@@ -1,5 +1,6 @@
 import Mettapedia.Languages.OpenTheory.EtaCompletenessRules
 import Mettapedia.Languages.OpenTheory.EtaCompletenessExpansion
+import Mettapedia.Logic.InstitutionBorrowing
 
 /-!
 # Completeness of the OpenTheory kernel with eta
@@ -37,6 +38,16 @@ hypotheses.
   is Heyting-valued consequence of the embedded translations over models of
   the signature with parameters.  `EtaCompletenessHeyting.lean` removes the
   parameters: the same holds over models of `Symbol` itself.
+
+## As a route
+
+Read as a route of theories (`Logic.InstitutionBorrowing.TheoryRoute`) from
+the kernel's Boolean-hypothesis sequents to those whose translations are
+derivable, the translation is conservative for every policy admitting eta
+(`EtaCompletenessRoutes.kernelRoute_conservative`), a conservative route makes
+eta kernel-provable (`EtaCompletenessRoutes.eta_kernelProvable_of_conservative`),
+and without eta the route adds a commitment
+(`EtaCompletenessRoutes.emptyRoute_not_conservative`).
 
 ## Controls
 
@@ -341,5 +352,77 @@ theorem extDerivation_top_and_not_translates_top :
   ⟨.topI, ReverseTranslation.Examples.not_translates_top []⟩
 
 end EtaCompletenessExamples
+
+/-! ## The route into extensional HOL, with and without eta -/
+
+namespace EtaCompletenessRoutes
+
+open EtaCompleteness EtaCompletenessExamples
+open Mettapedia.Logic.InstitutionBorrowing
+
+/-- Sequents with Boolean hypotheses that the kernel proves under a policy. -/
+def kernelTheory (policy : AxiomPolicy) : Set Sequent :=
+  {sequent | (∀ term ∈ sequent.hyp, term.IsBool) ∧
+    KernelProvable policy sequent.hyp sequent.concl.term}
+
+/-- Sequents with Boolean hypotheses whose translations are derivable in
+extensional HOL. -/
+def translatedTheory : Set Sequent :=
+  {sequent | (∀ term ∈ sequent.hyp, term.IsBool) ∧ TranslatedProvable ∅ sequent}
+
+/-- The route of a policy whose axioms have derivable translations: a sequent
+goes to itself, read in extensional HOL through its translation. -/
+def kernelRoute {policy : AxiomPolicy}
+    (policyProvable : ∀ sequent, policy sequent → TranslatedProvable ∅ sequent) :
+    TheoryRoute (kernelTheory policy) translatedTheory where
+  translate := id
+  preserves _ member :=
+    ⟨member.1, translatedProvable_of_kernelProvable policyProvable member.2⟩
+
+/-- **With eta the route is conservative**: extensional HOL certifies no
+Boolean-hypothesis sequent that the kernel does not prove. -/
+theorem kernelRoute_conservative {policy : AxiomPolicy}
+    (policyProvable : ∀ sequent, policy sequent → TranslatedProvable ∅ sequent)
+    (admitted : policy EtaAxiom.sequent) :
+    (kernelRoute policyProvable).Conservative :=
+  fun _ translated =>
+    ⟨translated.1, kernelProvable_of_translatedProvable admitted translated.1 translated.2⟩
+
+/-- **A conservative route proves eta**: the eta sequent's translation is
+derivable, so a route that adds no commitment makes it kernel-provable.  With
+`kernelRoute_conservative`, conservativity sits between admitting eta as an
+axiom and proving it. -/
+theorem eta_kernelProvable_of_conservative {policy : AxiomPolicy}
+    (policyProvable : ∀ sequent, policy sequent → TranslatedProvable ∅ sequent)
+    (conservative : (kernelRoute policyProvable).Conservative) :
+    KernelProvable policy EtaAxiom.sequent.hyp EtaAxiom.sequent.concl.term :=
+  (conservative (show EtaAxiom.sequent ∈ (kernelRoute policyProvable).borrowed from
+    ⟨EtaAxiom.sequent_isBool.2, etaAxiomPolicy_translatedProvable _ rfl⟩)).2
+
+/-- The empty policy admits nothing, so its axioms are vacuously derivable. -/
+theorem emptyAxiomPolicy_translatedProvable :
+    ∀ sequent, emptyAxiomPolicy sequent → TranslatedProvable ∅ sequent :=
+  fun _ absurdity => absurdity.elim
+
+/-- **Negative control: without eta the route adds a commitment.** -/
+theorem emptyRoute_not_conservative :
+    ¬ (kernelRoute emptyAxiomPolicy_translatedProvable).Conservative := by
+  intro conservative
+  obtain ⟨sequent, isBool, translated, notProvable⟩ :=
+    exists_translatedProvable_not_kernelProvable_emptyAxiomPolicy
+  exact notProvable (conservative (show sequent ∈
+    (kernelRoute emptyAxiomPolicy_translatedProvable).borrowed from ⟨isBool.2, translated⟩)).2
+
+/-- **Positive control**: the route of the eta policy is conservative. -/
+theorem etaRoute_conservative :
+    (kernelRoute etaAxiomPolicy_translatedProvable).Conservative :=
+  kernelRoute_conservative etaAxiomPolicy_translatedProvable rfl
+
+end EtaCompletenessRoutes
+
+#print axioms EtaCompletenessRoutes.kernelRoute_conservative
+#print axioms EtaCompletenessRoutes.eta_kernelProvable_of_conservative
+#print axioms EtaCompletenessRoutes.emptyRoute_not_conservative
+#print axioms EtaCompletenessRoutes.etaRoute_conservative
 
 end Mettapedia.Languages.OpenTheory

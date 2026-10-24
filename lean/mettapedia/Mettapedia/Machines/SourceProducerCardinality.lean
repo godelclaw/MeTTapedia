@@ -7,6 +7,7 @@ import Mettapedia.Machines.Cursor.Fold
 import Mettapedia.GSLT.Contracts.IndexedAuthority
 import Mettapedia.Machines.Cursor.ProducerOccurrenceLog
 import Mettapedia.Algebra.SharedCoefficientLedger
+import Mettapedia.GSLT.LanguageDef.NativeControlCursor
 
 /-!
 # Cardinality derived from the existing recursive equation IR
@@ -9839,5 +9840,1022 @@ end Controls
 #print axioms Controls.actual_handoff_is_one_observation_with_earned_prefix
 
 end BodyCallWeighted.Authored.Publication
+
+/-! ## Native cut, loan and acknowledgment representation
+
+The producer remains the maintained body/call cursor.  The adapter below
+stores its phase, control, source state and reply-readiness separately, as an
+owned native invocation does.  Its callback branches are independent of the
+reference callback provider; only the producer component is shared.  The
+request ordinal prices protocol inspections, not producer instructions or
+CPU time.  `sourcePulls` retains that other account without conflating them.
+
+This is a realization of the declared native boundary. Reading these fields
+from C, ownership of their payloads, finite-word nonwrapping, and conformance
+of an external payload provider remain separate implementation obligations.
+-/
+namespace NativeRetained
+
+open Cursor.Fold.OwnedSequence.CallbackBoundary
+open Mettapedia.GSLT.LanguageDef
+
+variable {Input Output Context : Type}
+  (construct : Input → Output → Output)
+  (callbackConstruct : Nat → Output → Output → Output)
+  (fallback : List Input → Nat → List Output)
+
+abbrev Loan := BodyCallOwned.Returned construct callbackConstruct fallback
+
+/-- The fields inspected at a cut; readiness is distinct from source phase.
+A paused client may already hold a yield that has not been exposed yet. -/
+structure RawCut (Input Output : Type) where
+  phase : BodyCall.Phase
+  source : BodyCall.State Input Output
+  control : BodyCall.Move Input Output
+  replyReady : Bool
+
+def RawCut.Valid (cut : RawCut Input Output) : Prop :=
+  cut.source.phase = cut.phase ∧
+    (cut.replyReady = false → cut.control.next.phase = cut.phase)
+
+abbrev Cut (Input Output : Type) := { raw : RawCut Input Output // raw.Valid }
+
+/-- A mismatched phase is rejected; it is never read as exhaustion. -/
+def RawCut.check (raw : RawCut Input Output) : Option (Cut Input Output) :=
+  letI : Decidable raw.Valid := inferInstanceAs (Decidable
+    (raw.source.phase = raw.phase ∧
+      (raw.replyReady = false → raw.control.next.phase = raw.phase)))
+  if valid : raw.Valid then some ⟨raw, valid⟩ else none
+
+theorem RawCut.check_some_iff (raw : RawCut Input Output) :
+    (∃ cut, raw.check = some cut) ↔ raw.Valid := by
+  simp [RawCut.check]
+
+def Cut.loan (cut : Cut Input Output) : Loan construct callbackConstruct fallback :=
+  ⟨⟨cut.val.phase⟩, cut.val.control, ⟨cut.val.source, cut.property.1⟩⟩
+
+def Cut.decode (cut : Cut Input Output) :
+    BodyCallProtocol.Outcome construct callbackConstruct fallback :=
+  if ready : cut.val.replyReady = true then .done (cut.loan construct callbackConstruct fallback)
+  else .paused ⟨⟨cut.val.phase⟩,
+    ⟨cut.val.control, cut.property.2 (Bool.eq_false_of_not_eq_true ready)⟩,
+    ⟨cut.val.source, cut.property.1⟩⟩
+
+def Cut.ofOutcome (outcome : BodyCallProtocol.Outcome construct callbackConstruct fallback) :
+    Cut Input Output :=
+  match outcome with
+  | .paused ⟨phase, control, state⟩ =>
+      ⟨⟨phase.down, state.val, control.val, false⟩, state.property, fun _ => control.property⟩
+  | .done ⟨phase, value, state⟩ =>
+      ⟨⟨phase.down, state.val, value, true⟩, state.property, by simp⟩
+
+@[simp] theorem Cut.decode_ofOutcome
+    (outcome : BodyCallProtocol.Outcome construct callbackConstruct fallback) :
+    (Cut.ofOutcome construct callbackConstruct fallback outcome).decode
+      construct callbackConstruct fallback = outcome := by
+  cases outcome with
+  | paused packet => rcases packet with ⟨⟨phase⟩, control, state⟩; rfl
+  | done result => rcases result with ⟨⟨phase⟩, value, state⟩; rfl
+
+@[simp] theorem Cut.ofOutcome_decode (cut : Cut Input Output) :
+    Cut.ofOutcome construct callbackConstruct fallback
+      (cut.decode construct callbackConstruct fallback) = cut := by
+  rcases cut with ⟨⟨phase, source, control, ready⟩, valid⟩
+  cases ready <;> rfl
+
+@[simp] theorem Cut.paused_ready (packet : BodyCallProtocol.Packet construct callbackConstruct fallback) :
+    (Cut.ofOutcome construct callbackConstruct fallback (.paused packet)).val.replyReady = false := rfl
+
+@[simp] theorem Cut.done_ready (loan : Loan construct callbackConstruct fallback) :
+    (Cut.ofOutcome construct callbackConstruct fallback (.done loan)).val.replyReady = true := rfl
+
+@[simp] theorem Cut.loan_done (loan : Loan construct callbackConstruct fallback) :
+    (Cut.ofOutcome construct callbackConstruct fallback (.done loan)).loan
+      construct callbackConstruct fallback = loan := by
+  rcases loan with ⟨⟨phase⟩, value, state⟩
+  rfl
+
+/-- The cut is a representation, not an authenticity certificate for arbitrary
+native memory. The body/call source invariant is inherited from an actual run. -/
+structure Record (Input Output Context : Type) where
+  cut : Cut Input Output
+  /-- The maintained body/call request-charge account, not the number of C
+  `next` callbacks or a bound on their physical work. -/
+  sourcePulls : Nat
+  acceptedRows : List (List Output)
+  consumer : Context
+  requestOrdinal : Nat
+
+abbrev ReferenceState := Nat × BodyCallOwned.State construct callbackConstruct fallback
+  (Context := Context)
+
+def Record.decode (state : Record Input Output Context) :
+    ReferenceState construct callbackConstruct fallback (Context := Context) :=
+  (state.requestOrdinal,
+    ⟨(state.sourcePulls, state.cut.decode construct callbackConstruct fallback),
+      state.acceptedRows, state.consumer⟩)
+
+def Record.ofReference
+    (state : ReferenceState construct callbackConstruct fallback (Context := Context)) :
+    Record Input Output Context :=
+  ⟨Cut.ofOutcome construct callbackConstruct fallback state.2.computation.2,
+    state.2.computation.1, state.2.context.1, state.2.context.2, state.1⟩
+
+@[simp] theorem Record.decode_ofReference
+    (state : ReferenceState construct callbackConstruct fallback (Context := Context)) :
+    (Record.ofReference construct callbackConstruct fallback state).decode
+      construct callbackConstruct fallback = state := by
+  rcases state with ⟨ordinal, ⟨⟨paid, outcome⟩, ⟨rows, context⟩⟩⟩
+  simp [Record.ofReference, Record.decode]
+
+@[simp] theorem Record.ofReference_decode (state : Record Input Output Context) :
+    Record.ofReference construct callbackConstruct fallback
+      (state.decode construct callbackConstruct fallback) = state := by
+  cases state
+  simp [Record.ofReference, Record.decode]
+
+variable (quantum : Nat)
+  (accept : Context → Loan construct callbackConstruct fallback → Bool × Context)
+
+abbrev CallbackProtocol := protocol
+  (Loan construct callbackConstruct fallback) (Loan construct callbackConstruct fallback)
+
+/-- The reference counts real callback protocol inspections around the
+maintained retained producer; it does not count them as body instructions. -/
+def referenceProvider : Cursor.Provider (CallbackProtocol construct callbackConstruct fallback) where
+  State _ _ := ReferenceState construct callbackConstruct fallback (Context := Context)
+  step state request :=
+    let response := (BodyCallOwned.provider construct callbackConstruct fallback quantum accept).step
+      state.2 request
+    ⟨response.1, state.1 + 1, response.2⟩
+
+/-- Classify only a reply already held by its producer. The payload's shape
+does not cause evaluation and a yield does not certify producer completion. -/
+def Record.reply (state : Record Input Output Context) :
+    NextReply (Loan construct callbackConstruct fallback) (Loan construct callbackConstruct fallback) :=
+  if state.cut.val.replyReady then
+    let loan := state.cut.loan construct callbackConstruct fallback
+    if BodyCallOwned.isReturn construct callbackConstruct fallback loan then .returned loan
+    else .terminal loan
+  else .paused
+
+/-- Native-facing callback branches inspect the saved cut directly. A cached
+reply never re-polls the producer, and acknowledgment consumes the held reply,
+not a caller-supplied copy. Refused consumers retain their private update. -/
+def nativeProvider : Cursor.Provider (CallbackProtocol construct callbackConstruct fallback) where
+  State _ _ := Record Input Output Context
+  step state request := match request with
+    | .next =>
+        if state.cut.val.replyReady then
+          ⟨state.reply construct callbackConstruct fallback,
+            { state with requestOrdinal := state.requestOrdinal + 1 }⟩
+        else
+          let produced := BodyCallProtocol.resume construct callbackConstruct fallback quantum
+            (state.sourcePulls, state.cut.decode construct callbackConstruct fallback)
+          let next : Record Input Output Context :=
+            { state with
+              cut := Cut.ofOutcome construct callbackConstruct fallback produced.2
+              sourcePulls := produced.1
+              requestOrdinal := state.requestOrdinal + 1 }
+          ⟨next.reply construct callbackConstruct fallback, next⟩
+    | .accept _ =>
+        if state.cut.val.replyReady then
+          let loan := state.cut.loan construct callbackConstruct fallback
+          if BodyCallOwned.isReturn construct callbackConstruct fallback loan then
+            let decision := accept state.consumer loan
+            let next : Record Input Output Context := { state with
+              cut := if decision.1 then Cut.ofOutcome construct callbackConstruct fallback
+                (.paused (BodyCallOwned.rearm construct callbackConstruct fallback loan)) else state.cut
+              acceptedRows := if decision.1 then state.acceptedRows ++ loan.2.1.rows
+                else state.acceptedRows
+              consumer := decision.2
+              requestOrdinal := state.requestOrdinal + 1 }
+            ⟨decision.1, next⟩
+          else ⟨false, { state with requestOrdinal := state.requestOrdinal + 1 }⟩
+        else ⟨false, { state with requestOrdinal := state.requestOrdinal + 1 }⟩
+
+/-- Each local callback branch constructs the correspondence. No whole-run
+equivalence, source-answer equality or native C conformance is an input. -/
+def representation : Cursor.Hom
+    (referenceProvider construct callbackConstruct fallback quantum accept)
+    (nativeProvider construct callbackConstruct fallback quantum accept) where
+  map := Record.ofReference construct callbackConstruct fallback
+  step state request := by
+    rcases state with ⟨ordinal, ⟨⟨paid, outcome⟩, ⟨rows, context⟩⟩⟩
+    cases request with
+    | next =>
+        cases outcome with
+        | paused packet =>
+            simp only [referenceProvider, nativeProvider, Record.ofReference,
+              Cut.paused_ready, Bool.false_eq_true, ↓reduceIte, Cut.decode_ofOutcome,
+              BodyCallOwned.provider, Retained.provider]
+            generalize advanced : BodyCallProtocol.resume construct callbackConstruct fallback quantum
+              (paid, .paused packet) = later
+            rcases later with ⟨spent, result⟩
+            cases result with
+            | paused saved =>
+                simp [Record.reply, BodyCallProtocol.resume] at advanced ⊢
+                rw [advanced]
+                simp
+            | done value =>
+                simp only [Record.reply, Cut.done_ready, ↓reduceIte, Cut.loan_done]
+                simp only [BodyCallProtocol.resume] at advanced
+                rw [advanced]
+                cases returned : BodyCallOwned.isReturn construct callbackConstruct fallback value <;>
+                  simp [returned]
+        | done result =>
+            simp only [referenceProvider, nativeProvider, Record.ofReference, Cut.done_ready,
+              ↓reduceIte, Record.reply, Cut.loan_done, BodyCallOwned.provider, Retained.provider,
+              Cursor.resume]
+            cases BodyCallOwned.isReturn construct callbackConstruct fallback result <;> rfl
+    | accept item =>
+        cases outcome with
+        | paused packet =>
+            simp [referenceProvider, nativeProvider, Record.ofReference,
+              BodyCallOwned.provider, Retained.provider]
+        | done result =>
+            by_cases returned : BodyCallOwned.isReturn construct callbackConstruct fallback
+                result = true
+            · cases decision : (accept context result).1 with
+              | false =>
+                  simp [referenceProvider, nativeProvider, Record.ofReference,
+                    BodyCallOwned.provider, Retained.provider, BodyCallOwned.consume,
+                    returned, decision]
+              | true =>
+                  simp [referenceProvider, nativeProvider, Record.ofReference,
+                    BodyCallOwned.provider, Retained.provider, BodyCallOwned.consume,
+                    returned, decision]
+                  exact (congrArg (fun loan : Loan construct callbackConstruct fallback => loan.2.1.rows)
+                    (Cut.loan_done construct callbackConstruct fallback result)).symm
+            · simp [referenceProvider, nativeProvider, Record.ofReference,
+                BodyCallOwned.provider, Retained.provider, returned]
+
+/-- Remove only the callback-inspection ordinal. The actual producer cut,
+accepted occurrences and consumer context remain the original owners. -/
+def eraseReference : Cursor.Hom
+    (referenceProvider construct callbackConstruct fallback quantum accept)
+    (BodyCallOwned.provider construct callbackConstruct fallback quantum accept) where
+  map state := state.2
+  step _ _ := rfl
+
+set_option backward.isDefEq.respectTransparency false in
+def decodeRepresentation : Cursor.Hom
+    (nativeProvider construct callbackConstruct fallback quantum accept)
+    (referenceProvider construct callbackConstruct fallback quantum accept) where
+  map := Record.decode construct callbackConstruct fallback
+  step := by
+    intro base index state request
+    cases base
+    cases index
+    change Record Input Output Context at state
+    change Request (Loan construct callbackConstruct fallback) at request
+    have compared := (representation construct callbackConstruct fallback quantum accept).step
+      (base := ()) (index := ()) (state.decode construct callbackConstruct fallback) request
+    change (⟨_, Record.ofReference construct callbackConstruct fallback _⟩ :
+      Sigma (fun _ => Record Input Output Context)) =
+        (nativeProvider construct callbackConstruct fallback quantum accept).step
+          (Record.ofReference construct callbackConstruct fallback
+            (state.decode construct callbackConstruct fallback)) request at compared
+    rw [Record.ofReference_decode] at compared
+    have decoded := congrArg (fun response : Sigma (fun _ => Record Input Output Context) =>
+      (⟨response.1, response.2.decode construct callbackConstruct fallback⟩ :
+        Sigma (fun _ => ReferenceState construct callbackConstruct fallback (Context := Context)))) compared
+    dsimp only at decoded
+    rw [Record.decode_ofReference construct callbackConstruct fallback] at decoded
+    exact decoded.symm
+
+/-- The separately written native callback branches realize the existing
+owned producer at every request, rather than merely agreeing after collection. -/
+def nativeToBody : Cursor.Hom
+    (nativeProvider construct callbackConstruct fallback quantum accept)
+    (BodyCallOwned.provider construct callbackConstruct fallback quantum accept) :=
+  (decodeRepresentation construct callbackConstruct fallback quantum accept).comp
+    (eraseReference construct callbackConstruct fallback quantum accept)
+
+/-- The native observation retains an accepted prefix, its unacknowledged
+reply and every source frame. Equal payloads at different positions stay. -/
+def Record.readout (state : Record Input Output Context) : List (List Output) :=
+  state.acceptedRows ++ (state.cut.val.control.rows ++
+    BodyCall.workRows construct callbackConstruct state.cut.val.source.work)
+
+theorem Record.readout_decode (state : Record Input Output Context) :
+    BodyCallOwned.view construct callbackConstruct fallback
+        (state.decode construct callbackConstruct fallback).2 =
+      state.readout construct callbackConstruct := by
+  unfold Record.decode BodyCallOwned.view BodyCallProtocol.unacceptedRows Cut.decode
+  split <;> rfl
+
+/-- Soundness of an actual producer cut is stronger than phase decoding. It
+is inherited from the existing body/call owner, rather than minted by the
+record's spelling or by a caller-supplied acknowledgment description. -/
+def Record.sound (state : Record Input Output Context) : Prop :=
+  BodyCallOwned.sound construct callbackConstruct fallback
+    (state.decode construct callbackConstruct fallback).2
+
+set_option backward.isDefEq.respectTransparency false in
+theorem native_request_preserves_source (state : Record Input Output Context)
+    (request : Request (Loan construct callbackConstruct fallback))
+    (safe : state.sound construct callbackConstruct fallback) :
+    let next := ((nativeProvider construct callbackConstruct fallback quantum accept).step
+      (base := ()) (index := ()) state request).2
+    next.sound construct callbackConstruct fallback ∧
+      next.readout construct callbackConstruct = state.readout construct callbackConstruct := by
+  have compared := (nativeToBody construct callbackConstruct fallback quantum accept).step
+    (base := ()) (index := ()) state request
+  have next := congrArg
+    (fun response : Sigma (fun _ => BodyCallOwned.State construct callbackConstruct fallback
+      (Context := Context)) => response.2) compared
+  have kept := BodyCallOwned.step_preserves_view construct callbackConstruct fallback
+    quantum accept (state.decode construct callbackConstruct fallback).2 request safe
+  change ((Record.decode construct callbackConstruct fallback
+    ((nativeProvider construct callbackConstruct fallback quantum accept).step state request).2).2) =
+      ((BodyCallOwned.provider construct callbackConstruct fallback quantum accept).step
+        (state.decode construct callbackConstruct fallback).2 request).2 at next
+  rw [← next] at kept
+  exact ⟨kept.1, by simpa only [Record.readout_decode] using kept.2⟩
+
+theorem native_request_ordinal (state : Record Input Output Context)
+    (request : Request (Loan construct callbackConstruct fallback)) :
+    ((nativeProvider construct callbackConstruct fallback quantum accept).step
+      (base := ()) (index := ()) state request).2.requestOrdinal = state.requestOrdinal + 1 := by
+  have compared := (representation construct callbackConstruct fallback quantum accept).step
+    (base := ()) (index := ()) (state.decode construct callbackConstruct fallback) request
+  change (⟨_, Record.ofReference construct callbackConstruct fallback _⟩ :
+    Sigma (fun _ => Record Input Output Context)) =
+      (nativeProvider construct callbackConstruct fallback quantum accept).step
+        (Record.ofReference construct callbackConstruct fallback
+          (state.decode construct callbackConstruct fallback)) request at compared
+  rw [Record.ofReference_decode] at compared
+  have counted := congrArg (fun response : Sigma (fun _ => Record Input Output Context) =>
+    response.2.requestOrdinal) compared
+  exact counted.symm
+
+/-- A retained source reply is retried without issuing any source request.
+The discarded acknowledgment description supplies neither a new payload nor
+another permission to advance the source. -/
+theorem native_acknowledgment_keeps_source_pulls (state : Record Input Output Context)
+    (description : Loan construct callbackConstruct fallback) :
+    ((nativeProvider construct callbackConstruct fallback quantum accept).step
+      (base := ()) (index := ()) state (.accept description)).2.sourcePulls = state.sourcePulls := by
+  simp only [nativeProvider]
+  split
+  · split
+    · rfl
+    · rfl
+  · rfl
+
+/-- Changing a copied acknowledgment cannot replace the stored occurrence. -/
+theorem native_acknowledgment_ignores_description (state : Record Input Output Context)
+    (first second : Loan construct callbackConstruct fallback) :
+    (nativeProvider construct callbackConstruct fallback quantum accept).step
+        (base := ()) (index := ()) state (.accept first) =
+      (nativeProvider construct callbackConstruct fallback quantum accept).step
+        (base := ()) (index := ()) state (.accept second) := rfl
+
+theorem cached_next_keeps_source_cut (state : Record Input Output Context)
+    (ready : state.cut.val.replyReady = true) :
+    let after := ((nativeProvider construct callbackConstruct fallback quantum accept).step
+      (base := ()) (index := ()) state .next).2
+    after.cut = state.cut ∧ after.sourcePulls = state.sourcePulls := by
+  simp [nativeProvider, ready]
+
+abbrev Call := Nat × (Result (Loan construct callbackConstruct fallback)
+  (Loan construct callbackConstruct fallback) × Record Input Output Context)
+
+def decodeCall (call : Call construct callbackConstruct fallback (Context := Context)) :
+    BodyCallAdmission.Call construct callbackConstruct fallback (Context := Context) :=
+  (call.1, call.2.1, (call.2.2.decode construct callbackConstruct fallback).2)
+
+def openCall (authored : List (Equation Output)) (items : List Input)
+    (parameter : Nat) (context : Context) : Call construct callbackConstruct fallback (Context := Context) :=
+  (0, ⟨none, none, 0⟩, Record.ofReference construct callbackConstruct fallback
+    (0, BodyCallOwned.openState construct callbackConstruct fallback authored items parameter context))
+
+def bodyRequestCharge : Cursor.Charge
+    (BodyCallOwned.provider construct callbackConstruct fallback quantum accept) :=
+  fun _ _ => 1
+
+/-- Reuse the existing callback runner, with separate producer and acceptance
+allowances. Neither the source call nor a held reply is reconstructed. -/
+def resume (allowance : Nat) (previous : Call construct callbackConstruct fallback (Context := Context)) :
+    Call construct callbackConstruct fallback (Context := Context) :=
+  resumeCall (nativeProvider construct callbackConstruct fallback quantum accept) (fun _ _ => 1)
+    allowance previous (BodyCallOwned.terminalAfter construct callbackConstruct fallback)
+
+theorem decode_resume (allowance : Nat)
+    (previous : Call construct callbackConstruct fallback (Context := Context)) :
+    decodeCall construct callbackConstruct fallback
+        (resume construct callbackConstruct fallback quantum accept allowance previous) =
+      BodyCallAdmission.resume construct callbackConstruct fallback quantum allowance accept
+        (bodyRequestCharge construct callbackConstruct fallback quantum accept)
+        (decodeCall construct callbackConstruct fallback previous) := by
+  have transported := resumeCall_account_transport
+    (nativeProvider construct callbackConstruct fallback quantum accept) (fun _ _ => 1)
+    (nativeToBody construct callbackConstruct fallback quantum accept)
+    (bodyRequestCharge construct callbackConstruct fallback quantum accept)
+    (fun _ _ => rfl) allowance previous
+    (BodyCallOwned.terminalAfter construct callbackConstruct fallback)
+  exact transported
+
+def schedule (grants : List (BodyCallAdmission.Grant construct callbackConstruct fallback (Context := Context)))
+    (previous : Call construct callbackConstruct fallback (Context := Context)) :
+    Call construct callbackConstruct fallback (Context := Context) :=
+  grants.foldl (fun held grant => resume construct callbackConstruct fallback
+    grant.1 grant.2.2 grant.2.1 held) previous
+
+/-- Changing the quantum or consumer at a real retained boundary transports
+the complete post-state. Equality of total allowances is not assumed. -/
+theorem decode_schedule
+    (grants : List (BodyCallAdmission.Grant construct callbackConstruct fallback (Context := Context)))
+    (previous : Call construct callbackConstruct fallback (Context := Context)) :
+    decodeCall construct callbackConstruct fallback
+        (schedule construct callbackConstruct fallback grants previous) =
+      BodyCallAdmission.schedule construct callbackConstruct fallback
+        (fun q consume => bodyRequestCharge construct callbackConstruct fallback q consume)
+        grants (decodeCall construct callbackConstruct fallback previous) := by
+  induction grants generalizing previous with
+  | nil => rfl
+  | cons grant rest ih =>
+      simpa only [schedule, BodyCallAdmission.schedule, List.foldl_cons, decode_resume] using
+        ih (resume construct callbackConstruct fallback grant.1 grant.2.2 grant.2.1 previous)
+
+/-- Actual native-facing execution conserves the independently specified
+finite authored source, including duplicates, held replies and full residue.
+The source equality is derived from an open computation, not supplied. -/
+theorem schedule_open_source
+    (grants : List (BodyCallAdmission.Grant construct callbackConstruct fallback (Context := Context)))
+    (authored : List (Equation Output)) (items : List Input) (parameter : Nat) (context : Context) :
+    let call := schedule construct callbackConstruct fallback grants
+      (openCall construct callbackConstruct fallback authored items parameter context)
+    BodyCallAdmission.captured construct callbackConstruct fallback authored items parameter
+      (decodeCall construct callbackConstruct fallback call) ∧
+      call.2.2.readout construct callbackConstruct = source construct callbackConstruct authored items parameter := by
+  intro call
+  have actual := BodyCallAdmission.schedule_open_captured construct callbackConstruct fallback
+    (fun q consume => bodyRequestCharge construct callbackConstruct fallback q consume)
+    grants authored items parameter context
+  have comparison := decode_schedule construct callbackConstruct fallback grants
+    (openCall construct callbackConstruct fallback authored items parameter context)
+  have seed : decodeCall construct callbackConstruct fallback
+      (openCall construct callbackConstruct fallback authored items parameter context) =
+      BodyCallAdmission.openCall construct callbackConstruct fallback authored items parameter context := by
+    simp [decodeCall, openCall, BodyCallAdmission.openCall]
+  rw [seed] at comparison
+  have captured : BodyCallAdmission.captured construct callbackConstruct fallback authored items parameter
+      (decodeCall construct callbackConstruct fallback call) := by
+    rw [show decodeCall construct callbackConstruct fallback call = _ from comparison]
+    exact actual
+  refine ⟨captured, ?_⟩
+  rw [← Record.readout_decode construct callbackConstruct fallback]
+  exact captured.2.2
+
+def callbackProfile : OperationCostProtocol.Profile :=
+  ⟨"retained-body-call", [("inspection", some .quantum)], .steps, none, .transparent⟩
+
+/-- A logical request invoice. Source pulls, callback CPU cost, allocation,
+transport and teardown are separate accounts and are not assigned this price. -/
+def requestInvoice (origin ordinal : Nat) : List OperationCostProtocol.Event :=
+  [(ordinal, ⟨origin, ordinal, .quantum, 1⟩)]
+
+def referenceGate {Denied : Type} (policy : Context → Except Denied Unit) :
+    OperationCostProtocol.Indexed.Gate (Denied := Denied)
+      (referenceProvider construct callbackConstruct fallback quantum accept) :=
+  fun state _ => policy state.2.context.2
+
+def nativeGate {Denied : Type} (policy : Context → Except Denied Unit) :
+    OperationCostProtocol.Indexed.Gate (Denied := Denied)
+      (nativeProvider construct callbackConstruct fallback quantum accept) :=
+  fun state _ => policy state.consumer
+
+def referenceInvoice (origin : Nat) : OperationCostProtocol.Indexed.Invoice
+    (referenceProvider construct callbackConstruct fallback quantum accept) :=
+  fun state _ => requestInvoice origin state.1
+
+def nativeInvoice (origin : Nat) : OperationCostProtocol.Indexed.Invoice
+    (nativeProvider construct callbackConstruct fallback quantum accept) :=
+  fun state _ => requestInvoice origin state.requestOrdinal
+
+/-- Current policy reads the actual consumer context on both sides. The
+handler homomorphism is constructed from the independent callback branches;
+gate and exact invoice agreement use their real field projections. -/
+def handler {Denied : Type} (policy : Context → Except Denied Unit) (origin : Nat) :
+    OperationCostProtocol.Indexed.HandlerHom
+      (referenceProvider construct callbackConstruct fallback quantum accept)
+      (nativeProvider construct callbackConstruct fallback quantum accept)
+      (referenceGate construct callbackConstruct fallback quantum accept policy)
+      (nativeGate construct callbackConstruct fallback quantum accept policy)
+      (fun _ => callbackProfile) (fun _ => callbackProfile)
+      (fun _ => false) (fun _ => false)
+      (referenceInvoice construct callbackConstruct fallback quantum accept origin)
+      (nativeInvoice construct callbackConstruct fallback quantum accept origin) where
+  representation := representation construct callbackConstruct fallback quantum accept
+  gate_eq _ _ := rfl
+  profiles_eq _ := rfl
+  replay_eq _ := rfl
+  invoice_eq _ _ := rfl
+
+
+variable {Denied : Type} (policy : Context → Except Denied Unit) (origin : Nat)
+
+def guardedProvider := OperationCostProtocol.Indexed.provider
+  (nativeProvider construct callbackConstruct fallback quantum accept)
+  (nativeGate construct callbackConstruct fallback quantum accept policy)
+  (fun _ => callbackProfile) (fun _ => false)
+  (nativeInvoice construct callbackConstruct fallback quantum accept origin)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Current admission may refuse without changing the cut. If admitted, the
+real callback transition preserves the independently inherited source law. -/
+theorem guarded_request_preserves_source
+    (state : Record Input Output Context × OperationCostProtocol.Account)
+    (request : Request (Loan construct callbackConstruct fallback))
+    (safe : state.1.sound construct callbackConstruct fallback) :
+    let next := ((guardedProvider construct callbackConstruct fallback quantum accept policy origin).step
+      (base := ()) (index := ()) state request).2.1
+    next.sound construct callbackConstruct fallback ∧
+      next.readout construct callbackConstruct = state.1.readout construct callbackConstruct := by
+  cases admitted : OperationCostProtocol.Indexed.admit
+      (nativeProvider construct callbackConstruct fallback quantum accept)
+      (nativeGate construct callbackConstruct fallback quantum accept policy)
+      (fun _ => callbackProfile) (fun _ => false)
+      (nativeInvoice construct callbackConstruct fallback quantum accept origin)
+      state.1 request state.2 with
+  | error reason =>
+      dsimp only [guardedProvider, OperationCostProtocol.Indexed.provider,
+        nativeGate, nativeInvoice] at admitted ⊢
+      rw [admitted]
+      exact ⟨safe, rfl⟩
+  | ok account =>
+      dsimp only [guardedProvider, OperationCostProtocol.Indexed.provider,
+        nativeGate, nativeInvoice] at admitted ⊢
+      rw [admitted]
+      exact native_request_preserves_source construct callbackConstruct fallback quantum accept
+        state.1 request safe
+
+def callbackReader := Cursor.Fold.OwnedSequence.CallbackBoundary.client
+  (Loan construct callbackConstruct fallback) (Loan construct callbackConstruct fallback)
+  (BodyCallOwned.terminalAfter construct callbackConstruct fallback)
+
+variable (notice : OperationCostProtocol.Indexed.Notice
+  (CallbackProtocol construct callbackConstruct fallback) Denied)
+
+abbrev GuardedPacket := Cursor.Packet
+  (guardedProvider construct callbackConstruct fallback quantum accept policy origin)
+  (OperationCostProtocol.Indexed.client (callbackReader construct callbackConstruct fallback) notice) ()
+
+abbrev GuardedOutcome := Cursor.Outcome
+  (guardedProvider construct callbackConstruct fallback quantum accept policy origin)
+  (OperationCostProtocol.Indexed.client (callbackReader construct callbackConstruct fallback) notice) ()
+
+def carried : GuardedOutcome construct callbackConstruct fallback quantum accept policy origin notice →
+    Record Input Output Context
+  | .paused ⟨_, _, state⟩ => state.1
+  | .done ⟨_, _, state⟩ => state.1
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Every admitted/refused interaction and every scheduler cut conserves the
+whole source observation. This is proved by the actual client's transitions;
+there is no assumed equality of complete runs. -/
+theorem guarded_run_preserves_source (fuel : Nat)
+    (packet : GuardedPacket construct callbackConstruct fallback quantum accept policy origin notice)
+    (safe : packet.2.2.1.sound construct callbackConstruct fallback) :
+    let result := Cursor.advance
+      (guardedProvider construct callbackConstruct fallback quantum accept policy origin)
+      (OperationCostProtocol.Indexed.client (callbackReader construct callbackConstruct fallback) notice)
+      (OperationCostProtocol.Indexed.charge
+        (nativeProvider construct callbackConstruct fallback quantum accept)
+        (nativeGate construct callbackConstruct fallback quantum accept policy)
+        (fun _ => callbackProfile) (fun _ => false)
+        (nativeInvoice construct callbackConstruct fallback quantum accept origin)) fuel packet
+    let after := carried construct callbackConstruct fallback quantum accept policy origin notice result.2
+    after.sound construct callbackConstruct fallback ∧
+      after.readout construct callbackConstruct = packet.2.2.1.readout construct callbackConstruct := by
+  induction fuel generalizing packet with
+  | zero => exact ⟨safe, rfl⟩
+  | succ fuel ih =>
+      rcases packet with ⟨⟨⟩, control, state⟩
+      cases exposed : (OperationCostProtocol.Indexed.client
+          (callbackReader construct callbackConstruct fallback) notice).str () () control with
+      | mk shape children =>
+          cases shape with
+          | inl result =>
+              simpa only [Cursor.advance, exposed, carried] using
+                And.intro safe (Eq.refl (state.1.readout construct callbackConstruct))
+          | inr request =>
+              let response := (guardedProvider construct callbackConstruct fallback
+                quantum accept policy origin).step state request
+              have one := guarded_request_preserves_source construct callbackConstruct fallback
+                quantum accept policy origin state request safe
+              have rest := ih ⟨(), children response.1, response.2⟩ one.1
+              refine ⟨?_, ?_⟩
+              · simpa only [Cursor.advance, exposed, carried] using rest.1
+              · simpa only [Cursor.advance, exposed, carried] using rest.2.trans one.2
+
+
+/-- The current account and policy surround one actual open source. They do
+not replace the source's captured equations, input and calling parameter. -/
+def guardedOpen (authored : List (Equation Output)) (items : List Input)
+    (parameter : Nat) (context : Context) (allowance : Nat)
+    (account : OperationCostProtocol.Account) :
+    GuardedPacket construct callbackConstruct fallback quantum accept policy origin notice :=
+  ⟨(), .inl (.running allowance none 0),
+    ((openCall construct callbackConstruct fallback authored items parameter context).2.2, account)⟩
+
+/-- A genuinely open, scope-resolved producer preserves its independent
+source meaning through every finite admitted/refused client execution.
+Neither complete execution nor answer equality is an assumption. -/
+theorem guarded_open_source (fuel : Nat) (authored : List (Equation Output)) (items : List Input)
+    (parameter : Nat) (context : Context) (allowance : Nat) (account : OperationCostProtocol.Account) :
+    let packet := guardedOpen construct callbackConstruct fallback quantum accept policy origin notice
+      authored items parameter context allowance account
+    let result := Cursor.advance
+      (guardedProvider construct callbackConstruct fallback quantum accept policy origin)
+      (OperationCostProtocol.Indexed.client (callbackReader construct callbackConstruct fallback) notice)
+      (OperationCostProtocol.Indexed.charge
+        (nativeProvider construct callbackConstruct fallback quantum accept)
+        (nativeGate construct callbackConstruct fallback quantum accept policy)
+        (fun _ => callbackProfile) (fun _ => false)
+        (nativeInvoice construct callbackConstruct fallback quantum accept origin)) fuel packet
+    let after := carried construct callbackConstruct fallback quantum accept policy origin notice result.2
+    after.sound construct callbackConstruct fallback ∧
+      after.readout construct callbackConstruct = source construct callbackConstruct authored items parameter := by
+  intro packet result after
+  have opened := schedule_open_source construct callbackConstruct fallback [] authored items parameter context
+  have initialSound : packet.2.2.1.sound construct callbackConstruct fallback := opened.1.1
+  have conserved := guarded_run_preserves_source construct callbackConstruct fallback
+    quantum accept policy origin notice fuel packet initialSound
+  exact ⟨conserved.1, conserved.2.trans opened.2⟩
+
+/-- The retained guarded cursor resumes its selected continuation. Completed
+outcomes stay inert; a paused cut retains source meaning and paid progress.
+Rearming a current-policy refusal is the existing explicit `Indexed.retry`. -/
+theorem guarded_resume_preserves_source (fuel : Nat)
+    (previous : Nat × GuardedOutcome construct callbackConstruct fallback quantum accept policy origin notice)
+    (safe : (carried construct callbackConstruct fallback quantum accept policy origin notice previous.2).sound
+      construct callbackConstruct fallback) :
+    let result := Cursor.resume
+      (guardedProvider construct callbackConstruct fallback quantum accept policy origin)
+      (OperationCostProtocol.Indexed.client (callbackReader construct callbackConstruct fallback) notice)
+      (OperationCostProtocol.Indexed.charge
+        (nativeProvider construct callbackConstruct fallback quantum accept)
+        (nativeGate construct callbackConstruct fallback quantum accept policy)
+        (fun _ => callbackProfile) (fun _ => false)
+        (nativeInvoice construct callbackConstruct fallback quantum accept origin)) fuel previous
+    let after := carried construct callbackConstruct fallback quantum accept policy origin notice result.2
+    after.sound construct callbackConstruct fallback ∧
+      after.readout construct callbackConstruct =
+        (carried construct callbackConstruct fallback quantum accept policy origin notice previous.2).readout
+          construct callbackConstruct := by
+  rcases previous with ⟨paid, outcome⟩
+  cases outcome with
+  | done result => exact ⟨safe, rfl⟩
+  | paused packet =>
+      exact guarded_run_preserves_source construct callbackConstruct fallback
+        quantum accept policy origin notice fuel packet safe
+
+#print axioms RawCut.check_some_iff
+#print axioms Cut.decode_ofOutcome
+#print axioms Cut.ofOutcome_decode
+#print axioms representation
+#print axioms decodeRepresentation
+#print axioms nativeToBody
+#print axioms native_request_preserves_source
+#print axioms native_request_ordinal
+#print axioms native_acknowledgment_keeps_source_pulls
+#print axioms native_acknowledgment_ignores_description
+#print axioms cached_next_keeps_source_cut
+#print axioms decode_resume
+#print axioms decode_schedule
+#print axioms schedule_open_source
+#print axioms handler
+#print axioms guarded_request_preserves_source
+#print axioms guarded_run_preserves_source
+#print axioms guarded_open_source
+#print axioms guarded_resume_preserves_source
+
+end NativeRetained
+
+/-! ## Receiving clients for the four calling conventions
+
+The source's conservative mode evidence chooses a client, not a prophecy
+about a future run. A producer hands over its unchanged provider state. A
+nonempty producer requests its first occurrence; scalar receivers collect to
+real exhaustion. The common cursor packet retains the actual provider world
+and client control at every suspension. Native affine lifetime, external
+resource ownership and authentication remain separate realization contracts.
+-/
+
+namespace CallingModes
+
+open Mettapedia.Machines.Cursor
+open Mettapedia.GSLT.LanguageDef.HostCalls (Pull)
+open Mettapedia.GSLT.LanguageDef.NativeControlCursor (protocol provider)
+open _root_.CategoryTheory
+
+variable {Item HState : Type}
+
+/-- A returned producer includes any already buffered occurrences and the
+reached provider state in `receive`. Fault rows remain intact, including
+whatever stable/retryable distinction and provenance their carrier retains. -/
+inductive Result (Item : Type) where
+  | producer (buffered : List Item)
+  | nonempty (first : Item) (buffered : List Item)
+  | direct (value : Item)
+  | optional (value : Option Item)
+  | incompatible (rows : List Item)
+  | faulted (rows : List Item)
+  deriving Repr, DecidableEq
+
+def Result.rows : Result Item → List Item
+  | .producer rows | .incompatible rows | .faulted rows => rows
+  | .nonempty first rest => first :: rest
+  | .direct value => [value]
+  | .optional value => value.toList
+
+def Result.successful : Result Item → Bool
+  | .incompatible _ | .faulted _ => false
+  | _ => true
+
+/-- This receiver classifies only completed observations. It does not query
+the source or treat a scheduler suspension as an empty result. -/
+def decode (mode : CallingConvention) (isFault : Item → Bool) (rows : List Item) : Result Item :=
+  if rows.any isFault then .faulted rows else
+    match mode, rows with
+    | .producer, rows => .producer rows
+    | .nonemptyProducer, first :: rest => .nonempty first rest
+    | .direct, [value] => .direct value
+    | .optional, [] => .optional none
+    | .optional, [value] => .optional (some value)
+    | _, rows => .incompatible rows
+
+theorem decode_keeps_every_occurrence (mode : CallingConvention) (isFault : Item → Bool)
+    (rows : List Item) : (decode mode isFault rows).rows = rows := by
+  unfold decode
+  split
+  · rfl
+  · cases mode <;> cases rows with
+    | nil => rfl
+    | cons first rest => cases rest <;> rfl
+
+theorem decode_successful (mode : CallingConvention) (isFault : Item → Bool)
+    (rows : List Item) (clean : rows.any isFault = false)
+    (licensed : ConventionAllows mode rows.length) :
+    (decode mode isFault rows).successful = true := by
+  simp only [decode, clean, Bool.false_eq_true, ↓reduceIte]
+  cases mode <;> cases rows with
+  | nil =>
+      simp_all only [ConventionAllows, List.length_nil, Result.successful]
+      all_goals omega
+  | cons first rest =>
+      cases rest <;>
+        simp_all only [ConventionAllows, List.length_cons, List.length_nil, Result.successful]
+      all_goals omega
+
+/-- The first-occurrence client shares the existing fold control states,
+but finishes after a yield without inspecting the remaining producer. -/
+def firstClient (Item : Type) :
+    Client (P := protocol Item) (Return := fun _ _ => List Item) where
+  V _ _ := Fold.State (List Item)
+  str := fun _ _ => ↾(fun state => match state with
+    | .finished values => ⟨.inl values, fun impossible => nomatch impossible⟩
+    | .pulling reversed => ⟨.inr (), fun reply => match reply with
+        | .done => .finished reversed.reverse
+        | .yield value _ => .finished (reversed.reverse ++ [value])
+        | .suspend _ => .pulling reversed⟩)
+
+def client (mode : CallingConvention) (Item : Type) :
+    Client (P := protocol Item) (Return := fun _ _ => List Item) where
+  V _ _ := Fold.State (List Item)
+  str base index := match mode with
+    | .nonemptyProducer => (firstClient Item).str base index
+    | _ => (Mettapedia.GSLT.LanguageDef.NativeControlCursor.client Item).str base index
+
+def start (mode : CallingConvention) (source : Provider (protocol Item))
+    (state : source.State () ()) : Packet source (client mode Item) () :=
+  ⟨(), (if mode = .producer then .finished [] else .pulling []), state⟩
+
+/-- The left summand is the exact unfinished packet; the right includes the
+actual post-transition provider state, rather than a restart at its root. -/
+def receive (mode : CallingConvention) (isFault : Item → Bool)
+    (source : Provider (protocol Item)) :
+    Outcome source (client mode Item) () →
+      Packet source (client mode Item) () ⊕ (Result Item × source.State () ())
+  | .paused packet => .inl packet
+  | .done ⟨(), values, state⟩ => .inr (decode mode isFault values, state)
+
+theorem producer_keeps_the_original_world (source : Provider (protocol Item))
+    (charge : Charge source) (state : source.State () ()) :
+    advance source (client .producer Item) charge 1 (start .producer source state) =
+      (0, .done ⟨(), [], state⟩) := rfl
+
+theorem first_yield_keeps_the_actual_residual (source : Provider (protocol Item))
+    (charge : Charge source) (state next : source.State () ()) (value : Item)
+    (yielded : source.step state () = ⟨.yield value (), next⟩) :
+    advance source (client .nonemptyProducer Item) charge 2
+      (start .nonemptyProducer source state) =
+      (charge state (), .done ⟨(), [value], next⟩) := by
+  unfold advance start client firstClient
+  dsimp
+  rw [yielded]
+  rfl
+
+theorem split_resume (mode : CallingConvention) (source : Provider (protocol Item))
+    (charge : Charge source) (first second : Nat)
+    (packet : Packet source (client mode Item) ()) :
+    advance source (client mode Item) charge (first + second) packet =
+      resume source (client mode Item) charge second
+        (advance source (client mode Item) charge first packet) :=
+  advance_add _ _ _ first second packet
+
+theorem pending_keeps_the_whole_packet (mode : CallingConvention) (isFault : Item → Bool)
+    (source : Provider (protocol Item)) (packet : Packet source (client mode Item) ()) :
+    receive mode isFault source (.paused packet) = .inl packet := rfl
+
+/-- Static source evidence only selects an admissible receiving plan.
+Unknown code keeps its producer, without inspecting any future answers. -/
+def selectMode (requested inferred : CallingConvention) (interface : ScalarResultInterface) :
+    CallingConvention :=
+  if BodyCallAdmission.modeEligible requested inferred interface then requested else .producer
+
+theorem selected_mode_sound (requested inferred : CallingConvention)
+    (interface : ScalarResultInterface) (count : Nat)
+    (bounded : ConventionAllows inferred count) :
+    ConventionAllows (selectMode requested inferred interface) count := by
+  unfold selectMode
+  split
+  · exact BodyCallAdmission.modeEligible_sound requested inferred interface count (by assumption) bounded
+  · trivial
+
+theorem unknown_is_a_producer (requested : CallingConvention) (interface : ScalarResultInterface) :
+    selectMode requested .producer interface = .producer := by
+  cases requested <;> cases interface <;> rfl
+
+/-- The existing source compiler supplies this bound from current syntax.
+No future source execution participates in choosing the calling convention. -/
+theorem authored_mode_license {Input Output : Type}
+    (construct : Input → Output → Output)
+    (callbackConstruct : Nat → Output → Output → Output)
+    (requested : CallingConvention) (interface : ScalarResultInterface)
+    (authored : List (Equation Output)) (items : List Input) (parameter : Nat) :
+    ConventionAllows
+      (selectMode requested
+        (BodyCallAdmission.workerMode (selectWorker authored items parameter interface)) interface)
+      (source construct callbackConstruct authored items parameter).length :=
+  selected_mode_sound requested _ interface _
+    (BodyCallAdmission.selected_mode_sound construct callbackConstruct authored items parameter interface)
+
+/-- The collector's source agreement follows from each actual poll's local
+conservation law. The complete answer list is not an assumed premise. -/
+theorem collect_completed_source (pull : HState → Pull HState Item)
+    (remaining : HState → List Item)
+    (preserves : ∀ state, match pull state with
+      | .done => remaining state = []
+      | .suspend next => remaining state = remaining next
+      | .yield answer next => remaining state = answer :: remaining next)
+    (budget : Nat) (state next : HState) (rows : List Item)
+    (completed : (advance (provider pull)
+      (Mettapedia.GSLT.LanguageDef.NativeControlCursor.client Item) (fun _ _ => 1) budget
+      (Mettapedia.GSLT.LanguageDef.NativeControlCursor.packet pull state [])).2 =
+        .done ⟨(), rows, next⟩) : rows = remaining state := by
+  cases budget with
+  | zero => cases completed
+  | succ fuel =>
+      have published := congrArg
+        (Mettapedia.GSLT.LanguageDef.NativeControlCursor.published pull) completed
+      rw [Mettapedia.GSLT.LanguageDef.NativeControlCursor.advance_collect] at published
+      simp only [List.reverse_nil, List.nil_append] at published
+      simp only [Option.map_id_fun',
+        Mettapedia.GSLT.LanguageDef.NativeControlCursor.published] at published
+      exact Mettapedia.GSLT.LanguageDef.NativeControlCursor.collect_sound
+        pull remaining (by
+          intro cursor
+          cases moved : pull cursor <;> simpa only [moved] using preserves cursor)
+        fuel state rows published
+
+/-- Direct and optional receivers are the established exhaustion collector.
+Their completed rows agree with the source while their result still contains
+the reached provider state. The unit invoice here counts logical polls. -/
+theorem scalar_completed_source (mode : CallingConvention)
+    (scalar : mode = .direct ∨ mode = .optional)
+    (pull : HState → Pull HState Item) (remaining : HState → List Item)
+    (preserves : ∀ state, match pull state with
+      | .done => remaining state = []
+      | .suspend next => remaining state = remaining next
+      | .yield answer next => remaining state = answer :: remaining next)
+    (budget : Nat) (state next : HState) (rows : List Item)
+    (completed : (advance (provider pull) (client mode Item) (fun _ _ => 1) budget
+      (start mode (provider pull) state)).2 = .done ⟨(), rows, next⟩) :
+    rows = remaining state := by
+  rcases scalar with rfl | rfl
+  all_goals exact collect_completed_source pull remaining preserves budget state next rows completed
+
+/-- A current compiler-derived source grade licenses the actual completed
+scalar receiver. Initial source loading and individual poll conservation are
+the adapter premises; no future probing or complete-run equality is assumed. -/
+theorem authored_scalar_receiver_license {Input Output : Type}
+    (construct : Input → Output → Output)
+    (callbackConstruct : Nat → Output → Output → Output)
+    (requested : CallingConvention) (interface : ScalarResultInterface)
+    (authored : List (Equation Output)) (items : List Input) (parameter : Nat)
+    (mode : CallingConvention)
+    (selected : mode = selectMode requested
+      (BodyCallAdmission.workerMode (selectWorker authored items parameter interface)) interface)
+    (scalar : mode = .direct ∨ mode = .optional)
+    (pull : HState → Pull HState (List Output)) (remaining : HState → List (List Output))
+    (preserves : ∀ state, match pull state with
+      | .done => remaining state = []
+      | .suspend next => remaining state = remaining next
+      | .yield answer next => remaining state = answer :: remaining next)
+    (budget : Nat) (state next : HState) (rows : List (List Output))
+    (loaded : remaining state = source construct callbackConstruct authored items parameter)
+    (completed : (advance (provider pull) (client mode (List Output)) (fun _ _ => 1) budget
+      (start mode (provider pull) state)).2 = .done ⟨(), rows, next⟩) :
+    rows = source construct callbackConstruct authored items parameter ∧
+      (decode mode (fun _ => false) rows).successful = true := by
+  have same := (scalar_completed_source mode scalar pull remaining (by
+    intro cursor
+    cases moved : pull cursor <;> simpa only [moved] using preserves cursor)
+    budget state next rows completed).trans loaded
+  refine ⟨same, decode_successful mode (fun _ => false) rows (by simp) ?_⟩
+  rw [same, selected]
+  exact authored_mode_license construct callbackConstruct requested interface authored items parameter
+
+namespace Controls
+
+def listPull : List Item → Pull (List Item) Item
+  | [] => .done
+  | first :: rest => .yield first rest
+
+/-- The source has one answer and then an effect before exhaustion. Its
+singleton count cannot license dropping that later work. -/
+def lateEffect : Nat × List Nat → Pull (Nat × List Nat) (Except Nat Nat)
+  | (0, effects) => .yield (.ok 7) (1, effects)
+  | (1, effects) => .suspend (2, effects ++ [9])
+  | _ => .done
+
+def fault : Except Nat Nat → Bool
+  | .ok _ => false
+  | .error _ => true
+
+theorem unknown_hands_over_the_actual_unforced_source :
+    let mode := selectMode .direct .producer .singleValue
+    advance (provider lateEffect) (client mode (Except Nat Nat)) (fun _ _ => 1) 1
+      (start mode (provider lateEffect) (0, [])) =
+      (0, .done ⟨(), [], (0, [])⟩) := rfl
+
+theorem nonempty_keeps_first_and_unrun_effectful_tail :
+    receive .nonemptyProducer fault (provider lateEffect)
+      (advance (provider lateEffect) (client .nonemptyProducer (Except Nat Nat))
+        (fun _ _ => 1) 2 (start .nonemptyProducer (provider lateEffect) (0, []))).2 =
+      .inr (.nonempty (.ok 7) [], (1, [])) := rfl
+
+theorem a_singleton_source_is_not_finished_after_its_first_value :
+    advance (provider lateEffect) (client .direct (Except Nat Nat)) (fun _ _ => 1) 2
+      (start .direct (provider lateEffect) (0, [])) =
+      (2, .paused ⟨(), .pulling [.ok 7], (2, [9])⟩) := rfl
+
+theorem direct_completion_keeps_the_late_effect :
+    receive .direct fault (provider lateEffect)
+      (advance (provider lateEffect) (client .direct (Except Nat Nat)) (fun _ _ => 1) 4
+        (start .direct (provider lateEffect) (0, []))).2 =
+      .inr (.direct (.ok 7), (2, [9])) := rfl
+
+theorem optional_absence_requires_exhaustion :
+    receive .optional (fun _ : Nat => false) (provider listPull)
+      (advance (provider listPull) (client .optional Nat) (fun _ _ => 1) 2
+        (start .optional (provider listPull) [])).2 = .inr (.optional none, []) := rfl
+
+theorem direct_absence_is_incompatible_not_pending :
+    receive .direct (fun _ : Nat => false) (provider listPull)
+      (advance (provider listPull) (client .direct Nat) (fun _ _ => 1) 2
+        (start .direct (provider listPull) [])).2 = .inr (.incompatible [], []) := rfl
+
+theorem equal_occurrences_cannot_fit_the_direct_interface :
+    receive .direct (fun _ : Nat => false) (provider listPull)
+      (advance (provider listPull) (client .direct Nat) (fun _ _ => 1) 4
+        (start .direct (provider listPull) [7, 7])).2 =
+      .inr (.incompatible [7, 7], []) := rfl
+
+theorem nonempty_retains_the_equal_second_occurrence :
+    receive .nonemptyProducer (fun _ : Nat => false) (provider listPull)
+      (advance (provider listPull) (client .nonemptyProducer Nat) (fun _ _ => 1) 2
+        (start .nonemptyProducer (provider listPull) [7, 7])).2 =
+      .inr (.nonempty 7 [], [7]) := rfl
+
+theorem a_fault_is_not_an_optional_absence :
+    receive .optional fault (provider listPull)
+      (advance (provider listPull) (client .optional (Except Nat Nat)) (fun _ _ => 1) 4
+        (start .optional (provider listPull) [.error 12, .ok 7])).2 =
+      .inr (.faulted [.error 12, .ok 7], []) := rfl
+
+theorem splitting_does_not_repeat_the_late_effect :
+    resume (provider lateEffect) (client .direct (Except Nat Nat)) (fun _ _ => 1) 2
+      (advance (provider lateEffect) (client .direct (Except Nat Nat)) (fun _ _ => 1) 2
+        (start .direct (provider lateEffect) (0, []))) =
+      (3, .done ⟨(), [.ok 7], (2, [9])⟩) := rfl
+
+end Controls
+
+end CallingModes
 
 end Mettapedia.Machines.SourceProducerCardinality

@@ -130,6 +130,12 @@ import Mettapedia.QuantumTheory.FromSymmetry
 import Mettapedia.Algebra.PrimeDecomposition
 import Mettapedia.Algebra.QuantaleWeakness
 import Mettapedia.Algebra.TemporalQuantale
+import Mettapedia.Algebra.CollectionFold
+import Mettapedia.Algebra.CollectionRest
+import Mettapedia.Algebra.CollectionUnification
+import Mettapedia.Algebra.CollectionCanonicalForm
+import Mettapedia.Algebra.SupportObservation
+import Mettapedia.Algebra.QuadraticAlgebras
 import Mettapedia.GSLT.LanguageDef.HyperoperationModule
 
 -- Category Theory (Hypercube/OSLF framework for quantales)
@@ -259,6 +265,8 @@ import Mettapedia.NARS
 import Mettapedia.Evidence
 import Mettapedia.Cybernetics
 import Mettapedia.Enactive
+import Mettapedia.FoundationalMeaning.Autonomy
+import Mettapedia.FoundationalMeaning.ReflectionByEvidence
 import Mettapedia.PLN.WorldModel.Experiment
 -- PLN confidence/strength/ITV characterization tower (finite + infinite:
 -- Ising/Gibbs/DLR and i.i.d. de Finetti).  `PLNTruthTheoryIndex` is the
@@ -288,6 +296,7 @@ import Mettapedia.UniversalAI.MultiAgent.TwoActionGames
 
 -- Brouwer's fixed-point theorem for cubes, by Kuhn's combinatorial lemma
 import Mettapedia.Combinatorics.Kuhn.Parity
+import Mettapedia.Combinatorics.Kuhn.Operational
 import Mettapedia.Topology.BrouwerCube
 
 -- Reflective oracles (Fallenstein, Taylor & Christiano; Leike, Taylor & Fallenstein)
@@ -373,6 +382,7 @@ import Mettapedia.GSLT.LanguageDef.HOLTypeDerivedConsequence
 import Mettapedia.GSLT.LanguageDef.HOLFullDomainTheory
 import Mettapedia.Languages.Megalodon.PreambleFragmentVertical
 import Mettapedia.Languages.Megalodon.PreambleDependencyRestriction
+import Mettapedia.Languages.Megalodon.ReductionBubbleElaboration
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.TowerTheoryNode
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativeRegularity
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.DeclarationFormation
@@ -624,6 +634,7 @@ import Mettapedia.Computability.HutterComputability
 import Mettapedia.Computability.HutterComputabilityClosure
 import Mettapedia.Computability.HutterComputabilityENNReal
 import Mettapedia.Computability.HutterComputabilityRational
+import Mettapedia.Computability.RationalApproximationBridge
 import Mettapedia.Computability.PartialEvaluation
 import Mettapedia.Computability.PartialEvaluationTransformation
 import Mettapedia.Computability.InterpreterMediatedSpecialization
@@ -834,6 +845,7 @@ import Mettapedia.OSLF.Framework.ConstructorObservationBoundary
 import Mettapedia.OSLF.Framework.SortedInstrumentCongruenceControls
 import Mettapedia.OSLF.Framework.SortedInstrumentCongruenceBranchingControls
 import Mettapedia.Documentation.SourceLedgers.FindingMind
+import Mettapedia.OSLF
 import Mettapedia.OSLF.NativeTypes
 import Mettapedia.OSLF.NativeTypes.Consumers
 import Mettapedia.OSLF.NativeTypes.Instances.Normalized
@@ -965,6 +977,8 @@ import Mettapedia.GSLT.Life.AssemblyTheory
 import Mettapedia.GSLT.Life.ReplicationFixedPoint
 import Mettapedia.GSLT.LanguageDef.HOLKernelProfiles
 import Mettapedia.Algebra.FootprintQuantale
+import Mettapedia.Algebra.LocatedUpdates
+import Mettapedia.Algebra.FocusedAccess
 import Mettapedia.OSLF.Framework.GrammarDerives
 import Mettapedia.GSLT.Parsing.CanonicalMorphism
 import Mettapedia.GSLT.Parsing.CanonicalGrammarLowering

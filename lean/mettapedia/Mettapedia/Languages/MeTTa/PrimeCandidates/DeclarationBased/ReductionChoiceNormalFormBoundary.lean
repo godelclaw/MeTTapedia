@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.QuotationChoiceGluingMorphisms
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.QuotationChoiceGluingMorphisms
 
 /-!
 # Reduction, choice, and the boundary of unique normal forms

@@ -1,15 +1,17 @@
 import Mettapedia.Languages.HOLLight.PrimitiveTransport
-import Mettapedia.Languages.HOLLight.EqualityExpansion
+import Mettapedia.Languages.HOLLight.HypothesisExpansion
 import Mettapedia.Languages.OpenTheory.DerivedRulesConnectives
 
 /-!
-# Explicit universal instantiation in HOL Light
+# Constructive universal quantifier rules in HOL Light
 
 Universal instantiation is a chronological graph of the original HOL Light
 primitive requests. The quantified theorem occupies one external premise
 slot. Beta conversion uses the computed fresh-source BETA/INST expansion;
 equality symmetry uses the shared five-request expansion. Full hypothesis
-and axiom sets are retained at the final instantiated theorem.
+and axiom sets are retained at the final instantiated theorem. Generalization
+uses the same primitive graph builder and checks the eigenvariable condition
+on the original hypotheses.
 -/
 
 set_option autoImplicit false
@@ -778,5 +780,204 @@ theorem future_quantified_proof_refused (policy : AxiomPolicy) [DecidablePred po
   emitSpec_future_refused policy taggedInput identityArgument 1 origin (start [taggedInput]) (by rfl)
 
 end Controls
+
+
+/-! ## Generalization -/
+
+/-- The universal conclusion abstracts the actual free variable in the input. -/
+def genTerm (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool) :
+    CanonicalTerm :=
+  ⟨forallAppDB binder.ty (input.sequent.concl.abstractFree binder).term, Ty.bool,
+    DerivedRules.inferType_forallAppDB_iff.mpr
+      ⟨by
+        have booleanType : input.sequent.concl.ty = Ty.bool := boolean
+        simpa only [CanonicalTerm.abstractFree, booleanType] using
+          (input.sequent.concl.abstractFree binder).checked, rfl⟩⟩
+
+def genResult (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool) :
+    Theorem :=
+  Theorem.preserveAxiomsResult input input.sequent.hyp (genTerm input binder boolean)
+
+/-- Generalization produces five checked local blocks. -/
+structure GenExpansion (policy : AxiomPolicy) [DecidablePred policy] (input : Theorem) where
+  requests : List BlockRequest
+  conclusion : Theorem
+  checked : LocallyChecked policy #[input] requests
+
+open HypothesisExpansion in
+def genExpansion (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool)
+    (fresh : ¬ FreeInHypotheses binder input.sequent.hyp) (origin : Origin) :
+    GenExpansion policy input := by
+  let truthEquation := truthEqualityResult input boolean
+  let abstracted := abstractionResult binder truthEquation input.sequent.concl
+    DerivedRules.truthTerm boolean
+  let predicate := input.sequent.concl.abstractFree binder
+  let constantTruth := DerivedRules.truthTerm.abstractFree binder
+  have predicateType : predicate.ty = .function binder.ty Ty.bool :=
+    congrArg (Ty.function binder.ty) boolean
+  have sameType : predicate.ty = constantTruth.ty := predicateType
+  let functionEquation := CanonicalTerm.equalityOfSameType predicate constantTruth sameType
+  let forallBody := CanonicalTerm.equalityDB (.function binder.ty Ty.bool) (.bound 0)
+    (.abs binder.ty truthDB)
+  have checkedForallBody : forallBody.inferType [.function binder.ty Ty.bool] = some Ty.bool :=
+    DBTerm.inferType_equalityDB (by simp [DBTerm.inferType])
+      (DBTerm.inferType_abs_of DerivedRules.inferType_truthDB)
+  let conversion := betaExpansion (.function binder.ty Ty.bool) forallBody Ty.bool
+    checkedForallBody predicate predicateType
+  let quantified := genTerm input binder boolean
+  have redex : betaRedex (.function binder.ty Ty.bool) forallBody Ty.bool
+      checkedForallBody predicate predicateType = quantified := by
+    apply CanonicalTerm.ext_term
+    rfl
+  have reduced : betaReduced (.function binder.ty Ty.bool) forallBody Ty.bool
+      checkedForallBody predicate predicateType = functionEquation := by
+    apply CanonicalTerm.ext_term
+    have booleanType : input.sequent.concl.ty = Ty.bool := boolean
+    simp [betaReduced, forallBody, functionEquation, predicate, constantTruth,
+      CanonicalTerm.equalityOfSameType, CanonicalTerm.equalityDB, DBTerm.instantiateAt,
+      CanonicalTerm.abstractFree, DerivedRules.truthTerm, booleanType,
+      DerivedRules.instantiateAt_truthDB, DerivedRules.closeFreeAt_truthDB]
+  have view : CanonicalTerm.EqualityViewSemantics conversion.conclusion.sequent.concl
+      quantified functionEquation := by
+    rw [betaExpansion_conclusion]
+    refine ⟨rfl, ?_⟩
+    change CanonicalTerm.equalityDB Ty.bool
+      (betaRedex (.function binder.ty Ty.bool) forallBody Ty.bool
+        checkedForallBody predicate predicateType).term
+      (betaReduced (.function binder.ty Ty.bool) forallBody Ty.bool
+        checkedForallBody predicate predicateType).term = _
+    rw [redex, reduced]
+    rfl
+  let reversed := symmetryResult conversion.conclusion quantified functionEquation rfl
+  let result := eqMpResult reversed abstracted quantified
+  have resultChecked : checkEqMp reversed abstracted = some result :=
+    eqMpResult_checked _ _ functionEquation quantified
+      (equality_view functionEquation quantified rfl) rfl
+  let requests : List BlockRequest :=
+    [⟨truthEquation, truthEqualityBlock input boolean origin, [0], origin⟩,
+     ⟨abstracted, abstractionBlock binder truthEquation input.sequent.concl
+        DerivedRules.truthTerm boolean origin, [1], origin⟩,
+     ⟨conversion.conclusion, betaBlock conversion origin, [], origin⟩,
+     ⟨reversed, symmetryBlock conversion.conclusion quantified functionEquation rfl origin,
+        [3], origin⟩,
+     ⟨result, primitiveBlock (.inference (.eqMp reversed abstracted)) result origin, [4, 2], origin⟩]
+  refine ⟨requests, result, ?_⟩
+  apply LocallyChecked.cons (premises := [input]) rfl
+  · exact truthEqualityBlock_checked policy input boolean origin
+  apply LocallyChecked.cons (premises := [truthEquation]) rfl
+  · exact abstractionBlock_checked policy binder truthEquation input.sequent.concl
+      DerivedRules.truthTerm boolean
+      (equality_view input.sequent.concl DerivedRules.truthTerm boolean) fresh origin
+  apply LocallyChecked.cons (premises := []) rfl
+  · exact betaBlock_checked policy conversion origin
+  apply LocallyChecked.cons (premises := [conversion.conclusion]) rfl
+  · exact symmetryBlock_checked policy conversion.conclusion quantified functionEquation rfl view origin
+  apply LocallyChecked.cons (premises := [reversed, abstracted]) rfl
+  · exact primitiveBlock_checked (.inference (.eqMp reversed abstracted)) result origin resultChecked
+  exact .nil _
+
+open HypothesisExpansion in
+theorem genExpansion_conclusion (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool)
+    (fresh : ¬ FreeInHypotheses binder input.sequent.hyp) (origin : Origin) :
+    (genExpansion policy input binder boolean fresh origin).conclusion =
+      genResult input binder boolean := by
+  apply Theorem.ext
+  · simp [genExpansion, genResult, eqMpResult, symmetryResult, abstractionResult,
+      truthEqualityResult, betaExpansion, substituteTheorem,
+      Theorem.preserveAxiomsResult, Theorem.unionResult, Theorem.emptyResult]
+  · apply Sequent.ext
+    · simp [genExpansion, genResult, eqMpResult, symmetryResult, abstractionResult,
+        truthEqualityResult, betaExpansion, substituteTheorem,
+        TypeCorrectTermSubstitution.applyHypotheses,
+        Theorem.preserveAxiomsResult, Theorem.unionResult, Theorem.emptyResult]
+    · rfl
+
+/-- The constructor runs the existing chronological compiler. Freshness is
+required by ABS and is not replaced by an unchecked derived-rule tag. -/
+def genTypedBlock? (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool)
+    (fresh : ¬ FreeInHypotheses binder input.sequent.hyp) (origin : Origin) :
+    Option ProofSystem.Certificate :=
+  finishPlan policy (start [input]) #[0]
+    (genExpansion policy input binder boolean fresh origin).requests 5
+
+theorem genTypedBlock?_checked (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool)
+    (fresh : ¬ FreeInHypotheses binder input.sequent.hyp) (origin : Origin) :
+    ∃ block, genTypedBlock? policy input binder boolean fresh origin = some block ∧
+      BlockChecked policy [input] (genResult input binder boolean) block := by
+  let expansion := genExpansion policy input binder boolean fresh origin
+  obtain ⟨block, computed, checked⟩ := finishPlan_checked (policy := policy)
+    (outputs := #[input]) (roots := #[0]) (start_checked policy [input]) rfl
+    expansion.checked (index := 5) (conclusion := expansion.conclusion) (by rfl)
+  refine ⟨block, computed, ?_⟩
+  simpa only [expansion, genExpansion_conclusion] using checked
+
+
+/-- Public generalization checks both the formula sort and the eigenvariable
+condition before constructing the primitive certificate. -/
+def genBlock? (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar) (origin : Origin) : Option ProofSystem.Certificate :=
+  if boolean : input.sequent.concl.isBoolB = true then
+    if fresh : hasFreeInHypothesesB binder input.sequent.hyp = false then
+      genTypedBlock? policy input binder
+        ((CanonicalTerm.isBoolB_eq_true_iff _).mp boolean)
+        ((hasFreeInHypothesesB_eq_false_iff _ _).mp fresh) origin
+    else none
+  else none
+
+theorem genBlock?_checked (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar) (boolean : input.sequent.concl.IsBool)
+    (fresh : ¬ FreeInHypotheses binder input.sequent.hyp) (origin : Origin) :
+    ∃ block, genBlock? policy input binder origin = some block ∧
+      BlockChecked policy [input] (genResult input binder boolean) block := by
+  simpa only [genBlock?, (CanonicalTerm.isBoolB_eq_true_iff _).mpr boolean,
+    (hasFreeInHypothesesB_eq_false_iff _ _).mpr fresh, dif_pos] using
+    genTypedBlock?_checked policy input binder boolean fresh origin
+
+theorem genBlock?_refuses_captured_variable (policy : AxiomPolicy) [DecidablePred policy]
+    (input : Theorem) (binder : SourceVar)
+    (captured : FreeInHypotheses binder input.sequent.hyp) (origin : Origin) :
+    genBlock? policy input binder origin = none := by
+  simp [genBlock?, (hasFreeInHypothesesB_eq_true_iff _ _).mpr captured]
+
+namespace GenExamples
+
+/-- A theorem with a retained truth hypothesis exercises the restoration
+branch of EQT_INTRO before generalization. -/
+def input : Theorem :=
+  Theorem.axiomResult ⟨{DerivedRules.truthTerm}, DerivedRules.truthTerm⟩
+    ⟨rfl, by
+      intro term member
+      have same : term = DerivedRules.truthTerm := by simpa using member
+      subst term
+      rfl⟩
+
+theorem truth_assumption_retained (policy : AxiomPolicy) [DecidablePred policy]
+    (binder : SourceVar) (origin : Origin) :
+    ∃ block, genBlock? policy input binder origin = some block ∧
+      BlockChecked policy [input] (genResult input binder rfl) block ∧
+      (genResult input binder rfl).sequent.hyp = {DerivedRules.truthTerm} ∧
+      (genResult input binder rfl).axioms = input.axioms := by
+  have fresh : ¬ FreeInHypotheses binder input.sequent.hyp := by
+    rintro ⟨term, member, occurs⟩
+    have same : term = DerivedRules.truthTerm := by simpa [input, Theorem.axiomResult] using member
+    subst term
+    exact DBTerm.not_freeOccurrence_of_freeNames_eq_empty
+      DerivedRules.freeNames_truthDB binder occurs
+  obtain ⟨block, computed, checked⟩ := genBlock?_checked policy input binder rfl fresh origin
+  exact ⟨block, computed, checked, rfl, rfl⟩
+
+/-- Generalizing an assumption on its own free variable is rejected. -/
+theorem free_assumption_refused (policy : AxiomPolicy) [DecidablePred policy]
+    (name : Name) (origin : Origin) :
+    genBlock? policy (HypothesisExpansion.assumption (CanonicalTerm.free ⟨name, Ty.bool⟩))
+      ⟨name, Ty.bool⟩ origin = none :=
+  genBlock?_refuses_captured_variable policy _ _
+    ⟨_, Finset.mem_singleton_self _, DBTerm.FreeOccurrence.here⟩ origin
+
+end GenExamples
 
 end Mettapedia.Languages.HOLLight.QuantifierExpansion

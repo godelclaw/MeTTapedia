@@ -265,19 +265,30 @@ def dkPresentation (names : List String) (rules : List RewriteRule)
     (valid : (dkLanguage names rules).validate = []) : ValidatedLanguageDef :=
   ⟨dkLanguage names rules, valid⟩
 
-/-- No constructor of `dkLanguage` is a collection or carries a collection
-algebra. -/
-theorem dkLanguage_terms_plain : ∀ rule ∈ (dkLanguage names rules).terms,
-    rule.algebra? = none ∧ ¬ UsesBareCollection rule := by
+private theorem dkLanguage_terms_shape : ∀ rule ∈ (dkLanguage names rules).terms,
+    rule.algebra? = none ∧
+      ¬ ∃ (parameterName : String) (kind : OSLF.MeTTaIL.Syntax.CollType) (elementType : TypeExpr),
+        rule.params = [.simple parameterName (.collection kind elementType)] := by
   intro rule member
   rcases List.mem_append.mp member with lf | named
   · rw [lfLanguageDef_terms] at lf
     simp only [lfTermRules, List.mem_cons, List.not_mem_nil, or_false] at lf
     rcases lf with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp [UsesBareCollection, sortTypeRule, sortKindRule, srtRule, conRule, varRule, piRule, lamRule,
+      simp [sortTypeRule, sortKindRule, srtRule, conRule, varRule, piRule, lamRule,
         appRule, lfBody]
   · obtain ⟨symbol, _, rfl⟩ := List.mem_map.mp named
-    simp [nameRule, UsesBareCollection]
+    simp [nameRule]
+
+/-- No constructor of `dkLanguage` is a collection or carries a collection
+algebra. -/
+theorem dkLanguage_terms_plain : ∀ rule ∈ (dkLanguage names rules).terms,
+    rule.algebra? = none ∧ ¬ UsesBareCollection rule := by
+  intro rule member
+  obtain ⟨noAlgebra, noCollection⟩ := dkLanguage_terms_shape rule member
+  refine ⟨noAlgebra, ?_⟩
+  rintro ⟨parameterName, kind, elementType, shape⟩
+  exact noCollection ⟨parameterName, kind, elementType,
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩
 
 theorem dkLanguage_equations : (dkLanguage names rules).equations = [] := rfl
 
@@ -292,13 +303,13 @@ theorem dk_not_equationContextStep {left right : Pattern} :
   · cases derived with
     | bagPerm carrier _ _ =>
         obtain ⟨parameterName, elementType, parameters⟩ := carrier.selfSorted
-        exact (dkLanguage_terms_plain _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
+        exact (dkLanguage_terms_shape _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
     | setPerm carrier _ _ =>
         obtain ⟨parameterName, elementType, parameters⟩ := carrier.selfSorted
-        exact (dkLanguage_terms_plain _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
+        exact (dkLanguage_terms_shape _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
     | setDedup carrier _ =>
         obtain ⟨parameterName, elementType, parameters⟩ := carrier.selfSorted
-        exact (dkLanguage_terms_plain _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
+        exact (dkLanguage_terms_shape _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
     | flatten algebra _ _ =>
         have none := (dkLanguage_terms_plain _ algebra.authored).1
         rw [algebra.declared] at none

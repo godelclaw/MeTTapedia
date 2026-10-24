@@ -34,6 +34,12 @@ namespace DualConcept
 
 variable {Obj : Type u} {Attr : Type v}
 
+@[ext] theorem ext {A B : DualConcept Obj Attr}
+    (hExtent : A.extent = B.extent) (hIntent : A.intent = B.intent) : A = B := by
+  cases A
+  cases B
+  simp_all
+
 /-- A `DualConcept` is closed exactly when it is a mathlib formal concept for
 the given relation. -/
 def IsClosed (r : Obj → Attr → Prop) (A : DualConcept Obj Attr) : Prop :=
@@ -65,33 +71,23 @@ def toConcept {r : Obj → Attr → Prop}
 
 theorem isClosed_ofConcept {r : Obj → Attr → Prop}
     (c : _root_.Concept Obj Attr r) :
-    IsClosed r (ofConcept c) := by
-  exact ⟨c.upperPolar_extent, c.lowerPolar_intent⟩
+    IsClosed r (ofConcept c) := ⟨c.upperPolar_extent, c.lowerPolar_intent⟩
 
 @[simp] theorem toConcept_ofConcept {r : Obj → Attr → Prop}
     (c : _root_.Concept Obj Attr r) :
-    toConcept (ofConcept c) (isClosed_ofConcept c) = c := by
-  cases c
-  rfl
+    toConcept (ofConcept c) (isClosed_ofConcept c) = c := rfl
 
 @[simp] theorem ofConcept_toConcept {r : Obj → Attr → Prop}
     (A : DualConcept Obj Attr) (hA : IsClosed r A) :
-    ofConcept (toConcept A hA) = A := by
-  cases A
-  rfl
+    ofConcept (toConcept A hA) = A := rfl
 
 /-- Order-theoretic view of a dual concept: direct order on extents and dual
 order on intents. This lets us reuse mathlib's product-order machinery. -/
 def toOrderPair (A : DualConcept Obj Attr) : Set Obj × OrderDual (Set Attr) :=
   (A.extent, A.intent)
 
-theorem toOrderPair_injective :
-    Function.Injective (@toOrderPair Obj Attr) := by
-  intro A B h
-  cases A
-  cases B
-  cases h
-  rfl
+theorem toOrderPair_injective : Function.Injective (@toOrderPair Obj Attr) :=
+  fun _ _ h => ext (congrArg Prod.fst h) (congrArg Prod.snd h)
 
 /-- Extensional inheritance is ordinary extent inclusion. -/
 def ExtensionalInherits (A B : DualConcept Obj Attr) : Prop :=
@@ -114,130 +110,69 @@ instance : LE (DualConcept Obj Attr) where
 @[simp] theorem le_iff (A B : DualConcept Obj Attr) :
     A ≤ B ↔ Inherits A B := Iff.rfl
 
-theorem extensionalInherits_refl (A : DualConcept Obj Attr) :
-    ExtensionalInherits A A :=
-  fun _ hx => hx
-
-theorem intensionalInherits_refl (A : DualConcept Obj Attr) :
-    IntensionalInherits A A :=
-  fun _ hx => hx
-
-theorem inherits_refl (A : DualConcept Obj Attr) :
-    Inherits A A :=
-  ⟨extensionalInherits_refl A, intensionalInherits_refl A⟩
-
-theorem extensionalInherits_trans {A B C : DualConcept Obj Attr}
-    (hAB : ExtensionalInherits A B) (hBC : ExtensionalInherits B C) :
-    ExtensionalInherits A C :=
-  fun _ hx => hBC (hAB hx)
-
-theorem intensionalInherits_trans {A B C : DualConcept Obj Attr}
-    (hAB : IntensionalInherits A B) (hBC : IntensionalInherits B C) :
-    IntensionalInherits A C :=
-  fun _ hx => hAB (hBC hx)
-
-theorem inherits_trans {A B C : DualConcept Obj Attr}
-    (hAB : Inherits A B) (hBC : Inherits B C) :
-    Inherits A C :=
-  ⟨extensionalInherits_trans hAB.1 hBC.1, intensionalInherits_trans hAB.2 hBC.2⟩
-
-/-- The dual intersection operation:
-smaller extent, richer intent. -/
+/-- Meet of raw meanings: smaller extent and richer intent. This need not
+be FCA-closed even when both inputs are closed. -/
 def inter (A B : DualConcept Obj Attr) : DualConcept Obj Attr where
   extent := A.extent ∩ B.extent
   intent := A.intent ∪ B.intent
 
-@[simp] theorem mem_inter_extent (A B : DualConcept Obj Attr) (x : Obj) :
-    x ∈ (inter A B).extent ↔ x ∈ A.extent ∧ x ∈ B.extent := Iff.rfl
-
-@[simp] theorem mem_inter_intent (A B : DualConcept Obj Attr) (a : Attr) :
-    a ∈ (inter A B).intent ↔ a ∈ A.intent ∨ a ∈ B.intent := Iff.rfl
-
-theorem inter_inherits_left (A B : DualConcept Obj Attr) :
-    Inherits (inter A B) A := by
-  constructor
-  · intro x hx
-    exact hx.1
-  · intro a ha
-    exact Or.inl ha
-
-theorem inter_inherits_right (A B : DualConcept Obj Attr) :
-    Inherits (inter A B) B := by
-  constructor
-  · intro x hx
-    exact hx.2
-  · intro a ha
-    exact Or.inr ha
-
-theorem inherits_inter_of_inherits {A B C : DualConcept Obj Attr}
-    (hAB : Inherits A B) (hAC : Inherits A C) :
-    Inherits A (inter B C) := by
-  constructor
-  · intro x hx
-    exact ⟨hAB.1 hx, hAC.1 hx⟩
-  · intro a ha
-    rcases ha with ha | ha
-    · exact hAB.2 ha
-    · exact hAC.2 ha
-
-/-- The dual union operation:
-larger extent, poorer intent. -/
+/-- Join of raw meanings: larger extent and poorer intent. -/
 def union (A B : DualConcept Obj Attr) : DualConcept Obj Attr where
   extent := A.extent ∪ B.extent
   intent := A.intent ∩ B.intent
 
-@[simp] theorem mem_union_extent (A B : DualConcept Obj Attr) (x : Obj) :
-    x ∈ (union A B).extent ↔ x ∈ A.extent ∨ x ∈ B.extent := Iff.rfl
-
-@[simp] theorem mem_union_intent (A B : DualConcept Obj Attr) (a : Attr) :
-    a ∈ (union A B).intent ↔ a ∈ A.intent ∧ a ∈ B.intent := Iff.rfl
-
-theorem inherits_union_left (A B : DualConcept Obj Attr) :
-    Inherits A (union A B) := by
-  constructor
-  · intro x hx
-    exact Or.inl hx
-  · intro a ha
-    exact ha.1
-
-theorem inherits_union_right (A B : DualConcept Obj Attr) :
-    Inherits B (union A B) := by
-  constructor
-  · intro x hx
-    exact Or.inr hx
-  · intro a ha
-    exact ha.2
-
-theorem union_inherits_of_inherits {A B C : DualConcept Obj Attr}
-    (hAC : Inherits A C) (hBC : Inherits B C) :
-    Inherits (union A B) C := by
-  constructor
-  · intro x hx
-    rcases hx with hx | hx
-    · exact hAC.1 hx
-    · exact hBC.1 hx
-  · intro a ha
-    exact ⟨hAC.2 ha, hBC.2 ha⟩
-
 instance : Min (DualConcept Obj Attr) := ⟨inter⟩
-
 instance : Max (DualConcept Obj Attr) := ⟨union⟩
-
-@[simp] theorem toOrderPair_inf (A B : DualConcept Obj Attr) :
-    toOrderPair (A ⊓ B) = toOrderPair A ⊓ toOrderPair B := rfl
-
-@[simp] theorem toOrderPair_sup (A B : DualConcept Obj Attr) :
-    toOrderPair (A ⊔ B) = toOrderPair A ⊔ toOrderPair B := rfl
-
 instance : PartialOrder (DualConcept Obj Attr) :=
   PartialOrder.lift toOrderPair toOrderPair_injective
+instance : DistribLattice (DualConcept Obj Attr) :=
+  toOrderPair_injective.distribLattice toOrderPair
+    (by intro x y; rfl) (by intro x y; rfl)
+    (by intro x y; rfl) (by intro x y; rfl)
 
-instance : Lattice (DualConcept Obj Attr) :=
-  toOrderPair_injective.lattice toOrderPair
-    (by intro x y; rfl)
-    (by intro x y; rfl)
-    (by intro x y; rfl)
-    (by intro x y; rfl)
+/-- Exact product-order representation; no closure or finiteness premise. -/
+def orderIso : DualConcept Obj Attr ≃o Set Obj × OrderDual (Set Attr) where
+  toFun := toOrderPair
+  invFun p := ⟨p.1, p.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_rel_iff' := Iff.rfl
+
+theorem inter_inherits_left (A B : DualConcept Obj Attr) :
+    Inherits (inter A B) A := (inf_le_left : A ⊓ B ≤ A)
+
+theorem inter_inherits_right (A B : DualConcept Obj Attr) :
+    Inherits (inter A B) B := (inf_le_right : A ⊓ B ≤ B)
+
+theorem inherits_inter_of_inherits {A B C : DualConcept Obj Attr}
+    (hAB : Inherits A B) (hAC : Inherits A C) :
+    Inherits A (inter B C) := (le_inf hAB hAC : A ≤ B ⊓ C)
+
+/-- Remove objects while retaining the subject's attributes. -/
+def diff (A B : DualConcept Obj Attr) : DualConcept Obj Attr :=
+  ⟨A.extent \ B.extent, A.intent⟩
+
+/-- Remove attributes while retaining the subject's objects. -/
+def idiff (A B : DualConcept Obj Attr) : DualConcept Obj Attr :=
+  ⟨A.extent, A.intent \ B.intent⟩
+
+theorem diff_le_left (A B : DualConcept Obj Attr) : diff A B ≤ A :=
+  ⟨Set.sdiff_subset, Set.Subset.rfl⟩
+
+theorem le_idiff_left (A B : DualConcept Obj Attr) : A ≤ idiff A B :=
+  ⟨Set.Subset.rfl, Set.sdiff_subset⟩
+
+theorem monotone_diff_left (B : DualConcept Obj Attr) : Monotone (diff · B) :=
+  fun _ _ h => ⟨Set.sdiff_subset_sdiff_left h.1, h.2⟩
+
+theorem antitone_diff_right (A : DualConcept Obj Attr) : Antitone (diff A) :=
+  fun _ _ h => ⟨Set.sdiff_subset_sdiff_right h.1, Set.Subset.rfl⟩
+
+theorem monotone_idiff_left (B : DualConcept Obj Attr) : Monotone (idiff · B) :=
+  fun _ _ h => ⟨h.1, Set.sdiff_subset_sdiff_left h.2⟩
+
+theorem antitone_idiff_right (A : DualConcept Obj Attr) : Antitone (idiff A) :=
+  fun _ _ h => ⟨Set.Subset.rfl, Set.sdiff_subset_sdiff_right h.2⟩
 
 theorem ofConcept_le_iff {r : Obj → Attr → Prop}
     (c d : _root_.Concept Obj Attr r) :
@@ -301,11 +236,7 @@ def MutualInherits (I : Interpretation Carrier Obj Attr) (a b : Carrier) : Prop 
 
 theorem inherits_refl (I : Interpretation Carrier Obj Attr) (a : Carrier) :
     I.Inherits a a :=
-  DualConcept.inherits_refl _
-
-theorem mutualInherits_refl (I : Interpretation Carrier Obj Attr) (a : Carrier) :
-    I.MutualInherits a a :=
-  ⟨I.inherits_refl a, I.inherits_refl a⟩
+  (le_rfl : I.meaning a ≤ I.meaning a)
 
 theorem mutualInherits_symm (I : Interpretation Carrier Obj Attr) {a b : Carrier}
     (h : I.MutualInherits a b) :
@@ -315,12 +246,12 @@ theorem mutualInherits_symm (I : Interpretation Carrier Obj Attr) {a b : Carrier
 theorem inherits_trans (I : Interpretation Carrier Obj Attr) {a b c : Carrier}
     (hab : I.Inherits a b) (hbc : I.Inherits b c) :
     I.Inherits a c :=
-  DualConcept.inherits_trans hab hbc
+  (le_trans hab hbc : I.meaning a ≤ I.meaning c)
 
-theorem mutualInherits_trans (I : Interpretation Carrier Obj Attr) {a b c : Carrier}
-    (hab : I.MutualInherits a b) (hbc : I.MutualInherits b c) :
-    I.MutualInherits a c :=
-  ⟨I.inherits_trans hab.1 hbc.1, I.inherits_trans hbc.2 hab.2⟩
+/-- Mutual inheritance identifies meanings, not necessarily carrier identities. -/
+theorem mutualInherits_iff_meaning_eq (I : Interpretation Carrier Obj Attr) (a b : Carrier) :
+    I.MutualInherits a b ↔ I.meaning a = I.meaning b :=
+  ⟨fun h => le_antisymm h.1 h.2, fun h => ⟨le_of_eq h, le_of_eq h.symm⟩⟩
 
 /-- Pairwise subset semantics induced directly from the abstract inheritance
 foundation. This is the generic relation used by downstream ASSOC/PAT

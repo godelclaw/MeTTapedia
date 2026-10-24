@@ -4,7 +4,7 @@ import Mettapedia.OSLF.MeTTaIL.GeneralRuleBindingGrammar
 # The core of an authored language
 
 A `CoreLanguageDef` is a language in its canonical, minimal form: binding by de Bruijn index
-only, a collection constructor's terms written as the bare collection, and every rule and
+only, each collection constructor using its declared representation, and every rule and
 equation carrying an admitted binding declaration. Compilation, execution and their proofs
 are stated on it.
 
@@ -17,9 +17,12 @@ upstream MeTTaIL's `language!` notation:
 - a premise `S ~> T` whose `S` sits under binders is a step under those binders;
 - a metavariable may stand for a whole abstraction, `(Lam fn)`, and `(eval fn a)` applies it.
 
-`LanguageDef.toCore` reduces it exactly to its core: bare collections, eta-long abstractions
-(`(Lam fn)` is `(Lam ^x.fn)` with `fn` depending on `x`, and `(eval fn a)` is
-`(eval ^x.fn a)`), erased binder names, bound-name references as indices, binding declarations
+`LanguageDef.toCore` reduces it exactly to its core: bare collections for bare declarations,
+retained applications for wrapped declarations, eta-long abstractions
+(`(Lam fn)` is `(Lam ^x.fn)` with `fn` depending on `x`, to the depth of the slot's whole curried
+type, and `(eval fn a)` is `(eval ^x.fn a)`), simultaneous binder spellings `^[x, y].p` in curried
+slots as `^x.^y.p`, application chains one binder at a time (`(eval (eval ^x.^y.B a) b)` is
+`(eval ^x.(eval ^y.B b) a)`, two substitutions), erased binder names, bound-name references as indices, binding declarations
 whose dependencies and occurrence arguments are computed from the names, and scoped premises. Freshness of a bound name
 becomes a dependency exclusion; freshness of a free name stays a premise. The result is
 checked by the core predicate; anything else is reported, never guessed.
@@ -37,10 +40,10 @@ open Syntax RuleBinding
 
 /-! ## Patterns -/
 
-/-- Constructors whose only parameter is a collection. -/
+/-- Bare declarations whose only parameter is a collection. -/
 def bareLabels (language : LanguageDef) : List (String × CollType) :=
   language.terms.filterMap fun rule =>
-    match rule.params with
+    match rule.bareParams with
     | [.simple _ (.collection kind _)] => some (rule.label, kind)
     | _ => none
 
@@ -142,40 +145,75 @@ def binderNames : Pattern → List String
   | .collection _ elements _ => elements.flatMap binderNames
 decreasing_by all_goals sizeOf_pattern_dec
 
-/-! ## Eta-long abstractions -/
+/-! ## Eta-long, beta-normal abstractions -/
 
 /-- A constructor's parameters. -/
 def paramsOf (language : LanguageDef) (label : String) : List TermParam :=
   ((language.terms.find? (·.label == label)).map (·.params)).getD []
 
+/-- The fixed telescope a binder type declares: the domains of a curried arrow. A variable-arity
+binder declares none. -/
+def telescopeDepth : TypeExpr → Nat
+  | .arrow (.multiBinder _) _ => 0
+  | .arrow _ codomain => telescopeDepth codomain + 1
+  | _ => 0
+
+/-- The binders an argument at a parameter opens in the core: the parameter's fixed telescope. -/
+def slotDepth : TermParam → Nat
+  | .abstractionNamed _ _ (.base _) => 1
+  | .abstractionNamed _ _ type => telescopeDepth type
+  | _ => 0
+
+/-- Named binders `^b₁.…^bₙ.body`, one at a time. -/
+def nestBinders (names : List String) (body : Pattern) : Pattern :=
+  names.foldr (fun name inner => .lambda (some name) inner) body
+
+/-- Unnamed binders around a pattern. -/
+def wrapBinders : Nat → Pattern → Pattern
+  | 0, body => body
+  | count + 1, body => .lambda none (wrapBinders count body)
+
 mutual
-  /-- The metavariables written directly in a one-binder abstraction slot. -/
-  def slotNames (language : LanguageDef) : Pattern → List String
+  /-- The metavariables written in abstraction slots, each with the binders still missing above
+  it: the depth of the abstraction it stands for. -/
+  def slotDepths (language : LanguageDef) : Pattern → List (String × Nat)
     | .bvar _ | .fvar _ => []
     | .apply label arguments => slotArguments language (paramsOf language label) arguments
-    | .lambda _ body => slotNames language body
-    | .multiLambda _ _ body => slotNames language body
-    | .subst body replacement => slotNames language body ++ slotNames language replacement
+    | .lambda _ body => slotDepths language body
+    | .multiLambda _ _ body => slotDepths language body
+    | .subst body replacement => slotDepths language body ++ slotDepths language replacement
     | .collection _ elements _ => slotList language elements
   termination_by pattern => (sizeOf pattern, 0)
 
-  def slotArguments (language : LanguageDef) : List TermParam → List Pattern → List String
-    | .abstractionNamed _ _ _ :: params, .fvar name :: rest => name :: slotArguments language params rest
-    | _ :: params, pattern :: rest => slotNames language pattern ++ slotArguments language params rest
+  def slotArguments (language : LanguageDef) : List TermParam → List Pattern → List (String × Nat)
+    | param :: params, pattern :: rest =>
+        slotIn language (slotDepth param) pattern ++ slotArguments language params rest
     | [], patterns => slotList language patterns
     | _, [] => []
   termination_by _ patterns => (sizeOf patterns, 1)
 
-  def slotList (language : LanguageDef) : List Pattern → List String
+  /-- Inside a slot with `depth` binders still to open. -/
+  def slotIn (language : LanguageDef) : Nat → Pattern → List (String × Nat)
+    | depth + 1, .lambda _ body => slotIn language depth body
+    | depth, .multiLambda arity binders body =>
+        if binders.length = arity ∧ 0 < arity ∧ arity ≤ depth then slotIn language (depth - arity) body
+        else slotDepths language body
+    | depth + 1, .fvar name => [(name, depth + 1)]
+    | _, pattern => slotDepths language pattern
+  termination_by _ pattern => (sizeOf pattern, 1)
+
+  def slotList (language : LanguageDef) : List Pattern → List (String × Nat)
     | [] => []
-    | pattern :: patterns => slotNames language pattern ++ slotList language patterns
+    | pattern :: patterns => slotDepths language pattern ++ slotList language patterns
   termination_by patterns => (sizeOf patterns, 0)
 end
 
 mutual
-  /-- A metavariable in a one-binder abstraction slot becomes `^x.m`, and `(eval m a)` for such
-  an `m` becomes `(eval ^x.m a)`: `m` then depends on the binder. -/
-  def etaLong (language : LanguageDef) (expanded : List String) : Pattern → Pattern
+  /-- **Eta-long abstractions**: an argument in an abstraction slot opens the slot's whole
+  telescope, so a metavariable there becomes `^x.^y.m` with `m` depending on the binders, and a
+  simultaneous spelling `^[x, y].m` becomes `^x.^y.m`. An application `(eval m a)` of such an
+  `m` applies `^x.^y.m`. -/
+  def etaLong (language : LanguageDef) (expanded : List (String × Nat)) : Pattern → Pattern
     | .bvar index => .bvar index
     | .fvar name => .fvar name
     | .apply label arguments =>
@@ -187,28 +225,176 @@ mutual
     | .collection kind elements rest => .collection kind (etaList language expanded elements) rest
   termination_by pattern => (sizeOf pattern, 0)
 
-  def etaArguments (language : LanguageDef) (expanded : List String) :
+  def etaArguments (language : LanguageDef) (expanded : List (String × Nat)) :
       List TermParam → List Pattern → List Pattern
-    | .abstractionNamed _ _ _ :: params, .fvar name :: rest =>
-        .lambda none (.fvar name) :: etaArguments language expanded params rest
-    | _ :: params, pattern :: rest =>
-        etaLong language expanded pattern :: etaArguments language expanded params rest
+    | .simple _ (.collection kind _) :: params, .collection _ elements tail :: rest =>
+        .collection kind (etaList language expanded elements) tail ::
+          etaArguments language expanded params rest
+    | param :: params, pattern :: rest =>
+        etaIn language expanded (slotDepth param) pattern :: etaArguments language expanded params rest
     | [], patterns => etaList language expanded patterns
     | _, [] => []
   termination_by _ patterns => (sizeOf patterns, 1)
 
-  def etaScope (language : LanguageDef) (expanded : List String) : List Pattern → List Pattern
+  /-- An argument in a slot with `depth` binders still to open: authored binders count, a
+  simultaneous spelling becomes single binders, and a metavariable gets the binders it lacks. -/
+  def etaIn (language : LanguageDef) (expanded : List (String × Nat)) : Nat → Pattern → Pattern
+    | depth + 1, .lambda binder body => .lambda binder (etaIn language expanded depth body)
+    | depth, .multiLambda arity binders body =>
+        if binders.length = arity ∧ 0 < arity ∧ arity ≤ depth then
+          nestBinders binders (etaIn language expanded (depth - arity) body)
+        else .multiLambda arity binders (etaLong language expanded body)
+    | depth + 1, .fvar name => wrapBinders (depth + 1) (.fvar name)
+    | _, pattern => etaLong language expanded pattern
+  termination_by _ pattern => (sizeOf pattern, 1)
+
+  /-- The head of an application chain: a metavariable that stands for an abstraction gets its
+  binders. -/
+  def etaScope (language : LanguageDef) (expanded : List (String × Nat)) : List Pattern → List Pattern
     | .fvar name :: rest =>
-        (if expanded.contains name then .lambda none (.fvar name) else .fvar name) ::
-          etaList language expanded rest
+        (match expanded.lookup name with
+          | some depth => wrapBinders depth (.fvar name)
+          | none => .fvar name) :: etaList language expanded rest
+    | .apply label arguments :: rest =>
+        (if label == Pattern.evalHead then .apply label (etaScope language expanded arguments)
+          else etaLong language expanded (.apply label arguments)) :: etaList language expanded rest
     | patterns => etaList language expanded patterns
   termination_by patterns => (sizeOf patterns, 1)
 
-  def etaList (language : LanguageDef) (expanded : List String) : List Pattern → List Pattern
+  def etaList (language : LanguageDef) (expanded : List (String × Nat)) : List Pattern → List Pattern
     | [] => []
     | pattern :: patterns => etaLong language expanded pattern :: etaList language expanded patterns
   termination_by patterns => (sizeOf patterns, 0)
 end
+
+/-- The names a pattern mentions without binding them. -/
+def freeNames : Pattern → List String
+  | .bvar _ => []
+  | .fvar name => [name]
+  | .apply _ arguments => arguments.flatMap freeNames
+  | .lambda binder body => (freeNames body).filter fun name => some name != binder
+  | .multiLambda _ binders body => (freeNames body).filter fun name => !binders.contains name
+  | .subst body replacement => freeNames body ++ freeNames replacement
+  | .collection _ elements _ => elements.flatMap freeNames
+decreasing_by all_goals sizeOf_pattern_dec
+
+/-- Rename the free occurrences of a name. -/
+def renameFree (old new : String) : Pattern → Pattern
+  | .bvar index => .bvar index
+  | .fvar name => .fvar (if name == old then new else name)
+  | .apply label arguments => .apply label (arguments.map (renameFree old new))
+  | .lambda binder body =>
+      if binder == some old then .lambda binder body else .lambda binder (renameFree old new body)
+  | .multiLambda arity binders body =>
+      if binders.contains old then .multiLambda arity binders body
+      else .multiLambda arity binders (renameFree old new body)
+  | .subst body replacement => .subst (renameFree old new body) (renameFree old new replacement)
+  | .collection kind elements rest => .collection kind (elements.map (renameFree old new)) rest
+decreasing_by all_goals sizeOf_pattern_dec
+
+/-- A primed variant of a name that avoids the given names. -/
+def freshName (avoid : List String) (base : String) : String :=
+  (((List.range (avoid.length + 1)).map fun count =>
+    base ++ String.ofList (List.replicate (count + 1) '\'')).find? (· ∉ avoid)).getD base
+
+/-- The number of nodes of a pattern. -/
+def nodeCount : Pattern → Nat
+  | .bvar _ | .fvar _ => 1
+  | .apply _ arguments => (arguments.map nodeCount).sum + 1
+  | .lambda _ body => nodeCount body + 1
+  | .multiLambda _ _ body => nodeCount body + 1
+  | .subst body replacement => nodeCount body + nodeCount replacement + 1
+  | .collection _ elements _ => (elements.map nodeCount).sum + 1
+decreasing_by all_goals sizeOf_pattern_dec
+
+/-- **Apply an abstraction to one more argument**, one binder at a time. Applied to `a₂`,
+`(eval ^b₁.^b₂.B a₁)` becomes `(eval ^b₁.(eval ^b₂.B a₂) a₁)`: the argument moves inside the
+applications already made, to the binder it fills. A binder whose name the argument mentions is
+renamed before the argument moves under it. Arguments beyond the binders stay applications. -/
+def applyInside : Nat → Pattern → Pattern → Pattern
+  | fuel + 1, .apply label [.lambda binder body, earlier], argument =>
+      if label == Pattern.evalHead then
+        match binder with
+        | some name =>
+            if (freeNames argument).contains name then
+              let fresh := freshName (name :: binderNames body ++ freeNames body ++ freeNames argument) name
+              .apply label [.lambda (some fresh) (applyInside fuel (renameFree name fresh body) argument), earlier]
+            else .apply label [.lambda binder (applyInside fuel body argument), earlier]
+        | none => .apply label [.lambda none (applyInside fuel body argument), earlier]
+      else .apply Pattern.evalHead [.apply label [.lambda binder body, earlier], argument]
+  | fuel + 1, .multiLambda arity binders body, argument =>
+      if binders.length = arity ∧ 0 < arity then applyInside fuel (nestBinders binders body) argument
+      else .apply Pattern.evalHead [.multiLambda arity binders body, argument]
+  | _, function, argument => .apply Pattern.evalHead [function, argument]
+
+/-- **Beta-normal applications**: every application chain applies one binder at a time, so that
+each becomes one substitution. -/
+def betaNormal : Pattern → Pattern
+  | .bvar index => .bvar index
+  | .fvar name => .fvar name
+  | .apply label arguments =>
+      if label == Pattern.evalHead then
+        match arguments.map betaNormal with
+        | [function, argument] => applyInside (nodeCount function) function argument
+        | normalized => .apply label normalized
+      else .apply label (arguments.map betaNormal)
+  | .lambda binder body => .lambda binder (betaNormal body)
+  | .multiLambda arity binders body => .multiLambda arity binders (betaNormal body)
+  | .subst body replacement => .subst (betaNormal body) (betaNormal replacement)
+  | .collection kind elements rest => .collection kind (elements.map betaNormal) rest
+decreasing_by all_goals sizeOf_pattern_dec
+
+/-! ## Binder declarations -/
+
+/-- **One declaration per binder type in the core**: a binder over a curried type is a single-name
+abstraction, whichever spelling the author used. Returns the names of its further binders, which
+stay with the authored language. -/
+def canonicalParam : TermParam → TermParam × List String
+  | .multiAbstractionNamed names body type =>
+      if 0 < telescopeDepth type then (.abstractionNamed names.head? body type, names.drop 1)
+      else (.multiAbstractionNamed names body type, [])
+  | param => (param, [])
+
+/-- An item that prints no parameter. -/
+def punctuation : SyntaxItem → Bool
+  | .terminal _ | .separator _ | .delimiter _ _ => true
+  | _ => false
+
+mutual
+  /-- Whether syntax mentions one of the given names. -/
+  def mentionsAny (names : List String) : List SyntaxItem → Bool
+    | [] => false
+    | .nonTerminal name :: rest => names.contains name || mentionsAny names rest
+    | .op (.var name) :: rest => names.contains name || mentionsAny names rest
+    | .op (.opt inner) :: rest => mentionsAny names inner || mentionsAny names rest
+    | _ :: rest => mentionsAny names rest
+
+  /-- Syntax without the items that print the given binder names; an optional segment that printed
+  one of them and has only punctuation left goes too. -/
+  def pruneItems (names : List String) : List SyntaxItem → List SyntaxItem
+    | [] => []
+    | .nonTerminal name :: rest =>
+        (if names.contains name then [] else [.nonTerminal name]) ++ pruneItems names rest
+    | .op (.var name) :: rest =>
+        (if names.contains name then [] else [.op (.var name)]) ++ pruneItems names rest
+    | .op (.opt inner) :: rest =>
+        let kept := pruneItems names inner
+        (if mentionsAny names inner && kept.all punctuation then [] else [.op (.opt kept)]) ++
+          pruneItems names rest
+    | item :: rest => item :: pruneItems names rest
+end
+
+/-- A constructor's core declaration: its binders over curried types declare one name, and its syntax
+no longer prints the others. -/
+def canonicalGrammarRule (rule : GrammarRule) : GrammarRule :=
+  let canonical := rule.params.map canonicalParam
+  { rule with
+    params := canonical.map (·.1)
+    syntaxPattern := pruneItems (canonical.flatMap (·.2)) rule.syntaxPattern }
+
+/-- The core's constructor declarations. -/
+def canonicalGrammar (language : LanguageDef) : LanguageDef :=
+  { language with terms := language.terms.map canonicalGrammarRule }
 
 /-! ## Rules -/
 
@@ -273,7 +459,7 @@ def unwrapPremise (bare : List (String × CollType)) : Premise → Premise
   | .congruence source target => .congruence (unwrap bare source) (unwrap bare target)
   | .scopedStep step => .scopedStep {step with source := unwrap bare step.source, target := unwrap bare step.target}
   | .relationQuery relation arguments => .relationQuery relation (arguments.map (unwrap bare))
-  | .forAll collection element body => .forAll collection element body
+  | .forAll collection element body => .forAll collection element (unwrapPremise bare body)
 
 /-- The core parts of one rule. -/
 structure Core where
@@ -298,17 +484,11 @@ def bindingAt (language : LanguageDef) (context : List (String × TypeExpr)) (bo
 /-- Reduce one authored rule to its core parts. -/
 def reduceRule (language : LanguageDef) (rule : AuthoredRule) : Except Failure Core := do
   let bare := bareLabels language
-  let expanded := slotNames language rule.left
-  let left := unwrap bare (etaLong language expanded rule.left)
-  let right := unwrap bare (etaLong language expanded rule.right)
+  let expanded := slotDepths language rule.left
+  let left := unwrap bare (betaNormal (etaLong language expanded rule.left))
+  let right := unwrap bare (betaNormal (etaLong language expanded rule.right))
   let authoredPremises := rule.premises.map (unwrapPremise bare)
-  let premisePatterns := authoredPremises.flatMap fun premise =>
-    match premise with
-    | .freshness condition => [condition.term]
-    | .congruence source target => [source, target]
-    | .scopedStep step => [step.source, step.target]
-    | .relationQuery _ arguments => arguments
-    | .forAll _ _ _ => []
+  let premisePatterns := authoredPremises.flatMap LanguageDef.premisePatterns
   let bound := binderNames left ++ binderNames right ++ premisePatterns.flatMap binderNames
   let kept := authoredPremises.filter fun premise => !boundFreshness bound premise
   let leftSites := sites .left [] [] left
@@ -321,24 +501,59 @@ def reduceRule (language : LanguageDef) (rule : AuthoredRule) : Except Failure C
     | some binding => pure binding
     | none => throw (.untyped rule.name name)
   let lookup (name : String) : Option Binding := leftBindings.find? (·.name == name)
-  -- premises: scoped steps under the binders of their source; their sites
-  let premiseRows ← kept.zipIdx.mapM fun (premise, index) => do
+  -- Premise addresses retain their enclosing quantifier depth. Body outputs
+  -- acquire typing declarations here; ordered admission decides availability.
+  let rec lowerPremise (index depth : Nat) (known : List Binding) (premise : Premise) :
+      Except Failure (Premise × List Site × List (String × Binding)) := do
+    let lookupKnown (name : String) := known.find? (·.name == name)
     match premise with
     | .congruence (.fvar source) (.fvar target) =>
-        match lookup source with
+        match lookupKnown source with
         | some binding =>
             if binding.sorts.isEmpty then
-              pure (premise, [⟨source, .premise index 0 0, [], []⟩, ⟨target, .premise index 0 1, [], []⟩],
-                [(target, {binding with name := target})])
+              pure (premise, [⟨source, .premise index depth 0, [], []⟩,
+                ⟨target, .premise index depth 1, [], []⟩], [(target, {binding with name := target})])
             else
               pure (.scopedStep ⟨binding.sorts, binding.result, .fvar source, .fvar target⟩,
-                [⟨source, .premise index 0 0, [], binding.names⟩, ⟨target, .premise index 0 1, [], binding.names⟩],
+                [⟨source, .premise index depth 0, [], binding.names⟩,
+                  ⟨target, .premise index depth 1, [], binding.names⟩],
                 [(target, {binding with name := target})])
         | none => throw (.unsupportedPremise rule.name index)
     | .freshness condition =>
         pure (.freshness ⟨condition.varName, resolve [] condition.term⟩,
-          sites (.premise index 0 0) [] [] condition.term, [])
+          sites (.premise index depth 0) [] [] condition.term, [])
+    | .relationQuery relation patterns =>
+        let patterns := patterns.map fun pattern =>
+          unwrap bare (betaNormal (etaLong language expanded pattern))
+        let hints := patterns.zipIdx.flatMap fun (pattern, argument) =>
+          (sites (.premise index depth argument) [] [] pattern).filterMap fun site =>
+            (bindingAt language rule.typeContext bound authoredPremises (resolve [] pattern) site).map
+              fun binding => (site.name, binding)
+        pure (.relationQuery relation (patterns.map (resolve [])),
+          patterns.zipIdx.flatMap (fun (pattern, argument) =>
+            sites (.premise index depth argument) [] [] pattern), hints)
+    | .forAll collection parameter body =>
+        let some collectionBinding := lookupKnown collection
+          | throw (.untyped rule.name collection)
+        let candidates := ([CollType.vec, .hashBag, .hashSet]).filterMap fun kind =>
+          (GeneralRuleBindingGrammar.collectionElement? language kind collectionBinding.result).map
+            fun element => (kind, element)
+        let some (_, elementType) := GeneralRuleBindingGrammar.unique? candidates
+          | throw (.unsupportedPremise rule.name index)
+        let parameterBinding : Binding := ⟨parameter, [], [], elementType⟩
+        let (body, bodySites, hints) ← lowerPremise index (depth + 1)
+          (parameterBinding :: known) body
+        pure (.forAll collection parameter body, bodySites, (parameter, parameterBinding) :: hints)
     | _ => throw (.unsupportedPremise rule.name index)
+  let rec lowerPremises (index : Nat) (known : List Binding) (premises : List Premise) :
+      Except Failure (List (Premise × List Site × List (String × Binding))) := do
+    match premises with
+    | [] => pure []
+    | premise :: premises =>
+        let row ← lowerPremise index 0 known premise
+        let remaining ← lowerPremises (index + 1) (known ++ row.2.2.map Prod.snd) premises
+        pure (row :: remaining)
+  let premiseRows ← lowerPremises 0 leftBindings kept
   let premises := premiseRows.map (·.1)
   let premiseSites := premiseRows.flatMap (·.2.1)
   let produced := premiseRows.flatMap (·.2.2)
@@ -346,7 +561,7 @@ def reduceRule (language : LanguageDef) (rule : AuthoredRule) : Except Failure C
     (lookup name).orElse fun _ => (produced.find? (·.1 == name)).map (·.2)
   -- every metavariable must be bound by the left side or a premise
   let allSites := leftSites ++ premiseSites ++ rightSites
-  let names := (allSites.map (·.name)).eraseDups
+  let names := (allSites.map (·.name) ++ produced.map Prod.fst).eraseDups
   let bindings ← names.mapM fun name =>
     match bindingOf name with
     | some binding => pure binding
@@ -389,15 +604,17 @@ def reduceEquation (language : LanguageDef) (equation : Equation) : Except Failu
     else throw (.notAdmitted equation.name)
 
 /-- Rules and equations reduced, or the first rule without a core. Rules and equations that
-already carry a binding declaration are kept as authored. -/
-def reduce (language : LanguageDef) : Except Failure LanguageDef := do
+already carry a binding declaration are kept as authored. Constructor declarations take their core
+form first (`canonicalGrammar`). -/
+def reduce (authored : LanguageDef) : Except Failure LanguageDef := do
+  let language := canonicalGrammar authored
   let rewrites ← language.rewrites.mapM (reduceRewrite language)
   let equations ← language.equations.mapM (reduceEquation language)
   return { language with «rewrites» := rewrites, «equations» := equations }
 
 /-! ## The core predicate -/
 
-/-- A core pattern: erased binder names and bare collections. -/
+/-- A core pattern: erased binder names and the declared collection representation. -/
 def corePattern (bare : List (String × CollType)) (pattern : Pattern) : Bool :=
   pattern.hasCanonicalBinderMetadata && unwrap bare pattern == pattern
 

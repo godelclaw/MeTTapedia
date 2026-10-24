@@ -248,8 +248,8 @@ def quantified : Nat → Environment → Context → String → Premise → Nat 
             (bindParameter parameter (localValue context.bound element) initial) = true then
         (premise fuel environment context.quantified body
           (bindParameter parameter (localValue context.bound element) initial) event).flatMap
-          (fun middle => quantified fuel environment context parameter body (index + 1) elements
-            (restoreParameter parameter initial middle) events)
+          (fun _middle => quantified fuel environment context parameter body (index + 1) elements
+            initial events)
       else []
   | _ + 1, _, _, _, _, _, _, _, _ => []
 end
@@ -975,7 +975,7 @@ def quantifiedFuel (environment : Environment) (context : Context) (parameter : 
       let before := premiseFuel environment context.quantified body localAssignment event
       max before (greatest ((premise before environment context.quantified body localAssignment event).map
         (fun middle => quantifiedFuel environment context parameter body (index + 1) elements
-          (restoreParameter parameter initial middle) events))) + 1
+          initial events))) + 1
   | _, _ => 1
 termination_by 4 * sizeOf events
 end
@@ -1088,13 +1088,13 @@ theorem quantifiedFuel_complete {environment : Environment} {context : Context}
       have before := premiseFuel_complete head
       have after := quantifiedFuel_complete tail
       have later : quantifiedFuel environment context parameter body (index + 1) rest
-          (restoreParameter parameter initial middle) events ≤
+          initial events ≤
           greatest ((premise (premiseFuel environment context.quantified body
             (bindParameter parameter (localValue context.bound element) initial) event)
             environment context.quantified body
               (bindParameter parameter (localValue context.bound element) initial) event).map
                 (fun next => quantifiedFuel environment context parameter body (index + 1) rest
-                  (restoreParameter parameter initial next) events)) :=
+                  initial events)) :=
         le_greatest (List.mem_map.mpr ⟨middle, before, rfl⟩)
       simp only [quantifiedFuel, quantified]
       split

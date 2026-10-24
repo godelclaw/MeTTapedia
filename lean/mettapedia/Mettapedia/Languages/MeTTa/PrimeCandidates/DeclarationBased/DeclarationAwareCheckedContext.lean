@@ -157,7 +157,7 @@ theorem typing_context_images_disjoint :
   cases contextQuery
   simp [towerTypingClaimCodec, typingClaimCodec,
     contextFormationQueryCodec, encodeContextFormationQuery,
-    contextFormedPattern, encodeTypingClaim] at equality
+    contextFormedPattern] at equality
 
 /-- The first genuinely heterogeneous cumulative-tower candidate judgment codec: ordinary
 structural typing and structural context formation share one exact wire waist
@@ -184,7 +184,7 @@ namespace StructuralContextFormation
 
 /-- Structural context evidence embeds into cumulative-tower candidate's full declaration-aware
 context judgment without forgetting any formation derivation. -/
-def toContextWellFormed :
+theorem toContextWellFormed :
     {n : Nat} → {context : Tower.Ctx n} → {levels : LevelSpine n} →
       StructuralContextFormation context levels →
       ContextWellFormed Tower.rules context
@@ -327,7 +327,7 @@ private theorem contextFormationTarget_valid :
     DeclarationAwareDataLanguage.definition,
     DeclarationAwareDataLanguage.constructorArities,
     DeclarationAwareDataLanguage.kernelDataType,
-    encodeTowerHead, LevelTower.zero, encodeLevel, encodeNat,
+    encodeTowerHead, LevelTower.zero, encodeNat,
     encodeCtx, CalculusLanguageDef.ruleIds,
     CalculusLanguageDef.judgmentSignatureValid, CalculusLanguageDef.judgmentHeads,
     CalculusLanguageDef.conversionDeclarationValid, CalculusLanguageDef.lookupJudgment?,
@@ -490,8 +490,7 @@ private def contextSnocConclusion_reflects
                     DeclarationAwareStructuralTyping.tmHeadPattern
                       (DeclarationAwareStructuralTyping.headSortPattern
                         levelPattern) := by
-                simp [encodeTm, towerHeadCodec, encodeTowerHead,
-                  DeclarationAwareStructuralTyping.tmHeadPattern,
+                simp [encodeTm, towerHeadCodec,                   DeclarationAwareStructuralTyping.tmHeadPattern,
                   DeclarationAwareStructuralTyping.headSortPattern,
                   levelsEquality.2]
               have typeEvidence :
@@ -504,8 +503,7 @@ private def contextSnocConclusion_reflects
                     type := .head (.sort entryLevel) }
                   (by
                     simp only [towerTypingClaimCodec, typingClaimCodec,
-                      encodeTypingClaim,
-                      DeclarationAwareStructuralTyping.hasTypePattern,
+                                            DeclarationAwareStructuralTyping.hasTypePattern,
                       Pattern.apply.injEq, List.cons.injEq, and_true,
                       true_and]
                     exact
@@ -607,8 +605,8 @@ private def contextSnocAddedMeaning
                     exact
                       ⟨fun typingQuery equality => by
                           cases typingQuery
-                          simp [towerTypingClaimCodec, typingClaimCodec,
-                            encodeTypingClaim] at equality,
+                          simp [towerTypingClaimCodec, typingClaimCodec
+                            ] at equality,
                         fun query equality =>
                           contextSnocConclusion_reflects query arityPattern
                             contextPattern levelsPattern typePattern

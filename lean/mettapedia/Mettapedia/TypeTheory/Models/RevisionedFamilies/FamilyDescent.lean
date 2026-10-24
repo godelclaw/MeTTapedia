@@ -106,7 +106,7 @@ theorem comprehensionSub_projection (R : WMReading State Query V)
   rfl
 
 /-- Descent supplies dependent transport along behavioral agreement inside
-Prime's semantic CwF, without pretending the raw states are equal. -/
+the staged families CwF, without pretending the raw states are equal. -/
 def transportOfDescent (R : WMReading State Query V)
     {F : State → Type} (descent : DescentData R F)
     {first second : State} (agree : R.Agree .state first second) :

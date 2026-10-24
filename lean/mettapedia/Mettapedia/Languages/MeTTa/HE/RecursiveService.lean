@@ -1,8 +1,11 @@
 import Mettapedia.Languages.MeTTa.HE.RecursiveExecution
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessRecursiveExecution
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessScopedAdequacy
+import Mettapedia.Machines.BranchLocalNeed.DependentService
+import Mettapedia.Machines.Cursor.OwnedLifecycle
 import Mettapedia.Machines.Cursor.ReadOnlyQuery
 import Mettapedia.Machines.Cursor.ProductiveBlocks
+import Mettapedia.Machines.RevisionDependencySet
 
 /-!
 # The retained HE evaluator as a service machine
@@ -1813,3 +1816,1090 @@ theorem reached_cut_revocation_refuses_current_source (frame : Frame) :
   decide
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveService.CheckedAdmission.Controls
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveService.ComponentRealization
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval Spec.Eval.Completed Spec.Bindings.ScopeObservation
+open RecursiveTasks.Contextual RecursiveMachine.Contextual
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+open Mettapedia.Machines.ProductiveCoreAdapters.ComponentRealization
+
+/-- A certified nonidentity load of the same restore task through two
+solution-equivalent binding presentations. -/
+structure RestoreLoad (Context World : Type) where
+  world : World
+  context : Context
+  pairs : List Entry.Value
+  saved : List Result
+  caller : Frame
+  bindings : Bindings
+  stack : List Continuation
+  emitted : List Result
+  agreement : BindingSourceAgreement caller.bindings bindings
+
+namespace RestoreLoad
+
+variable {Context World : Type}
+
+def logical (input : RestoreLoad Context World) : WorldConfiguration Context World :=
+  ⟨input.world, input.context, .work (.restore input.pairs input.saved input.caller),
+    input.stack, input.emitted⟩
+
+def implementation (input : RestoreLoad Context World) : WorldConfiguration Context World :=
+  ⟨input.world, input.context,
+    .work (.restore input.pairs input.saved (input.caller.represent input.bindings input.agreement)),
+    input.stack, input.emitted⟩
+
+end RestoreLoad
+
+/-- The store currently exposed by a restore phase. Other phases have no
+restore-store observation in this component profile. -/
+def restoreStore {Context World : Type} (state : WorldConfiguration Context World) : Option Bindings :=
+  match state.control with
+  | .work (.restore _ _ caller) => some caller.bindings
+  | _ => none
+
+/-- Retained caller/control envelope. The current restore store is factored
+separately by `restoreStore`. -/
+def controlEnvelope {Context World : Type} (state : WorldConfiguration Context World) :
+    Context × List Context × List Continuation :=
+  (state.context, state.control.contexts, state.stack)
+
+def selectionSpace {Context World : Type} (view : World → Context → Space)
+    (state : WorldConfiguration Context World) : Space :=
+  view state.world state.context
+
+def projection {Context World : Type} (view : World → Context → Space) :
+    ComponentProjection (WorldConfiguration Context World) (Option Bindings)
+      (Context × List Context × List Continuation) Space World (List Result) where
+  store := restoreStore
+  control := controlEnvelope
+  selection := selectionSpace view
+  world := WorldConfiguration.world
+  publication := WorldConfiguration.emitted
+
+/-- Semantic relation between optional restore stores. -/
+def StoreRel : Option Bindings → Option Bindings → Prop
+  | some left, some right => BindingSourceAgreement left right
+  | none, none => True
+  | _, _ => False
+
+theorem storeRel_refl (store : Option Bindings) : StoreRel store store := by
+  cases store with
+  | none => trivial
+  | some bindings => exact BindingSourceAgreement.refl bindings
+
+/-- The five-component relation between two representations of the same HE
+stateful protocol at a restore cut. This is not a second machine model. -/
+def relation {Context World : Type} (view : World → Context → Space) :
+    FiveComponentRel (projection view) (projection view) where
+  storeRel := StoreRel
+  controlRel := Eq
+  selectionRel := Eq
+  worldRel := Eq
+  publicationRel := Eq
+  coherent := RestoreRepresentation
+
+/-- Every proved restore representation entails all five component laws. -/
+theorem holds_of_restore {Context World : Type} {view : World → Context → Space}
+    {before after : WorldConfiguration Context World}
+    (related : RestoreRepresentation before after) :
+    (relation view).Holds before after := by
+  cases related with
+  | same =>
+      exact ⟨storeRel_refl _, rfl, rfl, rfl, rfl, .same before⟩
+  | @pending world context pairs saved caller bindings stack emitted agreement =>
+      refine ⟨?_, rfl, rfl, rfl, rfl, .pending agreement⟩
+      change StoreRel (some caller.bindings)
+        (some (caller.represent bindings agreement).bindings)
+      simpa [StoreRel] using agreement
+
+/-- The two certified loaders establish the full component relation. -/
+theorem load_related {Context World : Type} (view : World → Context → Space)
+    (input : RestoreLoad Context World) :
+    (relation view).Holds input.logical input.implementation :=
+  holds_of_restore (.pending input.agreement)
+
+/-- Joint model readout of the optional store. -/
+def storeObservation : Option Bindings → List Atom → Set (List Atom)
+  | some bindings, atoms => observedTuples bindings atoms
+  | none, _ => Set.univ
+
+/-- Store agreement preserves every later joint binding observation. -/
+theorem storeObservation_eq {left right : Option Bindings}
+    (related : StoreRel left right) (atoms : List Atom) :
+    storeObservation left atoms = storeObservation right atoms := by
+  cases left with
+  | none =>
+      cases right with
+      | none => rfl
+      | some => cases related
+  | some left =>
+      cases right with
+      | none => cases related
+      | some right =>
+          have agreement : BindingSourceAgreement left right := related
+          ext values
+          constructor
+          · rintro ⟨model, satisfied, returned⟩
+            exact ⟨model, (agreement.solutions model).mp satisfied, returned⟩
+          · rintro ⟨model, satisfied, returned⟩
+            exact ⟨model, (agreement.solutions model).mpr satisfied, returned⟩
+
+/-- Read a value through the currently retained restore frame. -/
+def futureRead {Context World : Type} (policy : Policy)
+    (state : WorldConfiguration Context World) (value : Entry.Value) : Entry.Value :=
+  match state.control with
+  | .work (.restore _ _ caller) => caller.read policy value
+  | _ => value
+
+/-- A restore representation preserves actual future frame reads. -/
+theorem futureRead_eq {Context World : Type} {policy : Policy}
+    {before after : WorldConfiguration Context World}
+    (related : RestoreRepresentation before after) (value : Entry.Value) :
+    futureRead policy before value = futureRead policy after value := by
+  cases related with
+  | same => rfl
+  | @pending world context pairs saved caller bindings stack emitted agreement =>
+      have represented : RestoreRepresentation
+          (⟨world, context, .work (.restore pairs saved caller), stack, emitted⟩ :
+            WorldConfiguration Context World)
+          ⟨world, context,
+            .work (.restore pairs saved (caller.represent bindings agreement)), stack, emitted⟩ :=
+        .pending agreement
+      exact (RestoreRepresentation.pending_read represented policy value).symm
+
+/-- One HE protocol inspection is implemented by one productive inspection
+under the nonidentity restore representation. -/
+theorem restore_productive_block {Context World PublicWorld : Type}
+    {environment : WorldEnvironment Context World} {policy : Policy}
+    (publicScope : List String) (worldView : World → PublicWorld) :
+    ProductiveLocalBlock
+      (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+      (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+      (relation environment.view).Holds
+      (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView)
+      (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView) := by
+  refine ⟨?_⟩
+  intro before target events outcome related path
+  have represented := related.2.2.2.2.2
+  cases represented with
+  | same =>
+      refine ⟨1, by omega, events, outcome, path, rfl, ?_⟩
+      cases outcome with
+      | finished verdict => exact .finished _
+      | faulted => exact .faulted
+      | suspended request saved => exact .suspended request (holds_of_restore (.same saved))
+      | stuck stopped => exact .stuck (holds_of_restore (.same stopped))
+      | exhausted saved => exact .exhausted (holds_of_restore (.same saved))
+  | @pending world context pairs saved caller bindings stack emitted agreement =>
+      have represented : RestoreRepresentation
+          (⟨world, context, .work (.restore pairs saved caller), stack, emitted⟩ :
+            WorldConfiguration Context World)
+          ⟨world, context,
+            .work (.restore pairs saved (caller.represent bindings agreement)), stack, emitted⟩ :=
+        .pending agreement
+      cases path with
+      | silent advanced rest =>
+          cases rest
+          cases advanced with
+          | internal primitive =>
+              obtain ⟨next, moved, retained⟩ := represented.step (.internal primitive)
+              cases moved with
+              | internal localStep =>
+                  exact ⟨1, by omega, [], .exhausted _,
+                    .silent (.internal localStep) (.pause _), rfl,
+                    .exhausted (holds_of_restore retained)⟩
+      | published advanced _ => cases advanced
+      | finished advanced => cases advanced with | finished observed => cases observed
+      | faulted advanced => cases advanced
+      | requested advanced => cases advanced
+      | stuck advanced =>
+          cases advanced with
+          | stuck observed blocked =>
+              refine ⟨1, by omega, [], .stuck _, .stuck (fuel := 0) (.stuck rfl ?_), rfl,
+                .stuck (holds_of_restore represented)⟩
+              rintro ⟨next, moved⟩
+              obtain ⟨original, advanced, _⟩ := represented.symm.step moved
+              exact blocked ⟨original, advanced⟩
+
+/-- The same-rule HE restore-representation profile discharges M1--M7; M8 is
+obtained from the generic local-to-global theorem. This proves representation
+independence, not AM-to-native refinement. -/
+def realization {Context World PublicWorld : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy)
+    (publicScope : List String) (worldView : World → PublicWorld) :
+    ModularMachineAdequacy
+      (fun input : RestoreLoad Context World => input.logical)
+      (fun input : RestoreLoad Context World => input.implementation)
+      (projection environment.view) (projection environment.view) (relation environment.view)
+      (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+      (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+      (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView)
+      (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView)
+      (List Atom) (List Atom) (Set (List Atom)) PublicWorld
+      (Context × List Context × List Continuation) (Multiset (Set (List Atom)))
+      Entry.Value Entry.Value where
+  m1_load := load_related environment.view
+  observeLogicalSelection := Space.atoms
+  observeImplSelection := Space.atoms
+  m2_selection related := congrArg Space.atoms related.2.2.1
+  readLogicalStore := storeObservation
+  readImplStore := storeObservation
+  m3_store_read related := storeObservation_eq related.1
+  m4_control := restore_productive_block publicScope worldView
+  observeLogicalWorld := worldView
+  observeImplWorld := worldView
+  m5_world related := congrArg worldView related.2.2.2.1
+  observeLogicalControl := id
+  observeImplControl := id
+  m6_retained_control related := related.2.1
+  observeLogicalPublication := RecursiveExecution.Contextual.Protocol.publicAnswers publicScope
+  observeImplPublication := RecursiveExecution.Contextual.Protocol.publicAnswers publicScope
+  m7_publication related := congrArg
+    (RecursiveExecution.Contextual.Protocol.publicAnswers publicScope) related.2.2.2.2.1
+  observeLogicalFuture := futureRead policy
+  observeImplFuture := futureRead policy
+  m7_future related := futureRead_eq related.2.2.2.2.2
+
+/-- Principal M8 retained-run theorem for HE restore-representation invariance. -/
+theorem retained_run {Context World PublicWorld : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy)
+    (publicScope : List String) (worldView : World → PublicWorld)
+    (input : RestoreLoad Context World)
+    {first second : Nat} {saved : WorldConfiguration Context World}
+    {events later : List Result}
+    {outcome : Outcome (WorldConfiguration Context World) (World × List Result) Empty}
+    (initial : Derivation (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+      first input.logical events (.exhausted saved))
+    (suffix : Derivation (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+      second saved later outcome) :
+    ∃ first' second' saved' events' later' outcome',
+      Derivation (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+        first' input.implementation events' (.exhausted saved') ∧
+      Derivation (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+        second' saved' later' outcome' ∧
+      (relation environment.view).Holds saved saved' ∧
+      (realization environment policy publicScope worldView).ObservationsAgree saved saved' ∧
+      events'.flatMap
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).event =
+        events.flatMap
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).event ∧
+      later'.flatMap
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).event =
+        later.flatMap
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).event ∧
+      OutcomeRel (relation environment.view).Holds
+        (outcome.relabel
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).verdict
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).request)
+        (outcome'.relabel
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).verdict
+          (RecursiveExecution.Contextual.Stateful.Protocol.readout publicScope worldView).request) ∧
+      Derivation (RecursiveExecution.Contextual.Stateful.Protocol.Rule environment policy)
+        (first' + second') input.implementation (events' ++ later') outcome' :=
+  (realization environment policy publicScope worldView).loaded_retained_run input initial suffix
+
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveService.ComponentRealization
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval Spec.Eval.Completed
+open RecursiveTasks.Contextual
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+open Mettapedia.Machines.Cursor.ReadOnlyQuery
+open Mettapedia.Machines
+open Mettapedia.GSLT.Contracts
+open Mettapedia.Machines.BranchLocalNeed
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+open Mettapedia.Machines.BranchLocalNeed.NeedDependentService
+open Mettapedia.TypeTheory.DisplayedEvidence
+open Mettapedia.Machines.Cursor.OwnedLifecycle
+open _root_.CategoryTheory
+
+/-- The exact semantic identity of one indexed append request cached by Need. -/
+structure AppendKey (size : Nat) where
+  reader : Fin size
+  argument : Atom
+  stamp : OrderedDependencyStore.ReadStamp size
+  deriving DecidableEq
+
+/-- The Need origin includes the complete captured read stamp, so a later world
+with the same reader and argument cannot reuse a stale cached reply. -/
+def retainedKey
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size)) : AppendKey size :=
+  ⟨request.reader, request.argument,
+    OrderedDependencyStore.readStamp saved.world.store request.reader⟩
+
+/-- A changed complete stamp changes the Need origin even when reader and
+argument syntax are unchanged. -/
+theorem retainedKey_ne_of_stale
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : OrderedDependencyStore.Store Atom size)
+    (stale : OrderedDependencyStore.checkRead current
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = false) :
+    retainedKey saved request ≠
+      ⟨request.reader, request.argument,
+        OrderedDependencyStore.readStamp current request.reader⟩ := by
+  intro equal
+  have stampEq := congrArg AppendKey.stamp equal
+  simp only [retainedKey] at stampEq
+  have accepted : OrderedDependencyStore.checkRead current
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = true := by
+    simpa [OrderedDependencyStore.checkRead, OrderedDependencyStore.readStamp] using stampEq
+  rw [stale] at accepted
+  cases accepted
+
+/-- Expose complete read stamps, including store identity and generation, as a
+revision environment. Comparing only the numeric revision would be unsound. -/
+def storeRevisionEnv {size : Nat} (store : OrderedDependencyStore.Store Atom size) :
+    RevisionEnvironment (Fin size) (OrderedDependencyStore.ReadStamp size) :=
+  ⟨fun reader => OrderedDependencyStore.readStamp store reader⟩
+
+/-- Capture exactly the source stamp consulted by one pending append. -/
+def capturedReaderView {size : Nat} (store : OrderedDependencyStore.Store Atom size)
+    (reader : Fin size) :
+    CapturedReadView (Fin size) (OrderedDependencyStore.ReadStamp size) :=
+  (CapturedReadView.admit (storeRevisionEnv store)).consult (storeRevisionEnv store) reader
+
+/-- Ordered-store stamp validation is exactly publication eligibility for the
+corresponding one-reader captured view. -/
+theorem checkRead_iff_canPublish {size : Nat}
+    (captured current : OrderedDependencyStore.Store Atom size) (reader : Fin size) :
+    OrderedDependencyStore.checkRead current (OrderedDependencyStore.readStamp captured reader) = true ↔
+      (capturedReaderView captured reader).CanPublish (storeRevisionEnv current) := by
+  unfold CapturedReadView.CanPublish
+  rw [CapturedReadView.valid_dependencies_iff]
+  simp [OrderedDependencyStore.checkRead, capturedReaderView, storeRevisionEnv,
+    CapturedReadView.admit, CapturedReadView.consult,
+    CapturedReadView.mismatchAt]
+  constructor
+  · intro same observed member
+    have observed_eq : observed = reader := Finset.mem_singleton.mp member
+    subst observed
+    exact same.symm
+  · intro agrees
+    exact (agrees reader (Finset.mem_singleton_self reader)).symm
+
+/-- A dependency capture whose payload is the actual retained HE cut. -/
+abbrev RetainedCapture {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) (size : Nat) :=
+  CapturedReadFrame Nat (Fin size) (OrderedDependencyStore.ReadStamp size)
+    (AuthorizedAppend.Retained.Configuration authority (size := size))
+
+/-- Issued returns are keyed by their exact Atom payload and indexed provider. -/
+abbrev RetainedRegistry (size : Nat) := IssuedReturn.Registry Atom (Fin size)
+abbrev RetainedHandle (size : Nat) := IssuedReturn.Handle Atom (Fin size)
+
+/-- Build the dependency capture from the same saved cut and request that will
+be resumed. -/
+def retainedCapture {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (source : Nat) (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size)) :
+    RetainedCapture authority size :=
+  ⟨source, capturedReaderView saved.world.store request.reader, saved⟩
+
+/-- Parent lineage, provider and payload must all name this pending request. -/
+def HandleMatches {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat} (source : Nat)
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (handle : RetainedHandle size) : Prop :=
+  handle.parent = source ∧ handle.row.provider = request.reader ∧
+    handle.row.payload = request.argument
+
+instance {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (source : Nat) (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (handle : RetainedHandle size) : Decidable (HandleMatches source request handle) :=
+  inferInstanceAs (Decidable (_ ∧ _ ∧ _))
+
+/-- Refusals occur before the retained HE configuration is changed. -/
+inductive RetainedReplyRefusal where
+  | requestMismatch
+  | staleDependencies
+  | denied
+  | unissued
+  deriving DecidableEq, Repr
+
+/-- A successful boundary returns the delivered cut, residual registry and
+cleared physical handle, together with the lookup cost. -/
+abbrev RetainedReplyResult {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) (size : Nat) :=
+  Except RetainedReplyRefusal
+      (AuthorizedAppend.Retained.Configuration authority (size := size) ×
+        RetainedRegistry size × RetainedHandle size) × Nat
+
+/-- Validate the exact reached read, authenticate the exact pending request,
+consume its issued row and only then construct the retained HE reply. -/
+def deliverRetainedChecked {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (source : Nat)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (registry : RetainedRegistry size) (handle : RetainedHandle size) :
+    RetainedReplyResult authority size :=
+  match AuthorizedAppend.Retained.requested? authority saved with
+  | none => (.error .requestMismatch, 0)
+  | some request =>
+      let capture := retainedCapture source saved request
+      let checked := capture.view.validate (storeRevisionEnv current.store)
+      if HandleMatches source request handle then
+        if checked.accepted then
+          if FrameUpdate current.point.authority
+              (required (.append request.reader [request.argument]) current.point.world) then
+            let released := IssuedReturn.releaseIssued registry handle
+            match released.1 with
+            | none => (.error .unissued, released.2)
+            | some (next, cleared) =>
+                let pending := {request with world := current}
+                let final := AuthorizedAppend.Retained.deliverConfiguration authority
+                  {saved with world := current}
+                  (AuthorizedAppend.Retained.reachedWorld authority pending)
+                  [(.symbol "ack", request.frame)]
+                (.ok (final, next, cleared), released.2)
+          else (.error .denied, 0)
+        else (.error .staleDependencies, 0)
+      else (.error .requestMismatch, 0)
+
+/-- The local checked boundary succeeds from current dependencies and issued
+authority, preserves registry validity and revokes both old handle spellings. -/
+theorem deliverRetainedChecked_admitted
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (source : Nat)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (registry : RetainedRegistry size) (handle : RetainedHandle size)
+    (registryValid : registry.Valid)
+    (found : AuthorizedAppend.Retained.requested? authority saved = some request)
+    (matched : HandleMatches source request handle)
+    (valid : OrderedDependencyStore.checkRead current.store
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = true)
+    (allowed : FrameUpdate current.point.authority
+      (required (.append request.reader [request.argument]) current.point.world))
+    (authenticated : IssuedReturn.Authenticated registry handle) :
+    ∃ next cleared,
+      (deliverRetainedChecked required source saved current registry handle).1 =
+        .ok (AuthorizedAppend.Retained.deliverConfiguration authority
+          {saved with world := current}
+          (AuthorizedAppend.Retained.reachedWorld authority {request with world := current})
+          [(.symbol "ack", request.frame)], next, cleared) ∧
+      next.Valid ∧ ¬IssuedReturn.Authenticated next handle ∧
+      ¬IssuedReturn.Authenticated next cleared := by
+  obtain ⟨next, cleared, released⟩ :=
+    (IssuedReturn.releaseIssued_exists_iff registry handle).mpr authenticated
+  have release : IssuedReturn.releaseIssued registry handle =
+      (some (next, cleared), (IssuedReturn.releaseIssued registry handle).2) :=
+    Prod.ext released rfl
+  have currentView :
+      ((retainedCapture source saved request).view.validate
+        (storeRevisionEnv current.store)).accepted = true :=
+    (CapturedReadView.validate_accepted_iff_canPublish _ _).2
+      ((checkRead_iff_canPublish saved.world.store current.store request.reader).mp valid)
+  refine ⟨next, cleared, ?_, ?_, ?_⟩
+  · simp only [deliverRetainedChecked, found]
+    rw [if_pos matched, if_pos currentView, if_pos allowed, release]
+  · exact IssuedReturn.releaseIssued_preserves_validity registry handle next cleared _
+      registryValid release
+  · have revoked := IssuedReturn.releaseIssued_revokes_old_and_cleared
+      registry handle next cleared _ registryValid release
+    refine ⟨revoked.1, ?_⟩
+    intro authenticatedCleared
+    have present := (IssuedReturn.lookup_authenticates next cleared).mpr authenticatedCleared
+    exact present (congrArg Prod.fst revoked.2)
+
+/-- A copied saved cut cannot replay a handle already consumed in the current
+registry. -/
+theorem deliverRetainedChecked_unissued
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (source : Nat)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (registry : RetainedRegistry size) (handle : RetainedHandle size)
+    (found : AuthorizedAppend.Retained.requested? authority saved = some request)
+    (matched : HandleMatches source request handle)
+    (valid : OrderedDependencyStore.checkRead current.store
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = true)
+    (allowed : FrameUpdate current.point.authority
+      (required (.append request.reader [request.argument]) current.point.world))
+    (unissued : ¬IssuedReturn.Authenticated registry handle) :
+    (deliverRetainedChecked required source saved current registry handle).1 = .error .unissued := by
+  have release : (IssuedReturn.releaseIssued registry handle).1 = none := by
+    cases released : (IssuedReturn.releaseIssued registry handle).1 with
+    | none => rfl
+    | some pair =>
+        exact (unissued ((IssuedReturn.releaseIssued_exists_iff registry handle).mp
+          ⟨pair.1, pair.2, released⟩)).elim
+  have currentView :
+      ((retainedCapture source saved request).view.validate
+        (storeRevisionEnv current.store)).accepted = true :=
+    (CapturedReadView.validate_accepted_iff_canPublish _ _).2
+      ((checkRead_iff_canPublish saved.world.store current.store request.reader).mp valid)
+  simp only [deliverRetainedChecked, found]
+  rw [if_pos matched, if_pos currentView, if_pos allowed, release]
+
+/-- Stale reached dependencies refuse before inspecting or consuming the issued
+row. -/
+theorem deliverRetainedChecked_stale
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (source : Nat)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (registry : RetainedRegistry size) (handle : RetainedHandle size)
+    (found : AuthorizedAppend.Retained.requested? authority saved = some request)
+    (matched : HandleMatches source request handle)
+    (stale : OrderedDependencyStore.checkRead current.store
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = false) :
+    (deliverRetainedChecked required source saved current registry handle).1 =
+      .error .staleDependencies := by
+  have noPublish : ¬(retainedCapture source saved request).view.CanPublish
+      (storeRevisionEnv current.store) := by
+    intro publishable
+    have checked := (checkRead_iff_canPublish saved.world.store current.store request.reader).mpr
+      publishable
+    rw [stale] at checked
+    cases checked
+  have currentView :
+      ((retainedCapture source saved request).view.validate
+        (storeRevisionEnv current.store)).accepted = false := by
+    apply Bool.eq_false_iff.mpr
+    intro accepted
+    exact noPublish ((CapturedReadView.validate_accepted_iff_canPublish _ _).mp accepted)
+  simp only [deliverRetainedChecked, found]
+  rw [if_pos matched, if_neg (by simp [currentView])]
+
+/-- Current dependencies do not substitute for the current operation right;
+denial also happens before registry release. -/
+theorem deliverRetainedChecked_denied
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (source : Nat)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (registry : RetainedRegistry size) (handle : RetainedHandle size)
+    (found : AuthorizedAppend.Retained.requested? authority saved = some request)
+    (matched : HandleMatches source request handle)
+    (valid : OrderedDependencyStore.checkRead current.store
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = true)
+    (denied : ¬FrameUpdate current.point.authority
+      (required (.append request.reader [request.argument]) current.point.world)) :
+    (deliverRetainedChecked required source saved current registry handle).1 = .error .denied := by
+  have currentView :
+      ((retainedCapture source saved request).view.validate
+        (storeRevisionEnv current.store)).accepted = true :=
+    (CapturedReadView.validate_accepted_iff_canPublish _ _).2
+      ((checkRead_iff_canPublish saved.world.store current.store request.reader).mp valid)
+  simp only [deliverRetainedChecked, found]
+  rw [if_pos matched, if_pos currentView, if_neg denied]
+
+/-- Returning at the selected native site removes that site, including beneath
+arbitrary retained context frames. -/
+theorem site_deliver_locate_none
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    {world : AuthorizedAppend.Retained.World authority (size := size)}
+    {reader : Fin size} {control : Control (Fin size)}
+    {request : AuthorizedAppend.Retained.Request authority (size := size)}
+    (site : AuthorizedAppend.Retained.Site authority world reader control request)
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (results : List Result) :
+    AuthorizedAppend.Retained.locate authority current reader
+      (AuthorizedAppend.Retained.deliver control results) = none := by
+  induction site with
+  | native => rfl
+  | context _ ih => simpa [AuthorizedAppend.Retained.deliver,
+      AuthorizedAppend.Retained.locate] using ih
+
+/-- A delivered HE configuration cannot request the same native operation
+again. -/
+theorem requested?_deliverConfiguration_none
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    {saved : AuthorizedAppend.Retained.Configuration authority (size := size)}
+    {request : AuthorizedAppend.Retained.Request authority (size := size)}
+    (found : AuthorizedAppend.Retained.requested? authority saved = some request)
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (results : List Result) :
+    AuthorizedAppend.Retained.requested? authority
+      (AuthorizedAppend.Retained.deliverConfiguration authority saved current results) = none := by
+  unfold AuthorizedAppend.Retained.requested?
+  simp only [AuthorizedAppend.Retained.deliverConfiguration]
+  rw [site_deliver_locate_none (AuthorizedAppend.Retained.requested_site authority found)
+    current results]
+  rfl
+
+/-- A dependent Need service indexed by the complete append key. -/
+def retainedFamily (size : Nat) (Value : Type) : Family.{0, 0} where
+  Raw := AppendKey size
+  Exact := fun _ => Value
+
+instance instDecidableEqRetainedRaw (size : Nat) (Value : Type) :
+    DecidableEq (retainedFamily size Value).Raw :=
+  inferInstanceAs (DecidableEq (AppendKey size))
+
+/-- The service callback returns the already earned retained configuration; the
+Need machine owns whether it is produced or read from cache. -/
+def retainedProducer {size : Nat} {Value : Type} (value : Value) :
+    (request : (retainedFamily size Value).Raw) →
+      (retainedFamily size Value).Exact request :=
+  fun _ => value
+
+/-- First demand for the exact append key. -/
+def retainedNeedBefore {size : Nat} {Value : Type}
+    (world : NeedDependentService.ServiceWorld (retainedFamily size Value))
+    (cell : CellId) (key : AppendKey size) :
+    NeedDependentService.ServiceMachine (retainedFamily size Value) :=
+  ⟨world, .run (.demand key cell) [], {}⟩
+
+/-- After the demand and ownership claim, Need is poised at its one producer
+action and the cache records the unique evaluating owner. -/
+def retainedNeedEvaluating {size : Nat} {Value : Type}
+    (world : NeedDependentService.ServiceWorld (retainedFamily size Value))
+    (cell : CellId) (key : AppendKey size) :
+    NeedDependentService.ServiceMachine (retainedFamily size Value) :=
+  ⟨NeedDependentService.forceWorld (retainedFamily size Value) world cell key,
+    .run (.produce key) [.commit cell world.nextEvaluator, .resume key],
+    (({} : Work).bump 0 0 0 0).bump 1 1 2 0⟩
+
+/-- Exact endpoint after the first demand has committed the retained result. -/
+def retainedNeedAfter {size : Nat} {Value : Type}
+    (world : NeedDependentService.ServiceWorld (retainedFamily size Value))
+    (cell : CellId) (key : AppendKey size) (value : Value) :
+    NeedDependentService.ServiceMachine (retainedFamily size Value) :=
+  ⟨NeedDependentService.producedWorld (retainedFamily size Value) (retainedProducer value)
+      world cell key,
+    .halted (.value ⟨key, value⟩),
+    NeedDependentService.consumerFinishWork
+      (NeedDependentService.freshForceWork (({} : Work).bump 0 0 0 0))⟩
+
+/-- The first two actual Need transitions demand and claim the suspended cell;
+the effectful HE service has not run yet. -/
+theorem retainedNeed_claim {size : Nat} {Value : Type}
+    (world : NeedDependentService.ServiceWorld (retainedFamily size Value))
+    (cell : CellId) (key : AppendKey size) (value : Value)
+    (suspended : world.heap.lookup cell = some ⟨key, .suspended⟩) :
+    runFrontier (NeedDependentService.spec (retainedFamily size Value)
+      (retainedProducer value)) 2 [retainedNeedBefore world cell key] =
+      [retainedNeedEvaluating world cell key] := by
+  apply UniqueSteps.runFrontier_eq
+  apply UniqueSteps.cons (by rfl)
+  apply UniqueSteps.cons
+    (NeedDependentService.step_force_suspended
+      (retainedFamily size Value) (retainedProducer value) suspended)
+  exact UniqueSteps.refl _
+
+/-- Once the checked service has produced the retained configuration, five
+actual Need transitions produce, commit and resume the waiting consumer. -/
+theorem retainedNeed_commit_and_resume {size : Nat} {Value : Type}
+    (world : NeedDependentService.ServiceWorld (retainedFamily size Value))
+    (cell : CellId) (key : AppendKey size) (value : Value) :
+    runFrontier (NeedDependentService.spec (retainedFamily size Value)
+      (retainedProducer value)) 5 [retainedNeedEvaluating world cell key] =
+      [retainedNeedAfter world cell key value] := by
+  let afterClaim := NeedDependentService.forceWorld
+    (retainedFamily size Value) world cell key
+  let workClaim := (({} : Work).bump 0 0 0 0).bump 1 1 2 0
+  let workProduced := workClaim.bump 0 0 0 0
+  let workCommitted := workProduced.bump 1 1 1 0
+  let packet : NeedDependentService.Packet (retainedFamily size Value) := ⟨key, value⟩
+  have produce : UniqueSteps
+      (NeedDependentService.spec (retainedFamily size Value) (retainedProducer value)) 1
+      (retainedNeedEvaluating world cell key)
+      ⟨afterClaim, .returned (.value packet)
+        [.commit cell world.nextEvaluator, .resume key], workProduced⟩ := by
+    apply UniqueSteps.cons
+      (NeedDependentService.step_produce (retainedFamily size Value)
+        (retainedProducer value) afterClaim key
+        [.commit cell world.nextEvaluator, .resume key] workClaim)
+    exact UniqueSteps.refl _
+  have commit : UniqueSteps
+      (NeedDependentService.spec (retainedFamily size Value) (retainedProducer value)) 1
+      ⟨afterClaim, .returned (.value packet)
+        [.commit cell world.nextEvaluator, .resume key], workProduced⟩
+      ⟨NeedDependentService.producedWorld (retainedFamily size Value)
+          (retainedProducer value) world cell key,
+        .returned (.value packet) [.resume key], workCommitted⟩ := by
+    apply UniqueSteps.cons
+      (NeedDependentService.step_commit (retainedFamily size Value)
+        (retainedProducer value)
+        (NeedDependentService.forceWorld_lookup (retainedFamily size Value) world cell key))
+    exact UniqueSteps.refl _
+  have resume := NeedDependentService.resume_and_halt
+    (retainedFamily size Value) (retainedProducer value)
+    (NeedDependentService.producedWorld (retainedFamily size Value)
+      (retainedProducer value) world cell key) key (.value packet)
+    workCommitted
+  simpa [retainedNeedAfter, NeedDependentService.freshForceWork,
+    afterClaim, workClaim, workProduced, workCommitted, packet,
+    NeedDependentService.consumeOutcome_matching (retainedFamily size Value) key value] using
+    UniqueSteps.runFrontier_eq _ (produce.trans _ (commit.trans _ resume))
+
+/-- A later demand starts from the already committed cell. -/
+def retainedNeedCachedBefore {size : Nat} {Value : Type}
+    (world : NeedDependentService.ServiceWorld (retainedFamily size Value))
+    (cell : CellId) (key : AppendKey size) (value : Value) :
+    NeedDependentService.ServiceMachine (retainedFamily size Value) :=
+  ⟨NeedDependentService.producedWorld (retainedFamily size Value) (retainedProducer value)
+      world cell key,
+    .run (.demand key cell) [], {}⟩
+
+/-- Current reached world after external changes, before the selected append. -/
+def retainedCurrent
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (changes : List (OrderedDependencyStore.Action Atom size))
+    (point : IndexedAuthority.Point authority) :
+    AuthorizedAppend.Retained.World authority (size := size) :=
+  ⟨OrderedDependencyStore.execute saved.world.store changes, point⟩
+
+/-- The unique delivered HE configuration shared by service, reply authority
+and Need cache. -/
+def retainedFinal
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {authority : IndexedAuthority.{0, 0, 0} AuthorityWorld} {size : Nat}
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size)) :
+    AuthorizedAppend.Retained.Configuration authority (size := size) :=
+  AuthorizedAppend.Retained.deliverConfiguration authority {saved with world := current}
+    (AuthorizedAppend.Retained.reachedWorld authority {request with world := current})
+    [(.symbol "ack", request.frame)]
+
+/-- Dependency and authority validation change only the reached world; the
+pending operational site remains available for the checked reply edge. -/
+structure RebaseAdvance
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (dispatch : Spec.Eval.GroundedDispatch) (lookup : CastLookup) (policy : Policy)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size)) : Prop where
+  rebased : AuthorizedAppend.Retained.rebase authority required saved current =
+    .ok {saved with world := current}
+  sourceStable : OrderedDependencyStore.query current.store request.reader =
+    OrderedDependencyStore.query saved.world.store request.reader
+  requestRetained : AuthorizedAppend.Retained.requested? authority {saved with world := current} =
+    some {request with world := current}
+
+/-- The actual one-append service block from the rebased live state to the
+delivered HE configuration. -/
+structure ServiceAdvance
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (dispatch : Spec.Eval.GroundedDispatch) (lookup : CastLookup) (policy : Policy)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    extends RebaseAdvance authority required dispatch lookup policy saved request current where
+  machineStep : Derivation
+    (RecursiveExecution.Contextual.Stateful.Protocol.Rule
+      (AuthorizedAppend.environment authority required dispatch lookup) policy)
+    1 {saved with world := current} [] (.exhausted (retainedFinal saved request current))
+  serviceRun : (AuthorizedAppend.Retained.handled authority required).run 4
+    (.running (.enter {saved with world := current})) =
+      ([.requested {request with world := current},
+        .performed ⟨PUnit.unit, current,
+          .write (.append request.reader [request.argument]), .ok ()⟩,
+        .replied (.returned
+          (AuthorizedAppend.Retained.reachedWorld authority {request with world := current},
+            [(.symbol "ack", request.frame)]))],
+        .finished (.returned (retainedFinal saved request current)))
+  stackRetained : (retainedFinal saved request current).stack = saved.stack
+  publicationRetained : (retainedFinal saved request current).emitted = saved.emitted
+  contextRetained : (retainedFinal saved request current).context = saved.context
+
+/-- Ordered phases of the single shared retained interaction. -/
+inductive JoinedPhase where
+  | demand
+  | service
+  | reply
+  | cache
+  | done
+  deriving DecidableEq, Repr
+
+/-- One state contains the Need machine, retained HE configuration and issued
+return registry together. -/
+structure JoinedState
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) (size : Nat) where
+  phase : JoinedPhase
+  need : NeedDependentService.ServiceMachine
+    (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+  he : AuthorizedAppend.Retained.Configuration authority (size := size)
+  registry : RetainedRegistry size
+
+/-- The joined transition relation: claim the Need cell, rebase the still-live
+HE cut, execute and authenticate its reply, then commit that exact delivered
+configuration to Need. Output registry witnesses are produced by the reply
+edge, rather than fixed as parameters of the relation. -/
+inductive JoinedStep
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (dispatch : Spec.Eval.GroundedDispatch) (lookup : CastLookup) (policy : Policy)
+    (source : Nat)
+    (saved : AuthorizedAppend.Retained.Configuration authority (size := size))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (current : AuthorizedAppend.Retained.World authority (size := size))
+    (needWorld : NeedDependentService.ServiceWorld
+      (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size))))
+    (cell : CellId) (handle : RetainedHandle size) :
+    JoinedState authority size → JoinedState authority size → Prop where
+  | claim {registry : RetainedRegistry size}
+      (ran : runFrontier
+        (NeedDependentService.spec
+          (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+          (retainedProducer (retainedFinal saved request current))) 2
+        [retainedNeedBefore needWorld cell (retainedKey saved request)] =
+        [retainedNeedEvaluating needWorld cell (retainedKey saved request)]) :
+      JoinedStep authority required dispatch lookup policy source saved request current
+        needWorld cell handle
+        ⟨.demand, retainedNeedBefore needWorld cell (retainedKey saved request),
+          saved, registry⟩
+        ⟨.service, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+          saved, registry⟩
+  | rebase {registry : RetainedRegistry size}
+      (advanced : RebaseAdvance authority required dispatch lookup policy saved request current) :
+      JoinedStep authority required dispatch lookup policy source saved request current
+        needWorld cell handle
+        ⟨.service, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+          saved, registry⟩
+        ⟨.reply, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+          {saved with world := current}, registry⟩
+  | reply {registry next : RetainedRegistry size} {cleared : RetainedHandle size}
+      (advanced : ServiceAdvance authority required dispatch lookup policy saved request current)
+      (delivered : (deliverRetainedChecked required source saved current registry handle).1 =
+        .ok (retainedFinal saved request current, next, cleared)) :
+      JoinedStep authority required dispatch lookup policy source saved request current
+        needWorld cell handle
+        ⟨.reply, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+          {saved with world := current}, registry⟩
+        ⟨.cache, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+          retainedFinal saved request current, next⟩
+  | cache {registry : RetainedRegistry size}
+      (ran : runFrontier
+        (NeedDependentService.spec
+          (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+          (retainedProducer (retainedFinal saved request current))) 5
+        [retainedNeedEvaluating needWorld cell (retainedKey saved request)] =
+        [retainedNeedAfter needWorld cell (retainedKey saved request)
+          (retainedFinal saved request current)]) :
+      JoinedStep authority required dispatch lookup policy source saved request current
+        needWorld cell handle
+        ⟨.cache, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+          retainedFinal saved request current, registry⟩
+        ⟨.done, retainedNeedAfter needWorld cell (retainedKey saved request)
+          (retainedFinal saved request current), retainedFinal saved request current, registry⟩
+
+/-- One shared retained trajectory: the reached HE service performs its pending
+append, the exact delivered configuration is committed to one Need cell, and
+the issued return row is consumed. Every later demand observes the cache, while
+the copied pre-delivery handle cannot repeat the append/reply boundary. -/
+theorem composed_retention_no_replay
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld) {size : Nat}
+    (required : OrderedDependencyStore.Action Atom size →
+      (world : AuthorityWorld) → authority.Fibre world)
+    [permission : ∀ (point : IndexedAuthority.Point authority)
+      (action : OrderedDependencyStore.Action Atom size),
+      Decidable (FrameUpdate point.authority (required action point.world))]
+    (dispatch : Spec.Eval.GroundedDispatch) (lookup : CastLookup) (policy : Policy)
+    {initial saved : AuthorizedAppend.Retained.Configuration authority (size := size)}
+    {fuel : Nat} {events : List Result}
+    (paused : Derivation
+      (RecursiveExecution.Contextual.Stateful.Protocol.Rule
+        (AuthorizedAppend.environment authority required dispatch lookup) policy)
+      fuel initial events (.exhausted saved))
+    (request : AuthorizedAppend.Retained.Request authority (size := size))
+    (found : AuthorizedAppend.Retained.requested? authority saved = some request)
+    (changes : List (OrderedDependencyStore.Action Atom size))
+    (point : IndexedAuthority.Point authority)
+    (lawful : OrderedDependencyStore.ObserverInvariant saved.world.store)
+    (valid : OrderedDependencyStore.checkRead
+      (OrderedDependencyStore.execute saved.world.store changes)
+      (OrderedDependencyStore.readStamp saved.world.store request.reader) = true)
+    (allowed : FrameUpdate point.authority
+      (required (.append request.reader [request.argument]) point.world))
+    (source : Nat) (registry : RetainedRegistry size) (handle : RetainedHandle size)
+    (registryValid : registry.Valid) (matched : HandleMatches source request handle)
+    (authenticated : IssuedReturn.Authenticated registry handle)
+    (needWorld : NeedDependentService.ServiceWorld
+      (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size))))
+    (cell : CellId)
+    (suspended : needWorld.heap.lookup cell =
+      some ⟨((retainedKey saved request) : AppendKey size), .suspended⟩) :
+    let current := retainedCurrent saved changes point
+    let final := retainedFinal saved request current
+    ∃ next cleared,
+      Relation.TransGen
+        (JoinedStep authority required dispatch lookup policy source saved request current
+          needWorld cell handle)
+        (⟨.demand,
+          retainedNeedBefore needWorld cell (retainedKey saved request),
+          saved, registry⟩ : JoinedState authority size)
+        ⟨.done,
+          retainedNeedAfter needWorld cell (retainedKey saved request) final,
+          final, next⟩ ∧
+      next.Valid ∧
+      ¬IssuedReturn.Authenticated next cleared ∧
+      (deliverRetainedChecked required source saved current next handle).1 = .error .unissued ∧
+      AuthorizedAppend.Retained.requested? authority final = none ∧
+      (∀ otherProducer : (key : (retainedFamily size
+          (AuthorizedAppend.Retained.Configuration authority (size := size))).Raw) →
+          (retainedFamily size
+            (AuthorizedAppend.Retained.Configuration authority (size := size))).Exact key,
+        runFrontier
+            (NeedDependentService.spec
+              (retainedFamily size
+                (AuthorizedAppend.Retained.Configuration authority (size := size))) otherProducer) 5
+            [retainedNeedCachedBefore needWorld cell (retainedKey saved request) final] =
+          runFrontier
+            (NeedDependentService.spec
+              (retainedFamily size
+                (AuthorizedAppend.Retained.Configuration authority (size := size)))
+              (retainedProducer final)) 5
+            [retainedNeedCachedBefore needWorld cell (retainedKey saved request) final]) := by
+  dsimp only
+  let current := retainedCurrent saved changes point
+  let final := retainedFinal saved request current
+  obtain ⟨rebased, sourceStable, requestRetained, machineStep, serviceRun,
+      stackRetained, finalEmitted, contextRetained⟩ :=
+    AuthorizedAppend.Retained.validated_resume_reached_cut authority required dispatch lookup
+      policy paused request found changes point lawful valid allowed
+  have savedEmitted :=
+    (RecursiveExecution.Contextual.Stateful.Protocol.exhausted_steps paused).2
+  have publicationRetained : final.emitted = saved.emitted :=
+    finalEmitted.trans savedEmitted.symm
+  have rebasedAdvance : RebaseAdvance authority required dispatch lookup policy
+      saved request current :=
+    ⟨rebased, sourceStable, requestRetained⟩
+  have advanced : ServiceAdvance authority required dispatch lookup policy saved request current :=
+    ⟨rebasedAdvance, machineStep, serviceRun,
+      stackRetained, publicationRetained, contextRetained⟩
+  obtain ⟨next, cleared, delivered, nextValid, revoked, clearedRevoked⟩ :=
+    deliverRetainedChecked_admitted required source saved request current registry handle
+      registryValid found matched valid allowed authenticated
+  have needClaim : runFrontier
+      (NeedDependentService.spec
+        (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+        (retainedProducer final)) 2
+      [retainedNeedBefore needWorld cell (retainedKey saved request)] =
+      [retainedNeedEvaluating needWorld cell (retainedKey saved request)] :=
+    retainedNeed_claim needWorld cell (retainedKey saved request) final suspended
+  have needFinish : runFrontier
+      (NeedDependentService.spec
+        (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+        (retainedProducer final)) 5
+      [retainedNeedEvaluating needWorld cell (retainedKey saved request)] =
+      [retainedNeedAfter needWorld cell (retainedKey saved request) final] :=
+    retainedNeed_commit_and_resume needWorld cell (retainedKey saved request) final
+  have first : JoinedStep authority required dispatch lookup policy source saved request current
+      needWorld cell handle
+      (⟨.demand, retainedNeedBefore needWorld cell (retainedKey saved request),
+        saved, registry⟩ : JoinedState authority size)
+      ⟨.service, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+        saved, registry⟩ := .claim needClaim
+  have second : JoinedStep authority required dispatch lookup policy source saved request current
+      needWorld cell handle
+      (⟨.service, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+        saved, registry⟩ : JoinedState authority size)
+      ⟨.reply, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+        {saved with world := current}, registry⟩ := .rebase rebasedAdvance
+  have third : JoinedStep authority required dispatch lookup policy source saved request current
+      needWorld cell handle
+      (⟨.reply, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+        {saved with world := current}, registry⟩ : JoinedState authority size)
+      ⟨.cache, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+        final, next⟩ := .reply advanced delivered
+  have fourth : JoinedStep authority required dispatch lookup policy source saved request current
+      needWorld cell handle
+      (⟨.cache, retainedNeedEvaluating needWorld cell (retainedKey saved request),
+        final, next⟩ : JoinedState authority size)
+      ⟨.done, retainedNeedAfter needWorld cell (retainedKey saved request) final,
+        final, next⟩ := .cache needFinish
+  refine ⟨next, cleared,
+    Relation.TransGen.tail
+      (Relation.TransGen.tail (Relation.TransGen.tail (.single first) second) third) fourth,
+    nextValid, clearedRevoked, ?_, ?_, ?_⟩
+  · exact deliverRetainedChecked_unissued required source saved request current next handle
+      found matched valid allowed revoked
+  · exact requested?_deliverConfiguration_none requestRetained
+      (AuthorizedAppend.Retained.reachedWorld authority {request with world := current})
+      [(.symbol "ack", request.frame)]
+  · intro otherProducer
+    exact NeedDependentService.cached_consumer_independent_of_producer
+      (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+      otherProducer (retainedProducer final) (retainedKey saved request) ({} : Work)
+      (NeedDependentService.producedWorld_lookup
+        (retainedFamily size (AuthorizedAppend.Retained.Configuration authority (size := size)))
+        (retainedProducer final) needWorld cell (retainedKey saved request))
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention
+
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComponentRealization.retained_run
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.retainedKey_ne_of_stale
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.checkRead_iff_canPublish
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.deliverRetainedChecked_admitted
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.deliverRetainedChecked_unissued
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.deliverRetainedChecked_stale
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.deliverRetainedChecked_denied
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.requested?_deliverConfiguration_none
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.retainedNeed_claim
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.retainedNeed_commit_and_resume
+#print axioms Mettapedia.Languages.MeTTa.HE.RecursiveService.ComposedRetention.composed_retention_no_replay

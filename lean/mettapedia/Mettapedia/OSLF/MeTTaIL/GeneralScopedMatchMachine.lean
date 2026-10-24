@@ -313,4 +313,22 @@ theorem tick_answers_length (request : Request) (state : State) :
           | mk assignment tasks trace =>
               cases tasks <;> simp [tick]
 
+/-- A retained matcher appends finished occurrences without moving old ones. -/
+theorem tick_answers_prefix (request : Request) (state : State) :
+    state.answers <+: (tick request state).answers := by
+  cases state with
+  | mk agenda answers =>
+    cases agenda with
+    | nil => exact List.prefix_refl _
+    | cons work agenda =>
+      cases work with
+      | mk assignment tasks trace =>
+        cases tasks <;> simp [tick]
+
+theorem run_answers_prefix (request : Request) (fuel : Nat) (state : State) :
+    state.answers <+: (run request fuel state).answers := by
+  induction fuel generalizing state with
+  | zero => exact List.prefix_refl _
+  | succ fuel ih => exact (tick_answers_prefix request state).trans (ih (tick request state))
+
 end Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachine

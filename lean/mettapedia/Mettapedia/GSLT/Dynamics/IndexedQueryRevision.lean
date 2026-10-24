@@ -20,8 +20,8 @@ rather than a second hand-authored execution relation.
 
 namespace Mettapedia.GSLT.Dynamics.IndexedQueryRevision
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.Dynamics.QueryRevision
 open Mettapedia.GSLT.IndexedOperational

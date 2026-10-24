@@ -113,7 +113,7 @@ namespace ContextFormation
 
 /-- Forget level annotations while retaining every full formation
 derivation. -/
-def toContextWellFormed {rules : Rules Tower.Head} :
+theorem toContextWellFormed {rules : Rules Tower.Head} :
     {n : Nat} -> {context : Tower.Ctx n} -> {levels : LevelSpine n} ->
       ContextFormation rules context levels ->
       ContextWellFormed rules context

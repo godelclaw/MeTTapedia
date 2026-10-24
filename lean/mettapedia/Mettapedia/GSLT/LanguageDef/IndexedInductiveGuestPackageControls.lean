@@ -87,21 +87,36 @@ private theorem vector_library_admitted :
   exact accepted_sound _ _ ((List.all_eq_true.mp DeclarationControls.all_verdicts) _
     (List.get_mem DeclarationControls.verdicts ⟨0, by decide⟩))
 
-/-- The source generator now supplies the existing full informative
-candidate, with positivity and complete constructor computation coverage. -/
+private theorem vector_prior_opaque : ∀ item ∈ vectorPrior, item.2.value? = none := by
+  intro item member
+  simp only [vectorPrior, NativeNaturalVectorFamilies.declarations, List.take_succ_cons,
+    List.take_zero, List.mem_cons, List.not_mem_nil, or_false] at member
+  rcases member with rfl | rfl | rfl | rfl <;> rfl
+
+private theorem vector_data_free :
+    ∀ sort, FreeOf vectorNames.family ((vectorParameters Bool).dataType sort) := by
+  intro sort
+  cases sort
+  · exact .const (by decide)
+  · exact .var 0
+
+noncomputable def publishAdmittedVector :=
+  Package.fromAdmitted (TypedControls.indexSyntax Bool) (vectorParameters Bool) vectorNames
+    Tower.rules baseDecoder choices 64 vectorPrior vector_prior_opaque vector_indices_free
+    ⟨trivial, .head _⟩ vector_data_free (IndexedInductiveNatVec.Vectors.admitted Bool)
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 2000000 in
+theorem admitted_vector_publication : publishAdmittedVector.isSome = true := by
+  decide +kernel
+
+/-- The admitted-source producer supplies the full informative candidate,
+with positivity and complete constructor computation coverage. -/
 noncomputable def vectorCandidate : Candidate Tower.rules :=
-  Package.candidate (TypedControls.indexSyntax Bool) (vectorParameters Bool) vectorNames
-    (IndexedInductiveNatVec.Vectors.admitted Bool) Tower.rules baseDecoder choices 64 vectorPrior
-    vector_library_admitted
-    (by
-      intro item member
-      simp only [vectorPrior, NativeNaturalVectorFamilies.declarations, List.take_succ_cons,
-        List.take_zero, List.mem_cons, List.not_mem_nil, or_false] at member
-      rcases member with rfl | rfl | rfl | rfl <;> rfl)
-    (by decide +kernel) vector_indices_free
-    ⟨trivial, .head _⟩
-    (by intro sort; cases sort; exact .const (by decide); exact .var 0)
-    vector_rows
+  publishAdmittedVector.get (by simpa using admitted_vector_publication)
+
+theorem publishAdmittedVector_eq : publishAdmittedVector = some vectorCandidate :=
+  (Option.some_get (by simpa using admitted_vector_publication)).symm
 
 private theorem mutual_indices_free : Types.IndexFree Mutual.indices Mutual.names.family := by
   intro context n expression environment free
@@ -119,9 +134,43 @@ noncomputable def mutualCandidate : Candidate Tower.rules :=
       rcases member with rfl | rfl | rfl <;> rfl)
     (by decide +kernel) mutual_indices_free trivial (fun sort => Empty.elim sort) mutual_rows
 
+theorem candidate_vector_table :
+    Checking.table (Checking.candidateSchemas vectorCandidate) =
+      Package.table (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+        vectorNames (IndexedInductiveNatVec.Vectors.admitted Bool) :=
+  Package.fromAdmitted_sound (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+    vectorNames Tower.rules baseDecoder choices 64 vectorPrior vector_prior_opaque
+    vector_indices_free ⟨trivial, .head _⟩ vector_data_free
+    (IndexedInductiveNatVec.Vectors.admitted Bool) vectorCandidate publishAdmittedVector_eq
+
+theorem candidate_vector_signature :
+    vectorCandidate.signature =
+      Package.signature (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+        vectorNames (IndexedInductiveNatVec.Vectors.admitted Bool) vectorPrior :=
+  Package.fromAdmitted_signature (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+    vectorNames Tower.rules baseDecoder choices 64 vectorPrior vector_prior_opaque
+    vector_indices_free ⟨trivial, .head _⟩ vector_data_free
+    (IndexedInductiveNatVec.Vectors.admitted Bool) vectorCandidate publishAdmittedVector_eq
+
+theorem candidate_vector_computation :
+    vectorCandidate.computation =
+      Package.computation (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+        vectorNames (IndexedInductiveNatVec.Vectors.admitted Bool) :=
+  Package.fromAdmitted_computation (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+    vectorNames Tower.rules baseDecoder choices 64 vectorPrior vector_prior_opaque
+    vector_indices_free ⟨trivial, .head _⟩ vector_data_free
+    (IndexedInductiveNatVec.Vectors.admitted Bool) vectorCandidate publishAdmittedVector_eq
+
 theorem candidate_vector_table_reference :
     Checking.table (Checking.candidateSchemas vectorCandidate) =
-      NativeNaturalVectorFamilies.Checking.table.drop 2 := rfl
+      NativeNaturalVectorFamilies.Checking.table.drop 2 := by
+  calc
+    Checking.table (Checking.candidateSchemas vectorCandidate) =
+        Package.table (TypedControls.indexSyntax Bool) (vectorParameters Bool)
+          vectorNames (IndexedInductiveNatVec.Vectors.admitted Bool) := candidate_vector_table
+    _ = Checking.table vectorSchemas := by
+      rw [vectorSchemas, Package.schemas_table]
+    _ = NativeNaturalVectorFamilies.Checking.table.drop 2 := vector_table_reference
 
 theorem candidate_mutual_inventory :
     mutualCandidate.iotaRules.map IotaRule.constructorName =
@@ -138,9 +187,31 @@ noncomputable def publishMutual (fuel : Nat) :=
     fuel Mutual.prior mutual_prior_opaque mutual_indices_free trivial (fun sort => Empty.elim sort)
     IndexedInductiveExamples.Mutual.source
 
+noncomputable def publishAdmittedMutual (fuel : Nat) :=
+  Package.fromAdmitted Mutual.indices Mutual.parameters Mutual.names Tower.rules baseDecoder choices
+    fuel Mutual.prior mutual_prior_opaque mutual_indices_free trivial (fun sort => Empty.elim sort)
+    Mutual.admitted
+
+theorem publishMutual_eq_admitted (fuel : Nat) :
+    publishMutual fuel =
+      (publishAdmittedMutual fuel).map fun output => (Mutual.admitted, output) := by
+  unfold publishMutual
+  unfold Package.fromSource
+  rw [IndexedInductiveExamples.Mutual.source_admitted]
+  unfold publishAdmittedMutual
+  rfl
+
 set_option maxRecDepth 10000 in
 set_option maxHeartbeats 2000000 in
 theorem mutual_publication : (publishMutual 64).isSome = true := by decide +kernel
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 2000000 in
+theorem admitted_mutual_publication :
+    (publishAdmittedMutual 64).isSome = true := by
+  rw [← Option.isSome_map (f := fun output => (Mutual.admitted, output))]
+  rw [← publishMutual_eq_admitted]
+  exact mutual_publication
 
 theorem mutual_publication_zero : publishMutual 0 = none := by
   have absent : (publishMutual 0).isSome = false := by decide +kernel
@@ -148,12 +219,35 @@ theorem mutual_publication_zero : publishMutual 0 = none := by
   | none => rfl
   | some output => simp [found] at absent
 
+theorem admitted_mutual_publication_zero : publishAdmittedMutual 0 = none := by
+  have mapped := publishMutual_eq_admitted 0
+  rw [mutual_publication_zero] at mapped
+  cases found : publishAdmittedMutual 0 with
+  | none => rfl
+  | some output => simp [found] at mapped
+
 set_option maxRecDepth 10000 in
 set_option maxHeartbeats 2000000 in
 theorem aliased_names_not_published :
     (Package.fromSource Mutual.indices Mutual.parameters Mutual.duplicateNames Tower.rules baseDecoder choices
       64 Mutual.prior mutual_prior_opaque mutual_indices_free trivial (fun sort => Empty.elim sort)
       IndexedInductiveExamples.Mutual.source).isSome = false := by decide +kernel
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 2000000 in
+theorem admitted_aliased_names_not_published :
+    (Package.fromAdmitted Mutual.indices Mutual.parameters Mutual.duplicateNames Tower.rules
+      baseDecoder choices 64 Mutual.prior mutual_prior_opaque mutual_indices_free trivial
+      (fun sort => Empty.elim sort) Mutual.admitted).isSome = false := by
+  decide +kernel
+
+theorem published_admitted_mutual_table (output : Candidate Tower.rules)
+    (accepted : publishAdmittedMutual 64 = some output) :
+    Checking.table (Checking.candidateSchemas output) =
+      Package.table Mutual.indices Mutual.parameters Mutual.names Mutual.admitted :=
+  Package.fromAdmitted_sound Mutual.indices Mutual.parameters Mutual.names Tower.rules
+    baseDecoder choices 64 Mutual.prior mutual_prior_opaque mutual_indices_free trivial
+    (fun sort => Empty.elim sort) Mutual.admitted output accepted
 
 theorem published_mutual_preserves_source (shape : Admitted Mutual.sourceInterface [])
     (output : Candidate Tower.rules) (accepted : publishMutual 64 = some (shape, output)) :
@@ -173,7 +267,8 @@ theorem text_candidate_source :
         (Package.table (TypedControls.indexSyntax Bool) (vectorParameters Bool) vectorNames) =
       some (Checking.table (Checking.candidateSchemas vectorCandidate)) := by
   rw [IndexedNatVecSourceControls.text_admitted]
-  rfl
+  simp only [Option.map_some, Option.some.injEq]
+  exact candidate_vector_table.symm
 
 abbrev runtimeTable := NativeNaturalVectorFamilies.Checking.table.drop 2
 
@@ -212,9 +307,19 @@ theorem all_verdicts : verdicts.all Prod.snd = true := by decide +kernel
 #print axioms mutual_signature_formed
 #print axioms all_verdicts
 #print axioms vectorCandidate
+#print axioms admitted_vector_publication
+#print axioms publishAdmittedVector_eq
+#print axioms candidate_vector_table
+#print axioms candidate_vector_signature
+#print axioms candidate_vector_computation
 #print axioms mutualCandidate
 #print axioms text_candidate_source
 #print axioms mutual_publication
+#print axioms publishMutual_eq_admitted
+#print axioms admitted_mutual_publication
+#print axioms admitted_mutual_publication_zero
+#print axioms admitted_aliased_names_not_published
+#print axioms published_admitted_mutual_table
 #print axioms published_mutual_preserves_source
 
 end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.PackageControls

@@ -197,7 +197,7 @@ mutual
         {elementType : TypeExpr} :
         allowed rule.label →
         rule ∈ language.terms →
-        rule.params =
+        rule.bareParams =
           [.simple parameterName (.collection collectionType elementType)] →
         ElementsHaveTypeWithConstructors language allowed free bound elements
           elementType →
@@ -323,7 +323,7 @@ theorem hasTypeWithConstructors_collection_inversion
         elementType) ∨
     (∃ rule parameterName elementType,
       allowed rule.label ∧ rule ∈ language.terms ∧
-      rule.params =
+      rule.bareParams =
         [.simple parameterName (.collection collectionType elementType)] ∧
       type = .base rule.category ∧
       ElementsHaveTypeWithConstructors language allowed free bound elements

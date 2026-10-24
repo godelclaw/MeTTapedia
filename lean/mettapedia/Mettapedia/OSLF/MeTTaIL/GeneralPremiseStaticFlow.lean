@@ -4,7 +4,7 @@ import Mettapedia.OSLF.MeTTaIL.GeneralPremiseStaticAdmission
 # Representation flow of independently justified premise results
 
 Provider output refinements follow actual row positions. Successful matches
-retain previous values, and quantified bodies restore their lexical parameter.
+retain previous values, and quantified bodies keep their outputs local.
 The refinements justify later freshness and finite-collection observations.
 -/
 
@@ -214,12 +214,10 @@ theorem premisesFlow_holds {environment : Environment} {context : Context}
       context.premiseIndex refinement premises).refinement.Holds final :=
   match held with
   | .nil => before
-  | @PremisesHold.cons _ _ premise premises _ middle _ event events head tail => by
+  | .cons head tail => by
       have produced := premiseFlow_holds before head
       rw [depthZero] at produced
-      exact premisesFlow_holds (context := context.next) (premises := premises)
-        (refinement := (premiseFlow environment.language environment.provider context.rule
-          context.spec context.premiseIndex 0 refinement premise).refinement) rfl produced tail
+      exact premisesFlow_holds (context := context.next) rfl produced tail
 termination_by premises.length
 
 end Static

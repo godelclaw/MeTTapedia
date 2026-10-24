@@ -187,7 +187,7 @@ theorem licensed_wrapper (admission : WrappersTyped laws language) {permissions 
   | @authoredCollection bound rule declarationIndex parameterName kind elements index element elementType inner
       declared shape permitted typed objects selected _ ih =>
     have elementOk := admission.bareElements rule (List.fst_mem_of_mem_zipIdx declared) parameterName kind elementType
-      shape
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
     obtain ⟨inner', licensed', focus, focusBound, focusType, focusOk, fill, accepts⟩ := ih elementOk
     -- the frame kept: a kind without laws, or at least two elements
     have kept : (lawFor laws kind = none ∨ 2 ≤ elements.length) →
@@ -225,7 +225,7 @@ theorem licensed_wrapper (admission : WrappersTyped laws language) {permissions 
         simp only [List.getElem?_cons_zero, Option.some.injEq] at selected
         subst selected
         have same := admission.homogeneous law kind found rule (List.fst_mem_of_mem_zipIdx declared) parameterName
-          elementType shape
+          elementType ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
         subst same
         refine ⟨inner', ?_, focus, focusBound, focusType, focusOk, ?_, ?_⟩
         · rw [wrapperNormal_law found]

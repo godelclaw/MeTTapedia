@@ -440,9 +440,9 @@ inductive SaturatedTerm (space : Space) : Atom → Prop where
       (∀ argument ∈ arguments, SaturatedTerm space argument) →
       SaturatedTerm space (.expression (.symbol name :: arguments))
 
-/-! ## Prime's primitive kinds -/
+/-! ## Primitive kinds -/
 
-/-- Prime's primitive types, which formation reads as types of kind `Type`
+/-- The reserved primitive types, which formation reads as types of kind `Type`
 when the space declares nothing for them. -/
 def primitiveKindNames : List String :=
   ["Atom", "Symbol", "Variable", "Expression", "Grounded", "Number", "Bool",

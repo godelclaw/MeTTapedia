@@ -2923,7 +2923,7 @@ theorem mem_costStaticCollectionTypingChoices_sound
           rule.label ∈ source.continuationRetyping.wrappedLabels ∧
           expected = mapTypeExpr (color.symbols source) (.base rule.category) ∧
           ∃ parameterName,
-            rule.params = [.simple parameterName
+            rule.bareParams = [.simple parameterName
               (.collection collectionType sourceElementType)] ∧
             WellSorted.checkElementsHaveType source.costWholeLanguage targetFree
               targetBound elements
@@ -3063,7 +3063,7 @@ theorem mem_costStaticCollectionTypingChoices_complete
             expected = mapTypeExpr (color.symbols source)
               (.base rule.category) ∧
             ∃ parameterName,
-              rule.params = [.simple parameterName
+              rule.bareParams = [.simple parameterName
                 (.collection collectionType sourceElementType)] ∧
               WellSorted.checkElementsHaveType source.costWholeLanguage
                 targetFree targetBound elements
@@ -3111,7 +3111,7 @@ theorem mem_costStaticCollectionTypingChoices_iff
             expected = mapTypeExpr (color.symbols source)
               (.base rule.category) ∧
             ∃ parameterName,
-              rule.params = [.simple parameterName
+              rule.bareParams = [.simple parameterName
                 (.collection collectionType sourceElementType)] ∧
               WellSorted.checkElementsHaveType source.costWholeLanguage
                 targetFree targetBound elements
@@ -3142,7 +3142,7 @@ theorem mem_costStaticCollectionTypingChoices_empty_iff
             expected = mapTypeExpr (color.symbols source)
               (.base rule.category) ∧
             ∃ parameterName,
-              rule.params = [.simple parameterName
+              rule.bareParams = [.simple parameterName
                 (.collection collectionType sourceElementType)]) := by
   rw [mem_costStaticCollectionTypingChoices_iff]
   simp [WellSorted.checkElementsHaveType]
@@ -3240,7 +3240,7 @@ theorem crossColorEmptyBareCollectionCandidate
       rule.category ≠
         source.theory.presentation.interactingSort.1.name)
     (parameterName : String)
-    (parameterShape : rule.params = [.simple parameterName
+    (parameterShape : rule.bareParams = [.simple parameterName
       (.collection collectionType sourceElementType)]) :
     let expected :=
       mapTypeExpr (CostStaticColor.base.symbols source)
@@ -3340,7 +3340,7 @@ theorem costStaticCollectionTypingChoice?_eq_some
           rule.label ∈ source.continuationRetyping.wrappedLabels ∧
           expected = mapTypeExpr (color.symbols source) (.base rule.category) ∧
           ∃ parameterName,
-            rule.params = [.simple parameterName
+            rule.bareParams = [.simple parameterName
               (.collection collectionType sourceElementType)] ∧
             WellSorted.checkElementsHaveType source.costWholeLanguage targetFree
               targetBound elements
@@ -6960,7 +6960,7 @@ theorem exists_costStaticCollectionTypingChoice?_of_typed_bare
     (rule : GrammarRule) (parameterName : String)
     (targetElementType : TypeExpr)
     (membership : rule ∈ source.costWholeLanguage.terms)
-    (parameterShape : rule.params =
+    (parameterShape : rule.bareParams =
       [.simple parameterName
         (.collection collectionType targetElementType)])
     (elementsTyped : WellSorted.ElementsHaveType source.costWholeLanguage
@@ -6989,7 +6989,8 @@ theorem exists_costStaticCollectionTypingChoice?_of_typed_bare
     ⟨sourceParameterName, sourceCollectionType, sourceElementType,
       sourceShape⟩
   have mappedShape := preimage.parametersMap
-  rw [materializes, parameterShape, sourceShape] at mappedShape
+  rw [materializes, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2,
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2] at mappedShape
   have shape : sourceParameterName = parameterName ∧
       sourceCollectionType = collectionType ∧
       mapTypeExpr (color.symbols source) sourceElementType = targetElementType := by
@@ -7086,7 +7087,7 @@ theorem WellSorted.HasType.collectionData
           type = .collection collectionType elementType) ∨
       (∃ rule parameterName elementType,
         rule ∈ language.terms ∧
-          rule.params = [.simple parameterName
+          rule.bareParams = [.simple parameterName
             (.collection collectionType elementType)] ∧
           WellSorted.ElementsHaveType language free bound elements elementType ∧
           type = .base rule.category) := by

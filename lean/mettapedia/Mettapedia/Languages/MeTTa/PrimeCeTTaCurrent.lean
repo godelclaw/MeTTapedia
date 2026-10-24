@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.ClosedFormationGSLT
 /-!
 # Current CeTTa runtime: inspected artifacts, not a language determination
 

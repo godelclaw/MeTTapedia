@@ -36,6 +36,13 @@ theorem rho_spatial_shape_computed :
     spatialShape? rhoCalc rhoParallelFormer.declaration = some rhoParallelShape := by
   decide
 
+/-- The same authored bag algebra does not license a raw spatial join when
+the constructor is represented by a wrapper. -/
+theorem rho_wrapped_spatial_shape_refused :
+    spatialShape? rhoCalc
+      { rhoParallelFormer.declaration with collectionRepresentation := .wrapped } = none := by
+  decide
+
 theorem rho_spatial_elaborates :
     ∃ judgment, elaborate rhoCalc noAtoms finiteLimitFragment (.base "Proc")
       (.spatial 3 .top .top) = .ok judgment := by

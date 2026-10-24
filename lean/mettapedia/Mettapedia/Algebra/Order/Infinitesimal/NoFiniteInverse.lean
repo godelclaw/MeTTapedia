@@ -1,7 +1,7 @@
 import Mettapedia.Algebra.Order.Infinitesimal.LevelSeries
 
 /-!
-# The finite representation is a ring, not a field
+# Finite denotations are closed under ring operations, not inversion
 
 `LevelField` is a field: every nonzero element has an inverse.  The executable
 representation is a *finite* list of terms, and this file proves that the
@@ -41,42 +41,22 @@ def omegaSubOne : LevelSeries := [(-1, 1), (0, -1)]
   simp [omegaSubOne, toHahn]
 
 theorem toLevelField_omegaSubOne : toLevelField omegaSubOne = Om - 1 := by
-  show toLex (toHahn omegaSubOne) = Om - 1
-  rw [toHahn_omegaSubOne,
-    show (single (0 : ℤ) (-1 : ℚ)) = -(1 : HahnSeries ℤ ℚ) by
-      rw [← single_zero_one, ← single_neg],
-    ← sub_eq_add_neg]
-  rfl
+  simpa only [toLevelField, Om, toLex_add, single_neg, toLex_neg, single_zero_one, toLex_one,
+    sub_eq_add_neg] using congrArg toLex toHahn_omegaSubOne
 
 /-! ## The two extreme levels of a canonical series -/
 
-/-- **A canonical nonempty series has a top level, and does not vanish there.**
-Proved by induction: the head sits strictly below every later level, so it
-contributes nothing at the top. -/
-theorem exists_top_level : ∀ {l : LevelSeries}, l ≠ [] → Sorted l → NoZero l →
-    ∃ m : ℤ, (∀ t ∈ l, t.1 ≤ m) ∧ (toHahn l).coeff m ≠ 0
-  | [], h, _, _ => absurd rfl h
-  | [(i, a)], _, hs, hz => by
-      refine ⟨i, ?_, ?_⟩
-      · intro t ht
-        rcases List.mem_singleton.mp ht with rfl
-        exact le_rfl
-      · rw [coeff_toHahn_head hs]
-        exact hz (i, a) List.mem_cons_self
-  | (i, a) :: u :: rest, _, hs, hz => by
-      obtain ⟨m, hbound, hne⟩ :=
-        exists_top_level (l := u :: rest) (by simp) hs.2
-          (fun t ht => hz t (List.mem_cons_of_mem _ ht))
-      have hiu : i < u.1 := hs.1 u List.mem_cons_self
-      have him : i < m := lt_of_lt_of_le hiu (hbound u List.mem_cons_self)
-      refine ⟨m, ?_, ?_⟩
-      · intro t ht
-        rcases List.mem_cons.mp ht with rfl | ht'
-        · exact le_of_lt him
-        · exact hbound t ht'
-      · simp only [toHahn_cons, coeff_add]
-        rw [coeff_single_of_ne (show m ≠ i by omega), zero_add]
-        exact hne
+/-- The last stored term is the highest nonzero coefficient of a canonical list. -/
+theorem exists_top_level {l : LevelSeries} (nonempty : l ≠ []) (sorted : Sorted l) (nonzero : NoZero l) :
+    ∃ m : ℤ, (∀ t ∈ l, t.1 ≤ m) ∧ (toHahn l).coeff m ≠ 0 := by
+  have member := List.getLast_mem nonempty
+  refine ⟨(l.getLast nonempty).1, ?_, ?_⟩
+  · intro t occurs
+    have weak : l.Pairwise (fun t u => t.1 ≤ u.1) :=
+      ((sorted_iff_pairwise l).mp sorted).imp (fun h => h.le)
+    exact weak.rel_getLast_of_rel_getLast_getLast occurs le_rfl
+  · rw [coeff_toHahn_of_mem sorted member]
+    exact nonzero _ member
 
 /-- **And a bottom level, where it also does not vanish** — namely the head. -/
 theorem exists_bottom_level : ∀ {l : LevelSeries}, l ≠ [] → Sorted l → NoZero l →
@@ -84,59 +64,31 @@ theorem exists_bottom_level : ∀ {l : LevelSeries}, l ≠ [] → Sorted l → N
   | [], h, _, _ => absurd rfl h
   | (i, a) :: rest, _, hs, hz => by
       refine ⟨i, ?_, ?_⟩
-      · intro t ht
-        rcases List.mem_cons.mp ht with rfl | ht'
-        · exact le_rfl
-        · exact le_of_lt (hs.1 t ht')
+      · simpa using fun t member => (hs.1 t member).le
       · rw [coeff_toHahn_head hs]
         exact hz (i, a) List.mem_cons_self
 
 /-! ## What multiplying by `Ω - 1` does at the extremes -/
 
-/-- At a level at or above every level of `q`, nothing arrives from above, so
-the product's coefficient is exactly minus `q`'s. -/
-theorem coeff_mul_omegaSubOne_at_upper {m : ℤ} :
-    ∀ {q : LevelSeries}, (∀ t ∈ q, t.1 ≤ m) →
-      (toHahn (mul q omegaSubOne)).coeff m = - (toHahn q).coeff m
-  | [], _ => by simp [mul]
-  | (i, c) :: rest, h => by
-      have hrec := coeff_mul_omegaSubOne_at_upper (q := rest)
-        (fun t ht => h t (List.mem_cons_of_mem _ ht))
-      have him : i ≤ m := h (i, c) List.mem_cons_self
-      have hstep : mul ((i, c) :: rest) omegaSubOne
-          = (i + (-1 : ℤ), c * 1) :: (i + (0 : ℤ), c * (-1)) :: mul rest omegaSubOne := by
-        simp [mul, omegaSubOne, scaleTerm]
-      simp only [hstep, toHahn_cons, coeff_add, hrec, add_zero, mul_one, mul_neg_one]
-      rw [coeff_single_of_ne (show m ≠ i + (-1 : ℤ) by omega)]
-      by_cases hc : m = i
-      · subst hc
-        rw [coeff_single_same, coeff_single_same]
-        ring
-      · rw [coeff_single_of_ne hc, coeff_single_of_ne hc]
-        ring
+/-- Multiplication by `Ω - 1` is the difference of two coefficient shifts. -/
+theorem coeff_mul_omegaSubOne (q : LevelSeries) (j : ℤ) :
+    (toHahn (mul q omegaSubOne)).coeff j = (toHahn q).coeff (j + 1) - (toHahn q).coeff j := by
+  simp [toHahn_mul, toHahn_omegaSubOne, mul_add, coeff_add, coeff_mul_single,
+    sub_eq_add_neg]
 
-/-- At one level below every level of `q`, nothing arrives from below, so the
-product's coefficient there is exactly `q`'s coefficient at the bottom. -/
-theorem coeff_mul_omegaSubOne_at_lower {n : ℤ} :
-    ∀ {q : LevelSeries}, (∀ t ∈ q, n ≤ t.1) →
-      (toHahn (mul q omegaSubOne)).coeff (n - 1) = (toHahn q).coeff n
-  | [], _ => by simp [mul]
-  | (i, c) :: rest, h => by
-      have hrec := coeff_mul_omegaSubOne_at_lower (q := rest)
-        (fun t ht => h t (List.mem_cons_of_mem _ ht))
-      have hni : n ≤ i := h (i, c) List.mem_cons_self
-      have hstep : mul ((i, c) :: rest) omegaSubOne
-          = (i + (-1 : ℤ), c * 1) :: (i + (0 : ℤ), c * (-1)) :: mul rest omegaSubOne := by
-        simp [mul, omegaSubOne, scaleTerm]
-      simp only [hstep, toHahn_cons, coeff_add, add_zero, mul_one, mul_neg_one]
-      rw [hrec, coeff_single_of_ne (show n - 1 ≠ i by omega)]
-      by_cases hc : n = i
-      · subst hc
-        rw [show n - 1 = n + (-1 : ℤ) by ring, coeff_single_same, coeff_single_same]
-        ring
-      · rw [coeff_single_of_ne (show n - 1 ≠ i + (-1 : ℤ) by omega),
-          coeff_single_of_ne hc]
-        ring
+/-- Above the raw support, the upper coefficient is just its own negation. -/
+theorem coeff_mul_omegaSubOne_at_upper {m : ℤ} {q : LevelSeries}
+    (bound : ∀ t ∈ q, t.1 ≤ m) :
+    (toHahn (mul q omegaSubOne)).coeff m = - (toHahn q).coeff m := by
+  rw [coeff_mul_omegaSubOne, coeff_toHahn_of_not_levels
+    (fun t member => by have := bound t member; omega), zero_sub]
+
+/-- Below the raw support, only the shifted bottom coefficient contributes. -/
+theorem coeff_mul_omegaSubOne_at_lower {n : ℤ} {q : LevelSeries}
+    (bound : ∀ t ∈ q, n ≤ t.1) :
+    (toHahn (mul q omegaSubOne)).coeff (n - 1) = (toHahn q).coeff n := by
+  rw [coeff_mul_omegaSubOne, sub_add_cancel, coeff_toHahn_of_not_levels
+    (j := n - 1) (l := q) (fun t member => by have := bound t member; omega), sub_zero]
 
 /-! ## `Ω - 1` has no inverse in the representation -/
 
@@ -144,72 +96,53 @@ theorem coeff_mul_omegaSubOne_at_lower {n : ℤ} :
 at `0` and its bottom level at `1`. -/
 theorem toHahn_mul_omegaSubOne_ne_one (q : LevelSeries) :
     toHahn (mul q omegaSubOne) ≠ 1 := by
-  intro hq
-  -- Canonicalise: the denotation, hence the product, is unchanged.
-  have hnorm : toHahn (mul (norm q) omegaSubOne) = 1 := by
-    rw [toHahn_mul, toHahn_norm, ← toHahn_mul]; exact hq
-  obtain ⟨hs, hz⟩ := normalized_norm q
-  rcases eq_or_ne (norm q) [] with hnil | hnil
-  · rw [hnil] at hnorm
-    simp [mul] at hnorm
-  obtain ⟨m, hmb, hmne⟩ := exists_top_level hnil hs hz
-  obtain ⟨n, hnb, hnne⟩ := exists_bottom_level hnil hs hz
-  -- The bottom is at or below the top, because the list is nonempty.
-  have hnm : n ≤ m := by
-    obtain ⟨t, ht⟩ := List.exists_mem_of_ne_nil _ hnil
-    exact le_trans (hnb t ht) (hmb t ht)
-  -- Top: the product does not vanish at `m`, so `m = 0`.
-  have htop : (1 : HahnSeries ℤ ℚ).coeff m ≠ 0 := by
-    rw [← hnorm, coeff_mul_omegaSubOne_at_upper hmb]
-    simpa using hmne
-  have hm0 : m = 0 := by
-    by_contra h
-    exact htop (by simp [h])
-  -- Bottom: the product does not vanish at `n - 1`, so `n = 1`.
-  have hbot : (1 : HahnSeries ℤ ℚ).coeff (n - 1) ≠ 0 := by
-    rw [← hnorm, coeff_mul_omegaSubOne_at_lower hnb]
-    exact hnne
-  have hn1 : n = 1 := by
-    by_contra h
-    exact hbot (by simp [show n - 1 ≠ 0 by omega])
+  intro product
+  have normalizedProduct : toHahn (mul (norm q) omegaSubOne) = 1 := by
+    simpa only [toHahn_mul, toHahn_norm] using product
+  obtain ⟨sorted, nonzero⟩ := normalized_norm q
+  by_cases empty : norm q = []
+  · simp [empty, mul] at normalizedProduct
+  obtain ⟨upper, upperBound, upperNonzero⟩ := exists_top_level empty sorted nonzero
+  obtain ⟨lower, lowerBound, lowerNonzero⟩ := exists_bottom_level empty sorted nonzero
+  have upperZero : upper = 0 := by
+    by_contra other
+    have coefficient := congrArg (fun value => value.coeff upper) normalizedProduct
+    rw [coeff_mul_omegaSubOne_at_upper upperBound] at coefficient
+    exact upperNonzero (by simpa [other] using coefficient)
+  have lowerOne : lower = 1 := by
+    by_contra other
+    have coefficient := congrArg (fun value => value.coeff (lower - 1)) normalizedProduct
+    rw [coeff_mul_omegaSubOne_at_lower lowerBound] at coefficient
+    exact lowerNonzero (by simpa [show lower - 1 ≠ 0 by omega] using coefficient)
+  obtain ⟨term, member⟩ := List.exists_mem_of_ne_nil _ empty
+  have := lowerBound term member
+  have := upperBound term member
   omega
 
 /-- **The representation is not closed under inversion.**  `Ω - 1` is nonzero,
 hence invertible in `LevelField`, but no level series denotes its inverse. -/
 theorem no_levelSeries_inverts_omegaSubOne (q : LevelSeries) :
-    toLevelField (mul q omegaSubOne) ≠ 1 := by
-  intro h
-  refine toHahn_mul_omegaSubOne_ne_one q ?_
-  have : (toLex (toHahn (mul q omegaSubOne)) : LevelField) = toLex (1 : HahnSeries ℤ ℚ) := h
-  exact toLex.injective this
+    toLevelField (mul q omegaSubOne) ≠ 1 :=
+  fun equal => toHahn_mul_omegaSubOne_ne_one q (toLex.injective equal)
 
 /-- The same, stated against the field element rather than the list: no finite
 representation has `(Ω - 1)⁻¹` as its value. -/
 theorem toLevelField_ne_inv_omegaSubOne (q : LevelSeries) :
     toLevelField q ≠ (Om - 1)⁻¹ := by
-  intro h
-  refine no_levelSeries_inverts_omegaSubOne q ?_
-  have hone : (1 : LevelField) < Om := by
-    have hr := ofRat_lt_Om 1
-    rwa [show ofRat 1 = 1 from by rw [ofRat, map_one]; rfl] at hr
-  have hne : (Om - 1 : LevelField) ≠ 0 := sub_ne_zero.mpr (ne_of_gt hone)
-  calc toLevelField (mul q omegaSubOne)
-      = toLevelField q * toLevelField omegaSubOne := by
-        show toLex (toHahn (mul q omegaSubOne)) = _
-        rw [toHahn_mul]; rfl
-    _ = (Om - 1)⁻¹ * (Om - 1) := by rw [h, toLevelField_omegaSubOne]
-    _ = 1 := inv_mul_cancel₀ hne
+  intro inverse
+  apply no_levelSeries_inverts_omegaSubOne q
+  have greater : (1 : LevelField) < Om := by simpa [ofRat] using ofRat_lt_Om 1
+  change toLex (toHahn (mul q omegaSubOne)) = 1
+  rw [toHahn_mul]
+  change toLevelField q * toLevelField omegaSubOne = 1
+  rw [toLevelField_omegaSubOne, inverse, inv_mul_cancel₀ (sub_ne_zero.mpr greater.ne')]
 
 /-! ## The positive side: division by a single term stays inside
 
-The restriction is exactly to inversion of a *sum*.  A single term inverts
-exactly, which is why moving between scales never leaves the representation. -/
+Nonzero monomials invert within the finite fragment. General finite
+expressions need not, as `Ω - 1` demonstrates. -/
 
 theorem omega_inverts : toLevelField (mul omega omegaInv) = 1 :=
   toLevelField_mul_omega_omegaInv
 
 end Mettapedia.Algebra.Order.Infinitesimal
-
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.toHahn_mul_omegaSubOne_ne_one
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.no_levelSeries_inverts_omegaSubOne
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.toLevelField_ne_inv_omegaSubOne

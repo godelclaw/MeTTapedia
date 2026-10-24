@@ -40,6 +40,7 @@ theorem unary_constructor_hasType
   rw [← labelEq]
   apply HasType.constructor member
   · rintro ⟨name, kind, element, shape⟩
+    have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
     rw [parameters] at shape
     have equality : argument = .collection kind element := by
       have sameTypes := congrArg (List.map TermParam.typeExpr) shape

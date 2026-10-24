@@ -1532,6 +1532,15 @@
                    True
                    (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))))
              (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))
+         (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))
+      ((LCons (GrammarTypingWrappedV1 $actual $category $parameters) $rest)
+       (if (== $actual $label)
+         (let $result (TBase $category)
+           (if (== $expected $result)
+             (if (gslt:premise:type-arguments $declarations $free $bound $arguments $parameters)
+               True
+               (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest))
+             (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))
          (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest))))))
 
 (: gslt:premise:type-collection-declarations (-> Atom Atom Atom Atom Atom Atom Atom %Undefined%))
@@ -1548,7 +1557,9 @@
                (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest))
              (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest)))
           ($ordinary
-           (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest))))))))
+           (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest)))))
+      ((LCons (GrammarTypingWrappedV1 $label $category $parameters) $rest)
+       (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest)))))
 
 (: gslt:premise:type-extend-count (-> Atom Number Atom %Undefined%))
 (= (gslt:premise:type-extend-count $domain $count $bound)
@@ -1721,7 +1732,7 @@
       ((PremiseElement $context $parameter $body $index $element $elements $initial $tail)
        (case $result
          (((PremiseResult $goal (PremiseAnswer $assignment $event))
-           (let* (($restored (gslt:premise:scope-restore $parameter $initial $assignment))
+           (let* (($restored $initial)
                   ($next (+ $index 1)))
              (Some (PremiseExpansion
                (LCons (PremiseEvaluate
@@ -1833,6 +1844,11 @@
          (let $filtered (gslt:premise:constructor-declarations $constructor $rest)
            (LCons (GrammarTypingV1 $label $category $parameters) $filtered))
          (gslt:premise:constructor-declarations $constructor $rest)))
+      ((LCons (GrammarTypingWrappedV1 $label $category $parameters) $rest)
+       (if (== $label $constructor)
+         (let $filtered (gslt:premise:constructor-declarations $constructor $rest)
+           (LCons (GrammarTypingWrappedV1 $label $category $parameters) $filtered))
+         (gslt:premise:constructor-declarations $constructor $rest)))
       ($bad LNil))))
 
 (: gslt:premise:source-type (-> Atom Atom Atom %Undefined%))
@@ -1846,6 +1862,8 @@
       ((PApp $constructor $arguments)
        (case (gslt:premise:constructor-declarations $constructor $declarations)
          (((LCons (GrammarTypingV1 $label $category $parameters) LNil)
+           (Some (TBase $category)))
+          ((LCons (GrammarTypingWrappedV1 $label $category $parameters) LNil)
            (Some (TBase $category)))
           ($ambiguous None))))
       ($unavailable None))))
@@ -3199,6 +3217,14 @@
                          (LCons (TypingApplication $declaration $index) $tail))
        (case (gslt:rule:row-at $declaration $declarations)
          (((Some (GrammarTypingV1 $label $category $parameters))
+           (case (gslt:rule:row-at $index $parameters)
+             (((Some $parameter)
+               (let $filled (gslt:rule:scope-fill $inner $target)
+                 (if (gslt:premise:parameter-representation $parameter $filled)
+                     (gslt:rule:site-replacement-represented $declarations $inner $tail $target)
+                     False)))
+              ($_ False))))
+          ((Some (GrammarTypingWrappedV1 $label $category $parameters))
            (case (gslt:rule:row-at $index $parameters)
              (((Some $parameter)
                (let $filled (gslt:rule:scope-fill $inner $target)

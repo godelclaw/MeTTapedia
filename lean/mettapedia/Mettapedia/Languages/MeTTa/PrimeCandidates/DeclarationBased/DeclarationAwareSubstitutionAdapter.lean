@@ -48,7 +48,7 @@ def instantiateEncodedTm? (headCodec : PartialCodec Head Pattern) (n : Nat)
     instantiateEncodedTm? headCodec n
         (encodeTm headCodec replacement) (encodeTm headCodec body) =
       some (encodeTm headCodec (inst0 replacement body)) := by
-  simp [instantiateEncodedTm?, decodeTm?_encodeTm]
+  simp [instantiateEncodedTm?]
 
 /-- Every successful adapter result reflects to two decoded intrinsic inputs
 and their exact intrinsic substitution. -/

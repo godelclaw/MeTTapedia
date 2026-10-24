@@ -5,11 +5,11 @@ import Mettapedia.GSLT.LanguageDef.TemplateScope.ListsCorpus
 /-!
 # Template scope, part 11: the reference export for the C scope matrix
 
-The Lean side of the bridge between this model and Prime's C runtime.  For
+The Lean side of the bridge between this model and the Prime C draft.  For
 every row of the spectrum corpus and every configuration, one record holds:
 the row and the configuration (as the model names it and as
 `docs/prime/scope-policy-spectrum-20261006.md` names it), the MeTTa program
-(`printSrc`), the model's answer bag with multiplicity in Prime's notation
+(`printSrc`), the model's answer bag with multiplicity in the draft's notation
 (`printAns`), and the aliasing classes of every answer.
 
 * `corpus` — the 46 rows whose six-configuration tables `SpectrumCorpus`
@@ -493,7 +493,7 @@ def answerJson (ν : Nm (Slot Sp) → SAtom Sy Sp) (t : T) : Json :=
   let e := printAns ν parName t
   Json.mkObj [("text", .str (text e)), ("sexp", sexpJson e), ("aliasing", aliasingJson ν t e)]
 
-/-- A bag in Prime's notation, `[a, b]`. -/
+/-- A bag in the draft's notation, `[a, b]`. -/
 def bagText (ν : Nm (Slot Sp) → SAtom Sy Sp) (bag : List T) : String :=
   "[" ++ ", ".intercalate (bag.map fun t => text (printAns ν parName t)) ++ "]"
 

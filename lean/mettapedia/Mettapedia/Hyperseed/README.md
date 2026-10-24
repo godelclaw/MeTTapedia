@@ -2,12 +2,10 @@
 
 ## What this is about
 
-An agent never sees the whole world — only the part of it that its current vantage
-point makes *reachable*, *affordable*, and *allowed*. Hyperseed is a small framework
-that takes this seriously: from a stream of observations it grows the set of queries
-("what could I ask / discover next?") that an agent can actually reach, and it makes
-the answer depend explicitly on a **perspective** — a chosen view that restricts which
-worlds are observable, which are within budget, and which a guard predicate admits.
+Hyperseed relates observation traces, world-model states, and query consequences.
+A perspective describes the readout through signal reachability, effort, and a
+supplied region. The full inference closure is computed before observing it;
+restricting inference itself requires a separate preservation theorem.
 
 Two pieces fit together:
 
@@ -30,6 +28,7 @@ Two pieces fit together:
 | File | Contents |
 |------|----------|
 | `Ultrainfinitism.lean` | the perspective core: `Perspective` / `StatefulPerspective`; `observableUniverse`, `nearEurycosm`, `availableRegion`; monotonicity and subset theorems (incl. `mem_availableRegion_iff`) |
+| `VisibleConsequence.lean` | active-rule backward closure; exact one-step, cascade, and least-closure correspondence for restricted inference |
 | `Basic.lean` | the Hyperseed front door: `ObservationEnvelope`, the `HyperseedKernel` interface, and trace-seeded helpers `traceSeed` / `closureFromTrace` / `cascadeFromTrace` (perspective-filtered, state-conditioned, and stage-filtered variants) over sufficient-statistic WMs |
 | `ObservationTrace.lean` | observation traces as lists plus the `traceState` fold that ingests a trace into WM state; `traceState_append` and the `simp` contracts |
 | `Closure.lean` | thin wrappers (`hyperseedClosure`, `hyperseedImmediateIter`, `hyperseedQueryStrength`) over `PLNWorldModelFixpointClosure`, specialized to a `HyperseedKernel` |
@@ -42,9 +41,9 @@ Two pieces fit together:
 
 - **`mem_availableRegion_iff`**: available region = observable ∩ affordable ∩ admitted.
 - **`mem_closureFromTrace_iff_mem_cascade_card_of_finite`**: closure and cascade agree
-  on finite rule pools.
+  on finite query spaces, by round `Fintype.card Query`.
 - **`mem_closureFromTrace_implies_eventualDiscovery_of_finite`**: every query in the
-  closure is eventually discovered by the fair cascade.
+  closure is discovered within that finite-query bound by the synchronous cascade.
 - **`availableClosureFromTrace_subset_closureFromTrace`**: perspective-filtering only
   removes queries, never adds.
 - **`availableClosureFromTrace_subset_availableRegion`**: the filtered closure stays
@@ -52,9 +51,15 @@ Two pieces fit together:
 - **Budget monotonicity**: larger budgets weakly enlarge the near eurycosm and the
   available closure.
 
+For the current unary rules at a fixed state, restricting inference preserves
+all visible conclusions for every seed exactly when no active rule enters the
+visible region from a hidden premise. Forward closure alone is insufficient;
+`Regression.VisibleInference` includes that counterexample and a state change
+that invalidates a formerly valid certificate. This is a readout contract.
+
 ## Formalization status
 
-All 8 source files are `sorry`-free. No `axiom` declarations appear in this directory
+All 9 source files are `sorry`-free. No `axiom` declarations appear in this directory
 — this is a source-level grep, *not* a per-theorem `#print axioms` audit (a theorem
 can still inherit a Mathlib axiom transitively).
 
@@ -62,7 +67,7 @@ can still inherit a Mathlib axiom transitively).
 enlarges the trusted base by trusting the compiler.
 
 Reproduce from this directory (raw scans — they also match prose in comments/strings;
-the comment-stripped count in the footer below is authoritative):
+inspect matches in their source context):
 
 ```bash
 # sorry/admit occurrences (raw):
@@ -80,4 +85,4 @@ rg -n --glob '*.lean' 'native_decide' .
   see also [Introducing Hyperseed-1](https://bengoertzel.substack.com/p/introducing-hyperseed-1) (2024).
 
 ---
-*Status (drafted 2026-06-22 by Claude Code, Opus 4.8): 8 .lean files, 0 with sorries.*
+*Status (2026-10-23): 9 Lean source modules; no source admissions or custom axioms.*

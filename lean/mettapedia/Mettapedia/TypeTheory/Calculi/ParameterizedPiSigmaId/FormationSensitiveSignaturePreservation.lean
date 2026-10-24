@@ -66,6 +66,25 @@ theorem Judgment.includeSignature {base : Rules Head}
     Judgment (Declaration.extendRules base signature) context term type :=
   ⟨judgment.context.includeSignature signature, judgment.typing.includeSignature signature⟩
 
+/-- A declaration-prefix extension retains every entry of a formed context. -/
+theorem ContextFormation.monoSignature {base : Rules Head}
+    {prior later : Declaration.Signature Head} (extension : prior.Extends later)
+    {context : Ctx Head n}
+    (formed : ContextFormation (Declaration.extendRules base prior) context) :
+    ContextFormation (Declaration.extendRules base later) context := by
+  induction formed with
+  | nil => exact .nil
+  | snoc _ typed universeWitness ih =>
+      exact .snoc ih (typed.monoSignature extension) universeWitness
+
+/-- Context formation and term typing transport through the same extension. -/
+theorem Judgment.monoSignature {base : Rules Head}
+    {prior later : Declaration.Signature Head} (extension : prior.Extends later)
+    {context : Ctx Head n} {term type : Tm Head n}
+    (judgment : Judgment (Declaration.extendRules base prior) context term type) :
+    Judgment (Declaration.extendRules base later) context term type :=
+  ⟨judgment.context.monoSignature extension, judgment.typing.monoSignature extension⟩
+
 theorem HeadPreservation.includeSignature {base : Rules Head}
     (heads : HeadPreservation base) (signature : Declaration.Signature Head) :
     HeadPreservation (Declaration.extendRules base signature) := by

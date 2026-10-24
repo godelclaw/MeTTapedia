@@ -22,7 +22,7 @@ open GeneralPremise (Environment)
 open GeneralPremise.Execution (Goal Result StepCall Continuation Task Obligation)
 
 private def environmentDataHeads : List String :=
-  ["Some", "LCons", "GrammarTypingV1", "TBase", "PremiseSignature"]
+  ["Some", "LCons", "GrammarTypingV1", "GrammarTypingWrappedV1", "TBase", "PremiseSignature"]
 
 private theorem environment_data_template (head : String) (arguments : List Atom)
     (supported : head ∈ environmentDataHeads)
@@ -200,17 +200,18 @@ private abbrev declarationsListValue (declarations : List GrammarRule) : Atom :=
   Base.encoded (encodeList InferenceCettaWire.AuthoredRule.typingDeclarationTerm declarations)
 private abbrev parametersValue (parameters : List TermParam) : Atom :=
   Base.encoded (InferenceCettaWire.encodeList InferenceCettaWire.AuthoredRule.parameterTerm parameters)
-private def constructorsConsData : Atom :=
-  Base.a "LCons" [Base.a "GrammarTypingV1" [Base.v "label", Base.v "category", Base.v "parameters"], Base.v "filtered"]
-private def constructorsIncludedBody : Atom :=
+private def constructorsConsData (mode : CollectionRepresentation) : Atom :=
+  Base.a "LCons" [Base.a (match mode with | .bare => "GrammarTypingV1" | .wrapped => "GrammarTypingWrappedV1") [Base.v "label", Base.v "category", Base.v "parameters"], Base.v "filtered"]
+private def constructorsIncludedBody (mode : CollectionRepresentation) : Atom :=
   Base.a "let" [Base.v "filtered", Base.a "gslt:premise:constructor-declarations" [Base.v "constructor", Base.v "rest"],
-    constructorsConsData]
-private def constructorsConsBody : Atom :=
-  Base.a "if" [Base.a "==" [Base.v "label", Base.v "constructor"], constructorsIncludedBody,
+    constructorsConsData mode]
+private def constructorsConsBody (mode : CollectionRepresentation) : Atom :=
+  Base.a "if" [Base.a "==" [Base.v "label", Base.v "constructor"], constructorsIncludedBody mode,
     Base.a "gslt:premise:constructor-declarations" [Base.v "constructor", Base.v "rest"]]
 private def constructorsCases : SpaceSemantics.Cases :=
   [(.symbol "LNil", .symbol "LNil"),
-    (Base.a "LCons" [Base.a "GrammarTypingV1" [Base.v "label", Base.v "category", Base.v "parameters"], Base.v "rest"], constructorsConsBody),
+    (Base.a "LCons" [Base.a "GrammarTypingV1" [Base.v "label", Base.v "category", Base.v "parameters"], Base.v "rest"], constructorsConsBody .bare),
+    (Base.a "LCons" [Base.a "GrammarTypingWrappedV1" [Base.v "label", Base.v "category", Base.v "parameters"], Base.v "rest"], constructorsConsBody .wrapped),
     (Base.v "bad", .symbol "LNil")]
 private theorem constructors_shape : (envEquation .constructors).body =
     Base.caseData (Base.v "declarations") constructorsCases := by decide +kernel
@@ -253,10 +254,10 @@ theorem constructor_declarations_returns (state : State) (constructor : String)
       apply env_call .constructors [] state _ _ _ rfl (Base.captured_closed _)
       rw [constructors_shape]
       apply Base.branch_returns caller selected state _ (declarationsListValue (declaration :: declarations))
-        constructorsCases constructorsConsBody _
+        constructorsCases (constructorsConsBody declaration.collectionRepresentation) _
       · simpa [caller, envCaptured, EnvHelper.names, applySubst, Subst.lookup] using
           variable_returns Base.runtime caller state "declarations"
-      · simp [constructorsCases, declarationsListValue, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
+      · cases mode : declaration.collectionRepresentation <;> simp [mode, constructorsCases, declarationsListValue, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
           encodeList, selected, caller, envCaptured, EnvHelper.names, Base.stringValue, parametersValue,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
           matchAtom, CettaWireAtom.encode, CettaWireAtom.encodeMany, Subst.lookup]
@@ -270,15 +271,15 @@ theorem constructor_declarations_returns (state : State) (constructor : String)
           unfold constructorsIncludedBody
           apply let_returns Base.runtime selected filtered state state state (Base.v "filtered")
             (Base.a "gslt:premise:constructor-declarations" [Base.v "constructor", Base.v "rest"])
-            constructorsConsData (declarationsListValue (declarations.filter fun declaration => declaration.label == constructor)) _
+            (constructorsConsData declaration.collectionRepresentation) (declarationsListValue (declarations.filter fun declaration => declaration.label == constructor)) _
           · exact env_capture .constructors selected state _ _ _ rfl
               (by simp [selected, caller, envCaptured, EnvHelper.names, applySubst, Subst.lookup]) ih
           · simp [SpaceSemantics.matchBinding, SpaceSemantics.matchValue, matchAtom, filtered,
               selected, caller, envCaptured, EnvHelper.names, Subst.lookup]
-          · have templated : PureData.Template Base.runtime constructorsConsData := by
-              unfold constructorsConsData
-              environment_template
-            simpa [constructorsConsData, declarationsListValue, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
+          · have templated : PureData.Template Base.runtime (constructorsConsData declaration.collectionRepresentation) := by
+              cases declaration.collectionRepresentation <;> unfold constructorsConsData <;> environment_template
+            cases mode : declaration.collectionRepresentation <;>
+              simpa [mode, Base.encoded, constructorsConsData, declarationsListValue, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
               encodeList, filtered, selected, caller, envCaptured, EnvHelper.names,
               applySubst, applySubst.applySubstList, Subst.lookup, parametersValue, Base.stringValue,
               CettaWireAtom.encode, CettaWireAtom.encodeMany] using
@@ -318,6 +319,8 @@ private def sourceVariableCases : SpaceSemantics.Cases :=
 private def sourceConstructorData : Atom := Base.a "Some" [Base.a "TBase" [Base.v "category"]]
 private def sourceConstructorCases : SpaceSemantics.Cases :=
   [(Base.a "LCons" [Base.a "GrammarTypingV1" [Base.v "label", Base.v "category", Base.v "parameters"], .symbol "LNil"],
+    sourceConstructorData),
+    (Base.a "LCons" [Base.a "GrammarTypingWrappedV1" [Base.v "label", Base.v "category", Base.v "parameters"], .symbol "LNil"],
     sourceConstructorData), (Base.v "ambiguous", .symbol "None")]
 private def sourceCases : SpaceSemantics.Cases :=
   [(Base.a "FVar" [Base.v "name"], Base.caseData (Base.v "rule") sourceVariableCases),
@@ -394,7 +397,7 @@ theorem source_type_returns (state : State) (language : LanguageDef) (rule : Rew
                 apply Base.branch_returns selected typed state _ (declarationsListValue [declaration])
                   sourceConstructorCases sourceConstructorData _
                 · simpa only [found] using computed
-                · simp [sourceConstructorCases, typed, selected, caller, envCaptured, EnvHelper.names,
+                · cases mode : declaration.collectionRepresentation <;> simp [mode, sourceConstructorCases, typed, selected, caller, envCaptured, EnvHelper.names,
                     declarationsListValue, InferenceCettaWire.AuthoredRule.typingDeclarationTerm, parametersValue,
                     Base.stringValue, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
                     SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
@@ -412,7 +415,7 @@ theorem source_type_returns (state : State) (language : LanguageDef) (rule : Rew
                 apply Base.branch_returns selected unavailable state _ (declarationsListValue (declaration :: next :: declarations))
                   sourceConstructorCases (.symbol "None") _
                 · simpa only [found] using computed
-                · simp [sourceConstructorCases, unavailable, selected, caller, envCaptured, EnvHelper.names,
+                · cases mode : declaration.collectionRepresentation <;> simp [mode, sourceConstructorCases, unavailable, selected, caller, envCaptured, EnvHelper.names,
                     declarationsListValue, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
                     encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
                     SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,

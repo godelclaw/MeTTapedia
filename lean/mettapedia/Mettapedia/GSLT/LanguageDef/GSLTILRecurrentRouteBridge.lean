@@ -726,6 +726,173 @@ theorem finite_operational_prefixes_do_not_imply_recurrence :
 
 end Canary
 
+/-! ## A counter-carrying alternating monitor
+
+The two-phase message contract keeps its counter in the concrete state.
+Only the declared phase observation has a finite carrier. Native printing,
+arithmetic and evaluator-yield fidelity are separate service obligations;
+these semantic transitions do not count native evaluator quanta.
+-/
+
+namespace AlternatingMonitor
+
+inductive Phase where
+  | heartbeat | service
+  deriving DecidableEq, Repr
+
+structure State where
+  phase : Phase
+  counter : Nat
+  deriving DecidableEq, Repr
+
+def phaseCode : Phase → Fin 2
+  | .heartbeat => 0
+  | .service => 1
+
+theorem phaseCode_injective : Function.Injective phaseCode := by
+  intro left right same
+  cases left <;> cases right <;> simp_all [phaseCode]
+
+def nextPhase : Phase → Phase
+  | .heartbeat => .service
+  | .service => .heartbeat
+
+def next : State → State
+  | ⟨.heartbeat, counter⟩ => ⟨.service, counter⟩
+  | ⟨.service, counter⟩ => ⟨.heartbeat, counter + 1⟩
+
+def controller : MemorylessController State State where
+  active _ := true
+  action := id
+  next := next
+
+def phaseController : MemorylessController Phase Phase where
+  active _ := true
+  action := id
+  next := nextPhase
+
+theorem local_phase (state : State) :
+    (controller.next state).phase = phaseController.next state.phase := by
+  rcases state with ⟨phase, counter⟩
+  cases phase <;> rfl
+
+/-- The local transition law supplies the phase observation for every finite
+advance. It is not a supplied completed-run equality. -/
+theorem advance_phase (fuel : Nat) (state : State) :
+    (advanceState controller fuel state).phase =
+      advanceState phaseController fuel state.phase := by
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih =>
+      rw [advanceState_succ, advanceState_succ]
+      exact (local_phase _).trans (congrArg phaseController.next ih)
+
+/-- A second burst starts at the retained counter, not the initial root. -/
+theorem advance_resume (first second : Nat) (state : State) :
+    advanceState controller (first + second) state =
+      advanceState controller second (advanceState controller first state) := by
+  unfold advanceState
+  rw [Nat.add_comm first second, Function.iterate_add_apply]
+
+theorem two_steps (state : State) :
+    advanceState controller 2 state = ⟨state.phase, state.counter + 1⟩ := by
+  rcases state with ⟨phase, counter⟩
+  cases phase <;> rfl
+
+theorem even_advance (counter cycles : Nat) :
+    advanceState controller (2 * cycles) ⟨.heartbeat, counter⟩ =
+      ⟨.heartbeat, counter + cycles⟩ := by
+  induction cycles with
+  | zero => simp [advanceState]
+  | succ cycles ih =>
+      rw [Nat.mul_succ, advance_resume, ih, two_steps]
+      simp only [Nat.add_assoc]
+
+theorem odd_advance (counter cycles : Nat) :
+    advanceState controller (2 * cycles + 1) ⟨.heartbeat, counter⟩ =
+      ⟨.service, counter + cycles⟩ := by
+  rw [advanceState_succ, even_advance]
+  rfl
+
+/-- Both phases recur beyond every finite cut, while the full state remains
+unbounded. This is phase recurrence, not per-request service or fairness. -/
+theorem phase_recurrence (counter lower : Nat) :
+    ∃ heartbeat service : Nat, lower ≤ heartbeat ∧ lower ≤ service ∧
+      (advanceState controller heartbeat ⟨.heartbeat, counter⟩).phase = .heartbeat ∧
+      (advanceState controller service ⟨.heartbeat, counter⟩).phase = .service := by
+  refine ⟨2 * (lower + 1), 2 * (lower + 1) + 1, by omega, by omega, ?_, ?_⟩
+  · rw [even_advance]
+  · rw [odd_advance]
+
+theorem concrete_counter_unbounded (bound : Nat) :
+    ∃ fuel, bound < (advanceState controller fuel ⟨.heartbeat, 0⟩).counter := by
+  refine ⟨2 * (bound + 1), ?_⟩
+  rw [even_advance]
+  simp
+
+def projectRecord (record : StepRecord State State) : StepRecord Phase Phase where
+  index := record.index
+  source := record.source.phase
+  action := record.action.phase
+  target := record.target.phase
+
+/-- Endpoints and temporal occurrence indices are projected together. The
+source history, including its full counter values, is retained independently. -/
+theorem record_phase (root : State) (index : Nat) :
+    projectRecord (recordedStep controller root index) =
+      recordedStep phaseController root.phase index := by
+  unfold projectRecord recordedStep
+  change (⟨index, (advanceState controller index root).phase,
+    (advanceState controller index root).phase,
+    (advanceState controller (index + 1) root).phase⟩ : StepRecord Phase Phase) = _
+  rw [advance_phase, advance_phase]
+  rfl
+
+theorem prefix_phase (root : State) (fuel : Nat) :
+    (recordedPrefix controller root fuel).map projectRecord =
+      recordedPrefix phaseController root.phase fuel := by
+  unfold recordedPrefix
+  rw [List.map_map]
+  apply List.map_congr_left
+  intro index _
+  exact record_phase root index
+
+/-- The optional recorder observes the actual run and projects its complete
+prefix; it does not construct a replacement execution from phase labels. -/
+theorem recorded_phase (root : State) (fuel capacity : Nat) (fits : fuel ≤ capacity) :
+    (((runIndexed controller root fuel (some capacity)).memory.2).bind
+      Mettapedia.GSLT.Core.InferenceControl.Recording.Prefix.complete?).map
+        (List.map projectRecord) =
+      some (recordedPrefix phaseController root.phase fuel) := by
+  rw [runIndexed_complete controller root fuel capacity fits, Option.map_some, prefix_phase]
+
+theorem recorded_frontier (root : State) (fuel : Nat) (capacity : Option Nat) :
+    (runIndexed controller root fuel capacity).search.frontier =
+      [{ index := fuel, phase := advanceState controller fuel root }] :=
+  runIndexed_frontier_eq_advanceState controller root fuel capacity
+
+/-- Re-entering heartbeat with zero after every service has the same finite
+phase diagram but loses the counter that the actual message observer sees. -/
+def resettingController : MemorylessController State State where
+  active _ := true
+  action := id
+  next state := ⟨nextPhase state.phase, 0⟩
+
+theorem phase_labels_do_not_detect_restarting :
+    ((recordedPrefix controller ⟨.heartbeat, 0⟩ 4).map (fun record => record.action.phase)) =
+      ((recordedPrefix resettingController ⟨.heartbeat, 0⟩ 4).map
+        (fun record => record.action.phase)) ∧
+    ((recordedPrefix controller ⟨.heartbeat, 0⟩ 4).map StepRecord.action) ≠
+      ((recordedPrefix resettingController ⟨.heartbeat, 0⟩ 4).map StepRecord.action) := by
+  decide
+
+theorem two_bursts_preserve_printed_counter :
+    (recordedPrefix controller ⟨.heartbeat, 0⟩ 4).map StepRecord.action =
+      [⟨.heartbeat, 0⟩, ⟨.service, 0⟩, ⟨.heartbeat, 1⟩, ⟨.service, 1⟩] := by
+  decide
+
+end AlternatingMonitor
+
 #print axioms namedRevisionPrefix
 #print axioms retainedFinitePrefix_erases_to_finitePrefix
 #print axioms retainedFinitePrefix_executionPath_length

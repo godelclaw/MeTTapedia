@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.Specification
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Index.Specification
 import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent
 import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.ScopedJudgmentDraft
 import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.ScopedJudgmentDraftSecondPass

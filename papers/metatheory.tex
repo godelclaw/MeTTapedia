@@ -201,10 +201,93 @@ $\nu H$ is not a construction.  One must name the ambient category, prove that
 $H$ is an endofunctor of the required class, establish the relevant accessibility
 or small-based condition, and then instantiate an existence theorem.
 
+\subsection{Specification spaces and the scope of a theorem}
+\label{sec:specification-space}
+
+A specification space starts with actual mathematical structures. Its points
+may be signatures with scoped syntax and conversion, contextual models,
+operational presentations, or assemblies of those data with comparison maps.
+The carrier and required laws must be stated before quantifying over points.
+For a stated carrier $\mathcal C$ and requirement $A$, the claims
+\[
+  \exists M:\mathcal C,\ A(M)
+  \qquad\text{and}\qquad
+  \forall M:\mathcal C,\ A(M)\Rightarrow P(M)
+\]
+express compatibility and a universal consequence, respectively. A claim that
+requirements force a feature also needs an inhabitant of the admissible class.
+The native type-theory profiles, a finite strategy comparison and a class of
+GSLT translations have different carriers; none supplies the others' quantifiers.
+
+The following are representative proved statements with explicit domains.
+\begin{description}[leftmargin=2.7cm,style=nextline]
+\item[Operational assemblies.]
+  \leanname{Language.Model} selects an occurrence point, its bag observation
+  and revision authority. For every such model,
+  \leanname{kernel_step_preserves_meaning} proves that the assembled base,
+  Need, quotation and crossing steps preserve the shared occurrence-bag
+  interpretation. The model does not select an intensional calculus.
+\item[Displayed typing.]
+  \leanname{TypeTheory.UnitypedDisplayedTyping} takes a unityped contextual
+  structure, type families and substitution-stable evidence. Its erasure law
+  is uniform in those data. Strict identity/composition coherence is a further
+  interface, not a consequence of having a transport operation. The common
+  \leanname{DisplayedEvidence} theory treats arbitrary evidence families and
+  reason types; native adapters instantiate it rather than copy its states.
+\item[History transport.]
+  \leanname{EventTransport.transportedPathEquiv} reconstructs complete event
+  histories in a pushed-forward presentation when the state map is injective.
+  The non-injective control admits newly composable target histories with no
+  source history. This reflection result is stronger than forward simulation.
+\item[Algebra and representation.]
+  \leanname{BagNormalForm.BagTheory} states algebraic bag laws independently
+  of the constructor's representation. Its refinement
+  \leanname{BareBagTheory} supplies the representation assumption used by
+  bare normal-form sections and their typing results. The forward invariance
+  theorem \leanname{normalForm_eq_of_equationEquiv} needs only
+  \leanname{BagTheory}. A wrapped profile satisfies the algebraic
+  laws and admits a well-typed wrapper term, while
+  \leanname{normalization_breaks_wrapped_typing} proves that bare bag
+  normalization makes that term ill typed. Algebraic validity therefore
+  does not supply a representation-independent typing theorem.
+\item[One joint witness.]
+  \leanname{SharedJudgmentQuotientRetainedSemantics.Controls.common_qualified}
+  qualifies source, retained semantics, required services and declarations on
+  the same actual assembly. Its changed-payload control preserves component
+  meanings while failing the caller's contract. Neither theorem characterizes
+  a complete class of higher-order languages.
+\item[Strategy comparisons.]
+  \leanname{CallSharingVerdict.perCandidate_iff_perSource} covers every call
+  in its declared call-time-choice semantics. The four-policy separating
+  workload retains exactly those two policies under ordered answer observation.
+  The probability controls give equal marginals with different joint laws and
+  preserve the joint law through finite resumption. These are stated profiles
+  and observers, not a universal choice of evaluation strategy.
+\end{description}
+
+The tier-0 Flower supplies independent source languages and checker theorems.
+Each optional route from a kernel into a candidate records source formation,
+checker faithfulness, the candidate image, preservation/reflection, semantic
+interpretation and native qualification separately. A source-checker result
+remains valid without choosing a HOTG interpretation or a dependent host.
+Framework adequacy and conservativity of a native embedding are further
+questions; the covering programme retains their open obligations.
+
+The maintained candidate index has one scoped-identity development selection
+and five unselected decision families. This is the content of
+\leanname{Specification.identity_direction_selected} and
+\leanname{Specification.unselected_families}, rather than a census of all
+settled decisions. The option graph records finer alternatives. Existing
+named profiles and partial assemblies explore the space; they do not yet
+give an exhaustive admissibility predicate for all intended Prime systems.
+The mathematical sections below state each interface and comparison at its
+own scope, while the status ledger records the remaining construction work.
+
 \section{Digest: what is known about HO MeTTa Prime, and how firmly}
 \label{sec:digest}
 
-This section is a map of the current state, dated 19 October 2026. Each row
+The specification-space map above is current to 22 October 2026. The following
+decision and confidence table retains its 19 October 2026 assessment. Each row
 names a part of the design, says what is known, and gives its status in the
 sense of the previous section, together with a PLN simple truth value
 $\mathrm{STV}\langle s, c\rangle$ and credal indefinite truth value
@@ -1237,7 +1320,8 @@ For infinite MLNs whose specifications both satisfy the Dobrushin bound:
   every step (a field of the path), the score grows from start to end, and the
   strength of every query on the original cores moves by at most the path's
   shell-tail budget
-  (\leanname{MarkovLogicSyntheticCognitiveDevelopment.SyntheticCognitiveDevelopmentPath.coordination_improves_while_joint_identity_drift_bounded}).
+  {\raggedright
+  (\leanname{MarkovLogicSyntheticCognitiveDevelopment.SyntheticCognitiveDevelopmentPath.coordination_improves_while_joint_identity_drift_bounded}).\par}
 \end{itemize}
 
 \paragraph{Relation to bubbles: open.}
@@ -2495,6 +2579,105 @@ an extensional bubble is a certified quotient/model readout of an intensional
 one when such a model theorem is available.  It is not permission to add
 equality reflection to every checker.
 
+\paragraph{Mutable references admit different comparison contracts.}
+For allocated references $a,b$ in a heap $H$, three coherent scalar
+comparisons are location identity $a=b$, current-payload equality
+$\mathsf{read}_H(a)=\mathsf{read}_H(b)$, and equality of the payloads in a
+fixed captured heap $H_0$. The existing
+\leanname{ResourceOwnership.MutableObservation} construction realizes all
+three on one nonempty heap. Current-payload equality is an equivalence at
+each fixed heap. Capturing the heap yields a pure frozen comparator;
+changing its heap argument yields a world-indexed comparator. A fixed
+world-independent comparator cannot also track equality in every pair of
+independently writable current worlds. This rules out that combination of
+promises, rather than ruling out observation-based comparison.
+
+The available program experiments determine stronger requirements. The
+existing \leanname{PolicyFamily.ContextClosure} construction closes a
+specified observation family under finite paths of declared total state
+operations. It constructs the greatest observation-preserving relation
+stable under those operations. The
+\leanname{ResourceOwnership.Optimality.ContextualReferences} instance uses
+actual heap payload writes at the selected reference, followed by a scalar
+read at that reference or a fixed anchor. With allocated references, two
+distinguishable payload values, all such writes and all fixed-anchor reads,
+its contextual equivalence within a fixed initial heap is exactly location
+identity. A one-write path already separates distinct cells: writing at the
+hole and reading a retained alias sees the write only when the locations
+alias. Two different write values remove any assumption about the old
+payload. Every readout realizing this entire experiment family must
+therefore preserve the selected-reference distinction within that heap.
+An address alone is not thereby a sufficient readout across different heaps.
+
+A second writable profile restricts this same operation graph to observations
+of the selected cell alone. The
+\leanname{ContextualReferences.SelectedOnly} construction reuses the existing
+consumer restriction and greatest stable relation. Its concrete update law is
+\[
+  \mathsf{selectedRead}(\mathsf{write}(v,c))
+   =\mathsf{map}(\lambda\_.v,\mathsf{selectedRead}(c)).
+\]
+Consequently equality of selected scalar observations is preserved by every
+write and characterizes the resulting finite-context equivalence, even
+across different heaps. The two allocated cells with payload $7$ remain
+equivalent under this interface after genuine writes to $9$; the fixed-anchor
+interface still separates them. Mutation alone therefore does not force
+location identity. The available observations and operations determine which
+replacement law is justified. The total model separately distinguishes honest
+absence from an allocated value; it does not model denied service as absence.
+
+Nested resources refine the same method without selecting a graph equality.
+An ordinal path is an actual adaptive query over the admitted ordered
+descriptor rows: every visited header is recorded, repeated slots remain
+repeated, and a missing endpoint is an ordinary negative reply. For fixed
+finite read paths and write paths, the observable signature consists of the
+initial scalar-read vector and the matrix stating whether each write path and
+read path reach the same allocated endpoint. The concrete payload-update law
+proves this signature stable under all declared writes. Conversely, when the
+payload has two distinguishable values, two write probes recover every matrix
+entry. Thus the existing finite context closure equates two clients exactly
+when their signatures agree.
+
+A shared diamond and a duplicated diamond can therefore agree under read-only
+or selected-descendant observations, while writing through one arm and reading
+the other separates them. Finite paths also observe self and mutual cycles
+without unfolding an infinite tree. Reordered and repeated slots show why the
+reference set alone is insufficient for an ordinal query. A conservative
+candidate preview keeps an unknown read, distinguishes it from known absence,
+and filters original occurrence coordinates and bindings rather than replacing
+them by candidate-list positions. This is a theorem about the declared finite
+resource profile; native State/Space matching and arbitrary graph
+isomorphism or bisimulation remain separate instances.
+
+The same two equal-valued cells satisfy the read-only family and fail the
+write-closed family. Restricted read grants and a one-value payload type
+give further separating controls against unconditional identity necessity.
+Equal scalar observations imply neither shared authority nor equal
+generation or origin. Relocation transports actual writes, reads and aliases
+through the existing injective address map; a fresh isolated clone retains
+its internal sharing without becoming the original mutable resource.
+These are scalar-payload results, not recursive graph equality or a model
+of every source-language context. The total-write profile treats absent
+addresses as absent, not as service refusal. Constraint-based unification,
+linear or persistent state, graph isomorphism and bisimulation require their
+own constructions and comparison laws.
+
+Collection and typing contracts must state which of these observations they
+consume. Stable resource keys, frozen value keys and validated
+world-dependent value indexes have different preservation obligations;
+value-based queries do not automatically require a linear scan. Scalar
+read observations remain valid after a write outside their actual resource
+support. Freezing such a readout does not freeze every resource reachable
+through its payload. Likewise, a Boolean comparison does not automatically
+provide intensional identity evidence, judgmental conversion or a license
+to replace references through arbitrary effects. These constructions
+delimit compatible promises without selecting a global meaning for the
+surface equality operator.
+An observational equivalence theorem also does not supply a terminating
+Boolean test for arbitrary payload types. Executable scalar comparison uses
+the stated decidable-equality premise; richer observations still need their
+own decision or retained partial-computation contract.
+
 \subsection{Compositional execution contracts over worlds and runs}
 \label{sec:execution-contracts}
 
@@ -2588,6 +2771,17 @@ law. The constructed all-access revocation example fails that law; this is
 not a claim that every information-losing transport lacks a right adjoint.
 Contravariant predicate reindexing remains a different, compatible role.
 
+The retained occurrence-space instance in
+\leanname{Contracts.OccurrenceSpace} reifies complete ordered key/version
+rows using fractional read shares and whole update shares. Actual local
+replacement and the existing keyed consuming publisher satisfy the frame
+judgment for every compatible other-space frame. Bijective namespace
+transport constructs the reification, extension-lifting and action laws;
+identifying namespaces can destroy them. This is a nonempty store instance,
+not an additional evaluator. The publisher's real admission establishes
+unique stable keys. Frame safety alone neither establishes this uniqueness
+nor licenses reordering the resulting publication history.
+
 \paragraph{Actual adaptive reads determine transaction dependencies.}
 For a finite ordered occurrence store $s$, let
 $\mathsf{rows}(q,s)$ be its full list of matching identifier/payload pairs.
@@ -2612,10 +2806,23 @@ ambiguous identifiers distinguish invalid certificates. An empty child
 answer still contributes a complete-query dependency.
 
 These are laws for the pure occurrence-query profile with fixed program and
-query meanings. They do not supply native higher-order matching, rule-version
-agreement, cross-space dependency completeness or stateful own-write
-continuation. Snapshot continuation and validated-fresh resumption retain
-their separately stated meanings.
+query meanings. The constructed \leanname{ReadOnlyQuery.ScopedOccurrence}
+provider additionally transports complete cross-space replies, retained
+continuations and exact read accounts through a namespace equivalence.
+Metadata validation preserves full adaptive replies only under the explicit
+immutable $(\mathsf{epoch},\mathsf{full\ stamp})$-to-payload interpretation;
+an unversioned mutable-payload control violates the conclusion. The existing
+own-write client retains captured reads across its actual local update, and
+the channel publisher supplies the general consuming case.
+\leanname{ChannelJoin.AuthorizedPublication.adaptive_publication_preserves_frame}
+joins current delegated grants, full adaptive row observations, selected
+observers and the actual keyed take/output operation at one boundary.
+The \leanname{ReadOnlyQuery.RetainedForce} adapter separately checks the
+current located Need lease and complete generational binding reference:
+copied descriptions do not grant force authority. Native higher-order
+matching, arbitrary imported-code/captured-world transport, service authenticity,
+fairness and physical costs retain their own realization obligations.
+Snapshot continuation and validated-fresh resumption remain distinct.
 
 \paragraph{Committed observers and nondiscardable obligations.}
 For a dependent observer family $O(s):\prod_{i:I}D_i$, administrative
@@ -2633,10 +2840,284 @@ settle an obligation already incurred. The constructed
 \leanname{Contracts.Joins.duty_family_requires_retention} control permits
 erasure at an empty permission observer and refuses it at an outstanding-duty
 observer unless the duty is retained outside the rejected leaf.
-Authorized settlement, transfer, cancellation, crash recovery and compensation
-still require actual service transitions and disposition evidence. A check
-after publication can expose an obligation without providing a compensator;
-irreversible and uncertain outcomes cannot be reclassified as rollback.
+The existing attempt-identity owner now supplies concrete allocating,
+transferring, supervising and settling transitions. Its
+\nolinkurl{DurableDuty.issued_duty_conservation} theorem derives, from an
+arbitrary finite run starting at the empty ledger, exactly one retained row
+for each issued occurrence. The row has an authorized ownership chain and
+either remains unsettled or records an authorized disposition. The original
+obligor, obligee and scope survive transfer; copying a descriptor does not
+allocate another occurrence. Atomic publication validates the current
+authority data together with the ledger, so a changed grant cannot hide
+behind a reused revision. Authentication of that authority data remains a
+service assumption.
+
+The existing dispatch-permit owner instantiates this ledger with an escrow
+service using its one-use dispatch claim and the existing supervisor. For
+every fresh funded reversible reservation, its actual debit followed by
+refund restores the original balance while retaining the ordered debit and
+refund events. Replaying the refund is inert; treaty satisfaction is derived
+from the actual refund history rather than assumed from a compensator's
+name. Intention, dispatch, remote acceptance, completion persistence and
+adoption are distinct transitions. Primary and repair crash controls retain
+uncertainty until positive reconciliation; missing acknowledgment does not
+prove failure. Irreversible effects refuse compensation. The construction
+does not prove eventual settlement or compiled-C refinement.
+
+The dispatch-permit owner's retained-settlement construction joins the actual
+escrow adopter to the existing indexed query, paid invocation and publication
+interfaces. Its adaptive query reads service state, current application grants
+and independent receiver evidence. A successful readout is computed by the
+adopter, with an explicit refusal for absent or inconsistent evidence. Reachable
+execution derives readiness from that query; it does not assume agreement of
+complete runs. Pausing, refusing, rearming and changing the handler preserve the
+recorded reads, residual query and paid account. Accepted publication revalidates
+those dependencies and the exact host-grant generation. The resulting current
+adoption preserves the duty ledger and has actual receiver evidence, without
+performing another remote effect. A second chronological read-provider
+representation supplies a handler homomorphism preserving the local reply,
+gates, replay policy and ordered invoice. These are model theorems; authentic
+native decoding, handler correspondence and physical operation prices remain
+separate obligations.
+
+The maintained native activity library realizes concrete HE and retained Prime
+clients of this boundary. A state context wraps the existing activity continuation without
+changing its proposed writes or sends. The enclosing duty retains its original
+parties, current custody, primary and repair activities, disposition and
+history. Current policy records authorize issue, transfer, execution and
+disposition separately. A correlated completion survives cancellation or
+execution revocation; settling it additionally requires the current holder's
+adopt/compensate right and a trusted interpretation of separately captured
+receiver evidence. The atomic host commit revalidates the exact policy,
+result and evidence records, including a same-byte replacement at a new
+revision. A contract tag or worker assertion alone is insufficient.
+The independent receiver fixture actually debits and refunds native stored
+funds while retaining both historical effects; it also exercises primary
+adoption, restart after debit and irreversible refusal. These are native
+boundary controls with explicit principal-binding and receiver-authenticity
+assumptions. Retained Prime imports the same client through the compiled source
+reader and document-scope elaboration. Its captured context retains structural
+mechanism availability and the explicitly admitted owned Rho handlers, but no
+loader or unrestricted external-service authority. Equation lookup uses frozen
+code, while the context-space operation and module-bound self reference
+designate the private data world. A computed storage coordinate is evaluated by
+the retained operand continuation. Policy revocation and equal-right regrant
+before commit refuse the stale issuance.
+
+The Prime reply path uses the existing owned-return sequencer for canonical
+Rho reduction and ordered value observation. The reducer retains its canonical
+cursor and the Prime payload provider; synchronous and resumable value
+observation use one traversal. A refused delivery retains the exact completed
+occurrence, and retry does not rerun the reducer. Callable-looking payload data
+and duplicate occurrences remain data and duplicates. The generic evaluator
+frame holds only an optional service pointer. The service retains its cursor
+owner and prevents moving collection or promotion while that opaque state is
+live. Each advance and delivery rechecks its selected context and caller
+contract; payload execution inherits the caller's permit chain. The generated
+progress declaration admits the owned handler and excludes its atomic prepared
+shortcut. Native controls cover all three HE/Prime duty scenarios, incomplete
+service failures, stale result arenas, allocation refusal, cancellation and
+split observation. These logical cursor transitions do not bound the internal
+work of preparation, normalization, allocation, materialization or teardown.
+This selected native control supplies neither arbitrary imported-world
+refinement nor a physical responsive-slot theorem.
+
+Deferred native payloads now preserve the captured code/data distinction through
+nested space overlays. The copied registry retains an explicit self binding;
+the context operation recognizes transparent views of its selected program,
+without treating a module-own view or unrelated space as that context. The
+shared space resolver consults each frame's direct raw-reference override before
+its inherited visible alias, so entering an empty frame preserves the preceding
+observation. A visibility redirect alone cannot license mutation: child writes
+use storage owned by that child, while borrowed parent views remain unchanged.
+Raw and already-visible references share the same newly created Rho overlay.
+Native controls exercise omitted and non-space self bindings, nested own writes,
+raw overrides, identity redirects and module-own boundaries. These are tested
+native service laws, not a compiled-code refinement or an ownership acquisition
+for arbitrary external services.
+
+The transaction frame is now address-stable and independently owned. A suspended
+child retains its original parent frame, including scratch resources; activation
+holds both the selected frame and the displaced caller until restoration.
+Synchronous and retained payload calls share overlay preparation and result
+promotion. An optional native provider retains the ordinary Prime stack, its
+Need episode and return traversal. Initialization runs the existing top-level
+prelude; only its designated heap result receiver can retain the final expression
+call. Thus registry-returned stored descriptors remain data, held values keep
+their top-level fuel exception, and incomplete preparation cannot become an empty
+completed frontier. Each grant borrows the current caller's authority rather
+than retaining a previous driver. Scoped library selection preserves session
+options. A failed provider prefix supplies no COMM candidate, and retirement
+does not require permission to advance. Referenced source services and result
+resource owners remain caller-held. Prelude, preparation, native operations,
+copying, promotion and teardown still require their own work contracts.
+
+\paragraph{Ordered resource copying.}
+The stable heap can itself be earned from finite observations. The existing
+\leanname{ResourceOwnership.DescriptorAdmission} checker takes actual
+address/header/ordered-slot rows and ordered roots. It checks repeated-row
+agreement, header/slot support, every referenced descendant and every root,
+then constructs a reference-closed heap. Equal repeated rows are permitted;
+conflicting headers or slot orders are refused. Explicit absence is an
+observation, separate from a service that refused to return one. This derives
+heap closure from the input rows instead of requiring a coherent heap or a
+desired destination as an input. The finite checker does not authenticate
+native capture, prove current-view agreement or price its own lookup work.
+The thin \leanname{DescriptorAdmission.SourceAdapter} supplies the existing
+copy source directly from these admitted rows. Completion, the reachable-graph
+invoice, relocation and ordered inventory then follow for that same retained
+producer, without a second copy machine or a caller-supplied target heap.
+
+Let $G$ be a finite, reference-closed stable heap, $S_v$ the ordered pointer
+slots of cell $v$, and $R$ a valid ordered list of roots. Write $L_G(R)$ for
+the reachable cells. The retained copy producer has the independent invoice
+\[
+  W(G,R)=|R|+\sum_{v\in L_G(R)}(1+|S_v|).
+\]
+A producer action consumes one root occurrence, writes one pointer slot, or
+completes one private shell. Discovery reserves the shell's identity before
+descending into its contents. Consequently a self-reference or mutual cycle
+can point to an unfinished image without waiting for that image to finish.
+Only the completed graph is published. The existing
+\leanname{ResourceOwnership.TraceWork.RetainedCopy} construction derives its
+destination heap and \leanname{Relocation} from the actual saved headers and
+ordered slot buffers. Its \leanname{initial_completes_exact},
+\leanname{completed_invoice}, \leanname{completed_relocation} and
+\leanname{completed_ordered_inventory} laws establish completion with
+$W(G,R)+1$ cursor fuel and $W(G,R)$ declared producer units. Every prefix
+retains its paid account and exact residual through zero allowance,
+split/resume and cancellation. The extra terminal inspection, lookup,
+allocation and disposal retain separate representation prices.
+
+Repeated roots and pointer slots retain their order and multiplicity even
+when they share one image. In particular, the slot lists $[b,b,c]$ and
+$[c,b,b]$ have equal edge sets but different ordered copies. Structural copying
+does not grant export authority: a separate concrete claim operation reuses
+an image for the same result owner and refuses an already claimed image for
+a different owner. Its one-resource law is not a graph-wide authority
+refinement. The fixed-source model also does not supply native mutable-source
+stability, visible-alias canonicalization or opaque Need/context transport.
+
+A native returned resource also needs its particular logical world. For
+example, a Prime payload can create a State containing $0$, write $7$ on its
+branch, and return the State. Reading only the physical cell at promotion
+would export $0$ despite an immediate branch read returning $7$. Synchronous
+and retained payload adapters now retain each emitted result's actual binding
+environment, invocation episode and execution banks through promotion. One
+result-indexed descriptor reader observes the value and type in that captured
+world, without merging an unrelated ambient Need context. The same canonical
+source-cell identity remains the affine export key: two aliases in one result
+share an image, while reusing that owned cell across results still refuses.
+Lookup distinguishes completed absence from collection refusal; the latter
+interrupts evaluation rather than licensing a physical-value fallback.
+The payload frame also captures the actual caller's bindings and Need view
+before setup. It promotes that complete logical environment into frame-owned
+storage, preserving Need identities and shared payloads rather than borrowing
+the caller's reclaimable path. Invocation banks have a separate validity
+lease. The lease does not retain the frame's own bank and therefore cannot
+form a frame--bank cycle; bank reset or caller retirement invalidates it before
+any stale pointer is read. A retained service owner can keep the invocation
+live, while a raw unowned caller receives refusal after retirement. External
+State, Space and language-service owners remain caller-held. Discovery and
+materialization of a directly discovered State graph observe the admitted
+source view: an already earned logical $7$ must not become the physical $0$
+merely because it crosses a deferred-code wrapper. A resource encountered
+later through a stored Space row first
+uses its result branch's update, then the fixed captured source view when that
+branch has no update for the borrowed resource. The source reader has no
+ambient fallback. Publication enrolls encountered States and Spaces in the
+same canonical-image and affine-claim maps before descending into them.
+Thus a stored State can retain its logical value and aliases without exposing
+a sibling payload's private write. This observation and export boundary does
+not yet interpret stored resource references before pattern matching: a
+pattern containing a private image can still miss its raw source row. Query
+candidate selection and matching require one coherent view as well.
+
+Code opening recognizes the existing quotation representation,
+including hidden ownership metadata, and delegates to the ordinary Prime
+code-opening operation. Result-world capture is an explicitly selected
+receiver of the existing evaluator kernel; ordinary evaluation supplies no
+receiver. This construction keeps capture out of the ordinary entry rather
+than installing another ambient callback. It is not a general zero-cost
+theorem. These native boundary repairs do not supply complete transitive
+source-view admission, graph-wide authority refinement or complete validation
+and retirement prices.
+
+The existing adaptive-query client also admits a sampling provider whose
+context may change after a reply. The
+\leanname{Cursor.ReadOnlyQuery.Sampled} construction records the reply actually
+returned, including repeated and negative reads. Agreement of that earned
+read log with one protected view derives equality of the client residual,
+completion status, log and declared tariff account with fixed-view execution;
+equality of complete runs is not a premise. The resource-copy
+\leanname{SourceLocality} adapter proves locality of the existing copy step
+at its actual fresh-node request, then derives the corresponding copy-state,
+status, invoice and completed relocation laws. Pending backedges and shell
+completion remain paid actions even when they consult no new source node.
+An unread-node change may be harmless; a changed earlier header is missed by
+checking only the latest read, and reordering slots is missed by every
+header-only or set-edge check. The full earned-support gate rejects both
+stale publications. Its fixed-view hypothesis does not supply the native
+stable-view grant, canonical identity, logical Need world, source lifetime,
+retained validation algorithm or physical validation price.
+
+The native payload controls now include captured transactional state views,
+raw and visible aliases of one private child image, self and mutual state
+cycles, and restoration of the displaced caller. Current-frame ownership,
+rather than an equal epoch alone, licenses a private write; a refused copy
+restores the previous redirect map. Resource discovery recognizes a pending
+image as already discovered. The ordinary payload exporter separately retains
+its actual source through the existing copy session and acknowledges only a
+complete image. Resource setup, mapped rebinding and result promotion remain
+atomic services: these controls do not license suspension across arbitrary
+mutable source reads or establish compiled-code refinement.
+Initialized promoted spaces acquire their cleanup owner before recursive
+exposure; later refusal leaves even a cyclic private graph owned until
+teardown. Refused ownership acquisition is explicit and releases the still
+unexposed shell. Cleanup ownership and semantic publication are separate.
+
+The sequential native reducer now retains its actual canonical candidate scan:
+channel-group positions, unexamined pairs, payload result occurrences and the
+best candidate survive a poll boundary. A committed COMM address records the
+source reduction count, endpoint positions and chosen body occurrence; a
+provisional winner is not a result. The existing fold protocol independently
+characterizes least-key selection with first-occurrence tie breaking and
+transports its full residual and pull account between array-window and tail
+representations. The \leanname{Machines.Cursor.Fold.StableMinimum} namespace
+provides \leanname{completed_selection_iff_specification} and
+\leanname{transported_completion_iff_specification} for these laws.
+The existing \leanname{CanonicalReactionOccurrences} owner now enumerates
+finite input positions and post-erasure output positions, checks their actual
+source constructors and canonical channel equality, and constructs the complete
+closed-COMM firing family without duplicate addresses. Its
+\leanname{Enumeration.publicStep_iff_enumerated} theorem covers the independent
+source step. The downstream \leanname{NativeInteractionCost.CanonicalSelection}
+instance retains the selected firing's whole rule and unmatched residue;
+completed emptiness is source quiescence, whereas an unfinished scan publishes
+no selected event. This is an eager finite source enumeration, with a declared
+traversal and key policy. Its \leanname{FullSource.addressEquiv} now converts
+constructively between post-erasure coordinates and two distinct positions in
+the whole source inventory. The checked natural-number decoder rejects equal,
+out-of-range and reversed-constructor positions. Accepted addresses correspond
+bijectively to actual firings and preserve the selected rule, complete ordered
+unmatched residue and reactum. Equal payload occurrences retain distinct
+addresses. The \leanname{FullSource.publicStep_iff_decoded} theorem covers the
+independent closed source step. Identifying this declared source inventory with
+native normalization, traversal and address encoding remains a separate duty.
+These mathematical pulls and native driver transitions have separate invoices.
+The native cursor now retains bottom-up endpoint merging, bytewise channel-group
+scanning, and structural/text reaction comparisons across polls. A failed key
+append invalidates the entire key, including an allocated prefix; sorting,
+normalization, frontier construction and trace adoption propagate that failure
+instead of publishing emptiness or an incorrectly ordered successor. Native
+key construction, normalization, comparison, substitution and expression export
+retain their structural positions and actual child replies. Scalar and
+interning operations, payload resource setup and promotion, callback admission,
+finalization and retirement still have atomic service work; polling alone
+supplies no bound for that work. The retained context
+copies service references, not current authority or resource ownership. Grounded
+result leaves require their actual owners beyond run closure. Native occurrence
+enumeration and its fixed-context decoder remain separate correspondence duties.
 
 \paragraph{Presence, consumption and fair service.}
 Presence-only programs, whose rules are monotone and inflationary, reach the
@@ -4399,6 +4880,792 @@ is useful but not automatically compatible with every effect
 only for the effects for which the required extension and subject-reduction laws
 are proved.
 
+\subsection{Indexed effect protocols with resumable handlers}
+
+The programmable plumbing between an authored MeTTa computation and its native
+services is an indexed effect protocol with dependent resumptions.  Its CBPV
+role is to keep values, suspended computations and effectful interactions
+distinct; its operational role is to make every interaction a typed
+request/reply boundary interpreted by a selected handler.  In a schematic
+presentation, an operation available at index $i$ carries
+\[
+  \mathsf{Op}(i)=
+  \bigl(\mathsf{Reply},\;\mathsf{next}:\mathsf{Reply}\to I,\;
+    \mathsf{requires},\;\mathsf{footprint},\;\mathsf{invoice},\;
+    \mathsf{progress},\;\mathsf{replay}\bigr),
+\]
+and the interaction program has constructors
+\[
+  \mathsf{return}:A\to\mathsf{Prog}(i,A),\qquad
+  \mathsf{call}:\mathsf{Op}(i)\to
+    \bigl((r:\mathsf{Reply})\to\mathsf{Prog}(\mathsf{next}(r),A)\bigr)
+    \to\mathsf{Prog}(i,A).
+\]
+The continuation therefore depends on the actual reply.  An accepted commit
+may advance the world index, a refusal may retain the old index and exact
+continuation, acquiring a resource may extend an ownership context, and
+consuming a linear permission may remove it.  A suspension retains the residual
+computation and its paid account rather than returning an empty answer list.
+This is the indexed-polynomial request/reply spine interpreted in a dependent
+CBPV style; the name alone supplies neither subject reduction nor a runtime
+adequacy theorem.
+
+Authority is one field of this protocol, not its master semantics.  Current
+authority answers whether the caller may perform the interaction now.  The
+footprint bounds what its implementation may read, write or consume.  The
+invoice records actual charged occurrences; progress declares bounded,
+yielding, isolated or unresolved realization; replay states which repeated
+uses are licensed.  Ownership and lifetime remain separate: retaining a value
+does not retain permission to use it.  Likewise, effect independence does not
+imply scheduler fairness, and a trace does not itself execute an effect.
+
+Handlers give this structure its programming interface
+\cite{PlotkinPretnarHandling}.  The same interaction program may be interpreted
+by a local handler, a worker handler, a durable handler, a restricted handler,
+or an optional tracing wrapper.  A trusted-local profile can specialize stable
+authority and history checks away; a revocable handle still requires a current
+check or a proved lease at its use boundary.  Handler composition requires an
+explicit law.  In particular, nondeterminism over isolated branch-local states
+and nondeterminism over one shared state are both coherent interpretations, but
+they need not produce the same observations and cannot be silently commuted.
+
+The maintained formal boundary is
+\nolinkurl{OperationCostProtocol.Indexed}.  Its retained
+\nolinkurl{Invocation} combines one dependency-certified submission with the
+exact indexed outcome and paid account.  \nolinkurl{NativePoll.History} retains
+initial pending states, final step verdicts and ordered tagged native events;
+\nolinkurl{Invocation.PollHistoryCovers} states the separate native realization
+duty connecting the paid account to that richer history.  Installing a current
+gate preserves the submission, manifest, private source state, selected
+continuation and account.
+
+Publication is another handler boundary.
+\nolinkurl{Invocation.publishCurrent} first checks current world-indexed
+authority and only then invokes the existing dependency-validated commit.  An
+authority refusal and a dependency conflict each return the exact retained
+invocation and poll history.  An accepted branch returns the current-world
+store obtained by rerunning the transaction at commit time; it does not report
+external delivery.  The generation-sensitive wrapper reuses the existing
+foreign-resource \nolinkurl{Handle}, whose identity contains provider,
+resource and generation.  A \nolinkurl{CheckedGrant.Requirement} pairs that
+identity with its required authority.  \nolinkurl{publishCheckedGrant} first
+compares the complete handle, then delegates to \nolinkurl{publishCurrent}; a
+revoke followed by a grant with the same rights but a fresh generation cannot
+revive an old resumption.  In the native space-service instance, retained
+cursor pages and waits record this generation, and checkpoint recovery retains
+the nonreused generation watermark.
+
+The existing \nolinkurl{SemanticServiceInvocation.Reliance} owner adds a
+different carrier for entrusted results: a value, its named premises and a
+conditional interpretation. Bind retains both the earlier premises and those
+of the actual reply-selected continuation. A constructed handler transports
+full outcomes, effects, retained residuals and exact semantic invoices;
+independent retained jobs use the existing snapshot-batch kernel. Adoption
+checks a current scoped grant without converting an unproved premise into
+checked semantic evidence. Revocation can refuse new reliance without
+rewriting the dependencies of an earlier verdict.
+
+The provenance view in \nolinkurl{Contracts.Society.Provenance} counts
+registered atomic observation roots through the unchanged additive evidence
+ledger. Replaying a packet is idempotent, disjoint roots add, and two
+forwarders of one observation still contribute one trial. An unfinished trial
+remains unfinished. Disjoint identifiers alone do not establish statistical
+independence; scoped calibration and authentic registry issuance remain
+separate obligations. The peer handler's actual authorized send words support
+agreement of three-of-four local quorums under at most one faulty sender.
+Decisions use available authenticated message positions, not a fault oracle
+or remote proof knowledge. A fully faulty overlap admits conflicting local
+decisions, so this is not a general consensus or liveness theorem.
+
+The constructed \nolinkurl{BoundaryObservationDisclosure.SpaceService}
+handler records an entire scoped read reply, including absence, and forwards
+that original receipt only under a separate current disclosure right. It
+does not rerun the read or accept a caller-supplied sender or payload.
+Epoch and membership amendments require current governance authority and the
+actual history position. Scoped borrowing preserves an authorized effect
+without retaining the borrowed permission. Empty initial receipts and actual
+issued transitions establish observation integrity; arbitrary initial data
+do not. Authentication, complete reply authorization, networking, physical
+costs and native realization retain their explicit service boundaries.
+
+Retry decisions have a further lifetime boundary.  The bounded full-reply
+cache is not the durable decision ledger: evicting a reply cannot erase the
+fact that its keyed mutation already committed.  A
+\nolinkurl{CheckedDecision.Decision} therefore retains the exact
+generation-bearing grant requirement and an optional full reply.  Its retry
+handler has four outcomes: a genuinely absent decision may execute; a current
+decision with a retained reply returns that reply; a current decision whose
+reply was retired is explicitly unknown; and a stale generation or revoked
+right is refused.  The corresponding law states that execution occurs exactly
+when the decision is absent.  Thus cache pressure cannot silently authorize a
+second mutation, and an equal-right regrant cannot reveal an old result.
+
+The native space-service instance journals this authority stamp with the
+committed event and retains compact decision tombstones independently of its
+bounded reply bytes.  Checkpoint recovery reconstructs both structures; the
+preceding checkpoint format is conservatively migrated without replaying an
+old root decision under a different current owner.  Decision storage is
+unbounded in the trusted default profile; an optional finite policy refuses a
+new mutation before journaling instead of evicting an old decision.  These
+controls establish the protocol behavior of the native instance, not a
+compiled-C refinement theorem.
+
+Native placement and progress admission use the same declaration boundary.
+The execution-contract source declares local, coordinator or unresolved
+placement together with bounded, yielding, isolated or unresolved progress;
+its generated table is consumed by ordinary worker admission and retained
+coordinator capsules.  Fixed constructors have a positive bounded allowance,
+revision-current authored equations use resumable yielding execution, and an
+isolated or unresolved call cannot enter a responsive inline slot.  This table
+does not prove that a handler respects its declaration: exact read capture,
+current authority, ordered-output permission and native conformance remain
+separate obligations.  Purity alone does not discharge progress: a pure native
+codec can still perform an input-sized scan.  Prepared dispatch and its
+canonical service fallback must therefore share the selected invocation's
+admission boundary before either executes the handler.  Unclassified codec
+and process services retain unresolved progress.  Marked data is a value,
+not an invocation of the head its printed shape resembles.  Likewise, an
+optional dialect-specific compiler that publishes generated equations is not
+a read-only query on a source revision already held by another invocation.
+
+The retained activity handler realizes a complete logical service-turn
+account.  Program and captured-record setup is admitted under finite structural
+inspection and destination-byte allowances and is emitted once in the ordered
+poll receipt.  The enclosing turn assigns every exposed occurrence to
+admission, preparation, execution, delivery, teardown, arrivals or
+bookkeeping.  Ready work and live worker connections have separate finite
+capacities; excess connections are refused without retiring established
+peers.  Durable record, byte, operation and page limits bound snapshot-backed
+loops, and timer maintenance counts inspected records separately from emitted
+timer occurrences.  Erasing phase tags recovers the ordered native invoice,
+while the existing slot projection preserves its total work.  This is a bound
+in declared logical units.  A wall-clock bound additionally assumes operating
+system scheduling and bounded allocator and page-fault latency; arbitrary
+unclassified foreign code remains isolated or unresolved.
+
+Attenuating lineage and one-shot currency have distinct owners.  A delegation
+\nolinkurl{Reference} names a scoped grant slot and authorization generation;
+\nolinkurl{Reference.toHandle} maps it injectively to the canonical
+provider/resource/generation handle.  The
+\nolinkurl{AuthorizedPublication.perform} adapter first validates the current
+\nolinkurl{AuthorizedChain}, the exact handle and the current required right,
+then calls the existing occurrence-preserving
+\nolinkurl{ScopedPublication.performOutputs} transition.  Its source theorem
+exposes both witnesses: the complete current lineage and the exact selected
+event serial appended to the spent ledger.  Revoked current authority, an
+invalid ancestor, a stale equal-right regrant and an output collision all
+refuse before that transition.  Copying the selected stamp and old capture
+does not recreate its physical occurrence.
+
+The native service realizes the one-shot part with a separate durable ticket,
+not a bit in a copyable grant or receipt.  A ticket is bound to one store, one
+authenticated account, the exact grant generation and one mutation right.
+Ticketed grants make the ordinary append or batch path return
+\texttt{ticket-required}; the corresponding ticketed path consumes one live
+ticket only after the mutation has been admitted and durably recorded.  A
+stale revision, revoked ticket or changed grant generation consumes nothing.
+The committed decision records the ticket identity, so retrying the same
+request returns its retained decision while another request carrying copied
+ticket data is refused.  Checkpoints retain the nonreused ticket watermark and
+live, spent or revoked status; the default profile has no ticket limit, while
+an optional finite policy refuses issuance before identity reuse.
+
+The native service also realizes finite single-parent attenuation chains.
+An explicit grant reference names the service, store, immutable grant identity
+and generation.  A child records that exact parent reference, its issuer and
+grantee, its ordinary and ticket rights, whether it may delegate again, and
+the complete inherited append form.  Use walks to a root and requires every
+record to remain live, every issuer edge to agree, rights and ticket rights to
+narrow, and the inherited form to remain equal.  Revoking one ancestor
+therefore invalidates all of its descendants at their next boundary check;
+issuing a fresh equal-right root does not reconnect them.  Delegated references
+never become an account's ambient/default grant.
+
+Grant identities have a store-local hash index.  Each chain check performs one
+indexed lookup per ancestor and carries no metadata per stored atom.  The
+trusted owner path remains direct.  Grant creation prepares inherited form
+bytes and index capacity before the journal write, so installing an admitted
+grant performs no further allocation.  The sealed checkpoint retains every
+immutable record and validates the complete graph; its reader accepts records
+in any order, rejects escalation, malformed parent generations, changed forms
+and duplicate identities, and migrates the preceding direct-grant checkpoint
+without replay.  The default retains unlimited grant history; an optional
+finite policy refuses before minting another identity.
+
+The same durable decision owner now retains optional historical account
+origin.  A constrained append form may contain the zero-argument
+\texttt{(origin)} marker.  Before journaling, the service replaces it in both
+the admitted pattern and the exact published bundle with a freshly minted
+reference containing the service identity, authenticated operating-system
+account, request identity and a random nonce.  The decision records that nonce
+and a SHA-256 digest of the exact materialized wire bundle.  Recovery
+reconstructs the bundle and checks the digest before applying the event.
+
+Origin inspection resolves only through the private durable decision table
+and is available only to the originating account or the current service owner.
+Its observation contains the reference, original grant requirement and bundle
+digest; it omits cached reply bytes and supplies no current authority.  Reply
+retirement therefore changes retry to unknown without changing historical
+origin, while revocation or an equal-right regrant refuses retry without
+erasing that origin.  The digest is an integrity commitment to the exact
+published bundle, not a portable authorship signature; the protected lookup
+is what authenticates the reference.
+
+Explicit observation uses the same immutable grant references.  Describe,
+verification, counting, every query mode and watch may carry one final grant
+reference without installing it as the account's ambient grant.  A query
+snapshot retains the exact grant identity and generation that admitted it;
+every page and close revalidates that record and its complete ancestor chain.
+A retained watch performs the same check before notification.  Revocation
+therefore ends both observations, and a freshly issued equal-right grant does
+not revive either.  Observe authority reveals only descriptor metadata and
+revision notifications, while query, count, verification and snapshot pages
+separately require read authority.  The trusted owner and legacy direct-grant
+profiles enter the same implementation through their distinguished authority
+views.
+
+The authenticated operating-system account and the authority principal are
+also distinct.  The native service pairs the kernel-supplied account number
+with a service-scoped, monotonically minted incarnation generation.  A
+connection pins that pair once; after rotation it cannot upgrade itself to the
+new incarnation.  Grants record both the grantee and the issuing incarnation,
+tickets and retained observations record their holder, and decisions and
+receipts use the pair in their retry key.  Every delegated use checks the leaf
+and each ancestor against the current binding.  Rotation therefore invalidates
+a lingering connection, a descendant of the rotated issuer, a live ticket, a
+snapshot and a wait at their next service boundary without deleting their
+historical records.
+
+The distinguished owner remains a trusted-local root at generation zero and
+does not enter the restricted lookup path.  Restricted accounts use one
+open-addressed current-binding index; no atom carries an authority label.
+Connecting does not mint identity.  The first journal-bound grant uses
+\nolinkurl{PrincipalIncarnation.Registry.ensure}: it returns an existing
+incarnation or mints the next generation only when none exists.  Explicit
+rotation uses \nolinkurl{Registry.rotate}.  The maintained laws show currency,
+monotone bounded generations, uniqueness of current service generations,
+preservation of other accounts and invalidation of the prior handle.  A
+separate control instantiates historical origin with these handles: a rotated
+incarnation of the same account cannot inspect the earlier origin, while the
+owner still can.
+
+Journal events retain the exact caller pair and any principal prepared by the
+operation.  Sealed checkpoints retain the principal clock and current binding
+table, then write generation-bearing grants, tickets, decisions and receipts.
+Recovery rejects an unconsumed prepared principal, a receipt without its
+durable decision and mixtures of the preceding checkpoint records with the
+new seal.  Older account-only checkpoints deterministically assign one
+incarnation to each encountered member account and compact forward without
+replaying mutations.  An unbound account receives opaque empty or missing
+views and cannot collide with generation-zero owner receipts; a rotated-away
+connection is instead refused.
+
+This native explicit-grant profile currently governs delegated append and
+batch publication, read/query/snapshot/watch observation, ticket issuance,
+revocation and service-stamped historical account origin.  A descriptor and
+an explicit grant are transported together; holding the grant does not expose
+the service catalogue or make name lookup ambient.  Protected identity for
+several agents sharing one operating-system account still requires a trusted
+launcher or distinct kernel credentials.  Compiled-C refinement,
+timing-noninterference and total execute-after-validate for every storage
+mutation also remain explicit obligations.
+
+The later \nolinkurl{DeliveryRecovery} handler distinguishes
+stable-key idempotence from an explicitly unknown external outcome.  A lost
+acknowledgment may be queried or retried only under the former policy; the
+latter remains parked for inspection or authorized external resolution.  This
+avoids deriving ``exactly once'' from a local journal when the remote effect is
+not queryable.
+
+Handler replacement has a constructed local comparison law.
+\nolinkurl{Indexed.HandlerHom} consists of an existing cursor-provider
+homomorphism together with request-level agreement of the current gate,
+operation profile, replay policy and exact ordered semantic invoice.  These
+local laws construct a homomorphism of the decorated providers; the existing
+cursor transport theorem then gives, for every finite allowance $n$,
+\[
+  (\mathsf{id}\times\mathsf{map}_h)(\mathsf{run}_S(n,p))
+    =\mathsf{run}_T(n,\mathsf{map}_h(p)).
+\]
+The account and dependent reply are preserved, including a pause before a
+request and a refusal after a paid reply has selected its continuation.
+Retry transports that retained continuation rather than restarting its
+producer.  The invocation lift preserves the transaction submission, ordered
+read manifest and paid prefix; it commutes with installing a new pair of
+agreeing current gates, current-authority publication and exact-generation
+publication.  Refused and conflicting publications retain the transported
+invocation and history; committed publications have the same shared store.
+The controls use different record and tuple representations and separate
+equal total work from equal invoices and ordered history.  This comparison
+keeps one declared interaction boundary and semantic metric.  A realization
+that fuses public interactions needs the existing productive-block comparison,
+and different physical costs require their own measurement or cost relation.
+Native handler conformance and authenticity of emitted history remain separate
+realization duties.
+
+A concrete instance, \nolinkurl{SourceProducerCardinality.NativeRetained},
+uses the existing finite, pure, scope-resolved body/call producer.  Its record
+stores source phase, control, producer state and reply-readiness separately,
+with an accepted occurrence prefix and consumer context.  A checked decoder
+rejects mismatched phases.  Independently written next and acknowledgment
+branches yield provider homomorphisms in both directions; a cached next does
+not advance the producer, and acknowledgment consumes the actual held reply
+rather than a description supplied by its caller.  Consumer refusal may keep
+a private context update while retaining the same loan.
+
+The constructed handler compares current policy, profile, replay and exact
+ordered invoices.  Induction over the guarded client's actual transitions
+then proves, from an open authored source, that
+\[
+  \mathsf{accepted}
+    \mathbin{+\!+}\mathsf{heldRows}
+    \mathbin{+\!+}\mathsf{remainingRows}
+      = \mathsf{sourceMeaning}.
+\]
+The law preserves equal-valued occurrences and every remaining source frame
+through finite run, resume, refusal and changing callback allowances.  It
+does not assume equality of complete answers or complete runs.  The producer's
+request-charge account and the callback inspection ordinal remain separate:
+the declared one-quantum callback invoice measures neither native instructions
+nor preparation, allocation, delivery or teardown.  A copied acknowledgment,
+a repeated invoice and a reversed ordered invoice are distinct negative
+controls.  Reading authentic C state into this record, higher-order and Need
+services, marked data, durable publication and whole-slot physical bounds
+remain separate realization obligations.
+
+The richer \nolinkurl{NativeWeightedHandler.RetainedInvocation} instance uses
+the existing scoped higher-order Need machine and its language-local steps.
+The target delegates protocol operations to the independent receipt-policy
+executor. Ordered successor and emission comparison gives the actual
+controller tick law; a constructed productive local block then supplies the
+shared component-realization theorem for a retained prefix and its resumed
+suffix. The representation retains the worlds and lexical controls of both
+live work and archived returns, rather than reconstructing them from the final
+answer bag. Its four calling-mode readouts apply only at completion: pending
+work, faults and incompatible cardinality remain separate outcomes. This is
+not a pre-call cardinality oracle or a decoder for arbitrary native Atoms.
+
+The corresponding receiving clients are constructed in the existing
+\nolinkurl{SourceProducerCardinality.CallingModes} owner. Producer handoff
+performs no provider poll and retains the original source state. The nonempty
+client obtains its first occurrence together with the actual residual;
+direct and optional clients use the established exhaustion collector. A
+singleton bound cannot justify discarding an effect after the first value.
+Completed decoding preserves every received row, and faults, cardinality
+incompatibility and an unfinished packet have distinct representations. The
+existing conservative source compiler selects the plan, with unknown code
+retaining a producer. For scalar completion, per-poll source conservation
+and the initial source load derive the source agreement and mode licence;
+equality of complete runs is not a premise. Provider-state ownership and
+logical poll invoices remain distinct from native affine lifetime and
+physical cost.
+
+The rich handler's passive history reader distinguishes current refusal,
+paid polls, completed production, cached delivery and primitive effects.
+Its local observation square transports ordered accounts on the actual
+retained invocation; noncommutative accounts retain their order. Generic
+Need successor choices, however, are not arbitrary authored equation row
+identifiers. The shared-source instance instead tags rich and authored
+origins in one Need heap. An authored call carries its immutable program
+and captured cell environment; its return resumes the original rich
+continuation. Positional source admission identifies the actual engine
+successor, including the selected cache owner, commit frame and evaluation
+receipts. An explicit finite frontier represents a genuinely empty source
+without confusing it with an unmatched call or empty data.
+
+In this instance, a coefficient callback retains its selected authored row,
+caller and running machine. Both authored and rich callbacks execute in
+the selected Need world. Successful interpretation restores the caller
+with the reached world and adds the callback's work once. Nested callbacks
+retain their parent stack and contribute to each branch's own ordered
+factor word; cached delivery contributes no new authored factor. A
+chronological log of choices from the whole search is not substituted for
+that word. Local source and callback squares derive finite-cut transport
+and the retained provider's four receiving-mode comparisons.
+
+A completed but uninterpreted callback is a parked obligation, not a body
+answer. The receiving provider emits only actual body completions and
+retains parked obligations in its live inventory. Thus optional absence
+requires genuine exhaustion, while a faulted body, an incompatible scalar
+cardinality and a waiting callback have distinct dispositions. Polling a
+parked obligation is a logical cursor inspection, not newly executed
+callback work. The weighted current-data handler now transports the local
+gate, profile, replay and invoice laws for this same provider. Its passive
+reader folds the actual cursor history into ordered accounts; recording,
+erasure and qualified replay preserve that execution. Current publication
+checks permission, grant generation and consulted data. Native decoding,
+emission coverage and complete work prices remain implementation duties.
+
+At the native return boundary, a reusable value with its logical environment
+is distinct from an atoms-only source observation. Replacing a captured Need
+reference by its producer text may preserve the displayed expression while
+duplicating its future effects. Storage reification is insufficient as well:
+instantiating the stored producer's logical origin can allocate a cell distinct
+from an existing direct reference to that producer. The owned provider instead
+returns the actual runtime value together with its complete logical environment
+and Need world. This preserves equal references to one cell and distinguishes
+different cells with equal producer text. A receiving
+invocation retains its source services and threads the resulting Need world;
+replaying the original immutable image instead starts from that earlier
+world. Native controls retire the producer controller before receiving the
+closure and distinguish shared production, distinct producers, duplicate
+choice, previously paid values, captured logical constraints and mixed direct
+and closure references to the same producer. Explicit storage and atoms-only
+observation retain their own representations and do not replace this runtime
+value/environment contract.
+
+The image copier may copy a Need reference intrinsically when the returned
+snapshot authenticates its session, cell and authority and the same copy
+episode owns the complete heap graph. Rights are copied without extension.
+A reference to a live evaluator, a foreign or orphan reference, a mutable
+state cell and an external service still require their separate ownership
+contracts. A selected synchronous source scope can advance its private-world
+execution guard after an actual own publication at the exact predecessor
+revision, while retaining the frozen program, registry and session checks.
+This neither refreshes an earlier query observation nor grants authority.
+These native controls and the rich mathematical instance remain separate
+evidence; no compiled-C refinement or physical service-time bound follows.
+
+A callback application uses the existing call-then-observe boundary.
+Observing its syntax alone can expose a captured callable's name while
+leaving the resulting application as data. Conversely, an agenda key
+inspects the authored body without invoking it. Pattern-guided code views
+expose only constrained paths, retain the original references at wildcard
+positions and never replace the owned body. Native controls distinguish
+captured admission callbacks, uninterpreted verdicts, refused effects and
+matched-row keys, including an unchosen effectful body and a shared cell
+forced once. These views retain their own admission and work contracts;
+they do not establish a bound on a complete native service slot.
+
+The continuing monitor has a separately checked finite observation, rather
+than a finite-state claim about its entire execution. The existing recurrent
+route bridge's \nolinkurl{AlternatingMonitor} retains an unbounded counter
+alongside its heartbeat/service phase. A local transition square derives the
+phase projection after every finite advance; the recorded-prefix projection
+preserves both endpoints and temporal occurrence indices. Resumption starts
+at the reached counter, and both phases recur beyond every finite cut. A
+controller that resets the counter has the same phase pattern but different
+message observations. Arithmetic, printing and native yielding realize
+separately stated services. Semantic monitor transitions are not evaluator
+quanta, and phase recurrence does not establish service for every request
+identity; the existing admission and bounded-queue laws supply that distinct
+obligation under their hypotheses.
+
+Native vocabulary registration is distinct from executable-head ownership.
+The registered symbol flags replace a historical numeric-interval test, while
+separate dialect and constructor roles preserve ordinary user equations for
+names owned only by another dialect. An authored lambda remains a value at
+the captured-source gate. The native handler consumes the strict continuation's
+already observed operand rather than substituting into its foreign binders
+again.
+
+At the native observation boundary, a completed reply supplies readiness
+only for the operand of the application that received it.  A different tail
+application must discharge its own demands.  Completion protects returned
+syntax from execution, but a transparent cell or stored suspension must still
+be opened through the existing world- and authority-checked demand before a
+weak-head observer reads its payload.  In particular, destructuring a matched
+stored field must observe the instantiated field rather than its storage
+carrier.  Native controls separate this case from inspecting open callable
+syntax without executing it; they do not establish the general Need-handler
+realization theorem above.
+
+The native durable adapter now interprets the existing record API using a
+private CeTTa space and the space service's shared CSL1 journal framing.
+Complete read-manifest validation, operation preconditions and admission
+checks precede preparation of the next native projection. One synced batch
+frame precedes publication of that prepared projection. Checkpoint replacement
+retains a stable owner lock and rebuilds the private arena. Recovery reads
+inert records; it neither evaluates stored continuations nor repeats external
+effects. Native controls distinguish incomplete append tails from complete
+corruption, current from revoked dependencies, and uncertain sync failure
+from a negative commit receipt. Independent optional admission bounds and an
+explicit finite service profile coexist. These tests instantiate the API's
+observable boundary; they do not turn the generic validated-commit theorem
+into a refinement proof of the native implementation, nor bound allocator,
+filesystem or kernel latency.
+
+These definitions join existing theory owners rather than introducing a
+second evaluator.  Their controls separate revocation from stale data,
+relevant from unrelated store changes, one physical keyed effect from a retry,
+and committed publication from later delivery.  Authentic authority issuance,
+complete native event emission, linear consumption, durable-store refinement
+and external-service correspondence remain implementation obligations.  The
+indexed protocol supplies a common place to state and compose those
+obligations; it does not discharge them by representation alone.
+
+\paragraph{Motivating clients.}
+The following clients make the interface distinctions observable. They reuse
+the maintained execution, algebra, publication, history and guest-checker
+clients rather than introducing another evaluator.
+They can also be read as stages of a research assistant investigating a
+claim: collect evidence, retain a shared hypothesis, select useful branches,
+pause or delegate work, check a proposed proof and publish an authorized
+conclusion. That complete application requires the additional composition
+laws; passing its component examples alone does not establish it.
+\begin{enumerate}
+\item \emph{Inspect one hypothesis twice.}
+An exported closure retains a shared choice after its original caller has
+retired. Its two inspections return $(7,7)$ or $(8,8)$ with one producer
+effect per branch. Rebuilding the producer from displayed syntax would
+repeat effects or lose the correlation. This motivates owned resumptions
+and the separation of a value, its source observation and its live cells.
+The ordinary Prime client exposes the same distinction directly:
+\begin{verbatim}
+(= (coin) 7)
+(= (coin) 8)
+(= (twice $x) (Pair $x $x))
+!(twice (coin))
+!(Pair (coin) (coin))
+\end{verbatim}
+The first query returns only $(7,7)$ and $(8,8)$. The second makes two
+independent choices and also returns $(7,8)$ and $(8,7)$.
+
+\item \emph{Ask for any answer, the best answers, or a jointly useful set.}
+The seven-route client uses one source with three selection policies.
+An early acceptable route need not be globally best, and individually
+good routes need not jointly cover the requested tasks. The source,
+ranking advice and stopping licence therefore have separate contracts.
+A key may inspect an authored route without executing its unchosen body.
+
+\item \emph{Decide what a score means.}
+Duplicate derivations contribute twice to a natural-number count; complex
+contributions may cancel; vector scores may be incomparable. A PLN
+confidence projection also forgets evidence counts. These clients motivate
+explicit algebra and readout handlers: a scalar ordering cannot silently
+replace any of these observations.
+
+\item \emph{Distinguish silence from an unfinished answer.}
+A genuinely empty source can complete an optional call without a value.
+An uninterpreted coefficient instead keeps its caller and callback parked;
+a faulted body has a separate disposition. The real-comparison client
+similarly leaves an unresolved comparison suspended without executing its
+guarded body. None of these cases licenses guessing a negative answer.
+
+\item \emph{Keep an operation's meaning through an ordinary binding.}
+A control operation must reach its designated executor even when the source
+contains a variable-headed equation. For example:
+\begin{verbatim}
+(= (target A) X)
+(= ($head A) Y)
+!(cost:run (target A))
+!(let $answer (cost:run (target A)) $answer)
+!(cost:run)
+\end{verbatim}
+The first two queries each complete with the answer bag $[X,Y]$ and two
+source-equation admissions. Their native preparation costs need not agree.
+The last query is unapplied syntax and remains data. Conversely, quoting a
+PeTTa \nolinkurl{min} or \nolinkurl{max} call and returning that quoted value
+must not execute it. These controls motivate one consistent ownership
+boundary across root dispatch, nested calls and returned values.
+
+\item \emph{Think for a while, then continue.}
+A budgeted search retains its pending branches and already paid prefix.
+The continuing monitor also retains its counter across pauses. Restarting
+either computation can repeat effects; resetting the monitor's counter
+can preserve its alternating phases while changing the messages it emits.
+These are tests of exact resumption, distinct from a physical latency bound.
+
+Initial process preparation gives a concrete structural example. A Rhometta
+service borrowing a caller-held immutable input retains grammar inspection,
+postorder normalization, parallel-component flattening, alpha-sensitive key
+construction and stable sorting. Its wide expression constructor accumulates
+one child's summary with each write, so finalization need not scan the
+children again. The existing \nolinkurl{ConstructorSummary.Assembly} laws
+reuse the pull-fold protocol to preserve the exact ordered inventory and
+allocation-indexed summary; missing or excess children cannot publish.
+Native controls preserve all $2048$ parallel occurrences even when they
+share one input leaf, and a small peer finishes while their preparation is
+still pending. Cancellation inside a nested sort publishes no partial root.
+The ordinary public opener retains its immediate-copy lifetime contract;
+borrowing requires the complete graph and its owners through close.
+Equality and occurrence preservation do not establish shared syntax storage.
+The retained normalizer uses a source-and-role memo for completed pure
+subterms: repeated process occurrences keep one normalized image, while a
+name checked in one role cannot license its use as a process. Different
+source keys may share an image; normalization is not an injective copy map.
+Lookup, replacement-slot clearing and collision migration retain their
+positions. The old table remains authoritative until its replacement is
+complete, so cancellation cannot hide an unmigrated answer. The existing
+\nolinkurl{DemandSummary.RetainedMemo} owner derives exact lookup and
+entry-preserving migration from physical slot placement, separately from
+the demand evaluator's semantic cache invariant. These are representation
+laws, not a refinement proof of the C memory operations. Allocation
+refusal is distinct from a completed absent lookup. A constructed DAG with
+$19$ process nodes and $18$ quotation nodes has $524287$ process occurrences
+when unfolded; its retained initial preparation preserves the sharing.
+Actual hash-probe work also depends on node addresses, including private
+normalized nodes. Exact split-work comparisons therefore hold the complete
+prepared representation and provider choices fixed. Fresh-run comparisons
+separately expose the memo-work subset while retaining it in the actual
+invoice; equality of the answer cannot establish equal physical work.
+The public copy opener has its separate answer and lifetime controls.
+These storage contracts are distinct from preserving the identities of
+live Need cells and referenced state owners.
+
+Selecting between two possible reactions supplies another observable pause.
+A component key records both its reset-context bytes and the displacement
+of the surrounding binder counter. Quote-local binders do not contribute
+to that displacement. Body rows merge by their reset keys; a later emitter
+applies the accumulated context rather than sorting a second time by
+shifted keys. A component merge compares one byte at a time, and the
+contextual emitter retains its frames and partial output. When the left
+comparison has produced a byte but the right side is still computing, the
+client retains that left reply. Treating the pending right side as end of
+text, or consuming the left byte again, can select the wrong reaction.
+Native controls compare these retained results with the independent
+synchronous text oracle, including decimal binder-index boundaries and
+quotes. On the existing Pattern carrier,
+\nolinkurl{LexCanonical.RetainedKey} separately constructs the frame/byte
+producer and its recursive reference. Its completed-cursor theorem gives
+the reference bytes and counter displacement; the paired-client theorem
+gives the same ordering as flattened comparison, including both genuine
+ready-byte cuts. The existing reaction-occurrence owner connects prepared
+row merge to the actual semantic firing inventory and public step.
+These results assume their declared pure decoders, concern cursors that
+complete, and do not identify this byte grammar with
+\nolinkurl{LexCanonical.ser} or prove native VarId/scope decoding.
+A replacement winner is copied into a private arena and its body
+rows remapped before it replaces the incumbent. Cancelling either phase
+publishes neither a partial body nor a provisional winner.
+
+The selected reaction still needs to become a complete process. Its retained
+constructor copies the selected body, then consumes the same stable row merge
+directly into the existing expression assembly. A row keeps its origin and
+original child ordinal: its position in a sorted list does not identify its
+child in the copied body. Equal keys likewise do not identify equal
+occurrences. Base rows precede body rows on a tie, and repeated body rows keep
+their original order. The existing
+\nolinkurl{CanonicalReactionOccurrences.RetainedInventory.Cursor} composes the
+actual retained byte comparator with \nolinkurl{Cursor.Fold} and
+\nolinkurl{ConstructorSummary.Assembly}. Its accepted-prefix invariant gives
+the complete ordered children, summary and firing inventory whenever the
+constructor completes. Cancellation discards unpublished construction and
+preserves the paid receipt. The native copy-origin/ordinal decoder and
+physical retirement remain separate obligations.
+
+A wide closed receiver body makes storage preservation observable across
+the whole path. Literal substitution in an already normalized,
+variable-free body can retain that body rather than rebuilding each
+occurrence. This does not suppress a deferred producer: its effects and
+every result occurrence still belong to the communication. Compaction and
+export reuse the graph-copy session, keeping the source generation live
+until copying completes. A noncanonical process is normalized privately
+before export; a canonical process keeps its copied graph. Reopening an
+arena preserves its allocation profile rather than silently enabling
+interning. These rules distinguish one stored value used many times from
+deduplication of its observable occurrences.
+
+Payload rendering, allocation, variable-bearing substitution and retirement
+retain their separate service duties, including control destruction and
+generation reclamation after a completed copy. Synchronous selection profiles
+retain their declared atomic preparation and transfer services. An interning
+arena uses the synchronous constructor rather than incremental draft assembly;
+both providers retain the same required process observation.
+Neither these structural controls nor the summary laws establish a bound
+on those services or refine compiled C.
+
+\item \emph{Receive code before deciding what to execute.}
+A receiver that runs communicated code must use the payload that actually
+arrived. The existing \nolinkurl{eval_at_comm} client requires two real
+handshakes before reaching the inactive process: the first delivers quoted
+code, and the second is performed by that delivered code. Quotation alone
+does not run it.
+
+The existing \nolinkurl{SemanticSubstitutionEvidence.Retained} owner makes
+the intermediate continuation observable. It first requests payload
+normalization, retains the returned value and its paid prefix, then forms
+the substitution request from that value. A distinguishing control pauses
+at the normalized reply and rejects substitution of the original payload.
+Its defunctionalized producer visits actual constructor and reply frames;
+it does not consult the recursive source meaning or a precomputed call tree.
+Every finite task completes with that independent source meaning. Splitting
+the allowance preserves the whole residual and exact declared receipt, and
+no incomplete prefix publishes a result. For a list of $n$ repeated bound
+variables, all $n$ result occurrences remain and the complete receipt is
+$4n+2$ provider operations, followed by an uncharged client inspection.
+
+Source admission is a separate check. Opaque quoted syntax can finish its
+raw traversal while containing an escaped binder. The existing scoped COMM
+preservation theorem therefore still requires well-sorted inputs and their
+quote-aware binder-safety conditions. Finite traversal does not establish
+those conditions, native capture avoidance, memory ownership or physical
+service prices.
+
+\item \emph{Withdraw permission during a pause.}
+The current-world publication clients retain a proposed operation when its
+grant is revoked. Regranting permission can resume the same paid work,
+whereas a stale query dependency cannot be repaired by presenting a fresh
+permission. This motivates keeping authority, observed data and execution
+currency distinct. The ungraded instance is constructed; its weighted
+shared-source instance now uses the same current-data gate and publication
+interface. A callback paused after emitting $5$ retains that effect and its
+paid continuation when permission is withdrawn. Restoring permission resumes
+the callback without emitting $5$ again. Changing a consulted absence still
+refuses publication, even under a fresh grant.
+
+\item \emph{Move useful work to another executor.}
+Local and worker handlers preserve the selected values, duplicate
+occurrences and permitted effects. They may have different physical
+costs, so a tiny task need not benefit from dispatch. Agreement of answer
+bags does not justify reordering observable effects or assuming that a
+long native primitive yields.
+
+\item \emph{Explain a run without changing it.}
+History clients enable recording, stop it, forget retained history and
+request qualified replay. Forgetting a trace does not undo an effect or
+refund its work. A foreign-call observer can use the same boundary for
+ordered Prolog answers and delayed constraints, but arbitrary Prolog state
+changes and I/O need their own replay contract. A call log alone does not
+authorize reissuing them.
+The weighted observer also separates a branch's coefficient word from the
+chronology of the whole search. Its two answer words are
+$[\mathsf{score}(0),\mathsf{choose}_0(2)]$ and
+$[\mathsf{score}(0),\mathsf{choose}_1(2)]$; its chronological factor log
+contains both score occurrences before both choice occurrences. Neither
+answer owns that combined log. The constructed run has $159$ paid provider
+polls and $161$ history observations. Recording only two observations reports
+$159$ omitted observations and refuses a complete-history claim. These are
+separate logical accounts, not a bound on native execution time.
+The MMU guest gives a concrete foreign-result boundary: an invalid Unicode
+scalar must reach its source error handler, while a successful string remains
+a value. Its finite deterministic call is observed once as a result bag;
+the selected adapter preserves error presence without promising the source
+error payload. A rename control detects accidental repetition, since the
+successful call moves its source. A later separate invocation must run
+afresh and observe the missing source. Recording these replies is distinct
+from invoking their operations again.
+
+\item \emph{Search freely, then check a proof.}
+The authored HOL Light client compares two resumed checker steps with one
+two-step run, including the reached state and receipts. A tactic may
+search by a heuristic grade; acceptance still belongs to the selected
+guest kernel and context. Rejecting a candidate proof does not refute its
+claim. A pending obligation has no verdict merely because checking pauses;
+already accepted prefix results remain part of the reached checker state. This
+motivates request-indexed replies without identifying the protocol with
+the guest's unification, conversion or inference rules.
+
+\item \emph{Send a letter without reading the inbox.}
+An append grant admits a shaped message while withholding the recipient's
+read and removal rights. The service checks the authenticated sender against
+the shape; a forged sender is refused. Retrying an identical message does not
+create a second occurrence, while changing its body under the same key is a
+conflict. When a single-use ticket is required, its committed use survives
+compaction and restart. Copying the ticket description cannot send a second
+letter. These controls motivate separate rights, exact grant generations,
+atomic consumption and durable decisions.
+
+\item \emph{Recover an answer after losing its acknowledgement.}
+A worker can commit its result and lose the connection before the caller
+receives the reply. Querying the durable keyed decision recovers that result
+without repeating the effect. An external service with no queryable or
+idempotent outcome instead leaves an explicit unknown result. Neither a
+missing acknowledgement nor an old trace authorizes pretending the effect
+failed and executing it again. Publication, later delivery and recovery
+therefore have separate handlers.
+\end{enumerate}
+
 \begin{definition}[Proof-relevant dependent bind]
 A default dependent bind retains the selected value and its computational
 receipt:
@@ -4925,6 +6192,691 @@ some Grothendieck universe'' is a completed-totality principle.  Open-ended
 staged ascent is a different principle: no largest stage is asserted, and each
 finite obligation is discharged later.  Neither should be silently substituted
 for the other.
+
+\subsection{Checked HOL routes and material interpretations}
+\label{sec:checked-hol-material}
+
+The common signature has six typed operations: membership, empty set, union,
+powerset, separation and replacement. Its six laws are extensionality and the
+five corresponding operation specifications. They are an explicit common
+higher-order theory, not the full ZF or HOTG axiom inventory. Choice, infinity,
+membership induction and universe selection are separate extensions.
+
+The retained calculus \leanname{Logic.HOL.ProofSyntax} has 29 constructors,
+including typed object binders, equality and ordered hypothesis occurrences.
+\leanname{HOLLight.RetainedCompilation.compile} computes a primitive proof
+graph for every such supplied proof over its OpenTheory signature. Connective
+expansion is explicit; eta is admitted by the stated policy. The output has
+exactly the translated conclusion and the finite set of translated hypotheses.
+Thus this route forgets hypothesis multiplicity and is not a bijection of proofs.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, every node/.style={align=center,font=\small},
+  box/.style={draw,rounded corners,inner sep=6pt}]
+\node[box] (hol) at (0,2.6) {Common HOL signature\\typed terms and retained proofs};
+\node[box] (mega) at (4.5,5.0) {Checked Megalodon\\common material profile};
+\node[box] (mm0) at (-4.5,5.0) {Generated MM0\\HOL-rule theory};
+\node[box] (mm0native) at (0,6.0) {Maintained \code{hol.mm0}\\all 29 proof constructors};
+\node[box] (kernel) at (-4,0.7) {HOL Light\\primitive certificates};
+\node[box] (dtt) at (4,0.7) {Cumulative $\Pi/\Sigma/\mathsf{Id}$\\set-operation terms and proofs};
+\node[box] (models) at (0,-1.3) {$\mathsf{ZFSet}$, $\mathsf{WF}(\mathsf{HSet})$,\\
+  $\mathsf{HSet}$ and well-founded hyperset codes};
+\draw[->] (hol) to[bend right=12] node[above left]{(1)} (kernel);
+\draw[->] (kernel) to[bend right=12] node[below right]{(2)} (hol);
+\draw[->] (hol) -- node[above right]{(3)} (dtt);
+\draw[->] (hol) -- node[right]{(4)} (models);
+\draw[->] (kernel) -- node[below left]{(5)} (models);
+\draw[->] (dtt) -- node[below right]{(6)} (models);
+\draw[->] (mega) to[bend right=10] node[above left]{(7)} (hol);
+\draw[->] (kernel) -- node[left]{(8)} (mm0);
+\draw[->] (hol) -- node[left]{(9)} (mm0native);
+\draw[->] (hol) to[bend right=10] node[below right]{(10)} (mega);
+\draw[->] (mega.east) -- ++(0.8,0) |- node[pos=.75,below]{(11)} (models.east);
+\draw[->] (mega) -- node[pos=.35,above]{(12)} (mm0native);
+\draw[->] (mm0native) to[bend left=16] node[pos=.25,right]{(13)} (hol);
+\end{tikzpicture}
+\end{center}
+
+These are four alternative interpretations of the common signature. The
+value comparisons pair $\mathsf{ZFSet}$ with well-founded hypersets, and full
+hypersets with their valid codes; they do not identify well-founded sets with
+all hypersets. The arrows have the following checked meanings.
+\begin{enumerate}[leftmargin=*]
+\item \leanname{SetOperationInterpretation.compile_accepted} and
+  \leanname{compile_sequent} instantiate the complete proof compiler after a
+  typed signature map. \leanname{proof_nodeCount} preserves the retained
+  source proof's node count during this map; it is not a bound on the later
+  primitive graph expansion.
+\item \leanname{RetainedSemanticReadback.accepted_source} recovers the source
+  judgment from any accepted exact closed sequent in the admitted image.
+  The image excludes an uninterpreted use of the primitive equality symbol.
+  Readback is proposition-valued derivability, not reconstruction of the
+  original proof identity.
+\item \leanname{SetOperationMaterialSemantics.native_substitution} relates
+  actual term compilation at \leanname{SetOperationSignature.signature} to
+  simultaneous substitution. The proof component is
+  \leanname{SetOperationProofCompilation.compile_typed}, with actual native
+  substitution coherence in \leanname{compile_substitute}. Its extended
+  declaration profile adds precisely two opaque extensionality proof constants;
+  all 29 source constructors then compile at that same profile.
+\item \leanname{ZFSetSimpleTypeInterpretation.decode_interpret} compares a
+  structural material graph evaluator with the independent full-domain HOL
+  model. \leanname{interpret_substitution} proves its contextual coherence.
+  The set and hyperset instances share this evaluator, including functional
+  graphs, lambda application, equality and higher-order quantifiers.
+\item \leanname{SetOperationReplay.accepted_sets},
+  \leanname{accepted_wellFounded}, \leanname{accepted_hypersets} and
+  \leanname{accepted_codes} validate the same checked sequent in the four
+  interpretations, conditional on its listed assumptions. The further
+  \leanname{accepted_hyperset_graph} theorem reaches the actual graph evaluator.
+\item \leanname{SetOperationMaterialSemantics.wellFounded_graph_square} and
+  \leanname{coded_graph_square} compare actual denoted values after term
+  compilation. The proof component is
+  \leanname{SetOperationProofCompilerSemantics.compile_proves}, instantiated
+  in all four material models by \leanname{SetOperationMaterialProofSemantics}.
+  It realizes the actual compiled proof at the original conclusion.
+  These results do not assert soundness of arbitrary ambient DTT conversions
+  or reflection of every host inhabitant.
+\item \leanname{Megalodon.SetOperationProofReconstruction.checkedSource}
+  reconstructs an ordinary source proof from every accepted program in the
+  admitted monomorphic common profile. It returns the exact authored conclusion
+  and ordered local assumptions. The six declarations are opaque; the finite
+  known-fact list contains the actual functional and propositional extensionality
+  instances. \leanname{ExtensionalityAxiomProofs.functionalNative} and
+  \leanname{propositionalNative} construct source proofs of their exact normalized
+  native readings. \leanname{withoutGlobalFacts} substitutes these proofs instead
+  of appending imported facts to the source theory.
+  \leanname{RelationEqualityComparison.equation} constructs the comparison of
+  primitive equality with the actual binary-relation definition, using an
+  explicit typed equality test and beta proofs in the reverse direction.
+  \leanname{HOLTermEncodingProofs.equation} then compares every term constructor
+  with its complete equality/connective encoding. Canonical hypothesis
+  normalization has its own retained equation. The signature retraction preserves
+  variables, open contexts, types and each named operation, including union and
+  powerset despite their equal simple type.
+
+  \leanname{accepted_profile_iff_source} equates source derivability with the
+  existence of an accepted program in one of these finite explicit profiles.
+  The forward compiler computes the required instances from its source proof;
+  the converse consumes the checked program and constructs a source proof.
+  This is an equivalence of provability, not a bijection of proofs or recovery
+  of the original presentation. \leanname{accepted_meaning} consequently applies
+  to any extensional Henkin model at admissible valuations, without requiring
+  full function domains. The separate literal function-value comparisons retain
+  their original full-domain hypotheses. Four source-reflection controls exclude
+  foundation, its negation, self-membership and its negation from the six common
+  operation laws. Prefix polymorphism and other declaration/definition policies
+  are separate interfaces; the existing
+  \leanname{CheckedProofReconstruction.checkedSourceDefined} retains explicit
+  defining premises for checked bodies rather than silently identifying them
+  with the opaque profile.
+\item \leanname{HOLLight.RetainedMM0Compilation.compile_accepted}
+  produces actual saved-proof witnesses for the generated first-order
+  HOL-rule theory. \leanname{accepted_sequent_iff} gives its source-derivation
+  converse. This target is distinct from the maintained \code{hol.mm0}
+  presentation and its native qualification.
+\item \leanname{MM0.HOLKernelProofCompilation.compile} is a total
+  constructive compiler for all 29 retained source constructors into the
+  maintained \code{hol.mm0} presentation. \leanname{compileFromInitial}
+  allocates the complete proof after a well-formed initial native context.
+  Inputs supply native sorting and checked typing for source variables and
+  constants in a formation antecedent. They do not supply any compound source
+  proof's translated conclusion. The exact logical antecedent retains the
+  translated source assumptions in their original order, including duplicates.
+  \leanname{compile_accepted} proves acceptance by the existing native proof
+  checker; \leanname{compile_refuses_changed_conclusion} rejects every different
+  claimed statement for that same witness.
+
+  \leanname{HOL.ProofSyntax.binderBudget} inspects interfaces, retained term
+  parameters and substitution images throughout the proof.
+  \leanname{BindingDepthControls.specialization} has an arbitrarily deep
+  ignored argument while its coarse proof observation and node count stay
+  fixed. The node count alone therefore cannot supply this binder budget.
+  \leanname{HOLKernelProofAllocation.forProof} allocates a canonical source
+  bank and a working and temporary bank at each preorder proof node. The
+  working root becomes a binding child's variable, and its tail becomes the
+  child's canonical bank. \leanname{HOLKernelProofEnvironment.Environment.fromInitial},
+  \leanname{bind} and \leanname{assume} construct the variable typings,
+  formation/logical projection and ordered assumption proofs at these contexts.
+  This is a sufficient finite syntactic allocation, not a native running-time
+  estimate or a bound on expanded certificate size.
+
+  Formation and logical contexts remain distinct. A canonical binder name
+  inside a retained quantified assumption cannot be reused as a fresh native
+  eigenvariable. Checked alpha equations are built in the formation context
+  and promoted through the actual logical projection. The all-constructor
+  \leanname{HOLKernelAlpha.rebind} and \leanname{HOLKernelSubstitution.compile}
+  constructions provide source readback and simultaneous substitution;
+  their compared raw terms need not be equal. \leanname{HOLKernelSourceBinding}
+  closes GEN, abstraction congruence and CHOOSE, including the source-weakened
+  child conclusion. \leanname{HOLKernelProofInstantiation} derives the actual
+  SPEC, EXISTS and beta premises from the allocated environments.
+  \leanname{HOLKernelExtensionality.functionExtensionality} constructs the
+  needed specialization equation by application and equality congruence, then
+  composes abstraction congruence with two maintained eta equations. It adds
+  no new extensionality axiom. \leanname{HOLKernelProofExtensionality} restores
+  the original source function and binder encodings.
+
+  The exact maintained headers and stored logical definition bodies are read
+  from the decoded theorem inventory. In particular, crossing between the
+  native \code{bi} abbreviation and typed Boolean equality requires the
+  checked stored body. Complete native occurrence independence and distinct
+  bound images remain explicit; they impose no inequality on interpreted
+  sets or hypersets. Existing variable-collapse, occupied-name, changed-body,
+  swapped-premise and dependent-CHOOSE-result controls remain in force.
+
+  The new native panel compiles the actual recursive output for one proof
+  rooted at every constructor and five retained-assumption controls. All 34
+  artifacts pass 220 checks: strict MM1 compilation, independent upstream C
+  verification, pinned CeTTa verification, altered conclusions, removed ordered
+  assumptions where present, and axiom-dependency checks. Eta remains an explicit
+  dependency of the eta and functional-extensionality receipts. The Lean
+  reference checker accepts all 34 and rejects 42 altered conclusions or
+  assumption contexts. The untrusted serializer is checked per artifact;
+  general serialization refinement and linked-C refinement remain separate.
+
+  \leanname{HOLKernelSetOperationInterpretation.compile_accepted} specializes
+  the complete compiler to the six material operations. One regular type
+  parameter and six distinct regular object parameters carry their explicit
+  typing antecedent. The mathematical operation laws remain the source proof's
+  ordered assumptions; no set-theoretic axioms are added to maintained HOL.
+  Union and powerset retain different parameter names despite their equal types.
+  Four actual deductions---self-membership in powerset, cyclic union, a cyclic
+  witness, and its relative equivalence to self-membership---pass 32 further
+  native checks, including altered conclusions and removed premises.
+
+  This panel exposes a concrete native-format boundary. The pinned MMB format
+  supports at most 55 simultaneous bound parameters. The generic Lean allocation
+  declares many unused positions; the four receipts use 22--38 bound names.
+  The untrusted exporter removes unused bound declarations and records the
+  resulting parameter map. Shared MM1 subproofs expand to the original printed
+  proof exactly. Their tree text totals 240,787,661 bytes, the shared MM1 sources
+  7,625,940 bytes, and the four verified MMB artifacts 619,600 bytes.
+  These are measurements of these receipts, not an asymptotic cost theorem or
+  unrestricted native-format adequacy. Existing derived native lemmas use eta
+  in all four receipts; this records their actual dependencies, not necessity
+  of eta for the four mathematical conclusions.
+
+  Forward interpretation does not imply reflection.
+  \leanname{HOLKernelEncodingReflection.source_not_derivable} uses a full-domain
+  model to refute equality of two source Boolean constants. The typed native
+  representation maps both to truth, where
+  \leanname{acceptedCollapsedSource_checks} constructs an accepted reflexivity
+  receipt at that encoded statement. Source reflection therefore needs an
+  appropriate representation and admitted certificate image; it does not
+  follow from sorting and forward compilation.
+  \leanname{Kernel.ProofWitness.restricted_check_iff} isolates the local
+  theorem-policy condition on the actual submitted witness. With term and
+  definition tables fixed, acceptance under a restricted theorem table is
+  equivalent to original acceptance and permission for every entry in
+  \leanname{theoremReferences}. This ordered list includes all child proofs
+  and repeated applications. \leanname{check_iff_of_theorem_agreement}
+  preserves the exact judgment when unused theorem entries change, while
+  \leanname{disallowed_reference_refused} excludes a denied used entry.
+  Local hypotheses are retained separately. This is a dependency theorem,
+  not reconstruction of a source HOL proof or a transitive axiom audit of
+  imported derived lemmas. The maintained-MM0 common-profile
+  readback requires the further inference interpretation below; no bijection
+  of proof identities is established. These results
+  qualify this interpretation of the common calculus, not every Prime profile.
+\item \leanname{Megalodon.LogicalProofCompilation.compile_isSome} gives
+  exact coverage of the 17 connective and quantifier proof constructors.
+  \leanname{RelationEqualityProofs} separately proves actual native inference
+  equations for eight equality combinators, including transitivity,
+  application congruences and propositional equality elimination. These are
+  proof terms, without imported known facts.
+  \leanname{ProofCompilation.compile} extends the executable producer to
+  all 29 retained constructors, taking explicit programs for functional and
+  propositional extensionality. \leanname{logical_agreement} proves that its
+  logical fragment is exactly the earlier program, independent of those
+  parameters. The solid forward arrow is now supplied by
+  \leanname{HOLProofCompilationCorrectness.inferred}: all 29 constructors
+  infer their exact encoded conclusion under ordered canonical hypotheses,
+  provided the type images are formed, term declarations are opaque, and
+  each used extensionality name denotes its exact schema.
+  \leanname{SetOperationCompilerAcceptance.accepted_required} instantiates
+  these policies on the six-operation signature, computing its finite
+  extensionality declarations from the supplied proof and constructing a
+  sufficient native budget. This does not assert acceptance for arbitrary
+  recursively defined or prefix-polymorphic profiles.
+\item \leanname{Megalodon.SetOperationSemantics.accepted_material} proves
+  soundness of the actual monomorphic Mathdata proof checker in the supplied
+  full-domain material model, conditional on the source hypotheses.
+  \leanname{denote_term} compares actual open-term values, and
+  \leanname{sourceValuation_extend} retains context extension. The independently
+  checked declaration readback distinguishes union from powerset despite their
+  identical simple types. \leanname{setInduction_refused} and
+  \leanname{selfMember_refused} use the hyperset and well-founded countermodels
+  to exclude both conclusions from the six shared operation laws, for every
+  supported proof and every checking budget.
+  \leanname{SetOperationExtensionality} adds a finite list of explicitly
+  declared functional-extensionality instances and propositional extensionality.
+  \leanname{knownValidity} proves the meanings of those facts from the model,
+  and \leanname{accepted_material} then applies actual checker soundness.
+  The four positive/negative membership-induction and self-membership refusals
+  remain valid with these guest axioms present.
+\item \leanname{Megalodon.MM0ProofTransport.compile_accepted} composes the
+  common-profile reconstruction with the independently proved maintained-MM0
+  compiler. Its components use the same closed source conclusion and ordered
+  assumptions. The actual target witness has the constructed material parameter
+  context and complete finite allocation. This statement does not identify the
+  two native proof representations or remove the separate MMB parameter/encoding
+  qualification boundary.
+\item \leanname{HOLKernelSetOperationReadback.readSequent_statement} reads
+  the exact authored conclusion and ordered assumptions from a native common-profile
+  statement. \leanname{readSequentIn_encode} covers a supplied open typed context
+  and formation prefix. The shared \leanname{HOLKernelTermReadback.readTerm_encode}
+  covers all 13 HOL term constructors, with explicit dictionary and name-bank
+  conditions; \leanname{readType_sound} reconstructs the actual type code.
+  The canonical image checks exact re-encoding after independent typed parsing.
+  \leanname{statement_injective} yields refusal of a changed conclusion or
+  contracted ordered assumptions for the same accepted native witness.
+  This is statement reflection, not source derivation reflection. The control
+  \leanname{statement_readback_is_not_derivability} faithfully reads the false
+  sequent while the actual material model rules out its source derivation.
+
+  The partial decoder \leanname{HOLKernelProofReadback.readProof}
+  interprets actual checked inference trees, constructing ordinary
+  retained source proofs by ordered hypothesis substitution. Its local
+  interpretation covers the 21 logical/equality schemas and five structural
+  schemas; actual theorem headers and native substitutions are checked.
+  Boolean equivalence uses its stored definition body.
+  \leanname{HOLKernelBindingInterpretation.bindingProof} reads recursive
+  premises in extended intrinsic frames for GEN, SPEC, EXISTS, CHOOSE,
+  abstraction congruence and substitution. Beta, eta and abstraction renaming
+  construct their explicit source proofs. The native theorem headers and
+  variable-independence checks remain in force.
+  \leanname{HOLKernelLogicalFunctionReadback} reads the seven curried logical
+  functions under their checked definitions. Native conversion is admitted
+  when the source readings agree or an explicit beta recipe connects them.
+  \leanname{ConversionNormalizationRecipes.betaEquality?_isSome_iff} proves
+  that the existing typed normal-order evaluator supplies such a checked
+  recipe exactly for beta-joinable source terms.
+  \leanname{HOLKernelSetOperationProofReadback.readSourceProof} then constructs
+  the explicit antecedent and restores the exact ordered source assumptions.
+  The proof may choose a different equal assumption occurrence; no proof
+  identity or occurrence-use correspondence is claimed.
+  Intrinsic typing is reconstructed before its discharged logical reading
+  becomes truth; distinct formation claims remain distinct syntax.
+  Lexical binder shadowing is allowed by the general parser; eigenvariable
+  freshness and the canonical name-bank condition remain distinct obligations.
+  All 29 source-constructor execution controls now reconstruct proofs.
+  Universal completeness for all compiled proofs and totality on an
+  independently specified native certificate representation remain open;
+  arrow (13) denotes successful reconstruction, not every accepted native proof.
+  \leanname{SetOperationMM0ReadbackSemantics.program_typed} composes the
+  reconstructed source proof with the cumulative proof compiler.
+  \leanname{program_substitute} retains native substitution, while
+  \leanname{sets_program_readout}, \leanname{hypersets_program_readout},
+  \leanname{wellFounded_program_proves} and \leanname{codes_program_proves}
+  interpret that same program in the four material models.
+\end{enumerate}
+
+The common source vocabulary is owned by \leanname{Logic.HOL.SetOperationSignature}.
+\leanname{HOLKernelSetOperationSyntax} supplies the native parameter representation
+and formation context; the inference compiler retains its separate owner.
+The existing declaration names and mathematical bodies are retained.
+The native reader preserves the identities of union and powerset despite their
+shared simple type. It refuses inconsistent equality type annotations and
+parameter capture. Distinct alpha spellings can decode to the same intrinsic
+lambda; only the canonical image supplies exact spelling recovery.
+The name-collapse control retains the explicit distinctness condition.
+None of these representation results licenses arbitrary theorem-table entries.
+
+The cumulative calculus also supports a constructive predicate-equality proof
+reading of this same six-operation signature.
+\leanname{HOLPredicateEqualitySignature.equality_typed} forms the actual
+native equality lambda; \leanname{application_conversion} derives its two
+beta steps without installing an equality decoder or a native identity equation.
+\leanname{HOLPredicateEqualityOperations.operations} constructs six lawful
+proof operations, with native substitution laws. Proposition and function
+extensionality are absent from this particular algebra.
+\leanname{SetOperationPredicateProofs.compile_typed} applies the existing
+recursive compiler to every successful expansion, and \leanname{compile_substitute}
+preserves its actual optional output under native context substitution.
+\leanname{union_typed} and \leanname{power_typed} check the independently
+displayed congruence programs. They retain different operation names despite
+the shared simple type. A propositional-extensionality presentation is refused
+while reflexivity at the same conclusion succeeds. This is a boundary of the
+chosen proof operations, not a non-derivability result. \leanname{HenkinModel.functionsRespectEqv_iff_predicateEquality} derives the
+exact semantic condition for agreement of unary predicate equality with intrinsic
+equality on admitted values. A concrete lambda-closed monotone model separates
+two admitted endpoint functionals with equal intrinsic readings by an admitted
+predicate. \leanname{HOLPredicateEqualitySemantics.native_equality_value}
+interprets the actual equality lambda through the original signature's lambda,
+quantifier and implication clauses. Equality of its entire binary function uses
+coverage of the endpoint type; its admitted-value comparison needs no full-domain
+assumption. \leanname{SetOperationPredicateSemantics} supplies the well-founded
+set, well-founded hyperset, full hyperset and coded-hyperset instances.
+The separate \leanname{SetOperationExtensionalProfile} adds two opaque,
+formed proof declarations expressing proposition and function extensionality.
+Their types use the same predicate equality and the shared proof-family name;
+neither changes native identity or the calculus's conversion relation.
+\leanname{SetOperationExtensionalOperations.operations} constructs all eight
+compiler capabilities, with totality and substitution naturality. The two
+extensionality programs supply their actual arguments, including native domain
+and codomain codes for function extensionality.
+
+\leanname{SetOperationProofFamilySemantics.Denotes} independently interprets
+native variables, abstraction, application and explicit family recoding, with
+clauses for these two fully applied opaque proof operations. The six remaining
+capabilities are realized by their actual lambda/application programs in
+\leanname{SetOperationPredicateFamilySemantics}. Thus
+\leanname{SetOperationProofCompilerSemantics.algebra} constructs every local
+semantic obligation before applying the generic compiler theorem.
+\leanname{compile_proves} realizes the original, unexpanded HOL conclusion
+of the actual computed native proof. This proof-family reading uses full HOL
+domains: its ordinary dependent products range over all carrier values.
+No necessity claim for other possible interpretations follows from that choice.
+\leanname{compile_proves_of_original_hypotheses} retains ordered authored
+hypothesis meanings, and \leanname{SetOperationKernelProofSemantics.accepted_program_proves}
+constructs the proof and its meaning from an accepted common-profile Megalodon
+program, without a supplied source proof.
+
+\leanname{SetOperationMaterialProofSemantics} instantiates this proof
+interpretation in the four material models. The separated-singleton proof codes
+are determined by the independent set and hyperset graph evaluators.
+\leanname{setGraphProofCode_substitution} and its hyperset analogue preserve
+source substitution; their implication laws identify the actual trace-coded
+dependent product. The well-founded and coded comparison squares agree at
+these proof codes. \leanname{distinct_programs_same_material_reading} gives
+two distinct native proof programs with the same material proof reading.
+The retained \leanname{semantic_codec_does_not_reflect_values} control
+separates this chosen realization from unique native execution meaning.
+The result concerns the compiled HOL fragment and fully applied opaque
+operations, not arbitrary native universe terms, partial opaque applications,
+identity reflection or a new C implementation of dependent proof checking.
+
+The material exports include deductions from powerset and empty-set laws and
+an explicitly cyclic union instance.
+\leanname{MM0.HOLMaterialProofExport.cyclicUnionProof} derives
+$q\in q\Rightarrow q\in\bigcup q$ from the union law.
+\leanname{cyclicUnionEquivalenceProof} gives a retained proof that, over
+that same law, the existence of $q$ with both $q\in q$ and
+$q\in\bigcup q$ is equivalent to the existence of a self-member.
+\leanname{cyclicUnionWitness_iff_selfMember} proves this equivalence over
+arbitrary Henkin models without full-domain or choice hypotheses.
+The cyclic premise is realized by the Quine hyperset; an actual well-founded
+model proves \leanname{cycle_premise_cannot_be_dropped}.
+\leanname{coded_cycle_instance} retains the actual encoded union of that
+same value, with cyclic interpreted membership and irreflexive host membership.
+These deductions explore compatible interpreted fragments without selecting
+an ambient foundation for all Prime candidates.
+
+The equality comparison also gives an exact relative-strength boundary.
+\leanname{Megalodon.RelationEqualityExtensionality.functionalExtensionality_iff_functionsRespectEqv}
+identifies functional extensionality for Megalodon's binary-relation equality
+with extensional argument congruence on admitted Henkin values.
+The set, hyperset and coded models satisfy it; the lambda-closed
+monotone-Boolean model refutes it. Full function domains suffice but are not
+asserted necessary. Propositional extensionality is already valid in the
+chosen Henkin interface's proposition carrier. These are principles of an
+interpreted fragment, not a conclusion about every proposition or identity
+type of an ambient Prime candidate.
+\leanname{ExtensionalityAxioms.Native.functional_normalizes} and
+\leanname{propositional_normalizes} identify the actual normalized native
+schemata with their typed formula interpretations.
+\leanname{functional_valid} derives the former's validity from extensional
+argument congruence, without full-domain or material-choice hypotheses;
+\leanname{propositional_valid} uses the chosen proposition carrier.
+
+The hyperset replacement construction uses an explicit graph presentation;
+\leanname{HSet.Presentation.choice} supplies one in the classical checking
+metatheory. \leanname{CodedFamilyCwf} constructs context extension and a full,
+faithful decoding functor. \leanname{CodedFamilyTypeOperations} equips that
+same CwF with actual dependent products and sums, their beta/eta laws and
+strict substitution laws. The comparison is contextual:
+\leanname{CodedFamilyTypeComparison.piFamily_comparison} and
+\leanname{sigmaFamily_comparison} compare the actual type sets after
+transporting the codomain through comprehension.
+\leanname{lam_comparison}, \leanname{app_comparison},
+\leanname{sigmaPair_comparison}, \leanname{sigmaFirst_comparison} and
+\leanname{sigmaSecond_comparison} compare the constructed term operations,
+with the dependent result-family transports explicit. Cyclic values are
+admitted, while \leanname{empty_codomain_no_section} retains the empty-fibre
+obstruction. In the coded interpretation,
+\leanname{CodedHypersetInterpretation.memberships_distinct} exhibits one code
+with interpreted self-membership and no host self-membership. Under the
+stated closure predicate, \leanname{HypersetHOLTypeInterpretation.all_typeCodes_mem_iff}
+identifies the extra carrier-code containment needed to contain every simple
+HOL type code. This is a closure characterization; it is not a necessity proof
+for inaccessible cardinals.
+\leanname{ZFSetTarskiUniverses.inaccessible_tarski} additionally proves all
+three local clauses of Tarski's Axiom A for inaccessible rank segments:
+subset closure, internal bounds on powersets, and the cardinality alternative
+for every subset of the universe. \leanname{exists_common_enclosure} constructs
+one set satisfying both this property and the existing Grothendieck closure
+predicate, under cofinal inaccessible cardinals. This is a common sufficient
+model construction, not the full equivalence of the axiom packages studied
+by Brown and P\k{a}k \cite{BrownPakTwoSetTheories}.
+\leanname{HypersetHOLTermInterpretation.exists_tarski_envelope} places all
+simple-type codes and interpreted term values in one such host universe.
+Its cyclic-guest control keeps the two memberships distinct. Indeed,
+\leanname{CodedHypersetInterpretation.no_membership_preserving_map_to_sets}
+shows that even forward preservation into host membership is impossible on
+the whole hyperset carrier: a Quine atom would become a host self-member.
+
+The two models also separate principles of the common theory.
+\leanname{HypersetHenkinInterpretation.setInduction_independent} and
+\leanname{selfMember_independent} give positive interpretations on both sides
+of each independence claim. At the checking boundary,
+\leanname{SetOperationReplay.foundation_refused} and
+\leanname{negatedInduction_refused} rule out both induction and its negation
+from just the six common laws under the eta-only policy. Negated induction
+is not being identified with a complete anti-foundation axiom package.
+
+The distinction between a classical guest and its host is also modeled
+contextually. \leanname{ConstantPresheafInterpretation} sends complete typed
+valuations and term denotations to constant presheaves, preserving context
+extension and substitution. Under full source domains,
+\leanname{universal_reading} and \leanname{existential_reading} compare HOL
+quantifiers with the ambient all-future operations. All 29 proof constructors
+are sound in that same context. \leanname{ConstantPresheafControls} instantiates
+the actual hyperset model over the existing advancing-world category.
+\leanname{excludedMiddle_in_fragment} holds for its closed proposition image,
+while \leanname{laterTruth_not_in_image} exhibits a stable predicate outside
+that image and \leanname{ambient_doubleNegation_fails} refutes ambient Boolean
+logic. \leanname{guestChoice} coexists with
+\leanname{emptyObject_has_no_section}; choice is not extended to the empty
+ambient object.
+\leanname{excludedMiddle_of_predicate_coverage} states the sufficient condition
+for globalizing this classicality: every ambient predicate of the chosen
+context must be the actual interpretation of a source formula. Equality of
+predicates supplies preservation and reflection of their truth at every point.
+\leanname{oneWorld_predicate_coverage} and \leanname{oneWorld_excludedMiddle}
+give a positive instance with the same hyperset guest over one world;
+\leanname{closedMeaning_not_surjective} records the failure of coverage in
+the advancing-world host. Coverage is a sufficient condition, not asserted to
+be necessary for a host that is independently Boolean.
+The construction uses classical external metatheory, while
+the separating logic is internal to the specified presheaf host.
+
+The reconstruction also separates logical equality from evaluation.
+\leanname{RetainedDefinitionControls.no_definition_free_proof} gives an
+independent interpretation refuting the source claim when its defining
+premise is omitted. Conversely, \leanname{DefinitionErasure.proof} transforms
+the same reconstructed proof to the original signature by substituting the
+actual defining body and discharging the resulting reflexive equation. The
+expanded claim has no defining assumptions; the opaque claim does not thereby
+acquire a definition-free proof. \leanname{Cyclic.all_fuels_exhausted} exhibits a typed
+self-referential definition whose equation has a reflexivity proof but whose
+unfolding exhausts every finite budget. A proof of equality is therefore not
+a termination certificate. The exact beta/eta normalization comparison,
+including failure, remains \leanname{RetainedNormalization.normalize_erases}.
+\leanname{Megalodon.HOLTermEncoding} separately translates every HOL term
+constructor to Megalodon's actual binary-relation equality and impredicative
+connectives. \leanname{encode_subst} and \leanname{denote_encode} preserve
+substitution and full-domain meanings; \leanname{native_infers} exposes the
+selected type-depth formation check. The logical proof fragment and native
+equality combinators above extend this term translation.
+\leanname{HOLTermConversion.encode_step} preserves beta and eta steps
+through both equality expansion and connective expansion, and
+\leanname{native_opaque_coherent} compares actual normalized outputs when
+the inputs contain no expandable declaration. This is preservation rather
+than reflection of source conversion: primitive truth and its quantified
+encoding have identical target syntax but are distinct source beta/eta
+normal forms (\leanname{same_encoding_does_not_reflect_conversion}).
+The shared \leanname{BetaEtaSubstitution} laws retain renaming and
+simultaneous substitution below binders.
+The all-constructor forward Megalodon theorem below concerns its explicit
+opaque profile. Prefix-polymorphic proof reconstruction, unrestricted delta
+policies, and general acceptance and reflection theorems for the
+maintained-\code{hol.mm0} proof exporter remain open.
+For the normalization obligation,
+\leanname{Logic.HOL.EtaPostponement.postponement} factors every typed
+beta/eta path into beta steps followed by eta steps. Its strict interaction
+law retains nonempty beta progress, giving
+\leanname{BetaEtaNormalization.stronglyNormalizing} for arbitrary
+interleavings, over all HOL term constructors and contexts.
+\leanname{BetaEtaConfluence.confluent} establishes confluence of the combined
+relation by joining the mixed local forks; distinct variables remain
+nonconvertible. These results use the existing typed relations and shared
+relation-theoretic accessibility constructions.
+\leanname{Megalodon.NormalizationTermination.normalizeOne_steps} connects
+the actual monomorphic pass, including its stability flag, to genuine
+reduction progress. The executable \leanname{complete} computes a sufficient
+budget for that pass; \leanname{completeNative} extends this guarantee to the
+delta/beta/eta pipeline when the input contains no expandable declaration.
+\leanname{HOLLightNormalizationCompletion.certificate_accepted} composes the
+computed budget with the retained equality compiler: every admitted intrinsic
+monomorphic input produces an accepted primitive HOL Light receipt, without a
+successful-run premise. Its \leanname{certificate_sequent} gives the exact
+translated equation and empty logical assumptions, under the explicit eta
+axiom policy. This theorem concerns normalization receipts rather than
+acceptance of arbitrary forward proof programs.
+\leanname{NormalizationNormalForm.stable_normal} proves that the actual
+pass's stable flag excludes every beta/eta step on its admitted grammar.
+\leanname{normalize_coherent} consequently equates the actual raw outputs
+of any two successful budgets on beta/eta-convertible intrinsic inputs.
+\leanname{decideConversion_correct} combines computed completion and this
+normal-form comparison into a decision procedure for that typed monomorphic
+conversion relation.
+For the common material signature,
+\leanname{SetOperationExtensionality.normalizeTerm_meaning} preserves the
+actual value under every open valuation in every supplied full-domain set or
+hyperset model. Its typed output is fixed before the model is chosen.
+The cyclic-definition control still exhausts every delta budget. General
+definition unfolding and prefix type computation remain outside this
+completion result. The all-constructor opaque-profile compiler uses this
+normalization coherence. Existing budget-monotonicity and finite-common-bound
+theorems join successful local checks.
+\leanname{TypedProofApplication.term_application} uses those bounds and the
+typed substituted body to construct a successful native proof application.
+Its body's definition-normal support follows from the checked function and
+the context support invariant; argument annotation formation and support
+remain explicit. \leanname{proof_application} joins two checked programs at
+the maximum of their budgets, retaining the same ordered context and exact
+intermediate proposition.
+\leanname{HOLProofSpecialization.allE2} and \leanname{allE3} use the shared
+\leanname{Logic.HOL.instantiate_subst_lift} law to express repeated universal
+specialization as one simultaneous substitution. The logical, existential,
+equality and extensionality constructions now cover all 29 source rules and
+are joined by the complete \leanname{HOLProofCompilationCorrectness.inferred}
+induction on the supplied proof tree.
+\leanname{SetOperationCompilerAcceptance.functional_declared} verifies the
+actual indexed declaration lookup for each requested instance, including
+repeated type pairs. \leanname{accepted_required} computes sufficient
+checking budgets and the finite instance list, rather than assuming a
+successful run. \leanname{SetOperationCheckedCompilation.checkingBudget}
+makes this selection executable using the computable least-number operator.
+Its \leanname{checkingBudget_accepted} and \leanname{checkingBudget_failure_below}
+prove success and minimality for the reference checker's normalization
+parameter. Certificate size, receipt grade and native runtime cost are
+separate quantities. \leanname{compiled_fragment} proves that every resulting
+program lies in the existing monomorphic semantic replay fragment.
+\leanname{checked_material} joins acceptance of this same program to its
+material interpretation. Its \leanname{canonical_formula_meaning} and
+\leanname{accepted_canonical_material} preserve the interpreted propositions
+of the ordered canonical hypotheses in every supplied full-domain model.
+This normalization of hypotheses is part of the admitted representation;
+\leanname{SetOperationCompilerControls.authored_hypothesis_refused} shows
+that supplying an authored redex as an unnormalized hypothesis can fail the
+reference check. The canonical representation accepts, and duplicate
+hypotheses retain their distinct indices.
+\leanname{HOLProofInference.refuses_other_normal_form} refuses every changed
+canonical conclusion at every budget. Source beta/eta conversion reflection
+and recovery of the original proof identity are not consequences of these
+forward theorems.
+\leanname{ProofCompilationDefinitionBoundary.compiled_reflexivity_requires_delta}
+derives a necessary condition from the actual Boolean checker: acceptance of
+compiled source reflexivity forces its encoded argument's delta phase to
+finish at the same budget.
+\leanname{compiled_cyclic_rejected}
+shows why typed declarations alone cannot replace the profile's unfolding
+conditions: the source has a reflexivity proof for a recursively defined
+constant, while its actual compiled program is rejected at every budget.
+\leanname{opaque_argument_accepted} accepts the corresponding program when
+the same name is declared opaque. This boundary concerns native definition
+unfolding, independently of the cyclic membership of material hypersets.
+Conversely, \leanname{SelectedTheoryProfile.opaque_profile_rejects} retains
+the control where hiding a needed definition invalidates a proof. A
+transport must therefore expose its definition and equation policy; opacity
+alone is not a general preservation theorem.
+
+MM0's bound names require an additional contextual distinction.
+\leanname{MM0.Kernel.Substitution.two_bound_admissible_iff} characterizes the
+actual two-bound substitution guard by inequality of target names.
+\leanname{MM0.HOLContextRenaming.independent_names_equal_sets} and its
+hyperset counterpart give admissible valuations assigning the same value to
+distinct names. At the concrete cumulative signature,
+\leanname{MM0BoundContexts.native_identification}, \leanname{set_identification}
+and \leanname{hyperset_identification} prove that ordinary object-variable
+identification commutes with term translation and material interpretation.
+Nevertheless, \leanname{typing_does_not_admit_bound_collapse} shows that this
+DTT typing provides no authority to bypass the MM0 guard. A reflecting
+comparison must retain name independence separately from semantic values.
+
+For operational meaning, \leanname{FiniteBranchingHypersetSemantics.readout_observe}
+factors small labelled coalgebra decoration through final observation.
+Injective label encoding gives \leanname{readout_eq_iff_bisimilar}; the GSOS
+instance \leanname{initial_final_readout} compares the compatible initial/final
+semantics. Actual CCS and HOL primitive-replay instances retain the size and
+label hypotheses. \leanname{HypersetReplay.origin_not_determined_by_meaning}
+separates future replay behaviour from past receipt origin, whereas
+\leanname{repeated_cache_entry_changes_meaning} shows why cache multiplicity
+can change a future indexed lookup. Neither a behavioural quotient nor a
+conversion judgment by itself specifies which history a runtime stores.
+
+Pinned native qualification currently covers all 29 HOL proof-constructor
+fixtures with exact canonical conclusions and axiom-dependency checks,
+material-signature deductions, and the Megalodon-to-HOL normalization examples.
+The powerset and definition-conversion examples are checked through both
+Megalodon's native authority and HOL Light, with exact authored conclusions;
+changed declarations and omitted defining premises are rejected.
+The qualification record separates positive checks, forged conclusions and
+changed policies. It is executable evidence for the recorded binary and
+inputs, not a formal refinement proof for the C implementation or a
+linear-time bound for arbitrary certificate checking.
+The resumed transport qualification adds 41 maintained-MM0 exports, checked
+against an independently printed specification by both the upstream verifier
+and the pinned native runtime. The same four material deductions are also
+checked through HOL Light. Megalodon's additional panel checks 26 equality
+programs, 18 logical-rule and assumption-occurrence examples, five material
+deductions and two final-conversion controls, each with a refused altered
+conclusion. Instance qualification and universally proved checker soundness
+remain separate claims.
+The full Megalodon producer has a further 123 checks over 36 retained-rule,
+context and binder cases and five material deductions. The two added cases
+retain reducible hypotheses and duplicate occurrences through canonical
+context normalization. Each checks its exact
+authored conclusion, refuses an altered conclusion, and tests removal of the
+declared extensionality facts. Four compiled programs use those facts and are
+refused under the changed profile. This is a dependency of these programs;
+it does not prove their particular conclusions require extensionality.
+
+
+The constructive common-profile reconstruction panel runs 42 programs, including
+all 29 retained constructors, material deductions and an open-context duplicate
+hypothesis. All 126 exact-conclusion, altered-conclusion and changed-profile
+checks pass through the pinned native checker. The Lean producer also executes
+the source reconstruction on each accepted program. A separate raw truth program
+is reconstructed and passed to the maintained-MM0 compiler without an input source
+proof. Its exported artifact passes strict upstream compilation, upstream C and
+pinned native exact-statement verification, both forged-conclusion refusals and
+an axiom-dependency check (six checks). Removing unused bound declarations leaves
+five used bound names; the proof text is unchanged. These are per-artifact
+qualifications, not a proof of a general native serializer or arbitrary MM0
+source reflection.
 
 \section{Universe services for reflective reasoning}
 
@@ -9614,10 +11566,11 @@ four different claims. A Lean emitter is not required to start a parallel
 implementation, although that implementation cannot claim a refinement theorem
 before the theorem is supplied.
 
-\texttt{DesignDetermination} makes necessity nonvacuous by requiring an
-inhabited admissible class as well as implication for every candidate in that
-class. Its quotation countermodel proves that preserving unevaluated quoted
-syntax alone does not force non-strict evaluation of ordinary arguments.
+Universal claims use the actual mathematical domain and premises described in
+Section~\ref{sec:specification-space}. The two-strategy
+\leanname{PrimeCandidates.QuotationDemand} counterexample proves that
+preserving unevaluated quoted syntax alone does not force non-strict
+evaluation of ordinary arguments.
 \texttt{PrimeCandidates.DecisionSurface} combines the existing shared/fresh
 provider workload with a new obstruction: equal returned-value supports do
 not suffice to recover the distinct occurrence/effect observations. Neither
@@ -9627,20 +11580,11 @@ formation and qualified preservation proofs do not adopt global K/UIP or
 determine Prime's identity theory.
 
 \paragraph{Theory-driven specification development.}
-\texttt{DesignStudy.Specification} indexes requirements by their actual
-semantic predicates. Evidence is indexed by one candidate, so a completed
-requirement list establishes compatibility for that candidate rather than
-combining unrelated existence witnesses. Extending the list narrows the
-admissible class; necessity is retained only for a consistent extension.
-The existing \texttt{Razor.Criterion} supplies independent comparison orders,
-including product orders, without selecting a globally best language.
-The finite evaluation study proves both positive narrowing by an added
-unused-effect requirement and a negative control: individually satisfiable
-requirements may have no joint candidate.
-Requirements on a component can now be pulled back along the projection from
-an assembly; conjunction retains that same assembly index. Adding evidence
-does not change old predicates. These laws do not manufacture compatibility:
-the agreement of interfaces remains a further predicate on the assembly.
+\leanname{PrimeCandidates.Requirements}, under the specification index,
+keeps requirement evidence at one actual assembly index. Component requirements
+are read through that assembly's projections; interface agreement still needs
+its own proof. This is bookkeeping for the stated mathematical structures,
+not a type-theory foundation or a characterization of all Prime candidates.
 \texttt{ScopedComputationSpecification} instantiates this distinction with
 one native handler and an independently authored primitive-world function.
 Exact realization and preservation of dependent results qualify admitted
@@ -12927,10 +14871,10 @@ postponed.
   native matching, ordered occurrences, absences, take/update, consulted
   spaces and rules, binding lineage, shared producers and force authority.
   Compose their actual decoders and actions with the independently selected
-  observation, oracle, progress and cost comparisons. Construct an authorized
-  obligation-disposition service and irreversible/uncertain controls;
-  preserving a readout alone does not authenticate settlement or guarantee
-  eventual discharge.
+  observation, oracle, progress and cost comparisons. Connect the constructed
+  authorized duty ledger and escrow/irreversibility controls to the selected
+  native service. Preserving a readout alone does not authenticate settlement
+  or guarantee eventual discharge.
 \item Construct a native inductive--recursive family-enclosing universe and
   prove its substitution and decoding laws.
 \item Construct native superuniverse and extended-predicative Mahlo candidates

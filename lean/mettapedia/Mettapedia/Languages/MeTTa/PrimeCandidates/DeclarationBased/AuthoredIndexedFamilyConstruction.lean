@@ -539,7 +539,7 @@ noncomputable def canonicalIdentityTypedOccurrence :
 have typed endpoints.  The source-wide inventory performs the finite case
 analysis once; the generic construction supplies canonical occurrences and
 the resulting native presentation. -/
-noncomputable def typedSchemaInventory :
+theorem typedSchemaInventory :
     ExhaustiveTypedSchemaInventory nativeListPresentedCandidate where
   entry := by
     intro index
@@ -653,7 +653,7 @@ open NativeNaturalVectorFamilySource
 viewed through the Nat candidate.  The inventory intentionally includes Vec
 computation because the candidate is a view of one declaration world, not a
 private rule registry. -/
-noncomputable def natTypedSchemaInventory :
+theorem natTypedSchemaInventory :
     ExhaustiveTypedSchemaInventory natPresentedCandidate where
   entry := by
     intro index
@@ -695,7 +695,7 @@ noncomputable def natTypedNativePresentation :
 
 /-- The Vec candidate supplies a second view of the same four typed schemas.
 Its source identity and receipt naturality remain those of the Vec view. -/
-noncomputable def vecTypedSchemaInventory :
+theorem vecTypedSchemaInventory :
     ExhaustiveTypedSchemaInventory vecPresentedCandidate where
   entry := by
     intro index

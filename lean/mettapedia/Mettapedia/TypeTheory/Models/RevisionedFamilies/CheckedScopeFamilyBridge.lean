@@ -6,14 +6,14 @@ import Mettapedia.OSLF.Framework.HennessyMilnerNativeTypes
 import Mettapedia.GSLT.LanguageDef.MultiRewriteSchematic
 
 /-!
-# Checked WM guards in Prime's observable dependent families
+# Checked WM guards in the staged observable dependent families
 
 An actual accepted `outsideScope` premise inhabits the existing observable
 receipt family of the world-model capability. The same counting backend has
 an in-scope request with no inhabitant, so neither a total dependent answer
 section nor a total functional representation is licensed. This is an
-external semantic capability over the staged families families CwF; no authored
-Prime former or computation rule is added here.
+external semantic capability over the staged families CwF; no authored
+former or computation rule is added here.
 -/
 
 open Mettapedia.TypeTheory.Calculi.StagedScopedReflective
@@ -115,8 +115,8 @@ theorem checked_guard_operational_family_coherence
 
 /-- The same accepted provider row is visible as a finite-fuel executable
 occurrence with the authored rule name, reaches the exact OSLF target type,
-and inhabits Prime's observable answer fibre. -/
-theorem checked_guard_executable_native_prime_coherence
+and inhabits the observable answer fibre. -/
+theorem checked_guard_executable_native_family_coherence
     {State Query Ev Ov Scope : Type}
     (reading : CombinedReading State Query Ev Ov Scope)
     (provider : CheckedProvider Scope Query reading.inScope)
@@ -270,7 +270,7 @@ theorem checked_guard_schematic_window_and_receipt
 
 /-- The checked outside-scope result can execute under one authored Combine
 context. Its semantic evidence is unchanged under that context, and the
-same provider row still inhabits Prime's observable receipt family. -/
+same provider row still inhabits the observable receipt family. -/
 theorem checked_guard_combine_context_and_receipt
     {State Query Ev Ov Scope : Type}
     (reading : CombinedReading State Query Ev Ov Scope)
@@ -332,7 +332,7 @@ theorem counting_outside_family_inhabited :
   · exact outside_premise_accepted
 
 /-- For the concrete counting backend, the same accepted provider result
-drives operational reduction, semantic preservation, and a Prime-family
+drives operational reduction, semantic preservation, and a staged-family
 receipt for every world state. -/
 theorem counting_guard_operational_family_coherence (state : CountState) :
     langSemanticReducesUsing
@@ -422,7 +422,7 @@ theorem counting_scope_no_total_receipt_pi :
 
 #print axioms checked_premise_observable_receipt
 #print axioms checked_guard_operational_family_coherence
-#print axioms checked_guard_executable_native_prime_coherence
+#print axioms checked_guard_executable_native_family_coherence
 #print axioms checked_guard_target_native_diamond
 #print axioms checked_guard_schematic_window_and_receipt
 #print axioms checked_guard_combine_context_and_receipt

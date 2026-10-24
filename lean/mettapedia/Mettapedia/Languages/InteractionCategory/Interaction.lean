@@ -243,7 +243,7 @@ theorem silentRetyping_redexRetypable : silentRetyping.RedexRetypable := by
     apply HasType.constructor (rule := costBaseConstructor (cut .silent) terms[3])
     · exact silentRetyping.costBaseConstructor_mem_generated terms[3]
         (List.getElem_mem (by decide))
-    · simp [UsesBareCollection, silent_costBaseAct_params]
+    · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, silent_costBaseAct_params]
     · rw [silent_costBaseAct_params]
       exact .cons trivial rfl (HasType.fvar leftType)
         (.cons trivial rfl (HasType.fvar rightType)
@@ -251,7 +251,7 @@ theorem silentRetyping_redexRetypable : silentRetyping.RedexRetypable := by
   apply HasType.constructor (rule := costBaseConstructor (cut .silent) terms[4])
   · exact silentRetyping.costBaseConstructor_mem_generated terms[4]
       (List.getElem_mem (by decide))
-  · simp [UsesBareCollection, silent_costBaseComp_params]
+  · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, silent_costBaseComp_params]
   · rw [silent_costBaseComp_params]
     exact .cons trivial rfl (actTyped "a" "b" "p" rfl rfl rfl)
       (.cons trivial rfl (actTyped "b" "c" "q" rfl rfl rfl) .nil)

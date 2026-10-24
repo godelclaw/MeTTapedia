@@ -24,7 +24,8 @@ mutual
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       (bareAllowed : ∀ rule ∈ source.terms, UsesBareCollection rule → allowed rule.label)
       {sourceReflection targetReflection : ReflectionProfile}
       (quotes : ∀ rule ∈ source.terms, allowed rule.label →
@@ -72,7 +73,7 @@ mutual
     | @constructorQuote bound rule arguments membership notBare argumentsTyped
         available _binderImage classification argumentsSafe =>
         obtain ⟨mappedArguments, mappedArgumentsSafe⟩ := argumentsSafe.mapRows symbols rows bareAllowed quotes (bound := bound) supported.2
-        obtain ⟨targetRule, targetMember, targetLabel, targetCategory, targetParams⟩ :=
+        obtain ⟨targetRule, targetMember, targetLabel, targetCategory, targetParams, targetRepresentation⟩ :=
           rows rule membership supported.1
         have targetArguments : ArgumentsHaveTypes target (free.map symbols)
             (bound.map (mapTypeExpr symbols)) (arguments.map (mapPattern symbols)) targetRule.params := by
@@ -81,7 +82,7 @@ mutual
           simpa only [targetParams] using mappedArgumentsSafe
         have targetNotBare : ¬ UsesBareCollection targetRule := by
           have result := fun bare => notBare ((usesBareCollection_mapGrammarRule_iff symbols rule).mp bare)
-          simpa [UsesBareCollection, targetParams, mapGrammarRule] using result
+          simpa [UsesBareCollection, GrammarRule.bareParams, targetParams, targetRepresentation, mapGrammarRule] using result
         have classified : ReflectiveContextSupport.isQuoteConstructor targetReflection targetRule.label = true := by
           rw [targetLabel, quotes rule membership supported.1]
           exact classification
@@ -98,7 +99,7 @@ mutual
     | @constructorOrdinary bound rule arguments membership notBare argumentsTyped
         available _binderImage classification argumentsSafe =>
         obtain ⟨mappedArguments, mappedArgumentsSafe⟩ := argumentsSafe.mapRows symbols rows bareAllowed quotes (bound := bound) supported.2
-        obtain ⟨targetRule, targetMember, targetLabel, targetCategory, targetParams⟩ :=
+        obtain ⟨targetRule, targetMember, targetLabel, targetCategory, targetParams, targetRepresentation⟩ :=
           rows rule membership supported.1
         have targetArguments : ArgumentsHaveTypes target (free.map symbols)
             (bound.map (mapTypeExpr symbols)) (arguments.map (mapPattern symbols)) targetRule.params := by
@@ -107,7 +108,7 @@ mutual
           simpa only [targetParams] using mappedArgumentsSafe
         have targetNotBare : ¬ UsesBareCollection targetRule := by
           have result := fun bare => notBare ((usesBareCollection_mapGrammarRule_iff symbols rule).mp bare)
-          simpa [UsesBareCollection, targetParams, mapGrammarRule] using result
+          simpa [UsesBareCollection, GrammarRule.bareParams, targetParams, targetRepresentation, mapGrammarRule] using result
         have classified : ReflectiveContextSupport.isQuoteConstructor targetReflection targetRule.label = false := by
           rw [targetLabel, quotes rule membership supported.1]
           exact classification
@@ -198,11 +199,14 @@ mutual
     | @collectionConstructor bound rule parameterName collectionType elements rest elementType
         membership parameterShape elementsTyped available _binderImage elementsSafe =>
         obtain ⟨mappedElements, mappedElementsSafe⟩ := elementsSafe.mapRows symbols rows bareAllowed quotes (bound := bound) supported
-        obtain ⟨targetRule, targetMember, targetLabel, targetCategory, targetParams⟩ :=
+        obtain ⟨targetRule, targetMember, targetLabel, targetCategory, targetParams, targetRepresentation⟩ :=
           rows rule membership (bareAllowed rule membership ⟨_, _, _, parameterShape⟩)
-        have targetShape : targetRule.params = [.simple parameterName
+        have targetShape : targetRule.bareParams = [.simple parameterName
             (.collection collectionType (mapTypeExpr symbols elementType))] := by
-          simp [targetParams, parameterShape, mapTermParam, mapTypeExpr]
+          have sourceShape := (GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape
+          have targetBare := targetRepresentation.trans sourceShape.1
+          simp [GrammarRule.bareParams_of_bare _ targetBare, targetParams,
+            sourceShape.2, mapTermParam, mapTypeExpr]
         let resultTyped := HasType.collectionConstructor (rest := rest) targetMember targetShape mappedElements
         have resultSafe : resultTyped.ReflectiveSupportSafeAt targetReflection support available id :=
           .collectionConstructor (membership := targetMember) (parameterShape := targetShape)
@@ -221,7 +225,8 @@ mutual
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       (bareAllowed : ∀ rule ∈ source.terms, UsesBareCollection rule → allowed rule.label)
       {sourceReflection targetReflection : ReflectionProfile}
       (quotes : ∀ rule ∈ source.terms, allowed rule.label →
@@ -291,7 +296,8 @@ mutual
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       (bareAllowed : ∀ rule ∈ source.terms, UsesBareCollection rule → allowed rule.label)
       {sourceReflection targetReflection : ReflectionProfile}
       (quotes : ∀ rule ∈ source.terms, allowed rule.label →
@@ -348,7 +354,8 @@ theorem HasTypeWithConstructors.mapRows_reflectiveSupport
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       (bareAllowed : ∀ rule ∈ source.terms, UsesBareCollection rule → allowed rule.label)
       {sourceReflection targetReflection : ReflectionProfile}
       (quotes : ∀ rule ∈ source.terms, allowed rule.label →

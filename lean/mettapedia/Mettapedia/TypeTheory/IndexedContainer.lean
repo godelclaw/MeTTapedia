@@ -16,12 +16,18 @@ Strict positivity does not imply finitarity.  Accordingly, `Finitary` is an
 additional proof that every position fibre is finite.  Lists and vectors have
 this proof.  The positive reader container with natural-number positions does
 not.
+
+Executable source-ordered traversal needs one further capability. A bare
+`Fintype` proves that the positions are finite but does not declare which
+enumeration represents source order. `OrderedFinitary` therefore retains an
+explicit duplicate-free, complete position list for every shape.
 -/
 
 namespace Mettapedia.TypeTheory
 
 universe uOutput uShape uPosition uElement uTarget uThird
 
+set_option linter.checkUnivs false in
 /-- A one-parameter indexed container.  `Shape output` records the complete
 structural skeleton at an output index; `Position shape` records every place
 where a parameter value is stored. -/
@@ -71,6 +77,19 @@ structure Finitary
   positionFintype : ∀ {output : Output} (shape : container.Shape output),
     Fintype (container.Position shape)
 
+/-- Finitarity together with a selected source order for every position
+fibre.  Completeness and duplicate freedom make this suitable for executable
+traversal without identifying positivity with enumeration. -/
+structure OrderedFinitary
+    (container : IndexedContainer.{uOutput, uShape, uPosition} Output)
+    extends Finitary container where
+  positions : ∀ {output : Output} (shape : container.Shape output),
+    List (container.Position shape)
+  positions_nodup : ∀ {output : Output} (shape : container.Shape output),
+    (positions shape).Nodup
+  positions_complete : ∀ {output : Output} (shape : container.Shape output)
+    (position : container.Position shape), position ∈ positions shape
+
 namespace Examples
 
 /-- Lists in indexed-container normal form: length is the shape and `Fin
@@ -85,6 +104,18 @@ def listFinitary : Finitary list where
     change Nat at length
     change Fintype (Fin length)
     infer_instance
+
+def listOrderedFinitary : OrderedFinitary list where
+  toFinitary := listFinitary
+  positions length := List.ofFn id
+  positions_nodup := by
+    intro output length
+    cases output
+    exact List.nodup_ofFn.mpr Function.injective_id
+  positions_complete := by
+    intro output length position
+    cases output
+    exact List.mem_ofFn.mpr ⟨position, rfl⟩
 
 /-- The container extension is exactly the usual shape/tuple encoding of
 lists. -/
@@ -104,6 +135,18 @@ def vectorFinitary : Finitary vector where
     change Fintype (Fin output)
     infer_instance
 
+def vectorOrderedFinitary : OrderedFinitary vector where
+  toFinitary := vectorFinitary
+  positions _shape := List.ofFn id
+  positions_nodup := by
+    intro _output shape
+    cases shape
+    exact List.nodup_ofFn.mpr Function.injective_id
+  positions_complete := by
+    intro _output shape position
+    cases shape
+    exact List.mem_ofFn.mpr ⟨position, rfl⟩
+
 /-- An infinitary but still positive container: one shape with a parameter at
 every natural-number position. -/
 def reader : IndexedContainer Unit where
@@ -121,9 +164,13 @@ def readerExtensionEquiv (Element : Type uElement) :
 the separate finitarity capability. -/
 theorem reader_not_finitary : ¬ Nonempty (Finitary reader) := by
   rintro ⟨finitary⟩
-  letI : Fintype Nat :=
+  let : Fintype Nat :=
     @Finitary.positionFintype Unit reader finitary () ()
   exact not_finite Nat
+
+theorem reader_not_orderedFinitary : ¬ Nonempty (OrderedFinitary reader) := by
+  rintro ⟨ordered⟩
+  exact reader_not_finitary ⟨ordered.toFinitary⟩
 
 end Examples
 
@@ -131,6 +178,9 @@ end Examples
 #print axioms map_comp
 #print axioms Examples.listExtensionEquiv
 #print axioms Examples.reader_not_finitary
+#print axioms Examples.listOrderedFinitary
+#print axioms Examples.vectorOrderedFinitary
+#print axioms Examples.reader_not_orderedFinitary
 
 end IndexedContainer
 end Mettapedia.TypeTheory

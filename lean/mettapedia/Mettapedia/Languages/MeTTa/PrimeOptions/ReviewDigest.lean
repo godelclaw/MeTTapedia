@@ -111,7 +111,7 @@ def nodes : List Node := [
     summary := "Internal services refuse as set judgments are refused." },
   { id := "named-bootstrap-core", question := "logical-core"
     title := "The named bootstrap logical core"
-    summary := "Prime's own intuitionistic higher-order core, named in every certificate." },
+    summary := "A candidate's own intuitionistic higher-order core, named in every certificate." },
   { id := "port-indexed-finality", question := "sheaf-hyperset-route"
     title := "Port the indexed final-coalgebra theorem"
     summary := "Instantiate the indexed final-coalgebra theorem with the exact ambient and \

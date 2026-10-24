@@ -13,6 +13,9 @@ granularity. The executable profile drains an internal ordered enumeration.
 The contextual machine takes its lookup contract separately; HE completion is
 observed as a bag with multiplicity. Internal drain order is not a promised
 language-level answer order.
+
+This is a first-order Atom profile of HE. It does not define MeTTa as a whole
+or constrain HO MeTTa Prime's binders, typed contexts, or search strategies.
 -/
 
 open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory (aliasConstraints)

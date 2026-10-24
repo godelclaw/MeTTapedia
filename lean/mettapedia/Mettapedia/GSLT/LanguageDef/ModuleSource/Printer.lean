@@ -104,7 +104,7 @@ def evalPolicy : Option TermEvalPolicy → String
   | some .oracle => " ![oracle]"
 
 def rule (row : GrammarRule) : String :=
-  s!"{row.label} . {commas (row.params.map termParam)} |- {" ".intercalate (row.syntaxPattern.map syntaxItem)} : " ++
+  s!"{quote row.label} . {commas (row.params.map termParam)} |- {" ".intercalate (row.syntaxPattern.map syntaxItem)} : " ++
     s!"{row.category}{evalPolicy row.evalPolicy?};"
 
 private def guarded (premises : List Premise) (body : String) : String :=
@@ -141,6 +141,7 @@ partial def expr (context : Nat) : Expr → List String
   | .join left right =>
       let text := expr 10 left ++ ["\\/"] ++ expr 11 right
       if context > 10 then ["{"] ++ text ++ ["}"] else text
+  | .extend none [] => ["Empty"]
   | .extend base blocks =>
       let text := (base.map (expr 51)).getD [] ++ blocks.flatMap block
       if context > 50 then ["{"] ++ text ++ ["}"] else text

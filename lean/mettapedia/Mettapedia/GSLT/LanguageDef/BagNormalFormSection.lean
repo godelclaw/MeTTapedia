@@ -48,7 +48,7 @@ theorem path_fill {base : BasePremiseEvaluator} (context : OneHoleContext)
   | tail _ step recurse => exact recurse.tail (equationContextStep_fill context step)
 
 /-- A chain from an admissible pattern ends at an admissible pattern. -/
-theorem path_admissible (laws : BagTheory language bag unit)
+theorem path_admissible (laws : BareBagTheory language bag unit)
     {base : BasePremiseEvaluator} {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} {source target : Pattern}
     (path : Path base language source target)
@@ -89,7 +89,7 @@ theorem path_of_derived {base : BasePremiseEvaluator} {source target : Pattern}
 /-! ## The chain to the normal form -/
 
 /-- An admissible bag is sorted at the bag's sort. -/
-theorem sortedAt_of_admissible (laws : BagTheory language bag unit)
+theorem sortedAt_of_admissible (laws : BareBagTheory language bag unit)
     {free : FreeTypeContext} {bound : List TypeExpr} {type : TypeExpr}
     {elements : List Pattern}
     (admissible : Admissible language free bound type
@@ -104,7 +104,7 @@ section Flattening
 variable {unitName : String}
 
 /-- Splice every nested bag of an admissible bag. -/
-theorem path_splice (laws : BagTheory language bag (some unitName))
+theorem path_splice (laws : BareBagTheory language bag (some unitName))
     {base : BasePremiseEvaluator} {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} (collectionless : collectionFree type = true) :
     ∀ (todo done : List Pattern),
@@ -131,7 +131,7 @@ theorem path_splice (laws : BagTheory language bag (some unitName))
         simpa [splice_of_not_bag nested, List.append_assoc] using later
 
 /-- Drop every unit of an admissible bag. -/
-theorem path_dropUnits (laws : BagTheory language bag (some unitName))
+theorem path_dropUnits (laws : BareBagTheory language bag (some unitName))
     {base : BasePremiseEvaluator} {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} (collectionless : collectionFree type = true) :
     ∀ (todo done : List Pattern),
@@ -159,7 +159,7 @@ theorem path_dropUnits (laws : BagTheory language bag (some unitName))
         simpa [isUnit, List.append_assoc] using later
 
 /-- Remove an empty or singleton wrapper from an admissible bag. -/
-theorem path_collapse (laws : BagTheory language bag (some unitName))
+theorem path_collapse (laws : BareBagTheory language bag (some unitName))
     {base : BasePremiseEvaluator} {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} (collectionless : collectionFree type = true)
     {components : List Pattern}
@@ -178,7 +178,7 @@ theorem path_collapse (laws : BagTheory language bag (some unitName))
 end Flattening
 
 /-- **An admissible bag of normal components reaches its normal form.** -/
-theorem path_normalizeBag (laws : BagTheory language bag unit)
+theorem path_normalizeBag (laws : BareBagTheory language bag unit)
     {base : BasePremiseEvaluator} {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} (collectionless : collectionFree type = true)
     {components : List Pattern}
@@ -211,7 +211,7 @@ theorem path_normalizeBag (laws : BagTheory language bag unit)
 
 /-- **Soundness.**  An admissible pattern at a collection-free type reaches
 its normal form by a chain of steps of the static equivalence. -/
-theorem path_normalForm (laws : BagTheory language bag unit)
+theorem path_normalForm (laws : BareBagTheory language bag unit)
     (base : BasePremiseEvaluator) (pattern : Pattern) :
     ∀ {free : FreeTypeContext} {bound : List TypeExpr} {type : TypeExpr},
       Admissible language free bound type pattern → collectionFree type = true →
@@ -230,7 +230,7 @@ theorem path_normalForm (laws : BagTheory language bag unit)
         hasType_apply_inversion admissible.typed
       have ruleNotBag : rule ≠ bag := by
         rintro rfl
-        obtain ⟨parameterName, shape⟩ := laws.bagShape
+        obtain ⟨parameterName, shape⟩ := laws.bareShape
         exact notBare ⟨parameterName, .hashBag, .base _, shape⟩
       have paths : ∀ argument ∈ arguments,
           Path base language argument (normalForm unit argument) := by
@@ -335,7 +335,7 @@ theorem closed_of_admissible {sort : LangSort language} {pattern : Pattern}
 /-- A chain from a closed term of the interacting fibre stays in the fibre,
 and relates its two ends in the fibre's static equivalence. -/
 theorem presented_of_path {presentation : InteractivePresentation}
-    (laws : BagTheory presentation.presentation.language bag unit)
+    (laws : BareBagTheory presentation.presentation.language bag unit)
     {source target : Pattern}
     (path : Path defaultBasePremises presentation.presentation.language source target)
     (sourceClosed : ClosedTermWellSorted presentation.presentation.language
@@ -359,7 +359,7 @@ fibre of an iGSLT whose presentation is a bag theory, the normal form is a
 computable section of the static equivalence: every term is equivalent to its
 normal form, and equivalent terms have the same normal form. -/
 def bagCanonicalSection (theory : IGSLT) {bag : GrammarRule} {unit : Option String}
-    (laws : BagTheory theory.presentation.presentation.language bag unit) :
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit) :
     ComputableCanonicalSection theory where
   normalize term :=
     ⟨normalForm unit term.1,
@@ -374,13 +374,13 @@ def bagCanonicalSection (theory : IGSLT) {bag : GrammarRule} {unit : Option Stri
   complete := by
     intro left right equivalent
     apply Subtype.ext
-    exact normalForm_eq_of_equationEquiv laws
+    exact normalForm_eq_of_equationEquiv laws.toBagTheory
       (equationEquiv_of_presentedEquationSetoid equivalent)
 
 /-- The section normalizes the underlying pattern by the raw normalizer. -/
 @[simp] theorem bagCanonicalSection_normalize_val (theory : IGSLT) {bag : GrammarRule}
     {unit : Option String}
-    (laws : BagTheory theory.presentation.presentation.language bag unit)
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit)
     (term : theory.toGSLT.Term) :
     ((bagCanonicalSection theory laws).normalize term).1 = normalForm unit term.1 :=
   rfl

@@ -32,7 +32,7 @@ open FormationSensitive (DeclarationSpine ContextFormation)
 
 variable {n : Nat}
 
-def universes : FormationSensitive.UniverseRegularity IntrinsicRelator.rules :=
+theorem universes : FormationSensitive.UniverseRegularity IntrinsicRelator.rules :=
   FormationSensitive.towerUniverseRegularity.includeSignature IntrinsicRelator.rawSignature
 
 def eliminatorContext : Tower.Ctx 5 :=

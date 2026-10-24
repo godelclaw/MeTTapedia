@@ -1,22 +1,44 @@
+import Mettapedia.Order.PredicateFixedPointEncodings
 import Mathlib.Data.Set.Card
-import Mathlib.Order.FixedPoints
+import Mathlib.Order.Hom.Set
 import Mathlib.Order.Iterate
 
 /-!
-# Fixed points of monotone maps on finite powersets
+# Finite fixed points, approximation stages, and De Morgan duality
 
-A monotone self-map of `Set S` reaches its least fixed point by iterating from
-`∅`, and its greatest fixed point by iterating from `Set.univ`.  When `S` is
-finite, at most `Nat.card S` iterations are needed.  The proof combines
-Mathlib's monotone-iterate, finite-cardinality, and bounded-stabilization
-lemmas.
+Iteration from `∅` discovers the least fixed point; iteration from `Set.univ`
+eliminates states outside the greatest. Complementation identifies elimination
+with discovery for the De Morgan dual operator, including the first such stage.
+On a finite carrier both sequences stabilize within `Nat.card S` rounds.
+A repeated approximation certifies the answer even before that bound.
+
+Ranks count rounds of a monotone set operator, not the work of implementing a
+round. The quantified predicates and executable finite-set strategies remain
+separate interpretations of these fixed points.
 -/
 
 namespace Mettapedia.Order.FiniteSetFixedPoints
 
+variable {S : Type*}
+
+/-- Iteration commutes with De Morgan duality.  The empty/universal fixed-point
+approximations are the two boundary instances of this generic semiconjugacy
+fact. -/
+theorem iterate_dual
+    (original dual : Set S → Set S)
+    (dualEq : ∀ states, dual states = (original statesᶜ)ᶜ)
+    (index : Nat) (states : Set S) :
+    dual^[index] statesᶜ = (original^[index] states)ᶜ := by
+  have semiconjugate : Function.Semiconj (fun states : Set S => statesᶜ)
+      original dual := by
+    intro states
+    rw [dualEq]
+    simp
+  exact (semiconjugate.iterate_right index states).symm
+
 /-- An increasing chain of subsets of a finite carrier that stays constant
 after its first repeated step has stabilized by `Nat.card S`. -/
-theorem monotone_chain_stabilizes_at_card {S : Type*} [Finite S]
+theorem monotone_chain_stabilizes_at_card [Finite S]
     (chain : Nat → Set S) (monotone : Monotone chain)
     (stable : ∀ index,
       chain index = chain (index + 1) →
@@ -25,10 +47,8 @@ theorem monotone_chain_stabilizes_at_card {S : Type*} [Finite S]
   have cardinalityMonotone : Monotone fun index => (chain index).ncard := by
     intro left right ordered
     exact Set.ncard_le_ncard (monotone ordered) (Set.toFinite _)
-  have cardinalityBound : ∀ index, (chain index).ncard ≤ Nat.card S := by
-    intro index
-    rw [← Set.ncard_univ]
-    exact Set.ncard_le_ncard (by intro _ _; trivial) (Set.toFinite _)
+  have cardinalityBound : ∀ index, (chain index).ncard ≤ Nat.card S :=
+    fun index => (chain index).ncard_le_card
   have cardinalityStable : ∀ index,
       (chain index).ncard = (chain (index + 1)).ncard →
         (chain (index + 1)).ncard = (chain (index + 2)).ncard := by
@@ -45,304 +65,206 @@ theorem monotone_chain_stabilizes_at_card {S : Type*} [Finite S]
 
 /-- A decreasing chain obeying the same stability condition has also
 stabilized by `Nat.card S`. -/
-theorem antitone_chain_stabilizes_at_card {S : Type*} [Finite S]
+theorem antitone_chain_stabilizes_at_card [Finite S]
     (chain : Nat → Set S) (antitone : Antitone chain)
     (stable : ∀ index,
       chain index = chain (index + 1) →
         chain (index + 1) = chain (index + 2)) :
     chain (Nat.card S) = chain (Nat.card S + 1) := by
-  let complementChain : Nat → Set S := fun index => (chain index)ᶜ
-  have complementMonotone : Monotone complementChain := by
-    intro left right ordered
-    exact Set.compl_subset_compl.mpr (antitone ordered)
-  have complementStable : ∀ index,
-      complementChain index = complementChain (index + 1) →
-        complementChain (index + 1) = complementChain (index + 2) := by
-    intro index equalComplements
-    exact congrArg (fun states : Set S => statesᶜ)
-      (stable index (compl_inj_iff.mp equalComplements))
-  exact compl_inj_iff.mp (monotone_chain_stabilizes_at_card
-    complementChain complementMonotone complementStable)
+  apply compl_inj_iff.mp
+  exact monotone_chain_stabilizes_at_card (fun index => (chain index)ᶜ)
+    (fun _ _ ordered => Set.compl_subset_compl.mpr (antitone ordered))
+    (fun index equal => congrArg (fun states : Set S => statesᶜ)
+      (stable index (compl_inj_iff.mp equal)))
 
-/-- The least fixed point of a monotone map on a finite powerset is its
-`Nat.card S`-th iterate from `∅`. -/
-theorem lfp_eq_iterate_empty {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) :
-    transformer.lfp =
-      (transformer : Set S → Set S)^[Nat.card S] (∅ : Set S) := by
-  let approximation : Nat → Set S := fun index =>
-    (transformer : Set S → Set S)^[index] (∅ : Set S)
-  have approximationMonotone : Monotone approximation :=
-    transformer.monotone.monotone_iterate_of_le_map bot_le
-  have approximationStable : ∀ index,
-      approximation index = approximation (index + 1) →
-        approximation (index + 1) = approximation (index + 2) := by
-    intro index equal
-    simpa [approximation, Function.iterate_succ_apply'] using
-      congrArg transformer equal
-  have stabilized := monotone_chain_stabilizes_at_card
-    approximation approximationMonotone approximationStable
-  have fixed : transformer (approximation (Nat.card S)) =
-      approximation (Nat.card S) := by
-    simpa [approximation, Function.iterate_succ_apply'] using stabilized.symm
-  have approximationLe : ∀ index, approximation index ≤ transformer.lfp := by
-    intro index
-    induction index with
-    | zero => exact bot_le
-    | succ index inductionHypothesis =>
-        simpa only [approximation, Function.iterate_succ_apply'] using
-          (transformer.monotone inductionHypothesis).trans_eq
-            transformer.map_lfp
-  exact le_antisymm (transformer.lfp_le_fixed fixed)
-    (by simpa [approximation] using approximationLe (Nat.card S))
+/-- The monotone operator whose discoveries are the original operator's eliminations. -/
+def deMorganDual (transformer : Set S →o Set S) : Set S →o Set S where
+  toFun states := (transformer statesᶜ)ᶜ
+  monotone' _ _ subset := compl_le_compl (transformer.monotone (compl_le_compl subset))
 
-/-- The greatest fixed point of a monotone map on a finite powerset is its
-`Nat.card S`-th iterate from `Set.univ`. -/
-theorem gfp_eq_iterate_univ {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) :
-    transformer.gfp =
-      (transformer : Set S → Set S)^[Nat.card S] (Set.univ : Set S) := by
-  let approximation : Nat → Set S := fun index =>
-    (transformer : Set S → Set S)^[index] (Set.univ : Set S)
-  have approximationAntitone : Antitone approximation :=
-    transformer.monotone.antitone_iterate_of_map_le le_top
-  have approximationStable : ∀ index,
-      approximation index = approximation (index + 1) →
-        approximation (index + 1) = approximation (index + 2) := by
-    intro index equal
-    simpa [approximation, Function.iterate_succ_apply'] using
-      congrArg transformer equal
-  have stabilized := antitone_chain_stabilizes_at_card
-    approximation approximationAntitone approximationStable
-  have fixed : transformer (approximation (Nat.card S)) =
-      approximation (Nat.card S) := by
-    simpa [approximation, Function.iterate_succ_apply'] using stabilized.symm
-  have approximationGe : ∀ index, transformer.gfp ≤ approximation index := by
-    intro index
-    induction index with
-    | zero => exact le_top
-    | succ index inductionHypothesis =>
-        simpa only [approximation, Function.iterate_succ_apply'] using
-          transformer.map_gfp.symm.le.trans
-            (transformer.monotone inductionHypothesis)
-  exact le_antisymm
-    (by simpa [approximation] using approximationGe (Nat.card S))
-    (transformer.le_gfp fixed.ge)
+variable (transformer : Set S →o Set S)
 
-/-! ## Canonical finite semantic ranks -/
+@[simp] theorem deMorganDual_apply (states : Set S) :
+    deMorganDual transformer states = (transformer statesᶜ)ᶜ := rfl
+
+@[simp] theorem deMorganDual_involutive : deMorganDual (deMorganDual transformer) = transformer := by
+  ext states
+  simp only [deMorganDual_apply, compl_compl]
+
+@[simp] theorem lfp_deMorganDual : (deMorganDual transformer).lfp = transformer.gfpᶜ := by
+  exact (FixedPointTransport.gfp_comparison (OrderIso.compl (Set S)) transformer
+    (deMorganDual transformer).dual (by
+      intro states
+      change (transformer states)ᶜ = (transformer statesᶜᶜ)ᶜ
+      rw [compl_compl])).symm
 
 /-- The increasing approximation sequence for a least fixed point. -/
-def lowerApproximation {S : Type*} (transformer : Set S →o Set S)
-    (index : Nat) : Set S :=
-  (transformer : Set S → Set S)^[index] (∅ : Set S)
+def lowerApproximation (index : Nat) : Set S := transformer^[index] ∅
 
 /-- The decreasing approximation sequence for a greatest fixed point. -/
-def upperApproximation {S : Type*} (transformer : Set S →o Set S)
-    (index : Nat) : Set S :=
-  (transformer : Set S → Set S)^[index] (Set.univ : Set S)
+def upperApproximation (index : Nat) : Set S := transformer^[index] Set.univ
 
-@[simp] theorem lowerApproximation_zero {S : Type*}
-    (transformer : Set S →o Set S) :
-    lowerApproximation transformer 0 = ∅ := rfl
+@[simp] theorem lowerApproximation_zero : lowerApproximation transformer 0 = ∅ := rfl
 
-@[simp] theorem lowerApproximation_succ {S : Type*}
-    (transformer : Set S →o Set S) (index : Nat) :
-    lowerApproximation transformer (index + 1) =
-      transformer (lowerApproximation transformer index) := by
-  simp [lowerApproximation, Function.iterate_succ_apply']
+@[simp] theorem lowerApproximation_succ (index : Nat) :
+    lowerApproximation transformer (index + 1) = transformer (lowerApproximation transformer index) :=
+  Function.iterate_succ_apply' _ _ _
 
-@[simp] theorem upperApproximation_zero {S : Type*}
-    (transformer : Set S →o Set S) :
-    upperApproximation transformer 0 = Set.univ := rfl
+@[simp] theorem upperApproximation_zero : upperApproximation transformer 0 = Set.univ := rfl
 
-@[simp] theorem upperApproximation_succ {S : Type*}
-    (transformer : Set S →o Set S) (index : Nat) :
-    upperApproximation transformer (index + 1) =
-      transformer (upperApproximation transformer index) := by
-  simp [upperApproximation, Function.iterate_succ_apply']
+@[simp] theorem upperApproximation_succ (index : Nat) :
+    upperApproximation transformer (index + 1) = transformer (upperApproximation transformer index) :=
+  Function.iterate_succ_apply' _ _ _
 
-theorem lowerApproximation_mono {S : Type*}
-    (transformer : Set S →o Set S) :
-    Monotone (lowerApproximation transformer) :=
+@[simp] theorem lowerApproximation_deMorganDual (index : Nat) :
+    lowerApproximation (deMorganDual transformer) index = (upperApproximation transformer index)ᶜ := by
+  simpa only [lowerApproximation, upperApproximation, Set.compl_univ] using
+    iterate_dual transformer (deMorganDual transformer) (fun _ => rfl) index Set.univ
+
+theorem lowerApproximation_mono : Monotone (lowerApproximation transformer) :=
   transformer.monotone.monotone_iterate_of_le_map bot_le
 
-theorem upperApproximation_antitone {S : Type*}
-    (transformer : Set S →o Set S) :
-    Antitone (upperApproximation transformer) :=
+theorem upperApproximation_antitone : Antitone (upperApproximation transformer) :=
   transformer.monotone.antitone_iterate_of_map_le le_top
 
 /-- Every lower approximation lies below the least fixed point. -/
-theorem lowerApproximation_le_lfp {S : Type*}
-    (transformer : Set S →o Set S) (index : Nat) :
-    lowerApproximation transformer index ≤ transformer.lfp := by
-  induction index with
-  | zero => exact bot_le
-  | succ index inductionHypothesis =>
-      rw [show index + 1 = Nat.succ index by omega, lowerApproximation_succ]
-      exact (transformer.monotone inductionHypothesis).trans_eq transformer.map_lfp
+theorem lowerApproximation_le_lfp (index : Nat) :
+    lowerApproximation transformer index ≤ transformer.lfp :=
+  (transformer.monotone.iterate index bot_le).trans_eq (transformer.isFixedPt_lfp.iterate index)
 
 /-- The greatest fixed point lies below every upper approximation. -/
-theorem gfp_le_upperApproximation {S : Type*}
-    (transformer : Set S →o Set S) (index : Nat) :
+theorem gfp_le_upperApproximation (index : Nat) :
     transformer.gfp ≤ upperApproximation transformer index := by
-  induction index with
-  | zero => exact le_top
-  | succ index inductionHypothesis =>
-      rw [show index + 1 = Nat.succ index by omega, upperApproximation_succ]
-      exact transformer.map_gfp.symm.le.trans
-        (transformer.monotone inductionHypothesis)
+  simpa only [lowerApproximation_deMorganDual, lfp_deMorganDual, compl_le_compl_iff_le] using
+    lowerApproximation_le_lfp (deMorganDual transformer) index
 
-/-- Every member of a finite least fixed point enters its approximation
-sequence by the carrier-cardinality bound. -/
-theorem exists_lowerApproximation_of_mem_lfp {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (member : state ∈ transformer.lfp) :
-    ∃ index, state ∈ lowerApproximation transformer index := by
-  refine ⟨Nat.card S, ?_⟩
-  simpa [lowerApproximation, ← lfp_eq_iterate_empty transformer] using member
+/-- Equality of successive lower approximations certifies the least fixed point. -/
+theorem lfp_eq_lowerApproximation_of_stable (index : Nat)
+    (stable : lowerApproximation transformer index = lowerApproximation transformer (index + 1)) :
+    transformer.lfp = lowerApproximation transformer index :=
+  le_antisymm (transformer.lfp_le_fixed ((lowerApproximation_succ transformer index).symm.trans
+    stable.symm)) (lowerApproximation_le_lfp transformer index)
 
-/-- Canonical rank of a state in a finite least fixed point: its first
-approximation stage. -/
-noncomputable def lfpEntryRank {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (member : state ∈ transformer.lfp) : Nat :=
-  by
-    classical
-    exact Nat.find
-      (exists_lowerApproximation_of_mem_lfp transformer state member)
+/-- Equality of successive upper approximations certifies the greatest fixed point. -/
+theorem gfp_eq_upperApproximation_of_stable (index : Nat)
+    (stable : upperApproximation transformer index = upperApproximation transformer (index + 1)) :
+    transformer.gfp = upperApproximation transformer index := by
+  have dualStable := congrArg (fun states : Set S => statesᶜ) stable
+  simpa only [lowerApproximation_deMorganDual, lfp_deMorganDual, compl_inj_iff] using
+    lfp_eq_lowerApproximation_of_stable (deMorganDual transformer) index
+      (by simpa only [lowerApproximation_deMorganDual] using dualStable)
 
-theorem lfpEntryRank_mem {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (member : state ∈ transformer.lfp) :
-    state ∈ lowerApproximation transformer
-      (lfpEntryRank transformer state member) :=
-  by
-    classical
-    exact Nat.find_spec
-      (exists_lowerApproximation_of_mem_lfp transformer state member)
+section Finite
 
-theorem lfpEntryRank_min {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (member : state ∈ transformer.lfp) {index : Nat}
+variable [Finite S]
+
+/-- The least fixed point is reached within the carrier-cardinality bound. -/
+theorem lfp_eq_iterate_empty :
+    transformer.lfp = transformer^[Nat.card S] (∅ : Set S) := by
+  apply lfp_eq_lowerApproximation_of_stable
+  exact monotone_chain_stabilizes_at_card (lowerApproximation transformer)
+    (lowerApproximation_mono transformer) (fun index equal => by
+      simpa only [lowerApproximation_succ] using congrArg transformer equal)
+
+/-- The greatest fixed point satisfies the same bound, by De Morgan duality. -/
+theorem gfp_eq_iterate_univ :
+    transformer.gfp = transformer^[Nat.card S] (Set.univ : Set S) := by
+  change transformer.gfp = upperApproximation transformer (Nat.card S)
+  have bound : (deMorganDual transformer).lfp =
+      lowerApproximation (deMorganDual transformer) (Nat.card S) :=
+    lfp_eq_iterate_empty (deMorganDual transformer)
+  simpa only [lfp_deMorganDual, lowerApproximation_deMorganDual, compl_inj_iff] using bound
+
+/-! ## Canonical finite semantic ranks -/
+
+variable (state : S)
+
+/-- Every member enters the lower approximation sequence by the cardinality bound. -/
+theorem exists_lowerApproximation_of_mem_lfp (member : state ∈ transformer.lfp) :
+    ∃ index, state ∈ lowerApproximation transformer index :=
+  ⟨Nat.card S, by simpa [lowerApproximation, ← lfp_eq_iterate_empty transformer] using member⟩
+
+/-- The first discovery stage. Stage zero is empty, so every entry rank is positive. -/
+noncomputable def lfpEntryRank (member : state ∈ transformer.lfp) : Nat := by
+  classical
+  exact Nat.find (exists_lowerApproximation_of_mem_lfp transformer state member)
+
+theorem lfpEntryRank_mem (member : state ∈ transformer.lfp) :
+    state ∈ lowerApproximation transformer (lfpEntryRank transformer state member) := by
+  classical
+  exact Nat.find_spec (exists_lowerApproximation_of_mem_lfp transformer state member)
+
+theorem lfpEntryRank_min (member : state ∈ transformer.lfp) {index : Nat}
     (atIndex : state ∈ lowerApproximation transformer index) :
-    lfpEntryRank transformer state member ≤ index :=
-  by
-    classical
-    exact Nat.find_min'
-      (exists_lowerApproximation_of_mem_lfp transformer state member) atIndex
+    lfpEntryRank transformer state member ≤ index := by
+  classical
+  exact Nat.find_min' (exists_lowerApproximation_of_mem_lfp transformer state member) atIndex
 
-theorem lfpEntryRank_le_card {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (member : state ∈ transformer.lfp) :
+theorem lfpEntryRank_le_card (member : state ∈ transformer.lfp) :
     lfpEntryRank transformer state member ≤ Nat.card S := by
   apply lfpEntryRank_min
   simpa [lowerApproximation, ← lfp_eq_iterate_empty transformer] using member
 
-theorem lfpEntryRank_pos {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (member : state ∈ transformer.lfp) :
+theorem lfpEntryRank_pos (member : state ∈ transformer.lfp) :
     0 < lfpEntryRank transformer state member := by
+  have enters := lfpEntryRank_mem transformer state member
   apply Nat.pos_of_ne_zero
   intro zero
-  have enters := lfpEntryRank_mem transformer state member
   simp [zero] at enters
 
-/-- Every state outside a finite greatest fixed point leaves its decreasing
-approximation sequence by the carrier-cardinality bound. -/
-theorem exists_not_mem_upperApproximation_of_not_mem_gfp
-    {S : Type*} [Finite S] (transformer : Set S →o Set S) (state : S)
-    (missing : state ∉ transformer.gfp) :
+/-- Every excluded state is eliminated from the upper approximation sequence. -/
+theorem exists_not_mem_upperApproximation_of_not_mem_gfp (missing : state ∉ transformer.gfp) :
     ∃ index, state ∉ upperApproximation transformer index := by
-  refine ⟨Nat.card S, ?_⟩
-  simpa [upperApproximation, ← gfp_eq_iterate_univ transformer] using missing
+  simpa only [lowerApproximation_deMorganDual, Set.mem_compl_iff] using
+    exists_lowerApproximation_of_mem_lfp (deMorganDual transformer) state (by simpa using missing)
 
-/-- Canonical rank of a state outside a finite greatest fixed point: its first
-elimination stage. -/
-noncomputable def gfpExitRank {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (missing : state ∉ transformer.gfp) : Nat :=
-  by
-    classical
-    exact Nat.find
-      (exists_not_mem_upperApproximation_of_not_mem_gfp transformer state missing)
+/-- The first elimination stage, computed as a discovery stage in the dual. -/
+noncomputable def gfpExitRank (missing : state ∉ transformer.gfp) : Nat :=
+  lfpEntryRank (deMorganDual transformer) state (by simpa using missing)
 
-theorem gfpExitRank_not_mem {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (missing : state ∉ transformer.gfp) :
-    state ∉ upperApproximation transformer
-      (gfpExitRank transformer state missing) :=
-  by
-    classical
-    exact Nat.find_spec
-      (exists_not_mem_upperApproximation_of_not_mem_gfp transformer state missing)
+theorem gfpExitRank_not_mem (missing : state ∉ transformer.gfp) :
+    state ∉ upperApproximation transformer (gfpExitRank transformer state missing) := by
+  simpa only [gfpExitRank, lowerApproximation_deMorganDual, Set.mem_compl_iff] using
+    lfpEntryRank_mem (deMorganDual transformer) state (by simpa using missing)
 
-theorem gfpExitRank_min {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (missing : state ∉ transformer.gfp) {index : Nat}
+theorem gfpExitRank_min (missing : state ∉ transformer.gfp) {index : Nat}
     (notAtIndex : state ∉ upperApproximation transformer index) :
     gfpExitRank transformer state missing ≤ index :=
-  by
-    classical
-    exact Nat.find_min'
-      (exists_not_mem_upperApproximation_of_not_mem_gfp transformer state missing)
-      notAtIndex
+  lfpEntryRank_min (deMorganDual transformer) state (by simpa using missing) (by simpa using notAtIndex)
 
-theorem gfpExitRank_le_card {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (missing : state ∉ transformer.gfp) :
-    gfpExitRank transformer state missing ≤ Nat.card S := by
-  apply gfpExitRank_min
-  simpa [upperApproximation, ← gfp_eq_iterate_univ transformer] using missing
+theorem gfpExitRank_le_card (missing : state ∉ transformer.gfp) :
+    gfpExitRank transformer state missing ≤ Nat.card S :=
+  lfpEntryRank_le_card (deMorganDual transformer) state (by simpa using missing)
 
-theorem gfpExitRank_pos {S : Type*} [Finite S]
-    (transformer : Set S →o Set S) (state : S)
-    (missing : state ∉ transformer.gfp) :
-    0 < gfpExitRank transformer state missing := by
-  apply Nat.pos_of_ne_zero
-  intro zero
-  have exits := gfpExitRank_not_mem transformer state missing
-  simp [zero] at exits
+theorem gfpExitRank_pos (missing : state ∉ transformer.gfp) :
+    0 < gfpExitRank transformer state missing :=
+  lfpEntryRank_pos (deMorganDual transformer) state (by simpa using missing)
 
-/-- Iteration commutes with De Morgan duality.  The empty/universal fixed-point
-approximations are the two boundary instances of this generic semiconjugacy
-fact. -/
-theorem iterate_dual {S : Type*}
-    (original dual : Set S → Set S)
-    (dualEq : ∀ states, dual states = (original statesᶜ)ᶜ)
-    (index : Nat) (states : Set S) :
-    dual^[index] statesᶜ = (original^[index] states)ᶜ := by
-  have semiconjugate : Function.Semiconj (fun states : Set S => statesᶜ)
-      original dual := by
-    intro states
-    rw [dualEq]
-    simp
-  exact (semiconjugate.iterate_right index states).symm
+/-- The dual rank is exactly the original least elimination index. -/
+theorem gfpExitRank_eq_find (missing : state ∉ transformer.gfp) :
+    gfpExitRank transformer state missing = (by
+      classical
+      exact Nat.find (exists_not_mem_upperApproximation_of_not_mem_gfp transformer state missing)) := by
+  classical
+  apply Nat.find_congr'
+  intro index
+  simp only [lowerApproximation_deMorganDual, Set.mem_compl_iff]
+
+end Finite
 
 /-! ## Executable boundary examples -/
 
 namespace Canary
 
-def forceUnit : Set Unit →o Set Unit where
-  toFun _ := Set.univ
-  monotone' := by
-    intro _ _ _
-    exact Set.Subset.rfl
+def forceUnit : Set Unit →o Set Unit := OrderHom.const _ Set.univ
 
-def eraseUnit : Set Unit →o Set Unit where
-  toFun _ := ∅
-  monotone' := by
-    intro _ _ _
-    exact Set.Subset.rfl
+def eraseUnit : Set Unit →o Set Unit := OrderHom.const _ ∅
 
 theorem forceUnit_lfp : forceUnit.lfp = Set.univ := by
-  rw [lfp_eq_iterate_empty]
-  simp [forceUnit]
-  rfl
+  simpa [forceUnit] using lfp_eq_iterate_empty forceUnit
 
 theorem eraseUnit_gfp : eraseUnit.gfp = ∅ := by
-  rw [gfp_eq_iterate_univ]
-  simp [eraseUnit]
-  rfl
+  simpa [eraseUnit] using gfp_eq_iterate_univ eraseUnit
 
 theorem forceUnit_entryRank :
     lfpEntryRank forceUnit () (by simp [forceUnit_lfp]) = 1 := by
@@ -353,10 +275,37 @@ theorem forceUnit_entryRank :
 
 theorem eraseUnit_exitRank :
     gfpExitRank eraseUnit () (by simp [eraseUnit_gfp]) = 1 := by
-  apply Nat.le_antisymm
-  · simpa only [Nat.card_unique] using
-      gfpExitRank_le_card eraseUnit () (by simp [eraseUnit_gfp])
-  · exact gfpExitRank_pos eraseUnit () (by simp [eraseUnit_gfp])
+  have dual : deMorganDual eraseUnit = forceUnit := by
+    ext states x
+    simp [eraseUnit, forceUnit]
+  simpa only [gfpExitRank, dual] using forceUnit_entryRank
+
+/-- On an empty carrier both endpoints are reached at round zero. -/
+theorem empty_carrier (operator : Set Empty →o Set Empty) :
+    operator.lfp = lowerApproximation operator 0 ∧ operator.gfp = upperApproximation operator 0 :=
+  ⟨Subsingleton.elim _ _, Subsingleton.elim _ _⟩
+
+/-- A nonempty carrier need not require even one round. -/
+theorem identity_stops_at_zero :
+    (OrderHom.id : Set Unit →o Set Unit).lfp = ∅ ∧ OrderHom.id.gfp = (Set.univ : Set Unit) :=
+  ⟨lfp_eq_lowerApproximation_of_stable _ 0 rfl, gfp_eq_upperApproximation_of_stable _ 0 rfl⟩
+
+/-- Complement oscillates; its failure of monotonicity is essential. -/
+theorem complement_not_monotone : ¬ Monotone (fun states : Set Unit => statesᶜ) := by
+  intro monotone
+  have impossible := monotone (Set.empty_subset (Set.univ : Set Unit))
+  simp at impossible
+
+theorem complement_two_rounds :
+    (compl : Set Unit → Set Unit)^[2] ∅ = ∅ ∧ (∅ : Set Unit)ᶜ ≠ ∅ := by simp
+
+def delayedChain (index : Nat) : Set Unit := { _state | 2 ≤ index }
+
+/-- Monotonicity alone permits a plateau before a later change. -/
+theorem delayed_chain_not_stable :
+    Monotone delayedChain ∧ delayedChain 0 = delayedChain 1 ∧ delayedChain 1 ≠ delayedChain 2 := by
+  refine ⟨fun _ _ ordered _ member => member.trans ordered, ?_, ?_⟩ <;>
+    simp [delayedChain, Set.empty_ne_univ]
 
 end Canary
 

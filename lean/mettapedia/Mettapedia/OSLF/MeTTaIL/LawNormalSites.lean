@@ -339,7 +339,8 @@ theorem licensed_normalize (admission : LawsTyped laws language free) {permissio
     simp only [SiteData.wrapCollection] at innerFlat fixed
     rw [innerLicensed.source_eq] at fixed
     have parameterOk : NoNested laws (.collection kind elementType) :=
-      admission.parameters rule (List.fst_mem_of_mem_zipIdx declared) _ (by rw [shape]; exact .head _) _ rfl
+      admission.parameters rule (List.fst_mem_of_mem_zipIdx declared) _
+        (by rw [((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2]; exact .head _) _ rfl
     obtain ⟨inner', licensed', focus, focusBound, focusType, frames, fill, accepts⟩ := ih boundOk parameterOk.1 innerFlat
     have split := normalElements_split (laws := laws) kind elements index within (by rw [atIndex]; exact fixed)
     rw [atIndex] at split
@@ -424,6 +425,6 @@ theorem Licensed.lawTypeOk (admission : LawsTypedStrict laws language free) {per
   | directCollection _ _ _ _ _ ih => exact ih boundOk expectedOk.element
   | authoredCollection declared shape _ _ _ _ _ ih =>
     exact ih boundOk (admission.parameters _ (List.fst_mem_of_mem_zipIdx declared) _
-      (by rw [shape]; exact .head _) _ rfl).element
+      (by rw [((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2]; exact .head _) _ rfl).element
 
 end Mettapedia.OSLF.MeTTaIL.CanonicalBags

@@ -9,7 +9,7 @@ is supplied at a named service boundary. These flags are not a claim that the
 native classifiers implement the corresponding independent semantics.
 
 HE Atom demand, PeTTa's eager callables and already-held variable values,
-Prime's held Data and evaluated top Atom, normalization, control continuations
+the Prime draft's held Data and evaluated top Atom, normalization, control continuations
 and error-as-data are kept distinct. No profile silently imports another.
 -/
 

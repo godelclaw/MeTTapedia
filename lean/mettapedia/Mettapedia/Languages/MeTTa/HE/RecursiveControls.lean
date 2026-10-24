@@ -4,6 +4,7 @@ import Mettapedia.Languages.MeTTa.HE.ArgumentResultControls
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal
 import Mettapedia.Languages.MeTTa.HE.SmallStepQuiescence
 import Mettapedia.Languages.MeTTa.HE.RecursiveSemanticSoundness
+import Mettapedia.Languages.MeTTa.HE.FirstSuccessScopedRecursiveAdequacy
 
 /-!
 # Retained evaluator controls
@@ -669,6 +670,797 @@ theorem internal_empty_is_not_dropped :
 def fcall : Atom := .expression [.symbol "f"]
 def value : Atom := .symbol "Value"
 def fspace : Space := Space.ofList [.expression [.symbol "=", fcall, value]]
+
+namespace TypedFScopedWorker
+
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open FirstSuccessRecursiveStrategy FirstSuccessRecursiveExecution
+open FirstSuccessSourceExecution FirstSuccessSourceApplicability
+open Spec.Eval Spec.Eval.Completed Spec.Eval.Steps
+open Spec.Type Spec.Type.Presentation Spec.Type.RuntimeRefinement
+open Spec.Bindings.ScopeObservation
+open Spec.Match.Merge
+open FirstSuccessScopedAdequacy
+open FirstSuccessScopedAdequacy.ScopedRetainedRelation
+open FirstSuccessScopedAdequacy.UniversalScopedPolymorphicApplication
+
+def typedFSignature : SelectedTypePolicy :=
+  ⟨functionType [Atom.symbolType], [], Atom.symbolType, rfl⟩
+
+def recursiveCall : Atom := .expression [.symbol "g"]
+
+def recursiveEquation : Atom :=
+  .expression [.symbol "=", recursiveCall, fcall]
+
+def typedFSpace : Space :=
+  Space.ofList
+    [annotated (.symbol "f") typedFSignature.functionType,
+      .expression [.symbol "=", fcall, value], recursiveEquation]
+
+def typedFWork : EquationWork :=
+  ⟨1, fcall, value, fcall, value, Bindings.empty⟩
+
+def recursiveWork : EquationWork :=
+  ⟨2, recursiveCall, fcall, recursiveCall, fcall, Bindings.empty⟩
+
+private theorem typedF_closed : ClosedTypeAnnotations typedFSpace :=
+  (closedColonAnnotations_of_bool (space := typedFSpace) (by decide +kernel)).closedTypeAnnotations
+
+private theorem fcall_closed_alpha (live : List Atom) :
+    AlphaVariantRel live fcall Bindings.empty fcall value fcall value := by
+  refine ⟨id, Function.injective_id, ?_, ?_, ?_⟩
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id fcall
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id value
+  · intro name occurs
+    rcases occurs with occurs | occurs
+    · cases occurs with
+      | expression member child =>
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          subst member
+          cases child
+    · cases occurs
+
+private theorem gcall_closed_alpha (live : List Atom) :
+    AlphaVariantRel live fcall Bindings.empty recursiveCall fcall
+      recursiveCall fcall := by
+  refine ⟨id, Function.injective_id, ?_, ?_, ?_⟩
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id recursiveCall
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id fcall
+  · intro name occurs
+    rcases occurs with occurs | occurs
+    · cases occurs with
+      | expression member child =>
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          subst member
+          cases child
+    · cases occurs with
+      | expression member child =>
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          subst member
+          cases child
+
+private theorem recursive_row_miss (live : List Atom) :
+    EquationRowResultsRel live fcall Bindings.empty 2 recursiveEquation [] := by
+  apply EquationRowResultsRel.miss 2 recursiveCall fcall recursiveCall fcall
+    (gcall_closed_alpha live)
+  intro pattern body renamed matched output viable
+  obtain ⟨_, _, patternRenamed, _, _⟩ := renamed
+  have same : pattern = recursiveCall := by
+    simpa only [Spec.Type.RuntimeRefinement.renameTypeVars, List.map_cons, List.map_nil,
+      recursiveCall] using EquationFreshening.alphaRename_eq patternRenamed
+  subst pattern
+  cases viable.1 with
+  | expression children _ =>
+      cases children with
+      | cons first _ _ => exact symbol_mismatch_not_match (by decide) _ first
+
+private theorem fcall_miss_alpha (live : List Atom) :
+    AlphaVariantRel live recursiveCall Bindings.empty fcall value fcall value := by
+  refine ⟨id, Function.injective_id, ?_, ?_, ?_⟩
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id fcall
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id value
+  · intro name occurs
+    rcases occurs with occurs | occurs
+    · cases occurs with
+      | expression member child =>
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          subst member
+          cases child
+    · cases occurs
+
+private theorem fcall_row_miss_for_recursive (live : List Atom) :
+    EquationRowResultsRel live recursiveCall Bindings.empty 1
+      (.expression [.symbol "=", fcall, value]) [] := by
+  apply EquationRowResultsRel.miss 1 fcall value fcall value (fcall_miss_alpha live)
+  intro pattern body renamed matched output viable
+  obtain ⟨_, _, patternRenamed, _, _⟩ := renamed
+  have same : pattern = fcall := by
+    simpa only [Spec.Type.RuntimeRefinement.renameTypeVars, List.map_cons, List.map_nil,
+      fcall] using EquationFreshening.alphaRename_eq patternRenamed
+  subst pattern
+  cases viable.1 with
+  | expression children _ =>
+      cases children with
+      | cons first _ _ => exact symbol_mismatch_not_match (by decide) _ first
+
+private theorem recursive_hit_alpha (live : List Atom) :
+    AlphaVariantRel live recursiveCall Bindings.empty recursiveCall fcall
+      recursiveCall fcall := by
+  refine ⟨id, Function.injective_id, ?_, ?_, ?_⟩
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id recursiveCall
+  · simpa only [ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id fcall
+  · intro name occurs
+    rcases occurs with occurs | occurs
+    · cases occurs with
+      | expression member child =>
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          subst member
+          cases child
+    · cases occurs with
+      | expression member child =>
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          subst member
+          cases child
+
+private theorem recursive_identical_match :
+    MatchRel equalityGroundedSemantic recursiveCall recursiveCall Bindings.empty := by
+  exact .expression
+    (.cons (.symSym "g" semanticLoopFree_empty) (.mk (.refl []) .nil) .nil)
+    semanticLoopFree_empty
+
+private theorem empty_logical_merge :
+    LogicalMergeRel Bindings.empty Bindings.empty Bindings.empty := by
+  refine ⟨BindingSourceAgreement.refl _, fun name => .var name, ?_⟩
+  simp [Spec.Type.RuntimeRefinement.TypeBindingSatisfied, Bindings.empty]
+
+private theorem fcall_identical_match :
+    MatchRel equalityGroundedSemantic fcall fcall Bindings.empty := by
+  exact .expression
+    (.cons (.symSym "f" semanticLoopFree_empty) (.mk (.refl []) .nil) .nil)
+    semanticLoopFree_empty
+
+private theorem typedFSignature_identical_match :
+    TypeMatchRel typedFSignature.functionType typedFSignature.functionType
+      Bindings.empty Bindings.empty := by
+  apply TypeMatchRel.structural <;> try decide
+  · exact .expression
+      (.cons (.symSym "->" semanticLoopFree_empty) (.mk (.refl []) .nil)
+        (.cons (.symSym "Symbol" semanticLoopFree_empty) (.mk (.refl []) .nil) .nil))
+      semanticLoopFree_empty
+  · exact .mk (.refl []) .nil
+
+theorem typedF_frontier (live : List Atom) :
+    EquationFrontierRel typedFSpace live fcall Bindings.empty [typedFWork] := by
+  apply EquationFrontierRel.completed (blocks := [[], [typedFWork], []])
+  exact .cons
+    (.irrelevant 0 (annotated (.symbol "f") typedFSignature.functionType)
+      (by intro left right bad; simp [annotated] at bad))
+    (.cons
+      (.hit 1 fcall value fcall value Bindings.empty Bindings.empty
+        (fcall_closed_alpha live) fcall_identical_match empty_logical_merge)
+      (.cons (recursive_row_miss live) .nil))
+
+theorem recursive_frontier (live : List Atom) :
+    EquationFrontierRel typedFSpace live recursiveCall Bindings.empty [recursiveWork] := by
+  apply EquationFrontierRel.completed (blocks := [[], [], [recursiveWork]])
+  exact .cons
+    (.irrelevant 0 (annotated (.symbol "f") typedFSignature.functionType)
+      (by intro left right bad; simp [annotated] at bad))
+    (.cons (fcall_row_miss_for_recursive live)
+      (.cons
+        (.hit 2 recursiveCall fcall recursiveCall fcall Bindings.empty Bindings.empty
+          (recursive_hit_alpha live) recursive_identical_match empty_logical_merge)
+        .nil))
+
+theorem typedF_scoped_type_query (protectedScope : List String) (expected : Atom) :
+    Completed.scopedLookup protectedScope typedFSpace Completed.Frame.empty.bindings
+      (.symbol "f") expected [typedFSignature.functionType] := by
+  refine ⟨[typedFSignature.functionType], ?_, .cons ?_ (.nil _)⟩
+  · apply StorageTypesRel.symbolKnown
+    · exact .hit
+        (.skip (by intro type; simp)
+          (.skip (by intro type; simp [recursiveEquation, recursiveCall, fcall]) .nil))
+    · simp
+  · exact ⟨id, Function.injective_id, by simp,
+      by simp [typedFSignature, functionType, TypeSubst.typeVars, TypeSubst.typeVarsList,
+        Atom.symbolType]⟩
+
+theorem typedF_scoped_operator_query :
+    Completed.scopedLookup
+      (invocationTypeScope [] [] fcall Atom.undefinedType Completed.Frame.empty.bindings)
+      typedFSpace Completed.Frame.empty.bindings (.symbol "f") Atom.undefinedType
+      [typedFSignature.functionType] :=
+  typedF_scoped_type_query _ _
+
+theorem typedF_contextual_selected :
+    Completed.InvocationSelectionRel typedFSpace Completed.scopedLookup Policy.unmarked
+      [] [] fcall (.symbol "f") Atom.undefinedType Completed.Frame.empty
+      (.selected typedFSignature [Completed.Frame.empty]) := by
+  let cLookup := Completed.scopedLookup
+    (invocationTypeScope [] [] fcall Atom.undefinedType Completed.Frame.empty.bindings)
+    typedFSpace
+  have returned : Completed.TypeCheckRel Policy.unmarked Atom.undefinedType
+      Completed.Frame.empty typedFSignature.returnType (.inr Completed.Frame.empty) :=
+    .accepted (.unchanged
+      (Completed.Frame.empty.preserved_type_match Policy.unmarked
+        (.undefinedLeft typedFSignature.returnType Completed.Frame.empty.bindings)))
+  have checked : Completed.ApplicationChecksRel typedFSpace cLookup Policy.unmarked
+      fcall Atom.undefinedType typedFSignature Completed.Frame.empty [Completed.Frame.empty] [] := by
+    simpa only [fcall, Completed.checkedFrames, Completed.checkedFailures,
+      List.filterMap_cons, List.filterMap_nil, List.append_nil, List.nil_append,
+      List.map_nil] using
+      (Completed.ApplicationChecksRel.checked rfl
+        (Completed.ApplicabilityArgumentsRel.nil (space := typedFSpace) (lookup := cLookup)
+          (policy := Policy.unmarked) (expression := fcall) (position := 1)
+          (frames := [Completed.Frame.empty]))
+        (.cons returned .nil))
+  exact ⟨[typedFSignature.functionType], typedF_scoped_operator_query,
+    .selected checked (by simp)⟩
+
+theorem typedF_worker_selected :
+    let state : Configuration :=
+      ⟨typedFSpace,
+        .work (.functions fcall Atom.undefinedType Bindings.empty 10
+          [typedFSignature.functionType]),
+        [.filter], []⟩
+    FirstSuccessRecursiveStrategy.select (lookup := invocationTypes state)
+      typedFSpace fcall Atom.undefinedType Bindings.empty 10
+      [typedFSignature.functionType] = .selected typedFSignature [Bindings.empty] := by
+  intro state
+  have applicable :
+      checkIfFunctionTypeIsApplicable (lookup := invocationTypes state)
+        fcall typedFSignature.functionType Atom.undefinedType typedFSpace Bindings.empty 10 =
+        .inr [Bindings.empty] := by
+    decide +kernel
+  simp only [typedFSignature, functionType] at applicable ⊢
+  simp only [FirstSuccessRecursiveStrategy.select,
+    FirstSuccessRecursiveStrategy.readPolicy]
+  rw [applicable]
+  rfl
+
+/-- The closed `f` signature is independent of every retained worker frame and
+published prefix.  This is the framing law needed to reuse the selected call
+inside a recursive equation body. -/
+theorem typedF_invocation_types
+    (control : Control) (stack : List RecursiveTasks.Frame) (emitted : ResultSet)
+    (bindings : Bindings) (expected : Atom) :
+    invocationTypes ⟨typedFSpace, control, stack, emitted⟩ bindings
+      (.symbol "f") expected = [typedFSignature.functionType] := by
+  rw [invocationTypes_closed]
+  · change getAtomTypes typedFSpace (.symbol "f") = [typedFSignature.functionType]
+    decide +kernel
+  · intro signature present
+    have equal : signature = typedFSignature.functionType := by
+      simpa [typedFSpace, fspace, Space.add, Space.ofList, getAtomTypes,
+        getAnnotatedTypes, annotated, recursiveEquation, recursiveCall] using present
+    subst signature
+    change atomVariables typedFSignature.functionType = []
+    decide +kernel
+
+/-- Selection of the closed nullary `f` declaration is likewise independent
+of the administrative caller stack. -/
+theorem typedF_worker_selected_at
+    (wStack : List RecursiveTasks.Frame) (wEmitted : ResultSet) :
+    let state : Configuration :=
+      ⟨typedFSpace,
+        .work (.functions fcall Atom.undefinedType Bindings.empty 10
+          [typedFSignature.functionType]),
+        .filter :: wStack, wEmitted⟩
+    FirstSuccessRecursiveStrategy.select (lookup := invocationTypes state)
+      typedFSpace fcall Atom.undefinedType Bindings.empty 10
+      [typedFSignature.functionType] = .selected typedFSignature [Bindings.empty] := by
+  intro state
+  have applicable :
+      checkIfFunctionTypeIsApplicable (lookup := invocationTypes state)
+        fcall typedFSignature.functionType Atom.undefinedType typedFSpace Bindings.empty 10 =
+        .inr [Bindings.empty] := by
+    rfl
+  simp only [typedFSignature, functionType] at applicable ⊢
+  simp only [FirstSuccessRecursiveStrategy.select,
+    FirstSuccessRecursiveStrategy.readPolicy]
+  rw [applicable]
+  rfl
+
+/-- Structural selected-entry evidence for `f` above any administrative
+worker stack and emitted prefix. -/
+theorem typedF_entry_at
+    (wStack : List RecursiveTasks.Frame) (wEmitted : ResultSet) :
+    ScopedSelectedFunctionEntry typedFSpace Policy.unmarked
+      (.symbol "f") [] (.symbol "f") Atom.undefinedType
+      Bindings.empty Bindings.empty 8 [] []
+      (.expression .active [.symbol "f"]) (.symbol "f") []
+      Completed.Frame.empty Completed.Frame.empty .active typedFSignature
+      [typedFSignature.functionType] wStack wEmitted := by
+  refine
+    { entry_ready := by
+        simpa only [Entry.Value.erase, List.map_cons, List.map_nil] using
+          (ScopedAtomEntryReady.initial Policy.unmarked
+            (.expression .active [.symbol "f"]) (Or.inl rfl))
+      read_shape := by simp
+      operator_erase := by simp only [Entry.Value.erase]
+      arguments_erase := rfl
+      input_not_stopped := by decide
+      expected_not_atom := by decide
+      expected_not_expression := by decide
+      candidate_eq := by
+        simpa only [fcall] using
+          typedF_invocation_types
+            (.work (.expression fcall Atom.undefinedType Bindings.empty 11 []))
+            (.filter :: wStack) wEmitted Bindings.empty Atom.undefinedType
+      selection_ready := by rfl
+      worker_selected := by
+        simpa only [fcall] using typedF_worker_selected_at wStack wEmitted
+      contextual_selected := typedF_contextual_selected
+      input_activation := SourceBindingComparison.FrameRelated.of_principal
+        PrincipalBindingFrame.empty (.refl _)
+      selected_activation := SourceBindingComparison.FrameRelated.of_principal
+        PrincipalBindingFrame.empty (.refl _)
+      arity_eq := rfl
+      argument_types_eq := rfl
+      operator_not_stopped := by decide }
+
+theorem typedF_entry :
+    ScopedSelectedFunctionEntry typedFSpace Policy.unmarked
+      (.symbol "f") [] (.symbol "f") Atom.undefinedType
+      Bindings.empty Bindings.empty 8 [] []
+      (.expression .active [.symbol "f"]) (.symbol "f") []
+      Completed.Frame.empty Completed.Frame.empty .active typedFSignature
+      [typedFSignature.functionType] [] [] :=
+  typedF_entry_at [] []
+
+/-- Closed-signature operator casts are stable under administrative framing.
+The worker calculation and the completed cast judgment still remain explicit
+parts of the admission. -/
+theorem typedF_operator_admission_at
+    (wLive cLive : List Atom) (scope : List String)
+    (wStack : List RecursiveTasks.Frame) (wEmitted : ResultSet) :
+    ScopedCastAdmission typedFSpace Policy.unmarked
+      (.symbol "f") typedFSignature.functionType (.symbol "f")
+      Bindings.empty Completed.Frame.empty 8 wLive cLive scope wStack wEmitted
+      [(.symbol "f", Bindings.empty)]
+      [((Completed.Frame.empty.read Policy.unmarked (.symbol "f")).erase,
+        Completed.Frame.empty.bindings)]
+      [(Completed.Frame.empty.read Policy.unmarked (.symbol "f"), Completed.Frame.empty)] := by
+  have ready : ScopedAtomEntryReady Policy.unmarked (.symbol "f") (.symbol "f")
+      Completed.Frame.empty := by
+    simpa only [Entry.Value.erase] using
+      (ScopedAtomEntryReady.initial Policy.unmarked (.symbol "f") (Or.inl rfl))
+  have entered : Entry.Rel Policy.unmarked.reentry .active (.symbol "f")
+      typedFSignature.functionType .cast :=
+    Entry.Rel.cast (policy := Policy.unmarked.reentry) (status := .active)
+      (by simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]) (.symbol "f")
+      (by decide) (Or.inl ⟨"f", rfl⟩) (by intro impossible; cases impossible)
+  apply ScopedCastAdmission.unchanged
+  · exact ready
+  · simpa only [Completed.Frame.read_empty, Entry.Value.status, Entry.Value.erase] using entered
+  · change typeCastCovered (.symbol "f") typedFSignature.functionType typedFSpace
+      Bindings.empty 8
+        (invocationTypes
+          ⟨typedFSpace,
+            .work (.atom (.symbol "f") typedFSignature.functionType Bindings.empty 9 wLive),
+            wStack, wEmitted⟩) = true
+    rw [invocationTypes_eq_rawTypeLookup_of_closed typedF_closed]
+    change typeCastCovered (.symbol "f") typedFSignature.functionType typedFSpace
+      Bindings.empty 8 (rawTypeLookup typedFSpace) = true
+    decide +kernel
+  · change typeCast (.symbol "f") typedFSignature.functionType typedFSpace
+      Bindings.empty 8
+        (invocationTypes
+          ⟨typedFSpace,
+            .work (.atom (.symbol "f") typedFSignature.functionType Bindings.empty 9 wLive),
+            wStack, wEmitted⟩) = [(.symbol "f", Bindings.empty)]
+    rw [invocationTypes_eq_rawTypeLookup_of_closed typedF_closed]
+    change typeCast (.symbol "f") typedFSignature.functionType typedFSpace
+      Bindings.empty 8 (rawTypeLookup typedFSpace) = [(.symbol "f", Bindings.empty)]
+    decide +kernel
+  · simpa only [Completed.Frame.read_empty, Entry.Value.erase] using
+      (typedF_scoped_type_query
+        (invocationTypeScope scope cLive (.symbol "f") typedFSignature.functionType
+          Completed.Frame.empty.bindings)
+        typedFSignature.functionType)
+  · exact Completed.Frame.empty.preserved_type_match Policy.unmarked
+      typedFSignature_identical_match
+  · exact SourceBindingComparison.FrameRelated.of_principal
+      PrincipalBindingFrame.empty (.refl _)
+
+/-- A selected nullary call uses the declared arrow, evaluates its operator,
+visits its physical equation, and returns the equation body above any related
+administrative caller stacks. -/
+theorem typedF_selected_derivation_at
+    (wStack : List RecursiveTasks.Frame)
+    (cStack : List RecursiveTasks.Contextual.Continuation)
+    (wEmitted : ResultSet) (cEmitted : List Completed.Result) :
+    let ctxCall : Entry.Value := .expression .active [.symbol "f"]
+    let ctxValue : Entry.Value := .symbol "Value"
+    ScopedAtomDerivation typedFSpace HE.GroundedDispatch.none noHost Policy.unmarked
+      wEmitted cEmitted 12 [] [] [] fcall ctxCall Atom.undefinedType Bindings.empty
+      Completed.Frame.empty wStack cStack 42
+      [(value, Bindings.empty)] [(ctxValue, Completed.Frame.empty)] := by
+  intro ctxCall ctxValue
+  let resultType : Atom := Atom.symbolType
+  let wCallStack : List RecursiveTasks.Frame :=
+    .calls resultType 10 [] ::
+      .append (.bindingAlternatives fcall typedFSignature.functionType resultType 10 [] []) ::
+      .filter :: wStack
+  let cCallStack : List RecursiveTasks.Contextual.Continuation :=
+    .calls [] [] resultType ::
+      .append (.invocations [] [] Atom.undefinedType typedFSignature (.symbol "f") [] []) ::
+      .publish fcall :: cStack
+  let wOperatorStack : List RecursiveTasks.Frame :=
+    .heads typedFSignature.functionType [] 9 [resultType] :: wCallStack
+  let cOperatorStack : List RecursiveTasks.Contextual.Continuation :=
+    .functionHeads [resultType] [] [] :: cCallStack
+  let wArgsStack : List RecursiveTasks.Frame :=
+    .functionTail (.symbol "f") ::
+      .append (.heads typedFSignature.functionType [] 9 [] [resultType]) ::
+      .calls resultType 10 [] ::
+      .append (.bindingAlternatives fcall typedFSignature.functionType resultType 10 [] []) ::
+      .filter :: wStack
+  let cArgsStack : List RecursiveTasks.Contextual.Continuation :=
+    .functionAssemble (.symbol "f") ::
+      .append (.functionBranches [resultType] [] [] []) ::
+      .calls [] [] resultType ::
+      .append (.invocations [] [] Atom.undefinedType typedFSignature (.symbol "f") [] []) ::
+      .publish fcall :: cStack
+  let wDrainStack : List RecursiveTasks.Frame :=
+    .append (.calls resultType 10 [] []) ::
+      .append (.bindingAlternatives fcall typedFSignature.functionType resultType 10 [] []) ::
+      .filter :: wStack
+  let cDrainStack : List RecursiveTasks.Contextual.Continuation :=
+    .append (.calls [] [] resultType []) ::
+      .append (.invocations [] [] Atom.undefinedType typedFSignature (.symbol "f") [] []) ::
+      .publish fcall :: cStack
+  have actEmpty : ScopedActivationRel Bindings.empty Completed.Frame.empty :=
+    SourceBindingComparison.FrameRelated.of_principal PrincipalBindingFrame.empty (.refl _)
+  have opAdmission : ScopedCastAdmission typedFSpace Policy.unmarked
+      (.symbol "f") typedFSignature.functionType (.symbol "f")
+      Bindings.empty Completed.Frame.empty 8
+      [typedFSignature.functionType, resultType]
+      [typedFSignature.functionType, resultType] [] wOperatorStack wEmitted
+      [(.symbol "f", Bindings.empty)]
+      [((Completed.Frame.empty.read Policy.unmarked (.symbol "f")).erase,
+        Completed.Frame.empty.bindings)]
+      [(Completed.Frame.empty.read Policy.unmarked (.symbol "f"), Completed.Frame.empty)] :=
+    typedF_operator_admission_at
+      [typedFSignature.functionType, resultType]
+      [typedFSignature.functionType, resultType] [] wOperatorStack wEmitted
+  have operatorDerivation : ScopedAtomDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked wEmitted cEmitted 9
+      [typedFSignature.functionType, resultType]
+      [typedFSignature.functionType, resultType] []
+      (.symbol "f") (.symbol "f") typedFSignature.functionType Bindings.empty
+      Completed.Frame.empty wOperatorStack cOperatorStack 1
+      [(.symbol "f", Bindings.empty)] [(.symbol "f", Completed.Frame.empty)] := by
+    simpa only [Completed.Frame.read_empty] using
+      (ScopedAtomDerivation.cast 8
+        [typedFSignature.functionType, resultType] [typedFSignature.functionType, resultType] []
+        (.symbol "f") typedFSignature.functionType (.symbol "f")
+        Bindings.empty Completed.Frame.empty wOperatorStack cOperatorStack
+        [(.symbol "f", Bindings.empty)]
+        [((Completed.Frame.empty.read Policy.unmarked (.symbol "f")).erase,
+          Completed.Frame.empty.bindings)]
+        [(Completed.Frame.empty.read Policy.unmarked (.symbol "f"), Completed.Frame.empty)]
+        opAdmission)
+  have argumentsDerivation : ScopedArgsDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked wEmitted cEmitted [] 9 1 [(.symbol "f"), resultType]
+      [] [] [] [] [] Bindings.empty Completed.Frame.empty Bindings.empty
+      Completed.Frame.empty wArgsStack cArgsStack := by
+    exact ScopedArgsDerivation.nil [] 8 [(.symbol "f"), resultType]
+      Bindings.empty Completed.Frame.empty wArgsStack cArgsStack actEmpty
+  have eqReady :
+      (matchCovered 9 (.merge Bindings.empty
+          (Spec.Type.Presentation.BindingTheory.aliasConstraints Bindings.empty)) &&
+        (mergeBindings Bindings.empty
+          (Spec.Type.Presentation.BindingTheory.aliasConstraints Bindings.empty) 9).all fun merged =>
+          (merged.hasLoop || merged.applyFullCovered value 9)) = true := by
+    decide +kernel
+  have mergeFilterEq :
+      ((mergeBindings Bindings.empty
+          (Spec.Type.Presentation.BindingTheory.aliasConstraints Bindings.empty) 9).filterMap fun merged =>
+        if merged.hasLoop then none else some (merged.applyFull value 9, merged)) =
+      [(value, Bindings.empty)] := by
+    decide +kernel
+  have callUnify : Entry.Value.UnifyRel Policy.unmarked.rebuilding
+      Completed.Frame.empty.environment ctxCall (Entry.Value.ofAtom typedFWork.pattern)
+      Completed.Frame.empty.environment := by
+    have ctxCallEq : ctxCall = Entry.Value.ofAtom fcall := by
+      simp [ctxCall, fcall, Entry.Value.ofAtom]
+    rw [ctxCallEq]
+    exact
+      (Entry.Value.UnifyRel.ordinary
+        (Entry.Value.AppliedUnifyRel.identical (policy := Policy.unmarked.rebuilding)
+          (environment := []) (by rfl)))
+  have valueReady : ScopedAtomEntryReady Policy.unmarked value ctxValue
+      Completed.Frame.empty := by
+    simpa only [ctxValue, value, Entry.Value.erase] using
+      (ScopedAtomEntryReady.initial Policy.unmarked ctxValue (Or.inl rfl))
+  have ctxProdEq : ctxValue =
+      Completed.Frame.empty.read Policy.unmarked (Entry.Value.ofAtom typedFWork.body) := by
+    simp [ctxValue, typedFWork, value, Entry.Value.ofAtom]
+  have tailDerivation : ScopedEquationDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked wEmitted cEmitted fcall resultType Bindings.empty 8 [] []
+      ctxCall Completed.Frame.empty 1 1 1
+      (.prepend [(value, Bindings.empty)] :: wDrainStack)
+      (.prepend [(Completed.Frame.empty.read Policy.unmarked ctxValue,
+        Completed.Frame.empty)] :: cDrainStack)
+      [] [] [] [] [] [] [] := by
+    exact ScopedEquationDerivation.nil
+      (.prepend [(value, Bindings.empty)] :: wDrainStack)
+      fcall resultType Bindings.empty 8 [] [] ctxCall Completed.Frame.empty
+      (.prepend [(Completed.Frame.empty.read Policy.unmarked ctxValue,
+        Completed.Frame.empty)] :: cDrainStack)
+  have equationDerivationRaw : ScopedEquationDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked wEmitted cEmitted fcall resultType Bindings.empty 8 [] []
+      ctxCall Completed.Frame.empty 4 5 6 wDrainStack cDrainStack
+      [(value, Bindings.empty)] [typedFWork]
+      [(value, Bindings.empty)] [(value, Bindings.empty)]
+      [(ctxValue, Completed.Frame.empty)]
+      [(value, Bindings.empty)]
+      [(Completed.Frame.empty.read Policy.unmarked ctxValue, Completed.Frame.empty)] := by
+    apply ScopedEquationDerivation.cons_ordinary_typePass
+      (rhs := value) (wBodyVal := value) (selected := Bindings.empty)
+      (wBMid := Bindings.empty) (work := typedFWork) (ctxProdVal := ctxValue)
+      (cFrameMid := Completed.Frame.empty)
+      (eqReady := eqReady) (mergeFilterEq := mergeFilterEq)
+      (outBindingsEq := rfl) (unifyRel := callUnify)
+      (ctxProdEq := ctxProdEq)
+      (notFunc := by intro body bad; cases bad)
+      (notRefused := by decide) (clean := by decide)
+      (typePass := Or.inr (Or.inl rfl))
+      (entryReady := valueReady) (actMid := actEmpty)
+      (tailDerivation := tailDerivation)
+  have equationDerivation : ScopedEquationDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked wEmitted cEmitted fcall resultType Bindings.empty 8 [] []
+      ctxCall Completed.Frame.empty 4 5 6 wDrainStack cDrainStack
+      [(value, Bindings.empty)] [typedFWork]
+      [(value, Bindings.empty)] [(value, Bindings.empty)]
+      [(ctxValue, Completed.Frame.empty)]
+      [(value, Bindings.empty)] [(ctxValue, Completed.Frame.empty)] := by
+    simpa only [Completed.Frame.read_empty] using equationDerivationRaw
+  have callAdmission : ScopedEquationCallAdmission typedFSpace HE.GroundedDispatch.none
+      noHost fcall resultType Bindings.empty 8 [] ctxCall Completed.Frame.empty
+      [(value, Bindings.empty)] [typedFWork] [(value, Bindings.empty)]
+      [(value, Bindings.empty)] 1 := by
+    refine
+      { value_erase := by simp [ctxCall, fcall, Entry.Value.erase]
+        not_error := by decide
+        not_executable := ?_
+        non_grounded := ?_
+        not_minimal := by decide
+        query_covered := by decide +kernel
+        query_eq := by decide +kernel
+        bodies_nonempty := by simp
+        frontier := by
+          simpa [ctxCall, fcall, Entry.Value.erase, Completed.Frame.empty] using
+            typedF_frontier [resultType]
+        works_nonempty := by simp
+        returned_covered := by intro pair member; simp at member; rcases member with rfl; decide +kernel
+        returned_stable := by intro pair member; simp at member; rcases member with rfl; rfl }
+    · intro _op _args _same
+      rfl
+    · simp [NonGroundedCallRel, Spec.Eval.Minimal.HostCall,
+        Spec.Eval.Minimal.embeddedInstruction, noHost, ctxCall, Entry.Value.erase]
+  have operatorResultRel : ScopedResultRel
+      ((.symbol "f", Bindings.empty) : ResultPair)
+      ((.symbol "f", Completed.Frame.empty) : Completed.Result) :=
+    ⟨by simp only [Entry.Value.erase], actEmpty⟩
+  have derivationRaw := ScopedAtomDerivation.selected_function
+    (entry := typedF_entry_at wStack wEmitted) (callAdmission := callAdmission)
+    (operatorResultRel := operatorResultRel)
+    (opSteps := 1) (argSteps := 1) (eqSteps := 4) (prodSteps := 5)
+    (retSteps := 6)
+    (operatorDerivation := by
+      simpa [resultType, wOperatorStack, wCallStack, cOperatorStack, cCallStack,
+        Completed.invocationReturnType, typedFSignature, Atom.expressionType,
+        Atom.symbolType, Atom.undefinedType,
+        expectedApplicationScope, TypeSubst.typeVars, TypeSubst.typeVarsList,
+        Entry.Value.erase, fcall] using operatorDerivation)
+    (argumentsDerivation := by
+      simpa [resultType, wArgsStack, wCallStack, cArgsStack, cCallStack,
+        Completed.invocationReturnType, typedFSignature, Atom.expressionType,
+        Atom.symbolType, fcall] using
+        argumentsDerivation)
+    (equationDerivation := by
+      simpa [resultType, wDrainStack, cDrainStack,
+        Completed.invocationReturnType, typedFSignature, Atom.expressionType,
+        Atom.symbolType, fcall, ctxCall] using
+        equationDerivation)
+  simpa [fcall, ctxCall, ctxValue, Completed.invocationReturnType, typedFSignature,
+    Atom.expressionType, Atom.symbolType, Atom.undefinedType,
+    successPriority, completedSuccessPriority,
+    Completed.readResult, Completed.publishResult, Entry.Value.publish,
+    Entry.publish, Entry.Value.withStatus, Entry.Value.erase, isErrorAtom, value,
+    Completed.Frame.read_empty] using derivationRaw
+
+theorem typedF_selected_derivation :
+    let ctxCall : Entry.Value := .expression .active [.symbol "f"]
+    let ctxValue : Entry.Value := .symbol "Value"
+    ScopedAtomDerivation typedFSpace HE.GroundedDispatch.none noHost Policy.unmarked
+      [] [] 12 [] [] [] fcall ctxCall Atom.undefinedType Bindings.empty
+      Completed.Frame.empty [] [] 42
+      [(value, Bindings.empty)] [(ctxValue, Completed.Frame.empty)] :=
+  typedF_selected_derivation_at [] [] [] []
+
+/-- The selected-function proof object is operationally inhabited: the checked
+scoped worker finishes with the equation body, and the same proof reconstructs
+the independent completed source judgment. -/
+theorem typedF_selected_function_complete :
+    let ctxCall : Entry.Value := .expression .active [.symbol "f"]
+    let ctxValue : Entry.Value := .symbol "Value"
+    (∃ budget,
+      (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none scopedTypes).run
+        budget
+        ⟨typedFSpace,
+          .work (.atom fcall Atom.undefinedType Bindings.empty 12 []), [], []⟩ =
+      ([(value, Bindings.empty)],
+        .finished
+          ⟨typedFSpace, .returning [], [], [(value, Bindings.empty)]⟩)) ∧
+    Completed.AtomRel typedFSpace noHost Completed.scopedLookup
+      [] [] ctxCall Atom.undefinedType Completed.Frame.empty
+      [(ctxValue, Completed.Frame.empty)] (policy := Policy.unmarked) := by
+  intro ctxCall ctxValue
+  have derivation := typedF_selected_derivation
+  have completed := derivation.complete_and_drain_bag
+  dsimp only at completed
+  exact ⟨completed.2.2.2.1, derivation.contextual_source⟩
+
+/-- The physical `g → f` equation exercises the genuinely recursive boundary:
+the equation return pass invokes a complete selected-function derivation while
+the worker and contextual machines retain differently factored continuations.
+Both the independent call judgment and the checked worker completion are
+constructed from the same stack-free recursive proof object. -/
+theorem recursive_equation_selected_child_complete :
+    let ctxCall : Entry.Value := Entry.Value.ofAtom recursiveCall
+    let ctxBody : Entry.Value := .expression .active [.symbol "f"]
+    let ctxValue : Entry.Value := .symbol "Value"
+    EquationFrontierRel typedFSpace [Atom.undefinedType] recursiveCall
+      Bindings.empty [recursiveWork] ∧
+    ScopedEquationDerivation typedFSpace HE.GroundedDispatch.none noHost
+      Policy.unmarked [] [] recursiveCall Atom.undefinedType Bindings.empty 11 [] []
+      ctxCall Completed.Frame.empty 4 5 47 [] []
+      [(fcall, Bindings.empty)] [recursiveWork]
+      [(fcall, Bindings.empty)] [(fcall, Bindings.empty)]
+      [(ctxBody, Completed.Frame.empty)]
+      [(value, Bindings.empty)] [(ctxValue, Completed.Frame.empty)] ∧
+    Completed.CallRel typedFSpace noHost Completed.scopedLookup [] []
+      ctxCall Atom.undefinedType Completed.Frame.empty
+      [(ctxValue, Completed.Frame.empty)] (policy := Policy.unmarked) ∧
+    ∃ budget,
+      (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none scopedTypes).run
+        budget
+        ⟨typedFSpace,
+          .work (.call recursiveCall Atom.undefinedType Bindings.empty 13 []), [], []⟩ =
+      ([(value, Bindings.empty)],
+        .finished
+          ⟨typedFSpace, .returning [], [], [(value, Bindings.empty)]⟩) := by
+  intro ctxCall ctxBody ctxValue
+  have actEmpty : ScopedActivationRel Bindings.empty Completed.Frame.empty :=
+    SourceBindingComparison.FrameRelated.of_principal PrincipalBindingFrame.empty (.refl _)
+  have eqReady :
+      (matchCovered 12 (.merge Bindings.empty
+          (Spec.Type.Presentation.BindingTheory.aliasConstraints Bindings.empty)) &&
+        (mergeBindings Bindings.empty
+          (Spec.Type.Presentation.BindingTheory.aliasConstraints Bindings.empty) 12).all fun merged =>
+          (merged.hasLoop || merged.applyFullCovered fcall 12)) = true := by
+    decide +kernel
+  have mergeFilterEq :
+      ((mergeBindings Bindings.empty
+          (Spec.Type.Presentation.BindingTheory.aliasConstraints Bindings.empty) 12).filterMap fun merged =>
+        if merged.hasLoop then none else some (merged.applyFull fcall 12, merged)) =
+      [(fcall, Bindings.empty)] := by
+    decide +kernel
+  have callUnify : Entry.Value.UnifyRel Policy.unmarked.rebuilding
+      Completed.Frame.empty.environment ctxCall (Entry.Value.ofAtom recursiveWork.pattern)
+      Completed.Frame.empty.environment := by
+    have same : ctxCall = Entry.Value.ofAtom recursiveCall := by
+      simp [ctxCall]
+    rw [same]
+    exact Entry.Value.UnifyRel.ordinary
+      (Entry.Value.AppliedUnifyRel.identical (policy := Policy.unmarked.rebuilding)
+        (environment := []) (by rfl))
+  have ctxProdEq : ctxBody =
+      Completed.Frame.empty.read Policy.unmarked (Entry.Value.ofAtom recursiveWork.body) := by
+    simp [ctxBody, recursiveWork, fcall, Entry.Value.ofAtom]
+  let wChildStack : List RecursiveTasks.Frame :=
+    [.append (.returns recursiveCall Atom.undefinedType 12 [] [])]
+  let cChildStack : List RecursiveTasks.Contextual.Continuation :=
+    [.append (.boundaryBatch [] [] none (.returned ctxCall Atom.undefinedType) []),
+      .append (.equations [] [] ctxCall Atom.undefinedType Completed.Frame.empty [])]
+  have childDerivation : ScopedAtomDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked [] [] 12 [] [] [] fcall ctxBody Atom.undefinedType
+      Bindings.empty Completed.Frame.empty wChildStack cChildStack 42
+      [(value, Bindings.empty)] [(ctxValue, Completed.Frame.empty)] := by
+    simpa [wChildStack, cChildStack, ctxBody, ctxValue, fcall] using
+      (typedF_selected_derivation_at wChildStack cChildStack [] [])
+  have tailDerivation : ScopedEquationDerivation typedFSpace HE.GroundedDispatch.none
+      noHost Policy.unmarked [] [] recursiveCall Atom.undefinedType Bindings.empty 11 [] []
+      ctxCall Completed.Frame.empty 1 1 1
+      [.prepend [(value, Bindings.empty)]]
+      [.prepend [(ctxValue, Completed.Frame.empty)]]
+      [] [] [] [] [] [] [] :=
+    ScopedEquationDerivation.nil [.prepend [(value, Bindings.empty)]]
+      recursiveCall Atom.undefinedType Bindings.empty 11 [] [] ctxCall
+      Completed.Frame.empty [.prepend [(ctxValue, Completed.Frame.empty)]]
+  have equationDerivation : ScopedEquationDerivation typedFSpace
+      HE.GroundedDispatch.none noHost Policy.unmarked [] [] recursiveCall
+      Atom.undefinedType Bindings.empty 11 [] [] ctxCall Completed.Frame.empty
+      4 5 47 [] [] [(fcall, Bindings.empty)] [recursiveWork]
+      [(fcall, Bindings.empty)] [(fcall, Bindings.empty)]
+      [(ctxBody, Completed.Frame.empty)]
+      [(value, Bindings.empty)] [(ctxValue, Completed.Frame.empty)] := by
+    apply ScopedEquationDerivation.cons_ordinary_evaluate
+      (rhs := fcall) (wBodyVal := fcall) (selected := Bindings.empty)
+      (wBMid := Bindings.empty) (work := recursiveWork) (ctxProdVal := ctxBody)
+      (cFrameMid := Completed.Frame.empty) (childSteps := 42)
+      (remEqSteps := 1) (remProdSteps := 1) (remRetSteps := 1)
+      (remRows := []) (remWorks := [])
+      (remBodyResults := []) (remProdResults := []) (remCtxProdResults := [])
+      (headFinalResults := [(value, Bindings.empty)]) (remFinalResults := [])
+      (headCtxFinalResults := [(ctxValue, Completed.Frame.empty)])
+      (remCtxFinalResults := [])
+      (eqReady := eqReady) (mergeFilterEq := mergeFilterEq)
+      (outBindingsEq := by simp [recursiveWork, Completed.Frame.empty])
+      (unifyRel := callUnify) (ctxProdEq := ctxProdEq)
+      (bodyEraseEq := by simp [ctxBody, fcall, Entry.Value.erase])
+      (notFunc := by intro body; simp [fcall])
+      (notRefused := by decide) (clean := by decide)
+      (actMid := actEmpty) (childDerivation := by
+        simpa [wChildStack, cChildStack] using childDerivation)
+      (tailDerivation := tailDerivation)
+  have recursiveNotMinimal : minimalInstruction recursiveCall = false := by
+    change minimalInstruction (.expression [.symbol "g"]) = false
+    decide
+  have recursiveNonGrounded : NonGroundedCallRel noHost ctxCall.erase := by
+    rw [show ctxCall.erase = recursiveCall by
+      simp [ctxCall, recursiveCall, Entry.Value.ofAtom, Entry.Value.erase]]
+    change NonGroundedCallRel noHost (.expression [.symbol "g"])
+    constructor
+    · simp [Spec.Eval.Minimal.HostCall, noHost]
+    · decide
+  have spine := equationDerivation.to_concreteSpine
+  have callRun := spine.call_run
+    (by simp [ctxCall, recursiveCall, Entry.Value.ofAtom, Entry.Value.erase])
+    (by simp [recursiveCall, isErrorAtom])
+    (by intro _op _args _same; rfl)
+    recursiveNonGrounded recursiveNotMinimal
+    (by decide +kernel) (by decide +kernel) (by simp)
+    (by simpa [ctxCall, recursiveCall, Entry.Value.ofAtom, Entry.Value.erase,
+      Completed.Frame.empty] using recursive_frontier [Atom.undefinedType])
+    (by simp)
+  have sourceBodies := equationDerivation.to_completed_equationBodiesRel
+  have sourceCall : Completed.CallRel typedFSpace noHost Completed.scopedLookup [] []
+      ctxCall Atom.undefinedType Completed.Frame.empty
+      [(ctxValue, Completed.Frame.empty)] (policy := Policy.unmarked) := by
+    apply Completed.CallRel.equations
+    · simp [ctxCall, recursiveCall, Entry.Value.ofAtom, Entry.Value.erase,
+        Conformance.isErrorRel_iff_isErrorAtom, isErrorAtom]
+    · exact recursiveNonGrounded
+    · simpa [ctxCall, recursiveCall, Entry.Value.ofAtom, Entry.Value.erase,
+        Completed.Frame.empty] using recursive_frontier [Atom.undefinedType]
+    · simp
+    · exact sourceBodies
+  have workerPrefix := callRun.2.1 2
+  have workerDrain :
+      (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none scopedTypes).run 2
+        ⟨typedFSpace, .returning [(value, Bindings.empty)], [], []⟩ =
+      ([(value, Bindings.empty)],
+        .finished ⟨typedFSpace, .returning [], [], [(value, Bindings.empty)]⟩) := rfl
+  refine ⟨recursive_frontier [Atom.undefinedType], equationDerivation, sourceCall, 63, ?_⟩
+  simpa only [show 4 + 5 + 47 + 5 + 2 = 63 by decide] using
+    workerPrefix.trans workerDrain
+
+end TypedFScopedWorker
+
 def rawSelect : Atom := .expression [.symbol "unify", .symbol "X", .symbol "X", fcall, .symbol "Fail"]
 
 theorem raw_selection_is_not_reactivated :
@@ -740,6 +1532,17 @@ theorem eval_operand_is_materialized :
     complete Space.empty (.primitive (.expression [.symbol "eval", .var "saved"])
       (Bindings.empty.assign "saved" (function (returned seven))) 30) =
       ([(seven, Bindings.empty.assign "saved" (function (returned seven)))], true) := by decide
+
+#print axioms TypedFScopedWorker.typedF_frontier
+#print axioms TypedFScopedWorker.recursive_frontier
+#print axioms TypedFScopedWorker.typedF_invocation_types
+#print axioms TypedFScopedWorker.typedF_entry_at
+#print axioms TypedFScopedWorker.typedF_entry
+#print axioms TypedFScopedWorker.typedF_operator_admission_at
+#print axioms TypedFScopedWorker.typedF_selected_derivation_at
+#print axioms TypedFScopedWorker.typedF_selected_derivation
+#print axioms TypedFScopedWorker.typedF_selected_function_complete
+#print axioms TypedFScopedWorker.recursive_equation_selected_child_complete
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveControls.Invocation
 

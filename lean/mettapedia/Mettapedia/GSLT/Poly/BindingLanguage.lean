@@ -263,7 +263,10 @@ abbrev signature (language : LanguageDef) : Signature where
 theorem not_usesBareCollection {rule : GrammarRule} (bound : BinderRule rule) :
     ¬ UsesBareCollection rule := by
   rintro ⟨name, collectionType, elementType, shape⟩
-  have ok := bound (.simple name (.collection collectionType elementType)) (by simp [shape])
+  have parameterShape := (GrammarRule.bareParams_cons_iff rule
+    (.simple name (.collection collectionType elementType)) []).mp shape
+  have ok := bound (.simple name (.collection collectionType elementType))
+    (by simp [parameterShape.2])
   simp [bindingDecl?] at ok
 
 variable {language : LanguageDef}

@@ -164,10 +164,10 @@ theorem ambient_everyRuleIsCutUpToEquations :
   rcases listed with rfl | rfl | rfl | rfl | rfl
   · exact ⟨_, Relation.EqvGen.refl _, rfl, by decide⟩
   · exact ⟨_, Relation.EqvGen.refl _, rfl, by decide⟩
-  · exact ⟨_, equationEquiv_cut_with_unit ambient_algebraRule rfl rfl outRule_left_sorted,
+  · exact ⟨_, equationEquiv_cut_with_unit ambient_algebraRule rfl rfl rfl outRule_left_sorted,
       rfl, by decide⟩
   · exact ⟨_, Relation.EqvGen.refl _, rfl, by decide⟩
-  · exact ⟨_, equationEquiv_cut_with_unit ambient_algebraRule rfl rfl ambCongRule_left_sorted,
+  · exact ⟨_, equationEquiv_cut_with_unit ambient_algebraRule rfl rfl rfl ambCongRule_left_sorted,
       rfl, by decide⟩
 
 end Ambients

@@ -1,6 +1,6 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.ObjectSetValuesControls
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.ObjectChurchLifting
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.IntuitionisticImport
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.ConsistencySound
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TowerInterpretation.ChurchSoundness
 
 /-!
@@ -23,8 +23,8 @@ premises of a root step are read off the typing of its redex by pattern inversio
 * **Not every code holds** (`objectRules_not_all_true`): no closed term of the object package
   has the type `Π (p : prop). holds p`.
 * **Impredicative falsity has no proof** (`objectRules_consistent_bot_tower`): no closed term
-  proves `∀ p : prop. p`, the statement of `consistent_bot`, here by the set tower: applied to
-  a code variable, such a term would prove every code.
+  proves `∀ p : prop. p`. The existing `consistent_bot` theorem proves this without the
+  tower hypothesis and therefore also supplies the tower-parameterized interface.
 
 Positive controls: the numerals are closed inhabitants of `num`, whose value is `ω`
 (`zero_mem_num`), so the theorems above do not hold of every type.
@@ -89,18 +89,11 @@ theorem objectRules_not_all_true (h : CofinalInaccessibles.{u}) (t : Tower.Tm 0)
   Derivable.no_closed_inhabitant (A := objectAllTrue) ConvRules.objectLevels objectLiftingFacts
     (objectSetModel h) rfl (ev_objectAllTrue_empty h) t
 
-/-- **Consistency for impredicative falsity, by the set tower.** Relative to
-`CofinalInaccessibles`, no closed term of the object package proves `∀ p : prop. p`: applied
-to a code variable it would prove every code. -/
-theorem objectRules_consistent_bot_tower (h : CofinalInaccessibles.{u}) (t : Tower.Tm 0) :
-    ¬ Typed objectRules .nil t (programCodes.holdsOf (botCode (n := 0))) := by
-  intro typed
-  refine objectRules_not_all_true h (.lam (.app (Presentation.rename wk t) (.var 0))) ?_
-  have family : Typed objectRules (.snoc .nil (.const propN))
-      (.app (.const holdsN) (.var 0)) Package.U0 :=
-    .appElim holds_typedO (.var 0)
-  exact .lamIntro (piO prop_typedO family) (.sort Tower.zero)
-    (botElimO (Typed.weaken typed) (.var 0))
+/-- **Consistency for impredicative falsity in the tower interface.** The
+existing consistency theorem needs no inaccessible-cardinal hypothesis. -/
+theorem objectRules_consistent_bot_tower (_h : CofinalInaccessibles.{u}) (t : Tower.Tm 0) :
+    ¬ Typed objectRules .nil t (programCodes.holdsOf (botCode (n := 0))) :=
+  consistent_bot t
 
 /-- **Positive control: `num` is inhabited in the tower.** The value of zero lies in the
 value of `num`, so the emptiness above is a property of those two types and not of every

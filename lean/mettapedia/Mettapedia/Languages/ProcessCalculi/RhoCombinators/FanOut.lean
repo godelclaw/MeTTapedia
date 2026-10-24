@@ -38,9 +38,14 @@ replaced by a fan-out: the arriving name is split, the gate releases the body,
 and the name reaches **every** proxy the body uses. That closes the affine
 boundary for the input clause, which is the §2 side.
 
-Threading the resulting list of proxies through `translate` itself — so that the
-body is compiled against `k` proxy names rather than one — is the remaining
-mechanical step, and the same pass serves the skeleton side.
+Threading these proxies through `translate` still requires a per-activation
+freshness argument. Position-based slots distinguish source occurrences but
+do not distinguish repeated runtime activations of one compiled body. The
+reachability theorems here do not establish that isolation. The separate
+`ScopedContextSwitching` executor proves exact support-sensitive renaming and
+keeps activation environments distinct; it is not a proof of the full rho
+translation. A compiler extension must supply and preserve that distinction
+at clause entry rather than treating proxy insertion as a mechanical step.
 -/
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.Translation
 

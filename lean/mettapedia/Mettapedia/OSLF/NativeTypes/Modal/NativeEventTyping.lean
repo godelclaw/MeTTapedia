@@ -89,7 +89,7 @@ theorem Event.completed_typing (event : Event schema) :
       GeneralPremise.TypedAssignment (GeneralPlanEnvironment.environment plan)
         ⟨event.receipt.firing.job.ordinal, rule, spec,
           event.receipt.firing.job.site.focusBound, 0, 0⟩ event.receipt.firing.completed :=
-  GeneralPremise.RootFiring.completed_typed (event.root_firing schema)
+  GeneralPremise.Interpreted.RootFiring.completed_typed (event.root_firing schema)
 
 /-- The actual rule and scoped specification are recovered from authored
 declaration lookup. Local captures are typed in the same ambient context as

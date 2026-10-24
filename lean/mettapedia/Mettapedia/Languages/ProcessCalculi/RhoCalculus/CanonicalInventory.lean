@@ -74,14 +74,25 @@ theorem name_row (inventory : CanonicalInventory language)
     rcases source with rfl | rfl | rfl | rfl | rfl | rfl <;> simp_all [rhoCalc]
   · simp [extra.2.2.1] at category
 
-theorem collection_row (inventory : CanonicalInventory language)
-    {rule : GrammarRule} (member : rule ∈ language.terms) (bare : UsesBareCollection rule) :
+theorem collection_parameter_row (inventory : CanonicalInventory language)
+    {rule : GrammarRule} {parameter : String} {kind : CollType} {element : TypeExpr}
+    (member : rule ∈ language.terms)
+    (shape : rule.params = [.simple parameter (.collection kind element)]) :
     rule = rhoCalc.terms[3] := by
   rcases inventory.rows rule member with source | extra
   · simp [rhoCalc] at source
     rcases source with rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp_all [rhoCalc, UsesBareCollection, TypeExpr.proc, TypeExpr.name, TypeExpr.baseType]
-  · exact False.elim (extra.2.2.2.1 bare)
+      simp_all [rhoCalc, TypeExpr.proc, TypeExpr.name, TypeExpr.baseType]
+  · have prohibited := extra.2.2.2.2 (.simple parameter (.collection kind element))
+      (by rw [shape]; simp) (.collection kind element) rfl
+    exact prohibited.elim
+
+theorem collection_row (inventory : CanonicalInventory language)
+    {rule : GrammarRule} (member : rule ∈ language.terms) (bare : UsesBareCollection rule) :
+    rule = rhoCalc.terms[3] := by
+  obtain ⟨parameter, kind, element, shape⟩ := bare
+  exact inventory.collection_parameter_row member
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
 
 theorem parameters (inventory : CanonicalInventory language)
     {rule : GrammarRule} (member : rule ∈ language.terms) (notBare : ¬ UsesBareCollection rule) :

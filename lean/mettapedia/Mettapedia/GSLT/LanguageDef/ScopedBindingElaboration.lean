@@ -2258,14 +2258,14 @@ structure SelectedVectorConstructor (language : LanguageDef) (category : String)
   unique : vectorConstructorCandidates language category = [index]
   parameterName : String
   elementSort : TypeExpr
-  shape : (language.terms.get index).params = [.simple parameterName (.collection .vec elementSort)]
+  shape : (language.terms.get index).bareParams = [.simple parameterName (.collection .vec elementSort)]
   categorized : (language.terms.get index).category = category
 
 def selectVectorConstructor? (language : LanguageDef) (category : String) :
     Option (SelectedVectorConstructor language category) :=
   match candidates : vectorConstructorCandidates language category with
   | [index] =>
-      match shape : (language.terms.get index).params with
+      match shape : (language.terms.get index).bareParams with
       | [.simple parameterName (.collection .vec elementSort)] =>
           if categorized : (language.terms.get index).category = category then
             some {
@@ -3685,7 +3685,7 @@ private theorem vector_constructor_op_transport {bound : List TypeExpr}
         secondArguments)
     (firstMember secondMember : declaration ∈ language.terms)
     (firstShape secondShape :
-      declaration.params = [.simple parameterName (.collection .vec elementSort)]) :
+      declaration.bareParams = [.simple parameterName (.collection .vec elementSort)]) :
     (show Term (SchemaSignature language rule spec) bound (.base declaration.category) from
       .op (.inl (.collectionConstructor declaration firstMember parameterName .vec
         elementSort firstShape first)) firstArguments) =

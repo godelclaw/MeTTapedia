@@ -1,29 +1,19 @@
-import Mettapedia.FluidDynamics.NavierStokes.ModeStateLogEnergyChartFork
+import Mettapedia.FluidDynamics.NavierStokes.ModeStateEnergyChartFork
 import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
 /-!
 # Generic Energy-Profile Fork on the Shared Mode State
 
-This file packages a reusable theorem pattern on the shared `ModeState`.
-Any globally continuous energy profile `ρ` satisfying
+A continuous profile, nonnegative and bounded above by the identity on
+nonnegative inputs, has a derived zero law. Applied to squared amplified
+coordinates before compensation, it gives a summable coordinate observation.
+Strict positivity identifies its hard detector with support presence.
 
-* `0 ≤ ρ(u)` for `u ≥ 0`,
-* `ρ(u) ≤ u` for `u ≥ 0`,
-* `ρ(0) = 0`,
-* `ρ(u) > 0` for `u > 0`,
-
-lands in the same soft-vs-hard fork:
-
-* the summably compensated soft radius is continuous and truncation-friendly;
-* the corresponding hard detector is tail-spike stable and therefore not
-  continuous at `modeZero`.
-
-The identity profile, the clipped log profile `u ↦ log(1 + max u 0)`, the
-bounded rational saturation `u ↦ u / (1 + u)`, and the smooth exponential
-saturation `u ↦ 1 - exp(-u)` on nonnegative inputs, and a mathlib smooth
-transition profile `u ↦ u * smoothTransition(u)` are provided as canonical
-instances. A positive-parameter scaled smooth-transition family
-`u ↦ u * smoothTransition(cu)` is also formalized.
+The identity profile cancels amplification exactly. Nonlinear logarithmic,
+rational, exponential, and smooth-transition profiles need not; a rational
+example computes two distinct responses for different amplification levels.
+The concrete logarithmic formula is interpreted by this generic theory in
+`ModeStateLogEnergyChartFork`, keeping the dependency direction explicit.
 -/
 
 set_option autoImplicit false
@@ -39,427 +29,189 @@ open scoped Classical
 
 section ModeStateEnergyProfileFork
 
-/-- A globally continuous radial energy profile that is nonnegative,
-dominated by the identity on nonnegative inputs, and strictly positive on
-positive inputs. -/
+/-- A continuous radial profile dominated by the identity on nonnegative
+inputs, and strictly positive on positive inputs. Its zero law is derived. -/
 structure EnergyProfile where
   profile : ℝ → ℝ
   continuous_profile : Continuous profile
   profile_nonneg : ∀ u, 0 ≤ u → 0 ≤ profile u
   profile_le : ∀ u, 0 ≤ u → profile u ≤ u
-  profile_zero : profile 0 = 0
   profile_pos : ∀ u, 0 < u → 0 < profile u
 
-/-- Soft profiled energy term. -/
-def profiledEnergyTerm (P : EnergyProfile) (m : ℕ) (x : ModeState) (n : ℕ) : ℝ :=
-  P.profile ((sobolevAmplification m x n) ^ (2 : ℕ)) * sobolevEnergyWeight m n
+@[simp] theorem EnergyProfile.profile_zero (P : EnergyProfile) : P.profile 0 = 0 :=
+  le_antisymm (P.profile_le 0 le_rfl) (P.profile_nonneg 0 le_rfl)
 
-/-- Soft profiled energy radius. -/
+/-- Applying a nonlinear profile before compensation can retain dependence on `m`. -/
+def profiledEnergyTerm (P : EnergyProfile) (m : ℕ) (x : ModeState) (n : ℕ) : ℝ :=
+  P.profile ((sobolevAmplification m x n) ^ 2) * energyCompensationWeight m n
+
 def profiledEnergyRadius (P : EnergyProfile) (m : ℕ) (x : ModeState) : ℝ :=
   ∑' n, profiledEnergyTerm P m x n
 
-/-- Zeroth visible mode plus the profiled energy radius. -/
 def profiledEnergyStatistic (P : EnergyProfile) (m : ℕ) (x : ModeState) : ℝ :=
   x.coeff 0 + profiledEnergyRadius P m x
 
-/-- Hard detector induced by the profile. -/
 def hardProfileThresholdRadius (P : EnergyProfile) (m : ℕ) (x : ModeState) : ℝ :=
-  if ∃ n, 0 < P.profile ((sobolevAmplification m x n) ^ (2 : ℕ)) then 1 else 0
+  if ∃ n, 0 < P.profile ((sobolevAmplification m x n) ^ 2) then 1 else 0
 
 theorem continuous_profiledEnergyTerm (P : EnergyProfile) (m n : ℕ) :
-    Continuous fun x : ModeState => profiledEnergyTerm P m x n := by
-  exact ((P.continuous_profile.comp ((continuous_sobolevAmplification m n).pow 2)).mul
-      (continuous_const : Continuous fun _ : ModeState => sobolevEnergyWeight m n))
+    Continuous fun x : ModeState => profiledEnergyTerm P m x n :=
+  (P.continuous_profile.comp ((continuous_sobolevAmplification m n).pow 2)).mul continuous_const
 
-theorem profiledEnergyTerm_le_sobolevEnergyTerm
+theorem profiledEnergyTerm_le_compensatedEnergyTerm
     (P : EnergyProfile) (m : ℕ) (x : ModeState) (n : ℕ) :
-    profiledEnergyTerm P m x n ≤ sobolevEnergyTerm m x n := by
-  have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-  exact mul_le_mul_of_nonneg_right
-    (P.profile_le _ hsq_nonneg) (sobolevEnergyWeight_nonneg m n)
+    profiledEnergyTerm P m x n ≤ compensatedEnergyTerm x n := by
+  rw [← amplifiedEnergyTerm_eq_compensatedEnergyTerm m]
+  exact mul_le_mul_of_nonneg_right (P.profile_le _ (sq_nonneg _))
+    (energyCompensationWeight_nonneg m n)
 
-theorem norm_profiledEnergyTerm_le_inverseSquare
-    (P : EnergyProfile) (m : ℕ) (x : ModeState) (n : ℕ) :
-    ‖profiledEnergyTerm P m x n‖ ≤ inverseSquareModeWeights.weight n := by
-  have hprof_nonneg : 0 ≤ P.profile ((sobolevAmplification m x n) ^ (2 : ℕ)) := by
-    have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-    exact P.profile_nonneg _ hsq_nonneg
-  have hterm_nonneg : 0 ≤ profiledEnergyTerm P m x n := by
-    exact mul_nonneg hprof_nonneg (sobolevEnergyWeight_nonneg m n)
-  have hsoft_nonneg : 0 ≤ sobolevEnergyTerm m x n := by
-    exact mul_nonneg (by positivity) (sobolevEnergyWeight_nonneg m n)
-  calc
-    ‖profiledEnergyTerm P m x n‖ = profiledEnergyTerm P m x n := by
-      rw [Real.norm_eq_abs, abs_of_nonneg hterm_nonneg]
-    _ ≤ sobolevEnergyTerm m x n := profiledEnergyTerm_le_sobolevEnergyTerm P m x n
-    _ ≤ inverseSquareModeWeights.weight n := by
-      simpa [Real.norm_eq_abs, abs_of_nonneg hsoft_nonneg] using
-        norm_sobolevEnergyTerm_le_inverseSquare m x n
+theorem norm_profiledEnergyTerm_le_inverseSquare (P : EnergyProfile) (m : ℕ)
+    (x : ModeState) (n : ℕ) : ‖profiledEnergyTerm P m x n‖ ≤ inverseSquareModeWeights.weight n := by
+  have nonneg : 0 ≤ profiledEnergyTerm P m x n :=
+    mul_nonneg (P.profile_nonneg _ (sq_nonneg (sobolevAmplification m x n)))
+    (energyCompensationWeight_nonneg m n)
+  rw [Real.norm_eq_abs, abs_of_nonneg nonneg]
+  exact (profiledEnergyTerm_le_compensatedEnergyTerm P m x n).trans
+    (le_trans (le_abs_self _) (by
+      exact (squareModeObservable inverseSquareModeWeights).norm_term_le x n))
+
+/-- The nonlinear formula shares the inverse-square envelope with compensated energy. -/
+def profiledEnergyObservable (P : EnergyProfile) (m : ℕ) : SummableCoordinateObservable where
+  envelope := inverseSquareModeWeights
+  response n t := P.profile (((n + 1 : ℝ) ^ m * t) ^ 2) * energyCompensationWeight m n
+  continuous_response n := by
+    apply Continuous.continuousOn
+    apply Continuous.mul
+    · apply P.continuous_profile.comp
+      fun_prop
+    · exact continuous_const
+  norm_response_le n t ht :=
+    norm_profiledEnergyTerm_le_inverseSquare P m ⟨fun _ => t, fun _ => ht⟩ n
 
 theorem continuous_profiledEnergyRadius (P : EnergyProfile) (m : ℕ) :
-    Continuous (profiledEnergyRadius P m) := by
-  unfold profiledEnergyRadius
-  refine continuous_tsum (fun n => continuous_profiledEnergyTerm P m n)
-    inverseSquareModeWeights.summable_weight ?_
-  intro n x
-  exact norm_profiledEnergyTerm_le_inverseSquare P m x n
+    Continuous (profiledEnergyRadius P m) := (profiledEnergyObservable P m).continuous_value
 
-theorem continuous_profiledEnergyStatistic (P : EnergyProfile) (m : ℕ) :
-    Continuous (profiledEnergyStatistic P m) := by
-  unfold profiledEnergyStatistic
-  exact (continuous_coeffObservable 0).add (continuous_profiledEnergyRadius P m)
+/-- All strictly positive profiles have the same support detector, despite
+their different quantitative observations. -/
+theorem hardProfileThresholdRadius_eq_hardSobolevRadius (P : EnergyProfile) (m : ℕ) :
+    hardProfileThresholdRadius P m = hardSobolevRadius m := by
+  have positive (t : ℝ) : 0 < P.profile (t ^ 2) ↔ t ≠ 0 := by
+    constructor
+    · rintro h rfl
+      simp at h
+    · exact fun h => P.profile_pos _ (sq_pos_of_ne_zero h)
+  funext x
+  simp only [hardProfileThresholdRadius, positive, hardSobolevRadius]
 
-theorem tendsto_profiledEnergyRadius_truncateModes
-    (P : EnergyProfile) (m : ℕ) (x : ModeState) :
-    Tendsto (fun N => profiledEnergyRadius P m (truncateModes N x))
-      Filter.atTop (nhds (profiledEnergyRadius P m x)) := by
-  exact (continuous_profiledEnergyRadius P m).continuousAt.tendsto.comp
-    (tendsto_truncateModes_modeState x)
-
-theorem tendsto_profiledEnergyStatistic_truncateModes
-    (P : EnergyProfile) (m : ℕ) (x : ModeState) :
-    Tendsto (fun N => profiledEnergyStatistic P m (truncateModes N x))
-      Filter.atTop (nhds (profiledEnergyStatistic P m x)) := by
-  exact (continuous_profiledEnergyStatistic P m).continuousAt.tendsto.comp
-    (tendsto_truncateModes_modeState x)
-
-theorem continuous_profiledEnergy_cutoffPotential
-    (P : EnergyProfile) (m : ℕ) {cutoff : ℝ → ℝ} (hcutoff : Continuous cutoff) :
-    Continuous (cutoffPotential cutoff (profiledEnergyRadius P m) (profiledEnergyStatistic P m)) := by
-  exact continuous_cutoffPotential hcutoff
-    (continuous_profiledEnergyRadius P m) (continuous_profiledEnergyStatistic P m)
-
-theorem continuous_profiledEnergy_coleHopfPhi
-    (P : EnergyProfile) (m : ℕ) {ν : ℝ} {cutoff : ℝ → ℝ} (hcutoff : Continuous cutoff) :
-    Continuous (coleHopfPhi ν
-      (cutoffPotential cutoff (profiledEnergyRadius P m) (profiledEnergyStatistic P m))) := by
-  exact continuous_cutoffColeHopfPhi hcutoff
-    (continuous_profiledEnergyRadius P m) (continuous_profiledEnergyStatistic P m)
-
-theorem hardProfileThresholdRadius_tailSpikeStableAt_one
-    (P : EnergyProfile) (m : ℕ) :
+theorem hardProfileThresholdRadius_tailSpikeStableAt_one (P : EnergyProfile) (m : ℕ) :
     TailSpikeStableAt (hardProfileThresholdRadius P m) 1 := by
-  intro N
-  unfold hardProfileThresholdRadius
-  split_ifs with h
-  · rfl
-  · exfalso
-    apply h
-    refine ⟨N, ?_⟩
-    have hsq_pos : 0 < (((N + 1 : ℝ) ^ m) ^ (2 : ℕ)) := by positivity
-    have hprof_pos : 0 < P.profile ((((N + 1 : ℝ) ^ m) ^ (2 : ℕ))) :=
-      P.profile_pos _ hsq_pos
-    simpa [sobolevAmplification, tailSpikeMode] using hprof_pos
+  rw [hardProfileThresholdRadius_eq_hardSobolevRadius, hardSobolevRadius_eq_hardSupportRadius]
+  exact tailPresenceRadius_tailSpikeStableAt_one
 
-theorem hardProfileThresholdRadius_modeZero
-    (P : EnergyProfile) (m : ℕ) :
+theorem hardProfileThresholdRadius_modeZero (P : EnergyProfile) (m : ℕ) :
     hardProfileThresholdRadius P m modeZero = 0 := by
-  unfold hardProfileThresholdRadius
-  split_ifs with h
-  · rcases h with ⟨n, hn⟩
-    simp [sobolevAmplification, modeZero, P.profile_zero] at hn
-  · rfl
+  rw [hardProfileThresholdRadius_eq_hardSobolevRadius, hardSobolevRadius_eq_hardSupportRadius]
+  exact tailPresenceRadius_modeZero
 
-theorem not_continuousAt_hardProfileThresholdRadius_modeZero
-    (P : EnergyProfile) (m : ℕ) :
+theorem not_continuousAt_hardProfileThresholdRadius_modeZero (P : EnergyProfile) (m : ℕ) :
     ¬ ContinuousAt (hardProfileThresholdRadius P m) modeZero := by
-  refine not_continuousAt_of_tailSpikeStableAt
-    (hardProfileThresholdRadius_tailSpikeStableAt_one P m) ?_
-  simp [hardProfileThresholdRadius_modeZero]
+  rw [hardProfileThresholdRadius_eq_hardSobolevRadius]
+  exact not_continuousAt_hardSobolevRadius_modeZero m
 
 theorem not_continuousAt_hardProfileThreshold_cutoffPotential_modeZero
     (P : EnergyProfile) (m : ℕ) :
-    ¬ ContinuousAt
-      (cutoffPotential (fun r => r) (hardProfileThresholdRadius P m) unitStatisticMode)
-      modeZero := by
-  exact not_continuousAt_cutoffPotential_of_tailSpikeStableAt
-    (hardProfileThresholdRadius_tailSpikeStableAt_one P m)
-    tendsto_unitStatisticMode_tailSpikeMode
-    (by
-      unfold cutoffPotential
-      rw [hardProfileThresholdRadius_modeZero]
-      norm_num [unitStatisticMode, modeZero])
+    ¬ ContinuousAt (cutoffPotential (fun r => r) (hardProfileThresholdRadius P m)
+      unitStatisticMode) modeZero := by
+  rw [hardProfileThresholdRadius_eq_hardSobolevRadius]
+  exact not_continuousAt_hardSobolev_cutoffPotential_modeZero m
 
 theorem not_continuousAt_hardProfileThreshold_coleHopfPhi_modeZero
     (P : EnergyProfile) (m : ℕ) :
-    ¬ ContinuousAt
-      (coleHopfPhi 1
-        (cutoffPotential (fun r => r) (hardProfileThresholdRadius P m) unitStatisticMode))
-      modeZero := by
-  exact not_continuousAt_coleHopfPhi_of_tailSpikeStableAt
-    (hardProfileThresholdRadius_tailSpikeStableAt_one P m)
-    tendsto_unitStatisticMode_tailSpikeMode
-    (by norm_num)
-    (by
-      unfold cutoffPotential
-      rw [hardProfileThresholdRadius_modeZero]
-      norm_num [unitStatisticMode, modeZero])
+    ¬ ContinuousAt (coleHopfPhi 1 (cutoffPotential (fun r => r)
+      (hardProfileThresholdRadius P m) unitStatisticMode)) modeZero := by
+  rw [hardProfileThresholdRadius_eq_hardSobolevRadius]
+  exact not_continuousAt_hardSobolev_coleHopfPhi_modeZero m
 
-theorem hardProfileThresholdRadius_eq_hardSobolevRadius
-    (P : EnergyProfile) (m : ℕ) :
-    hardProfileThresholdRadius P m = hardSobolevRadius m := by
-  funext x
-  have hiff :
-      (∃ n, 0 < P.profile ((sobolevAmplification m x n) ^ (2 : ℕ))) ↔
-        ∃ n, sobolevAmplification m x n ≠ 0 := by
-    constructor
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      intro hzero
-      have hsq_zero : (sobolevAmplification m x n) ^ (2 : ℕ) = 0 := by
-        simp [hzero]
-      have hprof_zero : P.profile ((sobolevAmplification m x n) ^ (2 : ℕ)) = 0 := by
-        simpa [hsq_zero] using P.profile_zero
-      rw [hprof_zero] at hn
-      linarith
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      have hsq_pos : 0 < (sobolevAmplification m x n) ^ (2 : ℕ) := by
-        nlinarith [sq_pos_of_ne_zero hn]
-      exact P.profile_pos _ hsq_pos
-  by_cases h : ∃ n, sobolevAmplification m x n ≠ 0
-  · have hp :
-        ∃ n, 0 < P.profile ((sobolevAmplification m x n) ^ (2 : ℕ)) := hiff.mpr h
-    simp [hardProfileThresholdRadius, hardSobolevRadius, hp, h]
-  · have hp :
-        ¬ ∃ n, 0 < P.profile ((sobolevAmplification m x n) ^ (2 : ℕ)) := by
-        intro hp
-        exact h (hiff.mp hp)
-    simp [hardProfileThresholdRadius, hardSobolevRadius, hp, h]
-
-/-- The identity profile recovers the raw soft energy on the good side. -/
+/-- The identity profile recovers compensated energy. -/
 def identityEnergyProfile : EnergyProfile where
-  profile := fun u => u
+  profile := id
   continuous_profile := continuous_id
-  profile_nonneg := by
-    intro u hu
-    exact hu
-  profile_le := by
-    intro u hu
-    exact le_rfl
-  profile_zero := by simp
-  profile_pos := by
-    intro u hu
-    exact hu
+  profile_nonneg _ hu := hu
+  profile_le _ _ := le_rfl
+  profile_pos _ hu := hu
 
-/-- A globally continuous clipped log profile agreeing with `log (1 + u)` on
-nonnegative inputs. -/
+/-- Clipped logarithm, agreeing with `log (1 + u)` on nonnegative inputs. -/
 def logOnePlusMaxEnergyProfile : EnergyProfile where
-  profile := fun u => Real.log (1 + max u 0)
-  continuous_profile := by
-    have harg : Continuous fun u : ℝ => 1 + max u 0 := by
-      exact continuous_const.add (continuous_id.max continuous_const)
-    refine harg.log ?_
-    intro u
-    have hmax_nonneg : 0 ≤ max u 0 := le_max_right _ _
-    linarith
-  profile_nonneg := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu
-    rw [show 1 + max u 0 = 1 + u by simp [hmax]]
-    apply Real.log_nonneg
-    linarith
-  profile_le := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu
-    have harg_pos : 0 < 1 + max u 0 := by
-      rw [hmax]
-      linarith
-    have h := Real.log_le_sub_one_of_pos harg_pos
-    simpa [hmax] using h
-  profile_zero := by
-    simp
-  profile_pos := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu.le
-    have hgt : 1 < 1 + max u 0 := by
-      rw [hmax]
-      linarith
-    simpa [hmax] using Real.log_pos hgt
+  profile u := Real.log (1 + max u 0)
+  continuous_profile := (continuous_const.add (continuous_id.max continuous_const)).log
+    (fun u => ne_of_gt (by change 0 < 1 + max u 0; linarith [le_max_right u 0]))
+  profile_nonneg u hu := by
+    simp only [max_eq_left hu]
+    exact Real.log_nonneg (by linarith)
+  profile_le u hu := by
+    simpa [max_eq_left hu] using Real.log_le_sub_one_of_pos (by positivity : 0 < 1 + u)
+  profile_pos u hu := by
+    simp only [max_eq_left hu.le]
+    exact Real.log_pos (by linarith)
 
-/-- A bounded rational saturation profile agreeing with `u / (1 + u)` on
-nonnegative inputs. -/
+/-- Bounded rational saturation, agreeing with `u / (1 + u)` for nonnegative `u`. -/
 def rationalMaxEnergyProfile : EnergyProfile where
-  profile := fun u => max u 0 / (1 + max u 0)
-  continuous_profile := by
-    have hmax : Continuous fun u : ℝ => max u 0 := continuous_id.max continuous_const
-    exact hmax.div (continuous_const.add hmax) (by
-      intro u
-      have hmax_nonneg : 0 ≤ max u 0 := le_max_right _ _
-      linarith)
-  profile_nonneg := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu
-    rw [show max u 0 / (1 + max u 0) = u / (1 + u) by simp [hmax]]
-    exact div_nonneg hu (by linarith)
-  profile_le := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu
-    rw [show max u 0 / (1 + max u 0) = u / (1 + u) by simp [hmax]]
-    exact div_le_self hu (by linarith)
-  profile_zero := by
-    simp
-  profile_pos := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu.le
-    rw [show max u 0 / (1 + max u 0) = u / (1 + u) by simp [hmax]]
-    exact div_pos hu (by linarith)
+  profile u := max u 0 / (1 + max u 0)
+  continuous_profile := (continuous_id.max continuous_const).div
+    (continuous_const.add (continuous_id.max continuous_const))
+    (fun u => ne_of_gt (by change 0 < 1 + max u 0; linarith [le_max_right u 0]))
+  profile_nonneg u hu := by simp only [max_eq_left hu]; positivity
+  profile_le u hu := by simpa [max_eq_left hu] using div_le_self hu (by linarith : 1 ≤ 1 + u)
+  profile_pos u hu := by simp only [max_eq_left hu.le]; positivity
 
-/-- A smooth bounded saturation profile agreeing with `1 - exp(-u)` on
-nonnegative inputs. -/
+/-- Exponential saturation, agreeing with `1 - exp(-u)` for nonnegative `u`. -/
 def expNegMaxEnergyProfile : EnergyProfile where
-  profile := fun u => 1 - Real.exp (- max u 0)
-  continuous_profile := by
-    have hmax : Continuous fun u : ℝ => max u 0 := continuous_id.max continuous_const
-    exact continuous_const.sub (Real.continuous_exp.comp (continuous_neg.comp hmax))
-  profile_nonneg := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu
-    have hexp_le : Real.exp (-u) ≤ 1 := by
-      have : Real.exp (-u) ≤ Real.exp 0 := by
-        gcongr
-        linarith
-      simpa using this
-    have : 0 ≤ 1 - Real.exp (-u) := by
-      exact sub_nonneg.mpr hexp_le
-    simpa [hmax] using this
-  profile_le := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu
-    have h := Real.add_one_le_exp (-u)
-    have : 1 - Real.exp (-u) ≤ u := by
-      linarith
-    simpa [hmax] using this
-  profile_zero := by
-    simp
-  profile_pos := by
-    intro u hu
-    have hmax : max u 0 = u := max_eq_left hu.le
-    have hexp_lt : Real.exp (-u) < 1 := by
-      have : Real.exp (-u) < Real.exp 0 := by
-        gcongr
-        linarith
-      simpa using this
-    have : 0 < 1 - Real.exp (-u) := by
-      exact sub_pos.mpr hexp_lt
-    simpa [hmax] using this
+  profile u := 1 - Real.exp (-max u 0)
+  continuous_profile := continuous_const.sub
+    (Real.continuous_exp.comp (continuous_id.max continuous_const).neg)
+  profile_nonneg u hu := by
+    simp only [max_eq_left hu]
+    exact sub_nonneg.mpr (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hu))
+  profile_le u hu := by
+    simp only [max_eq_left hu]
+    linarith [Real.add_one_le_exp (-u)]
+  profile_pos u hu := by
+    simp only [max_eq_left hu.le]
+    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (neg_neg_of_pos hu))
 
-/-- A smooth transition profile `u * smoothTransition u`. It is identically
-zero on nonpositive inputs and agrees with `u` for large positive inputs. -/
+/-- Smooth transition, zero on nonpositive inputs and equal to `u` above one. -/
 def smoothTransitionEnergyProfile : EnergyProfile where
-  profile := fun u => u * Real.smoothTransition u
+  profile u := u * Real.smoothTransition u
   continuous_profile := continuous_id.mul Real.smoothTransition.continuous
-  profile_nonneg := by
-    intro u hu
-    exact mul_nonneg hu (Real.smoothTransition.nonneg u)
-  profile_le := by
-    intro u hu
-    simpa using mul_le_mul_of_nonneg_left (Real.smoothTransition.le_one u) hu
-  profile_zero := by
-    simp
-  profile_pos := by
-    intro u hu
-    exact mul_pos hu (Real.smoothTransition.pos_of_pos hu)
+  profile_nonneg u hu := mul_nonneg hu (Real.smoothTransition.nonneg u)
+  profile_le u hu := by simpa using mul_le_mul_of_nonneg_left (Real.smoothTransition.le_one u) hu
+  profile_pos u hu := mul_pos hu (Real.smoothTransition.pos_of_pos hu)
 
-/-- A positive-scale smooth transition family `u * smoothTransition (c u)`. -/
+/-- Positive-scale smooth transition. -/
 def scaledSmoothTransitionEnergyProfile (c : ℝ) (hc : 0 < c) : EnergyProfile where
-  profile := fun u => u * Real.smoothTransition (c * u)
-  continuous_profile := by
-    exact continuous_id.mul
-      (Real.smoothTransition.continuous.comp (continuous_const.mul continuous_id))
-  profile_nonneg := by
-    intro u hu
-    exact mul_nonneg hu (Real.smoothTransition.nonneg (c * u))
-  profile_le := by
-    intro u hu
+  profile u := u * Real.smoothTransition (c * u)
+  continuous_profile := continuous_id.mul
+    (Real.smoothTransition.continuous.comp (continuous_const.mul continuous_id))
+  profile_nonneg u hu := mul_nonneg hu (Real.smoothTransition.nonneg (c * u))
+  profile_le u hu := by
     simpa using mul_le_mul_of_nonneg_left (Real.smoothTransition.le_one (c * u)) hu
-  profile_zero := by
-    simp
-  profile_pos := by
-    intro u hu
-    have hcu : 0 < c * u := mul_pos hc hu
-    exact mul_pos hu (Real.smoothTransition.pos_of_pos hcu)
+  profile_pos u hu := mul_pos hu (Real.smoothTransition.pos_of_pos (mul_pos hc hu))
 
-theorem profiledEnergyTerm_identity_eq_sobolevEnergyTerm
-    (m : ℕ) (x : ModeState) (n : ℕ) :
-    profiledEnergyTerm identityEnergyProfile m x n = sobolevEnergyTerm m x n := by
-  simp [profiledEnergyTerm, identityEnergyProfile, sobolevEnergyTerm]
+theorem profiledEnergyTerm_identity_eq_compensatedEnergyTerm (m : ℕ) (x : ModeState) (n : ℕ) :
+    profiledEnergyTerm identityEnergyProfile m x n = compensatedEnergyTerm x n :=
+  amplifiedEnergyTerm_eq_compensatedEnergyTerm m x n
 
-theorem profiledEnergyRadius_identity_eq_sobolevEnergyRadius
-    (m : ℕ) :
-    profiledEnergyRadius identityEnergyProfile m = sobolevEnergyRadius m := by
+theorem profiledEnergyRadius_identity_eq_compensatedEnergyRadius (m : ℕ) :
+    profiledEnergyRadius identityEnergyProfile m = compensatedEnergyRadius := by
   funext x
-  unfold profiledEnergyRadius sobolevEnergyRadius
-  simp [profiledEnergyTerm_identity_eq_sobolevEnergyTerm]
+  exact amplifiedEnergy_sum_eq_compensatedRadius m x
 
-theorem profiledEnergyTerm_logOnePlusMax_eq_logEnergyTerm
-    (m : ℕ) (x : ModeState) (n : ℕ) :
-    profiledEnergyTerm logOnePlusMaxEnergyProfile m x n = logEnergyTerm m x n := by
-  have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-  simp [profiledEnergyTerm, logOnePlusMaxEnergyProfile, logEnergyTerm, max_eq_left hsq_nonneg]
-
-theorem profiledEnergyRadius_logOnePlusMax_eq_logEnergyRadius
-    (m : ℕ) :
-    profiledEnergyRadius logOnePlusMaxEnergyProfile m = logEnergyRadius m := by
-  funext x
-  unfold profiledEnergyRadius logEnergyRadius
-  simp [profiledEnergyTerm_logOnePlusMax_eq_logEnergyTerm]
-
-theorem hardProfileThresholdRadius_logOnePlusMax_eq_hardLogEnergyThresholdRadius
-    (m : ℕ) :
-    hardProfileThresholdRadius logOnePlusMaxEnergyProfile m = hardLogEnergyThresholdRadius m := by
-  funext x
-  let p : Prop := ∃ n, 0 < logOnePlusMaxEnergyProfile.profile ((sobolevAmplification m x n) ^ (2 : ℕ))
-  let q : Prop := ∃ n, 0 < Real.log (1 + (sobolevAmplification m x n) ^ (2 : ℕ))
-  have hpq : p ↔ q := by
-    constructor
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-      simpa [p, q, logOnePlusMaxEnergyProfile, max_eq_left hsq_nonneg] using hn
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-      simpa [p, q, logOnePlusMaxEnergyProfile, max_eq_left hsq_nonneg] using hn
-  by_cases hp : p
-  · have hq : q := hpq.mp hp
-    simp [hardProfileThresholdRadius, hardLogEnergyThresholdRadius, p, q, hp, hq]
-  · have hq : ¬ q := by
-      intro hq
-      exact hp (hpq.mpr hq)
-    simp [hardProfileThresholdRadius, hardLogEnergyThresholdRadius, p, q, hp, hq]
-
-theorem hardProfileThresholdRadius_rationalMax_eq_hardSobolevRadius
-    (m : ℕ) :
-    hardProfileThresholdRadius rationalMaxEnergyProfile m = hardSobolevRadius m := by
-  simpa using
-    hardProfileThresholdRadius_eq_hardSobolevRadius
-      (P := rationalMaxEnergyProfile) m
-
-theorem hardProfileThresholdRadius_expNegMax_eq_hardSobolevRadius
-    (m : ℕ) :
-    hardProfileThresholdRadius expNegMaxEnergyProfile m = hardSobolevRadius m := by
-  simpa using
-    hardProfileThresholdRadius_eq_hardSobolevRadius
-      (P := expNegMaxEnergyProfile) m
-
-theorem hardProfileThresholdRadius_smoothTransition_eq_hardSobolevRadius
-    (m : ℕ) :
-    hardProfileThresholdRadius smoothTransitionEnergyProfile m = hardSobolevRadius m := by
-  simpa using
-    hardProfileThresholdRadius_eq_hardSobolevRadius
-      (P := smoothTransitionEnergyProfile) m
-
-theorem hardProfileThresholdRadius_scaledSmoothTransition_eq_hardSobolevRadius
-    (c : ℝ) (hc : 0 < c) (m : ℕ) :
-    hardProfileThresholdRadius (scaledSmoothTransitionEnergyProfile c hc) m = hardSobolevRadius m := by
-  simpa using
-    hardProfileThresholdRadius_eq_hardSobolevRadius
-      (P := scaledSmoothTransitionEnergyProfile c hc) m
+/-- Nonlinear profiling before compensation can distinguish amplification levels. -/
+theorem rationalProfile_amplification_changes_term :
+    profiledEnergyTerm rationalMaxEnergyProfile 0 (tailSpikeMode 1) 1 = 1 / 8 ∧
+    profiledEnergyTerm rationalMaxEnergyProfile 1 (tailSpikeMode 1) 1 = 1 / 20 := by
+  norm_num [profiledEnergyTerm, rationalMaxEnergyProfile, sobolevAmplification,
+    energyCompensationWeight, tailSpikeMode]
 
 end ModeStateEnergyProfileFork
 

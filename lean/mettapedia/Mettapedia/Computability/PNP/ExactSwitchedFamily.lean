@@ -249,7 +249,7 @@ theorem exactVisibleCompressionTarget_of_factorsThrough_fork_fintype
         (Index := Index) hfactor)
 
 /-- The exact post-switch data domain is finite whenever the latent local datum `z` is finite. -/
-noncomputable def exactVisibleFintype [Fintype Z] :
+@[instance_reducible] noncomputable def exactVisibleFintype [Fintype Z] :
     Fintype (ExactVisiblePostSwitchData Z k) :=
   Fintype.ofEquiv (ForkPostSwitchData Z k) (forkVisibleEquiv (Z := Z) (k := k)).symm
 

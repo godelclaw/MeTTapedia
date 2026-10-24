@@ -98,7 +98,7 @@ def eliminateTypeAt (level : LevelExpr Nat) : Tower.Tm 0 :=
   simp [listSignatureAt, LevelInstance.signature, eliminateTypeAt,
     Intrinsic.typeOf_eliminate]
 
-def listSignatureAt_formed (level : LevelExpr Nat) :
+theorem listSignatureAt_formed (level : LevelExpr Nat) :
     (listSignatureAt level).Formed Tower.rules :=
   (listLevelInstance level).formed Intrinsic.rawSignature_formed
 

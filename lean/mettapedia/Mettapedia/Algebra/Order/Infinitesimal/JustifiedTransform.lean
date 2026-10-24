@@ -8,10 +8,10 @@ the conditions are numeric facts.  Dividing through by a term is exact — but
 only if that term is nonzero, and in Lean division by zero is silently `0`, so
 an unjustified step does not fail loudly: it quietly returns the wrong answer.
 
-`Justified` is the type of a transformation that cannot be built without its
-proof.  A value carries the input, the output, the assumptions it needed, and a
-proof that the two denote the same number.  Composition appends the assumption
-lists, so what a result rests on travels with it.
+`Justified.Step` records a value-preserving transformation. Division changes
+the value instead: `DivisionResult` retains the quotient, a nonzero-divisor
+proof, and the equation reconstructing the original input. Its reconstruction
+is a value-preserving step; composition retains the assumption annotations.
 
 * `normalize` is justified by `toHahn_norm` and assumes nothing.
 * `divideByTerm` is justified only when the divisor's coefficient is nonzero;
@@ -82,30 +82,45 @@ theorem toHahn_divideByTerm_mul {i : ℤ} {c : ℚ} (hc : c ≠ 0) :
       toHahn (divideByTerm l i c) * single i c = toHahn l
   | [] => by simp [divideByTerm]
   | t :: rest => by
-      have hrec := toHahn_divideByTerm_mul (i := i) (c := c) hc rest
-      have hcons : divideByTerm (t :: rest) i c
-          = (t.1 - i, t.2 / c) :: divideByTerm rest i c := rfl
-      have h1 : t.1 - i + i = t.1 := by omega
-      have h2 : t.2 / c * c = t.2 := by field_simp
-      rw [hcons, toHahn_cons, add_mul, hrec, single_mul_single, h1, h2, toHahn_cons]
+      simpa only [divideByTerm, List.map_cons, toHahn_cons, add_mul, single_mul_single,
+        sub_add_cancel, div_mul_cancel₀ _ hc] using
+        congrArg (single t.1 t.2 + ·) (toHahn_divideByTerm_mul hc rest)
 
 /-- The same statement in the ordered field. -/
 theorem toLevelField_divideByTerm_mul {i : ℤ} {c : ℚ} (hc : c ≠ 0) (l : LevelSeries) :
     toLevelField (divideByTerm l i c) * toLevelField [(i, c)] = toLevelField l := by
-  show toLex (toHahn (divideByTerm l i c)) * toLex (toHahn [(i, c)]) = toLex (toHahn l)
-  have hone : toHahn [(i, c)] = single i c := by simp [toHahn]
-  rw [hone]
-  exact congrArg toLex (toHahn_divideByTerm_mul hc l)
+  simpa only [toLevelField, toHahn_cons, toHahn_nil, add_zero, toLex_mul] using
+    congrArg toLex (toHahn_divideByTerm_mul hc l)
 
-/-- **The checked entry point.**  A zero divisor is refused; there is no way to
-obtain a `Step` for it. -/
-def tryDivideByTerm (l : LevelSeries) (i : ℤ) (c : ℚ) : Option Justified.Step :=
-  if _hc : c = 0 then none
-  else some
-    { input := divideByTerm l i c
-      output := divideByTerm l i c
-      assumptions := ["divisor coefficient nonzero"]
-      valid := rfl }
+/-- Exact division is specified by reconstruction, not equality with the quotient. -/
+structure DivisionResult (input : LevelSeries) (level : ℤ) (coefficient : ℚ) where
+  quotient : LevelSeries
+  divisor_ne_zero : coefficient ≠ 0
+  reconstruct : toHahn quotient * single level coefficient = toHahn input
+
+namespace DivisionResult
+
+variable {input : LevelSeries} {level : ℤ} {coefficient : ℚ}
+
+/-- Canonicalizing the quotient preserves its division certificate. -/
+def normalize (result : DivisionResult input level coefficient) : DivisionResult input level coefficient :=
+  { result with quotient := norm result.quotient
+                reconstruct := by rw [toHahn_norm]; exact result.reconstruct }
+
+/-- Multiplication back by the divisor is a genuine value-preserving step. -/
+def reconstructionStep (result : DivisionResult input level coefficient) : Justified.Step where
+  input := mul result.quotient [(level, coefficient)]
+  output := input
+  assumptions := ["divisor coefficient nonzero"]
+  valid := congrArg toLex (by simpa only [toHahn_mul, toHahn_cons, toHahn_nil, add_zero]
+    using result.reconstruct.symm)
+
+end DivisionResult
+
+/-- Compute a quotient and certify its reconstruction; reject a zero divisor. -/
+def tryDivideByTerm (l : LevelSeries) (i : ℤ) (c : ℚ) : Option (DivisionResult l i c) :=
+  if hc : c = 0 then none
+  else some ⟨divideByTerm l i c, hc, toHahn_divideByTerm_mul hc l⟩
 
 theorem tryDivideByTerm_rejects (l : LevelSeries) (i : ℤ) :
     tryDivideByTerm l i 0 = none := by
@@ -120,19 +135,13 @@ merely unproved: the left side collapses to `0` while the right side is `1`.
 So the hypothesis in `toHahn_divideByTerm_mul` is load-bearing. -/
 theorem divideByZero_is_wrong :
     toHahn (divideByTerm [(0, 1)] 0 0) * single (0 : ℤ) (0 : ℚ) ≠ toHahn [(0, 1)] := by
-  rw [single_eq_zero, mul_zero]
-  intro h
-  have : (1 : ℚ) = 0 := by
-    have hc := congrArg (fun x => HahnSeries.coeff x (0 : ℤ)) h
-    simpa [toHahn] using hc.symm
-  exact one_ne_zero this
+  simp [divideByTerm, toHahn, single_zero_one]
 
 /-! ## Dividing by `Ω` is exact and stays in the representation
 
-The level field is a field, but this finite representation is only a ring:
-inverting `Ω - 1` needs infinitely many terms.  Division by a *single term* is
-the fragment that is exact and closed, and it is enough to move between
-scales. -/
+Finite denotations are closed under ring operations, while raw lists retain
+their presentation order. Inverting `Ω - 1` needs infinitely many terms.
+Division by a nonzero single term is exact and stays finite. -/
 
 /-- Divide by `Ω`, shifting every level up by one. -/
 def divideByOmega (l : LevelSeries) : LevelSeries := divideByTerm l (-1) 1
@@ -160,8 +169,20 @@ theorem reject_zero : tryDivideByTerm [(0, 1)] 0 0 = none :=
 theorem accept_nonzero : (tryDivideByTerm [(0, 1)] 0 2).isSome :=
   tryDivideByTerm_accepts _ _ (by norm_num)
 
-/-- Composing a division with a canonicalisation keeps both assumption
-records. -/
+/-- A concrete successful division certificate. -/
+def checkedHalf : DivisionResult [(0, 1)] 0 2 :=
+  (tryDivideByTerm [(0, 1)] 0 2).get (tryDivideByTerm_accepts _ _ (by norm_num))
+
+theorem checked_quotient : checkedHalf.quotient = [(0, 1 / 2)] := by decide +kernel
+
+/-- An unchanged quotient cannot certify dividing one by two. -/
+theorem wrong_quotient_rejected (result : DivisionResult [(0, 1)] 0 2) : result.quotient ≠ [(0, 1)] := by
+  intro wrong
+  have coefficient := congrArg (fun value => value.coeff 0) result.reconstruct
+  rw [wrong] at coefficient
+  norm_num [toHahn, single_mul_single] at coefficient
+
+/-- Composing a value-preserving step with canonicalisation retains its annotations. -/
 theorem composed_assumptions
     (s : Justified.Step) (h : (Justified.normalize s.output).input = s.output) :
     (Justified.trans s (Justified.normalize s.output) h).assumptions
@@ -171,10 +192,3 @@ theorem composed_assumptions
 end TransformControls
 
 end Mettapedia.Algebra.Order.Infinitesimal
-
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.toHahn_divideByTerm_mul
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.toLevelField_divideByTerm_mul
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.divideByZero_is_wrong
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.divideByOmega_mul
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.TransformControls.divide_sample
-#print axioms Mettapedia.Algebra.Order.Infinitesimal.TransformControls.reject_zero

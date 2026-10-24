@@ -445,6 +445,41 @@ theorem assign_extends {initial final : Assignment} {name : String} {value : Con
         exact Extends.refl initial
       next => contradiction
 
+/-- Reconciliation of a repeated body keeps the first captured contextual
+value for every declared comparison policy. -/
+theorem assignWith_extends {compare : String → Pattern → Pattern → Bool}
+    {initial final : Assignment} {name : String} {value : ContextualValue}
+    (assigned : assignWith compare initial name value = some final) : Extends initial final := by
+  unfold assignWith at assigned
+  cases stored : lookup initial name with
+  | none =>
+      simp only [stored, Option.some.injEq] at assigned
+      subst final
+      intro previous previousValue found
+      have different : name ≠ previous := by
+        intro same
+        subst previous
+        rw [stored] at found
+        contradiction
+      have notEqual : (name == previous) = false := by simp [different]
+      simpa only [lookup, List.find?_cons, notEqual] using found
+  | some prior =>
+      simp only [stored] at assigned
+      split at assigned
+      · cases Option.some.inj assigned
+        exact Extends.refl initial
+      · contradiction
+
+theorem captureWith_extends {compare : String → Pattern → Pattern → Bool}
+    {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth : Nat}
+    {site : RulePatternSite} {path : List Nat} {initial final : Assignment}
+    {name : String} {target : Pattern}
+    (captured : captureWith? compare rule spec ambient depth site path initial name target = some final) :
+    Extends initial final := by
+  simp only [captureWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at captured
+  obtain ⟨dependencies, _, arguments, _, value, _, assigned⟩ := captured
+  exact assignWith_extends assigned
+
 theorem assign_lookup {initial final : Assignment} {name : String} {value : ContextualValue}
     (assigned : assign initial name value = some final) : lookup final name = some value := by
   unfold assign at assigned

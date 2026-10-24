@@ -36,7 +36,7 @@ inductive AgentObservation where
 
 instance : Fintype AgentObservation where
   elems := {.pulse}
-  complete x := by cases x <;> simp
+  complete x := by cases x; simp
 
 inductive AgentQuery where
   | sensedSignal
@@ -472,7 +472,7 @@ theorem selfAware_triviality_iff
           (State := Multiset AgentObservation) (Query := AgentQuery) (Ev := BinaryEvidence)
           σ AgentQuery.awareReady = 0 ∧
       (σ + σ : Multiset AgentObservation) = σ := by
-  letI : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
+  let : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
     agentEncoder.inducedWorldModel
   constructor
   · intro hσ
@@ -485,5 +485,102 @@ theorem selfAware_triviality_iff
     exact
       (revision_idempotent_inducedWorldModel_iff_empty_of_unit
         (S := agentEncoder) agentEncoder_unitObservation σ AgentQuery.awareReady).1 h.2
+
+/-! ## Observing inference versus restricting its premises -/
+
+namespace VisibleInference
+
+def localRegion : Set AgentQuery := {.sensedSignal, .readyToAct}
+def terminalRegion : Set AgentQuery := {.awareReady}
+
+theorem local_backward_closed (σ : Multiset AgentObservation) :
+    BackwardClosedAt agentRules σ localRegion := by
+  intro r hr _ visible
+  rcases hr with rfl | rfl <;> simp_all [localRegion]
+
+theorem local_rounds (σ : Multiset AgentObservation) (seed : Set AgentQuery) (n : ℕ) :
+    immediateIter agentRules σ seed n ∩ localRegion =
+      immediateIter (visibleRules agentRules localRegion) σ (seed ∩ localRegion) n :=
+  immediateIter_inter_visible _ _ _ (local_backward_closed σ) seed n
+
+theorem local_closure (σ : Multiset AgentObservation) (seed : Set AgentQuery) :
+    leastRuleClosure agentRules σ seed ∩ localRegion =
+      leastRuleClosure (visibleRules agentRules localRegion) σ (seed ∩ localRegion) :=
+  leastRuleClosure_inter_visible _ _ _ (local_backward_closed σ) seed
+
+/-- Forward closure does not prevent a hidden premise from implying a visible fact. -/
+theorem terminal_forward_closed (σ : Multiset AgentObservation) :
+    ∀ r ∈ agentRules, r.side σ → r.premise ∈ terminalRegion → r.conclusion ∈ terminalRegion := by
+  intro r hr _ premise
+  rcases hr with rfl | rfl <;> simp [terminalRegion] at premise
+
+theorem terminal_not_backward_closed {σ : Multiset AgentObservation} (active : σ ≠ 0) :
+    ¬ BackwardClosedAt agentRules σ terminalRegion := by
+  intro closed
+  have impossible := closed readyToAwareRule readyToAwareRule_mem_agentRules active (by simp [terminalRegion])
+  simp [terminalRegion] at impossible
+
+theorem terminal_backward_closed_at_empty : BackwardClosedAt agentRules 0 terminalRegion := by
+  intro r hr active _
+  rcases hr with rfl | rfl <;> simp at active
+
+theorem hidden_premise_loses_visible_conclusion {σ : Multiset AgentObservation} (active : σ ≠ 0) :
+    AgentQuery.awareReady ∈ leastRuleClosure agentRules σ {.readyToAct} ∩ terminalRegion ∧
+      AgentQuery.awareReady ∉ leastRuleClosure (visibleRules agentRules terminalRegion) σ
+        ({.readyToAct} ∩ terminalRegion) := by
+  constructor
+  · exact ⟨leastRuleClosure_rule_closed agentRules σ _ readyToAwareRule_mem_agentRules active
+      (seed_subset_leastRuleClosure _ _ _ (by simp)), by simp [terminalRegion]⟩
+  · have empty : ({AgentQuery.readyToAct} : Set AgentQuery) ∩ terminalRegion = ∅ := by
+      ext q; cases q <;> simp [terminalRegion]
+    rw [empty, leastRuleClosure_empty]
+    exact fun h => h
+
+theorem activation_changes_certificate :
+    BackwardClosedAt agentRules 0 terminalRegion ∧
+      ¬ BackwardClosedAt agentRules {AgentObservation.pulse} terminalRegion :=
+  ⟨terminal_backward_closed_at_empty, terminal_not_backward_closed (by simp)⟩
+
+theorem grounded_backward_closed (σ : Multiset AgentObservation) :
+    BackwardClosedAt agentRules σ (availableRegion groundedQueryPerspective 2 Set.univ) := by
+  intro r hr _ _
+  rcases hr with rfl | rfl <;>
+    simp [availableRegion, observableUniverse, nearEurycosm, sublevelRegion, groundedQueryPerspective]
+
+theorem staged_backward_closed (σ : Multiset AgentObservation) :
+    BackwardClosedAt agentRules σ (agentQueryStageView.region 1) := by
+  intro r hr _ _
+  rcases hr with rfl | rfl <;> simp [agentQueryStageView, groundedQueryPerspective]
+
+theorem regime_backward_closed (σ : Multiset AgentObservation) :
+    BackwardClosedAt agentRules σ (availableRegionAt regimeSensitiveQueryPerspective σ 3 Set.univ) := by
+  intro r hr active _
+  rcases hr with rfl | rfl
+  all_goals
+    change σ ≠ 0 at active
+    simp [availableRegionAt, availableRegion, observableUniverse, nearEurycosm, sublevelRegion,
+      freezePerspective, regimeSensitiveQueryPerspective, groundedQueryPerspective, active]
+
+theorem grounded_execution (σ : Multiset AgentObservation) :
+    availableClosureFromTrace agentEncoder agentFrontier agentRules σ groundedQueryPerspective 2 Set.univ =
+      leastRuleClosure (visibleRules agentRules (availableRegion groundedQueryPerspective 2 Set.univ)) σ
+        (traceSeed agentFrontier σ ∩ availableRegion groundedQueryPerspective 2 Set.univ) :=
+  closureFromTrace_inter_visible _ _ _ _ _ (grounded_backward_closed σ)
+
+theorem staged_execution (σ : Multiset AgentObservation) :
+    stagedClosureFromTrace agentEncoder agentFrontier agentRules σ agentQueryStageView 1 =
+      leastRuleClosure (visibleRules agentRules (agentQueryStageView.region 1)) σ
+        (traceSeed agentFrontier σ ∩ agentQueryStageView.region 1) :=
+  closureFromTrace_inter_visible _ _ _ _ _ (staged_backward_closed σ)
+
+theorem regime_execution (σ : Multiset AgentObservation) :
+    stateAvailableClosureFromTrace agentEncoder agentFrontier agentRules σ
+      regimeSensitiveQueryPerspective 3 Set.univ =
+      leastRuleClosure (visibleRules agentRules
+        (availableRegionAt regimeSensitiveQueryPerspective σ 3 Set.univ)) σ
+        (traceSeed agentFrontier σ ∩ availableRegionAt regimeSensitiveQueryPerspective σ 3 Set.univ) :=
+  closureFromTrace_inter_visible _ _ _ _ _ (regime_backward_closed σ)
+
+end VisibleInference
 
 end Mettapedia.Hyperseed.Regression

@@ -217,19 +217,19 @@ end Captured
 
 section Ordered
 
-open Mettapedia.GSLT.Dynamics.OrderedDemand (Trace answerBag)
+open Mettapedia.GSLT.Dynamics.OrderedDemand (answerBag)
 open Mettapedia.GSLT.Core.NonFactorization (NonTrivialFiber)
 
 /-- **The ordered effect-aware observer refines the answer bag.** -/
 theorem trace_extends_answerBag {A E F : Type} [DecidableEq A] [DecidableEq E] [DecidableEq F] :
-    (Tolerance.ofReport (id : Trace A E F → Trace A E F)).Extends
-      (Tolerance.ofReport (answerBag : Trace A E F → Multiset A)) :=
+    (Tolerance.ofReport (id : Mettapedia.GSLT.Dynamics.OrderedDemand.Trace A E F → Mettapedia.GSLT.Dynamics.OrderedDemand.Trace A E F)).Extends
+      (Tolerance.ofReport (answerBag : Mettapedia.GSLT.Dynamics.OrderedDemand.Trace A E F → Multiset A)) :=
   (ofReport_extends_iff_soundKey _ _).2 fun _ _ same => congrArg answerBag same
 
 /-- **The answer bag forgets order**: two runs with one answer bag and different
 ordered traces. -/
 def answerBag_forgets_order :
-    NonTrivialFiber (answerBag : Trace ℕ Unit Unit → Multiset ℕ) id where
+    NonTrivialFiber (answerBag : Mettapedia.GSLT.Dynamics.OrderedDemand.Trace ℕ Unit Unit → Multiset ℕ) id where
   left := [.answer 1, .answer 2]
   right := [.answer 2, .answer 1]
   sameShadow := Mettapedia.GSLT.Dynamics.OrderedDemand.Controls.reordering_control.1
@@ -237,8 +237,8 @@ def answerBag_forgets_order :
 
 /-- The answer bag is strictly coarser than the ordered trace. -/
 theorem answerBag_not_extends_trace :
-    ¬ (Tolerance.ofReport (answerBag : Trace ℕ Unit Unit → Multiset ℕ)).Extends
-      (Tolerance.ofReport (id : Trace ℕ Unit Unit → Trace ℕ Unit Unit)) :=
+    ¬ (Tolerance.ofReport (answerBag : Mettapedia.GSLT.Dynamics.OrderedDemand.Trace ℕ Unit Unit → Multiset ℕ)).Extends
+      (Tolerance.ofReport (id : Mettapedia.GSLT.Dynamics.OrderedDemand.Trace ℕ Unit Unit → Mettapedia.GSLT.Dynamics.OrderedDemand.Trace ℕ Unit Unit)) :=
   not_ofReport_extends_of_fiber answerBag_forgets_order
 
 end Ordered

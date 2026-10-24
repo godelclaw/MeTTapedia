@@ -30,6 +30,8 @@ structure StaticConstructorPreimage (profile : ContinuationDecorationProfile cut
     (color.symbolsOf theory).sort sourceConstructor.1.category
   parametersMap : (profile.materializeDeclaredCostConstructor constructor).params =
     sourceConstructor.1.params.map (mapTermParam (color.symbolsOf theory))
+  representationMap : (profile.materializeDeclaredCostConstructor constructor).collectionRepresentation =
+    sourceConstructor.1.collectionRepresentation
   algebraMap : (profile.materializeDeclaredCostConstructor constructor).algebra? =
     sourceConstructor.1.algebra?.map
       (StructuralMorphism.mapCollectionAlgebra (color.symbolsOf theory).constructor)
@@ -72,7 +74,7 @@ def staticConstructorPreimage
     | base =>
       refine ⟨authored,
         (declaredCostConstructorRole_base_static_iff programAdditional environmentAdditional authored).mp role,
-        rfl, rfl, ?_, rfl⟩
+        rfl, rfl, ?_, rfl, rfl⟩
       exact static_base_params programAdditional environmentAdditional authored role
     | wrapped =>
       simp only [declaredCostConstructorRole] at role
@@ -81,14 +83,14 @@ def staticConstructorPreimage
     cases color with
     | base => cases role
     | wrapped =>
-      refine ⟨authored, declared, rfl, ?_, ?_, rfl⟩
+      refine ⟨authored, declared, rfl, ?_, ?_, rfl, rfl⟩
       · simp [materializeDeclaredCostConstructor, costWrappedConstructor,
           CostStaticColor.symbolsOf, costWrappedStaticSymbols]
       · simp [materializeDeclaredCostConstructor, costWrappedConstructor,
           CostStaticColor.symbolsOf]
   | apparatus kind => cases role
 
-/-- Bare collection representation is determined by the parameter profile;
+/-- Bare collection representation is preserved by the parameter and representation maps;
 its omitted surface constructor label introduces no second row authority. -/
 theorem StaticConstructorPreimage.usesBareCollection_iff
     {profile : ContinuationDecorationProfile cut} {color : CostStaticColor}
@@ -99,7 +101,8 @@ theorem StaticConstructorPreimage.usesBareCollection_iff
   have same : WellSorted.UsesBareCollection (profile.materializeDeclaredCostConstructor constructor) ↔
       WellSorted.UsesBareCollection (mapGrammarRule (color.symbolsOf theory)
         preimage.sourceConstructor.1) := by
-    simp only [WellSorted.UsesBareCollection, preimage.parametersMap, mapGrammarRule]
+    simp only [WellSorted.UsesBareCollection, GrammarRule.bareParams_cons_iff,
+      preimage.parametersMap, preimage.representationMap, mapGrammarRule]
   exact same.trans (WellSorted.usesBareCollection_mapGrammarRule_iff _ _)
 
 end ContinuationDecorationProfile

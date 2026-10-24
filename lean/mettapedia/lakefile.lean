@@ -61,6 +61,35 @@ input_dir primeMotivationSources where
 
 @[default_target] lean_lib Mettapedia
 
+/- The exact maintained roots of the compositional abstract-machine
+qualification. This target is deliberately narrower than the aggregate library
+and does not pull optional implementation studies into the AM proof boundary. -/
+lean_lib AbstractMachines where
+  roots := #[
+    `Mettapedia.GSLT.Distinction.SpanTransportControls,
+    `Mettapedia.Machines.ProductiveCoreAdapters,
+    `Mettapedia.Machines.OccurrenceMachine,
+    `Mettapedia.Machines.RefocusingControls,
+    `Mettapedia.Machines.CategoricalAbstractMachineControls,
+    `Mettapedia.Languages.C11.FixedCoreControls,
+    `Mettapedia.Languages.C11.CestaFixedCoreControls,
+    `Mettapedia.Languages.C11.StatementMachineRefinementControls,
+    `Mettapedia.Languages.C11.FixedCoreServiceControls,
+    `Mettapedia.Languages.MeTTa.HE.RecursiveControls,
+    `Mettapedia.Languages.MeTTa.HE.FirstSuccessScopedAdequacy,
+    `Mettapedia.Languages.MeTTa.HE.FirstSuccessScopedRecursiveAdequacy,
+    `Mettapedia.Languages.MeTTa.HE.RecursiveService,
+    `Mettapedia.Languages.MeTTa.PeTTa.Resumption,
+    `Mettapedia.Languages.MeTTa.PeTTa.EagerDFSStreaming,
+    `Mettapedia.Languages.MeTTa.PeTTa.CettaOperationAdmission,
+    `Mettapedia.Languages.MeTTa.PeTTa.ReadAfterRender,
+    `Mettapedia.Languages.MeTTa.HE.Spec.Type.Conformance,
+    `Mettapedia.Languages.MeTTa.HE.TypeGrounding.SimpleAgreement,
+    `Mettapedia.Languages.MeTTa.Translation.HEPeTTaTranslateOperationalBridge,
+    `Mettapedia.Languages.MeTTa.Translation.HEPeTTaOpenRecursive,
+    `Mettapedia.Languages.MeTTa.Translation.HEPeTTaTranslate,
+    `Mettapedia.GSLT.LanguageDef.ModuleAlgebra.OrderedRealizations]
+
 /- Maximal roots of the modules whose declared semantics or executable
 comparison depends on LeaTTa.  Their local imports are built recursively. -/
 meta if leattaIntegrationEnabled then
@@ -117,7 +146,7 @@ meta if leattaIntegrationEnabled then
 -- dependency through the normal module graph, without invalidating unrelated
 -- libraries when an authored curriculum file changes.
 lean_lib PrimeMotivationQuotation where
-  roots := #[`Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateMotivationProgramPackages]
+  roots := #[`Mettapedia.Languages.MeTTa.PrimeCandidates.Native.CandidateMotivationProgramPackages]
   needs := #[`@/primeMotivationSources]
 
 input_dir holLightMeTTaSources where
@@ -358,6 +387,7 @@ lean_lib GSLTInductiveM1Qualification where
     `Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalHOL,
     `Mettapedia.Languages.HOLLight.NaturalFacts,
     `Mettapedia.Languages.MM0.NaturalRecursion,
+    `Mettapedia.Languages.MM0.HOLTypeDefinitionBoundary,
     `Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalMM0,
     `Mettapedia.Languages.Megalodon.NaturalClosure,
     `Mettapedia.Languages.Megalodon.NaturalRecursion,
@@ -526,6 +556,12 @@ lean_exe gsltResourceHistoryCheck where
 
 lean_exe nativeInferenceCheck where
   root := `Mettapedia.Logic.CheckNativeInference
+
+lean_exe nativeIndexedMachineFormationCheck where
+  root := `scripts.check_native_indexed_machine_formation
+
+lean_exe nativeAuthoredCubeCheck where
+  root := `scripts.check_native_authored_cubes
 
 lean_exe guardedAtomRuleCheck where
   root := `Mettapedia.Languages.GuardedAtomRule.CheckEvidence

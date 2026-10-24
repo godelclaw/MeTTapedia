@@ -5,8 +5,8 @@ import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSemantics
 
 Successful premises keep contextual captures correctly sorted in the caller's
 complete bound context. A finite quantifier checks each local element binding,
-runs its body, and restores only the parameter from the original assignment.
-The other typed outputs remain available to later premises.
+runs its body, and returns to the complete enclosing assignment. Outputs
+introduced by a body remain local to that iteration.
 -/
 
 set_option autoImplicit false
@@ -67,19 +67,21 @@ theorem TypedAssignment.restoreParameter {environment : Environment} {context : 
           exact initialTyped.2 parameter saved member
         · exact remaining.2 name value contains
 
-theorem TracedQuery.final_typed {environment : Environment} {context : Context}
+namespace Interpreted
+
+theorem TracedQuery.final_typed {Choice : Type} {meaning : MatchingInterpretation Choice} {environment : Environment} {context : Context}
     {relation : String} {arguments : List Pattern} {initial final : Assignment}
-    {rowIndex : Nat} {origins : List (Nat × List GeneralScopedMatchMachine.BagChoice)}
-    (held : TracedQuery environment context relation arguments initial rowIndex final origins) :
+    {rowIndex : Nat} {origins : List (Nat × List Choice)}
+    (held : TracedQuery meaning environment context relation arguments initial rowIndex final origins) :
     TypedAssignment environment context final := by
   cases held with
   | row _ _ _ _ typed => exact typed
   | dynamicRow _ _ _ _ _ _ _ typed => exact typed
 
 mutual
- theorem PremiseHolds.typed {environment : Environment} {context : Context}
-    {premise : Premise} {initial final : Assignment} {event : Event}
-    (held : PremiseHolds environment context premise initial final event)
+ theorem PremiseHolds.typed {Choice : Type} {meaning : MatchingInterpretation Choice} {environment : Environment} {context : Context}
+    {premise : Premise} {initial final : Assignment} {event : (Event Choice)}
+    (held : PremiseHolds meaning environment context premise initial final event)
     (initialTyped : TypedAssignment environment context initial) :
     TypedAssignment environment context final :=
   match held with
@@ -89,37 +91,37 @@ mutual
   | .scopedStep _ _ _ typed => typed
   | .quantified _ elements => elements.typed initialTyped
 
- theorem PremisesHold.typed {environment : Environment} {context : Context}
-    {premises : List Premise} {initial final : Assignment} {events : List Event}
-    (held : PremisesHold environment context premises initial final events)
+ theorem PremisesHold.typed {Choice : Type} {meaning : MatchingInterpretation Choice} {environment : Environment} {context : Context}
+    {premises : List Premise} {initial final : Assignment} {events : List (Event Choice)}
+    (held : PremisesHold meaning environment context premises initial final events)
     (initialTyped : TypedAssignment environment context initial) :
     TypedAssignment environment context final :=
   match held with
   | .nil => initialTyped
   | .cons head tail => tail.typed (head.typed initialTyped)
 
- theorem QuantifiedElements.typed {environment : Environment} {context : Context}
+ theorem QuantifiedElements.typed {Choice : Type} {meaning : MatchingInterpretation Choice} {environment : Environment} {context : Context}
     {parameter : String} {body : Premise} {index : Nat} {elements : List Pattern}
-    {initial final : Assignment} {events : List (Nat × Pattern × List Event)}
-    (held : QuantifiedElements environment context parameter body index elements initial final events)
+    {initial final : Assignment} {events : List (Nat × Pattern × List (Event Choice))}
+    (held : QuantifiedElements meaning environment context parameter body index elements initial final events)
     (initialTyped : TypedAssignment environment context initial) :
-    TypedAssignment environment context final :=
-  match held with
-  | .nil => initialTyped
-  | .cons localTyped head tail =>
-      tail.typed (initialTyped.restoreParameter (head.typed localTyped) _)
+    TypedAssignment environment context final := by
+  rw [held.final_eq_initial]
+  exact initialTyped
 end
 
-theorem RootFiring.completed_typed {environment : Environment} {bound : List TypeExpr}
+theorem RootFiring.completed_typed {Choice : Type} {meaning : MatchingInterpretation Choice} {environment : Environment} {bound : List TypeExpr}
     {type : TypeExpr} {source target : Pattern} {index : Nat}
-    {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
-    {history : List Event}
-    (firing : RootFiring environment bound type source index trace captured completed history target) :
+    {trace : List Choice} {captured completed : Assignment}
+    {history : List (Event Choice)}
+    (firing : RootFiring meaning environment bound type source index trace captured completed history target) :
     ∃ rule spec, environment.language.rewrites[index]? = some rule ∧
       specification? environment index = some spec ∧
       TypedAssignment environment ⟨index, rule, spec, bound, 0, 0⟩ completed := by
   cases firing with
   | fire declared specified _ _ _ capturedTyped premises _ _ =>
       exact ⟨_, _, declared, specified, premises.typed capturedTyped⟩
+
+end Interpreted
 
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise

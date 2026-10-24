@@ -48,6 +48,11 @@ noncomputable def extensionEquiv (Γ : Ctx Unit) (A : Ty Unit) :
     cases pair
     rfl
 
+theorem extensionEquiv_symm_apply {Γ : Ctx Unit} {A : Ty Unit}
+    (point : Extension (typeFamily.{u} Γ A)) :
+    ((extensionEquiv Γ A).symm point : Context (A :: Γ)) =
+      (extend point.1 point.2 : Context (A :: Γ)) := rfl
+
 theorem extension_natural (h : CofinalInaccessibles.{u})
     {Γ Δ : Ctx Unit} {A : Ty Unit} (θ : Subst UniverseSymbol Γ Δ)
     (ρ : Context Δ) (x : Value A) :
@@ -156,13 +161,17 @@ theorem term_application (h : CofinalInaccessibles.{u})
         (termSection h argument) :=
   (application_agreement (termSection h function) (termSection h argument)).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem term_lambda (h : CofinalInaccessibles.{u})
     {Γ : Ctx Unit} {A B : Ty Unit} (body : UniverseExpr (A :: Γ) B) :
     termSection h (.lam body) =
       fromProduct (ZFSetContextualInterpretation.lam
         (a := typeFamily Γ A) (b := fun _ => typeCode B)
-        (fun pair => termSection h body ((extensionEquiv Γ A).symm pair))) :=
-  (lambda_agreement (fun ρ x => termSection h body (extend ρ x))).symm
+        (fun pair => termSection h body ((extensionEquiv Γ A).symm pair))) := by
+  simpa only [termSection, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    ZFSetSimpleTypeInterpretation.lam, extend_simple,
+    ZFSetHOLTypeInterpretation.lam, extensionEquiv_symm_apply] using
+    (lambda_agreement (fun ρ x => termSection h body (extend ρ x))).symm
 
 namespace Controls
 

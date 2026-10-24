@@ -5,6 +5,10 @@ import Mettapedia.Machines.ResourceOwnership
 import Mettapedia.Machines.RevisionDependencySet
 import Mettapedia.Machines.OrderedDependencyStore
 import Mettapedia.GSLT.Contracts.IndexedAuthority
+import Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+import Mettapedia.GSLT.Contracts.ReifiedActions
+import Mettapedia.Machines.BranchLocalNeed.CacheLaws
+import Mettapedia.Languages.MeTTa.MetavariableFrameStore
 
 /-!
 # Resumable adaptive queries with retained read certificates
@@ -3924,6 +3928,37 @@ structure Reference (Space Letter Generation : Type) where
   generation : Generation
   deriving DecidableEq, Repr
 
+namespace Reference
+
+/-- The native-generation instance uses the canonical provider/resource/
+generation handle.  The grant slot's space and letter path are the provider
+and resource; no second nominal authority identity is introduced. -/
+def toHandle {Space Letter : Type} (reference : Reference Space Letter Nat) :
+    Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone.Handle Space (List Letter) :=
+  ⟨reference.slot.1, reference.slot.2, reference.generation⟩
+
+theorem toHandle_injective {Space Letter : Type} :
+    Function.Injective (toHandle (Space := Space) (Letter := Letter)) := by
+  intro first second same
+  cases first with
+  | mk firstSlot firstGeneration =>
+      cases second with
+      | mk secondSlot secondGeneration =>
+          cases firstSlot with
+          | mk firstSpace firstLetters =>
+              cases secondSlot with
+              | mk secondSpace secondLetters =>
+                  simp only [toHandle] at same
+                  cases same
+                  rfl
+
+@[simp] theorem toHandle_inj {Space Letter : Type}
+    {first second : Reference Space Letter Nat} :
+    first.toHandle = second.toHandle ↔ first = second :=
+  toHandle_injective.eq_iff
+
+end Reference
+
 structure Grant (Space Letter Generation Principal Realm Right : Type) where
   generation : Generation
   issuer : Principal
@@ -4652,4 +4687,1199 @@ end Delegation
 
 end PolicyPlan
 
+/-! ## Scoped occurrences, retained contexts and current force authority
+
+These adapters use the existing scoped source, adaptive query interpreter,
+cursor and Need transition. Names may move between contexts; a retained value
+never acquires permission merely because its description was copied.
+-/
+
+namespace ScopedOccurrence
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.Machines
+
+variable {Epoch Space Letter Revision Payload Answer : Type}
+variable [DecidableEq Space] [DecidableEq Letter]
+
+abbrev Source (Epoch Space Letter Revision : Type) :=
+  ScopedRecords.Source Epoch Nat Space Letter Revision
+abbrev Scope (Space Letter : Type) := ScopedRecords.Scope Space Letter
+abbrev FullReply (Epoch Space Letter Revision Payload : Type) :=
+  ScopedRecords.FullReply Epoch Space Letter Revision Payload
+
+/-- The target really queries the transported space and normalizes only the
+namespace coordinates of its reply. Payload and row multiplicity are intact. -/
+def contextualStore
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (names : Space ≃ Space) (source : Source Epoch Space Letter Revision) :
+    Scope Space Letter → FullReply Epoch Space Letter Revision Payload :=
+  fun scope => OccurrenceSpace.normalizeReply names
+    (ScopedRecords.observe (OccurrenceSpace.renamedContents contents names)
+      (OccurrenceSpace.rename names source) (OccurrenceSpace.renameScope names scope))
+
+theorem contextualStore_eq
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (names : Space ≃ Space) (source : Source Epoch Space Letter Revision) :
+    contextualStore contents names source = ScopedRecords.observe contents source := by
+  funext scope
+  exact OccurrenceSpace.normalized_renamed_observe contents names source scope
+
+def contextHom
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (names : Space ≃ Space) (source : Source Epoch Space Letter Revision) :
+    Hom (provider (ScopedRecords.observe contents source)) (provider (contextualStore contents names source)) where
+  map reads := reads
+  step reads scope := by simp only [provider, contextualStore_eq]
+
+/-- Bounded adaptive runs retain the actual reply-selected continuation,
+ordered reads and paid account across the constructed context adapter. -/
+theorem context_advance_account
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (names : Space ≃ Space) (source : Source Epoch Space Letter Revision) (allowance : Nat)
+    (program : Program (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload) Answer)
+    (reads : Reads (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload)) :
+    Cursor.advance (provider (contextualStore contents names source)) client
+      (readCharge (contextualStore contents names source)) (base := .unit) allowance ⟨.unit, program, reads⟩ =
+      rebase (ScopedRecords.observe contents source) (contextualStore contents names source)
+        (Cursor.advance (provider (ScopedRecords.observe contents source)) client
+          (readCharge (ScopedRecords.observe contents source)) (base := .unit) allowance ⟨.unit, program, reads⟩) := by
+  let hom := contextHom contents names source
+  simpa only [Hom.packet, Hom.outcome, contextHom, rebase, hom] using
+    (hom.advance_account client (readCharge (ScopedRecords.observe contents source))
+      (readCharge (contextualStore contents names source)) (fun _ _ => rfl)
+      allowance (base := .unit) ⟨.unit, program, reads⟩).symm
+
+theorem context_resume_account
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (names : Space ≃ Space) (source : Source Epoch Space Letter Revision) (allowance : Nat)
+    (saved : Nat × Result (Answer := Answer) (ScopedRecords.observe contents source)) :
+    Cursor.resume (provider (contextualStore contents names source)) client
+      (readCharge (contextualStore contents names source)) allowance
+      (rebase (ScopedRecords.observe contents source) (contextualStore contents names source) saved) =
+      rebase (ScopedRecords.observe contents source) (contextualStore contents names source)
+        (Cursor.resume (provider (ScopedRecords.observe contents source)) client
+          (readCharge (ScopedRecords.observe contents source)) allowance saved) := by
+  let hom := contextHom contents names source
+  simpa only [Hom.outcome, contextHom, rebase, hom] using
+    (hom.resume_account client (readCharge (ScopedRecords.observe contents source))
+      (readCharge (contextualStore contents names source)) (fun _ _ => rfl) allowance saved).symm
+
+/-- Metadata validation of the actual performed prefix supplies the complete
+reply agreement required by the existing fresh-resumption theorem. -/
+theorem metadata_validated_resume
+    [DecidableEq Epoch] [DecidableEq Revision] [DecidableEq Payload]
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (captured current : Source Epoch Space Letter Revision) (before after : Nat)
+    (program : Program (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload) Answer)
+    (valid : ScopedRecords.validate current
+      ⟨captured.storeId, recorded (ScopedRecords.observe contents captured)
+        (Cursor.advance (provider (ScopedRecords.observe contents captured)) client
+          (readCharge (ScopedRecords.observe contents captured)) before ⟨.unit, program, []⟩).2⟩ = true) :
+    Cursor.resume (provider (ScopedRecords.observe contents current)) client
+      (readCharge (ScopedRecords.observe contents current)) after
+      (rebase (ScopedRecords.observe contents captured) (ScopedRecords.observe contents current)
+        (Cursor.advance (provider (ScopedRecords.observe contents captured)) client
+          (readCharge (ScopedRecords.observe contents captured)) before ⟨.unit, program, []⟩)) =
+      Cursor.advance (provider (ScopedRecords.observe contents current)) client
+        (readCharge (ScopedRecords.observe contents current)) (before + after) ⟨.unit, program, []⟩ := by
+  apply validated_revision_resume
+  exact ((ScopedRecords.validate_exact contents captured current _
+    (recorded_agrees _ before program)).mp valid).2
+
+/-- A selected observer is applied after the full adaptive observation has
+been justified. It cannot turn a missing negative read into agreement. -/
+theorem validated_selected_observer {View : Type}
+    [DecidableEq Epoch] [DecidableEq Revision] [DecidableEq Payload]
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (captured current : Source Epoch Space Letter Revision)
+    (program : Program (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload) Answer)
+    (observer : Observation (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload) Answer → View)
+    (valid : ScopedRecords.validate current
+      ⟨captured.storeId, (run (ScopedRecords.observe contents captured) program).reads⟩ = true) :
+    observer (run (ScopedRecords.observe contents current) program) =
+      observer (run (ScopedRecords.observe contents captured) program) := by
+  apply congrArg observer
+  apply Mettapedia.Machines.ReadOnlyQuery.run_eq_of_agrees
+  exact ((ScopedRecords.validate_exact contents captured current _
+    (Mettapedia.Machines.ReadOnlyQuery.run_agrees _ program)).mp valid).2
+
+/-- The read manifest may materialize a different immutable payload view.
+Complete key/version/epoch agreement still transports the original adaptive
+query, including its binding and Need fields. This is not payload erasure
+without an immutable-version interpretation. -/
+theorem scope_manifest_preserves_adaptive_query {Certificate : Type}
+    [DecidableEq Epoch] [DecidableEq Revision] [DecidableEq Certificate]
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (certificateContents : Epoch → ScopedRecords.Stamp Space Letter Revision → Certificate)
+    (captured current : Source Epoch Space Letter Revision)
+    (program : Program (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload) Answer)
+    (valid : ScopedRecords.validate current
+      (ScopedRecords.capture certificateContents captured
+        ((run (ScopedRecords.observe contents captured) program).reads.map Prod.fst)) = true) :
+    run (ScopedRecords.observe contents current) program =
+      run (ScopedRecords.observe contents captured) program := by
+  let scopes := (run (ScopedRecords.observe contents captured) program).reads.map Prod.fst
+  have authentic : Agrees (ScopedRecords.observe certificateContents captured)
+      (ScopedRecords.capture certificateContents captured scopes).reads :=
+    (Mettapedia.Machines.ReadOnlyQuery.agrees_samples_iff _ _ _).mpr (fun _ _ => rfl)
+  have checked := (ScopedRecords.validate_exact certificateContents captured current _ authentic).mp valid
+  apply Mettapedia.Machines.ReadOnlyQuery.run_eq_of_agrees
+  intro read member
+  have keyMember : read.1 ∈ scopes := List.mem_map.mpr ⟨read, member, rfl⟩
+  have sameCertificate := checked.2 (read.1, ScopedRecords.observe certificateContents captured read.1)
+    (List.mem_map.mpr ⟨read.1, keyMember, rfl⟩)
+  have sameMetadata : ScopedRecords.metadata current read.1 = ScopedRecords.metadata captured read.1 := by
+    simpa only [ScopedRecords.observe_metadata] using congrArg ScopedRecords.eraseReply sameCertificate
+  exact (ScopedRecords.metadata_preserves_full contents current captured read.1 sameMetadata).trans
+    (Mettapedia.Machines.ReadOnlyQuery.run_agrees _ program read member)
+
+/-- Current read permission is checked before the source is inspected. A
+refusal is distinct from a successfully observed empty occurrence list. -/
+def guardedObserve
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (held : OccurrenceSpace.Authority Space Letter Revision)
+    (current : Source Epoch Space Letter Revision) (scope : Scope Space Letter) :
+    Except OwnWrite.Fault (FullReply Epoch Space Letter Revision Payload) :=
+  match Mettapedia.Machines.CMemory.CellPermission.read (held scope.owner) with
+  | none => .error .denied
+  | some _ => .ok (ScopedRecords.observe contents current scope)
+
+theorem revoked_observation_refuses
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (current : Source Epoch Space Letter Revision) (scope : Scope Space Letter) :
+    guardedObserve contents 0 current scope = .error .denied := rfl
+
+theorem guarded_observation_issued
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Payload)
+    (held : OccurrenceSpace.Authority Space Letter Revision)
+    (current : Source Epoch Space Letter Revision) (scope : Scope Space Letter)
+    (expected : List (List Letter × Revision))
+    (permitted : Mettapedia.Machines.CMemory.CellPermission.read (held scope.owner) = some expected) :
+    guardedObserve contents held current scope = .ok (ScopedRecords.observe contents current scope) := by
+  simp only [guardedObserve, permitted]
+
+end ScopedOccurrence
+
+namespace RetainedForce
+
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+open Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+
+variable {Epoch Holder Binding Payload : Type}
+variable [DecidableEq Epoch] [DecidableEq Holder]
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type}
+
+/-- Row data retains the complete binding identity and Need allocation name.
+Neither field is a permission or a newly allocated producer. -/
+structure Row (Binding Payload : Type) where
+  binding : Binding
+  need : CellId
+  value : Payload
+  deriving DecidableEq
+
+abbrev BindingRef (Epoch : Type) := Epoch × Mettapedia.Languages.MeTTa.MetavariableFrameStore.Ref
+
+/-- Resolve the original full frame reference in the supplied current image.
+The existing owned read preserves valid-unbound slots and their clocks. -/
+def bindingRead {Stored : Type} (lineage : Epoch)
+    (allocator : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
+    (image : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.ImageOf Stored)
+    (row : Row (BindingRef Epoch) Payload) :=
+  if row.binding.1 = lineage then image.readSlotOwned? allocator row.binding.2 else none
+
+omit [DecidableEq Holder] in
+theorem binding_read_current {Stored : Type} (lineage : Epoch)
+    (allocator : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
+    (image : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.ImageOf Stored)
+    (row : Row (BindingRef Epoch) Payload) (sameLineage : row.binding.1 = lineage)
+    (live : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Live allocator
+      ⟨row.binding.2.handle, row.binding.2.generation⟩) :
+    bindingRead lineage allocator image row = image.readSlot? row.binding.2 := by
+  simp only [bindingRead, if_pos sameLineage,
+    Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.ImageOf.readSlotOwned?, if_pos live]
+
+omit [DecidableEq Holder] in
+theorem binding_read_different_lineage {Stored : Type} (lineage : Epoch)
+    (allocator : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
+    (image : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.ImageOf Stored)
+    (row : Row (BindingRef Epoch) Payload) (different : row.binding.1 ≠ lineage) :
+    bindingRead lineage allocator image row = none := by
+  simp only [bindingRead, if_neg different]
+
+def handle (epoch : Epoch) (cell : CellId) : Handle Epoch CellId :=
+  ⟨epoch, cell, cell.generation⟩
+
+omit [DecidableEq Epoch] [DecidableEq Holder] in
+theorem handle_injective (epoch : Epoch) : Function.Injective (handle epoch) := by
+  intro first second equal
+  exact congrArg Handle.resource equal
+
+/-- One actual Need instruction, interpreted at the supplied current machine.
+The shared reference transition owns caching, receipts, alternatives and work. -/
+def operation
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume)) (_ : Unit) (selected : Handle Epoch CellId) :
+    Except Unit (List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)) :=
+  .ok (step spec {machine with control := .force selected.resource stack})
+
+def force
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume))
+    (frontier : Frontier Epoch CellId Holder) (holder : Holder) (epoch : Epoch)
+    (row : Row Binding Payload) :
+    BoundaryOutcome (Row Binding Payload)
+      (List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)) Unit :=
+  dispatch (operation spec machine stack) frontier holder (handle epoch row.need) () row
+
+theorem force_without_current_lease
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume))
+    (frontier : Frontier Epoch CellId Holder) (holder : Holder) (epoch : Epoch)
+    (row : Row Binding Payload)
+    (denied : ¬ Authorized frontier holder (handle epoch row.need)) :
+    force spec machine stack frontier holder epoch row = .inert row :=
+  dispatch_eq_inert_of_not_authorized _ _ _ _ _ _ denied
+
+theorem force_with_current_lease
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume))
+    (frontier : Frontier Epoch CellId Holder) (holder : Holder) (epoch : Epoch)
+    (row : Row Binding Payload)
+    (permitted : Authorized frontier holder (handle epoch row.need)) :
+    force spec machine stack frontier holder epoch row =
+      .returned (step spec {machine with control := .force row.need stack}) := by
+  change authorizedB frontier holder (handle epoch row.need) = true at permitted
+  unfold force dispatch
+  rw [permitted]
+  rfl
+
+/-- A copied row in another holder's hands is still inert without a current
+lease. The original shared cell and binding identity remain in the row. -/
+theorem copying_description_does_not_force
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume)) (holder : Holder) (epoch : Epoch) (row : Row Binding Payload) :
+    force spec machine stack 0 holder epoch row = .inert row := by
+  apply force_without_current_lease
+  simp [Authorized, authorizedB]
+
+/-- The actual share transition both retains the original lease and grants
+the second holder the same complete allocation identity. -/
+theorem actual_share_authorizes
+    (world : World Epoch CellId Holder) (lease : Lease Epoch CellId Holder) (target : Holder)
+    (present : lease ∈ world.frontier) (copyable : lease.permission = .shared) :
+    Step world (.share lease target)
+      ⟨{lease with holder := target} ::ₘ world.frontier, world.history ++ [.share lease target]⟩ ∧
+    Authorized ({lease with holder := target} ::ₘ world.frontier) target lease.handle := by
+  refine ⟨Step.share world lease target present copyable, ?_⟩
+  simp [Authorized, authorizedB, copyable]
+
+/-- Ownership does not admit the shared-copy transition. -/
+theorem owned_lease_cannot_be_shared
+    (world next : World Epoch CellId Holder) (lease : Lease Epoch CellId Holder) (target : Holder)
+    (exclusive : lease.permission = .owned) : ¬ Step world (.share lease target) next := by
+  intro attempted
+  cases attempted with
+  | share _ _ _ copyable => simp [exclusive] at copyable
+
+/-- Cached delivery is the proved singleton Need step. It retains the exact
+heap, charges one semantic lookup and writes no second producer cache. The
+authorization/transport overhead is not priced by this semantic account. -/
+theorem authorized_cached_delivery
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume))
+    (frontier : Frontier Epoch CellId Holder) (holder : Holder) (epoch : Epoch)
+    (row : Row Binding Payload) (origin : Origin) (value : Value)
+    (permitted : Authorized frontier holder (handle epoch row.need))
+    (cached : machine.world.heap.lookup row.need = some ⟨origin, .value value⟩) :
+    force spec machine stack frontier holder epoch row =
+      .returned [finished {machine with control := .force row.need stack}
+        (Mettapedia.Machines.BranchLocalNeed.NeedReference.recorded machine.world (.observe row.need (.value value)))
+        (.returned (.value value) stack) 1 0 1 0] := by
+  rw [force_with_current_lease spec machine stack frontier holder epoch row permitted]
+  rw [Mettapedia.Machines.BranchLocalNeed.NeedCacheLaws.force_cached_value_step spec
+    {machine with control := .force row.need stack} rfl cached]
+
+/-- A retained adaptive query may select one row for a later force. Full
+manifest agreement preserves that selection, while the force still uses the
+current machine and current lease frontier supplied to this invocation. -/
+theorem validated_query_then_current_force {Space Letter Revision Certificate : Type}
+    [DecidableEq Space] [DecidableEq Letter] [DecidableEq Revision] [DecidableEq Certificate]
+    (contents : Epoch → ScopedRecords.Stamp Space Letter Revision → Row Binding Payload)
+    (certificateContents : Epoch → ScopedRecords.Stamp Space Letter Revision → Certificate)
+    (captured current : ScopedOccurrence.Source Epoch Space Letter Revision)
+    (program : Program (ScopedRecords.Scope Space Letter)
+      (ScopedRecords.FullReply Epoch Space Letter Revision (Row Binding Payload)) (Option (Row Binding Payload)))
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (stack : List (Frame Resume)) (frontier : Frontier Epoch CellId Holder) (holder : Holder)
+    (valid : ScopedRecords.validate current
+      (ScopedRecords.capture certificateContents captured
+        ((run (ScopedRecords.observe contents captured) program).reads.map Prod.fst)) = true) :
+    (run (ScopedRecords.observe contents current) program).answer.map
+        (force spec machine stack frontier holder current.storeId) =
+      (run (ScopedRecords.observe contents captured) program).answer.map
+        (force spec machine stack frontier holder current.storeId) := by
+  exact congrArg (fun result => result.answer.map (force spec machine stack frontier holder current.storeId))
+    (ScopedOccurrence.scope_manifest_preserves_adaptive_query contents certificateContents captured current program valid)
+
+end RetainedForce
+
+namespace ScopedOccurrence.OwnClient
+
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.GSLT.Contracts
+open Mettapedia.Machines
+
+variable {Entry World : Type} {size : Nat} [DecidableEq Entry] [Category.{0} World]
+variable (authority : IndexedAuthority.{0, 0, 0} World)
+  (required : OrderedDependencyStore.Action Entry size → (world : World) → authority.Fibre world)
+  [∀ point : IndexedAuthority.Point authority, ∀ change : OrderedDependencyStore.Action Entry size,
+    Decidable (FrameUpdate point.authority (required change point.world))]
+
+/-- A normal programmable client of the existing stateful service. It retains
+the old full reply and replaces the local list with its one-erased query view.
+The own-only take interpretation requires `take_own_only` below. -/
+def readEraseReplace (reader : Fin size) (selected : Entry) :
+    Prog (OwnWrite.Request Entry size) OwnWrite.Reply (OrderedDependencyStore.ReadStamp size × List Entry) :=
+  OwnWrite.readWrite reader (fun rows => .replace reader (rows.erase selected))
+
+theorem read_replace_returns_captured_reply
+    (state : OwnWrite.State authority Entry size) (reader : Fin size) (selected : Entry)
+    (allowed : FrameUpdate state.point.authority
+      (required (.replace reader ((OrderedDependencyStore.query state.store reader).erase selected)) state.point.world)) :
+    OwnWrite.advance authority required 3 (readEraseReplace reader selected) state =
+      (2, .done ⟨PUnit.unit,
+        .ok (OrderedDependencyStore.readStamp state.store reader, OrderedDependencyStore.query state.store reader),
+        {state with store := (OrderedDependencyStore.step state.store
+          (.replace reader ((OrderedDependencyStore.query state.store reader).erase selected)))}⟩) :=
+  OwnWrite.captured_read_own_write authority required state reader
+    (fun rows => .replace reader (rows.erase selected)) allowed
+
+/-- Imported segments must not be republished as the owner's own rows. The
+own-only profile is explicit at this client boundary. -/
+theorem take_own_only (state : OwnWrite.State authority Entry size) (reader : Fin size)
+    (noImports : (state.store.members reader).deps = []) (selected : Entry) :
+    OrderedDependencyStore.query state.store reader = (state.store.members reader).own ∧
+      ((OrderedDependencyStore.step state.store
+        (.replace reader ((OrderedDependencyStore.query state.store reader).erase selected))).members reader).own =
+        (state.store.members reader).own.erase selected := by
+  have query := OrderedDependencyStore.query_eq_view state.store reader
+  simp only [OrderedDependencyStore.view, noImports, List.flatMap_nil, List.append_nil] at query
+  exact ⟨query, by simp only [OrderedDependencyStore.step, OrderedDependencyStore.replaceOwn,
+    OrderedDependencyStore.contentUpdate_own, query]⟩
+
+theorem take_keeps_other_own_rows (state : OwnWrite.State authority Entry size) (reader other : Fin size)
+    (different : other ≠ reader) (selected : Entry) :
+    ((OrderedDependencyStore.step state.store
+      (.replace reader ((OrderedDependencyStore.query state.store reader).erase selected))).members other).own =
+      (state.store.members other).own :=
+  OrderedDependencyStore.contentUpdate_own_other state.store different _ true
+
+end ScopedOccurrence.OwnClient
+
+namespace ScopedOccurrence.Controls
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.Machines
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+
+abbrev Stamp := ScopedRecords.Stamp Nat Nat Nat
+abbrev Row := RetainedForce.Row (RetainedForce.BindingRef Nat) Nat
+abbrev Rows := Source Nat Nat Nat Nat
+abbrev QueryReply := FullReply Nat Nat Nat Nat Row
+
+local instance : DecidableEq Row := inferInstanceAs (DecidableEq (RetainedForce.Row (RetainedForce.BindingRef Nat) Nat))
+local instance : DecidableEq (Stamp × Row) := inferInstance
+local instance : DecidableEq (List (Stamp × Row)) := inferInstance
+local instance : DecidableEq QueryReply := inferInstance
+
+local instance : DecidableEq (Except OwnWrite.Fault QueryReply)
+  | .error firstReply, .error secondReply =>
+      if same : firstReply = secondReply then isTrue (congrArg Except.error same)
+      else isFalse (fun equal => same (Except.error.inj equal))
+  | .ok firstReply, .ok secondReply =>
+      if same : firstReply = secondReply then isTrue (congrArg Except.ok same)
+      else isFalse (fun equal => same (Except.ok.inj equal))
+  | .error _, .ok _ => isFalse (by intro equal; cases equal)
+  | .ok _, .error _ => isFalse (by intro equal; cases equal)
+
+def sharedCell : CellId := ⟨7, [3], 4, 2⟩
+def first : Stamp := ((1, [10, 0]), 1)
+def second : Stamp := ((1, [10, 1]), 1)
+def child : Stamp := ((2, [20]), 1)
+def newNegative : Stamp := ((2, [99]), 1)
+def source : Rows := ⟨17, 4, [first, second, child]⟩
+
+def contents (_epoch : Nat) (stamp : Stamp) : Row :=
+  ⟨(17, ⟨8, 3, stamp.1.2.getLast!⟩), sharedCell,
+    if stamp.1.1 = 1 then 42 else if stamp.1.2 = [99] then 99 else 20 + stamp.2⟩
+
+def program : Program (Scope Nat Nat) QueryReply (List (Stamp × Row)) :=
+  .read (.prefix 1 [10]) fun parent =>
+    .read (.key 2 [99]) fun absent =>
+      if absent.2.isEmpty then .read (.key 2 [20]) fun nested => .pure (parent.2 ++ nested.2)
+      else .pure absent.2
+
+def changed (stamp : Stamp) : Rows := ⟨17, 5, source.entries ++ [stamp]⟩
+def unread : Rows := changed ((3, [77]), 1)
+def inserted : Rows := changed newNegative
+def mutatedChild : Rows := OccurrenceSpace.replace source 2 [([20], 2)] 6
+def observed (current : Rows) := ScopedRecords.observe contents current
+def required : ScopedRecords.Captured Nat Nat Nat Nat Row :=
+  ⟨source.storeId, (run (observed source) program).reads⟩
+
+theorem actual_adaptive_reads_include_complete_match_absence_and_child :
+    ((run (observed source) program).reads.map Prod.fst) =
+      [.prefix 1 [10], .key 2 [99], .key 2 [20]] ∧
+      ((run (observed source) program).answer.map (fun entry => entry.2.value)) = [42, 42, 21] ∧
+      ((run (observed source) program).answer.map (fun entry => entry.2.binding.2.slot)) = [0, 1, 20] := by decide
+
+theorem unrelated_change_preserves_but_both_consulted_changes_refuse :
+    ScopedRecords.validate unread required = true ∧
+      ScopedRecords.validate inserted required = false ∧
+      ScopedRecords.validate mutatedChild required = false := by decide
+
+theorem omitting_negative_read_accepts_a_different_answer :
+    ScopedRecords.validate inserted (ScopedRecords.capture contents source [.prefix 1 [10]]) = true ∧
+      (run (observed inserted) program).answer ≠ (run (observed source) program).answer := by decide
+
+def changedPayloadSource : Rows := ⟨17, 5, source.entries⟩
+def changedPayload (epoch : Nat) (stamp : Stamp) : Row :=
+  {contents epoch stamp with value := (contents epoch stamp).value + 1}
+
+/-- Keeping stamps while changing their interpretation violates the immutable
+version interface. Metadata agreement alone cannot repair that provider. -/
+theorem metadata_is_insufficient_for_unversioned_mutable_payloads :
+    ScopedRecords.metadata changedPayloadSource (.prefix 1 [10]) =
+        ScopedRecords.metadata source (.prefix 1 [10]) ∧
+      ScopedRecords.observe changedPayload changedPayloadSource (.prefix 1 [10]) ≠
+        ScopedRecords.observe contents source (.prefix 1 [10]) := by decide
+
+theorem selected_payload_observer_is_preserved :
+    (run (observed unread) program).answer.map (fun entry => entry.2.value) =
+      (run (observed source) program).answer.map (fun entry => entry.2.value) :=
+  validated_selected_observer contents source unread program
+    (fun result => result.answer.map (fun entry => entry.2.value)) (by decide)
+
+def contextNames : Nat ≃ Nat := Equiv.swap 1 3
+
+theorem namespace_change_is_real_and_preserves_binding_and_need_names :
+    (OccurrenceSpace.rename contextNames source).entries ≠ source.entries ∧
+      contextualStore contents contextNames source (.prefix 1 [10]) = observed source (.prefix 1 [10]) ∧
+      ((contextualStore contents contextNames source (.prefix 1 [10])).2.map (fun row => row.2.need)) =
+        [sharedCell, sharedCell] := by
+  refine ⟨by decide, ?_, ?_⟩
+  · exact congrFun (contextualStore_eq contents contextNames source) _
+  · rw [contextualStore_eq]
+    rfl
+
+def saved : Nat × Result (Answer := List (Stamp × Row)) (observed source) :=
+  Cursor.advance (provider (observed source)) client (readCharge (observed source)) 2 ⟨.unit, program, []⟩
+
+theorem retained_prefix_validation_resumes_same_account :
+    Cursor.resume (provider (observed unread)) client (readCharge (observed unread)) 2
+      (rebase (observed source) (observed unread) saved) =
+      Cursor.advance (provider (observed unread)) client (readCharge (observed unread)) 4
+        ⟨.unit, program, []⟩ :=
+  metadata_validated_resume contents source unread 2 2 program (by decide)
+
+def held : OccurrenceSpace.Authority Nat Nat Nat :=
+  OccurrenceSpace.owned 1 (OccurrenceSpace.rows source 1) +
+    OccurrenceSpace.owned 2 (OccurrenceSpace.rows source 2)
+def protectedStore (current : Rows) := guardedObserve contents held current
+def revokedStore (current : Rows) := guardedObserve contents 0 current
+
+def protectedProgram : Program (Scope Nat Nat) (Except OwnWrite.Fault QueryReply)
+    (Except OwnWrite.Fault (List (Stamp × Row))) :=
+  .read (.prefix 1 [10]) fun parent =>
+    match parent with
+    | .error refused => .pure (.error refused)
+    | .ok rows => .read (.key 2 [99]) fun absent =>
+        match absent with
+        | .error refused => .pure (.error refused)
+        | .ok _ => .pure (.ok rows.2)
+
+def protectedCut : Nat × Result (Answer := Except OwnWrite.Fault (List (Stamp × Row))) (protectedStore source) :=
+  Cursor.advance (provider (protectedStore source)) client (readCharge (protectedStore source))
+    1 ⟨.unit, protectedProgram, []⟩
+
+theorem successful_empty_read_and_revoked_read_are_distinct :
+    protectedStore source (.key 2 [99]) = .ok (17, []) ∧
+      revokedStore source (.key 2 [99]) = .error .denied := by decide
+
+theorem capture_across_revocation_keeps_exact_paid_work :
+    resumeValidated (protectedStore source) (revokedStore source) 5 protectedCut = .error protectedCut := by
+  exact resumeValidated_refused _ _ _ _ (by decide)
+
+end ScopedOccurrence.Controls
+
+namespace ScopedOccurrence.OwnClient.Controls
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.Machines
+open scoped Mettapedia.GSLT.SeparationAlgebra
+
+abbrev Item := Nat × Nat
+
+local instance : Fintype Access :=
+  ⟨{.none, .read, .consume}, by intro access; cases access <;> simp⟩
+
+def required (_ : OrderedDependencyStore.Action Item 2) (_ : Bool) : Access := .consume
+def needed (_ : Bool) : Access := .consume
+
+local instance permissionDecision (point : IndexedAuthority.Point revocationWorlds)
+    (change : OrderedDependencyStore.Action Item 2) :
+    Decidable (FrameUpdate point.authority (required change point.world)) :=
+  inferInstanceAs (Decidable (∀ frame : Access,
+    Access.separate point.authority frame = true → Access.separate Access.consume frame = true))
+
+local instance admissionDecision (point : IndexedAuthority.Point revocationWorlds) :
+    Decidable (FrameUpdate point.authority (needed point.world)) :=
+  permissionDecision point (.append 0 [])
+
+def held : IndexedAuthority.Point revocationWorlds := ⟨false, .consume⟩
+def revoked : IndexedAuthority.Point revocationWorlds := ⟨true, .none⟩
+def source : OwnWrite.State revocationWorlds Item 2 :=
+  ⟨OrderedDependencyStore.initial 17 (fun site => if site = 0 then [(10, 42), (11, 42)] else [(20, 9)]), held⟩
+def program := readEraseReplace (Entry := Item) (size := 2) 0 (10, 42)
+def cut := OwnWrite.advance revocationWorlds required 1 program source
+def finished := OwnWrite.advance revocationWorlds required 3 program source
+
+def capturedRows : Option (List Item) :=
+  (OwnWrite.completed revocationWorlds required finished).bind fun result =>
+    result.toOption.map Prod.snd
+
+theorem actual_read_then_own_take_keeps_old_reply_and_other_space :
+    capturedRows = some [(10, 42), (11, 42)] ∧ finished.1 = 2 ∧
+      ((OwnWrite.current revocationWorlds required finished).store.members 0).own = [(11, 42)] ∧
+      ((OwnWrite.current revocationWorlds required finished).store.members 1).own = [(20, 9)] ∧
+      OrderedDependencyStore.checkRead (OwnWrite.current revocationWorlds required finished).store
+        (OrderedDependencyStore.readStamp source.store 0) = false := by decide
+
+theorem revocation_before_take_retains_the_paid_cut :
+    OwnWrite.Invocation.resume revocationWorlds required needed source.store revoked 0 2 cut = .error cut := by
+  have denied : ¬ FrameUpdate revoked.authority (needed revoked.world) := by
+    intro update
+    have impossible := update Access.read (by rfl)
+    exact (by decide : ¬ (Access.consume ## Access.read)) impossible
+  exact OwnWrite.Invocation.pending_refused revocationWorlds required needed source.store revoked
+    0 1 1 (.write (.replace 0 [(11, 42)]))
+    (fun _ => .ret (OrderedDependencyStore.readStamp source.store 0, [(10, 42), (11, 42)]))
+    source (.inl denied)
+
+end ScopedOccurrence.OwnClient.Controls
+
+namespace RetainedForce.Controls
+
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+open Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+open ScopedOccurrence.Controls (sharedCell contents first second)
+
+abbrev Machine := Mettapedia.Machines.BranchLocalNeed.NeedReference.Machine Unit Nat Nat Unit Nat Unit Unit Unit
+abbrev Row := ScopedOccurrence.Controls.Row
+
+def spec : Spec Unit Nat Nat Unit Nat Unit Unit Unit :=
+  Mettapedia.Machines.BranchLocalNeed.NeedCacheLaws.CompletedReceiptControls.spec
+
+def cached : Machine :=
+  { world := {
+      lineage := 7
+      path := [3]
+      heap := {
+        current := fun cell => if cell = sharedCell then some ⟨(), .value 21⟩ else none
+        spine := [.cache sharedCell (.value 21), .allocate sharedCell ()] }
+      receipts := ReceiptGraph.empty
+      nextCell := 5
+      nextEvaluator := 1 }
+    control := .run 0 [] }
+
+def lease : Lease Nat CellId Nat := ⟨handle 17 sharedCell, 1, .shared⟩
+def initial : World Nat CellId Nat := ⟨{lease}, []⟩
+def shared : World Nat CellId Nat := ⟨{lease with holder := 2} ::ₘ initial.frontier, [.share lease 2]⟩
+
+def valueWork : BoundaryOutcome Row (List Machine) Unit → Option (Nat × Work)
+  | .returned (machine :: _) =>
+      match machine.control with
+      | .returned (.value value) _ => some (value, machine.work)
+      | _ => none
+  | _ => none
+
+def outcomeTag : BoundaryOutcome Row (List Machine) Unit → Nat
+  | .inert _ => 0
+  | .fault _ => 1
+  | .returned [] => 2
+  | .returned (machine :: _) =>
+      match machine.control with
+      | .returned (.value _) _ => 3
+      | .returned (.retryableFault _) _ => 4
+      | _ => 5
+
+theorem distinct_bindings_share_one_original_need_cell :
+    (contents 17 first).binding ≠ (contents 17 second).binding ∧
+      (contents 17 first).need = (contents 17 second).need ∧
+      (contents 17 first).value = (contents 17 second).value := by decide
+
+theorem copy_without_lease_is_inert :
+    force spec cached [] initial.frontier 2 17 (contents 17 first) = .inert (contents 17 first) :=
+  force_without_current_lease spec cached [] initial.frontier 2 17 (contents 17 first)
+    (by unfold Authorized; decide)
+
+theorem real_share_keeps_identity_and_authorizes_second_holder :
+    Step initial (.share lease 2) shared ∧ Authorized shared.frontier 2 lease.handle := by
+  exact actual_share_authorizes initial lease 2 (by simp [initial]) rfl
+
+theorem both_shared_holders_deliver_cached_value_without_producing_again :
+    valueWork (force spec cached [] shared.frontier 1 17 (contents 17 first)) =
+      some (21, ⟨1, 1, 0, 1, 0⟩) ∧
+      valueWork (force spec cached [] shared.frontier 2 17 (contents 17 second)) =
+        some (21, ⟨1, 1, 0, 1, 0⟩) := by decide
+
+theorem copied_generation_and_other_store_do_not_acquire_force :
+    force spec cached [] shared.frontier 1 18 (contents 17 first) = .inert (contents 17 first) ∧
+      force spec cached [] shared.frontier 1 17
+        {contents 17 first with need := {sharedCell with generation := 3}} =
+          .inert {contents 17 first with need := {sharedCell with generation := 3}} := by
+  constructor <;> apply force_without_current_lease <;> unfold Authorized <;> decide
+
+def olderHeap : Machine := {cached with world := {cached.world with heap := Heap.empty}}
+
+/-- Current permission alone does not certify an arbitrary old heap. The real
+Need transition reports out-of-scope waiting rather than a successful value
+or an empty relational answer. A provider must supply its current retained world. -/
+theorem authority_is_not_heap_currency :
+    outcomeTag (force spec olderHeap [] shared.frontier 1 17 (contents 17 first)) = 4 := by decide
+
+def selectingProgram := Mettapedia.Machines.ReadOnlyQuery.map
+  (fun rows => rows.head?.map Prod.snd) ScopedOccurrence.Controls.program
+
+def selected (frontier : Frontier Nat CellId Nat) :=
+  (run (ScopedOccurrence.Controls.observed ScopedOccurrence.Controls.unread) selectingProgram).answer.map
+    (force spec cached [] frontier 1 17)
+
+theorem selected_query_composes_with_current_force :
+    (run (ScopedOccurrence.Controls.observed ScopedOccurrence.Controls.unread) selectingProgram).answer.map
+        (force spec cached [] shared.frontier 1 17) =
+      (run (ScopedOccurrence.Controls.observed ScopedOccurrence.Controls.source) selectingProgram).answer.map
+        (force spec cached [] shared.frontier 1 17) :=
+  validated_query_then_current_force contents (fun (_ : Nat) (_ : ScopedRecords.Stamp Nat Nat Nat) => 42)
+    ScopedOccurrence.Controls.source ScopedOccurrence.Controls.unread selectingProgram spec cached [] shared.frontier 1 (by decide)
+
+theorem validated_selection_is_not_a_live_force_grant :
+    (selected shared.frontier).map outcomeTag = some 3 ∧
+      (selected 0).map outcomeTag = some 0 := by decide
+
+def producingSpec : Spec Unit Nat Nat Unit Nat Unit Unit Unit where
+  alternatives _ := [((), 0)]
+  action state :=
+    if state = 0 then .perform () 1
+    else if state = 2 then .demand sharedCell 3
+    else .done (.value 21)
+  afterDemand token _ := token
+  afterAllocation token _ := token
+
+def suspended : Machine :=
+  {cached with
+    world := {cached.world with heap := {
+      current := fun cell => if cell = sharedCell then some ⟨(), .suspended⟩ else none
+      spine := [.allocate sharedCell ()] }}
+    control := .force sharedCell [.resume 2] }
+
+def authorizedProduction : List Machine :=
+  match force producingSpec suspended [.resume 2] shared.frontier 1 17 (contents 17 first) with
+  | .returned successors => runFrontier producingSpec 9 successors
+  | _ => []
+
+/-- A suspended producer actually emits an effect, commits, and is demanded
+again by its retained consumer. That second demand uses the original cache. -/
+theorem actual_production_then_shared_demand_emits_once :
+    (authorizedProduction.map fun machine => machine.world.receipts.effects) = [[()]] ∧
+      (authorizedProduction.map fun machine => machine.work.allocations) = [0] ∧
+      (authorizedProduction.map fun machine => machine.world.heap.lookup sharedCell) =
+        [some ⟨(), .value 21⟩] ∧
+      (authorizedProduction.map fun machine => isHalted machine) = [true] := by decide
+
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore
+
+def bindingEntry : EntryOf Nat :=
+  { generation := 3
+    frame := ["x", "y"]
+    values := #[none, some 9]
+    size_eq := rfl
+    writeVersions := #[4, 5]
+    versions_size_eq := rfl
+    activationBoundary := some 2 }
+def image : Shared.ImageOf Nat := ⟨#[some bindingEntry], 6⟩
+def allocator : Shared.Allocator := ⟨#[⟨3, 1⟩], 10⟩
+def unbound : Row := {contents 17 first with binding := (17, ⟨0, 3, 0⟩)}
+
+theorem actual_binding_read_retains_unbound_clock_and_activation :
+    bindingRead 17 allocator image unbound = some ⟨none, 4, 6, some 2⟩ ∧
+      bindingRead 18 allocator image unbound = none ∧
+      bindingRead 17 allocator image {unbound with binding := (17, ⟨0, 2, 0⟩)} = none := by decide
+
+end RetainedForce.Controls
+
+#print axioms ScopedOccurrence.context_advance_account
+#print axioms ScopedOccurrence.context_resume_account
+#print axioms ScopedOccurrence.metadata_validated_resume
+#print axioms ScopedOccurrence.validated_selected_observer
+#print axioms ScopedOccurrence.scope_manifest_preserves_adaptive_query
+#print axioms RetainedForce.binding_read_current
+#print axioms RetainedForce.force_with_current_lease
+#print axioms RetainedForce.copying_description_does_not_force
+#print axioms RetainedForce.actual_share_authorizes
+#print axioms RetainedForce.owned_lease_cannot_be_shared
+#print axioms RetainedForce.authorized_cached_delivery
+#print axioms RetainedForce.validated_query_then_current_force
+#print axioms ScopedOccurrence.OwnClient.read_replace_returns_captured_reply
+#print axioms ScopedOccurrence.OwnClient.Controls.revocation_before_take_retains_the_paid_cut
+#print axioms RetainedForce.Controls.actual_production_then_shared_demand_emits_once
+
 end Mettapedia.Machines.Cursor.ReadOnlyQuery
+
+/-! ## Earned sampled replies and a fixed comparison view
+
+The sampler returns its actual reply and next context. The existing query
+client records those replies without assuming a fixed source. Agreement of
+the earned log with one fixed view then determines its residual, status and
+matching pure request tariff. Provider context effects and source protection
+remain separate; logged agreement does not itself grant current authority.
+-/
+
+namespace Mettapedia.Machines.Cursor.ReadOnlyQuery.Sampled
+
+open Mettapedia.Machines.ReadOnlyQuery (Program Reads Observation Agrees checkReads)
+
+universe u
+variable {Key Value Answer Context : Type u}
+
+/-- A real sampling operation returns its actual reply and next context. -/
+def provider (sample : Context → Key → Value × Context) :
+    Cursor.Provider (protocol Key Value) where
+  State _ _ := Context × Reads Key Value
+  step saved key :=
+    let observed := sample saved.1 key
+    ⟨observed.1, observed.2, (key, observed.1) :: saved.2⟩
+
+def charge (sample : Context → Key → Value × Context) (price : Key → Nat) :
+    Cursor.Charge (provider sample) := fun _ key => price key
+
+def fixedCharge (store : Key → Value) (price : Key → Nat) :
+    Cursor.Charge (ReadOnlyQuery.provider store) := fun _ key => price key
+
+/-- This is the existing cursor, with the existing adaptive query client. -/
+def advance (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (fuel : Nat) (program : Program Key Value Answer) (context : Context)
+    (reads : Reads Key Value) :=
+  Cursor.advance (provider sample) client (charge sample price) (base := PUnit.unit) fuel
+    ⟨PUnit.unit, program, context, reads⟩
+
+def fixedAdvance (store : Key → Value) (price : Key → Nat) (fuel : Nat)
+    (program : Program Key Value Answer) (reads : Reads Key Value) :=
+  Cursor.advance (ReadOnlyQuery.provider store) client (fixedCharge store price) (base := PUnit.unit) fuel
+    ⟨PUnit.unit, program, reads⟩
+
+def savedState (sample : Context → Key → Value × Context) :
+    Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit →
+      Context × Reads Key Value
+  | .paused ⟨_, _, saved⟩ => saved
+  | .done ⟨_, _, saved⟩ => saved
+
+def recorded (sample : Context → Key → Value × Context)
+    (outcome : Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    Reads Key Value := (savedState sample outcome).2.reverse
+
+def completed? (sample : Context → Key → Value × Context) :
+    Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit →
+      Option (Observation Key Value Answer)
+  | .paused _ => none
+  | .done ⟨_, answer, saved⟩ => some ⟨answer, saved.2.reverse⟩
+
+/-- The existing state projection keeps the whole client residual/status.
+It asserts no step law on contexts not visited by this execution. -/
+def project (sample : Context → Key → Value × Context) (store : Key → Value)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    Nat × Cursor.Outcome (ReadOnlyQuery.provider store) (client (Answer := Answer)) PUnit.unit :=
+  (previous.1, Cursor.Outcome.mapState client (source := provider sample)
+    (target := ReadOnlyQuery.provider store) (fun saved => saved.2) previous.2)
+
+@[simp] theorem advance_zero (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (program : Program Key Value Answer) (context : Context) (reads : Reads Key Value) :
+    advance sample price 0 program context reads =
+      (0, .paused ⟨PUnit.unit, program, context, reads⟩) := rfl
+
+@[simp] theorem advance_pure (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (fuel : Nat) (answer : Answer) (context : Context) (reads : Reads Key Value) :
+    advance sample price (fuel + 1) (.pure answer) context reads =
+      (0, .done ⟨PUnit.unit, answer, context, reads⟩) := rfl
+
+@[simp] theorem advance_read (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (fuel : Nat) (key : Key) (next : Value → Program Key Value Answer)
+    (context : Context) (reads : Reads Key Value) :
+    advance sample price (fuel + 1) (.read key next) context reads =
+      let observed := sample context key
+      let rest := advance sample price fuel (next observed.1) observed.2 ((key, observed.1) :: reads)
+      (price key + rest.1, rest.2) := rfl
+
+@[simp] theorem fixedAdvance_read (store : Key → Value) (price : Key → Nat)
+    (fuel : Nat) (key : Key) (next : Value → Program Key Value Answer) (reads : Reads Key Value) :
+    fixedAdvance store price (fuel + 1) (.read key next) reads =
+      let rest := fixedAdvance store price fuel (next (store key)) ((key, store key) :: reads)
+      (price key + rest.1, rest.2) := rfl
+
+/-- Every actual old read remains, including duplicate and negative replies. -/
+theorem recorded_keeps_prior (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (fuel : Nat) (program : Program Key Value Answer) (context : Context) (reads : Reads Key Value) :
+    reads.reverse <+: recorded sample (advance sample price fuel program context reads).2 := by
+  induction fuel generalizing program context reads with
+  | zero => exact ⟨[], by simp [recorded, savedState]⟩
+  | succ fuel ih =>
+      cases program with
+      | pure answer => exact ⟨[], by simp [recorded, savedState]⟩
+      | read key next =>
+          rw [advance_read]
+          obtain ⟨suffix, equal⟩ := ih (next (sample context key).1) (sample context key).2
+            ((key, (sample context key).1) :: reads)
+          exact ⟨[(key, (sample context key).1)] ++ suffix, by
+            simpa only [List.reverse_cons, List.append_assoc] using equal⟩
+
+/-- The declared invoice is the tariff of the actual newly logged requests,
+including repeats. It holds even when no fixed view can validate the log. -/
+theorem actual_read_invoice (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (fuel : Nat) (program : Program Key Value Answer) (context : Context) (reads : Reads Key Value) :
+    ((recorded sample (advance sample price fuel program context reads).2).map
+        (fun observed => price observed.1)).sum =
+      (reads.reverse.map (fun observed => price observed.1)).sum +
+        (advance sample price fuel program context reads).1 := by
+  induction fuel generalizing program context reads with
+  | zero => simp [recorded, savedState]
+  | succ fuel ih =>
+      cases program with
+      | pure answer => simp [recorded, savedState]
+      | read key next =>
+          rw [advance_read]
+          have paid := ih (next (sample context key).1) (sample context key).2
+            ((key, (sample context key).1) :: reads)
+          simp only [List.reverse_cons, List.map_append, List.sum_append,
+            List.map_singleton, List.sum_singleton] at paid
+          change ((recorded sample (advance sample price fuel (next (sample context key).1)
+              (sample context key).2 ((key, (sample context key).1) :: reads)).2).map
+                (fun observed => price observed.1)).sum =
+            (reads.reverse.map (fun observed => price observed.1)).sum +
+              (price key + (advance sample price fuel (next (sample context key).1)
+                (sample context key).2 ((key, (sample context key).1) :: reads)).1)
+          omega
+
+/-- Agreement concerns this earned finite path. The sampler may disagree at
+other contexts/requests; no globally lawful provider homomorphism is assumed.
+The conclusion keeps exact status, reply-selected residual, log and tariff. -/
+theorem earned_prefix_eq_fixed (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (store : Key → Value) (fuel : Nat) (program : Program Key Value Answer)
+    (context : Context) (reads : Reads Key Value)
+    (valid : Agrees store (recorded sample (advance sample price fuel program context reads).2)) :
+    project sample store (advance sample price fuel program context reads) =
+      fixedAdvance store price fuel program reads := by
+  induction fuel generalizing program context reads with
+  | zero => rfl
+  | succ fuel ih =>
+      cases program with
+      | pure answer => rfl
+      | read key next =>
+          rw [advance_read] at valid ⊢
+          have seen : (key, (sample context key).1) ∈ recorded sample
+              (advance sample price fuel (next (sample context key).1) (sample context key).2
+                ((key, (sample context key).1) :: reads)).2 :=
+            (recorded_keeps_prior sample price fuel (next (sample context key).1)
+              (sample context key).2 ((key, (sample context key).1) :: reads)).subset (by simp)
+          have reply : store key = (sample context key).1 := valid _ seen
+          rw [fixedAdvance_read, reply]
+          have suffix := ih (next (sample context key).1) (sample context key).2
+            ((key, (sample context key).1) :: reads) valid
+          exact congrArg (fun saved => (price key + saved.1, saved.2)) suffix
+
+theorem projected_paid (sample : Context → Key → Value × Context) (store : Key → Value)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    (project sample store previous).1 = previous.1 := rfl
+
+theorem projected_recorded (sample : Context → Key → Value × Context) (store : Key → Value)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    ReadOnlyQuery.recorded store (project sample store previous).2 = recorded sample previous.2 := by
+  rcases previous with ⟨paid, outcome⟩
+  cases outcome with
+  | paused packet => rcases packet with ⟨⟨⟩, program, context, reads⟩; rfl
+  | done finished => rcases finished with ⟨⟨⟩, answer, context, reads⟩; rfl
+
+theorem projected_completed (sample : Context → Key → Value × Context) (store : Key → Value)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    ReadOnlyQuery.completed? store (project sample store previous).2 =
+      completed? sample previous.2 := by
+  rcases previous with ⟨paid, outcome⟩
+  cases outcome with
+  | paused packet => rcases packet with ⟨⟨⟩, program, context, reads⟩; rfl
+  | done finished => rcases finished with ⟨⟨⟩, answer, context, reads⟩; rfl
+
+theorem earned_account_eq (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (store : Key → Value) (fuel : Nat) (program : Program Key Value Answer)
+    (context : Context) (reads : Reads Key Value)
+    (valid : Agrees store (recorded sample (advance sample price fuel program context reads).2)) :
+    (advance sample price fuel program context reads).1 =
+      (fixedAdvance store price fuel program reads).1 :=
+  congrArg Prod.fst (earned_prefix_eq_fixed sample price store fuel program context reads valid)
+
+theorem checked_prefix_eq_fixed [DecidableEq Value]
+    (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (store : Key → Value) (fuel : Nat) (program : Program Key Value Answer)
+    (context : Context) (reads : Reads Key Value)
+    (checked : checkReads store (recorded sample (advance sample price fuel program context reads).2) = true) :
+    project sample store (advance sample price fuel program context reads) =
+      fixedAdvance store price fuel program reads :=
+  earned_prefix_eq_fixed sample price store fuel program context reads
+    ((Mettapedia.Machines.ReadOnlyQuery.checkReads_iff _ _).mp checked)
+
+/-- Outcome is independent of the declared tariff, by the existing identity
+provider homomorphism. This does not identify different tariffs' invoices. -/
+theorem fixed_outcome (store : Key → Value) (price : Key → Nat) (fuel : Nat)
+    (program : Program Key Value Answer) (reads : Reads Key Value) :
+    (fixedAdvance store price fuel program reads).2 =
+      (Cursor.advance (ReadOnlyQuery.provider store) client (readCharge store) fuel
+        (base := PUnit.unit) ⟨PUnit.unit, program, reads⟩).2 := by
+  have same := (Cursor.Hom.id (ReadOnlyQuery.provider store)).advance client
+    (fixedCharge store price) (readCharge store) fuel
+    (base := PUnit.unit) ⟨PUnit.unit, program, reads⟩
+  simpa only [Cursor.Hom.outcome, Cursor.Hom.id, Cursor.Hom.packet,
+    Cursor.Outcome.mapState_id, fixedAdvance] using same
+
+/-- Actual completion and validated replies reflect to the independent query
+meaning. No fixed-provider origin is supplied for the sampled execution. -/
+theorem earned_completion_correct (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (store : Key → Value) (fuel : Nat) (program : Program Key Value Answer) (context : Context)
+    (observation : Observation Key Value Answer)
+    (finished : completed? sample (advance sample price fuel program context []).2 = some observation)
+    (valid : Agrees store (recorded sample (advance sample price fuel program context []).2)) :
+    observation = Mettapedia.Machines.ReadOnlyQuery.run store program := by
+  have same := earned_prefix_eq_fixed sample price store fuel program context [] valid
+  have completed : ReadOnlyQuery.completed? store (fixedAdvance store price fuel program []).2 =
+      some observation := by
+    rw [← same, projected_completed]
+    exact finished
+  rw [fixed_outcome] at completed
+  exact ReadOnlyQuery.completed_correct store fuel program observation completed
+
+def resume (sample : Context → Key → Value × Context) (price : Key → Nat) (fuel : Nat)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :=
+  Cursor.resume (provider sample) client (charge sample price) fuel previous
+
+def fixedResume (store : Key → Value) (price : Key → Nat) (fuel : Nat)
+    (previous : Nat × Cursor.Outcome (ReadOnlyQuery.provider store) (client (Answer := Answer)) PUnit.unit) :=
+  Cursor.resume (ReadOnlyQuery.provider store) client (fixedCharge store price) fuel previous
+
+theorem resume_zero (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    resume sample price 0 previous = previous := Cursor.resume_zero ..
+
+theorem advance_split (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (first second : Nat) (program : Program Key Value Answer) (context : Context)
+    (reads : Reads Key Value) :
+    advance sample price (first + second) program context reads =
+      resume sample price second (advance sample price first program context reads) :=
+  Cursor.advance_add ..
+
+theorem resume_keeps_recorded (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (fuel : Nat)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit) :
+    recorded sample previous.2 <+: recorded sample (resume sample price fuel previous).2 := by
+  rcases previous with ⟨paid, outcome⟩
+  cases outcome with
+  | done finished => exact ⟨[], by simp [resume, Cursor.resume]⟩
+  | paused packet =>
+      rcases packet with ⟨⟨⟩, program, context, reads⟩
+      exact recorded_keeps_prior sample price fuel program context reads
+
+theorem resumed_prefix_eq_fixed (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (store : Key → Value) (fuel : Nat)
+    (previous : Nat × Cursor.Outcome (provider sample) (client (Answer := Answer)) PUnit.unit)
+    (valid : Agrees store (recorded sample (resume sample price fuel previous).2)) :
+    project sample store (resume sample price fuel previous) =
+      fixedResume store price fuel (project sample store previous) := by
+  rcases previous with ⟨paid, outcome⟩
+  cases outcome with
+  | done finished => rfl
+  | paused packet =>
+      rcases packet with ⟨⟨⟩, program, context, reads⟩
+      have same := earned_prefix_eq_fixed sample price store fuel program context reads valid
+      exact congrArg (fun saved => (paid + saved.1, saved.2)) same
+
+/-- The fixed-view comparison starts at the same original program, while both
+actual and fixed cursors reuse the saved prefix rather than execute it again. -/
+theorem earned_split_eq_fixed (sample : Context → Key → Value × Context) (price : Key → Nat)
+    (store : Key → Value) (first second : Nat) (program : Program Key Value Answer)
+    (context : Context) (reads : Reads Key Value)
+    (valid : Agrees store
+      (recorded sample (advance sample price (first + second) program context reads).2)) :
+    project sample store
+        (resume sample price second (advance sample price first program context reads)) =
+      fixedResume store price second (fixedAdvance store price first program reads) := by
+  rw [advance_split] at valid
+  have priorAgreement : Agrees store (recorded sample (advance sample price first program context reads).2) := by
+    intro observed member
+    exact valid observed ((resume_keeps_recorded sample price second
+      (advance sample price first program context reads)).subset member)
+  rw [resumed_prefix_eq_fixed sample price store second _ valid,
+    earned_prefix_eq_fixed sample price store first program context reads priorAgreement]
+
+namespace Controls
+
+/-- Key 1 changes after the first sample. Key 0 remains unchanged. -/
+private def viewAt (clock key : Nat) : Nat :=
+  if key = 0 then 1 else if key = 1 then (if clock = 0 then 2 else 11) else 0
+
+private def changing (clock key : Nat) : Nat × Nat := (viewAt clock key, clock + 1)
+private def tariff (key : Nat) : Nat := key + 1
+private def adaptive : Program Nat Nat (List Nat) :=
+  .read 0 fun first => .read first fun second => .pure [first, second]
+private def actual := advance changing tariff 3 adaptive 0 []
+private def firstCut := advance changing tariff 1 adaptive 0 []
+
+theorem actual_changing_provider_records_its_replies :
+    completed? changing actual.2 = some ⟨[1, 11], [(0, 1), (1, 11)]⟩ ∧
+      (savedState changing actual.2).1 = 2 ∧ actual.1 = 3 := ⟨rfl, rfl, rfl⟩
+
+theorem changing_execution_is_not_initial_fixed_execution :
+    (Mettapedia.Machines.ReadOnlyQuery.run (viewAt 0) adaptive).answer = [1, 2] ∧
+      completed? changing actual.2 ≠
+        some (Mettapedia.Machines.ReadOnlyQuery.run (viewAt 0) adaptive) := by
+  refine ⟨rfl, ?_⟩
+  intro equal
+  have answers := congrArg (Option.map Observation.answer) equal
+  change some [1, 11] = some [1, 2] at answers
+  cases answers
+
+theorem actual_log_validates_at_protected_view :
+    checkReads (viewAt 2) (recorded changing actual.2) = true := by decide
+
+theorem earned_changing_execution_matches_fixed_view :
+    project changing (viewAt 2) actual = fixedAdvance (viewAt 2) tariff 3 adaptive [] :=
+  checked_prefix_eq_fixed changing tariff (viewAt 2) 3 adaptive 0 [] actual_log_validates_at_protected_view
+
+/-- The actual path validates even though a request at an unvisited initial
+context would disagree. A globally lawful provider map is unnecessary. -/
+theorem path_agreement_does_not_assume_global_provider_agreement :
+    (changing 0 1).1 ≠ viewAt 2 1 ∧
+      project changing (viewAt 2) actual = fixedAdvance (viewAt 2) tariff 3 adaptive [] :=
+  ⟨by decide, earned_changing_execution_matches_fixed_view⟩
+
+theorem partial_reply_selects_actual_residual :
+    project changing (viewAt 2) firstCut =
+      (1, .paused ⟨PUnit.unit, .read 1 (fun second => .pure [1, second]), [(0, 1)]⟩) := rfl
+
+theorem changing_split_reuses_earned_prefix :
+    resume changing tariff 2 firstCut = actual := (advance_split changing tariff 1 2 adaptive 0 []).symm
+
+theorem changing_split_matches_fixed_resumption :
+    project changing (viewAt 2) (resume changing tariff 2 firstCut) =
+      fixedResume (viewAt 2) tariff 2 (fixedAdvance (viewAt 2) tariff 1 adaptive []) :=
+  earned_split_eq_fixed changing tariff (viewAt 2) 1 2 adaptive 0 []
+    ((Mettapedia.Machines.ReadOnlyQuery.checkReads_iff _ _).mp actual_log_validates_at_protected_view)
+
+theorem zero_resume_keeps_context_log_and_invoice :
+    resume changing tariff 0 firstCut = firstCut := resume_zero ..
+
+theorem changed_selected_reply_rejects_log :
+    checkReads (Function.update (viewAt 2) 0 8) (recorded changing actual.2) = false := by decide
+
+private def repeated : Program Nat Nat (List Nat) :=
+  .read 0 fun first => .read 0 fun second => .pure [first, second]
+private def increments (clock : Nat) (_key : Nat) : Nat × Nat := (clock, clock + 1)
+private def conflicting := advance increments (fun _ => 1) 3 repeated 0 []
+
+theorem conflicting_repeat_has_no_fixed_view (store : Nat → Nat) :
+    ¬ Agrees store (recorded increments conflicting.2) := by
+  intro valid
+  change Agrees store [(0, 0), (0, 1)] at valid
+  have first := valid (0, 0) (by simp)
+  have second := valid (0, 1) (by simp)
+  simp only at first second
+  omega
+
+theorem conflicting_repeat_is_not_silently_deduplicated :
+    recorded increments conflicting.2 = [(0, 0), (0, 1)] ∧
+      checkReads (fun _ => 0) (recorded increments conflicting.2) = false := by decide
+
+private def optionalRepeated : Program Nat (Option Nat) (List (Option Nat)) :=
+  .read 0 fun first => .read 0 fun second => .pure [first, second]
+private def presenceChanges (clock : Nat) (_key : Nat) : Option Nat × Nat :=
+  (if clock = 0 then none else some 9, clock + 1)
+private def absentThenPresent := advance presenceChanges (fun _ => 1) 3 optionalRepeated 0 []
+
+theorem negative_reply_is_part_of_actual_certificate :
+    recorded presenceChanges absentThenPresent.2 = [(0, none), (0, some 9)] ∧
+      checkReads (fun _ => some 9) (recorded presenceChanges absentThenPresent.2) = false := by decide
+
+private def oneRead : Program Nat Nat Nat := .read 0 .pure
+private def constantReply (hop clock : Nat) (_key : Nat) : Nat × Nat := (7, clock + hop)
+
+/-- Read agreement does not transport the sampler's arbitrary context effects. -/
+theorem equal_replies_do_not_identify_provider_contexts :
+    completed? (constantReply 1) (advance (constantReply 1) (fun _ => 1) 2 oneRead 0 []).2 =
+      completed? (constantReply 2) (advance (constantReply 2) (fun _ => 1) 2 oneRead 0 []).2 ∧
+      (savedState (constantReply 1) (advance (constantReply 1) (fun _ => 1) 2 oneRead 0 []).2).1 ≠
+        (savedState (constantReply 2) (advance (constantReply 2) (fun _ => 1) 2 oneRead 0 []).2).1 := ⟨rfl, by decide⟩
+
+/-- Matching reply certificates alone do not make unrelated tariffs equal. -/
+theorem account_condition_is_separate_from_reply_agreement :
+    completed? (constantReply 1) (advance (constantReply 1) (fun _ => 2) 2 oneRead 0 []).2 =
+      ReadOnlyQuery.completed? (fun _ => 7) (fixedAdvance (fun _ => 7) (fun _ => 1) 2 oneRead []).2 ∧
+      (advance (constantReply 1) (fun _ => 2) 2 oneRead 0 []).1 ≠
+        (fixedAdvance (fun _ => 7) (fun _ => 1) 2 oneRead []).1 := ⟨rfl, by decide⟩
+
+private def scopeStore (key : Nat × Nat) : Nat := key.1 + key.2 + 1
+private def oldScope : Program (Nat × Nat) Nat Nat := .read (0, 0) .pure
+private def otherScope : Program (Nat × Nat) Nat Nat := .read (1, 0) .pure
+
+theorem validated_old_scope_does_not_replace_the_query_scope :
+    checkReads scopeStore [( (0, 0), 1)] = true ∧
+      (Mettapedia.Machines.ReadOnlyQuery.run scopeStore oldScope).answer ≠
+        (Mettapedia.Machines.ReadOnlyQuery.run scopeStore otherScope).answer := by decide
+
+namespace LateCheck
+
+open Mettapedia.Machines.AuthorityObservationControls
+open Mettapedia.Machines.RevisionDependencySetCanary (Store environment)
+
+private def sample (state : State) (key : Store) : Nat × State := lateObserve key state
+private def program : Program Store Nat (Nat × Nat) :=
+  .read .evidence fun evidence => .read .model fun model => .pure (evidence, model)
+private def earned := advance sample (fun _ => 1) 3 program initial []
+
+theorem actual_late_observer_returns_truthful_earlier_replies :
+    completed? sample earned.2 = some ⟨(7, 3), [(.evidence, 7), (.model, 3)]⟩ ∧
+      (savedState sample earned.2).1 = { initial with evidence := 8, cacheTicks := 2 } := ⟨rfl, rfl⟩
+
+theorem historical_view_agrees_with_actual_late_log :
+    checkReads environment.current (recorded sample earned.2) = true := by decide
+
+theorem earned_late_log_reflects_only_the_historical_view :
+    project sample environment.current earned = fixedAdvance environment.current (fun _ => 1) 3 program [] :=
+  checked_prefix_eq_fixed sample (fun _ => 1) environment.current 3 program initial []
+    historical_view_agrees_with_actual_late_log
+
+/-- The existing late-check counterexample is now also an actual query-cursor
+execution. Its earlier successful comparison cannot grant current publication. -/
+theorem actual_late_current_publication_is_refused :
+    ¬ capture.CanPublish (projection (savedState sample earned.2).1) :=
+  late_checks_cannot_publish
+
+theorem actual_late_log_fails_current_full_agreement :
+    checkReads (projection (savedState sample earned.2).1).current (recorded sample earned.2) = false := by decide
+
+end LateCheck
+end Controls
+
+end Mettapedia.Machines.Cursor.ReadOnlyQuery.Sampled

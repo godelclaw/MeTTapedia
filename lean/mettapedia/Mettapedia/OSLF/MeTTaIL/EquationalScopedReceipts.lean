@@ -268,4 +268,46 @@ theorem exists_arguments_trace_iff_meaning {compare : Comparison} {rule : Rewrit
   ⟨fun ⟨_, receipt⟩ => receipt.meaning,
     fun meaning => EquationalScopedReceipts.ArgumentsMeaning.traced meaning⟩
 
+private theorem finished_extends {compare : Comparison} {rule : RewriteRule}
+    {spec : RuleBindingSpec} {ambient depth index : Nat} {site : RulePatternSite}
+    {path : List Nat} {rest : Option String} {kind : CollType}
+    {initial final : Assignment} {targets : List Pattern}
+    (finished : Finished compare rule spec ambient site path depth index rest kind initial targets final) :
+    GeneralScopedMatch.Extends initial final := by
+  cases rest with
+  | none =>
+      rcases finished with ⟨_, rfl⟩
+      exact .refl _
+  | some name => exact GeneralScopedMatch.captureWith_extends finished
+
+mutual
+/-- The declared comparison may validate a repeat, but cannot overwrite a
+previous capture. Nested allocations retain that same extension discipline. -/
+theorem Matches.extends {compare : Comparison} {rule : RewriteRule}
+    {spec : RuleBindingSpec} {ambient : Nat} {site : RulePatternSite} {path : List Nat}
+    {depth : Nat} {initial final : Assignment} {schema target : Pattern} {trace : List Event}
+    (matched : Matches compare rule spec ambient site path depth initial schema target trace final) :
+    GeneralScopedMatch.Extends initial final :=
+  match matched with
+  | .capture captured => GeneralScopedMatch.captureWith_extends captured
+  | .bound => .refl _
+  | .constructor arguments => arguments.extends
+  | .lambda body => body.extends
+  | .multiLambda body => body.extends
+  | .substitution body replacement => body.extends.trans replacement.extends
+  | .vector arguments => arguments.extends
+  | .vectorRest arguments captured =>
+      arguments.extends.trans (GeneralScopedMatch.captureWith_extends captured)
+  | .unordered _ _ arguments finished => arguments.extends.trans (finished_extends finished)
+
+theorem Arguments.extends {compare : Comparison} {rule : RewriteRule}
+    {spec : RuleBindingSpec} {ambient : Nat} {site : RulePatternSite} {path : List Nat}
+    {depth index : Nat} {initial final : Assignment} {schemas targets : List Pattern} {trace : List Event}
+    (matched : Arguments compare rule spec ambient site path depth initial index schemas targets trace final) :
+    GeneralScopedMatch.Extends initial final :=
+  match matched with
+  | .nil => .refl _
+  | .cons head tail => head.extends.trans tail.extends
+end
+
 end Mettapedia.OSLF.MeTTaIL.EquationalScopedReceipts

@@ -65,6 +65,122 @@ theorem tail_subst_ignores_head (σ : Subst) (left right : Atom)
       project .tail (subst σ (.expression (right :: rest))) := by
   rfl
 
+/-! ## Open-cons values
+
+The runtime's open-cons carrier is a resolved constructor with two borrowed
+children.  It can have an improper or still-open tail, so it is deliberately
+not identified with `Atom.expression`.  Once this constructor has been
+recognized, its eliminator reads exactly one child and leaves the other child
+and every deeper node untouched.
+-/
+
+/-- The semantic payload of an already-recognized open-cons carrier. -/
+structure OpenCons where
+  head : Atom
+  tail : Atom
+  deriving DecidableEq
+
+def OpenCons.subst (σ : Subst) (cell : OpenCons) : OpenCons :=
+  ⟨SubstitutionAlgebra.subst σ cell.head,
+   SubstitutionAlgebra.subst σ cell.tail⟩
+
+/-- Projection after carrier recognition. Root recognition and ownership are
+separate premises of the runtime admission check. -/
+def projectOpenCons : Direction → OpenCons → Atom
+  | .head, cell => cell.head
+  | .tail, cell => cell.tail
+
+/-- Selecting a carrier child commutes with every later substitution. -/
+theorem projectOpenCons_subst (direction : Direction) (σ : Subst)
+    (cell : OpenCons) :
+    projectOpenCons direction (cell.subst σ) =
+      SubstitutionAlgebra.subst σ (projectOpenCons direction cell) := by
+  cases direction <;> rfl
+
+/-- Tail observation does not inspect or substitute the discarded head. -/
+theorem openCons_tail_ignores_head (left right tail : Atom) :
+    projectOpenCons .tail ⟨left, tail⟩ =
+      projectOpenCons .tail ⟨right, tail⟩ := by
+  rfl
+
+/-! ### Root-query lower bound
+
+This is the exact pointer-access region used by the fast path: before the
+carrier is recognized, the algorithm either returns a constant without
+reading it, or performs one root read which exposes both child pointers.  It
+does not claim an allocation or cache bound for the surrounding evaluator.
+-/
+
+/-- Decision programs in the opaque-root access model. -/
+inductive RootProgram where
+  | constant (answer : Atom)
+  | inspect (select : Atom → Atom → Atom)
+
+def RootProgram.run : RootProgram → OpenCons → Atom
+  | .constant answer, _ => answer
+  | .inspect select, cell => select cell.head cell.tail
+
+def RootProgram.rootReads : RootProgram → Nat
+  | .constant _ => 0
+  | .inspect _ => 1
+
+def RootProgram.Correct (direction : Direction) (program : RootProgram) : Prop :=
+  ∀ cell, program.run cell = projectOpenCons direction cell
+
+/-- The direct constructor eliminator. -/
+def directRootProgram : Direction → RootProgram
+  | .head => .inspect fun head _ => head
+  | .tail => .inspect fun _ tail => tail
+
+theorem directRootProgram_correct (direction : Direction) :
+    (directRootProgram direction).Correct direction := by
+  intro cell
+  cases direction <;> rfl
+
+theorem directRootProgram_one_read (direction : Direction) :
+    (directRootProgram direction).rootReads = 1 := by
+  cases direction <;> rfl
+
+/-- No zero-read program can implement either projection for all carriers.
+Thus the one-read eliminator is optimal in this root-query model. -/
+theorem correct_rootReads_lower_bound (direction : Direction)
+    (program : RootProgram) (correct : program.Correct direction) :
+    1 ≤ program.rootReads := by
+  cases program with
+  | inspect select => rfl
+  | constant answer =>
+      cases direction with
+      | head =>
+          have first := correct ⟨.symbol "first", .symbol "tail"⟩
+          have second := correct ⟨.symbol "second", .symbol "tail"⟩
+          simp only [RootProgram.run, projectOpenCons] at first second
+          have impossible : (Atom.symbol "first") = Atom.symbol "second" :=
+            first.symm.trans second
+          have absurd : False :=
+            (by decide : (Atom.symbol "first") ≠ Atom.symbol "second") impossible
+          exact absurd.elim
+      | tail =>
+          have first := correct ⟨.symbol "head", .symbol "first"⟩
+          have second := correct ⟨.symbol "head", .symbol "second"⟩
+          simp only [RootProgram.run, projectOpenCons] at first second
+          have impossible : (Atom.symbol "first") = Atom.symbol "second" :=
+            first.symm.trans second
+          have absurd : False :=
+            (by decide : (Atom.symbol "first") ≠ Atom.symbol "second") impossible
+          exact absurd.elim
+
+/-- The direct path attains the lower bound. -/
+theorem directRootProgram_optimal (direction : Direction) :
+    (directRootProgram direction).Correct direction ∧
+      (directRootProgram direction).rootReads = 1 ∧
+      ∀ (program : RootProgram), program.Correct direction →
+        (directRootProgram direction).rootReads ≤ program.rootReads := by
+  refine ⟨directRootProgram_correct direction,
+    directRootProgram_one_read direction, ?_⟩
+  intro program correct
+  rw [directRootProgram_one_read]
+  exact correct_rootReads_lower_bound direction program correct
+
 private def renameX : Subst
   | "x" => some (.var "y")
   | _ => none

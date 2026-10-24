@@ -27,7 +27,8 @@ theory's own (`consistency_equivalent`), and the conclusion agrees with Foundati
 
 **The stratified escape.**  A theory true in the standard model has that model as a model
 one level up (`standardModel`), so it is consistent and does not prove its own consistency
-(`stratified_of_sound`).
+(`stratified_of_sound`).  The standard model reads the provability predicate correctly, so it
+validates every local reflection statement (`standardReflectiveModel`).
 -/
 
 set_option autoImplicit false
@@ -137,6 +138,15 @@ noncomputable def standardModel [ℕ ⊧ₘ* T] : ProvabilityStage.Model (stage 
     change ¬ ℕ ⊧ₘ (⊥ : ArithmeticSentence)
     simp
 
+/-- **The standard model reads provability as provability.**  For a theory true in it, the
+standard model is a reflective model one level up: it validates every local reflection
+statement `□σ → σ`, which the theory itself proves only for its own theorems. -/
+noncomputable def standardReflectiveModel [ℕ ⊧ₘ* T] :
+    ProvabilityStage.ReflectiveModel (stage T) where
+  toModel := standardModel T
+  holds_imp _ _ := LO.Semantics.Imp.models_imply
+  holds_box _ holds := (sound_on_model (𝔅 := T.standardProvability) (N := ℕ)).mp holds
+
 /-- **Stratification.**  A theory true in the standard model is consistent and does not prove
 its own consistency statement: its consistency is seen one level up. -/
 theorem stratified_of_sound [ℕ ⊧ₘ* T] :
@@ -149,5 +159,6 @@ theorem stratified_of_sound [ℕ ⊧ₘ* T] :
 #print axioms consistency_unprovable
 #print axioms agrees_with_foundation
 #print axioms stratified_of_sound
+#print axioms standardReflectiveModel
 
 end Mettapedia.Logic.Diagonal.Arithmetic

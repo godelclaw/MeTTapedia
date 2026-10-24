@@ -21,13 +21,18 @@ import Mathlib.Probability.Kernel.Basic
 import Mathlib.Order.KonigLemma
 import Mettapedia.UniversalAI.SolomonoffInduction
 import Mettapedia.UniversalAI.BayesianAgents
-import Mettapedia.Computability.ArithmeticalHierarchy.Basic
+import Mettapedia.Analysis.RationalApproximation
 
 /-!
 # Value Under Ignorance in Universal Artificial Intelligence
 
-This file formalizes "Value Under Ignorance in Universal Artificial Intelligence"
+This file develops analytic results motivated by "Value Under Ignorance in Universal Artificial Intelligence"
 by Cole Wyeth and Marcus Hutter (December 2025, arXiv:2512.17086v1).
+
+The rational approximation records used here contain no computability witness.
+In particular, the Choquet and minimizing-extension constructions below do not
+establish effective versions of the paper’s claims. Topological lower
+semicontinuity, used for attainment of minima, is a separate assumption.
 
 ## Main Contributions
 
@@ -44,8 +49,9 @@ the probability mass that "leaks" when a hypothesis only predicts finite prefixe
 
 ## Main Theorems
 
-* `choquet_recovers_standard_aixi`: As loss → 0, Choquet ≈ standard value
-* `choquet_value_delta03`: Choquet-based value is Δ⁰₃-computable
+* `choquet_recovers_standard_aixi`: zero semimeasure loss recovers the neutral value
+* `choquet_value_lower_approximation`: monotone rational stages for the one-step value
+* `choquet_value_lower_approximation_layercake`: an analytic layer-cake construction
 * `death_not_choquet`: Death interpretation ≠ Choquet integral
 
 ## References
@@ -388,7 +394,7 @@ theorem minNextUtility_bounds (U : Utility) (h : History)
 
     This definition is sufficient for the metatheoretic properties in this file:
     - it reduces to the neutral value when `semimeasureLoss ν = 0`
-    - it is lower-approximable (Σ⁰₁-style) as a real number
+    - it is lower rationally approximable under the hypotheses below
 -/
 noncomputable def valueChoquet (ν : Semimeasure) (U : Utility) (h : History) : ℝ :=
   valueNeutral ν U h + (semimeasureLoss ν (encodeHistory h)).toReal * minNextUtility U h
@@ -491,78 +497,66 @@ theorem semimeasureLoss_toReal_le_one (ν : Semimeasure) (x : BinString) :
     _ ≤ (1 : ENNReal).toReal := ENNReal.toReal_mono ENNReal.one_ne_top h3
     _ = 1 := by norm_num
 
-/-- **Theorem 2a** (One-step decomposition): Choquet value is lower semicomputable (Σ⁰₁).
+/-- **Theorem 2a** (One-step decomposition): Choquet value is lower rationally approximable.
 
-    The one-step Choquet value function (valueChoquet) is lower semicomputable when
-    U is l.s.c. and ν is **computable** (both l.s.c. and u.s.c.).
+    The one-step Choquet value function (valueChoquet) is lower rationally approximable when
+    U is lower-approximable and ν is equipped with both lower and upper rational approximations.
 
     **NOTE**: This uses the decomposition formula:
         valueChoquet = valueNeutral + semimeasureLoss * minUtility
 
     The semimeasureLoss involves subtraction: ν(x) - (ν(x0) + ν(x1)).
-    Since l.s.c. - l.s.c. is NOT l.s.c. in general, we need ν to be u.s.c. as well.
+    Subtracting two lower stage sequences need not preserve lower bounds. This
+    construction instead subtracts upper stages from lower stages.
 
-    For the paper's weaker result (ν only l.s.c.), see `choquet_integral_lower_semicomputable`.
+    For a conditional analytic construction from supplied integral stages, see
+    `choquet_integral_lower_approximation_of_stages`.
 -/
-theorem choquet_value_lower_semicomputable (ν : Semimeasure) (U : Utility)
-    (h_U_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable U)
-    (h_ν_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable (fun x => (ν x).toReal))
-    (h_ν_usc : Mettapedia.Computability.ArithmeticalHierarchy.UpperSemicomputable (fun x => (ν x).toReal))
+theorem choquet_value_lower_approximation (ν : Semimeasure) (U : Utility)
+    (h_U_lower : Mettapedia.Analysis.LowerApproximation U)
+    (h_ν_lower : Mettapedia.Analysis.LowerApproximation (fun x => (ν x).toReal))
+    (h_ν_upper : Mettapedia.Analysis.UpperApproximation (fun x => (ν x).toReal))
     (h_U_bounds : ∀ h, 0 ≤ U h ∧ U h ≤ 1) :
     ∃ (f : History → ℕ → ℚ),
       (∀ h n, f h n ≤ f h (n+1)) ∧
       (∀ h n, (f h n : ℝ) ≤ valueChoquet ν U h) ∧
       (∀ h (ε : ℝ), 0 < ε → ∃ N, ∀ n ≥ N, valueChoquet ν U h - (f h n : ℝ) < ε) := by
   -- Proof: valueChoquet = valueNeutral + loss * minUtility
-  -- Each component is lower semicomputable by closure properties
+  -- Each component is lower rationally approximable by closure properties
 
-  -- Step 1: minNextUtility is l.s.c. (finite infimum of l.s.c. functions)
-  have h_min_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable (fun h => minNextUtility U h) := by
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.finset_inf
+  -- Step 1: minNextUtility is lower-approximable (finite infimum of lower-approximable functions)
+  have h_min_lower : Mettapedia.Analysis.LowerApproximation (fun h => minNextUtility U h) := by
+    apply Mettapedia.Analysis.LowerApproximation.finset_inf
     · intro p
-      -- U is l.s.c., so U (h ++ [HistElem.per p]) is l.s.c. via composition
-      exact h_U_lsc.comp (fun h => h ++ [HistElem.per p])
+      -- U is lower-approximable, so U (h ++ [HistElem.per p]) is lower-approximable via composition
+      exact h_U_lower.comp (fun h => h ++ [HistElem.per p])
     · exact ⟨Percept.mk false false⟩  -- Percept is inhabited
 
-  -- Step 2: valueNeutral is l.s.c. (finite sum of products of l.s.c. functions)
-  have h_neutral_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable (fun h => valueNeutral ν U h) := by
+  -- Step 2: valueNeutral is lower-approximable (finite sum of products of lower-approximable functions)
+  have h_neutral_lower : Mettapedia.Analysis.LowerApproximation (fun h => valueNeutral ν U h) := by
     unfold valueNeutral
     simp only []  -- simplify the let binding
-    -- Goal: LowerSemicomputable (fun h => ∑ p : Percept, (ν (encodeHistory h ++ encodePerceptBin p)).toReal * U (h ++ [HistElem.per p]))
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.finset_sum
+    -- Goal: LowerApproximation (fun h => ∑ p : Percept, (ν (encodeHistory h ++ encodePerceptBin p)).toReal * U (h ++ [HistElem.per p]))
+    apply Mettapedia.Analysis.LowerApproximation.finset_sum
     intro p
-    -- Goal: LowerSemicomputable (fun h => (ν (encodeHistory h ++ encodePerceptBin p)).toReal * U (h ++ [HistElem.per p]))
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.mul (M := 1)
-    · -- ν(...).toReal is l.s.c.
-      exact h_ν_lsc.comp (fun h => encodeHistory h ++ encodePerceptBin p)
-    · -- U(...) is l.s.c.
-      exact h_U_lsc.comp (fun h => h ++ [HistElem.per p])
+    -- Goal: LowerApproximation (fun h => (ν (encodeHistory h ++ encodePerceptBin p)).toReal * U (h ++ [HistElem.per p]))
+    apply Mettapedia.Analysis.LowerApproximation.mul
+    · -- ν(...).toReal is lower-approximable
+      exact h_ν_lower.comp (fun h => encodeHistory h ++ encodePerceptBin p)
+    · -- U(...) is lower-approximable
+      exact h_U_lower.comp (fun h => h ++ [HistElem.per p])
     · -- ν(...).toReal ≥ 0
       intro h
       exact ENNReal.toReal_nonneg
     · -- U(...) ≥ 0
       intro h
       exact (h_U_bounds _).1
-    · -- ν(...).toReal ≤ 1
-      intro h
-      have h1 : ν (encodeHistory h ++ encodePerceptBin p) ≤ ν [] := ν.mono_append [] _
-      have h2 : ν [] ≤ 1 := ν.root_le_one'
-      have h_ne_top : ν (encodeHistory h ++ encodePerceptBin p) ≠ ⊤ :=
-        ne_of_lt (lt_of_le_of_lt (le_trans h1 h2) ENNReal.one_lt_top)
-      have h_root_ne_top : (ν []) ≠ ⊤ := ne_of_lt (lt_of_le_of_lt h2 ENNReal.one_lt_top)
-      calc (ν (encodeHistory h ++ encodePerceptBin p)).toReal
-          ≤ (ν []).toReal := ENNReal.toReal_mono h_root_ne_top h1
-        _ ≤ (1 : ENNReal).toReal := ENNReal.toReal_mono ENNReal.one_ne_top h2
-        _ = (1 : ℝ) := by simp
-    · -- U(...) ≤ 1
-      intro h
-      exact (h_U_bounds _).2
 
-  -- Step 3: semimeasureLoss.toReal is l.s.c.
+  -- Step 3: semimeasureLoss.toReal is lower-approximable
   -- Use sub with the proper approach:
-  -- loss = ν x - (ν x0 + ν x1) = l.s.c. - u.s.c. = l.s.c.
-  -- This requires ν to be COMPUTABLE (both l.s.c. and u.s.c.)
-  have h_loss_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable (fun h => (semimeasureLoss ν (encodeHistory h)).toReal) := by
+  -- loss = ν x - (ν x0 + ν x1) = lower-approximable - upper-approximable = lower-approximable
+  -- This requires ν to be equipped with both lower and upper approximations
+  have h_loss_lower : Mettapedia.Analysis.LowerApproximation (fun h => (semimeasureLoss ν (encodeHistory h)).toReal) := by
     -- Decompose into: (ν x).toReal - ((ν x0).toReal + (ν x1).toReal)
     have heq : (fun h => (semimeasureLoss ν (encodeHistory h)).toReal) =
                (fun h => (ν (encodeHistory h)).toReal -
@@ -581,21 +575,21 @@ theorem choquet_value_lower_semicomputable (ν : Semimeasure) (U : Utility)
       · exact ne_of_lt (lt_of_le_of_lt (le_trans (ν.mono_append [] _) ν.root_le_one') ENNReal.one_lt_top)
       · exact ne_of_lt (lt_of_le_of_lt (le_trans (ν.mono_append [] _) ν.root_le_one') ENNReal.one_lt_top)
     rw [heq]
-    -- Apply sub: l.s.c. - u.s.c. = l.s.c.
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.sub
-    · -- ν(...).toReal is l.s.c.
-      exact h_ν_lsc.comp (fun h => encodeHistory h)
-    · -- (ν x0 + ν x1).toReal is u.s.c. (since ν is computable)
-      exact Mettapedia.Computability.ArithmeticalHierarchy.UpperSemicomputable.add
-        (h_ν_usc.comp (fun h => encodeHistory h ++ [false]))
-        (h_ν_usc.comp (fun h => encodeHistory h ++ [true]))
+    -- Apply sub: lower-approximable - upper-approximable = lower-approximable
+    apply Mettapedia.Analysis.LowerApproximation.sub
+    · -- ν(...).toReal is lower-approximable
+      exact h_ν_lower.comp (fun h => encodeHistory h)
+    · -- (ν x0 + ν x1).toReal is upper-approximable (using the upper approximation of ν)
+      exact Mettapedia.Analysis.UpperApproximation.add
+        (h_ν_upper.comp (fun h => encodeHistory h ++ [false]))
+        (h_ν_upper.comp (fun h => encodeHistory h ++ [true]))
 
   -- Step 4: Combine using closure properties
-  have h_choquet_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable (fun h => valueChoquet ν U h) := by
+  have h_choquet_lower : Mettapedia.Analysis.LowerApproximation (fun h => valueChoquet ν U h) := by
     unfold valueChoquet
     -- valueChoquet = valueNeutral + loss * minUtility
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.add h_neutral_lsc
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.mul (M := 1) h_loss_lsc h_min_lsc
+    apply Mettapedia.Analysis.LowerApproximation.add h_neutral_lower
+    apply Mettapedia.Analysis.LowerApproximation.mul h_loss_lower h_min_lower
     · -- loss ≥ 0
       intro h
       exact semimeasureLoss_toReal_nonneg ν (encodeHistory h)
@@ -606,38 +600,16 @@ theorem choquet_value_lower_semicomputable (ν : Semimeasure) (U : Utility)
       apply Finset.le_inf'
       intro p _
       exact (h_U_bounds (h ++ [HistElem.per p])).1
-    · -- loss ≤ 1 (semimeasure total mass ≤ 1)
-      intro h
-      exact semimeasureLoss_toReal_le_one ν (encodeHistory h)
-    · -- minUtility ≤ 1
-      intro h
-      -- Infimum of bounded values is bounded
-      unfold minNextUtility
-      let p : Percept := Percept.mk false false
-      calc Finset.inf' Finset.univ Finset.univ_nonempty (fun p' => U (h ++ [HistElem.per p']))
-          ≤ U (h ++ [HistElem.per p]) := by
-              exact
-                (Finset.inf'_le (s := Finset.univ)
-                  (f := fun p' => U (h ++ [HistElem.per p']))
-                  (h := Finset.mem_univ p))
-        _ ≤ 1 := (h_U_bounds (h ++ [HistElem.per p])).2
 
-  -- Extract the approximation function from the LowerSemicomputable structure
-  exact ⟨h_choquet_lsc.approx, h_choquet_lsc.approx_mono, h_choquet_lsc.approx_le, h_choquet_lsc.approx_converges⟩
+  -- Extract the approximation function from the LowerApproximation structure
+  exact ⟨h_choquet_lower.approx, h_choquet_lower.approx_mono, h_choquet_lower.approx_le, h_choquet_lower.approx_converges⟩
 
-/-! ### Paper's Actual Theorem (Theorem 4.1)
+/-! ### Analytic approximation of integral values
 
-The paper claims that only ν l.s.c. (not computable) suffices for the Choquet value to be l.s.c.
-The proof avoids subtraction entirely by using simple function approximation:
-
-1. Define simple functions U_n constant on depth-n cylinder sets
-2. For simple functions, the Choquet integral is a sum with CONSTANT coefficients:
-   ∫ U_n dν = Σᵢ cᵢ · ν(Sᵢ)
-   where cᵢ are constants (levels of U_n) and Sᵢ are cylinder sets
-3. Constants times l.s.c. is l.s.c., sums of l.s.c. is l.s.c.
-4. By monotone convergence, the limit of increasing l.s.c. functions is l.s.c.
-
-This approach avoids the subtraction problem in our decomposition formula.
+The following construction lifts supplied rational approximations of integral
+values through a diagonal envelope. Its convergence and finiteness hypotheses
+are explicit. Constructing effective approximations to those values is a separate
+obligation, as is an effective theorem for the infinite-horizon Choquet value.
 -/
 
 /-- Simple function approximation: utility restricted to depth n.
@@ -656,9 +628,7 @@ theorem utilityTruncate_converges (U : Utility) (h : History) :
   unfold utilityTruncate
   rw [List.take_of_length_le hn]
 
-/-- Truncated utility is monotonically increasing (for nondecreasing U).
-    Actually, for general U it's not monotone, but bounded by U.
-    We use a more general bound. -/
+/-- Order comparison with a truncated history; this gives no monotonicity or error bound. -/
 theorem utilityTruncate_bound (U : Utility) (n : ℕ) (h : History) :
     utilityTruncate U n h ≤ U h ∨ utilityTruncate U n h ≥ U h := by
   -- This is a trivial dichotomy (always true)
@@ -666,57 +636,26 @@ theorem utilityTruncate_bound (U : Utility) (n : ℕ) (h : History) :
   · left; exact hle
   · right; exact le_of_not_ge hle
 
-/-- **Theorem 2b** (Paper's Actual Claim, Wyeth/Hutter Theorem 4.1):
-    Choquet integral of a l.s.c. utility is l.s.c. when ν is only l.s.c. (not u.s.c.).
-
-    **IMPORTANT**: This theorem applies to the FULL infinite-horizon Choquet integral,
-    not the one-step decomposition formula used in `choquet_value_lower_semicomputable`.
-
-    The proof uses simple function approximation to avoid subtraction:
-    1. Approximate U from below by simple functions U_n constant on depth-n cylinders
-    2. Each ∫ U_n dν is l.s.c. (sum of constants × l.s.c. ν values)
-    3. By monotone convergence, the limit is l.s.c.
-
-    **Paper Reference** (line 476-481):
-    > "König's lemma allows u̲ to inherit lower semicomputability from u.
-    > Then u̲ can be approximated from below on the cylinder sets by l.s.c.
-    > simple functions u_n, and V^π_{ν,u_n} → V^π_{ν,u} by monotone convergence.
-    > By Thm 3.2, ∀n, V^π_{ν,u_n} = ∫_Choquet u_n dν^π which is directly l.s.c."
-
-    The key insight is that for simple functions (constant on cylinder sets),
-    the Choquet integral becomes:
-        ∫ u_n dν = Σᵢ cᵢ · ν(Sᵢ)
-    where cᵢ are CONSTANTS (not l.s.c. functions), so no subtraction is needed.
-
-    **Technical Note**: This theorem uses the `monotone_sup` infrastructure.
-    The remaining sorries are technical lemmas about:
-    1. Bounded integrals being finite (bounded U ⟹ finite Choquet integral)
-    2. Capacity monotonicity (ν_ext preserves ⊆)
-    3. Convergence of Choquet integrals under pointwise function convergence
--/
-noncomputable def choquet_integral_lower_semicomputable_from_paper
+/-- A diagonal analytic approximation of a finite integral value, from supplied
+stage approximations, pointwise bounds, and convergence of the integral values.
+The construction retains every supplied rational stage in its finite envelope. -/
+noncomputable def choquet_integral_lower_approximation_of_stages
     {α : Type*} [MeasurableSpace α]
     (ν_ext : Set α → ENNReal)
     (U : α → ℝ)
     (U_n : ℕ → α → ℝ)
-    (h_U_n_mono : ∀ n x, U_n n x ≤ U_n (n+1) x)
     (h_U_n_bound : ∀ n x, U_n n x ≤ U x)
     (h_ν_mono : ∀ S T, S ⊆ T → ν_ext S ≤ ν_ext T)
-    (h_V_finite : ∀ n, choquetIntegral ν_ext (U_n n) ≠ ⊤)
     (h_V_limit_finite : choquetIntegral ν_ext U ≠ ⊤)
     (h_V_conv : ∀ ε > 0, ∃ N, ∀ n ≥ N,
         (choquetIntegral ν_ext U).toReal - (choquetIntegral ν_ext (U_n n)).toReal < ε)
-    (V_n_lsc : ∀ n,
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+    (V_n_lower : ∀ n,
+        Mettapedia.Analysis.LowerApproximation
           (fun (_ : Unit) => (choquetIntegral ν_ext (U_n n)).toReal)) :
-    Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+    Mettapedia.Analysis.LowerApproximation
       (fun (_ : Unit) => (choquetIntegral ν_ext U).toReal) := by
-  -- Apply monotone_sup: limit of increasing l.s.c. is l.s.c.
-  apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.monotone_sup V_n_lsc
-  · -- Monotonicity: V_n n () ≤ V_n (n+1) ()
-    intro n _
-    apply ENNReal.toReal_mono (h_V_finite (n+1))
-    exact ChoquetIntegral.monotone_function ν_ext h_ν_mono (h_U_n_mono n)
+  -- The diagonal envelope needs bounds and convergence, not monotonicity of U_n.
+  apply Mettapedia.Analysis.LowerApproximation.diagonal_envelope V_n_lower
   · -- Convergence
     intro _ ε hε
     obtain ⟨N, hN⟩ := h_V_conv ε hε
@@ -979,77 +918,16 @@ theorem choquet_has_exploration_bonus (ν : Semimeasure) (h : History)
     unfold valueOfInformation
     simp [tsub_eq_zero_iff_le.2 h_le]
 
-/-! ## König's Lemma Application
+/-! ## Full binary-tree paths and compact cylinder minima
 
-The paper (Wyeth & Hutter 2025, line 476-481) uses König's lemma to establish that
-the infimum utility u̲ inherits lower semicomputability from u:
-
-> "König's lemma allows u̲ to inherit lower semicomputability from u.
-> Then u̲ can be approximated from below on the cylinder sets by l.s.c.
-> simple functions u_n, and V^π_{ν,u_n} → V^π_{ν,u} by monotone convergence."
-
-### Mathematical Setup
-
-For a utility function u : H^∞ → [0,1] on infinite histories, define:
-  u̲(h_≤t) := inf_{h_{>t}} u(h_≤t · h_{>t})
-
-This is the infimum of u over all infinite extensions of the finite history h_≤t.
-
-### König's Lemma (Tree Form)
-
-Every infinite finitely-branching tree has an infinite path.
-
-In Mathlib, this is `exists_seq_covby_of_forall_covby_finite`:
-  - For a strongly atomic partial order
-  - Where each element is covered by finitely many others
-  - And there are infinitely many elements above some b
-  - There exists an infinite ascending sequence starting at b
-
-### Application to Cantor Space
-
-The Cantor space 2^ω (infinite binary sequences) can be viewed as:
-- An infinite binary tree where nodes are finite prefixes (BinString)
-- Each node has exactly 2 children (append false / true)
-- The tree is finitely branching
-
-König's lemma ensures: for any finite prefix x, the infimum of u over
-infinite extensions is achieved (or approached) along some infinite path.
-
-### Why This Matters for L.S.C.
-
-If u is lower semicomputable on 2^ω, then:
-1. u can be approximated from below: u[n] ↑ u
-2. For finite prefix x, u̲(x) = inf_{ω extends x} u(ω)
-3. König's lemma ensures this infimum is a "sup of infs" over finite approximations
-4. Therefore u̲ inherits lower semicomputability from u
-
-The key insight is that König's lemma converts the infinite infimum into
-a limit of finite operations, each of which is computable.
+Finite binary prefixes have concrete infinite extension paths. Separately,
+compactness of Cantor cylinders and topological lower semicontinuity supply
+minimizers. Evaluating an analytic approximation at a chosen minimizer preserves
+its stages and limit; this does not construct an effective minimizer.
 -/
 
-/-- **König's lemma for binary trees** (via prefix order).
-
-    Every finite binary string has an infinite extension path in the prefix order.
-
-    **Mathematical Statement**:
-    For the binary tree (finite binary strings ordered by prefix), König's lemma
-    states that from any node x, there exists an infinite descending path
-    x = f(0) <+: f(1) <+: f(2) <+: ... where each f(n+1) extends f(n) by one bit.
-
-    **Mathlib Version**:
-    This follows from `exists_seq_covby_of_forall_covby_finite` applied to the
-    prefix order on `List Bool`, where:
-    - Each string is covered by exactly 2 others (append false / true)
-    - The set of extensions of any string is infinite
-
-    **Application to Wyeth & Hutter**:
-    The paper uses König's lemma to show that u̲ (infimum over infinite extensions)
-    inherits lower semicomputability from u. The infinite infimum becomes a limit
-    of finite operations via König's path construction.
-
-    **Note**: We state this using the prefix relation directly rather than
-    instantiating a PartialOrder to avoid conflicts with List's default Lex order.
--/
+/-- Every finite binary string has a prefix-growing path in the full binary tree.
+This is a concrete full-tree construction, not a path selector for arbitrary subtrees. -/
 theorem konig_binary_tree_prefix (x : BinString) :
     ∃ f : ℕ → BinString,
       f 0 = x ∧
@@ -1106,7 +984,7 @@ instance cantorSpace_compactSpace : CompactSpace BinStream := by
 theorem extendsPrefix_isClosed (x : BinString) : IsClosed (extendsPrefix x) := by
   -- extendsPrefix x = ⋂ (n < x.length), {ω : ω n = x[n]!}
   -- Each {ω : ω n = b} is closed (preimage of {b} under continuous projection)
-  simp only [extendsPrefix, Set.setOf_forall]
+  simp only [extendsPrefix, Set.ofPred_forall]
   apply isClosed_iInter
   intro n
   apply isClosed_iInter
@@ -1130,30 +1008,30 @@ theorem extendsPrefix_isCompact (x : BinString) : IsCompact (extendsPrefix x) :=
     3. Lower semicontinuous functions achieve their min on compact sets
 -/
 theorem exists_infimum_minimizer (x : BinString) (u : BinStream → ℝ)
-    (hu_lsc : LowerSemicontinuous u) :
+    (hu_cont : LowerSemicontinuous u) :
     ∃ ω ∈ extendsPrefix x, ∀ ω' ∈ extendsPrefix x, u ω ≤ u ω' := by
-  -- The cylinder set is nonempty, compact, and u is l.s.c. on it
+  -- The cylinder set is nonempty, compact, and u is lower semicontinuous on it
   have h_nonempty := extendsPrefix_nonempty x
   have h_compact := extendsPrefix_isCompact x
-  have h_lsc_on := hu_lsc.lowerSemicontinuousOn (extendsPrefix x)
-  -- Apply the extreme value theorem for l.s.c. functions
-  obtain ⟨ω, hω_mem, hω_min⟩ := LowerSemicontinuousOn.exists_isMinOn h_nonempty h_compact h_lsc_on
+  have h_cont_on := hu_cont.lowerSemicontinuousOn (extendsPrefix x)
+  -- Apply the extreme value theorem for lower semicontinuous functions
+  obtain ⟨ω, hω_mem, hω_min⟩ := LowerSemicontinuousOn.exists_isMinOn h_nonempty h_compact h_cont_on
   exact ⟨ω, hω_mem, fun ω' hω' => hω_min hω'⟩
 
 /-- The minimizing extension of x (exists by compactness, noncomputable). -/
 noncomputable def minimizingExtension (x : BinString) (u : BinStream → ℝ)
-    (_hu_lsc : LowerSemicontinuous u) : BinStream :=
-  (exists_infimum_minimizer x u _hu_lsc).choose
+    (_hu_cont : LowerSemicontinuous u) : BinStream :=
+  (exists_infimum_minimizer x u _hu_cont).choose
 
 theorem minimizingExtension_extends (x : BinString) (u : BinStream → ℝ)
-    (hu_lsc : LowerSemicontinuous u) :
-    minimizingExtension x u hu_lsc ∈ extendsPrefix x :=
-  (exists_infimum_minimizer x u hu_lsc).choose_spec.1
+    (hu_cont : LowerSemicontinuous u) :
+    minimizingExtension x u hu_cont ∈ extendsPrefix x :=
+  (exists_infimum_minimizer x u hu_cont).choose_spec.1
 
 theorem minimizingExtension_isMin (x : BinString) (u : BinStream → ℝ)
-    (hu_lsc : LowerSemicontinuous u) (ω : BinStream) (hω : ω ∈ extendsPrefix x) :
-    u (minimizingExtension x u hu_lsc) ≤ u ω :=
-  (exists_infimum_minimizer x u hu_lsc).choose_spec.2 ω hω
+    (hu_cont : LowerSemicontinuous u) (ω : BinStream) (hω : ω ∈ extendsPrefix x) :
+    u (minimizingExtension x u hu_cont) ≤ u ω :=
+  (exists_infimum_minimizer x u hu_cont).choose_spec.2 ω hω
 
 /-- The extension type is nonempty (witnessed by padding with false). -/
 instance extendsPrefix_nonempty_subtype (x : BinString) :
@@ -1164,122 +1042,47 @@ instance extendsPrefix_nonempty_subtype (x : BinString) :
 
 /-- The infimum utility equals the value at the minimizing extension. -/
 theorem infimum_utility_eq_min (x : BinString) (u : BinStream → ℝ)
-    (hu_lsc : LowerSemicontinuous u)
+    (hu_cont : LowerSemicontinuous u)
     (hu_bdd : BddBelow (Set.range (fun (ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}) =>
                                     u ω.val))) :
     ⨅ ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}, u ω.val =
-    u (minimizingExtension x u hu_lsc) := by
+    u (minimizingExtension x u hu_cont) := by
   apply le_antisymm
   · -- inf ≤ value at minimizer
     -- The minimizing extension extends x, so it's a valid witness
-    have h_mem := minimizingExtension_extends x u hu_lsc
+    have h_mem := minimizingExtension_extends x u hu_cont
     let witness : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!} :=
-      ⟨minimizingExtension x u hu_lsc, h_mem⟩
+      ⟨minimizingExtension x u hu_cont, h_mem⟩
     exact ciInf_le hu_bdd witness
   · -- value at minimizer ≤ inf
     apply le_ciInf
     intro ⟨ω, hω⟩
-    exact minimizingExtension_isMin x u hu_lsc ω hω
+    exact minimizingExtension_isMin x u hu_cont ω hω
 
-/-- **Main Application**: Infimum utility inherits lower semicomputability.
-
-    For a lower semicomputable utility u on infinite histories,
-    the infimum utility u̲(x) := inf_{ω extends x} u(ω) is also lower semicomputable.
-
-    **Proof Outline** (from Wyeth & Hutter 2025, line 476-481):
-
-    > "König's lemma allows u̲ to inherit lower semicomputability from u.
-    > Then u̲ can be approximated from below on the cylinder sets by l.s.c.
-    > simple functions u_n, and V^π_{ν,u_n} → V^π_{ν,u} by monotone convergence."
-
-    **Key Insight**: By compactness of Cantor space, the infimum is achieved at
-    some minimizing extension ω*. Since u̲(x) = u(ω*), we can approximate u̲(x)
-    by approximating u at ω*: just use hu_lsc.approx(ω*, m).
-
-    **Why This Works**:
-    - approx(x, m) = hu_lsc.approx(ω*(x), m) where ω* is the minimizing extension
-    - Monotone: directly from hu_lsc.approx_mono
-    - Bounded: hu_lsc.approx(ω*, m) ≤ u(ω*) = u̲(x) ✓
-    - Convergent: hu_lsc.approx(ω*, m) → u(ω*) = u̲(x) ✓
-
-    **Note**: The definition is noncomputable because finding ω* requires
-    solving an optimization problem over a compact set. But existence is
-    guaranteed by compactness + lower semicontinuity.
--/
-noncomputable def infimum_utility_lower_semicomputable
-    (u : BinStream → ℝ)
-    (hu_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable u)
-    (hu_cont : LowerSemicontinuous u)  -- topological l.s.c. for compactness argument
-    (hu_bound : ∀ ω, 0 ≤ u ω ∧ u ω ≤ 1) :
-    Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+/-- Evaluate the supplied rational stages at a chosen minimizing extension.
+Topological lower semicontinuity ensures attainment on each compact cylinder.
+The choice of minimizer is classical; no computable selector is asserted. -/
+noncomputable def infimum_utility_lower_approximation
+    (u : BinStream → ℝ) (hu_lower : Mettapedia.Analysis.LowerApproximation u)
+    (hu_cont : LowerSemicontinuous u) (hu_bound : ∀ ω, 0 ≤ u ω ∧ u ω ≤ 1) :
+    Mettapedia.Analysis.LowerApproximation
       (fun x : BinString => ⨅ ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!},
-        u ω.val) where
-  -- Approximation: evaluate hu_lsc.approx at the minimizing extension
-  approx x m := hu_lsc.approx (minimizingExtension x u hu_cont) m
-  -- Monotonicity: directly from hu_lsc.approx_mono
-  approx_mono x m := hu_lsc.approx_mono (minimizingExtension x u hu_cont) m
-  -- Bounded above by inf u: follows from ω* being the minimizer
-  approx_le x m := by
-    have h1 : (hu_lsc.approx (minimizingExtension x u hu_cont) m : ℝ) ≤
-              u (minimizingExtension x u hu_cont) :=
-      hu_lsc.approx_le (minimizingExtension x u hu_cont) m
-    -- u is bounded below by 0, so the range is bounded below
-    have h_bdd : BddBelow (Set.range (fun (ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}) =>
-                                       u ω.val)) := by
-      use 0
-      intro y hy
-      simp only [Set.mem_range] at hy
-      obtain ⟨ω, hω⟩ := hy
-      rw [← hω]
-      exact (hu_bound ω.val).1
-    have h2 : u (minimizingExtension x u hu_cont) =
-              ⨅ ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}, u ω.val := by
-      symm
-      exact infimum_utility_eq_min x u hu_cont h_bdd
-    calc (hu_lsc.approx (minimizingExtension x u hu_cont) m : ℝ)
-        ≤ u (minimizingExtension x u hu_cont) := h1
-      _ = ⨅ ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}, u ω.val := h2
-  -- Convergence: hu_lsc.approx converges to u at ω*, which equals u̲(x)
-  approx_converges x ε hε := by
-    obtain ⟨N, hN⟩ := hu_lsc.approx_converges (minimizingExtension x u hu_cont) ε hε
-    use N
-    intro n hn
-    have h_conv := hN n hn
-    -- u is bounded below by 0, so the range is bounded below
-    have h_bdd : BddBelow (Set.range (fun (ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}) =>
-                                       u ω.val)) := by
-      use 0
-      intro y hy
-      simp only [Set.mem_range] at hy
-      obtain ⟨ω, hω⟩ := hy
-      rw [← hω]
-      exact (hu_bound ω.val).1
-    have h_eq : u (minimizingExtension x u hu_cont) =
-                ⨅ ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}, u ω.val := by
-      symm; exact infimum_utility_eq_min x u hu_cont h_bdd
-    rw [← h_eq]
-    exact h_conv
+        u ω.val) := by
+  have heq : (fun x : BinString =>
+      ⨅ ω : {ω : BinStream // ∀ n, n < x.length → ω n = x[n]!}, u ω.val) =
+      (fun x => u (minimizingExtension x u hu_cont)) := by
+    funext x
+    apply infimum_utility_eq_min x u hu_cont
+    exact ⟨0, fun _ ⟨ω, hω⟩ => hω ▸ (hu_bound ω.val).1⟩
+  rw [heq]
+  exact hu_lower.comp (fun x => minimizingExtension x u hu_cont)
 
-/-! ## Paper's Theorem 4.1: L.S.C. with Only ν L.S.C.
+/-! ## One-step layer-cake approximation
 
-The key insight from Wyeth & Hutter (2025) is that the Choquet integral can be computed
-using the **layer cake formula** (Riemann integral over capacity levels), which avoids
-explicit subtraction of l.s.c. functions.
-
-For the one-step case:
-  ∫_C U dν_h = ∫_0^∞ ν_h({p : U(h++p) ≥ t}) dt
-
-Using Riemann sums:
-  V_n(h) = (1/n) · Σ_{k=1}^n ν_h({p : U(h++p) ≥ k/n})
-
-Each term ν_h({p : U(h++p) ≥ k/n}) is l.s.c. because:
-- It's a sum of ν values (at most ν(h) when k/n ≤ min U)
-- Sums of l.s.c. functions are l.s.c.
-
-By monotone convergence, lim V_n = valueChoquet is l.s.c.
-
-**Critical insight**: The subtraction only appears in the RECURSIVE formula
-(valueChoquet = valueNeutral + loss * minU), not in the layer cake formula.
+Dyadic Riemann sums express the one-step value through capacity levels. The
+capacity construction below uses lower utility stages and both lower and upper
+semimeasure stages, including the subtraction defining semimeasure loss. It is an
+analytic realization of the layer-cake formula, not the full effective theorem.
 -/
 
 /-- Total one-step mass (percepts plus loss) at history h. -/
@@ -1844,7 +1647,7 @@ lemma integral_utilityOnPercepts_eq_valueNeutral (ν : Semimeasure) (U : Utility
   -- This is a standard result for discrete measures on finite types:
   -- ∫ f ∂(∑ₚ aₚ • δₚ) = ∑ₚ aₚ · f(p)
   -- Proof strategy:
-  -- 1. Use integral_finset_sum_measure: ∫ f ∂(∑ᵢ μᵢ) = ∑ᵢ ∫ f ∂μᵢ
+  -- 1. Use integral_finsetSum_measure: ∫ f ∂(∑ᵢ μᵢ) = ∑ᵢ ∫ f ∂μᵢ
   -- 2. Use integral_smul_measure: ∫ f ∂(c • μ) = c.toReal • ∫ f ∂μ
   -- 3. Use integral_dirac: ∫ f ∂(δₐ) = f(a)
   -- 4. Combine: ∫ f ∂(∑ₚ aₚ • δₚ) = ∑ₚ aₚ.toReal • f(p)
@@ -1863,7 +1666,7 @@ lemma integral_utilityOnPercepts_eq_valueNeutral (ν : Semimeasure) (U : Utility
       simp
     simpa using h_dirac.smul_measure ENNReal.ofReal_ne_top
   have h_sum :=
-      (integral_finset_sum_measure
+      (integral_finsetSum_measure
         (s := (Finset.univ : Finset Percept))
         (f := fun q : Percept => U (h ++ [HistElem.per q]))
         (μ := fun p =>
@@ -1903,14 +1706,14 @@ lemma integral_utilityOnPerceptsWithLoss_eq_valueChoquet (ν : Semimeasure) (U :
         (∑ p : Percept,
           (ENNReal.ofReal (ν (encodeHistory h ++ encodePerceptBin p)).toReal) •
             Measure.dirac (some p)) :=
-    (integrable_finset_sum_measure
+    (integrable_finsetSum_measure
       (s := (Finset.univ : Finset Percept))
       (f := utilityOnPerceptsWithLoss U h)
       (μ := fun p =>
         (ENNReal.ofReal (ν (encodeHistory h ++ encodePerceptBin p)).toReal) •
           Measure.dirac (some p))).2 h_integrable_percept
   have h_sum :=
-    (integral_finset_sum_measure
+    (integral_finsetSum_measure
       (s := (Finset.univ : Finset Percept))
       (f := utilityOnPerceptsWithLoss U h)
       (μ := fun p =>
@@ -2064,7 +1867,7 @@ lemma valueChoquet_eq_integral_capacity (ν : Semimeasure) (U : Utility) (h : Hi
           (∑ p : Percept,
             (ENNReal.ofReal (ν (encodeHistory h ++ encodePerceptBin p)).toReal) •
               Measure.dirac (some p)) :=
-      (integrable_finset_sum_measure
+      (integrable_finsetSum_measure
         (s := (Finset.univ : Finset Percept))
         (f := utilityOnPerceptsWithLoss U h)
         (μ := fun p =>
@@ -2417,29 +2220,29 @@ theorem valueChoquet_riemann_converges (ν : Semimeasure) (U : Utility) (h : His
     _ ≤ (1 / (m : ℝ)) * perceptMass ν h := h_bound
     _ < ε := h_final
 
-/-- Capacity at level is lower semicomputable (requires l.s.c. U and computable ν). -/
-noncomputable def capacityAtLevel_lower_semicomputable (ν : Semimeasure) (U : Utility) (t : ℝ)
-    (h_U_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable U)
-    (h_ν_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+/-- Capacity at level is lower rationally approximable (requires lower-approximable U and lower and upper rational approximations for ν). -/
+noncomputable def capacityAtLevel_lower_approximation (ν : Semimeasure) (U : Utility) (t : ℝ)
+    (h_U_lower : Mettapedia.Analysis.LowerApproximation U)
+    (h_ν_lower : Mettapedia.Analysis.LowerApproximation
                 (fun x => (ν x).toReal))
-    (h_ν_usc : Mettapedia.Computability.ArithmeticalHierarchy.UpperSemicomputable
+    (h_ν_upper : Mettapedia.Analysis.UpperApproximation
                 (fun x => (ν x).toReal)) :
-    Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+    Mettapedia.Analysis.LowerApproximation
       (fun h => capacityAtLevel ν U h t) := by
   classical
 
-  -- l.s.c. for minNextUtility
-  have h_min_lsc :
-      Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+  -- lower-approximable for minNextUtility
+  have h_min_lower :
+      Mettapedia.Analysis.LowerApproximation
         (fun h => minNextUtility U h) := by
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.finset_inf
+    apply Mettapedia.Analysis.LowerApproximation.finset_inf
     · intro p
-      exact h_U_lsc.comp (fun h => h ++ [HistElem.per p])
+      exact h_U_lower.comp (fun h => h ++ [HistElem.per p])
     · exact ⟨Percept.mk false false⟩
 
-  -- l.s.c. for semimeasureLoss (requires ν u.s.c.)
-  have h_loss_lsc :
-      Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+  -- lower-approximable for semimeasureLoss (requires ν upper-approximable)
+  have h_loss_lower :
+      Mettapedia.Analysis.LowerApproximation
         (fun h => (semimeasureLoss ν (encodeHistory h)).toReal) := by
     have heq : (fun h => (semimeasureLoss ν (encodeHistory h)).toReal) =
                (fun h => (ν (encodeHistory h)).toReal -
@@ -2458,138 +2261,79 @@ noncomputable def capacityAtLevel_lower_semicomputable (ν : Semimeasure) (U : U
       · exact ne_of_lt (lt_of_le_of_lt (le_trans (ν.mono_append [] _) ν.root_le_one') ENNReal.one_lt_top)
       · exact ne_of_lt (lt_of_le_of_lt (le_trans (ν.mono_append [] _) ν.root_le_one') ENNReal.one_lt_top)
     rw [heq]
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.sub
-    · exact h_ν_lsc.comp (fun h => encodeHistory h)
+    apply Mettapedia.Analysis.LowerApproximation.sub
+    · exact h_ν_lower.comp (fun h => encodeHistory h)
     · have h_add :
-          Mettapedia.Computability.ArithmeticalHierarchy.UpperSemicomputable
+          Mettapedia.Analysis.UpperApproximation
             (fun h => (ν (encodeHistory h ++ [false])).toReal +
                       (ν (encodeHistory h ++ [true])).toReal) := by
-        apply Mettapedia.Computability.ArithmeticalHierarchy.UpperSemicomputable.add
-        · exact h_ν_usc.comp (fun h => encodeHistory h ++ [false])
-        · exact h_ν_usc.comp (fun h => encodeHistory h ++ [true])
+        apply Mettapedia.Analysis.UpperApproximation.add
+        · exact h_ν_upper.comp (fun h => encodeHistory h ++ [false])
+        · exact h_ν_upper.comp (fun h => encodeHistory h ++ [true])
       exact h_add
 
-  -- Helper: indicator {t < f} is l.s.c. if f is l.s.c.
-  have indicator_lt :
-      ∀ {f : History → ℝ},
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable f →
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
-          (fun h => if t < f h then (1 : ℝ) else 0) := by
-    intro f hf
-    refine
-      { approx := fun h n => if t < (hf.approx h n : ℝ) then (1 : ℚ) else 0
-        approx_mono := ?_
-        approx_le := ?_
-        approx_converges := ?_ }
-    · intro h n
-      by_cases ht : t < (hf.approx h n : ℝ)
-      · have hmono :
-            (hf.approx h n : ℝ) ≤ (hf.approx h (n + 1) : ℝ) := by
-              exact_mod_cast (hf.approx_mono h n)
-        have ht' : t < (hf.approx h (n + 1) : ℝ) := lt_of_lt_of_le ht hmono
-        simp [ht, ht']
-      · by_cases ht' : t < (hf.approx h (n + 1) : ℝ)
-        · simp [ht, ht', zero_le_one]
-        · simp [ht, ht']
-    · intro h n
-      by_cases ht : t < (hf.approx h n : ℝ)
-      · have ht' : t < f h := lt_of_lt_of_le ht (hf.approx_le h n)
-        simp [ht, ht']
-      · by_cases ht' : t < f h
-        · simp [ht, ht', zero_le_one]
-        · simp [ht, ht']
-    · intro h ε hε
-      by_cases ht : t < f h
-      · have hδ : 0 < (f h - t) / 2 := by linarith
-        obtain ⟨N, hN⟩ := hf.approx_converges h ((f h - t) / 2) hδ
-        refine ⟨N, ?_⟩
-        intro n hn
-        have h_lt : t < (hf.approx h n : ℝ) := by
-          have h_close := hN n hn
-          linarith
-        simp [ht, h_lt, hε]
-      · refine ⟨0, ?_⟩
-        intro n hn
-        have h_not : ¬ t < (hf.approx h n : ℝ) := by
-          have h_le : (hf.approx h n : ℝ) ≤ f h := hf.approx_le h n
-          exact not_lt.mpr (le_trans h_le (not_lt.mp ht))
-        simp [ht, h_not, hε]
-
   have h_ind_min :
-      Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+      Mettapedia.Analysis.LowerApproximation
         (fun h => if t < minNextUtility U h then (1 : ℝ) else 0) := by
-    exact indicator_lt h_min_lsc
+    exact h_min_lower.indicator_lt t
 
   have h_ind_percept :
       ∀ p : Percept,
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+        Mettapedia.Analysis.LowerApproximation
           (fun h => if t < U (h ++ [HistElem.per p]) then (1 : ℝ) else 0) := by
     intro p
-    exact indicator_lt (h_U_lsc.comp (fun h => h ++ [HistElem.per p]))
+    exact (h_U_lower.comp (fun h => h ++ [HistElem.per p])).indicator_lt t
 
   have h_nu_term :
       ∀ p : Percept,
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+        Mettapedia.Analysis.LowerApproximation
           (fun h => (ν (encodeHistory h ++ encodePerceptBin p)).toReal) := by
     intro p
-    exact h_ν_lsc.comp (fun h => encodeHistory h ++ encodePerceptBin p)
+    exact h_ν_lower.comp (fun h => encodeHistory h ++ encodePerceptBin p)
 
   have h_loss_term :
-      Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+      Mettapedia.Analysis.LowerApproximation
         (fun h =>
           (if t < minNextUtility U h then (1 : ℝ) else 0) *
             (semimeasureLoss ν (encodeHistory h)).toReal) := by
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.mul (M := 1)
+    apply Mettapedia.Analysis.LowerApproximation.mul
     · exact h_ind_min
-    · exact h_loss_lsc
+    · exact h_loss_lower
     · intro h; by_cases ht : t < minNextUtility U h <;> simp [ht]
     · intro h; exact semimeasureLoss_toReal_nonneg ν (encodeHistory h)
-    · intro h; by_cases ht : t < minNextUtility U h <;> simp [ht]
-    · intro h; exact semimeasureLoss_toReal_le_one ν (encodeHistory h)
 
   have h_term :
       ∀ p : Percept,
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+        Mettapedia.Analysis.LowerApproximation
           (fun h =>
             (if t < U (h ++ [HistElem.per p]) then (1 : ℝ) else 0) *
               (ν (encodeHistory h ++ encodePerceptBin p)).toReal) := by
     intro p
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.mul (M := 1)
+    apply Mettapedia.Analysis.LowerApproximation.mul
     · exact h_ind_percept p
     · exact h_nu_term p
     · intro h; by_cases ht : t < U (h ++ [HistElem.per p]) <;> simp [ht]
     · intro h; exact ENNReal.toReal_nonneg
-    · intro h; by_cases ht : t < U (h ++ [HistElem.per p]) <;> simp [ht]
-    · intro h
-      have h1 : ν (encodeHistory h ++ encodePerceptBin p) ≤ ν [] := ν.mono_append [] _
-      have h2 : ν [] ≤ 1 := ν.root_le_one'
-      have h_ne_top : ν (encodeHistory h ++ encodePerceptBin p) ≠ ⊤ :=
-        ne_of_lt (lt_of_le_of_lt (le_trans h1 h2) ENNReal.one_lt_top)
-      have h_root_ne_top : (ν []) ≠ ⊤ := ne_of_lt (lt_of_le_of_lt h2 ENNReal.one_lt_top)
-      calc (ν (encodeHistory h ++ encodePerceptBin p)).toReal
-          ≤ (ν []).toReal := ENNReal.toReal_mono h_root_ne_top h1
-        _ ≤ (1 : ENNReal).toReal := ENNReal.toReal_mono ENNReal.one_ne_top h2
-        _ = (1 : ℝ) := by simp
 
   have h_sum_terms :
-      Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+      Mettapedia.Analysis.LowerApproximation
         (fun h =>
           ∑ p : Percept,
             (if t < U (h ++ [HistElem.per p]) then (1 : ℝ) else 0) *
               (ν (encodeHistory h ++ encodePerceptBin p)).toReal) := by
-    apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.finset_sum
+    apply Mettapedia.Analysis.LowerApproximation.finset_sum
     intro p
     exact h_term p
 
   have h_total :
-      Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+      Mettapedia.Analysis.LowerApproximation
         (fun h =>
           (if t < minNextUtility U h then (1 : ℝ) else 0) *
             (semimeasureLoss ν (encodeHistory h)).toReal +
           ∑ p : Percept,
             (if t < U (h ++ [HistElem.per p]) then (1 : ℝ) else 0) *
               (ν (encodeHistory h ++ encodePerceptBin p)).toReal) := by
-    exact Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.add h_loss_term h_sum_terms
+    exact Mettapedia.Analysis.LowerApproximation.add h_loss_term h_sum_terms
 
   have h_capacity_eq :
       (fun h => capacityAtLevel ν U h t) =
@@ -2615,42 +2359,32 @@ noncomputable def capacityAtLevel_lower_semicomputable (ν : Semimeasure) (U : U
 
   simpa [h_capacity_eq] using h_total
 
-/-- **Theorem 4.1 (Wyeth & Hutter 2025)**: Choquet value is l.s.c. using the layer-cake formula.
-
-Note: In this encoding, `capacityAtLevel` still depends on `semimeasureLoss`, so we require ν
-to be computable (l.s.c. + u.s.c.) to avoid subtraction.
-
-**Proof approach**: Use the Riemann sum (layer cake) formulation:
-1. Each capacityAtLevel is l.s.c. (sum of l.s.c. ν values)
-2. Each valueChoquet_riemann n is l.s.c. (constant × sum of l.s.c.)
-3. The limit valueChoquet = lim valueChoquet_riemann n is l.s.c. by monotone_sup
-
-**Note**: This requires showing the Riemann sum equals valueChoquet, which follows
-from the standard relationship between Choquet integrals and layer cake formulas.
--/
-noncomputable def choquet_value_lower_semicomputable_paper (ν : Semimeasure) (U : Utility)
-    (h_U_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable U)
-    (h_ν_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+/-- An analytic lower rational approximation of the one-step Choquet value via
+layer-cake Riemann sums. The supplied lower/upper semimeasure stages are both
+used by the capacity construction. No computability certificate is produced. -/
+noncomputable def choquet_value_lower_approximation_layercake (ν : Semimeasure) (U : Utility)
+    (h_U_lower : Mettapedia.Analysis.LowerApproximation U)
+    (h_ν_lower : Mettapedia.Analysis.LowerApproximation
                 (fun x => (ν x).toReal))
-    (h_ν_usc : Mettapedia.Computability.ArithmeticalHierarchy.UpperSemicomputable
+    (h_ν_upper : Mettapedia.Analysis.UpperApproximation
                 (fun x => (ν x).toReal))
     (h_U_bounds : ∀ h, 0 ≤ U h ∧ U h ≤ 1) :
-    Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+    Mettapedia.Analysis.LowerApproximation
       (fun h => valueChoquet ν U h) := by
-  -- Use monotone_sup with the Riemann approximation sequence
-  apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.monotone_sup
+  -- Use the diagonal envelope of the Riemann approximation sequence
+  apply Mettapedia.Analysis.LowerApproximation.diagonal_envelope
     (f_n := fun n h => valueChoquet_riemann ν U h n)
-  · -- Each V_n is l.s.c.
+  · -- Each V_n is lower-approximable
     intro n
     classical
     let m : ℕ := 2 ^ n
     have h_sum :
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+        Mettapedia.Analysis.LowerApproximation
           (fun h =>
             ∑ k ∈ Finset.range m, capacityAtLevel ν U h ((k + 1 : ℝ) / (m : ℝ))) := by
-      apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.finset_sum_finset
+      apply Mettapedia.Analysis.LowerApproximation.finset_sum_finset
       intro k
-      exact capacityAtLevel_lower_semicomputable ν U ((k + 1 : ℝ) / (m : ℝ)) h_U_lsc h_ν_lsc h_ν_usc
+      exact capacityAtLevel_lower_approximation ν U ((k + 1 : ℝ) / (m : ℝ)) h_U_lower h_ν_lower h_ν_upper
     have h_nonneg :
         ∀ h, 0 ≤ ∑ k ∈ Finset.range m, capacityAtLevel ν U h ((k + 1 : ℝ) / (m : ℝ)) := by
       intro h
@@ -2658,16 +2392,13 @@ noncomputable def choquet_value_lower_semicomputable_paper (ν : Semimeasure) (U
       intro k _
       exact capacityAtLevel_nonneg ν U h _
     have h_scaled :
-        Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable
+        Mettapedia.Analysis.LowerApproximation
           (fun h =>
             (1 / (m : ℝ)) *
               ∑ k ∈ Finset.range m, capacityAtLevel ν U h ((k + 1 : ℝ) / (m : ℝ))) := by
-      apply Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable.const_smul
+      apply Mettapedia.Analysis.LowerApproximation.const_smul
         (c := (1 / (m : ℝ))) (hc := by positivity) h_sum h_nonneg
     simpa [valueChoquet_riemann, m] using h_scaled
-  · -- Monotonicity
-    intro n h
-    exact valueChoquet_riemann_mono ν U h n
   · -- Convergence
     intro h ε hε
     exact valueChoquet_riemann_converges ν U h h_U_bounds ε hε

@@ -54,7 +54,8 @@ theorem wrapperInner_hasType (admission : WrappersTyped laws language) {bound : 
         · cases same; exact noLaw
       exact .collection (elementsHaveType_wrapper admission elementOk objects elementsTyped)
     · exact .collectionConstructor declared parameters
-        (elementsHaveType_wrapper admission (admission.bareElements rule declared name kind element parameters) objects
+        (elementsHaveType_wrapper admission (admission.bareElements rule declared name kind element
+          ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2) objects
           elementsTyped)
   | bvar index => simpa [wrapperInner, wrapperNormal_bvar] using typed
   | fvar name => simpa [wrapperInner, wrapperNormal_fvar] using typed

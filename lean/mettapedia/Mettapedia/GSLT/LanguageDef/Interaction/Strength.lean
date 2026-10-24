@@ -158,17 +158,22 @@ end InteractivePresentation
 /-! ## A unit for the contact makes every sorted term a cut -/
 
 /-- **With a unit, the reading up to equations is empty.**  When a bag
-constructor declares the flattening algebra with a unit, every pattern sorted
+constructor uses its bare representation and declares the flattening algebra
+with a unit, every pattern sorted
 at its sort is equal to the two-component bag of itself and the unit. -/
 theorem equationEquiv_cut_with_unit {base : BasePremiseEvaluator} {language : LanguageDef}
     {rule : GrammarRule} {kind : CollType} {algebra : CollectionAlgebra} {unit : String}
     (algebraRule : AlgebraRule language rule kind algebra)
+    (representation : rule.collectionRepresentation = .bare)
     (flatten : algebra.flatten = true) (declaredUnit : algebra.unit = some unit)
     {pattern : Pattern} {free : FreeTypeContext} {bound : List TypeExpr}
     (typed : HasSort language free bound pattern rule.category) :
     EquationEquiv base language pattern
       (.collection kind [pattern, .apply unit []] none) := by
   obtain ⟨parameterName, parameters⟩ := algebraRule.selfSorted
+  have bareParameters : rule.bareParams =
+      [.simple parameterName (.collection kind (.base rule.category))] := by
+    simpa only [GrammarRule.bareParams_of_bare rule representation] using parameters
   obtain ⟨unitRule, unitMember, unitLabel, unitCategory, unitParameters⟩ :=
     algebraRule.unitAuthored unit declaredUnit
   have unitTyped : HasType language free bound (.apply unit []) (.base rule.category) := by
@@ -176,17 +181,18 @@ theorem equationEquiv_cut_with_unit {base : BasePremiseEvaluator} {language : La
       (bound := bound) (rule := unitRule) (arguments := []) unitMember
       (by
         rintro ⟨name, collectionType, elementType, shape⟩
+        have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
         rw [unitParameters] at shape
         cases shape)
       (by rw [unitParameters]; exact .nil)
     rw [unitLabel, unitCategory] at typedUnit
     exact typedUnit
   have singletonSorted : SortedAt language (.collection kind [pattern] none) rule.category :=
-    ⟨free, bound, HasType.collectionConstructor algebraRule.authored parameters
+    ⟨free, bound, HasType.collectionConstructor algebraRule.authored bareParameters
       (.cons typed (.nil _ _))⟩
   have pairSorted : SortedAt language
       (.collection kind ([pattern] ++ (.apply unit []) :: []) none) rule.category :=
-    ⟨free, bound, HasType.collectionConstructor algebraRule.authored parameters
+    ⟨free, bound, HasType.collectionConstructor algebraRule.authored bareParameters
       (.cons typed (.cons unitTyped (.nil _ _)))⟩
   have toSingleton : EquationEquiv base language (.collection kind [pattern] none) pattern :=
     derivedInstance_equivalent

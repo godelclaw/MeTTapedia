@@ -16,19 +16,19 @@ namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise
 
 open Syntax RuleBinding ScopedRuleMatching
 
-theorem RootFiring.index_within {environment : Environment} {bound : List TypeExpr}
+theorem Interpreted.RootFiring.index_within {environment : Environment} {bound : List TypeExpr}
     {type : TypeExpr} {source target : Pattern} {index : Nat}
     {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
     {history : List Event}
-    (firing : RootFiring environment bound type source index trace captured completed history target) :
+    (firing : GeneralPremise.RootFiring environment bound type source index trace captured completed history target) :
     index < environment.language.rewrites.length := by
   cases firing with
   | fire declared _ _ _ _ _ _ _ _ => exact (List.getElem?_eq_some_iff.mp declared).1
 
 mutual
-  theorem PremiseHolds.top_ordered {environment : Environment} {context : Context}
+  theorem Interpreted.PremiseHolds.top_ordered {environment : Environment} {context : Context}
       {premise : Premise} {initial final : Assignment} {event : Event}
-      (held : PremiseHolds environment context premise initial final event)
+      (held : GeneralPremise.PremiseHolds environment context premise initial final event)
       (checked : checkStepStratification environment.language = true)
       (top : environment.language.rewrites.length ≤ context.ruleIndex) :
       eventOrdered context.ruleIndex event = true :=
@@ -45,9 +45,9 @@ mutual
         simp only [eventOrdered, decide_eq_true earlier, child, Bool.and_self]
     | .quantified _ elements => by simpa only [eventOrdered] using elements.top_ordered checked top
 
-  theorem PremisesHold.top_ordered {environment : Environment} {context : Context}
+  theorem Interpreted.PremisesHold.top_ordered {environment : Environment} {context : Context}
       {premises : List Premise} {initial final : Assignment} {events : List Event}
-      (held : PremisesHold environment context premises initial final events)
+      (held : GeneralPremise.PremisesHold environment context premises initial final events)
       (checked : checkStepStratification environment.language = true)
       (top : environment.language.rewrites.length ≤ context.ruleIndex) :
       eventsOrdered context.ruleIndex events = true :=
@@ -59,10 +59,10 @@ mutual
         change eventsOrdered context.ruleIndex _ = true at rest
         simp only [eventsOrdered, first, rest, Bool.and_self]
 
-  theorem QuantifiedElements.top_ordered {environment : Environment} {context : Context}
+  theorem Interpreted.QuantifiedElements.top_ordered {environment : Environment} {context : Context}
       {parameter : String} {body : Premise} {index : Nat} {elements : List Pattern}
       {initial final : Assignment} {events : List (Nat × Pattern × List Event)}
-      (held : QuantifiedElements environment context parameter body index elements initial final events)
+      (held : GeneralPremise.QuantifiedElements environment context parameter body index elements initial final events)
       (checked : checkStepStratification environment.language = true)
       (top : environment.language.rewrites.length ≤ context.ruleIndex) :
       quantifiedOrdered context.ruleIndex events = true :=

@@ -12,6 +12,8 @@ import Mettapedia.GSLT.Contracts.CoordinationFreedom
 import Mettapedia.GSLT.Contracts.AbsenceFrontier
 import Mettapedia.GSLT.Contracts.FrontierNegation
 import Mettapedia.GSLT.Contracts.ConsumptionArbitration
+import Mettapedia.GSLT.Contracts.ConeCapabilities
+import Mettapedia.GSLT.Contracts.AppendAuthority
 
 /-!
 # Semantic contracts: structure over one base of worlds and runs

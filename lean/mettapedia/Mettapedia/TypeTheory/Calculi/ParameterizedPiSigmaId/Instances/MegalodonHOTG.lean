@@ -23,7 +23,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.MegalodonH
 
 This collection preserves the well-founded higher-order set presentation,
 its least-universe operator, declared datatypes, proof terms, and comparisons.
-It is an opt-in mathematical instance, not Prime's native set foundation.
+It is an opt-in mathematical instance, not an ambient set foundation selected for any Prime candidate.
 The general ZFSet, universe-closure and hyperset developments remain reusable
 outside this profile with their own stated hypotheses.
 -/

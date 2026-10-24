@@ -22,7 +22,8 @@ only on the multiset of components.
 
 This module proves the raw half: equivalent patterns have the same normal
 form.  The other half, that a sorted pattern is equivalent to its normal form
-through sorted patterns only, needs typing along contexts; it is the subject
+through sorted patterns only, also requires the explicit `BareBagTheory`
+representation license and typing along contexts; it is the subject
 of `BagNormalFormTyping` and `BagNormalFormSection`.
 -/
 
@@ -137,6 +138,37 @@ theorem bagAlgebraRule {unitName : String}
   exact laws.unitAuthored unitName rfl
 
 end BagTheory
+
+/-- Algebraic bag laws together with their bare-collection representation.
+Wrapped algebraic presentations remain covered by `BagTheory`; this extra
+source fact licenses typing-preserving bare-pattern normalization. -/
+structure BareBagTheory (language : LanguageDef) (bag : GrammarRule)
+    (unit : Option String) : Prop extends BagTheory language bag unit where
+  representedBare : bag.collectionRepresentation = .bare
+
+instance {language : LanguageDef} {bag : GrammarRule} {unit : Option String} :
+    Coe (BareBagTheory language bag unit) (BagTheory language bag unit) :=
+  ⟨BareBagTheory.toBagTheory⟩
+
+/-- Qualify an algebraic theory with its actual representation choice. -/
+theorem BagTheory.asBare {language : LanguageDef} {bag : GrammarRule} {unit : Option String}
+    (laws : BagTheory language bag unit) (bare : bag.collectionRepresentation = .bare) :
+    BareBagTheory language bag unit := ⟨laws, bare⟩
+
+/-- The bare parameter shape combines algebra and representation at the same bag. -/
+theorem BareBagTheory.bareShape {language : LanguageDef} {bag : GrammarRule}
+    {unit : Option String} (laws : BareBagTheory language bag unit) :
+    ∃ parameterName,
+      bag.bareParams = [.simple parameterName (.collection .hashBag (.base bag.category))] := by
+  obtain ⟨name, shape⟩ := laws.bagShape
+  exact ⟨name, by simpa only [GrammarRule.bareParams_of_bare _ laws.representedBare] using shape⟩
+
+/-- A wrapped source declaration cannot supply a bare representation license. -/
+theorem BareBagTheory.not_wrapped {language : LanguageDef} {bag : GrammarRule}
+    {unit : Option String} (laws : BareBagTheory language bag unit) :
+    bag.collectionRepresentation ≠ .wrapped := by
+  rw [laws.representedBare]
+  decide
 
 /-- The executable test for `BagTheory`. -/
 def bagTheoryCheck (language : LanguageDef) (bag : GrammarRule) (unit : Option String) :

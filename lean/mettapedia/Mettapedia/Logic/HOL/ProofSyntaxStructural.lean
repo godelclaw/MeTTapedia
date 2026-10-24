@@ -467,4 +467,81 @@ theorem rootObservation_subst {Γ Γ' : Ctx Base} (θ : Subst Const Γ Γ')
     | rfl
     | simp [subst_instantiate, subst_weakenHyps, HOL.subst, Subst.lift]
 
+/-- The supplied proof tree uses neither eta nor function extensionality.
+Propositional equality rules remain part of the ordinary logical core. -/
+def FunctionExtensionalityFree {Γ : Ctx Base} {Δ : List (Formula Const Γ)}
+    {φ : Formula Const Γ} : ProofSyntax Const Δ φ → Prop
+  | .hyp _ | .topI | .eqRefl _ | .beta _ _ => True
+  | .eta _ | .funExt _ => False
+  | .botE proof | .andEL proof | .andER proof | .impI proof | .notI proof
+  | .allI proof | .allE _ proof | .exI _ proof | .eqSymm proof
+  | .eqPropEL proof | .eqPropER proof | .eqApp _ proof | .eqAppArg _ proof
+  | .eqLam proof | .orIL proof | .orIR proof => FunctionExtensionalityFree proof
+  | .andI first second | .impE first second | .notE first second
+  | .exE first second | .eqTrans first second | .eqPropI first second =>
+      FunctionExtensionalityFree first ∧ FunctionExtensionalityFree second
+  | .orE cases first second =>
+      FunctionExtensionalityFree cases ∧
+        FunctionExtensionalityFree first ∧ FunctionExtensionalityFree second
+
+@[simp] theorem functionExtensionalityFree_cast {ψ : Formula Const Γ} (equal : φ = ψ)
+    (proof : ProofSyntax Const Δ φ) :
+    FunctionExtensionalityFree (equal ▸ proof : ProofSyntax Const Δ ψ) ↔
+      FunctionExtensionalityFree proof := by
+  cases equal
+  rfl
+
+@[simp] theorem functionExtensionalityFree_castIndices
+    {Δ' : List (Formula Const Γ)} {ψ : Formula Const Γ}
+    (assumptions : Δ = Δ') (conclusion : φ = ψ) (proof : ProofSyntax Const Δ φ) :
+    FunctionExtensionalityFree (proof.castIndices assumptions conclusion) ↔
+      FunctionExtensionalityFree proof := by
+  cases assumptions
+  cases conclusion
+  rfl
+
+set_option backward.isDefEq.respectTransparency false in
+@[simp] theorem functionExtensionalityFree_mono {Δ' : List (Formula Const Γ)}
+    (transport : OccurrenceMap Δ Δ') (proof : ProofSyntax Const Δ φ) :
+    FunctionExtensionalityFree (proof.mono transport) ↔ FunctionExtensionalityFree proof := by
+  induction proof with
+  | hyp occurrence => simp [mono, FunctionExtensionalityFree]
+  | _ => simp_all only [mono, FunctionExtensionalityFree]
+
+set_option backward.isDefEq.respectTransparency false in
+@[simp] theorem functionExtensionalityFree_rename {Ξ : Ctx Base} (ρ : Rename Base Γ Ξ)
+    (proof : ProofSyntax Const Δ φ) :
+    FunctionExtensionalityFree (proof.rename ρ) ↔ FunctionExtensionalityFree proof := by
+  induction proof generalizing Ξ with
+  | _ => simp_all only [rename, functionExtensionalityFree_castIndices, FunctionExtensionalityFree]
+
+theorem functionExtensionalityFree_of_heq {Γ : Ctx Base} {Δ₁ Δ₂ : List (Formula Const Γ)}
+    {φ₁ φ₂ : Formula Const Γ} (hypotheses : Δ₁ = Δ₂) (conclusion : φ₁ = φ₂)
+    {first : ProofSyntax Const Δ₁ φ₁} {second : ProofSyntax Const Δ₂ φ₂}
+    (same : HEq first second) : FunctionExtensionalityFree first ↔ FunctionExtensionalityFree second := by
+  subst hypotheses conclusion
+  cases same
+  rfl
+
+set_option backward.isDefEq.respectTransparency false in
+@[simp] theorem functionExtensionalityFree_subst {Ξ : Ctx Base} (θ : Subst Const Γ Ξ)
+    (proof : ProofSyntax Const Δ φ) :
+    FunctionExtensionalityFree (proof.subst θ) ↔ FunctionExtensionalityFree proof := by
+  induction proof generalizing Ξ with
+  | exE first second ihFirst ihSecond =>
+      dsimp only [subst]
+      simp only [FunctionExtensionalityFree, ihFirst]
+      apply and_congr Iff.rfl
+      refine (functionExtensionalityFree_of_heq ?_ ?_ (id_mp_heq _ _)).trans ?_
+      · simp [List.map, subst_weakenHyps]
+      · simp
+      · exact ihSecond _
+  | _ =>
+      dsimp only [subst]
+      simp only [FunctionExtensionalityFree]
+      all_goals try (refine (functionExtensionalityFree_of_heq ?_ ?_ (id_mp_heq _ _)).trans ?_; rotate_left 2)
+      all_goals first
+        | simp_all only [FunctionExtensionalityFree]
+        | simp [subst_instantiate, subst_weakenHyps, HOL.subst, Subst.lift]
+
 end Mettapedia.Logic.HOL.ProofSyntax

@@ -21,13 +21,12 @@ frame, and a free variable carries the action as a decoration until it is substi
 
 Controls:
 - the elaborated language has its three sorts, its constructors and rules, and is core;
-- parallel composition declares the algebra of the commutative monoid it replaces, flattening with
-  unit `PZero`, and summation the algebra its own equations state, flattening without a unit; the
-  equations that remain are chaos absorbing both, distributivity, and the laws of the data;
+- parallel composition declares the fold algebra of the commutative monoid it replaces;
+  its wrapper-unit equations and summation's fixed-arity equations remain explicit;
 - its core reading puts the summands of COMM's reduct in a set, the collection the summation
   constructor declares;
-- the distributive declaration is read off the core language: composition the bag with unit `PZero`,
-  summation the set, `PChaos` absorbing both; without the distributivity equation there is none;
+- automatic distributive normalization is not authorized: the fixed-arity summation equation
+  does not establish unrestricted variadic flattening;
 - the module prints as text that reads back to the same data;
 - positive: a turn moves a fork's channel and message one step round the ring, also at depth two
   of quotation; three turns are no turn;
@@ -68,13 +67,14 @@ def language : LanguageDef :=
 #guard language.types.map (·.name) == ["Proc", "Data", "Name"]
 #guard language.terms.map (·.label) ==
   ["PZero", "PPar", "PChaos", "PSum", "One", "Mult", "Inv", "Turn", "NQuote", "POutput", "PInput", "PAct"]
-#guard (language.equations.length, language.rewrites.map (·.name)) == (10, ["RPar", "RSum", "RDiv", "RComm"])
+#guard (language.equations.length, language.rewrites.map (·.name)) == (14, ["RPar", "RSum", "RDiv", "RComm"])
 #guard language.equations.map (·.name) ==
-  ["ChaosSum:equation:2@5", "ChaosSum:equation:3@5", "ChaosSum:equation:4@5", "Monoid:equation:0@7",
+  ["Monoid:equation:1@2", "Monoid:equation:2@2", "ChaosSum:equation:0@5", "ChaosSum:equation:1@5",
+    "ChaosSum:equation:2@5", "ChaosSum:equation:3@5", "ChaosSum:equation:4@5", "Monoid:equation:0@7",
     "Monoid:equation:1@7", "Monoid:equation:2@7", "Group:equation:0@8", "Group:equation:1@8",
     "Group:equation:2@8", "Cyclic3:equation:0@9"]
 #guard (language.terms.find? (·.label == "PPar")).bind (·.algebra?) == some { flatten := true, unit := some "PZero" }
-#guard (language.terms.find? (·.label == "PSum")).bind (·.algebra?) == some { flatten := true, unit := none }
+#guard (language.terms.find? (·.label == "PSum")).bind (·.algebra?) == none
 #guard language.validate.isEmpty
 
 /-- The core reading of the language. -/
@@ -98,9 +98,10 @@ partial def kinds : Pattern → List CollType
 #guard (core.bind fun core => (core.rewrites.find? fun rule => rule.name == "RComm").map fun rule => kinds rule.right) ==
   some [.hashBag, .hashSet]
 
-/-! The distributive declaration, read off the module's own equations. -/
+/-! Fixed-arity equations remain executable equations, but do not authorize
+the stronger variadic distributive normalizer. -/
 #guard (core.bind fun coreLanguage => Distributive.recognize coreLanguage "Proc") ==
-  some ⟨.hashBag, "PZero", .hashSet, "PChaos"⟩
+  none
 
 /-- The core language without its distributivity equation. -/
 def withoutDistributivity (coreLanguage : LanguageDef) : LanguageDef :=

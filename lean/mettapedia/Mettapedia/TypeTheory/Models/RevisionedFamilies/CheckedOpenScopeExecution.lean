@@ -13,7 +13,7 @@ Scope/query decoding is tied to the interpreted captured query, rather than
 to unrelated semantic values. The occurrence survives dependent answer use.
 
 The consumer below is a term in the existing semantic families CwF. This
-does not yet give an authored Prime eliminator or generic binder semantics.
+does not yet give an authored source eliminator or generic binder semantics.
 -/
 
 open Mettapedia.TypeTheory.Calculi.StagedScopedReflective

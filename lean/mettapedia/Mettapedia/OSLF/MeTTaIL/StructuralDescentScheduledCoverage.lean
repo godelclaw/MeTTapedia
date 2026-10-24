@@ -80,7 +80,7 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
           obtain ⟨final, events, rest, ordered, concludes⟩ := meaning
           simp only [ExpansionAccepts, delivered, List.not_mem_nil, false_or,
             List.mem_singleton, exists_eq_left, TaskAccepts]
-          exact ⟨.premises final events rest, by simpa [Result.ordered] using ordered, concludes⟩
+          exact ⟨.premises final events rest, by simpa [Interpreted.Result.ordered] using ordered, concludes⟩
   | prepend depth context premise premises initial middle event head tail =>
       cases result with
       | premises final events rest =>
@@ -101,12 +101,12 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
           change ExpansionAccepts
             { tasks := [.evaluate
                 (.quantified depth context parameter body (index + 1) elements
-                  (restoreParameter parameter initial middle))
+                  initial)
                 (.prependElement depth context parameter body index element elements initial middle
                   event localTyped head tail)] } wanted
           simp only [ExpansionAccepts, List.not_mem_nil, false_or,
             List.mem_singleton, exists_eq_left, TaskAccepts]
-          exact ⟨.quantified final events rest, by simpa [Result.ordered] using ordered, concludes⟩
+          exact ⟨.quantified final events rest, by simpa [Interpreted.Result.ordered] using ordered, concludes⟩
   | prependElement depth context parameter body index element elements initial middle event localTyped head tail =>
       cases result with
       | quantified final events rest =>
@@ -162,10 +162,10 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
           | @cons context premise premises initial middle final event events head rest =>
               have parts : eventDepth event ≤ depth ∧
                   eventsDepth events ≤ depth := by
-                simpa [Result.ordered, eventsDepth, Nat.max_le] using ordered
+                simpa [Interpreted.Result.ordered, eventsDepth, Nat.max_le] using ordered
               simp only [ExpansionAccepts, evaluate.eq_3, List.not_mem_nil, false_or,
                 List.mem_singleton, exists_eq_left, TaskAccepts]
-              exact ⟨.premise middle event head, by simpa [Result.ordered] using parts.1,
+              exact ⟨.premise middle event head, by simpa [Interpreted.Result.ordered] using parts.1,
                 final, events, rest, parts.2, concludes⟩
   | quantified depth context parameter body index elements initial =>
       cases result with
@@ -177,10 +177,10 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
               have checked := checkTypedAssignment_complete localTyped
               have parts : eventDepth event ≤ depth ∧
                   elementsDepth events ≤ depth := by
-                simpa [Result.ordered, elementsDepth, eventsDepth, Nat.max_le] using ordered
+                simpa [Interpreted.Result.ordered, elementsDepth, eventsDepth, Nat.max_le] using ordered
               simp only [ExpansionAccepts, evaluate.eq_5, checked, dite_true, List.not_mem_nil,
                 false_or, List.mem_singleton, exists_eq_left, TaskAccepts]
-              exact ⟨.premise middle event head, by simpa [Result.ordered] using parts.1,
+              exact ⟨.premise middle event head, by simpa [Interpreted.Result.ordered] using parts.1,
                 final, events, rest, parts.2, concludes⟩
   | premise depth context premise initial =>
       cases result with
@@ -210,7 +210,7 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
                     exact (List.getElem?_eq_some_iff.mp declared).1
               have parts : childIndex < environment.language.rewrites.length ∧
                   decide (1 + eventsDepth history ≤ depth) = true := by
-                exact ⟨earlier, by simpa [Result.ordered, eventDepth] using ordered⟩
+                exact ⟨earlier, by simpa [Interpreted.Result.ordered, eventDepth] using ordered⟩
               rw [evaluate.eq_1]
               rw [evaluatePremise.eq_4]
               split
@@ -237,7 +237,7 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
                     exact (List.getElem?_eq_some_iff.mp declared).1
               have parts : childIndex < environment.language.rewrites.length ∧
                   decide (1 + eventsDepth history ≤ depth) = true := by
-                exact ⟨earlier, by simpa [Result.ordered, eventDepth] using ordered⟩
+                exact ⟨earlier, by simpa [Interpreted.Result.ordered, eventDepth] using ordered⟩
               rw [evaluate.eq_1]
               rw [evaluatePremise.eq_5]
               split
@@ -262,12 +262,12 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
                 simp only [ExpansionAccepts, List.not_mem_nil, false_or,
                   List.mem_singleton, exists_eq_left, TaskAccepts]
                 exact ⟨.quantified final history quantified,
-                  by simpa [Result.ordered, eventDepth] using ordered, concludes⟩
+                  by simpa [Interpreted.Result.ordered, eventDepth] using ordered, concludes⟩
   | root depth bound type source index =>
       cases depth with
       | zero =>
           cases result with
-          | root _ _ _ _ _ _ => simp [Result.ordered] at ordered
+          | root _ _ _ _ _ _ => simp [Interpreted.Result.ordered] at ordered
       | succ depth =>
           cases result with
           | root trace captured completed history target held =>
@@ -295,10 +295,10 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
                         matched, capturedTyped, ?_⟩
                       have bounded : eventsDepth history ≤ depth := by
                         have h : 1 + eventsDepth history ≤ depth + 1 := by
-                          simpa [Result.ordered] using ordered
+                          simpa [Interpreted.Result.ordered] using ordered
                         omega
                       exact ⟨.premises completed history premises,
-                        by simpa [Result.ordered] using bounded,
+                        by simpa [Interpreted.Result.ordered] using bounded,
                         target, converted, targetTyped, concludes⟩
   | steps depth bound type source limit =>
       cases result with
@@ -381,6 +381,7 @@ theorem rootMatch_covers {environment : Environment} {outer : Goal}
   unfold expandRootMatch
   split
   · rename_i seen found
+    change frame.state.answers[frame.cursor]? = some seen at found
     unfold continueRootAnswer
     obtain same | remaining :=
       (GeneralScopedMatchMachine.unread_cursor_split (rootRequest frame) frame.state frame.cursor answer).mp unread
@@ -419,6 +420,7 @@ theorem targetMatch_covers {environment : Environment} {outer : Goal}
   unfold expandTargetMatch
   split
   · rename_i seen found
+    change frame.state.answers[frame.cursor]? = some seen at found
     obtain same | remaining :=
       (GeneralScopedMatchMachine.unread_cursor_split (targetRequest frame) frame.state frame.cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
@@ -499,7 +501,7 @@ theorem run_covers {environment : Environment} {goal : Goal}
 /-- Every depth-bounded independent semantic answer occurs in the actual finite
 completed execution, retaining its assignment and full history. -/
 theorem finish_contains (environment : Environment) (goal : Goal)
-    (wanted : Result environment goal) (ordered : wanted.ordered = true) :
+    (wanted : Result environment goal) (ordered : Interpreted.Result.ordered wanted = true) :
     wanted ∈ (finish environment goal).answers := by
   have initial : StateAccepts (start environment goal) wanted := by
     right

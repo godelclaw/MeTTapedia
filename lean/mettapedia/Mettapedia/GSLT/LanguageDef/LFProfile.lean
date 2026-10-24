@@ -19,9 +19,10 @@ import Mettapedia.GSLT.LanguageDef.LF.DTTBenchProofCarryingConversionReplay
 /-!
 # Profile-parametric LF theory
 
-This umbrella exposes the source-extracted basic/indexed PTS lattice, the
-frozen DTTBench statement-demand theorem, eta-long canonical forms with
-hereditary substitution, and the profile-parametric reference checker.
+This umbrella exposes standard LF/λP together with the historical
+MettaKernel kind-result curriculum prototype, the frozen DTTBench
+statement-demand theorem, eta-long canonical forms with hereditary
+substitution, and the profile-parametric reference checker.
 
 The profile checker is paired with a rooted beta-eta reduction declaration.
 Conversion-dependent source terms must still pass both profile typing and the
@@ -30,7 +31,7 @@ to that root by proved lift, substitution, freshness, and scope
 correspondences.  The universe-free Pure trace carrier is connected to LF by a
 total embedding that commutes with beta-eta normalization and conversion.  A
 hash-bound calibration fixture rechecks all 31 frozen DTTBench candidates with
-the generic indexed conversion checker.  The original rooted proof
+the generic de Bruijn-indexed conversion checker.  The original rooted proof
 presentation has an explicit adequacy boundary: direct beta and eta are
 proof-carrying, but its binder-wrapped congruence premise cannot certify
 non-reflexive reduction under a product.  An independent contextual-closure
@@ -52,7 +53,7 @@ an explicitly checked transitivity rule, while a reversed chain is rejected
 before proof emission.  The derived MeTTa source is admitted by the
 source-indexed generic checker, and the live conversion bridge reconstructs
 both conversion goals from the raw and normalized `KWCheck` terms before the
-normalized candidate reaches the indexed LF kernel.  Closed contextual beta,
+normalized candidate reaches the de Bruijn-indexed LF checker.  Closed contextual beta,
 closed eta, and a two-step beta path pass that boundary; changed intermediate,
 reversed, missing-child, unknown-rule, captured-eta, malformed, and external
 proof-byte mutations fail.  Producing proof paths for the full raw dependent
@@ -62,7 +63,7 @@ rejects fuel exhaustion as completion, and supports both independent
 term/type normalization and common-normal-form conversion.  All 31 known raw
 DTTBench term/type pairs produce completed proof paths at fuel 512.  Separate
 negative fixtures establish that normalization does not imply typing, while
-malformed and binder-captured candidates remain rejected by the indexed
+malformed and binder-captured candidates remain rejected by the de Bruijn-indexed
 checker.  Live serialization of the full calibration corpus and validation on
 an independent unopened family remain open.
 -/

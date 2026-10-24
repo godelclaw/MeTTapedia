@@ -51,39 +51,6 @@ open UniverseLevel (LevelOrder)
 
 variable {Head : Type} {R : Rules Head}
 
-/-! ## Substitutions extended by one term -/
-
-namespace CTm
-
-/-- The substitution sending the newest variable to `N` and the others along `σ`. -/
-def consSub {n m : Nat} (N : CTm Head m) (σ : CSub Head n m) : CSub Head (n + 1) m :=
-  Fin.cases N σ
-
-@[simp] theorem consSub_zero {n m : Nat} (N : CTm Head m) (σ : CSub Head n m) :
-    consSub N σ 0 = N := rfl
-
-@[simp] theorem consSub_succ {n m : Nat} (N : CTm Head m) (σ : CSub Head n m) (i : Fin n) :
-    consSub N σ i.succ = σ i := rfl
-
-/-- A weakened term under an extended substitution. -/
-@[simp] theorem subst_consSub_wk {n m : Nat} (N : CTm Head m) (σ : CSub Head n m)
-    (t : CTm Head n) : (t.rename wk).subst (consSub N σ) = t.subst σ := by
-  rw [subst_rename]
-  rfl
-
-/-- Opening a substituted binder at `N` is substituting the extended substitution. -/
-theorem inst0_subst_liftSub {n m : Nat} (N : CTm Head m) (σ : CSub Head n m)
-    (B : CTm Head (n + 1)) : CTm.inst0 N (B.subst (liftSub σ)) = B.subst (consSub N σ) := by
-  unfold inst0
-  rw [subst_comp]
-  apply subst_ext
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · rfl
-  · exact inst0_rename_wk N (σ j)
-
-end CTm
-
 section Substitutions
 
 variable {P : ChurchRules R}
@@ -93,13 +60,10 @@ theorem CSubstEq.cons {n m : Nat} {Γ : CCtx Head n} {Δ : CCtx Head m} {σ τ :
     {A : CTm Head n} {N N' : CTm Head m} (equal : CSubstEq P Γ Δ σ τ)
     (typed : CTyped P Δ N (A.subst σ)) (e : CEqual P Δ N N' (A.subst σ)) :
     CSubstEq P (.snoc Γ A) Δ (CTm.consSub N σ) (CTm.consSub N' τ) := by
-  refine ⟨fun i => ?_, fun i => ?_⟩
-  · refine Fin.cases ?_ (fun j => ?_) i
-    · simpa only [CCtx.lookup_snoc_zero, CTm.subst_consSub_wk, CTm.consSub_zero] using typed
-    · simpa only [CCtx.lookup_snoc_succ, CTm.subst_consSub_wk, CTm.consSub_succ] using equal.1 j
-  · refine Fin.cases ?_ (fun j => ?_) i
-    · simpa only [CCtx.lookup_snoc_zero, CTm.subst_consSub_wk, CTm.consSub_zero] using e
-    · simpa only [CCtx.lookup_snoc_succ, CTm.subst_consSub_wk, CTm.consSub_succ] using equal.2 j
+  refine ⟨CSubstMor.cons equal.1 typed, fun i => ?_⟩
+  refine Fin.cases ?_ (fun j => ?_) i
+  · simpa only [CCtx.lookup_snoc_zero, CTm.subst_consSub_wk, CTm.consSub_zero] using e
+  · simpa only [CCtx.lookup_snoc_succ, CTm.subst_consSub_wk, CTm.consSub_succ] using equal.2 j
 
 end Substitutions
 

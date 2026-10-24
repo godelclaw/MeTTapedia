@@ -4,7 +4,7 @@ import Mettapedia.GSLT.LanguageDef.TemplateScope.Spectrum
 /-!
 # Template scope, part 10: surface syntax
 
-Printers from the model to Prime's surface syntax, as S-expressions over
+Printers from the model to the Prime C draft's surface syntax, as S-expressions over
 structured atoms (`SAtom`); turning atoms into text is the last step.
 
 * `printSrc` — authored text (`Src`) to a MeTTa form: `let`, `lam`, each with
@@ -14,7 +14,7 @@ structured atoms (`SAtom`); turning atoms into text is the last step.
   none, and a failed match gives no answer), alternatives as `superpose`,
   quotations as `quote`, store names as `$y`, parameters bare, and an
   equation reference as the nullary call `(F)`.
-* `printAns` — answers (`Tm S (Slot X)`) to Prime's answer notation, through a
+* `printAns` — answers (`Tm S (Slot X)`) to the draft's answer notation, through a
   naming of store names.  `bagNaming` prints the query's own slots as `$y` and
   every name a configuration allocates (an activation copy, or a per-closure
   slot left free) as `$y#k`, numbered by first occurrence in the bag.

@@ -140,36 +140,31 @@ rather than an application of its label.  This is the representation choice
 already used by the generic context compiler. -/
 def UsesBareCollection (rule : GrammarRule) : Prop :=
   ∃ parameterName collectionType elementType,
-    rule.params =
+    rule.bareParams =
       [.simple parameterName (.collection collectionType elementType)]
 
 theorem usesBareCollection_mapGrammarRule_iff
     (symbols : LanguageDefSymbolMap) (rule : GrammarRule) :
-    UsesBareCollection (mapGrammarRule symbols rule) ↔
-      UsesBareCollection rule := by
+    UsesBareCollection (mapGrammarRule symbols rule) ↔ UsesBareCollection rule := by
+  unfold UsesBareCollection
+  rw [bareParams_mapGrammarRule]
+  generalize rule.bareParams = parameters
   constructor
   · rintro ⟨parameterName, collectionType, elementType, mappedShape⟩
-    cases rule with
-    | mk label category parameters syntaxPattern evalPolicy =>
-      simp only [mapGrammarRule] at mappedShape
-      cases parameters with
-      | nil => simp at mappedShape
-      | cons parameter parameters =>
-          cases parameters with
-          | nil =>
-              cases parameter with
-              | simple originalName originalType =>
-                  cases originalType <;>
-                    simp_all [mapTermParam, mapTypeExpr, UsesBareCollection]
-              | abstractionNamed binder body type =>
-                  simp [mapTermParam] at mappedShape
-              | multiAbstractionNamed binders body type =>
-                  simp [mapTermParam] at mappedShape
-          | cons next rest => simp at mappedShape
+    cases parameters with
+    | nil => simp at mappedShape
+    | cons parameter remaining =>
+      cases remaining with
+      | nil =>
+        cases parameter with
+        | simple originalName originalType =>
+          cases originalType <;> simp_all [mapTermParam, mapTypeExpr]
+        | abstractionNamed binder body type => simp [mapTermParam] at mappedShape
+        | multiAbstractionNamed binders body type => simp [mapTermParam] at mappedShape
+      | cons next tail => simp at mappedShape
   · rintro ⟨parameterName, collectionType, elementType, shape⟩
-    refine ⟨parameterName, collectionType,
-      mapTypeExpr symbols elementType, ?_⟩
-    simp [mapGrammarRule, shape, mapTermParam, mapTypeExpr]
+    refine ⟨parameterName, collectionType, mapTypeExpr symbols elementType, ?_⟩
+    simp [shape, mapTermParam, mapTypeExpr]
 
 mutual
   /-- A raw pattern has a type expression by the constructor declarations of
@@ -219,7 +214,7 @@ mutual
         {collectionType : CollType} {elements : List Pattern}
         {rest : Option String} {elementType : TypeExpr} :
         rule ∈ language.terms →
-        rule.params =
+        rule.bareParams =
           [.simple parameterName (.collection collectionType elementType)] →
         ElementsHaveType language free bound elements elementType →
         HasType language free bound
@@ -1241,7 +1236,7 @@ mutual
             mappedLookup)
     | @constructor bound rule arguments membership notBareCollection argumentsTyped =>
         obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-          targetParameters⟩ := morphism.mapsTerms rule membership
+          targetParameters, targetRepresentation⟩ := morphism.mapsTerms rule membership
         have mappedArguments := argumentsTyped.mapTyping morphism
         have mappedNotBareCollection :
             ¬ UsesBareCollection (mapGrammarRule morphism.symbols rule) :=
@@ -1258,7 +1253,7 @@ mutual
         simpa [mapPattern, targetLabel, targetCategory, mapTypeExpr] using
           (HasType.constructor
             targetMembership (by
-              simpa [UsesBareCollection, targetParameters, mapGrammarRule] using
+              simpa [UsesBareCollection, GrammarRule.bareParams, targetParameters, targetRepresentation, mapGrammarRule] using
                 mappedNotBareCollection)
             targetArguments)
     | @lambda bound binder body domain codomain bodyTyped =>
@@ -1286,14 +1281,18 @@ mutual
     | @collectionConstructor bound rule parameterName collectionType elements rest
         elementType membership parameterShape elementsTyped =>
         obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-          targetParameters⟩ := morphism.mapsTerms rule membership
+          targetParameters, targetRepresentation⟩ := morphism.mapsTerms rule membership
         have mappedElements := elementsTyped.mapTyping morphism
         have mappedParameterShape :
-            targetRule.params =
+            targetRule.bareParams =
               [.simple parameterName
                 (.collection collectionType
                   (mapTypeExpr morphism.symbols elementType))] := by
-          simp [targetParameters, parameterShape, mapTermParam, mapTypeExpr]
+          have viewed : targetRule.bareParams = rule.bareParams.map (mapTermParam morphism.symbols) := by
+            cases mode : rule.collectionRepresentation <;>
+              simp [GrammarRule.bareParams, targetRepresentation, targetParameters, mode]
+          rw [viewed, parameterShape]
+          simp [mapTermParam, mapTypeExpr]
         simpa [mapPattern, targetLabel, targetCategory, mapTypeExpr] using
           (HasType.collectionConstructor
             targetMembership mappedParameterShape
@@ -1569,7 +1568,7 @@ theorem declared_collection_constructor_of_hasSort
           [.simple parameterName (.collection collectionType elementType)] := by
   cases typed with
   | collectionConstructor membership parameterShape elementsTyped =>
-      exact ⟨_, membership, rfl, _, _, parameterShape⟩
+      exact ⟨_, membership, rfl, _, _, (GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape |>.2⟩
 
 /-- Negative control: no bound variable is sorted in the empty bound context. -/
 theorem bvar_not_typed_in_empty

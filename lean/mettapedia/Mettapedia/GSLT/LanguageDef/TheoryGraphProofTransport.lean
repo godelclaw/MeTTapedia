@@ -30,6 +30,12 @@ theoremhood is preserved with evidence (`CertificateRoute.translated_mem`).
   (`theoryRoute`); a target certificate of a translated sentence yields a
   source certificate when that route is conservative and the source calculus
   is adequate (`source_certificate_of_conservative`).
+* Conversely, a route that is **full** on the certificates of translated
+  sentences is conservative when sentence translation is injective
+  (`CertificateRoute.conservative_of_full`); for the thin calculi fullness is
+  exactly conservativity (`thinRoute_full_iff`).  Faithfulness and fullness are
+  the two halves of a bijection on certificates; faithfulness alone does not
+  reflect theoremhood.
 -/
 
 set_option autoImplicit false
@@ -144,6 +150,64 @@ theorem source_certificate_of_conservative (route : PiInstitution.Comorphism sou
   change route.mapSentence theory.signature sentence ∈ (directImage route theory).theory.1
   rw [← projected]
   exact (targetCalculus.theorem_image _ _).mp ⟨_, rfl⟩
+
+namespace CertificateRoute
+
+variable {route : PiInstitution.Comorphism source target}
+  {sourceCalculus : PiInstitution.ProofCalculus source}
+  {targetCalculus : PiInstitution.ProofCalculus target}
+
+/-- Fullness on the certificates of translated sentences: every target
+certificate whose sentence is a translation is carried from a source
+certificate. -/
+def Full (carrier : CertificateRoute route sourceCalculus targetCalculus) : Prop :=
+  ∀ (theory : PiInstitution.TheoryObject source)
+    (sentence : source.sentence.obj theory.signature)
+    (targetCertificate : targetCalculus.proof.obj (directImage route theory)),
+    targetCalculus.projection.app _ targetCertificate =
+        route.mapSentence theory.signature sentence →
+      ∃ certificate : sourceCalculus.proof.obj theory,
+        carrier.carry.app theory certificate = targetCertificate
+
+/-- **A full certificate route is conservative** when sentence translation is
+injective.  Faithfulness alone is not what reflects theoremhood: it is the
+injectivity half of a bijection on certificates, and fullness is the half that
+carries theorems back. -/
+theorem conservative_of_full (carrier : CertificateRoute route sourceCalculus targetCalculus)
+    (full : carrier.Full)
+    (injective : ∀ signature, Function.Injective (route.mapSentence signature))
+    (theory : PiInstitution.TheoryObject source) :
+    (theoryRoute route theory).Conservative := by
+  intro sentence translated
+  obtain ⟨targetCertificate, projected⟩ :=
+    (targetCalculus.theorem_image (directImage route theory)
+      (route.mapSentence theory.signature sentence)).mpr translated
+  obtain ⟨certificate, carried⟩ := full theory sentence targetCertificate projected
+  have law := carrier.carry_projects theory certificate
+  rw [carried, projected] at law
+  exact (sourceCalculus.theorem_image theory sentence).mp
+    ⟨certificate, (injective theory.signature law).symm⟩
+
+end CertificateRoute
+
+/-- **For the thin calculi, fullness is conservativity**, given injective
+sentence translation. -/
+theorem thinRoute_full_iff (route : PiInstitution.Comorphism source target)
+    (injective : ∀ signature, Function.Injective (route.mapSentence signature)) :
+    (thinRoute route).Full ↔ ∀ theory, (theoryRoute route theory).Conservative := by
+  constructor
+  · intro full theory
+    exact (thinRoute route).conservative_of_full full injective theory
+  · intro conservative theory sentence targetCertificate projected
+    have translated : route.mapSentence theory.signature sentence ∈
+        (directImage route theory).theory.1 := by
+      have member := targetCertificate.2
+      change targetCertificate.1 = route.mapSentence theory.signature sentence at projected
+      rw [projected] at member
+      exact member
+    refine ⟨⟨sentence, conservative theory translated⟩, ?_⟩
+    apply Subtype.ext
+    exact projected.symm
 
 end Routes
 
@@ -278,6 +342,8 @@ end Tags
 #print axioms CertificateRoute.translated_mem
 #print axioms thinRoute
 #print axioms source_certificate_of_conservative
+#print axioms CertificateRoute.conservative_of_full
+#print axioms thinRoute_full_iff
 #print axioms directImageFunctor_comp
 #print axioms CertificateRoute.comp
 #print axioms eraseTags_not_faithful

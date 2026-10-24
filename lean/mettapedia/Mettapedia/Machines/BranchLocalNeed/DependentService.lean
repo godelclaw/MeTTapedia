@@ -1,6 +1,9 @@
 import Mettapedia.Machines.BranchLocalNeed.CacheLaws
 import Mettapedia.Machines.BranchLocalNeed.ExecutionMachine
 import Mettapedia.TypeTheory.DisplayedEvidenceNeed
+import Mettapedia.Machines.BranchLocalNeed.LocalSteps
+import Mettapedia.Machines.BranchLocalNeed.InferenceControl
+import Mettapedia.GSLT.LanguageDef.NativeControlCursor
 
 /-!
 # Dependent services on the reference Need machine
@@ -358,3 +361,347 @@ theorem cached_consumer_independent_of_producer [DecidableEq family.Raw]
 #print axioms cached_consumer_independent_of_producer
 
 end Mettapedia.Machines.BranchLocalNeed.NeedDependentService
+
+/-! ## Selected source alternatives
+
+This finite admission view inspects the existing suspended-force operation.
+It retains the actual source record, evaluator, return stack and physical
+alternative ordinal. It does not evaluate a body or identify empty admission
+with successful producer exhaustion. The indexed packet below is a finite
+admission result, not the eventual answer set of a searched service.
+-/
+namespace Mettapedia.Machines.BranchLocalNeed.NeedDependentService.SourceBranch
+
+open NeedReference
+open Mettapedia.TypeTheory.DisplayedEvidence
+
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type}
+
+abbrev SourceMachine := Machine Origin Local Resume Rule Value StableFault RetryableFault Effect
+
+structure Selection (Origin Local Resume Rule Value StableFault : Type) where
+  cell : CellId
+  record : CellRecord Origin Value StableFault
+  evaluator : EvaluatorId
+  returns : List (Frame Resume)
+  ordinal : Nat
+  rule : Rule
+  state : Local
+
+variable (specification : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+
+/-- The validity judgment mentions the independently defined source control,
+lookup and alternative list, rather than an equality to an inspector result. -/
+structure Admitted (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)) (ordinal : Nat)
+    (selection : Selection Origin Local Resume Rule Value StableFault) : Prop where
+  control : source.control = .force selection.cell selection.returns
+  lookup : source.world.heap.lookup selection.cell = some selection.record
+  suspended : selection.record.cache = .suspended
+  evaluator : selection.evaluator = source.world.nextEvaluator
+  position : selection.ordinal = ordinal
+  alternative : (specification.alternatives selection.record.origin)[ordinal]? =
+    some (selection.rule, selection.state)
+
+def inspectAt (heap : Heap Origin Value StableFault) (evaluator : EvaluatorId)
+    (control : Control Local Resume Value StableFault RetryableFault) (ordinal : Nat) :
+    Option (Selection Origin Local Resume Rule Value StableFault) :=
+  match control with
+  | .force cell returns =>
+      (heap.lookup cell).bind fun record => match record.cache with
+      | .suspended => ((specification.alternatives record.origin)[ordinal]?).map fun (rule, state) =>
+          ⟨cell, record, evaluator, returns, ordinal, rule, state⟩
+      | _ => none
+  | _ => none
+
+def inspect (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)) (ordinal : Nat) :
+    Option (Selection Origin Local Resume Rule Value StableFault) :=
+  inspectAt specification source.world.heap source.world.nextEvaluator source.control ordinal
+
+/-- Receipt selection changes no datum used by source admission. This view
+reads actual control and heap; it does not fabricate a full source world. -/
+def inspectCore (source : NeedExecution.CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (ordinal : Nat) : Option (Selection Origin Local Resume Rule Value StableFault) :=
+  inspectAt specification source.world.heap source.world.nextEvaluator source.control ordinal
+
+theorem inspectCore_project (keepReceipts : Bool)
+    (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+      (Rule := Rule) (Value := Value) (StableFault := StableFault)
+      (RetryableFault := RetryableFault) (Effect := Effect)) (ordinal : Nat) :
+    inspectCore specification (NeedExecution.projectMachine keepReceipts source) ordinal =
+      inspect specification source ordinal := rfl
+
+/-- The executable reader constructs genuine source admission evidence. -/
+theorem inspect_sound {source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)} {ordinal : Nat}
+    {selection : Selection Origin Local Resume Rule Value StableFault}
+    (selected : inspect specification source ordinal = some selection) :
+    Admitted specification source ordinal selection := by
+  cases control : source.control with
+  | run state returns => simp only [inspect, inspectAt, control] at selected; cases selected
+  | returned outcome returns => simp only [inspect, inspectAt, control] at selected; cases selected
+  | halted outcome => simp only [inspect, inspectAt, control] at selected; cases selected
+  | force cell returns =>
+      cases found : source.world.heap.lookup cell with
+      | none => simp only [inspect, inspectAt, control, found, Option.bind_none] at selected; cases selected
+      | some record =>
+          cases cache : record.cache <;> simp only [inspect, inspectAt, control, found, Option.bind_some, cache] at selected
+          case evaluating owner => cases selected
+          case value value => cases selected
+          case stableFault fault => cases selected
+          case suspended =>
+            cases alternative : (specification.alternatives record.origin)[ordinal]? with
+            | none => simp only [alternative, Option.map_none] at selected; cases selected
+            | some choice =>
+                rcases choice with ⟨rule, state⟩
+                simp only [alternative, Option.map_some, Option.some.injEq] at selected
+                subst selection
+                exact ⟨control, found, cache, rfl, rfl, alternative⟩
+
+/-- Conversely every admitted physical alternative is recognized with its
+full source record and exact continuation. -/
+theorem inspect_complete {source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)} {ordinal : Nat}
+    {selection : Selection Origin Local Resume Rule Value StableFault}
+    (admitted : Admitted specification source ordinal selection) :
+    inspect specification source ordinal = some selection := by
+  rcases selection with ⟨cell, record, evaluator, returns, position, rule, state⟩
+  obtain ⟨control, found, cache, owner, place, alternative⟩ := admitted
+  dsimp only at control found cache owner place alternative
+  simp only [inspect, inspectAt, control, found, Option.bind_some, cache, alternative, Option.map_some]
+  cases owner
+  cases place
+  rfl
+
+/-- A selected alternative excludes the separate no-rule branch. The actual
+Need instruction retains the entire ordered successor family, not only this
+one selected member. -/
+theorem admitted_step {source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)} {ordinal : Nat}
+    {selection : Selection Origin Local Resume Rule Value StableFault}
+    (admitted : Admitted specification source ordinal selection) :
+    NeedReference.step specification source =
+      branchAlternatives source { source.world with nextEvaluator := source.world.nextEvaluator + 1 }
+        selection.cell selection.record source.world.nextEvaluator selection.returns 0
+        (specification.alternatives selection.record.origin) := by
+  have nonempty : specification.alternatives selection.record.origin ≠ [] := by
+    intro empty
+    have selected := admitted.alternative
+    rw [empty] at selected
+    cases selected
+  simp only [NeedReference.step, admitted.control, admitted.lookup, admitted.suspended]
+
+/-- The selected physical branch installs the real cache owner and commit
+frame. Its world includes the engine's evaluation and choice receipts. -/
+def realize (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect))
+    (selection : Selection Origin Local Resume Rule Value StableFault) :
+    SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule)
+      (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect) :=
+  let base := { source.world with nextEvaluator := source.world.nextEvaluator + 1 }
+  let world := (base.fork selection.ordinal).setKnownCache selection.cell selection.record
+    (.evaluating selection.evaluator)
+  let world := recorded world (.evaluate selection.cell selection.evaluator)
+  let world := recorded world (.chooseRule selection.cell selection.rule)
+  finished source world (.run selection.state (.commit selection.cell selection.evaluator :: selection.returns)) 1 1 2 0
+
+private theorem branch_at
+    (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+      (Rule := Rule) (Value := Value) (StableFault := StableFault)
+      (RetryableFault := RetryableFault) (Effect := Effect))
+    (base : World Origin Rule Value StableFault RetryableFault Effect)
+    (cell : CellId) (record : CellRecord Origin Value StableFault) (owner : EvaluatorId)
+    (returns : List (Frame Resume)) (rule : Rule) (state : Local)
+    (alternatives : List (Rule × Local)) (offset ordinal : Nat)
+    (selected : alternatives[ordinal]? = some (rule, state)) :
+    (branchAlternatives source base cell record owner returns offset alternatives)[ordinal]? =
+      some (finished source
+        (recorded (recorded ((base.fork (offset + ordinal)).setKnownCache cell record (.evaluating owner))
+          (.evaluate cell owner)) (.chooseRule cell rule))
+        (.run state (.commit cell owner :: returns)) 1 1 2 0) := by
+  induction alternatives generalizing offset ordinal with
+  | nil => simp only [List.getElem?_nil] at selected; cases selected
+  | cons first rest ih =>
+      cases ordinal with
+      | zero =>
+          simp only [List.getElem?_cons_zero, Option.some.injEq] at selected
+          subst first
+          rfl
+      | succ ordinal =>
+          simp only [List.getElem?_cons_succ] at selected
+          simp only [branchAlternatives, List.getElem?_cons_succ]
+          have next := ih (offset + 1) ordinal selected
+          have position : (offset + 1) + ordinal = offset + (ordinal + 1) := by omega
+          simpa only [position] using next
+
+/-- Exact positional readback links admission to the actual successor list.
+It preserves the selected owner, full body and stack, rather than just the
+existence of a body with an equal final answer. -/
+theorem admitted_transition {source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)} {ordinal : Nat}
+    {selection : Selection Origin Local Resume Rule Value StableFault}
+    (admitted : Admitted specification source ordinal selection) :
+    (NeedReference.step specification source)[ordinal]? = some (realize source selection) := by
+  rw [admitted_step specification admitted]
+  simpa only [realize, admitted.evaluator, admitted.position, Nat.zero_add] using
+    branch_at source { source.world with nextEvaluator := source.world.nextEvaluator + 1 }
+      selection.cell selection.record source.world.nextEvaluator selection.returns selection.rule selection.state
+      (specification.alternatives selection.record.origin) 0 ordinal admitted.alternative
+
+/-- The source admission family keeps the complete request, including the
+original source world and physical ordinal, in its index. -/
+def family : Family where
+  Raw := SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect) × Nat
+  Exact request := Option { selected : Selection Origin Local Resume Rule Value StableFault //
+    Admitted specification request.1 request.2 selected }
+
+/-- A checked finite-admission reply is available without deciding equality
+of arbitrary captured closures or worlds. -/
+def checked (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)) (ordinal : Nat) :
+    (family specification).Exact (source, ordinal) :=
+  match selected : inspect specification source ordinal with
+  | none => none
+  | some selection => some ⟨selection, inspect_sound specification selected⟩
+
+/-- Packing adds the real request index; successful unpacking never substitutes
+another source world or another ordinal. -/
+def packet (source : SourceMachine (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)) (ordinal : Nat) :
+    NeedDependentService.Packet (family specification) :=
+  ⟨(source, ordinal), checked specification source ordinal⟩
+
+end Mettapedia.Machines.BranchLocalNeed.NeedDependentService.SourceBranch
+
+/-! ## Retained source inventories
+
+One poll delegates to the existing occurrence controller. A yielded item keeps
+its own selected-machine observation, while the provider state retains every
+other branch world. Exhaustion is checked against the complete inventory.
+This wrapper neither runs a body to completion nor computes cardinality.
+-/
+namespace Mettapedia.Machines.BranchLocalNeed.NeedDependentService.Retained
+
+open NeedReference
+open Mettapedia.GSLT.Core.BranchingTemporal
+open Mettapedia.GSLT.Core.InferenceControl
+open Mettapedia.GSLT.LanguageDef
+
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect Observation : Type}
+
+abbrev Machine := NeedReference.Machine Origin Local Resume Rule Value StableFault RetryableFault Effect
+abbrev Node := WorkOccurrence (Machine (Origin := Origin) (Local := Local) (Resume := Resume)
+  (Rule := Rule) (Value := Value) (StableFault := StableFault)
+  (RetryableFault := RetryableFault) (Effect := Effect))
+abbrev Answer := Produced Value StableFault RetryableFault
+abbrev Inventory := Mettapedia.GSLT.Core.InferenceControl.Snapshot
+  (Node (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule) (Value := Value)
+    (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect))
+  (Answer (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) × WorldPath) Nat
+
+variable (advance : Machine (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule)
+  (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect) →
+    List (Machine (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule)
+      (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect)))
+
+def system : BranchingSystem
+    (Node (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule) (Value := Value)
+      (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect))
+    (Answer (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) × WorldPath) :=
+  WorkOccurrence.lift ⟨haltedOutcome, advance⟩
+
+variable (controller : Controller
+  (Node (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule) (Value := Value)
+    (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect))
+  (Answer (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) × WorldPath) Nat)
+  (observe : Machine (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule)
+    (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect) → Observation)
+
+/-- A source-specific world readout travels with the actual emitted branch.
+The remaining inventory lives separately in the retained provider state. -/
+def pull (inventory : Inventory (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule)
+    (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect)) :
+    HostCalls.Pull (Inventory (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule)
+      (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect))
+      (Answer (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) × WorldPath × Observation) :=
+  match Mettapedia.GSLT.Core.InferenceControl.Snapshot.selected controller inventory with
+  | none => .done
+  | some node =>
+      let reached := Mettapedia.GSLT.Core.InferenceControl.Snapshot.tick (system advance) controller inventory
+      match haltedOutcome node.state with
+      | none => .suspend reached
+      | some outcome => .yield (outcome, node.trace, observe node.state) reached
+
+def provider : Mettapedia.Machines.Cursor.Provider
+    (NativeControlCursor.protocol
+      (Answer (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault) × WorldPath × Observation)) :=
+  NativeControlCursor.provider (pull advance controller observe)
+
+/-- Scheduler rearrangement preserves the complete occurrence inventory.
+It therefore cannot manufacture a successful exhaustion reply. -/
+theorem selected_none_iff (inventory : Inventory (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect)) :
+    Mettapedia.GSLT.Core.InferenceControl.Snapshot.selected controller inventory = none ↔
+      inventory.search.frontier = [] := by
+  have sameLength := ((controller.scheduler inventory.memory).reorder_complete
+    inventory.search.frontier).length_eq
+  cases ordered : (controller.scheduler inventory.memory).reorder inventory.search.frontier with
+  | nil =>
+      have empty : inventory.search.frontier = [] := by
+        rw [ordered] at sameLength
+        exact List.length_eq_zero_iff.mp sameLength.symm
+      change ((controller.scheduler inventory.memory).reorder inventory.search.frontier).head? = none ↔
+        inventory.search.frontier = []
+      rw [ordered]
+      exact ⟨fun _ => empty, fun _ => rfl⟩
+  | cons node rest =>
+      have nonempty : inventory.search.frontier ≠ [] := by
+        intro empty
+        rw [ordered, empty] at sameLength
+        simp only [List.length_cons, List.length_nil] at sameLength
+        omega
+      simp only [Mettapedia.GSLT.Core.InferenceControl.Snapshot.selected, selected, ordered,
+        List.head?_cons, Option.some_ne_none, nonempty]
+
+/-- An unfinished selected node suspends with its actual progressed inventory.
+The full residual cannot be replaced by an empty successful collection. -/
+theorem unfinished_poll (inventory : Inventory (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect))
+    (node : Node (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule) (Value := Value)
+      (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect))
+    (chosen : Mettapedia.GSLT.Core.InferenceControl.Snapshot.selected controller inventory = some node)
+    (unfinished : haltedOutcome node.state = none) :
+    pull advance controller observe inventory =
+      .suspend (Mettapedia.GSLT.Core.InferenceControl.Snapshot.tick (system advance) controller inventory) := by
+  simp only [pull, chosen, unfinished]
+
+/-- A returned fault and a returned value have the same occurrence retention.
+The chosen observation is read from that exact branch, not another world. -/
+theorem returned_poll (inventory : Inventory (Origin := Origin) (Local := Local) (Resume := Resume)
+    (Rule := Rule) (Value := Value) (StableFault := StableFault)
+    (RetryableFault := RetryableFault) (Effect := Effect))
+    (node : Node (Origin := Origin) (Local := Local) (Resume := Resume) (Rule := Rule) (Value := Value)
+      (StableFault := StableFault) (RetryableFault := RetryableFault) (Effect := Effect))
+    (outcome : Answer (Value := Value) (StableFault := StableFault) (RetryableFault := RetryableFault))
+    (chosen : Mettapedia.GSLT.Core.InferenceControl.Snapshot.selected controller inventory = some node)
+    (returned : haltedOutcome node.state = some outcome) :
+    pull advance controller observe inventory =
+      .yield (outcome, node.trace, observe node.state)
+        (Mettapedia.GSLT.Core.InferenceControl.Snapshot.tick (system advance) controller inventory) := by
+  simp only [pull, chosen, returned]
+
+end Mettapedia.Machines.BranchLocalNeed.NeedDependentService.Retained

@@ -73,7 +73,7 @@ theorem erase_homogeneousArguments {language : LanguageDef}
 
 def node {language : LanguageDef} (rule : GrammarRule) (member : rule ∈ language.terms)
     (parameter : String) (kind : CollType)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     {Γ : List TypeExpr} (values : List (Term (signatureOf language) Γ (.base rule.category))) :
     Term (signatureOf language) Γ (.base rule.category) :=
   .op (.collectionConstructor rule member parameter kind (.base rule.category) shape values.length)
@@ -81,7 +81,7 @@ def node {language : LanguageDef} (rule : GrammarRule) (member : rule ∈ langua
 
 theorem erase_node {language : LanguageDef} (rule : GrammarRule)
     (member : rule ∈ language.terms) (parameter : String) (kind : CollType)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     {Γ : List TypeExpr} (values : List (Term (signatureOf language) Γ (.base rule.category))) :
     erase (node rule member parameter kind shape values) =
       .collection kind (values.map erase) none := erase_homogeneousArguments values |>
@@ -89,7 +89,7 @@ theorem erase_node {language : LanguageDef} (rule : GrammarRule)
 
 theorem sorted_node {language : LanguageDef} (rule : GrammarRule)
     (member : rule ∈ language.terms) (parameter : String) (kind : CollType)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     {Γ : List TypeExpr} (values : List (Term (signatureOf language) Γ (.base rule.category))) :
     SortedAt language (.collection kind (values.map erase) none) rule.category := by
   refine ⟨FreeTypeContext.empty, Γ, ?_⟩
@@ -98,7 +98,7 @@ theorem sorted_node {language : LanguageDef} (rule : GrammarRule)
 
 def bagPermutation {language : LanguageDef} (rule : GrammarRule)
     (member : rule ∈ language.terms) (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection .hashBag (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection .hashBag (.base rule.category))])
     {Γ : List TypeExpr} (first second : List (Term (signatureOf language) Γ (.base rule.category)))
     (permutation : first.Perm second) : DeclaredAxiom language where
   context := Γ
@@ -109,13 +109,13 @@ def bagPermutation {language : LanguageDef} (rule : GrammarRule)
   target := .collection .hashBag (second.map erase) none
   leftErases := erase_node _ _ _ _ _ _
   rightErases := erase_node _ _ _ _ _ _
-  witness := .bagPerm rule _ _ ⟨member, ⟨parameter, _, shape⟩⟩
+  witness := .bagPerm rule _ _ ⟨member, ⟨parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩⟩
     (sorted_node rule member parameter .hashBag shape first) (permutation.map erase)
   sameCategory := rfl
 
 def setPermutation {language : LanguageDef} (rule : GrammarRule)
     (member : rule ∈ language.terms) (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection .hashSet (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection .hashSet (.base rule.category))])
     {Γ : List TypeExpr} (first second : List (Term (signatureOf language) Γ (.base rule.category)))
     (permutation : first.Perm second) : DeclaredAxiom language where
   context := Γ
@@ -126,13 +126,13 @@ def setPermutation {language : LanguageDef} (rule : GrammarRule)
   target := .collection .hashSet (second.map erase) none
   leftErases := erase_node _ _ _ _ _ _
   rightErases := erase_node _ _ _ _ _ _
-  witness := .setPerm rule _ _ ⟨member, ⟨parameter, _, shape⟩⟩
+  witness := .setPerm rule _ _ ⟨member, ⟨parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩⟩
     (sorted_node rule member parameter .hashSet shape first) (permutation.map erase)
   sameCategory := rfl
 
 def setDeduplication {language : LanguageDef} (rule : GrammarRule)
     (member : rule ∈ language.terms) (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection .hashSet (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection .hashSet (.base rule.category))])
     {Γ : List TypeExpr} (value : Term (signatureOf language) Γ (.base rule.category))
     (rest : List (Term (signatureOf language) Γ (.base rule.category))) : DeclaredAxiom language where
   context := Γ
@@ -143,7 +143,7 @@ def setDeduplication {language : LanguageDef} (rule : GrammarRule)
   target := .collection .hashSet (erase value :: rest.map erase) none
   leftErases := by rw [erase_node]; rfl
   rightErases := by rw [erase_node]; rfl
-  witness := .setDedup rule _ _ ⟨member, ⟨parameter, _, shape⟩⟩
+  witness := .setDedup rule _ _ ⟨member, ⟨parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩⟩
     (by simpa only [List.map_cons] using
       sorted_node rule member parameter .hashSet shape (value :: value :: rest))
   sameCategory := rfl
@@ -151,7 +151,7 @@ def setDeduplication {language : LanguageDef} (rule : GrammarRule)
 def flattening {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
     (algebra : CollectionAlgebra) (declaration : AlgebraRule language rule kind algebra)
     (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     (enabled : algebra.flatten = true) {Γ : List TypeExpr}
     (pre inner post : List (Term (signatureOf language) Γ (.base rule.category))) :
     DeclaredAxiom language where
@@ -174,7 +174,7 @@ def flattening {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
 def singletonCollapse {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
     (algebra : CollectionAlgebra) (declaration : AlgebraRule language rule kind algebra)
     (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     (enabled : algebra.flatten = true) {Γ : List TypeExpr}
     (value : Term (signatureOf language) Γ (.base rule.category)) : DeclaredAxiom language where
   context := Γ
@@ -195,7 +195,7 @@ def nullary {language : LanguageDef} (rule : GrammarRule) (member : rule ∈ lan
     (empty : rule.params = []) {Γ : List TypeExpr} :
     Term (signatureOf language) Γ (.base rule.category) :=
   .op (.constructor rule member
-    (by simp only [UsesBareCollection, empty]; simp)
+    (by simp only [UsesBareCollection, GrammarRule.bareParams_cons_iff, empty]; simp)
     (by rw [empty]; exact ParameterScopes.nil)) .nil
 
 theorem eraseConstructorArguments_empty {language : LanguageDef} {Γ : List TypeExpr}
@@ -518,7 +518,7 @@ theorem selectedUnit_eq_original_of_unique {language : LanguageDef} (rule : Gram
 def unitEliminationWith {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
     (algebra : CollectionAlgebra) (declaration : AlgebraRule language rule kind algebra)
     (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     (unit : String) (isUnit : algebra.unit = some unit)
     (selected : SelectedUnit language rule.category unit) {Γ : List TypeExpr}
     (pre post : List (Term (signatureOf language) Γ (.base rule.category))) :
@@ -541,7 +541,7 @@ def unitEliminationWith {language : LanguageDef} (rule : GrammarRule) (kind : Co
 def emptyUnitWith {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
     (algebra : CollectionAlgebra) (declaration : AlgebraRule language rule kind algebra)
     (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     (unit : String) (isUnit : algebra.unit = some unit)
     (selected : SelectedUnit language rule.category unit) {Γ : List TypeExpr} :
     DeclaredAxiom language where
@@ -560,7 +560,7 @@ def emptyUnitWith {language : LanguageDef} (rule : GrammarRule) (kind : CollType
 noncomputable def unitElimination {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
     (algebra : CollectionAlgebra) (declaration : AlgebraRule language rule kind algebra)
     (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     (unit : String) (isUnit : algebra.unit = some unit) {Γ : List TypeExpr}
     (pre post : List (Term (signatureOf language) Γ (.base rule.category))) :
     DeclaredAxiom language :=
@@ -570,7 +570,7 @@ noncomputable def unitElimination {language : LanguageDef} (rule : GrammarRule) 
 noncomputable def emptyUnit {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
     (algebra : CollectionAlgebra) (declaration : AlgebraRule language rule kind algebra)
     (parameter : String)
-    (shape : rule.params = [.simple parameter (.collection kind (.base rule.category))])
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
     (unit : String) (isUnit : algebra.unit = some unit) {Γ : List TypeExpr} :
     DeclaredAxiom language :=
   emptyUnitWith (Γ := Γ) rule kind algebra declaration parameter shape unit isUnit

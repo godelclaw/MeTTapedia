@@ -30,7 +30,7 @@ tree that displays an operational site:
 | HE machine | the call inside `metta-call` | none / type, space, output |
 | MeTTa program | the head of a call | none / argument |
 | PeTTa machine | the function target of a call | none / seven machine fields |
-| Prime shape | beta, the pair under a projection, `refl` under `J` | see below |
+| Π/Σ/Id shape | beta, the pair under a projection, `refl` under `J` | see below |
 | HOL4 kernel | the major premise of `MP` | antecedent / minor hypotheses |
 | HOL Light kernel | the major premise of `EQ_MP` | left side / minor hypotheses |
 | MM0 kernel | the instance premise of theorem application | context, theorem, hypotheses / index, local hypotheses |
@@ -343,24 +343,24 @@ theorem pettaMachine_call_site :
       ⟨[], List.replicate 7 (.base "GroundAtom"), .base "GroundAtom", .base "GroundAtom"⟩ := by
   decide +kernel
 
-/-! ## The shape of Prime's computation rules -/
+/-! ## The shape of the Π/Σ/Id computation rules -/
 
-theorem primeShape_row :
-    RowHolds primeShape ⟨["Tm", "Ctx"], ["Tm", "Ctx"], ["Tm"], ["Tm", "Ctx"]⟩ := by
+theorem piSigmaIdShape_row :
+    RowHolds piSigmaIdShape ⟨["Tm", "Ctx"], ["Tm", "Ctx"], ["Tm"], ["Tm", "Ctx"]⟩ := by
   decide +kernel
 
-theorem prime_beta_site : HasSite primeShape "BetaPi" [0] (betaInterface (.base "Tm")) := by
+theorem piSigmaId_beta_site : HasSite piSigmaIdShape "BetaPi" [0] (betaInterface (.base "Tm")) := by
   decide +kernel
 
 /-- The pair under a projection: no index and no rely, only the target axis. -/
-theorem prime_projection_site :
-    HasSite primeShape "BetaSigmaFst" [0] ⟨[], [], .base "Tm", .base "Tm"⟩ := by
+theorem piSigmaId_projection_site :
+    HasSite piSigmaIdShape "BetaSigmaFst" [0] ⟨[], [], .base "Tm", .base "Tm"⟩ := by
   decide +kernel
 
 /-- `refl a` under `J`: the endpoint is an index, the type, motive and case
 are rely variables. -/
-theorem prime_identity_site :
-    HasSite primeShape "J-refl" [5]
+theorem piSigmaId_identity_site :
+    HasSite piSigmaIdShape "J-refl" [5]
       ⟨[.base "Tm"], [.base "Tm", .base "Tm", .base "Tm"], .base "Tm", .base "Tm"⟩ := by
   decide +kernel
 

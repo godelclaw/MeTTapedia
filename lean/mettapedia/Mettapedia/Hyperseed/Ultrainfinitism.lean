@@ -1,21 +1,12 @@
 import Mathlib.Data.Set.Lattice
 
 /-!
-# Hyperseed Ultrainfinitism Core
+# Perspectives, visibility regions, and staged observations
 
-This file starts a Hyperseed-style foundation for ultrainfinitism by making
-observer-relativity a property of a potentially infinite perspective/regime rather
-than of a finitary observer token.
-
-The core move is:
-
-- a `Perspective` chooses a signal class and a reachability relation,
-- `observableUniverse` is induced by that signal class,
-- `nearEurycosm` is induced by a budget over an effort/cost preorder.
-
-This is intentionally a thin structural layer. It avoids premature commitments to
-finiteness, measure theory, or executable agents while still supporting concrete
-monotonicity theorems.
+A perspective supplies signals, reachability, and an effort preorder. Its
+available region intersects observability, a cost sublevel set, and a supplied
+query region. Stateful perspectives freeze to this same interface; staged
+views retain only monotonicity. No finiteness or execution semantics is assumed.
 -/
 
 namespace Mettapedia.Hyperseed
@@ -67,22 +58,22 @@ def sublevelRegion (c : World → Cost) (B : Cost) : Set World :=
 /-- Larger bounds weakly enlarge any sublevel-set region. -/
 theorem sublevelRegion_mono
     (c : World → Cost) {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
-    sublevelRegion c B₁ ⊆ sublevelRegion c B₂ := by
-  intro x hx
-  exact le_trans hx hB
+    sublevelRegion c B₁ ⊆ sublevelRegion c B₂ :=
+  fun _ hx => hx.trans hB
+
+variable (P : Perspective World Signal Cost) (B : Cost) (guard : Set World)
 
 /-- The observable universe induced by one perspective. -/
-def observableUniverse (P : Perspective World Signal Cost) : Set World :=
+def observableUniverse : Set World :=
   { x | ∃ s ∈ P.signalClass, P.reaches s x }
 
 /-- Budget-bounded comprehensibility region for one perspective. -/
-def nearEurycosm (P : Perspective World Signal Cost) (B : Cost) : Set World :=
+def nearEurycosm : Set World :=
   sublevelRegion P.effort B
 
 /-- Hyperseed-style available region: observable, affordable, and admitted by an
 additional guard/credibility region. -/
-def availableRegion
-    (P : Perspective World Signal Cost) (B : Cost) (guard : Set World) : Set World :=
+def availableRegion : Set World :=
   observableUniverse P ∩ (nearEurycosm P B ∩ guard)
 
 /-- Observable universe at one state/regime. -/
@@ -105,8 +96,7 @@ def availableRegionAt
 
 /-- Membership in the available region is exactly the conjunction of the three
 constituent filters. -/
-theorem mem_availableRegion_iff
-    (P : Perspective World Signal Cost) (B : Cost) (guard : Set World) (x : World) :
+theorem mem_availableRegion_iff (x : World) :
     x ∈ availableRegion P B guard ↔
       x ∈ observableUniverse P ∧ x ∈ nearEurycosm P B ∧ x ∈ guard := by
   rfl
@@ -134,81 +124,70 @@ theorem observableUniverseAt_mono_of_signalClass_subset
     (W : State)
     (hSig : P.signalClass W ⊆ P'.signalClass W)
     (hReach : ∀ s x, P.reaches W s x → P'.reaches W s x) :
-    observableUniverseAt P W ⊆ observableUniverseAt P' W := by
-  exact observableUniverse_mono_of_signalClass_subset hSig hReach
+    observableUniverseAt P W ⊆ observableUniverseAt P' W :=
+  observableUniverse_mono_of_signalClass_subset hSig hReach
 
 /-- Larger budgets weakly enlarge the near eurycosm. -/
-theorem nearEurycosm_mono
-    (P : Perspective World Signal Cost) {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
-    nearEurycosm P B₁ ⊆ nearEurycosm P B₂ := by
-  exact sublevelRegion_mono P.effort hB
+theorem nearEurycosm_mono {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
+    nearEurycosm P B₁ ⊆ nearEurycosm P B₂ :=
+  sublevelRegion_mono P.effort hB
 
 theorem nearEurycosmAt_mono
     (P : StatefulPerspective State World Signal Cost)
     (W : State) {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
-    nearEurycosmAt P W B₁ ⊆ nearEurycosmAt P W B₂ := by
-  exact nearEurycosm_mono (freezePerspective P W) hB
+    nearEurycosmAt P W B₁ ⊆ nearEurycosmAt P W B₂ :=
+  nearEurycosm_mono (freezePerspective P W) hB
 
 /-- Reachability along one admitted signal places a world in the observable
 universe. -/
-theorem mem_observableUniverse_of_mem_signalClass
-    (P : Perspective World Signal Cost) {s : Signal} {x : World}
+theorem mem_observableUniverse_of_mem_signalClass {s : Signal} {x : World}
     (hs : s ∈ P.signalClass) (hreach : P.reaches s x) :
-    x ∈ observableUniverse P := by
-  exact ⟨s, hs, hreach⟩
+    x ∈ observableUniverse P :=
+  ⟨s, hs, hreach⟩
 
 /-- If every observable world is within effort budget `B`, then the observable
 universe is contained in the near eurycosm at `B`. -/
 theorem observableUniverse_subset_nearEurycosm
-    (P : Perspective World Signal Cost) (B : Cost)
     (hB : ∀ x, x ∈ observableUniverse P → P.effort x ≤ B) :
     observableUniverse P ⊆ nearEurycosm P B := by
   intro x hx
   exact hB x hx
 
 /-- The available region always sits inside the observable universe. -/
-theorem availableRegion_subset_observableUniverse
-    (P : Perspective World Signal Cost) (B : Cost) (guard : Set World) :
-    availableRegion P B guard ⊆ observableUniverse P := by
-  intro x hx
-  exact hx.1
+theorem availableRegion_subset_observableUniverse :
+    availableRegion P B guard ⊆ observableUniverse P :=
+  Set.inter_subset_left
 
 theorem availableRegionAt_subset_observableUniverseAt
     (P : StatefulPerspective State World Signal Cost)
     (W : State) (B : Cost) (guard : Set World) :
-    availableRegionAt P W B guard ⊆ observableUniverseAt P W := by
-  exact availableRegion_subset_observableUniverse (freezePerspective P W) B guard
+    availableRegionAt P W B guard ⊆ observableUniverseAt P W :=
+  availableRegion_subset_observableUniverse (freezePerspective P W) B guard
 
 /-- The available region always sits inside the near eurycosm. -/
-theorem availableRegion_subset_nearEurycosm
-    (P : Perspective World Signal Cost) (B : Cost) (guard : Set World) :
-    availableRegion P B guard ⊆ nearEurycosm P B := by
-  intro x hx
-  exact hx.2.1
+theorem availableRegion_subset_nearEurycosm :
+    availableRegion P B guard ⊆ nearEurycosm P B :=
+  Set.Subset.trans Set.inter_subset_right Set.inter_subset_left
 
 theorem availableRegionAt_subset_nearEurycosmAt
     (P : StatefulPerspective State World Signal Cost)
     (W : State) (B : Cost) (guard : Set World) :
-    availableRegionAt P W B guard ⊆ nearEurycosmAt P W B := by
-  exact availableRegion_subset_nearEurycosm (freezePerspective P W) B guard
+    availableRegionAt P W B guard ⊆ nearEurycosmAt P W B :=
+  availableRegion_subset_nearEurycosm (freezePerspective P W) B guard
 
 /-- The available region always sits inside the guard region. -/
-theorem availableRegion_subset_guard
-    (P : Perspective World Signal Cost) (B : Cost) (guard : Set World) :
-    availableRegion P B guard ⊆ guard := by
-  intro x hx
-  exact hx.2.2
+theorem availableRegion_subset_guard :
+    availableRegion P B guard ⊆ guard :=
+  Set.Subset.trans Set.inter_subset_right Set.inter_subset_right
 
 theorem availableRegionAt_subset_guard
     (P : StatefulPerspective State World Signal Cost)
     (W : State) (B : Cost) (guard : Set World) :
-    availableRegionAt P W B guard ⊆ guard := by
-  exact availableRegion_subset_guard (freezePerspective P W) B guard
+    availableRegionAt P W B guard ⊆ guard :=
+  availableRegion_subset_guard (freezePerspective P W) B guard
 
 /-- Enlarging the budget weakly enlarges the available region. -/
-theorem availableRegion_mono_budget
-    (P : Perspective World Signal Cost) {B₁ B₂ : Cost}
-    (guard : Set World) (hB : B₁ ≤ B₂) :
+theorem availableRegion_mono_budget {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
     availableRegion P B₁ guard ⊆ availableRegion P B₂ guard := by
   intro x hx
   exact ⟨hx.1, nearEurycosm_mono P hB hx.2.1, hx.2.2⟩
@@ -217,12 +196,11 @@ theorem availableRegionAt_mono_budget
     (P : StatefulPerspective State World Signal Cost)
     (W : State) {B₁ B₂ : Cost}
     (guard : Set World) (hB : B₁ ≤ B₂) :
-    availableRegionAt P W B₁ guard ⊆ availableRegionAt P W B₂ guard := by
-  exact availableRegion_mono_budget (freezePerspective P W) guard hB
+    availableRegionAt P W B₁ guard ⊆ availableRegionAt P W B₂ guard :=
+  availableRegion_mono_budget (freezePerspective P W) guard hB
 
 /-- Enlarging the guard region weakly enlarges the available region. -/
 theorem availableRegion_mono_guard
-    (P : Perspective World Signal Cost) (B : Cost)
     {guard guard' : Set World} (hguard : guard ⊆ guard') :
     availableRegion P B guard ⊆ availableRegion P B guard' := by
   intro x hx
@@ -232,8 +210,8 @@ theorem availableRegionAt_mono_guard
     (P : StatefulPerspective State World Signal Cost)
     (W : State) (B : Cost)
     {guard guard' : Set World} (hguard : guard ⊆ guard') :
-    availableRegionAt P W B guard ⊆ availableRegionAt P W B guard' := by
-  exact availableRegion_mono_guard (freezePerspective P W) B hguard
+    availableRegionAt P W B guard ⊆ availableRegionAt P W B guard' :=
+  availableRegion_mono_guard (freezePerspective P W) B hguard
 
 /-- A stage-indexed filtration of an infinite world space. The stages themselves
 may be finite, infinite, or transfinite; only monotonicity matters here. -/
@@ -285,7 +263,7 @@ def oneStepReachable (M : Multiverse (World := World) Event) : Set World :=
 theorem mem_oneStepReachable
     (M : Multiverse (World := World) Event) {w x : World} {e : Event}
     (hw : w ∈ M.candidateWorlds) (hx : x ∈ M.step w e) :
-    x ∈ oneStepReachable M := by
-  exact ⟨w, e, hw, hx⟩
+    x ∈ oneStepReachable M :=
+  ⟨w, e, hw, hx⟩
 
 end Mettapedia.Hyperseed

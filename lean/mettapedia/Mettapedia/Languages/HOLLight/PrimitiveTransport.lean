@@ -147,6 +147,45 @@ theorem substitution_derives (policy : AxiomPolicy)
       subst premise
       exact proof
 
+
+/-- The joint substitution has a computed two-node source certificate:
+`INST_TYPE` precedes `INST`, using the already admitted maplet conventions. -/
+def substitutionBlock (substitution : TypeCorrectTermSubstitution) (input : Theorem)
+    (origin : ProofExecution.Origin) : ProofSystem.Certificate :=
+  let typePart := typeOnlySubstitution (typeEntries substitution.raw.types)
+  let typed := substituteTheorem typePart input
+  ([⟨typed, .inference (.instType (typeEntries substitution.raw.types) input), [0], origin⟩,
+    ⟨substituteTheorem substitution input, .inference (.inst (termEntries substitution) typed), [1], origin⟩], 2)
+
+theorem substitutionBlock_checked (policy : AxiomPolicy) [DecidablePred policy]
+    (substitution : TypeCorrectTermSubstitution) (input : Theorem) (origin : ProofExecution.Origin) :
+    GraphExpansion.BlockChecked policy [input] (substituteTheorem substitution input)
+      (substitutionBlock substitution input origin) := by
+  let typePart := typeOnlySubstitution (typeEntries substitution.raw.types)
+  let typed := substituteTheorem typePart input
+  let result := substituteTheorem substitution input
+  let first : ProofExecution.Receipt :=
+    ⟨typed, .inference (.instType (typeEntries substitution.raw.types) input), [0], origin⟩
+  let second : ProofExecution.Receipt :=
+    ⟨result, .inference (.inst (termEntries substitution) typed), [1], origin⟩
+  have typeChecked : (InferenceRequest.instType (typeEntries substitution.raw.types) input).check = some typed :=
+    (InferenceRequest.check_eq_some_iff _ _).mpr (substituteTheorem_semantics typePart input)
+  have termChecked : (InferenceRequest.inst (termEntries substitution) typed).check = some result := by
+    apply (InferenceRequest.check_eq_some_iff _ _).mpr
+    refine ⟨termOnly substitution, termEntries_admitted substitution, ?_⟩
+    rw [show result = substituteTheorem (termOnly substitution) typed from
+      (substituteTheorem_split substitution input).symm]
+    exact substituteTheorem_semantics _ _
+  have firstStep : first.replay (ruleWitness policy) #[input] = some #[input, typed] := by
+    apply (ProofSystem.node_replay_iff policy _ _ _).mpr
+    exact ⟨rfl, typeChecked, rfl⟩
+  have secondStep : second.replay (ruleWitness policy) #[input, typed] = some #[input, typed, result] := by
+    apply (ProofSystem.node_replay_iff policy _ _ _).mpr
+    exact ⟨rfl, termChecked, rfl⟩
+  refine ⟨#[input, typed, result], ?_, rfl⟩
+  change DerivationGraph.replayFrom (ruleWitness policy) #[input] [first, second] = _
+  simp [DerivationGraph.replayFrom, firstStep, secondStep]
+
 /-! ## Fresh named representatives -/
 
 def freeNames : DBTerm → List Name

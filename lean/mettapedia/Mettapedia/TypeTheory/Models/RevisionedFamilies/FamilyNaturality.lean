@@ -6,8 +6,8 @@ import Mettapedia.OSLF.Framework.WMCalculusQuotientFunctor
 
 An operation-preserving reading map need not preserve behavioral agreement:
 its target may have additional queries. Exactly when agreement is preserved,
-the map becomes a substitution between observable-state contexts in Prime's
-existing semantic families CwF. Reindexing every dependent family along
+the map becomes a substitution between observable-state contexts in the
+existing staged families CwF. Reindexing every dependent family along
 that substitution commutes with reindexing along the raw-state backend map.
 The construction is functorial on the already defined category of behavioral
 reading maps; it does not manufacture a quotient map for an arbitrary backend.

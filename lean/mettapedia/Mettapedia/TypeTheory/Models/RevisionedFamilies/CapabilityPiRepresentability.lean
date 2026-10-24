@@ -154,7 +154,7 @@ theorem termCapabilityChain_representable_iff_namedSupport
     exact (termCapabilityChain_has_answer_iff capability terms).mpr
       (namedSupport terms)
 
-/-- Prime's semantic families CwF can also form the dependent receipt
+/-- The staged families CwF can also form the dependent receipt
 product only over requests named by typed WM terms. This is the pullback of
 the observable receipt family along authored-term denotation. -/
 def allAuthoredReceiptPi (capability : WMCapability R) :

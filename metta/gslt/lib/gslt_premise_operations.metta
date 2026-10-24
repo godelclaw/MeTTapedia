@@ -193,6 +193,15 @@
                    True
                    (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))))
              (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))
+         (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))
+      ((LCons (GrammarTypingWrappedV1 $actual $category $parameters) $rest)
+       (if (== $actual $label)
+         (let $result (TBase $category)
+           (if (== $expected $result)
+             (if (gslt:premise:type-arguments $declarations $free $bound $arguments $parameters)
+               True
+               (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest))
+             (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest)))
          (gslt:premise:type-constructors $declarations $free $bound $label $arguments $expected $rest))))))
 
 (: gslt:premise:type-collection-declarations (-> Atom Atom Atom Atom Atom Atom Atom %Undefined%))
@@ -209,7 +218,9 @@
                (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest))
              (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest)))
           ($ordinary
-           (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest))))))))
+           (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest)))))
+      ((LCons (GrammarTypingWrappedV1 $label $category $parameters) $rest)
+       (gslt:premise:type-collection-declarations $declarations $free $bound $kind $elements $expected $rest)))))
 
 (: gslt:premise:type-extend-count (-> Atom Number Atom %Undefined%))
 (= (gslt:premise:type-extend-count $domain $count $bound)

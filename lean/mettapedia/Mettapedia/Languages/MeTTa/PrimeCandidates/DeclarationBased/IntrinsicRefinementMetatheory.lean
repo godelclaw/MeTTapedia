@@ -676,14 +676,14 @@ abbrev budgetRefinementRules : Rules Tower.Head :=
 abbrev BudgetRefinementHasType {n : Nat} :=
   @Presentation.HasType Tower.Head budgetRefinementRules n
 
-def includeEmptyInBudgetRefinement {context : Tower.Ctx n}
+theorem includeEmptyInBudgetRefinement {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : EmptyHasType context term type) :
     BudgetRefinementHasType context term type :=
   Presentation.Declaration.HasType.includeSignature emptyRules
     rawBudgetRefinementSignature typing
 
-def includeOutcomeInBudgetRefinement {context : Tower.Ctx n}
+theorem includeOutcomeInBudgetRefinement {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : IntrinsicHasType context term type) :
     BudgetRefinementHasType context term type :=
@@ -3103,7 +3103,7 @@ theorem rawBudgetRefinementSignature_fresh {name : DeclName}
       isRefuted, isOutside, isIncomplete, isIncompleteEstablished,
       isIncompleteRefuted, isEliminate] at lookup
 
-def rawBudgetRefinementSignature_formed :
+theorem rawBudgetRefinementSignature_formed :
     rawBudgetRefinementSignature.Formed emptyRules where
   fresh := rawBudgetRefinementSignature_fresh
   types := rawBudgetRefinementSignature_types_formed
@@ -3118,7 +3118,7 @@ def rawBudgetRefinementSignature_formed :
 
 /-! ### Strict positivity -/
 
-def budgetRefinementFamilyApplication
+theorem budgetRefinementFamilyApplication
     (signature judgment before after : Tower.Tm n)
     (signatureFree : FreeOf budgetRefinementName signature)
     (judgmentFree : FreeOf budgetRefinementName judgment)
@@ -3135,46 +3135,46 @@ def budgetRefinementFamilyApplication
     · exact beforeFree
     · exact afterFree) rfl
 
-def budgetSignatureTypeFree :
+theorem budgetSignatureTypeFree :
     FreeOf budgetRefinementName outcomeSignatureType :=
   outcomeSignatureTypeFreeOf budgetRefinementName
 
-def budgetSignatureJudgmentFree
+theorem budgetSignatureJudgmentFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf budgetRefinementName signature) :
     FreeOf budgetRefinementName (signatureJudgment signature) := by
   unfold signatureJudgment
   exact .fst signatureFree
 
-def budgetSignatureEvidenceFree
+theorem budgetSignatureEvidenceFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf budgetRefinementName signature) :
     FreeOf budgetRefinementName (signatureEvidence signature) := by
   unfold signatureEvidence
   exact .fst (.snd signatureFree)
 
-def budgetSignatureObstructionFree
+theorem budgetSignatureObstructionFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf budgetRefinementName signature) :
     FreeOf budgetRefinementName (signatureObstruction signature) := by
   unfold signatureObstruction
   exact .fst (.snd (.snd signatureFree))
 
-def budgetSignatureBoundaryFree
+theorem budgetSignatureBoundaryFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf budgetRefinementName signature) :
     FreeOf budgetRefinementName (signatureBoundary signature) := by
   unfold signatureBoundary
   exact .fst (.snd (.snd (.snd signatureFree)))
 
-def budgetSignatureFrontierFree
+theorem budgetSignatureFrontierFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf budgetRefinementName signature) :
     FreeOf budgetRefinementName (signatureFrontier signature) := by
   unfold signatureFrontier
   exact .snd (.snd (.snd (.snd signatureFree)))
 
-def budgetOutcomeConstructorFree (constructor : DeclName)
+theorem budgetOutcomeConstructorFree (constructor : DeclName)
     (different : constructor ≠ budgetRefinementName)
     {signature judgment witness : Tower.Tm n}
     (signatureFree : FreeOf budgetRefinementName signature)

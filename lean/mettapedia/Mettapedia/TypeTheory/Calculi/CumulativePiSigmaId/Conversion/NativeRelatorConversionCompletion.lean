@@ -174,7 +174,7 @@ theorem root_inclusion {left right : Tower.Tm n}
   | delta lookup => rw [IntrinsicRelator.rawSignature_valueOf_none] at lookup; cases lookup
   | declared evidence => obtain ⟨evidence⟩ := evidence; exact Root.of_iota evidence
 
-def conservative : ConversionConservativeExtension IntrinsicRelator.rules rules where
+theorem conservative : ConversionConservativeExtension IntrinsicRelator.rules rules where
   headEq_eq := rfl
   root_inclusion := root_inclusion
   root_sound := Root.sound

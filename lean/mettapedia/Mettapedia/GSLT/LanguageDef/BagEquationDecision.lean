@@ -38,7 +38,7 @@ theorem normalizeBag_isBagNode_of_length (unit : String) (elements : List Patter
   exact collapse_eq_bag_of_length unit _ (by simpa using many)
 
 /-- The constructive normalization path is an equation derivation. -/
-theorem equationEquiv_normalForm (laws : BagTheory language bag unit)
+theorem equationEquiv_normalForm (laws : BareBagTheory language bag unit)
     (base : BasePremiseEvaluator) {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} {pattern : Pattern}
     (admissible : Admissible language free bound type pattern)
@@ -48,7 +48,7 @@ theorem equationEquiv_normalForm (laws : BagTheory language bag unit)
     (path_normalForm laws base pattern admissible collectionless)
 
 /-- Exact equation adequacy of normalization, including open binding contexts. -/
-theorem equationEquiv_iff_normalForm_eq (laws : BagTheory language bag unit)
+theorem equationEquiv_iff_normalForm_eq (laws : BareBagTheory language bag unit)
     (base : BasePremiseEvaluator) {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} {left right : Pattern}
     (leftAdmissible : Admissible language free bound type left)
@@ -56,13 +56,13 @@ theorem equationEquiv_iff_normalForm_eq (laws : BagTheory language bag unit)
     (collectionless : collectionFree type = true) :
     EquationEquiv base language left right ↔ normalForm unit left = normalForm unit right := by
   constructor
-  · exact normalForm_eq_of_equationEquiv laws
+  · exact normalForm_eq_of_equationEquiv laws.toBagTheory
   · intro equal
     exact .trans _ _ _ (equationEquiv_normalForm laws base leftAdmissible collectionless)
       (equal ▸ (equationEquiv_normalForm laws base rightAdmissible collectionless).symm)
 
 /-- A decision procedure for the authored equation theory on its admissible terms. -/
-def decideEquationEquiv (laws : BagTheory language bag unit)
+def decideEquationEquiv (laws : BareBagTheory language bag unit)
     (base : BasePremiseEvaluator) {free : FreeTypeContext} {bound : List TypeExpr}
     {type : TypeExpr} {left right : Pattern}
     (leftAdmissible : Admissible language free bound type left)

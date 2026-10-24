@@ -12,9 +12,9 @@ therefore simultaneously:
 * operations on endpoint-indexed native certificates; and
 * computations witnessed by exact, proof-relevant GSLT executions.
 
-The `NativeProof` carrier is deliberately restricted to the canonical image
-of Mathlib walks.  Showing that every raw pattern accepted by `NativeWalk` is
-in this image is a separate no-junk theorem; it is not assumed here.
+The raw-pattern exactness theorem identifies every accepted native term with
+one unique Mathlib walk.  `NativeProof.acceptedEquiv` exposes this equivalence
+while retaining the existing proof carrier and its operations.
 -/
 
 namespace Mettapedia.GraphTheory.Walk.ProofTheory
@@ -64,6 +64,41 @@ theorem term_injective {n : Nat} {graph : SimpleGraph (Fin n)}
   intro left right equality
   apply ext
   exact walkPattern_injective equality
+
+/-- Recover the existing proof object from an arbitrary accepted native term.
+The choice is unique by `nativeWalk_iff_existsUnique`. -/
+noncomputable def ofAccepted {n : Nat} (graph : SimpleGraph (Fin n))
+    [DecidableRel graph.Adj] {start finish : Fin n}
+    (accepted : {term : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern //
+      NativeWalk graph graph Hom.id start finish term}) :
+    NativeProof graph start finish :=
+  ofWalk graph (Classical.choose
+    (nativeWalk_reconstruct graph graph Hom.id accepted.property))
+
+@[simp] theorem ofAccepted_term {n : Nat} (graph : SimpleGraph (Fin n))
+    [DecidableRel graph.Adj] {start finish : Fin n}
+    (accepted : {term : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern //
+      NativeWalk graph graph Hom.id start finish term}) :
+    (ofAccepted graph accepted).term = accepted.val :=
+  (Classical.choose_spec
+    (nativeWalk_reconstruct graph graph Hom.id accepted.property)).symm
+
+/-- Native syntax and dependent proofs retain exactly the same walks,
+including repeated edges and cycles. -/
+noncomputable def acceptedEquiv {n : Nat} (graph : SimpleGraph (Fin n))
+    [DecidableRel graph.Adj] (start finish : Fin n) :
+    NativeProof graph start finish ≃
+      {term : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern //
+        NativeWalk graph graph Hom.id start finish term} where
+  toFun proof := ⟨proof.term, proof.native⟩
+  invFun := ofAccepted graph
+  left_inv proof := term_injective (ofAccepted_term graph ⟨proof.term, proof.native⟩)
+  right_inv accepted := Subtype.ext (ofAccepted_term graph accepted)
+
+@[simp] theorem acceptedEquiv_val {n : Nat} (graph : SimpleGraph (Fin n))
+    [DecidableRel graph.Adj] {start finish : Fin n}
+    (proof : NativeProof graph start finish) :
+    (acceptedEquiv graph start finish proof).val = proof.term := rfl
 
 /-- Reflexivity of reachability. -/
 def identity {n : Nat} (graph : SimpleGraph (Fin n))
@@ -204,6 +239,8 @@ theorem map_executes {n m : Nat}
 
 section AxiomAudit
 
+#print axioms acceptedEquiv
+#print axioms ofAccepted_term
 #print axioms term_injective
 #print axioms comp_assoc
 #print axioms inverse_comp

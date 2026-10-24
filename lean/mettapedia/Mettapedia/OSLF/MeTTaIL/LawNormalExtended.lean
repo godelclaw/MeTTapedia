@@ -430,10 +430,12 @@ theorem lawCollection_elements (strict : LawsTypedStrict laws language free) (un
     ElementsHaveType language free bound elements (.base rule.category) := by
   rcases hasType_collection_inv typed with ⟨element', rfl, items⟩ | ⟨rule', name', element', declared', parameters', rfl, items⟩
   · obtain ⟨witness, witnessDeclared, witnessName, witnessParameters, rfl⟩ := typeOk.lawful found
-    rw [unique law kind found witness witnessDeclared rule declared _ _ _ _ witnessParameters parameters] at items
+    rw [unique law kind found witness witnessDeclared rule declared _ _ _ _
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp witnessParameters).2 parameters] at items
     exact items
-  · rw [strict.homogeneous law kind found rule' declared' name' element' parameters',
-      unique law kind found rule' declared' rule declared _ _ _ _ parameters' parameters] at items
+  · rw [strict.homogeneous_bare law kind found rule' declared' name' element' parameters',
+      unique law kind found rule' declared' rule declared _ _ _ _
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters').2 parameters] at items
     exact items
 
 /-- **A collection of a flattening kind can be rebuilt at its type from any elements of the
@@ -450,11 +452,13 @@ theorem lawCollection_rebuild (strict : LawsTypedStrict laws language free) (uni
   intro elements' rest' items
   rcases hasType_collection_inv typed with ⟨element', rfl, _⟩ | ⟨rule', name', element', declared', parameters', rfl, _⟩
   · obtain ⟨witness, witnessDeclared, witnessName, witnessParameters, same⟩ := typeOk.lawful found
-    rw [same, unique law kind found witness witnessDeclared rule declared _ _ _ _ witnessParameters parameters]
+    rw [same, unique law kind found witness witnessDeclared rule declared _ _ _ _
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp witnessParameters).2 parameters]
     exact .collection items
-  · have homogeneous := strict.homogeneous law kind found rule' declared' name' element' parameters'
+  · have homogeneous := strict.homogeneous_bare law kind found rule' declared' name' element' parameters'
     subst homogeneous
-    rw [← unique law kind found rule' declared' rule declared _ _ _ _ parameters' parameters] at items
+    rw [← unique law kind found rule' declared' rule declared _ _ _ _
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters').2 parameters] at items
     exact .collectionConstructor declared' parameters' items
 
 open Mettapedia.GSLT.LanguageDef.GeneralTypedOccurrence GeneralTypedSites in

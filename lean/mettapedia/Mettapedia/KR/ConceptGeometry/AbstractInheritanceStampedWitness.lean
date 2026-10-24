@@ -133,8 +133,8 @@ theorem stampDisjoint_symm (x y : StampedBinaryEvidence Stamp) :
 
 Formal counterpart to PLN's multi-witness Revision: gather many stamped
 inheritance / evidence packets, revise them all together, and certify
-soundness exactly when the packets are pairwise stamp-disjoint (no
-shared provenance, hence no double-counting).
+that the checker accepts exactly pairwise stamp-disjoint packets.
+Source separation and stochastic independence are different conditions.
 -/
 
 /-- Neutral packet: zero evidence, empty stamp. Identity for `revise`. -/
@@ -161,7 +161,7 @@ theorem stampDisjoint_empty_right (x : StampedBinaryEvidence Stamp) :
   simp [StampDisjoint, SourceScoped.Independent]
 
 /-- Iterated revision: chain `revise` across a list of stamped evidence packets.
-The whiteboard's multi-witness Revision pattern in formal form. -/
+The order and the finite list of packets are retained. -/
 noncomputable def listRevise :
     List (StampedBinaryEvidence Stamp) → StampedBinaryEvidence Stamp
   | [] => empty
@@ -200,17 +200,12 @@ theorem stampDisjoint_listRevise_iff
     (x : StampedBinaryEvidence Stamp)
     (xs : List (StampedBinaryEvidence Stamp)) :
     StampDisjoint x (listRevise xs) ↔ ∀ y ∈ xs, StampDisjoint x y := by
-  unfold StampDisjoint
-  constructor
-  · intro h y hy
-    refine Finset.disjoint_left.2 (fun a hax hay => ?_)
-    have hlist : a ∈ (listRevise xs).stamp :=
-      (mem_listRevise_stamp xs).2 ⟨y, hy, hay⟩
-    exact (Finset.disjoint_left.mp h hax) hlist
-  · intro h
-    refine Finset.disjoint_left.2 (fun a hax hlist => ?_)
-    obtain ⟨y, hy, hay⟩ := (mem_listRevise_stamp xs).1 hlist
-    exact (Finset.disjoint_left.mp (h y hy) hax) hay
+  induction xs with
+  | nil => simp [StampDisjoint, SourceScoped.Independent]
+  | cons y ys ih =>
+      simpa only [listRevise_cons, StampDisjoint, SourceScoped.Independent,
+        SourceScope.Independent, sourceScope_eq_stamp, revise_stamp,
+        Finset.disjoint_union_right, List.forall_mem_cons] using and_congr Iff.rfl ih
 
 /-- Guarded iterated revision: structurally propagates `Option` failure as
 soon as any prefix step produces an overlapping stamp, mirroring the binary
@@ -230,117 +225,48 @@ theorem guardedListRevise_cons (x : StampedBinaryEvidence Stamp)
       (guardedListRevise xs).bind fun r =>
         if StampDisjoint x r then some (revise x r) else none := rfl
 
-/-- Whenever the guarded iterated revision succeeds, its content equals the
-unguarded iterated revision. -/
-theorem guardedListRevise_eq_some_imp_eq_listRevise
-    (xs : List (StampedBinaryEvidence Stamp))
-    {r : StampedBinaryEvidence Stamp}
-    (hr : guardedListRevise xs = some r) :
-    r = listRevise xs := by
-  induction xs generalizing r with
-  | nil =>
-    simpa [guardedListRevise] using hr.symm
+/-- The recursive checker accepts exactly the pairwise source-disjoint lists.
+This characterizes its source-overlap guard, not probabilistic independence. -/
+theorem guardedListRevise_eq (xs : List (StampedBinaryEvidence Stamp)) :
+    guardedListRevise xs =
+      if xs.Pairwise StampDisjoint then some (listRevise xs) else none := by
+  induction xs with
+  | nil => simp [guardedListRevise, listRevise]
   | cons x xs ih =>
-    rw [guardedListRevise_cons] at hr
-    cases hxs : guardedListRevise xs with
-    | none =>
-      rw [hxs] at hr
-      simp at hr
-    | some s =>
-      rw [hxs] at hr
-      simp at hr
-      by_cases hdisj : StampDisjoint x s
-      · simp [hdisj] at hr
-        have hs : s = listRevise xs := ih hxs
-        rw [hs] at hr
-        rw [← hr, listRevise_cons]
-      · simp [hdisj] at hr
+      rw [guardedListRevise_cons, ih]
+      by_cases h : xs.Pairwise StampDisjoint
+      · simp only [if_pos h, Option.bind_some]
+        simp [List.pairwise_cons, h, ← stampDisjoint_listRevise_iff, listRevise_cons]
+      · simp [h, List.pairwise_cons]
 
-/-- Headline soundness theorem: the guarded iterated revision succeeds with
-the additive aggregate iff the input list is pairwise stamp-disjoint. This
-is the formal certificate that "additive multi-witness revision is sound
-exactly under pairwise stamp-disjointness." -/
+/-- Success determines both the aggregate and the source-separation certificate. -/
+theorem guardedListRevise_eq_some_iff
+    (xs : List (StampedBinaryEvidence Stamp)) (r : StampedBinaryEvidence Stamp) :
+    guardedListRevise xs = some r ↔ xs.Pairwise StampDisjoint ∧ r = listRevise xs := by
+  rw [guardedListRevise_eq]
+  split_ifs <;> simp_all [eq_comm]
+
+theorem guardedListRevise_eq_some_imp_eq_listRevise
+    (xs : List (StampedBinaryEvidence Stamp)) {r : StampedBinaryEvidence Stamp}
+    (hr : guardedListRevise xs = some r) : r = listRevise xs :=
+  ((guardedListRevise_eq_some_iff xs r).mp hr).2
+
 theorem guardedListRevise_eq_some_iff_pairwise
     (xs : List (StampedBinaryEvidence Stamp)) :
     guardedListRevise xs = some (listRevise xs) ↔ xs.Pairwise StampDisjoint := by
-  induction xs with
-  | nil =>
-    simp
-  | cons x xs ih =>
-    constructor
-    · intro h
-      rw [guardedListRevise_cons] at h
-      cases hxs : guardedListRevise xs with
-      | none =>
-        rw [hxs] at h
-        simp at h
-      | some s =>
-        rw [hxs] at h
-        simp at h
-        by_cases hdisj : StampDisjoint x s
-        · simp [hdisj] at h
-          have hs : s = listRevise xs :=
-            guardedListRevise_eq_some_imp_eq_listRevise xs hxs
-          subst hs
-          have hxsPair : xs.Pairwise StampDisjoint :=
-            ih.mp hxs
-          have hxAll : ∀ y ∈ xs, StampDisjoint x y :=
-            (stampDisjoint_listRevise_iff x xs).mp hdisj
-          exact List.Pairwise.cons hxAll hxsPair
-        · simp [hdisj] at h
-    · intro hPair
-      have hxsPair : xs.Pairwise StampDisjoint := hPair.tail
-      have hxAll : ∀ y ∈ xs, StampDisjoint x y := by
-        intro y hy
-        exact (List.pairwise_cons.mp hPair).1 y hy
-      have hxsSome : guardedListRevise xs = some (listRevise xs) :=
-        ih.mpr hxsPair
-      have hxRev : StampDisjoint x (listRevise xs) :=
-        (stampDisjoint_listRevise_iff x xs).mpr hxAll
-      rw [guardedListRevise_cons, hxsSome]
-      simp [hxRev, listRevise_cons]
+  simp only [guardedListRevise_eq_some_iff, and_true, eq_self]
 
-/-- Decidable version: the guarded revision is `some` iff `Pairwise` holds. -/
 theorem guardedListRevise_isSome_iff_pairwise
     (xs : List (StampedBinaryEvidence Stamp)) :
     (guardedListRevise xs).isSome ↔ xs.Pairwise StampDisjoint := by
-  constructor
-  · intro h
-    obtain ⟨r, hr⟩ := Option.isSome_iff_exists.mp h
-    have hr' : r = listRevise xs :=
-      guardedListRevise_eq_some_imp_eq_listRevise xs hr
-    subst hr'
-    exact (guardedListRevise_eq_some_iff_pairwise xs).mp hr
-  · intro hPair
-    rw [Option.isSome_iff_exists]
-    exact ⟨_, (guardedListRevise_eq_some_iff_pairwise xs).mpr hPair⟩
+  simp [guardedListRevise_eq]
 
-/-- Failure form of the multi-witness Revision certificate: guarded iterated
-Revision rejects exactly the non-pairwise-disjoint provenance families. -/
 theorem guardedListRevise_eq_none_iff_not_pairwise
     (xs : List (StampedBinaryEvidence Stamp)) :
     guardedListRevise xs = none ↔ ¬ xs.Pairwise StampDisjoint := by
-  constructor
-  · intro h hPair
-    have hSome : (guardedListRevise xs).isSome :=
-      (guardedListRevise_isSome_iff_pairwise xs).mpr hPair
-    rw [h] at hSome
-    simp at hSome
-  · intro hNot
-    cases hRev : guardedListRevise xs with
-    | none => rfl
-    | some r =>
-        have hSome : (guardedListRevise xs).isSome := by
-          rw [hRev]
-          simp
-        have hPair : xs.Pairwise StampDisjoint :=
-          (guardedListRevise_isSome_iff_pairwise xs).mp hSome
-        exact False.elim (hNot hPair)
+  simp [guardedListRevise_eq]
 
-/-- Corollary: under pairwise stamp-disjointness, the aggregate evidence is
-the additive sum of per-packet evidence. This is the WM-PLN-flavored formal
-counterpart to the whiteboard's inductive-generalization pattern: many
-witnesses, one additive Revision, soundness guaranteed by stamps. -/
+/-- A successful guarded aggregation returns the sum of the input counts. -/
 theorem evidence_of_guardedListRevise_eq_some
     {xs : List (StampedBinaryEvidence Stamp)}
     {r : StampedBinaryEvidence Stamp}
@@ -368,33 +294,17 @@ inductive WitnessStamp (Obj : Type u) (Attr : Type v) where
   | negInt : Attr → WitnessStamp Obj Attr
   deriving DecidableEq
 
-def posExtEmbedding : Obj ↪ WitnessStamp Obj Attr where
-  toFun := WitnessStamp.posExt
-  inj' := by
-    intro a b h
-    cases h
-    rfl
+@[simps!] def posExtEmbedding : Obj ↪ WitnessStamp Obj Attr :=
+  ⟨WitnessStamp.posExt, fun _ _ => WitnessStamp.posExt.inj⟩
 
-def negExtEmbedding : Obj ↪ WitnessStamp Obj Attr where
-  toFun := WitnessStamp.negExt
-  inj' := by
-    intro a b h
-    cases h
-    rfl
+@[simps!] def negExtEmbedding : Obj ↪ WitnessStamp Obj Attr :=
+  ⟨WitnessStamp.negExt, fun _ _ => WitnessStamp.negExt.inj⟩
 
-def posIntEmbedding : Attr ↪ WitnessStamp Obj Attr where
-  toFun := WitnessStamp.posInt
-  inj' := by
-    intro a b h
-    cases h
-    rfl
+@[simps!] def posIntEmbedding : Attr ↪ WitnessStamp Obj Attr :=
+  ⟨WitnessStamp.posInt, fun _ _ => WitnessStamp.posInt.inj⟩
 
-def negIntEmbedding : Attr ↪ WitnessStamp Obj Attr where
-  toFun := WitnessStamp.negInt
-  inj' := by
-    intro a b h
-    cases h
-    rfl
+@[simps!] def negIntEmbedding : Attr ↪ WitnessStamp Obj Attr :=
+  ⟨WitnessStamp.negInt, fun _ _ => WitnessStamp.negInt.inj⟩
 
 /-- Positive extensional witness packet. -/
 noncomputable def positiveExtensionalStampedEvidence
@@ -585,24 +495,10 @@ theorem finiteInheritanceStampedEvidence_stamp
 theorem negativeStampedEvidence_stamp_eq_empty_of_inherits
     {A B : DualConcept Obj Attr} (hAB : Inherits A B) :
     (negativeStampedEvidence A B).stamp = ∅ := by
-  have hExt :
-      finiteNegativeExtensionalWitnesses A B = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro x hx
-    have hx' : x ∈ negativeExtensionalWitnesses A B := by
-      simpa using hx
-    exact Set.notMem_empty x <|
-      (negativeExtensionalWitnesses_eq_empty_of_extensionalInherits hAB.1) ▸ hx'
-  have hInt :
-      finiteNegativeIntensionalWitnesses A B = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro a ha
-    have ha' : a ∈ negativeIntensionalWitnesses A B := by
-      simpa using ha
-    exact Set.notMem_empty a <|
-      (negativeIntensionalWitnesses_eq_empty_of_intensionalInherits hAB.2) ▸ ha'
   simp [negativeStampedEvidence, negativeExtensionalStampedEvidence,
-    negativeIntensionalStampedEvidence, hExt, hInt]
+    negativeIntensionalStampedEvidence,
+    (finiteNegativeExtensionalWitnesses_eq_empty_iff _ _).mpr hAB.1,
+    (finiteNegativeIntensionalWitnesses_eq_empty_iff _ _).mpr hAB.2]
 
 end Finite
 
@@ -682,38 +578,12 @@ theorem inheritanceStampedEvidence_eq_finiteInheritanceStampedEvidence
       DualConcept.finiteInheritanceStampedEvidence
         ((F.interpretation).meaning s) ((F.interpretation).meaning p) := by
   apply StampedBinaryEvidence.ext
-  · ext <;>
-      simp [inheritanceStampedEvidence,
-        evidence,
-        Mettapedia.NARS.Logic.Inheritance.Frame.positiveExtensionalWitnesses,
-        Mettapedia.NARS.Logic.Inheritance.Frame.negativeExtensionalWitnesses,
-        Mettapedia.NARS.Logic.Inheritance.Frame.positiveIntensionalWitnesses,
-        Mettapedia.NARS.Logic.Inheritance.Frame.negativeIntensionalWitnesses,
-        DualConcept.finiteInheritanceStampedEvidence_evidence_eq,
-        DualConcept.finiteInheritanceEvidence,
-        DualConcept.finitePositiveExtensionalWitnesses,
-        DualConcept.finiteNegativeExtensionalWitnesses,
-        DualConcept.finitePositiveIntensionalWitnesses,
-        DualConcept.finiteNegativeIntensionalWitnesses,
-        DualConcept.finiteExtent,
-        DualConcept.finiteIntent,
-        Mettapedia.NARS.Logic.Inheritance.Frame.interpretation]
-  · apply Finset.ext
-    intro a
-    rw [DualConcept.finiteInheritanceStampedEvidence_stamp]
-    cases a <;>
-      simp [inheritanceStampedEvidence,
-      Mettapedia.NARS.Logic.Inheritance.Frame.positiveExtensionalWitnesses,
-      Mettapedia.NARS.Logic.Inheritance.Frame.negativeExtensionalWitnesses,
-      Mettapedia.NARS.Logic.Inheritance.Frame.positiveIntensionalWitnesses,
-      Mettapedia.NARS.Logic.Inheritance.Frame.negativeIntensionalWitnesses,
-      DualConcept.finitePositiveExtensionalWitnesses,
-      DualConcept.finiteNegativeExtensionalWitnesses,
-      DualConcept.finitePositiveIntensionalWitnesses,
-      DualConcept.finiteNegativeIntensionalWitnesses,
-      DualConcept.finiteExtent,
-      DualConcept.finiteIntent,
-      Mettapedia.NARS.Logic.Inheritance.Frame.interpretation]
+  · rw [inheritanceStampedEvidence_evidence_eq,
+      DualConcept.finiteInheritanceStampedEvidence_evidence_eq]
+    exact evidence_eq_finiteInheritanceEvidence F s p
+  · simp only [inheritanceStampedEvidence, DualConcept.finiteInheritanceStampedEvidence_stamp,
+      ← F.positiveExtensionalWitnesses_eq_finite, ← F.negativeExtensionalWitnesses_eq_finite,
+      ← F.positiveIntensionalWitnesses_eq_finite, ← F.negativeIntensionalWitnesses_eq_finite]
 
 theorem inheritanceStampedEvidence_negative_stamp_eq_empty_of_inherits
     (F : Mettapedia.NARS.Logic.Inheritance.Frame Atom Obj Attr)

@@ -55,12 +55,15 @@ theorem generated_library_reference : generatedLibrary = NativeNaturalVectorFami
 theorem candidate_entries_reference :
     candidate.signature.entries =
       (Declaration.Signature.ofList NativeNaturalVectorFamilies.declarations).entries := by
+  rw [Guest.PackageControls.candidate_vector_signature]
   change (Declaration.Signature.ofList generatedLibrary).entries = _
   rw [generated_library_reference]
 
 theorem candidate_root_inclusion {n : Nat} {left right : Tower.Tm n}
     (step : candidate.signature.computation.step left right) :
     rawSignature.computation.step left right := by
+  rw [candidate.computationSupport] at step
+  rw [Guest.PackageControls.candidate_vector_computation] at step
   change (SchemaTableConversionCode.root vectorTable (fun _ => true)).step left right at step
   have joined := SchemaTableConversionCode.Linking.root_inclusion
     (SchemaTableConversionCode.Linking.right naturalTable vectorTable) (fun _ => true) step
@@ -129,6 +132,8 @@ local instance (allowed : Nat → Bool) :
 Its entries and roots both agree with the generated package, not merely names. -/
 theorem signature_comparison (allowed : Nat → Bool) :
     generatedSignature allowed = Programs.ComputationProfiles.signature (selection allowed) := by
+  unfold generatedSignature
+  rw [Guest.PackageControls.candidate_vector_signature]
   change (Declaration.Signature.ofList generatedLibrary).instantiateLevels Programs.levels
     (SchemaTableConversionCode.root generatedTable (fun index => allowed index.val)) = _
   rw [generated_library_reference, generated_table_reference]
@@ -141,7 +146,8 @@ theorem textual_candidate_table :
           (Guest.DeclarationControls.vectorParameters Bool) Guest.DeclarationControls.vectorNames)) =
       some (Checking.table (Checking.candidateSchemas candidate)) := by
   rw [AppendSource.text_admitted]
-  rfl
+  simp only [Option.map_some, Option.some.injEq]
+  exact Guest.PackageControls.candidate_vector_table.symm
 
 /-- The same actual declaration source supplies the entire opaque library,
 not merely two equations with the expected names. -/

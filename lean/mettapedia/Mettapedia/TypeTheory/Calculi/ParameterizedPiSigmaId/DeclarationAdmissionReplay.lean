@@ -48,6 +48,50 @@ inductive Admitted (base : Rules Head) :
         Typing (extendRules base (Signature.ofList prior)) .nil value item.2.type)
       (rest : Admitted base (prior ++ [item]) later) : Admitted base prior (item :: later)
 
+/-- Consecutive prefix checks compose without reordering either inventory. -/
+theorem Admitted.append (base : Rules Head)
+    {prior first second : List (DeclName × Entry Head)}
+    (firstAdmitted : Admitted base prior first)
+    (secondAdmitted : Admitted base (prior ++ first) second) :
+    Admitted base prior (first ++ second) := by
+  induction firstAdmitted with
+  | nil => simpa using secondAdmitted
+  | @cons prior item later level fresh isUniverse formed body rest ih =>
+      apply Admitted.cons fresh isUniverse formed body
+      apply ih
+      simpa only [List.append_assoc, List.singleton_append] using secondAdmitted
+
+private theorem typeOf_none (items : List (DeclName × Entry Head)) (name : DeclName) :
+    (Signature.ofList items).typeOf? name = none ↔ name ∉ items.map Prod.fst := by
+  induction items with
+  | nil => simp [Signature.ofList, Signature.typeOf?, Signature.empty]
+  | cons item later ih =>
+      by_cases same : name = item.1
+      · simp [Signature.ofList, Signature.typeOf?, Signature.insert, same]
+      · simpa [Signature.ofList, Signature.typeOf?, Signature.insert, same] using ih
+private theorem absent_of_fresh (base : Rules Head)
+    (prior : List (DeclName × Entry Head)) (name : DeclName)
+    (fresh : (extendRules base (Signature.ofList prior)).constantType name = none) :
+    name ∉ prior.map Prod.fst := by
+  apply (typeOf_none prior name).mp
+  cases selected : base.constantType name with
+  | none => simpa [extendRules, combinedType, selected] using fresh
+  | some type => simp [extendRules, combinedType, selected] at fresh
+
+/-- Prefix admission preserves unique declaration names. -/
+theorem Admitted.names_nodup (base : Rules Head) {prior source : List (DeclName × Entry Head)}
+    (admitted : Admitted base prior source) (priorDistinct : (prior.map Prod.fst).Nodup) :
+    ((prior ++ source).map Prod.fst).Nodup := by
+  induction admitted with
+  | nil => simpa using priorDistinct
+  | @cons prior item later level fresh isUniverse formed body rest ih =>
+      have absent := absent_of_fresh base prior item.1 fresh
+      have nextDistinct : ((prior ++ [item]).map Prod.fst).Nodup := by
+        simp only [List.map_append, List.map_cons, List.map_nil]
+        exact List.nodup_append.mpr ⟨priorDistinct, by simp,
+          by intro first firstMember second secondMember; simp only [List.mem_singleton] at secondMember; subst second; exact fun same => absent (same ▸ firstMember)⟩
+      simpa only [List.append_assoc, List.singleton_append] using ih nextDistinct
+
 section Computation
 
 variable (base : Rules Head) [DecidableEq Head]
@@ -138,13 +182,13 @@ theorem check_append (prior first second : List (DeclName × Entry Head))
   induction first generalizing prior firstCertificates with
   | nil =>
       cases firstCertificates with
-      | nil => simp [check]
-      | cons certificate certificates => simp at aligned
+      | nil => simp only [List.nil_append, List.append_nil, check, Bool.true_and]
+      | cons certificate certificates => cases aligned
   | cons item later ih =>
       cases firstCertificates with
-      | nil => simp at aligned
+      | nil => cases aligned
       | cons certificate certificates =>
-          have lengths : later.length = certificates.length := by simpa using aligned
+          have lengths : later.length = certificates.length := Nat.succ.inj aligned
           simp only [List.cons_append, check]
           rw [ih _ _ lengths]
           simp only [List.append_assoc, List.singleton_append, Bool.and_assoc]
@@ -241,6 +285,8 @@ theorem Admitted.selected_bodies_typed {entries : List (DeclName × Entry Head)}
 
 #print axioms conversionCheck_sound
 #print axioms conversion_iff_checked
+#print axioms Admitted.names_nodup
+#print axioms Admitted.append
 #print axioms check_append
 #print axioms check_sound
 #print axioms check_complete

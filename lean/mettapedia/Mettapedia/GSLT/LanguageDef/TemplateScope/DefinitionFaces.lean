@@ -24,14 +24,14 @@ the same object, the ground term `t[a/x]` (`FO.subst`).
   Both reuse `Mettapedia.Logic.HOL.DefinitionExtensionSemantics` and the
   constant-substitution closure of `ExtDerivation`.
 
-## Relation to Prime's `set:define`
+## Relation to the Prime draft's `set:define`
 
-Prime's `set:define`, in a theory space with a selected profile, promises the
+The Prime C draft's `set:define`, in a theory space with a selected profile, promises the
 same three faces for an admitted definition: the constant runs there, the
 kernel unfolds the same rule in conversion, and `set:` proofs reason about it.
 This module is a small model of that promise for explicit, non-recursive
 definitions, with the faces linked by theorems.  The model of `set:define`'s
-explicit case in Prime's dependent calculus is
+explicit case in the declaration-based candidate's dependent calculus is
 `ParameterizedPiSigmaId.TypedEquality.Annotated.ExplicitDefinitions` (type
 face) and `ParameterizedPiSigmaId.TowerInterpretation.SetExplicitDefinitions`
 (set face); this module states the faces in HOL instead, and adds the

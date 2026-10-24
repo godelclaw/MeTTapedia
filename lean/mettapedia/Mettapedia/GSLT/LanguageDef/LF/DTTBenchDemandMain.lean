@@ -15,12 +15,12 @@ open Mettapedia.GSLT.LanguageDef.LFProfile
 open Mettapedia.GSLT.LanguageDef.LFDTTBenchDemand
 open Mettapedia.GSLT.LanguageDef.PureDTTBench31
 
-/-- SHA-256 of `MettaKernel/kernel/kernel_signature_lf_v0.metta`. -/
-def basicKernelSha256 : String :=
+/-- SHA-256 of the historical standard-LF curriculum checker source. -/
+def standardLFKernelSha256 : String :=
   "91b510838ef3568e5d18504d10fcf1ffa658362271c1871bf735f598265bf548"
 
-/-- SHA-256 of `MettaKernel/kernel/kernel_signature_lf_indexed_v0.metta`. -/
-def indexedKernelSha256 : String :=
+/-- SHA-256 of the historical four-rule kind-result prototype source. -/
+def mettaKernelPrototypeSha256 : String :=
   "bf9ce2eb2d6c8deccfaa167faeb58d384444b9ef9f883bba0cd9b4430424e290"
 
 /-- SHA-256 of the frozen Lean-owned `Pure/DTTBench31.lean` module. -/
@@ -57,7 +57,7 @@ private def renderRule (rule : ProductRule) : String :=
 
 private def renderStatement (statement : Statement) : String :=
   let demandedRules :=
-    ((demand? indexed statement.goal).getD []).eraseDups.map renderRule
+    ((demand? mettaKernelKindResultPrototype statement.goal).getD []).eraseDups.map renderRule
   "{" ++
     "\"kind\":\"statement_demand\"," ++
     "\"group\":" ++ jsonString statement.group ++ "," ++
@@ -68,22 +68,25 @@ private def renderStatement (statement : Statement) : String :=
     "\"canonical_sha256\":" ++ jsonString statement.canonicalSha256 ++ "," ++
     "\"normalized_type_sha256\":" ++
       jsonString statement.normalizedTypeSha256 ++ "," ++
-    "\"basic_profile_forms\":" ++
-      jsonBool (statementWithin basic statement) ++ "," ++
-    "\"indexed_profile_forms\":" ++
-      jsonBool (statementWithin indexed statement) ++ "," ++
+    "\"standard_lf_forms\":" ++
+      jsonBool (statementWithin standardLF statement) ++ "," ++
+    "\"mettakernel_kind_result_prototype_forms\":" ++
+      jsonBool (statementWithin mettaKernelKindResultPrototype statement) ++ "," ++
     "\"result_sort\":" ++
-      renderOptionalSort (inferSort analysisFuel indexed [] statement.goal) ++ "," ++
+      renderOptionalSort (inferSort analysisFuel mettaKernelKindResultPrototype
+        [] statement.goal) ++ "," ++
     "\"required_product_rules\":" ++ jsonArray demandedRules ++
   "}"
 
 private def renderMeta : String :=
   "{" ++
     "\"kind\":\"meta\"," ++
-    "\"schema\":\"gslt.lf.dttbench_profile_demand.v1\"," ++
+    "\"schema\":\"gslt.lf.dttbench_profile_demand.v2\"," ++
     "\"row_count\":" ++ toString statements.length ++ "," ++
-    "\"basic_kernel_sha256\":" ++ jsonString basicKernelSha256 ++ "," ++
-    "\"indexed_kernel_sha256\":" ++ jsonString indexedKernelSha256 ++ "," ++
+    "\"standard_lf_curriculum_sha256\":" ++
+      jsonString standardLFKernelSha256 ++ "," ++
+    "\"mettakernel_kind_result_prototype_sha256\":" ++
+      jsonString mettaKernelPrototypeSha256 ++ "," ++
     "\"dttbench_module_sha256\":" ++ jsonString dttbenchModuleSha256 ++ "," ++
     "\"dttbench_generator_sha256\":" ++ jsonString generatorSha256 ++
   "}"

@@ -79,13 +79,14 @@ theorem typed_name_atomicOrClosed
   | collection _ => cases resultEq
   | @collectionConstructor bound rule parameter kind elements rest elementType member parameters elementsTyped =>
       have category : rule.category = costBaseSortName "Name" := (TypeExpr.base.inj resultEq).symm
+      have fullParameters := ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
       rcases name_constructor_cases member category with rfl | rfl
       · have actual : baseQuote.params = [.simple "p" (.base (costBaseSortName "Proc"))] := by decide +kernel
-        rw [actual] at parameters
-        simp at parameters
+        rw [actual] at fullParameters
+        simp at fullParameters
       · have actual : wrappedQuote.params = [.simple "p" (.base costWrappedSortName)] := by decide +kernel
-        rw [actual] at parameters
-        simp at parameters
+        rw [actual] at fullParameters
+        simp at fullParameters
 
 /-- Reflection admission supplies the same unique quote/drop witness used by
 the generic sorting theorem. It does not assert a preservation theorem. -/

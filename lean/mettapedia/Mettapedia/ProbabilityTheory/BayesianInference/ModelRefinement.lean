@@ -11,10 +11,11 @@ import Mathlib.Tactic.NormNum
 /-!
 # Refinement of a finite latent model
 
-The expanded model and the coarse model are supplied independently. An explicit
-state map sends the expanded state onto the coarse state, and a section chooses
-one expanded state in each fibre. Compatibility is the pushforward equation for
-the supplied prior, the controlled transition, and the emission.
+The expanded model and the coarse model are supplied independently. Compatibility
+is the pushforward equation for the supplied prior, controlled transition and
+emission. Prediction and filtering do not require the state map to be onto.
+A section is required only when comparing with a quotient constructed from
+representatives or proving a strict reduction in carrier size.
 
 Those equations give the same coarse prediction, the same filtering update on
 an observation of positive evidence, the same finite execution trace, and the
@@ -34,43 +35,9 @@ open Mettapedia.InformationTheory.Prob
 open Mettapedia.ProbabilityTheory.FiniteLumpability
 open Mettapedia.Cybernetics.ApproximateAdequacy hiding dirac
 
-/-- Pushing a finite law forward twice is the pushforward along the composite map. -/
-theorem coarsen_comp {S C D : Type*} [Fintype S] [Fintype C] [Fintype D]
-    [DecidableEq C] [DecidableEq D] (prior : Prob S) (view : S → C) (next : C → D) :
-    coarsen (coarsen prior view) next = coarsen prior (next ∘ view) := by
-  apply Subtype.ext
-  funext outcome
-  rw [coarsen_apply, coarsen_apply]
-  have mass :
-      (coarsen prior view).1 =
-        fun image => Mettapedia.InformationTheory.FiniteRV.pushforward prior.1 view image := by
-    funext image
-    rw [coarsen_apply]
-  rw [mass]
-  exact Mettapedia.InformationTheory.FiniteRV.pushforward_pushforward
-    prior.1 view next outcome
-
-/-- A kernel that reads the state only through `view` binds after that pushforward. -/
-theorem bind_of_coarsen {S C D : Type*} [Fintype S] [Fintype C] [Fintype D]
-    [DecidableEq C] [DecidableEq D] (prior : Prob S) (view : S → C) (kernel : C → Prob D) :
-    bind prior (kernel ∘ view) = bind (coarsen prior view) kernel := by
-  apply Subtype.ext
-  funext outcome
-  rw [bind_apply, bind_apply]
-  exact (coarsen_expectation prior view (fun image => (kernel image).1 outcome)).symm
-
 section Supplied
 
 variable {Fine Coarse Action : Type*} [Fintype Fine] [Fintype Coarse] [DecidableEq Coarse]
-
-/-- A transition that factors through the state map is strongly lumpable. -/
-theorem lumpable_of_transition (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state)) :
-    StrongLumpability view fineKernel := by
-  intro action source target same
-  rw [transition action source, transition action target, same]
 
 /-- At each section point the supplied coarse row is the lumped fine row. -/
 theorem supplied_matches_lumped (view : Fine → Coarse)
@@ -98,35 +65,28 @@ theorem supplied_kernel_agrees (view : Fine → Coarse)
 /-- Coarse prediction agrees with the pushforward of expanded prediction. -/
 theorem prediction_preserved (view : Fine → Coarse)
     (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (representative : Coarse → Fine) (sectionLaw : Function.RightInverse representative view)
     (transition : ∀ action state,
       coarsen (fineKernel action state) view = coarseKernel action (view state))
     (prior : Prob Fine) (action : Action) :
     coarsen (bind prior (fineKernel action)) view =
-      bind (coarsen prior view) (coarseKernel action) := by
-  rw [coarsen_predict view fineKernel representative sectionLaw
-    (lumpable_of_transition view fineKernel coarseKernel transition) prior action]
-  exact congrArg (Prob.bind (coarsen prior view))
-    (congrFun (supplied_kernel_agrees view fineKernel coarseKernel representative sectionLaw
-      transition) action)
+      bind (coarsen prior view) (coarseKernel action) :=
+  coarsen_bind_of_rows view view (fineKernel action) (coarseKernel action) (transition action) prior
 
 /-- The same prediction square holds for a supplied prior with the same pushforward. -/
 theorem prediction_of_supplied_prior (view : Fine → Coarse)
     (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (representative : Coarse → Fine) (sectionLaw : Function.RightInverse representative view)
     (transition : ∀ action state,
       coarsen (fineKernel action state) view = coarseKernel action (view state))
     (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
     (priorPush : coarsen finePrior view = coarsePrior) (action : Action) :
     coarsen (bind finePrior (fineKernel action)) view =
       bind coarsePrior (coarseKernel action) := by
-  rw [prediction_preserved view fineKernel coarseKernel representative sectionLaw transition
+  rw [prediction_preserved view fineKernel coarseKernel transition
       finePrior action, priorPush]
 
 /-- Filtering on positive evidence pushes forward to the coarse posterior. -/
 theorem filtering_preserved (view : Fine → Coarse)
     (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (representative : Coarse → Fine) (sectionLaw : Function.RightInverse representative view)
     (transition : ∀ action state,
       coarsen (fineKernel action state) view = coarseKernel action (view state))
     (prior : Prob Fine) (action : Action) (likelihood : Coarse → ℝ)
@@ -136,16 +96,12 @@ theorem filtering_preserved (view : Fine → Coarse)
         (fun state => nonneg (view state)) possible) view =
       posterior (bind (coarsen prior view) (coarseKernel action)) likelihood nonneg
         (by
-          rw [← prediction_preserved view fineKernel coarseKernel representative sectionLaw
-              transition prior action, evidence_coarsen]
+          rw [← prediction_preserved view fineKernel coarseKernel transition prior action,
+            evidence_coarsen]
           exact possible) := by
-  rw [coarsen_filter_step view fineKernel representative sectionLaw
-    (lumpable_of_transition view fineKernel coarseKernel transition)
-    prior action likelihood nonneg possible]
-  apply Subtype.ext
-  funext state
-  rw [posterior_apply, posterior_apply,
-    supplied_kernel_agrees view fineKernel coarseKernel representative sectionLaw transition]
+  rw [coarsen_posterior]
+  congr 1
+  exact prediction_preserved view fineKernel coarseKernel transition prior action
 
 /-- Joint transitions agree when emissions and state transitions push forward. -/
 theorem transition_emission_compatible (view : Fine → Coarse)
@@ -363,8 +319,7 @@ theorem predictive_coupling_bound (view : Fine → Coarse) (fineLaw : Prob Fine)
 /-- Exact transition and prior compatibility make the predictive reward gap zero. -/
 theorem compatible_prediction_gap {Action : Type*}
     (view : Fine → Coarse) (fineKernel : Action → Fine → Prob Fine)
-    (coarseKernel : Action → Coarse → Prob Coarse) (representative : Coarse → Fine)
-    (sectionLaw : Function.RightInverse representative view)
+    (coarseKernel : Action → Coarse → Prob Coarse)
     (transition : ∀ action state,
       coarsen (fineKernel action state) view = coarseKernel action (view state))
     (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
@@ -372,14 +327,13 @@ theorem compatible_prediction_gap {Action : Type*}
     (∑ s, (bind finePrior (fineKernel action)).1 s * reward (view s)) =
       ∑ c, (bind coarsePrior (coarseKernel action)).1 c * reward c := by
   rw [← coarsen_expectation (bind finePrior (fineKernel action)) view reward,
-    prediction_of_supplied_prior view fineKernel coarseKernel representative sectionLaw
+    prediction_of_supplied_prior view fineKernel coarseKernel
       transition finePrior coarsePrior priorPush action]
 
 /-- Under exact compatibility the diagonal coupling certifies a zero reward gap. -/
 theorem compatible_prediction_bound {Action : Type*}
     (view : Fine → Coarse) (fineKernel : Action → Fine → Prob Fine)
-    (coarseKernel : Action → Coarse → Prob Coarse) (representative : Coarse → Fine)
-    (sectionLaw : Function.RightInverse representative view)
+    (coarseKernel : Action → Coarse → Prob Coarse)
     (transition : ∀ action state,
       coarsen (fineKernel action state) view = coarseKernel action (view state))
     (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
@@ -388,7 +342,7 @@ theorem compatible_prediction_bound {Action : Type*}
         ∑ c, (bind coarsePrior (coarseKernel action)).1 c * reward c| ≤
       (diagonalCoupling (bind coarsePrior (coarseKernel action))).cost
         (fun x y => |reward x - reward y|) := by
-  rw [compatible_prediction_gap view fineKernel coarseKernel representative sectionLaw transition
+  rw [compatible_prediction_gap view fineKernel coarseKernel transition
       finePrior coarsePrior priorPush action reward,
     diagonalCoupling_abs_cost (bind coarsePrior (coarseKernel action)) reward]
   simp
@@ -489,21 +443,6 @@ theorem joint_dirac {S O : Type*} [Fintype S] [Fintype O] [DecidableEq S] [Decid
   rcases so with ⟨s, o⟩
   by_cases hs : s = state <;> by_cases ho : o = observation <;>
     simp [joint_apply, dirac_apply, hs, ho]
-
-/-- A point-mass prior returns the selected kernel row. -/
-theorem bind_dirac {S C : Type*} [Fintype S] [Fintype C] [DecidableEq S]
-    (state : S) (kernel : S → Prob C) :
-    bind (dirac state) kernel = kernel state := by
-  apply Subtype.ext
-  funext outcome
-  rw [bind_apply]
-  exact expectation_dirac state fun source => (kernel source).1 outcome
-
-/-- Evidence under a point mass is the likelihood at that point. -/
-theorem evidence_dirac {S : Type*} [Fintype S] [DecidableEq S]
-    (state : S) (likelihood : S → ℝ) :
-    evidence (dirac state) likelihood = likelihood state :=
-  expectation_dirac state likelihood
 
 /-- One action, then a terminal reward. -/
 def policyOne {O A : Type*} (action : A) : ObservationPolicy O A 1 :=
@@ -668,8 +607,8 @@ theorem redundant_priors_push (flag : Bool) :
 theorem redundant_prediction (flag : Bool) :
     coarsen (bind (dirac (true, flag)) (redundantFine ())) redundantView =
       bind (dirac true) (redundantCoarse ()) :=
-  prediction_of_supplied_prior redundantView redundantFine redundantCoarse redundantRep
-    redundant_section redundant_transition (dirac (true, flag)) (dirac true)
+  prediction_of_supplied_prior redundantView redundantFine redundantCoarse
+    redundant_transition (dirac (true, flag)) (dirac true)
     (redundant_priors_push flag) ()
 
 theorem redundant_task_preserved (flag : Bool) :

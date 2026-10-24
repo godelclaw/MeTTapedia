@@ -1,9 +1,9 @@
 import Mathlib
 
 /-!
-# Prime dependent world-model core
+# A dependent world-model core for Prime candidates
 
-This module contains the narrow mathematical core ratified for Prime v0.69:
+This module contains the narrow mathematical core of the v0.69 world-model calculus draft:
 
 * the equivalence between additive dependent extractor families and additive
   homomorphisms into a dependent profile, with all monoid structures fixed;

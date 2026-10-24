@@ -141,6 +141,78 @@ theorem compilePlan_reconstructs (plan : BranchPlan Head n) (forbidden : DeclNam
           obtain ⟨restores, free⟩ := ScopedSubstitutionInversion.invert_sound _ _ _ _ inverted
           exact ⟨source, body, rfl, restores, free, same.symm⟩
 
+/-! ## Operational reconstruction of submitted clauses -/
+
+open TypedEquality (Reduces)
+
+section
+
+omit [DecidableEq Head]
+
+private theorem instantiate_liftSubN {n m : Nat} (mapping : Sub Head n m)
+    (values : Nat → Tm Head m) : ∀ fields,
+    (fun index => subst (extendSub ids values fields) (liftSubN mapping fields index)) =
+      extendSub mapping values fields
+  | 0 => by funext index; exact subst_ids _
+  | fields + 1 => by
+      funext index
+      refine Fin.cases ?_ (fun prior => ?_) index
+      · rfl
+      · change subst (consSub (values fields) (extendSub ids values fields))
+          (rename wk (liftSubN mapping fields prior)) = extendSub mapping values fields prior
+        rw [subst_consSub_rename_wk]
+        exact congrFun (instantiate_liftSubN mapping values fields) prior
+
+private theorem lams_substitute_beta {R : Rules Head} {n m : Nat}
+    (mapping : Sub Head n m) (fields : Nat) (body : Tm Head (n + fields))
+    (arguments : List (Tm Head m)) (arity : arguments.length = fields) :
+    Reduces R (appSpine (subst mapping (lams fields body)) arguments)
+      (subst (extendSub mapping (fun index => arguments.getD index defaultTm) fields) body) := by
+  rw [subst_lams]
+  have reduction := lams_beta (R := R) fields (subst (liftSubN mapping fields) body) arguments arity
+  rw [subst_comp, instantiate_liftSubN] at reduction
+  exact reduction
+
+/-- Applying the emitted abstraction to its original fields and recursive
+results restores the exact source body by beta reduction. -/
+theorem BranchPlan.method_reduces {R : Rules Head} {ambient : Nat}
+    (plan : BranchPlan Head ambient)
+    (body : Tm Head (ambient + plan.fields + plan.recursiveCalls.length)) :
+    Reduces R
+      (appSpine (rename (wkN plan.fields) (plan.method body))
+        (fieldVars ambient plan.fields ++ plan.recursiveCalls))
+      (subst plan.substitution body) := by
+  have fieldsIdentity :
+      extendSub (Head := Head) (renSub (wkN plan.fields))
+        (fun index => (fieldVars ambient plan.fields).getD index defaultTm) plan.fields = ids :=
+    matchSub_pattern ambient plan.fields .anonymous 0
+  have fieldsReduce := lams_substitute_beta (R := R) (renSub (wkN plan.fields)) plan.fields
+    (lams plan.recursiveCalls.length body) (fieldVars ambient plan.fields)
+    (length_fieldVars ambient plan.fields)
+  rw [fieldsIdentity, subst_ids, subst_renSub] at fieldsReduce
+  rw [appSpine_append]
+  exact (Reduces.appSpine_left fieldsReduce plan.recursiveCalls).trans
+    (lams_beta (R := R) plan.recursiveCalls.length body plan.recursiveCalls rfl)
+
+end
+
+/-- Every accepted branch method executes back to its submitted clause.
+This grants neither typing nor authority for its proposed recursive calls. -/
+theorem compilePlan_reduces {R : Rules Head} {ambient : Nat}
+    (plan : BranchPlan Head ambient) (forbidden : DeclName)
+    (clause : Clause Head ambient) (compiled : Tm Head ambient)
+    (accepted : compilePlan plan forbidden clause = some compiled) :
+    ∃ source, adaptFields plan.name plan.fields clause = some source ∧
+      Reduces R
+        (appSpine (rename (wkN plan.fields) compiled)
+          (fieldVars ambient plan.fields ++ plan.recursiveCalls)) source := by
+  obtain ⟨source, body, adapted, restores, _free, same⟩ :=
+    compilePlan_reconstructs plan forbidden clause compiled accepted
+  refine ⟨source, adapted, ?_⟩
+  rw [same, ← restores]
+  exact plan.method_reduces body
+
+
 def compileBranch (indices : Guest.IndexSyntax I Head) (forbidden : DeclName)
     (template : Tm Head (n + 2)) (constructor : NamedConstructor I [])
     (clause : Clause Head n) : Option (Tm Head n) :=
@@ -159,6 +231,17 @@ theorem compileBranch_reconstructs (indices : Guest.IndexSyntax I Head) (forbidd
       compiled = method indices constructor template body :=
   compilePlan_reconstructs (plan indices constructor template) forbidden clause compiled accepted
 
+theorem compileBranch_reduces {R : Rules Head}
+    (indices : Guest.IndexSyntax I Head) (forbidden : DeclName)
+    (template : Tm Head (n + 2)) (constructor : NamedConstructor I [])
+    (clause : Clause Head n) (compiled : Tm Head n)
+    (accepted : compileBranch indices forbidden template constructor clause = some compiled) :
+    ∃ source, adaptClause constructor clause = some source ∧
+      Reduces R
+        (appSpine (rename (wkN (Guest.fieldCount constructor.body)) compiled)
+          (fieldVars n (Guest.fieldCount constructor.body) ++ calls indices constructor template)) source :=
+  compilePlan_reduces (plan indices constructor template) forbidden clause compiled accepted
+
 def compilePlans (plans : List (BranchPlan Head n)) (forbidden : DeclName)
     (clauses : List (Clause Head n)) : Option (List (Tm Head n)) :=
   if clauses.map Clause.constructor = plans.map BranchPlan.name then
@@ -174,6 +257,50 @@ theorem compilePlans_coverage (plans : List (BranchPlan Head n)) (forbidden : De
   · assumption
   · cases accepted
 
+private theorem compile_list_reduces {R : Rules Head} {ambient : Nat}
+    (forbidden : DeclName) (pairs : List (BranchPlan Head ambient × Clause Head ambient))
+    (methods : List (Tm Head ambient))
+    (accepted : pairs.mapM (fun pair => compilePlan pair.1 forbidden pair.2) = some methods) :
+    List.Forall₂ (fun pair compiled => ∃ source,
+      adaptFields pair.1.name pair.1.fields pair.2 = some source ∧
+      Reduces R (appSpine (rename (wkN pair.1.fields) compiled)
+        (fieldVars ambient pair.1.fields ++ pair.1.recursiveCalls)) source) pairs methods := by
+  induction pairs generalizing methods with
+  | nil =>
+      have same : ([] : List (Tm Head ambient)) = methods := Option.some.inj accepted
+      cases same
+      exact .nil
+  | cons pair pairs ih =>
+      cases head : compilePlan pair.1 forbidden pair.2 with
+      | none => simp [head] at accepted
+      | some method =>
+          cases tail : pairs.mapM (fun pair => compilePlan pair.1 forbidden pair.2) with
+          | none => simp [head, tail] at accepted
+          | some rest =>
+              have same : method :: rest = methods := by simpa [head, tail] using accepted
+              subst methods
+              exact .cons (compilePlan_reduces pair.1 forbidden pair.2 method head) (ih rest tail)
+
+theorem compilePlans_reduces {R : Rules Head} {ambient : Nat}
+    (plans : List (BranchPlan Head ambient)) (forbidden : DeclName)
+    (clauses : List (Clause Head ambient)) (methods : List (Tm Head ambient))
+    (accepted : compilePlans plans forbidden clauses = some methods) :
+    methods.length = plans.length ∧
+    List.Forall₂ (fun pair compiled => ∃ source,
+      adaptFields pair.1.name pair.1.fields pair.2 = some source ∧
+      Reduces R (appSpine (rename (wkN pair.1.fields) compiled)
+        (fieldVars ambient pair.1.fields ++ pair.1.recursiveCalls)) source)
+      (plans.zip clauses) methods := by
+  have coverage := compilePlans_coverage plans forbidden clauses methods accepted
+  have lengthSame : plans.length = clauses.length := by
+    have same := congrArg List.length coverage
+    simpa using same.symm
+  simp only [compilePlans, if_pos coverage] at accepted
+  have reductions := compile_list_reduces (R := R) forbidden _ methods accepted
+  refine ⟨?_, reductions⟩
+  simpa only [List.length_zip, lengthSame, Nat.min_self] using reductions.length_eq.symm
+
+
 def compileMethods (indices : Guest.IndexSyntax I Head) (admitted : Admitted I [])
     (forbidden : DeclName) (template : Tm Head (n + 2)) (clauses : List (Clause Head n)) :
     Option (List (Tm Head n)) :=
@@ -186,6 +313,23 @@ theorem compileMethods_coverage (indices : Guest.IndexSyntax I Head) (admitted :
     (accepted : compileMethods indices admitted forbidden template clauses = some methods) :
     clauses.map Clause.constructor = admitted.constructors.map NamedConstructor.name := by
   simpa only [List.map_map, Function.comp_def, plan] using compilePlans_coverage _ _ _ _ accepted
+
+/-- The admitted inventory retains every constructor occurrence, and each
+emitted method reconstructs its own source clause in that order. -/
+theorem compileMethods_reduces {R : Rules Head}
+    (indices : Guest.IndexSyntax I Head) (admitted : Admitted I [])
+    (forbidden : DeclName) (template : Tm Head (n + 2))
+    (clauses : List (Clause Head n)) (methods : List (Tm Head n))
+    (accepted : compileMethods indices admitted forbidden template clauses = some methods) :
+    methods.length = admitted.constructors.length ∧
+    List.Forall₂ (fun pair compiled => ∃ source,
+      adaptFields pair.1.name pair.1.fields pair.2 = some source ∧
+      Reduces R (appSpine (rename (wkN pair.1.fields) compiled)
+        (fieldVars n pair.1.fields ++ pair.1.recursiveCalls)) source)
+      ((admitted.constructors.map (fun constructor => plan indices constructor template)).zip clauses)
+      methods := by
+  have result := compilePlans_reduces (R := R) _ forbidden clauses methods accepted
+  simpa only [List.length_map] using result
 
 structure Result (Head : Type) (RootCode : Nat → Type) (ambient : Nat) where
   methods : List (Tm Head ambient)

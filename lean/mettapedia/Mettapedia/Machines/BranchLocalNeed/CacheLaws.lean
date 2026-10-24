@@ -1431,36 +1431,63 @@ def completedReceipt
     CompletedReceipt Value StableFault RetryableFault :=
   ⟨kind, cell, ⟨machine.world.path, machine.world.receipts.nextSerial⟩, outcome⟩
 
+/-- The role of an actual cache instruction, independent of whether its
+receipt graph is recorded. Native observers use the same control/heap reader
+rather than reconstructing an absent graph or copying its owner checks. -/
+structure CompletedObservation (Value StableFault RetryableFault : Type*) where
+  kind : CompletedReceiptKind
+  cell : CellId
+  outcome : Produced Value StableFault RetryableFault
+  deriving DecidableEq, Repr
+
 /-- Classify the existing source instruction. The cache owner is checked
 before attributing a production; retryable outcomes never produce a cache. -/
-def completedReceipt?
-    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
-    Option (CompletedReceipt Value StableFault RetryableFault) :=
-  match machine.control with
+def completedObservation?
+    (heap : Heap Origin Value StableFault)
+    (control : Control Local Resume Value StableFault RetryableFault) :
+    Option (CompletedObservation Value StableFault RetryableFault) :=
+  match control with
   | .force cell _ =>
-      match machine.world.heap.lookup cell with
+      match heap.lookup cell with
       | some record =>
           match record.cache with
-          | .value value => some (completedReceipt machine .delivery cell (.value value))
-          | .stableFault fault =>
-              some (completedReceipt machine .delivery cell (.stableFault fault))
+          | .value value => some ⟨.delivery, cell, .value value⟩
+          | .stableFault fault => some ⟨.delivery, cell, .stableFault fault⟩
           | _ => none
       | none => none
   | .returned outcome (.commit cell owner :: _) =>
-      match machine.world.heap.lookup cell with
+      match heap.lookup cell with
       | some record =>
           match record.cache with
           | .evaluating actual =>
               if actual = owner then
                 match outcome with
-                | .value value => some (completedReceipt machine .production cell (.value value))
-                | .stableFault fault =>
-                    some (completedReceipt machine .production cell (.stableFault fault))
+                | .value value => some ⟨.production, cell, .value value⟩
+                | .stableFault fault => some ⟨.production, cell, .stableFault fault⟩
                 | .retryableFault _ => none
               else none
           | _ => none
       | none => none
   | _ => none
+
+/-- Attach the actual receipt coordinate only after classifying the real
+control and heap. The existing receipt API and lifecycle meaning are retained. -/
+def completedReceipt?
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    Option (CompletedReceipt Value StableFault RetryableFault) :=
+  (completedObservation? machine.world.heap machine.control).map fun observed =>
+    completedReceipt machine observed.kind observed.cell observed.outcome
+
+/-- Forgetting the receipt coordinate recovers the common operational
+observation. No recording status or event serial is needed by that reader. -/
+theorem completedReceipt?_observation
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    (completedReceipt? machine).map
+      (fun receipt => (⟨receipt.kind, receipt.cell, receipt.outcome⟩ :
+        CompletedObservation Value StableFault RetryableFault)) =
+      completedObservation? machine.world.heap machine.control := by
+  unfold completedReceipt?
+  cases completedObservation? machine.world.heap machine.control <;> rfl
 
 /-- Independent lifecycle evidence for the four completed-cache events.
 It refers to the source control and heap, rather than the classifier. -/
@@ -1492,7 +1519,7 @@ theorem CompletedReceiptWitness.classified
     {receipt : CompletedReceipt Value StableFault RetryableFault}
     (witness : CompletedReceiptWitness machine receipt) :
     completedReceipt? machine = some receipt := by
-  cases witness <;> simp_all [completedReceipt?]
+  cases witness <;> simp_all [completedReceipt?, completedObservation?]
 
 theorem completedReceipt?_witness
     (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
@@ -1501,53 +1528,53 @@ theorem completedReceipt?_witness
     CompletedReceiptWitness machine receipt := by
   rcases machine with ⟨world, control, work⟩
   cases control with
-  | halted outcome => simp [completedReceipt?] at classified
-  | run state stack => simp [completedReceipt?] at classified
+  | halted outcome => simp [completedReceipt?, completedObservation?] at classified
+  | run state stack => simp [completedReceipt?, completedObservation?] at classified
   | force cell stack =>
       cases found : world.heap.lookup cell with
-      | none => simp [completedReceipt?, found] at classified
+      | none => simp [completedReceipt?, completedObservation?, found] at classified
       | some record =>
           rcases record with ⟨origin, cache⟩
           cases cache with
-          | suspended => simp [completedReceipt?, found] at classified
-          | evaluating owner => simp [completedReceipt?, found] at classified
+          | suspended => simp [completedReceipt?, completedObservation?, found] at classified
+          | evaluating owner => simp [completedReceipt?, completedObservation?, found] at classified
           | value value =>
-              simp only [completedReceipt?, found, Option.some.injEq] at classified
+              simp only [completedReceipt?, completedObservation?, found, Option.map_some, Option.some.injEq] at classified
               subst receipt
               exact .deliveryValue cell stack origin value rfl found
           | stableFault fault =>
-              simp only [completedReceipt?, found, Option.some.injEq] at classified
+              simp only [completedReceipt?, completedObservation?, found, Option.map_some, Option.some.injEq] at classified
               subst receipt
               exact .deliveryFault cell stack origin fault rfl found
   | returned outcome stack =>
       cases stack with
-      | nil => simp [completedReceipt?] at classified
+      | nil => simp [completedReceipt?, completedObservation?] at classified
       | cons frame rest =>
           cases frame with
-          | resume token => simp [completedReceipt?] at classified
+          | resume token => simp [completedReceipt?, completedObservation?] at classified
           | commit cell owner =>
               cases found : world.heap.lookup cell with
-              | none => simp [completedReceipt?, found] at classified
+              | none => simp [completedReceipt?, completedObservation?, found] at classified
               | some record =>
                   rcases record with ⟨origin, cache⟩
                   cases cache with
-                  | suspended => simp [completedReceipt?, found] at classified
-                  | value value => simp [completedReceipt?, found] at classified
-                  | stableFault fault => simp [completedReceipt?, found] at classified
+                  | suspended => simp [completedReceipt?, completedObservation?, found] at classified
+                  | value value => simp [completedReceipt?, completedObservation?, found] at classified
+                  | stableFault fault => simp [completedReceipt?, completedObservation?, found] at classified
                   | evaluating actual =>
                       by_cases same : actual = owner
                       · subst actual
                         cases outcome with
-                        | retryableFault reason => simp [completedReceipt?, found] at classified
+                        | retryableFault reason => simp [completedReceipt?, completedObservation?, found] at classified
                         | value value =>
-                            simp [completedReceipt?, found] at classified
+                            simp [completedReceipt?, completedObservation?, found] at classified
                             subst receipt
                             exact .productionValue cell owner rest origin value rfl found
                         | stableFault fault =>
-                            simp [completedReceipt?, found] at classified
+                            simp [completedReceipt?, completedObservation?, found] at classified
                             subst receipt
                             exact .productionFault cell owner rest origin fault rfl found
-                      · simp [completedReceipt?, found, same] at classified
+                      · simp [completedReceipt?, completedObservation?, found, same] at classified
 
 theorem completedReceipt?_iff
     (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)

@@ -236,7 +236,7 @@ abbrev refinementAxisRules : Rules Tower.Head :=
 abbrev RefinementAxisHasType {n : Nat} :=
   @Presentation.HasType Tower.Head refinementAxisRules n
 
-def includeEmptyInRefinementAxis {context : Tower.Ctx n}
+theorem includeEmptyInRefinementAxis {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : EmptyHasType context term type) :
     RefinementAxisHasType context term type :=
@@ -556,7 +556,7 @@ theorem rawRefinementAxisSignature_fresh {name : DeclName}
       Signature.ofList, Signature.insert, Signature.empty, isAxis,
       isBudget, isAuthority, isEliminate] at lookup
 
-def rawRefinementAxisSignature_formed :
+theorem rawRefinementAxisSignature_formed :
     rawRefinementAxisSignature.Formed emptyRules where
   fresh := rawRefinementAxisSignature_fresh
   types := rawRefinementAxisSignature_types_formed
@@ -661,7 +661,7 @@ def refinementAxisAuthorityIotaReceipt :
 
 /-! ## Strictly-positive family package -/
 
-def refinementAxisFamilyApplication :
+theorem refinementAxisFamilyApplication :
     FamilyApplication refinementAxisName 0
       (refinementAxisTm : Tower.Tm n) :=
   .intro [] rfl (by

@@ -17,6 +17,17 @@ structure Model (S : Signature.{u}) (Carrier : Type v) : Type (max u v) where
   interpret : (operation : S.Operation) →
     (Fin (S.arity operation) → Carrier) → Carrier
 
+/-- An empty carrier admits a model exactly when the signature has no constants. -/
+theorem Model.nonempty_iff_no_nullary {Carrier : Type v} [IsEmpty Carrier] :
+    Nonempty (Model S Carrier) ↔ ∀ operation, S.arity operation ≠ 0 := by
+  constructor
+  · rintro ⟨model⟩ operation nullary
+    exact isEmptyElim (model.interpret operation
+      (fun position => Fin.elim0 (Fin.cast nullary position)))
+  · intro noNullary
+    exact ⟨⟨fun operation arguments =>
+      arguments ⟨0, Nat.pos_of_ne_zero (noNullary operation)⟩⟩⟩
+
 /-- Evaluation of a term under a variable valuation. -/
 def Term.evaluate {Carrier : Type v} (model : Model S Carrier)
     (valuation : Nat → Carrier) : Term S → Carrier

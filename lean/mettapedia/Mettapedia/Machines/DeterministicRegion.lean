@@ -15,7 +15,7 @@ failure/exception status, and unavailable-operation continuation agree.
 
 The concrete instance models ready `get-state` and `change-state!`, integer
 addition, and explicit failure/exception boundaries. Named state is PeTTa's
-symbol-keyed world, not HE state handles or Prime's branch-local Need cache.
+symbol-keyed world, not HE state handles or the Prime C draft's branch-local Need cache.
 The C connection is `petta_machine_schedule_named_state`, the
 `PETTA_GOAL_NAMED_STATE_READY` branch, and `petta_eval_machine_named_state`.
 These are semantic component specifications, not a proof of the C source or

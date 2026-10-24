@@ -33,8 +33,7 @@ theorem algebra_shape (inventory : CanonicalInventory language)
     (declared : AlgebraRule language rule kind algebra) :
     kind = .hashBag ∧ algebra.flatten = true ∧ algebra.unit = some "PZero" := by
   obtain ⟨parameter, parameters⟩ := declared.selfSorted
-  have row := inventory.collection_row declared.authored
-    ⟨parameter, kind, .base rule.category, parameters⟩
+  have row := inventory.collection_parameter_row declared.authored parameters
   subst rule
   have algebraShape := declared.declared
   simp [rhoCalc, TypeExpr.bag, TypeExpr.proc, TypeExpr.baseType] at parameters algebraShape
@@ -47,8 +46,7 @@ theorem no_set_carrier (inventory : CanonicalInventory language) {rule : Grammar
     ¬ CollectionCarrierRule language rule .hashSet := by
   intro carrier
   obtain ⟨parameter, element, parameters⟩ := carrier.selfSorted
-  have row := inventory.collection_row carrier.authored
-    ⟨parameter, .hashSet, element, parameters⟩
+  have row := inventory.collection_parameter_row carrier.authored parameters
   subst rule
   simp [rhoCalc, TypeExpr.bag] at parameters
 

@@ -24,6 +24,8 @@ namespace Mettapedia.KR.ConceptOntology
 
 universe u v w
 
+-- The stored carriers retain independent universe levels.
+set_option linter.checkUnivs false in
 /-- A thin API-layer base for construction from `Abstract`, `Phenomena`, and an
 `Indexicality`-dependent window into the phenomena. The finite observer is not
 hard-coded: the indexicality may be time, budget, order bound, viewpoint, or

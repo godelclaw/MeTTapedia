@@ -108,6 +108,85 @@ theorem stack_expansion_invariant (heap : Heap Address Value)
   apply advance_invariant heap roots _ invariant
   simp [project, fresh]
 
+namespace SparseVisited
+
+/-! The native visited table retains its buckets across checks. Dense entries
+are bucket indices, and each bucket records its dense position. A round trip
+certifies occupancy, so clearing the dense length invalidates all old buckets
+without reading them. Hash probing is a separate representation invariant. -/
+
+def Present (dense : List Address) (position : Address → Nat)
+    (bucket : Address) : Prop := dense[position bucket]? = some bucket
+
+def Coherent (dense : List Address) (position : Address → Nat) : Prop :=
+  ∀ bucket ∈ dense, Present dense position bucket
+
+omit [LinearOrder Address] in
+/-- Physical storage may retain arbitrary inactive entries. The active
+prefix implements precisely the native length guard followed by its round
+trip; resetting the length therefore requires no writes to that storage. -/
+theorem present_prefix_iff (storage : List Address)
+    (position : Address → Nat) (used : Nat) (bucket : Address) :
+    Present (storage.take used) position bucket ↔
+      position bucket < used ∧ Present storage position bucket := by
+  constructor
+  · intro present
+    have bound := (List.getElem?_eq_some_iff.mp present).1
+    have active : position bucket < used := by
+      simp only [List.length_take] at bound
+      omega
+    exact ⟨active, by
+      simpa [Present, List.getElem?_take_of_lt active] using present⟩
+  · rintro ⟨active, present⟩
+    simpa [Present, List.getElem?_take_of_lt active] using present
+
+omit [LinearOrder Address] in
+theorem present_iff_mem (dense : List Address) (position : Address → Nat)
+    (coherent : Coherent dense position) (bucket : Address) :
+    Present dense position bucket ↔ bucket ∈ dense := by
+  exact ⟨List.mem_of_getElem?, coherent bucket⟩
+
+omit [LinearOrder Address] in
+/-- Old bucket positions have no authority after a reset. -/
+theorem clear_empty (position : Address → Nat) (bucket : Address) :
+    ¬ Present [] position bucket := by
+  simp [Present]
+
+omit [LinearOrder Address] in
+theorem clear_coherent (position : Address → Nat) : Coherent [] position := by
+  intro bucket member
+  cases member
+
+/-- Adding a fresh bucket preserves the inverse positions of every old
+bucket and establishes the inverse position of the newly appended one. -/
+theorem insert_coherent (dense : List Address) (position : Address → Nat)
+    (coherent : Coherent dense position) (bucket : Address)
+    (fresh : bucket ∉ dense) :
+    Coherent (dense ++ [bucket])
+      (fun key => if key = bucket then dense.length else position key) := by
+  intro key member
+  rcases List.mem_append.mp member with old | new
+  · have different : key ≠ bucket := by
+      intro equal
+      subst key
+      exact fresh old
+    have known := coherent key old
+    have bound : position key < dense.length :=
+      (List.getElem?_eq_some_iff.mp known).1
+    simpa [Present, different, List.getElem?_append_left bound] using known
+  · simp only [List.mem_singleton] at new
+    subst key
+    simp [Present]
+
+/-- Reusing a dense position does not resurrect a different stale bucket.
+Testing only that the old position is below the length would be unsound. -/
+example :
+    ¬ Present ([1] : List Nat) (fun _ => 0) 0 ∧
+      Present ([1] : List Nat) (fun _ => 0) 1 := by
+  simp [Present]
+
+end SparseVisited
+
 namespace Controls
 
 open ResourceOwnership.Examples

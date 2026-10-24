@@ -19,6 +19,38 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInteraction
 
+/-- The actual generated rho profile retains bare collection representation
+in every declaration; Cost colour does not change this representation choice. -/
+theorem rho_costWholeLanguage_representation_bare (rule : GrammarRule)
+    (member : rule ∈ rhoCIGSLT.costWholeLanguage.terms) :
+    rule.collectionRepresentation = .bare := by
+  have sourceRows : rhoCalc.terms.all
+      (fun row => decide (row.collectionRepresentation = .bare)) = true := by decide
+  have memberships := member
+  rw [WrappableIGSLT.costWholeLanguage_terms] at memberships
+  have split : rule ∈ rhoCIGSLT.continuationRetyping.generatedLanguage.terms ∨
+      rule ∈ costCoreConstructors
+        rhoCIGSLT.theory.presentation.interactingSort.1.name := by
+    simpa [WrappableIGSLT.costCoreLanguage_terms, List.mem_append] using memberships
+  rcases split with generated | apparatus
+  · change rule ∈ rhoCalc.terms.map (costBaseConstructor rhoInteractionCut) ++
+      rhoContinuationRetyping.wrappedConstructors.map
+        (fun constructor => costWrappedConstructor (theory := rhoIGSLT) constructor.1)
+      at generated
+    rcases List.mem_append.mp generated with baseSide | wrappedSide
+    · obtain ⟨source, present, rfl⟩ := List.mem_map.mp baseSide
+      exact of_decide_eq_true (List.all_eq_true.mp sourceRows source present)
+    · obtain ⟨source, _, rfl⟩ := List.mem_map.mp wrappedSide
+      exact of_decide_eq_true (List.all_eq_true.mp sourceRows source.1 source.2)
+  · change rule ∈ [costSignatureUnitConstructor,
+      costSignatureProductConstructor, costKeyLeafConstructor, costKeyBranchConstructor,
+      costSignatureCommitConstructor,
+      costSignedConstructor rhoCIGSLT.theory.presentation.interactingSort.1.name,
+      costTokenStackEmptyConstructor, costTokenStackConsConstructor,
+      costFundingConstructor, costContactConstructor] at apparatus
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at apparatus
+    rcases apparatus with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> rfl
+
 /-- Distinct generated rho Cost rules never share a wire label. -/
 theorem rho_costWholeLanguage_labelDeterministic :
     LabelDeterministic rhoCIGSLT.costWholeLanguage :=
@@ -139,9 +171,11 @@ theorem rho_costWholeLanguage_collectionChoiceDeterministic :
   intro leftRule rightRule leftName rightName collectionType leftElementType
     rightElementType leftMembership rightMembership leftShape rightShape
     categoriesEq
-  rcases rho_collectionRule_cases leftMembership leftShape with
+  rcases rho_collectionRule_cases leftMembership
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp leftShape).2 with
     ⟨_, leftCategory, leftElement⟩ | ⟨_, leftCategory, leftElement⟩ <;>
-    rcases rho_collectionRule_cases rightMembership rightShape with
+    rcases rho_collectionRule_cases rightMembership
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp rightShape).2 with
       ⟨_, rightCategory, rightElement⟩ | ⟨_, rightCategory, rightElement⟩
   · exact leftElement.trans rightElement.symm
   · exact absurd (leftCategory.symm.trans (categoriesEq.trans rightCategory))

@@ -1294,21 +1294,21 @@ abbrev axisRefinementRules : Rules Tower.Head :=
 abbrev AxisRefinementHasType {n : Nat} :=
   @Presentation.HasType Tower.Head axisRefinementRules n
 
-def includeRefinementAxisInAxisRefinement {context : Tower.Ctx n}
+theorem includeRefinementAxisInAxisRefinement {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : RefinementAxisHasType context term type) :
     AxisRefinementHasType context term type :=
   Presentation.Declaration.HasType.includeSignature refinementAxisRules
     rawAxisRefinementSignature typing
 
-def includeEmptyInAxisRefinement {context : Tower.Ctx n}
+theorem includeEmptyInAxisRefinement {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : EmptyHasType context term type) :
     AxisRefinementHasType context term type :=
   includeRefinementAxisInAxisRefinement
     (includeEmptyInRefinementAxis typing)
 
-def includeOutcomeInAxisRefinement {context : Tower.Ctx n}
+theorem includeOutcomeInAxisRefinement {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : IntrinsicHasType context term type) :
     AxisRefinementHasType context term type :=
@@ -5153,7 +5153,7 @@ theorem rawAxisRefinementSignature_fresh
       Signature.ofList, Signature.insert, Signature.empty,
       h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11] at lookup
 
-def rawAxisRefinementSignature_formed :
+theorem rawAxisRefinementSignature_formed :
     rawAxisRefinementSignature.Formed refinementAxisRules where
   fresh := rawAxisRefinementSignature_fresh
   types := rawAxisRefinementSignature_types_formed
@@ -5168,7 +5168,7 @@ def rawAxisRefinementSignature_formed :
 
 /-! ### Strict positivity -/
 
-def axisRefinementFamilyApplication
+theorem axisRefinementFamilyApplication
     (signature axis judgment before after : Tower.Tm n)
     (signatureFree : FreeOf axisRefinementName signature)
     (axisFree : FreeOf axisRefinementName axis)
@@ -5187,50 +5187,50 @@ def axisRefinementFamilyApplication
     · exact beforeFree
     · exact afterFree) rfl
 
-def axisSignatureTypeFree :
+theorem axisSignatureTypeFree :
     FreeOf axisRefinementName outcomeSignatureType :=
   outcomeSignatureTypeFreeOf axisRefinementName
 
-def refinementAxisTypeFree {n : Nat} :
+theorem refinementAxisTypeFree {n : Nat} :
     FreeOf axisRefinementName (refinementAxisTm : Tower.Tm n) :=
   .const (by decide)
 
-def axisSignatureJudgmentFree
+theorem axisSignatureJudgmentFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf axisRefinementName signature) :
     FreeOf axisRefinementName (signatureJudgment signature) := by
   unfold signatureJudgment
   exact .fst signatureFree
 
-def axisSignatureEvidenceFree
+theorem axisSignatureEvidenceFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf axisRefinementName signature) :
     FreeOf axisRefinementName (signatureEvidence signature) := by
   unfold signatureEvidence
   exact .fst (.snd signatureFree)
 
-def axisSignatureObstructionFree
+theorem axisSignatureObstructionFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf axisRefinementName signature) :
     FreeOf axisRefinementName (signatureObstruction signature) := by
   unfold signatureObstruction
   exact .fst (.snd (.snd signatureFree))
 
-def axisSignatureBoundaryFree
+theorem axisSignatureBoundaryFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf axisRefinementName signature) :
     FreeOf axisRefinementName (signatureBoundary signature) := by
   unfold signatureBoundary
   exact .fst (.snd (.snd (.snd signatureFree)))
 
-def axisSignatureFrontierFree
+theorem axisSignatureFrontierFree
     {signature : Tower.Tm n}
     (signatureFree : FreeOf axisRefinementName signature) :
     FreeOf axisRefinementName (signatureFrontier signature) := by
   unfold signatureFrontier
   exact .snd (.snd (.snd (.snd signatureFree)))
 
-def axisOutcomeConstructorFree (constructor : DeclName)
+theorem axisOutcomeConstructorFree (constructor : DeclName)
     (different : constructor ≠ axisRefinementName)
     {signature judgment witness : Tower.Tm n}
     (signatureFree : FreeOf axisRefinementName signature)
@@ -5320,11 +5320,11 @@ def axisIncompleteConstructorPositive :
                     axisOutcomeConstructorFree incompleteName (by decide)
                       (.var 4) (.var 2) (.var 0))))))))
 
-def refinementAxisBudgetFree {n : Nat} :
+theorem refinementAxisBudgetFree {n : Nat} :
     FreeOf axisRefinementName (refinementAxisBudgetTm : Tower.Tm n) :=
   .const (by decide)
 
-def refinementAxisAuthorityFree {n : Nat} :
+theorem refinementAxisAuthorityFree {n : Nat} :
     FreeOf axisRefinementName (refinementAxisAuthorityTm : Tower.Tm n) :=
   .const (by decide)
 

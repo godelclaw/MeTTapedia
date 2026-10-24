@@ -27,13 +27,13 @@ def matchingRequest (request : Request) (index : Nat) (assignment : Assignment)
   schema := schema
   target := value
 
-def expandArguments (environment : Environment) (request : Request)
-    (frame : ArgumentsFrame environment request) :
-    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation :=
+def expandArguments {matcher : MatchingExecution} (environment : Environment) (request : Request)
+    (frame : ArgumentsFrame environment request matcher) :
+    Scheduler.Expansion (Task environment request matcher) (Answer environment request matcher) Obligation :=
   match schemasFound : frame.schemas, valuesFound : frame.values, modesFound : frame.modes with
   | [], [], [] =>
       if checked : checkTypedAssignment environment request.context frame.assignment then
-        let held : TracedArgumentsHold request.context frame.index frame.assignment
+        let held : Interpreted.TracedArgumentsHold matcher.meaning request.context frame.index frame.assignment
             frame.schemas frame.values frame.modes frame.assignment [] := by
           rw [schemasFound, valuesFound, modesFound]
           exact .nil
@@ -48,10 +48,7 @@ def expandArguments (environment : Environment) (request : Request)
               frame.assignment schema with
           | none => { unresolved := [.inputUnavailable frame.rowIndex frame.index] }
           | some actual =>
-              if same : actual == value then
-                let held : ArgumentHolds request.context frame.index .input
-                    frame.assignment schema value frame.assignment :=
-                  .input (by simpa only [beq_iff_eq.mp same] using interpreted)
+              if same : matcher.acceptsInput (matchingRequest request frame.index frame.assignment schema value) actual then
                 { tasks := [.arguments {
                     rowIndex := frame.rowIndex
                     index := frame.index + 1
@@ -61,11 +58,10 @@ def expandArguments (environment : Environment) (request : Request)
                     modes := modes
                     origins := frame.origins ++ [(frame.index, [])]
                     finish := fun final traces tail typed => by
-                      have traced : TracedArgumentsHold request.context frame.index frame.assignment
+                      have traced : Interpreted.TracedArgumentsHold matcher.meaning request.context frame.index frame.assignment
                           frame.schemas frame.values frame.modes final ((frame.index, []) :: traces) := by
                         rw [schemasFound, valuesFound, modesFound]
-                        cases held with
-                        | input interpreted => exact .input interpreted tail
+                        exact .input (matcher.input_sound interpreted same) tail
                       simpa only [List.append_assoc, List.singleton_append] using
                         frame.finish final ((frame.index, []) :: traces) traced typed }] }
               else {}
@@ -79,46 +75,46 @@ def expandArguments (environment : Environment) (request : Request)
               modes := modes
               origins := frame.origins
               query := query
-              state := GeneralScopedMatchMachine.start query
-              reachable := .start
+              state := matcher.start query
+              reachable := matcher.start_reachable query
               cursor := 0
               finish := fun answer valid final traces tail typed => by
-                have traced : TracedArgumentsHold request.context frame.index frame.assignment
-                    frame.schemas frame.values frame.modes final ((frame.index, answer.trace) :: traces) := by
+                have traced : Interpreted.TracedArgumentsHold matcher.meaning request.context frame.index frame.assignment
+                    frame.schemas frame.values frame.modes final ((frame.index, (matcher.trace answer)) :: traces) := by
                   rw [schemasFound, valuesFound, modesFound]
                   exact .output valid tail
                 simpa only [List.append_assoc, List.singleton_append] using
-                  frame.finish final ((frame.index, answer.trace) :: traces) traced typed }] }
+                  frame.finish final ((frame.index, (matcher.trace answer)) :: traces) traced typed }] }
   | _, _, _ => { unresolved := [.argumentShape frame.rowIndex frame.index] }
 
-def expandMatcher (environment : Environment) (request : Request)
-    (frame : MatcherFrame environment request) :
-    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation :=
-  match found : frame.state.answers[frame.cursor]? with
+def expandMatcher {matcher : MatchingExecution} (environment : Environment) (request : Request)
+    (frame : MatcherFrame environment request matcher) :
+    Scheduler.Expansion (Task environment request matcher) (Answer environment request matcher) Obligation :=
+  match found : (matcher.answers frame.state)[frame.cursor]? with
   | some answer =>
-      have valid : GeneralScopedMatchMachine.Answer.Valid frame.query answer :=
-        GeneralScopedMatchMachine.answers_sound frame.reachable (List.mem_of_getElem? found)
+      have valid : matcher.meaning.Matches frame.query (matcher.trace answer) (matcher.assignment answer) :=
+        matcher.answers_sound frame.reachable (List.mem_of_getElem? found)
       { tasks := [
           .arguments {
             rowIndex := frame.rowIndex
             index := frame.argumentIndex + 1
-            assignment := answer.assignment
+            assignment := (matcher.assignment answer)
             schemas := frame.schemas
             values := frame.values
             modes := frame.modes
-            origins := frame.origins ++ [(frame.argumentIndex, answer.trace)]
+            origins := frame.origins ++ [(frame.argumentIndex, (matcher.trace answer))]
             finish := frame.finish answer valid },
           .matcher { frame with cursor := frame.cursor + 1 }] }
   | none =>
-      if GeneralScopedMatchMachine.complete frame.state then {}
+      if matcher.complete frame.state then {}
       else
         { tasks := [.matcher { frame with
-            state := GeneralScopedMatchMachine.tick frame.query frame.state
-            reachable := GeneralScopedMatchMachine.reachable_tick frame.reachable }] }
+            state := matcher.tick frame.query frame.state
+            reachable := matcher.tick_reachable frame.reachable }] }
 
 def expandDynamicInputs (environment : Environment) (request : Request)
-    (frame : DynamicInputsFrame environment request) :
-    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation :=
+    (frame : DynamicInputsFrame environment request) (matcher : MatchingExecution := MatchingExecution.ordinary) :
+    Scheduler.Expansion (Task environment request matcher) (Answer environment request matcher) Obligation :=
   match schemasFound : frame.schemas, modesFound : frame.modes with
   | [], [] =>
       let held : DynamicInputs request.context frame.index request.initial frame.schemas frame.modes [] := by
@@ -178,8 +174,8 @@ def expandDynamicInputs (environment : Environment) (request : Request)
   | _, _ => { unresolved := [.dynamicArgumentShape frame.index] }
 
 def expandDynamicRows (environment : Environment) (request : Request)
-    (frame : DynamicRowsFrame environment request) :
-    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation :=
+    (frame : DynamicRowsFrame environment request) (matcher : MatchingExecution := MatchingExecution.ordinary) :
+    Scheduler.Expansion (Task environment request matcher) (Answer environment request matcher) Obligation :=
   match selected : frame.rows[frame.cursor]? with
   | none => {}
   | some values =>
@@ -196,12 +192,12 @@ def expandDynamicRows (environment : Environment) (request : Request)
             origins := []
             finish := fun final traces held typed => by
               simpa only [List.nil_append] using
-                TracedQuery.dynamicRow frame.registered frame.signatureFound frame.inputs frame.source
+                Interpreted.TracedQuery.dynamicRow frame.registered frame.signatureFound frame.inputs frame.source
                   selected (checkRow_sound checked) held typed }, tail] }
       else { tasks := [tail] }
 
-def expand (environment : Environment) (request : Request) : Task environment request →
-    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation
+def expand {matcher : MatchingExecution} (environment : Environment) (request : Request) : Task environment request matcher →
+    Scheduler.Expansion (Task environment request matcher) (Answer environment request matcher) Obligation
   | .start =>
       match found : signature? environment.provider request.relation request.arguments.length with
       | none => { unresolved := [.signatureUnavailable request.relation request.arguments.length] }
@@ -233,24 +229,25 @@ def expand (environment : Environment) (request : Request) : Task environment re
                 modes := frame.signature.modes
                 origins := []
                 finish := fun final traces held typed => by
-                  simpa using TracedQuery.row found frame.signatureFound (checkRow_sound checked) held typed }, tail] }
+                  simpa using Interpreted.TracedQuery.row found frame.signatureFound (checkRow_sound checked) held typed }, tail] }
           else { tasks := [tail] }
-  | .dynamicInputs frame => expandDynamicInputs environment request frame
-  | .dynamicRows frame => expandDynamicRows environment request frame
+  | .dynamicInputs frame => expandDynamicInputs environment request frame matcher
+  | .dynamicRows frame => expandDynamicRows environment request frame matcher
   | .arguments frame => expandArguments environment request frame
   | .matcher frame => expandMatcher environment request frame
 
-def start (environment : Environment) (request : Request) : State environment request :=
+def start (environment : Environment) (request : Request)
+    (matcher : MatchingExecution := MatchingExecution.ordinary) : State environment request matcher :=
   { agenda := [.start] }
 
-def tick (environment : Environment) (request : Request) (state : State environment request) :
-    State environment request := Scheduler.tick (expand environment request) state
+def tick {matcher : MatchingExecution} (environment : Environment) (request : Request) (state : State environment request matcher) :
+    State environment request matcher := Scheduler.tick (expand environment request) state
 
-def run (environment : Environment) (request : Request) (fuel : Nat)
-    (state : State environment request) : State environment request :=
+def run {matcher : MatchingExecution} (environment : Environment) (request : Request) (fuel : Nat)
+    (state : State environment request matcher) : State environment request matcher :=
   Scheduler.run (expand environment request) fuel state
 
-def complete (environment : Environment) (request : Request) (state : State environment request) :
+def complete {matcher : MatchingExecution} (environment : Environment) (request : Request) (state : State environment request matcher) :
     Bool := Scheduler.complete state
 
 theorem emitted_sound (environment : Environment) (request : Request)
@@ -263,22 +260,22 @@ theorem emitted_extension (environment : Environment) (request : Request)
     (answer : Answer environment request) : Extension request.initial answer.assignment :=
   answer.valid.readout.extension
 
-theorem run_add (environment : Environment) (request : Request) (first second : Nat)
-    (state : State environment request) :
+theorem run_add {matcher : MatchingExecution} (environment : Environment) (request : Request) (first second : Nat)
+    (state : State environment request matcher) :
     run environment request (first + second) state =
       run environment request second (run environment request first state) :=
   Scheduler.run_add _ _ _ _
 
-theorem receipts_prefix (environment : Environment) (request : Request) (fuel : Nat)
-    (state : State environment request) :
+theorem receipts_prefix {matcher : MatchingExecution} (environment : Environment) (request : Request) (fuel : Nat)
+    (state : State environment request matcher) :
     Scheduler.Prefix state.answers (run environment request fuel state).answers :=
   Scheduler.run_answers_prefix _ _ _
 
-theorem work_add (environment : Environment) (request : Request) (first second : Nat)
-    (state : State environment request) :
-    Scheduler.spent (expand environment request) (first + second) state =
-      Scheduler.spent (expand environment request) first state +
-      Scheduler.spent (expand environment request) second (run environment request first state) :=
+theorem work_add {matcher : MatchingExecution} (environment : Environment) (request : Request) (first second : Nat)
+    (state : State environment request matcher) :
+    Scheduler.spent (expand (matcher := matcher) environment request) (first + second) state =
+      Scheduler.spent (expand (matcher := matcher) environment request) first state +
+      Scheduler.spent (expand (matcher := matcher) environment request) second (run environment request first state) :=
   Scheduler.spent_add _ _ _ _
 
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise.Query

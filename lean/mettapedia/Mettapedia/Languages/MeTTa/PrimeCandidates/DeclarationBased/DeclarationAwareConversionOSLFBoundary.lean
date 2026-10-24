@@ -37,7 +37,7 @@ open DeclarationAwareTypedConversion
 
 /-- The established proof-relevant conversion interpretation supplies the
 semantic model of the generated OSLF reachability predicate. -/
-noncomputable def conversionSoundModel :
+theorem conversionSoundModel :
     SoundModel typedConversionExtension.target
       (fun goal => Nonempty (TowerConversionRootMeaning goal)) :=
   SoundModel.ofProofRelevant typedConversionSemanticExtension.targetSemantics

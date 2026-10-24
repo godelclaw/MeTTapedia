@@ -349,4 +349,48 @@ theorem firings_exact (request : Request) (fuel : Nat)
     cases firing
     simp [firing?, reduced]
 
+/-- Completed execution has the exact source successor list, including repeated
+occurrences. The right side uses the independently specified collection
+matcher, followed by the authored reduct operation. -/
+theorem completed_targets (request : Request) (fuel : Nat)
+    (finished : complete (resume request fuel (start request)) = true) :
+    (firings request (resume request fuel (start request))).map (·.target) =
+      (ScopedCollectionMatching.run request.rule request.spec request.ambient
+        request.site request.path request.depth request.index request.initial
+        request.schemas request.rest request.kind request.targets).filterMap
+        (reduct? request.rule request.spec request.ambient) := by
+  rw [← completed_assignments request fuel finished]
+  simp only [firings, List.map_filterMap, List.filterMap_map]
+  apply List.filterMap_congr
+  intro receipt _
+  simp only [firing?, Function.comp_def]
+  cases reduct? request.rule request.spec request.ambient receipt.matching.assignment <;> rfl
+
+/-- At a complete frontier the actual targets agree in both directions with
+collection equality, scoped captures, and the authored reduct. -/
+theorem completed_target_iff (request : Request) (fuel : Nat)
+    (finished : complete (resume request fuel (start request)) = true)
+    (unordered : request.kind ≠ .vec)
+    (distinct : request.kind = .hashSet → request.targets.Nodup) (target : Pattern) :
+    (∃ firing ∈ firings request (resume request fuel (start request)), firing.target = target) ↔
+      ∃ assignment,
+        ScopedCollectionMatching.Matches request.rule request.spec request.ambient
+          request.site request.path request.depth request.index request.initial
+          request.schemas request.rest request.kind request.targets assignment ∧
+        reduct? request.rule request.spec request.ambient assignment = some target := by
+  rw [← List.mem_map, completed_targets request fuel finished, List.mem_filterMap]
+  simp only [ScopedCollectionMatching.run_exact _ _ _ _ _ _ _ _ _ _ _ unordered distinct]
+
+/-- Every finite request reaches exact source coverage; the work bound is
+obtained from the real retained matcher, not a fuel assumption. -/
+theorem eventually_source_exact (request : Request) :
+    ∃ fuel, complete (resume request fuel (start request)) = true ∧
+      (firings request (resume request fuel (start request))).map (·.target) =
+        (ScopedCollectionMatching.run request.rule request.spec request.ambient
+          request.site request.path request.depth request.index request.initial
+          request.schemas request.rest request.kind request.targets).filterMap
+          (reduct? request.rule request.spec request.ambient) := by
+  obtain ⟨fuel, finished⟩ := eventually_complete request (start request)
+  exact ⟨fuel, finished, completed_targets request fuel finished⟩
+
 end Mettapedia.OSLF.MeTTaIL.ScopedCollectionMachine

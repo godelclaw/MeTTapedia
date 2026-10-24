@@ -184,7 +184,7 @@ def getOperator (language : LanguageDef) : Data → Option (Σ sort, Operator la
       else none
   | .pair (.atom 1) payload => do
       let (row, parameter, kind, element, spine) ← (collectionConstructorCodec language).get payload
-      if shape : row.val.params = [.simple parameter (.collection kind element)] then
+      if shape : row.val.bareParams = [.simple parameter (.collection kind element)] then
         if spine.all (fun actual => decide (actual = element)) then
           return ⟨_, .collectionConstructor row.val row.property parameter kind element shape spine.length⟩
         else none
@@ -583,13 +583,24 @@ private theorem get_putAlgebra : ∀ algebra, getAlgebra (putAlgebra algebra) = 
 
 def algebraCodec : Codec (Option CollectionAlgebra) := ⟨putAlgebra, getAlgebra, get_putAlgebra⟩
 
+private def putRepresentation : CollectionRepresentation → Nat
+  | .bare => 0 | .wrapped => 1
+private def getRepresentation : Nat → Option CollectionRepresentation
+  | 0 => some .bare | 1 => some .wrapped | _ => none
+
+def representationCodec : Codec CollectionRepresentation :=
+  Codec.nat.mapped putRepresentation getRepresentation (fun mode => by cases mode <;> rfl)
+
 /-- Full original grammar metadata is retained, including syntax operators,
 evaluation policy and collection algebra omitted by typing-only wires. -/
 def grammarRuleCodec : Codec GrammarRule :=
   (Codec.prod Codec.string (Codec.prod Codec.string (Codec.prod (Codec.list parameterCodec)
-    (Codec.prod (Codec.list syntaxItemCodec) (Codec.prod policyCodec algebraCodec))))).mapped
-    (fun row => (row.label, row.category, row.params, row.syntaxPattern, row.evalPolicy?, row.algebra?))
-    (fun fields => some ⟨fields.1, fields.2.1, fields.2.2.1, fields.2.2.2.1, fields.2.2.2.2.1, fields.2.2.2.2.2⟩)
+    (Codec.prod (Codec.list syntaxItemCodec)
+      (Codec.prod policyCodec (Codec.prod algebraCodec representationCodec)))))).mapped
+    (fun row => (row.label, row.category, row.params, row.syntaxPattern, row.evalPolicy?,
+      row.algebra?, row.collectionRepresentation))
+    (fun fields => some ⟨fields.1, fields.2.1, fields.2.2.1, fields.2.2.2.1,
+      fields.2.2.2.2.1, fields.2.2.2.2.2.1, fields.2.2.2.2.2.2⟩)
     (fun _ => rfl)
 
 /-- This footprint authorizes the source binding signature and its declared

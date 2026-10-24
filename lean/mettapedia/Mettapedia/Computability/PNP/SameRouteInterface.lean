@@ -70,7 +70,7 @@ theorem exactRecoverySampleMass_ge_one_sub_bitBudget_mul_pow_of_agreementMass_le
       change Nonempty (BitCode s)
       exact ⟨Classical.choose htarget⟩)
     μ target m htarget q hq
-  letI : Nonempty F.toEncodedFamily.Code := by
+  let : Nonempty F.toEncodedFamily.Code := by
     change Nonempty (BitCode s)
     exact ⟨Classical.choose htarget⟩
   change 1 - (Fintype.card (BitCode s) : ℝ≥0∞) * q ^ m ≤

@@ -43,7 +43,7 @@ def inspect (language : LanguageDef) (free : FreeTypeContext)
           exact congrArg (fun head => Pattern.apply head arguments) (beq_iff_eq.mp heads.1).symm⟩
       else none
   | .collection kind elements rest =>
-      match shape : declaration.params with
+      match shape : declaration.bareParams with
       | [.simple name (.collection declaredKind elementType)] =>
           if accepted : declaredKind = kind then
             if checked : rest.isNone && checkElementsHaveType language free bound elements elementType then
@@ -71,10 +71,13 @@ theorem inspect_complete (language : LanguageDef) (free : FreeTypeContext)
       change (rest.isNone && isObjectPatternList elements) = true at object
       have objects := Bool.and_eq_true_iff.mp object
       have checked := checkElementsHaveType_complete_of_objects typed objects.2
-      rcases declaration with ⟨label, category, parameters, surfacePattern, policy, algebra⟩
-      dsimp only at shape
+      have bare := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.1
+      rcases declaration with ⟨label, category, parameters, surfacePattern, policy, algebra, representation⟩
+      change representation = .bare at bare
+      subst representation
+      dsimp only [GrammarRule.bareParams] at shape
       subst parameters
-      simp [inspect, ConstructorValue.pattern, objects.1, checked]
+      simp [inspect, ConstructorValue.pattern, GrammarRule.bareParams, objects.1, checked]
 
 /-- Equal introduction terms determine the same ordered input terms, even
 when their typing proofs or declaration witnesses were constructed differently. -/
@@ -157,5 +160,32 @@ theorem local_structural_exact {plan : GeneralExecutionAdmission.Plan}
   · intro representative related
     have same := (no_equation_iff_eq empty bound carrier term representative).mp related
     exact same ▸ object
+
+namespace RepresentationControls
+
+def elementRule (label : String) : GrammarRule :=
+  { label := label, category := "Item", params := [], syntaxPattern := [] }
+
+def bareRule : GrammarRule :=
+  { label := "Bag", category := "Items",
+    params := [.simple "items" (.collection .hashBag (.base "Item"))], syntaxPattern := [] }
+
+def wrappedRule : GrammarRule := { bareRule with collectionRepresentation := .wrapped }
+
+def language (rule : GrammarRule) : LanguageDef :=
+  { name := "collection-inspection", types := [],
+    terms := [elementRule "A", elementRule "B", rule], equations := [], rewrites := [] }
+
+def collection : Pattern := .collection .hashBag [.apply "A" [], .apply "B" []] none
+
+theorem bare_collection_inspected :
+    (inspect (language bareRule) FreeTypeContext.empty [] bareRule collection).isSome = true := by
+  decide +kernel
+
+theorem wrapped_declaration_refuses_bare_collection :
+    inspect (language wrappedRule) FreeTypeContext.empty [] wrappedRule collection = none := by
+  decide +kernel
+
+end RepresentationControls
 
 end Mettapedia.OSLF.NativeTypes.Instances.Local.Structural

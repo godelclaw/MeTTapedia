@@ -41,7 +41,7 @@ theorem actual_earlier {environment : Environment} {context : Context}
     (interpreted : instantiateAt? context.rule context.spec context.bound.length
       (context.site 0) [] depth initial schema = some actualSource)
     (bounds : bound.length = depth + context.bound.length)
-    (firing : RootFiring environment bound type actualSource index trace captured completed history target) :
+    (firing : GeneralPremise.RootFiring environment bound type actualSource index trace captured completed history target) :
     index < context.ruleIndex := by
   cases firing with
   | fire childDeclared _ _ _ matching _ _ _ _ =>
@@ -51,9 +51,9 @@ theorem actual_earlier {environment : Environment} {context : Context}
     exact GeneralRuleMatchingHeads.actual_child_stratum checked declared child called interpreted matched
 
 mutual
- theorem PremiseHolds.ordered {environment : Environment} {context : Context}
+ theorem Interpreted.PremiseHolds.ordered {environment : Environment} {context : Context}
     {premise : Premise} {initial final : Assignment} {event : Event}
-    (held : PremiseHolds environment context premise initial final event)
+    (held : GeneralPremise.PremiseHolds environment context premise initial final event)
     (checked : checkStepStratification environment.language = true)
     (declared : (context.rule, context.ruleIndex) ∈ environment.language.rewrites.zipIdx)
     (within : SourcesWithin context premise) : eventOrdered context.ruleIndex event = true :=
@@ -73,9 +73,9 @@ mutual
   | .quantified _ elements => by
       simpa only [eventOrdered] using elements.ordered checked declared within
 
- theorem PremisesHold.ordered {environment : Environment} {context : Context}
+ theorem Interpreted.PremisesHold.ordered {environment : Environment} {context : Context}
     {premises : List Premise} {initial final : Assignment} {events : List Event}
-    (held : PremisesHold environment context premises initial final events)
+    (held : GeneralPremise.PremisesHold environment context premises initial final events)
     (checked : checkStepStratification environment.language = true)
     (declared : (context.rule, context.ruleIndex) ∈ environment.language.rewrites.zipIdx)
     (within : ∀ premise ∈ premises, SourcesWithin context premise) :
@@ -88,10 +88,10 @@ mutual
       change eventsOrdered context.ruleIndex _ = true at rest
       simp only [eventsOrdered, first, rest, Bool.and_self]
 
- theorem QuantifiedElements.ordered {environment : Environment} {context : Context}
+ theorem Interpreted.QuantifiedElements.ordered {environment : Environment} {context : Context}
     {parameter : String} {body : Premise} {index : Nat} {elements : List Pattern}
     {initial final : Assignment} {events : List (Nat × Pattern × List Event)}
-    (held : QuantifiedElements environment context parameter body index elements initial final events)
+    (held : GeneralPremise.QuantifiedElements environment context parameter body index elements initial final events)
     (checked : checkStepStratification environment.language = true)
     (declared : (context.rule, context.ruleIndex) ∈ environment.language.rewrites.zipIdx)
     (within : SourcesWithin context body) : quantifiedOrdered context.ruleIndex events = true :=
@@ -103,11 +103,11 @@ mutual
       change eventOrdered context.ruleIndex _ = true at first
       simp only [quantifiedOrdered, eventsOrdered, first, rest, Bool.and_self]
 
- theorem RootFiring.ordered {environment : Environment} {bound : List TypeExpr}
+ theorem Interpreted.RootFiring.ordered {environment : Environment} {bound : List TypeExpr}
     {type : TypeExpr} {source target : Pattern} {index : Nat}
     {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
     {history : List Event}
-    (firing : RootFiring environment bound type source index trace captured completed history target)
+    (firing : GeneralPremise.RootFiring environment bound type source index trace captured completed history target)
     (checked : checkStepStratification environment.language = true) : eventsOrdered index history = true :=
   match firing with
   | .fire declared _ _ _ _ _ premises _ _ => by

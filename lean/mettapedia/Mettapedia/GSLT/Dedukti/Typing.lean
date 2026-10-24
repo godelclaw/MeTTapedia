@@ -9,7 +9,7 @@ two sorts of the existing λΠ syntax, with typed constants, in which the
 conversion rule uses the conversion declared by the theory.
 
 * The sorts, axioms and product rules are an existing `LFProfile.Profile`.
-  At `LFProfile.basic` the judgment is the λΠ-calculus modulo the rules of the
+  At `LFProfile.standardLF` the judgment is the λΠ-calculus modulo the rules of the
   theory.  At any profile and the empty theory it is the pure type system of
   that profile, with beta conversion.
 * Dependent function types, typed constants, and the conversion rule
@@ -83,7 +83,7 @@ inductive HasType (profile : Profile) (theory : Theory) : Ctx → Term → Term 
 
 /-- **The λΠ-calculus modulo the rules of a theory.** -/
 abbrev LambdaPiModulo (theory : Theory) : Ctx → Term → Term → Prop :=
-  HasType LFProfile.basic theory
+  HasType LFProfile.standardLF theory
 
 variable {profile : Profile} {theory : Theory}
 
@@ -332,11 +332,11 @@ theorem type_Q (context : Ctx) : LambdaPiModulo withRule context (.con "Q") (.sr
 theorem type_arrow (context : Ctx) :
     LambdaPiModulo withRule context (.pi (.con "Q") (.con "Q")) (.srt .type) :=
   .pi (type_Q _) (type_Q _)
-    (by decide : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products)
+    (by decide : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products)
 
 /-- **Positive**: the term is typable modulo the rule. -/
 theorem typable_with_rule : LambdaPiModulo withRule [] term type := by
-  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
   refine .lam (.con rfl) (type_arrow _) rule ?_
   refine .lam (type_Q _) (type_Q _) rule ?_
   have function : LambdaPiModulo withRule [.con "Q", .con "P"] (.var 1)

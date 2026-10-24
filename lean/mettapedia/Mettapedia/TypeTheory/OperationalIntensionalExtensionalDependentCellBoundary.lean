@@ -25,7 +25,7 @@ set_option autoImplicit false
 namespace Mettapedia.TypeTheory
 namespace OperationalIntensionalExtensionalDependentCellBoundary
 
-open CategoryTheory CategoryTheory.Bicategory
+open _root_.CategoryTheory _root_.CategoryTheory.Bicategory
 open CategoryIndexedFamilyTwoCellAction
 open OperationalIntensionalExtensionalTwoComputad
 open OperationalIntensionalExtensionalCellThinness

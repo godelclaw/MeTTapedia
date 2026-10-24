@@ -28,7 +28,7 @@ open scoped ProgramQuotation
 def source : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../../metta/gslt/lib/gslt_typed_sites.metta"
-    sha256 "3377d53517fafc55073b26eb5fb4f3c2737efb0ff09f8ab751e7b734086f0f60"
+    sha256 "70cbcf95d6ff191c34c3240f18ce26ac8d4289eb3990e61679ffb89cc000f01c"
 
 def program : Program := RuleExecutionProgram.program.append source.program
 
@@ -199,7 +199,7 @@ theorem data_template (head : String) (arguments : List Atom) (member : head ∈
 
 def executionHeadNames : List String :=
   ["+", "-", "==", "Binding", "ContextApp", "ContextCollection", "ContextLam", "ContextMultiLam",
-   "FVar", "GrammarTypingV1", "LCons", "LNil", "None", "OperationalPermissions", "PApp",
+   "FVar", "GrammarTypingV1", "GrammarTypingWrappedV1", "LCons", "LNil", "None", "OperationalPermissions", "PApp",
    "PCollection", "PLam", "PMultiLam", "PSubst", "PermissionNo", "PermissionYes", "RNone",
    "RuleJob", "RuleJobSite", "Some", "TArrow", "TBase", "TCollection", "TMultiBinder",
    "TermAbstraction", "TermMultiAbstraction", "TermSimple", "TermSlot", "TypingApplication",

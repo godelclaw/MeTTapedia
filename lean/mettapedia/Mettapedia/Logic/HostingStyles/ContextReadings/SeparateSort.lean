@@ -200,7 +200,8 @@ theorem tokens_le_of_hasType {lang : LanguageDef} (valid : lang.validate = []) {
       cases typed with
       | collectionConstructor membership parameters elementsTyped =>
           have plainRule := List.all_eq_true.mp closed _ membership
-          rw [parameters] at plainRule
+          have fullParameters := ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
+          rw [fullParameters] at plainRule
           simp [plainOther] at plainRule
 
 /-- **A term that reduces has exactly one constructor of the reducing sort**,

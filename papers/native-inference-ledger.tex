@@ -1,6 +1,6 @@
 % Generated from the axiom audit; do not edit by hand.
 \begin{small}
-\begin{longtable}{@{}l>{\raggedright\arraybackslash}p{0.37\linewidth}>{\raggedright\arraybackslash}p{0.34\linewidth}ll@{}}
+\begin{longtable}{@{}l>{\raggedright\arraybackslash}p{0.37\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}ll@{}}
 \toprule
 Part & Claim & Lean declaration & Axioms & Status\\
 \midrule
@@ -148,6 +148,123 @@ D & Compute the normal roundtrip for detour-free core-witness proofs & \name{GSL
 D & Retain coding in every normal form of a detour-free core-witness proof & \name{GSLT.Dedukti.HOLHub.compile_normalForm_coded} & PCQ & proved\\
 D & Separate evidence reconstruction from theoremhood with an uncoded witness & \name{GSLT.Dedukti.HOLHub.sttfa_not_exactly_adequate} & PCQ & proved\\
 D & Reject the uncoded normal universal witness & \name{GSLT.Dedukti.HOLHub.sttfa_coding_needed} & PCQ & proved\\
+D & Characterize extension above the direct-dependency formation vertex & \name{HypercubeHOLHub.standardLF_subsumed_iff_directInterface} & P & proved\\
+D & Form the actual STTfa declarations at the dependency vertex & \name{HypercubeHOLHub.formedSignature_at_dependentVertex} & PCQ & proved\\
+D & Type the STTfa bodies at the dependency vertex & \name{HypercubeHOLHub.typedBodies_at_dependentVertex} & PCQ & proved\\
+D & Preserve types for STTfa rewrites at the dependency vertex & \name{HypercubeHOLHub.rulesPreserveTypes_at_dependentVertex} & PCQ & proved\\
+D & Retain typing under STTfa reduction at the dependency vertex & \name{HypercubeHOLHub.typePreservation_at_dependentVertex} & PCQ & proved\\
+D & Type translated HOL terms above the direct-dependency vertex & \name{HypercubeHOLHub.translate_typed_of_directInterface} & PQ & proved\\
+D & Join source substitution coherence with profiled target typing & \name{HypercubeHOLHub.translate_substitute_typed_of_directInterface} & PCQ & proved\\
+D & Type compiled HOL evidence above the direct-dependency vertex & \name{HypercubeHOLHub.theorem_typed_of_directInterface} & PCQ & proved\\
+D & Type the universal-elimination control at the exact vertex & \name{HypercubeHOLHub.predInstance_typed_at_dependentVertex} & PCQ & proved\\
+D & Refuse a value-indexed decoder declaration at the simple vertex & \name{HypercubeHOLHub.eta_declaration_not_formed_at_simpleVertex} & PCQ & proved\\
+D & Refuse the STTfa signature at the simple vertex & \name{HypercubeHOLHub.signature_not_formed_at_simpleVertex} & PCQ & proved\\
+D & Form every frozen DTTBench statement at the indexed profile & \name{LFDTTBenchDemand.allWithinMettaKernelPrototype_eq_true} & P & proved\\
+D & Refuse the full frozen DTTBench corpus at the basic profile & \name{LFDTTBenchDemand.allWithinStandardLF_eq_false} & P & proved\\
+D & Compute the complete indexed product demand of the frozen corpus & \name{LFDTTBenchDemand.allDemandRules_eq_mettaKernelPrototype} & P & proved\\
+D & Identify the indexed profile as least for the frozen corpus demand & \name{LFDTTBenchDemand.mettaKernelPrototype_minimal_for_DTTBench} & P & proved\\
+D & Characterize the common rules of CoC and the MettaKernel kind-result prototype & \name{HypercubeHOLHub.construction_mettaKernelPrototype_common_product_iff} & P & proved\\
+D & Separate CoC formation from the MettaKernel kind-result prototype & \name{HypercubeHOLHub.constructions_not_subsumed_mettaKernelPrototype} & P & proved\\
+D & Separate the MettaKernel kind-result prototype from CoC formation & \name{HypercubeHOLHub.mettaKernelPrototype_not_subsumed_constructions} & P & proved\\
+D & Reject functionality of the literal upper-profile union & \name{HypercubeHOLHub.constructionMettaKernelPrototypeUnion_not_functional} & P & proved\\
+D & Keep the CoC direct interfaces outside the MettaKernel kind-result prototype & \name{HypercubeHOLHub.mettaKernelPrototype_does_not_support_directFormationInterfaces} & P & proved\\
+D & Keep the indexed corpus demand outside the CoC branch & \name{HypercubeHOLHub.constructions_do_not_contain_DTTBench} & P & proved\\
+D & Record the two useful upper branches and their nonfunctional union & \name{HypercubeHOLHub.coc_mettaKernelPrototype_fork} & P & proved\\
+D & Characterize code-indexed family descent through quote and splice & \name{ContextualCodeObserverFactorization.familyFactorization_iff_quoteSpliceFibreEquivalences} & Q & proved\\
+D & Characterize preservation of code equality by quote-splice eta & \name{ContextualCodeObserverFactorization.equalityFamilyFactorization_iff_quoteSplice} & PQ & proved\\
+D & Separate body-constant from tag-sensitive code families & \name{ContextualCodeObserverFactorization.Canary.contextual_code_observer_boundary} & PCQ & proved\\
+D & Separate code-carrier descent from decoding descent & \name{TarskiCodeFamilyObserverFactorization.Canary.code_syntax_does_not_determine_decoding_factorization} & PCQ & proved\\
+D & Compose coherent code decoding with dependent products and sums & \name{TarskiCodeFamilyObserverFactorization.Canary.constant_decoding_pi_sigma_control} & PCQ & proved\\
+D & Retain every annotated product rule occurring in a typed subject & \name{ReifiedIndexElaboration.productRule_mem_of_typed_subject} & PQ & proved\\
+D & Characterize the exact three-rule type-reified index vertex & \name{ReifiedIndexElaboration.reifiedTypeIndexedForall_iff} & PQ & proved\\
+D & Separate the direct and type-reified formation vertices & \name{ReifiedIndexElaboration.direct_reified_formation_fork} & PCQ & proved\\
+D & Check the direct and reified applications in formed contexts & \name{ReifiedIndexElaboration.Controls.applications_have_formed_contexts} & PCQ & proved\\
+D & Measure the extra reified application in the sound reference checker & \name{ReifiedIndexElaboration.Controls.reifiedApplication_accepts_fuel_six} & C & proved\\
+D & Separate direct witness transport from reified code transport & \name{ReifiedIndexElaboration.Controls.result_transport_surface} & PQ & proved\\
+D & Keep decoding coherence separate from reified formation & \name{ReifiedIndexElaboration.Controls.formation_with_missing_decoding_coherence} & PCQ & proved\\
+D & Decide compatibility of two formation rules exactly & \name{HypercubeHOLHub.compatibleResultsCheck_eq_true_iff} & PCQ & proved\\
+D & Decide finite formation-profile functionality exactly & \name{HypercubeHOLHub.functionalProductsCheck_eq_true_iff} & PCQ & proved\\
+D & Identify the executable gate with the uniqueness premise & \name{HypercubeHOLHub.functionalProducts_iff_profileFunctional} & none & proved\\
+D & Characterize accepted formation-profile joins & \name{HypercubeHOLHub.admitProductJoin_eq_some_iff} & PCQ & proved\\
+D & Characterize refused formation-profile joins & \name{HypercubeHOLHub.admitProductJoin_eq_none_iff} & PCQ & proved\\
+D & Retain every left formation rule in an admitted join & \name{HypercubeHOLHub.admitted_join_contains_left} & PCQ & proved\\
+D & Retain every right formation rule in an admitted join & \name{HypercubeHOLHub.admitted_join_contains_right} & PCQ & proved\\
+D & Accept the dependency and type-operator formation join & \name{HypercubeHOLHub.dependent_operator_join_accepted} & none & proved\\
+D & Refuse the blind CoC and prototype formation join & \name{HypercubeHOLHub.coc_mettaKernelPrototype_join_refused} & none & proved\\
+D & Embed the left profile into an admitted join & \name{HypercubeHOLHub.admitted_join_subsumes_left} & PCQ & proved\\
+D & Embed the right profile into an admitted join & \name{HypercubeHOLHub.admitted_join_subsumes_right} & PCQ & proved\\
+D & Recheck left-profile evidence in an admitted join & \name{HypercubeHOLHub.admitted_join_rechecks_left} & PCQ & proved\\
+D & Recheck right-profile evidence in an admitted join & \name{HypercubeHOLHub.admitted_join_rechecks_right} & PCQ & proved\\
+D & Exclude every untagged functional upper profile containing both branches & \name{HypercubeProfileStratification.no_functional_common_upper} & P & proved\\
+D & Characterize coarse result-sort reconciliation of the CoC/prototype union & \name{HypercubeProfileStratification.constructionMettaKernelPrototypeUnion_resultFunctionalUnder_iff} & P & proved\\
+D & Exhibit the one-point result-sort shadow of the conflicting profiles & \name{HypercubeProfileStratification.constant_observation_reconciles} & P & proved\\
+D & Exclude reconciliation by any faithful result-sort observation & \name{HypercubeProfileStratification.injective_observation_does_not_reconcile} & P & proved\\
+D & Keep the Type-in-Type upper profile explicitly inconsistent & \name{TypeInTypeParadox.typeInType_inconsistent} & PQ & proved\\
+D & Retain functionality separately in each upper-profile fibre & \name{HypercubeProfileStratification.branchProfile_functional} & none & proved\\
+D & Embed the exact shared formation fragment in either branch & \name{HypercubeProfileStratification.shared_subsumed_branch} & P & proved\\
+D & Check each selected upper-profile fibre exactly & \name{HypercubeProfileStratification.exists_checkProof_iff_deriv} & P & proved\\
+D & Recheck common-fragment evidence in both upper fibres & \name{HypercubeProfileStratification.shared_evidence_rechecks_both} & P & proved\\
+D & Separate the construction fibre by its direct formation interface & \name{HypercubeProfileStratification.construction_interface_separates_branches} & P & proved\\
+D & Separate the profiles by the prototype-computed demand record & \name{HypercubeProfileStratification.prototype_computedDemand_separates_profiles} & P & proved\\
+D & Decode the canonical MeTTa atom profile wire losslessly & \name{LFProfileAtomWire.decode_encode} & PQ & proved\\
+D & Reflect equality of formation profiles through their atom encodings & \name{LFProfileAtomWire.encode_injective} & PQ & proved\\
+D & Decide exact agreement of the finite sort-axiom tables & \name{LFProfileAtomWire.sameSortAxiomsCheck_eq_true_iff} & P & proved\\
+D & Publish only functional profile joins containing both inputs & \name{LFProfileAtomWire.admitProfileJoin_sound} & PCQ & proved\\
+D & Commute atom-level joining with canonical profile encoding & \name{LFProfileAtomWire.joinEncoded_encode} & PQ & proved\\
+D & Recover both decoded inputs and the admitted functional upper profile & \name{LFProfileAtomWire.joinEncoded_sound} & PCQ & proved\\
+D & Accept the encoded dependency and type-operator join & \name{LFProfileAtomWire.dependent_operator_join_encoded} & PQ & proved\\
+D & Refuse the encoded nonfunctional CoC and prototype union & \name{LFProfileAtomWire.coc_mettaKernelPrototype_join_encoded_refused} & P & proved\\
+D & Refuse a join with conflicting sort axioms & \name{LFProfileAtomWire.conflicting_sort_axiom_join_refused} & P & proved\\
+D & Refuse malformed atom data before profile admission & \name{LFProfileAtomWire.malformed_profile_refused} & P & proved\\
+D & Characterize bubble union as the least conversion extension & \name{BubbleConversion.convertible_join_least} & none & proved\\
+D & Embed left-bubble typing into the conversion join & \name{BubbleConversion.hasTypeIn_join_left} & P & proved\\
+D & Embed right-bubble typing into the conversion join & \name{BubbleConversion.hasTypeIn_join_right} & P & proved\\
+D & Normalize a bubble join under the stated interaction law & \name{BubbleConversion.join_normalizedBy} & none & proved\\
+D & Compute finite conversion-feature union exactly & \name{HOLConversionPolicyAtomWire.enabled_join} & PQ & proved\\
+D & Identify finite manifest union with the existing typed policy join & \name{HOLConversionPolicyAtomWire.denote_join} & PQ & proved\\
+D & Embed the left typed conversion policy in the manifest join & \name{HOLConversionPolicyAtomWire.denote_extends_join_left} & PQ & proved\\
+D & Embed the right typed conversion policy in the manifest join & \name{HOLConversionPolicyAtomWire.denote_extends_join_right} & PQ & proved\\
+D & Decode recursively encoded HOL types losslessly & \name{HOLConversionPolicyAtomWire.decodeType_encodeType} & PQ & proved\\
+D & Decode each typed conversion feature losslessly & \name{HOLConversionPolicyAtomWire.decodeFeature_encodeFeature} & PQ & proved\\
+D & Decode the complete conversion-policy atom wire losslessly & \name{HOLConversionPolicyAtomWire.decode_encode} & PQ & proved\\
+D & Reflect manifest equality through atom encoding & \name{HOLConversionPolicyAtomWire.encode_injective} & PQ & proved\\
+D & Commute encoded policy joining with finite manifest union & \name{HOLConversionPolicyAtomWire.joinEncoded_encode} & PQ & proved\\
+D & Recover exact submitted manifests from every published policy join & \name{HOLConversionPolicyAtomWire.joinEncoded_sound} & P & proved\\
+D & Recover the existing global beta-eta policy from two finite features & \name{HOLConversionPolicyAtomWire.beta_eta_manifest_join} & PQ & proved\\
+D & Accept the encoded beta and eta policy join & \name{HOLConversionPolicyAtomWire.beta_eta_encoded_join} & PQ & proved\\
+D & Refuse an equation selector outside the declared table & \name{HOLConversionPolicyAtomWire.out_of_range_equation_refused} & PCQ & proved\\
+D & Refuse malformed conversion-policy atom data & \name{HOLConversionPolicyAtomWire.malformed_policy_refused} & P & proved\\
+D & Decode every encoded bounded policy index exactly & \name{FinitePolicyAtomWire.decodeFin_encodeFin} & P & proved\\
+D & Refuse a policy index at or above its declared table bound & \name{FinitePolicyAtomWire.out_of_range_refused} & P & proved\\
+D & Decide the typed-receipt law for finite Nat/Vec profile manifests & \name{NatVecCheckingProfileAtomWire.Profiles.validCheck_eq_true_iff} & PCQ & proved\\
+D & Preserve the typed-receipt law under manifest union & \name{NatVecCheckingProfileAtomWire.Profiles.valid_join} & PCQ & proved\\
+D & Validate exactly the Nat/Vec manifests satisfying the receipt law & \name{NatVecCheckingProfileAtomWire.Profiles.validate_isSome_iff} & PCQ & proved\\
+D & Embed the left Nat/Vec checking contract in a valid manifest join & \name{NatVecCheckingProfileAtomWire.Profiles.denote_extends_join_left} & PCQ & proved\\
+D & Embed the right Nat/Vec checking contract in a valid manifest join & \name{NatVecCheckingProfileAtomWire.Profiles.denote_extends_join_right} & PCQ & proved\\
+D & Decode every finite Nat/Vec checking capability exactly & \name{NatVecCheckingProfileAtomWire.Profiles.decodeFeature_encodeFeature} & PCQ & proved\\
+D & Decode complete Nat/Vec checking manifests losslessly & \name{NatVecCheckingProfileAtomWire.Profiles.decode_encode} & PCQ & proved\\
+D & Reflect Nat/Vec manifest equality through atom encoding & \name{NatVecCheckingProfileAtomWire.Profiles.encode_injective} & PCQ & proved\\
+D & Recover exact valid inputs from every published Nat/Vec manifest join & \name{NatVecCheckingProfileAtomWire.Profiles.joinEncoded_sound} & PCQ & proved\\
+D & Recover the existing receipt-only checking profile from its manifest & \name{NatVecCheckingProfileAtomWire.Profiles.denote_minimal_eq} & PCQ & proved\\
+D & Recover the existing natural-intensional checking profile from its manifest & \name{NatVecCheckingProfileAtomWire.Profiles.denote_naturalIntensional_eq} & PCQ & proved\\
+D & Recover the existing scoped logical-extensional profile from its manifest & \name{NatVecCheckingProfileAtomWire.Profiles.denote_scopedLogicalExtensional_eq} & PCQ & proved\\
+D & Recover the existing full raw operational profile from its manifest & \name{NatVecCheckingProfileAtomWire.Profiles.denote_fullRawOperational_eq} & PCQ & proved\\
+D & Validate the encoded natural-intensional profile exactly & \name{NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_encoded_validated} & PCQ & proved\\
+D & Retrieve the canonical typed natural-zero receipt from its licensed row & \name{NatVecCheckingProfileAtomWire.Profiles.naturalZeroLicensedReceipt_exact} & PCQ & proved\\
+D & Retrieve the canonical typed natural-successor receipt from its licensed row & \name{NatVecCheckingProfileAtomWire.Profiles.naturalSuccLicensedReceipt_exact} & PCQ & proved\\
+D & Keep vector-nil computation outside natural-intensional conversion & \name{NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_vectorNil_not_judgmental} & PCQ & proved\\
+D & Check dependent append through the encoded natural-intensional profile & \name{NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_encoded_checks_append} & PCQ & proved\\
+D & Refuse append evidence under the encoded receipt-only profile & \name{NatVecCheckingProfileAtomWire.Profiles.minimal_encoded_refuses_append} & PCQ & proved\\
+D & Refuse judgmental iota authority without its retained receipt & \name{NatVecCheckingProfileAtomWire.Profiles.missingReceipt_encoded_refused} & PCQ & proved\\
+D & Refuse an iota capability outside the admitted schema table & \name{NatVecCheckingProfileAtomWire.Profiles.out_of_range_iota_refused} & PCQ & proved\\
+D & Refuse malformed Nat/Vec checking-profile data & \name{NatVecCheckingProfileAtomWire.Profiles.malformed_profile_refused} & PCQ & proved\\
+D & Run all finite Nat/Vec profile-wire controls & \name{NatVecCheckingProfileAtomWire.Profiles.all_verdicts} & PCQ & proved\\
+D & Identify the natural profile with its actual declaration-aware rule package & \name{CheckingProfiles.Interaction.naturalIntensional_actualRules} & PCQ & proved\\
+D & Expose exactly the two selected Nat iota schemas at the profile boundary & \name{CheckingProfiles.Interaction.naturalIntensional_roots_exact} & PCQ & proved\\
+D & Package Church--Rosser, Pi/Sigma boundaries and formed preservation for the natural profile & \name{CheckingProfiles.Interaction.naturalIntensionalCertificate} & PCQ & proved\\
+D & Separate the natural carrier from dependent function types through full conversion & \name{CheckingProfiles.Interaction.naturalIntensional_nat_not_pi} & PCQ & proved\\
+D & Retain the annotated-interaction obstruction for the full raw vector profile & \name{CheckingProfiles.Interaction.fullRawOperational_not_annotatedInteraction} & PCQ & proved\\
+D & Attach the interaction certificate to the encoded natural profile & \name{NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_encoded_qualified} & PCQ & proved\\
 D & Exact finite local-rule witnesses & \name{FormationSensitiveChecking.interface} & PQ & proved\\
 D & Original typing iff common tree acceptance & \name{FormationSensitiveChecking.typing_iff_checked_tree} & PCQ & proved\\
 D & Original typing iff common shared-graph acceptance & \name{FormationSensitiveChecking.typing_iff_checked_graph} & PCQ & proved\\
@@ -820,6 +937,662 @@ I & Generate every authored natural value & \name{IndexedInductiveNaturalMegalod
 I & Identify selected recursion with the authored eliminator & \name{IndexedInductiveNaturalMegalodonProfile.source_recursor_agrees} & PCQ & proved\\
 I & Derive total authored recursion and uniqueness & \name{IndexedInductiveNaturalMegalodonProfile.source_recursion} & PQ & proved\\
 I & Refuse a constant successor as the infinite witness & \name{IndexedInductiveNaturalMegalodonProfile.constant_successor_refused} & P & proved\\
+D & Exclude every model-forbidden input from model-sound acceptance & \name{LeanCheckerAuthorityFlower.Service.ModelSound.not_accepts_forbidden} & none & proved\\
+D & Transport model soundness through one-way acceptance refinement & \name{LeanCheckerAuthorityFlower.Service.AcceptanceRefinement.modelSound} & none & proved\\
+D & Compose acceptance refinements without asserting equivalence & \name{LeanCheckerAuthorityFlower.Service.AcceptanceRefinement.comp} & none & proved\\
+D & Characterize checked reconstruction by destination acceptance & \name{LeanCheckerAuthorityFlower.Service.checkedReconstruction_accepts_iff} & PQ & proved\\
+D & Transport destination soundness through untrusted reconstruction & \name{LeanCheckerAuthorityFlower.Service.checkedReconstruction_sound} & PQ & proved\\
+D & Transport destination model soundness through reconstruction & \name{LeanCheckerAuthorityFlower.Service.checkedReconstruction_modelSound} & PQ & proved\\
+D & Expose exact step decisions as exact acceptance services & \name{LeanCheckerAuthorityFlower.Service.ofStepDecision_accepts_iff} & P & proved\\
+D & Identify finite-catalog Lean head acceptance with its generated OSLF target type & \name{LeanCheckerAuthorityFlower.Service.catalogHeadService_accepts_iff_ntt} & PCQ & proved\\
+D & Separate sound acceptance from completeness by a nonempty service & \name{LeanCheckerAuthorityFlower.Service.Controls.sound_does_not_imply_completeness} & P & proved\\
+D & Show that exact checker agreement alone supplies no soundness & \name{LeanCheckerAuthorityFlower.Service.Controls.agreement_does_not_imply_soundness} & none & proved\\
+D & Separate one contradiction refusal from general soundness & \name{LeanCheckerAuthorityFlower.Service.Controls.false_refusal_does_not_imply_soundness} & PQ & proved\\
+D & Refuse a model-forbidden claim in a nonvacuous model-sound service & \name{LeanCheckerAuthorityFlower.Service.Controls.finiteModelService_refuses_forbidden} & P & proved\\
+D & Characterize release-bound acceptance by exact coordinates and underlying acceptance & \name{LeanCheckerReleaseReceipt.ReleaseBoundService.accepts_iff} & P & proved\\
+D & Retain the exact release while transporting checker soundness & \name{LeanCheckerReleaseReceipt.ReleaseBoundService.sound} & P & proved\\
+D & Transport model soundness without deriving it from receipt metadata & \name{LeanCheckerReleaseReceipt.ReleaseBoundService.modelSound} & P & proved\\
+D & Decline every valid mismatching release coordinate & \name{LeanCheckerReleaseReceipt.ReleaseBoundService.run_eq_declined_of_valid_mismatch} & P & proved\\
+D & Require a concrete executable digest for the verified con-leche source pin & \name{LeanCheckerReleaseReceipt.conLecheVerifiedChecker_valid_iff} & P & proved\\
+D & Refuse reuse across verified/trusted modes and checker families & \name{LeanCheckerReleaseReceipt.Controls.verdicts_all} & P & proved\\
+D & Compose direct and registered-nested hypotheses into the exact complete position family & \name{IndexedPositiveContainer.Code.bundleExact} & Q & proved\\
+D & Instantiate the generic induction bundle for the indexed Vector registry & \name{IndexedPositiveContainer.VectorControl.genericBundleExact} & PCQ & proved\\
+D & Separate semantic Reader induction from impossible finite traversal & \name{IndexedPositiveContainer.ReaderControl.not_finitary} & PCQ & proved\\
+D & Select complete duplicate-free source order for List positions & \name{IndexedContainer.Examples.listOrderedFinitary} & PCQ & proved\\
+D & Select complete duplicate-free source order for Vector positions & \name{IndexedContainer.Examples.vectorOrderedFinitary} & PCQ & proved\\
+D & Refuse ordered traversal for the infinitary Reader container & \name{IndexedContainer.Examples.reader_not_orderedFinitary} & PCQ & proved\\
+D & Enumerate every mixed direct and nested code position in selected order & \name{IndexedPositiveContainer.Code.mem_orderedPositions} & PCQ & proved\\
+D & Keep the selected mixed position enumeration duplicate-free & \name{IndexedPositiveContainer.Code.orderedPositions_nodup} & PCQ & proved\\
+D & Count exactly one ordered traversal entry per semantic position & \name{IndexedPositiveContainer.Code.orderedPositions_length} & PCQ & proved\\
+D & Execute the quoted position traversal while retaining arbitrary captured payloads & \name{IndexedContainerTraversal.returns} & PCQ & proved\\
+D & Reflect completed traversal to one exact result with no effects or extra answers & \name{IndexedContainerTraversal.completed_iff} & PCQ & proved\\
+D & Connect selected constructor-position order to emitted PeTTa execution & \name{IndexedContainerTraversal.ordered_returns} & PCQ & proved\\
+D & Count the output records by the exact semantic position cardinality & \name{IndexedContainerTraversal.ordered_record_count} & PCQ & proved\\
+D & Reflect equal complete observations to equality at every fixed-shape position & \name{IndexedContainerTraversal.ordered_output_eq_iff} & PCQ & proved\\
+D & Generate the two-position input from the resolved textual VectorTree branch & \name{IndexedContainerTraversal.Controls.textualVectorInput_two} & PCQ & proved\\
+D & Round-trip an exact two-family Workflow/Action source block & \name{MutualWorkflowActionLowering.lowerModule_quote} & PCQ & proved\\
+D & Identify the textual mutual block with the independent Boolean-indexed polynomial & \name{MutualWorkflowActionLowering.Controls.erased_eq_existing} & Q & proved\\
+D & Refuse wrong result families, cross-header duplicates, swaps and negative fields & \name{MutualWorkflowActionLowering.Controls.verdicts_all} & P & proved\\
+D & Connect the textual mutual block exactly to the direct guest polynomial & \name{PositiveInductiveWorkflowActionGuest.Source.textual_erasure_eq_direct_bridge} & Q & proved\\
+D & Form the generated Workflow/Action family, constructors and eliminator & \name{PositiveInductiveWorkflowActionGuest.signature_formed} & PCQ & proved\\
+D & Retain four typed proof-relevant iota receipts in source order & \name{PositiveInductiveWorkflowActionGuest.iota_rule_names} & PCQ & proved\\
+D & Refuse a Workflow child at the Action-typed schedule field & \name{PositiveInductiveWorkflowActionGuest.verdicts_all} & P & proved\\
+D & Identify every published admitted-family candidate with its complete generated table & \name{IndexedInductive.Guest.Package.fromAdmitted_sound} & Q & proved\\
+D & Retain the exact generated signature after admitted-family publication & \name{IndexedInductive.Guest.Package.fromAdmitted_signature} & Q & proved\\
+D & Retain the proof-relevant root computation after admitted-family publication & \name{IndexedInductive.Guest.Package.fromAdmitted_computation} & Q & proved\\
+D & Publish the independently admitted Vector through the shared candidate producer & \name{IndexedInductive.Guest.PackageControls.admitted_vector_publication} & PCQ & proved\\
+D & Identify the admitted Vector candidate table with the generated table & \name{IndexedInductive.Guest.PackageControls.candidate_vector_table} & PCQ & proved\\
+D & Identify the admitted Vector candidate signature with the generated signature & \name{IndexedInductive.Guest.PackageControls.candidate_vector_signature} & PCQ & proved\\
+D & Identify the admitted Vector computation with the generated proof-relevant root & \name{IndexedInductive.Guest.PackageControls.candidate_vector_computation} & PCQ & proved\\
+D & Factor textual mutual publication through the admitted-family producer & \name{IndexedInductive.Guest.PackageControls.publishMutual_eq_admitted} & Q & proved\\
+D & Refuse zero-fuel admitted mutual publication & \name{IndexedInductive.Guest.PackageControls.admitted_mutual_publication_zero} & P & proved\\
+D & Refuse aliased constructor names after mutual admission & \name{IndexedInductive.Guest.PackageControls.admitted_aliased_names_not_published} & P & proved\\
+D & Make the Workflow/Action object guest consume the published candidate table & \name{PositiveInductiveWorkflowActionGuest.candidate_table} & PCQ & proved\\
+D & Keep different authored constructor occurrences disjoint in every selected HOL carrier & \name{IndexedInductive.HOLFacts.Interpretation.construct_ne_of_occurrence_ne} & PQ & proved\\
+D & Compute the selected structural fold on every complete constructor layer & \name{IndexedInductive.HOLFacts.Interpretation.recurse_construct} & PQ & proved\\
+D & Characterize the selected structural fold by its constructor equations & \name{IndexedInductive.HOLFacts.Interpretation.recurse_unique} & Q & proved\\
+D & Validate the generated recursion sentence for every admitted selected interpretation & \name{IndexedInductive.HOLFacts.models_recursion} & PQ & proved\\
+D & Validate structural induction for every admitted selected interpretation & \name{IndexedInductive.HOLFacts.models_induction} & PQ & proved\\
+D & Validate complete-layer no-confusion for every admitted selected interpretation & \name{IndexedInductive.HOLFacts.models_noConfusion} & PQ & proved\\
+D & Select carrier infinity exactly when its separate witness is present & \name{IndexedInductive.HOLFacts.Selection.carrierInfinity_mem_iff} & P & proved\\
+D & Validate every fact named by the selected HOL manifest & \name{IndexedInductive.HOLFacts.Selection.models_of_mem} & PQ & proved\\
+D & Refuse infinity selection on every finite selected carrier & \name{IndexedInductive.HOLFacts.Selection.infinity_not_selected_of_finite} & P & proved\\
+D & Select and validate recursion, induction, no-confusion and infinity for the authored natural family & \name{IndexedInductive.HOLFacts.NaturalControl.all_selected_models} & PCQ & proved\\
+D & Project the four natural capabilities to exactly the existing five named facts & \name{IndexedInductive.HOLFacts.NaturalControl.projectedNativeFacts_eq} & Q & proved\\
+D & Project the selected natural facts to exactly the maintained HOL Light wires & \name{IndexedInductive.HOLFacts.NaturalControl.projectedStatements_eq} & Q & proved\\
+D & Recover the five established native theorem names in order & \name{IndexedInductive.HOLFacts.NaturalControl.projectedNames_eq} & Q & proved\\
+D & Retain the authored natural meaning for every projected formula & \name{IndexedInductive.HOLFacts.NaturalControl.projected_models} & PQ & proved\\
+D & Refute a Dedekind-infinity witness on lifted Boolean & \name{IndexedInductive.HOLFacts.bool_has_no_infinityWitness} & P & proved\\
+D & Characterize the HOL separation formula for two constructor occurrences & \name{IndexedInductive.HOLFacts.ConstructorProjection.separation_meaning} & Q & proved\\
+D & Validate constructor separation whenever the authored occurrences differ & \name{IndexedInductive.HOLFacts.ConstructorProjection.models_separation} & PQ & proved\\
+D & Validate every automatically generated named no-confusion formula & \name{IndexedInductive.HOLFacts.ConstructorProjection.namedNoConfusions_models} & PQ & proved\\
+D & Validate the named Zero/Succ separation projection & \name{IndexedInductive.HOLFacts.NaturalControl.zeroSuccPair_models} & PCQ & proved\\
+D & Generate exactly both ordered Nat constructor-separation names & \name{IndexedInductive.HOLFacts.NaturalControl.all_named_noConfusion_names} & none & proved\\
+D & Retain every structural source fact through typed HOL Light wire emission & \name{IndexedInductive.HOLFacts.NativeWire.Selection.emit_sources} & Q & proved\\
+D & Retain semantic validity for every emitted structural source formula & \name{IndexedInductive.HOLFacts.NativeWire.Selection.emit_source_models} & PQ & proved\\
+D & Retain every named constructor-pair formula through wire emission & \name{IndexedInductive.HOLFacts.ConstructorProjection.emitAll_sources} & Q & proved\\
+D & Retain semantic validity for every emitted constructor-pair formula & \name{IndexedInductive.HOLFacts.ConstructorProjection.emitAll_source_models} & PQ & proved\\
+D & Emit exactly the three structural mutual-family facts without infinity & \name{IndexedInductive.HOLFacts.MutualControl.emittedStructural_sources} & PCQ & proved\\
+D & Generate exactly six ordered mutual-family constructor pairs & \name{IndexedInductive.HOLFacts.MutualControl.emitted_names} & PCQ & proved\\
+D & Retain semantic validity for the non-Nat emitted manifest & \name{IndexedInductive.HOLFacts.MutualControl.emittedStructural_source_models} & PQ & proved\\
+D & Decode every injectively encoded finite-catalog wire back to its source & \name{IndexedInductive.HOLFacts.WireCatalog.decode_encode} & PQ & proved\\
+D & Ensure every successful catalog decode re-encodes to the input wire & \name{IndexedInductive.HOLFacts.WireCatalog.decode_sound} & PQ & proved\\
+D & Round-trip selected structural statements under injective encoding & \name{IndexedInductive.HOLFacts.NativeWire.Selection.decode_statement} & PQ & proved\\
+D & Round-trip constructor-pair statements under injective encoding & \name{IndexedInductive.HOLFacts.ConstructorProjection.decodePair_statement} & PQ & proved\\
+D & Round-trip every mutual structural statement & \name{IndexedInductive.HOLFacts.MutualControl.structural_roundtrips} & PCQ & proved\\
+D & Round-trip all six mutual constructor-pair statements & \name{IndexedInductive.HOLFacts.MutualControl.pair_roundtrips} & PCQ & proved\\
+D & Expose statement collapse when occurrence names collide & \name{IndexedInductive.HOLFacts.MutualControl.colliding_occurrence_names_collapse_statements} & P & proved\\
+D & Refuse the later-source roundtrip after a naming collision & \name{IndexedInductive.HOLFacts.MutualControl.colliding_occurrence_names_break_roundtrip} & P & proved\\
+D & Commute complete constructor layers with selected carrier transport & \name{IndexedInductive.HOLFacts.Interpretation.transport_construct} & Q & proved\\
+D & Commute recursive-layer mapping with selected carrier transport & \name{IndexedInductive.HOLFacts.Interpretation.transport_mapLayer} & Q & proved\\
+D & Commute the generated fold with selected carrier transport & \name{IndexedInductive.HOLFacts.Interpretation.transport_recurse} & PQ & proved\\
+D & Leave selected interpretations unchanged along identity transport & \name{IndexedInductive.HOLFacts.Interpretation.transport_refl} & Q & proved\\
+D & Compose selected carrier transports exactly & \name{IndexedInductive.HOLFacts.Interpretation.transport_trans} & Q & proved\\
+D & Recover selected interpretations after inverse transport & \name{IndexedInductive.HOLFacts.Interpretation.transport_symm} & Q & proved\\
+D & Leave infinity evidence unchanged along identity transport & \name{IndexedInductive.HOLFacts.InfinityWitness.transport_refl} & Q & proved\\
+D & Compose transported infinity evidence along carrier equivalences & \name{IndexedInductive.HOLFacts.InfinityWitness.transport_trans} & Q & proved\\
+D & Recover infinity evidence after inverse transport & \name{IndexedInductive.HOLFacts.InfinityWitness.transport_symm} & Q & proved\\
+D & Preserve selected infinity evidence along identity transport & \name{IndexedInductive.HOLFacts.Selection.transport_refl_witness} & PQ & proved\\
+D & Compose the infinity evidence retained by a selected manifest & \name{IndexedInductive.HOLFacts.Selection.transport_trans_witness} & PQ & proved\\
+D & Recover selected infinity evidence after inverse transport & \name{IndexedInductive.HOLFacts.Selection.transport_symm_witness} & PQ & proved\\
+D & Preserve the exact selected fact manifest across carrier equivalence & \name{IndexedInductive.HOLFacts.Selection.transport_facts} & PQ & proved\\
+D & Preserve the Nat manifest when transported to lifted host naturals & \name{IndexedInductive.HOLFacts.NaturalControl.hostSelection_facts} & PCQ & proved\\
+D & Commute authored and host-Nat structural folds & \name{IndexedInductive.HOLFacts.NaturalControl.host_recurse_commutes} & PQ & proved\\
+D & Validate all transported structural facts over host naturals & \name{IndexedInductive.HOLFacts.NaturalControl.host_all_selected_models} & PQ & proved\\
+D & Commute the lifted host/material/surreal comparison triangle & \name{IndexedInductive.HOLFacts.NaturalControl.lifted_comparison_triangle} & PQ & proved\\
+D & Identify direct and material-mediated natural-surreal interpretations & \name{IndexedInductive.HOLFacts.NaturalControl.material_surreal_interpretation_route} & PQ & proved\\
+D & Preserve the selected fact manifest on the material-surreal route & \name{IndexedInductive.HOLFacts.NaturalControl.material_surreal_selection_facts_route} & PCQ & proved\\
+D & Preserve the selected manifest over material naturals & \name{IndexedInductive.HOLFacts.NaturalControl.materialSelection_facts} & PCQ & proved\\
+D & Preserve the selected manifest over natural surreals & \name{IndexedInductive.HOLFacts.NaturalControl.surrealSelection_facts} & PCQ & proved\\
+D & Commute the structural fold with material-natural transport & \name{IndexedInductive.HOLFacts.NaturalControl.material_recurse_commutes} & PQ & proved\\
+D & Commute the structural fold with natural-surreal transport & \name{IndexedInductive.HOLFacts.NaturalControl.surreal_recurse_commutes} & PQ & proved\\
+D & Validate all selected HOL facts over material naturals & \name{IndexedInductive.HOLFacts.NaturalControl.material_all_selected_models} & PQ & proved\\
+D & Validate all selected HOL facts over natural surreals & \name{IndexedInductive.HOLFacts.NaturalControl.surreal_all_selected_models} & PQ & proved\\
+D & Decode guarded word-or-fallback successor at the selected HOL carrier & \name{NaturalBackendHOLFacts.successorBackend_host_exact} & PCQ & proved\\
+D & Identify guarded backend successor with the authored polynomial successor & \name{NaturalBackendHOLFacts.successorBackend_authored_exact} & PCQ & proved\\
+D & Retain exact selected observations on both fast and fallback branches & \name{NaturalBackendHOLFacts.fast_branch_host_exact} & PCQ & proved\\
+D & Refuse a selected infinity witness on the finite word carrier & \name{NaturalBackendHOLFacts.finiteWord_has_no_infinityWitness} & P & proved\\
+D & Separate exact observation from carrier equivalence for the tagged backend & \name{NaturalBackendHOLFacts.observeBackend_not_injective} & P & proved\\
+D & Refute unchecked word successor at the selected carrier boundary & \name{NaturalBackendHOLFacts.unchecked_word_successor_not_host_exact} & P & proved\\
+D & Connect every sound available exact-integer provider to natural addition by one & \name{NaturalBackendHOLFacts.IntegerProvider.addOne_host_exact} & PCQ & proved\\
+D & Recover every registry-coherent recognized constructor from its canonical raw spelling & \name{PositiveInductiveBlock.RawCode.decode_quote} & PQ & proved\\
+D & Derive positivity and uniform-parameter evidence from successful recognition & \name{PositiveInductiveBlock.RawCode.positive_of_decode} & P & proved\\
+D & Derive finite recursive positions from a finitary container registry & \name{PositiveInductiveBlock.Code.positionFintype} & PCQ & proved\\
+D & Retain positivity for every constructor in an accepted block & \name{PositiveInductiveBlock.recognize_positive} & PQ & proved\\
+D & Recover an exact ordered block after registry-coherent quotation & \name{PositiveInductiveBlock.recognize_quote} & PQ & proved\\
+D & Compute the generated recursor on every admitted constructor layer & \name{PositiveInductiveBlock.Admitted.recursor_construct} & none & proved\\
+D & Characterize the generated recursor by initiality & \name{PositiveInductiveBlock.Admitted.recursor_unique} & Q & proved\\
+D & Compute the generated dependent eliminator on every constructor layer & \name{PositiveInductiveBlock.Admitted.eliminator_construct} & none & proved\\
+D & Characterize the generated dependent eliminator by displayed initiality & \name{PositiveInductiveBlock.Admitted.eliminator_unique} & Q & proved\\
+D & Admit the registered-list nested search-tree block positively & \name{PositiveInductiveScenarios.Search.source_positive} & PQ & proved\\
+D & Give every nested search branch a finite recursive-position type & \name{PositiveInductiveScenarios.Search.branchPositionFintype} & PCQ & proved\\
+D & Collect the answer of a solved search node & \name{PositiveInductiveScenarios.Search.answers_solved} & P & proved\\
+D & Collect nested branch answers in source order & \name{PositiveInductiveScenarios.Search.answers_branch} & P & proved\\
+D & Retain distinct recursive positions for two nested search children & \name{PositiveInductiveScenarios.Search.nested_positions_distinct} & P & proved\\
+D & Admit the mutual workflow/action block positively & \name{PositiveInductiveScenarios.Workflow.source_positive} & PQ & proved\\
+D & Compute the generated recursor at a finished workflow & \name{PositiveInductiveScenarios.Workflow.actionCount_done} & P & proved\\
+D & Follow workflow-to-action recursion & \name{PositiveInductiveScenarios.Workflow.actionCount_schedule} & P & proved\\
+D & Count a primitive action & \name{PositiveInductiveScenarios.Workflow.actionCount_action} & P & proved\\
+D & Follow action-to-workflow recursion & \name{PositiveInductiveScenarios.Workflow.actionCount_subworkflow} & P & proved\\
+D & Refuse a nested recursive occurrence with changed parameters & \name{PositiveInductiveScenarios.Refusals.changedParameters_refused} & none & proved\\
+D & Refuse recursion under an unregistered container & \name{PositiveInductiveScenarios.Refusals.unknownContainer_refused} & none & proved\\
+D & Refuse a negative recursive function field & \name{PositiveInductiveScenarios.Refusals.negativeFunction_refused} & none & proved\\
+D & Refuse duplicate constructor names & \name{PositiveInductiveScenarios.Refusals.duplicateConstructor_refused} & none & proved\\
+D & Preserve direct constructor shapes in the richer grammar & \name{PositiveInductiveBlockBridge.Direct.shape_eq} & PQ & proved\\
+D & Preserve direct admitted constructor order and names & \name{PositiveInductiveBlockBridge.Direct.admitted_names} & P & proved\\
+D & Recognize every existing direct admitted block in the richer pipeline & \name{PositiveInductiveBlockBridge.Direct.admitted_recognized} & PQ & proved\\
+D & Route the existing vector block through staged admission & \name{PositiveInductiveBlockBridge.Controls.vector_recognized} & PQ & proved\\
+D & Route the existing mutual block through staged admission & \name{PositiveInductiveBlockBridge.Controls.mutual_recognized} & PQ & proved\\
+D & Identify the data retained by an indexed-polynomial signature equivalence & \name{IndexedPolynomial.SignatureEquiv.refl} & Q & proved\\
+D & Compare direct old/new constructor polynomials fibrewise & \name{PositiveInductiveBlockBridge.Direct.polynomialEquiv} & PCQ & proved\\
+D & Compare complete ordered old/new polynomial inventories & \name{PositiveInductiveBlockBridge.Direct.admittedPolynomialEquiv} & PCQ & proved\\
+D & Instantiate the complete polynomial comparison for vectors & \name{PositiveInductiveBlockBridge.Controls.vectorPolynomialEquiv} & PCQ & proved\\
+D & Instantiate the complete polynomial comparison for the mutual family & \name{PositiveInductiveBlockBridge.Controls.mutualPolynomialEquiv} & PCQ & proved\\
+D & Refuse polynomial equivalence after changing a recursive child index & \name{PositiveInductiveBlockBridge.Controls.translated_odd_not_equiv_wrongChild} & Q & proved\\
+D & Recover every canonical textual positive telescope after lowering & \name{PositiveInductiveLowering.lowerCode_quote} & P & proved\\
+D & Recover every accepted textual positive telescope by quotation & \name{PositiveInductiveLowering.quote_lowerCode} & P & proved\\
+D & Round-trip complete canonical registered-container families & \name{PositiveInductiveLowering.lowerFamily_quote} & PQ & proved\\
+D & Recover every accepted registered-container family source & \name{PositiveInductiveLowering.quote_lowerFamily} & PCQ & proved\\
+D & Round-trip the selected one-family module shell & \name{PositiveInductiveLowering.lowerModule_quote} & PQ & proved\\
+D & Recover every accepted selected module source & \name{PositiveInductiveLowering.quote_lowerModule} & PCQ & proved\\
+D & Lower the textual registered-list search-tree family & \name{PositiveInductiveLoweringControls.Search.family_roundtrip} & PCQ & proved\\
+D & Lower the complete textual search-tree module & \name{PositiveInductiveLoweringControls.Search.module_roundtrip} & PCQ & proved\\
+D & Identify textual lowering with the existing nested search semantics & \name{PositiveInductiveLoweringControls.Search.erased_family_eq_existing} & P & proved\\
+D & Refuse an unregistered textual nesting container & \name{PositiveInductiveLoweringControls.Search.unknown_container_refused} & PCQ & proved\\
+D & Refuse a negative textual recursive field & \name{PositiveInductiveLoweringControls.Search.negative_field_refused} & PCQ & proved\\
+D & Refuse a changed textual family header & \name{PositiveInductiveLoweringControls.Search.changed_header_refused} & PCQ & proved\\
+D & Refuse duplicate textual constructor names & \name{PositiveInductiveLoweringControls.Search.duplicate_constructor_refused} & PCQ & proved\\
+D & Refuse an unselected extra module block & \name{PositiveInductiveLoweringControls.Search.extra_block_refused} & PCQ & proved\\
+D & Check registered-container module positive and refusal controls & \name{PositiveInductiveLoweringControls.Search.all_verdicts} & PCQ & proved\\
+D & Equate dependent List hypotheses with one witness per list position & \name{IndexedContainer.listAllEquiv} & PQ & proved\\
+D & Implement the registered List induction-hypothesis bundle & \name{IndexedContainer.listInductionBundle} & PCQ & proved\\
+D & Count two positions in the genuine nested-list branch & \name{NestedInductiveGuestBoundary.Search.nested_position_card} & PCQ & proved\\
+D & Count one position in the direct recursive-field surrogate & \name{NestedInductiveGuestBoundary.Search.direct_position_card} & PCQ & proved\\
+D & Refute equivalence between nested-list positions and one direct slot & \name{NestedInductiveGuestBoundary.Search.nested_positions_not_direct} & PCQ & proved\\
+D & Refute polynomial equivalence with the direct guest surrogate & \name{NestedInductiveGuestBoundary.Search.nested_polynomial_not_direct_surrogate} & PCQ & proved\\
+D & Record the direct guest surrogate's one-field count & \name{NestedInductiveGuestBoundary.Search.direct_surrogate_fieldCount} & none & proved\\
+D & Supply exact list-position induction hypotheses & \name{NestedInductiveGuestBoundary.Search.listPositionBundle} & PCQ & proved\\
+D & Equate a native relational List spine with its source-ordered evidence bundle & \name{FormationSensitiveRegisteredListGuestLift.canonicalLiftEquiv} & PQ & proved\\
+D & Equate a native relational List spine with one typed pair per position & \name{FormationSensitiveRegisteredListGuestLift.canonicalLiftPositionEquiv} & PQ & proved\\
+D & Identify the native relational List spine with the registered List induction bundle & \name{FormationSensitiveRegisteredListGuestLift.canonicalLiftSemanticBundleEquiv} & PCQ & proved\\
+D & Recover every registered List position from the native object representation & \name{FormationSensitiveRegisteredListGuestLift.canonicalLiftRegisteredPositionEquiv} & PCQ & proved\\
+D & Form the encoded List lift and retain its exact position evidence & \name{FormationSensitiveRegisteredListGuestLift.QualifiedLift.judgment_and_positionEvidence} & PCQ & proved\\
+D & Transport an encoded registered-List lift through typed substitution & \name{FormationSensitiveRegisteredListGuestLift.QualifiedLift.substitute} & PQ & proved\\
+D & Recover the selected target at a singleton List position & \name{FormationSensitiveRegisteredListGuestLift.Controls.singleton_position_target} & PCQ & proved\\
+D & Refuse a relational List spine with a missing target position & \name{FormationSensitiveRegisteredListGuestLift.Controls.empty_target_refused} & PCQ & proved\\
+D & Instantiate the native List/relator declarations at one selected level & \name{IntrinsicRelatorLevels.levelInstance} & PQ & proved\\
+D & Decode all level-instantiated List/relator roots exactly & \name{IntrinsicRelatorLevels.rootDecoder} & PCQ & proved\\
+D & Generate SearchTree constructor rows from the admitted textual source & \name{PositiveInductiveSearchTreeGuest.sourceConstructorEntries_eq} & PCQ & proved\\
+D & Identify the guest source with the registered-container module lowering & \name{PositiveInductiveSearchTreeGuest.textual_source_eq} & PQ & proved\\
+D & Admit the generated SearchTree declaration inventory & \name{PositiveInductiveSearchTreeGuest.inventory_admitted} & PCQ & proved\\
+D & Form the complete generated SearchTree signature & \name{PositiveInductiveSearchTreeGuest.inventory_formed} & PCQ & proved\\
+D & Commute open nested child traversal with renaming & \name{PositiveInductiveSearchTreeGuest.rename_liftChildren} & PQ & proved\\
+D & Commute open nested child traversal with substitution & \name{PositiveInductiveSearchTreeGuest.subst_liftChildren} & PQ & proved\\
+D & Check solved, branch and nested-bundle endpoints with refusal control & \name{PositiveInductiveSearchTreeGuest.endpointVerdicts_eq_true} & PCQ & proved\\
+D & Form the open List-position recursive-result bundle & \name{PositiveInductiveSearchTreeGuest.branch_bundle_formed} & PCQ & proved\\
+D & Retain the typed solved iota receipt & \name{PositiveInductiveSearchTreeGuest.solvedReceipt} & PQ & proved\\
+D & Retain the typed registered-List branch iota receipt & \name{PositiveInductiveSearchTreeGuest.branchReceipt} & PCQ & proved\\
+D & Transport the registered-List branch receipt through typed substitution & \name{PositiveInductiveSearchTreeGuest.branchReceipt_substitute} & PQ & proved\\
+D & Keep the receipt-only SearchTree profile free of judgmental roots & \name{PositiveInductiveSearchTreeGuest.receiptOnly_no_root} & PCQ & proved\\
+D & Reject the all-undeclared substitution for the branch schema & \name{PositiveInductiveSearchTreeGuest.untypedAssignment_not_typed} & PQ & proved\\
+D & Separate raw branch evidence from typed schema instantiation & \name{PositiveInductiveSearchTreeGuest.rawEvidence_not_typedInstance} & PCQ & proved\\
+D & Generalize induction bundles to indexed container outputs & \name{IndexedContainer.InductionBundle} & none & definition\\
+D & Implement the length-indexed Vector induction bundle & \name{IndexedContainer.vectorInductionBundle} & PCQ & proved\\
+D & Count every Vector output's recursive positions & \name{IndexedContainer.vector_position_card} & PCQ & proved\\
+D & Refute equivalence of the length-two and length-three Vector fibres & \name{IndexedContainer.vector_two_not_equiv_three} & PCQ & proved\\
+D & Retain the established List container in the indexed registry & \name{IndexedPositiveContainer.ListInstance.entry_container_eq} & none & proved\\
+D & Count positions in the richer indexed Vector code & \name{IndexedPositiveContainer.VectorControl.position_card} & PCQ & proved\\
+D & Refute output-index erasure in the richer Vector code & \name{IndexedPositiveContainer.VectorControl.two_not_equiv_three} & PCQ & proved\\
+D & Connect the Vector code to its exact induction bundle & \name{IndexedPositiveContainer.VectorControl.bundleAt} & PCQ & proved\\
+D & Make scoped Vector length lookup and quotation inverse & \name{IndexedPositiveVectorLowering.Scope.lookup_quoteLength} & PQ & proved\\
+D & Round-trip the textual indexed-Vector module & \name{IndexedPositiveVectorLowering.Controls.module_roundtrip} & PCQ & proved\\
+D & Lower the textual branch to the exact indexed Vector code & \name{IndexedPositiveVectorLowering.Controls.branch_erases_to_indexed_vector} & P & proved\\
+D & Refuse unbound and shadowed Vector length names & \name{IndexedPositiveVectorLowering.Controls.shadowedLength_refused} & PCQ & proved\\
+D & Refuse a negative field in the indexed Vector source route & \name{IndexedPositiveVectorLowering.Controls.negativeField_refused} & PCQ & proved\\
+D & Instantiate native Vec elimination one universe above its element family & \name{NativeVectorAll.signature_formed} & PCQ & proved\\
+D & Commute the exact Vector `All` type with renaming and substitution & \name{NativeVectorAll.subst_allType} & PQ & proved\\
+D & Commute constructed Vector `All` evidence with renaming and substitution & \name{NativeVectorAll.subst_allEvidence} & PQ & proved\\
+D & Form the eliminator-defined Vector `All` type & \name{NativeVectorAll.Controls.allType_formed} & PCQ & proved\\
+D & Type the constructed evidence at the exact source-Vector `All` family & \name{NativeVectorAll.Controls.allEvidence_typed} & PCQ & proved\\
+D & Refuse a changed Vector `All` result type & \name{NativeVectorAll.Controls.wrong_type_refused} & PCQ & proved\\
+D & Refuse an undeclared pointwise Vector witness & \name{NativeVectorAll.Controls.undeclared_witness_refused} & PCQ & proved\\
+D & Identify the canonical Vector semantic bundle with its source-ordered witness spine & \name{NativeVectorAll.CanonicalAdequacy.semanticBundleEquiv} & PCQ & proved\\
+D & Recover the expected witness at every exact Vector position & \name{NativeVectorAll.CanonicalAdequacy.pointwiseBundle_exact} & PQ & proved\\
+D & Reduce native Vector `All` evidence to the quotation of the selected semantic bundle & \name{NativeVectorAll.CanonicalAdequacy.allEvidence_steps_semanticBundle} & PCQ & proved\\
+D & Retain both canonical Vector witnesses in source order & \name{NativeVectorAll.Controls.CanonicalAdequacyControls.two_position_reduces} & PQ & proved\\
+D & Distinguish a swap of two canonical Vector positions & \name{NativeVectorAll.Controls.CanonicalAdequacyControls.swapped_positions_refused} & PCQ & proved\\
+D & Connect a formed object computation to one selected semantic induction bundle & \name{FormationSensitiveIndexedContainerBundleRealization.SelectedObjectBundle} & none & definition\\
+D & Recover every semantic position from the connected selected object bundle & \name{FormationSensitiveIndexedContainerBundleRealization.SelectedObjectBundle.positionWitnesses} & PQ & proved\\
+D & Instantiate the object-realization contract through the registered List lookup & \name{FormationSensitiveIndexedContainerBundleRealization.ListInstance.registeredRealization} & PCQ & proved\\
+D & Instantiate the object-realization contract through the registered Vector lookup & \name{FormationSensitiveIndexedContainerBundleRealization.VectorInstance.registeredRealization} & PCQ & proved\\
+D & Recover both witnesses from the connected two-position Vector realization & \name{FormationSensitiveIndexedContainerBundleRealization.VectorInstance.covers_two_positions} & PQ & proved\\
+D & Refuse an object realization when the Reader motive has no position witnesses & \name{FormationSensitiveIndexedContainerBundleRealization.ReaderNegative.noSelectedObjectBundle} & PCQ & proved\\
+D & Quote complete direct and registered-nested induction bundles in source order & \name{FormationSensitiveIndexedContainerBundleRealization.Code.quoteBundle} & none & definition\\
+D & Recover every direct and nested witness from a code-wide object realization & \name{FormationSensitiveIndexedContainerBundleRealization.Code.SelectedObjectBundle.positionWitnesses} & PCQ & proved\\
+D & Identify the mixed direct/Vector quotation with its nested object pair & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.quote_bundle} & PQ & proved\\
+D & Form the mixed direct/Vector object bundle at its nested Sigma type & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.object_formed} & PCQ & proved\\
+D & Compute the mixed native Vector evidence to the generic code quotation & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.object_steps_quote} & PCQ & proved\\
+D & Recover all three positions of the mixed direct/Vector constructor & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.allPositionWitnesses} & PCQ & proved\\
+D & Assemble exactly the supplied formed leaves along arbitrary constructor code & \name{FormationSensitiveIndexedContainerBundleRealization.Code.realizeFromLeaves} & PCQ & proved\\
+D & Turn an assembled object value into the code-wide selected contract & \name{FormationSensitiveIndexedContainerBundleRealization.Code.ObjectValue.toSelectedCode} & PQ & proved\\
+D & Match compiled and independently constructed mixed semantic bundles & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_value_eq} & PCQ & proved\\
+D & Match compiled and independently constructed mixed object terms & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_term_eq} & PCQ & proved\\
+D & Match compiled and independently constructed mixed Sigma types & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_type_eq} & PCQ & proved\\
+D & Match the formation algebra's quotation with the generic code quotation & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_quote_eq} & PCQ & proved\\
+D & Recover all mixed positions from the formation-algebra output & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiledPositionWitnesses} & PCQ & proved\\
+D & Embed total direct and nested producers as an always-accepting provider table & \name{FormationSensitiveIndexedContainerBundleRealization.Code.PartialLeafProviders.ofTotal} & none & definition\\
+D & Route formation-qualified providers recursively over arbitrary constructor code & \name{FormationSensitiveIndexedContainerBundleRealization.Code.realizeWithProviders?} & PCQ & definition\\
+D & Recover every position witness from a successful provider result & \name{FormationSensitiveIndexedContainerBundleRealization.Code.positionWitnessesOfProviderSuccess} & PQ & proved\\
+D & Match provider-routed and total realizations on mixed direct/Vector code & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.completeProviders_compile} & PCQ & proved\\
+D & Recover all mixed positions from the provider-routed realization & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.providerPositionWitnesses} & PCQ & proved\\
+D & Refuse mixed direct/Vector realization when the nested provider is absent & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.missingNestedProvider_refused} & PCQ & proved\\
+D & Refuse mixed direct/Vector realization when direct evidence is absent & \name{FormationSensitiveIndexedContainerBundleRealization.MixedControl.missingDirectProvider_refused} & PCQ & proved\\
+D & Refuse an object value when the Reader motive has no semantic bundle & \name{FormationSensitiveIndexedContainerBundleRealization.ReaderNegative.noObjectValue} & PCQ & proved\\
+D & Retain occurrence-specific shape and children in a constructor realization request & \name{FormationSensitiveIndexedContainerBundleRealization.Code.ConstructorRequest} & none & definition\\
+D & Route one occurrence-specific request through selected object providers & \name{FormationSensitiveIndexedContainerBundleRealization.Code.realizeRequest?} & PCQ & definition\\
+D & Route every ordered constructor occurrence while retaining individual refusals & \name{FormationSensitiveIndexedContainerBundleRealization.Code.realizeInventory?} & PCQ & definition\\
+D & Identify inventory routing at each occurrence with the single-request compiler & \name{FormationSensitiveIndexedContainerBundleRealization.Code.realizeInventory?_at} & PQ & proved\\
+D & Recover the exact ordered VectorTree codes from the resolved textual family & \name{PositiveInductiveVectorTreeGuest.ProviderInventory.codes_eq} & P & proved\\
+D & Accept both textual VectorTree occurrences with complete providers & \name{PositiveInductiveVectorTreeGuest.ProviderInventory.branch_provider_accepted} & PCQ & proved\\
+D & Preserve solved and refuse branch when the Vector provider is absent & \name{PositiveInductiveVectorTreeGuest.ProviderInventory.missingNested_verdicts} & PCQ & proved\\
+D & Generate VectorTree constructor rows from the indexed textual source & \name{PositiveInductiveVectorTreeGuest.sourceConstructorEntries_eq} & P & proved\\
+D & Preserve the nested Vector traversal under renaming and substitution & \name{PositiveInductiveVectorTreeGuest.subst_liftChildren} & PQ & proved\\
+D & Admit and form the complete VectorTree declaration inventory & \name{PositiveInductiveVectorTreeGuest.inventory_formed} & PCQ & proved\\
+D & Form the exact source-Vector recursive-result bundle & \name{PositiveInductiveVectorTreeGuest.branch_bundle_formed} & PCQ & proved\\
+D & Check all VectorTree iota endpoints and refuse an unbundled branch & \name{PositiveInductiveVectorTreeGuest.endpointVerdicts_eq_true} & PCQ & proved\\
+D & Retain the typed solved VectorTree receipt & \name{PositiveInductiveVectorTreeGuest.solvedReceipt} & PCQ & proved\\
+D & Retain the typed length-indexed VectorTree branch receipt & \name{PositiveInductiveVectorTreeGuest.branchReceipt} & PCQ & proved\\
+D & Transport the VectorTree branch receipt through typed substitution & \name{PositiveInductiveVectorTreeGuest.branchReceipt_substitute} & PCQ & proved\\
+D & Transport complete generic PTS derivations along sort-renaming morphisms & \name{GenericPureTypeSystem.Derives.map} & P & proved\\
+D & Identify the maintained two-sort PTS with its generic instance & \name{GenericPureTypeSystem.TwoSort.derives_iff} & P & proved\\
+D & Prove functionality of the three-stratum comparison target & \name{HypercubeSortRenaming.comparisonProfile_functional} & P & proved\\
+D & Exclude a self-typed sort from the comparison target & \name{HypercubeSortRenaming.comparisonProfile_no_self_axiom} & none & proved\\
+D & Expose noncommutation of the shared Type sort & \name{HypercubeSortRenaming.comparison_maps_disagree_on_type} & none & proved\\
+D & Expose noncommutation of the shared Kind sort & \name{HypercubeSortRenaming.comparison_maps_disagree_on_kind} & none & proved\\
+D & Transport the CoC polymorphic identity to the lower strata & \name{HypercubeSortRenaming.coc_polymorphicIdentity_transports} & PQ & proved\\
+D & Transport a prototype type operator to the upper strata & \name{HypercubeSortRenaming.prototype_typeOperator_transports} & PQ & proved\\
+D & Force sort collapse in every functional commuting cocone & \name{HypercubeSortRenaming.commuting_functional_cocone_collapses} & PQ & proved\\
+D & Derive a self-typed sort in every functional commuting cocone & \name{HypercubeSortRenaming.commuting_cocone_self_axiom} & PQ & proved\\
+D & Retain the paradox product rule after the commuting collapse & \name{HypercubeSortRenaming.commuting_cocone_self_product} & PQ & proved\\
+D & Transport the concrete Hurkens inconsistency witness through the collapse & \name{HypercubeSortRenaming.commuting_functional_cocone_inconsistent} & PQ & proved\\
+D & Check the finite shifted-span and noncommutation controls & \name{HypercubeSortRenaming.Controls.all_verdicts} & none & proved\\
+D & Infer all 31 frozen DTTBench statement types under CoC & \name{LFDTTBenchDemand.allStatementsTypableInCoc_eq_true} & P & proved\\
+D & Reconstruct declarative CoC typing for every frozen statement & \name{LFDTTBenchDemand.coc_typable_of_mem} & PQ & proved\\
+D & Refute profile-independent necessity of the prototype demand rule & \name{LFDTTBenchDemand.prototype_demand_not_necessary_for_coc_typability} & P & proved\\
+D & Check the intrinsic nested fold and result adapter & \name{PositiveInductiveSearchTreeElaboration.fold_typed} & PQ & proved\\
+D & Apply the closed nested fold to its actual eliminator body & \name{PositiveInductiveSearchTreeElaboration.foldTerm_beta} & PCQ & proved\\
+D & Compute the declared child/result bundle method & \name{PositiveInductiveSearchTreeElaboration.consBundleCase_beta} & PQ & proved\\
+D & Retain every exact child/call pair in source order & \name{PositiveInductiveSearchTreeElaboration.liftChildren_fst_encode} & PQ & proved\\
+D & Join the bundle result view with the source recursive map & \name{PositiveInductiveSearchTreeElaboration.bundleResults_common_output} & PQ & proved\\
+D & Open a generated method by ordinary beta computation & \name{PositiveInductiveSearchTreeElaboration.applyMethod_reduces} & P & proved\\
+D & Compile both authored nested source methods & \name{PositiveInductiveSearchTreeElaboration.methods_emitted} & PCQ & proved\\
+D & Retain the existing admitted SearchTree source declarations & \name{PositiveInductiveSearchTreeElaboration.source_declarations_exact} & PCQ & proved\\
+D & Emit the whole authored nested fold & \name{PositiveInductiveSearchTreeElaboration.function_emitted} & PCQ & proved\\
+D & Derive selected call plans from registered constructor forms & \name{PositiveInductiveSearchTreeElaboration.selected_plans_derived} & PCQ & proved\\
+D & Reconstruct both actual nested clauses in constructor order & \name{PositiveInductiveSearchTreeElaboration.source_methods_reconstruct} & PCQ & proved\\
+D & Independently type-check the actual emitted nested program & \name{PositiveInductiveSearchTreeElaboration.source_typed} & PCQ & proved\\
+D & Apply an accepted source-produced program to its actual body & \name{PositiveInductiveSearchTreeElaboration.source_application} & PCQ & proved\\
+D & Every checked nested proposal has the displayed dependent typing & \name{PositiveInductiveSearchTreeElaboration.checkProposal_sound} & PCQ & proved\\
+D & Accept the nested source and reject source and typing mutations & \name{PositiveInductiveSearchTreeElaboration.all_verdicts} & PCQ & proved\\
+D & Form the fresh authored transparent declaration & \name{PositiveInductiveSearchTreeElaboration.Definitions.formed} & PCQ & proved\\
+D & Retain dependent typing of the actual published body & \name{PositiveInductiveSearchTreeElaboration.Definitions.bodyTyped} & PCQ & proved\\
+D & Type the actual authored constant in its declaration extension & \name{PositiveInductiveSearchTreeElaboration.Definitions.constant_typed} & PQ & proved\\
+D & Preserve every displayed refined type through delta unfolding & \name{PositiveInductiveSearchTreeElaboration.Definitions.typedUnfolding} & PCQ & proved\\
+D & Compute a named call to its actual compiled eliminator body & \name{PositiveInductiveSearchTreeElaboration.Definitions.namedApplication} & PCQ & proved\\
+D & Expand named recursive maps to ordered object-level calls & \name{PositiveInductiveSearchTreeElaboration.Definitions.namedMap} & PCQ & proved\\
+D & Join named source maps with the proof-relevant bundle result view & \name{PositiveInductiveSearchTreeElaboration.Definitions.namedBundleCommonOutput} & PCQ & proved\\
+D & Remove the recursive source name from the compiled body & \name{PositiveInductiveSearchTreeElaboration.Definitions.body_no_recursive_name} & PQ & proved\\
+D & Refuse reuse of the existing family declaration name & \name{PositiveInductiveSearchTreeElaboration.Definitions.shadow_refused} & PQ & proved\\
+D & Refuse a bare self-delta definition & \name{PositiveInductiveSearchTreeElaboration.Definitions.self_refused} & PQ & proved\\
+D & Check named-declaration positive and negative controls & \name{PositiveInductiveSearchTreeElaboration.Definitions.all_verdicts} & PQ & proved\\
+D & Independently check all five actual fold substitution components & \name{PositiveInductiveSearchTreeElaboration.Branch.slots} & PCQ & proved\\
+D & Form the actual fold context substitution & \name{PositiveInductiveSearchTreeElaboration.Branch.contextMorphism} & PCQ & proved\\
+D & Transport both fully formed branch endpoints & \name{PositiveInductiveSearchTreeElaboration.Branch.formed_endpoints} & PCQ & proved\\
+D & Retain the same checked substitution in the selected guest & \name{PositiveInductiveSearchTreeElaboration.Branch.guestMorphism} & PCQ & proved\\
+D & Convert the constant motive application to the result type & \name{PositiveInductiveSearchTreeElaboration.Branch.result_conversion} & PQ & proved\\
+D & Type both actual branch endpoints at their displayed result & \name{PositiveInductiveSearchTreeElaboration.Branch.result_endpoints} & PCQ & proved\\
+D & Retain the actual fold branch as an explicit typed iota receipt & \name{PositiveInductiveSearchTreeElaboration.Branch.receipt} & PCQ & proved\\
+D & Identify the receipt source with the actual fold branch & \name{PositiveInductiveSearchTreeElaboration.Branch.left_is_fold} & P & proved\\
+D & Refuse children-as-results in the actual branch method check & \name{PositiveInductiveSearchTreeElaboration.Branch.children_as_results_refused} & PQ & proved\\
+D & Check the concrete typed fold-receipt controls & \name{PositiveInductiveSearchTreeElaboration.Branch.all_verdicts} & PCQ & proved\\
+D & Transport guarded universal observations in every Henkin model & \name{HOL.GuardedQuantifierTransport.models_universal} & none & proved\\
+D & Transport guarded existential observations in every Henkin model & \name{HOL.GuardedQuantifierTransport.models_existential} & none & proved\\
+D & Retain both typed guarded transport schemas & \name{HOL.GuardedQuantifierTransport.all_models} & none & proved\\
+D & Distinguish inhabited padding from an empty represented carrier & \name{HOL.GuardedQuantifierTransport.empty_guard_separates} & none & proved\\
+D & Refute the actual typed statement with the target guard erased & \name{HOL.GuardedQuantifierTransport.guard_erasure_counterexample} & none & proved\\
+D & Certify a nonidentity guarded Boolean comparison & \name{HOL.GuardedQuantifierTransport.Examples.swap_comparison} & none & proved\\
+D & Retain the chosen comparison action on a selected observation & \name{HOL.GuardedQuantifierTransport.Examples.swap_changes_observation} & Q & proved\\
+D & Witness the model hypotheses on an inhabited representation & \name{HOL.GuardedQuantifierTransport.standard_instance} & none & proved\\
+D & Check nonidentity, inverse-action and padding controls & \name{HOL.GuardedQuantifierTransport.all_verdicts} & Q & proved\\
+D & Keep the native guarded theorem names distinct & \name{HOLLight.GuardedQuantifierTransport.names_distinct} & none & proved\\
+D & Characterize exact existential truth transport by the valid image & \name{HOL.GuardedQuantifierTransport.exists_observations_iff_image} & none & proved\\
+D & Characterize exact universal truth transport by the valid image & \name{HOL.GuardedQuantifierTransport.all_observations_iff_image} & none & proved\\
+D & Separate quantified truth transport from faithful value transport & \name{HOL.GuardedQuantifierTransport.truth_transport_does_not_force_injectivity} & none & proved\\
+D & Commute registered-container constructor generation with substitution & \name{IndexedPositiveContainerGuestTypes.constructorType_substitute} & PQ & proved\\
+D & Commute full dependent method generation with substitution & \name{IndexedPositiveContainerGuestTypes.methodBody_substitute} & PQ & proved\\
+D & Commute named method generation with substitution & \name{IndexedPositiveContainerGuestTypes.methodType_substitute} & PQ & proved\\
+D & Preserve every ordinary indexed constructor interface & \name{IndexedPositiveContainerGuestTypes.constructorType_ordinary} & PQ & proved\\
+D & Preserve every ordinary indexed method body and IH order & \name{IndexedPositiveContainerGuestTypes.methodBody_ordinary} & PQ & proved\\
+D & Preserve every ordinary indexed named method & \name{IndexedPositiveContainerGuestTypes.methodType_ordinary} & PQ & proved\\
+D & Independently admit the generated List declaration inventory & \name{IndexedPositiveContainerGuestControls.Lists.declarations_admitted} & PQ & proved\\
+D & Retain formation of the generated List inventory & \name{IndexedPositiveContainerGuestControls.Lists.declarations_formed} & PQ & proved\\
+D & Independently admit the generated Vector declaration inventory & \name{IndexedPositiveContainerGuestControls.Vectors.declarations_admitted} & PCQ & proved\\
+D & Retain formation of the generated Vector inventory & \name{IndexedPositiveContainerGuestControls.Vectors.declarations_formed} & PCQ & proved\\
+D & Retain the mixed constructor's actual source fields & \name{IndexedPositiveContainerGuestControls.Vectors.Mixed.source_roundtrip} & PCQ & proved\\
+D & Retain the mixed constructor's earlier Nat length & \name{IndexedPositiveContainerGuestControls.Vectors.Mixed.constructor_exact} & PCQ & proved\\
+D & Retain the mixed method's complete ordered IHs & \name{IndexedPositiveContainerGuestControls.Vectors.Mixed.method_exact} & PCQ & proved\\
+D & Independently form the mixed dependent method & \name{IndexedPositiveContainerGuestControls.Vectors.Mixed.method_formed} & PCQ & proved\\
+D & Exhibit the simple branch's insufficient coverage & \name{IndexedPositiveContainerGuestControls.Vectors.Mixed.wrong_simple_branch_agrees} & PQ & proved\\
+D & Refuse the mixed method with a faulty length reader & \name{IndexedPositiveContainerGuestControls.Vectors.Mixed.wrong_length_refused} & PCQ & proved\\
+D & Retain the actual Nat-indexed Vec constructor & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.cons_constructor_exact} & PQ & proved\\
+D & Retain the actual Nat-indexed Vec method & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.cons_method_exact} & PCQ & proved\\
+D & Check generated declaration positive and negative controls & \name{IndexedPositiveContainerGuestControls.verdicts_eq_true} & PCQ & proved\\
+D & Count complete method-call arguments & \name{IndexedPositiveContainerGuestPlans.calls_length} & P & proved\\
+D & Transport recursive-call plans with substitution & \name{IndexedPositiveContainerGuestPlans.calls_substitute} & P & proved\\
+D & Match plan call count to the constructor code & \name{IndexedPositiveContainerGuestPlans.plan_call_count} & PQ & proved\\
+D & Reconstruct accepted clauses from code-derived plans & \name{IndexedPositiveContainerGuestPlans.compile_reconstructs} & PQ & proved\\
+D & Commute authored nested map syntax with substitution & \name{PositiveInductiveSearchTreeElaboration.sourceMap_substitute} & PQ & proved\\
+D & Retain mixed source fields and call positions & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.generated_exact} & PCQ & proved\\
+D & Retain the earlier Vector output index & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.calls_exact} & PCQ & proved\\
+D & Compile all three mixed IH positions & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.compilation_exact} & PCQ & proved\\
+D & Retain mixed clause source and recursive-name freedom & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.compiled_reconstructs} & PCQ & proved\\
+D & Compile the first-child source clause & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.first_compiled} & PCQ & proved\\
+D & Witness accepted mixed-source reconstruction & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.first_reconstructs} & PCQ & proved\\
+D & Beta-reconstruct the actual mixed clause & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.first_beta} & PCQ & proved\\
+D & Witness call-plan substitution on the mixed source & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.substitution_witness} & PCQ & proved\\
+D & Retain call occurrences when terms coincide & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.coincident_children_keep_slots} & PQ & proved\\
+D & Expose method-slot loss under value deduplication & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.value_dedup_drops_slot} & PQ & proved\\
+D & Refuse a recursive call on the data payload & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.wrong_child_refused} & PCQ & proved\\
+D & Refuse a changed nested output length & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.wrong_length_refused} & PCQ & proved\\
+D & Distinguish lexical call order from reversal & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.correct_order_not_reversed} & PQ & proved\\
+D & Check source-call plan and abstraction controls & \name{IndexedPositiveContainerGuestPlansControls.all_verdicts} & PCQ & proved\\
+D & Count all authored header slots & \name{IndexedInductive.OperationSource.Header.fromPlan_slot_count} & PQ & proved\\
+D & Retain ordinary constructor arity & \name{IndexedPositiveContainerGuestPlans.fieldCount_ordinary} & none & proved\\
+D & Preserve ordinary index/child call templates & \name{IndexedPositiveContainerGuestPlans.calls_ordinary} & PCQ & proved\\
+D & Replay source clauses at generated dependent interfaces & \name{IndexedPositiveContainerGuestPlans.elaborateClause_sound} & PCQ & proved\\
+D & Retain the Nat-indexed append plan & \name{IndexedPositiveContainerGuestPlansControls.OrdinaryAppend.cons_plan_exact} & PCQ & proved\\
+D & Witness ordinary calls on the actual Vec code & \name{IndexedPositiveContainerGuestPlansControls.OrdinaryAppend.calls_ordinary_witness} & PCQ & proved\\
+D & Count the actual Vec source fields & \name{IndexedPositiveContainerGuestPlansControls.OrdinaryAppend.cons_fields_exact} & P & proved\\
+D & Compile the named mixed clause & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.named_before_compiled} & PCQ & proved\\
+D & Count every mixed source header slot & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.named_slots_count} & PCQ & proved\\
+D & Refuse a named recursive payload & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.named_payload_refused} & PCQ & proved\\
+D & Refuse aliased source constructor binders & \name{IndexedPositiveContainerGuestPlansControls.VectorCalls.source_alias_refused} & PCQ & proved\\
+D & Resolve the authored VectorTree inventory & \name{PositiveInductiveVectorTreeElaboration.source_inventory_exact} & PCQ & proved\\
+D & Compile both authored VectorTree methods & \name{PositiveInductiveVectorTreeElaboration.methods_emitted} & PCQ & proved\\
+D & Retain the generated solved interface & \name{PositiveInductiveVectorTreeElaboration.generated_solved_type} & PQ & proved\\
+D & Retain the generated dependent branch interface & \name{PositiveInductiveVectorTreeElaboration.generated_branch_type} & PQ & proved\\
+D & Retain source compilation after method replay & \name{PositiveInductiveVectorTreeElaboration.checked_sound} & PCQ & proved\\
+D & Type the authored VectorTree solved method & \name{PositiveInductiveVectorTreeElaboration.solved_typed} & PCQ & proved\\
+D & Type the authored VectorTree branch method & \name{PositiveInductiveVectorTreeElaboration.branch_typed} & PCQ & proved\\
+D & Beta-reconstruct the parsed VectorTree branch & \name{PositiveInductiveVectorTreeElaboration.branch_beta} & PCQ & proved\\
+D & Reconstruct typing of the compiled method application & \name{PositiveInductiveVectorTreeElaboration.branch_application_typed} & PCQ & proved\\
+D & Retain both typed reconstruction endpoints & \name{PositiveInductiveVectorTreeElaboration.branch_endpoints_typed} & PCQ & proved\\
+D & Identify the actual parsed receipt target & \name{PositiveInductiveVectorTreeElaboration.branch_read_exact} & PCQ & proved\\
+D & Transport the selected receipt to the parsed branch & \name{PositiveInductiveVectorTreeElaboration.sourceBranchReceipt} & PCQ & proved\\
+D & Exhibit raw compilation without a valid bundle & \name{PositiveInductiveVectorTreeElaboration.unbundled_compiles} & PCQ & proved\\
+D & Refuse a missing induction bundle at replay & \name{PositiveInductiveVectorTreeElaboration.unbundled_refused} & PCQ & proved\\
+D & Check authored dependent-source controls & \name{PositiveInductiveVectorTreeElaboration.all_verdicts} & PCQ & proved\\
+D & Commute scoped index-domain input with substitution & \name{IndexedPositiveContainerGuestTypes.Indexing.weakenDomain_substitute} & PQ & proved\\
+D & Substitute the generated dependent motive type & \name{IndexedPositiveContainerGuestTypes.motiveType_substitute} & PQ & proved\\
+D & Substitute the complete eliminator result interface & \name{IndexedPositiveContainerGuestTypes.resultType_substitute} & PQ & proved\\
+D & Substitute all ordered dependent methods & \name{IndexedPositiveContainerGuestTypes.methodsType_substitute} & PQ & proved\\
+D & Substitute the complete generated eliminator interface & \name{IndexedPositiveContainerGuestTypes.eliminatorType_substitute} & PQ & proved\\
+D & Retain ordinary indexed method inventories & \name{IndexedPositiveContainerGuestTypes.methodsType_ordinary} & PQ & proved\\
+D & Retain complete ordinary indexed eliminator interfaces & \name{IndexedPositiveContainerGuestTypes.eliminatorType_ordinary} & PQ & proved\\
+D & Generate the actual List SearchTree eliminator & \name{IndexedPositiveContainerGuestControls.Lists.eliminator_exact} & PQ & proved\\
+D & Witness complete generation at an open source parameter & \name{IndexedPositiveContainerGuestControls.Lists.eliminator_substitution_witness} & PQ & proved\\
+D & Detect List constructor-order interface drift & \name{IndexedPositiveContainerGuestControls.Lists.reversed_order_not_exact} & PQ & proved\\
+D & Generate the actual VectorTree eliminator & \name{IndexedPositiveContainerGuestControls.Vectors.eliminator_exact} & PQ & proved\\
+D & Detect Vector constructor-order interface drift & \name{IndexedPositiveContainerGuestControls.Vectors.reversed_order_not_exact} & PQ & proved\\
+D & Retain the actual Nat-indexed Vec eliminator & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.eliminator_exact} & PCQ & proved\\
+D & Compose declaration-prefix typing evidence & \name{DeclarationAdmissionReplay.Admitted.append} & PQ & proved\\
+D & Retain exact published source names & \name{IndexedInductive.Guest.Declarations.Registered.entries_names} & PQ & proved\\
+D & Keep generated entries opaque & \name{IndexedInductive.Guest.Declarations.Registered.entries_opaque} & PQ & proved\\
+D & Preserve complete ordinary indexed inventories & \name{IndexedInductive.Guest.Declarations.Registered.entries_ordinary} & PQ & proved\\
+D & Replay generated entries at their source prefix & \name{IndexedInductive.Guest.Declarations.Registered.admitInventory_sound} & PQ & proved\\
+D & Form generated libraries with admitted dependencies & \name{IndexedInductive.Guest.Declarations.Registered.admitInventory_formed} & PQ & proved\\
+D & Generate the actual parameterized SearchTree inventory & \name{IndexedPositiveContainerGuestControls.Lists.entries_exact} & PQ & proved\\
+D & Refuse a family/eliminator name collision & \name{IndexedPositiveContainerGuestControls.Lists.collision_refused} & PQ & proved\\
+D & Generate VectorTree entries after the Answer dependency & \name{IndexedPositiveContainerGuestControls.Vectors.entries_exact} & PQ & proved\\
+D & Admit the generated VectorTree suffix & \name{IndexedPositiveContainerGuestControls.Vectors.generated_admitted} & PCQ & proved\\
+D & Admit the actual Answer dependency & \name{IndexedPositiveContainerGuestControls.Vectors.prior_admitted} & PCQ & proved\\
+D & Refuse a payload in a Vector length position & \name{IndexedPositiveContainerGuestControls.Vectors.wrong_data_refused} & PCQ & proved\\
+D & Retain the actual Nat-indexed Vec declarations & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.entries_exact} & PCQ & proved\\
+D & Preserve name uniqueness through prefix admission & \name{DeclarationAdmissionReplay.Admitted.names_nodup} & PQ & proved\\
+D & Derive published-name separation from replay & \name{IndexedInductive.Guest.Declarations.Registered.admitInventory_names} & PQ & proved\\
+D & Refuse endpoint aliases at every production budget & \name{IndexedInductive.Guest.Declarations.Registered.aliased_endpoints_refused} & PQ & proved\\
+D & Witness List source-name separation & \name{IndexedPositiveContainerGuestControls.Lists.names_distinct} & PQ & proved\\
+D & Witness Vector source-name separation & \name{IndexedPositiveContainerGuestControls.Vectors.names_distinct} & PCQ & proved\\
+D & Preserve exact certificate concatenation & \name{IndexedInductive.Guest.Declarations.produce_append} & PQ & proved\\
+D & Compose production and independent replay exactly & \name{IndexedInductive.Guest.Declarations.elaborate_append} & PQ & proved\\
+D & Factor acceptance over consecutive prefixes & \name{IndexedInductive.Guest.Declarations.elaborate_isSome_append} & PQ & proved\\
+D & Assemble whole-inventory acceptance from checked entries & \name{IndexedInductive.Guest.Declarations.elaborate_cons_of} & PQ & proved\\
+D & Preserve result projection under scoped substitution & \name{NativeVectorAll.ResultView.subst_project} & PQ & proved\\
+D & Project the exact ordered canonical Vector bundle & \name{NativeVectorAll.ResultView.canonical_steps} & PQ & proved\\
+D & Open the closed Vector result program by beta computation & \name{NativeVectorAll.ResultView.program_beta} & PQ & proved\\
+D & Replay the complete polymorphic Vector result program & \name{NativeVectorAll.ResultView.program_formed} & PCQ & proved\\
+D & Form the library with the actual checked result definition & \name{PositiveInductiveVectorTreeGuest.ResultFold.checking_formed} & PCQ & proved\\
+D & Retain formation with the existing selected Tree computation & \name{PositiveInductiveVectorTreeGuest.ResultFold.execution_formed} & PCQ & proved\\
+D & Replay the whole constant-motive VectorTree fold & \name{PositiveInductiveVectorTreeGuest.ResultFold.fold_typed} & PCQ & proved\\
+D & Check all five source-context substitutions & \name{PositiveInductiveVectorTreeGuest.ResultFold.contextMorphism} & PCQ & proved\\
+D & Transport the original parsed branch receipt & \name{PositiveInductiveVectorTreeGuest.ResultFold.sourceReceipt} & PCQ & proved\\
+D & Beta-reconstruct the specialized parsed branch target & \name{PositiveInductiveVectorTreeGuest.ResultFold.parsed_branch_beta} & PCQ & proved\\
+D & Connect the selected source step to the projected node call & \name{PositiveInductiveVectorTreeGuest.ResultFold.source_path} & PCQ & proved\\
+D & Retain both path endpoints at the result type & \name{PositiveInductiveVectorTreeGuest.ResultFold.source_target_typed} & PCQ & proved\\
+D & Preserve displayed types under ordinary projection unfolding & \name{PositiveInductiveVectorTreeGuest.ResultFold.projection_typedUnfolding} & PCQ & proved\\
+D & Preserve length, order and repeated child occurrences & \name{PositiveInductiveVectorTreeGuest.ResultFold.childrenResults_canonical} & PQ & proved\\
+D & Compute the solved fold through the existing equation & \name{PositiveInductiveVectorTreeGuest.ResultFold.fold_solved_steps} & PQ & proved\\
+D & Compute the finite branch with source-ordered results & \name{PositiveInductiveVectorTreeGuest.ResultFold.fold_branch_canonical} & PQ & proved\\
+D & Open the actual closed VectorTree fold program & \name{PositiveInductiveVectorTreeGuest.ResultFold.program_application} & PQ & proved\\
+D & Refuse original children as recursive result values & \name{PositiveInductiveVectorTreeGuest.ResultFold.wrongBranch_refused} & PCQ & proved\\
+D & Check the selected result-fold positive and negative controls & \name{PositiveInductiveVectorTreeGuest.ResultFold.all_verdicts} & PCQ & proved\\
+D & Form every declared constructor code from primitive syntax typing & \name{IndexedPositiveContainerGuestTypes.constructorType_formed} & PQ & proved\\
+D & Close generated constructors over their formed parameter telescope & \name{IndexedInductive.Guest.Declarations.Registered.constructorEntry_formed} & PQ & proved\\
+D & Admit the generated fresh opaque constructor at its actual prefix & \name{IndexedInductive.Guest.Declarations.Registered.constructorEntry_admitted} & PQ & proved\\
+D & Admit the actual family-only source prefix & \name{IndexedPositiveContainerGuestControls.Lists.Formation.prefix_admitted} & PQ & proved\\
+D & Form the family-only source prefix & \name{IndexedPositiveContainerGuestControls.Lists.Formation.prefix_formed} & PQ & proved\\
+D & Validate the actual native List primitive typing contracts & \name{IndexedPositiveContainerGuestControls.Lists.Formation.primitives} & PQ & proved\\
+D & Form every registered-List constructor before its admission & \name{IndexedPositiveContainerGuestControls.Lists.Formation.every_constructor_formed} & PQ & proved\\
+D & Retain the formed source branch in its actual parameter context & \name{IndexedPositiveContainerGuestControls.Lists.Formation.source_branch_judgment} & PQ & proved\\
+D & Close the actual source branch over its parameter & \name{IndexedPositiveContainerGuestControls.Lists.Formation.source_closed_branch_formed} & PQ & proved\\
+D & Compose family and generically derived branch admission & \name{IndexedPositiveContainerGuestControls.Lists.Formation.family_branch_admitted} & PQ & proved\\
+D & Independently check the generated branch at its family prefix & \name{IndexedPositiveContainerGuestControls.Lists.Formation.source_branch_checked} & PQ & proved\\
+D & Refute a primitive contract for an undeclared family & \name{IndexedPositiveContainerGuestControls.Lists.Formation.missing_family_refused} & PQ & proved\\
+D & Refuse the generated branch without its family prefix & \name{IndexedPositiveContainerGuestControls.Lists.Formation.missing_prefix_refused} & PQ & proved\\
+D & Replay witness-free native Vector All formation & \name{NativeVectorAll.TypeFormation.replay_checked} & PCQ & proved\\
+D & Form native Vector All from typed inputs in every signature extension & \name{NativeVectorAll.TypeFormation.allType_typed} & PCQ & proved\\
+D & Recover actual native Vector declaration formation & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.nativeVecType_formed} & PCQ & proved\\
+D & Admit the actual VectorTree family-only prefix & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.prefix_admitted} & PQ & proved\\
+D & Form the actual VectorTree family-only prefix & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.prefix_formed} & PQ & proved\\
+D & Type actual length expressions through the data environment & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.lengthTerm_typed} & P & proved\\
+D & Discharge actual Vector constructor primitive contracts & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.primitives} & PCQ & proved\\
+D & Form every constructor over the actual Vector registry & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.every_constructor_formed} & PCQ & proved\\
+D & Form the actual Vector bundle without assuming its evidence & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.bundle_formed} & PCQ & proved\\
+D & Admit the generated Vector branch at its family prefix & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.branch_admitted} & PCQ & proved\\
+D & Admit the generated mixed Vector constructor at its family prefix & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.mixed_admitted} & PCQ & proved\\
+D & Independently check the Vector branch at its family prefix & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.branch_checked} & PCQ & proved\\
+D & Independently check the mixed Vector constructor at its family prefix & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.mixed_checked} & PCQ & proved\\
+D & Refuse a payload used as the Vector length & \name{IndexedPositiveContainerGuestControls.Vectors.Formation.wrong_mixed_refused} & PCQ & proved\\
+D & Form generated dependent method bodies from typed primitive contracts & \name{IndexedPositiveContainerGuestTypes.methodBody_formed} & PQ & proved\\
+D & Form generated dependent methods from actual constructors and motives & \name{IndexedPositiveContainerGuestTypes.methodType_formed} & PQ & proved\\
+D & Retain the actual authored Vector branch type & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.source_type_exact} & PQ & proved\\
+D & Keep the tree eliminator absent from the method prefix & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.no_eliminator} & PQ & proved\\
+D & Admit the family and branch prefix before the tree eliminator & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.prefix_admitted} & PCQ & proved\\
+D & Discharge actual Vector dependent-method primitive contracts & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.primitives} & PCQ & proved\\
+D & Form the actual source method through the generic theorem & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.source_method_formed} & PCQ & proved\\
+D & Close the source method over its actual motive & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.closed_method_formed} & PCQ & proved\\
+D & Admit the derived source method as an ordinary opaque declaration & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.method_admitted} & PCQ & proved\\
+D & Independently check the derived source method & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.source_method_checked} & PCQ & proved\\
+D & Refuse a source method without its constructor & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.missing_constructor_refused} & PCQ & proved\\
+D & Refuse a source method for an undeclared constructor & \name{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.undeclared_constructor_refused} & PCQ & proved\\
+D & Form the generated motive at its explicit upper universe & \name{IndexedPositiveContainerGuestTypes.motiveType_formed} & PQ & proved\\
+D & Form the final dependent result interface & \name{IndexedPositiveContainerGuestTypes.resultType_formed} & PQ & proved\\
+D & Form the complete ordered dependent-method inventory & \name{IndexedPositiveContainerGuestTypes.methodsType_formed} & PQ & proved\\
+D & Form the complete eliminator from primitive contracts & \name{IndexedPositiveContainerGuestTypes.eliminatorType_formed} & PQ & proved\\
+D & Retain the full authored prefix before its eliminator & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.prefix_exact} & PQ & proved\\
+D & Keep the source eliminator absent from its formation prefix & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.no_eliminator} & PQ & proved\\
+D & Generically admit both source constructors at their actual prefixes & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.prefix_admitted} & PCQ & proved\\
+D & Discharge actual VectorTree eliminator universe contracts & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.primitives} & PCQ & proved\\
+D & Type the full actual constructor inventory structurally & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.constructors_typed} & PCQ & proved\\
+D & Form the actual complete source eliminator generically & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.source_eliminator_formed} & PCQ & proved\\
+D & Admit the structurally formed source eliminator & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.eliminator_admitted} & PCQ & proved\\
+D & Derive full authored inventory admission from structural formation & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.full_inventory_admitted} & PCQ & proved\\
+D & Independently check the complete generated source eliminator & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.source_checked} & PCQ & proved\\
+D & Refuse an eliminator missing its source constructors & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.missing_constructor_refused} & PCQ & proved\\
+D & Refuse the checked lower-universe claim for the eliminator type & \name{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.lower_universe_refused} & PCQ & proved\\
+D & Recover unrestricted typing as the universal admission policy & \name{IndexedPositiveContainerGuestTypes.indexTypingOn_unrestricted_iff} & P & proved\\
+D & Form family fibres at admitted source indices & \name{IndexedPositiveContainerGuestTypes.ConstructorPrimitives.familyAt_formedOn} & PQ & proved\\
+D & Form constructors from code-local index admission & \name{IndexedPositiveContainerGuestTypes.constructorType_formedOn} & PQ & proved\\
+D & Type motive fibres at admitted source indices & \name{IndexedPositiveContainerGuestTypes.ConstructorPrimitives.predicateAt_typedOn} & PQ & proved\\
+D & Form dependent method bodies under source-local index admission & \name{IndexedPositiveContainerGuestTypes.methodBody_formedOn} & PQ & proved\\
+D & Form dependent methods under source-local index admission & \name{IndexedPositiveContainerGuestTypes.methodType_formedOn} & PQ & proved\\
+D & Form ordered method inventories with admitted source indices & \name{IndexedPositiveContainerGuestTypes.methodsType_formedOn} & PQ & proved\\
+D & Form complete eliminators with admitted source indices & \name{IndexedPositiveContainerGuestTypes.eliminatorType_formedOn} & PQ & proved\\
+D & Close scoped-index constructor formation over its parameters & \name{IndexedInductive.Guest.Declarations.Registered.constructorEntry_formedOn} & PQ & proved\\
+D & Admit a scoped-index constructor at its actual prefix & \name{IndexedInductive.Guest.Declarations.Registered.constructorEntry_admittedOn} & PQ & proved\\
+D & Type supported zero-variable-successor reference indices & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.supported_index_typed} & P & proved\\
+D & Type an actual open successor index in the constructor-free prefix & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.native_successor_index_typed} & PQ & proved\\
+D & Refute unrestricted typing of the undeclared reference addition & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.native_total_contract_refused} & PQ & proved\\
+D & Discharge the actual scoped Nat-indexed Vec primitives & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.scoped_primitives} & PQ & proved\\
+D & Admit all indices of the original Cons constructor & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.cons_indices_admitted} & P & proved\\
+D & Admit the original Nil result index & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.nil_indices_admitted} & P & proved\\
+D & Form the original indexed Cons through the scoped structural theorem & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_cons_formed} & PQ & proved\\
+D & Close the original cumulative vector constructor type & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_vcons_type_formed} & PQ & proved\\
+D & Keep both vector constructors and eliminator absent from formation & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_prefix_has_no_vector_constructors} & PQ & proved\\
+D & Admit the original indexed Cons through scoped generic formation & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_cons_admitted} & PQ & proved\\
+D & Retain the original reference constructor declaration & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.cons_entry_reference} & PQ & proved\\
+D & Independently check the scoped original indexed constructor & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_cons_checked} & PQ & proved\\
+D & Refuse scoped indexed admission without Nat & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_missing_nat_refused} & PQ & proved\\
+D & Refuse undeclared arithmetic at the declaration boundary & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_addition_refused} & PQ & proved\\
+D & Refuse addition code under the supported operation policy & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.addition_code_not_admitted} & P & proved\\
+D & Check the generated indexed entry through its exact reference comparison & \name{IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_generated_cons_checked} & PQ & proved\\
+D & Admit the original constructor-only Nat/Vec prefix & \name{IndexedPositiveContainerUniverseControls.prefix_admitted} & PQ & proved\\
+D & Qualify indexed Vec primitives before its eliminator & \name{IndexedPositiveContainerUniverseControls.constructor_primitives} & PQ & proved\\
+D & Discharge independent data, result and method universe contracts & \name{IndexedPositiveContainerUniverseControls.primitives} & PQ & proved\\
+D & Admit every original indexed Vec constructor occurrence & \name{IndexedPositiveContainerUniverseControls.indices_admitted} & P & proved\\
+D & Type the original constructor inventory in its admitted prefix & \name{IndexedPositiveContainerUniverseControls.constructors_typed} & PQ & proved\\
+D & Form the full generated indexed eliminator at independent universes & \name{IndexedPositiveContainerUniverseControls.generated_type_formed} & PQ & proved\\
+D & Retain the original reference indexed eliminator type & \name{IndexedPositiveContainerUniverseControls.generated_type_exact} & PCQ & proved\\
+D & Keep the indexed eliminator absent from its formation prefix & \name{IndexedPositiveContainerUniverseControls.source_eliminator_absent} & PQ & proved\\
+D & Admit the independently polymorphic generated eliminator opaquely & \name{IndexedPositiveContainerUniverseControls.eliminator_admitted} & PQ & proved\\
+D & Close the original declaration inventory from structural elimination formation & \name{IndexedPositiveContainerUniverseControls.source_inventory_admitted} & PCQ & proved\\
+D & Transport generated formation through independent level instantiation & \name{IndexedPositiveContainerUniverseControls.instantiated_type_formed} & PQ & proved\\
+D & Relate concrete checked types to the instantiated generated source & \name{IndexedPositiveContainerUniverseControls.closed_type_exact} & PCQ & proved\\
+D & Form the original indexed source with a higher result level & \name{IndexedPositiveContainerUniverseControls.higher_result_formed} & PQ & proved\\
+D & Form the original indexed source with a lower result level & \name{IndexedPositiveContainerUniverseControls.lower_result_formed} & PQ & proved\\
+D & Independently check the higher-result indexed instance & \name{IndexedPositiveContainerUniverseControls.higher_result_checked} & PQ & proved\\
+D & Independently check the lower-result indexed instance & \name{IndexedPositiveContainerUniverseControls.lower_result_checked} & PQ & proved\\
+D & Accept the motive-binding result-universe successor & \name{IndexedPositiveContainerUniverseControls.motive_successor_bound_checked} & PQ & proved\\
+D & Refuse an omitted motive-binding universe successor & \name{IndexedPositiveContainerUniverseControls.missing_motive_successor_refused} & PQ & proved\\
+D & Refuse indexed elimination before its constructor dependencies & \name{IndexedPositiveContainerUniverseControls.missing_constructors_refused} & PQ & proved\\
+D & Directly type the original indexed Cons in its admitted constructor prefix & \name{IndexedPositiveContainerUniverseControls.source_cons_typed} & PQ & proved\\
+D & Check the existing All template with independent child and predicate universes & \name{NativeVectorAll.Universes.accepted_eq_true} & PCQ & proved\\
+D & Form the universe-instantiated open All program without pointwise evidence & \name{NativeVectorAll.Universes.formed} & PCQ & proved\\
+D & Instantiate independent-universe All formation under typed inputs & \name{NativeVectorAll.Universes.allType_typed} & PCQ & proved\\
+D & Commute universe-instantiated All with scoped substitution & \name{NativeVectorAll.Universes.substitute_allType} & PCQ & proved\\
+D & Refuse an All result bound below the declared predicate universe & \name{NativeVectorAll.Universes.insufficient_bound_refused} & PCQ & proved\\
+D & Refuse a natural type in the All predicate position & \name{NativeVectorAll.Universes.malformed_predicate_refused} & PCQ & proved\\
+D & Admit the original VectorTree constructor prefix at the new native universe instance & \name{IndexedPositiveContainerUniverseTreeControls.prefix_admitted} & PCQ & proved\\
+D & Qualify original VectorTree fields at their actual data universe & \name{IndexedPositiveContainerUniverseTreeControls.constructor_primitives} & PCQ & proved\\
+D & Assemble the original VectorTree and native All at independent universe coordinates & \name{IndexedPositiveContainerUniverseTreeControls.primitives} & PCQ & proved\\
+D & Type the actual VectorTree constructors before its eliminator & \name{IndexedPositiveContainerUniverseTreeControls.constructors_typed} & PCQ & proved\\
+D & Directly type the original VectorTree branch from its inventory & \name{IndexedPositiveContainerUniverseTreeControls.source_branch_typed} & PCQ & proved\\
+D & Form the full registered VectorTree eliminator with independent result universe & \name{IndexedPositiveContainerUniverseTreeControls.generated_type_formed} & PCQ & proved\\
+D & Retain the independently written polymorphic VectorTree interface & \name{IndexedPositiveContainerUniverseTreeControls.source_type_exact} & PCQ & proved\\
+D & Keep the polymorphic VectorTree eliminator absent from formation & \name{IndexedPositiveContainerUniverseTreeControls.source_eliminator_absent} & PQ & proved\\
+D & Ordinarily admit the generated polymorphic VectorTree eliminator & \name{IndexedPositiveContainerUniverseTreeControls.eliminator_admitted} & PCQ & proved\\
+D & Close the assembled independent-universe VectorTree declaration inventory & \name{IndexedPositiveContainerUniverseTreeControls.source_inventory_admitted} & PCQ & proved\\
+D & Independently check the polymorphic VectorTree reference interface & \name{IndexedPositiveContainerUniverseTreeControls.source_checked} & PCQ & proved\\
+D & Check the exact generated polymorphic VectorTree source entry & \name{IndexedPositiveContainerUniverseTreeControls.source_generated_checked} & PCQ & proved\\
+D & Refuse polymorphic VectorTree elimination without its constructors & \name{IndexedPositiveContainerUniverseTreeControls.missing_constructor_refused} & PCQ & proved\\
+D & Type the original source children in the actual bundle context & \name{IndexedPositiveContainerUniverseTreeControls.original_children_typed} & PCQ & proved\\
+D & Refuse original child data in place of the required induction evidence & \name{IndexedPositiveContainerUniverseTreeControls.original_children_not_bundle} & PCQ & proved\\
+D & Directly form the independent-universe induction bundle without evidence & \name{IndexedPositiveContainerUniverseTreeControls.source_bundle_formed} & PCQ & proved\\
+D & Distinguish the declared evidence bundle from the child-vector interface & \name{IndexedPositiveContainerUniverseTreeControls.bundle_cannot_be_replaced_by_children} & PQ & proved\\
+D & Retain the existing Vector-eliminator program under a raw universe annotation & \name{NativeVectorAll.Universes.Canonical.allTypeAtUniverse_eq_eliminate} & PQ & proved\\
+D & Compute every canonical constructor Vector to its quoted dependent-pair type spine & \name{NativeVectorAll.Universes.Canonical.allTypeAtUniverse_steps} & PQ & proved\\
+D & Retain one common quoted type spine across raw universe annotations & \name{NativeVectorAll.Universes.Canonical.universe_annotation_common_result} & PQ & proved\\
+D & Specialize canonical type-spine computation to the checked universe profile & \name{NativeVectorAll.Universes.Canonical.allType_steps} & PQ & proved\\
+D & Compute the actual two-position dependent-predicate source instance & \name{NativeVectorAll.Universes.Canonical.two_positions_reduce} & PQ & proved\\
+D & Compare two raw annotations on the same concrete source vector & \name{NativeVectorAll.Universes.Canonical.two_raw_annotations_share_result} & PQ & proved\\
+D & Keep two source positions distinct from a one-position type spine & \name{NativeVectorAll.Universes.Canonical.two_positions_not_one} & PQ & proved\\
+D & Exhibit a predicate reduction inside a quoted type spine & \name{NativeVectorAll.Universes.Canonical.quoted_predicate_can_reduce} & PQ & proved\\
+D & Commute All generation with capture-avoiding input substitution & \name{NativeVectorAll.Universes.Canonical.substitute_allTypeAtUniverse} & PCQ & proved\\
+D & Commute All generation with universe instantiation & \name{NativeVectorAll.Universes.Canonical.substLevels_allTypeAtUniverse} & PQ & proved\\
+D & Commute both substitutions on the actual four-input All program & \name{NativeVectorAll.Universes.Canonical.instantiation_substitution_square} & PCQ & proved\\
+D & Form both open All annotations at one common upper bound & \name{NativeVectorAll.Universes.CumulativeElimination.both_typed} & PCQ & proved\\
+D & Convert the two All types on every constructor vector & \name{NativeVectorAll.Universes.CumulativeElimination.canonical_conversion} & PQ & proved\\
+D & Transport every inhabitant judgment on constructor vectors & \name{NativeVectorAll.Universes.CumulativeElimination.canonical_typing_iff} & PCQ & proved\\
+D & Instantiate both open judgments with exact extension lookup & \name{NativeVectorAll.Universes.CumulativeElimination.instantiated_both_typed} & PCQ & proved\\
+D & Admit the collapsed target despite the symbolic source refusal & \name{NativeVectorAll.Universes.CumulativeElimination.collapsed_upper_fits_lower} & PCQ & proved\\
+D & Lift an actually checked two-position dependent-pair proof & \name{NativeVectorAll.Universes.CumulativeElimination.two_positions_lift} & PCQ & proved\\
+D & Instantiate the actual two-position predicate source & \name{NativeVectorAll.Universes.CumulativeElimination.two_positions_instantiated} & PCQ & proved\\
+D & Refuse the enlarged program at an insufficient symbolic bound & \name{NativeVectorAll.Universes.CumulativeElimination.upper_below_refused} & PCQ & proved\\
+D & Retain the different annotations in neutral source syntax & \name{NativeVectorAll.Universes.CumulativeElimination.neutral_programs_distinct} & PQ & proved\\
+D & Commute generated constructor types with head maps & \name{IndexedPositiveContainerGuestTypes.constructorType_mapHead} & PQ & proved\\
+D & Commute dependent method bodies with head maps & \name{IndexedPositiveContainerGuestTypes.methodBody_mapHead} & PQ & proved\\
+D & Commute complete generated eliminators with head maps & \name{IndexedPositiveContainerGuestTypes.eliminatorType_mapHead} & PQ & proved\\
+D & Retain the actual source index interpretation under head maps & \name{IndexedInductive.Guest.TypedControls.indexTerm_mapHead} & P & proved\\
+D & Instantiate the registered native Vector bundle template & \name{IndexedPositiveContainerUniverseTreeControls.containers_substLevels} & PCQ & proved\\
+D & Instantiate the whole nested VectorTree eliminator & \name{IndexedPositiveContainerUniverseTreeControls.generated_type_substLevels} & PCQ & proved\\
+D & Check a nonidentity instance of the whole nested source type & \name{IndexedPositiveContainerUniverseTreeControls.generated_collapse_exact} & PCQ & proved\\
+D & Instantiate the complete indexed Vec eliminator & \name{IndexedPositiveContainerUniverseControls.generated_type_substLevels} & PQ & proved\\
+D & Distinguish a collapsed generated annotation from the original & \name{IndexedPositiveContainerUniverseTreeControls.generated_annotation_changes} & PCQ & proved\\
+D & Map All evidence to the upper annotation at neutral vectors & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.forward_typed} & PCQ & proved\\
+D & Map All evidence back to the lower annotation at neutral vectors & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.backward_typed} & PCQ & proved\\
+D & Compare inhabitation of both All annotations at arbitrary typed inputs & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.inhabited_iff} & PCQ & proved\\
+D & Refuse a projection shortcut under the indexed map certificate & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.projection_certificate_refused} & PCQ & proved\\
+D & Refuse reversed evidence for the forward universe map & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.swapped_certificate_refused} & PCQ & proved\\
+D & Preserve a finite head observation under pair expansion & \name{ParameterizedPiSigmaId.Presentation.PairSpine.head_expand} & P & proved\\
+D & Preserve the final tail under pair expansion & \name{ParameterizedPiSigmaId.Presentation.PairSpine.tail_expand} & P & proved\\
+D & Compute a universe map on opaque evidence over constructor vectors & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.canonical_steps} & PQ & proved\\
+D & Preserve each source head through the actual Vector map & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.canonical_head} & PQ & proved\\
+D & Preserve the final source tail through the actual Vector map & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.canonical_tail} & PQ & proved\\
+D & Preserve head observations through a universe round trip & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.roundtrip_head} & PQ & proved\\
+D & Preserve the tail observation through a universe round trip & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.roundtrip_tail} & PQ & proved\\
+D & Contract repeated pair expansion without terminal eta & \name{ParameterizedPiSigmaId.Presentation.PairSpine.expand_idempotent} & P & proved\\
+D & Compute the complete universe round trip on a constructor vector & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.roundtrip_steps} & PQ & proved\\
+D & Reconstruct a formed dependent spine by typed pair eta & \name{ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.expand_typed_and_equal} & P & proved\\
+D & Produce an object identity witness for pair-eta reconstruction & \name{ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.expand_identity} & P & proved\\
+D & Transport a typed spine through context substitution & \name{ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.substitute} & PQ & proved\\
+D & Transport a typed spine through a rule-package morphism & \name{ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.mapHead} & PQ & proved\\
+D & Reconstruct typed equality from retained projection comparisons & \name{ParameterizedPiSigmaId.Presentation.PairSpine.equal_of_readout} & P & proved\\
+D & Transport the unknown-bundle identity witness through universe substitution & \name{ParameterizedPiSigmaId.Presentation.TypedEquality.DependentPairSpine.neutral_identity_levels} & PQ & proved\\
+D & Separate typed pair eta from raw beta/projection conversion & \name{ParameterizedPiSigmaId.Presentation.TypedEquality.DependentPairSpine.neutral_expansion_not_raw_convertible} & PQ & proved\\
+D & Read arbitrary supplied evidence at constructor-vector positions & \name{NativeVectorAll.ResultView.canonical_steps_observe} & PQ & proved\\
+D & Read independent assembled witnesses with an arbitrary final tail & \name{NativeVectorAll.ResultView.canonical_steps_assembled} & PQ & proved\\
+D & Read the actual registered Vector induction bundle & \name{NativeVectorAll.ResultView.semanticBundle_steps} & PCQ & proved\\
+D & Separate raw expansion syntax from its opaque input & \name{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.expansion_syntax_distinct} & PQ & proved\\
+D & Exhibit distinct raw inputs sharing one result observation & \name{NativeVectorAll.ResultView.shared_result_distinct_inputs} & PQ & proved\\
+D & Check independent caller bounds in the enlarged Vector result profile & \name{NativeVectorAll.ResultView.Universes.program_formed} & PCQ & proved\\
+D & Refuse the same result certificate in the original native profile & \name{NativeVectorAll.ResultView.Universes.original_certificate_refused} & PCQ & proved\\
+D & Transport formed judgments through the actual result-profile level instance & \name{NativeVectorAll.ResultView.Universes.judgment_map} & PQ & proved\\
+D & Compute ordered mapped witnesses with the actual result program & \name{NativeVectorAll.ResultView.Universes.program_computes_mapped_witnesses} & PQ & proved\\
+D & Accept the mapped two-position conversion certificate & \name{NativeVectorAll.ResultView.Universes.mapped_conversion_accepted} & PCQ & proved\\
+D & Refuse the same code for swapped result witnesses & \name{NativeVectorAll.ResultView.Universes.mapped_swapped_refused} & PCQ & proved\\
+D & Distinguish the result program's raw universe annotation & \name{NativeVectorAll.ResultView.Universes.program_annotation_changes} & PQ & proved\\
+D & Form compatible declaration unions through shared signature transport & \name{ParameterizedPiSigmaId.Presentation.Declaration.Signature.Formed.merge} & PQ & proved\\
+D & Retain the original lower input in a formed higher-result signature & \name{NativeVectorAll.ResultView.OriginalInputUniverses.signature_formed} & PCQ & proved\\
+D & Check the actual original-input higher-result program & \name{NativeVectorAll.ResultView.OriginalInputUniverses.program_formed} & PCQ & proved\\
+D & Refuse its certificate with a changed result family & \name{NativeVectorAll.ResultView.OriginalInputUniverses.changed_result_certificate_refused} & PCQ & proved\\
+D & Expose the exact unrenamed declaration-entry conflict & \name{NativeVectorAll.ResultView.OriginalInputUniverses.unrenamed_signatures_incompatible} & PQ & proved\\
+D & Accept ordered independent position evidence & \name{NativeVectorAll.ResultView.OriginalInputUniverses.independent_conversion_accepted} & PCQ & proved\\
+D & Refuse the same code for swapped position witnesses & \name{NativeVectorAll.ResultView.OriginalInputUniverses.swapped_conversion_refused} & PCQ & proved\\
+D & Transport the joined signature through universe substitution & \name{NativeVectorAll.ResultView.OriginalInputUniverses.result_signature_level_formed} & PCQ & proved\\
+D & Transport the complete original-input program judgment & \name{NativeVectorAll.ResultView.OriginalInputUniverses.program_level_transport} & PCQ & proved\\
+D & Derive ordered Vector evidence readout from actual roots and case computations & \name{NativeVectorAll.ResultView.EvidenceElimination.fold_reads} & P & proved\\
+D & Read all constructor positions in the original-input higher-result profile & \name{NativeVectorAll.ResultView.OriginalInputUniverses.Computation.project_reads} & PCQ & proved\\
+D & Compute the actual original-input program on independent assembled witnesses & \name{NativeVectorAll.ResultView.OriginalInputUniverses.Computation.program_witnesses} & PCQ & proved\\
+D & Specialize the original-input result computation to the registered Vector bundle & \name{NativeVectorAll.ResultView.OriginalInputUniverses.Computation.registered_bundle_steps} & PCQ & proved\\
+D & Transport the complete result computation through universe substitution & \name{NativeVectorAll.ResultView.OriginalInputUniverses.Computation.program_level_witnesses} & PCQ & proved\\
+D & Separate constructor-prefix injection from global argument renaming in raw syntax & \name{NativeVectorAll.ResultView.OriginalInputUniverses.Computation.constructor_prefix_renaming_is_distinct} & PCQ & proved\\
+D & Form the checked closed result definition & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.formed} & PCQ & proved\\
+D & Type its declared source name & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.constant_typed} & PCQ & proved\\
+D & Preserve the displayed type when the checked result definition unfolds & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.typed_unfolding} & PCQ & proved\\
+D & Type the closed original-input application returning a Vector of types & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.application_typed} & PCQ & proved\\
+D & Independently type its returned Vector of types & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.output_typed} & PCQ & proved\\
+D & Check the finite conversion from the named application to its output & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.application_conversion} & PCQ & proved\\
+D & Refuse the same Vector-of-types certificate for swapped result witnesses & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.swapped_refused} & PCQ & proved\\
 \midrule
 A3 & Finite-stack realization of the HOL Light to MM0 translation & --- & --- & open\\
 A2 & Existing shared-lemma HOL translation equals the node-by-node translation & --- & --- & open\\

@@ -294,10 +294,10 @@ theorem changed_dynamics_refuses_prediction :
   intro same
   have leftLaw :
       coarsen (Prob.bind (dirac (true, false)) (stayFine ())) redundantView = dirac true := by
-    rw [Mettapedia.ProbabilityTheory.BayesianInference.ModelRefinement.bind_dirac, stayFine,
+    rw [Prob.bind_dirac, stayFine,
       coarsen_dirac, redundantView]
   have rightLaw : Prob.bind (dirac true) (redundantCoarse ()) = dirac false := by
-    rw [Mettapedia.ProbabilityTheory.BayesianInference.ModelRefinement.bind_dirac, redundantCoarse,
+    rw [Prob.bind_dirac, redundantCoarse,
       Bool.not_true]
   rw [leftLaw, rightLaw] at same
   have mass := congrArg (fun law : Prob Bool => law.1 true) same

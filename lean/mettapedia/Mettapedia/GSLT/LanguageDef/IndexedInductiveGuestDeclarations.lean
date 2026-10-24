@@ -1,5 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveGuestTypes
+import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestTypes
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TelescopeAbstraction
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationCheckedTelescopePrograms
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.DeclarationAdmissionReplay
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveElaboration
 
@@ -90,12 +92,9 @@ theorem entries_opaque (indices : IndexSyntax I Head) (parameters : Parameters I
   simp only [entries, List.mem_append, List.mem_cons, List.mem_map, List.not_mem_nil, or_false] at member
   rcases member with (rfl | ⟨constructor, _, rfl⟩) | rfl <;> rfl
 
-section Checking
+section Production
 
 variable (base : Rules Head) [DecidableEq Head]
-    [DecidableRel base.headTyping] [DecidablePred base.isUniverse]
-    [∀ u v w, Decidable (base.join u v w)] [DecidableRel base.cumulative]
-    [DecidableRel base.headEq]
 variable (decoder : StructuralConversionCode.RootDecoder base.computation)
 
 abbrev Choices := FormationSensitiveElaboration.Choices Head
@@ -122,6 +121,61 @@ def produce (choices : Choices base decoder) (fuel : Nat) :
       let rest ← produce choices fuel (prior ++ [item]) later
       pure (⟨level, formation.evidence, value⟩ :: rest)
 
+/-- Production over consecutive source blocks retains the same certificates. -/
+theorem produce_append (choices : Choices base decoder) (fuel : Nat)
+    (prior first second : List (DeclName × Entry Head)) :
+    produce base decoder choices fuel prior (first ++ second) = (do
+      let firstCertificates ← produce base decoder choices fuel prior first
+      let secondCertificates ← produce base decoder choices fuel (prior ++ first) second
+      pure (firstCertificates ++ secondCertificates)) := by
+  induction first generalizing prior with
+  | nil => simp [produce]
+  | cons item later ih =>
+      simp only [List.cons_append, produce, ih, List.append_assoc]
+      cases formation : FormationSensitiveElaboration.synth
+        (extendRules base (Signature.ofList prior)) choices fuel .nil item.2.type with
+      | none => simp
+      | some result =>
+          cases resultType : result.type <;> simp [resultType]
+          cases item.2.value? <;> simp [Option.bind_assoc]
+theorem produce_length (choices : Choices base decoder) (fuel : Nat)
+    (prior source : List (DeclName × Entry Head))
+    (certificates : List (DeclarationAdmissionReplay.Certificate Head decoder.Code))
+    (produced : produce base decoder choices fuel prior source = some certificates) :
+    certificates.length = source.length := by
+  induction source generalizing prior certificates with
+  | nil =>
+      have same : ([] : List (DeclarationAdmissionReplay.Certificate Head decoder.Code)) = certificates := by
+        simpa [produce] using produced
+      cases same
+      rfl
+  | cons item later ih =>
+      cases formation : FormationSensitiveElaboration.synth
+        (extendRules base (Signature.ofList prior)) choices fuel .nil item.2.type with
+      | none => simp [produce, formation] at produced
+      | some result =>
+          cases resultType : result.type <;> simp [produce, formation, resultType] at produced
+          cases value : item.2.value? with
+          | none =>
+              simp only [value, Option.bind_eq_some_iff, Option.some.injEq] at produced
+              obtain ⟨rest, restProduced, rfl⟩ := produced
+              exact congrArg Nat.succ (ih _ _ restProduced)
+          | some term =>
+              simp only [value, Option.bind_eq_some_iff, Option.some.injEq] at produced
+              obtain ⟨evidence, _, rest, restProduced, rfl⟩ := produced
+              exact congrArg Nat.succ (ih _ _ restProduced)
+
+
+end Production
+
+section Checking
+
+variable (base : Rules Head) [DecidableEq Head]
+    [DecidableRel base.headTyping] [DecidablePred base.isUniverse]
+    [∀ u v w, Decidable (base.join u v w)] [DecidableRel base.cumulative]
+    [DecidableRel base.headEq]
+variable (decoder : StructuralConversionCode.RootDecoder base.computation)
+
 def elaborate (choices : Choices base decoder) (fuel : Nat)
     (prior source : List (DeclName × Entry Head)) :
     Option (List (DeclarationAdmissionReplay.Certificate Head decoder.Code)) := do
@@ -129,6 +183,48 @@ def elaborate (choices : Choices base decoder) (fuel : Nat)
   if DeclarationAdmissionReplay.check base decoder prior source certificates then
     some certificates
   else none
+
+/-- Prefix production and independent replay compose on the exact flat
+certificate list. The algorithms and their budgets are unchanged. -/
+theorem elaborate_append (choices : Choices base decoder) (fuel : Nat)
+    (prior first second : List (DeclName × Entry Head)) :
+    elaborate base decoder choices fuel prior (first ++ second) = (do
+      let firstCertificates ← elaborate base decoder choices fuel prior first
+      let secondCertificates ← elaborate base decoder choices fuel (prior ++ first) second
+      pure (firstCertificates ++ secondCertificates)) := by
+  rw [elaborate, produce_append]
+  cases firstProduced : produce base decoder choices fuel prior first with
+  | none => simp [elaborate, firstProduced]
+  | some firstCertificates =>
+      cases secondProduced : produce base decoder choices fuel (prior ++ first) second with
+      | none => simp [elaborate, firstProduced, secondProduced]
+      | some secondCertificates =>
+          have splitCheck := DeclarationAdmissionReplay.check_append base decoder prior first second
+            firstCertificates secondCertificates
+            (produce_length base decoder choices fuel prior first firstCertificates firstProduced).symm
+          cases firstChecked : DeclarationAdmissionReplay.check base decoder prior first firstCertificates
+          <;> cases secondChecked : DeclarationAdmissionReplay.check base decoder
+            (prior ++ first) second secondCertificates
+          <;> simp [elaborate, firstProduced, secondProduced, splitCheck, firstChecked, secondChecked]
+
+theorem elaborate_isSome_append (choices : Choices base decoder) (fuel : Nat)
+    (prior first second : List (DeclName × Entry Head)) :
+    (elaborate base decoder choices fuel prior (first ++ second)).isSome =
+      ((elaborate base decoder choices fuel prior first).isSome &&
+        (elaborate base decoder choices fuel (prior ++ first) second).isSome) := by
+  rw [elaborate_append]
+  cases elaborate base decoder choices fuel prior first <;>
+    cases elaborate base decoder choices fuel (prior ++ first) second <;> rfl
+
+/-- Assemble acceptance from one checked declaration and its checked suffix. -/
+theorem elaborate_cons_of (choices : Choices base decoder) (fuel : Nat)
+    {prior : List (DeclName × Entry Head)} {item : DeclName × Entry Head}
+    {later : List (DeclName × Entry Head)}
+    (firstAccepted : (elaborate base decoder choices fuel prior [item]).isSome = true)
+    (restAccepted : (elaborate base decoder choices fuel (prior ++ [item]) later).isSome = true) :
+    (elaborate base decoder choices fuel prior (item :: later)).isSome = true := by
+  have same := elaborate_isSome_append base decoder choices fuel prior [item] later
+  simpa only [List.singleton_append, firstAccepted, restAccepted, Bool.true_and] using same
 
 theorem elaborate_checked (choices : Choices base decoder) (fuel : Nat)
     (prior source : List (DeclName × Entry Head))
@@ -237,3 +333,296 @@ theorem opaque_formed (base : Rules Head) (source : List (DeclName × Entry Head
 #print axioms opaque_formed
 
 end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Declarations
+
+/-!
+## Registered-container declaration inventories
+
+The family, constructors and complete eliminator share one name assignment and
+one explicit parameter telescope. The code's uniform parameter count agrees
+with that telescope. Prefix admission reuses the producer and independent
+replay above; no new checker or computation rule is introduced.
+
+The input is an already resolved registered-container inventory. Textual block
+recognition and semantic qualification stay separate. Producer failure does
+not establish that a declaration is untypable. The ordinary indexed route is
+preserved exactly.
+-/
+
+namespace Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Declarations.Registered
+
+open Mettapedia.TypeTheory.IndexedPolynomial.Description
+open Mettapedia.TypeTheory.IndexedPositiveContainer
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+open Declaration TelescopeAbstraction
+open IndexedPositiveContainerGuestTypes (Indexing RegistrySyntax IndexPredicate
+  IndicesAdmitted indices_unrestricted constructorType_formedOn)
+universe u
+variable {I : Interface.{u}} {registry : Registry I} {Head : Type} {n : Nat}
+
+structure Parameters (I : Interface.{u}) (Head : Type) (indexing : Indexing I Head) (n : Nat) where
+  context : Ctx Head n
+  dataType : I.SortCode → Tm Head n
+  indexDomain : indexing.Domain n
+  familyUniverse : Head
+  motiveUniverse : Head
+
+def Parameters.types {indexing : Indexing I Head}
+    (parameters : Parameters I Head indexing n) (names : Names) :
+    IndexedPositiveContainerGuestTypes.TypeSyntax I Head n where
+  dataType := parameters.dataType
+  family := applyClosed parameters.context (fun index => .var index) (.const names.family)
+  constructor := fun name =>
+    applyClosed parameters.context (fun index => .var index) (.const (names.constructor name))
+
+def familyEntry (indexing : Indexing I Head) (parameters : Parameters I Head indexing n) : Entry Head :=
+  ⟨closeType parameters.context (match indexing with
+    | .indexed _ => .pi parameters.indexDomain (.head parameters.familyUniverse)
+    | .unindexed _ => .head parameters.familyUniverse), none⟩
+
+def constructorEntry (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructor : String × Code I registry n []) : Entry Head :=
+  ⟨closeType parameters.context
+    (IndexedPositiveContainerGuestTypes.constructorType indexing containers constructor.2
+      (parameters.types names) PUnit.unit), none⟩
+
+def eliminatorEntry (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n [])) : Entry Head :=
+  ⟨closeType parameters.context
+    (IndexedPositiveContainerGuestTypes.eliminatorType indexing containers constructors
+      (parameters.types names) parameters.indexDomain parameters.motiveUniverse), none⟩
+
+def entries (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n [])) : List (DeclName × Entry Head) :=
+  (names.family, familyEntry indexing parameters) ::
+    (constructors.map fun constructor =>
+      (names.constructor constructor.1, constructorEntry indexing containers parameters names constructor)) ++
+    [(names.eliminator, eliminatorEntry indexing containers parameters names constructors)]
+
+theorem entries_length (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n [])) :
+    (entries indexing containers parameters names constructors).length = constructors.length + 2 := by
+  simp [entries]
+
+theorem entries_names (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n [])) :
+    (entries indexing containers parameters names constructors).map Prod.fst =
+      names.family :: constructors.map (fun constructor => names.constructor constructor.1) ++ [names.eliminator] := by
+  simp [entries, List.map_map, Function.comp_def]
+
+theorem entries_opaque (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n [])) (item : DeclName × Entry Head)
+    (member : item ∈ entries indexing containers parameters names constructors) : item.2.value? = none := by
+  simp only [entries, List.mem_append, List.mem_cons, List.mem_map, List.not_mem_nil, or_false] at member
+  rcases member with (rfl | ⟨constructor, _, rfl⟩) | rfl <;> rfl
+
+def Parameters.ofOrdinary (indices : IndexSyntax I Head)
+    (parameters : Declarations.Parameters I Head n) : Parameters I Head (.indexed indices) n where
+  context := parameters.context
+  dataType := parameters.dataType
+  indexDomain := parameters.indexType
+  familyUniverse := parameters.familyUniverse
+  motiveUniverse := parameters.motiveUniverse
+
+theorem familyEntry_ordinary (indices : IndexSyntax I Head)
+    (parameters : Declarations.Parameters I Head n) :
+    familyEntry (.indexed indices) (Parameters.ofOrdinary indices parameters) =
+      Declarations.familyEntry parameters := rfl
+
+theorem constructorEntry_ordinary (indices : IndexSyntax I Head)
+    (containers : RegistrySyntax I registry Head) (parameters : Declarations.Parameters I Head n)
+    (names : Names) (constructor : NamedConstructor I []) :
+    constructorEntry (.indexed indices) containers (Parameters.ofOrdinary indices parameters) names
+        (constructor.name, IndexedPositiveContainerGuestTypes.ordinaryCode (parameters := n) constructor.body) =
+      Declarations.constructorEntry indices parameters names constructor := by
+  exact congrArg (fun term : Tm Head n => (Entry.mk (closeType parameters.context term) none))
+    (IndexedPositiveContainerGuestTypes.constructorType_ordinary indices containers
+      constructor.body (parameters.types names) PUnit.unit)
+
+theorem eliminatorEntry_ordinary (indices : IndexSyntax I Head)
+    (containers : RegistrySyntax I registry Head) (parameters : Declarations.Parameters I Head n)
+    (names : Names) (admitted : IndexedInductive.Admitted I []) :
+    eliminatorEntry (.indexed indices) containers (Parameters.ofOrdinary indices parameters) names
+        (IndexedPositiveContainerGuestTypes.ordinaryInventory (parameters := n) admitted.constructors) =
+      Declarations.eliminatorEntry indices parameters names admitted := by
+  exact congrArg (fun term : Tm Head n => (Entry.mk (closeType parameters.context term) none))
+    (IndexedPositiveContainerGuestTypes.eliminatorType_ordinary indices containers
+      admitted (parameters.types names))
+
+theorem entries_ordinary (indices : IndexSyntax I Head)
+    (containers : RegistrySyntax I registry Head) (parameters : Declarations.Parameters I Head n)
+    (names : Names) (admitted : IndexedInductive.Admitted I []) :
+    entries (.indexed indices) containers (Parameters.ofOrdinary indices parameters) names
+        (IndexedPositiveContainerGuestTypes.ordinaryInventory (parameters := n) admitted.constructors) =
+      Declarations.entries indices parameters names admitted := by
+  rw [entries, Declarations.entries, familyEntry_ordinary, eliminatorEntry_ordinary]
+  simp only [IndexedPositiveContainerGuestTypes.ordinaryInventory,
+    List.map_map, Function.comp_def, constructorEntry_ordinary]
+
+section Admission
+variable (base : Rules Head) [DecidableEq Head]
+    [DecidableRel base.headTyping] [DecidablePred base.isUniverse]
+    [∀ u v w, Decidable (base.join u v w)] [DecidableRel base.cumulative]
+    [DecidableRel base.headEq]
+variable (decoder : StructuralConversionCode.RootDecoder base.computation)
+
+def admitInventory (choices : Choices base decoder) (fuel : Nat)
+    (prior : List (DeclName × Entry Head))
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n [])) :=
+  elaborate base decoder choices fuel prior (entries indexing containers parameters names constructors)
+
+theorem admitInventory_sound (choices : Choices base decoder) (fuel : Nat)
+    (prior : List (DeclName × Entry Head))
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n []))
+    (certificates : List (DeclarationAdmissionReplay.Certificate Head decoder.Code))
+    (accepted : admitInventory base decoder choices fuel prior indexing containers parameters names constructors = some certificates) :
+    DeclarationAdmissionReplay.Admitted base prior (entries indexing containers parameters names constructors) :=
+  elaborate_sound base decoder choices fuel prior _ certificates accepted
+
+/-- An admitted prior inventory and accepted generated suffix form one opaque
+library. Formation of dependencies is not inferred from suffix acceptance. -/
+theorem admitInventory_formed (choices : Choices base decoder) (fuel : Nat)
+    (prior : List (DeclName × Entry Head))
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n []))
+    (certificates : List (DeclarationAdmissionReplay.Certificate Head decoder.Code))
+    (priorAdmitted : DeclarationAdmissionReplay.Admitted base [] prior)
+    (opaquePrior : ∀ item ∈ prior, item.2.value? = none)
+    (accepted : admitInventory base decoder choices fuel prior indexing containers parameters names constructors = some certificates) :
+    (Signature.ofList (prior ++ entries indexing containers parameters names constructors)).Formed base := by
+  apply Declarations.opaque_formed base _
+    (priorAdmitted.append base (admitInventory_sound base decoder choices fuel prior
+      indexing containers parameters names constructors certificates accepted))
+  intro item member
+  rcases List.mem_append.mp member with old | generated
+  · exact opaquePrior item old
+  · exact entries_opaque indexing containers parameters names constructors item generated
+
+/-- The checker evidence also justifies source-name lookup without a separate
+name-distinctness assumption on the generated inventory. -/
+theorem admitInventory_names (choices : Choices base decoder) (fuel : Nat)
+    (prior : List (DeclName × Entry Head))
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n []))
+    (certificates : List (DeclarationAdmissionReplay.Certificate Head decoder.Code))
+    (priorAdmitted : DeclarationAdmissionReplay.Admitted base [] prior)
+    (accepted : admitInventory base decoder choices fuel prior indexing containers parameters names constructors = some certificates) :
+    (prior.map Prod.fst ++ (names.family ::
+      constructors.map (fun constructor => names.constructor constructor.1) ++ [names.eliminator])).Nodup := by
+  have checked := priorAdmitted.append base (admitInventory_sound base decoder choices fuel prior
+    indexing containers parameters names constructors certificates accepted)
+  simpa only [List.nil_append, List.map_append, entries_names] using
+    checked.names_nodup base (by simp)
+
+/-- An eliminator cannot alias the family, at any production budget. This
+refusal follows from admission freshness, independently of producer behavior. -/
+theorem aliased_endpoints_refused (choices : Choices base decoder) (fuel : Nat)
+    (prior : List (DeclName × Entry Head))
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructors : List (String × Code I registry n []))
+    (priorAdmitted : DeclarationAdmissionReplay.Admitted base [] prior)
+    (sameName : names.eliminator = names.family) :
+    (admitInventory base decoder choices fuel prior indexing containers parameters names constructors).isNone = true := by
+  cases result : admitInventory base decoder choices fuel prior indexing containers parameters names constructors with
+  | none => rfl
+  | some certificates =>
+      have distinct := (admitInventory_names base decoder choices fuel prior indexing containers
+        parameters names constructors certificates priorAdmitted result).of_append_right
+      have absent := (List.nodup_cons.mp distinct).1
+      exact False.elim (absent (List.mem_append_right _ (by simp [sameName])))
+
+end Admission
+/-! ## Constructor admission from primitive formation contracts -/
+
+open IndexedPositiveContainerGuestTypes (ConstructorPrimitives constructorType_formed TypeSyntax)
+
+theorem constructorEntry_formedOn (R : Rules Head)
+    (joins : ∀ {u v}, R.isUniverse u → R.isUniverse v →
+      ∃ w, R.isUniverse w ∧ R.join u v w)
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    {admittedIndices : IndexPredicate I}
+    (constructor : String × Code I registry n [])
+    (constructorAdmitted : IndicesAdmitted admittedIndices constructor.2)
+    (context : FormationSensitive.ContextFormation R parameters.context)
+    (primitives : ConstructorPrimitives R parameters.context (parameters.types names)
+      indexing containers parameters.indexDomain parameters.familyUniverse admittedIndices) :
+    ∃ level, R.isUniverse level ∧ FormationSensitive.Typing R .nil
+      (constructorEntry indexing containers parameters names constructor).type (.head level) := by
+  have morphism : FormationSensitive.CtxMor R parameters.context parameters.context ids := by
+    intro index
+    simpa only [subst_ids, ids] using
+      FormationSensitive.Typing.var (R := R) (Γ := parameters.context) index
+  have openType := constructorType_formedOn primitives constructor.2 constructorAdmitted ids morphism PUnit.unit (by trivial)
+  simp only [TypeSyntax.map, subst_ids] at openType
+  exact FormationCheckedTelescopePrograms.close_formed joins context openType primitives.isUniverse
+
+theorem constructorEntry_formed (R : Rules Head)
+    (joins : ∀ {u v}, R.isUniverse u → R.isUniverse v →
+      ∃ w, R.isUniverse w ∧ R.join u v w)
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructor : String × Code I registry n [])
+    (context : FormationSensitive.ContextFormation R parameters.context)
+    (primitives : ConstructorPrimitives R parameters.context (parameters.types names)
+      indexing containers parameters.indexDomain parameters.familyUniverse) :
+    ∃ level, R.isUniverse level ∧ FormationSensitive.Typing R .nil
+      (constructorEntry indexing containers parameters names constructor).type (.head level) :=
+  constructorEntry_formedOn R joins indexing containers parameters names constructor
+    (indices_unrestricted constructor.2) context primitives
+
+/-- The generated opaque constructor is admitted at the actual prior prefix. -/
+theorem constructorEntry_admittedOn (base : Rules Head) (prior : List (DeclName × Entry Head))
+    (joins : ∀ {u v}, base.isUniverse u → base.isUniverse v →
+      ∃ w, base.isUniverse w ∧ base.join u v w)
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    {admittedIndices : IndexPredicate I}
+    (constructor : String × Code I registry n [])
+    (constructorAdmitted : IndicesAdmitted admittedIndices constructor.2)
+    (context : FormationSensitive.ContextFormation (extendRules base (Signature.ofList prior)) parameters.context)
+    (primitives : ConstructorPrimitives (extendRules base (Signature.ofList prior)) parameters.context
+      (parameters.types names) indexing containers parameters.indexDomain parameters.familyUniverse admittedIndices)
+    (fresh : (extendRules base (Signature.ofList prior)).constantType (names.constructor constructor.1) = none) :
+    DeclarationAdmissionReplay.Admitted base prior
+      [(names.constructor constructor.1, constructorEntry indexing containers parameters names constructor)] := by
+  obtain ⟨level, universeWitness, formed⟩ :=
+    constructorEntry_formedOn (extendRules base (Signature.ofList prior)) joins indexing containers
+      parameters names constructor constructorAdmitted context primitives
+  exact .cons fresh universeWitness formed (fun value impossible => by cases impossible) (.nil _)
+
+theorem constructorEntry_admitted (base : Rules Head) (prior : List (DeclName × Entry Head))
+    (joins : ∀ {u v}, base.isUniverse u → base.isUniverse v →
+      ∃ w, base.isUniverse w ∧ base.join u v w)
+    (indexing : Indexing I Head) (containers : RegistrySyntax I registry Head)
+    (parameters : Parameters I Head indexing n) (names : Names)
+    (constructor : String × Code I registry n [])
+    (context : FormationSensitive.ContextFormation (extendRules base (Signature.ofList prior)) parameters.context)
+    (primitives : ConstructorPrimitives (extendRules base (Signature.ofList prior)) parameters.context
+      (parameters.types names) indexing containers parameters.indexDomain parameters.familyUniverse)
+    (fresh : (extendRules base (Signature.ofList prior)).constantType (names.constructor constructor.1) = none) :
+    DeclarationAdmissionReplay.Admitted base prior
+      [(names.constructor constructor.1, constructorEntry indexing containers parameters names constructor)] :=
+  constructorEntry_admittedOn base prior joins indexing containers parameters names constructor
+    (indices_unrestricted constructor.2) context primitives fresh
+
+
+#print axioms constructorEntry_formedOn
+#print axioms constructorEntry_admittedOn
+#print axioms constructorEntry_formed
+#print axioms constructorEntry_admitted
+
+end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Declarations.Registered

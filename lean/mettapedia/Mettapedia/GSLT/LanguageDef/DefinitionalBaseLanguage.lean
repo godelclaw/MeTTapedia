@@ -261,6 +261,7 @@ theorem primitive_of_usesBareCollection {language : LanguageDef} {rows : List Ro
   have same : rule = declaration := typedAt.unique member isHead
   subst same
   obtain ⟨parameterName, collectionType, elementType, shape⟩ := bare
+  have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
   have simple := typedAt.simple
   rw [shape] at simple
   cases simple with

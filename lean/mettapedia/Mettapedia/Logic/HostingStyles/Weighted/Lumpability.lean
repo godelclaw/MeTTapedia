@@ -75,6 +75,44 @@ theorem closedSum_coarsen {S C : Type*} [Fintype S] [Fintype C] [DecidableEq C]
   rw [closedSum_probRow, closedSum_probRow, indicator_expectation, indicator_expectation,
     coarsen_expectation]
 
+@[simp] theorem closedSum_probRow_singleton {C : Type*} [Fintype C]
+    (prior : Prob C) (outcome : C) :
+    closedSum (probRow prior) (fun c => c = outcome) = prior.1 outcome := by
+  rw [closedSum_probRow, Finset.sum_eq_single outcome]
+  · exact if_pos rfl
+  · intro other _ different
+    exact if_neg different
+  · intro absent
+    exact (absent (Finset.mem_univ outcome)).elim
+
+/-- Equality of observed distributions is exactly equality of the mass of
+every observable predicate. Singleton predicates establish the converse. -/
+theorem coarsen_eq_iff_closedSum {S C : Type*} [Fintype S] [Fintype C] [DecidableEq C]
+    (prior : Prob S) (view : S → C) (target : Prob C) :
+    coarsen prior view = target ↔ ∀ held : C → Prop,
+      closedSum (probRow prior) (fun s => held (view s)) = closedSum (probRow target) held := by
+  constructor
+  · intro same held
+    rw [← closedSum_coarsen, same]
+  · intro masses
+    apply Subtype.ext
+    funext outcome
+    have same := masses (fun c => c = outcome)
+    rw [← closedSum_coarsen prior view (fun c => c = outcome)] at same
+    simpa only [closedSum_probRow_singleton] using same
+
+/-- A weighted observer certifies prediction for every prior precisely when
+it preserves every observed predicate mass at every source state. -/
+theorem prediction_iff_row_closedSums {S C : Type*} [Fintype S] [Fintype C] [DecidableEq C]
+    (view : S → C) (fine : S → Prob S) (coarse : C → Prob C) :
+    (∀ prior : Prob S,
+      coarsen (bind prior fine) view = bind (coarsen prior view) coarse) ↔
+      ∀ s (held : C → Prop),
+        closedSum (probRow (fine s)) (fun t => held (view t)) =
+          closedSum (probRow (coarse (view s))) held := by
+  rw [coarsen_bind_iff_rows]
+  exact forall_congr' fun s => coarsen_eq_iff_closedSum (fine s) view (coarse (view s))
+
 /-! ## The quotient map along a section -/
 
 noncomputable def lumpMap {S C : Type u} {A : Type v} [Fintype S] [Fintype C] [DecidableEq S]

@@ -1,6 +1,6 @@
 import Mettapedia.PLN.Bridges.GSLT.EvidenceResolutionAlgebra
 import Mettapedia.PLN.Bridges.GSLT.RevisionPinnedEvidenceExecution
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeWeightedControls
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.NativeWeightedControls
 
 /-!
 # Exact evidence grades on native MeTTa continuations

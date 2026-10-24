@@ -102,7 +102,7 @@ theorem familyType_hasType :
       (.sort (.succ Presentation.Tower.zero))
     (.sorts Presentation.Tower.zero (.succ Presentation.Tower.zero))
 
-def contextBWellFormed :
+theorem contextBWellFormed :
     ContextWellFormed Presentation.Tower.rules contextB :=
   .snoc .nil familyType_hasType (.sort familyTypeLevel)
 
@@ -124,11 +124,11 @@ theorem sectionType_hasType :
   · exact .sort Presentation.Tower.zero
   · exact .sorts Presentation.Tower.zero Presentation.Tower.zero
 
-def contextBGWellFormed :
+theorem contextBGWellFormed :
     ContextWellFormed Presentation.Tower.rules contextBG :=
   .snoc contextBWellFormed sectionType_hasType (.sort sectionTypeLevel)
 
-def contextWellFormed :
+theorem contextWellFormed :
     ContextWellFormed Presentation.Tower.rules context := by
   apply ContextWellFormed.snoc
   · exact contextBGWellFormed
@@ -322,6 +322,8 @@ namespace ExtensionalFaces
 
 universe u v
 
+-- The base and dependent fibres have independent universe levels.
+set_option linter.checkUnivs false in
 /-- An independent extensional interpretation of the selected telescope.
 The family may genuinely vary with its base argument. -/
 structure Model where
@@ -366,7 +368,7 @@ theorem sectionGraph_eq_iff (model : Model.{u, v})
     exact member
   · intro pointwise
     ext point
-    simp only [sectionGraph, Set.mem_setOf_eq]
+    simp only [sectionGraph, Set.mem_ofPred_eq]
     constructor
     · intro equalLeft
       exact equalLeft.trans (pointwise point.1)
@@ -473,7 +475,7 @@ structure IntrinsicScope (candidate : Candidate) : Prop where
   source_typed : Presentation.Tower.HasType context source resultType
   target_typed : Presentation.Tower.HasType context target resultType
 
-def canonicalScope : IntrinsicScope canonicalCandidate where
+theorem canonicalScope : IntrinsicScope canonicalCandidate where
   term_exact := rfl
   type_exact := rfl
   formed := contextWellFormed

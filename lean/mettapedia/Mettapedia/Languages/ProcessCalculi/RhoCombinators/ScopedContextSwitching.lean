@@ -1,5 +1,6 @@
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.RuleSkeleton
 import Mettapedia.GSLT.Dynamics.ContextIndexedSwitching
+import Mettapedia.GSLT.Core.NonFactorization
 
 /-!
 # Scoped multi-hole contexts across execution representations
@@ -24,6 +25,7 @@ namespace Mettapedia.Languages.ProcessCalculi.RhoCombinators.ScopedContextSwitch
 open Mettapedia.GSLT.Dynamics
 open RegionHolePlan RepresentationSwitching OrderedOccurrenceBodyAlgebra
 open Mettapedia.GraphTheory.Representation
+open Mettapedia.GSLT.Core.NonFactorization
 
 /-! ## An independently executed compilation -/
 
@@ -149,24 +151,109 @@ theorem compile_renamed_exact (skeleton : Skeleton) (rename : Comb → Comb)
     execute fresh (compile (renameReads rename skeleton)) [] =
       some [skeleton.fill original] := by
   rw [execute_compile, fill_renameReads]
-  congr 2
-  induction skeleton with
-  | read channel => exact agrees channel (by simp [Skeleton.readChannels])
-  | const value => rfl
-  | nodePar left right ihLeft ihRight | nodeMsg left right ihLeft ihRight =>
-      simp only [Skeleton.fill]
-      congr 1
-      · apply ihLeft
-        intro channel member
-        exact agrees channel (by simp [Skeleton.readChannels, member])
-      · apply ihRight
-        intro channel member
-        exact agrees channel (by simp [Skeleton.readChannels, member])
+  exact congrArg (fun value => some [value]) ((skeleton.fill_eq_iff _ _).2 agrees)
+
+/-- A renamed compiled context can reproduce an environment exactly iff that
+environment factors through the renamed coordinates it actually reads.
+Names outside this support need no recovery law. -/
+theorem compile_renamed_iff_factors (skeleton : Skeleton) (rename original : Comb → Comb) :
+    (∃ fresh : Comb → Comb,
+      execute fresh (compile (renameReads rename skeleton)) [] =
+        some [skeleton.fill original]) ↔
+      Factors (fun channel : {channel // channel ∈ skeleton.readChannels} => rename channel.val)
+        (fun channel => original channel.val) := by
+  simp only [execute_compile, fill_renameReads, Option.some.injEq, List.cons.injEq,
+    and_true, skeleton.fill_eq_iff]
+  constructor
+  · rintro ⟨fresh, agrees⟩
+    exact ⟨fresh, fun channel => agrees channel.val channel.property⟩
+  · rintro ⟨fresh, agrees⟩
+    exact ⟨fresh, fun channel present => agrees ⟨channel, present⟩⟩
+
+/-- No adapter after a coordinate collision can restore two distinguishable
+read values. This applies to computed addresses and foreign constructor names
+at the same observer boundary. -/
+theorem compile_renamed_impossible_of_collision (skeleton : Skeleton)
+    (rename original : Comb → Comb) {left right : Comb}
+    (leftRead : left ∈ skeleton.readChannels) (rightRead : right ∈ skeleton.readChannels)
+    (collapsed : rename left = rename right) (distinguished : original left ≠ original right) :
+    ¬ ∃ fresh : Comb → Comb,
+      execute fresh (compile (renameReads rename skeleton)) [] =
+        some [skeleton.fill original] := by
+  let collision : NonTrivialFiber
+      (fun channel : {channel // channel ∈ skeleton.readChannels} => rename channel.val)
+      (fun channel => original channel.val) :=
+    ⟨⟨left, leftRead⟩, ⟨right, rightRead⟩, collapsed, distinguished⟩
+  exact fun completion => collision.not_factors
+    ((compile_renamed_iff_factors skeleton rename original).1 completion)
+
+/-- The independently executed nested quotation cannot be recovered after
+its two distinct channels have been collapsed to one. -/
+theorem collapsed_nested_reads_refused :
+    ¬ ∃ fresh : Comb → Comb,
+      execute fresh (compile (renameReads (fun _ => leftChannel) nestedContext)) [] =
+        some [nestedContext.fill firstEnvironment] := by
+  exact compile_renamed_impossible_of_collision nestedContext _ firstEnvironment
+    (left := leftChannel) (right := rightChannel)
+    (by simp [nestedContext, Skeleton.readChannels])
+    (by simp [nestedContext, Skeleton.readChannels]) rfl (by decide)
+
+/-! ## One prepared body, separate activation environments -/
+
+/-- Recycling one handle does not identify successive activations. -/
+def activation (generation : Nat) : ContextIndexedSwitching.ActivationKey :=
+  ⟨7, generation⟩
+
+/-- Both jobs use the same immutable nested body; only their environments
+and physical output occurrences differ. -/
+def pairedActivations : ContextIndexedSwitching.TreeState Comb Comb where
+  store key := if key = activation 0 then firstEnvironment else secondEnvironment
+  pending := [⟨activation 0, 0, 10⟩, ⟨activation 1, 0, 11⟩]
+  published := []
+
+/-- The independent stack executor reuses one prepared body while retaining
+the two activation identities, correlated reads and ordered publications. -/
+theorem shared_code_separate_activations :
+    (ContextIndexedSwitching.repeats
+      (ContextIndexedSwitching.indexedStep (kernel (fun _ => nestedContext))) 2
+      (ContextIndexedSwitching.encode pairedActivations)).published =
+      [⟨activation 0, 10, nestedContext.fill firstEnvironment⟩,
+        ⟨activation 1, 11, nestedContext.fill secondEnvironment⟩] ∧
+      nestedContext.fill firstEnvironment ≠ nestedContext.fill secondEnvironment := by
+  have transported := congrArg ContextIndexedSwitching.TreeState.published
+    (ContextIndexedSwitching.decode_repeats (kernel (fun _ => nestedContext)) 2
+      (ContextIndexedSwitching.encode pairedActivations))
+  constructor
+  · simpa [ContextIndexedSwitching.decode, ContextIndexedSwitching.repeats,
+      ContextIndexedSwitching.treeStep, ContextIndexedSwitching.encode,
+      pairedActivations, kernel, activation] using transported
+  · decide
+
+/-- An update to another generation of this same handle cannot affect either
+pending job. The complete residual and publication state commutes. -/
+theorem other_generation_update_commutes (replacement : Comb → Comb) (count : Nat) :
+    ContextIndexedSwitching.repeats
+        (ContextIndexedSwitching.treeStep (kernel (fun _ => nestedContext))) count
+        (ContextIndexedSwitching.treeBoundary
+          (.environment (fun store => store.replace (activation 2) replacement)) pairedActivations) =
+      ContextIndexedSwitching.treeBoundary
+        (.environment (fun store => store.replace (activation 2) replacement))
+        (ContextIndexedSwitching.repeats
+          (ContextIndexedSwitching.treeStep (kernel (fun _ => nestedContext))) count pairedActivations) := by
+  apply ContextIndexedSwitching.repeats_replace_other
+  intro job present
+  simp only [pairedActivations, List.mem_cons, List.not_mem_nil, or_false] at present
+  rcases present with rfl | rfl <;> decide
 
 #print axioms execute_compile
 #print axioms compile_length
 #print axioms fill_renameReads
 #print axioms compile_renamed_exact
 #print axioms mixed_instances_change_quotation
+#print axioms compile_renamed_iff_factors
+#print axioms compile_renamed_impossible_of_collision
+#print axioms collapsed_nested_reads_refused
+#print axioms shared_code_separate_activations
+#print axioms other_generation_update_commutes
 
 end Mettapedia.Languages.ProcessCalculi.RhoCombinators.ScopedContextSwitching

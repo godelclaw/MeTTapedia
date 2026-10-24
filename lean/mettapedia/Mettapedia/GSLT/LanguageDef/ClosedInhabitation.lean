@@ -268,7 +268,8 @@ mutual
         simp only [typeGoal, Option.some.injEq] at shape
         subst shape
         refine .clause (List.mem_map.mpr ⟨rule, member, rfl⟩) fun premise premiseMember => ?_
-        simp [ruleClause, parameters, paramGoal, typeGoal] at premiseMember
+        have declaredParameters := ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
+        simp [ruleClause, declaredParameters, paramGoal, typeGoal] at premiseMember
 
   theorem derives_of_arguments {bound : List TypeExpr} {arguments : List Pattern}
       {params : List TermParam}

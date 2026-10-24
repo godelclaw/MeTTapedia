@@ -5,6 +5,45 @@ import Mettapedia.Logic.IntuitionisticDecision
 import Mettapedia.Logic.EqualityRecipe
 import Mettapedia.GSLT.Logic.PropositionalLRAT
 import Mettapedia.Languages.Lean.HintedHeadConversion
+import Mettapedia.Languages.Lean.LeanCheckerAuthorityFlower
+import Mettapedia.Languages.Lean.LeanCheckerReleaseReceipt
+import Mettapedia.TypeTheory.PositiveInductiveScenarios
+import Mettapedia.TypeTheory.NbE.BidirectionalCheckerAndNIK
+import Mettapedia.TypeTheory.HypercubeSortRenaming
+import Mettapedia.TypeTheory.ReifiedIndexElaboration
+import Mettapedia.GSLT.LanguageDef.PositiveInductiveBlockBridge
+import Mettapedia.GSLT.LanguageDef.ModuleSource.PositiveInductiveLoweringControls
+import Mettapedia.GSLT.LanguageDef.ModuleSource.IndexedPositiveVectorLowering
+import Mettapedia.GSLT.LanguageDef.ModuleSource.MutualWorkflowActionLowering
+import Mettapedia.GSLT.LanguageDef.PositiveInductiveWorkflowActionGuest
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLFacts
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveBooleanHOL
+import Mettapedia.Languages.HOLLight.BooleanFacts
+import Mettapedia.GSLT.Dynamics.NaturalBackendHOLFacts
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedContainerTraversal
+import Mettapedia.Languages.MeTTa.Bridges.GSLT.FormationSensitiveBundleTraversal
+import Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeGuestControls
+import Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeElaboration
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeVectorAllControls
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeVectorAllUniverses
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeVectorAllUniverseMaps
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveIndexedContainerBundleRealization
+import Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeGuestControls
+import Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeElaboration
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeVectorAllResultsChecking
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeVectorAllResultUniversesChecking
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeVectorAllOriginalInputUniversesChecking
+import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerListResultChecking
+import Mettapedia.Languages.HOLLight.GuardedRetraction
+import Mettapedia.Languages.HOLLight.InferenceOnlyReplayControls
+import Mettapedia.Languages.HOLLight.TypeDefinitionEqualityControls
+import Mettapedia.Languages.HOLLight.PredicateFixedPoint
+import Mettapedia.Languages.HOLLight.PolynomialPredicate
+import Mettapedia.Logic.HOL.PredicateFixedPointControls
+import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls
+import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerUniverseControls
+import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerUniverseTreeControls
+import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestPlansControls
 import Mettapedia.Languages.MeTTa.EquationKernel.Execution
 import Mettapedia.Languages.MeTTa.EquationKernel.Controls
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.NativeExecution
@@ -18,6 +57,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.InductiveEl
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorProgramChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorComputationProfiles
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorCheckingProfiles
+import Mettapedia.Languages.MeTTa.Bridges.GSLT.NatVecCheckingProfileAtomWire
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorConversion
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedAppend
@@ -38,6 +78,7 @@ import Mettapedia.Languages.Megalodon.NaturalTheoryProfile
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendChecking
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLComparison
 import Mettapedia.Logic.HOL.ConversionRecipeControls
+import Mettapedia.Logic.HOL.GuardedQuantifierTransport
 
 /-! # Executable integration controls for native inference checking -/
 
@@ -186,14 +227,69 @@ def checks : List (String × Bool) :=
   Mettapedia.GSLT.LanguageDef.IndexedInductive.AppendSource.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.ComputationProfiles.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.CheckingProfiles.verdicts ++
+  Mettapedia.Languages.MeTTa.Bridges.GSLT.NatVecCheckingProfileAtomWire.Profiles.verdicts ++
   Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.ScopedSubstitutionInversion.Controls.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Computation.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.verdicts ++
   Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.InductiveElaborationControls.verdicts ++
   Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.IndexedFamilyCheckingControls.verdicts ++
   HOL.ConversionRecipes.Controls.verdicts ++
+    HOL.GuardedQuantifierTransport.verdicts ++
   Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLComparison.Controls.verdicts ++
   Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Tower.Checking.Controls.verdicts ++
+    Mettapedia.TypeTheory.HypercubeSortRenaming.Controls.verdicts ++
+    Mettapedia.TypeTheory.ReifiedIndexElaboration.Controls.verdicts ++
+    [("all DTTBench statements type under CoC",
+      Mettapedia.GSLT.LanguageDef.LFDTTBenchDemand.allStatementsTypableInCoc)] ++
+    Mettapedia.Languages.Lean.LeanCheckerAuthorityFlower.Service.Controls.verdicts ++
+    Mettapedia.Languages.Lean.LeanCheckerReleaseReceipt.Controls.verdicts ++
+    Mettapedia.TypeTheory.PositiveInductiveScenarios.Refusals.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveBlockBridge.Controls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.ModuleSource.PositiveInductiveLoweringControls.Search.verdicts ++
+    Mettapedia.GSLT.LanguageDef.ModuleSource.PositiveInductiveLoweringControls.MutualIndex.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedContainerWire.Controls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.ModuleSource.IndexedPositiveVectorLowering.Controls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.ModuleSource.MutualWorkflowActionLowering.Controls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveWorkflowActionGuest.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeGuest.endpointVerdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeElaboration.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeElaboration.Definitions.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeElaboration.Branch.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.Controls.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.TypeFormation.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.Universes.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.Universes.CumulativeElimination.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeGuest.endpointVerdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls.Lists.Formation.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls.Vectors.Formation.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls.Vectors.MethodFormation.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerUniverseControls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerUniverseTreeControls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestPlansControls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeElaboration.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.ResultView.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.ResultView.Universes.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.ResultView.OriginalInputUniverses.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.verdicts ++
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeListResultView.Controls.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerListResultAdapter.Registered.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.GuardedRetraction.verdicts ++
+    Mettapedia.Languages.HOLLight.InferenceOnlyReplay.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.TypeDefinitionEquality.Controls.verdicts ++
+    Mettapedia.TypeTheory.NbE.checkingVerdicts ++
+    Mettapedia.Languages.HOLLight.PredicateFixedPoint.verdicts ++
+    Mettapedia.Languages.HOLLight.PolynomialPredicate.verdicts ++
+    Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeGuest.ResultFold.verdicts ++
+    [("ordered inductive traversal retains complete payloads",
+      Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedContainerTraversal.Controls.modelChecks),
+     ("compiled nested SearchTree fold retains complete answers",
+      Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedContainerTraversal.Folding.modelChecks),
+     ("formed List and Vector bundles retain actual position witnesses",
+      Mettapedia.Languages.MeTTa.Bridges.GSLT.FormationSensitiveBundleTraversal.modelChecks)] ++
     Mettapedia.GSLT.Logic.PropositionalLRAT.Controls.verdicts ++
     equationChecks ++ recipeChecks ++ hilbertChecks ++ hintChecks ++ refusalChecks ++ equalityChecks ++
     extensionChecks ++ intuitionisticChecks ++

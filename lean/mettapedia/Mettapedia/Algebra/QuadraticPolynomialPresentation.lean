@@ -222,6 +222,12 @@ theorem exists_equiv_adjoinRoot_iff (K A : Type*) [Field K] [Ring A] [Algebra K 
       (presentation.trans (equivAdjoinRoot a b).symm)
   · exact exists_equiv_adjoinRoot K A
 
+/-- Polynomial evaluation commutes with a genuine affine generator change. -/
+theorem changeGenerator_aeval (a b u : R) (v : Rˣ) (p : R[X]) :
+    QuadraticPresentation.changeGenerator a b u v (aeval QuadraticAlgebra.omega p) =
+      aeval (QuadraticPresentation.changeGenerator a b u v QuadraticAlgebra.omega) p :=
+  (aeval_algHom_apply (QuadraticPresentation.changeGenerator a b u v) _ p).symm
+
 namespace Controls
 
 /-- Cubic reduction retains an actual nonzero linear component. -/

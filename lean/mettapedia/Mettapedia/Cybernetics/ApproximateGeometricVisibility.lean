@@ -82,7 +82,7 @@ noncomputable def ofExact (geometry : ValueGeometry Value) (value : State → Va
     rw [Classical.choose_spec visible state, geometry.self]
 
 /-- In a point-separating geometry, zero-error reconstruction is exact. -/
-def toExactOfZero
+theorem toExactOfZero
     (readout : ApproximateValueReadout geometry value observer 0)
     (separates : SeparatesPoints geometry) :
     ValueVisibleAt value observer := by

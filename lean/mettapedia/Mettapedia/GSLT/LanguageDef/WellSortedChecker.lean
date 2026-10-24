@@ -55,32 +55,29 @@ theorem matchesParameterRepresentation?_eq_true_iff
 /-- Executable recognition of the declaration shape represented by a bare
 collection node. -/
 def usesBareCollection? (rule : GrammarRule) : Bool :=
-  match rule.params with
+  match rule.bareParams with
   | [.simple _ (.collection _ _)] => true
   | _ => false
 
 @[simp]
 theorem usesBareCollection?_eq_true_iff (rule : GrammarRule) :
     usesBareCollection? rule = true ↔ UsesBareCollection rule := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases parameters with
-      | nil => simp [usesBareCollection?, UsesBareCollection]
-      | cons parameter remaining =>
-          cases remaining with
-          | nil =>
-              cases parameter <;>
-                simp [usesBareCollection?, UsesBareCollection]
-              case simple name type =>
-                cases type <;> simp
-          | cons next tail =>
-              simp [usesBareCollection?, UsesBareCollection]
+  unfold usesBareCollection? UsesBareCollection
+  generalize rule.bareParams = parameters
+  cases parameters with
+  | nil => simp
+  | cons parameter remaining =>
+    cases remaining with
+    | nil =>
+      cases parameter <;> simp
+      case simple paramName type => cases type <;> simp
+    | cons next tail => simp
 
 /-- A declaration can type one bare collection at the requested result type
 exactly when this function returns its element type. -/
 def bareCollectionElementType? (rule : GrammarRule)
     (collectionType : CollType) (expected : TypeExpr) : Option TypeExpr :=
-  match expected, rule.params with
+  match expected, rule.bareParams with
   | .base category, [.simple _ (.collection actual elementType)] =>
       if rule.category = category ∧ actual = collectionType then
         some elementType
@@ -95,24 +92,19 @@ theorem bareCollectionElementType?_eq_some_iff
     bareCollectionElementType? rule collectionType expected = some elementType ↔
       expected = .base rule.category ∧
         ∃ parameterName,
-          rule.params =
-            [.simple parameterName (.collection collectionType elementType)] := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases expected <;> cases parameters with
-      | nil => simp [bareCollectionElementType?]
-      | cons parameter parameters =>
-          cases parameters with
-          | nil =>
-              cases parameter with
-              | simple parameterName parameterType =>
-                  cases parameterType <;>
-                    simp [bareCollectionElementType?] <;> aesop
-              | abstractionNamed binderName bodyName parameterType =>
-                  simp [bareCollectionElementType?]
-              | multiAbstractionNamed binderNames bodyName parameterType =>
-                  simp [bareCollectionElementType?]
-          | cons next remaining => simp [bareCollectionElementType?]
+          rule.bareParams = [.simple parameterName (.collection collectionType elementType)] := by
+  unfold bareCollectionElementType?
+  generalize rule.bareParams = parameters
+  cases expected <;> cases parameters with
+  | nil => simp
+  | cons parameter parameters =>
+    cases parameters with
+    | nil =>
+      cases parameter with
+      | simple parameterName parameterType => cases parameterType <;> simp <;> aesop
+      | abstractionNamed binderName bodyName parameterType => simp
+      | multiAbstractionNamed binderNames bodyName parameterType => simp
+    | cons next remaining => simp
 
 mutual
   /-- Check one raw pattern against an expected type in the exact authored

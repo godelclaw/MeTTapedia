@@ -95,7 +95,7 @@ theorem reverseTopCode_primrec : Primrec reverseTopCode :=
 /-- **The second section of a bag theory is effective.** -/
 theorem reversedBagSection_effective (theory : IGSLT) {bag : GrammarRule}
     {unit : Option String}
-    (laws : BagTheory theory.presentation.presentation.language bag unit) :
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit) :
     (reversedBagSection theory laws).Effective :=
   (bagCanonicalSection_effective theory laws).rerepresent
     (reverseTopClosed_equivalent theory laws) reverseTopCode_primrec.to_comp
@@ -118,22 +118,22 @@ open InstanceTable
 /-- **CCS is effectively continued**: the section of its continued
 presentation is the bag normal form. -/
 theorem ccs_isEffectivelyContinued : IsEffectivelyContinued ccsIGSLT :=
-  ⟨ccsContinuedPresentation, bagCanonicalSection_effective ccsIGSLT ccs_bagTheory⟩
+  ⟨ccsContinuedPresentation, bagCanonicalSection_effective ccsIGSLT (ccs_bagTheory.asBare rfl)⟩
 
 /-- **The asynchronous pi calculus is effectively continued**, by the bag
 normal form without a unit. -/
 theorem pi_isEffectivelyContinued : IsEffectivelyContinued piIGSLT :=
-  ⟨piContinuedPresentation, bagCanonicalSection_effective piIGSLT pi_bagTheory⟩
+  ⟨piContinuedPresentation, bagCanonicalSection_effective piIGSLT (pi_bagTheory.asBare rfl)⟩
 
 /-- **The synchronous pi calculus is effectively continued**, by the bag
 normal form without a unit. -/
 theorem piSync_isEffectivelyContinued : IsEffectivelyContinued piSyncIGSLT :=
-  ⟨piSyncContinuedPresentation, bagCanonicalSection_effective piSyncIGSLT piSync_bagTheory⟩
+  ⟨piSyncContinuedPresentation, bagCanonicalSection_effective piSyncIGSLT (piSync_bagTheory.asBare rfl)⟩
 
 /-- **Mobile ambients are effectively continued**, by the bag normal form
 with inaction as unit. -/
 theorem ambient_isEffectivelyContinued : IsEffectivelyContinued ambientIGSLT :=
-  ⟨ambientContinuedPresentation, bagCanonicalSection_effective ambientIGSLT ambient_bagTheory⟩
+  ⟨ambientContinuedPresentation, bagCanonicalSection_effective ambientIGSLT (ambient_bagTheory.asBare rfl)⟩
 
 /-- **Both sections of CCS are effective**, and the two continued
 presentations they give over the one iGSLT are different. -/
@@ -141,8 +141,8 @@ theorem ccs_two_effective_presentations :
     ccsContinuedPresentation.canonical.Effective ∧
       ccsReversedContinuedPresentation.canonical.Effective ∧
         ccsContinuedPresentation ≠ ccsReversedContinuedPresentation :=
-  ⟨bagCanonicalSection_effective ccsIGSLT ccs_bagTheory,
-    reversedBagSection_effective ccsIGSLT ccs_bagTheory, ccs_two_continuedPresentations⟩
+  ⟨bagCanonicalSection_effective ccsIGSLT (ccs_bagTheory.asBare rfl),
+    reversedBagSection_effective ccsIGSLT (ccs_bagTheory.asBare rfl), ccs_two_continuedPresentations⟩
 
 /-- The tracking function at work on CCS.  Both listings of the handshake
 have the code of the action-first handshake as tracked code, and the two

@@ -76,7 +76,7 @@ inductive Licensed (language : LanguageDef) (free : FreeTypeContext)
       {parameterName : String} {kind : CollType} {elements : List Pattern}
       {index : Nat} {element : Pattern} {elementType : TypeExpr} {inner : SiteData} :
       (rule, declaration) ∈ language.terms.zipIdx →
-      rule.params = [.simple parameterName (.collection kind elementType)] →
+      rule.bareParams = [.simple parameterName (.collection kind elementType)] →
       kind ∈ permissions.collectionKinds →
       ElementsHaveType language free bound elements elementType →
       isObjectPatternList elements = true → elements[index]? = some element →

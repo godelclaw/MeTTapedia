@@ -130,7 +130,7 @@ theorem old_continuation_survives_new_binder
     (Denotes.var (context.snoc (context.family 0)) (0 : Fin 1).succ)
     (Denotes.var context 0) headEquality root
   simp only [NativeTraceLambdaSemantics.Tm.subst, liftSubTm, weakening,
-    argumentSubstitution, Fin.cases_succ, Fin.cases_zero,
+    argumentSubstitution, Fin.cases_succ,
     NativeTraceLambdaSemantics.Tm.rename, NativeTraceLambdaSemantics.Tm.erase, wk,
     Context.snoc_family_succ, Context.snoc_projection_succ] at square
   simpa only [oldIndex, bodyIndex, Morphism.weaken] using square

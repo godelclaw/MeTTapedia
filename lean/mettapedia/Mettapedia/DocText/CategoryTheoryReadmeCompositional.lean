@@ -3,6 +3,7 @@ import Mettapedia.Languages.GF.HandCrafted.English.Pronouns
 import Mettapedia.DocText.ReadmeGFHelpers
 import Mettapedia.DocText.ReadmeTree
 import Mettapedia.DocText.ReadmeStructuredParse
+import Lean.Data.Json
 
 namespace Mettapedia.DocText.CategoryTheoryReadmeCompositional
 
@@ -52,8 +53,8 @@ inductive CategoryTheoryClaim where
   | fuzzyFrameFileRole
   | toglFileRole
   | toposInternalLanguageFileRole
-  | proofStatusMajorityProven
-  | proofStatusRemainingFiles
+  | proofStatusSourceInventory
+  | proofStatusKernelBoundary
   | dependencyFlowCaption
   deriving Repr, DecidableEq, BEq
 
@@ -135,19 +136,19 @@ def renderCategoryTheoryClaim : CategoryTheoryClaim → String
         (complV2 (mkV2 (regV "provide")) (properNameNP "the recommended import interface"))
   | .fuzzyFrameFileRole =>
       mkPresPos (properNameNP "FuzzyFrame.lean")
-        (complV2 (mkV2 (regV "formalize")) (properNameNP "the unit interval frame for PLN truth values"))
+        (complV2 (mkV2 (regV "formalize")) (properNameNP "the coherent unit interval frame and its distinct product quantale"))
   | .toglFileRole =>
       mkPresPos (properNameNP "TOGL.lean")
         (complV2 (mkV2 (regV "formalize")) (properNameNP "Greg Meredith's theory of graphs"))
   | .toposInternalLanguageFileRole =>
       mkPresPos (properNameNP "Topos/InternalLanguage.lean")
         (complV2 (mkV2 (regV "formalize")) (properNameNP "Kripke-Joyal semantics for OSLF"))
-  | .proofStatusMajorityProven =>
-      mkPresPos (properNameNP "Nineteen of twenty-three files" .AgP3Pl)
-        (copulaAdj "fully proven with zero sorries")
-  | .proofStatusRemainingFiles =>
-      mkPresPos (properNameNP "The remaining four files" .AgP3Pl)
-        (copulaNP (properNameNP "TOGL one sorry, FuzzyFrame two sorries, ModalTypes one sorry, and Hypercube two sorries"))
+  | .proofStatusSourceInventory =>
+      mkPresPos (properNameNP "The source inventory")
+        (complV2 (mkV2 (regV "count")) (properNameNP "admission markers outside comments and literal text"))
+  | .proofStatusKernelBoundary =>
+      mkPresNeg (properNameNP "The source inventory")
+        (complV2 (mkV2 (regV "replace")) (properNameNP "kernel dependency qualification"))
   | .dependencyFlowCaption =>
       mkPresPos (properNameNP "The dependency flow")
         (copulaNP (properNameNP "the following architecture diagram"))
@@ -181,8 +182,8 @@ def allCategoryTheoryClaims : List CategoryTheoryClaim :=
   , .fuzzyFrameFileRole
   , .toglFileRole
   , .toposInternalLanguageFileRole
-  , .proofStatusMajorityProven
-  , .proofStatusRemainingFiles
+  , .proofStatusSourceInventory
+  , .proofStatusKernelBoundary
   , .dependencyFlowCaption
   ]
 
@@ -263,8 +264,8 @@ def categoryTheoryReadmeBlocks : List ReadmeBlock :=
   , .fileRef "Topos/InternalLanguage.lean" (renderCategoryTheoryClaim .toposInternalLanguageFileRole)
   , .heading 2 (renderCategoryTheoryHeading .proofStatus)
   , .claimBullets
-      [ claimBullet .proofStatusMajorityProven
-      , claimBullet .proofStatusRemainingFiles
+      [ claimBullet .proofStatusSourceInventory
+      , claimBullet .proofStatusKernelBoundary
       ]
   , .heading 2 (renderCategoryTheoryHeading .dependencyFlow)
   , .paragraph [renderCategoryTheoryClaim .dependencyFlowCaption]
@@ -274,6 +275,14 @@ def categoryTheoryReadmeBlocks : List ReadmeBlock :=
 
 def categoryTheoryReadmeMarkdown : String :=
   renderDoc categoryTheoryReadmeBlocks
+
+/-- Runtime inventory data stays in a technical block; its claims use the same GF renderer. -/
+def sourceInventoryBlocks (inventory : Lean.Json) : List ReadmeBlock :=
+  [ .paragraph [renderCategoryTheoryClaim .proofStatusSourceInventory,
+      renderCategoryTheoryClaim .proofStatusKernelBoundary]
+  , .codeBlock "json" inventory.pretty ]
+
+def sourceInventoryMarkdown (inventory : Lean.Json) : String := renderDoc (sourceInventoryBlocks inventory)
 
 #eval categoryTheoryReadmeMarkdown
 
@@ -301,7 +310,7 @@ def selectedStructuredCategoryTheoryLines : List String :=
   claimBulletLines categoryTheoryReadmeBlocks ++
   [ ensurePeriod (renderCategoryTheoryClaim .titleScope)
   , ensurePeriod (renderCategoryTheoryClaim .architectureHasThreeStrands)
-  , ensurePeriod (renderCategoryTheoryClaim .proofStatusMajorityProven)
+  , ensurePeriod (renderCategoryTheoryClaim .proofStatusSourceInventory)
   ]
 
 def categoryTheoryHardAuditPasses : Bool :=
@@ -309,14 +318,22 @@ def categoryTheoryHardAuditPasses : Bool :=
 
 theorem categoryTheory_hard_audit :
     categoryTheoryHardAuditPasses = true := by
-  native_decide
+  decide +kernel
+
+theorem sourceInventory_hard_audit (inventory : Lean.Json) :
+    (sourceInventoryBlocks inventory).all
+      (blockPassesHardAuditWith parseCategoryTheoryClaimLine? parseCategoryTheoryHeadingLine?) = true := by
+  change (([renderCategoryTheoryClaim .proofStatusSourceInventory,
+      renderCategoryTheoryClaim .proofStatusKernelBoundary].all
+        (fun line => (parseCategoryTheoryClaimLine? line).isSome)) && true) = true
+  decide +kernel
 
 def categoryTheoryHeadingImageCheck : Bool :=
   headingRenderImageCheck parseCategoryTheoryHeadingLine? renderCategoryTheoryHeading categoryTheoryReadmeBlocks
 
 theorem categoryTheory_heading_images :
     categoryTheoryHeadingImageCheck = true := by
-  native_decide
+  decide +kernel
 
 theorem categoryTheory_heading_image_witness
     {lvl : Nat} {txt : String}

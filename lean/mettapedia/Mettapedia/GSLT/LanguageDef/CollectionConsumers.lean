@@ -63,8 +63,8 @@ def reachabilityPlan : GeneralExecutionAdmission.Plan :=
 
 theorem petri_admitted : petriPlan.complete = true := by cbv
 
-/-- The current compiler must keep refusing this source until the new matcher
-and its coherence certificate are connected to the admitted execution path. -/
+/-- The base plan records its set-matching capability requirement. The common
+emitter discharges it only through a recognized root-collection profile. -/
 theorem reachability_requires_set_matching :
     .setDecomposition ∈ reachabilityPlan.obligations := by
   cbv

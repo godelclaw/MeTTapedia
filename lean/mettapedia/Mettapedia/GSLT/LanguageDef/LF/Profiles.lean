@@ -1,16 +1,21 @@
 /-
-# LF kernel profiles as PTS data
+# LF and curriculum-prototype profiles as PTS data
 
-The product rules below are extracted from the running MeTTa kernels rather
-than chosen for convenience.
+The product rules below distinguish a standard calculus from two historical
+MettaKernel curriculum checkers.
 
-* The registered basic `KWCheck` route reaches
+* `standardLF` is the ordinary two-rule LF/λP formation profile.  The
+  historical `KWCheck` curriculum route at
   `MettaKernel/kernel/kernel_signature_lf_v0.metta:106-110`: it admits
   `(type,type,type)` and `(type,kind,kind)` only.
-* The indexed kernel implements the additional Type-parameter cases at
+* `mettaKernelKindResultPrototype` records the four-rule curriculum prototype
+  at
   `MettaKernel/kernel/kernel_signature_lf_indexed_v0.metta:99-108`:
   `(kind,type,kind)` and `(kind,kind,kind)`.
-* Both kernels implement `Type : Kind` and reject `Kind` as a top sort
+  The `(kind,type,kind)` rule is outside the λ-cube: for those premises CoC
+  uses `(kind,type,type)`.  The name therefore identifies the prototype and
+  its unusual result sort rather than presenting it as a standard indexed LF.
+* Both curriculum checkers implement `Type : Kind` and reject `Kind` as a top sort
   (`kernel_signature_lf_v0.metta:112-113` and
   `kernel_signature_lf_indexed_v0.metta:110-111`).
 
@@ -44,13 +49,16 @@ def typeKindKind : ProductRule := ⟨.type, .kind, .kind⟩
 def kindTypeKind : ProductRule := ⟨.kind, .type, .kind⟩
 def kindKindKind : ProductRule := ⟨.kind, .kind, .kind⟩
 
-/-- Exact profile of the kernel behind the registered basic `KWCheck` bridge. -/
-def basic : Profile where
+/-- Standard LF/λP formation: ordinary functions and dependent products from
+terms into types. -/
+def standardLF : Profile where
   sortAxiom := typeAxiom
   products := [typeTypeType, typeKindKind]
 
-/-- Exact PTS profile implemented by the indexed kernel. -/
-def indexed : Profile where
+/-- Exact four-rule profile of the historical MettaKernel curriculum
+prototype.  Its `(Kind, Type, Kind)` rule is intentionally visible in the
+name and must not be read as the standard meaning of indexed LF. -/
+def mettaKernelKindResultPrototype : Profile where
   sortAxiom := typeAxiom
   products := [typeTypeType, typeKindKind, kindTypeKind, kindKindKind]
 
@@ -78,14 +86,15 @@ theorem Subsumed.trans {first second third : Profile}
   · intro rule hrule
     exact hsecond.2 rule (hfirst.2 rule hrule)
 
-/-- T1: every basic product/axiom is present unchanged in the indexed profile. -/
-theorem basic_subsumed_indexed : basic ⊑ indexed := by
+/-- Standard LF is a subprofile of the historical four-rule prototype. -/
+theorem standardLF_subsumed_mettaKernelKindResultPrototype :
+    standardLF ⊑ mettaKernelKindResultPrototype := by
   constructor
   · intro source target haxiom
     exact haxiom
   · intro rule hrule
-    simp [basic] at hrule
-    rcases hrule with rfl | rfl <;> simp [indexed]
+    simp [standardLF] at hrule
+    rcases hrule with rfl | rfl <;> simp [mettaKernelKindResultPrototype]
 
 /-! A small shared formation judgment makes profile monotonicity substantive. -/
 
@@ -121,44 +130,47 @@ theorem Forms.mono {first second : Profile} (hprofiles : first ⊑ second)
       exact .pi ihDomain ihCodomain (hprofiles.2 _ hrule)
 
 /-- Corollary in the exact form needed by later profile-parametric judgments. -/
-theorem basic_forms_embed {expression : SortExpr} {sort : Srt}
-    (hforms : Forms basic expression sort) : Forms indexed expression sort :=
-  hforms.mono basic_subsumed_indexed
+theorem standardLF_forms_embed {expression : SortExpr} {sort : Srt}
+    (hforms : Forms standardLF expression sort) :
+    Forms mettaKernelKindResultPrototype expression sort :=
+  hforms.mono standardLF_subsumed_mettaKernelKindResultPrototype
 
 def objectArrow : SortExpr :=
   .pi (.atom 0 .type) (.atom 1 .type)
 
 /-- A product between ordinary object types belongs to both profiles. -/
-theorem objectArrow_basic : Forms basic objectArrow .type := by
-  exact .pi (.atom 0 .type) (.atom 1 .type) (by simp [basic, typeTypeType])
+theorem objectArrow_standardLF : Forms standardLF objectArrow .type := by
+  exact .pi (.atom 0 .type) (.atom 1 .type) (by simp [standardLF, typeTypeType])
 
 def typeParameterProduct : SortExpr :=
   .pi (.sort .type) (.sort .type)
 
-/-- Positive fixture: the indexed profile admits `Π (α : Type). Type`. -/
-theorem typeParameterProduct_indexed :
-    Forms indexed typeParameterProduct .kind := by
-  exact .pi (.sort rfl) (.sort rfl) (by simp [indexed, kindKindKind])
+/-- Positive fixture: the four-rule prototype admits
+`Π (α : Type). Type` at sort `Kind`. -/
+theorem typeParameterProduct_mettaKernelPrototype :
+    Forms mettaKernelKindResultPrototype typeParameterProduct .kind := by
+  exact .pi (.sort rfl) (.sort rfl)
+    (by simp [mettaKernelKindResultPrototype, kindKindKind])
 
-/-- Negative fixture: the registered basic profile cannot form that product. -/
-theorem typeParameterProduct_not_basic :
-    ¬ Forms basic typeParameterProduct .kind := by
+/-- Standard LF cannot form that type-operator product. -/
+theorem typeParameterProduct_not_standardLF :
+    ¬ Forms standardLF typeParameterProduct .kind := by
   intro hforms
   cases hforms with
   | pi hdomain hcodomain hrule =>
       cases hdomain with
       | sort hdomainSort =>
-          simp [basic, typeAxiom] at hdomainSort
+          simp [standardLF, typeAxiom] at hdomainSort
           cases hcodomain with
           | sort hcodomainSort =>
-              simp [basic, typeAxiom] at hcodomainSort
+              simp [standardLF, typeAxiom] at hcodomainSort
               cases hdomainSort
               cases hcodomainSort
-              simp [basic, typeTypeType, typeKindKind] at hrule
+              simp [standardLF, typeTypeType, typeKindKind] at hrule
 
-#print axioms basic_subsumed_indexed
+#print axioms standardLF_subsumed_mettaKernelKindResultPrototype
 #print axioms Forms.mono
-#print axioms typeParameterProduct_indexed
-#print axioms typeParameterProduct_not_basic
+#print axioms typeParameterProduct_mettaKernelPrototype
+#print axioms typeParameterProduct_not_standardLF
 
 end Mettapedia.GSLT.LanguageDef.LFProfile

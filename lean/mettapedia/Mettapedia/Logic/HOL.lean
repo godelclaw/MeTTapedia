@@ -1,5 +1,6 @@
 import Mettapedia.Logic.HOL.Syntax.Type
 import Mettapedia.Logic.HOL.Syntax.Term
+import Mettapedia.Logic.HOL.GuardedRetraction
 import Mettapedia.Logic.HOL.Embedding.SimpleSliceOfDependent
 import Mettapedia.Logic.HOL.Embedding.WeakTypeComprehension
 import Mettapedia.Logic.HOL.Embedding.ConversionPrice

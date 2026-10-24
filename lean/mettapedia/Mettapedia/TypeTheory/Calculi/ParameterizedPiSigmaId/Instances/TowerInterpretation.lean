@@ -117,7 +117,7 @@ is in `TowerInterpretation`. This file gathers its concrete instantiation:
   (`univOf_not_closed_under_univOf`).
 
 These are set-model instances under their named hypotheses. They do not select
-Prime's native set theory. The Megalodon HOTG package and its associated
+an ambient set theory for any Prime candidate; that choice is open. The Megalodon HOTG package and its associated
 examples are collected separately by `Instances.MegalodonHOTG`, which this
 aggregate does not import.
 -/

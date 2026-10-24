@@ -462,6 +462,98 @@ theorem candidate_table
   rw [List.map_ofFn, List.map_ofFn]
   rfl
 
+/-- Publish a structurally admitted direct family after full prefix formation,
+name separation, and every generated row check succeed.  This is the common
+producer used by textual and independently admitted direct sources. -/
+noncomputable def fromAdmitted
+    (opaquePrior : ∀ item ∈ prior, item.2.value? = none)
+    (indexFree : Types.IndexFree indices names.family)
+    (contextFree : ContextFree names.family parameters.context)
+    (dataFree : ∀ sort, FreeOf names.family (parameters.dataType sort))
+    (shape : Admitted I []) : Option (Candidate base) :=
+  match typed : Declarations.elaborate base decoder choices fuel []
+      (library indices parameters names shape prior) with
+  | none => none
+  | some certificates =>
+      if distinct : namesDistinct indices parameters names shape prior = true then
+        if rows : checkRows indices parameters names shape base decoder choices fuel prior = true then
+          some (candidate indices parameters names shape base decoder choices fuel prior
+            (Declarations.elaborate_sound base decoder choices fuel [] _ certificates typed)
+            opaquePrior distinct indexFree contextFree dataFree rows)
+        else none
+      else none
+
+/-- Every published admitted family exposes exactly its complete generated
+typed table. -/
+theorem fromAdmitted_sound
+    (opaquePrior : ∀ item ∈ prior, item.2.value? = none)
+    (indexFree : Types.IndexFree indices names.family)
+    (contextFree : ContextFree names.family parameters.context)
+    (dataFree : ∀ sort, FreeOf names.family (parameters.dataType sort))
+    (shape : Admitted I []) (output : Candidate base)
+    (published : fromAdmitted indices parameters names base decoder choices fuel prior
+      opaquePrior indexFree contextFree dataFree shape = some output) :
+    Checking.table (Checking.candidateSchemas output) =
+      table indices parameters names shape := by
+  unfold fromAdmitted at published
+  split at published
+  · cases published
+  · rename_i certificates typed
+    split_ifs at published with distinct rows
+    · have same : candidate indices parameters names shape base decoder choices fuel prior
+          (Declarations.elaborate_sound base decoder choices fuel [] _ certificates typed)
+          opaquePrior distinct indexFree contextFree dataFree rows = output :=
+        Option.some.inj published
+      cases same
+      exact candidate_table indices parameters names shape base decoder choices fuel prior
+        _ opaquePrior distinct indexFree contextFree dataFree rows
+
+/-- Publication retains the exact generated declaration signature, not only
+the same computation table. -/
+theorem fromAdmitted_signature
+    (opaquePrior : ∀ item ∈ prior, item.2.value? = none)
+    (indexFree : Types.IndexFree indices names.family)
+    (contextFree : ContextFree names.family parameters.context)
+    (dataFree : ∀ sort, FreeOf names.family (parameters.dataType sort))
+    (shape : Admitted I []) (output : Candidate base)
+    (published : fromAdmitted indices parameters names base decoder choices fuel prior
+      opaquePrior indexFree contextFree dataFree shape = some output) :
+    output.signature = signature indices parameters names shape prior := by
+  unfold fromAdmitted at published
+  split at published
+  · cases published
+  · rename_i certificates typed
+    split_ifs at published with distinct rows
+    · have same : candidate indices parameters names shape base decoder choices fuel prior
+          (Declarations.elaborate_sound base decoder choices fuel [] _ certificates typed)
+          opaquePrior distinct indexFree contextFree dataFree rows = output :=
+        Option.some.inj published
+      cases same
+      rfl
+
+/-- Publication retains the complete generated proof-relevant root
+computation. -/
+theorem fromAdmitted_computation
+    (opaquePrior : ∀ item ∈ prior, item.2.value? = none)
+    (indexFree : Types.IndexFree indices names.family)
+    (contextFree : ContextFree names.family parameters.context)
+    (dataFree : ∀ sort, FreeOf names.family (parameters.dataType sort))
+    (shape : Admitted I []) (output : Candidate base)
+    (published : fromAdmitted indices parameters names base decoder choices fuel prior
+      opaquePrior indexFree contextFree dataFree shape = some output) :
+    output.computation = computation indices parameters names shape := by
+  unfold fromAdmitted at published
+  split at published
+  · cases published
+  · rename_i certificates typed
+    split_ifs at published with distinct rows
+    · have same : candidate indices parameters names shape base decoder choices fuel prior
+          (Declarations.elaborate_sound base decoder choices fuel [] _ certificates typed)
+          opaquePrior distinct indexFree contextFree dataFree rows = output :=
+        Option.some.inj published
+      cases same
+      rfl
+
 /-- Publish from the source document only after structural admission, full
 prefix formation, name separation and every generated row check succeed.
 Failure means this evidence producer did not produce a checked package. -/
@@ -474,17 +566,9 @@ noncomputable def fromSource
   match IndexedInductive.admit? source with
   | none => none
   | some shape =>
-      match typed : Declarations.elaborate base decoder choices fuel []
-          (library indices parameters names shape prior) with
-      | none => none
-      | some certificates =>
-          if distinct : namesDistinct indices parameters names shape prior = true then
-            if rows : checkRows indices parameters names shape base decoder choices fuel prior = true then
-              some (shape, candidate indices parameters names shape base decoder choices fuel prior
-                (Declarations.elaborate_sound base decoder choices fuel [] _ certificates typed)
-                opaquePrior distinct indexFree contextFree dataFree rows)
-            else none
-          else none
+      (fromAdmitted indices parameters names base decoder choices fuel prior
+        opaquePrior indexFree contextFree dataFree shape).map fun output =>
+          (shape, output)
 
 /-- Publication retains the complete authored inventory and exposes exactly
 its generated rows through the shared checker. -/
@@ -502,24 +586,27 @@ theorem fromSource_sound
   split at published
   · cases published
   · rename_i found structural
-    split at published
-    · cases published
-    · rename_i certificates typed
-      split_ifs at published with distinct rows
-      · have same : (found, candidate indices parameters names found base decoder choices fuel prior
-            (Declarations.elaborate_sound base decoder choices fuel [] _ certificates typed)
-            opaquePrior distinct indexFree contextFree dataFree rows) = (shape, output) :=
-          Option.some.inj published
+    cases generated : fromAdmitted indices parameters names base decoder choices fuel prior
+        opaquePrior indexFree contextFree dataFree found with
+    | none => simp [generated] at published
+    | some candidate =>
+        have mapped : some (found, candidate) = some (shape, output) := by
+          simpa [generated] using published
+        have same : (found, candidate) = (shape, output) := by
+          exact Option.some.inj mapped
         cases same
         exact ⟨source_of_admit source shape structural,
-          candidate_table indices parameters names shape base decoder choices fuel prior
-            _ opaquePrior distinct indexFree contextFree dataFree rows⟩
+          fromAdmitted_sound indices parameters names base decoder choices fuel prior
+            opaquePrior indexFree contextFree dataFree shape output generated⟩
 
 end Checking
 
 #print axioms formed
 #print axioms schemas_table
 #print axioms candidate
+#print axioms fromAdmitted_sound
+#print axioms fromAdmitted_signature
+#print axioms fromAdmitted_computation
 #print axioms fromSource_sound
 
 end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Package

@@ -1,4 +1,5 @@
 import Mettapedia.Machines.SourceSnapshot
+import Mettapedia.Machines.LevinSearch
 import Mettapedia.Machines.ReadCertifiedQueryReuse
 import Mettapedia.Machines.ValidatedCommit
 import Mettapedia.Machines.Cursor.ReadOnlyQuery

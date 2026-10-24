@@ -104,6 +104,10 @@ def mapGrammarRule (symbols : LanguageDefSymbolMap)
     params := rule.params.map (mapTermParam symbols)
     algebra? := rule.algebra?.map (StructuralMorphism.mapCollectionAlgebra symbols.constructor) }
 
+@[simp] theorem bareParams_mapGrammarRule (symbols : LanguageDefSymbolMap) (rule : GrammarRule) :
+    (mapGrammarRule symbols rule).bareParams = rule.bareParams.map (mapTermParam symbols) := by
+  cases mode : rule.collectionRepresentation <;> simp [GrammarRule.bareParams, mapGrammarRule, mode]
+
 /- Structural action on the shared locally nameless term carrier.  Binder
 metadata, de Bruijn indices, collection kind, order, multiplicity, and rest
 variables are preserved.  The list companion keeps this traversal genuinely
@@ -252,24 +256,22 @@ private theorem list_map_comp_of_mem {α β γ : Type*}
 
 @[simp] theorem mapGrammarRule_id (rule : GrammarRule) :
     mapGrammarRule LanguageDefSymbolMap.id rule = rule := by
-  cases rule
+  rcases rule with ⟨label, category, parameters, syntaxItems, policy, algebra, representation⟩
   simp only [mapGrammarRule, LanguageDefSymbolMap.id, id_eq]
   congr 1
   · exact list_map_eq_self_of_mem _ _ fun parameter _ => mapTermParam_id parameter
-  · rename_i algebra
-    cases algebra <;> simp [StructuralMorphism.mapCollectionAlgebra]
+  · cases algebra <;> simp [StructuralMorphism.mapCollectionAlgebra]
 
 @[simp] theorem mapGrammarRule_comp (first second : LanguageDefSymbolMap)
     (rule : GrammarRule) :
     mapGrammarRule (first.comp second) rule =
       mapGrammarRule second (mapGrammarRule first rule) := by
-  cases rule
+  rcases rule with ⟨label, category, parameters, syntaxItems, policy, algebra, representation⟩
   simp only [mapGrammarRule, LanguageDefSymbolMap.comp, Function.comp_apply]
   congr 1
   · exact list_map_comp_of_mem _ _ _ _ fun parameter _ =>
       mapTermParam_comp first second parameter
-  · rename_i algebra
-    cases algebra <;> simp [StructuralMorphism.mapCollectionAlgebra, Option.map_map]
+  · cases algebra <;> simp [StructuralMorphism.mapCollectionAlgebra, Option.map_map]
 
 @[simp] theorem mapPattern_id (pattern : Pattern) :
     mapPattern LanguageDefSymbolMap.id pattern = pattern := by
@@ -646,7 +648,8 @@ structure TypingMorphism (source target : ValidatedLanguageDef) where
     ∃ targetRule, List.Mem targetRule target.language.terms ∧
       targetRule.label = symbols.constructor rule.label ∧
       targetRule.category = symbols.sort rule.category ∧
-      targetRule.params = rule.params.map (mapTermParam symbols)
+      targetRule.params = rule.params.map (mapTermParam symbols) ∧
+      targetRule.collectionRepresentation = rule.collectionRepresentation
 
 namespace TypingMorphism
 
@@ -668,7 +671,7 @@ def id (language : ValidatedLanguageDef) : TypingMorphism language language wher
     rw [mapTypeDecl_id]
     exact membership
   mapsTerms rule membership := by
-    refine ⟨rule, membership, ?_, ?_, ?_⟩
+    refine ⟨rule, membership, ?_, ?_, ?_, rfl⟩
     · rfl
     · rfl
     · have parameters :=
@@ -686,10 +689,10 @@ def comp {first second third : ValidatedLanguageDef}
     exact right.mapsTypes _ (left.mapsTypes declaration membership)
   mapsTerms rule membership := by
     obtain ⟨middleRule, middleMembership, middleLabel, middleCategory,
-      middleParameters⟩ := left.mapsTerms rule membership
+      middleParameters, middleRepresentation⟩ := left.mapsTerms rule membership
     obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-      targetParameters⟩ := right.mapsTerms middleRule middleMembership
-    refine ⟨targetRule, targetMembership, ?_, ?_, ?_⟩
+      targetParameters, targetRepresentation⟩ := right.mapsTerms middleRule middleMembership
+    refine ⟨targetRule, targetMembership, ?_, ?_, ?_, targetRepresentation.trans middleRepresentation⟩
     · rw [targetLabel, middleLabel]
       rfl
     · rw [targetCategory, middleCategory]
@@ -721,7 +724,7 @@ def toTyping {source target : ValidatedLanguageDef}
   mapsTypes := morphism.mapsTypes
   mapsTerms rule membership := by
     refine ⟨mapGrammarRule morphism.symbols rule,
-      morphism.mapsTerms rule membership, ?_, ?_, ?_⟩ <;>
+      morphism.mapsTerms rule membership, ?_, ?_, ?_, rfl⟩ <;>
       rfl
 
 /-- Signature maps are proof-irrelevantly determined by their symbol action. -/

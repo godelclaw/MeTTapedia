@@ -384,7 +384,7 @@ def composeJudgment : ExactJudgment :=
   .tower .check BoundaryJudgments.emptyTowerContext
     composeSchemaTerm composeSchemaType
 
-def composeEvidence : ExactEvidence composeJudgment :=
+theorem composeEvidence : ExactEvidence composeJudgment :=
   ⟨composeSchemaTerm_hasType,
     ⟨composeSchemaLevel, composeSchemaType_hasType⟩⟩
 
@@ -399,7 +399,7 @@ def churchMapJudgment : ExactJudgment :=
   .tower .check BoundaryJudgments.emptyTowerContext
     churchMapSchemaTerm churchMapSchemaType
 
-def churchMapEvidence : ExactEvidence churchMapJudgment :=
+theorem churchMapEvidence : ExactEvidence churchMapJudgment :=
   ⟨churchMapSchemaTerm_hasType,
     ⟨churchMapSchemaLevel, churchMapSchemaType_hasType⟩⟩
 
@@ -463,7 +463,7 @@ def CheckedCastReceipt.outcome {judgment : ExactJudgment}
     (receipt : CheckedCastReceipt judgment) : ExactOutcome judgment :=
   .established receipt.evidence
 
-def composeCheckedCastReceipt : CheckedCastReceipt composeJudgment :=
+theorem composeCheckedCastReceipt : CheckedCastReceipt composeJudgment :=
   ⟨composeEvidence⟩
 
 @[simp] theorem checkedCast_asBool_true

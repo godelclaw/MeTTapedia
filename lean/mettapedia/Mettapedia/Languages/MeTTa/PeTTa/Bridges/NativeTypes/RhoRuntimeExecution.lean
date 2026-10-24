@@ -31,10 +31,10 @@ theorem target_in_helper_returns (state : Effects.State)
     (receipt : GeneralOccurrenceSemantics.Receipt)
     (checked : Complete.Classes.Checked spec.plan spec.bound spec.expected receipt.target) :
     PureReturns helperLibrary.runtime [] state
-      (apply "gslt:runner:target" [standardAtom spec, encoded (classReceiptTerm receipt)]) state
+      (apply "gslt:runner:target" [CompleteExecution.classSearchBackend, standardAtom spec, encoded (classReceiptTerm receipt)]) state
       (patternValue (committed receipt.target)) := by
   exact Library.lift_call helpers_checked (by decide +kernel) (by decide)
-    (by decide +kernel) (by decide) ["standard", "receipt"]
+    (by decide +kernel) (by decide) ["backend", "standard", "receipt"]
     (by decide) (by rfl) (by decide +kernel)
     (runner_target_returns spec.plan state spec.mode (table spec) (table_for spec)
       spec.bound spec.expected receipt checked)
@@ -47,7 +47,7 @@ private theorem hit_nil_returns (state : Effects.State) (standard : Term) (targe
 private theorem hit_cons_hit_returns (state : Effects.State) (standard receipt : Term)
     (rest : List Term) (target reached : Pattern)
     (here : PureReturns helperLibrary.runtime [] state
-      (apply "gslt:runner:target" [encoded standard, encoded receipt]) state (patternValue reached))
+      (apply "gslt:runner:target" [CompleteExecution.classSearchBackend, encoded standard, encoded receipt]) state (patternValue reached))
     (same : reached = target) :
     PureReturns helperLibrary.runtime [] state
       (apply "rho:native:hit" [encoded standard, patternValue target,
@@ -58,7 +58,7 @@ private theorem hit_cons_hit_returns (state : Effects.State) (standard receipt :
 private theorem hit_cons_miss_returns (state : Effects.State) (standard receipt : Term)
     (rest : List Term) (target reached : Pattern) (result : Bool)
     (here : PureReturns helperLibrary.runtime [] state
-      (apply "gslt:runner:target" [encoded standard, encoded receipt]) state (patternValue reached))
+      (apply "gslt:runner:target" [CompleteExecution.classSearchBackend, encoded standard, encoded receipt]) state (patternValue reached))
     (different : reached ≠ target)
     (later : PureReturns helperLibrary.runtime [] state
       (apply "rho:native:hit" [encoded standard, patternValue target, encoded (encodeList id rest)])
@@ -67,7 +67,7 @@ private theorem hit_cons_miss_returns (state : Effects.State) (standard receipt 
       (apply "rho:native:hit" [encoded standard, patternValue target,
         encoded (encodeList id (receipt :: rest))]) state (Effects.boolean result) := by
   have encoded_ne : InferenceCettaWire.encodePattern reached ≠ InferenceCettaWire.encodePattern target :=
-    fun equal => different (CompleteExecution.encodePattern_injective equal)
+    fun equal => different (InferenceCettaWire.encodePattern_injective equal)
   rho_native_eval [here] unfolding [encodeList]
   all_goals
     rw [if_neg encoded_ne]
@@ -109,6 +109,7 @@ theorem hit_returns (state : Effects.State) (target : Pattern) :
       rw [wire] at negative
       simpa only [standardAtom, List.any_cons, beq_eq_false_iff_ne.mpr same, Bool.false_or] using negative
 
+set_option maxHeartbeats 4000000 in
 @[metta_head "rho:native:verdict"]
 theorem verdict_returns (state : Effects.State) (target : Pattern)
     (snapshot : Complete.Classes.State spec.plan)

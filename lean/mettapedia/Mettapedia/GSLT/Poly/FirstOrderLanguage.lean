@@ -64,6 +64,7 @@ theorem baseSort?_input {language : LanguageDef} (rule : FirstOrderConstructor l
 theorem not_usesBareCollection {rule : GrammarRule} (firstOrder : FirstOrderRule rule) :
     ¬ UsesBareCollection rule := by
   rintro ⟨name, collectionType, elementType, shape⟩
+  have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
   have isBase := firstOrder (.simple name (.collection collectionType elementType)) (by simp [shape])
   simp [baseSort?] at isBase
 
@@ -229,6 +230,7 @@ theorem exists_toPattern_of_size (firstOrder : ∀ rule ∈ language.terms, Firs
           cases typed with
           | collectionConstructor member shape _ =>
               rename_i rule _ _ _
+              have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
               have isBase := firstOrder rule member _ (by rw [shape]; exact List.mem_singleton_self _)
               simp [baseSort?] at isBase
 

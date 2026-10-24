@@ -13,7 +13,7 @@ readings put the operational site of a language into the source:
   their ordered children, so the head of a call is an ordinary displayed
   occurrence, as in HE's data model. (Reading a head as a constructor label,
   as `OSLFCore.Bridge.atomToPattern` does, removes that occurrence.)
-* `primeShape`: the two-sort dependent calculus with the identity
+* `piSigmaIdShape`: the two-sort dependent calculus with the identity
   eliminator `J` and its computation rule `J A C d a a (refl a) ⇝ d a` added
   beside the Π-β and Σ-projection rules.
 * `checkingLanguage`: an inference calculus read as proof checking: a rule
@@ -64,7 +64,7 @@ def sampleProgram : List (Atom × Atom) :=
 /-- The same program without its last equation. -/
 def sampleProgramPrefix : List (Atom × Atom) := sampleProgram.take 2
 
-/-! ## The shape of Prime's kernel computation rules -/
+/-! ## The shape of the Π/Σ/Id computation rules -/
 
 /-- The identity eliminator `J A C d a b p`. -/
 def identityEliminator : GrammarRule where
@@ -84,8 +84,8 @@ def identityComputation : RewriteRule where
 
 open Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Pattern.Core in
 /-- Π-β, the two Σ projections and the computation rule of `J`. -/
-def primeShape : LanguageDef where
-  name := "PrimeShape"
+def piSigmaIdShape : LanguageDef where
+  name := "PiSigmaIdShape"
   types := twoSortDependent.types
   terms := twoSortDependent.terms ++ [identityEliminator]
   equations := []

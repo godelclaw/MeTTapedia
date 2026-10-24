@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.Language
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Native.Language
 import Mettapedia.Logic.HostingStyles.ReductionRank
 import Mettapedia.Logic.HostingStyles.TermsAloneHosting
 

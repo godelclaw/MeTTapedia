@@ -40,7 +40,7 @@ universe uAuthority uIdentity
 variable {Origin Local Resume Rule Value StableFault RetryableFault Effect :
   Type*}
 
-abbrev PrimeMachine :=
+abbrev AuthorityMachine :=
   Machine Origin Local Resume Rule Value StableFault RetryableFault Effect
 
 /-- Endpoint erasure of the occurrence-sensitive reference transition. -/
@@ -48,7 +48,7 @@ def machineTheory
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect) :
     GSLT where
-  Term := PrimeMachine
+  Term := AuthorityMachine
   equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
   rewrites := fun source target => Nonempty (StepOccurrence spec source target)
   rewrites_resp_left := by
@@ -65,7 +65,7 @@ transition. -/
 structure OccurrenceEvidence
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    (index : Nat) (source target : PrimeMachine) : Type where
+    (index : Nat) (source target : AuthorityMachine) : Type where
   successorAt : (step spec source)[index]? = some target
 
 /-- A recording execution admits exactly the reference occurrence at the
@@ -73,7 +73,7 @@ same list position. Full readback supplies the reverse implication; this
 does not identify distinct occurrences with equal endpoints. -/
 theorem recording_occurrence_iff
     (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    (index : Nat) (source target : PrimeMachine) :
+    (index : Nat) (source target : AuthorityMachine) :
     (NeedExecution.step spec (NeedExecution.projectMachine true source))[index]? =
         some (NeedExecution.projectMachine true target) ↔
       Nonempty (OccurrenceEvidence spec index source target) := by
@@ -118,7 +118,7 @@ interaction event without recomputing the successor list. -/
 def StepOccurrence.toEnabled
     {spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect}
-    {source target : PrimeMachine}
+    {source target : AuthorityMachine}
     (occurrence : StepOccurrence spec source target) :
     (machinePresentation spec).Enabled source where
   site := occurrence.index
@@ -723,7 +723,7 @@ occurrence. The cursor does not manufacture this proof. -/
 theorem enumerated_descriptor_is_occurrence
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    {captured target : PrimeMachine} {entries : List PrimeMachine}
+    {captured target : AuthorityMachine} {entries : List AuthorityMachine}
     (agrees : entries = step spec captured) (index : Nat)
     (atIndex : entries[index]? = some target) :
     Nonempty (StepOccurrence spec captured target) :=
@@ -734,8 +734,8 @@ own source-occurrence evidence. No execution permission follows from it. -/
 theorem discovered_descriptor_is_occurrence
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    (captured : PrimeMachine) (fuel : Nat)
-    (descriptor : OccurrenceDescriptor PrimeMachine)
+    (captured : AuthorityMachine) (fuel : Nat)
+    (descriptor : OccurrenceDescriptor AuthorityMachine)
     (present : descriptor ∈
       (readDiscovery (discover fuel [] ⟨0, step spec captured⟩).2).yielded) :
     Nonempty (StepOccurrence spec captured descriptor.target) :=
@@ -750,8 +750,8 @@ the ready-item allowance. -/
 theorem paged_descriptor_is_occurrence
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    (captured : PrimeMachine) (earlier later : Nat)
-    (descriptor : OccurrenceDescriptor PrimeMachine)
+    (captured : AuthorityMachine) (earlier later : Nat)
+    (descriptor : OccurrenceDescriptor AuthorityMachine)
     (present : descriptor ∈
       (readDiscovery
         (discover later []
@@ -788,7 +788,7 @@ theorem different_live_source_fails_validation
       RetryableFault Effect)
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    {captured live target : PrimeMachine} (index : Nat)
+    {captured live target : AuthorityMachine} (index : Nat)
     (evidence : OccurrenceEvidence spec index captured target)
     (different : identity.identify live ≠ identity.identify captured) :
     checkEventCertificateByIdentity identity
@@ -813,7 +813,7 @@ theorem checked_identity_source_step_sound
       RetryableFault Effect)
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
-    {captured live target : PrimeMachine} (index : Nat)
+    {captured live target : AuthorityMachine} (index : Nat)
     (evidence : OccurrenceEvidence spec index captured target)
     (selector :
       InteractionPresentation.Selector (discoveryCatalog spec) Unit)

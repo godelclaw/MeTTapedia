@@ -68,6 +68,28 @@ def expand : {Γ : Ctx Base} → {τ : Ty Base} → Term Const Γ τ → Term Co
   | _, _, .all b => .all (expand b)
   | _, _, @Term.ex _ _ σ _ b => .app (existential σ) (.lam (expand b))
 
+/-- The expansion introduces logical operators but no new signature symbols. -/
+theorem noConstOccurrence_expand {σ : Ty Base} {constant : Const σ}
+    {term : Term Const Γ τ} (absent : NoConstOccurrence constant term) :
+    NoConstOccurrence constant (expand term) := by
+  induction absent with
+  | var => exact .var
+  | const_diff_type different symbol => exact .const_diff_type different symbol
+  | const_same_ne symbol different => exact .const_same_ne symbol different
+  | app _ _ ihf iha => exact .app ihf iha
+  | lam _ ih => exact .lam ih
+  | top => exact .all (.imp .var .var)
+  | bot => exact .all .var
+  | and _ _ ihp ihq =>
+      exact .app (.app (.lam (.lam (.all (.imp (.imp .var (.imp .var .var)) .var)))) ihp) ihq
+  | or _ _ ihp ihq =>
+      exact .app (.app (.lam (.lam (.all (.imp (.imp .var .var) (.imp (.imp .var .var) .var))))) ihp) ihq
+  | imp _ _ ihp ihq => exact .imp ihp ihq
+  | not _ ih => exact .imp ih (.all .var)
+  | eq _ _ ihp ihq => exact .eq ihp ihq
+  | all _ ih => exact .all ih
+  | ex _ ih => exact .app (.lam (.all (.imp (.all (.imp (.app .var .var) .var)) .var))) (.lam ih)
+
 theorem expand_isCore (t : Term Const Γ τ) : IsCore (expand t) := by
   induction t <;>
     simp_all [expand, IsCore, truth, falsity, conjunction, disjunction, existential]

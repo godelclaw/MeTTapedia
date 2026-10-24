@@ -147,11 +147,18 @@ noncomputable def universalSections (h : CofinalInaccessibles.{u})
       ((x : Value A) → Elements (truthFibre h p (extend ρ x))) where
   toFun proof x := ⟨∅, (mem_truthFibre h p (extend ρ x) ∅).mpr ⟨rfl, by
     have universal := ((mem_truthFibre h (.all p) ρ proof.1).mp proof.2).2
-    exact (holds_truth _).mp universal x⟩⟩
+    have same := congrArg
+      (fun environment : Valuation (A :: Γ) => holds (interpret (universeConstants h) p environment))
+      (extend_simple ρ x)
+    exact same.mp ((holds_truth _).mp universal x)⟩⟩
   invFun sectionValue := ⟨∅, (mem_truthFibre h (.all p) ρ ∅).mpr ⟨rfl, by
     apply (holds_truth _).mpr
     intro x
-    exact ((mem_truthFibre h p (extend ρ x) (sectionValue x).1).mp (sectionValue x).2).2⟩⟩
+    have same := congrArg
+      (fun environment : Valuation (A :: Γ) => holds (interpret (universeConstants h) p environment))
+      (extend_simple ρ x)
+    exact same.mpr
+      (((mem_truthFibre h p (extend ρ x) (sectionValue x).1).mp (sectionValue x).2).2)⟩⟩
   left_inv proof := (fibre_subsingleton h (.all p) ρ).allEq _ proof
   right_inv sectionValue := by
     funext x
@@ -351,7 +358,8 @@ theorem fibre_empty_of_false (h : CofinalInaccessibles.{u}) {Γ : Ctx Unit}
 
 theorem false_fibre (h : CofinalInaccessibles.{u}) {Γ : Ctx Unit} (ρ : Valuation Γ) :
     truthFibre h (.bot : Formula UniverseSymbol Γ) ρ = ∅ :=
-  fibre_empty_of_false h .bot ρ (by simp only [interpret, holds_truth, not_false_eq_true])
+  fibre_empty_of_false h .bot ρ (by
+    simp only [interpret, ZFSetSimpleTypeInterpretation.interpret, holds_truth, not_false_eq_true])
 
 noncomputable def vacuousGraph (h : CofinalInaccessibles.{u}) :
     Elements (implicationGraphCode h (.bot : ClosedFormula UniverseSymbol) .bot emptyValuation) :=
@@ -425,7 +433,8 @@ theorem nonconstant_universal_graph_empty (h : CofinalInaccessibles.{u}) :
     (fun x => truthFibre h equalsParameter (extend emptyParameter x)) point
   refine atPoint.trans (fibre_empty_of_false h equalsParameter (extend emptyParameter point) ?_)
   intro proof
-  simp only [equalsParameter, interpret, extend, emptyParameter, holds_truth] at proof
+  simp only [equalsParameter, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    extend, emptyParameter, holds_truth] at proof
   have valueEqual := congrArg Subtype.val proof
   change ZFSet.powerset (∅ : ZFSet.{u + 1}) = ∅ at valueEqual
   have member : (∅ : ZFSet.{u + 1}) ∈ ZFSet.powerset ∅ :=
@@ -437,7 +446,8 @@ theorem nonconstant_predicate_has_inhabited_fibre (h : CofinalInaccessibles.{u})
     Nonempty (Elements (truthFibre h equalsParameter
       (extend emptyParameter ZFSetUniverseLift.carrierEmpty))) := by
   refine ⟨⟨∅, (mem_truthFibre h _ _ ∅).mpr ⟨rfl, ?_⟩⟩⟩
-  simp only [equalsParameter, interpret, extend, emptyParameter, holds_truth]
+  simp only [equalsParameter, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    extend, emptyParameter, holds_truth]
 
 #print axioms implicationEquiv
 #print axioms implication_intro_graph

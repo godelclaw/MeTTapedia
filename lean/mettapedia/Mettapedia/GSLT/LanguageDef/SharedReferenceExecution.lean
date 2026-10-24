@@ -17,6 +17,11 @@ It restores the submitted key between rows and returns the first matching
 physical reference. A missing key is refused after scanning the finite table.
 The table encoder uses the same five-symbol alphabet and numeric delimiters
 as the original certificate storage codec.
+
+The composite finite-machine definitions are reducible and macro-inlined.
+Instruction projections retain their original computation without allocating
+unused finite-state enumeration tables at module initialization. Their fields,
+counted executions and existing instruction-agreement theorems are unchanged.
 -/
 set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.SharedReferenceExecution
@@ -1180,7 +1185,7 @@ theorem decodedOutput_some_iff {A : Type} (codec : Codec A) (selected : Option A
         Triples.Recovery.result, List.cons.injEq, true_and, Option.some.injEq]
       exact (encodeWith_injective codec).eq_iff
 
-abbrev decodedMachine : FinTM2 :=
+@[reducible, macro_inline] def decodedMachine : FinTM2 :=
   Mettapedia.Computability.StackMachineComposition.machine machine
     Triples.Recovery.machine (Equiv.refl Alphabet)
 
@@ -1661,7 +1666,7 @@ local instance : Inhabited ((WordTemplateMachine.Indexed.machine firstTemplate).
     (WordTemplateMachine.Indexed.machine firstTemplate).k₁) := inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
 local instance : Inhabited (SharedReferenceExecution.machine.Γ SharedReferenceExecution.machine.k₀) :=
   inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
-abbrev firstMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine firstTemplate)
+@[reducible, macro_inline] def firstMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine firstTemplate)
   SharedReferenceExecution.machine (Equiv.refl SharedReferenceExecution.Alphabet)
 local instance : Fintype (firstMachine.Γ firstMachine.k₁) := inferInstanceAs (Fintype SharedReferenceExecution.Alphabet)
 local instance : Inhabited (firstMachine.Γ firstMachine.k₀) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
@@ -1707,7 +1712,7 @@ def firstOutputs {A : Type} (codec : Codec A) (roots : Array Nat) (values : Arra
   dsimp only [sourcePacket] at bounded ⊢
   nlinarith [Nat.pow_le_pow_left bounded 2]
 
-abbrev retainedMachine := RetainedWordExecution.WithOutput.machine firstMachine
+@[reducible, macro_inline] def retainedMachine := RetainedWordExecution.WithOutput.machine firstMachine
 
 def untag (symbol : Sum (Option SharedReferenceExecution.Alphabet) SharedReferenceExecution.Alphabet) :
     List (Option SharedReferenceExecution.Alphabet) :=
@@ -1720,12 +1725,12 @@ local instance : Inhabited (retainedMachine.Γ retainedMachine.k₁) :=
 local instance : Inhabited ((WordHomomorphismMachine.machine untag).Γ
     (WordHomomorphismMachine.machine untag).k₀) :=
   inferInstanceAs (Inhabited (Sum (Option SharedReferenceExecution.Alphabet) SharedReferenceExecution.Alphabet))
-abbrev taggedMachine := StackMachineComposition.machine retainedMachine
+@[reducible, macro_inline] def taggedMachine := StackMachineComposition.machine retainedMachine
   (WordHomomorphismMachine.machine untag)
   (Equiv.refl (Sum (Option SharedReferenceExecution.Alphabet) SharedReferenceExecution.Alphabet))
 local instance : Fintype (taggedMachine.Γ taggedMachine.k₁) := inferInstanceAs (Fintype (Option SharedReferenceExecution.Alphabet))
 local instance : Inhabited (taggedMachine.Γ taggedMachine.k₁) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
-abbrev preparedMachine := StackMachineComposition.machine taggedMachine
+@[reducible, macro_inline] def preparedMachine := StackMachineComposition.machine taggedMachine
   (WordTemplateMachine.machine closeTemplate) (Equiv.refl (Option SharedReferenceExecution.Alphabet))
 
 theorem framed_machine_same : preparedMachine =
@@ -1819,14 +1824,14 @@ local instance : Inhabited (EncodedTable.decodedMachine.Γ EncodedTable.decodedM
   inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
 local instance : Inhabited (EncodedTable.decodedMachine.Γ EncodedTable.decodedMachine.k₁) :=
   inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
-abbrev guardedMachine := StackMachineComposition.Dispatch.machine EncodedTable.decodedMachine acceptsRoot
+@[reducible, macro_inline] def guardedMachine := StackMachineComposition.Dispatch.machine EncodedTable.decodedMachine acceptsRoot
   ([0] : AWord)
 local instance : Fintype ((WordTemplateMachine.Indexed.machine secondTemplate).Γ
     (WordTemplateMachine.Indexed.machine secondTemplate).k₁) := inferInstanceAs (Fintype SharedReferenceExecution.Alphabet)
 local instance : Inhabited ((WordTemplateMachine.Indexed.machine secondTemplate).Γ
     (WordTemplateMachine.Indexed.machine secondTemplate).k₁) := inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
 local instance : Inhabited (guardedMachine.Γ guardedMachine.k₀) := inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
-abbrev secondMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine secondTemplate)
+@[reducible, macro_inline] def secondMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine secondTemplate)
   guardedMachine (Equiv.refl SharedReferenceExecution.Alphabet)
 
 def selected {A : Type} (roots : Array Nat) (values : Array A) (query : Nat) : Option A :=
@@ -1914,7 +1919,7 @@ def secondOutputs {A : Type} (codec : Codec A) (roots : Array Nat) (values : Arr
 local instance : Fintype (preparedMachine.Γ preparedMachine.k₁) := inferInstanceAs (Fintype (Option SharedReferenceExecution.Alphabet))
 local instance : Inhabited (preparedMachine.Γ preparedMachine.k₁) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
 local instance : Inhabited (secondMachine.Γ secondMachine.k₀) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
-abbrev machine := StackMachineComposition.machine preparedMachine secondMachine (Equiv.refl (Option SharedReferenceExecution.Alphabet))
+@[reducible, macro_inline] def machine := StackMachineComposition.machine preparedMachine secondMachine (Equiv.refl (Option SharedReferenceExecution.Alphabet))
 
 /-- Two-level chronological resolution is one uniform finite-stack machine.
 Both unbounded tables are physical input. Repeated roots retain their original
@@ -2075,7 +2080,7 @@ local instance : Fintype (decodedMachine.Γ decodedMachine.k₁) :=
   inferInstanceAs (Fintype SharedReferenceExecution.Alphabet)
 local instance : Inhabited (decodedMachine.Γ decodedMachine.k₁) :=
   inferInstanceAs (Inhabited SharedReferenceExecution.Alphabet)
-abbrev firstMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine firstTemplate)
+@[reducible, macro_inline] def firstMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine firstTemplate)
   decodedMachine (Equiv.refl SharedReferenceExecution.Alphabet)
 local instance : Fintype (firstMachine.Γ firstMachine.k₁) := inferInstanceAs (Fintype SharedReferenceExecution.Alphabet)
 local instance : Inhabited (firstMachine.Γ firstMachine.k₀) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
@@ -2136,7 +2141,7 @@ def firstOutputs {A : Type} (codec : Codec A) (values : Array A) (query : Nat) (
   dsimp only [sourcePacket] at bounded ⊢
   nlinarith [Nat.pow_le_pow_left bounded 2]
 
-abbrev preparedMachine := RetainedWordExecution.WithOutput.Framed.machine firstMachine
+@[reducible, macro_inline] def preparedMachine := RetainedWordExecution.WithOutput.Framed.machine firstMachine
   (Equiv.refl (Option SharedReferenceExecution.Alphabet)) (Equiv.refl SharedReferenceExecution.Alphabet)
 local instance : Fintype (preparedMachine.Γ preparedMachine.k₁) := inferInstanceAs (Fintype (Option SharedReferenceExecution.Alphabet))
 local instance : Inhabited (preparedMachine.Γ preparedMachine.k₁) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
@@ -2210,7 +2215,7 @@ theorem lift_exact {A : Type} (codec : Codec A) (values : Array A) (query : Nat)
   simp only [List.map_map,Function.comp_def]
   rfl
 
-abbrev liftedMachine := StackMachineComposition.machine preparedMachine
+@[reducible, macro_inline] def liftedMachine := StackMachineComposition.machine preparedMachine
   (WordHomomorphismMachine.machine liftSymbol) (Equiv.refl (Option SharedReferenceExecution.Alphabet))
 local instance : Fintype (liftedMachine.Γ liftedMachine.k₁) := inferInstanceAs (Fintype (Option (Option SharedReferenceExecution.Alphabet)))
 local instance : Inhabited (liftedMachine.Γ liftedMachine.k₁) := inferInstanceAs (Inhabited (Option (Option SharedReferenceExecution.Alphabet)))
@@ -2225,10 +2230,10 @@ local instance : Inhabited ((WordTemplateMachine.Indexed.machine secondTemplate)
     (WordTemplateMachine.Indexed.machine secondTemplate).k₁) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
 local instance : Inhabited ((WordEqualityMachine.machine SharedReferenceExecution.Alphabet).Γ
     (WordEqualityMachine.machine SharedReferenceExecution.Alphabet).k₀) := inferInstanceAs (Inhabited (Option SharedReferenceExecution.Alphabet))
-abbrev secondMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine secondTemplate)
+@[reducible, macro_inline] def secondMachine := StackMachineComposition.machine (WordTemplateMachine.Indexed.machine secondTemplate)
   (WordEqualityMachine.machine SharedReferenceExecution.Alphabet) (Equiv.refl (Option SharedReferenceExecution.Alphabet))
 local instance : Inhabited (secondMachine.Γ secondMachine.k₀) := inferInstanceAs (Inhabited (Option (Option SharedReferenceExecution.Alphabet)))
-abbrev machine := StackMachineComposition.machine liftedMachine secondMachine
+@[reducible, macro_inline] def machine := StackMachineComposition.machine liftedMachine secondMachine
   (Equiv.refl (Option (Option SharedReferenceExecution.Alphabet)))
 
 theorem secondTemplate_exact {A : Type} (codec : Codec A) (values : Array A) (query : Nat) (expected : A) :
@@ -2364,8 +2369,8 @@ noncomputable def differentOutputs {A : Type} [DecidableEq A] (codec : Codec A) 
       (250*((sourcePacket codec values query expected).length+1)^2) := by
   simpa only [found,Option.some.injEq,decide_eq_false different] using outputs codec values query expected
 
-abbrev retainedMachine := RetainedWordExecution.WithOutput.machine firstMachine
-abbrev taggedMachine := RetainedWordExecution.WithOutput.Framed.taggedMachine firstMachine
+@[reducible, macro_inline] def retainedMachine := RetainedWordExecution.WithOutput.machine firstMachine
+@[reducible, macro_inline] def taggedMachine := RetainedWordExecution.WithOutput.Framed.taggedMachine firstMachine
   (Equiv.refl (Option SharedReferenceExecution.Alphabet)) (Equiv.refl SharedReferenceExecution.Alphabet)
 abbrev images := RetainedWordExecution.WithOutput.Framed.untag firstMachine
   (Equiv.refl (Option SharedReferenceExecution.Alphabet)) (Equiv.refl SharedReferenceExecution.Alphabet)

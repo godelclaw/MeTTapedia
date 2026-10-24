@@ -1297,7 +1297,8 @@ def operatorImage (source : NativeSignature.Installation language) :
   | _, .constructor rule member _ _, _, _ =>
       .const (constructorDeclName language (constructorIndex rule member))
   | _, .collectionConstructor rule member name kind element shape _, _, _ =>
-      False.elim (no_collection_constructor source rule member name kind element shape)
+      False.elim (no_collection_constructor source rule member name kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
   | _, .lambda _ _, _, _ => ClosedOperators.Derived.identity
   | _, .multiLambda domain codomain _, sort, resultRead =>
       False.elim (source_not_multiArrow sort domain codomain resultRead)
@@ -1528,7 +1529,8 @@ theorem operatorImage_typed (source : NativeSignature.Installation language)
         constructor_type source unique rule member parameters arity projects sort resultRead] at typed
       exact typed
   | collectionConstructor rule member name kind element shape count =>
-      exact False.elim (no_collection_constructor source rule member name kind element shape)
+      exact False.elim (no_collection_constructor source rule member name kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
   | lambda domain codomain =>
       cases sort with
       | sort position => cases resultRead
@@ -1728,7 +1730,8 @@ def operatorIntermediateName (source : NativeSignature.Installation language) :
   | _, .constructor rule member _ _, _, _ =>
       constructorDeclName language (constructorIndex rule member)
   | _, .collectionConstructor rule member name kind element shape _, _, _ =>
-      False.elim (no_collection_constructor source rule member name kind element shape)
+      False.elim (no_collection_constructor source rule member name kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
   | _, .lambda _ _, _, _ => identityName language
   | _, .multiLambda domain codomain _, sort, resultRead => by
       cases sort with
@@ -1760,7 +1763,8 @@ theorem operatorIntermediate_expands (source : NativeSignature.Installation lang
   | constructor rule member ordinary parameters =>
       exact if_neg (constructor_ne_identity (constructorIndex rule member))
   | collectionConstructor rule member name kind element shape count =>
-      exact False.elim (no_collection_constructor source rule member name kind element shape)
+      exact False.elim (no_collection_constructor source rule member name kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
   | lambda domain codomain => exact if_pos rfl
   | multiLambda domain codomain count =>
       cases sort with
@@ -3157,7 +3161,8 @@ theorem RuleMetavariables.positions_intermediate
   | constructor declaration member ordinary parameters =>
       exact metadata.positions_constructor ruleIndex ambient _
   | collectionConstructor declaration member name kind element shape count =>
-      exact False.elim (no_collection_constructor source declaration member name kind element shape)
+      exact False.elim (no_collection_constructor source declaration member name kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
   | lambda domain codomain => exact metadata.positions_identity ruleIndex ambient
   | multiLambda domain codomain count =>
       cases sort with

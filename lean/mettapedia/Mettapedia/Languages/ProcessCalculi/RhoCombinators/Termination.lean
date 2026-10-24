@@ -1,4 +1,5 @@
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.Occupancy
+import Mettapedia.Languages.ProcessCalculi.RhoCombinators.NormalForm
 
 /-!
 # Termination without the opener, and the weight the bound needs
@@ -226,6 +227,106 @@ theorem relay_bounded {n : Nat}
     boundedPoint_omits_opener occupied chain
   simpa [weight] using bound
 
+/-! ## Constructed duplication defeats a syntactic absence test -/
+
+namespace ConstructedDuplication
+
+/-- Six channel names; any closed terms will do. -/
+def sourceName : Comb := kk nil
+def copyName : Comb := kk (kk nil)
+def firstInput : Comb := kk (kk (kk nil))
+def secondInput : Comb := ev nil
+def thirdInput : Comb := ev (ev nil)
+def constructorOutput : Comb := fw nil nil
+
+/-- Code that reconstructs a duplicator and the opener of the next round. -/
+def rebuildCode : Comb :=
+  par (consDup firstInput secondInput thirdInput constructorOutput)
+    (par (mm firstInput sourceName)
+      (par (mm secondInput copyName)
+        (par (mm thirdInput sourceName) (par (ev constructorOutput) (ev copyName)))))
+
+/-- Start: two copies of the code and one opener; no duplicator anywhere. -/
+def duplicationFreeStart : Comb :=
+  par (mm copyName rebuildCode) (par (mm sourceName rebuildCode) (ev copyName))
+
+theorem duplicationFreeStart_has_no_dd : Shape.dd ∉ atomsStar duplicationFreeStart := by decide
+
+theorem duplicationFreeStart_has_constructor_and_opener :
+    Shape.consDup ∈ atomsStar duplicationFreeStart ∧
+      Shape.ev ∈ atomsStar duplicationFreeStart := by decide
+
+/-- The opener at the copy channel activates one copy of the code. -/
+private theorem open_code : Step Cong duplicationFreeStart (par rebuildCode (mm sourceName rebuildCode)) := by
+  refine Step.congruent (p' := par (par (ev copyName) (mm copyName rebuildCode)) (mm sourceName rebuildCode))
+    (q' := par rebuildCode (mm sourceName rebuildCode)) ?_ ?_ (Cong.refl _)
+  · exact cong_of_perm (by decide)
+  · exact Step.parLeft _ (Step.ofMinus (StepMinus.opening rebuildCode (Cong.refl copyName)))
+
+/-- Step 2: the duplicator constructor builds the quotation of `dd sourceName copyName sourceName`. -/
+private theorem construct_duplicator : Step Cong (par rebuildCode (mm sourceName rebuildCode))
+    (par (mm constructorOutput (dd sourceName copyName sourceName)) (par (par (ev constructorOutput) (ev copyName)) (mm sourceName rebuildCode))) := by
+  refine Step.congruent
+    (p' := par (par (consDup firstInput secondInput thirdInput constructorOutput) (par (mm firstInput sourceName) (par (mm secondInput copyName) (mm thirdInput sourceName))))
+              (par (par (ev constructorOutput) (ev copyName)) (mm sourceName rebuildCode)))
+    (q' := par (mm constructorOutput (dd sourceName copyName sourceName)) (par (par (ev constructorOutput) (ev copyName)) (mm sourceName rebuildCode))) ?_ ?_ (Cong.refl _)
+  · exact cong_of_perm (by decide)
+  · exact Step.parLeft _ (Step.buildDup constructorOutput sourceName copyName sourceName (Cong.refl firstInput) (Cong.refl secondInput) (Cong.refl thirdInput))
+
+/-- Step 3: the opener at `constructorOutput` erects the live duplicator. -/
+private theorem open_duplicator : Step Cong (par (mm constructorOutput (dd sourceName copyName sourceName)) (par (par (ev constructorOutput) (ev copyName)) (mm sourceName rebuildCode)))
+    (par (dd sourceName copyName sourceName) (par (ev copyName) (mm sourceName rebuildCode))) := by
+  refine Step.congruent
+    (p' := par (par (ev constructorOutput) (mm constructorOutput (dd sourceName copyName sourceName))) (par (ev copyName) (mm sourceName rebuildCode)))
+    (q' := par (dd sourceName copyName sourceName) (par (ev copyName) (mm sourceName rebuildCode))) ?_ ?_ (Cong.refl _)
+  · exact cong_of_perm (by decide)
+  · exact Step.parLeft _ (Step.ofMinus (StepMinus.opening (dd sourceName copyName sourceName) (Cong.refl constructorOutput)))
+
+/-- Step 4: the duplicator copies the code message to `copyName` and back to `sourceName`. -/
+private theorem duplicate_code : Step Cong (par (dd sourceName copyName sourceName) (par (ev copyName) (mm sourceName rebuildCode))) duplicationFreeStart := by
+  refine Step.congruent
+    (p' := par (par (dd sourceName copyName sourceName) (mm sourceName rebuildCode)) (ev copyName))
+    (q' := par (par (mm copyName rebuildCode) (mm sourceName rebuildCode)) (ev copyName)) ?_ ?_ ?_
+  · exact cong_of_perm (by decide)
+  · exact Step.parLeft _ (Step.ofMinus (StepMinus.duplicate copyName sourceName rebuildCode (Cong.refl sourceName)))
+  · exact cong_of_perm (by decide)
+
+/-- The initially duplicator-free term returns to itself in four steps of the
+full calculus. Its constructor creates the duplicator used by the final step. -/
+theorem duplicationFreeStart_cycles : Relation.TransGen (Step Cong) duplicationFreeStart duplicationFreeStart :=
+  Relation.TransGen.head open_code (Relation.TransGen.head construct_duplicator
+    (Relation.TransGen.head open_duplicator (Relation.TransGen.single duplicate_code)))
+
+/-- The same initially duplicator-free term admits arbitrarily many complete
+rounds. The absence of a live duplicator is not a reduction-closed capability
+restriction when code can build and open it. -/
+theorem duplicationFreeStart_unbounded (rounds : Nat) :
+    Chain duplicationFreeStart (4 * rounds) := by
+  induction rounds with
+  | zero => exact .nil _
+  | succ rounds ih =>
+      simpa only [Nat.mul_succ] using
+        (Chain.cons open_code (Chain.cons construct_duplicator
+          (Chain.cons open_duplicator (Chain.cons duplicate_code ih))))
+
+/-- Strong normalization, read as accessibility of reversed reduction, fails
+for the initially `dd`-free control. -/
+theorem duplicationFreeStart_not_accessible :
+    ¬ Acc (fun next current => Step Cong current next) duplicationFreeStart := by
+  intro accessible
+  have irrefl : ∀ (term : Comb),
+      Acc (Relation.TransGen (fun next current => Step Cong current next)) term →
+      ¬ Relation.TransGen (fun next current => Step Cong current next) term term := by
+    intro term access
+    induction access with
+    | intro term _ ih =>
+        intro loop
+        exact ih term loop loop
+  exact irrefl _ accessible.transGen
+    (Relation.transGen_swap.mpr duplicationFreeStart_cycles)
+
+end ConstructedDuplication
+
 end TerminationControls
 
 end Mettapedia.Languages.ProcessCalculi.RhoCombinators
@@ -235,3 +336,8 @@ end Mettapedia.Languages.ProcessCalculi.RhoCombinators
 #print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.weight_lt_of_step
 #print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.chain_length_le_weight
 #print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.TerminationControls.relay_bounded
+
+#print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.TerminationControls.ConstructedDuplication.duplicationFreeStart_has_no_dd
+#print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.TerminationControls.ConstructedDuplication.duplicationFreeStart_cycles
+#print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.TerminationControls.ConstructedDuplication.duplicationFreeStart_unbounded
+#print axioms Mettapedia.Languages.ProcessCalculi.RhoCombinators.TerminationControls.ConstructedDuplication.duplicationFreeStart_not_accessible

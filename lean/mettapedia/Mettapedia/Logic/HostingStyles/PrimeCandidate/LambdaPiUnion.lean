@@ -449,8 +449,9 @@ mutual
         elementsTyped =>
         have category : rule.category ∈ sorts := by simpa [resultIn] using inSorts
         obtain ⟨inSmaller, parameters⟩ := closed rule member category
+        have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
         have element := parameters (.simple parameterName (.collection kind elementType))
-          (by rw [shape]; exact List.mem_singleton.mpr rfl) (.collection kind elementType) rfl
+          (by rw [fullShape]; exact List.mem_singleton.mpr rfl) (.collection kind elementType) rfl
         simp only [isObjectPattern, Bool.and_eq_true] at object
         exact .collectionConstructor inSmaller shape
           (elements_of_sortsFrom closed elementsTyped (by simpa [resultIn] using element)

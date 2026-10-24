@@ -53,6 +53,40 @@ theorem sum_prefixPMF_toReal (μ : PrefixMeasure) (n : ℕ) :
     (∑ x : Fin n → Bool, (prefixPMF μ n x).toReal) = 1 :=
   sum_toReal_eq_one (p := prefixPMF μ n)
 
+/-- Pointwise comparisons and affine combinations pass through prefix expectation. -/
+theorem expectPrefix_mono (μ : PrefixMeasure) (n : ℕ) {f g : BinString → ℝ}
+    (h : ∀ x, f x ≤ g x) : expectPrefix μ n f ≤ expectPrefix μ n g :=
+  Finset.sum_le_sum fun _ _ => mul_le_mul_of_nonneg_left (h _) ENNReal.toReal_nonneg
+
+/-- Comparisons need only hold at histories of positive actual mass. -/
+theorem expectPrefix_mono_on_support (μ : PrefixMeasure) (n : ℕ) {f g : BinString → ℝ}
+    (h : ∀ x, μ x ≠ 0 → f x ≤ g x) : expectPrefix μ n f ≤ expectPrefix μ n g := by
+  unfold expectPrefix
+  apply Finset.sum_le_sum
+  intro x _
+  by_cases zero : μ (List.ofFn x) = 0
+  · change (μ (List.ofFn x)).toReal * f (List.ofFn x) ≤
+      (μ (List.ofFn x)).toReal * g (List.ofFn x)
+    simp only [zero, ENNReal.toReal_zero, zero_mul, le_refl]
+  · exact mul_le_mul_of_nonneg_left (h _ zero) ENNReal.toReal_nonneg
+
+theorem expectPrefix_congr_on_support (μ : PrefixMeasure) (n : ℕ) {f g : BinString → ℝ}
+    (h : ∀ x, μ x ≠ 0 → f x = g x) : expectPrefix μ n f = expectPrefix μ n g :=
+  le_antisymm (expectPrefix_mono_on_support μ n (fun x hx => (h x hx).le))
+    (expectPrefix_mono_on_support μ n (fun x hx => (h x hx).ge))
+
+@[simp] theorem expectPrefix_const (μ : PrefixMeasure) (n : ℕ) (a : ℝ) :
+    expectPrefix μ n (fun _ => a) = a := by
+  rw [expectPrefix, ← Finset.sum_mul, sum_prefixPMF_toReal, one_mul]
+
+theorem expectPrefix_affine (μ : PrefixMeasure) (n : ℕ) (a b : ℝ) (f g : BinString → ℝ) :
+    expectPrefix μ n (fun x => a * f x + b * g x) =
+      a * expectPrefix μ n f + b * expectPrefix μ n g := by
+  simp only [expectPrefix, Finset.mul_sum, ← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro x _
+  ring
+
 /-- A `Semimeasure` dominates a probability measure only with constant `c ≤ 1`. -/
 theorem dominates_const_le_one {μ : PrefixMeasure} {ξ : Semimeasure} {c : ENNReal}
     (hdom : Dominates ξ μ c) : c ≤ 1 := by

@@ -2,6 +2,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionCodec
 import Mettapedia.OSLF.MeTTaIL.ScopedCollectionMachineControls
 import Mettapedia.GSLT.LanguageDef.CettaWireEquality
 import Mettapedia.GSLT.LanguageDef.CollectionConsumers
+import Mettapedia.GSLT.LanguageDef.CollectionConsumerControls
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPlanExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution
 
@@ -15,6 +16,7 @@ open ScopedCollectionExecution (requestTerm stateTerm receiptTerm)
 open ScopedCollectionExecution (firingTerm)
 open CollectionPlanExecution (requestEntryTerm planStateTerm planFiringTerm)
 open CollectionMatcherBackendExecution (rawOrdinaryTarget rawOrdinaryRequest backendAnswers)
+open CompleteExecution.DescentCodec
 open ScopedCollectionMatching.Controls (a b twoVariables repeatedVariable rule spec)
 open Mettapedia.Languages.MeTTa.PeTTa
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
@@ -125,6 +127,99 @@ def backendControls (label : String) (query : Request) : List String :=
         (CettaWire.encodeList RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm
           (backendAnswers query receipt)) ]
 
+def continuationControl (label : String) (environment : GeneralPremise.Environment)
+    (type : TypeExpr) (firing : CollectionPlanMachine.Firing)
+    (goal : StructuralDescent.Scheduled.Goal)
+    (handoff : GeneralPremise.Scheduler.Expansion
+      (StructuralDescent.Scheduled.Task environment goal)
+      (StructuralDescent.Scheduled.Result environment goal)
+      StructuralDescent.Scheduled.Obligation) : String :=
+  let source := CollectionMatcherCompatibility.ordinaryTarget firing.request firing.receipt.source
+  let ordinary := rawOrdinaryRequest firing.request firing.receipt.source
+  let tail : StructuralDescent.Scheduled.Continuation environment goal goal := .done goal
+  let next : List (StructuralDescent.Scheduled.Task environment goal) := []
+  let bindings :=
+    [("$environment", quoted
+        (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+          (environment.free.entriesOn []))),
+     ("$bound", quoted (CettaWire.encodeList InferenceCettaWire.AuthoredRule.typeTerm [])),
+     ("$type", quoted (InferenceCettaWire.AuthoredRule.typeTerm type)),
+     ("$source", quoted (encodePattern source)),
+     ("$rule", quoted (InferenceCettaWire.AuthoredRule.rewriteTerm firing.request.rule)),
+     ("$spec", quoted (InferenceCettaWire.AuthoredRule.bindingSpecTerm firing.request.spec)),
+     ("$request", quoted
+        (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm ordinary)),
+     ("$assignment", quoted
+        (RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm
+          firing.receipt.source.matching.assignment)),
+     ("$tail", quoted (continuationTerm tail)),
+     ("$next", quoted (CettaWire.encodeList taskTerm next))]
+  assertion label bindings
+    ("(let $answers (gslt:collection-backend:answers $request $assignment) " ++
+      "(gslt:collection-backend:continue-answers $environment 0 $bound $type $source " ++
+      toString firing.ordinal ++ " $rule $spec $answers $tail $next))")
+    (encodeOption expansionTerm (some handoff))
+
+def petriContinuationControl : String :=
+  continuationControl "petri-generic-continuation"
+    CollectionConsumers.Controls.petriEnvironment (.base "Marking")
+    CollectionConsumers.Controls.petriFirstFiring
+    CollectionConsumers.Controls.petriHandoffGoal
+    CollectionConsumers.Controls.petriHandoff
+
+def graphContinuationControl : String :=
+  continuationControl "graph-generic-continuation"
+    CollectionConsumers.Controls.graphEnvironment (.base "Graph")
+    CollectionConsumers.Controls.graphFirstFiring
+    CollectionConsumers.Controls.graphHandoffGoal
+    CollectionConsumers.Controls.graphHandoff
+
+def scheduledControl (label : String) (environment : GeneralPremise.Environment)
+    (type : TypeExpr) (firing : CollectionPlanMachine.Firing)
+    (goal : StructuralDescent.Scheduled.Goal)
+    (run : StructuralDescent.Scheduled.State environment goal) : String :=
+  let source := CollectionMatcherCompatibility.ordinaryTarget firing.request firing.receipt.source
+  let ordinary := rawOrdinaryRequest firing.request firing.receipt.source
+  let tail : StructuralDescent.Scheduled.Continuation environment goal goal := .done goal
+  let next : List (StructuralDescent.Scheduled.Task environment goal) := []
+  let bindings :=
+    [("$environment", quoted
+        (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+          (environment.free.entriesOn []))),
+     ("$bound", quoted (CettaWire.encodeList InferenceCettaWire.AuthoredRule.typeTerm [])),
+     ("$type", quoted (InferenceCettaWire.AuthoredRule.typeTerm type)),
+     ("$source", quoted (encodePattern source)),
+     ("$rule", quoted (InferenceCettaWire.AuthoredRule.rewriteTerm firing.request.rule)),
+     ("$spec", quoted (InferenceCettaWire.AuthoredRule.bindingSpecTerm firing.request.spec)),
+     ("$request", quoted
+        (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm ordinary)),
+     ("$assignment", quoted
+        (RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm
+          firing.receipt.source.matching.assignment)),
+     ("$tail", quoted (continuationTerm tail)),
+     ("$next", quoted (CettaWire.encodeList taskTerm next))]
+  assertion label bindings
+    ("(let* (($answers (gslt:collection-backend:answers $request $assignment)) " ++
+      "($expanded (gslt:collection-backend:continue-answers $environment 0 $bound $type $source " ++
+      toString firing.ordinal ++ " $rule $spec $answers $tail $next)) " ++
+      "($state (gslt:collection-backend:expansion-state $expanded))) " ++
+      "(gslt:descent:run $environment 20 $state))")
+    (stateTerm run)
+
+def petriScheduledControl : String :=
+  scheduledControl "petri-generic-scheduled-run"
+    CollectionConsumers.Controls.petriEnvironment (.base "Marking")
+    CollectionConsumers.Controls.petriFirstFiring
+    CollectionConsumers.Controls.petriHandoffGoal
+    CollectionConsumers.Controls.petriScheduledRun
+
+def graphScheduledControl : String :=
+  scheduledControl "graph-generic-scheduled-run"
+    CollectionConsumers.Controls.graphEnvironment (.base "Graph")
+    CollectionConsumers.Controls.graphFirstFiring
+    CollectionConsumers.Controls.graphHandoffGoal
+    CollectionConsumers.Controls.graphScheduledRun
+
 def fixtures : List (String × Request) :=
   [ ("set-reuse", request .hashSet twoVariables (some "R") [a])
   , ("bag-origins", request .hashBag twoVariables (some "R") [a, a])
@@ -194,6 +289,8 @@ def controls : List String :=
         fun (decisions, number) => replayControl s!"replay-{mode}-{index}-{number}" mode items decisions
   allocate ++ replayed ++ fixtures.flatMap (fun (label, query) => batchControls label query) ++
     fixtures.flatMap (fun (label, query) => backendControls label query) ++
+    [petriContinuationControl, graphContinuationControl,
+      petriScheduledControl, graphScheduledControl] ++
     planFixtures.flatMap fun (label, requests) => planControls label requests
 
 def packets (label : String) (query : Request) : String :=

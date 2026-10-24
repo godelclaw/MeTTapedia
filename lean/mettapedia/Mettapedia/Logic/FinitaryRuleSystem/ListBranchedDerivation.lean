@@ -1,21 +1,17 @@
 import Mathlib.Algebra.BigOperators.Fin
-import Mathlib.CategoryTheory.Limits.Shapes.IsTerminal
 import Mettapedia.Logic.FinitaryRuleSystem.Initiality
 
 /-!
 # List-branched finite derivations
 
-The generic replay certificate is often easiest to state as the initial algebra
-of the polynomial endofunctor
-
-`F X = J × W × List X`.
-
-The existing `Derivation` type stores the same finite branching as an arity
-`n : Nat` and a family `Fin n → X`.  This module proves that the two
-representations are exactly equivalent.  The equivalence preserves roots,
-branch order, branch multiplicity, node count, and replay.  It therefore
-exposes a representation-independent finite construction without selecting an
-object logic or a bootstrap host.
+`ListBranchedDerivation` is the initial algebra of `F X = J × W × List X`;
+`Derivation` instead stores each finite family as an arity and a `Fin n` tuple.
+Both syntaxes and evaluators are independently defined.  Conversion preserves
+roots, branch order, multiplicity, node count, and replay.  Transport of node
+interpretations makes their folds commute and gives list initiality from
+indexed initiality, independently of any object logic or bootstrap host.
+Replay, ordered witness traces, and node counts retain different observations
+of this common finite construction.
 -/
 
 set_option autoImplicit false
@@ -133,15 +129,8 @@ theorem toIndexed_ofIndexed :
   intro tree
   induction tree with
   | node conclusion witness n children ih =>
-      simp only [ofIndexed, toIndexed]
-      have mapped :
-          toIndexedList (List.ofFn fun i => ofIndexed (children i)) =
-            List.ofFn children := by
-        rw [toIndexedList_eq_map, List.map_ofFn]
-        apply congrArg List.ofFn
-        funext i
-        exact ih i
-      rw [mapped, indexedNodeFromList_ofFn]
+      simp only [ofIndexed, toIndexed, toIndexedList_eq_map, List.map_ofFn,
+        Function.comp_def, ih, indexedNodeFromList_ofFn]
 
 mutual
   /-- Converting a list tree to an indexed tree and back is the identity. -/
@@ -184,9 +173,8 @@ theorem concl_toIndexed : ∀ tree : ListBranchedDerivation J W,
 @[simp]
 theorem concl_ofIndexed (tree : Derivation J W) :
     (ofIndexed tree).concl = tree.concl := by
-  have preserved := concl_toIndexed (ofIndexed tree)
-  rw [toIndexed_ofIndexed] at preserved
-  exact preserved.symm
+  cases tree
+  rfl
 
 @[simp]
 theorem indexedNodeFromList_nodeCount (conclusion : J) (witness : W)
@@ -195,34 +183,22 @@ theorem indexedNodeFromList_nodeCount (conclusion : J) (witness : W)
       1 + (children.map Derivation.nodeCount).sum := by
   simp [indexedNodeFromList, List.equivSigmaTuple]
 
-mutual
-  /-- Node count is invariant under conversion to indexed branching. -/
-  theorem nodeCount_toIndexed :
-      ∀ tree : ListBranchedDerivation J W,
-        (toIndexed tree).nodeCount = tree.nodeCount
-    | .node conclusion witness children => by
-        rw [toIndexed, indexedNodeFromList_nodeCount]
-        simp only [nodeCount]
-        congr 1
-        exact congrArg List.sum (nodeCounts_toIndexedList children)
-
-  theorem nodeCounts_toIndexedList :
-      ∀ children : List (ListBranchedDerivation J W),
-        (toIndexedList children).map Derivation.nodeCount =
-          children.map nodeCount
-    | [] => rfl
-    | child :: children => by
-        simp only [toIndexedList, List.map_cons, List.cons.injEq]
-        exact ⟨nodeCount_toIndexed child,
-          nodeCounts_toIndexedList children⟩
-end
-
 @[simp]
 theorem nodeCount_ofIndexed (tree : Derivation J W) :
     (ofIndexed tree).nodeCount = tree.nodeCount := by
-  have preserved := nodeCount_toIndexed (ofIndexed tree)
-  rw [toIndexed_ofIndexed] at preserved
-  exact preserved.symm
+  induction tree with
+  | node conclusion witness n children ih =>
+      simp only [ofIndexed, nodeCount_node, List.map_ofFn, List.sum_ofFn,
+        Derivation.nodeCount_node, Function.comp_def, ih]
+
+/-- Node count is invariant under conversion to indexed branching. -/
+theorem nodeCount_toIndexed (tree : ListBranchedDerivation J W) :
+    (toIndexed tree).nodeCount = tree.nodeCount := by
+  simpa only [ofIndexed_toIndexed] using (nodeCount_ofIndexed (toIndexed tree)).symm
+
+theorem nodeCounts_toIndexedList (children : List (ListBranchedDerivation J W)) :
+    (toIndexedList children).map Derivation.nodeCount = children.map nodeCount := by
+  simp only [toIndexedList_eq_map, List.map_map, Function.comp_def, nodeCount_toIndexed]
 
 @[simp]
 theorem indexedNodeFromList_valid {rules : List J → J → Prop}
@@ -234,44 +210,27 @@ theorem indexedNodeFromList_valid {rules : List J → J → Prop}
         (children.map (Derivation.valid interface)).all id) := by
   simp [indexedNodeFromList, List.equivSigmaTuple, Derivation.valid]
 
-mutual
-  /-- Replay is invariant under conversion to indexed branching. -/
-  theorem valid_toIndexed {rules : List J → J → Prop}
-      (interface : RuleWitness.{u, v} rules) :
-      ∀ tree : ListBranchedDerivation J interface.W,
-        (toIndexed tree).valid interface = tree.valid interface
-    | .node conclusion witness children => by
-        rw [toIndexed, indexedNodeFromList_valid]
-        simp only [valid]
-        have conclusions :
-            (toIndexedList children).map Derivation.concl =
-              children.map concl := by
-          rw [toIndexedList_eq_map, List.map_map]
-          apply List.map_congr_left
-          intro child _member
-          exact concl_toIndexed child
-        rw [conclusions, validities_toIndexedList interface children]
-
-  theorem validities_toIndexedList {rules : List J → J → Prop}
-      (interface : RuleWitness.{u, v} rules) :
-      ∀ children : List (ListBranchedDerivation J interface.W),
-        (toIndexedList children).map (Derivation.valid interface) =
-          children.map (valid interface)
-    | [] => rfl
-    | child :: children => by
-        simp only [toIndexedList, List.map_cons, List.cons.injEq]
-        exact ⟨valid_toIndexed interface child,
-          validities_toIndexedList interface children⟩
-end
-
 @[simp]
 theorem valid_ofIndexed {rules : List J → J → Prop}
-    (interface : RuleWitness.{u, v} rules)
-    (tree : Derivation J interface.W) :
+    (interface : RuleWitness.{u, v} rules) (tree : Derivation J interface.W) :
     (ofIndexed tree).valid interface = tree.valid interface := by
-  have preserved := valid_toIndexed interface (ofIndexed tree)
-  rw [toIndexed_ofIndexed] at preserved
-  exact preserved.symm
+  induction tree with
+  | node conclusion witness n children ih =>
+      simp only [ofIndexed, valid_node, List.map_ofFn, Function.comp_def,
+        concl_ofIndexed, Derivation.valid, ih]
+
+/-- Replay is invariant under conversion to indexed branching. -/
+theorem valid_toIndexed {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) (tree : ListBranchedDerivation J interface.W) :
+    (toIndexed tree).valid interface = tree.valid interface := by
+  simpa only [ofIndexed_toIndexed] using (valid_ofIndexed interface (toIndexed tree)).symm
+
+theorem validities_toIndexedList {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules)
+    (children : List (ListBranchedDerivation J interface.W)) :
+    (toIndexedList children).map (Derivation.valid interface) =
+      children.map (valid interface) := by
+  simp only [toIndexedList_eq_map, List.map_map, Function.comp_def, valid_toIndexed]
 
 /-- Accepted list-branched certificates reconstruct semantic derivability. -/
 theorem valid_sound {rules : List J → J → Prop}
@@ -279,13 +238,8 @@ theorem valid_sound {rules : List J → J → Prop}
     (certificate : ListBranchedDerivation J interface.W)
     (accepted : certificate.valid interface = true) :
     Derives rules certificate.concl := by
-  have indexedAccepted :
-      (toIndexed certificate).valid interface = true := by
-    rw [valid_toIndexed interface certificate]
-    exact accepted
-  have derivable := Derivation.valid_sound interface
-    (toIndexed certificate) indexedAccepted
-  simpa using derivable
+  simpa only [concl_toIndexed] using Derivation.valid_sound interface
+    (toIndexed certificate) ((valid_toIndexed interface certificate).trans accepted)
 
 /-- Derivability is exactly the existence of an accepted list-branched
 certificate with the requested root. -/
@@ -312,6 +266,12 @@ namespace ListNodeAlgebra
 
 variable {J : Type u} {W : Type v}
 
+/-- Interpret indexed children in their supplied order as a finite list. -/
+def asIndexed (A : ListNodeAlgebra.{u, v, w} J W) : NodeAlgebra.{u, v, w} J W where
+  Carrier := A.Carrier
+  node := fun conclusion witness _n children =>
+    A.node conclusion witness (List.ofFn children)
+
 /-- A function preserving list-branched node formation. -/
 @[ext]
 structure Hom (A B : ListNodeAlgebra.{u, v, w} J W) where
@@ -326,15 +286,8 @@ instance {A B : ListNodeAlgebra.{u, v, w} J W} :
 
 @[ext]
 theorem Hom.ext' {A B : ListNodeAlgebra.{u, v, w} J W} (f g : Hom A B)
-    (pointwise : ∀ value, f value = g value) : f = g := by
-  cases f with
-  | mk f preservesF =>
-      cases g with
-      | mk g preservesG =>
-          change ∀ value, f value = g value at pointwise
-          have functionsEqual : f = g := funext pointwise
-          subst g
-          rfl
+    (pointwise : ∀ value, f value = g value) : f = g :=
+  Hom.ext (funext pointwise)
 
 def Hom.id (A : ListNodeAlgebra.{u, v, w} J W) : Hom A A where
   toFun := fun value => value
@@ -382,39 +335,51 @@ def foldHom (A : ListNodeAlgebra.{u, v, max u v} J W) :
     intro conclusion witness children
     exact fold_node A conclusion witness children
 
-mutual
-  /-- Every homomorphism from syntax is its structural fold. -/
-  theorem hom_eq_fold_pointwise
-      (A : ListNodeAlgebra.{u, v, max u v} J W)
-      (f : syntaxAlgebra ⟶ A) :
-      ∀ tree, f.toFun tree = fold A tree
-    | .node conclusion witness children => by
-        calc
-          f.toFun (.node conclusion witness children) =
-              A.node conclusion witness (children.map f.toFun) := by
-                simpa [syntaxAlgebra] using
-                  f.map_node conclusion witness children
-          _ = A.node conclusion witness (children.map (fold A)) := by
-                rw [hom_eq_fold_children A f children]
-          _ = fold A (.node conclusion witness children) := by
-                rw [fold_node]
+/-- Every list fold agrees with the indexed fold of the transported algebra. -/
+theorem fold_asIndexed (A : ListNodeAlgebra.{u, v, max u v} J W)
+    (tree : ListBranchedDerivation J W) :
+    NodeAlgebra.fold A.asIndexed (toIndexed tree) = fold A tree := by
+  suffices ∀ indexed, NodeAlgebra.fold A.asIndexed indexed = fold A (ofIndexed indexed) by
+    simpa only [ofIndexed_toIndexed] using this (toIndexed tree)
+  intro indexed
+  induction indexed with
+  | node conclusion witness n children ih =>
+      rw [NodeAlgebra.fold_node, ofIndexed, fold_node, List.map_ofFn]
+      exact congrArg (A.node conclusion witness) (congrArg List.ofFn (funext ih))
 
-  theorem hom_eq_fold_children
-      (A : ListNodeAlgebra.{u, v, max u v} J W)
-      (f : syntaxAlgebra ⟶ A) :
-      ∀ children : List (ListBranchedDerivation J W),
-        children.map f.toFun = children.map (fold A)
-    | [] => rfl
-    | child :: children => by
-        exact congrArg₂ List.cons
-          (hom_eq_fold_pointwise A f child)
-          (hom_eq_fold_children A f children)
-end
+/-- Every homomorphism from syntax is its structural fold, by indexed initiality. -/
+theorem hom_eq_fold_pointwise (A : ListNodeAlgebra.{u, v, max u v} J W)
+    (f : syntaxAlgebra ⟶ A) : ∀ tree, f.toFun tree = fold A tree := by
+  let g : NodeAlgebra.derivationAlgebra ⟶ A.asIndexed :=
+    { toFun := fun indexed => f.toFun (ofIndexed indexed)
+      map_node := fun conclusion witness n children => by
+        simpa only [NodeAlgebra.derivationAlgebra, syntaxAlgebra, asIndexed,
+          ofIndexed, List.map_ofFn, Function.comp_def] using
+          f.map_node conclusion witness (List.ofFn fun i => ofIndexed (children i)) }
+  intro tree
+  change ListBranchedDerivation J W at tree
+  have unique := congrArg
+    (fun h : NodeAlgebra.derivationAlgebra ⟶ A.asIndexed => h.toFun (toIndexed tree))
+    (NodeAlgebra.hom_eq_fold A.asIndexed g)
+  change f.toFun (ofIndexed (toIndexed tree)) = _ at unique
+  rw [ofIndexed_toIndexed] at unique
+  exact unique.trans (fold_asIndexed A tree)
+
+theorem hom_eq_fold_children (A : ListNodeAlgebra.{u, v, max u v} J W)
+    (f : syntaxAlgebra ⟶ A) : ∀ children : List (ListBranchedDerivation J W),
+    children.map f.toFun = children.map (fold A) :=
+  fun _ => List.map_congr_left fun child _ => hom_eq_fold_pointwise A f child
 
 theorem hom_eq_fold (A : ListNodeAlgebra.{u, v, max u v} J W)
-    (f : syntaxAlgebra ⟶ A) : f = foldHom A := by
-  apply Hom.ext'
-  exact hom_eq_fold_pointwise A f
+    (f : syntaxAlgebra ⟶ A) : f = foldHom A :=
+  Hom.ext' _ _ (hom_eq_fold_pointwise A f)
+
+/-- Node-preserving observations commute with a list-branched fold. -/
+theorem fold_fusion {A B : ListNodeAlgebra.{u, v, max u v} J W}
+    (f : A ⟶ B) (tree : ListBranchedDerivation J W) :
+    f.toFun (fold A tree) = fold B tree :=
+  congrArg (fun g : syntaxAlgebra ⟶ B => g.toFun tree)
+    (hom_eq_fold B (foldHom A ≫ f))
 
 /-- `ListBranchedDerivation` is the initial algebra of
 `F X = J × W × List X`. -/
@@ -438,26 +403,20 @@ def nodeCountAlgebra : ListNodeAlgebra.{u, v, max u v} J W where
   node := fun _conclusion _witness children =>
     ULift.up (1 + (children.map ULift.down).sum)
 
-mutual
-  theorem fold_nodeCount :
-      ∀ tree : ListBranchedDerivation J W,
-        (fold nodeCountAlgebra tree).down = tree.nodeCount
-    | .node conclusion witness children => by
-        simp only [fold_node, nodeCountAlgebra,
-          ListBranchedDerivation.nodeCount]
-        congr 1
-        exact congrArg List.sum (fold_nodeCounts children)
+theorem fold_nodeCount (tree : ListBranchedDerivation J W) :
+    (fold nodeCountAlgebra tree).down = tree.nodeCount := by
+  let interpreter : syntaxAlgebra ⟶ nodeCountAlgebra (J := J) (W := W) :=
+    { toFun := fun t => ULift.up t.nodeCount
+      map_node := fun _ _ (children : List (ListBranchedDerivation J W)) => by
+        simp only [syntaxAlgebra, nodeCountAlgebra, nodeCount_node, List.map_map, Function.comp_def] }
+  exact (congrArg (fun h => (h.toFun tree).down) (hom_eq_fold _ interpreter)).symm
 
-  theorem fold_nodeCounts :
-      ∀ children : List (ListBranchedDerivation J W),
-        (children.map (fold nodeCountAlgebra)).map ULift.down =
-          children.map ListBranchedDerivation.nodeCount
-    | [] => rfl
-    | child :: children => by
-        exact congrArg₂ List.cons
-          (fold_nodeCount child)
-          (fold_nodeCounts children)
-end
+theorem fold_nodeCounts (children : List (ListBranchedDerivation J W)) :
+    (children.map (fold nodeCountAlgebra)).map ULift.down =
+      children.map ListBranchedDerivation.nodeCount := by
+  dsimp only [nodeCountAlgebra]
+  rw [List.map_map]
+  exact List.map_congr_left fun child _ => fold_nodeCount child
 
 /-- A single fold computing both root conclusion and exact replay. -/
 def replayAlgebra {rules : List J → J → Prop}
@@ -470,91 +429,84 @@ def replayAlgebra {rules : List J → J → Prop}
           conclusion &&
         (children.map (fun child => child.down.2)).all id)
 
-private theorem map_ulift_down_fst {A B : Type*}
-    (values : List (ULift (A × B))) :
-    values.map (fun value => value.down.1) =
-      (values.map ULift.down).map Prod.fst := by
-  induction values with
-  | nil => rfl
-  | cons value values ih =>
-      simp only [List.map_cons]
-      rw [ih]
+theorem fold_replay {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) (tree : ListBranchedDerivation J interface.W) :
+    (fold (replayAlgebra interface) tree).down = (tree.concl, tree.valid interface) := by
+  let interpreter : syntaxAlgebra ⟶ replayAlgebra interface :=
+    { toFun := fun t => ULift.up (t.concl, t.valid interface)
+      map_node := fun _ _ (children : List (ListBranchedDerivation J interface.W)) => by
+        simp only [syntaxAlgebra, replayAlgebra, concl_node, valid_node,
+          List.map_map, Function.comp_def] }
+  exact (congrArg (fun h => (h.toFun tree).down) (hom_eq_fold _ interpreter)).symm
 
-private theorem map_ulift_down_snd {A B : Type*}
-    (values : List (ULift (A × B))) :
-    values.map (fun value => value.down.2) =
-      (values.map ULift.down).map Prod.snd := by
-  induction values with
-  | nil => rfl
-  | cons value values ih =>
-      simp only [List.map_cons]
-      rw [ih]
+theorem fold_replays {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules)
+    (children : List (ListBranchedDerivation J interface.W)) :
+    (children.map (fold (replayAlgebra interface))).map ULift.down =
+      children.map fun child => (child.concl, child.valid interface) := by
+  dsimp only [replayAlgebra]
+  rw [List.map_map]
+  exact List.map_congr_left fun child _ => fold_replay interface child
 
-mutual
-  theorem fold_replay {rules : List J → J → Prop}
-      (interface : RuleWitness.{u, v} rules) :
-      ∀ tree : ListBranchedDerivation J interface.W,
-        (fold (replayAlgebra interface) tree).down =
-          (tree.concl, tree.valid interface)
-    | .node conclusion witness children => by
-        simp only [fold_node,
-          ListBranchedDerivation.concl, ListBranchedDerivation.valid]
-        change
-          (conclusion,
-            interface.isInstance witness
-                  ((children.map (fold (replayAlgebra interface))).map
-                    (fun child => child.down.1)) conclusion &&
-                ((children.map (fold (replayAlgebra interface))).map
-                  (fun child => child.down.2)).all id) =
-            (conclusion,
-              interface.isInstance witness
-                  (children.map ListBranchedDerivation.concl) conclusion &&
-                (children.map
-                  (ListBranchedDerivation.valid interface)).all id)
-        simp only [Prod.mk.injEq, true_and]
-        have evaluated := fold_replays interface children
-        have conclusions :
-            (children.map (fold (replayAlgebra interface))).map
-                (fun child => child.down.1) =
-              children.map ListBranchedDerivation.concl := by
-          calc
-            _ = ((children.map (fold (replayAlgebra interface))).map
-                  ULift.down).map Prod.fst := by
-                  exact map_ulift_down_fst _
-            _ = (children.map fun child =>
-                  (child.concl, child.valid interface)).map Prod.fst :=
-                  congrArg (List.map Prod.fst) evaluated
-            _ = _ := by
-                  simp only [List.map_map, Function.comp_def]
-        have validities :
-            (children.map (fold (replayAlgebra interface))).map
-                (fun child => child.down.2) =
-              children.map (ListBranchedDerivation.valid interface) := by
-          calc
-            _ = ((children.map (fold (replayAlgebra interface))).map
-                  ULift.down).map Prod.snd := by
-                  exact map_ulift_down_snd _
-            _ = (children.map fun child =>
-                  (child.concl, child.valid interface)).map Prod.snd :=
-                  congrArg (List.map Prod.snd) evaluated
-            _ = _ := by
-                  simp only [List.map_map, Function.comp_def]
-        rw [conclusions, validities]
+/-- Ordered rule-witness occurrences, including the root and every child. -/
+def witnessTraceAlgebra : ListNodeAlgebra.{u, v, max u v} J W where
+  Carrier := ULift.{max u v, v} (List W)
+  node := fun _ witness children => ULift.up (witness :: children.flatMap ULift.down)
 
-  theorem fold_replays {rules : List J → J → Prop}
-      (interface : RuleWitness.{u, v} rules) :
-      ∀ children : List (ListBranchedDerivation J interface.W),
-        (children.map (fold (replayAlgebra interface))).map ULift.down =
-          children.map fun child => (child.concl, child.valid interface)
-    | [] => rfl
-    | child :: children => by
-        exact congrArg₂ List.cons
-          (fold_replay interface child)
-          (fold_replays interface children)
-end
+/-- Preorder observation retains witness order and repeated occurrences. -/
+def witnessTrace (tree : ListBranchedDerivation J W) : List W :=
+  (fold witnessTraceAlgebra tree).down
+
+theorem witnessTrace_toIndexed (tree : ListBranchedDerivation J W) :
+    (NodeAlgebra.fold witnessTraceAlgebra.asIndexed (toIndexed tree)).down = witnessTrace tree :=
+  congrArg ULift.down (fold_asIndexed _ tree)
+
+/-- Trace length is a node-preserving observation into physical node count. -/
+def traceLengthHom : witnessTraceAlgebra ⟶ nodeCountAlgebra (J := J) (W := W) where
+  toFun := fun trace => ULift.up trace.down.length
+  map_node := fun _ _ (children : List (ULift.{max u v, v} (List W))) => by
+    simp [witnessTraceAlgebra, nodeCountAlgebra, List.length_flatMap, List.map_map,
+      Function.comp_def, Nat.add_comm]
+
+theorem witnessTrace_length (tree : ListBranchedDerivation J W) :
+    (witnessTrace tree).length = tree.nodeCount :=
+  (congrArg ULift.down (fold_fusion traceLengthHom tree)).trans (fold_nodeCount tree)
 
 end ListNodeAlgebra
 
 end ListBranchedDerivation
+
+namespace NodeAlgebra
+
+open ListBranchedDerivation
+
+variable {J : Type u} {W : Type v}
+
+/-- Interpret a finite list by its exact indexed tuple, retaining order and repetitions. -/
+def asList (A : NodeAlgebra.{u, v, w} J W) :
+    ListNodeAlgebra.{u, v, w} J W where
+  Carrier := A.Carrier
+  node := fun conclusion witness children =>
+    let packed := List.equivSigmaTuple children
+    A.node conclusion witness packed.1 packed.2
+
+@[simp]
+theorem asList_node_ofFn (A : NodeAlgebra.{u, v, w} J W)
+    (conclusion : J) (witness : W) (n : Nat) (children : Fin n → A.Carrier) :
+    A.asList.node conclusion witness (List.ofFn children) = A.node conclusion witness n children := by
+  dsimp only [asList]
+  rw [show List.equivSigmaTuple (List.ofFn children) = ⟨n, children⟩ from
+    List.equivSigmaTuple.right_inv ⟨n, children⟩]
+
+/-- Indexed interpretation also agrees with its transported list fold. -/
+theorem fold_asList (A : NodeAlgebra.{u, v, max u v} J W) (tree : Derivation J W) :
+    ListNodeAlgebra.fold A.asList (ofIndexed tree) = fold A tree := by
+  induction tree with
+  | node conclusion witness n children ih =>
+      rw [ofIndexed, ListNodeAlgebra.fold_node, List.map_ofFn]
+      exact (asList_node_ofFn A conclusion witness n _).trans
+        (congrArg (A.node conclusion witness n) (funext ih))
+
+end NodeAlgebra
 
 end Mettapedia.Logic.FinitaryRuleSystem

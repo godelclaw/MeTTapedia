@@ -116,8 +116,8 @@ theorem lawCollection_witness {language : LanguageDef} {free : FreeTypeContext} 
     ∃ rule ∈ language.terms, ∃ name element, rule.params = [.simple name (.collection kind element)] := by
   rcases hasType_collection_inv typed with ⟨_, rfl, _⟩ | ⟨rule, name, element, declared, parameters, rfl, _⟩
   · obtain ⟨witness, declared, name, parameters, _⟩ := typeOk.lawful found
-    exact ⟨witness, declared, name, _, parameters⟩
-  · exact ⟨rule, declared, name, element, parameters⟩
+    exact ⟨witness, declared, name, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2⟩
+  · exact ⟨rule, declared, name, element, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2⟩
 
 /-- **Every firing at a well-sorted presentation has a counterpart at its law-normal form**, with
 a law-equal result, also when reduction lies inside collections of a flattening kind. -/

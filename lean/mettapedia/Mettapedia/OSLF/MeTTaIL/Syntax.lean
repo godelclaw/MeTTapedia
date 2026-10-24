@@ -411,6 +411,14 @@ structure CollectionAlgebra where
   unit : Option String := none
 deriving Repr, DecidableEq
 
+/-- A collection-valued constructor may expose the collection node itself or
+retain its named application. The latter distinguishes independent operations
+that use the same collection carrier. -/
+inductive CollectionRepresentation where
+  | bare
+  | wrapped
+deriving Repr, DecidableEq
+
 /-- A grammar rule defines a constructor. `syntaxPattern` is the single
     authored syntax authority and may contain both plain tokens/nonterminals and
     Rust-style metasyntax operators.  `algebra?` declares the flattening and
@@ -423,7 +431,32 @@ structure GrammarRule where
   syntaxPattern : List SyntaxItem
   evalPolicy? : Option TermEvalPolicy := none
   algebra? : Option CollectionAlgebra := none
+  collectionRepresentation : CollectionRepresentation := .bare
 deriving Repr, DecidableEq
+
+namespace GrammarRule
+
+/-- Parameters visible to the bare-collection typing rule. Wrapped
+constructors use their ordinary application and full parameter list. -/
+def bareParams (rule : GrammarRule) : List TermParam :=
+  match rule.collectionRepresentation with
+  | .bare => rule.params
+  | .wrapped => []
+
+@[simp] theorem bareParams_of_bare (rule : GrammarRule)
+    (mode : rule.collectionRepresentation = .bare) : rule.bareParams = rule.params := by
+  simp [bareParams, mode]
+
+@[simp] theorem bareParams_of_wrapped (rule : GrammarRule)
+    (mode : rule.collectionRepresentation = .wrapped) : rule.bareParams = [] := by
+  simp [bareParams, mode]
+
+theorem bareParams_cons_iff (rule : GrammarRule) (head : TermParam) (tail : List TermParam) :
+    rule.bareParams = head :: tail ↔
+      rule.collectionRepresentation = .bare ∧ rule.params = head :: tail := by
+  cases mode : rule.collectionRepresentation <;> simp [bareParams, mode]
+
+end GrammarRule
 
 /-! ## Patterns (Locally Nameless) -/
 

@@ -196,6 +196,30 @@ structure Header (ambient : Nat) where
   left : Pattern
   slots : List (String × Fin (ambient + fields))
 
+/-- A clause header retains every original field. Ambient arguments are
+written oldest first; constructor parameters select their existing ambient
+slots. Generated placeholders are distinct from authored variable names.
+The reader still checks the actual match, linearity and source metadata. -/
+def Header.fromPlan (plan : CaseElaboration.BranchPlan Head n)
+    (operation : String) (constructorParameters : List (Fin n)) : Header n where
+  constructor := plan.name
+  fields := plan.fields
+  left := .apply operation
+    ((List.finRange n).reverse.map (fun i => .fvar ("ambient." ++ toString i.val)) ++
+      [.apply plan.name
+        (constructorParameters.map (fun i => .fvar ("ambient." ++ toString i.val)) ++
+          (List.range plan.fields).map (fun i => .fvar ("field." ++ toString i)))])
+  slots :=
+    (List.finRange n).map (fun i =>
+      ("ambient." ++ toString i.val, ⟨plan.fields + i.val, by omega⟩)) ++
+    (List.finRange plan.fields).map (fun i =>
+      ("field." ++ toString i.val, ⟨plan.fields - 1 - i.val, by omega⟩))
+
+theorem Header.fromPlan_slot_count (plan : CaseElaboration.BranchPlan Head n)
+    (operation : String) (constructorParameters : List (Fin n)) :
+    (Header.fromPlan plan operation constructorParameters).slots.length = n + plan.fields := by
+  simp [Header.fromPlan]
+
 def sourceVariables (header : Header n) (bindings : Mettapedia.OSLF.MeTTaIL.Match.Bindings) :
     Option (List (String × Fin (n + header.fields))) := do
   let names ← header.slots.mapM fun (slot, index) =>
@@ -236,6 +260,76 @@ def readRule (symbols : List (Symbol Head)) (fuel : Nat) (header : Header n)
         else none
     | _ => none
 
+/-- Successful reading retains the exact lowering of the written right-hand
+side under the resolved source names. -/
+theorem readRule_body_exact (symbols : List (Symbol Head)) (fuel : Nat) (header : Header n)
+    (rule : RewriteRule) (read : ReadClause Head header rule)
+    (accepted : readRule symbols fuel header rule = some read) :
+    lower symbols (variableEnvironment read.boundNames) fuel rule.right = some read.body := by
+  unfold readRule at accepted
+  split at accepted
+  · cases accepted
+  · split at accepted
+    · rename_i bindings matching
+      split at accepted
+      · rename_i exactLeft
+        cases named : sourceVariables header bindings with
+        | none => simp [named] at accepted
+        | some boundNames =>
+            cases lowered : lower symbols (variableEnvironment boundNames) fuel rule.right with
+            | none => simp [named, lowered] at accepted
+            | some body =>
+                have same : (⟨bindings, exactLeft, boundNames, body⟩ : ReadClause Head header rule) = read := by
+                  simpa [named, lowered] using accepted
+                cases same
+                exact lowered
+      · cases accepted
+    · cases accepted
+
+section Compilation
+
+variable [DecidableEq Head]
+
+/-- Read one named source rule and abstract its declared recursive calls.
+The caller supplies a plan derived from the admitted inventory; this producer
+does not authorize calls or grant a typing judgment. -/
+def compileRule (symbols : List (Symbol Head)) (fuel : Nat) (forbidden : DeclName)
+    (header : Header n) (recursiveCalls : List (Tm Head (n + header.fields)))
+    (rule : RewriteRule) : Option (Tm Head n) := do
+  let read ← readRule symbols fuel header rule
+  CaseElaboration.compilePlan ⟨header.constructor, header.fields, recursiveCalls⟩ forbidden read.toClause
+
+/-- An accepted method restores the actual resolved source body by beta
+reduction, retaining the exact matched left side and source scope. -/
+theorem compileRule_reconstructs
+    {R : Rules Head}
+    (symbols : List (Symbol Head)) (fuel : Nat) (forbidden : DeclName)
+    (header : Header n) (recursiveCalls : List (Tm Head (n + header.fields)))
+    (rule : RewriteRule) (compiled : Tm Head n)
+    (accepted : compileRule symbols fuel forbidden header recursiveCalls rule = some compiled) :
+    ∃ read : ReadClause Head header rule,
+      readRule symbols fuel header rule = some read ∧
+      Mettapedia.OSLF.MeTTaIL.Match.applyBindings read.bindings header.left = rule.left ∧
+      lower symbols (variableEnvironment read.boundNames) fuel rule.right = some read.body ∧
+      TypedEquality.Reduces R
+        (TypedEquality.Normalization.appSpine
+          (rename (TypedEquality.Normalization.wkN header.fields) compiled)
+          (TypedEquality.Normalization.fieldVars n header.fields ++ recursiveCalls)) read.body := by
+  cases found : readRule symbols fuel header rule with
+  | none => simp [compileRule, found] at accepted
+  | some read =>
+      have compiledRule : CaseElaboration.compilePlan
+          ⟨header.constructor, header.fields, recursiveCalls⟩ forbidden read.toClause = some compiled := by
+        simpa [compileRule, found] using accepted
+      obtain ⟨source, adapted, reduction⟩ :=
+        CaseElaboration.compilePlan_reduces (R := R) _ forbidden read.toClause compiled compiledRule
+      have sourceSame : read.body = source := by
+        simpa [CaseElaboration.adaptFields, ReadClause.toClause] using adapted
+      exact ⟨read, rfl, read.leftExact, readRule_body_exact symbols fuel header rule read found,
+        sourceSame ▸ reduction⟩
+
+end Compilation
+
 namespace Controls
 
 def symbols : List (Symbol Unit) :=
@@ -268,7 +362,24 @@ def row (parameter field : String) : RewriteRule :=
 def readBody (source : RewriteRule) : Option (Tm Unit 2) :=
   (readRule symbols 8 header source).map (·.body)
 
+def recursiveSymbols : List (Symbol Unit) := symbols ++
+  [⟨"Recursive", 1, .app (.const `sourceFunction) (.var 0)⟩]
+
+def recursiveRow : RewriteRule :=
+  { row "a" "n" with right := .apply "Recursive" [.fvar "n"] }
+
 def clauseVerdicts : List (String × Bool) := [
+  ("named method reconstructs the resolved clause",
+    compileRule symbols 8 `sourceFunction header [] (row "a" "n") ==
+      some (.lam (.pair (.var 1) (.var 0)))),
+  ("named method abstracts the declared recursive child",
+    compileRule recursiveSymbols 8 `sourceFunction header
+      [.app (.const `sourceFunction) (.var 0)] recursiveRow == some (.lam (.lam (.var 0)))),
+  ("named method refuses an undeclared recursive call",
+    (compileRule recursiveSymbols 8 `sourceFunction header [] recursiveRow).isNone),
+  ("named method refuses a call on another argument",
+    (compileRule recursiveSymbols 8 `sourceFunction header
+      [.app (.const `sourceFunction) (.var 1)] recursiveRow).isNone),
   ("named clause resolves distinct ambient and field binders",
     readBody (row "a" "n") == some (.pair (.var 1) (.var 0))),
   ("named clause is invariant under source binder renaming",

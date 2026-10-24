@@ -190,12 +190,14 @@ mutual
               costBaseConstructor_params_eq_map_of_mem_wrappedLabels source.continuationRetyping
                 rule membership labelSupported
             have targetShape :
-                (costBaseConstructor source.cut rule).params =
+                (costBaseConstructor source.cut rule).bareParams =
                   [.simple parameterName
                     (.collection collectionType
                       (mapTypeExpr
                         (CostStaticColor.base.symbols source) elementType))] := by
-              simp [parameterEquality, parameterShape,
+              apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+              refine ⟨by simpa using ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).1, ?_⟩
+              simp [parameterEquality, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2,
                 mapTermParam_costBaseStaticSymbols,
                 CostStaticColor.symbols, CostStaticColor.symbolsOf, mapParameterType,
                 costBaseTypeExpr]
@@ -214,13 +216,15 @@ mutual
             have mappedElements :=
               elementsTyped.mapCostStaticHereditary source .wrapped
             have targetShape :
-                (costWrappedConstructor (theory := source.theory) rule).params =
+                (costWrappedConstructor (theory := source.theory) rule).bareParams =
                   [.simple parameterName
                     (.collection collectionType
                       (mapTypeExpr
                         (CostStaticColor.wrapped.symbols source)
                         elementType))] := by
-              simp [costWrappedConstructor, parameterShape,
+              apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+              refine ⟨((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).1, ?_⟩
+              simp [costWrappedConstructor, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2,
                 CostStaticColor.symbols, CostStaticColor.symbolsOf, mapParameterType,
                 costWrappedTypeExpr]
             have targetAllowed :

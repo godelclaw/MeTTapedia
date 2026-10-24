@@ -7,7 +7,8 @@ An unlabelled collection pattern may receive a carrier type from a
 single-collection grammar row. The ordinary typing proposition states only
 the resulting type; this evidence retains the exact authored row, parameter
 name, and element sort. It makes the information loss from bare-pattern
-typing explicit without changing the existing typing judgment.
+typing explicit. Bare collection evidence retains the constructor's bare
+representation premise; wrapped constructors use their named application.
 -/
 
 set_option autoImplicit false
@@ -29,6 +30,7 @@ structure RowEvidence (language : LanguageDef)
   elementType : TypeExpr
   member : rule ∈ language.terms
   result : rule.category = resultSort
+  representation : rule.collectionRepresentation = .bare
   parameterShape :
     rule.params = [.simple parameterName (.collection kind elementType)]
   elementsTyped : ElementsHaveType language free bound elements elementType
@@ -46,7 +48,8 @@ theorem RowEvidence.toHasType
   have typed : HasType language free bound
       (.collection kind elements rest) (.base evidence.rule.category) :=
     HasType.collectionConstructor evidence.member
-      evidence.parameterShape evidence.elementsTyped
+      ((evidence.rule.bareParams_of_bare evidence.representation).trans
+        evidence.parameterShape) evidence.elementsTyped
   simpa only [evidence.result] using typed
 
 /-- The constructor label is retained as data rather than reconstructed from

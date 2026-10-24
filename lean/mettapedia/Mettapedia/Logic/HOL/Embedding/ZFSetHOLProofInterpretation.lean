@@ -157,7 +157,8 @@ noncomputable def refinementMap (h : CofinalInaccessibles.{u})
   have maps : ∀ x : Value A,
       holds (interpret (universeConstants h) φ (extend ρ.1 x)) →
         holds (interpret (universeConstants h) ψ (extend ρ.1 x)) := by
-    simpa only [interpret, holds_truth] using proofHolds.2
+    simpa only [interpret, ZFSetSimpleTypeInterpretation.interpret,
+      extend_simple, holds_truth] using proofHolds.2
   exact ⟨point.1, (mem_refinementCode h ψ ρ.1 point.1).mpr
     ⟨source.1.2, maps source.1 source.2⟩⟩
 
@@ -304,7 +305,7 @@ noncomputable def emptyParameter : Valuation.{u} [set] :=
 noncomputable def equalPoint (h : CofinalInaccessibles.{u}) :
     Elements (refinementCode h (.and equalsParameter .top) emptyParameter) := by
   refine ⟨∅, (mem_refinementCode h _ _ ∅).mpr ⟨ZFSetUniverseLift.carrierEmpty.2, ?_⟩⟩
-  simp only [equalsParameter, interpret, extend, emptyParameter, holds_truth]
+  simp only [equalsParameter, interpret, ZFSetSimpleTypeInterpretation.interpret, extend, emptyParameter, holds_truth]
   exact ⟨rfl, trivial⟩
 
 noncomputable def transportedEqualPoint (h : CofinalInaccessibles.{u}) :
@@ -328,7 +329,7 @@ theorem changed_parameter_rejects_point (h : CofinalInaccessibles.{u}) :
     (∅ : ZFSet.{u + 1}) ∉ refinementCode h equalsParameter changedParameter := by
   intro member
   obtain ⟨hm, hp⟩ := (mem_refinementCode h _ _ ∅).mp member
-  simp only [equalsParameter, interpret, extend, changedParameter, holds_truth] at hp
+  simp only [equalsParameter, interpret, ZFSetSimpleTypeInterpretation.interpret, extend, changedParameter, holds_truth] at hp
   have equality := congrArg Subtype.val hp
   change (∅ : ZFSet.{u + 1}) = ZFSet.powerset ∅ at equality
   have emptyMember : (∅ : ZFSet.{u + 1}) ∈ ZFSet.powerset ∅ :=
@@ -341,7 +342,7 @@ theorem false_predicate_has_no_point (h : CofinalInaccessibles.{u}) {Γ : Ctx Un
     refinementCode h (.bot : Formula UniverseSymbol (A :: Γ)) ρ = ∅ := by
   apply ZFSet.ext
   intro x
-  simp only [mem_refinementCode, interpret, holds_truth, ZFSet.notMem_empty, exists_false]
+  simp only [mem_refinementCode, interpret, ZFSetSimpleTypeInterpretation.interpret, holds_truth, ZFSet.notMem_empty, exists_false]
 
 theorem false_claim_has_no_proof (h : CofinalInaccessibles.{u}) :
     ¬ Nonempty (ProofSyntax UniverseSymbol universeTheory .bot) := by

@@ -118,7 +118,7 @@ theorem target_closedTypes : target.ClosedTypes := by
   · simp at member
 
 theorem target_identity_typed :
-    HasType LFProfile.basic target [] identityTerm (.pi (.con "T") (.con "T")) := by
+    HasType LFProfile.standardLF target [] identityTerm (.pi (.con "T") (.con "T")) := by
   exact .lam (resultSort := .type) (.con rfl) (.con rfl) (by decide) (.var rfl)
 
 private theorem left_closedTypes : leftTheory.ClosedTypes := by
@@ -177,7 +177,7 @@ theorem right_respects : translation.Respects rightTheory target := by
     rw [aliasImage, midImage]
     exact .refl _
 
-theorem left_typed : translation.Typed LFProfile.basic leftTheory target := by
+theorem left_typed : translation.Typed LFProfile.standardLF leftTheory target := by
   apply typed_of_generators leftAssignment translation on_left left_closedTypes
     target_closedBodies target_closedTypes
   intro name type declared
@@ -190,14 +190,14 @@ theorem left_typed : translation.Typed LFProfile.basic leftTheory target := by
       exact .con rfl
     · refine ⟨namedMember "mid" (by decide), rfl,
         .pi left_support_carrier left_support_carrier, ?_⟩
-      change HasType LFProfile.basic target [] identityTerm
+      change HasType LFProfile.standardLF target [] identityTerm
         (.pi ((interpretation left leftAssignment).apply carrier)
           ((interpretation left leftAssignment).apply carrier))
       rw [left_apply_carrier]
       exact target_identity_typed
   · simp [leftSig] at member
 
-theorem right_typed : translation.Typed LFProfile.basic rightTheory target := by
+theorem right_typed : translation.Typed LFProfile.standardLF rightTheory target := by
   apply typed_of_generators rightAssignment translation on_right right_closedTypes
     target_closedBodies target_closedTypes
   intro name type declared
@@ -207,14 +207,14 @@ theorem right_typed : translation.Typed LFProfile.basic rightTheory target := by
     · exact ⟨namedMember "Carrier" (by decide), rfl, .sort .type, .con rfl⟩
     · refine ⟨namedMember "mid" (by decide), rfl,
         .pi right_support_carrier right_support_carrier, ?_⟩
-      change HasType LFProfile.basic target [] identityTerm
+      change HasType LFProfile.standardLF target [] identityTerm
         (.pi ((interpretation right rightAssignment).apply carrier)
           ((interpretation right rightAssignment).apply carrier))
       rw [right_apply_carrier]
       exact target_identity_typed
     · refine ⟨namedMember "alias" (by decide), rfl,
         .pi right_support_carrier right_support_carrier, ?_⟩
-      change HasType LFProfile.basic target [] identityTerm
+      change HasType LFProfile.standardLF target [] identityTerm
         (.pi ((interpretation right rightAssignment).apply carrier)
           ((interpretation right rightAssignment).apply carrier))
       rw [right_apply_carrier]
@@ -235,7 +235,7 @@ theorem source_respects : translation.Respects source target := by
     · exact left_respects
     · exact right_respects
 
-theorem source_typed : translation.Typed LFProfile.basic source target := by
+theorem source_typed : translation.Typed LFProfile.standardLF source target := by
   apply Interpretation.Typed.of_fragments [leftTheory, rightTheory]
   · intro name type declared
     rcases Phenomena.lookupType_mem declared with member | ⟨_, member⟩
@@ -255,8 +255,8 @@ theorem source_typed : translation.Typed LFProfile.basic source target := by
 /-- The actual joined interpretation preserves all source typing derivations,
 including contexts and substitutions, rather than just its sample program. -/
 theorem source_typing_preserved {context : LFTyping.Ctx} {term type : LF.Term}
-    (typed : HasType LFProfile.basic source context term type) :
-    HasType LFProfile.basic target (context.map translation.apply)
+    (typed : HasType LFProfile.standardLF source context term type) :
+    HasType LFProfile.standardLF target (context.map translation.apply)
       (translation.apply term) (translation.apply type) :=
   source_respects.hasType source_typed typed
 
@@ -264,14 +264,14 @@ theorem source_typing_preserved {context : LFTyping.Ctx} {term type : LF.Term}
 reflection theorem and does not model a priority-changing rule extension. -/
 theorem source_preserved_in_extension (larger : Theory) (extension : target.Extends larger)
     {context : LFTyping.Ctx} {term type : LF.Term}
-    (typed : HasType LFProfile.basic source context term type) :
-    HasType LFProfile.basic larger (context.map translation.apply)
+    (typed : HasType LFProfile.standardLF source context term type) :
+    HasType LFProfile.standardLF larger (context.map translation.apply)
       (translation.apply term) (translation.apply type) :=
   (source_respects.target_mono extension).hasType (source_typed.target_mono extension) typed
 
 theorem source_signature_formed {name : String} {type : LF.Term}
     (declared : source.constType name = some type) :
-    ∃ sort, HasType LFProfile.basic source [] type (.srt sort) := by
+    ∃ sort, HasType LFProfile.standardLF source [] type (.srt sort) := by
   rcases Phenomena.lookupType_mem declared with member | ⟨_, member⟩
   · simp only [sourceSig, List.mem_cons, Decl.const.injEq, List.not_mem_nil, or_false] at member
     rcases member with ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩
@@ -416,7 +416,7 @@ theorem rename_back_respects : rename.Respects renamedTarget target where
   body := fun name body impossible => by simp [renamedTarget, Theory.ofSig, lookupBody] at impossible
   rule := fun rule impossible => by cases impossible
 
-theorem rename_typed : rename.Typed LFProfile.basic target renamedTarget where
+theorem rename_typed : rename.Typed LFProfile.standardLF target renamedTarget where
   constType := fun name type declared context => by
     rcases Phenomena.lookupType_mem declared with member | ⟨_, member⟩
     · simp only [List.mem_cons, Decl.const.injEq, List.not_mem_nil, or_false] at member
@@ -427,7 +427,7 @@ theorem rename_typed : rename.Typed LFProfile.basic target renamedTarget where
         exact .con rfl
     · simp at member
 
-theorem rename_back_typed : rename.Typed LFProfile.basic renamedTarget target where
+theorem rename_back_typed : rename.Typed LFProfile.standardLF renamedTarget target where
   constType := fun name type declared context => by
     rcases Phenomena.lookupType_mem declared with member | ⟨_, member⟩
     · simp only [List.mem_cons, Decl.const.injEq, List.not_mem_nil, or_false] at member
@@ -449,15 +449,15 @@ theorem rename_context_reflects : (rename.contextMap rename_respects).ReflectsEq
     (fun term => Conv.of_eq (rename_twice term))
 
 theorem rename_returns_any_inhabitant {type proof : LF.Term} {sort : Srt}
-    (formed : HasType LFProfile.basic target [] type (.srt sort))
-    (typed : HasType LFProfile.basic renamedTarget [] proof (rename.apply type)) :
-    ∃ sourceProof, HasType LFProfile.basic target [] sourceProof type :=
+    (formed : HasType LFProfile.standardLF target [] type (.srt sort))
+    (typed : HasType LFProfile.standardLF renamedTarget [] proof (rename.apply type)) :
+    ∃ sourceProof, HasType LFProfile.standardLF target [] sourceProof type :=
   Interpretation.inhabited_of_return rename_back_respects rename_back_typed formed
     (Conv.of_eq (rename_twice type)) typed
 
 /-- The modular route composes with a separately checked target renaming. -/
 theorem composed_typed :
-    (rename.comp translation).Typed LFProfile.basic source renamedTarget :=
+    (rename.comp translation).Typed LFProfile.standardLF source renamedTarget :=
   rename_typed.comp rename_respects source_typed
 
 theorem composed_respects : (rename.comp translation).Respects source renamedTarget :=
@@ -487,7 +487,7 @@ theorem collapsed_target_is_not_hosting :
 /-- This existing recursive arithmetic control passes every constant type
 check while failing the independently specified rewrite equation. -/
 theorem constants_typing_is_not_rule_verification :
-    Phenomena.wrongDouble.Typed LFProfile.basic Phenomena.withDouble Phenomena.unary ∧
+    Phenomena.wrongDouble.Typed LFProfile.standardLF Phenomena.withDouble Phenomena.unary ∧
       ¬ Phenomena.wrongDouble.Respects Phenomena.withDouble Phenomena.unary :=
   ⟨Phenomena.wrongDouble_typed, Unconditional.wrongDouble_not_respects⟩
 
@@ -628,13 +628,13 @@ the supplied typed signature. Signature lowering is not inferred from this. -/
 theorem checked_symbolic_templates :
     ∃ rules, lowerRules symbolic.toLanguageDef = some rules ∧
       translation.Respects (Theory.ofSig sourceSig rules) target ∧
-      translation.Typed LFProfile.basic (Theory.ofSig sourceSig rules) target :=
+      translation.Typed LFProfile.standardLF (Theory.ofSig sourceSig rules) target :=
   ⟨[midRule, aliasRule], symbolic_templates_exact, source_respects, source_typed⟩
 
 theorem checked_english_templates :
     ∃ rules, lowerRules english.toLanguageDef = some rules ∧
       translation.Respects (Theory.ofSig sourceSig rules) target ∧
-      translation.Typed LFProfile.basic (Theory.ofSig sourceSig rules) target := by
+      translation.Typed LFProfile.standardLF (Theory.ofSig sourceSig rules) target := by
   rw [surfaces_agree]
   exact checked_symbolic_templates
 
@@ -643,16 +643,16 @@ the general joined translation theorem supplies its target typing. -/
 theorem authored_program_checked :
     ∃ sourceTerm,
       lowerPattern (.apply "Alias" [.apply "Mid" [.apply "Seed" []]]) = some sourceTerm ∧
-      HasType LFProfile.basic source [] sourceTerm carrier ∧
-      HasType LFProfile.basic target [] (translation.apply sourceTerm) (.con "T") := by
+      HasType LFProfile.standardLF source [] sourceTerm carrier ∧
+      HasType LFProfile.standardLF target [] (translation.apply sourceTerm) (.con "T") := by
   let sourceTerm : LF.Term := .app (.con "alias") (.app (.con "mid") (.con "seed"))
-  have aliasTyped : HasType LFProfile.basic source [] (.con "alias") arrow := .con rfl
-  have midTyped : HasType LFProfile.basic source [] (.con "mid") arrow := .con rfl
-  have seedTyped : HasType LFProfile.basic source [] (.con "seed") carrier := .con rfl
-  have typed : HasType LFProfile.basic source [] sourceTerm carrier :=
+  have aliasTyped : HasType LFProfile.standardLF source [] (.con "alias") arrow := .con rfl
+  have midTyped : HasType LFProfile.standardLF source [] (.con "mid") arrow := .con rfl
+  have seedTyped : HasType LFProfile.standardLF source [] (.con "seed") carrier := .con rfl
+  have typed : HasType LFProfile.standardLF source [] sourceTerm carrier :=
     .app aliasTyped (.app midTyped seedTyped)
   have transported := source_typing_preserved typed
-  change HasType LFProfile.basic target [] (translation.apply sourceTerm)
+  change HasType LFProfile.standardLF target [] (translation.apply sourceTerm)
     (translation.meaning "Carrier") at transported
   rw [carrier_image] at transported
   exact ⟨sourceTerm, rfl, typed, transported⟩

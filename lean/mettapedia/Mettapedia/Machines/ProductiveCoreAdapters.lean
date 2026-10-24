@@ -1091,4 +1091,265 @@ end Controls
 
 end EventCursor
 
+/-! ## Semantic component realizations -/
+
+namespace ComponentRealization
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- Five explicit semantic projections of a retained configuration. -/
+structure ComponentProjection
+    (Config Store Control Selection World Publication : Type) where
+  store : Config → Store
+  control : Config → Control
+  selection : Config → Selection
+  world : Config → World
+  publication : Config → Publication
+
+/-- A representation relation factored through all five components and one
+joint coherence law. None of the component relations is inferred from the
+others. -/
+structure FiveComponentRel
+    {LogicalConfig ImplConfig LStore LControl LSelection LWorld LPublication
+      IStore IControl ISelection IWorld IPublication : Type}
+    (logical : ComponentProjection LogicalConfig LStore LControl LSelection LWorld LPublication)
+    (impl : ComponentProjection ImplConfig IStore IControl ISelection IWorld IPublication) where
+  storeRel : LStore → IStore → Prop
+  controlRel : LControl → IControl → Prop
+  selectionRel : LSelection → ISelection → Prop
+  worldRel : LWorld → IWorld → Prop
+  publicationRel : LPublication → IPublication → Prop
+  coherent : LogicalConfig → ImplConfig → Prop
+
+namespace FiveComponentRel
+
+variable {LogicalConfig ImplConfig LStore LControl LSelection LWorld LPublication
+  IStore IControl ISelection IWorld IPublication : Type}
+variable {logical : ComponentProjection LogicalConfig LStore LControl LSelection LWorld LPublication}
+  {impl : ComponentProjection ImplConfig IStore IControl ISelection IWorld IPublication}
+
+/-- The full state relation used by finite-block transport. -/
+def Holds (relation : FiveComponentRel logical impl) (state : LogicalConfig)
+    (state' : ImplConfig) : Prop :=
+  relation.storeRel (logical.store state) (impl.store state') ∧
+  relation.controlRel (logical.control state) (impl.control state') ∧
+  relation.selectionRel (logical.selection state) (impl.selection state') ∧
+  relation.worldRel (logical.world state) (impl.world state') ∧
+  relation.publicationRel (logical.publication state) (impl.publication state') ∧
+  relation.coherent state state'
+
+end FiveComponentRel
+
+/-- One logical inspection is realized by a nonempty target block. This is a
+local component obligation, not an assumed whole-run correspondence. -/
+structure ProductiveLocalBlock
+    {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+      PublicEvent PublicVerdict PublicRequest : Type}
+    (source : Source → Option (Transition Source SourceEvent SourceVerdict SourceRequest) → Prop)
+    (target : Target → Option (Transition Target TargetEvent TargetVerdict TargetRequest) → Prop)
+    (related : Source → Target → Prop)
+    (sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest
+      PublicEvent PublicVerdict PublicRequest)
+    (targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest
+      PublicEvent PublicVerdict PublicRequest) : Prop where
+  one : ∀ {state state' events outcome}, related state state' →
+    Derivation source 1 state events outcome →
+    ∃ count, 0 < count ∧ ∃ events' outcome',
+      Derivation target count state' events' outcome' ∧
+      events'.flatMap targetRead.event = events.flatMap sourceRead.event ∧
+      OutcomeRel related (outcome.relabel sourceRead.verdict sourceRead.request)
+        (outcome'.relabel targetRead.verdict targetRead.request)
+
+namespace ProductiveLocalBlock
+
+variable {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+  PublicEvent PublicVerdict PublicRequest : Type}
+variable {source : Source → Option (Transition Source SourceEvent SourceVerdict SourceRequest) → Prop}
+  {target : Target → Option (Transition Target TargetEvent TargetVerdict TargetRequest) → Prop}
+  {related : Source → Target → Prop}
+  {sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest
+    PublicEvent PublicVerdict PublicRequest}
+  {targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest
+    PublicEvent PublicVerdict PublicRequest}
+
+/-- Forgetting the positive target count retains the full public and endpoint
+relation required by the common span-transport theory. -/
+theorem toDerivationSimulation
+    (block : ProductiveLocalBlock source target related sourceRead targetRead) :
+    DerivationSimulation source target related sourceRead targetRead where
+  one retained path := by
+    obtain ⟨count, _positive, events, outcome, reached, observed, relatedOutcome⟩ :=
+      block.one retained path
+    exact ⟨count, events, outcome, reached, observed, relatedOutcome⟩
+
+end ProductiveLocalBlock
+
+/-- M1--M7 for the five semantic components. M4 is a productive local block;
+M8 is derived below and therefore cannot be supplied as a whole-evaluator
+assumption. Component observations are explicit so a vacuous relation does not
+establish store, selection, world, control, or publication agreement. -/
+structure ModularMachineAdequacy
+    {Input LogicalConfig ImplConfig
+      LStore LControl LSelection LWorld LPublication
+      IStore IControl ISelection IWorld IPublication
+      LogicalEvent ImplEvent LogicalVerdict ImplVerdict LogicalRequest ImplRequest
+      PublicEvent PublicVerdict PublicRequest : Type}
+    (loadLogical : Input → LogicalConfig) (loadImpl : Input → ImplConfig)
+    (logical : ComponentProjection LogicalConfig LStore LControl LSelection LWorld LPublication)
+    (impl : ComponentProjection ImplConfig IStore IControl ISelection IWorld IPublication)
+    (relation : FiveComponentRel logical impl)
+    (logicalRule : LogicalConfig → Option (Transition LogicalConfig LogicalEvent LogicalVerdict LogicalRequest) → Prop)
+    (implRule : ImplConfig → Option (Transition ImplConfig ImplEvent ImplVerdict ImplRequest) → Prop)
+    (logicalRead : ExecutionReadout LogicalEvent LogicalVerdict LogicalRequest
+      PublicEvent PublicVerdict PublicRequest)
+    (implRead : ExecutionReadout ImplEvent ImplVerdict ImplRequest
+      PublicEvent PublicVerdict PublicRequest)
+    (SelectionObservation StoreQuery StoreObservation WorldObservation ControlObservation
+      PublicationObservation FutureQuery FutureObservation : Type) : Type where
+  m1_load : ∀ input, relation.Holds (loadLogical input) (loadImpl input)
+  observeLogicalSelection : LSelection → SelectionObservation
+  observeImplSelection : ISelection → SelectionObservation
+  m2_selection : ∀ {state state'}, relation.Holds state state' →
+    observeLogicalSelection (logical.selection state) =
+      observeImplSelection (impl.selection state')
+  readLogicalStore : LStore → StoreQuery → StoreObservation
+  readImplStore : IStore → StoreQuery → StoreObservation
+  m3_store_read : ∀ {state state'}, relation.Holds state state' → ∀ query,
+    readLogicalStore (logical.store state) query = readImplStore (impl.store state') query
+  m4_control : ProductiveLocalBlock logicalRule implRule relation.Holds logicalRead implRead
+  observeLogicalWorld : LWorld → WorldObservation
+  observeImplWorld : IWorld → WorldObservation
+  m5_world : ∀ {state state'}, relation.Holds state state' →
+    observeLogicalWorld (logical.world state) = observeImplWorld (impl.world state')
+  observeLogicalControl : LControl → ControlObservation
+  observeImplControl : IControl → ControlObservation
+  m6_retained_control : ∀ {state state'}, relation.Holds state state' →
+    observeLogicalControl (logical.control state) = observeImplControl (impl.control state')
+  observeLogicalPublication : LPublication → PublicationObservation
+  observeImplPublication : IPublication → PublicationObservation
+  m7_publication : ∀ {state state'}, relation.Holds state state' →
+    observeLogicalPublication (logical.publication state) =
+      observeImplPublication (impl.publication state')
+  observeLogicalFuture : LogicalConfig → FutureQuery → FutureObservation
+  observeImplFuture : ImplConfig → FutureQuery → FutureObservation
+  m7_future : ∀ {state state'}, relation.Holds state state' → ∀ query,
+    observeLogicalFuture state query = observeImplFuture state' query
+
+namespace ModularMachineAdequacy
+
+variable {Input LogicalConfig ImplConfig
+  LStore LControl LSelection LWorld LPublication
+  IStore IControl ISelection IWorld IPublication
+  SelectionObservation StoreQuery StoreObservation WorldObservation ControlObservation
+  PublicationObservation FutureQuery FutureObservation
+  LogicalEvent ImplEvent LogicalVerdict ImplVerdict LogicalRequest ImplRequest
+  PublicEvent PublicVerdict PublicRequest : Type}
+variable {loadLogical : Input → LogicalConfig} {loadImpl : Input → ImplConfig}
+  {logical : ComponentProjection LogicalConfig LStore LControl LSelection LWorld LPublication}
+  {impl : ComponentProjection ImplConfig IStore IControl ISelection IWorld IPublication}
+  {relation : FiveComponentRel logical impl}
+  {logicalRule : LogicalConfig → Option (Transition LogicalConfig LogicalEvent LogicalVerdict LogicalRequest) → Prop}
+  {implRule : ImplConfig → Option (Transition ImplConfig ImplEvent ImplVerdict ImplRequest) → Prop}
+  {logicalRead : ExecutionReadout LogicalEvent LogicalVerdict LogicalRequest
+    PublicEvent PublicVerdict PublicRequest}
+  {implRead : ExecutionReadout ImplEvent ImplVerdict ImplRequest
+    PublicEvent PublicVerdict PublicRequest}
+
+/-- The observation-level statement of M2, M3 and M5--M7 at one related cut. -/
+def ObservationsAgree
+    (adequacy : ModularMachineAdequacy loadLogical loadImpl logical impl relation
+      logicalRule implRule logicalRead implRead SelectionObservation StoreQuery StoreObservation
+      WorldObservation ControlObservation PublicationObservation FutureQuery FutureObservation)
+    (state : LogicalConfig) (state' : ImplConfig) : Prop :=
+  adequacy.observeLogicalSelection (logical.selection state) =
+      adequacy.observeImplSelection (impl.selection state') ∧
+    (∀ query, adequacy.readLogicalStore (logical.store state) query =
+      adequacy.readImplStore (impl.store state') query) ∧
+    adequacy.observeLogicalWorld (logical.world state) =
+      adequacy.observeImplWorld (impl.world state') ∧
+    adequacy.observeLogicalControl (logical.control state) =
+      adequacy.observeImplControl (impl.control state') ∧
+    adequacy.observeLogicalPublication (logical.publication state) =
+      adequacy.observeImplPublication (impl.publication state') ∧
+    ∀ query, adequacy.observeLogicalFuture state query = adequacy.observeImplFuture state' query
+
+/-- The component observations follow from the corresponding local M-laws. -/
+theorem observations_agree
+    (adequacy : ModularMachineAdequacy loadLogical loadImpl logical impl relation
+      logicalRule implRule logicalRead implRead SelectionObservation StoreQuery StoreObservation
+      WorldObservation ControlObservation PublicationObservation FutureQuery FutureObservation)
+    {state state'} (related : relation.Holds state state') :
+    adequacy.ObservationsAgree state state' :=
+  ⟨adequacy.m2_selection related, adequacy.m3_store_read related,
+    adequacy.m5_world related, adequacy.m6_retained_control related,
+    adequacy.m7_publication related, adequacy.m7_future related⟩
+
+/-- M8: the productive local block composes through every finite derivation. -/
+theorem toDerivationSimulation
+    (adequacy : ModularMachineAdequacy loadLogical loadImpl logical impl relation
+      logicalRule implRule logicalRead implRead SelectionObservation StoreQuery StoreObservation
+      WorldObservation ControlObservation PublicationObservation FutureQuery FutureObservation) :
+    DerivationSimulation logicalRule implRule relation.Holds logicalRead implRead :=
+  adequacy.m4_control.toDerivationSimulation
+
+/-- M8 at a loaded finite prefix. -/
+theorem loaded_prefix
+    (adequacy : ModularMachineAdequacy loadLogical loadImpl logical impl relation
+      logicalRule implRule logicalRead implRead SelectionObservation StoreQuery StoreObservation
+      WorldObservation ControlObservation PublicationObservation FutureQuery FutureObservation)
+    (input : Input) {fuel events outcome}
+    (path : Derivation logicalRule fuel (loadLogical input) events outcome) :
+    ∃ count events' outcome', Derivation implRule count (loadImpl input) events' outcome' ∧
+      events'.flatMap implRead.event = events.flatMap logicalRead.event ∧
+      OutcomeRel relation.Holds (outcome.relabel logicalRead.verdict logicalRead.request)
+        (outcome'.relabel implRead.verdict implRead.request) :=
+  adequacy.toDerivationSimulation.transport path (adequacy.m1_load input)
+
+/-- M8 at a retained cut. Prefix and suffix are composed exactly once, and
+all five component observations agree at the actual saved target endpoint. -/
+theorem loaded_retained_run
+    (adequacy : ModularMachineAdequacy loadLogical loadImpl logical impl relation
+      logicalRule implRule logicalRead implRead SelectionObservation StoreQuery StoreObservation
+      WorldObservation ControlObservation PublicationObservation FutureQuery FutureObservation)
+    (input : Input) {first second : Nat} {saved : LogicalConfig}
+    {events later : List LogicalEvent}
+    {outcome : Outcome LogicalConfig LogicalVerdict LogicalRequest}
+    (initial : Derivation logicalRule first (loadLogical input) events (.exhausted saved))
+    (suffix : Derivation logicalRule second saved later outcome) :
+    ∃ first' second' saved' events' later' outcome',
+      Derivation implRule first' (loadImpl input) events' (.exhausted saved') ∧
+      Derivation implRule second' saved' later' outcome' ∧
+      relation.Holds saved saved' ∧ adequacy.ObservationsAgree saved saved' ∧
+      events'.flatMap implRead.event = events.flatMap logicalRead.event ∧
+      later'.flatMap implRead.event = later.flatMap logicalRead.event ∧
+      OutcomeRel relation.Holds (outcome.relabel logicalRead.verdict logicalRead.request)
+        (outcome'.relabel implRead.verdict implRead.request) ∧
+      Derivation implRule (first' + second') (loadImpl input) (events' ++ later') outcome' := by
+  obtain ⟨first', second', saved', events', later', outcome', firstPath, secondPath,
+      related, firstRead, secondRead, relatedOutcome, whole⟩ :=
+    adequacy.toDerivationSimulation.resume initial suffix (adequacy.m1_load input)
+  exact ⟨first', second', saved', events', later', outcome', firstPath, secondPath,
+    related, adequacy.observations_agree related, firstRead, secondRead, relatedOutcome, whole⟩
+
+/-- M8 at completion preserves ordered public events and the completed public
+verdict from every admitted load. -/
+theorem loaded_completed
+    (adequacy : ModularMachineAdequacy loadLogical loadImpl logical impl relation
+      logicalRule implRule logicalRead implRead SelectionObservation StoreQuery StoreObservation
+      WorldObservation ControlObservation PublicationObservation FutureQuery FutureObservation)
+    (input : Input) {fuel events verdict}
+    (path : Derivation logicalRule fuel (loadLogical input) events (.finished verdict)) :
+    ∃ count events' verdict', Derivation implRule count (loadImpl input) events' (.finished verdict') ∧
+      events'.flatMap implRead.event = events.flatMap logicalRead.event ∧
+      implRead.verdict verdict' = logicalRead.verdict verdict :=
+  adequacy.toDerivationSimulation.completed path (adequacy.m1_load input)
+
+end ModularMachineAdequacy
+
+end ComponentRealization
+
+#print axioms ComponentRealization.ProductiveLocalBlock.toDerivationSimulation
+#print axioms ComponentRealization.ModularMachineAdequacy.loaded_retained_run
+#print axioms ComponentRealization.ModularMachineAdequacy.loaded_completed
+
 end Mettapedia.Machines.ProductiveCoreAdapters

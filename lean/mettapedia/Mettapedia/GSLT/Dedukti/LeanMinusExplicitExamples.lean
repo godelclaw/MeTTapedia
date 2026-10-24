@@ -165,7 +165,7 @@ theorem section5_typed : LambdaPiModulo leanTheoryExplicit section5Context secti
         (.pi (eps (subIn (instAt [zero]) (varCode zeroN)) (.var 0))
           (eps (subIn (instAt [zero]) (varCode zeroN)) (.var 1)))) :=
     app_at (.con rfl) instTyped rfl
-  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
   have codeA : LambdaPiModulo leanTheoryExplicit (U zero :: section5Context) (.var 0) (U zero) :=
     .var rfl
   have target : LambdaPiModulo leanTheoryExplicit section5Context
@@ -305,7 +305,7 @@ theorem propVariable_explicit {context : Ctx} {index : Nat}
 theorem identityTerm_typed_raw_explicit :
     LambdaPiModulo leanTheoryExplicit [] identityTerm
       (.pi propType (.pi (eps zero (.var 0)) (eps zero (.var 1)))) := by
-  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
   have inner : LambdaPiModulo leanTheoryExplicit [propType] innerIdentity
       (.pi (eps zero (.var 0)) (eps zero (.var 1))) :=
     .lam (epsZero_formed_explicit (propVariable_explicit rfl))
@@ -325,7 +325,7 @@ theorem imax_one_zero_explicit : Conv leanTheoryExplicit (imax (succ zero) zero)
 
 theorem identityFamily_typed_explicit :
     LambdaPiModulo leanTheoryExplicit [] identityFamily (.pi propType (U zero)) := by
-  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
   have arrowTyped : LambdaPiModulo leanTheoryExplicit [propType] arrowFamily
       (.pi (eps zero (.var 0)) (U zero)) :=
     .lam (epsZero_formed_explicit (propVariable_explicit rfl)) (uZero_formed_explicit _) rule

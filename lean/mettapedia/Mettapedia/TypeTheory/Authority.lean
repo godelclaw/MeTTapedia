@@ -258,7 +258,7 @@ inductive AuthorityRefines :
   | outsideIncomplete (before : Boundary) (after : Incomplete) :
       AuthorityRefines (.outsideFragment before) (.incomplete after)
 
-/-! The relations above are proposition-valued support readouts.  Prime's
+/-! The relations above are proposition-valued support readouts.  A candidate's
 internal metatheory needs their proof-relevant witnesses as ordinary data. -/
 
 /-- Proof-relevant evidence for a fixed-authority budget refinement. -/

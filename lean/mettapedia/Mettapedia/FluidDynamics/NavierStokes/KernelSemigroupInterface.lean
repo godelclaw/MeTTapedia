@@ -19,7 +19,6 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
-open ProbabilityTheory
 open Mettapedia.ProbabilityTheory
 
 section KernelSemigroup

@@ -30,7 +30,9 @@ private theorem spatial_pair_typed {language : LanguageDef} {free : FreeTypeCont
       (.base former.declaration.category) := by
   exact .collectionConstructor
     (List.mem_of_getElem? ((mem_structuralFormers_iff _ _).mp member))
-    (spatialShape?_sound checked).1 (.cons leftTyped (.cons rightTyped (.nil bound _)))
+    (by simpa only [GrammarRule.bareParams_of_bare _ (spatialShape?_bare checked)]
+      using (spatialShape?_sound checked).1)
+    (.cons leftTyped (.cons rightTyped (.nil bound _)))
 
 private theorem spatial_pair_commutative {base : BasePremiseEvaluator} {language : LanguageDef}
     {free : FreeTypeContext} {bound : List TypeExpr} {former : Former} {shape : SpatialShape}

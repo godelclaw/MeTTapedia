@@ -41,6 +41,7 @@ import Mathlib.Tactic
 namespace Mettapedia.Algebra.TwoDimClassification
 
 open SplitComplex
+open scoped QuadraticAlgebra
 
 /-! ## The μ-Parameterized Product
 
@@ -64,15 +65,6 @@ variable (μ : ℝ)
 /-- The normalized product has no linear coefficient. -/
 @[simp] theorem mul_im (z w : MuAlgebra μ) :
     (z * w).im = z.re * w.im + z.im * w.re := by simp
-
-/-- The distinguished generator satisfies `e² = μ`. -/
-def e : MuAlgebra μ := QuadraticAlgebra.omega
-
-@[simp] theorem e_re : (e μ).re = 0 := rfl
-@[simp] theorem e_im : (e μ).im = 1 := rfl
-
-@[simp] theorem e_sq : (e μ) * (e μ) = ⟨μ, 0⟩ := by
-  ext <;> simp [e]
 
 end MuAlgebra
 
@@ -99,18 +91,6 @@ noncomputable def muAlgebraNegOneEquivComplex : MuAlgebra (-1) ≃+* ℂ where
   map_add' := fun z w => by
     apply Complex.ext <;> simp
 
-/-- MuAlgebra 1 is isomorphic to SplitComplex. -/
-noncomputable def muAlgebraOneEquivSplit : MuAlgebra (1 : ℝ) ≃+* SplitComplex where
-  toFun z := ⟨z.re, z.im⟩
-  invFun s := ⟨s.re, s.im⟩
-  left_inv := fun z => by ext <;> rfl
-  right_inv := fun s => by ext <;> rfl
-  map_mul' := fun z w => by
-    ext
-    · simp only [QuadraticAlgebra.re_mul, SplitComplex.mul_re]; ring
-    · simp only [MuAlgebra.mul_im, SplitComplex.mul_im]
-  map_add' := fun z w => by ext <;> simp
-
 /-! ## The Classification Theorem
 
 Now we prove the main classification result.
@@ -129,94 +109,6 @@ noncomputable def classifyByMu (μ : ℝ) : TwoDimAlgebraClass :=
   else if μ = 0 then TwoDimAlgebraClass.dual
   else TwoDimAlgebraClass.splitComplex
 
-/-- MuAlgebra 0 has ε² = 0 (dual numbers). -/
-theorem muAlgebra_zero_e_sq : (MuAlgebra.e 0) * (MuAlgebra.e 0) = (0 : MuAlgebra 0) := by
-  ext <;> simp [MuAlgebra.e]
-
-/-- Rescaling: all positive μ give isomorphic algebras.
-The map (a, b) ↦ (a, b·√(μ/μ')) scales e² by μ/μ'. -/
-noncomputable def muAlgebraRescale (μ μ' : ℝ) (hμ : 0 < μ) (hμ' : 0 < μ') :
-    MuAlgebra μ ≃+* MuAlgebra μ' := by
-  let k := Real.sqrt (μ / μ')
-  let k' := Real.sqrt (μ' / μ)
-  have hk_pos : 0 ≤ k := Real.sqrt_nonneg _
-  have hk'_pos : 0 ≤ k' := Real.sqrt_nonneg _
-  have hkk' : k * k' = 1 := by
-    simp only [k, k']
-    rw [← Real.sqrt_mul (div_nonneg (le_of_lt hμ) (le_of_lt hμ'))]
-    rw [div_mul_div_comm, mul_comm μ' μ, div_self (ne_of_gt (mul_pos hμ hμ'))]
-    simp
-  have hk'k : k' * k = 1 := by rw [mul_comm]; exact hkk'
-  have hksq : k * k = μ / μ' := Real.mul_self_sqrt (div_nonneg (le_of_lt hμ) (le_of_lt hμ'))
-  refine ⟨⟨fun z => ⟨z.re, z.im * k⟩, fun z => ⟨z.re, z.im * k'⟩, ?_, ?_⟩, ?_, ?_⟩
-  · intro z; ext; rfl; simp only; rw [mul_assoc, hkk', mul_one]
-  · intro z; ext; rfl; simp only; rw [mul_assoc, hk'k, mul_one]
-  · intro z w
-    ext
-    · simp only [QuadraticAlgebra.re_mul]
-      have h : μ' * (z.im * k) * (w.im * k) = μ * z.im * w.im := by
-        calc μ' * (z.im * k) * (w.im * k)
-            = μ' * z.im * w.im * (k * k) := by ring
-          _ = μ' * z.im * w.im * (μ / μ') := by rw [hksq]
-          _ = μ * z.im * w.im := by field_simp
-      linarith [h]
-    · simp only [MuAlgebra.mul_im]; ring
-  · intro z w; ext <;> simp [add_mul]
-
-/-- Rescaling for negative μ values. -/
-noncomputable def muAlgebraRescaleNeg (μ μ' : ℝ) (hμ : μ < 0) (hμ' : μ' < 0) :
-    MuAlgebra μ ≃+* MuAlgebra μ' := by
-  have hdiv_pos : 0 < μ / μ' := div_pos_of_neg_of_neg hμ hμ'
-  have hdiv_pos' : 0 < μ' / μ := div_pos_of_neg_of_neg hμ' hμ
-  let k := Real.sqrt (μ / μ')
-  let k' := Real.sqrt (μ' / μ)
-  have hk_pos : 0 ≤ k := Real.sqrt_nonneg _
-  have hk'_pos : 0 ≤ k' := Real.sqrt_nonneg _
-  have hkk' : k * k' = 1 := by
-    simp only [k, k']
-    rw [← Real.sqrt_mul (le_of_lt hdiv_pos)]
-    rw [div_mul_div_comm, mul_comm μ' μ, div_self (ne_of_gt (mul_pos_of_neg_of_neg hμ hμ'))]
-    simp
-  have hk'k : k' * k = 1 := by rw [mul_comm]; exact hkk'
-  have hksq : k * k = μ / μ' := Real.mul_self_sqrt (le_of_lt hdiv_pos)
-  refine ⟨⟨fun z => ⟨z.re, z.im * k⟩, fun z => ⟨z.re, z.im * k'⟩, ?_, ?_⟩, ?_, ?_⟩
-  · intro z; ext; rfl; simp only; rw [mul_assoc, hkk', mul_one]
-  · intro z; ext; rfl; simp only; rw [mul_assoc, hk'k, mul_one]
-  · intro z w
-    ext
-    · simp only [QuadraticAlgebra.re_mul]
-      have hμ'_ne : μ' ≠ 0 := ne_of_lt hμ'
-      have h : μ' * (z.im * k) * (w.im * k) = μ * z.im * w.im := by
-        have step1 : μ' * (z.im * k) * (w.im * k) = μ' * z.im * w.im * (k * k) := by ring
-        have step2 : μ' * z.im * w.im * (k * k) = μ' * z.im * w.im * (μ / μ') := by rw [hksq]
-        have step3 : μ' * z.im * w.im * (μ / μ') = μ * z.im * w.im := by field_simp
-        linarith [step1, step2, step3]
-      linarith [h]
-    · simp only [MuAlgebra.mul_im]; ring
-  · intro z w; ext <;> simp [add_mul]
-
-/-- Every MuAlgebra with μ > 0 is isomorphic to MuAlgebra 1 (split-complex). -/
-noncomputable def muAlgebraPosToOne (μ : ℝ) (hμ : 0 < μ) : MuAlgebra μ ≃+* MuAlgebra 1 :=
-  muAlgebraRescale μ 1 hμ one_pos
-
-/-- Every MuAlgebra with μ < 0 is isomorphic to MuAlgebra (-1) (complex). -/
-noncomputable def muAlgebraNegToNegOne (μ : ℝ) (hμ : μ < 0) : MuAlgebra μ ≃+* MuAlgebra (-1) :=
-  muAlgebraRescaleNeg μ (-1) hμ (neg_one_lt_zero)
-
-/-- Every 2D unital real algebra with e² = μ is isomorphic to one of the three standard forms. -/
-theorem mu_algebra_classification (μ : ℝ) :
-    (μ < 0 ∧ Nonempty (MuAlgebra μ ≃+* ℂ)) ∨
-    (μ = 0) ∨
-    (0 < μ ∧ Nonempty (MuAlgebra μ ≃+* SplitComplex)) := by
-  rcases lt_trichotomy μ 0 with h_neg | h_zero | h_pos
-  · left
-    refine ⟨h_neg, ?_⟩
-    exact ⟨(muAlgebraNegToNegOne μ h_neg).trans muAlgebraNegOneEquivComplex⟩
-  · right; left; exact h_zero
-  · right; right
-    refine ⟨h_pos, ?_⟩
-    exact ⟨(muAlgebraPosToOne μ h_pos).trans muAlgebraOneEquivSplit⟩
-
 /-! ## The Completing-the-Square Parameter
 
 The key algebraic insight: Given e² = a + be, defining e' = e - b/2 gives (e')² = μ·1
@@ -226,29 +118,9 @@ the resulting real algebra.
 
 /-- The normalized square parameter. Its numerical value is not invariant
 under a further rescaling of the generator. -/
-noncomputable def completingSquareInvariant (a b : ℝ) : ℝ := a + b^2 / 4
+noncomputable def normalizedSquareParameter (a b : ℝ) : ℝ := a + b^2 / 4
 
-/-- Squaring within the normalized algebra. This coordinate identity does
-not perform the change of basis; `completingSquareIso` does so below. -/
-theorem completing_square_abstract (a b : ℝ) :
-    let μ := completingSquareInvariant a b
-    ∀ z : MuAlgebra μ, z * z = ⟨z.re^2 + μ * z.im^2, 2 * z.re * z.im⟩ := by
-  intro μ z
-  ext
-  · simp [QuadraticAlgebra.re_mul]; ring
-  · simp; ring
-
-/-! ## Connection to K&S SymmetricalFoundation
-
-K&S parameterize their bilinear product by a real parameter μ:
-  (u₁, u₂) * (v₁, v₂) = (u₁v₁ + μ·u₂v₂, u₁v₂ + u₂v₁)
-
-This gives exactly MuAlgebra μ. The classification theorem shows that although μ
-varies continuously, there are only 3 isomorphism classes.
-
-For quantum mechanics, K&S argue that μ = -1 (complex numbers) is selected by
-additional physical constraints (unitarity, Fourier duality).
--/
+/-! ## Independent coordinate multiplication -/
 
 /-- K&S bilinearProduct matches MuAlgebra multiplication. -/
 theorem ks_bilinearProduct_eq_muAlgebra (μ : ℝ) (z w : MuAlgebra μ) :
@@ -274,62 +146,16 @@ The K&S bilinearProduct is exactly MuAlgebra multiplication viewed on ℝ × ℝ
 def bilinearProductDef (μ : ℝ) (u v : ℝ × ℝ) : ℝ × ℝ :=
   (u.1 * v.1 + μ * u.2 * v.2, u.1 * v.2 + u.2 * v.1)
 
-/-- bilinearProductDef is associative for any μ. -/
-theorem bilinearProductDef_assoc (μ : ℝ) (u v w : ℝ × ℝ) :
-    bilinearProductDef μ (bilinearProductDef μ u v) w =
-    bilinearProductDef μ u (bilinearProductDef μ v w) := by
-  simp only [bilinearProductDef]
-  ext <;> ring
-
-/-- bilinearProductDef has identity (1, 0). -/
-theorem bilinearProductDef_one_left (μ : ℝ) (u : ℝ × ℝ) :
-    bilinearProductDef μ (1, 0) u = u := by
-  simp only [bilinearProductDef]
-  ext <;> simp
-
-theorem bilinearProductDef_one_right (μ : ℝ) (u : ℝ × ℝ) :
-    bilinearProductDef μ u (1, 0) = u := by
-  simp only [bilinearProductDef]
-  ext <;> simp
-
 /-- MuAlgebra multiplication matches bilinearProductDef. -/
 theorem muAlgebra_eq_bilinearProductDef (μ : ℝ) (z w : MuAlgebra μ) :
     let prod := z * w
     (prod.re, prod.im) = bilinearProductDef μ (z.re, z.im) (w.re, w.im) := by
   simp only [bilinearProductDef, QuadraticAlgebra.re_mul, MuAlgebra.mul_im]
 
-/-- bilinearProductDef is commutative. -/
-theorem bilinearProductDef_comm (μ : ℝ) (u v : ℝ × ℝ) :
-    bilinearProductDef μ u v = bilinearProductDef μ v u := by
-  simp only [bilinearProductDef]
-  ext <;> ring
+/-! ## The conjugate norm
 
-/-- The classification restated: all bilinearProductDef μ algebras are classified by sign of μ. -/
-theorem bilinearProductDef_classification (μ : ℝ) :
-    (μ < 0 ∧ Nonempty (MuAlgebra μ ≃+* ℂ)) ∨
-    (μ = 0) ∨
-    (0 < μ ∧ Nonempty (MuAlgebra μ ≃+* SplitComplex)) := by
-  rcases lt_trichotomy μ 0 with h | h | h
-  · left
-    exact ⟨h, ⟨(muAlgebraNegToNegOne μ h).trans muAlgebraNegOneEquivComplex⟩⟩
-  · right; left; exact h
-  · right; right
-    exact ⟨h, ⟨(muAlgebraPosToOne μ h).trans muAlgebraOneEquivSplit⟩⟩
-
-/-! ## Positive-definite conjugate norm
-
-Requiring this particular conjugate norm to be positive definite selects
-negative μ within the normalized family. Whether a proposed physical model
-requires that norm, and whether it realizes quantum mechanics, are additional
-questions not established by the algebraic theorem.
-
-For MuAlgebra(μ), conjugation is conj(u₁, u₂) = (u₁, -u₂), and:
-  N(u) = u · conj(u) = (u₁² - μ·u₂², 0)
-
-So the norm² is u₁² - μ·u₂²:
-- μ < 0: N(u) = u₁² + |μ|·u₂² ≥ 0 (positive definite) ✓
-- μ = 0: N(u) = u₁² (degenerate - ignores imaginary part)
-- μ > 0: N(u) = u₁² - μ·u₂² (indefinite - can be negative) ✗
+Positive definiteness singles out negative parameters within this algebraic
+family. It does not establish a physical selection principle.
 -/
 
 /-- The consumed conjugate API reuses the canonical quadratic involution. -/
@@ -365,23 +191,12 @@ theorem MuAlgebra.conjNorm_eq_zero_iff {μ : ℝ} (hμ : μ < 0) (z : MuAlgebra 
     z.conjNorm = 0 ↔ z = 0 := by
   constructor
   · intro h
-    simp only [MuAlgebra.conjNorm_def] at h
-    -- h : z.re^2 - μ * z.im^2 = 0, i.e., z.re^2 = μ * z.im^2
-    -- Since μ < 0 and z.im^2 ≥ 0, we have μ * z.im^2 ≤ 0
-    -- But z.re^2 ≥ 0, so z.re^2 = μ * z.im^2 implies both are 0
-    have hre_sq : z.re^2 = μ * z.im^2 := by linarith
-    have him_sq_nonneg : 0 ≤ z.im^2 := sq_nonneg z.im
-    have hμ_im_nonpos : μ * z.im^2 ≤ 0 := by nlinarith
-    have hre_sq_nonneg : 0 ≤ z.re^2 := sq_nonneg z.re
-    have hre_sq_zero : z.re^2 = 0 := by linarith
-    have him_sq_zero : z.im^2 = 0 := by
-      have : 0 = μ * z.im^2 := by linarith
-      nlinarith
-    have hre : z.re = 0 := by nlinarith
-    have him : z.im = 0 := by nlinarith
+    rw [MuAlgebra.conjNorm_def] at h
+    have hre : z.re = 0 := by nlinarith [sq_nonneg z.re, sq_nonneg z.im]
+    have him : z.im = 0 := by simpa [hre, mul_eq_zero, ne_of_lt hμ] using h
     ext <;> assumption
-  · intro h
-    simp [h, MuAlgebra.conjNorm_def]
+  · rintro rfl
+    simp [MuAlgebra.conjNorm_def]
 
 /-- For μ > 0 (split-complex), the conjugate norm can be negative. -/
 theorem MuAlgebra.conjNorm_can_be_negative {μ : ℝ} (hμ : 0 < μ) :
@@ -400,107 +215,55 @@ theorem selection_theorem :
     ∀ μ : ℝ, (∀ z : MuAlgebra μ, 0 ≤ z.conjNorm ∧ (z.conjNorm = 0 → z = 0)) ↔ μ < 0 := by
   intro μ
   constructor
-  · -- If norm is positive-definite, then μ < 0
-    intro h
-    by_contra hμ_nonneg
-    push Not at hμ_nonneg
-    rcases lt_or_eq_of_le hμ_nonneg with hμ_pos | hμ_zero
-    · -- Case μ > 0: contradicts positive-definiteness
-      obtain ⟨z, hz⟩ := MuAlgebra.conjNorm_can_be_negative hμ_pos
-      have ⟨hnonneg, _⟩ := h z
-      linarith
-    · -- Case μ = 0: z = (0, 1) has norm 0 but z ≠ 0
-      subst hμ_zero
-      have ⟨_, hinj⟩ := h ⟨0, 1⟩
-      have heq : MuAlgebra.conjNorm (⟨0, 1⟩ : MuAlgebra 0) = 0 := by
-        simp [MuAlgebra.conjNorm_def]
-      have hz : (⟨0, 1⟩ : MuAlgebra 0) = 0 := hinj heq
-      have : (1 : ℝ) = 0 := congrArg QuadraticAlgebra.im hz
-      linarith
-  · -- If μ < 0, then norm is positive-definite
-    intro hμ z
-    exact ⟨MuAlgebra.conjNorm_nonneg hμ z, fun h => (MuAlgebra.conjNorm_eq_zero_iff hμ z).mp h⟩
+  · intro h
+    have tested := h ⟨0, 1⟩
+    have nonzero : (⟨0, 1⟩ : MuAlgebra μ) ≠ 0 := by
+      intro equal
+      have := congrArg QuadraticAlgebra.im equal
+      norm_num at this
+    have nonpositive : μ ≤ 0 := by simpa [MuAlgebra.conjNorm_def] using tested.1
+    have unequal : μ ≠ 0 := by
+      intro zero
+      exact nonzero (tested.2 (by simp [MuAlgebra.conjNorm_def, zero]))
+    exact lt_of_le_of_ne nonpositive unequal
+  · intro hμ z
+    exact ⟨MuAlgebra.conjNorm_nonneg hμ z, (MuAlgebra.conjNorm_eq_zero_iff hμ z).mp⟩
 
 /-- Multiplicativity is the standard quadratic norm's multiplication law. -/
 theorem MuAlgebra.conjNorm_mul {μ : ℝ} (z w : MuAlgebra μ) :
     (z * w).conjNorm = z.conjNorm * w.conjNorm :=
   (QuadraticAlgebra.norm : MuAlgebra μ →* ℝ).map_mul z w
 
-/-! ## General Bilinear Algebra and Classification
-
-The general 2D bilinear algebra has multiplication:
-  (u₁, u₂) * (v₁, v₂) = (u₁v₁ + a·u₂v₂, u₁v₂ + u₂v₁ + b·u₂v₂)
-
-Both domain names reuse Mathlib's canonical `QuadraticAlgebra`, including
-its ring and scalar structures. The coordinate shift below is retained and
-upgraded to an equivalence of real algebras.
--/
+/-! ## General relations and classification -/
 
 /-- The general coordinate family reuses the standard quadratic algebra;
 its defining relation is `ω² = a + bω`. -/
 abbrev GeneralBilinearAlgebra (a b : ℝ) := QuadraticAlgebra ℝ a b
 
-/-- The completing-the-square isomorphism:
-    GeneralBilinearAlgebra(a, b) ≃+* MuAlgebra(a + b²/4)
-
-    The map is (x, y) ↦ (x + b·y/2, y), which corresponds to the
-    change of basis e' = e - b/2 where (e')² = (a + b²/4)·1. -/
-noncomputable def completingSquareIso (a b : ℝ) :
-    GeneralBilinearAlgebra a b ≃+* MuAlgebra (a + b^2/4) where
-  toFun z := ⟨z.re + b * z.im / 2, z.im⟩
-  invFun z := ⟨z.re - b * z.im / 2, z.im⟩
-  left_inv z := by ext <;> simp
-  right_inv z := by ext <;> simp
-  map_mul' z w := by
-    ext
-    · -- First component: need to show transformed product matches
-      simp only [QuadraticAlgebra.re_mul, QuadraticAlgebra.im_mul]
-      ring
-    · -- Second component: direct calculation
-      simp only [QuadraticAlgebra.im_mul]
-      ring
-  map_add' z w := by
-    ext
-    · simp only [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add]
-      ring
-    · simp only [QuadraticAlgebra.im_add]
-
-/-- The existing coordinate shift also preserves the declared real scalars. -/
+/-- Completing the square is the inverse affine shift `ω ↦ ω - b/2`. -/
 noncomputable def completingSquareAlgEquiv (a b : ℝ) :
-    GeneralBilinearAlgebra a b ≃ₐ[ℝ] MuAlgebra (a + b ^ 2 / 4) where
-  __ := completingSquareIso a b
-  commutes' r := by
-    ext <;> simp [completingSquareIso, QuadraticAlgebra.algebraMap_eq]
+    GeneralBilinearAlgebra a b ≃ₐ[ℝ] MuAlgebra (normalizedSquareParameter a b) :=
+  (QuadraticPresentation.affineEquiv a b (normalizedSquareParameter a b) 0 (-(b / 2)) 1
+    (by simp [QuadraticPresentation.shiftedConstant, normalizedSquareParameter]; ring)
+    (by simp [QuadraticPresentation.shiftedLinear]; ring)).symm
 
 @[simp] theorem completingSquareAlgEquiv_re (a b : ℝ) (z : QuadraticAlgebra ℝ a b) :
-    (completingSquareAlgEquiv a b z).re = z.re + b * z.im / 2 := rfl
+    (completingSquareAlgEquiv a b z).re = z.re + b * z.im / 2 := by
+  change z.re - -(b / 2) * (1 : ℝ) * z.im = z.re + b * z.im / 2
+  ring
 
 @[simp] theorem completingSquareAlgEquiv_im (a b : ℝ) (z : QuadraticAlgebra ℝ a b) :
-    (completingSquareAlgEquiv a b z).im = z.im := rfl
+    (completingSquareAlgEquiv a b z).im = z.im := by
+  change (1 : ℝ) * z.im = z.im
+  exact one_mul _
 
 /-- The shifted old generator becomes the normalized generator, rather than
 merely satisfying a squaring identity in an already normalized algebra. -/
 theorem completingSquareAlgEquiv_shift (a b : ℝ) :
     completingSquareAlgEquiv a b
         (QuadraticAlgebra.omega - algebraMap ℝ (QuadraticAlgebra ℝ a b) (b / 2)) =
-      MuAlgebra.e (a + b ^ 2 / 4) := by
-  ext <;> simp [MuAlgebra.e]
-
-/-- The authored two-parameter coordinate algebra admits a normalized form.
-The arbitrary finite-dimensional algebra presentation is handled separately. -/
-theorem classification_to_muAlgebra (a b : ℝ) :
-    Nonempty (GeneralBilinearAlgebra a b ≃+* MuAlgebra (a + b^2/4)) :=
-  ⟨completingSquareIso a b⟩
-
-/-- Equality of normalized parameters suffices for isomorphism. It is not
-necessary: rescaling permits distinct parameters with the same sign. -/
-theorem classification_invariant (a₁ b₁ a₂ b₂ : ℝ)
-    (h : a₁ + b₁^2/4 = a₂ + b₂^2/4) :
-    Nonempty (GeneralBilinearAlgebra a₁ b₁ ≃+* GeneralBilinearAlgebra a₂ b₂) := by
-  have h1 := completingSquareIso a₁ b₁
-  have h2 := completingSquareIso a₂ b₂
-  rw [h] at h1
-  exact ⟨h1.trans h2.symm⟩
+      (QuadraticAlgebra.omega : MuAlgebra (normalizedSquareParameter a b)) := by
+  ext <;> simp
 
 /-! ## Real algebra equivalences and distinct standard forms -/
 
@@ -509,11 +272,6 @@ noncomputable def muAlgebraNegOneAlgEquivComplex : MuAlgebra (-1) ≃ₐ[ℝ] �
   __ := muAlgebraNegOneEquivComplex
   commutes' r := by
     apply Complex.ext <;> simp [muAlgebraNegOneEquivComplex]
-
-/-- The existing split-complex comparison preserves real scalars. -/
-noncomputable def muAlgebraOneAlgEquivSplit : MuAlgebra 1 ≃ₐ[ℝ] SplitComplex where
-  __ := muAlgebraOneEquivSplit
-  commutes' r := by ext <;> simp [muAlgebraOneEquivSplit]
 
 /-- The missing standard form uses Mathlib's dual numbers, with their
 nonzero square-zero generator, rather than only a zero parameter label. -/
@@ -532,17 +290,23 @@ noncomputable def muAlgebraZeroAlgEquivDual : MuAlgebra 0 ≃ₐ[ℝ] DualNumber
   map_add' z w := by apply TrivSqZeroExt.ext <;> rfl
   commutes' r := by rw [QuadraticAlgebra.algebraMap_eq]; rfl
 
-/-- Positive-parameter rescaling is an equivalence of real algebras. -/
-noncomputable def muAlgebraRescaleAlg (μ μ' : ℝ) (hμ : 0 < μ) (hμ' : 0 < μ') :
-    MuAlgebra μ ≃ₐ[ℝ] MuAlgebra μ' where
-  __ := muAlgebraRescale μ μ' hμ hμ'
-  commutes' r := by ext <;> simp [muAlgebraRescale]
+/-- One rescaling construction covers both nonzero sign branches. -/
+noncomputable def muAlgebraRescaleAlgOfRatio (μ μ' : ℝ) (ratio : 0 < μ / μ') :
+    MuAlgebra μ ≃ₐ[ℝ] MuAlgebra μ' := by
+  have targetNonzero : μ' ≠ 0 := by rintro rfl; simp at ratio
+  let v : ℝˣ := Units.mk0 (Real.sqrt (μ / μ')) (ne_of_gt (Real.sqrt_pos.2 ratio))
+  apply QuadraticPresentation.affineEquiv μ' 0 μ 0 0 v
+  · dsimp [QuadraticPresentation.shiftedConstant, v]
+    rw [Real.sq_sqrt ratio.le]
+    simp [div_mul_cancel₀ μ targetNonzero]
+  · simp [QuadraticPresentation.shiftedLinear]
 
-/-- Negative-parameter rescaling also preserves all real scalars. -/
+noncomputable def muAlgebraRescaleAlg (μ μ' : ℝ) (hμ : 0 < μ) (hμ' : 0 < μ') :
+    MuAlgebra μ ≃ₐ[ℝ] MuAlgebra μ' := muAlgebraRescaleAlgOfRatio μ μ' (div_pos hμ hμ')
+
 noncomputable def muAlgebraRescaleNegAlg (μ μ' : ℝ) (hμ : μ < 0) (hμ' : μ' < 0) :
-    MuAlgebra μ ≃ₐ[ℝ] MuAlgebra μ' where
-  __ := muAlgebraRescaleNeg μ μ' hμ hμ'
-  commutes' r := by ext <;> simp [muAlgebraRescaleNeg]
+    MuAlgebra μ ≃ₐ[ℝ] MuAlgebra μ' :=
+  muAlgebraRescaleAlgOfRatio μ μ' (div_pos_of_neg_of_neg hμ hμ')
 
 /-- All three branches now carry an actual equivalence of real algebras. -/
 theorem mu_algebra_real_classification (μ : ℝ) :
@@ -554,16 +318,15 @@ theorem mu_algebra_real_classification (μ : ℝ) :
       neg_one_lt_zero).trans muAlgebraNegOneAlgEquivComplex⟩⟩
   · subst μ
     exact Or.inr (Or.inl ⟨rfl, ⟨muAlgebraZeroAlgEquivDual⟩⟩)
-  · exact Or.inr (Or.inr ⟨positive, ⟨(muAlgebraRescaleAlg μ 1 positive
-      one_pos).trans muAlgebraOneAlgEquivSplit⟩⟩)
+  · exact Or.inr (Or.inr ⟨positive, ⟨muAlgebraRescaleAlg μ 1 positive one_pos⟩⟩)
 
 /-- Split-complex numbers have no nonzero square-zero element, although
 they do have nonzero zero divisors. -/
 theorem split_square_eq_zero_iff (z : SplitComplex) : z * z = 0 ↔ z = 0 := by
   constructor
   · intro square
-    have realPart := congrArg SplitComplex.re square
-    simp only [SplitComplex.mul_re, SplitComplex.zero_re] at realPart
+    have realPart := congrArg QuadraticAlgebra.re square
+    simp only [QuadraticAlgebra.re_mul, QuadraticAlgebra.re_zero] at realPart
     have realZero : z.re = 0 := by nlinarith [sq_nonneg z.re, sq_nonneg z.im]
     have imaginaryZero : z.im = 0 := by nlinarith [sq_nonneg z.re, sq_nonneg z.im]
     ext <;> assumption
@@ -636,33 +399,25 @@ theorem standardForm_class_eq {first second : TwoDimAlgebraClass}
 
 /-- Every normalized parameter has its sign-selected standard real algebra. -/
 noncomputable def muAlgebraAlgEquivStandard (μ : ℝ) :
-    MuAlgebra μ ≃ₐ[ℝ] standardForm (classifyByMu μ) :=
-  if negative : μ < 0 then by
-    have kind : TwoDimAlgebraClass.complex = classifyByMu μ := by
-      simp [classifyByMu, negative]
-    exact ((muAlgebraRescaleNegAlg μ (-1) negative neg_one_lt_zero).trans
-      muAlgebraNegOneAlgEquivComplex).trans
-        (AlgEquiv.cast (R := ℝ) (A := standardForm) kind)
-  else if zero : μ = 0 then by
-    subst μ
-    have kind : TwoDimAlgebraClass.dual = classifyByMu 0 := by simp [classifyByMu]
-    exact muAlgebraZeroAlgEquivDual.trans
-      (AlgEquiv.cast (R := ℝ) (A := standardForm) kind)
-  else by
-    have positive : 0 < μ := lt_of_le_of_ne (le_of_not_gt negative) (Ne.symm zero)
-    have kind : TwoDimAlgebraClass.splitComplex = classifyByMu μ := by
-      simp [classifyByMu, negative, zero]
-    exact ((muAlgebraRescaleAlg μ 1 positive one_pos).trans
-      muAlgebraOneAlgEquivSplit).trans
-        (AlgEquiv.cast (R := ℝ) (A := standardForm) kind)
+    MuAlgebra μ ≃ₐ[ℝ] standardForm (classifyByMu μ) := by
+  by_cases negative : μ < 0
+  · rw [show classifyByMu μ = .complex by simp [classifyByMu, negative]]
+    exact (muAlgebraRescaleNegAlg μ (-1) negative neg_one_lt_zero).trans
+      muAlgebraNegOneAlgEquivComplex
+  · by_cases zero : μ = 0
+    · subst μ
+      rw [show classifyByMu 0 = .dual by simp [classifyByMu]]
+      exact muAlgebraZeroAlgEquivDual
+    · rw [show classifyByMu μ = .splitComplex by simp [classifyByMu, negative, zero]]
+      exact muAlgebraRescaleAlg μ 1 (lt_of_le_of_ne (le_of_not_gt negative) (Ne.symm zero)) one_pos
 
 /-- The same classification applies to the actual polynomial quotient, via
 its independently proved quadratic-coordinate equivalence. -/
 noncomputable def adjoinRootAlgEquivStandard (a b : ℝ) :
     AdjoinRoot (QuadraticPolynomialPresentation.definingPolynomial a b) ≃ₐ[ℝ]
-      standardForm (classifyByMu (a + b ^ 2 / 4)) :=
+      standardForm (classifyByMu (normalizedSquareParameter a b)) :=
   (QuadraticPolynomialPresentation.equivAdjoinRoot a b).symm.trans
-    ((completingSquareAlgEquiv a b).trans (muAlgebraAlgEquivStandard (a + b ^ 2 / 4)))
+    ((completingSquareAlgEquiv a b).trans (muAlgebraAlgEquivStandard (normalizedSquareParameter a b)))
 
 /-- The sign class is the complete invariant for normalized parameters. -/
 theorem mu_algebra_equiv_iff (μ μ' : ℝ) :
@@ -688,7 +443,7 @@ theorem two_dimensional_classification (A : Type*) [Ring A] [Algebra ℝ A]
     ∃! kind : TwoDimAlgebraClass, Nonempty (A ≃ₐ[ℝ] standardForm kind) := by
   obtain ⟨a, b, ⟨presentation⟩⟩ :=
     QuadraticPresentation.exists_equiv_quadratic ℝ A dimension
-  let μ := a + b ^ 2 / 4
+  let μ := normalizedSquareParameter a b
   let normalized : A ≃ₐ[ℝ] MuAlgebra μ := presentation.trans (completingSquareAlgEquiv a b)
   let comparison : A ≃ₐ[ℝ] standardForm (classifyByMu μ) :=
     normalized.trans (muAlgebraAlgEquivStandard μ)

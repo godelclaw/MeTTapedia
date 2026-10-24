@@ -21,7 +21,7 @@ open scoped ProgramQuotation
 def descentSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../../metta/gslt/lib/gslt_descent_execution.metta"
-    sha256 "baeb87474438024cd981304e67564cd382383b25b4930b950cb391f8767fe822"
+    sha256 "81c5696a7a0243c5fcf8ef6dc95d2cfc02931180504d9147ad2dcc4d056c3e31"
 
 def completeSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%

@@ -74,24 +74,8 @@ private theorem usesBareCollection?_map
     (symbols : LanguageDefSymbolMap) (rule : GrammarRule) :
     usesBareCollection? (mapGrammarRule symbols rule) =
       usesBareCollection? rule := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases parameters with
-      | nil => rfl
-      | cons parameter remaining =>
-          cases remaining with
-          | nil =>
-              cases parameter with
-              | simple name type =>
-                  cases type <;>
-                    simp [usesBareCollection?, mapGrammarRule, mapTermParam,
-                      mapTypeExpr]
-              | abstractionNamed binder body type =>
-                  simp [usesBareCollection?, mapGrammarRule, mapTermParam]
-              | multiAbstractionNamed binders body type =>
-                  simp [usesBareCollection?, mapGrammarRule, mapTermParam]
-          | cons next tail =>
-              simp [usesBareCollection?, mapGrammarRule]
+  rw [Bool.eq_iff_iff, usesBareCollection?_eq_true_iff, usesBareCollection?_eq_true_iff]
+  exact usesBareCollection_mapGrammarRule_iff symbols rule
 
 private def constructorCandidate
     (language : LanguageDef) (free : FreeTypeContext)
@@ -264,27 +248,28 @@ private theorem bareCollectionElementType?_left_map
         collectionType (mapTypeExpr leftSymbols expected) =
       (bareCollectionElementType? rule collectionType expected).map
         (mapTypeExpr leftSymbols) := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases expected <;> cases parameters with
-      | nil => simp [bareCollectionElementType?, mapGrammarRule]
-      | cons parameter parameters =>
-          cases parameters with
-          | cons next remaining =>
-              simp [bareCollectionElementType?, mapGrammarRule]
-          | nil =>
-              cases parameter with
-              | abstractionNamed binder body type =>
-                  simp [bareCollectionElementType?, mapGrammarRule,
-                    mapTermParam]
-              | multiAbstractionNamed binders body type =>
-                  simp [bareCollectionElementType?, mapGrammarRule,
-                    mapTermParam]
-              | simple parameterName parameterType =>
-                  cases parameterType <;>
-                    simp [bareCollectionElementType?, mapGrammarRule,
-                      mapTermParam, mapTypeExpr,
-                      compatible.leftSymbolsInjective.sort.eq_iff]
+  unfold bareCollectionElementType?
+  rw [bareParams_mapGrammarRule]
+  generalize rule.bareParams = parameters
+  cases expected <;> cases parameters with
+  | nil => simp
+  | cons parameter parameters =>
+      cases parameters with
+      | cons next remaining =>
+          simp
+      | nil =>
+          cases parameter with
+          | abstractionNamed binder body type =>
+              simp [
+                mapTermParam]
+          | multiAbstractionNamed binders body type =>
+              simp [
+                mapTermParam]
+          | simple parameterName parameterType =>
+              cases parameterType <;>
+                simp [mapGrammarRule,
+                  mapTermParam, mapTypeExpr,
+                  compatible.leftSymbolsInjective.sort.eq_iff]
 
 private theorem bareCollectionElementType?_right_map_eq_none
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
@@ -293,38 +278,39 @@ private theorem bareCollectionElementType?_right_map_eq_none
     (rule : GrammarRule) (collectionType : CollType) (expected : TypeExpr) :
     bareCollectionElementType? (mapGrammarRule rightSymbols rule)
         collectionType (mapTypeExpr leftSymbols expected) = none := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases expected with
-      | arrow domain codomain =>
-          simp [bareCollectionElementType?, mapGrammarRule, mapTypeExpr]
-      | multiBinder body =>
-          simp [bareCollectionElementType?, mapGrammarRule, mapTypeExpr]
-      | collection actual element =>
-          simp [bareCollectionElementType?, mapGrammarRule, mapTypeExpr]
-      | base expectedSort =>
-          have unequal :
-              rightSymbols.sort category ≠ leftSymbols.sort expectedSort :=
-            fun equality => compatible.symbolImagesDisjoint.sort
-              expectedSort category equality.symm
+  unfold bareCollectionElementType?
+  rw [bareParams_mapGrammarRule]
+  generalize rule.bareParams = parameters
+  cases expected with
+  | arrow domain codomain =>
+      simp [mapTypeExpr]
+  | multiBinder body =>
+      simp [mapTypeExpr]
+  | collection actual element =>
+      simp [mapTypeExpr]
+  | base expectedSort =>
+      have unequal :
+          rightSymbols.sort rule.category ≠ leftSymbols.sort expectedSort :=
+        fun equality => compatible.symbolImagesDisjoint.sort
+          expectedSort rule.category equality.symm
+      cases parameters with
+      | nil => simp
+      | cons parameter parameters =>
           cases parameters with
-          | nil => simp [bareCollectionElementType?, mapGrammarRule]
-          | cons parameter parameters =>
-              cases parameters with
-              | cons next remaining =>
-                  simp [bareCollectionElementType?, mapGrammarRule]
-              | nil =>
-                  cases parameter with
-                  | simple parameterName parameterType =>
-                      cases parameterType <;>
-                        simp [bareCollectionElementType?, mapGrammarRule,
-                          mapTermParam, mapTypeExpr, unequal]
-                  | abstractionNamed binder body type =>
-                      simp [bareCollectionElementType?, mapGrammarRule,
-                        mapTermParam, mapTypeExpr]
-                  | multiAbstractionNamed binders body type =>
-                      simp [bareCollectionElementType?, mapGrammarRule,
-                        mapTermParam, mapTypeExpr]
+          | cons next remaining =>
+              simp
+          | nil =>
+              cases parameter with
+              | simple parameterName parameterType =>
+                  cases parameterType <;>
+                    simp [mapGrammarRule,
+                      mapTermParam, mapTypeExpr, unequal]
+              | abstractionNamed binder body type =>
+                  simp [
+                    mapTermParam, mapTypeExpr]
+              | multiAbstractionNamed binders body type =>
+                  simp [
+                    mapTermParam, mapTypeExpr]
 
 private theorem bareCollectionCandidate_left_map
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
@@ -521,27 +507,28 @@ private theorem bareCollectionElementType?_right_source_map
         collectionType (mapTypeExpr rightSymbols expected) =
       (bareCollectionElementType? rule collectionType expected).map
         (mapTypeExpr rightSymbols) := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases expected <;> cases parameters with
-      | nil => simp [bareCollectionElementType?, mapGrammarRule]
-      | cons parameter parameters =>
-          cases parameters with
-          | cons next remaining =>
-              simp [bareCollectionElementType?, mapGrammarRule]
-          | nil =>
-              cases parameter with
-              | abstractionNamed binder body type =>
-                  simp [bareCollectionElementType?, mapGrammarRule,
-                    mapTermParam]
-              | multiAbstractionNamed binders body type =>
-                  simp [bareCollectionElementType?, mapGrammarRule,
-                    mapTermParam]
-              | simple parameterName parameterType =>
-                  cases parameterType <;>
-                    simp [bareCollectionElementType?, mapGrammarRule,
-                      mapTermParam, mapTypeExpr,
-                      compatible.rightSymbolsInjective.sort.eq_iff]
+  unfold bareCollectionElementType?
+  rw [bareParams_mapGrammarRule]
+  generalize rule.bareParams = parameters
+  cases expected <;> cases parameters with
+  | nil => simp
+  | cons parameter parameters =>
+      cases parameters with
+      | cons next remaining =>
+          simp
+      | nil =>
+          cases parameter with
+          | abstractionNamed binder body type =>
+              simp [
+                mapTermParam]
+          | multiAbstractionNamed binders body type =>
+              simp [
+                mapTermParam]
+          | simple parameterName parameterType =>
+              cases parameterType <;>
+                simp [mapGrammarRule,
+                  mapTermParam, mapTypeExpr,
+                  compatible.rightSymbolsInjective.sort.eq_iff]
 
 private theorem bareCollectionElementType?_left_map_eq_none_on_right
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
@@ -550,37 +537,38 @@ private theorem bareCollectionElementType?_left_map_eq_none_on_right
     (rule : GrammarRule) (collectionType : CollType) (expected : TypeExpr) :
     bareCollectionElementType? (mapGrammarRule leftSymbols rule)
         collectionType (mapTypeExpr rightSymbols expected) = none := by
-  cases rule with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases expected with
-      | arrow domain codomain =>
-          simp [bareCollectionElementType?, mapGrammarRule, mapTypeExpr]
-      | multiBinder body =>
-          simp [bareCollectionElementType?, mapGrammarRule, mapTypeExpr]
-      | collection actual element =>
-          simp [bareCollectionElementType?, mapGrammarRule, mapTypeExpr]
-      | base expectedSort =>
-          have unequal :
-              leftSymbols.sort category ≠ rightSymbols.sort expectedSort :=
-            compatible.symbolImagesDisjoint.sort category expectedSort
+  unfold bareCollectionElementType?
+  rw [bareParams_mapGrammarRule]
+  generalize rule.bareParams = parameters
+  cases expected with
+  | arrow domain codomain =>
+      simp [mapTypeExpr]
+  | multiBinder body =>
+      simp [mapTypeExpr]
+  | collection actual element =>
+      simp [mapTypeExpr]
+  | base expectedSort =>
+      have unequal :
+          leftSymbols.sort rule.category ≠ rightSymbols.sort expectedSort :=
+        compatible.symbolImagesDisjoint.sort rule.category expectedSort
+      cases parameters with
+      | nil => simp
+      | cons parameter parameters =>
           cases parameters with
-          | nil => simp [bareCollectionElementType?, mapGrammarRule]
-          | cons parameter parameters =>
-              cases parameters with
-              | cons next remaining =>
-                  simp [bareCollectionElementType?, mapGrammarRule]
-              | nil =>
-                  cases parameter with
-                  | simple parameterName parameterType =>
-                      cases parameterType <;>
-                        simp [bareCollectionElementType?, mapGrammarRule,
-                          mapTermParam, mapTypeExpr, unequal]
-                  | abstractionNamed binder body type =>
-                      simp [bareCollectionElementType?, mapGrammarRule,
-                        mapTermParam, mapTypeExpr]
-                  | multiAbstractionNamed binders body type =>
-                      simp [bareCollectionElementType?, mapGrammarRule,
-                        mapTermParam, mapTypeExpr]
+          | cons next remaining =>
+              simp
+          | nil =>
+              cases parameter with
+              | simple parameterName parameterType =>
+                  cases parameterType <;>
+                    simp [mapGrammarRule,
+                      mapTermParam, mapTypeExpr, unequal]
+              | abstractionNamed binder body type =>
+                  simp [
+                    mapTermParam, mapTypeExpr]
+              | multiAbstractionNamed binders body type =>
+                  simp [
+                    mapTermParam, mapTypeExpr]
 
 private theorem bareCollectionCandidate_right_source_map
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}

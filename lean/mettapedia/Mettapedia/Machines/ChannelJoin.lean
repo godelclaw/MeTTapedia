@@ -3,6 +3,7 @@ import Mettapedia.Machines.RevisionedOccurrenceStore
 import Mettapedia.GSLT.Causality.ResourceWaves
 import Mettapedia.GSLT.Causality.ResourceRuns
 import Mettapedia.GSLT.LanguageDef.NativeControlCursor
+import Mettapedia.GSLT.LanguageDef.OperationCostProtocol
 import Mettapedia.Machines.ResourceOwnership
 import Mettapedia.Machines.Cursor.ReadOnlyQuery
 import Mettapedia.GSLT.Contracts.IndexedAuthority
@@ -4248,5 +4249,628 @@ end OutputsControls
 #print axioms outputs_from_initial
 
 end ScopedPublication
+
+/-! ## Current lineage and commit-spent ticket adapter
+
+This cold adapter joins existing owners.  Delegation validates every current
+ancestor, revocation scope and root anchor.  `CheckedGrant` ties that lineage's
+selected reference to the canonical generation-bearing handle and current
+authority.  `ScopedPublication.performOutputs` supplies the actual one-shot
+currency: a failed check consumes nothing, while success spends the selected
+occurrence in the same transition that publishes its outputs.
+
+The adapter does not mint principals, handles or origins, and it does not
+replace the general invocation protocol.  A native monitor must still provide
+an atomic realization and protected origin evidence.
+-/
+
+namespace AuthorizedPublication
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.LanguageDef.OperationCostProtocol.Indexed
+open Mettapedia.Machines.Cursor.ReadOnlyQuery.PolicyPlan
+open Mettapedia.Machines.Cursor.ReadOnlyQuery.PolicyPlan.Delegation
+open PositionalPublication
+
+set_option synthInstance.maxSize 512
+
+variable {GrantSpace GrantLetter Principal Realm Right GrantEpoch GrantRevision : Type}
+variable {TicketEpoch Site Letter Version Authority : Type}
+variable [DecidableEq GrantSpace] [DecidableEq GrantLetter]
+  [DecidableEq Principal] [DecidableEq Realm] [DecidableEq Right]
+  [DecidableEq GrantEpoch] [DecidableEq GrantRevision]
+variable [DecidableEq TicketEpoch] [DecidableEq Site] [DecidableEq Letter]
+  [DecidableEq Version]
+variable [Encodable TicketEpoch] [Encodable Site] [Encodable Letter] [Encodable Version]
+variable [Zero Authority] [Add Authority]
+  [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+
+abbrev GrantStore :=
+  GrantScope (Space := GrantSpace) (Letter := GrantLetter) →
+    GrantReply (Space := GrantSpace) (Letter := GrantLetter) (Generation := Nat)
+      (Principal := Principal) (Realm := Realm) (Right := Right)
+      (Epoch := GrantEpoch) (Revision := GrantRevision)
+
+abbrev TicketRows := ScopedRecords.Source TicketEpoch Nat Site Letter Version
+abbrev TicketStamp := ScopedRecords.Stamp Site Letter Version
+abbrev TicketRequired := ScopedRecords.Captured TicketEpoch Site Letter Version Nat
+abbrev TicketState (Epoch : Type) := PositionalPublication.Retained.State Epoch
+
+/-- All authorization checks precede the existing atomic ticket/output
+transition.  `none` retains the caller's original rows and channel state. -/
+def perform
+    (profile : Profile GrantSpace GrantLetter Nat Principal Realm)
+    (grants : GrantStore (GrantSpace := GrantSpace) (GrantLetter := GrantLetter)
+      (Principal := Principal) (Realm := Realm) (Right := Right)
+      (GrantEpoch := GrantEpoch) (GrantRevision := GrantRevision))
+    (depth : Nat) (demand : Demand GrantSpace GrantLetter Nat Principal Realm Right)
+    (requirement : CheckedGrant.Requirement GrantSpace (List GrantLetter) Authority)
+    (view : CheckedGrant.View GrantSpace (List GrantLetter) Authority)
+    [Decidable (FrameUpdate view.available requirement.required)]
+    (contents : TicketEpoch → TicketStamp (Site := Site) (Letter := Letter) (Version := Version) → Nat)
+    (current : TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (required : TicketRequired (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (chosen outputs : List (TicketStamp (Site := Site) (Letter := Letter) (Version := Version)))
+    (state : TicketState TicketEpoch) (receiver nextGeneration : Nat) :
+    Option (TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version) × TicketState TicketEpoch) :=
+  if requirement.handle = Reference.toHandle demand.reference then
+    if requirement.handle = view.handle ∧ FrameUpdate view.available requirement.required then
+      if (Mettapedia.Machines.ReadOnlyQuery.run grants
+          (query profile depth [] demand)).answer = .allowed then
+        ScopedPublication.performOutputs contents current required chosen outputs state receiver nextGeneration
+      else none
+    else none
+  else none
+
+omit [DecidableEq GrantEpoch] [DecidableEq GrantRevision] in
+theorem perform_admitted
+    (profile : Profile GrantSpace GrantLetter Nat Principal Realm)
+    (grants : GrantStore (GrantSpace := GrantSpace) (GrantLetter := GrantLetter)
+      (Principal := Principal) (Realm := Realm) (Right := Right)
+      (GrantEpoch := GrantEpoch) (GrantRevision := GrantRevision))
+    (depth : Nat) (demand : Demand GrantSpace GrantLetter Nat Principal Realm Right)
+    (requirement : CheckedGrant.Requirement GrantSpace (List GrantLetter) Authority)
+    (view : CheckedGrant.View GrantSpace (List GrantLetter) Authority)
+    [Decidable (FrameUpdate view.available requirement.required)]
+    (contents : TicketEpoch → TicketStamp (Site := Site) (Letter := Letter) (Version := Version) → Nat)
+    (current : TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (required : TicketRequired (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (chosen outputs : List (TicketStamp (Site := Site) (Letter := Letter) (Version := Version)))
+    (state next : TicketState TicketEpoch) (receiver nextGeneration : Nat)
+    (published : TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (accepted : perform profile grants depth demand requirement view contents current required
+      chosen outputs state receiver nextGeneration = some (published, next)) :
+    requirement.handle = Reference.toHandle demand.reference ∧ requirement.Current view ∧
+      (∃ height, height ≤ depth ∧ AuthorizedChain profile grants [] demand height) ∧
+      ScopedPublication.performOutputs contents current required chosen outputs state receiver
+        nextGeneration = some (published, next) := by
+  unfold perform at accepted
+  split at accepted
+  · rename_i identity
+    split at accepted
+    · rename_i currentGrant
+      split at accepted
+      · rename_i allowed
+        exact ⟨identity, currentGrant, query_sound profile grants depth [] demand allowed, accepted⟩
+      · cases accepted
+    · cases accepted
+  · cases accepted
+
+omit [DecidableEq GrantEpoch] [DecidableEq GrantRevision] in
+/-- Successful authorization and publication expose the already-proved current
+lineage and the exact ticket/output transition. -/
+theorem perform_source
+    (profile : Profile GrantSpace GrantLetter Nat Principal Realm)
+    (grants : GrantStore (GrantSpace := GrantSpace) (GrantLetter := GrantLetter)
+      (Principal := Principal) (Realm := Realm) (Right := Right)
+      (GrantEpoch := GrantEpoch) (GrantRevision := GrantRevision))
+    (depth : Nat) (demand : Demand GrantSpace GrantLetter Nat Principal Realm Right)
+    (requirement : CheckedGrant.Requirement GrantSpace (List GrantLetter) Authority)
+    (view : CheckedGrant.View GrantSpace (List GrantLetter) Authority)
+    [Decidable (FrameUpdate view.available requirement.required)]
+    (contents : TicketEpoch → TicketStamp (Site := Site) (Letter := Letter) (Version := Version) → Nat)
+    (current : TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (required : TicketRequired (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (chosen outputs : List (TicketStamp (Site := Site) (Letter := Letter) (Version := Version)))
+    (state next : TicketState TicketEpoch) (receiver nextGeneration : Nat)
+    (published : TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (lawful : PositionalPublication.Retained.Lawful state)
+    (accepted : perform profile grants depth demand requirement view contents current required
+      chosen outputs state receiver nextGeneration = some (published, next)) :
+    requirement.handle = Reference.toHandle demand.reference ∧ requirement.Current view ∧
+      (∃ height, height ≤ depth ∧ AuthorizedChain profile grants [] demand height) ∧
+      published = RevisionedStoreView.Publication.Keyed.reference id current chosen outputs nextGeneration ∧
+      PositionalPublication.Retained.Lawful next ∧
+      next.channel.spent = state.channel.spent ++
+        (chosen.map (ScopedPublication.event contents current.storeId)).map EventPump.Event.serial := by
+  obtain ⟨identity, currentGrant, lineage, ticket⟩ :=
+    perform_admitted profile grants depth demand requirement view contents current required chosen outputs
+      state next receiver nextGeneration published accepted
+  have source := ScopedPublication.outputs_source contents current required chosen outputs state next
+    receiver nextGeneration published lawful ticket
+  exact ⟨identity, currentGrant, lineage, source.1, source.2.1, source.2.2.2.2.1⟩
+
+omit [DecidableEq GrantEpoch] [DecidableEq GrantRevision] in
+theorem refused_of_stale_handle
+    (profile : Profile GrantSpace GrantLetter Nat Principal Realm)
+    (grants : GrantStore (GrantSpace := GrantSpace) (GrantLetter := GrantLetter)
+      (Principal := Principal) (Realm := Realm) (Right := Right)
+      (GrantEpoch := GrantEpoch) (GrantRevision := GrantRevision))
+    (depth : Nat) (demand : Demand GrantSpace GrantLetter Nat Principal Realm Right)
+    (requirement : CheckedGrant.Requirement GrantSpace (List GrantLetter) Authority)
+    (view : CheckedGrant.View GrantSpace (List GrantLetter) Authority)
+    [Decidable (FrameUpdate view.available requirement.required)]
+    (contents : TicketEpoch → TicketStamp (Site := Site) (Letter := Letter) (Version := Version) → Nat)
+    (current : TicketRows (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (required : TicketRequired (TicketEpoch := TicketEpoch) (Site := Site)
+      (Letter := Letter) (Version := Version))
+    (chosen outputs : List (TicketStamp (Site := Site) (Letter := Letter) (Version := Version)))
+    (state : TicketState TicketEpoch) (receiver nextGeneration : Nat)
+    (stale : requirement.handle ≠ Reference.toHandle demand.reference) :
+    perform profile grants depth demand requirement view contents current required chosen outputs state
+      receiver nextGeneration = none := by
+  simp [perform, stale]
+
+namespace Controls
+
+open Mettapedia.GSLT.Contracts (Access)
+
+local instance : Fintype Access :=
+  ⟨{.none, .read, .consume}, by intro access; cases access <;> simp⟩
+
+def grantRequirement : CheckedGrant.Requirement Nat (List Nat) Access :=
+  ⟨Reference.toHandle Delegation.Controls.leaf, .consume⟩
+
+def grantView : CheckedGrant.View Nat (List Nat) Access :=
+  ⟨Reference.toHandle Delegation.Controls.leaf, .consume⟩
+
+def revokedGrantView : CheckedGrant.View Nat (List Nat) Access :=
+  ⟨Reference.toHandle Delegation.Controls.leaf, .none⟩
+
+local instance permissionDecision (view : CheckedGrant.View Nat (List Nat) Access) :
+    Decidable (FrameUpdate view.available grantRequirement.required) :=
+  inferInstanceAs (Decidable (∀ frame : Access,
+    Access.separate view.available frame = true →
+      Access.separate grantRequirement.required frame = true))
+
+def joined := perform Delegation.Controls.policy
+  (Delegation.Controls.observed Delegation.Controls.initial) 3 Delegation.Controls.demand
+  grantRequirement grantView ScopedPublication.Controls.contentsN
+  ScopedPublication.Controls.current ScopedPublication.Controls.read
+  [ScopedPublication.Controls.first] ScopedPublication.OutputsControls.firstOutputs
+  ScopedPublication.Controls.start 7 6
+
+def joinedResult := joined.get (by decide)
+
+/-- Positive: the current three-hop attenuating lineage and exact handle spend
+one selected occurrence while publishing the already-qualified outputs. -/
+theorem current_lineage_spends_one_ticket :
+    joined.isSome = true ∧
+      joinedResult.1.entries =
+        [ScopedPublication.Controls.second, ScopedPublication.OutputsControls.replacement,
+          ScopedPublication.OutputsControls.created 1] ∧
+      joinedResult.2.channel.spent =
+        [(ScopedPublication.event ScopedPublication.Controls.contentsN 17
+          ScopedPublication.Controls.first).serial] := by decide
+
+/-- A copied old handle cannot follow an equal-right regrant at a fresh
+authorization generation.  The ticket remains untouched because the adapter
+refuses before calling the consuming transition. -/
+theorem equal_right_regrant_does_not_revive_handle :
+    let freshDemand := { Delegation.Controls.demand with
+      reference := { Delegation.Controls.leaf with generation := 201 } }
+    perform Delegation.Controls.policy
+      (Delegation.Controls.observed (Delegation.Controls.replace Delegation.Controls.leaf.slot 2))
+      3 freshDemand grantRequirement grantView ScopedPublication.Controls.contentsN
+      ScopedPublication.Controls.current ScopedPublication.Controls.read
+      [ScopedPublication.Controls.first] ScopedPublication.OutputsControls.firstOutputs
+      ScopedPublication.Controls.start 7 6 = none := by decide
+
+/-- Revoking current authority refuses before ticket consumption even though
+the complete lineage and ticket source are otherwise unchanged. -/
+theorem revoked_current_authority_keeps_ticket :
+    perform Delegation.Controls.policy
+      (Delegation.Controls.observed Delegation.Controls.initial) 3 Delegation.Controls.demand
+      grantRequirement revokedGrantView ScopedPublication.Controls.contentsN
+      ScopedPublication.Controls.current ScopedPublication.Controls.read
+      [ScopedPublication.Controls.first] ScopedPublication.OutputsControls.firstOutputs
+      ScopedPublication.Controls.start 7 6 = none := by decide
+
+/-- Revoking an ancestor is a lineage refusal, not a consumed ticket.  A later
+call against the unchanged current lineage and same state still succeeds. -/
+theorem ancestor_revocation_and_retry_are_separate :
+    (perform Delegation.Controls.policy
+        (Delegation.Controls.observed Delegation.Controls.revoked) 3 Delegation.Controls.demand
+        grantRequirement grantView ScopedPublication.Controls.contentsN
+        ScopedPublication.Controls.current ScopedPublication.Controls.read
+        [ScopedPublication.Controls.first] ScopedPublication.OutputsControls.firstOutputs
+        ScopedPublication.Controls.start 7 6).isNone = true ∧
+      joined.isSome = true := by decide
+
+/-- Output collision is checked before the transition.  Retrying from that
+same untouched state with fresh outputs spends the ticket exactly once. -/
+theorem output_conflict_does_not_spend_ticket :
+    let collision : ScopedPublication.Controls.StampN := ((1, [10, 1]), 2)
+    (perform Delegation.Controls.policy
+        (Delegation.Controls.observed Delegation.Controls.initial) 3 Delegation.Controls.demand
+        grantRequirement grantView ScopedPublication.Controls.contentsN
+        ScopedPublication.Controls.current ScopedPublication.Controls.read
+        [ScopedPublication.Controls.first] [collision]
+        ScopedPublication.Controls.start 7 6).isNone = true ∧
+      joined.isSome = true := by decide
+
+/-- Copying the consumed stamp and the old capture does not recreate its
+physical occurrence after a successful turn. -/
+theorem copied_ticket_data_cannot_spend_twice :
+    perform Delegation.Controls.policy
+      (Delegation.Controls.observed Delegation.Controls.initial) 3 Delegation.Controls.demand
+      grantRequirement grantView ScopedPublication.Controls.contentsN
+      ScopedPublication.OutputsControls.one.1 ScopedPublication.Controls.read
+      [ScopedPublication.Controls.first] [ScopedPublication.OutputsControls.created 2]
+      ScopedPublication.OutputsControls.one.2 7 7 = none := by decide
+
+end Controls
+
+#print axioms perform_admitted
+#print axioms perform_source
+#print axioms refused_of_stale_handle
+#print axioms Controls.current_lineage_spends_one_ticket
+#print axioms Controls.equal_right_regrant_does_not_revive_handle
+#print axioms Controls.revoked_current_authority_keeps_ticket
+#print axioms Controls.ancestor_revocation_and_retry_are_separate
+#print axioms Controls.output_conflict_does_not_spend_ticket
+#print axioms Controls.copied_ticket_data_cannot_spend_twice
+
+end AuthorizedPublication
+
+/-! ## Reified retained-space frames at the actual publication boundary -/
+
+namespace ScopedPublication
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.SeparationAlgebra
+open scoped Mettapedia.GSLT.SeparationAlgebra
+open PositionalPublication
+
+variable {Epoch Site Letter Version : Type}
+variable [DecidableEq Epoch] [DecidableEq Site] [DecidableEq Letter] [DecidableEq Version]
+variable [Encodable Epoch] [Encodable Site] [Encodable Letter] [Encodable Version]
+
+local notation "Rows" => ScopedRecords.Source Epoch Nat Site Letter Version
+local notation "Stamp" => ScopedRecords.Stamp Site Letter Version
+local notation "Required" => ScopedRecords.Captured Epoch Site Letter Version Nat
+
+/-- Stable-key uniqueness comes from the actual publication's admission.
+Repeated read-view mentions are not additional physical consume rights. -/
+theorem accepted_turn_unique
+    (contents : Epoch → Stamp → Nat) (current published : Rows) (required : Required)
+    (chosen outputs : List Stamp) (state next : Retained.State Epoch) (receiver generation : Nat)
+    (accepted : performOutputs contents current required chosen outputs state receiver generation = some (published, next)) :
+    (current.entries.map Prod.fst).Nodup ∧ (chosen.map Prod.fst).Nodup ∧ chosen.Nodup := by
+  obtain ⟨positions, compiled, _, _, _, _, _⟩ := outputs_admitted contents current required chosen outputs
+    state next receiver generation published accepted
+  have actual := compile_admitted current required chosen positions compiled
+  exact ⟨actual.2.1, actual.2.2.1, List.Nodup.of_map Prod.fst actual.2.2.1⟩
+
+/-- The implemented retained turn, including one-occurrence take, realizes
+the constructed scoped-row frame judgement. Currency, origin conservation,
+read validation and current grants retain their separate owners. -/
+theorem outputs_reify_frame
+    (contents : Epoch → Stamp → Nat) (current published : Rows) (required : Required)
+    (chosen outputs : List Stamp) (state next : Retained.State Epoch) (receiver generation : Nat)
+    (site : Site) (before : List (List Letter × Version))
+    (frame : OccurrenceSpace.Authority Site Letter Version)
+    (localChosen : ∀ stamp ∈ chosen, stamp.1.1 = site)
+    (localOutputs : ∀ stamp ∈ outputs, stamp.1.1 = site)
+    (lawful : Retained.Lawful state)
+    (separate : OccurrenceSpace.owned site before ## frame)
+    (holds : current ∈ OccurrenceSpace.reify (OccurrenceSpace.owned site before + frame))
+    (accepted : performOutputs contents current required chosen outputs state receiver generation = some (published, next)) :
+    OccurrenceSpace.owned site
+        (OccurrenceSpace.remainingLocal site chosen before ++ outputs.map ScopedRecords.localStamp) ## frame ∧
+      published ∈ OccurrenceSpace.reify
+        (OccurrenceSpace.owned site
+          (OccurrenceSpace.remainingLocal site chosen before ++ outputs.map ScopedRecords.localStamp) + frame) ∧
+      Retained.Lawful next ∧
+      next.channel.spent = state.channel.spent ++
+        (chosen.map (event contents current.storeId)).map EventPump.Event.serial := by
+  have source := outputs_source contents current required chosen outputs state next receiver generation published lawful accepted
+  have framed := OccurrenceSpace.publication_preserves site chosen outputs generation localChosen localOutputs before
+    frame separate current holds published source.1
+  exact ⟨framed.1, framed.2, source.2.1, source.2.2.2.2.1⟩
+
+/-- The manifest comes from the original adaptive row query. Both contents
+functions below are fixed interpretations of `(epoch, full stamp)` throughout
+the boundary. An unversioned mutable-payload provider does not instantiate this
+interface. The actual turn transports the chosen observation and resource frame. -/
+theorem adaptive_outputs_reify_frame {Payload Answer View : Type}
+    (contents : Epoch → Stamp → Nat) (rowContents : Epoch → Stamp → Payload)
+    (captured current published : Rows)
+    (program : Mettapedia.Machines.ReadOnlyQuery.Program (ScopedRecords.Scope Site Letter)
+      (ScopedRecords.FullReply Epoch Site Letter Version Payload) Answer)
+    (observer : Mettapedia.Machines.ReadOnlyQuery.Observation (ScopedRecords.Scope Site Letter)
+      (ScopedRecords.FullReply Epoch Site Letter Version Payload) Answer → View)
+    (chosen outputs : List Stamp) (state next : Retained.State Epoch) (receiver generation : Nat)
+    (site : Site) (before : List (List Letter × Version))
+    (frame : OccurrenceSpace.Authority Site Letter Version)
+    (localChosen : ∀ stamp ∈ chosen, stamp.1.1 = site)
+    (localOutputs : ∀ stamp ∈ outputs, stamp.1.1 = site)
+    (lawful : Retained.Lawful state)
+    (separate : OccurrenceSpace.owned site before ## frame)
+    (holds : current ∈ OccurrenceSpace.reify (OccurrenceSpace.owned site before + frame))
+    (accepted : performOutputs contents current
+      (ScopedRecords.capture contents captured
+        ((Mettapedia.Machines.ReadOnlyQuery.run (ScopedRecords.observe rowContents captured) program).reads.map Prod.fst))
+      chosen outputs state receiver generation = some (published, next)) :
+    observer (Mettapedia.Machines.ReadOnlyQuery.run (ScopedRecords.observe rowContents current) program) =
+        observer (Mettapedia.Machines.ReadOnlyQuery.run (ScopedRecords.observe rowContents captured) program) ∧
+      published ∈ OccurrenceSpace.reify
+        (OccurrenceSpace.owned site
+          (OccurrenceSpace.remainingLocal site chosen before ++ outputs.map ScopedRecords.localStamp) + frame) ∧
+      Retained.Lawful next ∧
+      next.channel.spent = state.channel.spent ++
+        (chosen.map (event contents current.storeId)).map EventPump.Event.serial := by
+  obtain ⟨positions, compiled, _, _, _, _, _⟩ := outputs_admitted contents current _ chosen outputs
+    state next receiver generation published accepted
+  have valid := (compile_admitted current _ chosen positions compiled).1
+  have same := Cursor.ReadOnlyQuery.ScopedOccurrence.scope_manifest_preserves_adaptive_query
+    rowContents contents captured current program valid
+  have framed := outputs_reify_frame contents current published _ chosen outputs state next
+    receiver generation site before frame localChosen localOutputs lawful separate holds accepted
+  exact ⟨congrArg observer same, framed.2⟩
+
+/-- Disjoint joins preserve this permutation observer. Supplying a different
+observer additionally requires its congruence for the returned permutation. -/
+theorem joins_preserve_selected_observer {View : Type}
+    (observer : List Reaction → View)
+    (respects : ∀ first second, first.Perm second → observer first = observer second)
+    (state : Space) (firstId secondId : Nat) (first second : Continuation)
+    (firstInputs secondInputs : List Occurrence)
+    (firstRegistered : state.receives firstId = some first)
+    (secondRegistered : state.receives secondId = some second)
+    (firstValid : valid state first firstInputs) (secondValid : valid state second secondInputs)
+    (receiversIndependent : secondId ≠ firstId ∨ first.persistent = true)
+    (disjoint : ∀ event ∈ secondInputs, event.serial ∉ firstInputs.map EventPump.Event.serial) :
+    observer (commit (commit state firstId firstInputs) secondId secondInputs).ready =
+      observer (commit (commit state secondId secondInputs) firstId firstInputs).ready := by
+  apply respects
+  exact (independent_joins_commute_modulo_publication_order state firstId secondId first second
+    firstInputs secondInputs firstRegistered secondRegistered firstValid secondValid
+    receiversIndependent disjoint).2.2.2.2.2
+
+namespace FrameControls
+
+open Mettapedia.GSLT.Contracts
+
+def initialRows : Controls.RowsN :=
+  ⟨17, 4, [Controls.first, Controls.second, Controls.outside]⟩
+def scopes : List (ScopedRecords.Scope Nat Nat) := [.prefix 1 [10], .key 2 [9]]
+def observed := ScopedRecords.capture Controls.contentsN initialRows scopes
+def initial := ScopedPublication.initial Controls.contentsN initialRows 7 Controls.waiting
+def taken := (performOutputs Controls.contentsN initialRows observed [Controls.first] [] initial 7 5).get (by decide)
+
+/-- Peeking all equal-valued rows is non-consuming; a real take spends exactly
+the selected identity and retains the equal-valued sibling and other space. -/
+theorem peek_all_is_not_one_occurrence_take :
+    (ScopedRecords.observe Controls.contentsN initialRows (.prefix 1 [10])).2.map (fun row => row.2) = [42, 42] ∧
+      initialRows.entries = [Controls.first, Controls.second, Controls.outside] ∧
+      taken.1.entries = [Controls.second, Controls.outside] ∧
+      taken.2.channel.spent = [(event Controls.contentsN 17 Controls.first).serial] ∧
+      taken.2.channel.available.map EventPump.Event.payload = [42, 42] := by decide
+
+theorem framed_take_keeps_other_space :
+    taken.1 ∈ OccurrenceSpace.reify (OccurrenceSpace.owned 2 [([9], 1)]) := by
+  simpa only [show OccurrenceSpace.rows taken.1 2 = [([9], 1)] from rfl] using
+    OccurrenceSpace.source_holds_owned taken.1 2
+
+def leftEvent : Occurrence := ⟨0, ⟨1, 0, 0⟩, 42⟩
+def rightEvent : Occurrence := ⟨1, ⟨2, 0, 0⟩, 42⟩
+def leftReceiver : Continuation := ⟨[⟨⟨1, 0, 0⟩, fun _ => true⟩], false⟩
+def rightReceiver : Continuation := ⟨[⟨⟨2, 0, 0⟩, fun _ => true⟩], false⟩
+def schedulerSource : Space :=
+  register (register (produce (produce {} leftEvent) rightEvent) 10 leftReceiver) 20 rightReceiver
+def forward : Space := commit (commit schedulerSource 10 [leftEvent]) 20 [rightEvent]
+def reverse : Space := commit (commit schedulerSource 20 [rightEvent]) 10 [leftEvent]
+
+/-- Actual enabled, independently consuming turns retain ordered effects.
+Their final stores agree, but an ordered effect observer forbids the swap. -/
+theorem frame_safety_does_not_license_ordered_publication_swap :
+    valid schedulerSource leftReceiver [leftEvent] ∧
+      valid schedulerSource rightReceiver [rightEvent] ∧
+      forward.available = reverse.available ∧
+      forward.ready.map Reaction.continuation = [10, 20] ∧
+      reverse.ready.map Reaction.continuation = [20, 10] ∧
+      forward.ready.map Reaction.continuation ≠ reverse.ready.map Reaction.continuation := by decide
+
+end FrameControls
+
+#print axioms outputs_reify_frame
+#print axioms accepted_turn_unique
+#print axioms adaptive_outputs_reify_frame
+#print axioms joins_preserve_selected_observer
+#print axioms FrameControls.peek_all_is_not_one_occurrence_take
+#print axioms FrameControls.framed_take_keeps_other_space
+#print axioms FrameControls.frame_safety_does_not_license_ordered_publication_swap
+
+end ScopedPublication
+
+namespace AuthorizedPublication
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.SeparationAlgebra
+open scoped Mettapedia.GSLT.SeparationAlgebra
+open Mettapedia.GSLT.LanguageDef.OperationCostProtocol.Indexed
+open Mettapedia.Machines.Cursor.ReadOnlyQuery.PolicyPlan.Delegation
+open PositionalPublication
+
+variable {GrantSpace GrantLetter Principal Realm Right GrantEpoch GrantRevision : Type}
+variable {TicketEpoch Site Letter Version Authority : Type}
+variable [DecidableEq GrantSpace] [DecidableEq GrantLetter]
+  [DecidableEq Principal] [DecidableEq Realm] [DecidableEq Right]
+  [DecidableEq GrantEpoch] [DecidableEq GrantRevision]
+variable [DecidableEq TicketEpoch] [DecidableEq Site] [DecidableEq Letter] [DecidableEq Version]
+variable [Encodable TicketEpoch] [Encodable Site] [Encodable Letter] [Encodable Version]
+variable [Zero Authority] [Add Authority] [SepAlgebra Authority]
+
+omit [DecidableEq GrantEpoch] [DecidableEq GrantRevision] in
+/-- Current delegated authority, complete adaptive observation and a resource
+frame compose at the same existing consuming publication. None is inferred
+from the other two, and this theorem makes no scheduler or physical-cost claim. -/
+theorem adaptive_publication_preserves_frame {Payload Answer View : Type}
+    (profile : Profile GrantSpace GrantLetter Nat Principal Realm)
+    (grants : GrantStore (GrantSpace := GrantSpace) (GrantLetter := GrantLetter)
+      (Principal := Principal) (Realm := Realm) (Right := Right)
+      (GrantEpoch := GrantEpoch) (GrantRevision := GrantRevision))
+    (depth : Nat) (demand : Demand GrantSpace GrantLetter Nat Principal Realm Right)
+    (requirement : CheckedGrant.Requirement GrantSpace (List GrantLetter) Authority)
+    (view : CheckedGrant.View GrantSpace (List GrantLetter) Authority)
+    [Decidable (FrameUpdate view.available requirement.required)]
+    (contents : TicketEpoch → ScopedRecords.Stamp Site Letter Version → Nat)
+    (rowContents : TicketEpoch → ScopedRecords.Stamp Site Letter Version → Payload)
+    (captured current published : ScopedRecords.Source TicketEpoch Nat Site Letter Version)
+    (program : Mettapedia.Machines.ReadOnlyQuery.Program (ScopedRecords.Scope Site Letter)
+      (ScopedRecords.FullReply TicketEpoch Site Letter Version Payload) Answer)
+    (observer : Mettapedia.Machines.ReadOnlyQuery.Observation (ScopedRecords.Scope Site Letter)
+      (ScopedRecords.FullReply TicketEpoch Site Letter Version Payload) Answer → View)
+    (chosen outputs : List (ScopedRecords.Stamp Site Letter Version))
+    (state next : Retained.State TicketEpoch) (receiver generation : Nat)
+    (site : Site) (before : List (List Letter × Version))
+    (frame : OccurrenceSpace.Authority Site Letter Version)
+    (localChosen : ∀ stamp ∈ chosen, stamp.1.1 = site)
+    (localOutputs : ∀ stamp ∈ outputs, stamp.1.1 = site)
+    (lawful : Retained.Lawful state)
+    (separate : OccurrenceSpace.owned site before ## frame)
+    (holds : current ∈ OccurrenceSpace.reify (OccurrenceSpace.owned site before + frame))
+    (accepted : perform profile grants depth demand requirement view contents current
+      (ScopedRecords.capture contents captured
+        ((Mettapedia.Machines.ReadOnlyQuery.run (ScopedRecords.observe rowContents captured) program).reads.map Prod.fst))
+      chosen outputs state receiver generation = some (published, next)) :
+    requirement.handle = Reference.toHandle demand.reference ∧ requirement.Current view ∧
+      (∃ height, height ≤ depth ∧ AuthorizedChain profile grants [] demand height) ∧
+      observer (Mettapedia.Machines.ReadOnlyQuery.run (ScopedRecords.observe rowContents current) program) =
+        observer (Mettapedia.Machines.ReadOnlyQuery.run (ScopedRecords.observe rowContents captured) program) ∧
+      published ∈ OccurrenceSpace.reify
+        (OccurrenceSpace.owned site
+          (OccurrenceSpace.remainingLocal site chosen before ++ outputs.map ScopedRecords.localStamp) + frame) ∧
+      Retained.Lawful next ∧
+      next.channel.spent = state.channel.spent ++
+        (chosen.map (ScopedPublication.event contents current.storeId)).map EventPump.Event.serial := by
+  obtain ⟨identity, currentGrant, chain, committed⟩ := perform_admitted profile grants depth demand requirement view
+    contents current _ chosen outputs state next receiver generation published accepted
+  have composed := ScopedPublication.adaptive_outputs_reify_frame contents rowContents captured current published
+    program observer chosen outputs state next receiver generation site before frame localChosen localOutputs
+    lawful separate holds committed
+  exact ⟨identity, currentGrant, chain, composed⟩
+
+#print axioms adaptive_publication_preserves_frame
+
+namespace ConcreteFrameControls
+
+open Mettapedia.Machines.Cursor.ReadOnlyQuery
+open Mettapedia.Machines.Cursor.ReadOnlyQuery.PolicyPlan
+
+local instance : Fintype Access :=
+  ⟨{.none, .read, .consume}, by intro access; cases access <;> simp⟩
+
+local instance permissionDecision (view : CheckedGrant.View Nat (List Nat) Access) :
+    Decidable (FrameUpdate view.available Controls.grantRequirement.required) :=
+  inferInstanceAs (Decidable (∀ frame : Access,
+    Access.separate view.available frame = true → Access.separate Access.consume frame = true))
+
+abbrev Row := ScopedOccurrence.Controls.Row
+abbrev Rows := ScopedPublication.Controls.RowsN
+abbrev Stamp := ScopedPublication.Controls.StampN
+abbrev Reply := ScopedRecords.FullReply Nat Nat Nat Nat Row
+
+def program : Mettapedia.Machines.ReadOnlyQuery.Program (ScopedRecords.Scope Nat Nat) Reply (List (Stamp × Row)) :=
+  .read (.prefix 1 [10]) fun parent =>
+    .read (.key 2 [99]) fun absent =>
+      if absent.2.isEmpty then .read (.key 2 [9]) fun child => .pure (parent.2 ++ child.2)
+      else .pure absent.2
+
+def manifest := ScopedRecords.capture ScopedPublication.Controls.contentsN
+  ScopedPublication.FrameControls.initialRows
+  ((Mettapedia.Machines.ReadOnlyQuery.run
+    (ScopedRecords.observe ScopedOccurrence.Controls.contents ScopedPublication.FrameControls.initialRows) program).reads.map Prod.fst)
+
+def resources := OccurrenceSpace.owned 1 (OccurrenceSpace.rows ScopedPublication.FrameControls.initialRows 1)
+def frame := OccurrenceSpace.sharedRead 2 (OccurrenceSpace.rows ScopedPublication.FrameControls.initialRows 2)
+
+theorem resource_frames_separate : resources ## frame := by
+  intro site
+  by_cases same : site = 1
+  · subst site
+    simp only [resources, frame, OccurrenceSpace.owned, OccurrenceSpace.sharedRead, Function.update_self,
+      Function.update_of_ne (by decide : (1 : Nat) ≠ 2), Pi.zero_apply]
+    exact SepAlgebra.separate_zero _
+  · simp only [resources, OccurrenceSpace.owned, Function.update_of_ne same, Pi.zero_apply]
+    exact SepAlgebra.zero_separate _
+
+theorem current_source_reifies_actual_frames :
+    ScopedPublication.FrameControls.initialRows ∈ OccurrenceSpace.reify (resources + frame) :=
+  (OccurrenceSpace.replace_enabled ScopedPublication.FrameControls.initialRows 1 frame resource_frames_separate
+    (OccurrenceSpace.source_holds_sharedRead ScopedPublication.FrameControls.initialRows 2) [] 5).1
+
+theorem actual_current_authority_adaptive_take_preserves_other_owner :
+    Controls.grantRequirement.Current Controls.grantView ∧
+      ScopedPublication.FrameControls.taken.1 ∈ OccurrenceSpace.reify
+        (OccurrenceSpace.owned 1 [([10, 1], 1)] + frame) ∧
+      (Mettapedia.Machines.ReadOnlyQuery.run
+        (ScopedRecords.observe ScopedOccurrence.Controls.contents ScopedPublication.FrameControls.initialRows) program).answer.map
+          (fun row => row.2.value) = [42, 42, 21] := by
+  have qualified := adaptive_publication_preserves_frame
+    Delegation.Controls.policy (Delegation.Controls.observed Delegation.Controls.initial) 3 Delegation.Controls.demand
+    Controls.grantRequirement Controls.grantView ScopedPublication.Controls.contentsN ScopedOccurrence.Controls.contents
+    ScopedPublication.FrameControls.initialRows ScopedPublication.FrameControls.initialRows ScopedPublication.FrameControls.taken.1
+    program (fun result => result.answer.map (fun row => row.2.value))
+    [ScopedPublication.Controls.first] [] ScopedPublication.FrameControls.initial ScopedPublication.FrameControls.taken.2
+    7 5 1 (OccurrenceSpace.rows ScopedPublication.FrameControls.initialRows 1) frame
+    (by intro stamp member; simp only [List.mem_singleton] at member; subst stamp; rfl)
+    (by intro stamp member; cases member)
+    (ScopedPublication.initial_coupled ScopedPublication.Controls.contentsN ScopedPublication.FrameControls.initialRows
+      (by decide) 7 ScopedPublication.Controls.waiting).1
+    resource_frames_separate current_source_reifies_actual_frames (by rfl)
+  refine ⟨qualified.2.1, ?_, by decide⟩
+  exact qualified.2.2.2.2.1
+
+theorem independent_reader_keeps_its_actual_reply_after_take :
+    ScopedOccurrence.guardedObserve ScopedOccurrence.Controls.contents frame
+        ScopedPublication.FrameControls.initialRows (.key 2 [9]) =
+      .ok (ScopedRecords.observe ScopedOccurrence.Controls.contents ScopedPublication.FrameControls.initialRows (.key 2 [9])) ∧
+    ScopedOccurrence.guardedObserve ScopedOccurrence.Controls.contents frame
+        ScopedPublication.FrameControls.taken.1 (.key 2 [9]) =
+      .ok (ScopedRecords.observe ScopedOccurrence.Controls.contents ScopedPublication.FrameControls.initialRows (.key 2 [9])) := by
+  exact ⟨rfl, rfl⟩
+
+def phantom : Rows :=
+  ⟨17, 5, ScopedPublication.FrameControls.initialRows.entries ++ [((2, [99]), 1)]⟩
+
+theorem absence_insertion_or_current_revocation_refuses_same_take :
+    (perform Delegation.Controls.policy (Delegation.Controls.observed Delegation.Controls.initial)
+      3 Delegation.Controls.demand Controls.grantRequirement Controls.grantView
+      ScopedPublication.Controls.contentsN phantom manifest [ScopedPublication.Controls.first] []
+      ScopedPublication.FrameControls.initial 7 6).isNone = true ∧
+      (perform Delegation.Controls.policy (Delegation.Controls.observed Delegation.Controls.initial)
+        3 Delegation.Controls.demand Controls.grantRequirement Controls.revokedGrantView
+        ScopedPublication.Controls.contentsN ScopedPublication.FrameControls.initialRows manifest
+        [ScopedPublication.Controls.first] [] ScopedPublication.FrameControls.initial 7 5).isNone = true := by decide
+
+end ConcreteFrameControls
+
+#print axioms ConcreteFrameControls.actual_current_authority_adaptive_take_preserves_other_owner
+#print axioms ConcreteFrameControls.independent_reader_keeps_its_actual_reply_after_take
+#print axioms ConcreteFrameControls.absence_insertion_or_current_revocation_refuses_same_take
+
+end AuthorizedPublication
 
 end Mettapedia.Machines.ChannelJoin

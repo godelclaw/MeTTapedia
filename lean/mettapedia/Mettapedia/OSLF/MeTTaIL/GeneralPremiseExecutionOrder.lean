@@ -101,15 +101,6 @@ theorem drain_deterministic (request : Request) {state : State} (deterministic :
   | case1 => exact id
   | case2 state _ ih => exact fun deterministic => ih (tick_deterministic request deterministic)
 
-theorem tick_answers_prefix (request : Request) (state : State) :
-    state.answers <+: (tick request state).answers := by
-  unfold tick
-  split
-  · exact List.prefix_refl _
-  · split
-    · exact List.prefix_append _ _
-    · exact List.prefix_refl _
-
 theorem drain_answers_prefix (request : Request) (state : State) :
     state.answers <+: (drain request state).answers := by
   fun_induction drain request state with
@@ -260,7 +251,7 @@ def Result.prependElement {environment : Environment} {context : Context} {param
     (head : Result environment (.premise context.quantified body
       (bindParameter parameter (localValue context.bound element) initial))) →
     Result environment (.quantified context parameter body (index + 1) elements
-      (restoreParameter parameter initial head.continues)) →
+      initial) →
     Result environment (.quantified context parameter body index (element :: elements) initial)
   | .premise _ event head, .quantified final events rest =>
       .quantified final ((index, element, [event]) :: events) (.cons localTyped head rest)
@@ -409,7 +400,7 @@ def results (environment : Environment) : (goal : Goal) → List (Result environ
         (results environment (.premise context.quantified body
             (bindParameter parameter (localValue context.bound element) initial))).flatMap fun head =>
           (results environment (.quantified context parameter body (index + 1) elements
-              (restoreParameter parameter initial head.continues))).map
+              initial)).map
             (Result.prependElement (checkTypedAssignment_sound checked) head)
       else []
   | .root bound type source index =>
@@ -463,7 +454,7 @@ def Kdenote {environment : Environment} {goal outer : Goal} :
   | .quantifier _ _ _ _ _ _ _ read tail, result => Kdenote tail (Result.quantifier read result)
   | .element context parameter body index _ elements initial localTyped tail, head =>
       (results environment (.quantified context parameter body (index + 1) elements
-          (restoreParameter parameter initial head.continues))).flatMap fun rest =>
+          initial)).flatMap fun rest =>
         Kdenote tail (Result.prependElement localTyped head rest)
   | .prependElement _ _ _ index element _ _ _ event localTyped head tail,
       .quantified final events rest =>
@@ -544,7 +535,7 @@ theorem Kdenote_prependElement {environment : Environment} {outer : Goal} {conte
     {tail : Continuation environment
       (.quantified context parameter body index (element :: elements) initial) outer}
     (rest : Result environment (.quantified context parameter body (index + 1) elements
-      (restoreParameter parameter initial middle))) :
+      initial)) :
     Kdenote (.prependElement context parameter body index element elements initial middle event
         localTyped head tail) rest =
       Kdenote tail (Result.prependElement localTyped (.premise middle event head) rest) := by

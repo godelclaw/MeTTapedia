@@ -583,20 +583,25 @@ def algebra? : Term → Option (Option CollectionAlgebra)
   | some value => cases value; simp [algebra, algebra?]
 
 def grammarRule (value : GrammarRule) : Term :=
-  .application "GrammarRuleV2" [.string value.label, .string value.category,
+  .application (match value.collectionRepresentation with
+    | .bare => "GrammarRuleV2" | .wrapped => "GrammarRuleWrappedV2")
+    [.string value.label, .string value.category,
     encodeList parameterTerm value.params, syntaxItems value.syntaxPattern,
     policy value.evalPolicy?, algebra value.algebra?]
 
 def grammarRule? : Term → Option GrammarRule
   | .application "GrammarRuleV2" [.string label, .string category, params, syntaxRows, evaluation, laws] => do
       pure ⟨label, category, ← decodeList decodeParameter? params, ← syntaxItems? syntaxRows,
-        ← policy? evaluation, ← algebra? laws⟩
+        ← policy? evaluation, ← algebra? laws, .bare⟩
+  | .application "GrammarRuleWrappedV2" [.string label, .string category, params, syntaxRows, evaluation, laws] => do
+      pure ⟨label, category, ← decodeList decodeParameter? params, ← syntaxItems? syntaxRows,
+        ← policy? evaluation, ← algebra? laws, .wrapped⟩
   | _ => none
 
 @[simp] theorem grammarRule_roundtrip (value : GrammarRule) :
     grammarRule? (grammarRule value) = some value := by
-  cases value
-  simp [grammarRule, grammarRule?, decodeList_encodeList]
+  rcases value with ⟨label, category, params, syntaxRows, evaluation, laws, mode⟩
+  cases mode <;> simp [grammarRule, grammarRule?, decodeList_encodeList]
 
 def equation (value : Equation) : Term :=
   .application "ScopedEquationV1" [.string value.name,

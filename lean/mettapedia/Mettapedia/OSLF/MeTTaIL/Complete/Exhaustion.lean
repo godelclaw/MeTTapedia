@@ -44,9 +44,9 @@ def Reaches {environment : Environment} {goal outer : Goal}
             (.quantified read held)) wanted
   | .element depth context parameter body index element elements initial localTyped tail =>
       match result with
-      | .premise middle event head =>
+      | .premise _middle event head =>
           ∃ (final : Assignment) (events : List (Nat × Pattern × List Event)) (rest : QuantifiedElements environment context parameter body
-              (index + 1) elements (restoreParameter parameter initial middle) final events),
+              (index + 1) elements initial final events),
             Reaches tail (.quantified final ((index, element, [event]) :: events)
               (.cons localTyped head rest)) wanted
   | .prependElement depth _ _ _ index element _ _ _ event localTyped head tail =>
@@ -110,7 +110,8 @@ def Accepts {environment : Environment} {outer : Goal}
               ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩ answer.assignment),
           Evaluates (.rootBody frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
             frame.declared frame.specified frame.admitted frame.sorted answer.trace answer.assignment
-            matched typed frame.tail) wanted
+            (by simpa only [rootRequest, GeneralScopedMatchMachine.Answer.Valid,
+              MatchingExecution.ordinary, ordinaryInterpretation] using matched) typed frame.tail) wanted
   | .targetMatch frame =>
       frame.cursor ≤ frame.state.answers.length ∧
       ∃ answer : GeneralScopedMatchMachine.Answer,
@@ -174,7 +175,7 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
           change Core
             { tasks := [.evaluate
                 (.quantified depth context parameter body (index + 1) elements
-                  (restoreParameter parameter initial middle))
+                  initial)
                 (.prependElement depth context parameter body index element elements initial middle
                   event localTyped head tail)] } wanted
           simp only [Core, List.not_mem_nil, false_or,
@@ -437,6 +438,7 @@ theorem rootMatch_covers {environment : Environment} {outer : Goal}
   unfold expandRootMatch
   split
   · rename_i seen found
+    change frame.state.answers[frame.cursor]? = some seen at found
     unfold continueRootAnswer
     obtain same | remaining :=
       (GeneralScopedMatchMachine.unread_cursor_split (rootRequest frame) frame.state frame.cursor answer).mp unread
@@ -448,7 +450,7 @@ theorem rootMatch_covers {environment : Environment} {outer : Goal}
       exact ⟨_, List.mem_cons_self, continued⟩
     · have newBound : frame.cursor + 1 ≤ frame.state.answers.length := by
         obtain ⟨before, _⟩ := List.getElem?_eq_some_iff.mp found
-        omega
+        exact Nat.succ_le_of_lt before
       dsimp only
       split
       · right
@@ -475,6 +477,7 @@ theorem targetMatch_covers {environment : Environment} {outer : Goal}
   unfold expandTargetMatch
   split
   · rename_i seen found
+    change frame.state.answers[frame.cursor]? = some seen at found
     obtain same | remaining :=
       (GeneralScopedMatchMachine.unread_cursor_split (targetRequest frame) frame.state frame.cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
@@ -485,7 +488,7 @@ theorem targetMatch_covers {environment : Environment} {outer : Goal}
       exact ⟨_, List.mem_cons_self, continued⟩
     · have newBound : frame.cursor + 1 ≤ frame.state.answers.length := by
         obtain ⟨before, _⟩ := List.getElem?_eq_some_iff.mp found
-        omega
+        exact Nat.succ_le_of_lt before
       dsimp only
       split
       · right

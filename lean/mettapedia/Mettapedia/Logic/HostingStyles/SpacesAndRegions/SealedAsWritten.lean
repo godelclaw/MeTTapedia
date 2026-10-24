@@ -458,10 +458,11 @@ theorem eq_quoted_of_name {lang : LanguageDef} (sorted : QuoteDropSorted lang)
   | collection _ => cases isName
   | @collectionConstructor _ rule parameterName kind elements rest elementType member shape
       elementsTyped =>
+      have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
       have category : rule.category = "CandidateName" := by simpa using isName
       have params := (sorted.quote rule member (onlyQuote rule member category)).2
-      rw [params] at shape
-      simp at shape
+      rw [params] at fullShape
+      simp at fullShape
 
 /-- **What a dropping takes is a quotation**, in such a language and at such
 a stage: the one argument of a dropping is a name. -/
@@ -538,10 +539,11 @@ mutual
           (by simpa [bindsNoName] using allowed) object.2
     | @collectionConstructor _ rule parameterName kind elements rest elementType member shape
         elementsTyped =>
+        have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
         simp only [isObjectPattern, Bool.and_eq_true] at object
         rw [dropsQuotations]
         have element := params rule member (.simple parameterName (.collection kind elementType))
-          (by rw [shape]; exact List.mem_singleton.mpr rfl) (.collection kind elementType) rfl
+          (by rw [fullShape]; exact List.mem_singleton.mpr rfl) (.collection kind elementType) rfl
         exact dropsQuotations_of_elements sorted onlyQuote params elementsTyped noNames
           (by simpa [bindsNoName] using element) object.2
 

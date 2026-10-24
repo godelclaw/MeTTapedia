@@ -147,7 +147,7 @@ theorem normalFormCode_patternCode (unit : Option String) (pattern : Pattern) :
 on codes is a computable function that tracks it. -/
 theorem bagCanonicalSection_effective (theory : IGSLT) {bag : GrammarRule}
     {unit : Option String}
-    (laws : BagTheory theory.presentation.presentation.language bag unit) :
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit) :
     (bagCanonicalSection theory laws).Effective :=
   ⟨normalFormCode unit, (normalFormCode_primrec unit).to_comp,
     fun term => (normalFormCode_patternCode unit term.1).symm⟩

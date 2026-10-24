@@ -657,7 +657,7 @@ theorem query_expand_start_returns (state : State) (environment : Environment) (
         (premise_previous_returns (by simp [codeWithin, expressionHeadWithin, atomsWithin]; decide +kernel) queried)
       cases found : signature? environment.provider request.relation request.arguments.length with
       | none =>
-          have original : Query.expand environment request .start =
+          have original : Query.expand (matcher := GeneralPremise.MatchingExecution.ordinary) environment request .start =
               { unresolved := [.signatureUnavailable request.relation request.arguments.length] } := by
             simp only [Query.expand]
             split <;> simp_all
@@ -673,7 +673,7 @@ theorem query_expand_start_returns (state : State) (environment : Environment) (
               environmentCaller, callee, Helper.names, applySubst, applySubst.applySubstList, Subst.lookup, CettaWireAtom.encode, CettaWireAtom.encodeMany] using
               PureData.template_return runtime counted state _ templated
       | some signature =>
-          have original : Query.expand environment request .start =
+          have original : Query.expand (matcher := GeneralPremise.MatchingExecution.ordinary) environment request .start =
               { tasks := [.rows ⟨signature, found, 0⟩] } := by
             simp only [Query.expand]
             split
@@ -1546,7 +1546,7 @@ theorem query_expand_start_returns (program : Program)
       have computed := queried
       cases found : signature? environment.provider request.relation request.arguments.length with
       | none =>
-          have original : Query.expand environment request .start =
+          have original : Query.expand (matcher := GeneralPremise.MatchingExecution.ordinary) environment request .start =
               { unresolved := [.signatureUnavailable request.relation request.arguments.length] } := by
             simp only [Query.expand]
             split <;> simp_all
@@ -1562,7 +1562,7 @@ theorem query_expand_start_returns (program : Program)
               environmentCaller, callee, Helper.names, applySubst, applySubst.applySubstList, Subst.lookup, CettaWireAtom.encode, CettaWireAtom.encodeMany] using
               PureData.template_return program counted state _ templated
       | some signature =>
-          have original : Query.expand environment request .start =
+          have original : Query.expand (matcher := GeneralPremise.MatchingExecution.ordinary) environment request .start =
               { tasks := [.rows ⟨signature, found, 0⟩] } := by
             simp only [Query.expand]
             split
@@ -2026,9 +2026,23 @@ private theorem input_expansion (environment : Environment) (request : Query.Req
     rfl
   · rename_i actual found
     simp only [inputValue, found]
-    split <;>
+    split
+    · rename_i same
+      have literal : actual = value := by
+        apply beq_iff_eq.mp
+        change (actual == value) = true at same
+        exact same
+      subst actual
       simp [expansionValue, queryExpansionTerm, PremiseSchedulerExecution.schedulerExpansionTerm,
         acceptedValue, query_arguments_wire, encodeOption, encodeList]
+    · rename_i different
+      have literal : actual ≠ value := by
+        intro equal
+        apply different
+        change (actual == value) = true
+        exact beq_iff_eq.mpr equal
+      simp [literal, expansionValue, queryExpansionTerm, PremiseSchedulerExecution.schedulerExpansionTerm,
+        encodeOption, encodeList]
 
 theorem query_expand_arguments_input_returns (program : Program)
     (agreement : ProgramAgreementOn ownedHeads runtime program) (lower : LowerOperations program)

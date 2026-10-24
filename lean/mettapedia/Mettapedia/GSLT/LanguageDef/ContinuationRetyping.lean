@@ -116,6 +116,12 @@ theorem costBaseConstructor_def {theory : IGSLT}
           (mapCollectionAlgebra costBaseConstructorName) } :=
   rfl
 
+/-- Continuation retyping preserves the source collection representation. -/
+@[simp] theorem costBaseConstructor_collectionRepresentation {theory : IGSLT}
+    (cut : InteractionCutPresentation theory) (constructor : GrammarRule) :
+    (costBaseConstructor cut constructor).collectionRepresentation =
+      constructor.collectionRepresentation := rfl
+
 @[simp]
 theorem costBaseConstructor_label {theory : IGSLT}
     (cut : InteractionCutPresentation theory) (constructor : GrammarRule) :

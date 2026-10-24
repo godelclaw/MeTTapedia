@@ -38,6 +38,14 @@ as in a universe of circular sentences.
 level up, proves that stage consistent.  The stage itself cannot prove it
 when it has Löb sentences.
 
+**Checking without detaching.**  The local reflection statement `box c → c`
+detaches `c` from its provability; the consistency statement is its instance
+at `⊥`.  A stage with Löb sentences proves a local reflection statement exactly
+when it already proves its conclusion (`proves_localReflection_iff`), so
+internal verification of provability never yields a new conclusion.  A
+reflective model, one level up, reads `box` as provability and validates every
+local reflection statement (`ReflectiveModel.holds_localReflection`).
+
 **Controls.**
 * `truthStage`: the Boolean stage whose `box` is truth itself.  It is
   consistent and proves its own consistency statement, so it has no Löb
@@ -47,6 +55,10 @@ when it has Löb sentences.
   statement.
 * `trivialStage`: the stage proving everything.  It is diagonalizable, proves
   its consistency statement, and proves `⊥`, as the theorem requires.
+* `saturatedStage_model_refutes_reflection`: a model that reads `box` as truth
+  of every sentence falsifies local reflection at `⊥`.
+* `truthStage_reflectiveModel`, `truthStage_proves_localReflection`: without a
+  diagonal, reflection is internal.
 -/
 
 set_option autoImplicit false
@@ -209,6 +221,30 @@ theorem stratified {Code : Type w} {run : Code → Code → Sentence}
     stage.Consistent ∧ ¬ stage.Proves stage.consistency :=
   ⟨model.consistent, not_proves_consistency diagonal model.consistent⟩
 
+/-! ## Local reflection: checking without detaching -/
+
+variable (stage) in
+/-- Local reflection at `c`: from the provability of `c`, conclude `c`. -/
+def localReflection (c : Sentence) : Sentence := stage.imp (stage.box c) c
+
+/-- **Löb's theorem as a reflection statement.**  A stage with Löb sentences
+proves local reflection at `c` exactly when it proves `c`. -/
+theorem proves_localReflection_iff (sentences : stage.HasLoebSentences) (c : Sentence) :
+    stage.Proves (stage.localReflection c) ↔ stage.Proves c :=
+  ⟨loeb_of_hasLoebSentences sentences,
+    fun proved => stage.modusPonens (stage.axiomK c (stage.box c)) proved⟩
+
+/-- A model one level up that reads implication as implication and the
+internal operator as provability. -/
+structure ReflectiveModel (stage : ProvabilityStage Sentence) extends Model stage where
+  holds_imp : ∀ a b : Sentence, Holds (stage.imp a b) ↔ (Holds a → Holds b)
+  holds_box : ∀ c : Sentence, Holds (stage.box c) → stage.Proves c
+
+/-- A reflective model validates every local reflection statement. -/
+theorem ReflectiveModel.holds_localReflection (model : ReflectiveModel stage) (c : Sentence) :
+    model.Holds (stage.localReflection c) :=
+  (model.holds_imp _ _).mpr fun boxed => model.sound (model.holds_box c boxed)
+
 /-! ## Curry's paradox: Löb's theorem for the identity operator -/
 
 section Hilbert
@@ -338,6 +374,26 @@ def saturatedStage_model : Model saturatedStage where
   sound := fun proved => proved
   falsum_fails := Bool.false_ne_true
 
+/-- **Control.**  The saturated model is a model, but it reads `box` as truth
+of every sentence rather than as provability, and it falsifies local
+reflection at `⊥`. -/
+theorem saturatedStage_model_refutes_reflection :
+    ¬ saturatedStage_model.Holds (saturatedStage.localReflection saturatedStage.falsum) :=
+  Bool.false_ne_true
+
+/-- **Positive control.**  Without a diagonal, reflection can be internal: the
+truth stage has a reflective model and proves every local reflection statement. -/
+def truthStage_reflectiveModel : ReflectiveModel truthStage where
+  Holds := fun sentence => sentence = true
+  sound := fun proved => proved
+  falsum_fails := Bool.false_ne_true
+  holds_imp := by intro a b; cases a <;> cases b <;> decide
+  holds_box := fun _ holds => holds
+
+theorem truthStage_proves_localReflection (c : Bool) :
+    truthStage.Proves (truthStage.localReflection c) := by
+  cases c <;> rfl
+
 /-- The stage that proves everything. -/
 def trivialStage : ProvabilityStage Bool where
   Proves := fun _ => True
@@ -381,5 +437,7 @@ end ProvabilityStage
 #print axioms ProvabilityStage.curry
 #print axioms ProvabilityStage.stratified
 #print axioms ProvabilityStage.truthStage_no_curry
+#print axioms ProvabilityStage.proves_localReflection_iff
+#print axioms ProvabilityStage.ReflectiveModel.holds_localReflection
 
 end Mettapedia.Logic.Diagonal

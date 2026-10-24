@@ -1677,7 +1677,7 @@ mutual
               _checked⟩ := bare
           have ruleEquality : rule = rhoCalc.terms[3] :=
             CostCanonicalLaws.rho_rule_eq_parallel_of_bare_shape membership
-              parameterShape
+              ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2
           subst rule
           simp [rhoCalc, TypeExpr.bag, TypeExpr.proc,
             TypeExpr.baseType] at parameterShape

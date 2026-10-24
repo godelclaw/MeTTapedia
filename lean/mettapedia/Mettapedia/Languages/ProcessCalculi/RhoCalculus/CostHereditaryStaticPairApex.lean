@@ -1972,7 +1972,8 @@ private theorem rhoParallel_elements_hasType
       ⟨rule, parameterName, elementType, membership, parameterShape,
         typeEq, elementsTyped⟩
   · cases typeEq
-  · rcases rho_collectionRule_cases membership parameterShape with
+  · rcases rho_collectionRule_cases membership
+            ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2 with
       ⟨parallelType, category, element⟩ |
       ⟨parallelType, category, element⟩
     · cases color with
@@ -2023,7 +2024,8 @@ private theorem rhoParallel_elements_hasTypeWithConstructors
       ⟨rule, parameterName, elementType, _allowedRule, membership,
         parameterShape, typeEq, elementsTyped⟩
   · cases typeEq
-  · rcases rho_collectionRule_cases membership parameterShape with
+  · rcases rho_collectionRule_cases membership
+            ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2 with
       ⟨parallelType, category, element⟩ |
         ⟨parallelType, category, element⟩
     · cases color with
@@ -2116,7 +2118,7 @@ private theorem rhoParallel_shapeWithConstructors
     have sourceEq : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
       CostCanonicalLaws.rho_rule_eq_parallel_of_bare_shape
         preimage.sourceConstructor.2
-        sourceShape
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2
     have categorySelected : rule.category = declaration.processSort := by
       have mappedCategory := preimage.categoryMap
       rw [materializes, sourceEq] at mappedCategory
@@ -2125,7 +2127,8 @@ private theorem rhoParallel_shapeWithConstructors
         CostStaticColor.reflectiveSymbols_sort,
         rhoReflectivePresentation, rhoCalc,
         TypeExpr.proc, TypeExpr.baseType] using mappedCategory
-    rcases rho_collectionRule_cases membership parameterShape with
+    rcases rho_collectionRule_cases membership
+            ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2 with
       ⟨_parallelType, baseCategory, baseElement⟩ |
         ⟨_parallelType, wrappedCategory, wrappedElement⟩
     · cases color with
@@ -5944,7 +5947,8 @@ theorem rhoCanonicalRootAlignedWithin
             typeEq, elementsTyped⟩
       · rw [typeEq] at admissible
         exact (rhoCanonicalRecursiveTypeDomain.noCollection admissible).elim
-      · rcases rho_collectionRule_cases membership parameterShape with
+      · rcases rho_collectionRule_cases membership
+            ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2 with
           ⟨parallelType, category, element⟩ |
           ⟨parallelType, category, element⟩
         all_goals

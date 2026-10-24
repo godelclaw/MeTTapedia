@@ -4628,7 +4628,7 @@ def collectionConstructor
     {rule : GrammarRule} {parameterName : String}
     {collectionType : CollType}
     (membership : rule ∈ language.terms)
-    (parameterShape : rule.params =
+    (parameterShape : rule.bareParams =
       [.simple parameterName (.collection collectionType elementType)])
     (elements : AvailableOpenElements profile language free available outer
       elementType) :
@@ -4653,7 +4653,7 @@ theorem collectionConstructor_pattern
     {rule : GrammarRule} {parameterName : String}
     {collectionType : CollType}
     (membership : rule ∈ language.terms)
-    (parameterShape : rule.params =
+    (parameterShape : rule.bareParams =
       [.simple parameterName (.collection collectionType elementType)])
     (elements : AvailableOpenElements profile language free available outer
       elementType) :
@@ -4782,7 +4782,7 @@ theorem EquationForall₂.assembleConstructor
     (equivalent : EquationForall₂ profile language free available outer elementType
       left right)
     (membership : rule ∈ language.terms)
-    (parameterShape : rule.params =
+    (parameterShape : rule.bareParams =
       [.simple parameterName (.collection collectionType elementType)]) :
     (AvailableOpenPattern.equationSetoid language free available outer
       (.base rule.category)).r

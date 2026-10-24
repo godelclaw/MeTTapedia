@@ -59,21 +59,9 @@ theorem transpose_mulVec_projectedGradient_eq_zero
     (orthonormal : HasOrthonormalColumns memory)
     (gradient : Coordinate → ℝ) :
     memory.transpose.mulVec (projectedGradient memory gradient) = 0 := by
-  have matrixZero :
-      memory.transpose * residualProjector memory = 0 := by
-    unfold residualProjector projector HasOrthonormalColumns at *
-    calc
-      memory.transpose * (1 - memory * memory.transpose) =
-          memory.transpose -
-            (memory.transpose * memory) * memory.transpose := by
-        rw [Matrix.mul_sub, Matrix.mul_one, Matrix.mul_assoc]
-      _ = 0 := by
-        rw [orthonormal]
-        simp
-  change memory.transpose.mulVec
-      ((residualProjector memory).mulVec gradient) = 0
-  rw [Matrix.mulVec_mulVec, matrixZero]
-  simp
+  simpa [projectedGradient, residualProjector, convolutionalUpdate,
+    Matrix.mulVec_mulVec] using congrArg (fun matrix => matrix.mulVec gradient)
+      (convolutionalUpdate_annihilates_basis memory orthonormal 1)
 
 /-- The projected gradient is orthogonal to the component removed by the
 stored projector. -/
@@ -83,17 +71,12 @@ theorem projectedGradient_dot_removed_eq_zero
     (gradient : Coordinate → ℝ) :
     projectedGradient memory gradient ⬝ᵥ
         (projector memory).mulVec gradient = 0 := by
-  have vecMulEq :
-      Matrix.vecMul (projectedGradient memory gradient) memory =
-        memory.transpose.mulVec
-          (projectedGradient memory gradient) := by
-    simpa using
-      (Matrix.vecMul_transpose memory.transpose
-        (projectedGradient memory gradient))
   rw [projector, ← Matrix.mulVec_mulVec,
-    Matrix.dotProduct_mulVec, vecMulEq,
-    transpose_mulVec_projectedGradient_eq_zero
-      memory orthonormal gradient]
+    Matrix.dotProduct_mulVec]
+  have orthogonal := transpose_mulVec_projectedGradient_eq_zero memory orthonormal gradient
+  simp only [← Matrix.vecMul_transpose memory.transpose,
+    Matrix.transpose_transpose] at orthogonal
+  rw [orthogonal]
   simp
 
 /-- Exact Pythagorean identity behind OGD's current-task descent claim. -/
@@ -104,35 +87,16 @@ theorem projectedGradient_dot_gradient_eq_self
     projectedGradient memory gradient ⬝ᵥ gradient =
       projectedGradient memory gradient ⬝ᵥ
         projectedGradient memory gradient := by
-  have decomposition :
-      gradient =
-        (projector memory).mulVec gradient +
-          projectedGradient memory gradient := by
-    rw [projectedGradient_eq_sub_projector]
-    module
-  calc
-    projectedGradient memory gradient ⬝ᵥ gradient =
-        projectedGradient memory gradient ⬝ᵥ
-          ((projector memory).mulVec gradient +
-            projectedGradient memory gradient) := by
-      exact congrArg
-        (fun right => projectedGradient memory gradient ⬝ᵥ right)
-        decomposition
-    _ = projectedGradient memory gradient ⬝ᵥ
-          projectedGradient memory gradient := by
-      rw [dotProduct_add,
-        projectedGradient_dot_removed_eq_zero
-          memory orthonormal gradient]
-      simp
+  have orthogonal := projectedGradient_dot_removed_eq_zero memory orthonormal gradient
+  conv_rhs => arg 2; rw [projectedGradient_eq_sub_projector]
+  rw [dotProduct_sub, orthogonal, sub_zero]
 
 omit [Fintype Basis] [DecidableEq Coordinate] [DecidableEq Basis] in
 /-- Squared Euclidean length is nonnegative in finite real coordinates. -/
 theorem dotProduct_self_nonnegative_local
     (vector : Coordinate → ℝ) :
     0 ≤ vector ⬝ᵥ vector := by
-  unfold dotProduct
-  exact Finset.sum_nonneg (fun coordinate _ =>
-    mul_self_nonneg (vector coordinate))
+  exact Finset.sum_nonneg (fun coordinate _ => mul_self_nonneg (vector coordinate))
 
 /-- Source Lemma 3.1, sharpened to equality: the negative projected gradient
 has directional derivative exactly minus its squared Euclidean length. -/
@@ -165,17 +129,8 @@ theorem neg_projectedGradient_dot_gradient_neg
     (nonzero : projectedGradient memory gradient ≠ 0) :
     (-projectedGradient memory gradient) ⬝ᵥ gradient < 0 := by
   rw [neg_projectedGradient_dot_gradient memory orthonormal]
-  have normSqNonnegative :
-      0 ≤ projectedGradient memory gradient ⬝ᵥ
-        projectedGradient memory gradient :=
-    dotProduct_self_nonnegative_local _
-  have normSqNonzero :
-      projectedGradient memory gradient ⬝ᵥ
-          projectedGradient memory gradient ≠ 0 := by
-    intro normSqZero
-    exact nonzero (dotProduct_self_eq_zero.mp normSqZero)
-  exact neg_lt_zero.mpr (lt_of_le_of_ne normSqNonnegative
-    (Ne.symm normSqNonzero))
+  exact neg_lt_zero.mpr (lt_of_le_of_ne (dotProduct_self_nonnegative_local _)
+    (Ne.symm (mt dotProduct_self_eq_zero.mp nonzero)))
 
 omit [DecidableEq Basis] in
 /-- Zero memory recovers the ordinary current-task gradient. -/
@@ -207,22 +162,9 @@ theorem firstAxisMemory_projects_to_second :
       projectedGradient memory gradient =
         (fun coordinate => if coordinate = 0 then 0 else 2) ∧
       (-projectedGradient memory gradient) ⬝ᵥ gradient = -4 := by
-  dsimp
-  constructor
-  · ext first second
-    cases first
-    cases second
-    norm_num [HasOrthonormalColumns, Matrix.mul_apply,
-      Fin.sum_univ_two]
-  · constructor
-    · funext coordinate
-      fin_cases coordinate <;>
-        norm_num [projectedGradient, residualProjector, projector,
-          Matrix.mulVec, Matrix.mul_apply, dotProduct,
-          Fin.sum_univ_two]
-    · norm_num [projectedGradient, residualProjector, projector,
-        Matrix.mulVec, Matrix.mul_apply, dotProduct,
-        Fin.sum_univ_two]
+  norm_num [HasOrthonormalColumns, projectedGradient, residualProjector, projector,
+    ← Matrix.ext_iff, funext_iff, Matrix.mulVec, Matrix.mul_apply, Matrix.one_apply,
+    dotProduct, Fin.sum_univ_two, Fin.forall_fin_succ]
 
 set_option backward.isDefEq.respectTransparency false in
 /-- Orthonormality is load-bearing.  In one dimension a stored vector of
@@ -235,23 +177,9 @@ theorem nonorthonormal_scalar_memory_reverses_descent :
     ¬ HasOrthonormalColumns memory ∧
       projectedGradient memory gradient = (fun _ => -3) ∧
       (-projectedGradient memory gradient) ⬝ᵥ gradient = 3 := by
-  dsimp
-  constructor
-  · intro orthonormal
-    have entry := congr_fun (congr_fun orthonormal ()) ()
-    norm_num [HasOrthonormalColumns, Matrix.mul_apply] at entry
-  · constructor
-    · funext coordinate
-      cases coordinate
-      norm_num [projectedGradient, residualProjector, projector,
-        Matrix.mulVec, Matrix.mul_apply, dotProduct]
-    · norm_num [projectedGradient, residualProjector, projector,
-        Matrix.mulVec, Matrix.mul_apply, dotProduct]
+  norm_num [HasOrthonormalColumns, projectedGradient, residualProjector, projector,
+    ← Matrix.ext_iff, funext_iff, Matrix.mulVec, Matrix.mul_apply, dotProduct]
 
-#print axioms neg_projectedGradient_dot_gradient
-#print axioms neg_projectedGradient_dot_gradient_neg
-#print axioms firstAxisMemory_projects_to_second
-#print axioms nonorthonormal_scalar_memory_reverses_descent
 
 end
 

@@ -2804,19 +2804,21 @@ private def constructorParameterCases : SpaceSemantics.Cases :=
    (v "ordinary",constructorArgumentsBody)]
 private def constructorParameterBody : Atom :=
   a "case" [v "parameters",.expression (constructorParameterCases.map fun row => .expression [row.1,row.2])]
-private def constructorTypeBody : Atom :=
+private def constructorTypeBody (mode : CollectionRepresentation) : Atom :=
   a "let" [v "result",a "TBase" [v "category"],
-    a "if" [a "==" [v "expected",v "result"],constructorParameterBody,constructorNext]]
-private def constructorConsBody : Atom :=
-  a "if" [a "==" [v "actual",v "label"],constructorTypeBody,constructorNext]
+    a "if" [a "==" [v "expected",v "result"],
+      (match mode with | .bare => constructorParameterBody | .wrapped => constructorArgumentsBody),constructorNext]]
+private def constructorConsBody (mode : CollectionRepresentation) : Atom :=
+  a "if" [a "==" [v "actual",v "label"],constructorTypeBody mode,constructorNext]
 private def constructorCases : SpaceSemantics.Cases :=
   [(.symbol "LNil",Effects.boolean false),
-    (a "LCons" [a "GrammarTypingV1" [v "actual",v "category",v "parameters"],v "rest"],constructorConsBody)]
+    (a "LCons" [a "GrammarTypingV1" [v "actual",v "category",v "parameters"],v "rest"],constructorConsBody .bare),
+    (a "LCons" [a "GrammarTypingWrappedV1" [v "actual",v "category",v "parameters"],v "rest"],constructorConsBody .wrapped)]
 private theorem constructors_shape : (rawEquation .constructors).body =
     a "case" [v "remaining",.expression (constructorCases.map fun row => .expression [row.1,row.2])] := by decide +kernel
 
 private theorem constructor_parameters_return (caller : Subst) (state : State) (rule : GrammarRule)
-    (argumentResult restResult : Bool)
+    (mode : rule.collectionRepresentation = .bare) (argumentResult restResult : Bool)
     (stored : applySubst caller (v "parameters") = parametersValue rule.params)
     (parameterFresh : Subst.lookup caller "parameter" = none)
     (kindFresh : Subst.lookup caller "kind" = none)
@@ -2831,6 +2833,7 @@ private theorem constructor_parameters_return (caller : Subst) (state : State) (
   simp only [Subst.lookup] at parameterFresh kindFresh elementFresh ordinaryFresh
   by_cases bare : usesBareCollection? rule = true
   · obtain ⟨parameter,kind,element,shape⟩ := (usesBareCollection?_eq_true_iff rule).mp bare
+    have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
     let selected := ("element",typeValue element) :: ("kind",encoded (InferenceCettaWire.encodeCollectionType kind)) ::
       ("parameter",encoded (.string parameter)) :: caller
     unfold constructorParameterBody
@@ -2857,7 +2860,8 @@ private theorem constructor_parameters_return (caller : Subst) (state : State) (
       constructorParameterCases constructorArgumentsBody
     · simpa only [stored] using variable_returns program caller state "parameters"
     · cases rule with
-      | mk label category parameters syntaxPattern evalPolicy =>
+      | mk label category parameters syntaxPattern evalPolicy algebra representation =>
+          change representation = .bare at mode
           cases parameters with
           | nil => simp [constructorParameterCases,parametersValue,encodeList,CettaWireAtom.encode,selected,
               SpaceSemantics.selectCase,SpaceSemantics.matchValue,matchAtom,Subst.lookup,ordinaryFresh]
@@ -2870,7 +2874,7 @@ private theorem constructor_parameters_return (caller : Subst) (state : State) (
                   cases parameter with
                   | simple name type =>
                       cases type with
-                      | collection kind element => simp [usesBareCollection?] at notBare
+                      | collection kind element => simp [usesBareCollection?, GrammarRule.bareParams, mode] at notBare
                       | _ => simp [constructorParameterCases,parametersValue,parameterTerm,typeTerm,encodeList,
                           CettaWireAtom.encode,CettaWireAtom.encodeMany,selected,SpaceSemantics.selectCase,SpaceSemantics.matchValue,
                           SpaceSemantics.matchValue.matchValues,matchAtom,Subst.lookup,ordinaryFresh]
@@ -2933,16 +2937,16 @@ private theorem constructors_returns_of (language : LanguageDef) (free : List (S
       apply raw_closed .constructors state [declarationsValue language.terms,freeValue free,boundValue bound,
         encoded (.string label),patternsValue arguments,typeValue expected,declarationsValue (rule::remaining)] _ rfl
       rw [constructors_shape]
-      apply QuantifiedLocal.branch_returns caller selected state (v "remaining") (declarationsValue (rule::remaining)) constructorCases constructorConsBody
+      apply QuantifiedLocal.branch_returns caller selected state (v "remaining") (declarationsValue (rule::remaining)) constructorCases (constructorConsBody rule.collectionRepresentation)
       · simpa [caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup] using variable_returns program caller state "remaining"
-      · simp [constructorCases,declarationsValue,declarationsTerm,typingDeclarationTerm,InferenceCettaWire.encodeList,parametersValue,encodeList,
+      · cases mode : rule.collectionRepresentation <;> simp [mode,constructorCases,declarationsValue,declarationsTerm,typingDeclarationTerm,InferenceCettaWire.encodeList,parametersValue,encodeList,
           CettaWireAtom.encode,CettaWireAtom.encodeMany,SpaceSemantics.selectCase,SpaceSemantics.matchValue,
           SpaceSemantics.matchValue.matchValues,matchAtom,selected,caller,rawEnvironment,RawHelper.names,Subst.lookup]
       · unfold constructorConsBody
         have labelChecked := CettaWireAtom.equality_captured_returns program selected state (.string rule.label) (.string label)
           "actual" "label" (by simp [selected,applySubst,Subst.lookup])
           (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
-        have typedReturned : PureReturns program selected state constructorTypeBody state
+        have typedReturned : PureReturns program selected state (constructorTypeBody rule.collectionRepresentation) state
             (Effects.boolean (if expected == .base rule.category then
                 if usesBareCollection? rule then restResult else
                   checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments rule.params || restResult
@@ -2969,14 +2973,22 @@ private theorem constructors_returns_of (language : LanguageDef) (free : List (S
               [declarationsValue language.terms,freeValue free,boundValue bound,patternsValue arguments,parametersValue rule.params] _ rfl
               (by simp [result,selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
               (arguments_returns_of language free bound arguments rule.params state children)
-            exact boolean_branch_returns result state _ _ _ _ _ _ compared'
-              (constructor_parameters_return result state rule _ restResult
+            apply boolean_branch_returns result state _ _ _ _ _ _ compared' ?_ more
+            cases mode : rule.collectionRepresentation with
+            | wrapped =>
+              have checked := boolean_branch_returns result state _ _ _ _ true restResult
+                argumentReturned (grounded_returns program result state (.bool true)) more
+              cases checkedArguments : checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments rule.params <;>
+                simpa [mode, constructorArgumentsBody, usesBareCollection?, GrammarRule.bareParams,
+                  constructorNext, RawHelper.head, Effects.boolean, checkedArguments] using checked
+            | bare =>
+              exact constructor_parameters_return result state rule mode _ restResult
                 (by simp [result,selected,applySubst,Subst.lookup])
                 (by simp [result,selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
                 (by simp [result,selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
                 (by simp [result,selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
                 (by simp [result,selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
-                argumentReturned more) more
+                argumentReturned more
         have folded := boolean_branch_returns selected state _ _ _ (rule.label == label) _ restResult
           (by simpa only [Term.string.injEq,beq_as_decide] using labelChecked) typedReturned restReturned
         cases labelEquality : (rule.label == label) <;>
@@ -3002,7 +3014,8 @@ private def collectionParameterBody : Atom :=
     .expression (collectionParameterCases.map fun row => .expression [row.1,row.2])]
 private def collectionDeclarationCases : SpaceSemantics.Cases :=
   [(.symbol "LNil",Effects.boolean false),
-   (a "LCons" [a "GrammarTypingV1" [v "label",v "category",v "parameters"],v "rest"],collectionParameterBody)]
+   (a "LCons" [a "GrammarTypingV1" [v "label",v "category",v "parameters"],v "rest"],collectionParameterBody),
+   (a "LCons" [a "GrammarTypingWrappedV1" [v "label",v "category",v "parameters"],v "rest"],collectionNext)]
 private theorem collections_shape : (rawEquation .collections).body =
     a "case" [v "remaining",.expression (collectionDeclarationCases.map fun row => .expression [row.1,row.2])] := by decide +kernel
 
@@ -3045,6 +3058,7 @@ private theorem collection_fallback_selected (caller : Subst) (parameters : List
 private theorem collection_parameters_return (caller : Subst) (state : State)
     (language : LanguageDef) (free : List (String × TypeExpr)) (bound : List TypeExpr)
     (elements : List Pattern) (rule : GrammarRule) (kind : CollType) (expected : TypeExpr) (restResult : Bool)
+    (mode : rule.collectionRepresentation = .bare)
     (stored : [v "parameters",v "expected"].map (applySubst caller) =
       [parametersValue rule.params,typeValue expected])
     (fields : [v "declarations",v "free",v "bound",v "elements"].map (applySubst caller) =
@@ -3114,7 +3128,7 @@ private theorem collection_parameters_return (caller : Subst) (state : State)
         (by simpa only [Term.string.injEq] using categoryCompared)
         (by simpa only [collectionKindBody] using kindBranch) more
       by_cases categorySame : rule.category=sort <;> by_cases kindSame : actual=kind <;>
-        simpa [collectionCategoryBody,bareCollectionElementType?,shape,categorySame,kindSame,collectionKindBody,collectionNext,RawHelper.head,Effects.boolean] using categoryBranch
+        simpa [collectionCategoryBody,bareCollectionElementType?,GrammarRule.bareParams,mode,shape,categorySame,kindSame,collectionKindBody,collectionNext,RawHelper.head,Effects.boolean] using categoryBranch
   · let selected := ("ordinary",.expression [parametersValue rule.params,typeValue expected]) :: caller
     apply QuantifiedLocal.branch_returns caller selected state _
       (.expression [parametersValue rule.params,typeValue expected]) collectionParameterCases collectionNext values
@@ -3124,7 +3138,8 @@ private theorem collection_parameters_return (caller : Subst) (state : State)
       | none => rfl
       | some element =>
           obtain ⟨expectedShape,name,shape⟩ := (bareCollectionElementType?_eq_some_iff rule kind expected element).mp found
-          exact False.elim (supported ⟨name,kind,element,rule.category,shape,expectedShape⟩)
+          exact False.elim (supported ⟨name,kind,element,rule.category,
+            (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2,expectedShape⟩)
     apply PureData.raw_capture_returns program caller selected state state RawHelper.collections.head
       [v "declarations",v "free",v "bound",v "kind",v "elements",v "expected",v "rest"]
       [v "declarations",v "free",v "bound",v "kind",v "elements",v "expected",v "rest"] _
@@ -3172,21 +3187,26 @@ private theorem collections_returns_of (language : LanguageDef) (free : List (St
       apply raw_closed .collections state [declarationsValue language.terms,freeValue free,boundValue bound,
         encoded (InferenceCettaWire.encodeCollectionType kind),patternsValue elements,typeValue expected,declarationsValue (rule::remaining)] _ rfl
       rw [collections_shape]
-      apply QuantifiedLocal.branch_returns caller selected state (v "remaining") (declarationsValue (rule::remaining)) collectionDeclarationCases collectionParameterBody
+      apply QuantifiedLocal.branch_returns caller selected state (v "remaining") (declarationsValue (rule::remaining)) collectionDeclarationCases
+        (match rule.collectionRepresentation with | .bare => collectionParameterBody | .wrapped => collectionNext)
       · simpa [caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup] using variable_returns program caller state "remaining"
-      · simp [collectionDeclarationCases,declarationsValue,declarationsTerm,typingDeclarationTerm,InferenceCettaWire.encodeList,parametersValue,encodeList,
+      · cases mode : rule.collectionRepresentation <;> simp [mode,collectionDeclarationCases,declarationsValue,declarationsTerm,typingDeclarationTerm,InferenceCettaWire.encodeList,parametersValue,encodeList,
           CettaWireAtom.encode,CettaWireAtom.encodeMany,SpaceSemantics.selectCase,SpaceSemantics.matchValue,
           SpaceSemantics.matchValue.matchValues,matchAtom,selected,caller,rawEnvironment,RawHelper.names,Subst.lookup]
-      · simpa only [List.any_cons] using collection_parameters_return selected state language free bound elements rule kind expected restResult
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
-          (by simp [selected,applySubst,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
-          (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup]) children restReturned
+      · cases mode : rule.collectionRepresentation with
+        | wrapped =>
+          simpa [List.any_cons, bareCollectionElementType?, GrammarRule.bareParams, mode, restResult] using restReturned
+        | bare =>
+          simpa only [List.any_cons] using collection_parameters_return selected state language free bound elements rule kind expected restResult mode
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,applySubst,Subst.lookup])
+            (by simp [selected,applySubst,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup])
+            (by simp [selected,caller,rawEnvironment,RawHelper.names,Subst.lookup]) children restReturned
 
 private def typeLookupBody (lookup : Atom) : Atom :=
   a "let*" [.expression [.expression [v "actual",lookup],

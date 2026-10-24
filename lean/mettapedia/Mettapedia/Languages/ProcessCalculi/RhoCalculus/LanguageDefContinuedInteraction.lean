@@ -267,7 +267,7 @@ theorem rhoContinuationRetyping_redexRetypable :
           rhoContinuationRetyping.costBaseConstructor_mem_generated
             rhoInteractionCut.program.constructor.1
             rhoInteractionCut.program.constructor.2
-      · simp [WellSorted.UsesBareCollection,
+      · simp [WellSorted.UsesBareCollection, GrammarRule.bareParams_cons_iff,
           rho_costBaseInputConstructor_params]
       · rw [rho_costBaseInputConstructor_params]
         apply ArgumentsHaveTypes.cons
@@ -287,7 +287,7 @@ theorem rhoContinuationRetyping_redexRetypable :
             rhoContinuationRetyping.costBaseConstructor_mem_generated
               rhoInteractionCut.environment.constructor.1
               rhoInteractionCut.environment.constructor.2
-        · simp [WellSorted.UsesBareCollection,
+        · simp [WellSorted.UsesBareCollection, GrammarRule.bareParams_cons_iff,
             rho_costBaseOutputConstructor_params]
         · rw [rho_costBaseOutputConstructor_params]
           apply ArgumentsHaveTypes.cons

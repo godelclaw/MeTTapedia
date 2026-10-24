@@ -5,7 +5,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredTypeE
 import Mettapedia.GSLT.LanguageDef.BindingCollectionEquationGenerators
 import Mettapedia.GSLT.LanguageDef.BindingCollectionEquationWire
 import Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceRegistry
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.SharedJudgmentServiceRegistry
 
 /-!
 # Optional literal declared-calculus attachment of authored binding equations

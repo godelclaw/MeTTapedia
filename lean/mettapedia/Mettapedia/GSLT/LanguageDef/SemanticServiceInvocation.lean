@@ -1,4 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.SemanticServiceFamily
+import Mettapedia.GSLT.LanguageDef.OperationCostProtocol
+import Mettapedia.Machines.Cursor.Protocol
+import Mettapedia.Machines.SnapshotBatch
+import Mettapedia.GSLT.Core.LooseRelationEquipment
+import Mettapedia.GSLT.Distinction.OrderedAdministration
 
 /-!
 # Invocation of semantically qualified services
@@ -445,5 +450,600 @@ end PositiveNaturalControl
 #print axioms PositiveNaturalControl.false_decision_refutes
 #print axioms PositiveNaturalControl.native_admitted_range_is_proper
 #print axioms PositiveNaturalControl.raw_operation_is_not_source_admission
+
+/-! ## Conditional reports and current reliance
+
+The checked service faces above retain their soundness obligations. An
+entrusted report is a different carrier: it retains named assumptions and a
+conditional consequence, never an inhabitant of a checked authority's evidence.
+-/
+
+namespace Reliance
+
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.LanguageDef.OperationCostProtocol.Indexed
+
+structure Scope (Principal Task Context Epoch : Type) where
+  principal : Principal
+  task : Task
+  context : Context
+  epoch : Epoch
+  deriving DecidableEq
+
+structure Premise (Principal Task Context Epoch Occurrence Claim : Type) where
+  scope : Scope Principal Task Context Epoch
+  occurrence : Occurrence
+  claim : Claim
+  deriving DecidableEq
+
+variable {Dependency : Type} [DecidableEq Dependency]
+variable (meaning : Dependency → Prop)
+
+/-- A data result with an explicit conditional interpretation. The implication
+is checked mathematics; the named premises are not asserted to be true. -/
+structure Conditional (target : AdmissionObject.{0}) where
+  value : target.Carrier
+  dependencies : Finset Dependency
+  conditional : (∀ dependency ∈ dependencies, meaning dependency) → target.Meaning value
+
+namespace Conditional
+
+variable {meaning} {source middle later : AdmissionObject.{0}}
+
+def checked {service : Service.{0, 0} source} (request : Request service)
+    (admitted : InputAdmission request) (value : source.Carrier)
+    (accepted : (invoke request).acceptedValue = some value) : Conditional meaning source :=
+  ⟨value, ∅, fun _ => accepted_meaning request admitted accepted⟩
+
+def map (operation : source ⟶ later) (result : Conditional meaning source) : Conditional meaning later :=
+  ⟨operation.run result.value, result.dependencies,
+    fun supplied => operation.preserves _ (result.conditional supplied)⟩
+
+def require (prior : Finset Dependency) (result : Conditional meaning source) : Conditional meaning source :=
+  ⟨result.value, prior ∪ result.dependencies, fun supplied =>
+    result.conditional (fun dependency member => supplied dependency (Finset.mem_union_right _ member))⟩
+
+/-- The selected continuation is executed on the actual result data. Every
+previous premise remains in the combined dependency set. -/
+def bind (result : Conditional meaning source)
+    (next : source.Carrier → Conditional meaning later) : Conditional meaning later :=
+  (next result.value).require result.dependencies
+
+def product (first second : AdmissionObject.{0}) : AdmissionObject.{0} :=
+  ⟨first.Carrier × second.Carrier, fun value => first.Meaning value.1 ∧ second.Meaning value.2⟩
+
+def pair (first : Conditional meaning source) (second : Conditional meaning later) :
+    Conditional meaning (product source later) :=
+  ⟨(first.value, second.value), first.dependencies ∪ second.dependencies, fun supplied =>
+    ⟨first.conditional (fun dependency member => supplied dependency (Finset.mem_union_left _ member)),
+      second.conditional (fun dependency member => supplied dependency (Finset.mem_union_right _ member))⟩⟩
+
+theorem bind_keeps_each_premise (result : Conditional meaning source)
+    (next : source.Carrier → Conditional meaning later) :
+    result.dependencies ⊆ (result.bind next).dependencies ∧
+      (next result.value).dependencies ⊆ (result.bind next).dependencies :=
+  ⟨Finset.subset_union_left, Finset.subset_union_right⟩
+
+omit [DecidableEq Dependency] in
+theorem map_comp (first : source ⟶ middle) (second : middle ⟶ later)
+    (result : Conditional meaning source) :
+    (result.map first).map second = result.map (first ≫ second) := by
+  cases result
+  rfl
+
+theorem bind_assoc (result : Conditional meaning source)
+    (next : source.Carrier → Conditional meaning middle)
+    (last : middle.Carrier → Conditional meaning later) :
+    (result.bind next).bind last = result.bind (fun value => (next value).bind last) := by
+  cases result
+  simp only [bind, require, Finset.union_assoc]
+
+/-- The loose interpretation retains the exact assumption interface. Its
+witness is a conditional implication, not checked evidence for the value. -/
+def interpretation (target : AdmissionObject.{0}) :
+    Mettapedia.GSLT.LooseRelationEquipment.Loose (Finset Dependency) target.Carrier :=
+  fun dependencies value => PLift ((∀ dependency ∈ dependencies, meaning dependency) → target.Meaning value)
+
+def asInterpretation (result : Conditional meaning source) :
+    interpretation (meaning := meaning) source result.dependencies result.value := ⟨result.conditional⟩
+
+/-- An existing admitted semantic operation gives the actual nonidentity
+right boundary of a loose square. No evidence is obtained by forgetting its
+left assumption boundary. -/
+def interpretationCell (operation : source ⟶ later) :
+    Mettapedia.GSLT.LooseRelationEquipment.Cell id operation.run
+      (interpretation (meaning := meaning) source) (interpretation (meaning := meaning) later) where
+  map witness := ⟨fun supplied => operation.preserves _ (witness.down supplied)⟩
+
+def requireCell (prior : Finset Dependency) :
+    Mettapedia.GSLT.LooseRelationEquipment.Cell (fun dependencies => prior ∪ dependencies) id
+      (interpretation (meaning := meaning) source) (interpretation (meaning := meaning) source) where
+  map witness := ⟨fun supplied => witness.down (fun dependency member =>
+    supplied dependency (Finset.mem_union_right _ member))⟩
+
+omit [DecidableEq Dependency] in
+theorem interpretation_cells_compose (first : source ⟶ middle) (second : middle ⟶ later) :
+    Mettapedia.GSLT.LooseRelationEquipment.Cell.vcomp (interpretationCell (meaning := meaning) first) (interpretationCell (meaning := meaning) second) =
+      interpretationCell (meaning := meaning) (first ≫ second) := by
+  ext dependencies value witness
+  rfl
+
+end Conditional
+
+/-- Trusting one report introduces exactly its named premise, rather than
+calling any of the checked service constructors. -/
+def report {Principal Task Context Epoch Occurrence : Type}
+    [DecidableEq Principal] [DecidableEq Task] [DecidableEq Context]
+    [DecidableEq Epoch] [DecidableEq Occurrence]
+    (target : AdmissionObject.{0}) [DecidableEq target.Carrier]
+    (premise : Premise Principal Task Context Epoch Occurrence target.Carrier) :
+    Conditional (fun dependency : Premise Principal Task Context Epoch Occurrence target.Carrier =>
+      target.Meaning dependency.claim) target :=
+  ⟨premise.claim, {premise}, fun supplied => supplied premise (Finset.mem_singleton_self _)⟩
+
+section Adoption
+
+variable {Provider Resource Authority : Type}
+variable [DecidableEq Provider] [DecidableEq Resource]
+variable [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+variable {target : AdmissionObject.{0}}
+
+/-- Acceptance licenses a new use of the data under current policy. It does
+not prove the premises or convert the report into checked semantic evidence. -/
+def adopt (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (result : Conditional meaning target) :
+    Except (Conditional meaning target) (Conditional meaning target) :=
+  if requirement.handle = current.handle ∧ FrameUpdate current.available requirement.required then
+    if ∀ dependency ∈ result.dependencies, active dependency = true then .ok result else .error result
+  else .error result
+
+omit [DecidableEq Dependency] in
+theorem adopt_admitted (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (result adopted : Conditional meaning target)
+    (accepted : adopt meaning requirement current active result = .ok adopted) :
+    requirement.Current current ∧ (∀ dependency ∈ result.dependencies, active dependency = true) ∧ adopted = result := by
+  unfold adopt at accepted
+  split at accepted
+  · rename_i granted
+    split at accepted
+    · rename_i currentDependencies
+      exact ⟨granted, currentDependencies,
+        (Except.ok.inj accepted).symm⟩
+    · cases accepted
+  · cases accepted
+
+omit [DecidableEq Dependency] in
+/-- A refusal retains the exact report. Old premises are never rewritten to
+the new epoch or erased by the policy decision. -/
+theorem adopt_refused_retains (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (result refused : Conditional meaning target)
+    (rejected : adopt meaning requirement current active result = .error refused) : refused = result := by
+  unfold adopt at rejected
+  split at rejected
+  · split at rejected
+    · cases rejected
+    · exact (Except.error.inj rejected).symm
+  · exact (Except.error.inj rejected).symm
+
+def publish (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (history : List (Conditional meaning target))
+    (result : Conditional meaning target) :
+    List (Conditional meaning target) × Except (Conditional meaning target) (Conditional meaning target) :=
+  match adopt meaning requirement current active result with
+  | .ok admitted => (history ++ [admitted], .ok admitted)
+  | .error retained => (history, .error retained)
+
+omit [DecidableEq Dependency] in
+theorem publication_keeps_historical_dependencies
+    (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (history : List (Conditional meaning target))
+    (result : Conditional meaning target) :
+    history <+: (publish meaning requirement current active history result).1 := by
+  unfold publish
+  split
+  · exact List.prefix_append _ _
+  · exact List.prefix_refl _
+
+/-- Both adoption outcomes retain their original conditional packet. -/
+def original {meaning : Dependency → Prop} (outcome : Except (Conditional meaning target) (Conditional meaning target)) : Conditional meaning target :=
+  match outcome with
+  | .ok result | .error result => result
+
+omit [DecidableEq Dependency] in
+theorem adoption_returns_original
+    (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (result : Conditional meaning target) :
+    original (adopt meaning requirement current active result) = result := by
+  cases issued : adopt meaning requirement current active result with
+  | ok accepted => exact (adopt_admitted meaning requirement current active result accepted issued).2.2
+  | error retained => exact adopt_refused_retains meaning requirement current active result retained issued
+
+abbrev Review := Sum (Conditional meaning target) (Except (Conditional meaning target) (Conditional meaning target))
+
+def reviewStable : Review (target := target) meaning → Bool
+  | .inl _ => false
+  | .inr _ => true
+
+def reviewRead : Review (target := target) meaning → Conditional meaning target
+  | .inl pending => pending
+  | .inr outcome => original outcome
+
+/-- One actual adoption boundary, embedded in the existing administration
+interface. Refusal remains an observable retained result, rather than an
+empty successor list. This supplies no scheduling or physical-cost bound. -/
+def reviewSystem (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)] (active : Dependency → Bool) :
+    Mettapedia.GSLT.Distinction.OrderedSystem (Review (target := target) meaning) where
+  step
+    | .inl pending => [.inr (adopt meaning requirement current active pending)]
+    | .inr _ => []
+  halted := reviewStable meaning
+
+omit [DecidableEq Dependency] in
+theorem review_preserves_assumption_packet
+    (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)] (active : Dependency → Bool) :
+    (reviewSystem (target := target) meaning requirement current active).AdministrationPreserves (reviewStable meaning) (reviewRead meaning) := by
+  intro state administrative next member
+  cases state with
+  | inl pending =>
+      have same := List.mem_singleton.mp member
+      cases same
+      exact adoption_returns_original meaning requirement current active pending
+  | inr _ => cases administrative
+
+/-- A deliberately lossy consumer discards refused branches. This is used
+only to expose its missing erasure licence. -/
+def discardRefused (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)] (active : Dependency → Bool) :
+    Mettapedia.GSLT.Distinction.OrderedSystem (Review (target := target) meaning) where
+  step
+    | .inl pending => match adopt meaning requirement current active pending with
+        | .ok accepted => [.inr (.ok accepted)]
+        | .error _ => []
+    | .inr _ => []
+  halted := reviewStable meaning
+
+omit [DecidableEq Dependency] in
+theorem refusal_does_not_license_erasing_named_assumptions
+    (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)] (active : Dependency → Bool)
+    (result : Conditional meaning target)
+    (refused : adopt meaning requirement current active result = .error result)
+    (outstanding : result.dependencies ≠ ∅) :
+    ¬ (discardRefused (target := target) meaning requirement current active).ErasurePreserves (reviewStable meaning)
+      (fun state => (reviewRead meaning state).dependencies) (fun _ => ∅) := by
+  intro licensed
+  apply outstanding
+  simpa only [reviewRead] using licensed (.inl result) rfl (by simp only [discardRefused, refused])
+
+end Adoption
+
+/-! ## Dependencies around the actual retained primitive provider -/
+
+namespace Tracked
+
+open Mettapedia.Machines.Cursor
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+
+variable {Op State Fault Answer : Type} {Reply : Op → Type}
+variable (step : State → (operation : Op) → State × Except Fault (Reply operation))
+variable (used : State → (operation : Op) → Except Fault (Reply operation) → Finset Dependency)
+
+def handle (state : State × Finset Dependency) (operation : Op) :
+    (State × Finset Dependency) × Except Fault (Reply operation) :=
+  let response := step state.1 operation
+  ((response.1, state.2 ∪ used state.1 operation response.2), response.2)
+
+abbrev provider := PrimitiveProgram.provider (handle step used)
+abbrev client (Answer : Type) := PrimitiveProgram.client Op Reply Answer Fault
+abbrev Saved (Answer : Type) := Nat × Outcome (provider step used) (client Answer) PUnit.unit
+
+/-- The decoration preserves the actual reply and the entire provider state,
+so values, faults, effects, occurrence IDs and residual control remain intact. -/
+def projection : Hom (provider step used) (PrimitiveProgram.provider step) where
+  map state := state.1
+  step _ _ := rfl
+
+def addPrior (prior : Finset Dependency) : Hom (provider step used) (provider step used) where
+  map state := (state.1, prior ∪ state.2)
+  step state operation := by simp only [provider, PrimitiveProgram.provider, handle, Finset.union_assoc]
+
+def slice (cost : State → Op → Nat) (allowance : Nat) (program : Prog Op Reply Answer)
+    (state : State) (dependencies : Finset Dependency) : Saved step used Answer :=
+  Mettapedia.Machines.Cursor.advance (provider step used) (client Answer)
+    (fun current operation => cost current.1 operation) allowance ⟨PUnit.unit, .ok program, state, dependencies⟩
+
+theorem projected_slice_account (cost : State → Op → Nat) (allowance : Nat)
+    (program : Prog Op Reply Answer) (state : State) (dependencies : Finset Dependency) :
+    ((slice step used cost allowance program state dependencies).1,
+      (projection step used).outcome (client Answer) (slice step used cost allowance program state dependencies).2) =
+      Mettapedia.Machines.Cursor.advance (PrimitiveProgram.provider step) (client Answer)
+        (PrimitiveProgram.charge cost step) allowance ⟨PUnit.unit, .ok program, state⟩ :=
+  (projection step used).advance_account (client Answer)
+    (fun current operation => cost current.1 operation) (PrimitiveProgram.charge cost step)
+    (fun _ _ => rfl) allowance ⟨PUnit.unit, .ok program, state, dependencies⟩
+
+theorem projected_resume_account (cost : State → Op → Nat) (allowance : Nat) (saved : Saved step used Answer) :
+    ((Mettapedia.Machines.Cursor.resume (provider step used) (client Answer)
+        (fun current operation => cost current.1 operation) allowance saved).1,
+      (projection step used).outcome (client Answer)
+        (Mettapedia.Machines.Cursor.resume (provider step used) (client Answer)
+          (fun current operation => cost current.1 operation) allowance saved).2) =
+      Mettapedia.Machines.Cursor.resume (PrimitiveProgram.provider step) (client Answer) (PrimitiveProgram.charge cost step)
+        allowance (saved.1, (projection step used).outcome (client Answer) saved.2) :=
+  (projection step used).resume_account (client Answer)
+    (fun current operation => cost current.1 operation) (PrimitiveProgram.charge cost step)
+    (fun _ _ => rfl) allowance saved
+
+/-- Prefix assumptions are propagated by a constructed provider map. This
+law applies to every dependent continuation, including a bound program. -/
+theorem prefix_slice (cost : State → Op → Nat) (allowance : Nat)
+    (program : Prog Op Reply Answer) (state : State) (dependencies prior : Finset Dependency) :
+    ((slice step used cost allowance program state dependencies).1,
+      (addPrior step used prior).outcome (client Answer) (slice step used cost allowance program state dependencies).2) =
+      slice step used cost allowance program state (prior ∪ dependencies) :=
+  (addPrior step used prior).advance_account (client Answer)
+    (fun current operation => cost current.1 operation) (fun current operation => cost current.1 operation)
+    (fun _ _ => rfl) allowance ⟨PUnit.unit, .ok program, state, dependencies⟩
+
+variable {Owner : Type} [DecidableEq Owner]
+
+/-- The existing independent-owner batch resumes complete retained accounts.
+It does not project jobs to answers before preparing or joining them. -/
+def parallelKernel (cost : State → Op → Nat) :
+    Mettapedia.Machines.SnapshotBatch.Kernel Unit (Owner × Nat) Unit Owner (Saved step used Answer) :=
+  Mettapedia.Machines.SnapshotBatch.Kernel.fromOwnerAction fun _ allowance saved =>
+    Mettapedia.Machines.Cursor.resume (provider step used) (client Answer)
+      (fun current operation => cost current.1 operation) allowance saved
+
+theorem parallel_is_serial_on_independent_owners (cost : State → Op → Nat)
+    (jobs : Owner → Saved step used Answer) (requests : List (Owner × Nat))
+    (independent : (requests.map Prod.fst).Nodup) :
+    (parallelKernel step used cost).batch () (fun _ => ()) jobs requests =
+      (parallelKernel step used cost).run () (fun _ => ()) jobs requests :=
+  (parallelKernel step used cost).batch_eq_run () (fun _ => ()) jobs requests independent
+
+end Tracked
+
+namespace Reported
+
+variable {Op State Fault : Type}
+
+/-- This specialization derives the annotation from the actual conditional
+reply. It cannot silently replace the reply's named premises with a basis tag. -/
+def dependencies (targets : Op → AdmissionObject.{0}) (_state : State) (operation : Op) :
+    Except Fault (Conditional meaning (targets operation)) → Finset Dependency
+  | .ok report => report.dependencies
+  | .error _ => ∅
+
+theorem successful_reply_is_recorded (targets : Op → AdmissionObject.{0})
+    (handler : State → (operation : Op) → State × Except Fault (Conditional meaning (targets operation)))
+    (state next : State) (prior : Finset Dependency) (operation : Op)
+    (report : Conditional meaning (targets operation))
+    (returned : handler state operation = (next, .ok report)) :
+    Tracked.handle handler (dependencies meaning targets) (state, prior) operation =
+      ((next, prior ∪ report.dependencies), .ok report) := by
+  simp only [Tracked.handle, returned, dependencies]
+
+end Reported
+
+namespace Controls
+
+open AdmissionCanary
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.Machines.Cursor
+
+abbrev Fact := Premise Nat Nat Nat Nat Nat Nat
+local instance : DecidableEq Fact := inferInstanceAs (DecidableEq (Premise Nat Nat Nat Nat Nat Nat))
+local instance : DecidableEq positiveNaturals.Carrier := inferInstanceAs (DecidableEq Nat)
+def premiseMeaning (fact : Fact) := positiveNaturals.Meaning fact.claim
+def first : Fact := ⟨⟨7, 9, 11, 3⟩, 10, 2⟩
+def second : Fact := ⟨⟨7, 9, 11, 3⟩, 11, 4⟩
+def falseReport : Fact := ⟨⟨7, 9, 11, 3⟩, 12, 0⟩
+
+def sumPositive : Conditional.product positiveNaturals positiveNaturals ⟶ positiveNaturals where
+  run pair := Nat.add pair.1 pair.2
+  preserves := by
+    intro pair positive
+    change Nat.add pair.1 pair.2 ≠ Nat.zero
+    exact Nat.ne_of_gt (Nat.add_pos_left (Nat.pos_of_ne_zero positive.1) pair.2)
+
+def conditionalResult : Conditional premiseMeaning positiveNaturals :=
+  ((report positiveNaturals first).pair (report positiveNaturals second)).map sumPositive
+
+inductive Op where
+  | ask (fact : Fact)
+  | emit (value : Nat)
+  | fail (code : Nat)
+
+def Reply : Op → Type
+  | .ask _ => Nat
+  | .emit _ | .fail _ => Unit
+
+abbrev State := Nat × List (Nat × Nat)
+
+def step (state : State) (operation : Op) : State × Except Nat (Reply operation) :=
+  match operation with
+  | .ask fact => ((state.1 + 1, state.2 ++ [(state.1, fact.occurrence)]), .ok fact.claim)
+  | .emit value => ((state.1 + 1, state.2 ++ [(state.1, 1000 + value)]), .ok ())
+  | .fail code => ((state.1 + 1, state.2 ++ [(state.1, 2000 + code)]), .error code)
+
+def used (_state : State) (operation : Op) (_reply : Except Nat (Reply operation)) : Finset Fact :=
+  match operation with
+  | .ask fact => {fact}
+  | .emit _ | .fail _ => ∅
+
+def cost (_state : State) (_operation : Op) : Nat := 1
+def firstCall : Prog Op Reply Nat := .call (.ask first) .ret
+def next (value : Nat) : Prog Op Reply Nat :=
+  .call (.emit value) fun _ => .call (.ask second) fun other => .ret (Nat.add value other)
+def program := firstCall.bind next
+def faultProgram : Prog Op Reply Nat :=
+  .call (.ask first) fun value => .call (.emit value) fun _ => .call (.fail 99) fun _ => .ret 0
+
+abbrev Saved := Tracked.Saved step used Nat
+def cut : Saved := Tracked.slice step used cost 1 program (0, []) ∅
+def completed : Saved := Tracked.slice step used cost 4 program (0, []) ∅
+def faultCut : Saved := Tracked.slice step used cost 1 faultProgram (0, []) ∅
+def faulted : Saved := Tracked.slice step used cost 4 faultProgram (0, []) ∅
+
+structure View where
+  paid : Nat
+  status : Nat
+  answer : Option Nat
+  fault : Option Nat
+  history : List (Nat × Nat)
+  dependencies : Finset Fact
+  deriving DecidableEq
+
+def view (saved : Saved) : View :=
+  let actual := PrimitiveProgram.readOutcome (Tracked.handle step used) saved.2
+  match actual.1 with
+  | .inl (.ok answer) => ⟨saved.1, 0, some answer, none, actual.2.1.2, actual.2.2⟩
+  | .inl (.error fault) => ⟨saved.1, 1, none, some fault, actual.2.1.2, actual.2.2⟩
+  | .inr _ => ⟨saved.1, 2, none, none, actual.2.1.2, actual.2.2⟩
+
+/-- The actual bound client, the separately constructed conditional result,
+and the retained read/effect trace agree at their declared data boundary. -/
+theorem selected_bind_propagates_real_dependencies :
+    (view completed).answer = some conditionalResult.value ∧
+      (view completed).dependencies = conditionalResult.dependencies ∧
+      (view completed).history = [(0, 10), (1, 1002), (2, 11)] ∧
+      (view completed).paid = 3 ∧ (view cut).dependencies = {first} :=
+  ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+theorem split_resume_keeps_actual_residual_effects_and_account :
+    Mettapedia.Machines.Cursor.resume (Tracked.provider step used) (Tracked.client Nat)
+      (fun state operation => cost state.1 operation) 3 cut = completed :=
+  (Mettapedia.Machines.Cursor.advance_add (Tracked.provider step used) (Tracked.client Nat)
+    (fun state operation => cost state.1 operation) 1 3 ⟨PUnit.unit, .ok program, (0, []), ∅⟩).symm
+
+theorem fault_retains_used_assumptions_and_prior_effect :
+    (view faulted).status = 1 ∧ (view faulted).fault = some 99 ∧
+      (view faulted).dependencies = {first} ∧
+      (view faulted).history = [(0, 10), (1, 1002), (2, 2099)] ∧ (view faulted).paid = 3 := by decide
+
+def jobs (owner : Bool) : Saved := if owner then faultCut else cut
+def requests : List (Bool × Nat) := [(false, 3), (true, 3)]
+def parallel := (Tracked.parallelKernel step used cost).batch () (fun _ => ()) jobs requests
+
+theorem real_independent_jobs_preserve_faults_effects_and_dependencies :
+    (view (parallel false)).answer = some 6 ∧
+      (view (parallel true)).fault = some 99 ∧
+      (view (parallel false)).dependencies ∪ (view (parallel true)).dependencies = {first, second} ∧
+      (view (parallel false)).history.length + (view (parallel true)).history.length = 6 ∧
+      (view (parallel false)).paid + (view (parallel true)).paid = 6 := by decide
+
+theorem real_independent_jobs_equal_serial_full_states :
+    parallel = (Tracked.parallelKernel step used cost).run () (fun _ => ()) jobs requests :=
+  Tracked.parallel_is_serial_on_independent_owners step used cost jobs requests (by decide)
+
+local instance : Fintype Access :=
+  ⟨{.none, .read, .consume}, by intro access; cases access <;> simp⟩
+
+def requirement : CheckedGrant.Requirement Nat Nat Access := ⟨⟨0, 9, 3⟩, .consume⟩
+def current : CheckedGrant.View Nat Nat Access := ⟨⟨0, 9, 3⟩, .consume⟩
+def revoked : CheckedGrant.View Nat Nat Access := ⟨⟨0, 9, 3⟩, .none⟩
+def regranted : CheckedGrant.View Nat Nat Access := ⟨⟨0, 9, 4⟩, .consume⟩
+
+local instance grantDecision (grant : CheckedGrant.View Nat Nat Access) :
+    Decidable (FrameUpdate grant.available requirement.required) :=
+  inferInstanceAs (Decidable (∀ frame : Access,
+    Access.separate grant.available frame = true → Access.separate Access.consume frame = true))
+
+def active (fact : Fact) : Bool := fact.scope.epoch == 3
+def adoptionView : Except (Conditional premiseMeaning positiveNaturals) (Conditional premiseMeaning positiveNaturals) →
+    Bool × Nat × Finset Fact
+  | .ok result => (true, result.value, result.dependencies)
+  | .error result => (false, result.value, result.dependencies)
+
+/-- A policy can rely on a false external claim without turning it into a
+checked theorem. Its false named premise remains explicit in the result. -/
+theorem adopted_data_does_not_establish_its_claim :
+    adoptionView (adopt premiseMeaning requirement current active (report positiveNaturals falseReport)) =
+        (true, 0, {falseReport}) ∧
+      ¬ positiveNaturals.Meaning (0 : Nat) := by
+  exact ⟨by decide, fun purported => purported rfl⟩
+
+theorem revocation_and_equal_right_regrant_preserve_original_premises :
+    adoptionView (adopt premiseMeaning requirement revoked active conditionalResult) =
+        (false, 6, {first, second}) ∧
+      adoptionView (adopt premiseMeaning requirement regranted active conditionalResult) =
+        (false, 6, {first, second}) ∧
+      adoptionView (adopt premiseMeaning requirement current (fun _ => false) conditionalResult) =
+        (false, 6, {first, second}) := by decide
+
+theorem refusal_does_not_rewrite_historical_verdicts :
+    ((publish premiseMeaning requirement revoked active [report positiveNaturals first] conditionalResult).1.map
+      (fun result => (result.value, result.dependencies))) = [((2 : Nat), {first})] := rfl
+
+
+theorem concrete_refusal_is_not_absence_or_an_erasure_licence :
+    original (adopt premiseMeaning requirement revoked active conditionalResult) = conditionalResult ∧
+      ¬ (discardRefused (target := positiveNaturals) premiseMeaning requirement revoked active).ErasurePreserves (reviewStable premiseMeaning)
+        (fun state => (reviewRead premiseMeaning state).dependencies) (fun _ => ∅) := by
+  refine ⟨adoption_returns_original premiseMeaning requirement revoked active conditionalResult, ?_⟩
+  exact refusal_does_not_license_erasing_named_assumptions premiseMeaning requirement revoked active conditionalResult
+    rfl (by decide)
+
+
+namespace ReportedClient
+
+abbrev Op := Fact ⊕ Nat
+def targets (_operation : Op) := positiveNaturals
+abbrev Reply (operation : Op) := Conditional premiseMeaning (targets operation)
+
+def step (state : State) (operation : Op) : State × Except Nat (Reply operation) :=
+  match operation with
+  | .inl fact => ((state.1 + 1, state.2 ++ [(state.1, fact.occurrence)]), .ok (report positiveNaturals fact))
+  | .inr code => ((state.1 + 1, state.2 ++ [(state.1, 2000 + code)]), .error code)
+
+abbrev used : State → (operation : Op) → Except Nat (Reply operation) → Finset Fact :=
+  Reported.dependencies premiseMeaning targets
+abbrev Answer := Conditional premiseMeaning positiveNaturals
+
+def firstCall : Prog Op Reply Answer := .call (.inl first) .ret
+def next (firstResult : Answer) : Prog Op Reply Answer :=
+  .call (.inl second) fun secondResult => .ret ((firstResult.pair secondResult).map sumPositive)
+def program := firstCall.bind next
+
+def run (fuel : Nat) := Tracked.slice step used (fun _ _ => 1) fuel program (0, []) ∅
+def decoded (fuel : Nat) := PrimitiveProgram.readOutcome (Tracked.handle step used) (run fuel).2
+
+theorem actual_conditional_replies_compose_in_the_selected_bound_client :
+    (match (decoded 3).1 with | .inl (.ok result) => some (result.value, result.dependencies) | _ => none) =
+        some (conditionalResult.value, conditionalResult.dependencies) ∧
+      (decoded 3).2.2 = conditionalResult.dependencies ∧
+      (decoded 3).2.1.2 = [(0, 10), (1, 11)] ∧ (run 3).1 = 2 :=
+  ⟨rfl, rfl, rfl, rfl⟩
+
+theorem actual_reported_client_keeps_the_same_residual_on_resume :
+    Mettapedia.Machines.Cursor.resume (Tracked.provider step used) (Tracked.client Answer)
+      (fun _ _ => 1) 2 (run 1) = run 3 :=
+  (Mettapedia.Machines.Cursor.advance_add (Tracked.provider step used) (Tracked.client Answer)
+    (fun _ _ => 1) 1 2 ⟨PUnit.unit, .ok program, (0, []), ∅⟩).symm
+
+end ReportedClient
+
+end Controls
+
+end Reliance
 
 end Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation

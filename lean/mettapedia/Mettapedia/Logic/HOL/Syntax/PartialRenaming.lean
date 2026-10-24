@@ -117,6 +117,74 @@ theorem weaken_of_rename?_drop {term : Term Const (σ :: Γ) τ} {lowered : Term
     (success : rename? PartialRename.drop term = some lowered) : weaken lowered = term :=
   rename_of_rename?_eq_some term PartialRename.drop_inverse success
 
+/-- A commuting square of variable maps induces the same square on partial
+term renaming, including both success and failure below binders. -/
+theorem rename?_rename {Ξ Φ : Ctx Base}
+    (before : Rename Base Γ Ξ) (after : Rename Base Δ Φ)
+    (rho : PartialRename Base Γ Δ) (rho' : PartialRename Base Ξ Φ)
+    (square : ∀ {type} (index : Var Γ type), rho' (before index) = (rho index).map after)
+    (term : Term Const Γ τ) :
+    rename? rho' (rename before term) = (rename? rho term).map (rename after) := by
+  have lifted {Γ Δ Ξ Φ : Ctx Base} {bound : Ty Base}
+      {before : Rename Base Γ Ξ} {after : Rename Base Δ Φ}
+      {rho : PartialRename Base Γ Δ} {rho' : PartialRename Base Ξ Φ}
+      (square : ∀ {type} (index : Var Γ type), rho' (before index) = (rho index).map after) :
+      ∀ {type} (index : Var (bound :: Γ) type),
+        PartialRename.lift rho' (Rename.lift before index) =
+          (PartialRename.lift rho index).map (Rename.lift after) := by
+    intro type index
+    cases index with
+    | vz => rfl
+    | vs index =>
+        simp only [PartialRename.lift, Rename.lift, square index, Option.map_map]
+        cases rho index <;> rfl
+  induction term generalizing Δ Ξ Φ with
+  | var index =>
+      simp only [rename, rename?, square index, Option.map_map]
+      cases rho index <;> rfl
+  | const | top | bot => rfl
+  | app left right ihl ihr | and left right ihl ihr | or left right ihl ihr
+  | imp left right ihl ihr | eq left right ihl ihr =>
+      simp only [rename, rename?, ihl _ _ _ _ square, ihr _ _ _ _ square]
+      cases rename? rho left <;> cases rename? rho right <;> rfl
+  | not body ih =>
+      simp only [rename, rename?, ih _ _ _ _ square]
+      cases rename? rho body <;> rfl
+  | lam body ih | all body ih | ex body ih =>
+      simp only [rename, rename?, ih _ _ _ _ (lifted square)]
+      cases rename? (PartialRename.lift rho) body <;> rfl
+
+theorem rename?_weaken (rho : PartialRename Base Γ Δ) (term : Term Const Γ τ) :
+    rename? (PartialRename.lift (σ := σ) rho) (weaken term) =
+      (rename? rho term).map (weaken (σ := σ)) :=
+  rename?_rename Rename.weaken Rename.weaken rho (PartialRename.lift rho)
+    (fun _ => rfl) term
+
+/-- A partial left inverse of a total variable map cancels it on every term. -/
+theorem rename?_rename_inverse {Ξ : Ctx Base}
+    (before : Rename Base Γ Ξ) (rho : PartialRename Base Ξ Γ)
+    (inverse : ∀ {type} (index : Var Γ type), rho (before index) = some index)
+    (term : Term Const Γ τ) : rename? rho (rename before term) = some term := by
+  have lifted {Γ Ξ : Ctx Base} {bound : Ty Base}
+      {before : Rename Base Γ Ξ} {rho : PartialRename Base Ξ Γ}
+      (inverse : ∀ {type} (index : Var Γ type), rho (before index) = some index) :
+      ∀ {type} (index : Var (bound :: Γ) type),
+        PartialRename.lift rho (Rename.lift before index) = some index := by
+    intro type index
+    cases index with
+    | vz => rfl
+    | vs index => simp [PartialRename.lift, Rename.lift, inverse index]
+  induction term generalizing Ξ with
+  | var index => simp [rename, rename?, inverse index]
+  | const | top | bot => rfl
+  | app | and | or | imp | eq | not => simp_all [rename, rename?]
+  | lam body ih | all body ih | ex body ih =>
+      simp only [rename, rename?, ih _ _ (lifted inverse), Option.map_some]
+
+theorem rename?_drop_weaken (term : Term Const Γ τ) :
+    rename? (PartialRename.drop (σ := σ)) (weaken term) = some term :=
+  rename?_rename_inverse Rename.weaken PartialRename.drop (fun _ => rfl) term
+
 namespace PartialRenamingExamples
 
 def independent : Term (fun _ : Ty Unit => Empty) [.prop, .prop] .prop :=

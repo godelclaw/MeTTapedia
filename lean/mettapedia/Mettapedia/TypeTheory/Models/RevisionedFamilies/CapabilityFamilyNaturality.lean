@@ -49,7 +49,7 @@ def observableStateMap (preserves : AgreementPreserving hom) :
         (preserves first second agree))
 
 /-- The same map, with the query component retained, is a substitution
-between Prime's observable request contexts. -/
+between the observable request contexts. -/
 def observableRequestMap (preserves : AgreementPreserving hom) :
     Mettapedia.TypeTheory.Calculi.StagedScopedReflective.familiesCwF.Sub
       (observableRequestContext source.model.reading)
@@ -90,8 +90,8 @@ def mapObservableReceipt (preserves : AgreementPreserving hom)
         receipt.checked
       rw [← hom.readingMap.extract_comm, checked]
 
-/-- Naturality at raw requests: first reinterpret the GSLT-IL receipt as a
-Prime observable dependent fibre and then map the fibre, or first map the
+/-- Naturality at raw requests: first reinterpret the GSLT-IL receipt as an
+observable dependent fibre and then map the fibre, or first map the
 proof-relevant receipt and then reinterpret it, yields the same inhabitant.
 No middle request or support proof is silently dropped. -/
 theorem mapObservableReceipt_raw_square

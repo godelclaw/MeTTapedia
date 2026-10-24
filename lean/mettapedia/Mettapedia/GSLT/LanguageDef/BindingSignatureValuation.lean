@@ -79,7 +79,8 @@ def operator {language : LanguageDef} {base : String → Type u}
   | _, .constructor rule member ordinary scopes, args =>
       constructors.ordinary rule member ordinary scopes args
   | _, .collectionConstructor rule member parameter kind element shape count, args =>
-      constructors.collection rule member parameter kind element shape
+      constructors.collection rule member parameter kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
         (listArguments language base element count args)
   | _, .lambda _ _, args => fun value => args.1 (value, PUnit.unit)
   | _, .multiLambda domain _ count, args => fun values =>

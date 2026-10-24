@@ -759,7 +759,7 @@ hypotheses with objects.  A β-step substitutes a proof for a hypothesis or the
 translation of a core term for an object; typing excludes the other pairings. -/
 theorem PreCoded.step : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M : LF.Term},
     PreCoded e ρ M → ∀ {context : LFTyping.Ctx} {A M' : LF.Term}, ShapedCtx e ρ context →
-      WellFormedCtx LFProfile.basic (sttfaProofTheory e) context →
+      WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) context →
       LambdaPiModulo (sttfaProofTheory e) context M A → Step STTfa.theory M M' →
       PreCoded e ρ M' := by
   have headed := STTfa.orthogonal.leftAlgebraic.headed
@@ -858,7 +858,7 @@ theorem PreCoded.step : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M :
 hypotheses with objects. -/
 theorem PreCoded.reduces {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M N : LF.Term}
     {context : LFTyping.Ctx} {A : LF.Term} (coded : PreCoded e ρ M) (shaped : ShapedCtx e ρ context)
-    (wellFormed : WellFormedCtx LFProfile.basic (sttfaProofTheory e) context)
+    (wellFormed : WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) context)
     (typed : LambdaPiModulo (sttfaProofTheory e) context M A)
     (reduces : Reduces STTfa.theory M N) : PreCoded e ρ N := by
   induction reduces with
@@ -971,7 +971,7 @@ theorem compile_normalForms_coded_open {Γ : Ctx Base} {φ : Formula Const Γ}
     Coded names (HOL.Rename.id (Γ := Γ)) N := by
   have proofs := sttfaProofHub e names.el names.arrow names.imp names.all names.fresh names.typeFresh
   have typed := proofs.theorem_typed d
-  have wellFormed : WellFormedCtx LFProfile.basic (sttfaProofTheory e) (e.ctx Γ) := by
+  have wellFormed : WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) (e.ctx Γ) := by
     clear typed reduces normal core d φ
     induction Γ with
     | nil => exact .nil

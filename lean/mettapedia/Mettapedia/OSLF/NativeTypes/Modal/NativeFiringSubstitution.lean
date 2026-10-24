@@ -127,7 +127,6 @@ theorem quantified_substitutes {environment : Environment} {original : Context}
       have headNew := premise_substitutes head ready admitted located scopes substitution canonical objects
       have tailNew := quantified_substitutes tail ready admitted located scopes substitution canonical objects
       simp only [bind_parameter, local_value, context_quantified] at localTypedNew headNew
-      rw [restore_parameter] at tailNew
       simpa only [NativeEventSubstitution.quantified, NativeEventSubstitution.events, List.map_cons, Context.quantified] using
         (QuantifiedElements.cons localTypedNew headNew tailNew)
 

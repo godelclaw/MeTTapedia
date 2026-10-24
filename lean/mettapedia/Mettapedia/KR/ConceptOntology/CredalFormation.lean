@@ -1071,7 +1071,7 @@ structure CredalConceptFormationProfile where
         else if A ∈ upperConceptFamily S Γ σ then (1 / 2 : ℝ) else 0
 
 /-- Public proof-carrying handle for observation-level credal concept formation. -/
-def credalConceptFormationProfile : CredalConceptFormationProfile where
+theorem credalConceptFormationProfile : CredalConceptFormationProfile := {
   lowerSubsetUpper := fun S Γ σ =>
     lowerConceptFamily_subset_upperConceptFamily S Γ σ
   lowerSingleton := fun S G σ A =>
@@ -1090,6 +1090,8 @@ def credalConceptFormationProfile : CredalConceptFormationProfile where
     globalEnvelopeWidthComplement_conceptFormationGamble_eq S Γ σ A
   midpoint := fun S Γ σ A =>
     globalEnvelopeMidpoint_conceptFormationGamble_eq S Γ σ A
+
+}
 
 end ObservationEncoder
 

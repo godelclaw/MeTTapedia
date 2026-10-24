@@ -8,7 +8,7 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 
 The guest's checker is executed through a native data service. These lemmas
 preserve data typing and service execution; they do not identify Mathdata
-proofs with Prime's dependent proof terms or select a set-theoretic foundation.
+proofs with the candidate's dependent proof terms or select a set-theoretic foundation.
 -/
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased

@@ -100,6 +100,17 @@ def readChannels : Skeleton → List Comb
   | nodePar left right => left.readChannels ++ right.readChannels
   | nodeMsg left right => left.readChannels ++ right.readChannels
 
+/-- Exact structural observation of a filled context sees precisely its read
+coordinates. Repeated reads constrain one environment value consistently. -/
+theorem fill_eq_iff (skeleton : Skeleton) (left right : Comb → Comb) :
+    skeleton.fill left = skeleton.fill right ↔
+      ∀ channel ∈ skeleton.readChannels, left channel = right channel := by
+  induction skeleton with
+  | read channel => simp [fill, readChannels]
+  | const value => simp [fill, readChannels]
+  | nodePar first second ihFirst ihSecond | nodeMsg first second ihFirst ihSecond =>
+      simp [fill, readChannels, ihFirst, ihSecond, or_imp, forall_and]
+
 /-- How many slots a compiled skeleton reserves: two per internal node. -/
 def slotsUsed : Skeleton → ℕ
   | read _ => 0

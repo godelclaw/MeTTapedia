@@ -31,7 +31,7 @@ open FormationSensitive (DeclarationSpine ContextFormation)
 
 variable {n : Nat}
 
-def universes : FormationSensitive.UniverseRegularity rules :=
+theorem universes : FormationSensitive.UniverseRegularity rules :=
   FormationSensitive.towerUniverseRegularity.includeSignature rawSignature
 
 def parameterSubstitution

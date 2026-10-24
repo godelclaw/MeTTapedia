@@ -1137,6 +1137,232 @@ profile, a total qualified normalizer or the native kernels requires the
 corresponding additional laws.
 \lean{GSLT.Dedukti.HOLHub.sttfa_not_exactly_adequate, GSLT.Dedukti.HOLHub.sttfa_coding_needed}
 
+\paragraph{The hub at its exact formation vertex.}
+The STTfa proof service does not use the four-rule CoC formation profile. Its
+declared \name{LFProfile.standardLF} is exactly the standard LF/$\lambda P$
+two-rule dependent vertex
+$\{F,D\}$. For every profile retaining $\ast:\square$, extension from that
+vertex is equivalent to supporting the direct interface
+$A:\mathsf{Type},P:A\to\mathsf{Type},\prod_{x:A}P(x)$, uniformly in the
+separately selected bubble. Once the family is available, forming the final
+product is indeed the short ordinary-function step. The substantive boundary
+is that forming the family itself requires $D$, and conversion cannot supply
+a missing formation rule.
+\lean{HypercubeHOLHub.standardLF_eq_dependentVertex, HypercubeHOLHub.standardLF_subsumed_iff_directInterface}
+
+This correspondence reaches the actual hub rather than stopping at profile
+names. Its declarations are formed at $\{F,D\}$, its transparent-body
+obligation holds, every rewrite instance preserves its input type, and
+reduction preserves typing in formed contexts. The compiled universal-
+elimination control is typed there. At the simple vertex $\{F\}$ the actual
+decoder declaration $\eta:\mathsf{type}\to\mathsf{Type}$ cannot be formed,
+under any conversion theory; consequently the complete STTfa signature is
+not formed there.
+\lean{HypercubeHOLHub.formedSignature_at_dependentVertex, HypercubeHOLHub.rulesPreserveTypes_at_dependentVertex, HypercubeHOLHub.typePreservation_at_dependentVertex, HypercubeHOLHub.predInstance_typed_at_dependentVertex, HypercubeHOLHub.signature_not_formed_at_simpleVertex}
+
+For any larger profile supporting the direct interface, source HOL terms stay
+typed in the pointwise decoded source context, and every proof of the selected
+implication/universal calculus compiles to typed hub evidence. The existing
+capture-avoiding source-substitution equation is joined to that profiled
+typing statement: translated substitution and LF substitution agree under
+the stated image premise, and the result remains typed in the translated
+target context. This supplies a formation/context/substitution/evidence edge.
+It does not change the hub's rewrite theory, add eta conversion, prove
+normalization of all typed terms, or make every dependent profile a model of
+HOL.
+\lean{HypercubeHOLHub.translate_typed_of_directInterface, HypercubeHOLHub.translate_substitute_typed_of_directInterface, HypercubeHOLHub.theorem_typed_of_directInterface}
+
+\paragraph{CoC and a historical prototype diverge.}
+The four-rule CoC formation vertex and the historical MettaKernel kind-result
+prototype are not the same top. Besides $F,D,O$, CoC contains
+\[
+  P=(\square,\ast,\ast),
+\]
+while the prototype contains the non-$\lambda$-cube rule
+\[
+  R_K=(\square,\ast,\square).
+\]
+Thus their exact common product set is $\{F,D,O\}$. The CoC branch is the
+relative minimum for the three direct interfaces above. When the 31 frozen
+DTTBench statements are inferred at the prototype, their computed derivations
+exercise all four prototype rules; any profile containing that particular
+demand record subsumes the prototype. This is not a profile-independent
+minimality result. The generic, sound checker types all 31 raw statements at
+sort $\ast$ under CoC as well, without $R_K$: CoC assigns different result
+sorts to intermediate products. Standard LF remains too small. Hence the
+prototype-computed demand distinguishes inference profiles, while corpus
+typability does not distinguish these two upper branches.
+\lean{LFDTTBenchDemand.allWithinMettaKernelPrototype_eq_true, LFDTTBenchDemand.allWithinStandardLF_eq_false, LFDTTBenchDemand.allDemandRules_eq_mettaKernelPrototype, LFDTTBenchDemand.mettaKernelPrototype_minimal_for_DTTBench, LFDTTBenchDemand.allStatementsTypableInCoc_eq_true, LFDTTBenchDemand.coc_typable_of_mem, LFDTTBenchDemand.prototype_demand_not_necessary_for_coc_typability, HypercubeHOLHub.construction_mettaKernelPrototype_common_product_iff, HypercubeHOLHub.coc_mettaKernelPrototype_fork}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, every node/.style={align=center,font=\small},
+  profile/.style={draw=ink!70,rounded corners,fill=ink!4,minimum width=34mm}]
+\node[profile] (hub) at (0,0) {STTfa / $\lambda P$\\$F,D$};
+\node[profile] (shared) at (0,1.7) {shared upper fragment\\$F,D,O$};
+\node[profile] (coc) at (-3.2,3.5) {CoC formation\\$F,D,O,P$};
+\node[profile] (prototype) at (3.2,3.5) {MettaKernel prototype\\$F,D,O,R_K$};
+\node[profile] (union) at (0,5.2) {literal union\\non-functional};
+\draw[->] (hub) -- node[right] {add $O$} (shared);
+\draw[->] (shared) -- node[left] {add $P$} (coc);
+\draw[->] (shared) -- node[right] {add $R_K$} (prototype);
+\draw[dashed,->] (coc) -- (union);
+\draw[dashed,->] (prototype) -- (union);
+\end{tikzpicture}
+\end{center}
+
+The dashed union is a warning, not an admitted profile. It contains two rules
+with the same domain and codomain sorts but different result sorts, and is
+therefore not functional. The maintained uniqueness-of-types theorem uses
+functionality. Non-functionality alone is not inconsistency, but it means that
+blindly collecting both petals loses that metatheoretic route. A useful common
+extension must resolve or stratify the result-sort choice, or prove another
+adequate checking theory.
+\lean{HypercubeHOLHub.constructionMettaKernelPrototypeUnion_not_functional, HypercubeHOLHub.mettaKernelPrototype_does_not_support_directFormationInterfaces, HypercubeHOLHub.constructions_do_not_contain_DTTBench}
+
+A coarser semantic readout can nevertheless forget the syntactic conflict.
+For this literal union, observed result sorts are functional exactly when the
+readout identifies \(\mathsf{Type}\) and \(\mathsf{Kind}\). A constant
+one-point readout does so; every injective readout refuses. This supplies a
+common semantic shadow, not a common faithful calculus or a model of typing
+and conversion. Adding \(\mathsf{Type}:\mathsf{Type}\) is a different
+syntactic construction, and the maintained PTS development proves that
+profile inconsistent.
+\lean{HypercubeProfileStratification.constructionMettaKernelPrototypeUnion_resultFunctionalUnder_iff, HypercubeProfileStratification.constant_observation_reconciles, HypercubeProfileStratification.injective_observation_does_not_reconcile, TypeInTypeParadox.typeInType_inconsistent}
+
+This is an obstruction to every untagged functional upper profile over the
+same two sorts, not merely to the displayed list union: any upper profile
+containing both branches inherits the conflicting rules. The checked common
+service therefore retains a branch mode. Each fibre is functional and has
+the exact profile checker. Evidence from the shared $F,D,O$ fragment rechecks
+in both fibres. The selected direct interfaces separate one direction; the
+prototype-computed DTTBench demand record separates the other, although the
+raw statements themselves type in both upper profiles. This mode-stratified
+service is a common dispatch interface, not a merged calculus. Removing the
+tag requires resolving the result sort, extending the sort syntax or proving
+a replacement for the present uniqueness metatheory.
+\lean{HypercubeProfileStratification.no_functional_common_upper, HypercubeProfileStratification.branchProfile_functional, HypercubeProfileStratification.exists_checkProof_iff_deriv, HypercubeProfileStratification.shared_evidence_rechecks_both, HypercubeProfileStratification.construction_interface_separates_branches, HypercubeProfileStratification.prototype_computedDemand_separates_profiles}
+
+The arbitrary-sort PTS generalization sharpens ``extending the sort syntax.''
+A sort-renaming morphism preserves axioms and product rules and transports
+annotated terms, beta conversion, contexts and complete typing derivations.
+The existing two-sort calculus is equivalent to its generic instance. Suppose
+the CoC and prototype maps into one functional target agree on their shared
+$\ast$ and $\square$. Their conflicting $(\square,\ast)$ rules force the two
+target images to coincide. The image of $\ast:\square$ is then $u:u$, and the
+image of $(\ast,\ast,\ast)$ supplies the product rule used by the maintained
+Hurkens term. Transporting that concrete derivation inhabits
+$\Pi p:u.\,p$ in the target. This proves an inconsistency witness for every
+functional commuting cocone, rather than merely observing a non-functional
+two-sort union.
+\lean{GenericPureTypeSystem.Derives.map, GenericPureTypeSystem.TwoSort.derives_iff, HypercubeSortRenaming.commuting_functional_cocone_collapses, HypercubeSortRenaming.commuting_cocone_self_axiom, HypercubeSortRenaming.commuting_cocone_self_product, HypercubeSortRenaming.commuting_functional_cocone_inconsistent}
+
+There is also a functional three-stratum comparison target. It sends CoC's
+$\ast,\square$ to $\mathsf{Prop},\mathsf{Type}_0$ and sends the prototype's
+$\ast,\square$ to $\mathsf{Type}_0,\mathsf{Type}_1$. The seven image rules
+are single-valued, the displayed CoC polymorphic identity and a prototype
+type operator transport, and none of the three strata types itself. The maps
+disagree on both source sorts. Consequently this is a noncommuting span for
+comparison and reuse, not a join of the shared source calculus. It is not
+named ECC or CIC: cumulativity, a model, normalization and decidable checking
+remain independent obligations. The branch-tagged service above therefore
+remains the faithful common interface for the original syntax.
+\lean{HypercubeSortRenaming.comparisonProfile_functional, HypercubeSortRenaming.comparisonProfile_no_self_axiom, HypercubeSortRenaming.comparison_maps_disagree_on_type, HypercubeSortRenaming.comparison_maps_disagree_on_kind, HypercubeSortRenaming.coc_polymorphicIdentity_transports, HypercubeSortRenaming.prototype_typeOperator_transports}
+
+The formation part of this policy is executable. A finite checker compares
+every pair of product rules with the same premise sorts and accepts exactly
+when their result sorts agree. Joining erases duplicate rules and refuses an
+otherwise non-functional union. Dependency plus type operators passes; CoC
+plus the MettaKernel prototype refuses. Every admitted join contains both input
+profiles, and acceptance of a finite proof tree in either input yields finite
+accepted evidence in the joined profile through the existing exact
+profile-parametric checker.
+\lean{HypercubeHOLHub.functionalProductsCheck_eq_true_iff, HypercubeHOLHub.functionalProducts_iff_profileFunctional, HypercubeHOLHub.admitProductJoin_eq_some_iff, HypercubeHOLHub.admitProductJoin_eq_none_iff, HypercubeHOLHub.dependent_operator_join_accepted, HypercubeHOLHub.coc_mettaKernelPrototype_join_refused, HypercubeHOLHub.admitted_join_rechecks_left, HypercubeHOLHub.admitted_join_rechecks_right}
+
+The corresponding MeTTa-data boundary is also checked. A tagged atom wire
+records both sort axioms and every ordered product rule. Decoding is a left
+inverse of encoding, hence the representation is injective. The atom-level
+join service decodes both submissions, requires identical sort axioms, then
+runs the formation gate. Every published result contains both input profiles
+and is functional. Dependency plus type operators is accepted; a conflicting
+sort axiom, the nonfunctional CoC/prototype union and malformed atom data are
+all refused. This is a source contract for a runtime consumer; it does not
+claim that a current executable consumes the wire or preserves its cost.
+\lean{LFProfileAtomWire.decode_encode, LFProfileAtomWire.encode_injective, LFProfileAtomWire.sameSortAxiomsCheck_eq_true_iff, LFProfileAtomWire.admitProfileJoin_sound, LFProfileAtomWire.joinEncoded_sound, LFProfileAtomWire.dependent_operator_join_encoded, LFProfileAtomWire.coc_mettaKernelPrototype_join_encoded_refused, LFProfileAtomWire.conflicting_sort_axiom_join_refused, LFProfileAtomWire.malformed_profile_refused}
+
+This is an admission rule for formation profiles, not conversion packages.
+The join of two bubbles is their least upper bound as a conversion relation,
+and typing from each side embeds in it. Decidability and normalization of that
+join require the separate completion, commutation or disjointness laws already
+stated by the bubble theory. A runtime profile service should therefore keep
+formation admission and conversion-package admission as two checks.
+\lean{BubbleConversion.convertible_join_least, BubbleConversion.hasTypeIn_join_left, BubbleConversion.hasTypeIn_join_right, BubbleConversion.join_normalizedBy}
+
+The conversion side has a parallel finite wire for the existing typed HOL
+recipe policy. A manifest selects beta and eta globally or at named simple
+types, and selects all or individual licensed equations. Its recursive type
+codec is parameterized by a lossless codec for base-type names. Decoding is a
+left inverse; malformed policies and out-of-range equation indices refuse.
+Finite manifest union denotes exactly the existing pointwise policy join, so
+both input local-step judgments embed in it. This gives atom-level permission
+data for the HOL recipe checker. It does not yet encode a dependent-calculus
+conversion package or establish normalization, confluence, decidability,
+conservativity or cost for the joined policy.
+\lean{HOLConversionPolicyAtomWire.enabled_join, HOLConversionPolicyAtomWire.denote_join, HOLConversionPolicyAtomWire.denote_extends_join_left, HOLConversionPolicyAtomWire.denote_extends_join_right, HOLConversionPolicyAtomWire.decodeType_encodeType, HOLConversionPolicyAtomWire.decodeFeature_encodeFeature, HOLConversionPolicyAtomWire.decode_encode, HOLConversionPolicyAtomWire.encode_injective, HOLConversionPolicyAtomWire.joinEncoded_sound, HOLConversionPolicyAtomWire.beta_eta_manifest_join, HOLConversionPolicyAtomWire.out_of_range_equation_refused, HOLConversionPolicyAtomWire.malformed_policy_refused}
+
+\paragraph{The reified-index branch has its own exact price.}
+The alternative to direct indexing can be specified rather than merely named.
+A beta-correct quote/splice interface gives a split readout from retained code
+to its body. A code-indexed family descends to that body view exactly when its
+fibre at every code is equivalent to its fibre at the canonical
+quote-after-splice code. Ordinary source equality descends exactly when the
+readout is faithful, equivalently when quote after splice satisfies eta.
+Thus beta supplies a body view; eta is the additional condition for forgetting
+code identity.
+\lean{ContextualCodeObserverFactorization.familyFactorization_iff_quoteSpliceFibreEquivalences, ContextualCodeObserverFactorization.equalityFamilyFactorization_iff_quoteSplice}
+
+The tagged-code control is the negative half. A body-constant family descends,
+while a family depending on a retained Boolean code tag does not; source
+equality does not descend either. A Tarski-style encoding has another layer:
+factorization of its code carrier does not imply factorization of decoding.
+The maintained example has one code at each of two identified levels, but
+that code decodes to a singleton at one level and Booleans at the other.
+Code syntax factors and decoding cannot. Consequently a reified route owes
+value/code coherence and code/meaning coherence separately. This route can
+avoid the direct syntactic premise only by changing the interface; it does
+not derive the missing formation rule.
+\lean{ContextualCodeObserverFactorization.Canary.contextual_code_observer_boundary, TarskiCodeFamilyObserverFactorization.Canary.code_syntax_does_not_determine_decoding_factorization, TarskiCodeFamilyObserverFactorization.Canary.constant_decoding_pi_sigma_control}
+
+The formation branch is now concrete in the same annotated PTS as the direct
+necessity theorem. Direct indexing forms (P\,x) from ordinary functions and
+the value-to-type rule. Type reification instead forms
+
+\[
+  Q : \mathrm{Type}\to\mathrm{Type}
+  \;\vdash\;
+  \Pi X:\mathrm{Type}.\,\Pi x:X.\,Q\,X
+\]
+
+from ordinary functions, polymorphism and type operators. These rule sets are
+incomparable: each supports its displayed interface and refuses the other,
+independently of conversion. Both universal types are accepted by the sound
+reference checker at structural fuel five. The direct application is accepted
+at fuel five; the reified application first consumes a type code and then its
+witness, and is accepted first at fuel six. In the concrete controls its term
+has five syntax nodes rather than three. The direct result type contains the
+runtime argument; the reified result contains the type code and omits the
+witness. Thus witness substitution is replaced by code transport plus the
+separate value/code and decoding-coherence obligations above. These are exact
+measurements of this syntax and checker, not asymptotic complexity claims.
+\lean{ReifiedIndexElaboration.productRule_mem_of_typed_subject, ReifiedIndexElaboration.reifiedTypeIndexedForall_iff, ReifiedIndexElaboration.direct_reified_formation_fork, ReifiedIndexElaboration.directApplicationContext_formed, ReifiedIndexElaboration.reifiedApplicationContext_formed, ReifiedIndexElaboration.Controls.directApplication_accepts_fuel_five, ReifiedIndexElaboration.Controls.reifiedApplication_refuses_fuel_five, ReifiedIndexElaboration.Controls.reifiedApplication_accepts_fuel_six, ReifiedIndexElaboration.Controls.application_node_counts, ReifiedIndexElaboration.Controls.result_transport_surface, ReifiedIndexElaboration.Controls.formation_with_missing_decoding_coherence}
+
+Here ``quotation'' and ``splicing'' name the abstract contextual-code
+operations of the modal theorem. They do not redefine the candidate runtime's
+surface forms. Its \code{quote} remains an evaluation-blocking constructor whose
+interior variables remain available to structural matching. The distinct
+\code{@} form retains its name-making role; matching below those names crosses
+the existing \code{lift} boundary. Relating either runtime form to the modal
+interface needs an adapter proving the relevant binding, beta and eta laws.
+
 \subsection{Finite dependent evidence through the common interfaces}
 
 The selected profile is the existing cumulative tower over natural-number
@@ -1242,6 +1468,52 @@ promoted to checker conversion merely because both expressions denote the
 same set. Conversely, a model interpretation need not reflect all set truth
 back into source derivations. These comparisons preserve their assumptions;
 they assert neither equivalence of all foundations nor optimal native speed.
+
+\paragraph{Native guarded transport.}
+Two typed HOL schemas now transport universal and existential observations
+between guarded representations. Their explicit forward and backward maps
+preserve validity and are inverse on valid values. The observed predicate is
+pulled back along the chosen forward map; comparison action is retained.
+Both formulas hold in every Henkin model, with no full-domain or choice
+premise, and their Lean proofs use no host axioms. An inhabited representation
+of an empty carrier refutes the actual intrinsic formula obtained by dropping
+the target guard. A Boolean swap supplies a valid nonidentity comparison,
+whose action changes a selected observation.
+\lean{HOL.GuardedQuantifierTransport.models_universal, HOL.GuardedQuantifierTransport.models_existential, HOL.GuardedQuantifierTransport.guard_erasure_counterexample, HOL.GuardedQuantifierTransport.Examples.swap_comparison, HOL.GuardedQuantifierTransport.Examples.swap_changes_observation}
+
+Independent original HOL Light proofs establish the same exact statements.
+The explicit-rule producer uses generalization, specialization, discharge,
+conjunction, equality and existential introduction/elimination. Its exported
+closure retains five checked logical definitions and has no AXIOM nodes;
+the earlier proof-search route used eta and choice. Native replay under the
+existing sealed policy, which prohibits axiom introduction, checks the
+two exact sequents and rejects changed claims, additional axioms and a
+truncated stream. Packet checks also refuse a missing or repeated root and
+the typed guard-erasure claim. The maps' comparison certificates remain
+requirements of clients. This library is an interoperability and
+representation edge, not automatic datatype proof generation or a proof of
+the linked native checker.
+
+On the same pinned checker and standard policy, eight interleaved paired
+fresh-process runs checked the identical two sequents. The proof-search
+artifact used 36,205 records and 202,056 bytes; the explicit-rule artifact used
+3,023 records and 16,382 bytes. Median process time was 6.51\,ms versus
+2.15\,ms, and median peak RSS was 9,724 versus 8,216\,KiB. These are measured
+costs of these two proof artifacts, not an optimality theorem or a bound for
+other workloads. The explicit proof also qualifies under the separate sealed
+policy.
+
+The exact semantic boundary for truth observations is weaker than an inverse
+comparison. Over the observation class containing every predicate, preserving
+all existential truths is equivalent to the image of valid source values
+being exactly the valid target values. The same equivalence holds for all
+universal truths. A projection from a pair of Booleans to its first component
+satisfies both observation laws while identifying distinct source values.
+Truth agreement therefore does not establish faithful transport of values,
+witnesses or multiplicities. The native library retains its explicit
+inverse-comparison hypothesis; this semantic criterion does not change its
+admission contract.
+\lean{HOL.GuardedQuantifierTransport.exists_observations_iff_image, HOL.GuardedQuantifierTransport.all_observations_iff_image, HOL.GuardedQuantifierTransport.truth_transport_does_not_force_injectivity}
 
 \subsection{Operational logical form and relative checking bases}
 
@@ -1767,6 +2039,72 @@ smallest kernel or unprovability from the rejected submissions. These local
 results do not establish uniform computational admission of the package.
 \lean{NativeNaturalVectorFamilies.Programs.ComputationProfiles.permissions_mono, NativeNaturalVectorFamilies.Programs.ComputationProfiles.judgment_inclusion, NativeNaturalVectorFamilies.Programs.ComputationProfiles.append_typed_naturalOnly, NativeNaturalVectorFamilies.Programs.ComputationProfiles.all_verdicts}
 
+\paragraph{Finite manifests for the checking-profile flower.}
+The same admitted schema table has four explicitly separated checking nodes.
+The minimal node retains every typed iota receipt but licenses no iota
+conversion. The natural intensional node adds exactly the two natural rows.
+It has two incomparable children: the scoped logical-extensional node adds
+opaque propositional and function extensionality as object-theory constants,
+while the raw operational node licenses both vector rows. Neither child
+silently supplies the other's capability.
+\begin{center}
+\begin{tikzpicture}[
+  node distance=13mm and 20mm,
+  every node/.style={draw=ink!70,rounded corners,fill=ink!4,align=center}]
+\node (minimal) {receipt-only\\minimal};
+\node (natural) [above=of minimal] {natural\\intensional};
+\node (logical) [above left=of natural] {scoped logical\\extensional};
+\node (raw) [above right=of natural] {full raw\\operational};
+\draw[->] (minimal) -- (natural);
+\draw[->] (natural) -- (logical);
+\draw[->] (natural) -- (raw);
+\end{tikzpicture}
+\end{center}
+Inclusion and both reverse separations are checked per capability field. The
+logical child keeps extensionality out of judgmental equality and includes
+neither UIP nor equality reflection. The raw child remains an operational
+profile: unrestricted lifting into annotated vector conversion is refuted by
+the repeated-parameter counterexample.
+\lean{NativeNaturalVectorFamilies.Programs.CheckingProfiles.natural_profile_fork, NativeNaturalVectorFamilies.Programs.CheckingProfiles.scoped_extensionality_not_judgmental, NativeNaturalVectorFamilies.Programs.CheckingProfiles.scoped_has_neither_uip_nor_equalityReflection, NativeNaturalVectorFamilies.Programs.CheckingProfiles.fullRawOperational_not_unrestrictedAnnotatedLift}
+
+These nodes now have a finite MeTTa \code{Atom} manifest. Features select
+tower or legacy-ground elimination, propositional or judgmental identity
+principles, and the receipt, propositional and judgmental observations of
+each actual iota-table row. Decoding checks every submitted row index.
+Validation rejects a judgmental iota permission unless the corresponding
+typed receipt is retained. Feature union preserves this law and embeds both
+input checking contracts. This validates contract structure; arbitrary
+optional identity data, whether propositional or judgmental, still needs a
+profile-specific realization theorem.
+\lean{NatVecCheckingProfileAtomWire.Profiles.validCheck_eq_true_iff, NatVecCheckingProfileAtomWire.Profiles.valid_join, NatVecCheckingProfileAtomWire.Profiles.denote_extends_join_left, NatVecCheckingProfileAtomWire.Profiles.denote_extends_join_right, NatVecCheckingProfileAtomWire.Profiles.decode_encode, NatVecCheckingProfileAtomWire.Profiles.joinEncoded_sound}
+
+The four canonical manifests validate to the existing four profiles, rather
+than parallel reimplementations. The encoded natural profile checks the
+existing dependent append certificate; the encoded minimal profile refuses
+it. Its two licensed natural rows retrieve exactly the original typed source
+and target receipts, while vector nil remains non-judgmental there. A missing
+receipt, an out-of-range selector and malformed profile data all refuse.
+None of these finite checks establishes normalization, confluence,
+conservativity, a Hofmann translation or native runtime refinement.
+\lean{NatVecCheckingProfileAtomWire.Profiles.denote_minimal_eq, NatVecCheckingProfileAtomWire.Profiles.denote_naturalIntensional_eq, NatVecCheckingProfileAtomWire.Profiles.denote_scopedLogicalExtensional_eq, NatVecCheckingProfileAtomWire.Profiles.denote_fullRawOperational_eq, NatVecCheckingProfileAtomWire.Profiles.naturalZeroLicensedReceipt_exact, NatVecCheckingProfileAtomWire.Profiles.naturalSuccLicensedReceipt_exact, NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_vectorNil_not_judgmental, NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_encoded_checks_append, NatVecCheckingProfileAtomWire.Profiles.minimal_encoded_refuses_append, NatVecCheckingProfileAtomWire.Profiles.missingReceipt_encoded_refused, NatVecCheckingProfileAtomWire.Profiles.out_of_range_iota_refused, NatVecCheckingProfileAtomWire.Profiles.malformed_profile_refused}
+
+\paragraph{Interaction evidence is a separate certificate.}
+For the natural-intensional node, the actual declaration-aware calculus is
+exactly the previously proved natural-only package. Its root computation is
+covered by the two constructor schemas, and the maintained constructor-system
+development proves Church--Rosser for their interaction with structural beta,
+pair projections and universe-head equality. The same certificate retains Pi
+and Sigma conversion boundaries and formation-sensitive subject reduction
+along arbitrary finite forward paths. The encoded natural manifest is now
+packaged with this separate certificate.
+\lean{CheckingProfiles.Interaction.naturalIntensional_actualRules, CheckingProfiles.Interaction.naturalIntensional_roots_exact, CheckingProfiles.Interaction.naturalIntensionalCertificate, CheckingProfiles.Interaction.naturalIntensional_nat_not_pi, NatVecCheckingProfileAtomWire.Profiles.naturalIntensional_encoded_qualified}
+
+This proves confluence and preservation for that exact selected join. It does
+not prove total normalization or make those results a consequence of feature
+union. Nor does it qualify the full raw vector child: its repeated payload
+occurrences still refute unrestricted interaction with annotated conversion.
+\lean{CheckingProfiles.Interaction.fullRawOperational_not_annotatedInteraction}
+
 General source compilation and complete generated-package admission remain
 separate from that checked target. Acceptance of the corresponding
 natural laws by native HOL Light, Mathdata and configured MM0, representation
@@ -1791,6 +2129,20 @@ uniformly in payload type. The source declarations themselves also lower
 to the original admitted Nat/Vec example. The same clause compiler consumes
 these plans without evaluating the source's noncomputable natural carrier.
 \lean{IndexedInductive.OperationSource.selectModule_exact, IndexedInductive.CaseElaboration.compilePlan_reconstructs, IndexedInductive.AppendSource.text_admitted, IndexedInductive.AppendSource.source_vector_plans_match}
+
+Operational reconstruction now holds for every accepted compiler plan.
+Applying an emitted method to its original field variables and declared
+recursive-call results beta-reduces to the exact submitted clause body. For a
+complete accepted method list, this holds for every paired source clause in
+order, and the method count equals the constructor count. A successful named
+rule reader retains the actual lowering of its written right-hand side under
+the resolved source names. The combined rule compiler reconstructs that body
+while retaining the matched left-hand side. Both independently checked append
+methods instantiate the result. An unabstracted recursive constant or a call
+on another argument refuses. This is a computation theorem for accepted
+source plans; it neither authorizes a proposed recursive call nor proves
+arbitrary nested plan generation, source typing or termination.
+\lean{IndexedInductive.CaseElaboration.BranchPlan.method_reduces, IndexedInductive.CaseElaboration.compilePlans_reduces, IndexedInductive.CaseElaboration.compileMethods_reduces, IndexedInductive.OperationSource.readRule_body_exact, IndexedInductive.OperationSource.compileRule_reconstructs, IndexedInductive.AppendElaboration.methods_reconstruct_source}
 
 Named expression expansion preserves the original lexical argument order
 and commutes with capture-safe substitution. Addition is compiled from its
@@ -2474,6 +2826,1298 @@ the original four-row family candidates, arbitrary vector contextual
 computation, richer annotated equality or a native C checker. The earlier
 missing-domain distinction between raw and formed typing remains valid.
 
+\paragraph{Committed-opt qualification of the selected Nat/Vec chain.}
+The unchanged joined driver now passes all twenty stages with no open
+qualification obligations at its recorded artifact cohort. Normal and
+ASan/UBSan executables come from committed opt revision
+\code{dcb7dffad6bd}. Both 1,024-round array-lifetime panels and injected
+allocation-failure panels pass the stated fail-stop contract. All three
+native-fact routes, changed-evidence refusals, length/counter observations
+and three fixed-point runs pass. The complete frozen Lean import cohort
+remains unchanged through the run; its audit checks 164,556 safe declarations
+with standard axioms only. This qualifies the selected declared chain.
+General native checker refinement and fact generation for every admitted
+signature remain separate obligations.
+
+\subsection{A Lean-family branch: exact checking, reconstruction and model soundness}
+
+Lean compatibility does not form one vertex. The official Lean kernel,
+Lean4Lean, con-leche and a Lean4Less translation expose different judgments
+and different theorems about them. They belong to a connected family whose
+edges state their actual strength.
+
+The local authority interface distinguishes four public outcomes: acceptance
+with a retained output, rejection of an invalid proposal, decline on an
+unsupported feature, and operational error. Only acceptance carries an
+authority theorem. A model-sound service maps every accepted output to a
+semantic realization. Therefore a model-forbidden input cannot be accepted,
+without implying whether it is rejected, declined or encounters an error.
+An acceptance refinement is one-way: every optimized acceptance maps to a
+pure-checker acceptance. Such refinements compose, and pure-checker model
+soundness transports through them. Neither direction supplies completeness.
+\lean{LeanCheckerAuthorityFlower.Service.ModelSound.not_accepts_forbidden, LeanCheckerAuthorityFlower.Service.AcceptanceRefinement.modelSound, LeanCheckerAuthorityFlower.Service.AcceptanceRefinement.comp}
+
+Checked reconstruction gives the elaboration edge its authority. An
+untrusted producer may propose a core certificate; publication occurs only
+after the destination checker recomputes it. The resulting four-outcome
+service accepts exactly the certificates published by the existing
+reconstruction combinator, and destination soundness alone transports each
+accepted result to its meaning or model. No theorem about the producer is
+needed. A failed producer is a decline and a checker refusal is a rejection.
+\lean{LeanCheckerAuthorityFlower.Service.checkedReconstruction_accepts_iff, LeanCheckerAuthorityFlower.Service.checkedReconstruction_sound, LeanCheckerAuthorityFlower.Service.checkedReconstruction_modelSound}
+
+The distinctions are strict. A nonempty sound service may decline a true
+input, so soundness does not give completeness. Two implementations may
+agree on every result while both accept an invalid claim. Refusing one chosen
+contradiction also does not imply soundness for all claims. Conversely, a
+finite nonvacuous model-sound service accepts its modeled claim and refuses a
+model-forbidden one. These controls prevent differential testing or a single
+consistency canary from being promoted to semantic authority.
+\lean{LeanCheckerAuthorityFlower.Service.Controls.sound_does_not_imply_completeness, LeanCheckerAuthorityFlower.Service.Controls.agreement_does_not_imply_soundness, LeanCheckerAuthorityFlower.Service.Controls.false_refusal_does_not_imply_soundness, LeanCheckerAuthorityFlower.Service.Controls.finiteModelService_refuses_forbidden}
+
+The already implemented finite-catalog Lean fragment supplies an exact lower
+node: executable beta, delta and head-application acceptance agrees with its
+authored raw GSLT and the generated OSLF exact-target predicate. The existing
+typed-boundary counterexample still shows that this raw node is not a Lean
+typing checker. Thus the flower has a proved exact operational edge without
+calling it the full Lean kernel.
+\lean{LeanCheckerAuthorityFlower.Service.catalogHeadService_accepts_iff_ntt, Lean4LeanRungTwoTypedBoundary.raw_accepts_while_typed_ntt_rejects}
+
+Con-leche supplies a stronger external semantic pattern \cite{ConLeche}. Its
+verified mode checks exported Lean declarations using a cached implementation;
+accepted cached runs simulate a pure checker, whose accepted environments are
+proved to have a model. The model interprets the pinned \code{False} as the
+empty set and equality as set equality, yielding the checked refusal of an
+export containing a theorem of \code{False}. The result is relative to the
+project's \code{SetTheory} interface: ZF without infinity and choice, together
+with an omega-chain of Grothendieck universes; the Lean metalogic supplies
+choice. Lean 4.35 distributes con-leche as an external checker. The exported
+model theorem is deliberately one-way. It does not prove equality with the
+official kernel's acceptance relation, and its simplified public model omits
+delta and iota equations. Computational adequacy and official-kernel parity
+therefore remain separate edges.
+
+This suggests the following Lean branch rather than a single ``Lean profile'':
+
+\begin{center}
+\begin{minipage}{0.82\linewidth}
+\begin{verbatim}
+surface Lean --checked reconstruction--> exported core declarations
+                    |             |                 |
+                    v             v                 v
+             official kernel   Lean4Lean      con-leche cached
+                                                   |
+                                            acceptance refinement
+                                                   v
+                                             pure checker
+                                                   |
+                                              model soundness
+                                                   v
+                                           set-model semantics
+\end{verbatim}
+\end{minipage}
+\end{center}
+\par\medskip
+
+Lean4Lean remains useful for the independently stated typing and definitional
+equality judgments and for implementation comparison \cite{Lean4Lean}. Its
+locally pinned metatheory still leaves whole-inductive implementation
+verification unfinished, so no full-Lean exactness edge is inferred here.
+Con-leche instead gives a complete acceptance-to-model route for its own
+verified checker, including a uniform positivity analysis for mutual and
+nested inductives and checker-generated recursors. For the present M2 goal,
+that design motivates four separately checked components: block recognition,
+positivity and uniform-parameter admission, recursor generation, and a
+least-fixed-point semantic law. Reusing its architecture does not import its
+acceptance relation or select it as a foundation.
+
+The release-receipt boundary now binds the complete export stream and import
+closure, toolchain and exporter revisions, checker family, source revision and
+mode, selected profile and assumptions, primitive pins and executable digest.
+The adapter recomputes the observed coordinate. Invalid coordinates are
+errors; a different valid coordinate declines as inapplicable. Only an
+underlying accepting outcome produces a receipt, and ordinary or model
+soundness reaches it solely through the underlying checker's theorem. The
+pinned con-leche decoder retains exit zero with its declaration count as
+acceptance, exit one as rejection, exit two as decline, and malformed or error
+results as operational errors. Verified and trusted modes cannot reuse one
+another's receipts, nor can the official kernel reuse a con-leche receipt.
+Matching digests therefore make an already checked theorem applicable; they do
+not create a proof, establish official-kernel parity or prove that an input
+observer hashed the intended bytes. That last statement is the concrete
+adapter's correspondence obligation. Portable subfragments may additionally
+be rechecked by HOL Light, Megalodon or MM0, while full Lean terms remain native
+to a Lean-family checker.
+\lean{LeanCheckerReleaseReceipt.ReleaseBoundService.accepts_iff, LeanCheckerReleaseReceipt.ReleaseBoundService.sound, LeanCheckerReleaseReceipt.ReleaseBoundService.modelSound, LeanCheckerReleaseReceipt.ReleaseBoundService.run_eq_declined_of_valid_mismatch, LeanCheckerReleaseReceipt.conLecheVerifiedChecker_valid_iff, LeanCheckerReleaseReceipt.Controls.trusted_mode_cannot_reuse_verified_receipt, LeanCheckerReleaseReceipt.Controls.checker_family_cannot_reuse_receipt}
+
+\subsection{Four inductive petals and agent-facing data}
+
+The M2 inductive path now separates the four components suggested by the
+external Lean-family comparison. First, an executable recognizer retains an
+ordered constructor block. Second, successful recognition produces strict
+positivity and uniform-parameter evidence: each direct or nested recursive
+occurrence repeats the canonical block parameter vector. A nested occurrence
+is accepted only beneath a named positive container supplied by the selected
+registry. Function fields, unknown containers, changed parameter vectors and
+duplicate constructor names refuse.
+\lean{PositiveInductiveBlock.RawCode.positive_of_decode, PositiveInductiveBlock.recognize_positive, PositiveInductiveBlock.RawCode.functionField_refused, PositiveInductiveBlock.RawCode.changedParameters_refused, PositiveInductiveBlock.RawCode.unknownContainer_refused}
+
+Third, the recognized block compiles to an indexed polynomial. Its ordinary
+recursor and dependent eliminator are generated from the polynomial fixed
+family; they are not accepted from the declaration. Both compute on every
+recognized constructor layer. Fourth, initiality proves every
+constructor-preserving map equal to the generated recursor, and displayed
+initiality gives the corresponding uniqueness theorem for dependent
+elimination. These are semantic computation laws. A selected DTT profile must
+still form the declarations and decide which iota equations are judgmental.
+\lean{PositiveInductiveBlock.Admitted.recursor_construct, PositiveInductiveBlock.Admitted.recursor_unique, PositiveInductiveBlock.Admitted.eliminator_construct, PositiveInductiveBlock.Admitted.eliminator_unique}
+
+Strict positivity does not imply finite execution. The positive Reader
+container has a natural-number position at one shape and is not finitary.
+Accordingly a separate registry capability supplies a finite position type at
+every registered shape. The list registry used below has that capability.
+This distinction keeps infinitary semantics from silently becoming a finite
+MeTTa traversal.
+\lean{PositiveInductiveBlock.Code.positionFintype, IndexedContainer.Examples.reader_not_finitary}
+
+Finite cardinality alone still does not select an execution order. The indexed
+container layer now separates an `OrderedFinitary` capability: each shape has
+an explicit complete, duplicate-free position list. List and Vector supply
+their ordinary `Fin` order; Reader cannot, because ordered finitarity implies
+finitarity. Registered nested code inherits the capability. Its position
+enumerator follows constructor-field order: a direct recursive field first,
+then each nested container in its declared order, then the remaining fields.
+Every semantic position occurs and the resulting list has no duplicates. This
+enumeration's length is therefore exactly the finite cardinality of the
+semantic position fibre, giving the theory-side work count. This is the
+interface needed before an emitted traversal may claim source ordering or a
+per-position cost.
+\lean{IndexedContainer.Examples.listOrderedFinitary, IndexedContainer.Examples.vectorOrderedFinitary, IndexedContainer.Examples.reader_not_orderedFinitary, IndexedPositiveContainer.Registry.OrderedFinitary.toFinitary, IndexedPositiveContainer.Code.mem_orderedPositions, IndexedPositiveContainer.Code.orderedPositions_nodup, IndexedPositiveContainer.Code.orderedPositions_length, IndexedPositiveContainer.ListInstance.orderedFinitary, IndexedPositiveContainer.VectorControl.orderedFinitary}
+
+The established unindexed registered-container grammar now embeds into the
+indexed registry with a complete signature comparison. Constructor data,
+recursive-position fibres and each required child-family index are preserved;
+the selected ordered position lists agree occurrence by occurrence. The
+comparison applies to every registry-coherent source block and retains its
+constructor occurrence ordinals. A generic polynomial theorem transports
+constructor layers naturally in the recursive carrier, induces an equivalence
+of the complete fixed families, and proves that folds commute with both
+directions under transported constructor methods. For the admitted SearchTree
+block, every tree retains its answer-collecting recursion, and the images of
+solved false and solved true remain distinct. A mutual Workflow control checks
+a child index different from its root. These are semantic transport laws;
+open-term guest interpretation and complete runtime recursor compilation are
+separate obligations.
+\lean{IndexedPolynomial.SignatureEquiv.extensionEquiv_natural, IndexedPolynomial.SignatureEquiv.fixEquiv, IndexedPolynomial.SignatureEquiv.fold_toFix, IndexedPolynomial.SignatureEquiv.fold_fromFix, IndexedPositiveContainer.Unindexed.signatureEquiv, IndexedPositiveContainer.Unindexed.ordered_observations_preserved, IndexedPositiveContainer.Unindexed.blockRecursor_preserved, ModuleSource.PositiveInductiveLoweringControls.WholeFamily.answers_preserved, ModuleSource.PositiveInductiveLoweringControls.WholeFamily.distinct_solved_answers, ModuleSource.PositiveInductiveLoweringControls.MutualIndex.child_index_ne_root}
+
+The indexed machine formation/focus regression now has an explicit compiled
+Lean command, \code{nativeIndexedMachineFormationCheck}. It executes the
+maintained formation action on the original PartrecMachine and checks all
+110 generated declaration rows, including the existing rejection controls.
+Library compilation retains the action without executing this runtime panel.
+The recorded operational qualification is separate from the kernel-checked
+theorems about the generated judgments.
+
+\begin{samepage}
+The authored cube panel likewise has an explicit compiled command,
+\code{nativeAuthoredCubeCheck}. The twenty existing batch modules retain
+their original actions. The command checks their declared index order and
+executes the complete schedule, preserving the fixture-coverage checks and
+the actual native certificate checks. At the recorded cohort, the three
+fixtures contain 175 formers in total; all twenty batches and sixty coverage
+checks pass. These runtime actions are retained by library imports and
+executed at qualification, separately from mathematical proof checking.
+\end{samepage}
+
+The selected order now reaches a quoted MeTTa traversal program. The program
+walks a captured constructor list and emits one \code{Visited} record per input
+occurrence. Its execution theorem in the existing PeTTa machine covers
+arbitrary payload atoms, retaining executable-looking syntax as data. Every
+completed run returns exactly the one ordered result, with no additional
+answers, store changes or I/O. The source adapter supplies the exact position
+list from the selected indexed-container code. Output length equals the
+semantic position cardinality; for a fixed shape, equality of complete outputs
+is equivalent to pointwise equality of the payload observations. A control
+uses the actual semantic erasure of the resolved textual VectorTree branch.
+Missing repeated occurrences, reordered outputs and zero-fuel completion are
+negative controls. This realizes traversal of already represented positions;
+interpreting arbitrary open guest terms and compiling arbitrary authored
+recursor clauses remain further edges.
+\lean{IndexedContainerTraversal.returns, IndexedContainerTraversal.completed_iff, IndexedContainerTraversal.ordered_returns, IndexedContainerTraversal.ordered_record_count, IndexedContainerTraversal.ordered_output_eq_iff, IndexedContainerTraversal.Controls.textualVectorInput_two, IndexedContainerTraversal.Controls.model_checks}
+
+List and Vector container values now have a shared physical algebraic-list
+carrier, with exact decoding in both directions relative to the element codec.
+The Vector decoder retains the declared output length: a changed length, a
+dropped child, an ill-typed payload or malformed list syntax refuses. Equal
+payloads at different positions remain separate entries. The execution
+adapter sends these actual container extensions to the source-pinned visitor;
+it does not merely accept an unrelated list with the same cardinality.
+\lean{IndexedContainerWire.decodeListValue_encodeListValue, IndexedContainerWire.encodeListValue_decodeListValue, IndexedContainerWire.decodeVectorValue_encodeVectorValue, IndexedContainerWire.encodeVectorValue_decodeVectorValue, IndexedContainerWire.wrong_vector_length_refused, IndexedContainerTraversal.ContainerValues.vector_value_completed_iff}
+
+The next source program performs a complete bottom-up fold. Executable
+structural encoding of an indexed-polynomial fixed family agrees with the
+independent generated semantic fold. Faithful shape encoding and complete
+position coverage make the tree encoding injective. The execution theorem
+lifts correctness of a method on one constructor layer to the complete fixed
+family, folding every child in the selected order before calling the method.
+Its premise describes that one layer, not an already-correct recursive call.
+The admitted SearchTree instance discharges the premise for the existing
+answer-collecting algebra. Thus every semantic SearchTree has the same
+ordered solved answers in the quoted PeTTa program; any completed run has
+exactly that one result, with no store or I/O effects. Distinct input trees
+remain distinguishable at the quotation boundary even when their answer
+lists coincide.
+\lean{IndexedContainerWire.Recursive.encodeFix_eq_fold, IndexedContainerWire.Recursive.encodeFix_injective, IndexedContainerTraversal.Folding.fold_returns, IndexedContainerTraversal.Folding.Search.answers_return, IndexedContainerTraversal.Folding.Search.answers_completed_iff, IndexedContainerTraversal.Folding.Search.quote_injective}
+
+An execution probe exposed a source-emission error at computed calls. The
+formal evaluator treats a variable-headed tuple as data, whereas the selected
+native candidate dispatches it as an application. Following such a tuple with
+\code{eval} therefore executed a returned code payload twice in the native
+candidate. Emission now constructs the application explicitly with
+\code{cons-atom} and executes it once. Both the method proof and the diagnostic
+replay retain the original code-shaped result; neither runtime quotation
+policy nor evaluator implementation was changed. This is a qualified
+compilation fragment, not a claim of full correspondence between the formal
+evaluator and every native PeTTa expression.
+
+The qualification driver distinguishes observed values from completed runs.
+Six Lean controls emit exact source and record minimal evaluator fuel. The retained
+SWI-PeTTa reference run emits all six expected packets, and the oracle refuses missing
+packets, duplicate packets, a dropped repeated occurrence, a reordered payload
+and unexpected additional stdout. Five reference cases complete. The 32-position
+case publishes its exact
+packet but does not terminate within the observation window. This is a reference-run
+completion divergence; production qualification requires a separate replay on a
+pinned CeTTa artifact in PeTTa mode. The source-machine counts are
+17 transitions for the empty case, 125 for the two-position textual branch,
+179 for either three-position case, 71 for a retained syntax payload and
+1,745 for 32 positions. These are measured source-machine counts, not a
+universal runtime-cost theorem or a C performance comparison.
+
+The pinned frozen-opt diagnostic now completes all six visitor controls and
+eight fold controls. The fold controls cover solved and empty constructors,
+order, repetition, nesting, depth sixteen, width thirty-two and a method
+returning executable-looking data. Their exact minimal source-machine counts
+are respectively 129, 126, 664, 933, 1,465, 4,385, 8,734 and 104. Five visitor
+output mutations and six fold mutations are refused. Each mutation starts
+from an independently accepted model-output baseline, so a wrong native
+baseline cannot make the negative controls vacuous. The candidate's executable
+hash is retained, but its committed-source build provenance has not been
+established; the driver therefore keeps these runs diagnostic and does not
+claim production release qualification or C implementation correctness.
+
+The selected formed List and Vector providers now feed this traversal through
+an exact source-evidence comparison. Registered List-bundle lookup is proved
+equal to direct source-spine lookup, retaining the actual relation witness at
+each position. Vector entries retain an element and its induction witness;
+List entries retain source, target and relation evidence. The scoped binary
+term codec is injective, and the physical decoder retains the scope parameter.
+Decoding syntax alone grants no typing judgment. The observation list sent to
+the visitor is proved equal to the actual selected semantic bundle, and every
+completed model run returns exactly that ordered list.
+\lean{IndexedContainer.listInductionBundle_exact_cast, FormationSensitiveRegisteredListGuestLift.canonicalLiftRegisteredPositionEquiv_eq, FormationSensitiveBundleTraversal.selectedEntries_eq_entries, FormationSensitiveBundleTraversal.entries_completed_iff, FormationSensitiveBundleTraversal.ListProvider.encodeFrame_injective, FormationSensitiveBundleTraversal.ListProvider.selectedEntries_eq_entries, FormationSensitiveBundleTraversal.ListProvider.entries_completed_iff}
+
+The List control uses a formed context containing two evidence variables of
+the same relation type. Its two source and target lists agree, but exchanging
+the evidence variables changes the exact output. Thus this adapter does not
+erase proof-relevant evidence under the guise of representation transport.
+All three native diagnostic cases complete, with six packet mutations
+refused. Each takes 125 source-machine transitions. The binary codec reduces
+the Vector control's serialized call from 526,927 to 2,241 characters and
+each List call from 880 to 380; the transition count is unchanged and does not
+measure the internal work of processing an atom. These are canonical finite
+source spines with scoped elements, not an interpretation of an arbitrary
+open List or Vector variable.
+\lean{FormationSensitiveBundleTraversal.Canonical.formed, FormationSensitiveBundleTraversal.Canonical.refuses_wrong_scope, FormationSensitiveBundleTraversal.ListProvider.Controls.context_formed, FormationSensitiveBundleTraversal.ListProvider.Controls.formed, FormationSensitiveBundleTraversal.ListProvider.Controls.swapped_formed, FormationSensitiveBundleTraversal.ListProvider.Controls.same_values_different_output}
+
+Two checked scenarios give the petals agent-facing content. The first is a
+nested search tree with either a solved Boolean answer or a registered list of
+recursive branches. Its generated recursor collects answers in source order;
+a two-child branch exposes two distinct recursive positions. The second is a
+Boolean-indexed mutual family of workflows and actions. Workflows may schedule
+actions; actions may contain subworkflows. Its generated recursor counts
+actions across both directions of the dependency.
+\lean{PositiveInductiveScenarios.Search.source_positive, PositiveInductiveScenarios.Search.answers_solved, PositiveInductiveScenarios.Search.answers_branch, PositiveInductiveScenarios.Search.nested_positions_distinct, PositiveInductiveScenarios.Workflow.source_positive, PositiveInductiveScenarios.Workflow.actionCount_schedule, PositiveInductiveScenarios.Workflow.actionCount_action, PositiveInductiveScenarios.Workflow.actionCount_subworkflow}
+
+The search tree now has an exact lowering from the shared `.module` syntax
+data produced by both readers. The selected fragment retains every field and
+constructor name, requires a registry witness for `List`, and round-trips
+telescopes, the family and the one-family module shell. Its canonical text is:
+
+\begin{verbatim}
+Module AgentSearch {
+  Theory Data() {
+    Inductives {
+      SearchTree parameters (Answer : Type) indices () : Type {
+        solved (answer : Answer) : SearchTree Answer;
+        branch (children : List (SearchTree Answer)) : SearchTree Answer;
+      }
+    }
+  }
+  theory Data()
+}
+\end{verbatim}
+
+The erased result is definitionally the independently specified nested search
+block above. An unknown container, a function field, a changed parameter
+header, duplicate constructor names and an extra module block all refuse.
+\lean{PositiveInductiveLowering.lowerCode_quote, PositiveInductiveLowering.quote_lowerCode, PositiveInductiveLowering.lowerFamily_quote, PositiveInductiveLowering.quote_lowerFamily, PositiveInductiveLowering.lowerModule_quote, PositiveInductiveLowering.quote_lowerModule, PositiveInductiveLoweringControls.Search.family_roundtrip, PositiveInductiveLoweringControls.Search.module_roundtrip, PositiveInductiveLoweringControls.Search.erased_family_eq_existing, PositiveInductiveLoweringControls.Search.unknown_container_refused, PositiveInductiveLoweringControls.Search.negative_field_refused, PositiveInductiveLoweringControls.Search.extra_block_refused}
+
+The textual mutual route is now checked for the existing workflow/action
+scenario. Separate `Workflow` and `Action` headers share one resolver into the
+Boolean-indexed family: scheduling crosses from plans to actions and
+subworkflows cross back. Lowering additionally checks that every constructor
+returns the family named by its header and that constructor names are unique
+across the whole block. The accepted two-family module round-trips exactly and
+erases definitionally to the independently specified mutual polynomial.
+Swapped family order, a Workflow constructor returning Action, a name collision
+across headers and a negative function field are refused. This closes the
+source-to-semantic mutual join.
+\lean{MutualWorkflowActionLowering.lowerFamilies_quote, MutualWorkflowActionLowering.lowerModule_quote, MutualWorkflowActionLowering.Controls.erased_eq_existing, MutualWorkflowActionLowering.Controls.wrong_workflow_result_refused, MutualWorkflowActionLowering.Controls.duplicate_across_families_refused, MutualWorkflowActionLowering.Controls.swapped_families_refused, MutualWorkflowActionLowering.Controls.negative_field_refused}
+
+The object guest consumes exactly that erasure through the already proved
+direct-polynomial bridge. It generates one Boolean-indexed family, four
+constructors and a dependent eliminator. Family tags use the existing natural
+zero/successor encoding; the authored permission payload remains a separate
+opaque object type, so the index representation is not mistaken for the data
+interpretation. The complete declaration library forms, and all four
+computation endpoints form before their own iota rules are enabled. The
+generated schema list retains four typed proof-relevant receipts in source
+order. `done`, `schedule (subworkflow done)`, `subworkflow done`, and `action`
+at a typed permission variable check. `schedule done` refuses because it
+supplies a Workflow where the constructor requires an Action. This establishes
+typed canonical computation receipts, not a semantic equivalence between the
+opaque permission type and Lean's Boolean type.
+\lean{PositiveInductiveWorkflowActionGuest.Source.textual_erasure_eq_direct_bridge, PositiveInductiveWorkflowActionGuest.signature_formed, PositiveInductiveWorkflowActionGuest.rows_checked, PositiveInductiveWorkflowActionGuest.schemas_length, PositiveInductiveWorkflowActionGuest.typedReceiptAt, PositiveInductiveWorkflowActionGuest.iota_rule_names, PositiveInductiveWorkflowActionGuest.verdicts_all}
+
+Publication after direct structural admission is shared rather than rebuilt by
+each source route. The common producer elaborates the complete declaration
+prefix, checks global name separation and checks every generated computation
+row before returning a candidate. Its soundness theorem identifies the
+candidate's checker table with the complete generated table, while companion
+theorems retain the exact declaration signature and proof-relevant computation
+root. Textual source publication is admission followed by this producer. The independently
+admitted Vector family and the textual two-family Workflow/Action family both
+instantiate the boundary, and the latter's typed object guest consumes the
+published candidate's schemas. Zero fuel and aliased mutual constructor names
+are negative controls. This is a consolidation of publication and evidence
+flow; it is not a new positivity or normalization theorem.
+\lean{IndexedInductive.Guest.Package.fromAdmitted_sound, IndexedInductive.Guest.Package.fromAdmitted_signature, IndexedInductive.Guest.Package.fromAdmitted_computation, IndexedInductive.Guest.PackageControls.admitted_vector_publication, IndexedInductive.Guest.PackageControls.candidate_vector_table, IndexedInductive.Guest.PackageControls.candidate_vector_signature, IndexedInductive.Guest.PackageControls.candidate_vector_computation, IndexedInductive.Guest.PackageControls.publishMutual_eq_admitted, IndexedInductive.Guest.PackageControls.admitted_mutual_publication_zero, IndexedInductive.Guest.PackageControls.admitted_aliased_names_not_published, PositiveInductiveWorkflowActionGuest.candidate_table}
+
+Every admitted indexed family now has a generic selected HOL fact boundary.
+The selection is an equivalence from the actual tagged total fixed-point family
+to one HOL base carrier, retaining each family index as data. The generated
+HOL signature separates the carrier, a complete source constructor layer, the
+same layer with recursive children mapped to an arbitrary result carrier, and
+that result carrier. Its recursion sentence says that every mapped-layer
+algebra has a fold. Its no-confusion sentence says that the complete
+constructor-layer map is injective. Its induction sentence says that every
+predicate closed under complete constructor layers covers the carrier. The
+generated fold computes on each layer and is unique, while unequal authored
+constructor occurrences remain disjoint. All three structural sentences are
+valid in the selected full-domain model for every admitted family. Dedekind infinity enters the export manifest only with a separate
+injective endomorphism having an omitted point. The authored natural family
+supplies one and selects all four capabilities; no finite carrier, including
+lifted Boolean, can supply one. For Nat the manifest projects exactly to the
+existing five names and statement wires: recursion, induction, zero/successor
+separation, successor injectivity and infinity. Their exact formulas retain
+the existing authored natural interpretation. This generates semantic HOL
+formulas and reaches one maintained native statement producer. Producing
+native proofs for arbitrary admitted signatures remains a distinct stage.
+\lean{IndexedInductive.HOLFacts.Interpretation.construct_ne_of_occurrence_ne, IndexedInductive.HOLFacts.Interpretation.recurse_construct, IndexedInductive.HOLFacts.Interpretation.recurse_unique, IndexedInductive.HOLFacts.models_recursion, IndexedInductive.HOLFacts.models_induction, IndexedInductive.HOLFacts.models_noConfusion, IndexedInductive.HOLFacts.Selection.carrierInfinity_mem_iff, IndexedInductive.HOLFacts.Selection.models_of_mem, IndexedInductive.HOLFacts.Selection.infinity_not_selected_of_finite, IndexedInductive.HOLFacts.NaturalControl.all_selected_models, IndexedInductive.HOLFacts.NaturalControl.projectedNativeFacts_eq, IndexedInductive.HOLFacts.NaturalControl.projectedStatements_eq, IndexedInductive.HOLFacts.NaturalControl.projectedNames_eq, IndexedInductive.HOLFacts.NaturalControl.projected_models, IndexedInductive.HOLFacts.bool_has_no_infinityWitness}
+
+Constructor-specific no-confusion is generated without erasing constructor
+arguments. The projection enumerates every ordered pair of distinct authored
+constructor occurrences. Its structured pair name accompanies a HOL sentence
+quantifying two complete layers: if their tags are the selected occurrences,
+their constructed carrier values differ. Every generated sentence is valid
+under the selected carrier equivalence. The Nat control generates exactly
+\code{(Zero, Succ)} and \code{(Succ, Zero)}. A pair with equal occurrences is excluded at
+the generator type. Rendering this generic signature and producing native
+proofs for it remain separate from the exact maintained Nat statement route.
+\lean{IndexedInductive.HOLFacts.ConstructorProjection.separation_meaning, IndexedInductive.HOLFacts.ConstructorProjection.models_separation, IndexedInductive.HOLFacts.ConstructorProjection.namedNoConfusions_models, IndexedInductive.HOLFacts.NaturalControl.zeroSuccPair_models, IndexedInductive.HOLFacts.NaturalControl.all_named_noConfusion_names}
+
+The structural and constructor-pair signatures now have typed HOL Light wire
+encoders. Explicit name records provide every base type and typed constant;
+emitted records retain the source formula beside its wire. Mapping back to
+those retained sources recovers the full manifest in order, and each retained
+formula is valid in the selected model. The non-Nat mutual even/odd control
+emits recursion, induction and complete-layer no-confusion, omits infinity,
+and emits all six ordered separation pairs among \code{zero}, \code{odd} and
+\code{even}. This establishes generic claim emission. It does not yet prove
+acceptance by a native kernel.
+
+The shared wire carrier now has executable structural equality. A finite
+catalog decoder is sound without a naming assumption: every returned source
+belongs to the catalog and re-encodes to the input wire. Roundtrip in the other
+direction requires injective statement encoding. All mutual structural and
+constructor-pair statements pass that roundtrip. A negative control maps every
+constructor occurrence to one name; the zero/odd and zero/even statements then
+collapse, and decoding the latter returns the earlier source. Thus collision
+freedom is a checked premise rather than an informal naming convention.
+Native proof production remains open.
+\lean{IndexedInductive.HOLFacts.NativeWire.Selection.emit_sources, IndexedInductive.HOLFacts.NativeWire.Selection.emit_source_models, IndexedInductive.HOLFacts.WireCatalog.decode_encode, IndexedInductive.HOLFacts.WireCatalog.decode_sound, IndexedInductive.HOLFacts.NativeWire.Selection.decode_statement, IndexedInductive.HOLFacts.ConstructorProjection.emitAll_sources, IndexedInductive.HOLFacts.ConstructorProjection.emitAll_source_models, IndexedInductive.HOLFacts.ConstructorProjection.decodePair_statement, IndexedInductive.HOLFacts.ConstructorProjection.decodePair_sound, IndexedInductive.HOLFacts.MutualControl.emittedStructural_sources, IndexedInductive.HOLFacts.MutualControl.emittedStructural_refuses_infinity, IndexedInductive.HOLFacts.MutualControl.emittedStructural_source_models, IndexedInductive.HOLFacts.MutualControl.emitted_names, IndexedInductive.HOLFacts.MutualControl.emitted_source_models, IndexedInductive.HOLFacts.MutualControl.structural_roundtrips, IndexedInductive.HOLFacts.MutualControl.pair_roundtrips, IndexedInductive.HOLFacts.MutualControl.colliding_occurrence_names_collapse_statements, IndexedInductive.HOLFacts.MutualControl.colliding_occurrence_names_break_roundtrip}
+
+A finite non-Nat family now has a proof-producing native route. The admitted
+two-nullary-constructor declaration is equivalent to Boolean data; its actual
+generated fold transports through an explicit classical equivalence to HOL's
+logical Boolean carrier. Independently typed claims state recursion,
+induction, constructor separation, cases and finiteness. The source family
+interprets all five. In arbitrary Henkin models of this signature, an explicit
+semantic Hilbert-choice family suffices to make the transported source fold
+admissible; the other four facts require no choice premise in this model
+interface. This is a sufficient condition, not a necessity or independence
+claim. The ordinary full-domain reading also covers an empty result carrier,
+where the recursion sentence's outer quantification is vacuous. The structural
+manifest omits infinity, and no infinity witness can exist for its finite
+carrier.
+\lean{IndexedInductiveBooleanHOL.ofBool_toBool, IndexedInductiveBooleanHOL.false_generated, IndexedInductiveBooleanHOL.true_generated, IndexedInductiveBooleanHOL.logicalRecursor_commutes, IndexedInductiveBooleanHOL.NativeMeaning.all_models, IndexedInductiveBooleanHOL.NativeMeaning.logicalRecursor_admissible, IndexedInductiveBooleanHOL.NativeMeaning.all_models_of_choice, IndexedInductiveBooleanHOL.infinity_not_selected, IndexedInductiveBooleanHOL.no_infinity_witness}
+
+Independent HOL Light proofs replay all five exact claims through the native
+service: 8,274 source proof nodes become 23,298 replay records in a 129,527-byte
+artifact. The closure uses only the existing eta and choice axioms; it adds no
+axiom and contains no infinity axiom. Changed claims, an unlicensed axiom and
+a truncated stream refuse natively, while missing, changed and repeated
+statement packets refuse at intake. The same shared gate retains the existing
+natural-law acceptance target. This qualifies the selected finite law interface
+against the pinned executable, not generic proof production for every admitted
+signature, full source definition-history refinement, linked-C correctness or
+committed-source release provenance. No MeTTa proof evaluator substitutes for
+the native HOL checker.
+
+The selected carrier comparison has an additional boundary: structural
+admission does not imply inhabitance. The actual admitted declaration
+\(\mathsf{Loop}:T\to T\), with no base constructor, has an empty least fixed
+family. Its generated fold into the empty type proves that no source value
+exists. A faithful direct carrier equivalence into an inhabited simple type is
+therefore impossible. In particular, a semantic Hilbert-choice family supplies
+an inhabitant of every base domain and rules out such a direct interpretation.
+This obstruction concerns the selected carrier comparison, not positivity or
+consistency of the admitted declaration.
+\lean{IndexedInductive.HOLFacts.InhabitanceBoundary.source_admitted, IndexedInductive.HOLFacts.InhabitanceBoundary.source_empty, IndexedInductive.HOLFacts.InhabitanceBoundary.source_nonempty_of_choice, IndexedInductive.HOLFacts.InhabitanceBoundary.no_direct_choice_model}
+
+A guarded reading handles this source boundary explicitly. For every admitted
+family, its tagged source carrier is equivalent to the guarded part of
+\(\mathsf{Option}(\mathsf{ULift}(\mathit{Source}))\). The total carrier has a
+\code{none} value, while the guard accepts exactly the represented source
+values. Typed HOL universal and existential formulas, with their respective
+implication and conjunction guards, agree exactly with source quantification.
+The full-domain model admits a semantic choice family. For the recursive-only
+source, guarded existence of a true property is false, while unguarded
+existence is true; guarded universal falsity is true, while its unguarded
+version is false. Thus removing the guard changes the represented logic.
+Source functions have an exact comparison as well. Every total function
+between two admitted source carriers has one strict, guard-preserving
+extension between their Option carriers, and every such extension restricts
+back to that source function. Encoding preserves identity and composition.
+Typed HOL universal and existential quantifiers over the qualified function
+image agree with source-function quantification for an arbitrary host
+predicate pulled back along this encoding. Strictness specifies the selected
+behavior at the added invalid input; it is not asserted necessary for every
+interpretation. An explicit non-strict extension agrees with identity on all
+guarded values yet differs at \code{none}, so that behavior may be hidden only
+by an interface that excludes the corresponding observation.
+\lean{IndexedInductive.HOLFacts.InhabitanceBoundary.functionEquiv, IndexedInductive.HOLFacts.InhabitanceBoundary.mapSource_identity, IndexedInductive.HOLFacts.InhabitanceBoundary.mapSource_composition, IndexedInductive.HOLFacts.InhabitanceBoundary.functionsAll_iff, IndexedInductive.HOLFacts.InhabitanceBoundary.functionsEx_iff, IndexedInductive.HOLFacts.InhabitanceBoundary.fillMissing_agrees_on_guard, IndexedInductive.HOLFacts.InhabitanceBoundary.fillMissing_differs}
+
+These are formula-level semantic comparisons in the declared choice fragment,
+not a complete native-theory model, automatic guarded proof emission or a
+runtime adapter.
+\lean{IndexedInductive.HOLFacts.InhabitanceBoundary.guardedEquiv, IndexedInductive.HOLFacts.InhabitanceBoundary.guardedChoice, IndexedInductive.HOLFacts.InhabitanceBoundary.guardedAll_iff, IndexedInductive.HOLFacts.InhabitanceBoundary.guardedEx_iff, IndexedInductive.HOLFacts.InhabitanceBoundary.guarded_exists_refuses, IndexedInductive.HOLFacts.InhabitanceBoundary.unguarded_exists_accepts, IndexedInductive.HOLFacts.InhabitanceBoundary.guarded_universal_vacuous, IndexedInductive.HOLFacts.InhabitanceBoundary.unguarded_universal_refuses}
+
+A selected HOL interpretation may change carrier representation along an
+explicit equivalence. Construction and mapped recursive layers commute with
+the carrier map, and the generated fold commutes on every source value. An
+infinity witness transports its injective endomorphism and omitted point, so
+the selected manifest is invariant. Carrier changes obey identity,
+composition and inverse laws, as does the retained infinity evidence. The Nat
+control transports the authored
+polynomial carrier to lifted host naturals, material von Neumann naturals and
+natural surreals. The lifted material-to-surreal route closes the same triangle
+as the initial-algebra comparisons; the two routes select the same
+interpretation and fact manifest. Every fold agrees and recursion, induction,
+no-confusion and infinity remain valid. These are the natural subtypes, not
+arbitrary hypersets or all surreals. This is semantic transport: the chosen
+inverses need not be executable adapters, and no cost theorem follows.
+\lean{IndexedInductive.HOLFacts.Interpretation.transport_construct, IndexedInductive.HOLFacts.Interpretation.transport_mapLayer, IndexedInductive.HOLFacts.Interpretation.transport_recurse, IndexedInductive.HOLFacts.Interpretation.transport_refl, IndexedInductive.HOLFacts.Interpretation.transport_trans, IndexedInductive.HOLFacts.Interpretation.transport_symm, IndexedInductive.HOLFacts.InfinityWitness.transport_refl, IndexedInductive.HOLFacts.InfinityWitness.transport_trans, IndexedInductive.HOLFacts.InfinityWitness.transport_symm, IndexedInductive.HOLFacts.Selection.transport_refl_witness, IndexedInductive.HOLFacts.Selection.transport_trans_witness, IndexedInductive.HOLFacts.Selection.transport_symm_witness, IndexedInductive.HOLFacts.Selection.transport_facts, IndexedInductive.HOLFacts.NaturalControl.hostSelection_facts, IndexedInductive.HOLFacts.NaturalControl.host_recurse_commutes, IndexedInductive.HOLFacts.NaturalControl.host_all_selected_models, IndexedInductive.HOLFacts.NaturalControl.lifted_comparison_triangle, IndexedInductive.HOLFacts.NaturalControl.material_surreal_interpretation_route, IndexedInductive.HOLFacts.NaturalControl.material_surreal_selection_facts_route, IndexedInductive.HOLFacts.NaturalControl.materialSelection_facts, IndexedInductive.HOLFacts.NaturalControl.surrealSelection_facts, IndexedInductive.HOLFacts.NaturalControl.material_recurse_commutes, IndexedInductive.HOLFacts.NaturalControl.surreal_recurse_commutes, IndexedInductive.HOLFacts.NaturalControl.material_all_selected_models, IndexedInductive.HOLFacts.NaturalControl.surreal_all_selected_models}
+
+The guarded word backend reaches the same selected HOL carrier through its
+exact observation. Both a successful \code{UInt64} branch and the unbounded
+fallback decode to the authored successor. A finite word alone cannot supply
+the infinity witness. The tagged word-or-Nat result is not injective as a
+carrier representation because its two branches may denote the same number;
+unchecked word successor also fails at the boundary. Separately, any
+exact-integer provider satisfying the existing roundtrip, successful-soundness
+and fallback-availability contracts computes natural addition by one at that
+host carrier. Its representation stays abstract. These results establish the
+theory contract, not a C/GMP proof or a cost comparison.
+\lean{NaturalBackendHOLFacts.successorBackend_host_exact, NaturalBackendHOLFacts.successorBackend_authored_exact, NaturalBackendHOLFacts.fast_branch_host_exact, NaturalBackendHOLFacts.fallback_branch_host_exact, NaturalBackendHOLFacts.finiteWord_has_no_infinityWitness, NaturalBackendHOLFacts.observeBackend_not_injective, NaturalBackendHOLFacts.unchecked_word_successor_not_host_exact, NaturalBackendHOLFacts.IntegerProvider.addOne_host_exact}
+
+Typed nested elimination needs an additional edge. The current direct guest
+compiler allocates one recursive argument and induction hypothesis per direct
+recursive field. Treating the whole list as such a field would therefore give
+one recursive position. The genuine two-child nested branch has two positions;
+the two fibres are not equivalent, and neither are the complete constructor
+polynomials. The missing interface is a registered-container induction bundle:
+one motive witness for every actual container position. The List instance is
+proved equivalent to a dependent list of hypotheses in source order. For
+canonical typed List spines, the proof-relevant native \texttt{mapRel} family
+now realizes the bundle in object syntax: a retained target/evidence spine is
+equivalent to the actual registered List induction bundle and hence to one
+typed pair per source position. Its encoded term forms in the existing guest
+calculus, and the resulting judgment is stable under every typed context
+substitution. The already formed native List eliminator handles arbitrary open
+List traversal.
+
+The first complete nested guest slice now applies both pieces to the exact
+textual \texttt{SearchTree} source. Source-ordered compilation produces an
+opaque family, solved and branch constructors, and a dependent eliminator.
+The branch method receives a dependent sum containing a List of packed
+recursive results and a proof-relevant native relation spine connecting each
+packed result to its exact child. The native List eliminator constructs that
+bundle for an arbitrary open child List. Both solved and branch endpoints are
+independently replayed at their displayed dependent types before becoming
+proof-relevant iota receipts; typed substitution transports the complete
+branch receipt. A negative control removes the bundle and is refused. The
+signature remains a candidate: the canonical typed receipts are established,
+while a preservation theorem for every arbitrary raw iota instance is a
+separate authorization obligation. Accordingly, the safe receipt-only profile
+installs no judgmental roots. Raw iota evidence can still be built from five
+copies of an undeclared constant, while the corresponding canonical branch
+substitution is provably not typed. This witness makes the authority boundary
+executable: retaining a checked schema does not license every raw
+substitution.
+\lean{IndexedContainer.listAllEquiv, IndexedContainer.listInductionBundle, NestedInductiveGuestBoundary.Search.nested_position_card, NestedInductiveGuestBoundary.Search.direct_position_card, NestedInductiveGuestBoundary.Search.nested_positions_not_direct, NestedInductiveGuestBoundary.Search.nested_polynomial_not_direct_surrogate, NestedInductiveGuestBoundary.Search.listPositionBundle, FormationSensitiveRegisteredListGuestLift.canonicalLiftEquiv, FormationSensitiveRegisteredListGuestLift.canonicalLiftPositionEquiv, FormationSensitiveRegisteredListGuestLift.canonicalLiftSemanticBundleEquiv, FormationSensitiveRegisteredListGuestLift.canonicalLiftRegisteredPositionEquiv, FormationSensitiveRegisteredListGuestLift.QualifiedLift.judgment_and_positionEvidence, FormationSensitiveRegisteredListGuestLift.QualifiedLift.substitute, FormationSensitiveRegisteredListGuestLift.Controls.singleton_position_target, FormationSensitiveRegisteredListGuestLift.Controls.empty_target_refused, PositiveInductiveSearchTreeGuest.sourceConstructorEntries_eq, PositiveInductiveSearchTreeGuest.textual_source_eq, PositiveInductiveSearchTreeGuest.inventory_formed, PositiveInductiveSearchTreeGuest.rename_liftChildren, PositiveInductiveSearchTreeGuest.subst_liftChildren, PositiveInductiveSearchTreeGuest.endpointVerdicts_eq_true, PositiveInductiveSearchTreeGuest.branch_bundle_formed, PositiveInductiveSearchTreeGuest.solvedReceipt, PositiveInductiveSearchTreeGuest.branchReceipt, PositiveInductiveSearchTreeGuest.branchReceipt_substitute, PositiveInductiveSearchTreeGuest.receiptOnly_no_root, PositiveInductiveSearchTreeGuest.untypedAssignment_not_typed, PositiveInductiveSearchTreeGuest.rawEvidence_not_typedInstance}
+
+\paragraph{Authored nested folds and their result view.}
+A separate source file now presents solved and branch fold clauses over that
+same admitted SearchTree declaration. Finite plans are derived from its
+one-data-field and registered-List constructor forms. The existing clause
+compiler abstracts the declared nested recursive map, preserving constructor
+order, and both emitted methods beta-reconstruct their original clauses.
+The selected source-library expansion uses the intrinsic List eliminator;
+it is not an opaque host map.
+
+The actual dependent branch receives a List of child/result pairs and the
+source-correspondence evidence above. Its adapter traverses that List and
+projects each result. For every finite source child spine, including open
+child terms, this result view and the source recursive map reach the same
+ordered List of object-level recursive calls. The theorem does not evaluate
+those calls in the host or erase their source association. The complete
+emitted term, including the adapter, independently passes formation-sensitive
+replay. Applying the emitted closed function to its actual arguments
+beta-reduces to the same eliminator body used by the bundle theorem. A
+changed source body that uses the original children as its result
+List can pass production but fails that replay. Missing, extra and reordered
+clauses, a wrong nested recursive input, an unbundled call, unknown names and
+unresolved imports also refuse.
+
+This is a selected textual source-to-typed-term and finite-computation edge.
+It is not a full source-parser adequacy theorem, a generic plan generator for
+every registered container, a semantic decoding of an arbitrary open List
+variable or authorization of all raw SearchTree iota instances.
+\lean{PositiveInductiveSearchTreeElaboration.fold_typed, PositiveInductiveSearchTreeElaboration.liftChildren_fst_encode, PositiveInductiveSearchTreeElaboration.bundleResults_common_output, PositiveInductiveSearchTreeElaboration.selected_plans_derived, PositiveInductiveSearchTreeElaboration.source_methods_reconstruct, PositiveInductiveSearchTreeElaboration.source_typed, PositiveInductiveSearchTreeElaboration.source_application, PositiveInductiveSearchTreeElaboration.checkProposal_sound, PositiveInductiveSearchTreeElaboration.all_verdicts}
+
+\paragraph{Checked names and explicit computation.}
+The authored fold name receives a fresh transparent declaration with the
+actual checked compiler output as its body. The declaration type is formed
+independently and no recursive source constant remains in that body.
+Ordinary delta unfolding preserves every displayed refined type, including
+the original conversion and cumulativity tail. Applying the named function
+then reaches the compiled eliminator body by delta/beta computation. The
+named source map and the dependent bundle result view consequently reach the
+same ordered calls on every finite child spine. Reusing the existing family
+name and installing a bare self-delta definition are formally refused.
+\lean{PositiveInductiveSearchTreeElaboration.Definitions.formed, PositiveInductiveSearchTreeElaboration.Definitions.typedUnfolding, PositiveInductiveSearchTreeElaboration.Definitions.namedApplication, PositiveInductiveSearchTreeElaboration.Definitions.namedBundleCommonOutput, PositiveInductiveSearchTreeElaboration.Definitions.shadow_refused, PositiveInductiveSearchTreeElaboration.Definitions.self_refused}
+
+The fold also instantiates the existing branch schema by an independently
+checked formation-sensitive context substitution. Its five components retain
+the actual payload, constant motive, leaf method, bundle-consuming branch
+method and child List. Substitution transports both fully formed endpoints;
+the displayed motive application converts to the result type. The resulting
+proof-relevant iota receipt retains the exact fold source, target and result
+type. A method using children as results fails the independent component
+check. This is explicit typed computation evidence; global raw tree-iota
+preservation remains a separate obligation.
+\lean{PositiveInductiveSearchTreeElaboration.Branch.contextMorphism, PositiveInductiveSearchTreeElaboration.Branch.result_endpoints, PositiveInductiveSearchTreeElaboration.Branch.receipt, PositiveInductiveSearchTreeElaboration.Branch.children_as_results_refused}
+
+\paragraph{Open declaration generation for registered containers.}
+Constructor and method types are now generated over the complete admitted
+registered-container code grammar. A nested field retains both its container
+output expression and its recursive child's family index. Its induction
+hypothesis is the whole dependent bundle, after all original fields and in
+recursive-field order. Generation commutes with scoped substitution. On every
+ordinary indexed code, the extended generator agrees with the existing
+constructor and method generator; the actual Nat-indexed Vec instantiates
+this comparison.
+
+The admitted SearchTree and VectorTree codes reproduce their independently
+checked declaration inventories. A mixed Vector source places a payload
+between its Nat arity and nested field, with direct recursive children before
+and after that field. Its generated method independently forms and keeps all
+three induction hypotheses in order. A faulty output reader commutes with
+substitution and agrees on the simple branch, but picks the intervening
+payload as a length in the mixed source; independent typing refuses it.
+Registry syntax laws therefore grant no formation or computation authority.
+Generic formation completeness, source-program joins and semantic decoding of
+arbitrary open containers remain separate obligations.
+\lean{IndexedPositiveContainerGuestTypes.constructorType_substitute, IndexedPositiveContainerGuestTypes.methodBody_substitute, IndexedPositiveContainerGuestTypes.constructorType_ordinary, IndexedPositiveContainerGuestTypes.methodBody_ordinary, IndexedPositiveContainerGuestControls.Lists.declarations_admitted, IndexedPositiveContainerGuestControls.Vectors.declarations_admitted, IndexedPositiveContainerGuestControls.Vectors.Mixed.method_formed, IndexedPositiveContainerGuestControls.Vectors.Mixed.wrong_length_refused}
+
+\paragraph{Constructor formation from primitive contracts.}
+A structural theorem now establishes formation of the generated constructor
+type for every code in the declared grammar. Its premises concern the
+primitive syntax: typed data sorts, the family kind, typed index expressions
+in the data environment, and the registered container's field-type
+operation. These primitive domains and family fibres are formed in one
+selected universe. An actual product rule and an exact or cumulative bound
+supply product closure there. The proof preserves the typed data environment
+through every data, direct-recursive and registered-nested binder. It takes
+no formation proof for the generated constructor type as an input.
+\lean{IndexedPositiveContainerGuestTypes.constructorType_formed}
+
+Closing the actual parameter telescope forms the generated
+\texttt{constructorEntry}. Freshness of its published name then yields
+ordinary opaque admission against the actual prior signature. The concrete
+List source instantiates these contracts in a prefix containing only its
+family declaration over the existing native List library. Every constructor
+code over that registry forms there. The parsed branch's generated entry
+is admitted through the generic theorem and independently passes the
+existing executable producer and replay. Omitting its family prefix is
+refused, and an undeclared family refutes the primitive contract. Other universe policies, representation adequacy and
+computation authority retain their separate obligations.
+\lean{IndexedInductive.Guest.Declarations.Registered.constructorEntry_formed, IndexedInductive.Guest.Declarations.Registered.constructorEntry_admitted, IndexedPositiveContainerGuestControls.Lists.Formation.primitives, IndexedPositiveContainerGuestControls.Lists.Formation.every_constructor_formed, IndexedPositiveContainerGuestControls.Lists.Formation.family_branch_admitted, IndexedPositiveContainerGuestControls.Lists.Formation.source_branch_checked, IndexedPositiveContainerGuestControls.Lists.Formation.missing_family_refused, IndexedPositiveContainerGuestControls.Lists.Formation.missing_prefix_refused}
+
+The actual Vector registry discharges the same contracts in its family-only
+prefix. Both the branch and mixed source constructors are admitted and pass
+independent checking, while interpreting the intervening payload as a
+Vector length refuses. The native $\mathsf{All}\;P\;xs$ type now forms
+without a pointwise witness function: its context contains only the element
+type, predicate, length and Vector. Finite structural evidence independently
+replays this formation. Typed substitution carries the result to arbitrary
+typed inputs under every signature extension. The registered Vector bundle
+therefore forms without assuming its requested evidence. This qualifies the
+selected primitive basis for the method-formation theorem below. Arbitrary open-container semantic decoding retains its separate
+interpretation obligation.
+\lean{NativeVectorAll.TypeFormation.allType_typed, IndexedPositiveContainerGuestControls.Vectors.Formation.primitives, IndexedPositiveContainerGuestControls.Vectors.Formation.bundle_formed, IndexedPositiveContainerGuestControls.Vectors.Formation.branch_admitted, IndexedPositiveContainerGuestControls.Vectors.Formation.mixed_admitted, IndexedPositiveContainerGuestControls.Vectors.Formation.wrong_mixed_refused}
+
+\paragraph{Source-local index admission.}
+The structural formation criterion also accepts an explicit predicate on
+source index expressions. Every result index, direct-recursive index and
+nested-child index in the constructor must satisfy that predicate; container
+output expressions keep their separate registry contract. Primitive index
+typing is required on these admitted expressions under every typed context
+substitution. Constructor, dependent-method, method-inventory and complete
+eliminator formation follow by the same structural proofs. Unrestricted index
+typing is recovered as the universal-admission specialization.
+\lean{IndexedPositiveContainerGuestTypes.indexTypingOn_unrestricted_iff, IndexedPositiveContainerGuestTypes.constructorType_formedOn, IndexedPositiveContainerGuestTypes.methodBody_formedOn, IndexedPositiveContainerGuestTypes.methodType_formedOn, IndexedPositiveContainerGuestTypes.methodsType_formedOn, IndexedPositiveContainerGuestTypes.eliminatorType_formedOn}
+
+The original Nat-indexed Vec supplies the separating instance. Its reference
+interpreter contains a deliberately undeclared addition symbol, so its
+unrestricted index-typing contract is impossible. The zero, variable and
+successor fragment is typed from the existing natural primitives, and all
+indices of both original constructors belong to that fragment. The original
+Cons constructor type forms through the scoped theorem in a prefix containing
+Nat and the vector family, with neither vector constructor nor eliminator
+present. Closing its parameter and fresh opaque admission use the generic
+constructor-entry theorem. Its generated entry equals the original reference
+entry, which the independent executable admission checker accepts; missing
+Nat and undeclared addition refuse. This qualifies the constructor instance.
+Semantic interpretation and computation authority remain separate obligations.
+\lean{IndexedInductive.Guest.Declarations.Registered.constructorEntry_admittedOn, IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.native_total_contract_refused, IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.supported_index_typed, IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_cons_admitted, IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_generated_cons_checked, IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_missing_nat_refused, IndexedPositiveContainerGuestControls.OrdinaryVectors.IndexAdmission.source_addition_refused}
+
+\paragraph{Independent data and result universes.}
+The structural method and eliminator criterion now separates the data/family
+level $\alpha$, motive-result level $\beta$ and method/bundle bound $\gamma$.
+Explicit product and cumulative contracts close fields and induction
+hypotheses at $\gamma$, without assuming either ordering between $\alpha$
+and $\beta$. Binding the motive also requires a bound containing the sort
+of $U_\beta$; this obligation is distinct from forming a motive application.
+The original Nat-indexed Vec supplies the concrete instance: methods use
+$\max(\alpha,\beta)$, and the motive-binding bound contains $\beta+1$.
+Its generated eliminator type is structurally formed and ordinarily admitted
+in the original prefix containing both constructors and no vector eliminator.
+It equals the existing reference type. The existing level-instantiation
+morphism transports that formation. Independent checks accept both
+$(\alpha,\beta)=(0,2)$ and $(2,0)$. The former accepts the full type at
+$U_3$ and refuses $U_2$; missing constructors also refuse. These are
+formation and opaque-admission results. Elimination lift coherence, semantic interpretation, raw iota
+preservation and native realization remain separate obligations.
+\lean{IndexedPositiveContainerUniverseControls.generated_type_formed, IndexedPositiveContainerUniverseControls.generated_type_exact, IndexedPositiveContainerUniverseControls.eliminator_admitted, IndexedPositiveContainerUniverseControls.instantiated_type_formed, IndexedPositiveContainerUniverseControls.higher_result_checked, IndexedPositiveContainerUniverseControls.lower_result_checked, IndexedPositiveContainerUniverseControls.motive_successor_bound_checked, IndexedPositiveContainerUniverseControls.missing_motive_successor_refused}
+
+The registered VectorTree closes the corresponding nested instance. Its
+original child-vector fields keep their length expressions and data level.
+A universe-instantiated template of the existing native \code{All} program
+forms its induction-evidence bundle at $\max(\alpha,\beta)$ with a predicate
+returning into $U_\beta$; no pointwise witness function is required. The
+template changes the result-universe annotation while retaining the child
+universe in the native Vector declarations. Its checked open judgment and
+typed substitution qualify the bundle operation in extended signatures.
+The original constructor prefix, motive and bundle operation assemble at
+these same coordinates, and the structural theorem forms and ordinarily
+admits the complete generated eliminator before its name is present.
+Its independently written interface checks. Missing constructors refuse;
+the original child vector checks at its declared Vector type but cannot
+replace the required induction-evidence bundle. Semantic interpretation,
+elimination lift coherence, raw iota preservation and native realization
+remain separate obligations.
+\lean{NativeVectorAll.Universes.allType_typed, NativeVectorAll.Universes.substitute_allType, IndexedPositiveContainerUniverseTreeControls.generated_type_formed, IndexedPositiveContainerUniverseTreeControls.source_type_exact, IndexedPositiveContainerUniverseTreeControls.source_inventory_admitted, IndexedPositiveContainerUniverseTreeControls.source_bundle_formed, IndexedPositiveContainerUniverseTreeControls.original_children_typed, IndexedPositiveContainerUniverseTreeControls.original_children_not_bundle}
+
+\paragraph{Canonical computation across universe annotations.}
+For every finite constructor-vector input, the same native \code{All} type
+program reaches a quoted dependent-pair spine. The quotation retains every
+original position and the application of the predicate to its element.
+Instantiating only the program's raw universe annotation at two different
+levels produces the same quoted result. The selected checked universe
+profile is one instance of this law. A two-position reflexive-equality
+predicate supplies the concrete source control; its quoted spine differs
+from the one-position spine. The quotation may still contain reducible
+predicate applications, and an explicit beta step witnesses that distinction.
+These are native raw-computation laws on canonical inputs. They do not
+establish arbitrary neutral-term typed lift coherence, global normalization
+or new computation authority.
+\lean{NativeVectorAll.Universes.Canonical.allTypeAtUniverse_steps, NativeVectorAll.Universes.Canonical.universe_annotation_common_result, NativeVectorAll.Universes.Canonical.allType_steps, NativeVectorAll.Universes.Canonical.two_positions_reduce, NativeVectorAll.Universes.Canonical.two_positions_not_one, NativeVectorAll.Universes.Canonical.quoted_predicate_can_reduce}
+
+\paragraph{Typed cumulative elimination and instantiation.}
+One enlarged native elimination profile keeps the element and predicate
+universes fixed. Both the original and enlarged \code{All} result annotations
+form at its common upper bound, including on a neutral vector. On constructor
+vectors the common quoted computation gives conversion between these types.
+Every inhabitant judgment therefore transports in either direction while
+retaining the same term. A checked two-position proof supplies a nonconstant
+predicate instance. The open programs remain syntactically distinct; this
+does not assert their nonconvertibility.
+Level instantiation transports both formed open programs and commutes with
+capture-avoiding input substitution. Instantiated extensions supply their
+own computation transport, and exact declaration lookup prevents shadowing.
+An insufficient symbolic result bound is refused; collapsing level
+parameters nevertheless admits the corresponding instantiated judgment.
+These results give typed compatibility on arbitrary inputs and cumulative
+conversion on constructor vectors. Equality between the two type programs
+at an arbitrary neutral vector remains open.
+\lean{NativeVectorAll.Universes.CumulativeElimination.both_typed, NativeVectorAll.Universes.CumulativeElimination.canonical_typing_iff, NativeVectorAll.Universes.CumulativeElimination.two_positions_lift, NativeVectorAll.Universes.CumulativeElimination.instantiated_both_typed, NativeVectorAll.Universes.CumulativeElimination.collapsed_upper_fits_lower, NativeVectorAll.Universes.Canonical.instantiation_substitution_square}
+
+\paragraph{Evidence maps at neutral vectors.}
+The same elimination profile supplies explicit maps
+$\mathsf{All}_{\gamma}(P,n,xs)\to\mathsf{All}_{\delta}(P,n,xs)$
+and back, where $\gamma=\max(\alpha,\beta)$ and
+$\delta=\max(\gamma,\kappa)$. The vector $xs$ may be neutral.
+The motive returns the function type between the two annotations;
+the nil method is identity, and the cons method sends evidence $p$ to
+$\langle\pi_1p,\mathit{ih}(\pi_2p)\rangle$.
+Shared finite certificates undergo independent replay against the original
+open programs. Typed substitution and application then prove equivalence of
+inhabitation under signature extensions. The existing two-position identity
+predicate supplies concrete forward and return applications. A projection
+shortcut and a reversed certificate cannot reuse the forward receipt.
+This is an explicit comparison by object programs. Inverse laws, preservation
+of witness identity and equality of the neutral type programs remain open;
+no new identity eliminator or computation rule is added.
+\lean{NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.forward_typed, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.backward_typed, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.inhabited_iff, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.two_maps_typed, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.two_positions_inhabited, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.projection_certificate_refused, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.swapped_certificate_refused}
+
+\paragraph{Constructor computation and pair observations.}
+For a constructor vector of length $n$, the same map accepts an arbitrary
+supplied evidence term $q$. Its source reduction reaches the pair expansion
+$E_0(q)=q$ and $E_{n+1}(q)=\langle\pi_1q,E_n(\pi_2q)\rangle$.
+Every head projection below $n$, and the final tail after $n$ projections,
+reduce to the corresponding observation of $q$. These observations also
+commute with a round trip through the two annotations. The complete round
+trip reduces to one expansion $E_n(q)$: projection beta contracts a repeated
+expansion to a single one. On an explicitly assembled pair spine the map
+reduces to that same spine.
+The generic pair-spine laws quantify over the parameterized scoped syntax;
+the native computation theorems use the actual Vector iota rules.
+The vector argument is a constructor spine. No equality of an arbitrary
+neutral vector's mapped proof, eta contraction, unique execution strategy or
+global raw-iota preservation follows from these finite source paths.
+\lean{ParameterizedPiSigmaId.Presentation.PairSpine.head_expand, ParameterizedPiSigmaId.Presentation.PairSpine.tail_expand, ParameterizedPiSigmaId.Presentation.PairSpine.expand_idempotent, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.canonical_steps, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.canonical_head, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.canonical_tail, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.roundtrip_steps, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.roundtrip_head, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.roundtrip_tail}
+
+\paragraph{Typed pair-eta reconstruction.}
+In the separate typed equality judgment with dependent pair eta, formation
+data for each successive projection fibre suffice to prove
+$\Gamma\vdash E_n(q)\equiv q:T$. The terminal fibre and its inhabitant remain
+arbitrary; unit eta and uniqueness of identity proofs are not used.
+The reconstruction also supplies the object proof
+$\mathsf{refl}(E_n(q)):\mathsf{Id}_T(E_n(q),q)$ by typed conversion.
+Typed substitution and rule-package morphisms preserve the dependent spine.
+A second formulation reconstructs equality from typed comparisons of all
+head projections and the final tail, using their actual dependent fibres.
+The concrete unknown bundle $q:\Sigma(A:\mathcal U_\alpha).\Sigma(x:A).A$
+exercises two dependent layers and transports its object identity witness
+through every substitution of the universe parameter.
+The same expansion is provably not raw beta/projection-convertible to $q$
+in the root-free tower. Thus the eta judgment supplies an additional, explicit
+equality principle. These results do not yet transfer the actual Vector maps
+into that judgment or prove their inverse law on a neutral vector.
+\lean{ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.expand_typed_and_equal, ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.expand_identity, ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.substitute, ParameterizedPiSigmaId.Presentation.PairSpine.TypedSpine.mapHead, ParameterizedPiSigmaId.Presentation.PairSpine.equal_of_readout, ParameterizedPiSigmaId.Presentation.TypedEquality.DependentPairSpine.neutral_identity_levels, ParameterizedPiSigmaId.Presentation.TypedEquality.DependentPairSpine.neutral_expansion_not_raw_convertible}
+
+\paragraph{Independent position witnesses and result views.}
+The maintained constant-motive result program now reads an arbitrary supplied
+bundle on a constructor vector. Its target is the Vector encoding of the
+ordered head projections. An assembled list of independent witnesses gives
+those exact witnesses, with no universal witness function on element values
+and no restriction on the final tail. The former pointwise computation is a
+corollary. A further instance consumes the actual registered Vector induction
+bundle at the same source value, using its exact finite-position interface
+and an explicit witness quotation. This semantic quotation is separate from
+decoding an arbitrary open source container or implementing a runtime adapter.
+Repeated source values may carry distinct supplied position witnesses.
+The result view forgets the final tail: two independently checked inputs with
+distinct raw tails have source paths to the same result vector. In contrast,
+the universe map retains that tail. Raw pair expansion also differs
+syntactically from an opaque input; this is not a nonconvertibility claim.
+\lean{NativeVectorAll.ResultView.canonical_steps_observe, NativeVectorAll.ResultView.canonical_steps_assembled, NativeVectorAll.ResultView.semanticBundle_steps, NativeVectorAll.ResultView.independent_formed, NativeVectorAll.ResultView.first_tail_formed, NativeVectorAll.ResultView.second_tail_formed, NativeVectorAll.ResultView.shared_result_distinct_inputs, NativeVectorAll.Universes.CumulativeElimination.EvidenceMaps.expansion_syntax_distinct}
+
+\paragraph{Independent caller bounds in an enlarged Vector profile.}
+One further profile uses native Vector at $\gamma=\max(\alpha,\beta)$ and
+elimination into $\mathsf{succ}\,\gamma$. The existing result program is
+universe-instantiated in that signature, while its requested function type
+retains caller bounds $A:U_\alpha$ and $R:U_\beta$. Both its input and output
+vectors belong to this specified $\gamma$ instance. The signature is formed
+and the complete finite certificate replays against the actual program and
+function type. Replaying that same certificate in the original native All
+profile is refused. This is a checked comparison point, not transport of an
+original lower-universe Vector or a non-derivability theorem for that profile.
+The maintained evidence writer reproduces the original result certificate
+byte for byte and emits this independently replayed profile through the same
+source-emission owner. The separately named result instance below retains the original input
+universe; general registered-container adaptation remains open.
+\lean{NativeVectorAll.ResultView.Universes.program_formed, NativeVectorAll.ResultView.Universes.original_certificate_refused}
+
+\paragraph{Computation under profile instantiation.}
+An explicit level instance of the original native All profile has exactly this
+enlarged signature. Writing $\theta$ for its level substitution, formed source
+judgments and finite raw computation paths transport as follows:
+\[
+ \Gamma\vdash_{\rm All}t:T
+ \Longrightarrow \theta\Gamma\vdash_{\rm enlarged}\theta t:\theta T,
+ \qquad
+ t\longrightarrow^*_{\rm All}u
+ \Longrightarrow \theta t\longrightarrow^*_{\rm enlarged}\theta u.
+\]
+The actual result program therefore computes the ordered mapped witnesses on
+mapped constructor inputs, with an arbitrary final evidence tail. The
+two-position control retains independent witnesses at repeated source values.
+Its conversion code is accepted by the enlarged profile and refused when
+the proposed result swaps those witnesses. A separate raw-syntax control
+distinguishes the program's universe annotation. Contexts and inputs follow
+$\theta$. The following construction instead retains the original input
+universe.
+They supply neither unrestricted subject reduction nor normalization, and
+refusal of the supplied code is not a nonconvertibility theorem.
+\lean{NativeVectorAll.ResultView.Universes.judgment_map, NativeVectorAll.ResultView.Universes.program_computes_mapped_witnesses, NativeVectorAll.ResultView.Universes.mapped_conversion_accepted, NativeVectorAll.ResultView.Universes.mapped_swapped_refused, NativeVectorAll.ResultView.Universes.program_annotation_changes}
+
+\paragraph{Original input and a separately named higher result.}
+The native Vector at $\alpha$ and a separately named instance at
+$\gamma=\max(\alpha,\beta)$ now coexist in one formed declaration signature.
+The four shared natural-number entries agree exactly; the Vector type,
+constructors and eliminator use distinct names. Formation of their compatible
+union reuses the existing signature-extension theorem. Independent finite
+replay checks the actual object program at the type
+\[
+\begin{aligned}
+ &\Pi(A:U_\alpha)(R:U_\beta)(n:\mathsf{Nat})
+       (xs:\mathsf{Vec}_\alpha\,A\,n).\\[-2pt]
+ &\qquad\mathsf{All}_{\alpha,\beta}(\lambda\_.R)\,n\,xs
+       \;\to\;\mathsf{Vec}^{+}_\gamma\,R\,n.
+\end{aligned}
+\]
+The source Vector keeps its original family at $\alpha$; its All evidence
+still depends on that exact source Vector. The program reads position
+evidence and builds the higher-universe result family. The same finite certificate is refused when its proposed
+result family is changed. The unrenamed signatures fail the exact entry
+compatibility condition; this is not a non-derivability or inconsistency claim.
+A two-position conversion code retains independent witnesses at repeated
+source values and refuses the result with those witnesses swapped.
+
+Constant-name maps commute with universe-head maps. The joined root relation
+is stable under level substitution, so both signature formation and the
+complete program judgment transport through the actual level instance.
+A closed instance has data at level zero and result types at level one.
+These results do not establish general inverse laws, global raw-iota
+preservation, normalization or a native runtime refinement.
+\lean{NativeVectorAll.ResultView.OriginalInputUniverses.program_formed, NativeVectorAll.ResultView.OriginalInputUniverses.signature_formed, NativeVectorAll.ResultView.OriginalInputUniverses.changed_result_certificate_refused, NativeVectorAll.ResultView.OriginalInputUniverses.unrenamed_signatures_incompatible, NativeVectorAll.ResultView.OriginalInputUniverses.independent_conversion_accepted, NativeVectorAll.ResultView.OriginalInputUniverses.swapped_conversion_refused, NativeVectorAll.ResultView.OriginalInputUniverses.program_level_transport, NativeVectorAll.ResultView.OriginalInputUniverses.result_signature_level_formed}
+
+\paragraph{Complete original-input readout and a Vector of types.}
+A shared elimination law derives a complete ordered readout from the actual
+Vector iota roots and the local nil and cons computations. Its destination
+constructors are explicit parameters. It supplies both the existing result
+program and the original-input higher-result program. In the latter profile,
+for finite lists of scoped source terms $xs$, witnesses $ws$ and final tail $t$,
+\[
+\begin{aligned}
+ &\mathsf{results}\,A\,R\,|xs|\,\ulcorner xs\urcorner_\alpha\,
+       \mathsf{assemble}(ws,t)\\[-2pt]
+ &\qquad\longrightarrow^{*}\mathsf{encode}^{+}_R(ws),
+       \qquad |xs|=|ws|.
+\end{aligned}
+\]
+Here $\mathsf{results}$ is the actual five-argument source program. The
+result reads one witness per source position and does not inspect the final
+evidence tail. Its construction changes the destination constructor prefix
+while retaining the result-type and witness arguments. A checked raw-syntax
+example distinguishes this from globally renaming every constant inside a
+nested result-type argument. The registered Vector induction bundle
+specializes the computation under an explicit witness quotation. The whole
+path also transports through the actual universe-level instance. These raw
+computation statements do not supply an arbitrary open-term decoder.
+\lean{NativeVectorAll.ResultView.EvidenceElimination.fold_reads, NativeVectorAll.ResultView.OriginalInputUniverses.Computation.program_witnesses, NativeVectorAll.ResultView.OriginalInputUniverses.Computation.registered_bundle_steps, NativeVectorAll.ResultView.OriginalInputUniverses.Computation.program_level_witnesses, NativeVectorAll.ResultView.OriginalInputUniverses.Computation.constructor_prefix_renaming_is_distinct}
+
+At $\alpha=0$ and $\beta=1$, take $A=\mathsf{Nat}$ and $R=U_0$.
+The two repeated input values $[0,0]$ carry the independent result witnesses
+$\mathsf{Nat}$ and $\mathsf{Id}_{\mathsf{Nat}}(0,0)$.
+A checked transparent definition exposes the application, whose output is a
+Vector of these two types. The application and returned Vector have separate
+formation-sensitive typing proofs. A finite conversion certificate checks
+this output and refuses the same certificate with the two witnesses swapped.
+Qualified unfolding preserves the caller's displayed type. General subject
+reduction, normalization and native runtime refinement remain separate
+obligations.
+\lean{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.formed, NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.typed_unfolding, NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.application_typed, NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.output_typed, NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.application_conversion, NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.swapped_refused}
+
+\paragraph{Naturality of complete generated declarations.}
+A head map commuting with the actual index interpretation and registered
+field and bundle syntax commutes with generated constructors, ordered
+dependent methods and the complete eliminator. These primitive contracts
+extend through every source binder and induction hypothesis. The existing
+native \code{All} template supplies the registered Vector bundle at an
+arbitrary result annotation. Its universe-instantiation law therefore
+extends to the actual indexed Vec and nested VectorTree eliminators.
+A concrete level collapse witnesses the whole generated VectorTree law;
+retaining its original annotation yields different syntax. This is
+syntactic coherence, with typing transport and computation authority
+retaining their separate contracts.
+\lean{IndexedPositiveContainerGuestTypes.constructorType_mapHead, IndexedPositiveContainerGuestTypes.methodBody_mapHead, IndexedPositiveContainerGuestTypes.eliminatorType_mapHead, IndexedPositiveContainerUniverseControls.generated_type_substLevels, IndexedPositiveContainerUniverseTreeControls.generated_type_substLevels, IndexedPositiveContainerUniverseTreeControls.generated_collapse_exact, IndexedPositiveContainerUniverseTreeControls.generated_annotation_changes}
+
+\paragraph{Dependent method formation.}
+A structural theorem forms generated dependent methods throughout the
+declared code grammar. Beyond constructor primitives, the registry supplies
+typing for its whole-field bundle operation. The actual motive and
+constructor must be typed, and pending induction hypotheses must be formed.
+The proof retains the typed data/index environment through every binder and
+appends each direct hypothesis or whole nested bundle in source order.
+No premise assumes formation of the generated method itself.
+\lean{IndexedPositiveContainerGuestTypes.methodBody_formed, IndexedPositiveContainerGuestTypes.methodType_formed}
+
+The actual Vector branch supplies a concrete witness before the tree
+eliminator is declared. Its prefix contains only the family declarations
+and branch constructor, whose type matches the authored source. The method
+forms through the generic theorem, closes over its motive and is admitted
+as an ordinary opaque declaration. Independent checking accepts that entry
+and refuses a missing or undeclared constructor. This is formation under
+explicit primitive contracts and the common universe bound. The complete eliminator result below additionally uses explicit domain and
+universe contracts; other universe cases, semantic decoding and computation
+authority remain separate.
+\lean{IndexedPositiveContainerGuestControls.Vectors.MethodFormation.no_eliminator, IndexedPositiveContainerGuestControls.Vectors.MethodFormation.source_method_formed, IndexedPositiveContainerGuestControls.Vectors.MethodFormation.method_admitted, IndexedPositiveContainerGuestControls.Vectors.MethodFormation.source_method_checked, IndexedPositiveContainerGuestControls.Vectors.MethodFormation.missing_constructor_refused, IndexedPositiveContainerGuestControls.Vectors.MethodFormation.undeclared_constructor_refused}
+
+\paragraph{Complete eliminator formation.}
+The full eliminator forms structurally from those method contracts, typed
+constructors, a typed optional index domain and explicit universe/product
+rules. The proof forms the motive in its upper universe, the final dependent
+result and the complete ordered method inventory, then binds the motive.
+It assumes no formation of the generated eliminator.
+\lean{IndexedPositiveContainerGuestTypes.motiveType_formed, IndexedPositiveContainerGuestTypes.resultType_formed, IndexedPositiveContainerGuestTypes.methodsType_formed, IndexedPositiveContainerGuestTypes.eliminatorType_formed}
+
+The actual VectorTree instance uses both authored constructors at their
+original prefixes, with no tree eliminator present. Generic constructor
+formation supplies their typings; the generated eliminator type matches the
+original source declaration. Ordinary opaque admission reconstructs the full
+authored inventory. Independent checking accepts the final entry and refuses
+missing constructors and the tested lower-universe claim. The sufficient
+common-level criterion keeps its upper/output universe contracts explicit.
+Further universe configurations, general indexed-eliminator qualification, semantic
+interpretation, raw $\iota$ preservation and native implementation refinement
+remain separate.
+\lean{IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.prefix_exact, IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.constructors_typed, IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.source_eliminator_formed, IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.full_inventory_admitted, IndexedPositiveContainerGuestControls.Vectors.EliminatorFormation.lower_universe_refused}
+
+The complete dependent eliminator interface is now generated from the same
+source inventory: its motive, ordered methods and final index/value binders.
+Only an indexed family supplies an index-domain term; the unindexed interface
+has no such input or binder. Complete generation commutes with substitution
+and preserves the previous ordinary indexed interface. The actual List
+SearchTree and VectorTree declaration inventories use this generator, and
+their entries retain independently checked whole-inventory comparisons.
+Source-prefix replay supplies admission and formation as described below. The Nat-indexed Vec instantiates the indexed
+comparison. Reversing the constructor inventory changes the selected nested
+interfaces, exposing an order error that a constructor-by-constructor check
+would miss. These are generation and comparison results; further universe configurations, general admission and computation authority remain separate obligations.
+\lean{IndexedPositiveContainerGuestTypes.eliminatorType_substitute, IndexedPositiveContainerGuestTypes.eliminatorType_ordinary, IndexedPositiveContainerGuestControls.Lists.eliminator_exact, IndexedPositiveContainerGuestControls.Vectors.eliminator_exact, IndexedPositiveContainerGuestControls.OrdinaryVectors.eliminator_exact, IndexedPositiveContainerGuestControls.Lists.reversed_order_not_exact, IndexedPositiveContainerGuestControls.Vectors.reversed_order_not_exact}
+
+Registered-container declaration generation also closes the family, every
+constructor and the complete eliminator under one parameter telescope. One
+name assignment supplies both the published names and their internal type
+prefixes. The complete ordinary indexed inventory is preserved; the actual
+Nat-indexed Vec supplies the comparison. The existing independent declaration
+checker replays each generated type at its source prefix. Admission of the
+dependency prefix composes with admission of the generated suffix, giving a
+formed opaque signature without treating the dependencies as formed merely
+because a suffix check passed. Prefix evidence also proves name separation;
+an eliminator cannot alias its family at any producer budget over an admitted
+prefix. Both nested-family clients use this path. A
+family/eliminator name collision and a Vector length/data-sort mismatch refuse.
+This is checked inventory integration, not generic formation completeness or
+new computation authority.
+\lean{DeclarationAdmissionReplay.Admitted.append, DeclarationAdmissionReplay.Admitted.names_nodup, IndexedInductive.Guest.Declarations.Registered.admitInventory_names, IndexedInductive.Guest.Declarations.Registered.aliased_endpoints_refused, IndexedInductive.Guest.Declarations.Registered.entries_ordinary, IndexedInductive.Guest.Declarations.Registered.admitInventory_sound, IndexedInductive.Guest.Declarations.Registered.admitInventory_formed, IndexedPositiveContainerGuestControls.Lists.declarations_formed, IndexedPositiveContainerGuestControls.Vectors.declarations_formed, IndexedPositiveContainerGuestControls.OrdinaryVectors.entries_exact, IndexedPositiveContainerGuestControls.Lists.collision_refused, IndexedPositiveContainerGuestControls.Vectors.wrong_data_refused}
+
+Production and independent replay compose over consecutive declaration blocks,
+retaining exactly the same concatenated certificates. Successful production
+supplies one certificate per declaration, and whole-inventory acceptance is
+the conjunction of the two prefix-aligned acceptance results. The existing
+VectorTree inventory proof uses this equation to share checked declaration
+facts. The producer, checker, complete source inventory and budgets are
+unchanged; this factors the proof of their result.
+\lean{IndexedInductive.Guest.Declarations.produce_append, IndexedInductive.Guest.Declarations.elaborate_append, IndexedInductive.Guest.Declarations.elaborate_isSome_append, IndexedInductive.Guest.Declarations.elaborate_cons_of, PositiveInductiveVectorTreeGuest.inventoryAccepted_eq_true}
+
+The same admitted code now generates source-call plans. A scan binds earlier
+data fields before interpreting later container outputs and child-family
+indices, retaining direct and nested call order. Its call list commutes with
+scoped substitution and has one entry per direct induction hypothesis or
+complete nested bundle. This argument count differs from the number of
+semantic child positions inside a container. The authored SearchTree producer
+uses the generic scan and preserves its independently checked output.
+
+For the mixed Vector source, five original fields yield three call entries.
+Three separate source bodies compile to the first, middle and last method
+hypothesis; the first has an explicit beta reconstruction. A call on the
+payload or a changed nested length refuses during call abstraction. A further
+substitution makes the two direct calls identical as terms while retaining all
+three slots. Direct value-only deduplication leaves two slots and cannot serve
+as the original method interface; sharing computation while retaining argument
+positions remains possible. These are source-call occurrences, not independent
+statistical samples. These laws concern the raw clause compiler. Generic
+whole-program formation, complete-bundle/result-view adapters and their
+semantic qualifications remain separate obligations.
+\lean{IndexedPositiveContainerGuestPlans.calls_substitute, IndexedPositiveContainerGuestPlans.plan_call_count, IndexedPositiveContainerGuestPlans.compile_reconstructs, IndexedPositiveContainerGuestPlansControls.VectorCalls.compilation_exact, IndexedPositiveContainerGuestPlansControls.VectorCalls.first_beta, IndexedPositiveContainerGuestPlansControls.VectorCalls.wrong_child_refused, IndexedPositiveContainerGuestPlansControls.VectorCalls.wrong_length_refused, IndexedPositiveContainerGuestPlansControls.VectorCalls.coincident_children_keep_slots, IndexedPositiveContainerGuestPlansControls.VectorCalls.value_dedup_drops_slot}
+
+\paragraph{Named clauses at generated dependent interfaces.}
+The shared header generator now retains every original constructor field and
+its ambient parameters. Constructor parameters select their existing ambient
+slots. The actual SearchTree reader uses this generator. The five-field
+mixed source also passes through the named reader; a recursive use of its
+payload and an aliased source pattern refuse. On the ordinary fragment, a
+direct-call template preserves the existing index/child call list, with the
+actual Nat-indexed Vec append plan as a comparison witness. A generic service
+then compiles a named clause and independently replays its emitted method at
+the dependent type generated from the same constructor code. Accepted output
+retains both that typing judgment and the actual source compilation result.
+\lean{IndexedInductive.OperationSource.Header.fromPlan_slot_count, IndexedPositiveContainerGuestPlans.calls_ordinary, IndexedPositiveContainerGuestPlans.elaborateClause_sound, IndexedPositiveContainerGuestPlansControls.OrdinaryAppend.cons_plan_exact, IndexedPositiveContainerGuestPlansControls.VectorCalls.named_before_compiled}
+
+The authored VectorTree module supplies the two-field dependent branch.
+Its actual declaration block lowers to the qualified inventory, and both
+compiled methods check at their generated interfaces. The branch keeps the
+earlier length and the complete Vector-position induction bundle. Its compiled
+method beta-reconstructs the parsed right-hand side; the application typing
+is reconstructed from the checked method and its typed arguments. This does
+not assume that the bidirectional producer can synthesize every unannotated
+lambda application. Both endpoints are typed, and the exact parsed target
+receives the existing VectorTree proof-relevant receipt. Replacing the
+induction bundle by the child Vector survives raw compilation but refuses
+dependent checking. These are clause-stage statements, with no new datatype,
+raw Tree iota authority, whole-program adequacy or native realization claim.
+\lean{PositiveInductiveVectorTreeElaboration.source_inventory_exact, PositiveInductiveVectorTreeElaboration.solved_typed, PositiveInductiveVectorTreeElaboration.branch_typed, PositiveInductiveVectorTreeElaboration.branch_beta, PositiveInductiveVectorTreeElaboration.branch_endpoints_typed, PositiveInductiveVectorTreeElaboration.sourceBranchReceipt, PositiveInductiveVectorTreeElaboration.unbundled_compiles, PositiveInductiveVectorTreeElaboration.unbundled_refused}
+
+\paragraph{Constant-motive Vector results.}
+The native Vector \texttt{All} bundle now has an object-level result
+projection. At a constant motive \(\lambda x.\,R\), its complete program
+has type
+\[
+  \Pi A\,R\,n\,xs.\;
+  \operatorname{All}(A,\lambda x.\,R,n,xs)\to\operatorname{Vec}(R,n).
+\]
+Independent finite evidence replay establishes this polymorphic judgment.
+For every finite constructor spine, the projection reduces to one result
+per source position, in order; the element terms may be open. Substitution
+commutes with the projection. A version that uses original children in
+place of recursive results refuses the executable checking control.
+\lean{NativeVectorAll.ResultView.program_formed, NativeVectorAll.ResultView.subst_project, NativeVectorAll.ResultView.canonical_steps}
+
+The VectorTree specialization calls that actual projection through a fresh
+ordinary transparent declaration. Its body and declared type are checked,
+the extended library is formed, and delta unfolding preserves the caller's
+displayed type. The whole fold independently replays at its closed
+polymorphic interface. Its branch method receives the original arity,
+original child vector and a separate result vector of that same arity.
+\lean{PositiveInductiveVectorTreeGuest.ResultFold.checking_formed, PositiveInductiveVectorTreeGuest.ResultFold.execution_formed, PositiveInductiveVectorTreeGuest.ResultFold.fold_typed, PositiveInductiveVectorTreeGuest.ResultFold.projection_typedUnfolding}
+
+All five components of the substitution into the original branch context
+replay independently. This transports the existing parsed source receipt
+at the actual result type. Subsequent beta steps reconstruct the projected
+node call, whose result typing is checked independently. On a finite child
+spine, its result vector reduces to the ordered recursive fold calls,
+retaining repeated occurrences. The selected witness has three positions,
+with the first child repeated in the third. A children-as-results method
+is formally refused by the checker. These statements qualify this source
+specialization and its explicit computation path; arbitrary open-container
+semantic decoding, generic whole-program adequacy and universal raw-iota
+preservation remain separate obligations.
+\lean{PositiveInductiveVectorTreeGuest.ResultFold.contextMorphism, PositiveInductiveVectorTreeGuest.ResultFold.sourceReceipt, PositiveInductiveVectorTreeGuest.ResultFold.source_path, PositiveInductiveVectorTreeGuest.ResultFold.source_target_typed, PositiveInductiveVectorTreeGuest.ResultFold.childrenResults_canonical, PositiveInductiveVectorTreeGuest.ResultFold.canonical_witness, PositiveInductiveVectorTreeGuest.ResultFold.wrongBranch_refused}
+
+Registered-container outputs are now explicit in the semantic interface. An
+entry owns its output-expression language, its evaluation in the constructor
+environment, and the indexed container at that output. The List entry retains
+the established container and constant unit output. The Vector entry evaluates
+a length expression and exposes exactly \(\mathrm{Fin}\,n\) recursive
+positions. Its induction bundle is represented by a dependent list and proved
+equivalent to one motive witness at every length-indexed position. The
+position fibres at lengths two and three are not equivalent, so output-index
+erasure is observably wrong at the recursion interface.
+
+The position bundle is now generic over the indexed registry. Semantic
+induction qualification remains separate from executable lookup: every
+successful qualified lookup supplies a representation equivalent to one
+motive witness at each position of that container value. A recursive
+construction combines those representations with direct recursive fields and
+later fields. Its exactness theorem identifies the resulting bundle with one
+witness at every position of the complete constructor polynomial, including
+mixed direct and registered-nested occurrences. List and Vector instantiate
+the same theorem. A positive Reader container also has a semantic bundle, but
+its natural-number position fibre has no finite traversal capability. Thus
+strict positivity, dependent induction evidence and executable finitarity are
+three distinct petals.
+\lean{IndexedPositiveContainer.Code.bundleExact, IndexedPositiveContainer.ListInstance.inductionQualified, IndexedPositiveContainer.VectorControl.inductionQualified, IndexedPositiveContainer.VectorControl.genericBundleExact, IndexedPositiveContainer.ReaderControl.inductionQualified, IndexedPositiveContainer.ReaderControl.not_finitary}
+
+The textual source boundary has a corresponding indexed-output specialization.
+A constructor may bind a natural length and use that name in a later
+\texttt{Vector n VectorTree} field. Lowering preserves the scoped length
+expression and erases exactly to the independently defined Vector semantic
+code. Data-binder freshness makes length-name lookup and quotation inverse;
+unbound lengths, shadowing and negative function fields are refused. This
+qualifies indexed source admission and semantic erasure. The object-language
+bundle and its first generated guest are described below.
+\lean{IndexedContainer.vectorInductionBundle, IndexedContainer.vector_position_card, IndexedContainer.vector_two_not_equiv_three, IndexedPositiveContainer.ListInstance.entry_container_eq, IndexedPositiveContainer.ListInstance.entry_output_eq, IndexedPositiveContainer.VectorControl.position_card, IndexedPositiveContainer.VectorControl.two_not_equiv_three, IndexedPositiveContainer.VectorControl.bundleAt, IndexedPositiveVectorLowering.Scope.lookup_quoteLength, IndexedPositiveVectorLowering.Scope.quote_lookupLength, IndexedPositiveVectorLowering.lowerModule_quote, IndexedPositiveVectorLowering.Controls.branch_erases_to_indexed_vector, IndexedPositiveVectorLowering.Controls.shadowedLength_refused}
+
+The object-language Vector bundle now has a reusable core. The existing native
+Vec eliminator is instantiated with element universe \(\alpha\) and elimination
+universe \(\alpha+1\). A first elimination computes
+\(
+  \mathsf{All}\;P\;n\;xs : U_\alpha
+\): nil gives the singleton identity type
+\(0 =_{\mathsf{Nat}} 0\), while cons gives a dependent pair containing the
+head witness and the recursively computed tail evidence. A second elimination
+constructs that exact type from a pointwise witness function. Both terms
+commute with renaming and substitution. Formation-sensitive replay accepts the
+type and its inhabitant, rejects the inhabitant at `Nat`, and rejects an
+undeclared witness function. Because `All` retains the actual source Vector in
+its motive, the construction does not confuse exact position evidence with an
+unrelated Vector of the same length. The generated `VectorTree` declaration
+below consumes this reusable core.
+
+The semantic and object accounts now meet on every canonical constructor
+spine. A source List selects the actual length-indexed Vector extension. Its
+registered-container induction bundle is equivalent to the source-ordered
+dependent witness spine, with the expected witness at every exact
+\(\mathrm{Fin}\,n\) position. Native `All` evidence reduces by the existing
+Vec iota and beta rules to the nested-pair quotation of that same semantic
+bundle. A two-position control retains both witness applications in order;
+swapping distinguishable positions changes the quotation. Thus formation,
+native computation and semantic position coverage agree on this fragment
+without granting any new judgmental rule.
+\lean{NativeVectorAll.signature_formed, NativeVectorAll.rename_allType, NativeVectorAll.subst_allType, NativeVectorAll.rename_allEvidence, NativeVectorAll.subst_allEvidence, NativeVectorAll.Controls.allType_accepted, NativeVectorAll.Controls.allEvidence_accepted, NativeVectorAll.Controls.wrong_type_refused, NativeVectorAll.Controls.undeclared_witness_refused, NativeVectorAll.Controls.allEvidence_typed, NativeVectorAll.CanonicalAdequacy.semanticBundleEquiv, NativeVectorAll.CanonicalAdequacy.pointwiseBundle_exact, NativeVectorAll.CanonicalAdequacy.allEvidence_steps_semanticBundle, NativeVectorAll.Controls.CanonicalAdequacyControls.two_position_reduces, NativeVectorAll.Controls.CanonicalAdequacyControls.swapped_positions_refused}
+
+These two instances now share one selected object-realization contract. The
+exact registry lookup determines the semantic induction bundle. A realization
+retains an inhabitant of that bundle, a formation-checked object term, a
+quotation of semantic bundles, and a structural computation from the object
+term to the quotation of the selected inhabitant. Applying the container's
+existing exactness equivalence yields one motive witness at every recursive
+position. The canonical List relation spine and the closed two-element Vector
+reflexivity bundle instantiate the contract through their real registry
+entries. As a negative control, the positive but infinitary Reader at the
+impossible motive has no semantic bundle and therefore admits no selected
+object realization or object value. This interface connects evidence already
+produced; source syntax cannot create a missing motive witness.
+\lean{FormationSensitiveIndexedContainerBundleRealization.SelectedObjectBundle.positionWitnesses, FormationSensitiveIndexedContainerBundleRealization.ListInstance.registeredRealization, FormationSensitiveIndexedContainerBundleRealization.VectorInstance.registeredRealization, FormationSensitiveIndexedContainerBundleRealization.VectorInstance.covers_two_positions, FormationSensitiveIndexedContainerBundleRealization.ReaderNegative.semanticBundle_empty, FormationSensitiveIndexedContainerBundleRealization.ReaderNegative.noSelectedObjectBundle, FormationSensitiveIndexedContainerBundleRealization.ReaderNegative.noObjectValue}
+
+The interface now lifts through complete constructor code. A generic quotation
+fold follows result, data, direct-recursive and registered-nested nodes in
+source order. Its nested callback is indexed by the actual lookup proof,
+container output, shape and child family. A code-wide selected realization
+then binds one `Code.Bundle`, a formed object term and its computation to that
+quotation; the existing `bundleExact` theorem recovers every direct and nested
+position. The nontrivial control contains one direct recursive child followed
+by a length-two Vector field. Its object term pairs the direct reflexivity
+witness with native `All` evidence, forms at the corresponding nested Sigma
+type, computes through the existing Vec rules to the generic quotation, and
+exposes all three witnesses. The generic quotation is now available, while
+automatic formation for arbitrary open source inputs remains to be generated.
+\lean{FormationSensitiveIndexedContainerBundleRealization.Code.quoteBundle, FormationSensitiveIndexedContainerBundleRealization.Code.SelectedObjectBundle.positionWitnesses, FormationSensitiveIndexedContainerBundleRealization.MixedControl.quote_bundle, FormationSensitiveIndexedContainerBundleRealization.MixedControl.object_formed, FormationSensitiveIndexedContainerBundleRealization.MixedControl.object_steps_quote, FormationSensitiveIndexedContainerBundleRealization.MixedControl.allPositionWitnesses}
+
+Formation assembly is generic once the actual leaves are available.
+`LeafRealizations` requests only the direct and nested leaves occurring in one
+selected constructor shape. A pair algebra combines their formed object
+terms, semantic values, quotations and computations; `realizeFromLeaves`
+recurses over the same constructor code and returns a complete formed object
+value for `Code.Bundle`. For the mixed direct/Vector control, the compiled
+semantic value, term, nested Sigma type and quotation agree exactly with the
+independently constructed reference. This removes handwritten assembly while
+leaving the production of each open direct or nested leaf as an explicit
+source-specific obligation.
+\lean{FormationSensitiveIndexedContainerBundleRealization.Code.realizeFromLeaves, FormationSensitiveIndexedContainerBundleRealization.Code.ObjectValue.toSelectedCode, FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_value_eq, FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_term_eq, FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_type_eq, FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiled_quote_eq, FormationSensitiveIndexedContainerBundleRealization.MixedControl.compiledPositionWitnesses}
+
+Provider selection is now part of that recursion. A partial provider table
+offers formation-qualified object values for direct leaves and for nested
+leaves indexed by the actual registry lookup, output, shape and children.
+The compiler walks arbitrary recognized code, combines accepted leaves with
+the pair algebra and refuses the entire realization if any leaf provider is
+absent. Every successful result contains the exact complete semantic bundle,
+so it yields a motive witness at every actual position. Total producers embed
+as always-accepting tables. On the mixed direct/Vector control, a uniformly
+inhabited motive makes both providers available; the partial compiler agrees
+exactly with the total reference and covers all three positions. Removing the
+direct provider or the Vector provider refuses independently. Automatic
+routing and assembly are therefore generic;
+producing formation evidence for arbitrary open source values remains a
+source-specific elaboration obligation.
+\lean{FormationSensitiveIndexedContainerBundleRealization.Code.PartialLeafProviders.ofTotal, FormationSensitiveIndexedContainerBundleRealization.Code.realizeWithProviders?, FormationSensitiveIndexedContainerBundleRealization.Code.positionWitnessesOfProviderSuccess, FormationSensitiveIndexedContainerBundleRealization.MixedControl.completeProviders_compile, FormationSensitiveIndexedContainerBundleRealization.MixedControl.providerPositionWitnesses, FormationSensitiveIndexedContainerBundleRealization.MixedControl.missingNestedProvider_refused, FormationSensitiveIndexedContainerBundleRealization.MixedControl.missingDirectProvider_refused}
+
+The same routing now lifts over ordered constructor inventories. Each
+constructor request retains its own environment, result index, shape and child
+family; the pointwise result retains the corresponding code and refusal. The
+actual resolved textual VectorTree family supplies two requests from the exact
+erasures of its ordered `solved` and `branch` constructors. With complete
+providers both accept. Removing the Vector provider leaves `solved` accepted
+and refuses `branch`, demonstrating that the inventory adapter neither loses
+constructor identity nor turns a family-wide capability into authority for an
+unrelated occurrence. The control uses a uniformly inhabited motive to test
+routing; its open object-language branch evidence remains the separate
+formation/logical-relation obligation.
+\lean{FormationSensitiveIndexedContainerBundleRealization.Code.realizeRequest?, FormationSensitiveIndexedContainerBundleRealization.Code.realizeInventory?, FormationSensitiveIndexedContainerBundleRealization.Code.realizeInventory?_at, PositiveInductiveVectorTreeGuest.ProviderInventory.codes_eq, PositiveInductiveVectorTreeGuest.ProviderInventory.solved_provider_accepted, PositiveInductiveVectorTreeGuest.ProviderInventory.branch_provider_accepted, PositiveInductiveVectorTreeGuest.ProviderInventory.missingNested_verdicts}
+
+That final indexed guest edge is checked. The accepted textual constructor
+order generates the solved and branch declaration rows. The complete ordered
+inventory adds the external `Answer` type, `VectorTree`, both constructors and
+the dependent eliminator. Its branch method receives the exact
+\(\mathsf{All}\;P\;n\;children\). The branch iota target builds that value by
+native Vec elimination, applying the tree eliminator recursively to every
+child. Source, target and bundle terms recheck independently before becoming
+proof-relevant receipts; the branch receipt transports through every typed
+substitution. Supplying the raw child Vector where its `All` evidence is
+required is refused. This establishes typed canonical branch computation, not
+global preservation of every raw schema instance.
+\lean{PositiveInductiveVectorTreeGuest.sourceConstructorEntries_eq, PositiveInductiveVectorTreeGuest.textual_source_roundtrip, PositiveInductiveVectorTreeGuest.rename_liftChildren, PositiveInductiveVectorTreeGuest.subst_liftChildren, PositiveInductiveVectorTreeGuest.inventory_formed, PositiveInductiveVectorTreeGuest.endpointVerdicts_eq_true, PositiveInductiveVectorTreeGuest.branch_bundle_formed, PositiveInductiveVectorTreeGuest.solvedReceipt, PositiveInductiveVectorTreeGuest.branchReceipt, PositiveInductiveVectorTreeGuest.branchReceipt_substitute}
+
+Such families support several concrete agent workloads. A proof-search agent
+can retain a tree of solved answers and unresolved subgoals. A planner can keep
+pure workflow structure distinct from effect-bearing actions. A theorem agent
+can use a mutual goal/evidence family so evidence construction may expose new
+typed obligations without confusing the two states. An interaction agent can
+index protocol traces by initial and final state so only composable turns are
+combined. Syntax, explanation and provenance trees can keep ordered child
+lists while obtaining recursion and induction once from the declaration.
+These types organize evidence; they do not themselves supply a search policy,
+fair scheduler, effect authorization or truth.
+
+The existing direct vector and even/odd blocks enter the richer recognizer
+through an explicit bridge, preserving constructor order and names. Direct
+constructor shapes have the same interpretation. A reusable polynomial-
+signature equivalence additionally retains an equivalence of every shape
+fibre, an equivalence of recursive positions over the corresponding shape,
+and equality of the child index selected by each position. The direct-code
+translation satisfies this law constructor by constructor and for the whole
+ordered inventory. The vector and even/odd inventories instantiate it. If the
+odd constructor's only child index is changed, no such equivalence exists.
+Nested guest declaration formation, typed generated recursors and native
+execution remain separate M2 edges.
+\lean{IndexedPolynomial.SignatureEquiv, PositiveInductiveBlockBridge.Direct.shape_eq, PositiveInductiveBlockBridge.Direct.polynomialEquiv, PositiveInductiveBlockBridge.Direct.admittedPolynomialEquiv, PositiveInductiveBlockBridge.Direct.admitted_names, PositiveInductiveBlockBridge.Direct.admitted_recognized, PositiveInductiveBlockBridge.Controls.vectorPolynomialEquiv, PositiveInductiveBlockBridge.Controls.mutualPolynomialEquiv, PositiveInductiveBlockBridge.Controls.translated_odd_not_equiv_wrongChild}
+
 \section{Status ledger}\label{sec:ledger}
 
 
@@ -2520,6 +4164,22 @@ Axioms are those reported by \code{#print axioms} on the listed declaration:
   Extend the coding-preservation argument to arbitrary typed reducts before
   using a broader normal-form reflection theorem. This obligation remains
   separate from termination of normalization on every typed hub term.
+\item \textbf{Lean-family native qualification.}
+  Instantiate the four-outcome service and acceptance-refinement interfaces
+  with a pinned external checker and export format. Bind parser, declaration
+  stream, checker mode, semantic assumptions and runtime artifact in one
+  release receipt. Prove the selected elaboration/reconstruction route into
+  that checker, and keep official-kernel parity, model soundness and
+  computational adequacy as distinct edges. Generalize the current
+  finite-catalog exact node to declarations, inductive installation,
+  quotients, primitives and the complete typed checker.
+\item \textbf{Generic registered-container and mutual guest generation.}
+  Generalize the checked List and Vector specializations to every admitted
+  registered container and to the mutual-family source fragment. Retain each
+  container's output expression, position bundle and executable-traversal
+  capability. Then connect finite-position evidence to executable MeTTa
+  traversal and retain an explicit refusal or semantic-only status for positive
+  infinitary containers.
 \end{enumerate}
 
 \begin{thebibliography}{99}
@@ -2599,6 +4259,14 @@ PhD thesis, University of Edinburgh, 1995.
 K. Kapulkin and Y. Li. Extensional concepts in intensional type theory,
 revisited. \emph{Theoretical Computer Science} 1029, 2025, 115051.
 \url{https://arxiv.org/abs/2310.05706}.
+
+\bibitem{Lean4Lean}
+M. Carneiro. Lean4Lean: towards a verified typechecker for Lean, in Lean.
+Preprint, 2024. \url{https://arxiv.org/abs/2403.14064}.
+
+\bibitem{ConLeche}
+J. Breitner. \emph{con-leche: a consistent Lean checker}.
+Lean FRO, 2026. \url{https://github.com/leanprover/con-leche}.
 
 \end{thebibliography}
 

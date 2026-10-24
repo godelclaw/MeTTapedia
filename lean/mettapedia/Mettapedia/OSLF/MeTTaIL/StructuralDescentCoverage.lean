@@ -131,6 +131,7 @@ theorem firing_depth_bound (environment : Environment)
           simp only [StructuralDescent.checkRule, Bool.and_eq_true] at ruleChecked
           have smaller := premises_depth_lt premises ruleChecked.2 rfl matched.matching
             (Extends.refl _) children
+          change eventsDepth history < nodes parent at smaller
           change 1 + eventsDepth history ≤ nodes parent
           omega
 

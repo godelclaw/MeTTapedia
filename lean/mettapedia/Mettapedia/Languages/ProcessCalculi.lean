@@ -5,6 +5,9 @@ import Mettapedia.Languages.ProcessCalculi.OrientedRho.Module
 import Mettapedia.Languages.ProcessCalculi.MQCalculus
 import Mettapedia.Languages.ProcessCalculi.MORK
 import Mettapedia.Languages.ProcessCalculi.MeTTaCalculus
+import Mettapedia.Languages.ProcessCalculi.CCS.Bialgebraic
+import Mettapedia.Languages.ProcessCalculi.CCS.Continued
+import Mettapedia.Languages.ProcessCalculi.CCS.Observed
 
 /-!
 # Process Calculi

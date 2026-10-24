@@ -114,6 +114,9 @@ private theorem nullary_root_exact (index : Nat) (declaration : GrammarRule)
     Holds language snapshot.free [] (fun _ => Eq) (fun _ _ _ => False)
       (.base declaration.category) (.root index) term ↔
       term = .apply declaration.label [] := by
+  have noBareArguments : declaration.bareParams = [] := by
+    cases mode : declaration.collectionRepresentation <;>
+      simp [GrammarRule.bareParams, mode, noArguments]
   rw [holds_root_exact found]
   constructor
   · rintro ⟨member, value, equal⟩
@@ -124,14 +127,16 @@ private theorem nullary_root_exact (index : Nat) (declaration : GrammarRule)
         have empty : arguments = [] := by simpa using arity
         simpa only [ConstructorValue.pattern, empty] using equal
     | collection name kind sort elements rest shape typed =>
-        rw [noArguments] at shape
+        change declaration.bareParams = _ at shape
+        rw [noBareArguments] at shape
         cases shape
   · intro same
     subst term
     refine ⟨?_, .ordinary [] ?_ ?_, rfl⟩
     · exact (mem_structuralFormers_iff language ⟨index, declaration⟩).mpr found
     · rintro ⟨name, kind, sort, shape⟩
-      rw [noArguments] at shape
+      change declaration.bareParams = _ at shape
+      rw [noBareArguments] at shape
       cases shape
     · rw [noArguments]
       exact .nil
@@ -302,8 +307,9 @@ theorem formed_readout_conclusive {expected : TypeExpr}
       rw [lookup_parameters_empty index rule found] at arity
       cases arity
   | spatial index rule shape enabled found expected spatial first second =>
-      simp only [spatialShape?, lookup_parameters_empty index rule found] at spatial
-      cases spatial
+      have params := (spatialShape?_sound spatial).1
+      rw [lookup_parameters_empty index rule found] at params
+      cases params
 
 theorem generated_check_conclusive {sort : signature.Srt} (term : Term signature sort)
     (formula : Mettapedia.OSLF.NativeTypes.Structural.Formula)

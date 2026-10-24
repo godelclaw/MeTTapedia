@@ -116,7 +116,14 @@
                 ($ordinary
                  (if (gslt:premise:type-arguments $declarations $free $bound $arguments $parameters)
                    (gslt:sites:application-children $declarations $free $permissions $bound $constructor $arguments $parameters $declaration $arguments 0)
-                   LNil)))) LNil)) LNil)))))
+                   LNil)))) LNil)) LNil))
+      ((GrammarTypingWrappedV1 $label $category $parameters)
+       (if (== $label $constructor)
+         (let $result (TBase $category)
+           (if (== $expected $result)
+             (if (gslt:premise:type-arguments $declarations $free $bound $arguments $parameters)
+               (gslt:sites:application-children $declarations $free $permissions $bound $constructor $arguments $parameters $declaration $arguments 0)
+               LNil) LNil)) LNil)))))
 
 (: gslt:sites:application-children (-> Atom Atom Atom Atom Atom Atom Atom Atom Atom Atom %Undefined%))
 (= (gslt:sites:application-children $declarations $free $permissions $bound $constructor $arguments $parameters $declaration $remaining $index)

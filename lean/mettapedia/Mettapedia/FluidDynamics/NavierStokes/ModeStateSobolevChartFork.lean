@@ -4,13 +4,10 @@ import Mathlib.Analysis.PSeries
 /-!
 # Sobolev-Style Chart Fork on the Shared Mode State
 
-This file moves one step closer to manuscript shape. We amplify high modes by a
-polynomial Sobolev-style factor `((n+1)^m)` before applying the chart cutoff.
-
-* The soft version, using the bounded scalar `|t| / (1 + |t|)` together with a
-  concrete inverse-square envelope, lands on the good side.
-* The hard version, which only records whether any amplified mode is nonzero,
-  collapses to the earlier hard support detector and lands on the bad side.
+Polynomial amplification `((n+1)^m)` precedes the bounded soft-support scalar.
+The inverse-square envelope controls the response uniformly in `m`, with tail
+error at most `1/N` for positive prefix length. Detecting any nonzero amplified
+mode instead gives exactly the original hard support detector.
 -/
 
 set_option autoImplicit false
@@ -35,6 +32,33 @@ def inverseSquareModeWeights : SummableModeWeights where
   weight_nonneg := by
     intro n
     positivity
+
+/-- Inverse-square truncation has a reciprocal uniform tail budget. -/
+theorem inverseSquareModeWeights_tailError_le {N : ℕ} (hN : 0 < N) :
+    inverseSquareModeWeights.tailError N ≤ 1 / (N : ℝ) := by
+  have positive : (0 : ℝ) < N := by exact_mod_cast hN
+  have finite (K : ℕ) :
+      (∑ k ∈ Finset.range K, 1 / ((k : ℝ) + N + 1) ^ 2) ≤
+        1 / (N : ℝ) - 1 / ((K : ℝ) + N) := by
+    induction K with
+    | zero => simp
+    | succ K ih =>
+      rw [Finset.sum_range_succ, Nat.cast_add, Nat.cast_one]
+      rw [show (K : ℝ) + 1 + N = K + N + 1 by ring]
+      have pos : (0 : ℝ) < K + N := by positivity
+      have step : 1 / ((K : ℝ) + N + 1) ^ 2 ≤
+          1 / ((K : ℝ) + N) - 1 / ((K : ℝ) + N + 1) := by
+        field_simp
+        nlinarith
+      linarith
+  have summable : Summable (fun k => inverseSquareModeWeights.weight (k + N)) :=
+    (summable_nat_add_iff N).2 inverseSquareModeWeights.summable_weight
+  apply le_of_tendsto summable.hasSum.tendsto_sum_nat
+  filter_upwards with K
+  have bound := finite K
+  have nonneg : 0 ≤ 1 / ((K : ℝ) + N) := by positivity
+  simpa [inverseSquareModeWeights, Nat.cast_add] using
+    (bound.trans (sub_le_self _ nonneg))
 
 /-- Polynomial Sobolev-style amplification of the `n`-th mode. -/
 def sobolevAmplification (m : ℕ) (x : ModeState) (n : ℕ) : ℝ :=
@@ -61,87 +85,19 @@ theorem continuous_sobolevAmplification (m n : ℕ) :
   exact (continuous_const : Continuous fun _ : ModeState => ((n + 1 : ℝ) ^ m)).mul
       (continuous_coeffObservable n)
 
-theorem continuous_softSobolevTerm (m n : ℕ) :
-    Continuous fun x : ModeState => softSobolevTerm m x n := by
-  exact (continuous_softSupportScalar.comp (continuous_sobolevAmplification m n)).mul
-      (continuous_const : Continuous fun _ : ModeState => inverseSquareModeWeights.weight n)
+/-- The soft Sobolev family uses the same bounded scalar with polynomial amplification. -/
+def softSobolevObservable (m : ℕ) : SummableCoordinateObservable :=
+  softSupportObservable inverseSquareModeWeights (fun n => (n + 1 : ℝ) ^ m)
 
-theorem norm_softSobolevTerm_le (m : ℕ) (x : ModeState) (n : ℕ) :
-    ‖softSobolevTerm m x n‖ ≤ inverseSquareModeWeights.weight n := by
-  have hterm_nonneg : 0 ≤ softSobolevTerm m x n := by
-    exact mul_nonneg
-      (softSupportScalar_nonneg (sobolevAmplification m x n))
-      (inverseSquareModeWeights.weight_nonneg n)
-  calc
-    ‖softSobolevTerm m x n‖ = softSobolevTerm m x n := by
-      simp [Real.norm_eq_abs, abs_of_nonneg hterm_nonneg]
-    _ = softSupportScalar (sobolevAmplification m x n) * inverseSquareModeWeights.weight n := rfl
-    _ ≤ inverseSquareModeWeights.weight n := by
-      nlinarith [softSupportScalar_nonneg (sobolevAmplification m x n),
-        softSupportScalar_le_one (sobolevAmplification m x n),
-        inverseSquareModeWeights.weight_nonneg n]
-
-theorem continuous_softSobolevRadius (m : ℕ) :
-    Continuous (softSobolevRadius m) := by
-  unfold softSobolevRadius
-  refine continuous_tsum (fun n => continuous_softSobolevTerm m n)
-    inverseSquareModeWeights.summable_weight ?_
-  intro n x
-  exact norm_softSobolevTerm_le m x n
-
-theorem continuous_softSobolevStatistic (m : ℕ) :
-    Continuous (softSobolevStatistic m) := by
-  unfold softSobolevStatistic
-  exact (continuous_coeffObservable 0).add (continuous_softSobolevRadius m)
-
-theorem tendsto_softSobolevRadius_truncateModes (m : ℕ) (x : ModeState) :
-    Tendsto (fun N => softSobolevRadius m (truncateModes N x))
-      Filter.atTop (nhds (softSobolevRadius m x)) := by
-  exact (continuous_softSobolevRadius m).continuousAt.tendsto.comp
-    (tendsto_truncateModes_modeState x)
-
-theorem tendsto_softSobolevStatistic_truncateModes (m : ℕ) (x : ModeState) :
-    Tendsto (fun N => softSobolevStatistic m (truncateModes N x))
-      Filter.atTop (nhds (softSobolevStatistic m x)) := by
-  exact (continuous_softSobolevStatistic m).continuousAt.tendsto.comp
-    (tendsto_truncateModes_modeState x)
-
-theorem continuous_softSobolev_cutoffPotential
-    (m : ℕ) {cutoff : ℝ → ℝ} (hcutoff : Continuous cutoff) :
-    Continuous (cutoffPotential cutoff (softSobolevRadius m) (softSobolevStatistic m)) := by
-  exact continuous_cutoffPotential hcutoff
-    (continuous_softSobolevRadius m) (continuous_softSobolevStatistic m)
-
-theorem continuous_softSobolev_coleHopfPhi
-    (m : ℕ) {ν : ℝ} {cutoff : ℝ → ℝ} (hcutoff : Continuous cutoff) :
-    Continuous (coleHopfPhi ν
-      (cutoffPotential cutoff (softSobolevRadius m) (softSobolevStatistic m))) := by
-  exact continuous_cutoffColeHopfPhi hcutoff
-    (continuous_softSobolevRadius m) (continuous_softSobolevStatistic m)
+theorem continuous_softSobolevRadius (m : ℕ) : Continuous (softSobolevRadius m) :=
+  (softSobolevObservable m).continuous_value
 
 theorem hardSobolevRadius_eq_hardSupportRadius (m : ℕ) :
     hardSobolevRadius m = hardSupportRadius := by
   funext x
-  have hiff : (∃ n, sobolevAmplification m x n ≠ 0) ↔ ∃ n, x.coeff n ≠ 0 := by
-    constructor
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      intro hzero
-      apply hn
-      simp [sobolevAmplification, hzero]
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      have hfac : ((n + 1 : ℝ) ^ m) ≠ 0 := by positivity
-      simpa [sobolevAmplification] using mul_ne_zero hfac hn
-  by_cases h : ∃ n, x.coeff n ≠ 0
-  · have hs : ∃ n, sobolevAmplification m x n ≠ 0 := hiff.mpr h
-    simp [hardSobolevRadius, hardSupportRadius, tailPresenceRadius, hs, h]
-  · have hs : ¬ ∃ n, sobolevAmplification m x n ≠ 0 := by
-      intro hs
-      exact h (hiff.mp hs)
-    simp [hardSobolevRadius, hardSupportRadius, tailPresenceRadius, hs, h]
+  have key (n : ℕ) : sobolevAmplification m x n ≠ 0 ↔ x.coeff n ≠ 0 := by
+    exact mul_ne_zero_iff.trans (and_iff_right (by positivity))
+  simp only [hardSobolevRadius, key, hardSupportRadius, tailPresenceRadius]
 
 theorem not_continuousAt_hardSobolevRadius_modeZero (m : ℕ) :
     ¬ ContinuousAt (hardSobolevRadius m) modeZero := by

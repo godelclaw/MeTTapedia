@@ -1,4 +1,7 @@
 import Mathlib.LinearAlgebra.Matrix.Rank
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.LinearAlgebra.Matrix.Bilinear
+import Mettapedia.MachineLearning.ContinualLearning.OrthogonalGradientRetention
 import Mathlib.Tactic
 
 /-!
@@ -48,10 +51,8 @@ theorem uncenteredCovariance_mulVec_eq_zero_iff
     (direction : Feature → ℝ) :
     (uncenteredCovariance features).mulVec direction = 0 ↔
       features.mulVec direction = 0 := by
-  change direction ∈
-      LinearMap.ker ((features.transpose * features).mulVecLin) ↔
-    direction ∈ LinearMap.ker features.mulVecLin
-  rw [Matrix.ker_mulVecLin_transpose_mul_self]
+  simpa [uncenteredCovariance] using
+    Matrix.conjTranspose_mul_self_mulVec_eq_zero features direction
 
 /-- Columnwise generalization used by a whole weight update: covariance
 annihilation is equivalent to annihilating all stored features. -/
@@ -60,26 +61,8 @@ theorem uncenteredCovariance_mul_eq_zero_iff
     (update : Matrix Feature Output ℝ) :
     uncenteredCovariance features * update = 0 ↔
       features * update = 0 := by
-  constructor
-  · intro covarianceNull
-    ext sample output
-    let direction : Feature → ℝ := fun feature => update feature output
-    have covarianceColumn :
-        (uncenteredCovariance features).mulVec direction = 0 := by
-      funext feature
-      simpa [direction, Matrix.mulVec, Matrix.mul_apply,
-        dotProduct] using
-        congr_fun (congr_fun covarianceNull feature) output
-    have featureColumn :
-        features.mulVec direction = 0 :=
-      (uncenteredCovariance_mulVec_eq_zero_iff
-        features direction).mp covarianceColumn
-    simpa [direction, Matrix.mulVec, Matrix.mul_apply,
-      dotProduct] using
-      congr_fun featureColumn sample
-  · intro featureNull
-    rw [uncenteredCovariance, Matrix.mul_assoc, featureNull]
-    simp
+  simpa [uncenteredCovariance] using
+    Matrix.conjTranspose_mul_self_mul_eq_zero features update
 
 /-- An exact covariance-null update leaves the stored affine-free linear
 layer output unchanged. -/
@@ -94,9 +77,8 @@ theorem linearLayer_add_covarianceNull
     add_zero]
 
 /-- Sum a finite execution trace of updates to one layer. -/
-def totalWeightUpdate : List (Matrix Feature Output ℝ) → Matrix Feature Output ℝ
-  | [] => 0
-  | update :: updates => update + totalWeightUpdate updates
+def totalWeightUpdate (updates : List (Matrix Feature Output ℝ)) : Matrix Feature Output ℝ :=
+  totalUpdate updates
 
 /-- Exact covariance-nullity is closed under an arbitrary finite update
 trace.  This is the step-level-to-task-level bridge used by the source. -/
@@ -107,21 +89,11 @@ theorem uncenteredCovariance_mul_totalWeightUpdate_eq_zero
         uncenteredCovariance features * update = 0) →
       uncenteredCovariance features * totalWeightUpdate updates = 0 := by
   intro updates covarianceNull
-  induction updates with
-  | nil =>
-      simp [totalWeightUpdate]
-  | cons update updates inductionHypothesis =>
-      have headNull :
-          uncenteredCovariance features * update = 0 :=
-        covarianceNull update (by simp)
-      have tailNull :
-          ∀ later ∈ updates,
-            uncenteredCovariance features * later = 0 := by
-        intro later laterMem
-        exact covarianceNull later (by simp [laterMem])
-      rw [totalWeightUpdate, Matrix.mul_add, headNull,
-        inductionHypothesis tailNull]
-      simp
+  have observation := observe_accumulatedParameter
+    (mulLeftLinearMap Output ℝ (uncenteredCovariance features)).toAddMonoidHom 0 updates
+  have zeroSum : (updates.map (fun update => uncenteredCovariance features * update)).sum = 0 :=
+    List.sum_eq_zero (by simpa using covarianceNull)
+  simpa [accumulatedParameter, totalWeightUpdate, mulLeftLinearMap, zeroSum] using observation
 
 /-- One square layer together with the finite parameter change made while
 learning later tasks. -/
@@ -133,38 +105,26 @@ structure SquareLayerChange (Feature : Type*) where
 activation after every linear map. -/
 def runSquareLayers
     (activation :
-      Matrix Sample Feature ℝ → Matrix Sample Feature ℝ) :
-    Matrix Sample Feature ℝ →
-      List (Matrix Feature Feature ℝ) →
-      Matrix Sample Feature ℝ
-  | features, [] => features
-  | features, weight :: weights =>
-      runSquareLayers activation
-        (activation (features * weight)) weights
+      Matrix Sample Feature ℝ → Matrix Sample Feature ℝ)
+    (features : Matrix Sample Feature ℝ)
+    (weights : List (Matrix Feature Feature ℝ)) : Matrix Sample Feature ℝ :=
+  weights.foldl (fun current weight => activation (current * weight)) features
 
 /-- Execute the stored, pre-update version of a finite layer chain. -/
 def runBaseChanges
     (activation :
-      Matrix Sample Feature ℝ → Matrix Sample Feature ℝ) :
-    Matrix Sample Feature ℝ →
-      List (SquareLayerChange Feature) →
-      Matrix Sample Feature ℝ
-  | features, [] => features
-  | features, change :: changes =>
-      runBaseChanges activation
-        (activation (features * change.base)) changes
+      Matrix Sample Feature ℝ → Matrix Sample Feature ℝ)
+    (features : Matrix Sample Feature ℝ)
+    (changes : List (SquareLayerChange Feature)) : Matrix Sample Feature ℝ :=
+  runSquareLayers activation features (changes.map SquareLayerChange.base)
 
 /-- Execute the same finite chain after applying every declared update. -/
 def runUpdatedChanges
     (activation :
-      Matrix Sample Feature ℝ → Matrix Sample Feature ℝ) :
-    Matrix Sample Feature ℝ →
-      List (SquareLayerChange Feature) →
-      Matrix Sample Feature ℝ
-  | features, [] => features
-  | features, change :: changes =>
-      runUpdatedChanges activation
-        (activation (features * (change.base + change.update))) changes
+      Matrix Sample Feature ℝ → Matrix Sample Feature ℝ)
+    (features : Matrix Sample Feature ℝ)
+    (changes : List (SquareLayerChange Feature)) : Matrix Sample Feature ℝ :=
+  runSquareLayers activation features (changes.map fun change => change.base + change.update)
 
 /-- Layerwise Condition 1 evaluated along the stored forward trajectory. -/
 def CovarianceNullAlongBase
@@ -199,7 +159,10 @@ theorem runUpdatedChanges_eq_runBaseChanges
             features * change.base :=
         linearLayer_add_covarianceNull
           features change.base change.update covarianceNull.1
-      rw [runUpdatedChanges, runBaseChanges, layerSame]
+      change runUpdatedChanges activation
+        (activation (features * (change.base + change.update))) changes =
+          runBaseChanges activation (activation (features * change.base)) changes
+      rw [layerSame]
       exact inductionHypothesis
         (activation (features * change.base)) covarianceNull.2
 
@@ -216,20 +179,8 @@ theorem unseenSecondFeature_nontrivial_safeUpdate :
         if input = 1 ∧ output = 1 then 3 else 0
     uncenteredCovariance features * update = 0 ∧
       features * update = 0 ∧ update ≠ 0 := by
-  dsimp
-  constructor
-  · ext input output
-    fin_cases input <;> fin_cases output <;>
-      norm_num [uncenteredCovariance, Matrix.mul_apply,
-        Fin.sum_univ_succ]
-  · constructor
-    · ext sample output
-      fin_cases sample
-      fin_cases output <;>
-        norm_num [Matrix.mul_apply, Fin.sum_univ_succ]
-    · intro updateZero
-      have entryZero := congr_fun (congr_fun updateZero 1) 1
-      norm_num at entryZero
+  norm_num [uncenteredCovariance, ← Matrix.ext_iff, Matrix.mul_apply,
+    Fin.sum_univ_succ, Fin.forall_fin_succ]
 
 /-- Full stored feature rank leaves no covariance-null plasticity. -/
 theorem identityFeatures_covarianceNull_iff_zero
@@ -251,16 +202,7 @@ theorem scalar_covarianceResidual_small_but_outputDrift_one
     features * update = 1 ∧
       uncenteredCovariance features * update =
         fun _ _ => epsilon := by
-  dsimp
-  constructor
-  · ext sample output
-    cases sample
-    cases output
-    simp [Matrix.mul_apply, nonzero]
-  · ext input output
-    cases input
-    cases output
-    simp [uncenteredCovariance, Matrix.mul_apply, nonzero]
+  constructor <;> ext <;> simp [uncenteredCovariance, Matrix.mul_apply, nonzero]
 
 /-- Concrete form of the conditioning boundary: a covariance residual of
 `1/100` coexists with unit output drift. -/
@@ -274,10 +216,6 @@ theorem hundredfold_scalar_conditioning :
     scalar_covarianceResidual_small_but_outputDrift_one
       (1 / 100 : ℝ) (by norm_num)
 
-#print axioms uncenteredCovariance_mul_eq_zero_iff
-#print axioms runUpdatedChanges_eq_runBaseChanges
-#print axioms unseenSecondFeature_nontrivial_safeUpdate
-#print axioms scalar_covarianceResidual_small_but_outputDrift_one
 
 end
 

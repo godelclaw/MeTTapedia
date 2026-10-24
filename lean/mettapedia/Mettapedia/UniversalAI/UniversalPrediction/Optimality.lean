@@ -83,7 +83,7 @@ def errorPerformance : PerformanceMeasure :=
     **Note**: This formalization proves the deterministic case where μ is deterministic
     (optimal errors = 0). In this case, the bound is O(log(1/c)) independent of n.
     For stochastic environments, the regret grows as O(√n), so a uniform bound
-    requires the average regret formulation (see `average_regret_vanishes`). -/
+    requires the average regret formulation (see `ErrorBounds.average_error_regret_vanishes`). -/
 theorem time_to_win (μ : PrefixMeasure) (ξ : Semimeasure) (p : Predictor)
     (Kp : ℕ) -- Complexity of predictor p
     (hKp_pos : 0 < Kp) -- Kp > 0 (all computable predictors have positive complexity)

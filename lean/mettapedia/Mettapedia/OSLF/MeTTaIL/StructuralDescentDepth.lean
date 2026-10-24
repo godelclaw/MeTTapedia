@@ -16,18 +16,18 @@ namespace Mettapedia.OSLF.MeTTaIL.StructuralDescent
 open Syntax RuleBinding ScopedRuleMatching GeneralPremise
 
 mutual
-def eventDepth : Event → Nat
+def eventDepth {Choice : Type} : Event Choice → Nat
   | .query _ _ _ _ | .freshness _ _ _ _ => 0
   | .child _ _ _ _ _ _ _ _ _ _ history => 1 + eventsDepth history
   | .quantified _ _ _ elements => elementsDepth elements
 termination_by event => sizeOf event
 
-def eventsDepth : List Event → Nat
+def eventsDepth {Choice : Type} : List (Event Choice) → Nat
   | [] => 0
   | event :: events => max (eventDepth event) (eventsDepth events)
 termination_by events => sizeOf events
 
-def elementsDepth : List (Nat × Pattern × List Event) → Nat
+def elementsDepth {Choice : Type} : List (Nat × Pattern × List (Event Choice)) → Nat
   | [] => 0
   | (_, _, history) :: elements => max (eventsDepth history) (elementsDepth elements)
 termination_by elements => sizeOf elements

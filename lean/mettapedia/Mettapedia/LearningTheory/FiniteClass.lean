@@ -1,35 +1,25 @@
 import Mathlib.Analysis.Convex.StdSimplex
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mettapedia.ProbabilityTheory.FiniteEventMass
 import Mathlib.Combinatorics.SetFamily.Shatter
 
 /-!
-# Learning a finite hypothesis class on a finite domain
+# Finite-class learning and candidate refinement
 
-Distributions are Mathlib's standard simplex on a finite domain; a sample of size
-`m` is a function `Fin m → Point` drawn independently, so its weight is the
-product of the point masses.  Hypotheses are Boolean functions on the domain.
+Distributions are Mathlib's finite standard simplex. Samples have product
+weights, and hypotheses are Boolean functions. `occam_bound` bounds the chance
+of any consistent hypothesis with risk above `ε` by `|H| exp (-ε m)`;
+`occam_sample_complexity` gives the corresponding sufficient sample size.
 
-* **Occam bound** (`occam_bound`).  The probability that some hypothesis in a
-  finite class agrees with the target on the whole sample yet has true risk
-  above `ε` is at most `|H| · exp (-ε m)`.  A consistent hypothesis is
-  therefore probably approximately correct once
-  `m ≥ (log |H| + log (1/δ)) / ε` (`occam_sample_complexity`).
-* **No free lunch** (`no_free_lunch_unseen`).  For any learner and any point the
-  sample does not contain, exactly half of all targets make the learner wrong at
-  that point.  No learner beats chance on unseen points, averaged over targets.
-* **VC dimension** (`card_le_sum_vcDim`, `vc_occam_bound`).  Through Mathlib's
-  shattering theory, a class of VC dimension `d` on `n` points has at most
-  `∑_{k ≤ d} (n choose k)` members, so the Occam bound holds with that count in
-  place of `|H|`.  The count grows with the domain size `n`, so this is a
-  finite-domain counting bound, not the distribution-free VC theorem whose sample
-  complexity depends on `d` alone.  The class of constant hypotheses has VC
-  dimension at most one; the class of all hypotheses shatters the whole domain.
-* **Learning online by halving** (`halving_mistake_bound`).  Predict with the
-  majority of the hypotheses still consistent with every labeled point, then
-  discard the inconsistent ones.  When the target is in the class, every mistake
-  at least halves what remains, so on any sequence of points there are at most
-  `log₂ |H|` mistakes (`halving_mistakes_le_log`).
+`no_free_lunch_unseen` proves that every learner is wrong on exactly half of
+all targets at an unseen point. Through Mathlib's Sauer–Shelah theorem,
+`vc_occam_bound` replaces class size by a VC-dimension counting bound over the
+whole finite domain; this is not a domain-independent VC sample bound.
+
+The halving learner makes at most `log₂ |H|` mistakes when the target belongs
+to the class. Candidate filtering computes `versionSpace` independently of
+observation order or repetition; the ordered learner's mistake count need not
+share those invariances. Empty classes expose the realizability premise.
 -/
 
 set_option autoImplicit false
@@ -37,8 +27,52 @@ set_option autoImplicit false
 namespace Mettapedia.LearningTheory
 
 open Finset Classical
+open Mettapedia.ProbabilityTheory
 
-variable {Point : Type*} [Fintype Point]
+variable {Point : Type*}
+
+/-- One observation eliminates precisely the hypotheses that disagree with it. -/
+def updateCandidates (hypotheses : Finset (Point → Bool)) (observation : Point × Bool) :=
+  hypotheses.filter fun h => h observation.1 == observation.2
+
+/-- The denotational candidate set for an entire observation trace. -/
+def versionSpace (hypotheses : Finset (Point → Bool)) (observations : List (Point × Bool)) :=
+  hypotheses.filter fun h => observations.all fun e => h e.1 == e.2
+
+theorem foldl_updateCandidates (hypotheses : Finset (Point → Bool))
+    (observations : List (Point × Bool)) :
+    observations.foldl updateCandidates hypotheses = versionSpace hypotheses observations := by
+  induction observations generalizing hypotheses with
+  | nil => simp [versionSpace]
+  | cons e rest ih =>
+      rw [List.foldl_cons, ih]
+      ext h
+      simp [versionSpace, updateCandidates, and_assoc]
+
+theorem versionSpace_append (hypotheses : Finset (Point → Bool)) (first second : List (Point × Bool)) :
+    versionSpace hypotheses (first ++ second) = versionSpace (versionSpace hypotheses first) second := by
+  ext h
+  simp [versionSpace, and_assoc]
+
+theorem versionSpace_perm (hypotheses : Finset (Point → Bool))
+    {first second : List (Point × Bool)} (permutation : first.Perm second) :
+    versionSpace hypotheses first = versionSpace hypotheses second := by
+  simp_rw [versionSpace, permutation.all_eq]
+
+theorem updateCandidates_commute (hypotheses : Finset (Point → Bool)) (first second : Point × Bool) :
+    updateCandidates (updateCandidates hypotheses first) second =
+      updateCandidates (updateCandidates hypotheses second) first := by
+  ext h
+  simp only [updateCandidates, Finset.mem_filter]
+  exact and_right_comm
+
+theorem updateCandidates_idempotent (hypotheses : Finset (Point → Bool)) (e : Point × Bool) :
+    updateCandidates (updateCandidates hypotheses e) e = updateCandidates hypotheses e := by
+  ext h
+  simp [updateCandidates]
+
+section FiniteDomain
+variable [Fintype Point]
 
 /-- A probability distribution on a finite domain. -/
 abbrev Distribution (Point : Type*) [Fintype Point] := ↥(stdSimplex ℝ Point)
@@ -73,18 +107,21 @@ theorem sampleProb_consistent (distribution : Distribution Point) (m : ℕ)
     (hypothesis target : Point → Bool) :
     sampleProb distribution m (Consistent hypothesis target) =
       (1 - risk distribution hypothesis target) ^ m := by
-  have agree : 1 - risk distribution hypothesis target =
-      ∑ x, if hypothesis x = target x then distribution.1 x else 0 := by
-    have total := prob_add_prob_not distribution fun x => hypothesis x ≠ target x
-    have complement : 1 - risk distribution hypothesis target =
-        prob distribution fun x => ¬ hypothesis x ≠ target x := by
-      rw [risk]; linarith
-    rw [complement, prob]
-    simp only [ne_eq, not_not]
-  rw [agree, Fintype.sum_pow, sampleProb]
-  refine sum_congr rfl fun sample _ => ?_
-  simp only [Consistent, Finset.prod_ite_zero, Finset.mem_univ, true_implies]
-  congr
+  have agree : FiniteEventMass.mass distribution.1 (fun x => decide (hypothesis x = target x)) =
+      1 - risk distribution hypothesis target := by
+    calc
+      _ = FiniteEventMass.mass distribution.1 (fun x => !decide (hypothesis x ≠ target x)) :=
+        FiniteEventMass.congr _ fun x => by by_cases h : hypothesis x = target x <;> simp [h]
+      _ = _ := by
+        rw [FiniteEventMass.complement, distribution.2.2]
+        congr 1
+        exact FiniteEventMass.indicator distribution.1 _ (fun x => hypothesis x ≠ target x)
+          (decision := fun _ => Classical.propDecidable _) (fun _ => by simp)
+  calc
+    _ = FiniteEventMass.mass (fun sample : Fin m → Point => ∏ i, distribution.1 (sample i))
+        (fun sample => decide (∀ i, (decide (hypothesis (sample i) = target (sample i))) = true)) :=
+      (FiniteEventMass.indicator _ _ _ (fun _ => by simp [Consistent])).symm
+    _ = _ := (FiniteEventMass.product_event _ _ m).trans (congrArg (· ^ m) agree)
 
 /-- **Occam bound.** -/
 theorem occam_bound (distribution : Distribution Point) [DecidableEq Point]
@@ -100,18 +137,10 @@ theorem occam_bound (distribution : Distribution Point) [DecidableEq Point]
       (fun sample => ∃ hypothesis ∈ hypotheses, Consistent hypothesis target sample ∧
         ε < risk distribution hypothesis target) ≤
       ∑ hypothesis ∈ bad, sampleProb distribution m (Consistent hypothesis target) := by
-    rw [sampleProb]
-    simp only [sampleProb]
-    rw [sum_comm]
-    refine sum_le_sum fun sample _ => ?_
-    split_ifs with exists_bad
-    · obtain ⟨hypothesis, member, consistent, large⟩ := exists_bad
-      have inBad : hypothesis ∈ bad := mem_filter.mpr ⟨member, large⟩
-      have single := single_le_sum (s := bad) (a := hypothesis)
-        (f := fun h => if Consistent h target sample then ∏ i, distribution.1 (sample i) else 0)
-        (fun h _ => by split_ifs <;> simp [weight_nonneg sample]) inBad
-      simpa [consistent] using single
-    · exact sum_nonneg fun h _ => by split_ifs <;> simp [weight_nonneg sample]
+    have bound := FiniteEventMass.finset_union_le bad
+      (fun sample : Fin m → Point => ∏ i, distribution.1 (sample i)) weight_nonneg
+      (fun h sample => decide (Consistent h target sample))
+    simpa [FiniteEventMass.mass, sampleProb, bad, and_assoc, and_comm] using bound
   have each : ∀ hypothesis ∈ bad,
       sampleProb distribution m (Consistent hypothesis target) ≤ Real.exp (-(ε * m)) := by
     intro hypothesis member
@@ -174,31 +203,19 @@ theorem no_free_lunch_unseen [DecidableEq Point] {m : ℕ} (learner : Learner Po
     simp [label, flip, Function.update_of_ne (notSampled i)]
   have flip_flip : ∀ target, flip (flip target) = target := by
     intro target
-    funext x
-    by_cases same : x = unseen
-    · subst same; simp [flip]
-    · simp [flip, Function.update_of_ne same]
+    simp [flip, Function.update_idem]
   set wrong := univ.filter fun target : Point → Bool =>
     learner (label target sample) unseen ≠ target unseen
   set right := univ.filter fun target : Point → Bool =>
     ¬ learner (label target sample) unseen ≠ target unseen
   have swap : wrong.card = right.card := by
-    refine card_nbij' flip flip (fun target member => ?_) (fun target member => ?_)
-      (fun target _ => flip_flip target) (fun target _ => flip_flip target)
-    · simp only [wrong, right, coe_filter, mem_univ, true_and, Set.mem_ofPred_eq, not_not,
-        ne_eq] at member ⊢
-      rw [flip_label]
-      have flipped : flip target unseen = !target unseen := by simp [flip]
-      rw [flipped]
-      revert member
-      cases learner (label target sample) unseen <;> cases target unseen <;> decide
-    · simp only [wrong, right, coe_filter, mem_univ, true_and, Set.mem_ofPred_eq, not_not,
-        ne_eq] at member ⊢
-      rw [flip_label]
-      have flipped : flip target unseen = !target unseen := by simp [flip]
-      rw [flipped]
-      revert member
-      cases learner (label target sample) unseen <;> cases target unseen <;> decide
+    apply card_equiv (⟨flip, flip, flip_flip, flip_flip⟩ : (Point → Bool) ≃ (Point → Bool))
+    intro target
+    change target ∈ wrong ↔ flip target ∈ right
+    simp only [wrong, right, mem_filter, mem_univ, true_and]
+    rw [flip_label]
+    simp only [flip, Function.update_self]
+    cases learner (label target sample) unseen <;> cases target unseen <;> decide
   have partition := card_filter_add_card_filter_not
     (s := (univ : Finset (Point → Bool)))
     (fun target : Point → Bool => learner (label target sample) unseen ≠ target unseen)
@@ -269,6 +286,8 @@ theorem all_shatters_univ [DecidableEq Point] :
   simp only [classFamily, mem_image, mem_univ, true_and]
   exact ⟨fun x => decide (x ∈ subset), by ext x; simp⟩
 
+end FiniteDomain
+
 /-! ## Online learning by halving -/
 
 /-- The majority prediction of a set of hypotheses: `true` when strictly more than
@@ -285,7 +304,6 @@ def halvingMistakes (target : Point → Bool) :
       (if majority hypotheses x = target x then 0 else 1) +
         halvingMistakes target (hypotheses.filter fun hypothesis => hypothesis x = target x) rest
 
-omit [Fintype Point] in
 /-- A mistake leaves at most half of the hypotheses. -/
 theorem card_consistent_le_half_of_mistake (hypotheses : Finset (Point → Bool))
     (target : Point → Bool) (x : Point) (mistake : majority hypotheses x ≠ target x) :
@@ -308,7 +326,6 @@ theorem card_consistent_le_half_of_mistake (hypotheses : Finset (Point → Bool)
       rw [falseIsNotTrue]
       omega
 
-omit [Fintype Point] in
 /-- **The halving mistake bound.**  When the target is among the hypotheses, two to
 the number of mistakes never exceeds the number of hypotheses. -/
 theorem halving_mistake_bound (target : Point → Bool) (hypotheses : Finset (Point → Bool))
@@ -328,27 +345,15 @@ theorem halving_mistake_bound (target : Point → Bool) (hypotheses : Finset (Po
         have halved := card_consistent_le_half_of_mistake hypotheses target x correct
         omega
 
-omit [Fintype Point] in
 theorem halving_mistakes_le_log (target : Point → Bool) (hypotheses : Finset (Point → Bool))
     (realizable : target ∈ hypotheses) (points : List Point) :
     halvingMistakes target hypotheses points ≤ Nat.log 2 hypotheses.card :=
   Nat.le_log_of_pow_le (by norm_num) (halving_mistake_bound target hypotheses realizable points)
 
-omit [Fintype Point] in
 /-- **Realizability is load-bearing.**  With no hypotheses at all, the learner
 predicts `false` and errs on every point labeled `true`. -/
 theorem halving_without_target (x : Point) :
     halvingMistakes (fun _ => true) ∅ [x, x] = 2 := by
   simp [halvingMistakes, majority]
-
-#print axioms sampleProb_consistent
-#print axioms occam_bound
-#print axioms occam_sample_complexity
-#print axioms no_free_lunch_unseen
-#print axioms vc_occam_bound
-#print axioms constants_vcDim_le_one
-#print axioms halving_mistake_bound
-#print axioms halving_mistakes_le_log
-#print axioms all_shatters_univ
 
 end Mettapedia.LearningTheory

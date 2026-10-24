@@ -26,6 +26,9 @@ import Mettapedia.Languages.MM0.Translation.UniversalTraceBound
 import Mettapedia.Languages.MM0.Translation.CalculusSimulation
 import Mettapedia.Languages.MM0.Translation.DerivationWeight
 import Mettapedia.Languages.MM0.Translation.LemmaSimulation
+import Mettapedia.Languages.MM0.PeanoEquationalFragment
+import Mettapedia.Languages.MM0.RewriteRung
+import Mettapedia.Languages.MM0.PeanoRewriteRung
 
 /-!
 # MM0 theories, checking semantics, and language-definition translations
@@ -170,6 +173,18 @@ trees relocate; shared origins survive and source conflicts refuse.
 `Translation.FirstOrderPrinting` emits MM0, MMU and explicit-argument MM1
 using retained authored names and supported notation. Its native text boundary
 is independently qualified rather than asserted by the derivability theorem.
+
+`PeanoEquationalFragment` states the equational fragment of `peano.mm0` as
+kernel tables whose entries match the native declarations word for word, with
+proof witnesses for its equality structure and soundness in the standard
+model (`derives_sound`). `RewriteRung` puts a rewriting conversion on it for
+every finite rule set: if each rule is the equation of a table entry, every
+conversion is derivable (`rung_sound`), an executable trace checker is sound
+(`checkTrace_sound`), and receipt mode elaborates trees into accepted
+witnesses at least as large as their recorded work (`stepCount_le_nodeCount`).
+`PeanoRewriteRung` instantiates it with the recursion equations of addition
+and multiplication, decides their conversion by normal forms
+(`conv_iff_norm`), and compares direct, receipt and rung certificates.
 
 The authoring surface is the shared `moduleTheory!` quotation extended by
 typed `Judgments` and `Inferences` blocks (`inferenceTheory!`). The current

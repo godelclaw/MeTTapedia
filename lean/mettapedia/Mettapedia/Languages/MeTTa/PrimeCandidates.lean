@@ -1,9 +1,9 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DecisionSurface
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDefAdequacy
-import Mettapedia.Languages.MeTTa.PrimeCandidates.Specification
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DevelopmentPlan
-import Mettapedia.Languages.MeTTa.PrimeCandidates.ReductionViewCanary
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativePriorityControl
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Index.DecisionSurface
+import Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflective.LanguageDefAdequacy
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Index.Specification
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Index.DevelopmentPlan
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.ReductionViewCanary
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Native.NativePriorityControl
 
 /-!
 # Candidate integrations for Prime research

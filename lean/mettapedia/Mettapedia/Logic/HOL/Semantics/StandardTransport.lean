@@ -1,4 +1,5 @@
 import Mettapedia.Logic.HOL.Semantics.ModelProperties
+import Mettapedia.Logic.HOL.Embedding.ContextualHenkinSemantics
 
 /-!
 # Isomorphism invariance of full-domain Henkin models
@@ -34,7 +35,21 @@ def liftEquiv (base : ∀ b, Source b ≃ Target b) :
     ∀ τ : Ty Base, Ty.denote Source τ ≃ Ty.denote Target τ
   | .prop => Equiv.ulift.trans Equiv.ulift.symm
   | .base b => base b
-  | .arr σ τ => Equiv.arrowCongr (liftEquiv base σ) (liftEquiv base τ)
+  | .arr σ τ =>
+      { toFun := fun function argument =>
+          liftEquiv base τ (function ((liftEquiv base σ).symm argument))
+        invFun := fun function argument =>
+          (liftEquiv base τ).symm (function (liftEquiv base σ argument))
+        left_inv := by
+          intro function
+          funext argument
+          exact ((liftEquiv base τ).symm_apply_apply _).trans
+            (congrArg function ((liftEquiv base σ).symm_apply_apply argument))
+        right_inv := by
+          intro function
+          funext argument
+          exact ((liftEquiv base τ).apply_symm_apply _).trans
+            (congrArg function ((liftEquiv base σ).apply_symm_apply argument)) }
 
 @[simp] theorem liftEquiv_prop_down (base : ∀ b, Source b ≃ Target b)
     (value : Ty.denote Source .prop) :
@@ -195,5 +210,128 @@ theorem models_transport
   exact Iff.of_eq transported
 
 end Models
+
+section Properties
+
+variable (source : HenkinModel.{u, v, w} Base Const) (target : HenkinModel.{u, v, w'} Base Const)
+variable (sourceFull : source.FullDomains) (targetFull : target.FullDomains)
+variable (base : ∀ b, source.Carrier b ≃ target.Carrier b)
+
+/-- Transport a supplied Hilbert selector by the carrier equivalences. This
+uses its existing selection law; it introduces no classical witness choice. -/
+def transportHilbertChoice (choice : source.HilbertChoice) : target.HilbertChoice where
+  choose τ predicate := liftEquiv base τ
+    (choice.choose τ (fun value => .up ((predicate (liftEquiv base τ value)).down)))
+  choose_admissible _ := targetFull _ _
+  specified τ predicate _ witness := by
+    apply choice.specified τ
+      (fun value => .up ((predicate (liftEquiv base τ value)).down)) (sourceFull _ _)
+    obtain ⟨value, _, holds⟩ := witness
+    refine ⟨(liftEquiv base τ).symm value, sourceFull _ _, ?_⟩
+    simpa only [Equiv.apply_symm_apply] using holds
+
+include sourceFull targetFull base in
+/-- Choice is preserved and reflected between equivalent full-domain
+models. The theorem does not assert a selector in either model. -/
+theorem hasHilbertChoice_iff : source.HasHilbertChoice ↔ target.HasHilbertChoice := by
+  constructor
+  · rintro ⟨choice⟩
+    exact ⟨transportHilbertChoice source target sourceFull targetFull base choice⟩
+  · rintro ⟨choice⟩
+    exact ⟨transportHilbertChoice target source targetFull sourceFull (fun b => (base b).symm) choice⟩
+
+/-- Transport an actual injective successor and its omitted element. -/
+def transportInfinity (b : Base) (infinity : source.DedekindInfinityWitness b) :
+    target.DedekindInfinityWitness b where
+  successor value := base b (infinity.successor ((base b).symm value))
+  successor_admissible := targetFull _ _
+  successor_injective := fun _ _ same =>
+    (base b).symm.injective (infinity.successor_injective ((base b).injective same))
+  omitted := base b infinity.omitted
+  omitted_not_image value same :=
+    infinity.omitted_not_image ((base b).symm value) ((base b).injective same)
+
+include sourceFull targetFull base in
+/-- Dedekind infinity is invariant under the actual carrier comparison. -/
+theorem hasDedekindInfiniteBase_iff (b : Base) :
+    source.HasDedekindInfiniteBase b ↔ target.HasDedekindInfiniteBase b := by
+  constructor
+  · rintro ⟨infinity⟩
+    exact ⟨transportInfinity source target targetFull base b infinity⟩
+  · rintro ⟨infinity⟩
+    exact ⟨transportInfinity target source sourceFull (fun b => (base b).symm) b infinity⟩
+
+end Properties
+
+section Contexts
+
+variable (source : HenkinModel.{u, v, w} Base Const) (target : HenkinModel.{u, v, w'} Base Const)
+variable (base : ∀ b, source.Carrier b ≃ target.Carrier b)
+
+/-- The comparison of carriers extends to whole typed environments, including
+function-valued variables and all their dependent variable indices. -/
+def valuationEquiv (Γ : Ctx Base) :
+    HenkinModel.Valuation source Γ ≃ HenkinModel.Valuation target Γ where
+  toFun valuation := fun {τ} index => liftEquiv base τ (valuation index)
+  invFun valuation := fun {τ} index => (liftEquiv base τ).symm (valuation index)
+  left_inv valuation := by
+    funext τ index
+    exact (liftEquiv base τ).symm_apply_apply (valuation index)
+  right_inv valuation := by
+    funext τ index
+    exact (liftEquiv base τ).apply_symm_apply (valuation index)
+
+/-- Context extension keeps the supplied argument under the carrier comparison. -/
+theorem valuationEquiv_extend {Γ : Ctx Base} {τ : Ty Base}
+    (valuation : HenkinModel.Valuation source Γ) (value : Ty.denote source.Carrier τ) :
+    (valuationEquiv source target base (τ :: Γ) (HenkinModel.extend source valuation value) :
+      HenkinModel.Valuation target (τ :: Γ)) =
+      (fun {A} index => HenkinModel.extend target
+        (valuationEquiv source target base Γ valuation) (liftEquiv base τ value)
+        (τ := A) index) :=
+  (extend_transport source target base valuation value).symm
+
+variable (sourceFull : source.FullDomains) (targetFull : target.FullDomains)
+variable (constants : ∀ {τ : Ty Base} (constant : Const τ),
+  liftEquiv base τ (source.constDen constant) = target.constDen constant)
+include sourceFull targetFull constants
+
+/-- Simultaneous substitution and the comparison of whole environments commute. -/
+theorem valuationEquiv_substitution {Γ Δ : Ctx Base} (substitution : Subst Const Γ Δ)
+    (valuation : HenkinModel.Valuation source Δ) :
+    (valuationEquiv source target base Γ (Soundness.substVal source substitution valuation) :
+      HenkinModel.Valuation target Γ) =
+      (fun {A} index => Soundness.substVal target substitution
+        (valuationEquiv source target base Δ valuation) (τ := A) index) := by
+  funext τ index
+  exact (denote_transport source target sourceFull targetFull base constants
+    (substitution index) valuation).symm
+
+end Contexts
+
+section NaturalIso
+
+variable (source target : HenkinModel.{u, v, w} Base Const)
+variable (base : ∀ b, source.Carrier b ≃ target.Carrier b)
+variable (sourceFull : source.FullDomains) (targetFull : target.FullDomains)
+variable (constants : ∀ {τ : Ty Base} (constant : Const τ),
+  liftEquiv base τ (source.constDen constant) = target.constDen constant)
+
+/-- For models in a common semantic universe, the comparison is a natural
+isomorphism over the actual HOL context/substitution category. -/
+def valuationNaturalIso :
+    ContextualHenkinSemantics.valuationFunctor source ≅
+      ContextualHenkinSemantics.valuationFunctor target :=
+  CategoryTheory.NatIso.ofComponents
+    (fun context => (valuationEquiv source target base context.val).toIso)
+    (by
+      intro context next substitution
+      apply TypeCat.Hom.ext
+      apply TypeCat.Fun.ext
+      funext valuation
+      exact valuationEquiv_substitution source target base sourceFull targetFull constants
+        substitution valuation)
+
+end NaturalIso
 
 end Mettapedia.Logic.HOL.StandardTransport

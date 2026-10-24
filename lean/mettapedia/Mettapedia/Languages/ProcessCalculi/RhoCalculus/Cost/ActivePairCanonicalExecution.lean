@@ -197,14 +197,16 @@ theorem fundedPairChannels_typed {free : FreeTypeContext} {ambient : List TypeEx
       · apply HasType.constructor
           (rule := communicationDecoration.baseConstructor rhoCalc.terms[5])
         · decide +kernel
-        · simp [UsesBareCollection, communicationDecoration_input_parameters]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff,
+            communicationDecoration_input_parameters]
         · rw [communicationDecoration_input_parameters]
           exact .cons trivial rfl receiverTyped (.cons trivial rfl (.lambda bodyTyped) .nil)
       · apply ElementsHaveType.cons
         · apply HasType.constructor
             (rule := communicationDecoration.baseConstructor rhoSyncOutputRule)
           · decide +kernel
-          · simp [UsesBareCollection, communicationDecoration_output_parameters]
+          · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff,
+              communicationDecoration_output_parameters]
           · rw [communicationDecoration_output_parameters]
             exact .cons trivial rfl senderTyped
               (.cons trivial rfl sentTyped (.cons trivial rfl afterTyped .nil))

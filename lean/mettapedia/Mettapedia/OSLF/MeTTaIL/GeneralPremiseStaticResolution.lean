@@ -84,16 +84,10 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
           cases result with
           | premise middle event head =>
             apply ResolvedTree.branch rfl
-            have restored : InputFacts environment context refinement
-                (restoreParameter parameter initial middle) :=
-              ⟨facts.typed.restoreParameter (head.typed localTyped) parameter,
-                facts.canonical.restoreParameter (head.canonical localFacts.canonical) parameter,
-                facts.represented.extension (restored_extension initial middle parameter
-                  (localValue context.bound element) head.extension)⟩
             refine .cons (resolvedEvaluate environment language services outer
               (.quantified context parameter body (index + 1) elements
-                (restoreParameter parameter initial middle))
-              (.quantified refinement elementType restored zero parameterType parameterDependencies
+                initial)
+              (.quantified refinement elementType facts zero parameterType parameterDependencies
                 tailTyped elementsObjects.2 elementsCanonical.2 supported stratum) _ ?_) (.nil _ _)
             intro result
             cases result with

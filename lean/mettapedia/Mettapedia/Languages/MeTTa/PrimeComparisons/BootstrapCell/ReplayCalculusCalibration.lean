@@ -1,7 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReflexiveLayer
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCorrect
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCalculus
-import Mettapedia.Languages.MeTTa.PrimeCandidates.MinimalCheckingPackage
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.MinimalCheckingPackage
 
 /-!
 # Calibration of the reflexive cell

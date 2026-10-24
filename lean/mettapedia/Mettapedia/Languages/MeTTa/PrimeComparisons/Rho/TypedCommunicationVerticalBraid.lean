@@ -2,7 +2,7 @@ import Mettapedia.GSLT.LanguageDef.InteractionEventAuthority
 import Mettapedia.GSLT.LanguageDef.Cost.OperationalValuation
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.DependentReflectiveCommunicationCell
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.ScopedRefinement
-import Mettapedia.Languages.MeTTa.PrimeCandidates.SelectedCostLayerIterationBoundary
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Native.SelectedCostLayerIterationBoundary
 
 /-!
 # A vertical braid for one dependent typed rho communication

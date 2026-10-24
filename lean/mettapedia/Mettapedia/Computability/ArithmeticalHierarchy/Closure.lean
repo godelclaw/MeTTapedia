@@ -11,21 +11,14 @@ boolean operations.
 ## Main Results
 
 * `Sigma02Predicate.and`: Σ⁰₂ is closed under conjunction
-* `Sigma02Predicate.or`: Σ⁰₂ is closed under disjunction
-* `Pi02Predicate.and`: Π⁰₂ is closed under conjunction
-* `Pi02Predicate.or`: Π⁰₂ is closed under disjunction
 * `Delta02Predicate.and`: Δ⁰₂ is closed under conjunction
 * `Delta02Predicate.or`: Δ⁰₂ is closed under disjunction
 * `Delta02Predicate.not`: Δ⁰₂ is closed under negation
 
-## Key Insights
-
-- Σ⁰₂ is closed under ∃, ∧, ∨ but NOT ¬
-- Π⁰₂ is closed under ∀, ∧, ∨ but NOT ¬
-- Δ⁰₂ is closed under ALL boolean operations (∧, ∨, ¬)
-
-This is crucial for building up complex predicates from simple ones in the
-Grain of Truth formalization.
+The implemented interfaces cover Σ⁰₂ conjunction and computable precomposition,
+and the Boolean operations and computable precomposition for Δ⁰₂. Complements of
+Σ⁰₂ and Π⁰₂ presentations are constructed in `Basic`. No other closure interface
+is asserted here.
 
 ## References
 
@@ -86,18 +79,10 @@ def and (hP : Sigma02Predicate P) (hQ : Sigma02Predicate Q) :
         all_goals try (rw [hP_case, hQ_case] at h_and_val; simp at h_and_val)
         all_goals rfl
 
-/-! ### NOTE: Σ⁰₂ OR Closure
-
-Σ⁰₂ is closed under disjunction (∨), but the proof is non-trivial:
-- Requires showing bounded search is computable (primitive recursive)
-- Convergence proof uses pigeonhole principle on infinite sets
-
-This is a standard result in computability theory (Rogers 1987, Soare 2016)
-but is deferred as it's not needed for the Grain of Truth formalization
-(which uses Δ⁰₂, not bare Σ⁰₂).
-
-If needed later, the construction is: at stage k, search for m ≤ k where
-the approximation is continuously true on [m,k].
+/-!
+Pointwise disjunction of eventually-true presentations does not in general
+present disjunction: complementary alternating sequences have a constantly true
+pointwise disjunction although neither sequence is eventually true.
 -/
 
 /-- Σ⁰₂ predicates can be composed with computable functions.
@@ -122,25 +107,13 @@ def comp (hP : Sigma02Predicate P) (f : ℕ → ℕ) (hf : Computable f) :
 
 end Sigma02Predicate
 
-/-! ## Π⁰₂ Closure Properties
+/-! ## Π⁰₂ presentations
 
-NOTE: Π⁰₂ AND and OR closures are standard results in computability theory
-(Rogers 1987, Soare 2016) but are deferred as they require non-trivial proofs
-using infinite Ramsey-type arguments.
-
-For the Grain of Truth formalization, we only need Δ⁰₂ closures (proven below),
-so these are omitted for now.
-
-The constructions are straightforward:
-- Π⁰₂ AND: Use pointwise conjunction (&&), prove infinitely often both hold
-- Π⁰₂ OR: Use pointwise disjunction (||), immediate from definitions
-
-If needed later, these can be added following the standard textbook proofs.
+Infinitely-often witnesses do not synchronize under pointwise conjunction.
+Two sequences true at complementary parities are each true infinitely often,
+while their pointwise conjunction is always false. No conjunction construction
+for Π⁰₂ presentations is supplied here.
 -/
-
-namespace Pi02Predicate
--- Deferred: and, or closures
-end Pi02Predicate
 
 /-! ## Δ⁰₂ Closure Properties -/
 

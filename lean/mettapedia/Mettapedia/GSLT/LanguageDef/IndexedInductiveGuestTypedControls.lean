@@ -39,6 +39,16 @@ theorem lookup_substitute {A : Type} {n m : Nat} (substitution : Sub Tower.Head 
   | here => rfl
   | there reference ih => exact ih environment.2
 
+/-- Head maps retain the selected source length variable. -/
+theorem lookup_mapHead (map : Tower.Head → Tower.Head) {A : Type} {n : Nat}
+    {context : List Vectors.DataSort} (reference : Vectors.LengthVariable context)
+    (environment : TermEnv (Vectors.interface A) Tower.Head n context) :
+    (lookup reference environment).mapHead map =
+      lookup reference (mapEnv (Tm.mapHead map) environment) := by
+  induction reference with
+  | here => rfl
+  | there reference ih => exact ih environment.2
+
 /-- Native name interpretation. Addition is deliberately not a declared
 operation of the reference library and is not used by its constructor codes. -/
 def indexTerm {A : Type} {n : Nat} {context : List Vectors.DataSort} :
@@ -49,6 +59,21 @@ def indexTerm {A : Type} {n : Nat} {context : List Vectors.DataSort} :
   | .addition left right, environment =>
       .app (.app (.const `Unadmitted.IndexAdd) (indexTerm left environment))
         (indexTerm right environment)
+
+/-- The source index syntax commutes with head maps, including open variables.
+This syntactic law does not admit the deliberately undeclared addition operation. -/
+theorem indexTerm_mapHead (map : Tower.Head → Tower.Head) {A : Type} {n : Nat}
+    {context : List Vectors.DataSort} (expression : Vectors.IndexExpr context)
+    (environment : TermEnv (Vectors.interface A) Tower.Head n context) :
+    (indexTerm expression environment).mapHead map =
+      indexTerm expression (mapEnv (Tm.mapHead map) environment) := by
+  induction expression with
+  | zero => rfl
+  | «variable» reference => exact lookup_mapHead map reference environment
+  | successor expression ih =>
+      simp only [indexTerm, NativeNaturalVectorFamilies.succApp, Tm.mapHead, ih]
+  | addition left right ihLeft ihRight =>
+      simp only [indexTerm, Tm.mapHead, ihLeft, ihRight]
 
 def indexSyntax (A : Type) : IndexSyntax (Vectors.interface A) Tower.Head where
   term := indexTerm

@@ -500,7 +500,7 @@ theorem member_returns (state : State) (item : Pattern) : ∀ items : List Patte
     have later := member_returns state item rest
     by_cases same : item = first
     · subst same
-      canonical_eval unfolding [patternsValue, encodePatterns]
+      canonical_eval unfolding [patternsValue, encodePatterns, List.mem_cons, true_or, decide_true]
     · have different : encodePattern item ≠ encodePattern first :=
         fun equal => same (InferenceCettaWire.encodePattern_injective equal)
       canonical_eval [later] unfolding [same, different, patternsValue, encodePatterns, List.mem_cons]
@@ -517,7 +517,7 @@ theorem dedup_returns (state : State) : ∀ items : List Pattern,
     by_cases member : first ∈ rest
     · rw [List.dedup_cons_of_mem member]
       canonical_eval [tail, tested] unfolding [member, patternsValue, encodePatterns]
-    · rw [List.dedup_cons_of_not_mem member]
+    · rw [List.dedup_cons_of_notMem member]
       canonical_eval [tail, tested] unfolding [member, patternsValue, encodePatterns]
 
 /-- **`gslt:canon:set-form` is `Wrappers.setForm`** on covered items: a set's elements in canonical form

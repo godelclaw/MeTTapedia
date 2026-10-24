@@ -126,7 +126,7 @@ theorem permutationBag_bagTheory : BagTheory permutationBag bagConstructor none 
 
 /-- Its canonical section. -/
 def canonicalSection : ComputableCanonicalSection theory :=
-  bagCanonicalSection theory permutationBag_bagTheory
+  bagCanonicalSection theory (permutationBag_bagTheory.asBare rfl)
 
 /-- The constant `A`. -/
 def termA : Pattern := .apply "A" []

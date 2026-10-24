@@ -75,6 +75,49 @@ theorem validatesExcludedMiddle (M : HenkinModel.{u, v, w} Base Const) :
   change (M.denote φ ρ).down ∨ ¬ (M.denote φ ρ).down
   exact Classical.em _
 
+/-- Formula-level classicality decides each proposition admitted by the
+model. A one-variable context exposes that proposition directly; no choice
+or global coverage assumption is needed. -/
+theorem excludedMiddle_of_admissible_proposition
+    (M : HenkinModel.{u, v, w} Base Const) (valid : M.ValidatesExcludedMiddle)
+    (proposition : Prop) (admitted : M.adm .prop (.up proposition)) :
+    proposition ∨ ¬ proposition := by
+  let valuation : M.Valuation [.prop] :=
+    fun {A} index => match index with
+      | .vz => .up proposition
+      | .vs previous => nomatch previous
+  exact valid (.var .vz) valuation (by
+    intro A index
+    cases index with
+    | vz => exact admitted
+    | vs previous => cases previous)
+
+/-- Precisely the admitted propositions must be classical. Term closure
+supplies admissibility of the denotation of every source formula. -/
+theorem validatesExcludedMiddle_iff_admitted
+    (M : HenkinModel.{u, v, w} Base Const) :
+    M.ValidatesExcludedMiddle ↔
+      ∀ proposition : Prop, M.adm .prop (.up proposition) → proposition ∨ ¬ proposition := by
+  constructor
+  · exact M.excludedMiddle_of_admissible_proposition
+  · intro classicalOnImage Γ formula valuation admissible
+    exact classicalOnImage (M.denote formula valuation).down
+      (M.denote_admissible admissible formula)
+
+/-- This particular `Prop`-valued model interface already admits every
+ambient proposition through `prop_mem`. Its formula-level classicality is
+therefore equivalent to ambient excluded middle, without a further coverage
+assumption. A classical fragment inside a nonclassical presheaf host requires
+an explicit interpretation into that host, not a restriction of this field. -/
+theorem validatesExcludedMiddle_iff_ambient
+    (M : HenkinModel.{u, v, w} Base Const) :
+    M.ValidatesExcludedMiddle ↔ ∀ proposition : Prop, proposition ∨ ¬ proposition := by
+  constructor
+  · intro valid proposition
+    exact M.excludedMiddle_of_admissible_proposition valid proposition (M.prop_mem _)
+  · intro classicalLogic
+    exact (M.validatesExcludedMiddle_iff_admitted).mpr (fun proposition _ => classicalLogic proposition)
+
 /-- Under full domains, recursive Henkin equality coincides with ambient
 equality at every simple type. -/
 theorem eq_of_eqv_of_fullDomains (M : HenkinModel.{u, v, w} Base Const)

@@ -196,6 +196,23 @@ rg -n --glob '*.lean' '^\s*(@\[[^]]*\]\s*)*(noncomputable\s+)?axiom\s' .
 # native_decide occurrences:
 rg -n --glob '*.lean' 'native_decide' .
 ```
+<!-- category-theory-source-inventory:start -->
+The source inventory counts admission markers outside comments and literal text.
+The source inventory doesn't replace kernel dependency qualification.
+
+```json
+{"token_counts":
+ {"theorem_wanted": 0,
+  "sorry": 0,
+  "native_decide": 0,
+  "axiom": 0,
+  "admit": 0,
+  "aby": 0},
+ "scope": "Mettapedia/CategoryTheory",
+ "files_with_tokens": [],
+ "file_count": 469}
+```
+<!-- category-theory-source-inventory:end -->
 
 ## Dependency flow
 

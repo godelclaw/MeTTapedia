@@ -62,8 +62,6 @@ theorem ultrapower_interpret {Carrier : Type v} {Index : Type w}
       (fun index =>
         model.interpret operation (fun position => arguments position index) :
           Index → Carrier) := by
-  letI : (index : Index) → S.toFirstOrderLanguage.Structure Carrier :=
-    fun _ => model.toFirstOrderStructure
   exact @FirstOrder.Language.Ultraproduct.funMap_cast
     Index (fun _ : Index => Carrier) ultrafilter S.toFirstOrderLanguage
     (fun _ : Index => model.toFirstOrderStructure) (S.arity operation)
@@ -215,7 +213,7 @@ theorem growingElement_ne_diagonal (value : Nat) :
   have singletonMem : {index : Nat | index = value} ∈ Filter.hyperfilter Nat :=
     Filter.eventually_iff.mp eventuallyConstant
   have singletonFinite : Set.Finite {index : Nat | index = value} := by
-    simpa only [Set.setOf_eq_eq_singleton] using Set.finite_singleton value
+    simpa only [Set.ofPred_eq_eq_singleton] using Set.finite_singleton value
   exact singletonFinite.notMem_hyperfilter singletonMem
 
 /-- Negative canary: the diagonal embedding into this ultrapower is not

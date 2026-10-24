@@ -110,7 +110,7 @@ theorem atomic_grammar_not_equation_invariant :
     have singleton : EquationEquiv (engineBasePremises RelationEnv.empty) piCalc
         (.collection .hashBag [.fvar "b"] none) (.fvar "b") := derivedInstance_equivalent
       (DerivedInstance.singleton piBagTheory.bagAlgebraRule rfl
-        ⟨piNameContext, [], bag_hasType piBagTheory (.cons (.fvar rfl) (.nil _ _))⟩)
+        ⟨piNameContext, [], bag_hasType (piBagTheory.asBare rfl) (.cons (.fvar rfl) (.nil _ _))⟩)
     exact equationEquiv_fill (.apply "PiOut" [.fvar "a"] .hole []) (.symm _ _ singleton)
   have first : AtomicPi 0 before := .output (.free 0 "a") (.free 0 "b")
   have escaped : AtomicPi 0 after := (invariant same).mp first

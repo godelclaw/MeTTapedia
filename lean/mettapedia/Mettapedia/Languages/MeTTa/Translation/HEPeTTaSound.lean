@@ -29,6 +29,10 @@ frame. Per-occurrence continuation manifests preserve the supplied HE occurrence
 Their local child certificates do not assert complete recursive PeTTa search
 coverage, so this transport is not whole-program open-query equivalence.
 
+The shared E1/E2 comparison is a first-order Atom fragment. Its open recursive
+admission requires a passive environment so variable lookup cannot introduce
+an active call. It neither defines MeTTa nor bounds HO MeTTa Prime.
+
 The earlier matcher-level section remains historical: equation membership,
 leaf delivery and error passthrough are intentionally narrower than completed
 recursive evaluation. `MeTTaEval` there is not substituted for either dialect's
@@ -2480,8 +2484,8 @@ private theorem ClauseScan.he_rows {head : String} {values : List Atom} {positio
   have instanceAt (index : Nat) (equation : Equation) :
       ∃ pattern body, HE.Spec.Eval.Steps.AlphaVariantRel live
         (.expression (.symbol head::values)) frame.bindings
-        (PeTTa.CettaEagerDFS.Destination.ClauseChoice.pattern equation) equation.body pattern body := by
-    let caller : PeTTa.CettaEagerDFS.Destination.Control :=
+        (PeTTa.EagerDFS.Destination.ClauseChoice.pattern equation) equation.body pattern body := by
+    let caller : PeTTa.EagerDFS.Destination.Control :=
       {bindings := HE.Spec.Type.Presentation.BindingTheory.bindingAtomEquations frame.bindings,
         goals := [],destination := .expression []}
     exact ⟨_,_,ConstructorMatch.protected_petta_clause_he_alpha caller index equation live
@@ -2498,7 +2502,7 @@ private theorem ClauseScan.he_rows {head : String} {values : List Atom} {positio
         obtain ⟨valuation,image⟩ :=
           (ConstructorMatch.fresh_candidate_iff_raw_solution otherVariant closed frame.certified.satisfiable).mp
             ⟨output,matched,compatible⟩
-        simp only [PeTTa.CettaEagerDFS.Destination.ClauseChoice.pattern,
+        simp only [PeTTa.EagerDFS.Destination.ClauseChoice.pattern,
           HE.Spec.Type.RuntimeRefinement.applyTypeValuation,List.map_cons,Atom.expression.injEq,
           List.cons.injEq,Atom.symbol.injEq] at image
         exact different image.1
@@ -2513,7 +2517,7 @@ private theorem ClauseScan.he_rows {head : String} {values : List Atom} {positio
         obtain ⟨substitution,matching⟩ :=
           (ConstructorMatch.fresh_candidate_iff_source_match otherVariant closed ground frame.certified.satisfiable).mp
             ⟨output,matched,compatible⟩
-        simp only [PeTTa.CettaEagerDFS.Destination.ClauseChoice.pattern,same] at matching
+        simp only [PeTTa.EagerDFS.Destination.ClauseChoice.pattern,same] at matching
         cases matching with
         | expr_cons first rest => cases first; exact absent _ rest
       exact ⟨[]::blocks,.cons refused rows,related⟩
@@ -2521,9 +2525,9 @@ private theorem ClauseScan.he_rows {head : String} {values : List Atom} {positio
       obtain ⟨blocks,rows,related⟩ := ih
       obtain ⟨pattern,body,variant⟩ := instanceAt position equation
       have full : MORK.MatchAtomRel []
-          (PeTTa.CettaEagerDFS.Destination.ClauseChoice.pattern equation)
+          (PeTTa.EagerDFS.Destination.ClauseChoice.pattern equation)
           (.expression (.symbol head::values)) substitution := by
-        simp only [PeTTa.CettaEagerDFS.Destination.ClauseChoice.pattern,same]
+        simp only [PeTTa.EagerDFS.Destination.ClauseChoice.pattern,same]
         exact .expr_cons .symbol matched
       obtain ⟨image,output,matchedBindings,matching,merged⟩ := ConstructorMatch.source_match_fresh_candidate
         variant closed ground frame.certified.satisfiable full
@@ -3269,25 +3273,25 @@ theorem ConstructorHead.he_frontier_empty {program : Program} {head : String}
     (passive : ConstructorHead program head) (arguments live : List Atom) (incoming : HE.Bindings) :
     HE.Spec.Eval.Steps.EquationFrontierRel (equationSpace program) live
       (.expression (.symbol head::arguments)) incoming [] := by
-  let caller : PeTTa.CettaEagerDFS.Destination.Control :=
+  let caller : PeTTa.EagerDFS.Destination.Control :=
     {bindings := HE.Spec.Type.Presentation.BindingTheory.bindingAtomEquations incoming,
       goals := [],destination := .expression []}
-  have emptyChoices (control : PeTTa.CettaEagerDFS.Destination.Control) :
-      PeTTa.CettaEagerDFS.Destination.ClauseChoice.choices program control head arguments
+  have emptyChoices (control : PeTTa.EagerDFS.Destination.Control) :
+      PeTTa.EagerDFS.Destination.ClauseChoice.choices program control head arguments
         (.expression []) [] = [] := by
-    unfold PeTTa.CettaEagerDFS.Destination.ClauseChoice.choices
+    unfold PeTTa.EagerDFS.Destination.ClauseChoice.choices
     apply List.filterMap_eq_nil_iff.mpr
     intro position _member
     cases row : program.equations[position]? with
-    | none => simp [PeTTa.CettaEagerDFS.Destination.ClauseChoice.trial,row]
+    | none => simp [PeTTa.EagerDFS.Destination.ClauseChoice.trial,row]
     | some equation =>
         have different := passive.2 equation (List.mem_of_getElem? row)
-        simp [PeTTa.CettaEagerDFS.Destination.ClauseChoice.trial,
-          PeTTa.CettaEagerDFS.Destination.ClauseChoice.attempt,row,different]
+        simp [PeTTa.EagerDFS.Destination.ClauseChoice.trial,
+          PeTTa.EagerDFS.Destination.ClauseChoice.attempt,row,different]
   obtain ⟨works,completed,related⟩ := ConstructorMatch.protected_petta_choices_he_frontier
     program caller head arguments (.expression []) [] live incoming
     (fun environment =>
-      (PeTTa.CettaEagerDFS.Destination.solves_binding_equations environment incoming).symm)
+      (PeTTa.EagerDFS.Destination.solves_binding_equations environment incoming).symm)
   rw [emptyChoices] at related
   cases related
   exact completed
@@ -3975,7 +3979,7 @@ private theorem unit_frontier (program : Program) (live : List Atom)
     HE.Spec.Eval.Steps.EquationFrontierRel (equationSpace program) live (.expression []) frame.bindings [] := by
   have row (position : Nat) (equation : Equation) : HE.Spec.Eval.Steps.EquationRowResultsRel
       live (.expression []) frame.bindings position equation.toAtom [] := by
-    let control : PeTTa.CettaEagerDFS.Destination.Control :=
+    let control : PeTTa.EagerDFS.Destination.Control :=
       {bindings := [],goals := [],destination := .expression []}
     have variant := ConstructorMatch.protected_petta_clause_he_alpha control position equation live
       (.expression []) frame.bindings
@@ -3984,7 +3988,7 @@ private theorem unit_frontier (program : Program) (live : List Atom)
     obtain ⟨valuation,image⟩ :=
       (ConstructorMatch.fresh_candidate_iff_raw_solution fresh rfl frame.certified.satisfiable).mp
         ⟨output,matched,merged⟩
-    simp only [PeTTa.CettaEagerDFS.Destination.ClauseChoice.pattern,
+    simp only [PeTTa.EagerDFS.Destination.ClauseChoice.pattern,
       HE.Spec.Type.RuntimeRefinement.applyTypeValuation,List.map_cons,Atom.expression.injEq,List.cons_ne_nil] at image
   have rows (equations : List Equation) (position : Nat) : List.Forall₂
       (fun entry block => HE.Spec.Eval.Steps.EquationRowResultsRel live (.expression []) frame.bindings entry.2 entry.1 block)
@@ -6347,7 +6351,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open HE.Spec.Eval
 open HE.Spec.Eval.Completed (Frame CastLookup ArgumentRequest AtomRel
   TupleRel TupleBranchesRel ArgumentsRel ArgumentBranchesRel)
-open PeTTa.CettaEagerDFS.Destination
+open PeTTa.EagerDFS.Destination
 open HE.Spec.Bindings.ScopeObservation (observedTuples)
 open PureConstructor (NoErrorSymbol)
 
@@ -6404,7 +6408,7 @@ structure SourcePoint (Context : Type) extends Cursor Context where
 def SourcePoint.state {Context : Type} (point : SourcePoint Context) : ScopedCursor Context :=
   (point.supply, ⟨point.world,point.scope :: point.parents⟩)
 
-abbrev SilentPath {Context : Type} (policy : PeTTa.CettaEagerDFS.Destination.Policy)
+abbrev SilentPath {Context : Type} (policy : PeTTa.EagerDFS.Destination.Policy)
     (program : PeTTa.SpaceSemantics.Program) :=
   Relation.ReflTransGen (fun (before after : SourcePoint Context) =>
     Source.ScopedStep Source.FreshOperations.owned policy program before.state (.silent after.state))
@@ -6413,7 +6417,7 @@ abbrev SilentPath {Context : Type} (policy : PeTTa.CettaEagerDFS.Destination.Pol
 joint packet at its reached cut. This is a certificate for that occurrence,
 not an assumed correctness theorem for the recursive child evaluator. -/
 structure ChildCompletion {Context : Type}
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
     (evaluated : List Entry.Value) (prefixSlots : List Atom) (remaining : List ArgumentRequest)
     (sourceTail slots pending sourcePending : List Atom) (older : List Goal)
     (sourceValue slot : Atom) (before : SourcePoint Context) (head : HResult) (after : SourcePoint Context) : Prop where
@@ -6467,7 +6471,7 @@ These finite manifests preserve multiplicity; completeness of an arbitrary
 PeTTa child-search frontier is a separate obligation. -/
 inductive OpenSpine {Context : Type} (kind : Kind)
     (space : HE.Space) (dispatch : HE.Spec.Eval.GroundedDispatch) (lookup : CastLookup) (policy : HE.Spec.Eval.Completed.Policy)
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
     (scope : List String) (pending sourcePending : List Atom) (older : List Goal) :
     List Atom → List Entry.Value → List Atom → List ArgumentRequest → List Atom → List Atom →
       Frame → SourcePoint Context → List (Outcome Context) → Prop where
@@ -6491,7 +6495,7 @@ inductive OpenSpine {Context : Type} (kind : Kind)
 
 inductive OpenBranchSpines {Context : Type} (kind : Kind)
     (space : HE.Space) (dispatch : HE.Spec.Eval.GroundedDispatch) (lookup : CastLookup) (policy : HE.Spec.Eval.Completed.Policy)
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
     (scope : List String) (pending sourcePending : List Atom) (older : List Goal) :
     List Atom → List Entry.Value → List Atom → List ArgumentRequest → Atom → List Atom → Atom →
       List Atom → SourcePoint Context → List HResult → List (Outcome Context) → Prop where
@@ -6514,7 +6518,7 @@ end
 
 variable {Context : Type} {kind : Kind} {space : HE.Space} {dispatch : HE.Spec.Eval.GroundedDispatch}
   {lookup : CastLookup} {policy : HE.Spec.Eval.Completed.Policy}
-  {sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy} {program : PeTTa.SpaceSemantics.Program}
+  {sourcePolicy : PeTTa.EagerDFS.Destination.Policy} {program : PeTTa.SpaceSemantics.Program}
   {scope : List String} {pending sourcePending : List Atom} {older : List Goal}
 
 mutual
@@ -6595,7 +6599,7 @@ def SourcePoint.afterLocal {Context : Type} (point : SourcePoint Context) (after
     parents := point.parents, origins := point.origins, pending := point.pending, frontier := rfl}
 
 theorem SourcePoint.local_step {Context : Type} (point : SourcePoint Context)
-    {sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy} {program : PeTTa.SpaceSemantics.Program}
+    {sourcePolicy : PeTTa.EagerDFS.Destination.Policy} {program : PeTTa.SpaceSemantics.Program}
     {after : Cursor Context} (source : Source.Step sourcePolicy program point.toCursor (.silent after)) :
     Source.ScopedStep Source.FreshOperations.owned sourcePolicy program point.state
       (.silent (point.afterLocal after).state) := by
@@ -6605,7 +6609,7 @@ theorem SourcePoint.local_step {Context : Type} (point : SourcePoint Context)
 /-- The actual source variable rule allocates its result after any evaluated
 prefix. Its two scoped transitions preserve all retained caller components. -/
 theorem source_variable_child
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
     (frame : Frame) (before : SourcePoint Context) (head : Entry.Value)
     (sourceName slotName : String) (evaluated : List Entry.Value) (prefixSlots : List Atom)
     (requests : List ArgumentRequest) (sourceTail slots pending sourcePending : List Atom) (older : List Goal)
@@ -6656,7 +6660,7 @@ theorem source_variable_child
 slot is fresh, so allocating it preserves the entire still-open caller packet.
 The HE derivation and both actual scoped source steps are constructed here. -/
 theorem variable_child
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
     (policy : HE.Spec.Eval.Completed.Policy) (space : HE.Space) (dispatch : HE.Spec.Eval.GroundedDispatch)
     (lookup : CastLookup) (scope : List String) (live : List Atom) (frame : Frame)
     (before : SourcePoint Context) (name sourceName slotName : String) (expected : Atom)
@@ -6700,7 +6704,7 @@ theorem variable_child
 source language. Earlier values, unevaluated siblings and caller observations
 remain one joint packet; no recursive child completion is assumed. -/
 theorem passive_variable_child
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) (program : PeTTa.SpaceSemantics.Program)
     (policy : HE.Spec.Eval.Completed.Policy) (allowed scope : List String) (live : List Atom) (frame : Frame)
     (passive : PureConstructor.PassiveEnvironment program allowed frame.environment)
     (before : SourcePoint Context) (name sourceName slotName : String) (member : name ∈ allowed)
@@ -7144,16 +7148,16 @@ private def middle : Cursor Unit :=
 private def after : Cursor Unit :=
   {before with control := {before.control with bindings := completedBindings,goals := []}}
 
-private theorem source_steps (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) :
+private theorem source_steps (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) :
     Source.Step sourcePolicy sampleProgram before (.silent middle) ∧
       Source.Step sourcePolicy sampleProgram middle (.silent after) ∧
       Source.Step sourcePolicy sampleProgram after (.finish (.value call completedBindings,after)) := by
   let constant : Environment := fun _ => encode call
-  have variableRead (name : String) : PeTTa.CettaEagerDFS.Destination.read constant (.var name) = call := by
-    rw [PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation]
+  have variableRead (name : String) : PeTTa.EagerDFS.Destination.read constant (.var name) = call := by
+    rw [PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation]
     simp only [applyTypeValuation,constant,decode_encode]
-  have constantRead : PeTTa.CettaEagerDFS.Destination.read constant call = call := by
-    rw [PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation]
+  have constantRead : PeTTa.EagerDFS.Destination.read constant call = call := by
+    rw [PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation]
     simp only [call,applyTypeValuation,List.map_cons,List.map_nil]
   have solved : Solves constant completedBindings := by
     intro pair member
@@ -7190,7 +7194,7 @@ as data. The program satisfies the existing pure code admission. Thus joint
 binding agreement alone cannot extend the closed comparison to all open entry
 syntax; this is a source-policy separator, not an implementation discrepancy. -/
 theorem active_binding_separates_dispatch (policy : HE.Spec.Eval.Completed.Policy)
-    (sourcePolicy : PeTTa.CettaEagerDFS.Destination.Policy) :
+    (sourcePolicy : PeTTa.EagerDFS.Destination.Policy) :
     CodeProgram sampleProgram ∧ CodeRel sampleProgram ["x"] (.var "x") ∧
       (∀ packet, observedTuples frame.bindings packet = solutionTuples before.control.bindings packet) ∧
       (∃ results,
@@ -7200,7 +7204,7 @@ theorem active_binding_separates_dispatch (policy : HE.Spec.Eval.Completed.Polic
       Source.Step sourcePolicy sampleProgram before (.silent middle) ∧
       Source.Step sourcePolicy sampleProgram middle (.silent after) ∧
       Source.Step sourcePolicy sampleProgram after (.finish (.value call completedBindings,after)) ∧
-      (PeTTa.CettaEagerDFS.Destination.machine sourcePolicy sampleProgram).run 3 before =
+      (PeTTa.EagerDFS.Destination.machine sourcePolicy sampleProgram).run 3 before =
         ([],.finished (.value call completedBindings,after)) ∧
       ¬List.Perm [.symbol "A"] [call] := by
   obtain ⟨results,closed,answers,_safe⟩ := PureConstructor.RecursiveTransport.he_evaluation source program_code rfl
@@ -7215,9 +7219,9 @@ theorem active_binding_separates_dispatch (policy : HE.Spec.Eval.Completed.Polic
   obtain ⟨first,second,returned⟩ := source_steps sourcePolicy
   refine ⟨program_code,.variable (by simp),initial_agreement,⟨results,opened,answers⟩,
     first,second,returned,?_,?_⟩
-  · rw [(PeTTa.CettaEagerDFS.Destination.machine sourcePolicy sampleProgram).run_succ_silent first.execution,
-      (PeTTa.CettaEagerDFS.Destination.machine sourcePolicy sampleProgram).run_succ_silent second.execution,
-      (PeTTa.CettaEagerDFS.Destination.machine sourcePolicy sampleProgram).run_succ_finish returned.execution]
+  · rw [(PeTTa.EagerDFS.Destination.machine sourcePolicy sampleProgram).run_succ_silent first.execution,
+      (PeTTa.EagerDFS.Destination.machine sourcePolicy sampleProgram).run_succ_silent second.execution,
+      (PeTTa.EagerDFS.Destination.machine sourcePolicy sampleProgram).run_succ_finish returned.execution]
   · intro paired
     have impossible : Atom.symbol "A" = call := List.mem_singleton.mp (paired.mem_iff.mp (by simp))
     cases impossible

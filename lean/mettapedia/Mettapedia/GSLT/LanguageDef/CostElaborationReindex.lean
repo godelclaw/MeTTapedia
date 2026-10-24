@@ -501,6 +501,10 @@ def map {source target : CIGSLT} (morphism : source.Morphism target)
       _ = (morphism.underlying.structural.structural.mapConstructor
             preimage.sourceConstructor).1.params.map
           (mapTermParam (color.symbols target)) := rfl
+  representationMap := by
+    exact (congrArg GrammarRule.collectionRepresentation
+      (morphism.materialize_mapDeclaredCostConstructor constructor)).trans
+        preimage.representationMap
   algebraMap := by
     let sourceSymbols :=
       morphism.underlying.structural.structural.symbols
@@ -1530,12 +1534,8 @@ theorem maps_mem_costStaticCollectionTypingChoices
       rw [expectedEquality]
       exact morphism.mapTypeExpr_costStatic_natural color
         (.base rule.category)
-    · simpa [mapGrammarRule, mapTermParam, mapTypeExpr] using
-        congrArg
-          (List.map
-            (mapTermParam
-              morphism.underlying.structural.structural.symbols))
-          parameterShape
+    · rw [bareParams_mapGrammarRule, parameterShape]
+      rfl
     · have mappedChecked := WellSorted.checkElementsHaveType_map
         morphism.costWholeStructural elementsChecked objects
       change WellSorted.checkElementsHaveType target.costWholeLanguage

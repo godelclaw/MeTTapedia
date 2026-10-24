@@ -40,7 +40,7 @@ def parameter (name typeName : String) : TermParam :=
 
 def constructor (label category : String) (params : List TermParam) :
     GrammarRule :=
-  GrammarRule.mk label category params [] none none
+  GrammarRule.mk label category params [] none none .bare
 
 /-- Sorted constructors are the syntax consumed by the generic executor.
 There is deliberately no opaque route or conversion constructor. -/

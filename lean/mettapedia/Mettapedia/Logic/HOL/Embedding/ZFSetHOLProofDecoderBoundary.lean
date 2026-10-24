@@ -49,14 +49,16 @@ theorem true_fibre (h : CofinalInaccessibles.{u}) :
     truthFibre h (.top : ClosedFormula UniverseSymbol) emptyValuation = unitCode := by
   apply ZFSet.ext
   intro value
-  simp only [mem_truthFibre, interpret, holds_truth, unitCode, ZFSet.mem_singleton,
+  simp only [mem_truthFibre, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    holds_truth, unitCode, ZFSet.mem_singleton,
     and_true]
 
 theorem true_implication_fibre (h : CofinalInaccessibles.{u}) :
     truthFibre h (.imp .top .top : ClosedFormula UniverseSymbol) emptyValuation = unitCode := by
   apply ZFSet.ext
   intro value
-  simp only [mem_truthFibre, interpret, holds_truth, unitCode, ZFSet.mem_singleton,
+  simp only [mem_truthFibre, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    holds_truth, unitCode, ZFSet.mem_singleton,
     implies_true, and_true]
 
 /-- The displayed native decoder equation is not equality of these actual

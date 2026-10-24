@@ -136,6 +136,7 @@ theorem seed_agrees (parameters : Parameters installed index ambient)
       exact congrArg (fun item => item.slot.name) located
     · exact named
 
+set_option maxHeartbeats 800000 in
 /-- Every independent selected firing reconstructs its canonical authored
 left-hand side even after premises add further completed captures. -/
 theorem response_instantiates (parameters : Parameters installed index ambient) (focus : Pattern)
@@ -160,7 +161,12 @@ theorem response_instantiates (parameters : Parameters installed index ambient) 
       cases Option.some.inj (ruleLookup.symm.trans selectedRule)
       cases Option.some.inj (specLookup.symm.trans selectedSpec)
       obtain ⟨rawSource, instantiated, erased⟩ := matching_reconstructs
-        (operation := Substitution.instantiateBVar) matching.matching shape premises.extension
+        (operation := Substitution.instantiateBVar)
+        (rule := schema.declaration.rule) (spec := schema.declaration.binding.spec)
+        (ambient := (NativeBindingEventAction.bound ambient).length)
+        (site := .left) (path := []) (depth := 0)
+        (completed := payload.completed) (pattern := schema.declaration.rule.left)
+        matching.matching shape premises.extension
       have interpreted : instantiateAt? schema.declaration.rule schema.declaration.binding.spec
           ambient.length .left [] 0 payload.completed schema.declaration.rule.left = some rawSource := by
         simpa only [NativeBindingEventAction.bound,

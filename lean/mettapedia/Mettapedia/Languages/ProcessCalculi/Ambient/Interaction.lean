@@ -243,14 +243,14 @@ theorem dissolutionRetyping_redexRetypable : dissolutionRetyping.RedexRetypable 
     · apply HasType.constructor (rule := costBaseConstructor dissolutionCut terms[4])
       · exact dissolutionRetyping.costBaseConstructor_mem_generated terms[4]
           (List.getElem_mem (by decide))
-      · simp [UsesBareCollection, ambient_costBaseOpen_params]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, ambient_costBaseOpen_params]
       · rw [ambient_costBaseOpen_params]
         exact .cons trivial rfl (HasType.fvar rfl) (.cons trivial rfl (HasType.fvar rfl) .nil)
     · apply ElementsHaveType.cons
       · apply HasType.constructor (rule := costBaseConstructor dissolutionCut terms[5])
         · exact dissolutionRetyping.costBaseConstructor_mem_generated terms[5]
             (List.getElem_mem (by decide))
-        · simp [UsesBareCollection, ambient_costBaseAmb_params]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, ambient_costBaseAmb_params]
         · rw [ambient_costBaseAmb_params]
           exact .cons trivial rfl (HasType.fvar rfl)
             (.cons trivial rfl (HasType.fvar rfl) .nil)

@@ -1931,7 +1931,7 @@ theorem rawOutcomeSignature_fresh {name : DeclName}
 
 /-- Formation, freshness, and the absence of hidden delta definitions are
 proved independently of any choice of raw confluence discipline. -/
-def rawOutcomeSignature_formed : rawOutcomeSignature.Formed Tower.rules where
+theorem rawOutcomeSignature_formed : rawOutcomeSignature.Formed Tower.rules where
   fresh := rawOutcomeSignature_fresh
   types := rawOutcomeSignature_types_formed
   values := by
@@ -1945,7 +1945,7 @@ def rawOutcomeSignature_formed : rawOutcomeSignature.Formed Tower.rules where
 
 /-! ### Strict positivity -/
 
-def outcomeFamilyApplication (signature judgment : Tower.Tm n)
+theorem outcomeFamilyApplication (signature judgment : Tower.Tm n)
     (signatureFree : FreeOf outcomeName signature)
     (judgmentFree : FreeOf outcomeName judgment) :
     FamilyApplication outcomeName 2 (outcomeApp signature judgment) :=
@@ -1959,7 +1959,7 @@ def outcomeFamilyApplication (signature judgment : Tower.Tm n)
 /-- The first-class signature record is structural: it contains no declared
 family constant at all.  Consequently it is free of every prospective
 family name, not merely the intrinsic `Outcome` name. -/
-def outcomeSignatureTypeFreeOf (family : DeclName) :
+theorem outcomeSignatureTypeFreeOf (family : DeclName) :
     FreeOf family outcomeSignatureType := by
   unfold outcomeSignatureType outcomeSignatureBody familyType sortTm
   exact .sigma (.head _)
@@ -1972,7 +1972,7 @@ def outcomeSignatureTypeFreeOf (family : DeclName) :
           (.pi (.var 3) (.head _)))))
 
 /-- Specialization used by the intrinsic Outcome declaration. -/
-def outcomeSignatureTypeFree : FreeOf outcomeName outcomeSignatureType :=
+theorem outcomeSignatureTypeFree : FreeOf outcomeName outcomeSignatureType :=
   outcomeSignatureTypeFreeOf outcomeName
 
 def establishedConstructorPositive :

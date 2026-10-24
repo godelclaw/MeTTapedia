@@ -12,9 +12,10 @@ set_option autoImplicit false
 
 namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise
 
-/-- Premise citations identify the selected source/provider occurrences and
-child applications. Scoped matching permutations are replay guidance rather
-than application identity. Quantified lists retain every element occurrence. -/
+/-- A validation citation forgets matcher traces and quantified ordinal
+labels while retaining provider declarations and the child/body event tree.
+It is not a policy for logical derivation identity. Full allocation evidence
+remains in `Event`; quantified lists preserve their order and duplicates. -/
 inductive Citation where
   | query (premiseIndex quantifierDepth rowIndex : Nat)
   | freshness (premiseIndex quantifierDepth : Nat) (atom : String) (subject : Syntax.Pattern)
@@ -26,36 +27,73 @@ inductive Citation where
   deriving Repr
 
 mutual
-  def Event.citation : Event → Citation
+  def Event.citation {Choice : Type} : Event Choice → Citation
     | .query p q row _ => .query p q row
     | .freshness p q atom subject => .freshness p q atom subject
     | .quantified p q kind elements => .quantified p q kind (quantifiedCitations elements)
     | .child p q index bound source target _ _ captured completed history =>
         .child p q index bound source target captured completed (citations history)
 
-  def citations : List Event → List Citation
+  def citations {Choice : Type} : List (Event Choice) → List Citation
     | [] => []
     | event :: rest => event.citation :: citations rest
 
-  def quantifiedCitations : List (Nat × Syntax.Pattern × List Event) →
+  def quantifiedCitations {Choice : Type} : List (Nat × Syntax.Pattern × List (Event Choice)) →
       List (Syntax.Pattern × List Citation)
     | [] => []
     | (_, element, history) :: rest => (element, citations history) :: quantifiedCitations rest
 end
 
-@[simp] theorem citations_length (history : List Event) : (citations history).length = history.length := by
+@[simp] theorem citations_length {Choice : Type} (history : List (Event Choice)) : (citations history).length = history.length := by
   induction history with
   | nil => rfl
   | cons event rest ih => exact congrArg Nat.succ ih
 
-@[simp] theorem quantifiedCitations_length (history : List (Nat × Syntax.Pattern × List Event)) :
+@[simp] theorem quantifiedCitations_length {Choice : Type} (history : List (Nat × Syntax.Pattern × List (Event Choice))) :
     (quantifiedCitations history).length = history.length := by
   induction history with
   | nil => rfl
   | cons event rest ih => cases event; exact congrArg Nat.succ ih
 
 mutual
-  def eventDecEq : (first second : Event) → Decidable (first = second)
+/-- Changing the matcher evidence carrier does not change this validation
+readout. This does not identify the underlying allocation receipts. -/
+theorem Event.citation_mapTraces {Left Right : Type} (trace : List Left → List Right)
+    (event : Event Left) : (event.mapTraces trace).citation = event.citation :=
+  match event with
+  | .query _ _ _ _ => by simp only [Event.mapTraces, Event.citation]
+  | .freshness _ _ _ _ => by simp only [Event.mapTraces, Event.citation]
+  | .quantified index depth kind elements => by
+      simpa only [Event.mapTraces, Event.citation] using
+        congrArg (Citation.quantified index depth kind) (quantifiedCitations_mapElements trace elements)
+  | .child index depth declaration bound source target _ _ captured completed history => by
+      simpa only [Event.mapTraces, Event.citation] using
+        congrArg (Citation.child index depth declaration bound source target captured completed)
+          (citations_mapHistory trace history)
+termination_by sizeOf event
+
+theorem citations_mapHistory {Left Right : Type} (trace : List Left → List Right)
+    (history : List (Event Left)) : citations (Event.mapHistory trace history) = citations history :=
+  match history with
+  | [] => by simp only [Event.mapHistory, citations]
+  | event :: rest => by
+      simp only [Event.mapHistory, citations]
+      rw [Event.citation_mapTraces trace event, citations_mapHistory trace rest]
+termination_by sizeOf history
+
+theorem quantifiedCitations_mapElements {Left Right : Type} (trace : List Left → List Right)
+    (history : List (Nat × Syntax.Pattern × List (Event Left))) :
+    quantifiedCitations (Event.mapElements trace history) = quantifiedCitations history :=
+  match history with
+  | [] => by simp only [Event.mapElements, quantifiedCitations]
+  | (index, element, events) :: rest => by
+      simp only [Event.mapElements, quantifiedCitations]
+      rw [citations_mapHistory trace events, quantifiedCitations_mapElements trace rest]
+termination_by sizeOf history
+end
+
+mutual
+  def eventDecEq {Choice : Type} [DecidableEq Choice] : (first second : Event Choice) → Decidable (first = second)
     | .query p q row origins, .query p' q' row' origins' =>
         decidable_of_iff (p = p' ∧ q = q' ∧ row = row' ∧ origins = origins') (by simp only [Event.query.injEq])
     | .freshness p q atom subject, .freshness p' q' atom' subject' =>
@@ -69,20 +107,20 @@ mutual
         decidable_of_iff (p = p' ∧ q = q' ∧ index = index' ∧ bound = bound' ∧ source = source' ∧
           target = target' ∧ trace = trace' ∧ targetTrace = targetTrace' ∧ captured = captured' ∧
           completed = completed' ∧ history = history') (by simp only [Event.child.injEq])
-    | .query _ _ _ _, .freshness _ _ _ _ => isFalse Event.noConfusion
-    | .query _ _ _ _, .quantified _ _ _ _ => isFalse Event.noConfusion
-    | .query _ _ _ _, .child _ _ _ _ _ _ _ _ _ _ _ => isFalse Event.noConfusion
-    | .freshness _ _ _ _, .query _ _ _ _ => isFalse Event.noConfusion
-    | .freshness _ _ _ _, .quantified _ _ _ _ => isFalse Event.noConfusion
-    | .freshness _ _ _ _, .child _ _ _ _ _ _ _ _ _ _ _ => isFalse Event.noConfusion
-    | .quantified _ _ _ _, .query _ _ _ _ => isFalse Event.noConfusion
-    | .quantified _ _ _ _, .freshness _ _ _ _ => isFalse Event.noConfusion
-    | .quantified _ _ _ _, .child _ _ _ _ _ _ _ _ _ _ _ => isFalse Event.noConfusion
-    | .child _ _ _ _ _ _ _ _ _ _ _, .query _ _ _ _ => isFalse Event.noConfusion
-    | .child _ _ _ _ _ _ _ _ _ _ _, .freshness _ _ _ _ => isFalse Event.noConfusion
-    | .child _ _ _ _ _ _ _ _ _ _ _, .quantified _ _ _ _ => isFalse Event.noConfusion
+    | .query _ _ _ _, .freshness _ _ _ _ => isFalse (by intro same; cases same)
+    | .query _ _ _ _, .quantified _ _ _ _ => isFalse (by intro same; cases same)
+    | .query _ _ _ _, .child _ _ _ _ _ _ _ _ _ _ _ => isFalse (by intro same; cases same)
+    | .freshness _ _ _ _, .query _ _ _ _ => isFalse (by intro same; cases same)
+    | .freshness _ _ _ _, .quantified _ _ _ _ => isFalse (by intro same; cases same)
+    | .freshness _ _ _ _, .child _ _ _ _ _ _ _ _ _ _ _ => isFalse (by intro same; cases same)
+    | .quantified _ _ _ _, .query _ _ _ _ => isFalse (by intro same; cases same)
+    | .quantified _ _ _ _, .freshness _ _ _ _ => isFalse (by intro same; cases same)
+    | .quantified _ _ _ _, .child _ _ _ _ _ _ _ _ _ _ _ => isFalse (by intro same; cases same)
+    | .child _ _ _ _ _ _ _ _ _ _ _, .query _ _ _ _ => isFalse (by intro same; cases same)
+    | .child _ _ _ _ _ _ _ _ _ _ _, .freshness _ _ _ _ => isFalse (by intro same; cases same)
+    | .child _ _ _ _ _ _ _ _ _ _ _, .quantified _ _ _ _ => isFalse (by intro same; cases same)
 
-  def eventsDecEq : (first second : List Event) → Decidable (first = second)
+  def eventsDecEq {Choice : Type} [DecidableEq Choice] : (first second : List (Event Choice)) → Decidable (first = second)
     | [], [] => isTrue rfl
     | [], _ :: _ => isFalse (by intro same; cases same)
     | _ :: _, [] => isFalse (by intro same; cases same)
@@ -91,8 +129,8 @@ mutual
         letI : Decidable (rest = remaining) := eventsDecEq rest remaining
         decidable_of_iff (first = second ∧ rest = remaining) (by simp only [List.cons.injEq])
 
-  def quantifiedEventsDecEq :
-      (first second : List (Nat × Syntax.Pattern × List Event)) → Decidable (first = second)
+  def quantifiedEventsDecEq {Choice : Type} [DecidableEq Choice] :
+      (first second : List (Nat × Syntax.Pattern × List (Event Choice))) → Decidable (first = second)
     | [], [] => isTrue rfl
     | [], _ :: _ => isFalse (by intro same; cases same)
     | _ :: _, [] => isFalse (by intro same; cases same)
@@ -103,6 +141,6 @@ mutual
           (by simp only [List.cons.injEq, Prod.mk.injEq, and_assoc])
 end
 
-instance : DecidableEq Event := eventDecEq
+instance {Choice : Type} [DecidableEq Choice] : DecidableEq (Event Choice) := eventDecEq
 
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise

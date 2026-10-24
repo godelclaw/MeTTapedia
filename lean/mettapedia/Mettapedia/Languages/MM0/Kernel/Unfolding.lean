@@ -20,6 +20,7 @@ namespace Definition
 structure Body where
   dummies : List Nat
   expression : Preterm
+  deriving DecidableEq
 
 abbrev Signature := Nat → Option Body
 

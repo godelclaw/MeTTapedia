@@ -22,6 +22,7 @@ import Mettapedia.Computability.HutterComputability
 import Mettapedia.Computability.HutterComputabilityClosure
 import Mettapedia.Computability.HutterComputabilityENNReal
 import Mettapedia.Computability.HutterComputabilityRational
+import Mettapedia.Computability.RationalApproximationBridge
 import Mettapedia.Computability.PartialEvaluation
 import Mettapedia.Computability.PartialEvaluationTransformation
 import Mettapedia.Computability.InterpreterMediatedSpecialization

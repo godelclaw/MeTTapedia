@@ -30,6 +30,10 @@ correspondence with the LF semantic relations is established separately.
 
 namespace Mettapedia.GSLT.LanguageDef.LFFirstOrderContextualConversion
 
+/- The `indexed-lf` strings below are retained artifact protocol identifiers.
+They do not identify the historical MettaKernel kind-result PTS profile or a
+standard calculus named "indexed LF". -/
+
 set_option maxRecDepth 100000
 
 open Mettapedia.OSLF.MeTTaIL.Syntax

@@ -543,12 +543,13 @@ open Mettapedia.GSLT.LanguageDef.WellSorted (HasSort HasType ElementsHaveType
   FreeTypeContext)
 open Mettapedia.GSLT.SeparationAlgebra
 
-/-- A declared associative collection former: an authored rule whose single
+/-- A declared bare associative collection former: an authored rule whose single
 parameter is a collection of its own category, declaring flattening. -/
 structure AssociativeFormer (language : LanguageDef) (rule : GrammarRule)
     (kind : CollType) (algebra : CollectionAlgebra) : Prop where
   declared : AlgebraRule language rule kind algebra
   flattens : algebra.flatten = true
+  bare : rule.collectionRepresentation = .bare
 
 namespace AssociativeFormer
 
@@ -572,7 +573,8 @@ theorem collection_sorted (former : AssociativeFormer language rule kind algebra
     (typed : ElementsHaveType language free bound elements (.base rule.category)) :
     HasSort language free bound (.collection kind elements none) rule.category := by
   obtain ⟨parameterName, parameters⟩ := former.declared.selfSorted
-  exact HasType.collectionConstructor former.declared.authored parameters typed
+  exact HasType.collectionConstructor former.declared.authored
+    ((GrammarRule.bareParams_of_bare rule former.bare).trans parameters) typed
 
 /-- The terms of the former's category in one typing context. -/
 abbrev SortedTerm (language : LanguageDef) (rule : GrammarRule) (free : FreeTypeContext)
@@ -826,6 +828,7 @@ theorem rhoParallel :
         cases isUnit
         exact ⟨rhoZeroRule, by simp [rhoCalc, rhoZeroRule], rfl, rfl, rfl⟩ }
   flattens := rfl
+  bare := rfl
 
 /-- Rho processes modulo the equations, in one typing context, form a separation
 algebra. -/
@@ -871,6 +874,7 @@ theorem former : AssociativeFormer language seqRule .vec { flatten := true, unit
       selfSorted := ⟨"xs", rfl⟩
       unitAuthored := by intro unit isUnit; cases isUnit }
   flattens := rfl
+  bare := rfl
 
 theorem atom_sorted (label : String) (member : atomRule label ∈ language.terms)
     (free : FreeTypeContext) (bound : List TypeExpr) :

@@ -57,6 +57,7 @@ declare_syntax_cat langDefTypeBinding
 declare_syntax_cat langDefPremise
 declare_syntax_cat langDefEvalPolicy
 declare_syntax_cat langDefTermDecl
+declare_syntax_cat langDefRuleItem
 declare_syntax_cat langDefEquationDecl
 declare_syntax_cat langDefRewriteDecl
 
@@ -144,7 +145,17 @@ scoped syntax "fold" : langDefEvalPolicy
 scoped syntax "oracle" : langDefEvalPolicy
 
 scoped syntax ident "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident ";" : langDefTermDecl
+scoped syntax str "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident ";" : langDefTermDecl
 scoped syntax ident "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" langDefEvalPolicy "]" ";" : langDefTermDecl
+scoped syntax str "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" langDefEvalPolicy "]" ";" : langDefTermDecl
+
+/-- An item of a rule row: a terminal, or a category. -/
+scoped syntax str : langDefRuleItem
+scoped syntax ident : langDefRuleItem
+
+/-- **A rule row**, as in labelled BNF: `Label . Category ::= item*;`. Its categories become positional
+parameters `argument:0`, `argument:1`, …, in order. -/
+scoped syntax ident "." ident "::=" langDefRuleItem* ";" : langDefTermDecl
 scoped syntax ident "." langDefTypeBinding,* "|-" langDefPattern "=" langDefPattern ";" : langDefEquationDecl
 scoped syntax ident "." langDefPremise,* "|-" langDefPattern "=" langDefPattern ";" : langDefEquationDecl
 scoped syntax ident "." langDefTypeBinding,* "|" langDefPremise,* "|-" langDefPattern "=" langDefPattern ";" : langDefEquationDecl
@@ -800,25 +811,54 @@ private partial def unwrapChoiceSyntax (stx : Syntax) : Syntax :=
       | none => stx
   | _ => stx
 
+private def expandNamedTermDecl (label : String) (category : TSyntax `ident)
+    (params : Array (TSyntax `langDefTermParam)) (syns : Array (TSyntax `langDefSyntaxAtom))
+    (policy : Option (TSyntax `langDefEvalPolicy)) : MacroM (TSyntax `term) := do
+  let params' ← params.toList.mapM expandTermParam
+  let synArrays ← syns.toList.mapM expandSyntaxAtom
+  let syns' := synArrays.foldl (init := #[]) (fun acc arr => acc ++ arr)
+  let paramsTerm ← mkTermList params'
+  let synsTerm ← mkTermList syns'.toList
+  let policyTerm ← match policy with
+    | none => `(none)
+    | some value => do
+      let resolved ← resolveEvalPolicyName value
+      `(some $(evalPolicyTerm resolved))
+  `(({ label := $(mkStrTerm label), category := $(mkStrTerm (coreName category.getId)),
+       params := $paramsTerm, syntaxPattern := $synsTerm, evalPolicy? := $policyTerm,
+       algebra? := none, collectionRepresentation := .bare } : GrammarRule))
+
+/-- A rule row: each category becomes the next positional parameter, `argument:0`, `argument:1`, …, and stands
+for it in the syntax. -/
+private def expandRuleDecl (label : String) (category : TSyntax `ident) (items : Array (TSyntax `langDefRuleItem)) :
+    MacroM (TSyntax `term) := do
+  let mut params : Array (TSyntax `term) := #[]
+  let mut syns : Array (TSyntax `term) := #[]
+  for item in items do
+    match item with
+    | `(langDefRuleItem| $text:str) => syns := syns.push (← `(SyntaxItem.terminal $text))
+    | `(langDefRuleItem| $sort:ident) =>
+        let parameter := mkStrTerm s!"argument:{params.size}"
+        params := params.push (← `(TermParam.simple $parameter (TypeExpr.base $(mkStrTerm (coreName sort.getId)))))
+        syns := syns.push (← `(SyntaxItem.nonTerminal $parameter))
+    | other => Macro.throwErrorAt other "unsupported rule item"
+  let paramsTerm ← mkTermList params.toList
+  let synsTerm ← mkTermList syns.toList
+  `(({ label := $(mkStrTerm label), category := $(mkStrTerm (coreName category.getId)),
+       params := $paramsTerm, syntaxPattern := $synsTerm, evalPolicy? := none,
+       algebra? := none, collectionRepresentation := .bare } : GrammarRule))
+
 private def expandTermDecl : TSyntax `langDefTermDecl → MacroM (TSyntax `term)
+  | `(langDefTermDecl| $label:str . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ; ) => do
+      expandNamedTermDecl label.getString category params.getElems syns none
+  | `(langDefTermDecl| $label:str . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ $policy:langDefEvalPolicy ] ; ) => do
+      expandNamedTermDecl label.getString category params.getElems syns (some policy)
   | `(langDefTermDecl| $label:ident . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ; ) => do
-      let params' ← params.getElems.toList.mapM expandTermParam
-      let synArrays ← syns.toList.mapM expandSyntaxAtom
-      let syns' := synArrays.foldl (init := #[]) (fun acc arr => acc ++ arr)
-      let paramsTerm ← mkTermList params'
-      let synsTerm ← mkTermList syns'.toList
-      `(GrammarRule.mk $(mkStrTerm (coreName label.getId))
-        $(mkStrTerm (coreName category.getId)) $paramsTerm $synsTerm none none)
+      expandNamedTermDecl (coreName label.getId) category params.getElems syns none
   | `(langDefTermDecl| $label:ident . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ $policy:langDefEvalPolicy ] ; ) => do
-      let params' ← params.getElems.toList.mapM expandTermParam
-      let synArrays ← syns.toList.mapM expandSyntaxAtom
-      let syns' := synArrays.foldl (init := #[]) (fun acc arr => acc ++ arr)
-      let paramsTerm ← mkTermList params'
-      let synsTerm ← mkTermList syns'.toList
-      let resolvedPolicy ← resolveEvalPolicyName policy
-      let policyTerm := evalPolicyTerm resolvedPolicy
-      `(GrammarRule.mk $(mkStrTerm (coreName label.getId))
-        $(mkStrTerm (coreName category.getId)) $paramsTerm $synsTerm (some $policyTerm) none)
+      expandNamedTermDecl (coreName label.getId) category params.getElems syns (some policy)
+  | `(langDefTermDecl| $label:ident . $category:ident ::= $items:langDefRuleItem* ; ) => do
+      expandRuleDecl (coreName label.getId) category items
   | stx => Macro.throwErrorAt stx "unsupported term declaration"
 
 private def mkEquationTerm

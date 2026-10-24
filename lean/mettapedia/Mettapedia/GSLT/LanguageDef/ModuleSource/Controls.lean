@@ -30,11 +30,31 @@ open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.ModuleSource (Error)
 
+-- The module's empty theory does not reserve Lean's ordinary Empty type.
+example : Subsingleton Empty := inferInstance
+
 #module_file "../../../../artifacts/upstream-authoring-20261008/UnivAlg.module"
 #module_file "../../../../artifacts/upstream-authoring-20261008/Rholang.module"
 
 #module_roundtrip UnivAlg
 #module_roundtrip Rholang
+
+Module ExplicitEmptySourceControl {
+  Theory Bare() { Empty }
+  theory Bare()
+}
+Module QuotedTermSourceControl {
+  Theory TermsWithTextLabels() {
+    Empty Types { Item; }
+    Terms {
+      "quoted:label" . |- "literal" : Item;
+      "quoted:policy" . value:Item |- "wrapped" value : Item ![ rewrite ];
+    }
+  }
+  theory TermsWithTextLabels()
+}
+#module_roundtrip ExplicitEmptySourceControl
+#module_roundtrip QuotedTermSourceControl
 
 namespace Mettapedia.GSLT.LanguageDef.ModuleSource.Controls
 
@@ -70,6 +90,10 @@ def isCore (result : Except Error LanguageDef) : Bool :=
     | .error _ => false
   | .error _ => false
 
+#guard ExplicitEmptySourceControl.language.isOk
+#guard labels ExplicitEmptySourceControl.language == []
+#guard labels QuotedTermSourceControl.language == ["quoted:label", "quoted:policy"]
+
 #guard sorts UnivAlg.language == ["Elem"]
 #guard labels UnivAlg.language == ["Zero", "Plus", "One", "Mult", "Neg"]
 #guard counts UnivAlg.language == (14, 0)
@@ -79,11 +103,12 @@ def isCore (result : Except Error LanguageDef) : Bool :=
 
 #guard sorts Rholang.language == ["Proc", "Name"]
 #guard labels Rholang.language == ["PZero", "PPar", "PDrop", "NQuote", "PRepl", "PNew", "POutput", "PInput"]
-#guard counts Rholang.language == (3, 4)
+#guard counts Rholang.language == (5, 4)
 #guard algebraOf Rholang.language "PPar" == some { flatten := true, unit := some "PZero" }
 #guard (match Rholang.language with
   | .ok language => language.equations.map (·.name)
-  | .error _ => []) == ["QuoteDropCalc:equation:0@5", "NewReplCalc:equation:0@6", "NewReplCalc:equation:1@6"]
+  | .error _ => []) == ["Monoid:equation:1@2", "Monoid:equation:2@2",
+    "QuoteDropCalc:equation:0@5", "NewReplCalc:equation:0@6", "NewReplCalc:equation:1@6"]
 #guard isCore Rholang.language
 
 #module
@@ -96,7 +121,7 @@ def isCore (result : Except Error LanguageDef) : Bool :=
   }
 
 #guard algebraOf ListOfMonoid.language "Word" == some { flatten := true, unit := some "One" }
-#guard counts ListOfMonoid.language == (0, 0)
+#guard counts ListOfMonoid.language == (2, 0)
 
 #module
   import "UnivAlg.module" as u

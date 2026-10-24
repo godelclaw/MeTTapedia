@@ -41,7 +41,7 @@ private def parameter (name : String) : TermParam :=
 
 private def constructor (label : String) (parameters : List TermParam) :
     GrammarRule :=
-  GrammarRule.mk label termType.name parameters [] none none
+  { label, category := termType.name, params := parameters, syntaxPattern := [] }
 
 private def terms : List GrammarRule :=
   [ constructor "Left" []

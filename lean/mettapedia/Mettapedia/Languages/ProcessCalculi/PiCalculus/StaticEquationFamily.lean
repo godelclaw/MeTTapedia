@@ -158,7 +158,7 @@ collection kind in the authored pi signature. -/
 theorem collection_row_exact {kind : CollType}
     (row : CollectionEquationGenerators.Row piCalc kind) :
     row.rule = piCalc.terms[1] ∧ kind = .hashBag :=
-  piBagTheory.carrier ⟨row.member, ⟨row.parameter, _, row.shape⟩⟩
+  piBagTheory.carrier ⟨row.member, ⟨row.parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp row.shape).2⟩⟩
 
 theorem no_set_row : ¬ Nonempty (CollectionEquationGenerators.Row piCalc .hashSet) := by
   rintro ⟨row⟩

@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Core.DemandExecution
+import Mathlib.Data.Multiset.DershowitzManna
 
 /-!
 # Finite occurrence observations from a structural depth bound
@@ -96,13 +97,23 @@ def denotation (system : BranchingSystem Node Answer) (bound : DepthBound system
   unfold node := by
     rw [value_unfold, sum_eq_foldValues]
 
+/-- The derived work account is both sufficient and necessary for closure. -/
+theorem completes_iff (system : BranchingSystem Node Answer) (bound : DepthBound system)
+    (controller : InferenceControl.Controller Node Answer Value) (roots : List Node)
+    (budget : Nat) :
+    (InferenceControl.Snapshot.run system controller budget
+      (InferenceControl.Snapshot.initial controller roots)).search.frontier = [] ↔
+      foldRanks (descent system bound).rank roots ≤ budget := by
+  rw [← (descent system bound).foldRanks_eq_zero_iff,
+    InferenceControl.Snapshot.foldRanks_run]
+  exact Nat.sub_eq_zero_iff_le
+
 theorem completes (system : BranchingSystem Node Answer) (bound : DepthBound system)
     (controller : InferenceControl.Controller Node Answer Value) (roots : List Node) :
     (InferenceControl.Snapshot.run system controller
       (foldRanks (descent system bound).rank roots)
       (InferenceControl.Snapshot.initial controller roots)).search.frontier = [] :=
-  InferenceControl.Snapshot.run_completes_at_rank system controller (descent system bound)
-    (InferenceControl.Snapshot.initial controller roots)
+  (completes_iff system bound controller roots _).mpr le_rfl
 
 namespace Controls
 
@@ -120,6 +131,46 @@ def chainDepth : DepthBound chain where
 example : (descent chain chainDepth).rank 3 = 4 := by decide
 example : (denotation chain chainDepth).value 3 = {3, 2, 1, 0} := by
   simp [denotation, value, approximate, chain, chainDepth, optionBag, Multiset.cons_swap]
+
+/-- One root grows into arbitrarily many terminal, equally labelled leaves. -/
+def fanout (n : Nat) : BranchingSystem Bool Nat where
+  emit root := if root then none else some 0
+  successors root := if root then List.replicate n false else []
+
+def fanoutDepth (n : Nat) : DepthBound (fanout n) where
+  depth root := if root then 1 else 0
+  decreases root child member := by cases root <;> simp_all [fanout]
+
+@[simp] theorem fanout_rank (n : Nat) :
+    (descent (fanout n) (fanoutDepth n)).rank true = n + 1 := by
+  simp [descent, value, approximate, fanout, fanoutDepth, Nat.add_comm]
+
+theorem fanout_denotation (n : Nat) :
+    (denotation (fanout n) (fanoutDepth n)).value true = Multiset.replicate n 0 := by
+  simp [denotation, value, approximate, fanout, fanoutDepth, optionBag,
+    Multiset.nsmul_singleton]
+
+/-- Splitting one rank-one head decreases even when the frontier grows. -/
+theorem fanout_decreases (n : Nat) :
+    Multiset.IsDershowitzMannaLT (Multiset.replicate n 0) ({1} : Multiset Nat) := by
+  refine ⟨0, Multiset.replicate n 0, {1}, by simp, by simp, by simp, ?_⟩
+  intro child member
+  exact ⟨1, by simp, by simpa only [Multiset.eq_of_mem_replicate member] using Nat.zero_lt_one⟩
+
+theorem fanout_grows {n : Nat} (many : 1 < n) :
+    ({1} : Multiset Nat).card < (Multiset.replicate n 0).card := by simpa using many
+
+theorem fanout_completion_iff (n budget : Nat)
+    (controller : InferenceControl.Controller Bool Nat Value) :
+    (InferenceControl.Snapshot.run (fanout n) controller budget
+      (InferenceControl.Snapshot.initial controller [true])).search.frontier = [] ↔
+      n + 1 ≤ budget := by
+  simpa [foldRanks] using completes_iff (fanout n) (fanoutDepth n) controller [true] budget
+
+/-- Constant initial depth and initial multiset `{1}` give no uniform work bound. -/
+theorem fanout_no_uniform_work_bound :
+    ∀ bound : Nat, ∃ n, bound < (descent (fanout n) (fanoutDepth n)).rank true :=
+  fun bound => ⟨bound, by simp⟩
 
 /-- A productive cycle has no decreasing depth, even though every individual
 quantum terminates.  Finite-search exhaustion cannot be used for it. -/

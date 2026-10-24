@@ -267,6 +267,7 @@ theorem isName_of_typed (typedPresentation : QuoteDropTyped language declaration
   | @collectionConstructor _ rule _ _ _ _ _ declared parameters _ =>
     simp only [TypeExpr.base.injEq] at nameType
     obtain ⟨_, _, quoteParameters⟩ := typedPresentation.quote rule declared (typedPresentation.names rule declared nameType)
+    have parameters := ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
     rw [quoteParameters] at parameters
     simp at parameters
 

@@ -52,7 +52,8 @@ inductive Result (environment : Environment) : Goal → Type where
       (valid : RootFiring environment bound type source index trace captured completed events target) :
       Result environment (.steps bound type source limit)
 
-structure StepCall (environment : Environment) where
+structure StepCall (environment : Environment)
+    (matcher : MatchingExecution := MatchingExecution.ordinary) where
   context : Context
   premise : Premise
   initial : Assignment
@@ -61,12 +62,12 @@ structure StepCall (environment : Environment) where
   source : Pattern
   targetSchema : Pattern
   conclude : ∀ index trace captured completed history target final targetTrace,
-    RootFiring environment (binders ++ context.bound) type source index trace captured completed
+    Interpreted.RootFiring matcher.meaning environment (binders ++ context.bound) type source index trace captured completed
       history target →
-    GeneralScopedMatchMachine.TracedMatches context.rule context.spec context.bound.length
-      (context.site 1) [] binders.length initial targetSchema target targetTrace final →
+    matcher.meaning.Matches ⟨context.rule, context.spec, context.bound.length,
+      context.site 1, [], binders.length, initial, targetSchema, target⟩ targetTrace final →
     TypedAssignment environment context final →
-    PremiseHolds environment context premise initial final
+    Interpreted.PremiseHolds matcher.meaning environment context premise initial final
       (.child context.premiseIndex context.quantifierDepth index (binders ++ context.bound)
         source target trace targetTrace captured completed history)
 
@@ -106,7 +107,7 @@ inductive Continuation (environment : Environment) : Goal → Goal → Type wher
         (.quantified context parameter body index (element :: elements) initial) outer) :
       Continuation environment
         (.quantified context parameter body (index + 1) elements
-          (restoreParameter parameter initial middle)) outer
+          initial) outer
   | rootBody {outer : Goal} (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
       (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
       (declared : environment.language.rewrites[index]? = some rule)

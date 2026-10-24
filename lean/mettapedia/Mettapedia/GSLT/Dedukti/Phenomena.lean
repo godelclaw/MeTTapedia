@@ -165,7 +165,7 @@ theorem unfoldDouble_respects : unfoldDouble.Respects withDouble unary where
       simpa [doubleBody, plus, nat, inst, instantiate, lift_zero, subst0, subst] using beta
 
 /-- The obligation on constants holds. -/
-theorem unfoldDouble_typed : unfoldDouble.Typed LFProfile.basic withDouble unary where
+theorem unfoldDouble_typed : unfoldDouble.Typed LFProfile.standardLF withDouble unary where
   constType := fun name type declared context => by
     rcases lookupType_mem declared with member | ⟨_, member⟩
     · simp only [doubleSig, unarySig, List.cons_append, List.nil_append, List.mem_cons,
@@ -195,7 +195,7 @@ def wrongDouble : Interpretation where
 
 /-- The wrong definition has the declared type: the obligation on constants
 does not see the mistake. -/
-theorem wrongDouble_typed : wrongDouble.Typed LFProfile.basic withDouble unary where
+theorem wrongDouble_typed : wrongDouble.Typed LFProfile.standardLF withDouble unary where
   constType := fun name type declared context => by
     rcases lookupType_mem declared with member | ⟨_, member⟩
     · simp only [doubleSig, unarySig, List.cons_append, List.nil_append, List.mem_cons,
@@ -325,7 +325,7 @@ def align : Interpretation where
   closed := fun name => by split <;> exact .con
 
 /-- The signatures align: the obligation on constants holds. -/
-theorem align_typed : align.Typed LFProfile.basic unary rightLibrary where
+theorem align_typed : align.Typed LFProfile.standardLF unary rightLibrary where
   constType := fun name type declared context => by
     rcases lookupType_mem declared with member | ⟨_, member⟩
     · simp only [unarySig, List.mem_cons, Decl.const.injEq, List.not_mem_nil, or_false] at member
@@ -447,7 +447,7 @@ theorem eraseCast_respects : eraseCast.Respects explicit silent where
 
 /-- It meets the obligation on constants: the identity has type `A → B` in
 the source, by the rule. -/
-theorem eraseCast_typed : eraseCast.Typed LFProfile.basic explicit silent where
+theorem eraseCast_typed : eraseCast.Typed LFProfile.standardLF explicit silent where
   constType := fun name type declared context => by
     rcases lookupType_mem declared with member | ⟨_, member⟩
     · simp only [explicitSig, silentSig, List.cons_append, List.nil_append, List.mem_cons,

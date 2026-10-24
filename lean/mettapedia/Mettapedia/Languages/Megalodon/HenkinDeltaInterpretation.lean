@@ -1,4 +1,5 @@
 import Mettapedia.Languages.Megalodon.HenkinTermSubstitution
+import Mettapedia.Languages.Megalodon.CheckedTermReconstruction
 import Mettapedia.Languages.Megalodon.MathdataTypeFormation
 import Mettapedia.Logic.HOL.Syntax.PartialConstSubstitution
 
@@ -59,13 +60,17 @@ theorem CheckedPlainDefinitions.exists_body
   subst type
   exact ⟨term, erased⟩
 
-/-- The body interpretation is obtained from the independent native checks. -/
-noncomputable def CheckedPlainDefinitions.interpretBody
+/-- The body is reconstructed computationally from the independent native
+checks; no representative is selected from an existence theorem. -/
+def CheckedPlainDefinitions.interpretBody
     (checked : CheckedPlainDefinitions environment) (name : Name) (declaration : TermDecl)
     (lookup : environment.lookupTerm? name = some declaration)
     (typed : declaration.type = reifyType τ) (body : Tm)
     (defined : declaration.definition = some body) : ClosedTerm (Constant environment) τ :=
-  Classical.choose (checked.exists_body name declaration lookup typed body defined)
+  let valid := checked.body name declaration body lookup defined ⟨τ, typed.symm⟩
+  (CheckedTermReconstruction.atType (context := []) (type := τ) body valid.lookups
+    (supported_of_plainAnnotations valid.annotations)
+    (valid.inferred.trans (congrArg some typed))).val
 
 theorem CheckedPlainDefinitions.erase_interpretBody
     (checked : CheckedPlainDefinitions environment) (name : Name) (declaration : TermDecl)
@@ -73,7 +78,10 @@ theorem CheckedPlainDefinitions.erase_interpretBody
     (typed : declaration.type = reifyType τ) (body : Tm)
     (defined : declaration.definition = some body) :
     erase (checked.interpretBody name declaration lookup typed body defined) = some body :=
-  Classical.choose_spec (checked.exists_body name declaration lookup typed body defined)
+  let valid := checked.body name declaration body lookup defined ⟨τ, typed.symm⟩
+  (CheckedTermReconstruction.atType (context := []) (type := τ) body valid.lookups
+    (supported_of_plainAnnotations valid.annotations)
+    (valid.inferred.trans (congrArg some typed))).property
 
 /-- An erased closed term has no free native term indices to shift. -/
 theorem erase_closed_shift (term : ClosedTerm (Constant environment) τ)
@@ -91,7 +99,7 @@ theorem erase_weakenCtx (term : ClosedTerm (Constant environment) τ) (context :
       rw [weakenCtx_cons, erase_weaken, ih, erase_closed_shift]
 
 /-- Already-expanded replacements at the requested definition-dependency depth. -/
-noncomputable def deltaConstants (checked : CheckedPlainDefinitions environment) :
+def deltaConstants (checked : CheckedPlainDefinitions environment) :
     Nat → {type : Ty Base} → Constant environment type →
       Option (ClosedTerm (Constant environment) type)
   | 0, _, .named name declaration lookup typed =>
@@ -107,7 +115,7 @@ noncomputable def deltaConstants (checked : CheckedPlainDefinitions environment)
 
 /-- Partial delta expansion in the existing typed syntax. The executable source
 of truth remains `MathdataKernel.deltaNormalize`. -/
-noncomputable def deltaInterpretation (checked : CheckedPlainDefinitions environment)
+def deltaInterpretation (checked : CheckedPlainDefinitions environment)
     (fuel : Nat) (term : Term (Constant environment) Γ τ) :
     Option (Term (Constant environment) Γ τ) :=
   substConst? (deltaConstants checked fuel) term

@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS
+import Mettapedia.Languages.MeTTa.PeTTa.EagerDFS
 import Mettapedia.Languages.MeTTa.PeTTa.ExplicitEvaluation
 import Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
 
@@ -524,11 +524,11 @@ theorem modelClass_literal_not_control (program : Program) (head : String)
       exact False.elim (notControl same)
   exact ⟨ordinary, (modelClass_literal_of_noncontrol program head arguments ordinary).symm.trans classification⟩
 
-theorem passive_source_transition (program : Program) (world : CettaEagerDFS.World)
+theorem passive_source_transition (program : Program) (world : EagerDFS.World)
     (bindings : Subst) (head : String) (arguments : List Atom)
-    (frames : List CettaEagerDFS.Frame)
+    (frames : List EagerDFS.Frame)
     (passive : modelClass program (.expression (.symbol head :: arguments)) = .passive) :
-    CettaEagerDFS.LocalTransition program world
+    EagerDFS.LocalTransition program world
       ⟨.evaluate bindings (.expression (.symbol head :: arguments)), frames⟩
       world (.next ⟨.arguments bindings .data (.symbol head :: arguments) [] 0, frames⟩) := by
   have ordinary : DeclarativeSpec.controlForm (.expression (.symbol head :: arguments)) = false := by
@@ -542,54 +542,54 @@ theorem passive_source_transition (program : Program) (world : CettaEagerDFS.Wor
 /-- Successful passive admission enters the actual data branch of the driver.
 No unknown application is turned into a language error by this bridge. -/
 theorem admitted_passive_localStep (program : Program) (snapshot : Snapshot)
-    (address : Address) (world : CettaEagerDFS.World) (bindings : Subst)
-    (head : String) (arguments : List Atom) (frames : List CettaEagerDFS.Frame)
+    (address : Address) (world : EagerDFS.World) (bindings : Subst)
+    (head : String) (arguments : List Atom) (frames : List EagerDFS.Frame)
     (requirement : Requirement)
     (accepted : checkOne program snapshot
       ⟨address, .expression (.symbol head :: arguments)⟩ = .ok requirement)
     (passive : requirement.selection = .passive) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.evaluate bindings (.expression (.symbol head :: arguments)), frames⟩ =
       some (world, .next ⟨.arguments bindings .data (.symbol head :: arguments) [] 0, frames⟩) := by
   have selected := checkOne_selection program snapshot
     ⟨address, .expression (.symbol head :: arguments)⟩ requirement accepted
-  exact CettaEagerDFS.local_transition_step
+  exact EagerDFS.local_transition_step
     (passive_source_transition program world bindings head arguments frames (selected.symm.trans passive))
 
 /-- The primitive response is the actual shared primitive call and post-state.
 This theorem does not supply the separate host primitive correspondence. -/
-theorem primitive_source_response (program : Program) (world : CettaEagerDFS.World)
+theorem primitive_source_response (program : Program) (world : EagerDFS.World)
     (bindings : Subst) (head : String) (values : List Atom) (index : Nat)
-    (frames : List CettaEagerDFS.Frame) (after : Effects.State) (answers : List Atom)
+    (frames : List EagerDFS.Frame) (after : Effects.State) (answers : List Atom)
     (primitive : headClass program head = .primitive)
     (called : StdLib.apply world.state head values = .ok (after, answers)) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.arguments bindings (.function head) [] values index, frames⟩ =
       some ({ world with state := after },
-        .alternatives (CettaEagerDFS.returnedBranches answers frames)) := by
+        .alternatives (EagerDFS.returnedBranches answers frames)) := by
   obtain ⟨ordinary, known⟩ := (headClass_primitive_iff program head).mp primitive
-  exact CettaEagerDFS.local_transition_step (.primitive ordinary known called)
+  exact EagerDFS.local_transition_step (.primitive ordinary known called)
 
 /-- Authored dispatch uses the actual ordered equation selection. A native
 mixed builtin/equation route is refused instead of licensed by this theorem. -/
-theorem authored_source_response (program : Program) (world : CettaEagerDFS.World)
+theorem authored_source_response (program : Program) (world : EagerDFS.World)
     (bindings : Subst) (head : String) (values : List Atom) (index : Nat)
-    (frames : List CettaEagerDFS.Frame)
+    (frames : List EagerDFS.Frame)
     (authored : headClass program head = .authored) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.arguments bindings (.function head) [] values index, frames⟩ =
-      some (world, .alternatives (CettaEagerDFS.equationBranches program head values frames)) := by
+      some (world, .alternatives (EagerDFS.equationBranches program head values frames)) := by
   obtain ⟨ordinary, unknown, _⟩ := (headClass_authored_iff program head).mp authored
-  exact CettaEagerDFS.local_transition_step (.equations ordinary unknown)
+  exact EagerDFS.local_transition_step (.equations ordinary unknown)
 
 theorem admitted_authored_localStep (program : Program) (snapshot : Snapshot)
-    (address : Address) (world : CettaEagerDFS.World) (bindings : Subst)
-    (head : String) (arguments : List Atom) (frames : List CettaEagerDFS.Frame)
+    (address : Address) (world : EagerDFS.World) (bindings : Subst)
+    (head : String) (arguments : List Atom) (frames : List EagerDFS.Frame)
     (requirement : Requirement)
     (accepted : checkOne program snapshot
       ⟨address, .expression (.symbol head :: arguments)⟩ = .ok requirement)
     (authored : requirement.selection = .authored) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.evaluate bindings (.expression (.symbol head :: arguments)), frames⟩ =
       some (world, .next ⟨.arguments bindings (.function head) arguments [] 0, frames⟩) := by
   have selected := checkOne_selection program snapshot
@@ -597,21 +597,21 @@ theorem admitted_authored_localStep (program : Program) (snapshot : Snapshot)
   obtain ⟨notControl, classification⟩ := modelClass_literal_not_control program head arguments .authored
     (selected.symm.trans authored) (by decide)
   obtain ⟨io, primitive, callable⟩ := (headClass_authored_iff program head).mp classification
-  exact CettaEagerDFS.local_transition_step
+  exact EagerDFS.local_transition_step
     (.call_enter notControl (by simp only [io, primitive, callable, Bool.false_or]))
 
 theorem admitted_primitive_source_response (program : Program) (snapshot : Snapshot)
-    (address : Address) (world : CettaEagerDFS.World) (bindings : Subst)
-    (head : String) (values : List Atom) (index : Nat) (frames : List CettaEagerDFS.Frame)
+    (address : Address) (world : EagerDFS.World) (bindings : Subst)
+    (head : String) (values : List Atom) (index : Nat) (frames : List EagerDFS.Frame)
     (after : Effects.State) (answers : List Atom) (requirement : Requirement)
     (accepted : checkOne program snapshot
       ⟨address, .expression (.symbol head :: values)⟩ = .ok requirement)
     (primitive : requirement.selection = .primitive)
     (called : StdLib.apply world.state head values = .ok (after, answers)) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.arguments bindings (.function head) [] values index, frames⟩ =
       some ({ world with state := after },
-        .alternatives (CettaEagerDFS.returnedBranches answers frames)) := by
+        .alternatives (EagerDFS.returnedBranches answers frames)) := by
   have selected := checkOne_selection program snapshot
     ⟨address, .expression (.symbol head :: values)⟩ requirement accepted
   have classification := (modelClass_literal_not_control program head values .primitive
@@ -689,16 +689,16 @@ theorem primitive_admitted_with_retained_requirements :
     checkOne emptyProgram additionSnapshot addition =
       .ok (Requirement.ofFact emptyProgram addition additionFact) := by decide
 
-theorem primitive_admission_uses_actual_integer_service (world : CettaEagerDFS.World)
-    (bindings : Subst) (frames : List CettaEagerDFS.Frame) :
-    CettaEagerDFS.localStep emptyProgram world
+theorem primitive_admission_uses_actual_integer_service (world : EagerDFS.World)
+    (bindings : Subst) (frames : List EagerDFS.Frame) :
+    EagerDFS.localStep emptyProgram world
       ⟨.arguments bindings (.function "+") [] [.grounded (.int 1), .grounded (.int 2)] 2, frames⟩ =
       some (world, .alternatives [⟨.returned (.grounded (.int 3)), frames⟩]) := by
   have called := StdLib.integer_addition world.state 1 2
   have stepped := admitted_primitive_source_response emptyProgram additionSnapshot firstAddress world
     bindings "+" [.grounded (.int 1), .grounded (.int 2)] 2 frames world.state
       [.grounded (.int 3)] _ primitive_admitted_with_retained_requirements rfl called
-  simpa only [CettaEagerDFS.returnedBranches, List.map_cons, List.map_nil] using stepped
+  simpa only [EagerDFS.returnedBranches, List.map_cons, List.map_nil] using stepped
 
 def mixedProgram : Program :=
   { equations := [⟨"+", [.var "x", .var "y"], .symbol "authored"⟩], declarations := [] }
@@ -728,9 +728,9 @@ theorem inventory_order_does_not_reorder_requests :
       .ok [Requirement.ofFact emptyProgram addition additionFact,
         Requirement.ofFact emptyProgram second secondFact] := by decide
 
-theorem passive_admission_enters_actual_data_branch (world : CettaEagerDFS.World)
-    (bindings : Subst) (frames : List CettaEagerDFS.Frame) :
-    CettaEagerDFS.localStep emptyProgram world
+theorem passive_admission_enters_actual_data_branch (world : EagerDFS.World)
+    (bindings : Subst) (frames : List EagerDFS.Frame) :
+    EagerDFS.localStep emptyProgram world
       ⟨.evaluate bindings unknown.expression, frames⟩ =
       some (world, .next ⟨.arguments bindings .data
         [.symbol "Uninterpreted", .symbol "a", .symbol "b"] [] 0, frames⟩) :=
@@ -770,9 +770,9 @@ theorem captured_role_erasure_cannot_support_dispatch :
   rw [imported_later_head_collision_refused, predeclared_later_head_admitted] at same
   cases same
 
-theorem authored_admission_enters_actual_function_branch (world : CettaEagerDFS.World)
-    (bindings : Subst) (frames : List CettaEagerDFS.Frame) :
-    CettaEagerDFS.localStep laterProgram world
+theorem authored_admission_enters_actual_function_branch (world : EagerDFS.World)
+    (bindings : Subst) (frames : List EagerDFS.Frame) :
+    EagerDFS.localStep laterProgram world
       ⟨.evaluate bindings laterOccurrence.expression, frames⟩ =
       some (world, .next ⟨.arguments bindings (.function "later") [] [] 0, frames⟩) :=
   admitted_authored_localStep laterProgram ⟨.extended, [{ laterFact with role := .call }]⟩

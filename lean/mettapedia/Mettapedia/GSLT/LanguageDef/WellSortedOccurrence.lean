@@ -80,7 +80,7 @@ inductive TypedAt (language : LanguageDef) (free : FreeTypeContext)
       {inner : OneHoleContext} {rest : Option String}
       {bound focusBound : List TypeExpr} {element result : TypeExpr} :
       rule ∈ language.terms →
-      rule.params = [.simple parameter (.collection kind element)] →
+      rule.bareParams = [.simple parameter (.collection kind element)] →
       ElementsHaveType language free bound
         (before ++ inner.fill focus :: after) element →
       TypedAt language free focus inner bound element focusBound result →

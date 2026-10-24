@@ -341,7 +341,7 @@ theorem AtomicPi.hasType {depth : Nat} {process : Pattern} (atomic : AtomicPi de
     exact .constructor (List.getElem_mem (l := piCalc.terms) (n := 5) (by decide))
       (by simp [UsesBareCollection, piCalc]) (.cons trivial rfl name.hasType
         (.cons trivial rfl (.lambda (by simpa [List.replicate_succ] using ih)) .nil))
-  | parallel _ ih => exact bag_hasType piBagTheory (elementsHaveType_iff.mpr ih)
+  | parallel _ ih => exact bag_hasType (piBagTheory.asBare rfl) (elementsHaveType_iff.mpr ih)
 
 theorem AtomicName.normalForm {depth : Nat} {name : Pattern} (atomic : AtomicName depth name) :
     normalForm (some "PiNil") name = name := by cases atomic <;> rfl

@@ -44,7 +44,7 @@ theorem HasType.collection_base_inv {language : LanguageDef} {free : FreeTypeCon
       simp only [Pattern.collection.injEq] at source
       obtain ⟨rfl, rfl, rfl⟩ := source
       simp only [TypeExpr.base.injEq] at target
-      exact ⟨_, membership, target.symm, _, _, parameters, elementsTyped⟩
+      exact ⟨_, membership, target.symm, _, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2, elementsTyped⟩
   | collection _ => cases target
   | bvar _ => cases source
   | fvar _ => cases source

@@ -319,41 +319,49 @@ theorem usesBareCollection_costWrappedConstructor_iff {theory : IGSLT}
     (constructor : GrammarRule) :
     UsesBareCollection (costWrappedConstructor (theory := theory) constructor) ↔
       UsesBareCollection constructor := by
-  constructor
-  · rintro ⟨parameterName, collectionType, elementType, mappedShape⟩
-    cases constructor with
-    | mk label category parameters syntaxPattern evalPolicy =>
-      simp only [costWrappedConstructor] at mappedShape
-      cases parameters with
-      | nil => simp at mappedShape
-      | cons parameter parameters =>
+  cases mode : constructor.collectionRepresentation with
+  | wrapped =>
+      simp [UsesBareCollection, costWrappedConstructor, GrammarRule.bareParams, mode]
+  | bare =>
+      have targetMode : (costWrappedConstructor (theory := theory) constructor).collectionRepresentation = .bare := mode
+      simp only [UsesBareCollection,
+        GrammarRule.bareParams_of_bare _ mode,
+        GrammarRule.bareParams_of_bare _ targetMode]
+      constructor
+      · rintro ⟨parameterName, collectionType, elementType, mappedShape⟩
+        cases constructor with
+        | mk label category parameters syntaxPattern evalPolicy =>
+          simp only [costWrappedConstructor] at mappedShape
           cases parameters with
-          | nil =>
-              cases parameter with
-              | simple originalName originalType =>
-                  cases originalType with
-                  | base sort =>
-                      by_cases selected :
-                          sort = theory.presentation.interactingSort.1.name <;>
-                        simp_all [mapParameterType, costWrappedTypeExpr]
-                  | arrow domain codomain =>
-                      simp_all [mapParameterType, costWrappedTypeExpr]
-                  | multiBinder body =>
-                      simp_all [mapParameterType, costWrappedTypeExpr]
-                  | collection originalCollection originalElement =>
-                      simp_all [mapParameterType, costWrappedTypeExpr,
-                        UsesBareCollection]
-              | abstractionNamed binder body type =>
-                  simp [mapParameterType] at mappedShape
-              | multiAbstractionNamed binders body type =>
-                  simp [mapParameterType] at mappedShape
-          | cons next rest => simp at mappedShape
-  · rintro ⟨parameterName, collectionType, elementType, shape⟩
-    refine ⟨parameterName, collectionType,
-      costWrappedTypeExpr theory.presentation.interactingSort.1.name
-        elementType, ?_⟩
-    simp [costWrappedConstructor, shape, mapParameterType,
-      costWrappedTypeExpr]
+          | nil => simp at mappedShape
+          | cons parameter parameters =>
+              cases parameters with
+              | nil =>
+                  cases parameter with
+                  | simple originalName originalType =>
+                      cases originalType with
+                      | base sort =>
+                          by_cases selected :
+                              sort = theory.presentation.interactingSort.1.name <;>
+                            simp_all [mapParameterType, costWrappedTypeExpr]
+                      | arrow domain codomain =>
+                          simp_all [mapParameterType, costWrappedTypeExpr]
+                      | multiBinder body =>
+                          simp_all [mapParameterType, costWrappedTypeExpr]
+                      | collection originalCollection originalElement =>
+                          simp_all [mapParameterType, costWrappedTypeExpr]
+                  | abstractionNamed binder body type =>
+                      simp [mapParameterType] at mappedShape
+                  | multiAbstractionNamed binders body type =>
+                      simp [mapParameterType] at mappedShape
+              | cons next rest => simp at mappedShape
+      · rintro ⟨parameterName, collectionType, elementType, shape⟩
+        refine ⟨parameterName, collectionType,
+          costWrappedTypeExpr theory.presentation.interactingSort.1.name
+            elementType, ?_⟩
+        simp [costWrappedConstructor, shape, mapParameterType,
+          costWrappedTypeExpr]
+
 
 /-! ## The rewrite's variable context and authored labels -/
 
@@ -566,32 +574,41 @@ theorem usesBareCollection_baseConstructor_iff (profile : ContinuationDecoration
     (constructor : GrammarRule) :
     UsesBareCollection (profile.baseConstructor constructor) ↔
       UsesBareCollection constructor := by
-  cases constructor with
-  | mk label category parameters syntaxPattern evalPolicy =>
-      cases parameters with
-      | nil => simp [UsesBareCollection, baseConstructor]
-      | cons parameter parameters =>
+  cases mode : constructor.collectionRepresentation with
+  | wrapped =>
+      simp [UsesBareCollection, baseConstructor, GrammarRule.bareParams, mode]
+  | bare =>
+      have targetMode : (profile.baseConstructor constructor).collectionRepresentation = .bare := mode
+      simp only [UsesBareCollection,
+        GrammarRule.bareParams_of_bare _ mode,
+        GrammarRule.bareParams_of_bare _ targetMode]
+      cases constructor with
+      | mk label category parameters syntaxPattern evalPolicy =>
           cases parameters with
-          | nil =>
-              cases parameter with
-              | simple name type =>
-                  simp only [UsesBareCollection, baseConstructor,
-                    baseParameter, List.zipIdx_cons, List.map_cons,
-                    List.singleton_inj, TermParam.simple.injEq]
-                  split <;> cases type <;>
-                    simp [mapParameterType, costWrappedTypeExpr,
-                      costBaseTypeExpr] ;
-                    split <;> simp
-              | abstractionNamed binder name type =>
-                  simp only [UsesBareCollection, baseConstructor,
-                    baseParameter, List.zipIdx_cons, List.map_cons]
-                  split <;> simp [mapParameterType]
-              | multiAbstractionNamed binders name type =>
-                  simp only [UsesBareCollection, baseConstructor,
-                    baseParameter, List.zipIdx_cons, List.map_cons]
-                  split <;> simp [mapParameterType]
-          | cons second rest =>
-              simp [UsesBareCollection, baseConstructor]
+          | nil => simp [baseConstructor]
+          | cons parameter parameters =>
+              cases parameters with
+              | nil =>
+                  cases parameter with
+                  | simple name type =>
+                      simp only [baseConstructor,
+                        baseParameter, List.zipIdx_cons, List.map_cons,
+                        List.singleton_inj, TermParam.simple.injEq]
+                      split <;> cases type <;>
+                        simp [mapParameterType, costWrappedTypeExpr,
+                          costBaseTypeExpr] ;
+                        split <;> simp
+                  | abstractionNamed binder name type =>
+                      simp only [baseConstructor,
+                        baseParameter, List.zipIdx_cons, List.map_cons]
+                      split <;> simp [mapParameterType]
+                  | multiAbstractionNamed binders name type =>
+                      simp only [baseConstructor,
+                        baseParameter, List.zipIdx_cons, List.map_cons]
+                      split <;> simp [mapParameterType]
+              | cons second rest =>
+                  simp [baseConstructor]
+
 
 def wrappedLabels (profile : ContinuationDecorationProfile cut) : List String :=
   profile.constructorClosure.map (·.1.label)

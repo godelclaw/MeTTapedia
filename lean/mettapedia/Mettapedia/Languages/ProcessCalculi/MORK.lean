@@ -13,6 +13,7 @@ import Mettapedia.Languages.ProcessCalculi.MORK.BridgeAlgebraInterfaceRefinement
 import Mettapedia.Languages.ProcessCalculi.MORK.PathOfAtomEncodingContract
 import Mettapedia.Languages.ProcessCalculi.MORK.ExecutionBoundary
 import Mettapedia.Languages.ProcessCalculi.MORK.CapabilityProfile
+import Mettapedia.Languages.ProcessCalculi.MORK.WriteResourceResolution
 import Mettapedia.Languages.ProcessCalculi.MORK.GSLTSemantics
 import Mettapedia.Languages.ProcessCalculi.MORK.ReflectiveExecution
 import Mettapedia.Languages.ProcessCalculi.MORK.ReflectiveGSLTNativeTypes

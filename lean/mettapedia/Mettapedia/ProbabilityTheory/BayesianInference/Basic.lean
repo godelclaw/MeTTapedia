@@ -21,6 +21,11 @@ variable {S O : Type*} [Fintype S] [Fintype O]
 noncomputable def evidence (prior : Prob S) (likelihood : S → ℝ) : ℝ :=
   ∑ s, prior.1 s * likelihood s
 
+/-- Under a point mass, evidence is the likelihood at the selected state. -/
+@[simp] theorem evidence_dirac [DecidableEq S] (state : S) (likelihood : S → ℝ) :
+    evidence (Prob.dirac state) likelihood = likelihood state :=
+  Prob.expectation_dirac state likelihood
+
 theorem evidence_nonneg (prior : Prob S) (likelihood : S → ℝ)
     (h : ∀ s, 0 ≤ likelihood s) : 0 ≤ evidence prior likelihood :=
   Finset.sum_nonneg fun s _ => mul_nonneg (prior.2.1 s) (h s)

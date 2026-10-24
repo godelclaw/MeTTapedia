@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+import Mettapedia.Logic.InstitutionBorrowing
 
 /-!
 # Conservative proof embeddings between checker authorities
@@ -25,6 +26,16 @@ negative examples show separately that exact checker commutation can erase
 certificate identity and that exact accepted-fibre parity can still collapse
 claim identity.
 
+**Theory routes.**  At each kind a theory translation is a route between the
+scopes in the sense of `Logic.InstitutionBorrowing`
+(`TheoryTranslation.scopeRoute`), and scope reflection is exactly the
+conservativity of these routes (`TheoryTranslation.scopeReflecting_iff`).
+Hence certificate-level adequacy gives theory-level conservativity, so
+borrowing theoremhood back is sound (`Embedding.scopeRoute_conservative`).
+The converse fails: the erasing translation's routes are conservative and it is
+no embedding (`CertificateCollapseCanary.erasingTranslation_scopeRoute_conservative`,
+`CertificateCollapseCanary.erasingTranslation_not_proofEmbedding`).
+
 Formerly `Mettapedia.GSLT.LanguageDef.NIKConservativeProofEmbedding`, part of the native inference kernel (NIK) development of 2026-08-11 to 2026-10-08; renamed to its subject name on 2026-10-08.
 The namespace was `Mettapedia.GSLT.LanguageDef.NIKConservativeProofEmbedding`; it is now `Mettapedia.GSLT.LanguageDef.ConservativeProofEmbedding`.
 Renamed declarations: `ConservativeProofEmbedding` → `Embedding`.
@@ -37,6 +48,7 @@ namespace Mettapedia.GSLT.LanguageDef.ConservativeProofEmbedding
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.Logic.InstitutionBorrowing
 
 universe uKind uSignature uClaim uCertificate
 
@@ -248,6 +260,34 @@ theorem comp
 
 end Embedding
 
+/-! ## Scopes as theory routes -/
+
+/-- At one kind, a theory translation is a route between the scopes: a claim in
+scope goes to a claim in scope. -/
+def _root_.Mettapedia.GSLT.LanguageDef.HeterogeneousTheory.TheoryTranslation.scopeRoute
+    (translation : TheoryTranslation source target) (kind : SourceKind) :
+    TheoryRoute {claim | source.Scope kind claim}
+      {claim | target.Scope (translation.mapKind kind) claim} where
+  translate := translation.mapClaim kind
+  preserves claim member := translation.scope_preserved kind claim member
+
+/-- **Scope reflection is conservativity of the scope routes.** -/
+theorem _root_.Mettapedia.GSLT.LanguageDef.HeterogeneousTheory.TheoryTranslation.scopeReflecting_iff
+    (translation : TheoryTranslation source target) :
+    translation.ScopeReflecting ↔ ∀ kind, (translation.scopeRoute kind).Conservative :=
+  ⟨fun reflecting kind claim translated => reflecting kind claim translated,
+    fun conservative kind _claim translated => conservative kind translated⟩
+
+/-- **Certificate-level adequacy gives theory-level conservativity.**  Along a
+conservative proof embedding every scope route is conservative, so a target
+theorem about a translated claim is a source theorem. -/
+theorem Embedding.scopeRoute_conservative
+    {translation : CertifiedTranslation sourceContract targetContract}
+    (embedding : Embedding translation) (kind : SourceKind) :
+    (translation.toTheoryTranslation.scopeRoute kind).Conservative :=
+  translation.toTheoryTranslation.scopeReflecting_iff.mp
+    embedding.toTheoryConservative.scope_reflecting kind
+
 end Generic
 
 /-! ## A non-identity-shaped positive calibration -/
@@ -396,6 +436,14 @@ theorem erasingTranslation_semantically_conservative :
   scope_reflecting := by intro kind claim inScope; exact inScope
   meaning_reflecting := by intro kind claim meaningful; exact meaningful
 
+/-- **Negative control: a conservative route need not be an embedding.** The
+erasing translation's scope route is conservative, while the translation is no
+proof embedding (`erasingTranslation_not_proofEmbedding`). -/
+theorem erasingTranslation_scopeRoute_conservative :
+    (erasingTranslation.toTheoryTranslation.scopeRoute Kind.only).Conservative :=
+  erasingTranslation.toTheoryTranslation.scopeReflecting_iff.mp
+    erasingTranslation_semantically_conservative.scope_reflecting Kind.only
+
 /-- Negative control: exact replay plus two-way theorem/meaning preservation
 does not preserve proof occurrence identity. -/
 theorem erasingTranslation_not_proofEmbedding :
@@ -503,6 +551,9 @@ end ClaimCollapseCanary
 #print axioms acceptedMap_comp
 #print axioms Embedding.scope_reflecting
 #print axioms Embedding.toTheoryConservative
+#print axioms HeterogeneousTheory.TheoryTranslation.scopeReflecting_iff
+#print axioms Embedding.scopeRoute_conservative
+#print axioms CertificateCollapseCanary.erasingTranslation_scopeRoute_conservative
 #print axioms Embedding.scope_rejection_iff
 #print axioms Embedding.comp
 #print axioms RepresentationChangeCanary.proofEmbedding

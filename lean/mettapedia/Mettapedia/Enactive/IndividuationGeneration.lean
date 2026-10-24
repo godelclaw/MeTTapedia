@@ -38,7 +38,7 @@ variable {System : Type uSystem} {Boundary : Type uBoundary}
   {World : Type uWorld} {layer : AbstractionLayer World}
 
 /-- The exact process length becomes the Bennett generation length. -/
-def processGeneration (interpretation : TaskInterpretation theory layer)
+theorem processGeneration (interpretation : TaskInterpretation theory layer)
     {steps : Nat} {first last : System}
     (process : Individuation.Process theory steps first last) :
     Task.Generation steps
@@ -90,7 +90,7 @@ def process : Individuation.Process theory 1 false true :=
 
 /-- A real interpreted individuation step yields the existing nontrivial
 Bennett generation witness. -/
-def interpretedGeneration :
+theorem interpretedGeneration :
     Task.Generation 1 ScopedGeneration.Canary.childTask
       ScopedGeneration.Canary.parentTask := by
   simpa [process,

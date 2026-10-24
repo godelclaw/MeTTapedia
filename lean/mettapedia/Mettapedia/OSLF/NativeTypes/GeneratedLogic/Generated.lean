@@ -1,0 +1,129 @@
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula
+import Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-!
+# The formulas a language generates
+
+The native type language Φ(L) of a language L is the set of formulas whose formers L provides
+(`GeneratedBy`):
+- a constructor former names one of L's constructors at its arity. A constructor that declares a bare
+  collection carrier has no applications; its terms are read through the collection formers;
+- a collection former names a collection kind that L's constructors use;
+- the binder formers need a constructor with an abstraction parameter (`body`, `bound` and the hom
+  formers) or with a multi-abstraction parameter (`multiBody`);
+- a step label names L's rules, in the modalities and in the counting modalities;
+- a type is built from L's declared sorts, and a singleton names a closed term of L.
+
+Φ(L) is closed under the dual (`generatedBy_dual`), so refuting a formula of Φ(L) proves a formula of
+Φ(L).
+-/
+
+set_option autoImplicit false
+
+namespace Mettapedia.OSLF.NativeTypes.GeneratedLogic
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.GSLT.LanguageDef.WellSorted (OpenPatternWellSorted FreeTypeContext UsesBareCollection)
+open Formula
+
+/-- The number of formulas in a list. -/
+def Formulas.length {n : ℕ} : Formulas n → ℕ
+  | .nil => 0
+  | .cons _ formulas => formulas.length + 1
+
+theorem Formulas.length_dualList {n : ℕ} : ∀ formulas : Formulas n, (dualList formulas).length = formulas.length
+  | .nil => rfl
+  | .cons _ formulas => by simp only [dualList, Formulas.length, Formulas.length_dualList formulas]
+
+/-- **A constructor of the language** at this arity, whose terms are applications. -/
+def HasConstructor (language : LanguageDef) (constructor : String) (arity : ℕ) : Prop :=
+  ∃ rule ∈ language.terms, rule.label = constructor ∧ rule.params.length = arity ∧ ¬ UsesBareCollection rule
+
+/-- **The language has binders**: some constructor takes an abstraction. -/
+def HasBinder (language : LanguageDef) : Prop :=
+  ∃ rule ∈ language.terms, ∃ binder body type, TermParam.abstractionNamed binder body type ∈ rule.params
+
+/-- **The language has multi-binders**: some constructor abstracts several variables at once. -/
+def HasMultiBinder (language : LanguageDef) : Prop :=
+  ∃ rule ∈ language.terms, ∃ binders body type, TermParam.multiAbstractionNamed binders body type ∈ rule.params
+
+/-- **A type of the language**: built from its declared sorts. -/
+def DeclaresType (language : LanguageDef) : TypeExpr → Prop
+  | .base sort => sort ∈ language.types.map TypeDecl.name
+  | .arrow domain codomain => DeclaresType language domain ∧ DeclaresType language codomain
+  | .multiBinder domain => DeclaresType language domain
+  | .collection _ element => DeclaresType language element
+
+/-- **A step label of the language**: it names the language's rules. -/
+def LabelOf (language : LanguageDef) : StepLabel → Prop
+  | .any => True
+  | .rule index => index < language.rewrites.length
+  | .under index label => index < language.rewrites.length ∧ LabelOf language label
+
+mutual
+/-- **The formulas the language generates**: Φ(L). -/
+def GeneratedBy (language : LanguageDef) : {n : ℕ} → Formula n → Prop
+  | _, .top | _, .bot | _, .var _ => True
+  | _, .and left right | _, .or left right => GeneratedBy language left ∧ GeneratedBy language right
+  | _, .mu inner | _, .nu inner => GeneratedBy language inner
+  | _, .possibly label formula | _, .necessarily label formula | _, .sometimeBefore label formula
+  | _, .alwaysBefore label formula | _, .atLeast _ _ label formula | _, .allButFewer _ _ label formula =>
+    LabelOf language label ∧ GeneratedBy language formula
+  | _, .built constructor arguments | _, .everyBuilt constructor arguments =>
+    HasConstructor language constructor arguments.length ∧ GeneratedByList language arguments
+  | _, .split kind left right | _, .everySplit kind left right =>
+    language.usesCollection kind = true ∧ GeneratedBy language left ∧ GeneratedBy language right
+  | _, .empty kind | _, .nonEmpty kind => language.usesCollection kind = true
+  | _, .single kind formula | _, .everySingle kind formula =>
+    language.usesCollection kind = true ∧ GeneratedBy language formula
+  | _, .body formula | _, .everyBody formula => HasBinder language ∧ GeneratedBy language formula
+  | _, .multiBody _ formula | _, .everyMultiBody _ formula => HasMultiBinder language ∧ GeneratedBy language formula
+  | _, .bound _ | _, .notBound _ => HasBinder language ∨ HasMultiBinder language
+  | _, .typed type | _, .untyped type => DeclaresType language type
+  | _, .is term | _, .isNot term => ∃ type, OpenPatternWellSorted language FreeTypeContext.empty [] type term
+  | _, .mapsAll argument result | _, .mapsSome argument result =>
+    HasBinder language ∧ GeneratedBy language argument ∧ GeneratedBy language result
+  | _, .someOf type formula | _, .everyOf type formula => DeclaresType language type ∧ GeneratedBy language formula
+
+/-- Every formula of the list is generated by the language. -/
+def GeneratedByList (language : LanguageDef) : {n : ℕ} → Formulas n → Prop
+  | _, .nil => True
+  | _, .cons formula formulas => GeneratedBy language formula ∧ GeneratedByList language formulas
+end
+
+/-- **Φ(L)**: the native type formulas, with `n` free fixed-point variables, that the language
+generates. -/
+abbrev GeneratedFormula (language : LanguageDef) (n : ℕ) := { formula : Formula n // GeneratedBy language formula }
+
+mutual
+/-- **Φ(L) is closed under the dual.** -/
+theorem generatedBy_dual (language : LanguageDef) : ∀ {n : ℕ} (formula : Formula n),
+    GeneratedBy language formula.dual ↔ GeneratedBy language formula
+  | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _
+  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ => Iff.rfl
+  | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right
+  | _, .mapsAll left right | _, .mapsSome left right => by
+    simp only [dual, GeneratedBy, generatedBy_dual language left, generatedBy_dual language right]
+  | _, .mu inner | _, .nu inner => by simp only [dual, GeneratedBy, generatedBy_dual language inner]
+  | _, .possibly _ formula | _, .necessarily _ formula | _, .sometimeBefore _ formula
+  | _, .alwaysBefore _ formula | _, .single _ formula | _, .everySingle _ formula | _, .body formula
+  | _, .everyBody formula | _, .multiBody _ formula | _, .everyMultiBody _ formula | _, .someOf _ formula
+  | _, .everyOf _ formula | _, .atLeast _ _ _ formula | _, .allButFewer _ _ _ formula => by
+    simp only [dual, GeneratedBy, generatedBy_dual language formula]
+  | _, .built _ arguments | _, .everyBuilt _ arguments => by
+    simp only [dual, GeneratedBy, Formulas.length_dualList, generatedByList_dualList language arguments]
+
+theorem generatedByList_dualList (language : LanguageDef) : ∀ {n : ℕ} (formulas : Formulas n),
+    GeneratedByList language (dualList formulas) ↔ GeneratedByList language formulas
+  | _, .nil => Iff.rfl
+  | _, .cons formula formulas => by
+    simp only [dualList, GeneratedByList, generatedBy_dual language formula,
+      generatedByList_dualList language formulas]
+end
+
+/-- The dual of a formula of Φ(L). -/
+def GeneratedFormula.dual {language : LanguageDef} {n : ℕ} (formula : GeneratedFormula language n) :
+    GeneratedFormula language n :=
+  ⟨formula.1.dual, (generatedBy_dual language formula.1).mpr formula.2⟩
+
+end Mettapedia.OSLF.NativeTypes.GeneratedLogic

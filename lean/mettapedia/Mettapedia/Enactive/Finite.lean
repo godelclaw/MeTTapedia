@@ -120,6 +120,25 @@ theorem weakness_antitone {left right : layer.Statement}
   rw [mem_extension] at member ⊢
   exact included.trans member
 
+/-- Principal completion cones reflect the information order. -/
+theorem extension_subset_iff {left right : layer.Statement} :
+    layer.extension right ⊆ layer.extension left ↔ left.val ⊆ right.val := by
+  constructor
+  · intro included
+    exact layer.mem_extension.mp (included (layer.mem_extension.mpr Finset.Subset.rfl))
+  · intro included target member
+    exact layer.mem_extension.mpr (included.trans (layer.mem_extension.mp member))
+
+/-- A proper refinement loses a completion: the original statement itself.
+Finiteness therefore makes the counting inequality strict. -/
+theorem weakness_strictAnti : StrictAnti layer.weakness := by
+  intro left right strict
+  apply Finset.card_lt_card
+  rw [Finset.ssubset_iff_subset_ne]
+  refine ⟨layer.extension_subset_iff.mpr strict.le, ?_⟩
+  intro equal
+  exact strict.not_ge (layer.extension_subset_iff.mp (by rw [equal]))
+
 /-- The corresponding abstract layer contains exactly the set-valued images
 of the finite vocabulary facts. -/
 def toAbstract : AbstractionLayer World where

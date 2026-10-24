@@ -23,8 +23,8 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
-def profile (rule : GrammarRule) : String × String × List TermParam :=
-  (rule.label, rule.category, rule.params)
+def profile (rule : GrammarRule) : String × String × List TermParam × CollectionRepresentation :=
+  (rule.label, rule.category, rule.params, rule.collectionRepresentation)
 
 /-- Exact parameter metadata is a sufficient search profile, not a necessary
 condition on all interpretations. The search does not identify renamed sorts. -/
@@ -61,8 +61,9 @@ def typingOfFits (source target : ValidatedLanguageDef)
     obtain ⟨other, otherMem, same⟩ := terms_of_fits fits rule member
     have label := congrArg Prod.fst same
     have category := congrArg (fun p => p.2.1) same
-    have parameters := congrArg (fun p => p.2.2) same
-    refine ⟨other, otherMem, label, category, ?_⟩
+    have parameters := congrArg (fun p => p.2.2.1) same
+    have representation := congrArg (fun p => p.2.2.2) same
+    refine ⟨other, otherMem, label, category, ?_, representation⟩
     have parameterId : mapTermParam LanguageDefSymbolMap.id = id := funext mapTermParam_id
     simpa only [profile, parameterId, List.map_id] using parameters
 
@@ -107,6 +108,25 @@ private def notationChange : LanguageDef :=
 
 theorem different_notation_succeeds : signatureFits source notationChange = true := by decide
 
+private def collectionRule : GrammarRule where
+  label := "Sequence"
+  category := "T"
+  params := [.simple "elements" (.collection .vec (.base "T"))]
+  syntaxPattern := []
+
+private def bareCollection : LanguageDef :=
+  { source with terms := [collectionRule] }
+
+private def wrappedCollection : LanguageDef :=
+  { bareCollection with terms := bareCollection.terms.map fun rule =>
+      { rule with collectionRepresentation := .wrapped } }
+
+theorem identical_collection_signature_succeeds :
+    signatureFits bareCollection bareCollection = true := by decide
+
+theorem changed_collection_representation_refused :
+    signatureFits bareCollection wrappedCollection = false := by decide
+
 private def renamed : LanguageDef :=
   { source with terms := [nullary "Z" "zero", nullary "S" "one"] }
 
@@ -131,9 +151,9 @@ def renamedTyping : TypingMorphism validatedSource validatedRenamed where
     change rule ∈ [nullary "A" "a", nullary "B" "b"] at member
     simp only [List.mem_cons, List.not_mem_nil, or_false] at member
     rcases member with rfl | rfl
-    · refine ⟨nullary "Z" "zero", ?_, rfl, rfl, rfl⟩
+    · refine ⟨nullary "Z" "zero", ?_, rfl, rfl, rfl, rfl⟩
       exact List.Mem.head _
-    · refine ⟨nullary "S" "one", ?_, rfl, rfl, rfl⟩
+    · refine ⟨nullary "S" "one", ?_, rfl, rfl, rfl, rfl⟩
       exact List.Mem.tail _ (List.Mem.head _)
 
 theorem unknown_identity_has_another_interpretation :

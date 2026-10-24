@@ -3,14 +3,14 @@ import Mettapedia.Algebra.QuantaleWeakness
 import Mettapedia.Logic.Query.MultisetAscription
 import Mettapedia.GSLT.Core.WeightedMuScheduler
 import Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler
-import Mettapedia.Languages.MeTTa.PrimeCandidates.TypedScheduler
+import Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflective.TypedScheduler
 import Mettapedia.Logic.ModalQuantaleSemantics
 import Mettapedia.Order.FiniteSetFixedPoints
 #eval List.insertionSort (fun _ _ : Nat => False) [1, 2, 3]
 #eval List.insertionSort (fun _ _ : Nat => True) [1, 2, 3]
 #print List.orderedInsert
 #print List.insertionSort
-#check List.orderedInsert_of_le
+#check List.orderedInsert_cons_of_le
 
 #print axioms Mettapedia.Logic.Query.MultisetAscription.check_holds_iff
 #print axioms Mettapedia.Logic.Query.MultisetAscription.check_holds_iff_nonempty_evidence
@@ -22,7 +22,8 @@ import Mettapedia.Order.FiniteSetFixedPoints
 #print axioms Mettapedia.GSLT.Core.WeightedMuScheduler.weightedOddLoop_has_no_certificate
 #print axioms Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler.fusedScorer_grade_mul
 #print axioms Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler.propensity_eq_strength_mul_confidence
-#print axioms Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler.internalNeedEvidencePolicy_apply
+-- Inspect the current reference-machine policy definition.
+#print axioms Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler.needEvidencePolicy
 #print axioms Mettapedia.Logic.ModalMuCalculus.satisfies_congr
 #print axioms Mettapedia.Logic.ModalMuCalculus.EvaluationGame.Program.graphValid_eq_true
 #print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.TypedScheduler.TemporalObjective.evaluationProgram_denotes_iff

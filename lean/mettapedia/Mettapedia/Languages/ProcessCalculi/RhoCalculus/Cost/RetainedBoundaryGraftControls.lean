@@ -52,7 +52,7 @@ theorem quote_parameter : quotePreimage.sourceConstructor.1.params =
     [.simple "p" (.base "Proc")] := rfl
 
 theorem quote_not_bare : ¬ UsesBareCollection quotePreimage.sourceConstructor.1 := by
-  simp [UsesBareCollection, quote_parameter]
+  simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, quote_parameter]
 
 theorem quote_category_supported : quotePreimage.sourceConstructor.1.category ∈
     rhoCIGSLT.theory.presentation.presentation.language.types := by decide +kernel

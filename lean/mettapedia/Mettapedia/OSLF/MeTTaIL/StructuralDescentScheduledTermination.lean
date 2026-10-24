@@ -87,7 +87,7 @@ def treeEvaluate (environment : Environment) (outer : Goal) (goal : Goal)
           apply Scheduler.TaskTree.branch
           refine .cons (treeEvaluate environment outer
             (.quantified depth context parameter body (index + 1) elements
-              (restoreParameter parameter initial middle)) _ ?_) .nil
+              initial) _ ?_) .nil
           intro result
           cases result with
           | quantified final history rest =>

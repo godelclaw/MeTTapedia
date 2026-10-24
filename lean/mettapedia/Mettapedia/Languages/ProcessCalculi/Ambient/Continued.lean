@@ -24,7 +24,7 @@ theorem ambient_bagTheory :
 
 /-- The bag normal form is a section of the static equivalence. -/
 def ambientCanonicalSection : ComputableCanonicalSection ambientIGSLT :=
-  bagCanonicalSection ambientIGSLT ambient_bagTheory
+  bagCanonicalSection ambientIGSLT (ambient_bagTheory.asBare rfl)
 
 /-- The three clauses for mobile ambients. -/
 def ambientContinuedPresentation : ContinuedPresentation ambientIGSLT where

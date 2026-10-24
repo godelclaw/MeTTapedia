@@ -37,12 +37,12 @@ theorem hasType_unary {language : LanguageDef} {zeroRule succRule : GrammarRule}
   induction count with
   | zero =>
       exact HasType.constructor zeroMember
-        (by rintro ⟨name, kind, element, shape⟩; rw [zeroParams] at shape; cases shape)
+        (by rintro ⟨name, kind, element, shape⟩; simpa [zeroParams] using ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
         (zeroParams ▸ .nil)
   | succ count recurse =>
       have typed := HasType.constructor (free := free) (bound := bound)
         (arguments := [Pattern.unary zeroRule.label succRule.label count]) succMember
-        (by rintro ⟨name, kind, element, shape⟩; rw [succParams] at shape; cases shape)
+        (by rintro ⟨name, kind, element, shape⟩; simpa [succParams] using ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2)
         (succParams ▸ .cons trivial rfl recurse .nil)
       rw [category] at typed
       exact typed

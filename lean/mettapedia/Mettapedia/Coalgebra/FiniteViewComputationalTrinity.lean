@@ -13,8 +13,9 @@ bijective:
 * operational states represent behaviors faithfully and completely; and
 * behaviors are represented faithfully and completely by coherent towers.
 
-The theorem is independent of streams.  Streams instantiate the finite-view
-interface, while later polynomial or container coalgebras need only provide
+The theorem is independent of streams. "Finite" means observation depth, not
+finite cardinality of each view type. Streams instantiate the interface;
+polynomial or container coalgebras need only provide
 their own behavior observation and exactness proof.
 -/
 
@@ -34,6 +35,8 @@ abbrev Context := Discrete PUnit
 private def here : Contextᵒᵖ :=
   Opposite.op (Discrete.mk PUnit.unit)
 
+variable {State Behavior : Type u} {system : FiniteViewSystem.{u}}
+
 def stateFace (State : Type u) :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj State
@@ -46,19 +49,17 @@ def towerFace (system : FiniteViewSystem.{u}) :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj system.Tower
 
-def stateToBehavior {State : Type u} {Behavior : Type u}
+def stateToBehavior
     (unfold : State → Behavior) :
     stateFace State ⟶ behaviorFace Behavior :=
   (Functor.const Contextᵒᵖ).map (↾unfold)
 
-def behaviorToTower {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
+def behaviorToTower
     (observation : BehaviorObservation system Behavior) :
     behaviorFace Behavior ⟶ towerFace system :=
   (Functor.const Contextᵒᵖ).map (↾observation.toTower)
 
-def stateToTower {State : Type u} {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
+def stateToTower
     (unfold : State → Behavior)
     (observation : BehaviorObservation system Behavior) :
     stateFace State ⟶ towerFace system :=
@@ -66,8 +67,7 @@ def stateToTower {State : Type u} {Behavior : Type u}
 
 /-- Operational states, behaviors, and coherent finite views always form a
 commuting comparison. -/
-def comparison {State : Type u} {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
+def comparison
     (unfold : State → Behavior)
     (observation : BehaviorObservation system Behavior) :
     Comparison.{0, 0, u} Context where
@@ -84,8 +84,6 @@ def comparison {State : Type u} {Behavior : Type u}
 /-- Information loss in the spatial face is exactly collision of the
 composite state-to-tower map. -/
 theorem comparison_loses_iff_composite_collision
-    {State : Type u} {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
     (unfold : State → Behavior)
     (observation : BehaviorObservation system Behavior) :
     (comparison unfold observation).LosesProgramInformation ↔
@@ -104,8 +102,6 @@ theorem comparison_loses_iff_composite_collision
 /-- Exactness includes agreement with the independently supplied maps; an
 unrelated isomorphism between carrier types is insufficient. -/
 structure ExactTrinityWitness
-    {State : Type u} {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
     (unfold : State → Behavior)
     (observation : BehaviorObservation system Behavior) where
   stateBehavior : stateFace State ≅ behaviorFace Behavior
@@ -113,35 +109,24 @@ structure ExactTrinityWitness
   behaviorTower : behaviorFace Behavior ≅ towerFace system
   behaviorTower_agrees : behaviorTower.hom = behaviorToTower observation
 
-private theorem constantIso_bijective
+/-- A compatible constant-presheaf isomorphism makes its supplied map bijective.
+The component at `here` matters: an empty context category would not suffice. -/
+theorem constantIso_bijective
     {Source : Type u} {Target : Type u}
     (mapping : Source → Target)
     (isomorphism : stateFace Source ≅ behaviorFace Target)
     (agrees : isomorphism.hom = stateToBehavior mapping) :
     Function.Bijective mapping := by
-  have componentAgreement :=
-    congrArg (fun transformation => transformation.app here) agrees
-  constructor
-  · intro left right equalImages
-    apply (isomorphism.app here).toEquiv.injective
-    change isomorphism.hom.app here left = isomorphism.hom.app here right
-    rw [componentAgreement]
-    exact equalImages
-  · intro target
-    obtain ⟨source, represents⟩ :=
-      (isomorphism.app here).toEquiv.surjective target
-    change Source at source
-    change isomorphism.hom.app here source = target at represents
-    refine ⟨source, ?_⟩
-    change (stateToBehavior mapping).app here source = target
-    rw [← componentAgreement]
-    exact represents
+  have component : (isomorphism.app here).toEquiv.toFun = mapping := by
+    funext source
+    change isomorphism.hom.app here source = mapping source
+    rw [agrees]
+    rfl
+  exact component ▸ (isomorphism.app here).toEquiv.bijective
 
 namespace ExactTrinityWitness
 
-variable {State : Type u} {Behavior : Type u}
-  {system : FiniteViewSystem.{u}}
-  {unfold : State → Behavior}
+variable {unfold : State → Behavior}
   {observation : BehaviorObservation system Behavior}
 
 theorem stateBehavior_bijective
@@ -152,26 +137,8 @@ theorem stateBehavior_bijective
 
 theorem behaviorTower_exact
     (witness : ExactTrinityWitness unfold observation) :
-    observation.Exact := by
-  have componentAgreement :=
-    congrArg (fun transformation => transformation.app here)
-      witness.behaviorTower_agrees
-  constructor
-  · intro left right equalTowers
-    apply (witness.behaviorTower.app here).toEquiv.injective
-    change witness.behaviorTower.hom.app here left =
-      witness.behaviorTower.hom.app here right
-    rw [componentAgreement]
-    exact equalTowers
-  · intro tower
-    obtain ⟨behavior, represents⟩ :=
-      (witness.behaviorTower.app here).toEquiv.surjective tower
-    change Behavior at behavior
-    change witness.behaviorTower.hom.app here behavior = tower at represents
-    refine ⟨behavior, ?_⟩
-    change (behaviorToTower observation).app here behavior = tower
-    rw [← componentAgreement]
-    exact represents
+    observation.Exact :=
+  constantIso_bijective observation.toTower witness.behaviorTower witness.behaviorTower_agrees
 
 /-- Forget compatible exactness to the general exact computational-trinity
 interface. -/
@@ -188,8 +155,6 @@ end ExactTrinityWitness
 /-- Bijectivity of both supplied maps constructs the compatible exact
 trinity. -/
 noncomputable def exactTrinityWitnessOfBijective
-    {State : Type u} {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
     (unfold : State → Behavior)
     (observation : BehaviorObservation system Behavior)
     (stateExact : Function.Bijective unfold)
@@ -207,8 +172,6 @@ noncomputable def exactTrinityWitnessOfBijective
 /-- Exact computational-trinity compatibility exists exactly when the
 operational and finite-view maps are both faithful and complete. -/
 theorem exactTrinityWitness_nonempty_iff
-    {State : Type u} {Behavior : Type u}
-    {system : FiniteViewSystem.{u}}
     (unfold : State → Behavior)
     (observation : BehaviorObservation system Behavior) :
     Nonempty (ExactTrinityWitness unfold observation) ↔
@@ -220,9 +183,27 @@ theorem exactTrinityWitness_nonempty_iff
     exact ⟨exactTrinityWitnessOfBijective unfold observation
       stateExact viewExact⟩
 
+/-- Equivalent towers preserve compatible exactness when the observation maps agree. -/
+theorem exactTrinityWitness_transport_iff {other : FiniteViewSystem.{u}}
+    (unfold : State → Behavior) (first : BehaviorObservation system Behavior)
+    (second : BehaviorObservation other Behavior) (equivalence : system.Tower ≃ other.Tower)
+    (agrees : ∀ behavior, equivalence (first.toTower behavior) = second.toTower behavior) :
+    Nonempty (ExactTrinityWitness unfold first) ↔ Nonempty (ExactTrinityWitness unfold second) := by
+  rw [exactTrinityWitness_nonempty_iff, exactTrinityWitness_nonempty_iff]
+  change (_ ∧ Function.Bijective first.toTower) ↔ (_ ∧ Function.Bijective second.toTower)
+  rw [← funext agrees]
+  exact and_congr_right (fun _ => (Equiv.comp_bijective first.toTower equivalence).symm)
+
 /-! ## Independence controls over exact stream finite views -/
 
 namespace Canary
+
+/-- Isomorphic carriers do not certify an unrelated, information-losing map. -/
+theorem carrier_iso_does_not_certify_map :
+    Nonempty (stateFace Bool ≅ behaviorFace Bool) ∧
+      ¬ Function.Bijective (fun _ : Bool => false) := by
+  refine ⟨⟨Iso.refl _⟩, fun bijective => ?_⟩
+  exact Bool.false_ne_true (bijective.1 (a₁ := false) (a₂ := true) rfl)
 
 abbrev booleanObservation := streamObservation Bool
 
@@ -230,9 +211,8 @@ abbrev booleanObservation := streamObservation Bool
 def constantBehavior : Bool → Stream Bool := constant
 
 theorem constantBehavior_injective :
-    Function.Injective constantBehavior := by
-  intro left right equalStreams
-  exact congrFun equalStreams 0
+    Function.Injective constantBehavior :=
+  fun _ _ equalStreams => congrFun equalStreams 0
 
 theorem constantBehavior_not_surjective :
     ¬ Function.Surjective constantBehavior := by
@@ -247,9 +227,7 @@ theorem constantBehavior_not_surjective :
 def taggedBehavior : Stream Bool × Bool → Stream Bool := Prod.fst
 
 theorem taggedBehavior_surjective :
-    Function.Surjective taggedBehavior := by
-  intro stream
-  exact ⟨(stream, false), rfl⟩
+    Function.Surjective taggedBehavior := fun stream => ⟨(stream, false), rfl⟩
 
 theorem taggedBehavior_not_injective :
     ¬ Function.Injective taggedBehavior := by
@@ -300,16 +278,5 @@ noncomputable def exactStreamTrinity :
     Function.bijective_id (streamObservation_exact Bool)
 
 end Canary
-
-#print axioms comparison_loses_iff_composite_collision
-#print axioms ExactTrinityWitness.stateBehavior_bijective
-#print axioms ExactTrinityWitness.behaviorTower_exact
-#print axioms exactTrinityWitness_nonempty_iff
-#print axioms Canary.constantBehavior_injective
-#print axioms Canary.constantBehavior_not_surjective
-#print axioms Canary.taggedBehavior_not_injective
-#print axioms Canary.faithful_incomplete_comparison_not_exact
-#print axioms Canary.complete_unfaithful_comparison_loses
-#print axioms Canary.exactStreamTrinity
 
 end Mettapedia.Coalgebra.FiniteViewComputationalTrinity

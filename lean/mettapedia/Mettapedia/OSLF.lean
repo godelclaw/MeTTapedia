@@ -11,6 +11,18 @@ import Mettapedia.OSLF.PathMap
 import Mettapedia.OSLF.SpecIndex
 import Mettapedia.OSLF.Framework.ReductionSpanTypeSynthesis
 import Mettapedia.OSLF.Framework.GSLTTypeSynthesis
+import Mettapedia.OSLF.Framework.BackwardNarrowingControls
+import Mettapedia.OSLF.Framework.HerbrandBridge
+import Mettapedia.OSLF.Framework.HerbrandSorts
+import Mettapedia.OSLF.Framework.NativeBasis
+import Mettapedia.OSLF.Framework.FiniteModels
+import Mettapedia.OSLF.Framework.FiniteModelContexts
+import Mettapedia.OSLF.Framework.FiniteModelSearch
+import Mettapedia.OSLF.Framework.BackwardBinders
+import Mettapedia.OSLF.Framework.FiniteModelContextual
+import Mettapedia.OSLF.MeTTaIL.ReferenceStepControls
+import Mettapedia.OSLF.Framework.GeneralReferenceAgreement
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic
 import Mettapedia.OSLF.Framework.GeneralCanonicalAgreement
 import Mettapedia.OSLF.Framework.GeneralCanonicalPremiseAgreement
 import Mettapedia.OSLF.Framework.GeneralCanonicalQueryAgreement
@@ -55,6 +67,7 @@ import Mettapedia.OSLF.StructuralModal.Formula
 import Mettapedia.OSLF.Framework.OSLFCertificateGSLTAuthority
 import Mettapedia.OSLF.StructuralModal.CertificateGSLT
 import Mettapedia.OSLF.MeTTaIL.CoreLanguageDef
+import Mettapedia.OSLF.MeTTaIL.BinderSpellingControls
 import Mettapedia.OSLF.MeTTaIL.LanguageProfiles
 import Mettapedia.OSLF.MeTTaIL.CollectionLaws
 import Mettapedia.OSLF.MeTTaIL.DistributiveLaws

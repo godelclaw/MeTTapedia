@@ -1,11 +1,15 @@
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveNativeListEliminationPreservation
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.Tower
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativeConversion
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Normalization.Conservativity
 
 /-!
 # Refined formation and reflexivity computation for native identity elimination
 
 The original identity eliminator and its original iota rule are qualified in
-the existing combined List, identity and mapRel package. Formation certificates
-are constructed in the refined judgment, independently of the raw certificates.
+the existing combined List, identity and mapRel package. The declaration type is first formed in the root-free tower, then transported
+to the combined package. Its typed-equality formation uses the proved tower
+conversion facts. The refined certificates remain independent of raw typing.
 The declaration telescope recovers every argument from an arbitrary admitted
 application and replays the result at its original displayed type.
 
@@ -28,6 +32,12 @@ open FormationSensitiveNativeList (Typing)
 open FormationSensitive (DeclarationSpine ContextFormation)
 
 variable {n : Nat}
+
+/-! ## Formation before declaration extension -/
+
+namespace TowerFormation
+
+abbrev Typing {scope : Nat} := FormationSensitive.Typing Tower.rules (n := scope)
 
 theorem identityMotiveType_hasType :
     Typing contextAX identityMotiveType (sortTm identityMotiveLevel) := by
@@ -86,7 +96,7 @@ theorem identityEliminateResultType_hasType :
   · exact .sorts elementLevel (.max elementLevel motiveLevel)
 
 /-- The complete original declaration, including the equality-indexed motive,
-is independently formed in the combined package's refined judgment. -/
+is formed in the root-free cumulative tower, before installing declarations. -/
 theorem identityEliminateType_hasType :
     Typing (.nil : Tower.Ctx 0) identityEliminateType
       (sortTm identityEliminateDeclarationLevel) := by
@@ -113,6 +123,38 @@ theorem identityEliminateType_hasType :
     · exact .sorts elementLevel identityAfterMotiveLevel
   · exact .sort identityAfterPointLevel
   · exact .sorts (.succ elementLevel) identityAfterPointLevel
+
+/-- Typed-equality formation uses the proved normalization and conversion
+facts of the declaration-free tower. No facts about native List or Vector
+computation are assumed. -/
+theorem identityEliminateType_typed : TypedEquality.Typed Tower.rules (.nil : Tower.Ctx 0)
+    identityEliminateType (sortTm identityEliminateDeclarationLevel) :=
+  TypedEquality.Normalization.FormationSensitive.Typing.toTyped
+    (S := TypedEquality.Normalization.TowerModel.setting (fun _ => (0 : Nat)))
+    TypedEquality.Normalization.TowerModel.facts TypedEquality.Normalization.TowerModel.roots
+    TypedEquality.Normalization.TowerModel.heads LevelTower.churchRosser
+    identityEliminateType_hasType .nil
+
+end TowerFormation
+
+/-! ## Formation in the existing combined declaration package -/
+
+theorem identityMotiveType_hasType :
+    Typing contextAX identityMotiveType (sortTm identityMotiveLevel) :=
+  TowerFormation.identityMotiveType_hasType.includeSignature IntrinsicRelator.rawSignature
+
+theorem identityReflCaseType_hasType :
+    Typing contextAXP identityReflCaseType (sortTm motiveLevel) :=
+  TowerFormation.identityReflCaseType_hasType.includeSignature IntrinsicRelator.rawSignature
+
+theorem identityEliminateResultType_hasType :
+    Typing contextAXPD identityEliminateResultType (sortTm identityEliminateResultLevel) :=
+  TowerFormation.identityEliminateResultType_hasType.includeSignature IntrinsicRelator.rawSignature
+
+theorem identityEliminateType_hasType :
+    Typing (.nil : Tower.Ctx 0) identityEliminateType
+      (sortTm identityEliminateDeclarationLevel) :=
+  TowerFormation.identityEliminateType_hasType.includeSignature IntrinsicRelator.rawSignature
 
 theorem identityEliminateConstant_hasType {context : Tower.Ctx n} :
     Typing context (.const identityEliminateName) (liftClosed identityEliminateType) := by
@@ -290,6 +332,8 @@ theorem changed_endpoint_not_root (output : Tower.Tm 5) :
   have endpoints := (identity_root_iff.mp root).1
   cases endpoints
 
+#print axioms TowerFormation.identityEliminateType_hasType
+#print axioms TowerFormation.identityEliminateType_typed
 #print axioms identityMotiveType_hasType
 #print axioms identityReflCaseType_hasType
 #print axioms identityEliminateResultType_hasType

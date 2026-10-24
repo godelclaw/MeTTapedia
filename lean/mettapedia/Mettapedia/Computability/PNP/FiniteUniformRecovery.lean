@@ -37,7 +37,7 @@ theorem exists_nondeceptiveSample_of_card_gap
     (hgap : Fintype.card (H.DeceptiveSamples target m) < Fintype.card (PointSample Input m)) :
     ∃ sample : PointSample Input m, ¬ H.IsDeceptiveSample target sample := by
   by_contra hnone
-  push_neg at hnone
+  push Not at hnone
   let s : Set (PointSample Input m) := {sample | H.IsDeceptiveSample target sample}
   let _ : Fintype s := Fintype.ofFinite s
   have hs_univ : s = Set.univ := by

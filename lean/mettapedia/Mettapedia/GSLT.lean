@@ -169,6 +169,9 @@ import Mettapedia.GSLT.Topos.PredicateFibration
 import Mettapedia.GSLT.Topos.PresheafPredicateProjection
 import Mettapedia.GSLT.Topos.PresheafPredicateProjectionControls
 import Mettapedia.GSLT.Parsing.CompilerCorrespondence
+import Mettapedia.GSLT.Parsing.CollectionLiteralPresentation
+import Mettapedia.GSLT.Parsing.CollectionReaderModes
+import Mettapedia.GSLT.Parsing.BarBraceLexing
 import Mettapedia.GSLT.Parsing.GuardCorrespondence
 import Mettapedia.GSLT.Parsing.HornCertificate
 import Mettapedia.GSLT.Parsing.HornStream
