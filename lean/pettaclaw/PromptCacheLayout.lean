@@ -18,7 +18,9 @@ state, with a cache boundary after each of the first three) is an instance.
 
 A shared prefix is not by itself evidence of a cache hit. For providers with
 explicit cache entries, `ExplicitPromptCache.lean` additionally models writes,
-expiry and the finite lookback window.
+expiry and the finite lookback window. The native full-context renderer puts
+completed history before current project facts; its append/revision property
+is `ExplicitPromptCache.history_before_facts_keeps_hit_after_append`.
 -/
 
 namespace PettaClaw.PromptCacheLayout

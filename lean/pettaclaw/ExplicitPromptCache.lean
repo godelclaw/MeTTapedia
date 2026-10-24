@@ -60,6 +60,20 @@ theorem written_shared_prefix_is_reusable
   exact ⟨entry, written, entry.blocks.length, marked,
     alive, shared, Nat.le_refl _, by omega, shared.length_le⟩
 
+/-- Keep completed history before current facts. A source revision after that
+history cannot destroy the prior entry; a short append remains in lookback.
+The facts and per-turn suffix are arbitrary, including entirely new text. -/
+theorem history_before_facts_keeps_hit_after_append
+    (head history added facts turn : List α) (expires now : Nat)
+    (alive : now < expires) (shortAppend : added.length < 20) :
+    Hit [⟨head ++ history, expires⟩]
+      (head ++ history ++ added ++ facts ++ turn)
+      [(head ++ history ++ added).length] now := by
+  refine ⟨⟨head ++ history, expires⟩, by simp,
+    (head ++ history ++ added).length, by simp, alive, ?_, ?_, ?_, ?_⟩
+  · exact ⟨added ++ facts ++ turn, by simp [List.append_assoc]⟩
+  all_goals simp only [List.length_append]; omega
+
 /-- Shared text that was never written as an entry cannot produce a hit. -/
 theorem no_matching_written_entry_means_miss
     (entries : List (Entry α)) (prompt : List α) (points : List Nat) (now : Nat)
@@ -115,3 +129,4 @@ end PettaClaw.ExplicitPromptCache
 
 #print axioms PettaClaw.ExplicitPromptCache.only_full_write_misses_changed_prompt
 #print axioms PettaClaw.ExplicitPromptCache.written_shared_prefix_is_reusable
+#print axioms PettaClaw.ExplicitPromptCache.history_before_facts_keeps_hit_after_append
