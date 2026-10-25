@@ -26,6 +26,13 @@ Proved:
   (`uncached_rewrite_after_head`).
 
 Items stand for whatever the provider compares: tokens, messages or blocks.
+
+This is the ideal of a prefix cache: `lcp` is the most any prefix cache can
+serve. A deployed cache serves at most that. It reuses a prefix only at the
+boundaries it caches, only above its minimum length, and only while the entry
+is still held. The costs below are therefore ideal costs: a real step pays at
+least as much, and a layout that is bad for the ideal cache is bad for every
+cache.
 -/
 
 set_option autoImplicit false
