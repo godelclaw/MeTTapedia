@@ -130,15 +130,16 @@ mutual
           (by simpa [resultIn] using inSorts) object.2 (by simpa [tokens] using dropFree)]
     | @collectionConstructor _ rule parameterName kind elements rest elementType member shape
         elementsTyped =>
+        have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
         have category : rule.category ∈ sorts := by simpa [resultIn] using inSorts
         simp only [isObjectPattern, Bool.and_eq_true] at object
         rw [contract, contractList_eq_map] at dropFree ⊢
         by_cases isDrop : rule.label = "prime-drop"
         · have params := sorted.drop rule member isDrop
-          rw [params] at shape
-          simp at shape
+          rw [params] at fullShape
+          simp at fullShape
         · have element := (only rule member category).2 isDrop (.simple parameterName
-            (.collection kind elementType)) (by rw [shape]; exact List.mem_singleton.mpr rfl)
+            (.collection kind elementType)) (by rw [fullShape]; exact List.mem_singleton.mpr rfl)
             (.collection kind elementType) rfl
           rw [contractList_of_dropFree_elements only sorted elementsTyped
             (by simpa [resultIn] using element) object.2 (by simpa [tokens] using dropFree)]

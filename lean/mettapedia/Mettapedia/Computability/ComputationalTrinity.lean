@@ -77,6 +77,29 @@ def LosesProgramInformation
       comparison.programToSpace.app context left =
         comparison.programToSpace.app context right
 
+/-- Change the spatial representation while retaining both interpretation maps. -/
+def transportSpace (comparison : Comparison.{u, v, w} Context)
+    {space : Face.{u, v, w} Context} (equivalence : comparison.space ≅ space) :
+    Comparison.{u, v, w} Context where
+  program := comparison.program
+  logic := comparison.logic
+  space := space
+  programToLogic := comparison.programToLogic
+  logicToSpace := comparison.logicToSpace ≫ equivalence.hom
+  programToSpace := comparison.programToSpace ≫ equivalence.hom
+  coherence := by rw [← Category.assoc, comparison.coherence]
+
+/-- An equivalent spatial representation preserves exactly the same collisions. -/
+theorem transportSpace_loses_iff (comparison : Comparison.{u, v, w} Context)
+    {space : Face.{u, v, w} Context} (equivalence : comparison.space ≅ space) :
+    (comparison.transportSpace equivalence).LosesProgramInformation ↔
+      comparison.LosesProgramInformation := by
+  constructor
+  · rintro ⟨context, left, right, different, same⟩
+    exact ⟨context, left, right, different, (equivalence.app context).toEquiv.injective same⟩
+  · rintro ⟨context, left, right, different, same⟩
+    exact ⟨context, left, right, different, congrArg (equivalence.hom.app context) same⟩
+
 /-- Information loss rules out every natural isomorphism from programs to
 spaces that agrees with the direct interpretation. -/
 theorem no_programSpace_iso_of_losesProgramInformation

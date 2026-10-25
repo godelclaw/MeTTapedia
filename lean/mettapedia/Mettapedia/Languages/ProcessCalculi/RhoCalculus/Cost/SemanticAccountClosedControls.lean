@@ -40,18 +40,24 @@ theorem output_shape : (costBaseConstructor rhoCIGSLT.cut rhoCalc.terms[4]).para
     [.simple "n" (.base (costBaseSortName "Name")), .simple "q" wrappedSort] := by
   decide +kernel
 
+private theorem quote_not_bare :
+    ¬ WellSorted.UsesBareCollection (costBaseConstructor rhoCIGSLT.cut rhoCalc.terms[2]) := by
+  simp [WellSorted.UsesBareCollection, GrammarRule.bareParams_cons_iff, quote_shape, baseSort]
+
+private theorem output_not_bare :
+    ¬ WellSorted.UsesBareCollection (costBaseConstructor rhoCIGSLT.cut rhoCalc.terms[4]) := by
+  simp [WellSorted.UsesBareCollection, GrammarRule.bareParams_cons_iff, output_shape]
+
 def quotedZero : Term (signatureOf language) [] (.base (costBaseSortName "Name")) :=
   .op (.constructor (costBaseConstructor rhoCIGSLT.cut rhoCalc.terms[2]) (by decide +kernel)
-    (by rw [WellSorted.UsesBareCollection, quote_shape]
-        simp [baseSort])
+    quote_not_bare
     (by rw [quote_shape]
         exact .cons (.simple _ _) .nil)) (.cons baseZero .nil)
 
 /-- The real generated output uses a wrapped continuation payload. -/
 def outputOperator : (signatureOf language).Op baseSort :=
   .constructor (costBaseConstructor rhoCIGSLT.cut rhoCalc.terms[4]) (by decide +kernel)
-    (by rw [WellSorted.UsesBareCollection, output_shape]
-        simp)
+    output_not_bare
     (by rw [output_shape]
         exact .cons (.simple _ _) (.cons (.simple _ _) .nil))
 
@@ -133,7 +139,7 @@ theorem output_observation : observe (SemanticAccountSignature.embedOriginal out
         (foldArgs algebra.toRaw (embedArgs outputArguments))) PUnit (𝟙 _)
           (fun type position => TypeCat.ofHom (fun _ => emptyAssignment type position)) PUnit.unit)
   exact output_meaning (by decide +kernel)
-    (by rw [WellSorted.UsesBareCollection, output_shape]; simp)
+    output_not_bare
     (by rw [output_shape]; exact .cons (.simple _ _) (.cons (.simple _ _) .nil)) inputs
 
 theorem closed_return : observe returned = seed := by

@@ -8,43 +8,28 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.TowerCheck
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ExecutableCheckingControls
 
 /-!
-# NbE-Backed Bidirectional Typechecker, NIK Stage A Link, and Controls (`BidirectionalCheckerAndNIK.lean`)
+# NbE-backed bidirectional checking and finite evidence replay
 
-This module completes **Deliverables 2, 3, 5, and 6**:
+The bidirectional algorithms use the closure-based weak-head reducer
+`nbeWhnfReducer`. They are sound under the existing normalization interfaces.
+For the cumulative universe tower with empty declaration-root computation and
+rigid heads, they are complete at some finite fuel on the stated bidirectional
+fragment. Raw term checking takes a formed expected type as a premise; full
+judgment checking computes context and expected-type formation itself. The
+computing natural-number instance has separate soundness and execution controls.
 
-1. **Deliverable 2 — Bidirectional Typechecker Powered by Closure-Based NbE**:
-   - Instantiates `ExecutableChecking` (`synth`, `check`, `judgment`, `accepts`,
-     `equality`, `acceptsEquality`) with the closure-based weak-head NbE reducer
-     `nbeWhnfReducer R root` from `EnvironmentMachine.lean`.
-   - Provides concrete instances for the cumulative universe tower `Tower.rules`
-     (`towerNbESynth`, `towerNbECheck`, `towerNbEAccepts`, `towerNbEAcceptsEquality`)
-     and the computing natural-number calculus `TowerNumbersModel.rules`
-     (`towerNumbersNbEAccepts`, `towerNumbersNbEAcceptsEquality`).
-   - Proves soundness (`towerNbEAccepts_sound`, `towerNbEAcceptsEquality_sound`,
-     `towerNumbersNbEAccepts_sound`) and completeness on the bidirectional fragment
-     (`tower_check_iff_typed`, `tower_synth_exists_iff_typable`, `tower_synth_isType_iff`).
+Structural typing trees and formation-sensitive derivation graphs can instead
+carry a fuel bound for verified `nbeConvNf` conversion. Their replay is sound.
+Certificate coverage additionally requires `UniverseRegularity` and
+`TypedConvComplete` for formed type-conversion obligations; this module does not
+establish that completeness hypothesis for arbitrary declaration roots. The
+resulting indexed tree checker has `KernelAuthority.Checker.Authority` under
+those same assumptions. Native codecs and execution refinement are separate.
 
-2. **Deliverable 3 — NIK Stage A Link (Replacing Trusted `GConversion` with Verified NbE)**:
-   - Replaces step-by-step `StructuralConversionCode` certificates in both
-     `StructuralTypingReplay` and `FormationSensitiveChecking` with zero-trace
-     verified NbE conversion (`nbeConvNf`).
-   - Defines `CodeWithNbE`, `decodeWithNbE`, `interfaceWithNbE : RuleWitness (FormationSensitiveChecking.rules R)`,
-     and `checkRequestWithNbE`, proving `checkRequestWithNbE_sound` and bridging to
-     `Mettapedia.Logic.Premiseize.ReplayCorrect` and `Mettapedia.Kernel.NikBridge.Checker.Authority`.
-
-3. **Deliverable 5 — Positive and Negative Controls**:
-   - Positive controls: Π-η conversion, Σ-η conversion, cumulative universes,
-     polymorphic identity, recursor ι-reduction via NbE, and long β-chain typing
-     with zero conversion-step certificates.
-   - Negative controls: `Type : Type` (`U0 : U0`) rejected, ill-typed application
-     rejected, universe lowering (`U1 : U0`) rejected, and near-miss dependent
-     pair / identity endpoints rejected (plus semantic refutation `¬ Equal`).
-
-4. **Deliverable 6 — Performance & Certificate-Size Comparison**:
-   - Compares closure-based NbE (`nbeNormTm`, `checkReplayWithNbE`) against
-     syntactic substitution (`ExecutableReduction.normalizeTerm`) and step-by-step
-     conversion certificates (`StructuralConversionCode`) on generated β-chains
-     `idBetaChain k`.
+Positive and separating negative controls cover eta, cumulative levels, dependent
+identity endpoints and recursor computation. Beta-chain comparisons retain the
+actual optional machine-step count, explicit path length and certificate-tree
+size. These syntactic measurements are separate from native runtime costs.
 -/
 
 set_option autoImplicit false
@@ -58,7 +43,7 @@ open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.TypedEquality
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.TypedEquality.Normalization
 
-/-! ## 1. Deliverable 2: Bidirectional Typechecker Powered by Closure-Based NbE -/
+/-! ## Bidirectional checking with closure-based NbE -/
 
 section GenericNbEChecking
 
@@ -106,6 +91,7 @@ def nbeAcceptsEquality (fuel : Nat) {n : Nat} (Γ : Ctx Head n)
 
 /-! ### Fuel Monotonicity of Closure-Based NbE Checking -/
 
+omit [DecidableEq Head] [DecidableRel R.headEq] [∀ head, Decidable (R.isUniverse head)] [DecidableRel R.cumulative] in
 /-- Because `ExecutableReduction.Result R t` has a `Prop`-valued second field
 (`Reduces R t target`), fuel monotonicity of `nbeWhnfReducer` preserves the exact
 `Result` value. -/
@@ -117,6 +103,7 @@ theorem nbeWhnfReducer_mono_eq
   exact (Subtype.ext rfl : (⟨res.val, _⟩ : ExecutableReduction.Result R t) = res) ▸
     nbeWhnfReducer_mono R root hle h1
 
+omit [DecidableRel R.cumulative] in
 /-- Fuel monotonicity of `ExecutableConversion.compare` with `nbeWhnfReducer`,
 preserving the exact `PLift (Algorithm ...)` certificate by proof irrelevance. -/
 theorem nbeCompare_mono_eq
@@ -129,6 +116,7 @@ theorem nbeCompare_mono_eq
   have hEq : res₂ = res := Subsingleton.elim res₂ res
   exact hEq ▸ h2
 
+omit [DecidableRel R.cumulative] in
 /-- Fuel monotonicity of `ExecutableConversion.types` with `nbeWhnfReducer`,
 preserving the exact `PLift (Algorithm ...)` certificate by proof irrelevance. -/
 theorem nbeCompareTypes_mono_eq
@@ -141,6 +129,7 @@ theorem nbeCompareTypes_mono_eq
   have hEq : res₂ = res := Subsingleton.elim res₂ res
   exact hEq ▸ h2
 
+omit [DecidableEq Head] [DecidableRel R.headEq] [DecidableRel R.cumulative] in
 /-- Fuel monotonicity of `ExecutableChecking.asUniverse` with `nbeWhnfReducer`. -/
 theorem asUniverse_mono_eq
     {fuel₁ fuel₂ n : Nat} {type : Tm Head n}
@@ -203,7 +192,7 @@ theorem nbeBelow_mono_eq
                                 | none => simp [hDom, hCod] at h1
                                 | some dCod =>
                                     rw [nbeCompareTypes_mono_eq R root hf hDom, ih hf hCod]
-                                    simpa [hDom, hCod] using h1
+                                    simp [hDom, hCod] at h1 ⊢
                           · rename_i domA codA domB codB
                             simp only at h1 ⊢
                             cases hDom : ExecutableChecking.below R (nbeWhnfReducer R root) f₁ Γ domA domB with
@@ -213,7 +202,7 @@ theorem nbeBelow_mono_eq
                                 | none => simp [hDom, hCod] at h1
                                 | some dCod =>
                                     rw [ih hf hDom, ih hf hCod]
-                                    simpa [hDom, hCod] using h1
+                                    simp [hDom, hCod] at h1 ⊢
 
 private theorem option_bind_mono_eq {α β : Type} {ma₁ ma₂ : Option α}
     {f₁ f₂ : α → Option β} {b : β}
@@ -373,6 +362,7 @@ theorem nbeFormContext_mono_eq
 
 /-! ### Per-Branch Construction Helpers for `ExecutableChecking` -/
 
+omit [DecidableEq Head] [DecidableRel R.headEq] [DecidableRel R.cumulative] in
 private theorem asUniverse_of_whnf
     {fuel n : Nat} {T : Tm Head n} {norm : ExecutableReduction.Result R T} {u : Head}
     (hNorm : nbeWhnfReducer R root fuel T = some norm)
@@ -625,6 +615,18 @@ private theorem check_switch_of
 
 end GenericNbEChecking
 
+theorem Bidirectional.synth_not_lam {Head : Type} {n : Nat} {t : Tm Head n}
+    (h : Bidirectional .synth t) : ∀ body, t ≠ .lam body := by
+  intro body hEq; subst hEq; cases h
+
+theorem Bidirectional.synth_not_pair {Head : Type} {n : Nat} {t : Tm Head n}
+    (h : Bidirectional .synth t) : ∀ a b, t ≠ .pair a b := by
+  intro a b hEq; subst hEq; cases h
+
+theorem Bidirectional.synth_not_refl {Head : Type} {n : Nat} {t : Tm Head n}
+    (h : Bidirectional .synth t) : ∀ x, t ≠ .refl x := by
+  intro x hEq; subst hEq; cases h
+
 /-! ### Simulation Completeness of `nbeBelow`, `nbeSynth`, and `nbeCheck` -/
 
 section GenericNbECheckingCompleteness
@@ -663,7 +665,7 @@ private theorem below_complete_of_typeEq {n : Nat} {Γ : Ctx Head n} {A B : Tm H
   have hAlg : Algorithmic S.R S.roles (.types Γ A B) :=
     AlgorithmicComplete.types complete eAB formed
   obtain ⟨fuel, c, hTypes⟩ :=
-    nbeCompareTypes_complete_of_algorithmic S facts roots heads algebra hComp hRoles formed hAlg
+    nbeCompareTypes_complete_of_algorithmic (S := S) facts roots heads algebra hComp hRoles formed hAlg
   have hTypes1 := nbeCompareTypes_mono_eq S.R (fun _ => none) (Nat.le_succ fuel) hTypes
   obtain ⟨res, hBelow⟩ := below_of_types S.R (fun _ => none) hTypes1
   exact ⟨fuel + 1, res, hBelow⟩
@@ -695,8 +697,8 @@ theorem Algorithmic.below_executable_complete {st : AlgorithmicStatement Head}
           TypeEq.trans S.levels (TypeEq.symm eB) rB.typeEq
         have c₀ : S.R.cumulative h v₀ :=
           algebra.same_right c (TypeEq.head_injective facts eVV₀ formed)
-        obtain ⟨fA, nA, hNA, hValA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA.wh rA.whnf
-        obtain ⟨fB, nB, hNB, hValB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB.wh rB.whnf
+        obtain ⟨fA, nA, hNA, hValA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA.red (head_whnf S.shape _)
+        obtain ⟨fB, nB, hNB, hValB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB.red (head_whnf S.shape _)
         let f := Nat.max fA fB
         have hNA' := nbeWhnfReducer_mono_eq S.R (fun _ => none)
           (Nat.le_trans (Nat.le_max_left fA fB) (Nat.le_succ f)) hNA
@@ -718,16 +720,16 @@ theorem Algorithmic.below_executable_complete {st : AlgorithmicStatement Head}
         have eA₁A₂' : TypeEq S.R Γ A₁ A₂' :=
           TypeEq.trans S.levels eDom (TypeEq.symm eDom₂)
         have leB₁B₂' : Below S.R (.snoc Γ A₁) B₁ B₂' :=
-          .subTrans leCod (Below.ctxConv (TypeEq.below (TypeEq.symm eCod₂)) (TypeEq.symm eDom))
+          .subTrans leCod (Below.ctxConv (TypeEq.below (TypeEq.symm eCod₂)) (TypeEq.symm eA₁A₂'))
         obtain ⟨_, ⟨u₂', hu₂', tB₂'⟩⟩ := IsType.pi_parts rB.targetType
         have isB₂' : IsType S.R (.snoc Γ A₁) B₂' :=
           ⟨u₂', hu₂', Typed.ctxBelow tB₂' (TypeEq.below eA₁A₂')⟩
-        obtain ⟨fA, nA, hNA, hValA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA.wh rA.whnf
-        obtain ⟨fB, nB, hNB, hValB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB.wh rB.whnf
+        obtain ⟨fA, nA, hNA, hValA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA.red (pi_whnf S.shape _ _)
+        obtain ⟨fB, nB, hNB, hValB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB.red (pi_whnf S.shape _ _)
         have hAlgDom : Algorithmic S.R S.roles (.types Γ A₁ A₂') :=
           AlgorithmicComplete.types complete eA₁A₂' formed
         obtain ⟨fDom, dDom, hDom⟩ :=
-          nbeCompareTypes_complete_of_algorithmic S facts roots heads algebra hComp hRoles formed hAlgDom
+          nbeCompareTypes_complete_of_algorithmic (S := S) facts roots heads algebra hComp hRoles formed hAlgDom
         obtain ⟨fCod, dCod, hCod⟩ := ihB formedA₁ isB₁ isB₂' leB₁B₂'
         let f := Nat.max (Nat.max fA fB) (Nat.max fDom fCod)
         have hfA : fA ≤ f := Nat.le_trans (Nat.le_max_left fA fB) (Nat.le_max_left _ _)
@@ -757,8 +759,8 @@ theorem Algorithmic.below_executable_complete {st : AlgorithmicStatement Head}
         obtain ⟨isA₂', ⟨u₂', hu₂', tB₂'⟩⟩ := IsType.sigma_parts rB.targetType
         have isB₂' : IsType S.R (.snoc Γ A₁) B₂' :=
           ⟨u₂', hu₂', Typed.ctxBelow tB₂' leA₁A₂'⟩
-        obtain ⟨fA, nA, hNA, hValA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA.wh rA.whnf
-        obtain ⟨fB, nB, hNB, hValB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB.wh rB.whnf
+        obtain ⟨fA, nA, hNA, hValA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA.red (sigma_whnf S.shape _ _)
+        obtain ⟨fB, nB, hNB, hValB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB.red (sigma_whnf S.shape _ _)
         obtain ⟨fDom, dDom, hDom⟩ := ihA formed isA₁ isA₂' leA₁A₂'
         obtain ⟨fCod, dCod, hCod⟩ := ihB formedA₁ isB₁ isB₂' leB₁B₂'
         let f := Nat.max (Nat.max fA fB) (Nat.max fDom fCod)
@@ -817,18 +819,6 @@ structure HeadChoicesComplete (R : Rules Head)
   typing_complete : ∀ {h u : Head}, R.headTyping h u → ∃ res, choices.typing h = some res
   join_complete : ∀ {u v : Head}, R.isUniverse u → R.isUniverse v → ∃ res, choices.join u v = some res
 
-theorem Bidirectional.synth_not_lam {Head : Type} {n : Nat} {t : Tm Head n}
-    (h : Bidirectional .synth t) : ∀ body, t ≠ .lam body := by
-  intro body hEq; subst hEq; cases h
-
-theorem Bidirectional.synth_not_pair {Head : Type} {n : Nat} {t : Tm Head n}
-    (h : Bidirectional .synth t) : ∀ a b, t ≠ .pair a b := by
-  intro a b hEq; subst hEq; cases h
-
-theorem Bidirectional.synth_not_refl {Head : Type} {n : Nat} {t : Tm Head n}
-    (h : Bidirectional .synth t) : ∀ x, t ≠ .refl x := by
-  intro x hEq; subst hEq; cases h
-
 /-- Bundled simulation completeness statement for `nbeSynth` and `nbeCheck`
 on the bidirectional fragment `Bidirectional mode t`. -/
 def ExecKernelComplete (choices : ExecutableChecking.HeadChoices S.R)
@@ -867,10 +857,18 @@ theorem Bidirectional.executable_complete
       exact ⟨Ctx.lookup Γ i, 1, ⟨Ctx.lookup Γ i, ⟨.var i⟩⟩, .var i, rfl, rfl⟩
   | const name =>
       intro Γ E _ typing
-      obtain ⟨_, type, declared, tType, hu, _⟩ := Typed.generation typing
+      obtain ⟨type, _, declared, tType, hu, _⟩ := Typed.generation typing
       refine ⟨liftClosed type, 1, ⟨liftClosed type, ⟨.const declared⟩⟩,
         .const declared tType hu, ?_, rfl⟩
-      simp [ExecutableChecking.synth, declared]
+      simp only [ExecutableChecking.synth]
+      split
+      · rename_i chosen known
+        have same : chosen = type := Option.some.inj (known.symm.trans declared)
+        subst chosen
+        rfl
+      · rename_i known
+        rw [declared] at known
+        contradiction
   | head h =>
       intro Γ E _ typing
       obtain ⟨_, headTyping, _⟩ := Typed.generation typing
@@ -890,9 +888,9 @@ theorem Bidirectional.executable_complete
         Synth.universe_whnf facts algebra headsTyped sB formedA tB hv
       have rA' : RedTy S.R S.roles Γ rA_exec.1 (.head u₀) := hValRA ▸ rA
       have rB' : RedTy S.R S.roles (.snoc Γ _) rB_exec.1 (.head v₀) := hValRB ▸ rB
-      obtain ⟨fUA, nUA, hNUA, hValUA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA'.wh rA'.whnf
+      obtain ⟨fUA, nUA, hNUA, hValUA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA'.red (head_whnf S.shape _)
       obtain ⟨uA, hUA, hValuA⟩ := asUniverse_of_whnf S.R (fun _ => none) hNUA hValUA hu₀
-      obtain ⟨fUB, nUB, hNUB, hValUB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB'.wh rB'.whnf
+      obtain ⟨fUB, nUB, hNUB, hValUB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB'.red (head_whnf S.shape _)
       obtain ⟨uB, hUB, hValuB⟩ := asUniverse_of_whnf S.R (fun _ => none) hNUB hValUB hv₀
       obtain ⟨j, hJ⟩ := hChoices.join_complete uA.property.1 uB.property.1
       have hJoin₀ : S.R.join u₀ v₀ j.val := hValuA ▸ hValuB ▸ j.property
@@ -922,9 +920,9 @@ theorem Bidirectional.executable_complete
         Synth.universe_whnf facts algebra headsTyped sB formedA tB hv
       have rA' : RedTy S.R S.roles Γ rA_exec.1 (.head u₀) := hValRA ▸ rA
       have rB' : RedTy S.R S.roles (.snoc Γ _) rB_exec.1 (.head v₀) := hValRB ▸ rB
-      obtain ⟨fUA, nUA, hNUA, hValUA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA'.wh rA'.whnf
+      obtain ⟨fUA, nUA, hNUA, hValUA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA'.red (head_whnf S.shape _)
       obtain ⟨uA, hUA, hValuA⟩ := asUniverse_of_whnf S.R (fun _ => none) hNUA hValUA hu₀
-      obtain ⟨fUB, nUB, hNUB, hValUB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB'.wh rB'.whnf
+      obtain ⟨fUB, nUB, hNUB, hValUB⟩ := nbeWhnf_complete_of_whRed hComp hRoles rB'.red (head_whnf S.shape _)
       obtain ⟨uB, hUB, hValuB⟩ := asUniverse_of_whnf S.R (fun _ => none) hNUB hValUB hv₀
       obtain ⟨j, hJ⟩ := hChoices.join_complete uA.property.1 uB.property.1
       have hJoin₀ : S.R.join u₀ v₀ j.val := hValuA ▸ hValuB ▸ j.property
@@ -951,7 +949,7 @@ theorem Bidirectional.executable_complete
       obtain ⟨ca_k, fCA, rCA, hCA⟩ := iha formed ta
       obtain ⟨cb_k, fCB, rCB, hCB⟩ := ihb formed tb
       have rA' : RedTy S.R S.roles Γ rA_exec.1 (.head u₀) := hValRA ▸ rA
-      obtain ⟨fUA, nUA, hNUA, hValUA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA'.wh rA'.whnf
+      obtain ⟨fUA, nUA, hNUA, hValUA⟩ := nbeWhnf_complete_of_whRed hComp hRoles rA'.red (head_whnf S.shape _)
       obtain ⟨uA, hUA, hValuA⟩ := asUniverse_of_whnf S.R (fun _ => none) hNUA hValUA hu₀
       let f := Nat.max (Nat.max fSA fUA) (Nat.max fCA fCB)
       have hfSA : fSA ≤ f := Nat.le_trans (Nat.le_max_left fSA fUA) (Nat.le_max_left _ _)
@@ -983,7 +981,7 @@ theorem Bidirectional.executable_complete
           Typed.convType ta (TypeEq.symm (TypeEq.trans S.levels e₀₁ eA₁))
         obtain ⟨ca_k, fCA, rCA, hCA⟩ := iha formed ta₀
         have red' : RedTy S.R S.roles Γ rF_exec.1 (.pi A₀ B₀) := hValRF ▸ red
-        obtain ⟨fNF, nF, hNF, hValF⟩ := nbeWhnf_complete_of_whRed hComp hRoles red'.wh red'.whnf
+        obtain ⟨fNF, nF, hNF, hValF⟩ := nbeWhnf_complete_of_whRed hComp hRoles red'.red (pi_whnf S.shape _ _)
         let f := Nat.max (Nat.max fSF fCA) fNF
         have hfSF : fSF ≤ f := Nat.le_trans (Nat.le_max_left fSF fCA) (Nat.le_max_left _ _)
         have hfCA : fCA ≤ f := Nat.le_trans (Nat.le_max_right fSF fCA) (Nat.le_max_left _ _)
@@ -1006,7 +1004,7 @@ theorem Bidirectional.executable_complete
       rcases IsType.sigma_or facts formed (Typed.isType tP formed) with
         ⟨A₀, B₀, red⟩ | notSigma
       · have red' : RedTy S.R S.roles Γ rP_exec.1 (.sigma A₀ B₀) := hValRP ▸ red
-        obtain ⟨fNP, nP, hNP, hValP⟩ := nbeWhnf_complete_of_whRed hComp hRoles red'.wh red'.whnf
+        obtain ⟨fNP, nP, hNP, hValP⟩ := nbeWhnf_complete_of_whRed hComp hRoles red'.red (sigma_whnf S.shape _ _)
         let f := Nat.max fSP fNP
         have hfSP : fSP ≤ f := Nat.le_max_left fSP fNP
         have hfNP : fNP ≤ f + 1 := Nat.le_trans (Nat.le_max_right fSP fNP) (Nat.le_succ f)
@@ -1027,7 +1025,7 @@ theorem Bidirectional.executable_complete
       rcases IsType.sigma_or facts formed (Typed.isType tP formed) with
         ⟨A₀, B₀, red⟩ | notSigma
       · have red' : RedTy S.R S.roles Γ rP_exec.1 (.sigma A₀ B₀) := hValRP ▸ red
-        obtain ⟨fNP, nP, hNP, hValP⟩ := nbeWhnf_complete_of_whRed hComp hRoles red'.wh red'.whnf
+        obtain ⟨fNP, nP, hNP, hValP⟩ := nbeWhnf_complete_of_whRed hComp hRoles red'.red (sigma_whnf S.shape _ _)
         let f := Nat.max fSP fNP
         have hfSP : fSP ≤ f := Nat.le_max_left fSP fNP
         have hfNP : fNP ≤ f + 1 := Nat.le_trans (Nat.le_max_right fSP fNP) (Nat.le_succ f)
@@ -1075,7 +1073,7 @@ theorem Bidirectional.executable_complete
           (Typed.ctxBelow (.sub tb leB) (TypeEq.below (TypeEq.symm eA₁))) (TypeEq.symm eB₁₂)
         obtain ⟨isA₁, _⟩ := IsType.pi_parts red.targetType
         obtain ⟨cb_k, fCB, rCB, hCB⟩ := ihb (.snoc formed isA₁) tb₁
-        obtain ⟨fNE, nE, hNE, hValE⟩ := nbeWhnf_complete_of_whRed hComp hRoles red.wh red.whnf
+        obtain ⟨fNE, nE, hNE, hValE⟩ := nbeWhnf_complete_of_whRed hComp hRoles red.red (pi_whnf S.shape _ _)
         let f := Nat.max fCB fNE
         have hCB' := nbeCheck_mono_eq S.R choices (fun _ => none) (Nat.le_max_left fCB fNE) hCB
         have hNE' := nbeWhnfReducer_mono_eq S.R (fun _ => none)
@@ -1099,7 +1097,7 @@ theorem Bidirectional.executable_complete
           (TypeEq.symm (TypeEq.instantiate eB₁₂ ta₁))
         obtain ⟨ca_k, fCA, rCA, hCA⟩ := iha formed ta₁
         obtain ⟨cb_k, fCB, rCB, hCB⟩ := ihb formed tb₁
-        obtain ⟨fNE, nE, hNE, hValE⟩ := nbeWhnf_complete_of_whRed hComp hRoles red.wh red.whnf
+        obtain ⟨fNE, nE, hNE, hValE⟩ := nbeWhnf_complete_of_whRed hComp hRoles red.red (sigma_whnf S.shape _ _)
         let f := Nat.max (Nat.max fCA fCB) fNE
         have hfCA : fCA ≤ f := Nat.le_trans (Nat.le_max_left fCA fCB) (Nat.le_max_left _ _)
         have hfCB : fCB ≤ f := Nat.le_trans (Nat.le_max_right fCA fCB) (Nat.le_max_left _ _)
@@ -1122,15 +1120,15 @@ theorem Bidirectional.executable_complete
         have eaC : Equal S.R Γ _ a C := Equal.convType ea eA
         have ebC : Equal S.R Γ _ b C := Equal.convType eb eA
         obtain ⟨cx_k, fCX, rCX, hCX⟩ := ihx formed txC
-        obtain ⟨fNE, nE, hNE, hValE⟩ := nbeWhnf_complete_of_whRed hComp hRoles red.wh red.whnf
-        have hAlgA : Algorithmic S.R S.roles (.compare Γ _ a C) :=
-          AlgorithmicComplete.terms complete eaC formed
-        have hAlgB : Algorithmic S.R S.roles (.compare Γ _ b C) :=
-          AlgorithmicComplete.terms complete ebC formed
+        obtain ⟨fNE, nE, hNE, hValE⟩ := nbeWhnf_complete_of_whRed hComp hRoles red.red (id_whnf S.shape _ _ _)
+        have hAlgA : Algorithmic S.R S.roles (.terms Γ _ a C) :=
+          complete formed eaC
+        have hAlgB : Algorithmic S.R S.roles (.terms Γ _ b C) :=
+          complete formed ebC
         obtain ⟨fCXA, cxa, hCXA⟩ :=
-          nbeCompare_complete_of_algorithmic S facts roots heads algebra hComp hRoles formed hAlgA
+          nbeCompare_complete_of_algorithmic (S := S) facts roots heads algebra hComp hRoles formed hAlgA
         obtain ⟨fCXB, cxb, hCXB⟩ :=
-          nbeCompare_complete_of_algorithmic S facts roots heads algebra hComp hRoles formed hAlgB
+          nbeCompare_complete_of_algorithmic (S := S) facts roots heads algebra hComp hRoles formed hAlgB
         let f := Nat.max (Nat.max fCX fNE) (Nat.max fCXA fCXB)
         have hfCX : fCX ≤ f := Nat.le_trans (Nat.le_max_left fCX fNE) (Nat.le_max_left _ _)
         have hfNE : fNE ≤ f + 1 :=
@@ -1185,33 +1183,36 @@ theorem nbeFormContext_complete
   induction hΓ with
   | nil => exact ⟨0, ⟨.nil⟩, rfl⟩
   | @snoc m ctx dom _ fDom ih =>
-      rcases formed with ⟨formedCtx, ⟨u, hu, tDom⟩⟩
-      obtain ⟨fCtx, rCtx, hCtx⟩ := ih formedCtx
-      obtain ⟨TDom, fSDom, rDom_exec, sDom, hSDom, hValDom⟩ :=
-        Bidirectional.executable_complete S facts roots heads algebra complete hComp hRoles
-          headsTyped hChoices fDom formedCtx tDom
-      obtain ⟨u₀, rDom, hu₀⟩ :=
-        Synth.universe_whnf facts algebra headsTyped sDom formedCtx tDom hu
-      have rDom' : RedTy S.R S.roles ctx rDom_exec.1 (.head u₀) := hValDom ▸ rDom
-      obtain ⟨fUDom, nUDom, hNUDom, hValUDom⟩ :=
-        nbeWhnf_complete_of_whRed hComp hRoles rDom'.wh rDom'.whnf
-      obtain ⟨uDom, hUDom, _⟩ :=
-        asUniverse_of_whnf S.R (fun _ => none) hNUDom hValUDom hu₀
-      let f := Nat.max fCtx (Nat.max fSDom fUDom)
-      have hfCtx : fCtx ≤ f := Nat.le_max_left _ _
-      have hfSDom : fSDom ≤ f := Nat.le_trans (Nat.le_max_left _ _) (Nat.le_max_right _ _)
-      have hfUDom : fUDom ≤ f := Nat.le_trans (Nat.le_max_right _ _) (Nat.le_max_right _ _)
-      have hCtx' := nbeFormContext_mono_eq S.R choices (fun _ => none) hfCtx hCtx
-      have hSDom' := nbeSynth_mono_eq S.R choices (fun _ => none) hfSDom hSDom
-      have hUDom' := asUniverse_mono_eq S.R (fun _ => none) hfUDom hUDom
-      refine ⟨f, ⟨.snoc rCtx.down rDom_exec.2.down uDom.property.2 uDom.property.1⟩, ?_⟩
-      unfold nbeFormContext ExecutableChecking.formContext
-      change (do
-        let previous ← nbeFormContext S.R choices (fun _ => none) f ctx
-        let inferred ← nbeSynth S.R choices (fun _ => none) f ctx dom
-        let level ← ExecutableChecking.asUniverse S.R (nbeWhnfReducer S.R (fun _ => none)) f inferred.1
-        pure ⟨.snoc previous.down inferred.2.down level.property.2 level.property.1⟩) = _
-      simp [hCtx', hSDom', hUDom', bind, Option.bind, pure]
+      cases formed with
+      | snoc formedCtx isDom =>
+          rcases isDom with ⟨u, hu, tDom⟩
+          obtain ⟨fCtx, rCtx, hCtx⟩ := ih formedCtx
+          obtain ⟨TDom, fSDom, rDom_exec, sDom, hSDom, hValDom⟩ :=
+            Bidirectional.executable_complete S facts roots heads algebra complete hComp hRoles
+              headsTyped hChoices fDom formedCtx tDom
+          obtain ⟨u₀, rDom, hu₀⟩ :=
+            Synth.universe_whnf facts algebra headsTyped sDom formedCtx tDom hu
+          have rDom' : RedTy S.R S.roles ctx rDom_exec.1 (.head u₀) := hValDom ▸ rDom
+          obtain ⟨fUDom, nUDom, hNUDom, hValUDom⟩ :=
+            nbeWhnf_complete_of_whRed hComp hRoles rDom'.red (head_whnf S.shape _)
+          obtain ⟨uDom, hUDom, _⟩ :=
+            asUniverse_of_whnf S.R (fun _ => none) hNUDom hValUDom hu₀
+          let f := Nat.max fCtx (Nat.max fSDom fUDom)
+          have hfCtx : fCtx ≤ f := Nat.le_max_left _ _
+          have hfSDom : fSDom ≤ f := Nat.le_trans (Nat.le_max_left _ _) (Nat.le_max_right _ _)
+          have hfUDom : fUDom ≤ f := Nat.le_trans (Nat.le_max_right _ _) (Nat.le_max_right _ _)
+          have hCtx' := nbeFormContext_mono_eq S.R choices (fun _ => none) hfCtx hCtx
+          have hSDom' := nbeSynth_mono_eq S.R choices (fun _ => none) hfSDom hSDom
+          have hUDom' := asUniverse_mono_eq S.R (fun _ => none) hfUDom hUDom
+          refine ⟨f, ⟨.snoc rCtx.down rDom_exec.2.down uDom.property.2 uDom.property.1⟩, ?_⟩
+          unfold nbeFormContext ExecutableChecking.formContext
+          change (do
+            let previous ← nbeFormContext S.R choices (fun _ => none) f ctx
+            let inferred ← nbeSynth S.R choices (fun _ => none) f ctx dom
+            let level ← ExecutableChecking.asUniverse S.R (nbeWhnfReducer S.R (fun _ => none)) f inferred.1
+            pure (⟨.snoc previous.down inferred.2.down level.property.2 level.property.1⟩ :
+              PLift (ExecutableChecking.ContextAlgorithm S.R (.snoc ctx dom)))) = _
+          simp [hCtx', hSDom', hUDom', bind, Option.bind, pure]
 
 /-- Simulation completeness of `nbeJudgment` (`nbeAccepts`) on the bidirectional fragment. -/
 theorem nbeJudgment_complete
@@ -1234,7 +1235,7 @@ theorem nbeJudgment_complete
     Synth.universe_whnf facts algebra headsTyped sE formed tE hu
   have rE' : RedTy S.R S.roles Γ rE_exec.1 (.head u₀) := hValE ▸ rE
   obtain ⟨fUE, nUE, hNUE, hValUE⟩ :=
-    nbeWhnf_complete_of_whRed hComp hRoles rE'.wh rE'.whnf
+    nbeWhnf_complete_of_whRed hComp hRoles rE'.red (head_whnf S.shape _)
   obtain ⟨uE, hUE, _⟩ :=
     asUniverse_of_whnf S.R (fun _ => none) hNUE hValUE hu₀
   obtain ⟨_, fCt, rCt, hCt⟩ :=
@@ -1256,8 +1257,9 @@ theorem nbeJudgment_complete
     let expected ← nbeSynth S.R choices (fun _ => none) f Γ E
     let level ← ExecutableChecking.asUniverse S.R (nbeWhnfReducer S.R (fun _ => none)) f expected.1
     let termChecked ← nbeCheck S.R choices (fun _ => none) f Γ t E
-    pure ⟨contextChecked.down, level.val, expected.1, expected.2.down,
-      level.property.2, level.property.1, termChecked.down⟩) = _
+    pure (⟨contextChecked.down, level.val, expected.1, expected.2.down,
+      level.property.2, level.property.1, termChecked.down⟩ :
+      ExecutableChecking.JudgmentCertificate S.R Γ t E)) = _
   simp [hCtx', hSE', hUE', hCt', bind, Option.bind, pure]
 
 /-- Simulation completeness of `nbeAcceptsEquality` on the bidirectional fragment. -/
@@ -1283,7 +1285,7 @@ theorem nbeAcceptsEquality_complete
     Synth.universe_whnf facts algebra headsTyped sE formed tE huUniv
   have rE' : RedTy S.R S.roles Γ rE_exec.1 (.head u₀) := hValE ▸ rE
   obtain ⟨fUE, nUE, hNUE, hValUE⟩ :=
-    nbeWhnf_complete_of_whRed hComp hRoles rE'.wh rE'.whnf
+    nbeWhnf_complete_of_whRed hComp hRoles rE'.red (head_whnf S.shape _)
   obtain ⟨uE, hUE, _⟩ :=
     asUniverse_of_whnf S.R (fun _ => none) hNUE hValUE hu₀
   obtain ⟨_, fCt, rCt, hCt⟩ :=
@@ -1292,10 +1294,10 @@ theorem nbeAcceptsEquality_complete
   obtain ⟨_, fCu, rCu, hCu⟩ :=
     Bidirectional.executable_complete S facts roots heads algebra complete hComp hRoles
       headsTyped hChoices hu formed tu
-  have hAlg : Algorithmic S.R S.roles (.compare Γ t u E) :=
-    AlgorithmicComplete.terms complete eq formed
+  have hAlg : Algorithmic S.R S.roles (.terms Γ t u E) :=
+    complete formed eq
   obtain ⟨fCmp, rCmp, hCmp⟩ :=
-    nbeCompare_complete_of_algorithmic S facts roots heads algebra hComp hRoles formed hAlg
+    nbeCompare_complete_of_algorithmic (S := S) facts roots heads algebra hComp hRoles formed hAlg
   let f := Nat.max (Nat.max (Nat.max fCtx fSE) (Nat.max fUE fCt)) (Nat.max fCu fCmp)
   have hfCtx : fCtx ≤ f :=
     Nat.le_trans (Nat.le_trans (Nat.le_max_left _ _) (Nat.le_max_left _ _)) (Nat.le_max_left _ _)
@@ -1321,8 +1323,9 @@ theorem nbeAcceptsEquality_complete
       let expected ← nbeSynth S.R choices (fun _ => none) f Γ E
       let level ← ExecutableChecking.asUniverse S.R (nbeWhnfReducer S.R (fun _ => none)) f expected.1
       let termChecked ← nbeCheck S.R choices (fun _ => none) f Γ t E
-      pure ⟨contextChecked.down, level.val, expected.1, expected.2.down,
-        level.property.2, level.property.1, termChecked.down⟩) = _
+      pure (⟨contextChecked.down, level.val, expected.1, expected.2.down,
+        level.property.2, level.property.1, termChecked.down⟩ :
+        ExecutableChecking.JudgmentCertificate S.R Γ t E)) = _
     simp [hCtx', hSE', hUE', hCt', bind, Option.bind, pure]
   have hJu : ExecutableChecking.judgment S.R choices (nbeWhnfReducer S.R (fun _ => none)) f Γ u E =
       some ⟨rCtx.down, uE.val, rE_exec.1, rE_exec.2.down, uE.property.2, uE.property.1, rCu.down⟩ := by
@@ -1332,8 +1335,9 @@ theorem nbeAcceptsEquality_complete
       let expected ← nbeSynth S.R choices (fun _ => none) f Γ E
       let level ← ExecutableChecking.asUniverse S.R (nbeWhnfReducer S.R (fun _ => none)) f expected.1
       let termChecked ← nbeCheck S.R choices (fun _ => none) f Γ u E
-      pure ⟨contextChecked.down, level.val, expected.1, expected.2.down,
-        level.property.2, level.property.1, termChecked.down⟩) = _
+      pure (⟨contextChecked.down, level.val, expected.1, expected.2.down,
+        level.property.2, level.property.1, termChecked.down⟩ :
+        ExecutableChecking.JudgmentCertificate S.R Γ u E)) = _
     simp [hCtx', hSE', hUE', hCu', bind, Option.bind, pure]
   refine ⟨f, ?_⟩
   unfold nbeAcceptsEquality ExecutableChecking.acceptsEquality ExecutableChecking.equality
@@ -1358,33 +1362,40 @@ instance : DecidableRel (LevelTower.rules L).cumulative :=
 instance (head : LevelTower.Head L) : Decidable ((LevelTower.rules L).isUniverse head) :=
   ExecutableTowerChoices.universeDecidable head
 
+omit [DecidableEq L] in
+private theorem levelTower_headsTyped {h u v : LevelTower.Head L}
+    (first : (LevelTower.rules L).headTyping h u)
+    (second : (LevelTower.rules L).headTyping h v) : u = v :=
+  ((ExecutableTowerChoices.typing_exact h u).mp first).trans
+    ((ExecutableTowerChoices.typing_exact h v).mp second).symm
+
 /-- Bidirectional type synthesis in `LevelTower.rules L` powered by `nbeWhnfReducer`. -/
 def levelTowerNbESynth (fuel : Nat) {n : Nat}
     (Γ : Ctx (LevelTower.Head L) n) (t : Tm (LevelTower.Head L) n) :
     Option (ExecutableChecking.SynthResult (LevelTower.rules L) Γ t) :=
-  nbeSynth (LevelTower.rules L) ExecutableTowerChoices.choices levelTowerEmptyRoot fuel Γ t
+  nbeSynth (LevelTower.rules L) ExecutableTowerChoices.choices (fun _ => none) fuel Γ t
 
 /-- Bidirectional type checking in `LevelTower.rules L` powered by `nbeWhnfReducer`. -/
 def levelTowerNbECheck (fuel : Nat) {n : Nat}
     (Γ : Ctx (LevelTower.Head L) n) (t A : Tm (LevelTower.Head L) n) :
     Option (ExecutableChecking.CheckResult (LevelTower.rules L) Γ t A) :=
-  nbeCheck (LevelTower.rules L) ExecutableTowerChoices.choices levelTowerEmptyRoot fuel Γ t A
+  nbeCheck (LevelTower.rules L) ExecutableTowerChoices.choices (fun _ => none) fuel Γ t A
 
 /-- Full judgment checking in `LevelTower.rules L` powered by `nbeWhnfReducer`. -/
 def levelTowerNbEJudgment (fuel : Nat) {n : Nat}
     (Γ : Ctx (LevelTower.Head L) n) (t A : Tm (LevelTower.Head L) n) :
     Option (ExecutableChecking.JudgmentCertificate (LevelTower.rules L) Γ t A) :=
-  nbeJudgment (LevelTower.rules L) ExecutableTowerChoices.choices levelTowerEmptyRoot fuel Γ t A
+  nbeJudgment (LevelTower.rules L) ExecutableTowerChoices.choices (fun _ => none) fuel Γ t A
 
 /-- Boolean judgment acceptance in `LevelTower.rules L` powered by `nbeWhnfReducer`. -/
 def levelTowerNbEAccepts (fuel : Nat) {n : Nat}
     (Γ : Ctx (LevelTower.Head L) n) (t A : Tm (LevelTower.Head L) n) : Bool :=
-  nbeAccepts (LevelTower.rules L) ExecutableTowerChoices.choices levelTowerEmptyRoot fuel Γ t A
+  nbeAccepts (LevelTower.rules L) ExecutableTowerChoices.choices (fun _ => none) fuel Γ t A
 
 /-- Qualified equality acceptance in `LevelTower.rules L` powered by `nbeWhnfReducer`. -/
 def levelTowerNbEAcceptsEquality (fuel : Nat) {n : Nat}
     (Γ : Ctx (LevelTower.Head L) n) (t u A : Tm (LevelTower.Head L) n) : Bool :=
-  nbeAcceptsEquality (LevelTower.rules L) ExecutableTowerChoices.choices levelTowerEmptyRoot
+  nbeAcceptsEquality (LevelTower.rules L) ExecutableTowerChoices.choices (fun _ => none)
     fuel Γ t u A
 
 /-- Specializations to `Tower` (`L = Nat`). -/
@@ -1407,7 +1418,7 @@ abbrev towerNbEAcceptsEquality (fuel : Nat) {n : Nat}
 /-- **Soundness of `levelTowerNbEAccepts`**:
 Acceptance by the NbE-powered bidirectional checker implies declarative typing
 `Typed (LevelTower.rules L) Γ t A` (and context formation `CtxFormed`). -/
-theorem levelTowerNbEAccepts_sound (valuation : L → Nat)
+theorem levelTowerNbEAccepts_sound (valuation : Nat → L)
     {fuel n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t A : Tm (LevelTower.Head L) n}
     (hAcc : levelTowerNbEAccepts fuel Γ t A = true) :
     Typed (LevelTower.rules L) Γ t A := by
@@ -1420,7 +1431,7 @@ theorem levelTowerNbEAccepts_sound (valuation : L → Nat)
   exact ExecutableChecking.accepts_sound (S := setting valuation)
     facts roots heads algebra (fun {_ _} h => nomatch h)
     ExecutableTowerChoices.choices
-    (nbeWhnfReducer (LevelTower.rules L) levelTowerEmptyRoot) hAcc
+    (nbeWhnfReducer (LevelTower.rules L) (fun _ => none)) hAcc
 
 theorem towerNbEAccepts_sound
     {fuel n : Nat} {Γ : Tower.Ctx n} {t A : Tower.Tm n}
@@ -1431,7 +1442,7 @@ theorem towerNbEAccepts_sound
 /-- **Soundness of `levelTowerNbEAcceptsEquality`**:
 Acceptance by the NbE-powered bidirectional equality checker implies declarative
 typed equality `Equal (LevelTower.rules L) Γ t u A`. -/
-theorem levelTowerNbEAcceptsEquality_sound (valuation : L → Nat)
+theorem levelTowerNbEAcceptsEquality_sound (valuation : Nat → L)
     {fuel n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t u A : Tm (LevelTower.Head L) n}
     (hAcc : levelTowerNbEAcceptsEquality fuel Γ t u A = true) :
     Equal (LevelTower.rules L) Γ t u A := by
@@ -1444,7 +1455,7 @@ theorem levelTowerNbEAcceptsEquality_sound (valuation : L → Nat)
   exact ExecutableChecking.acceptsEquality_sound (S := setting valuation)
     facts roots heads algebra (fun {_ _} h => nomatch h)
     ExecutableTowerChoices.choices
-    (nbeWhnfReducer (LevelTower.rules L) levelTowerEmptyRoot) hAcc
+    (nbeWhnfReducer (LevelTower.rules L) (fun _ => none)) hAcc
 
 theorem towerNbEAcceptsEquality_sound
     {fuel n : Nat} {Γ : Tower.Ctx n} {t u A : Tower.Tm n}
@@ -1467,10 +1478,11 @@ theorem levelTower_headChoices_complete :
 /-- **Both-Directions Completeness & Soundness of `levelTowerNbECheck`**:
 On the bidirectional checking fragment `Bidirectional .check t`, our executable
 NbE checker `levelTowerNbECheck` succeeds at some finite `fuel` if and only if
-`Typed (LevelTower.rules L) Γ t E` holds in a formed context `Γ`. -/
-theorem levelTower_typed_iff_exists_fuel_nbeCheck (valuation : L → Nat)
+`Typed (LevelTower.rules L) Γ t E` holds in a formed context `Γ` at a formed expected type `E`. -/
+theorem levelTower_typed_iff_exists_fuel_nbeCheck (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t E : Tm (LevelTower.Head L) n}
-    (ht : Bidirectional .check t) (formed : CtxFormed (LevelTower.rules L) Γ) :
+    (ht : Bidirectional .check t) (formed : CtxFormed (LevelTower.rules L) Γ)
+    (expected : IsType (LevelTower.rules L) Γ E) :
     Typed (LevelTower.rules L) Γ t E ↔
       ∃ fuel, (levelTowerNbECheck fuel Γ t E).isSome := by
   constructor
@@ -1483,29 +1495,27 @@ theorem levelTower_typed_iff_exists_fuel_nbeCheck (valuation : L → Nat)
       fun head => ExecutableTowerChoices.universeDecidable head
     obtain ⟨_, fuel, res, hCheck⟩ :=
       Bidirectional.executable_complete (setting valuation)
-        facts roots heads algebra (complete valuation) rfl rfl
-        heads_unique_type levelTower_headChoices_complete ht formed typing
+        facts roots heads algebra complete rfl rfl
+        levelTower_headsTyped levelTower_headChoices_complete ht formed typing
     exact ⟨fuel, Option.isSome_iff_exists.mpr ⟨res, hCheck⟩⟩
   · rintro ⟨fuel, hSome⟩
     obtain ⟨res, hCheck⟩ := Option.isSome_iff_exists.mp hSome
-    have hKernel : Check (LevelTower.rules L) (fun _ => .rigid) Γ t E :=
-      CheckingAlgorithm.sound (S := setting valuation)
-        facts roots heads algebra (fun {_ _} h => nomatch h) res.down formed
-    exact Check.sound (S := setting valuation)
-      facts algebra heads_unique_type hKernel formed
+    exact CheckingAlgorithm.sound (S := setting valuation)
+      facts roots heads algebra (fun {_ _} h => nomatch h) res.down formed expected
 
 theorem tower_typed_iff_exists_fuel_nbeCheck
     {n : Nat} {Γ : Tower.Ctx n} {t E : Tower.Tm n}
-    (ht : Bidirectional .check t) (formed : CtxFormed Tower.rules Γ) :
+    (ht : Bidirectional .check t) (formed : CtxFormed Tower.rules Γ)
+    (expected : IsType Tower.rules Γ E) :
     Typed Tower.rules Γ t E ↔
       ∃ fuel, (towerNbECheck fuel Γ t E).isSome :=
-  levelTower_typed_iff_exists_fuel_nbeCheck (fun _ => 0) ht formed
+  levelTower_typed_iff_exists_fuel_nbeCheck (fun _ => 0) ht formed expected
 
 /-- **Both-Directions Completeness & Soundness of `levelTowerNbESynth`**:
 On the bidirectional synthesis fragment `Bidirectional .synth t`, our executable
 NbE synthesizer `levelTowerNbESynth` succeeds at some finite `fuel` if and only if
 `t` is typable (`∃ E, Typed (LevelTower.rules L) Γ t E`) in a formed context `Γ`. -/
-theorem levelTower_typable_iff_exists_fuel_nbeSynth (valuation : L → Nat)
+theorem levelTower_typable_iff_exists_fuel_nbeSynth (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t : Tm (LevelTower.Head L) n}
     (ht : Bidirectional .synth t) (formed : CtxFormed (LevelTower.rules L) Γ) :
     (∃ E, Typed (LevelTower.rules L) Γ t E) ↔
@@ -1520,16 +1530,13 @@ theorem levelTower_typable_iff_exists_fuel_nbeSynth (valuation : L → Nat)
       fun head => ExecutableTowerChoices.universeDecidable head
     obtain ⟨_, fuel, res, _, hSynth, _⟩ :=
       Bidirectional.executable_complete (setting valuation)
-        facts roots heads algebra (complete valuation) rfl rfl
-        heads_unique_type levelTower_headChoices_complete ht formed typing
+        facts roots heads algebra complete rfl rfl
+        levelTower_headsTyped levelTower_headChoices_complete ht formed typing
     exact ⟨fuel, Option.isSome_iff_exists.mpr ⟨res, hSynth⟩⟩
   · rintro ⟨fuel, hSome⟩
     obtain ⟨res, hSynth⟩ := Option.isSome_iff_exists.mp hSome
-    have hKernel : Synth (LevelTower.rules L) (fun _ => .rigid) Γ t res.1 :=
-      CheckingAlgorithm.sound (S := setting valuation)
-        facts roots heads algebra (fun {_ _} h => nomatch h) res.2.down formed
-    exact ⟨res.1, (Synth.principal (S := setting valuation)
-      facts algebra heads_unique_type hKernel formed).1⟩
+    exact ⟨res.1, CheckingAlgorithm.sound (S := setting valuation)
+      facts roots heads algebra (fun {_ _} h => nomatch h) res.2.down formed⟩
 
 theorem tower_typable_iff_exists_fuel_nbeSynth
     {n : Nat} {Γ : Tower.Ctx n} {t : Tower.Tm n}
@@ -1542,7 +1549,7 @@ theorem tower_typable_iff_exists_fuel_nbeSynth
 On the bidirectional fragment (`BidirectionalCtx Γ`, `Bidirectional .synth E`,
 `Bidirectional .check t`), `CtxFormed (LevelTower.rules L) Γ ∧ Typed (LevelTower.rules L) Γ t E`
 holds if and only if there exists a finite `fuel` at which `levelTowerNbEAccepts` returns `true`. -/
-theorem levelTower_typed_iff_exists_fuel_nbeAccepts (valuation : L → Nat)
+theorem levelTower_typed_iff_exists_fuel_nbeAccepts (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t E : Tm (LevelTower.Head L) n}
     (hΓ : BidirectionalCtx Γ) (hE : Bidirectional .synth E) (ht : Bidirectional .check t) :
     (CtxFormed (LevelTower.rules L) Γ ∧ Typed (LevelTower.rules L) Γ t E) ↔
@@ -1557,8 +1564,8 @@ theorem levelTower_typed_iff_exists_fuel_nbeAccepts (valuation : L → Nat)
   · rintro ⟨formed, typing⟩
     obtain ⟨fuel, cert, hJ⟩ :=
       nbeJudgment_complete (setting valuation)
-        facts roots heads algebra (complete valuation) rfl rfl
-        heads_unique_type levelTower_headChoices_complete hΓ hE ht formed typing
+        facts roots heads algebra complete rfl rfl
+        levelTower_headsTyped levelTower_headChoices_complete hΓ hE ht formed typing
     exact ⟨fuel, Option.isSome_iff_exists.mpr ⟨cert, hJ⟩⟩
   · rintro ⟨fuel, hAcc⟩
     obtain ⟨cert, hJ⟩ := Option.isSome_iff_exists.mp hAcc
@@ -1579,7 +1586,7 @@ On the bidirectional fragment (`BidirectionalCtx Γ`, `Bidirectional .synth E`,
 `Bidirectional .check t`, `Bidirectional .check u`), qualified typed equality
 holds if and only if there exists a finite `fuel` at which `levelTowerNbEAcceptsEquality`
 returns `true`. -/
-theorem levelTower_equal_iff_exists_fuel_nbeAcceptsEquality (valuation : L → Nat)
+theorem levelTower_equal_iff_exists_fuel_nbeAcceptsEquality (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t u E : Tm (LevelTower.Head L) n}
     (hΓ : BidirectionalCtx Γ) (hE : Bidirectional .synth E)
     (ht : Bidirectional .check t) (hu : Bidirectional .check u) :
@@ -1595,24 +1602,24 @@ theorem levelTower_equal_iff_exists_fuel_nbeAcceptsEquality (valuation : L → N
   constructor
   · rintro ⟨formed, tt, tu, eq⟩
     exact nbeAcceptsEquality_complete (setting valuation)
-      facts roots heads algebra (complete valuation) rfl rfl
-      heads_unique_type levelTower_headChoices_complete hΓ hE ht hu formed tt tu eq
+      facts roots heads algebra complete rfl rfl
+      levelTower_headsTyped levelTower_headChoices_complete hΓ hE ht hu formed tt tu eq
   · rintro ⟨fuel, hAcc⟩
     obtain ⟨cert, hEq⟩ := Option.isSome_iff_exists.mp hAcc
     have hJt : levelTowerNbEAccepts fuel Γ t E = true := by
       unfold ExecutableChecking.equality at hEq
       cases h1 : ExecutableChecking.judgment (LevelTower.rules L) ExecutableTowerChoices.choices
-          (nbeWhnfReducer (LevelTower.rules L) levelTowerEmptyRoot) fuel Γ t E with
+          (nbeWhnfReducer (LevelTower.rules L) (fun _ => none)) fuel Γ t E with
       | none => simp [h1, bind, Option.bind] at hEq
       | some c1 => exact Option.isSome_iff_exists.mpr ⟨c1, h1⟩
     have hJu : levelTowerNbEAccepts fuel Γ u E = true := by
       unfold ExecutableChecking.equality at hEq
       cases h1 : ExecutableChecking.judgment (LevelTower.rules L) ExecutableTowerChoices.choices
-          (nbeWhnfReducer (LevelTower.rules L) levelTowerEmptyRoot) fuel Γ t E with
+          (nbeWhnfReducer (LevelTower.rules L) (fun _ => none)) fuel Γ t E with
       | none => simp [h1, bind, Option.bind] at hEq
       | some c1 =>
           cases h2 : ExecutableChecking.judgment (LevelTower.rules L) ExecutableTowerChoices.choices
-              (nbeWhnfReducer (LevelTower.rules L) levelTowerEmptyRoot) fuel Γ u E with
+              (nbeWhnfReducer (LevelTower.rules L) (fun _ => none)) fuel Γ u E with
           | none => simp [h1, h2, bind, Option.bind] at hEq
           | some c2 => exact Option.isSome_iff_exists.mpr ⟨c2, h2⟩
     have formed : CtxFormed (LevelTower.rules L) Γ :=
@@ -1637,36 +1644,36 @@ omit [DecidableEq L] in
 (from `Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Normalization.Checking`)
 to `LevelTower.rules L`. For the executable NbE checker biconditional, see
 `levelTower_typed_iff_exists_fuel_nbeCheck` and `levelTower_typed_iff_exists_fuel_nbeAccepts`. -/
-theorem tower_check_iff_typed (valuation : L → Nat)
+theorem tower_check_iff_typed (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t E : Tm (LevelTower.Head L) n}
     (fragment : Bidirectional .check t) (formed : CtxFormed (LevelTower.rules L) Γ) :
     Check (LevelTower.rules L) (fun _ => .rigid) Γ t E ↔
       Typed (LevelTower.rules L) Γ t E :=
-  Check.iff_typed (S := setting valuation) facts algebra heads_unique_type fragment formed
+  Check.iff_typed (S := setting valuation) facts algebra levelTower_headsTyped fragment formed
 
 omit [DecidableEq L] in
 /-- Specialization of the existing bidirectional kernel synthesis equivalence
 `Synth.exists_iff_typable` (from `Checking.lean`) to `LevelTower.rules L`.
 For the executable NbE synthesizer biconditional, see
 `levelTower_typable_iff_exists_fuel_nbeSynth`. -/
-theorem tower_synth_exists_iff_typable (valuation : L → Nat)
+theorem tower_synth_exists_iff_typable (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {t : Tm (LevelTower.Head L) n}
     (fragment : Bidirectional .synth t) (formed : CtxFormed (LevelTower.rules L) Γ) :
     (∃ T, Synth (LevelTower.rules L) (fun _ => .rigid) Γ t T) ↔
       ∃ E, Typed (LevelTower.rules L) Γ t E :=
-  Synth.exists_iff_typable (S := setting valuation) facts algebra heads_unique_type fragment formed
+  Synth.exists_iff_typable (S := setting valuation) facts algebra levelTower_headsTyped fragment formed
 
 omit [DecidableEq L] in
 /-- Specialization of the existing bidirectional kernel type-formation equivalence
 `Synth.isType_iff` (from `Checking.lean`) to `LevelTower.rules L`. -/
-theorem tower_synth_isType_iff (valuation : L → Nat)
+theorem tower_synth_isType_iff (valuation : Nat → L)
     {n : Nat} {Γ : Ctx (LevelTower.Head L) n} {A : Tm (LevelTower.Head L) n}
     (fragment : Bidirectional .synth A) (formed : CtxFormed (LevelTower.rules L) Γ) :
     (∃ T u, Synth (LevelTower.rules L) (fun _ => .rigid) Γ A T ∧
       RedTy (LevelTower.rules L) (fun _ => .rigid) Γ T (.head u) ∧
       (LevelTower.rules L).isUniverse u) ↔
     IsType (LevelTower.rules L) Γ A :=
-  Synth.isType_iff (S := setting valuation) facts algebra heads_unique_type fragment formed
+  (Synth.isType_iff (S := setting valuation) facts algebra levelTower_headsTyped fragment formed).symm
 
 end TowerNbEChecking
 
@@ -1738,19 +1745,18 @@ theorem towerNumbersNbEAcceptsEquality_sound
 
 end TowerNumbersNbEChecking
 
-/-! ## 2. Deliverable 3: NIK Stage A Link with Typed Conversion Obligations -/
+/-! ## Finite replay with typed conversion obligations -/
 
 section NIKStageALink
 
 open FormationSensitiveRuleSignature
 open FormationSensitiveChecking
 open Mettapedia.GSLT.LanguageDef.BootstrapCell
-open Mettapedia.Kernel.NikBridge.Checker
+open Mettapedia.GSLT.LanguageDef.KernelAuthority
 
 variable {Head : Type} (R : Rules Head) [DecidableEq Head]
 variable [DecidableRel R.headTyping] [DecidablePred R.isUniverse]
 variable [∀ u v w, Decidable (R.join u v w)] [DecidableRel R.cumulative]
-variable [DecidableRel R.headEq]
 variable (root : ExecutableReduction.RootEvaluator R)
 variable (headEqB : Head → Head → Bool)
 variable (hHeadEq : ∀ h₁ h₂, headEqB h₁ h₂ = true → h₁ = h₂ ∨ R.headEq h₁ h₂)
@@ -1798,8 +1804,12 @@ theorem levelTower_universeRegularity {L : Type} [LevelOrder L] :
     | sorts u v => exact .sort _
   cumulative_target := by
     intro u v hc
-    cases hc with
-    | sorts _ => exact .sort _
+    cases u with
+    | legacyGround => cases hc
+    | sort left =>
+        cases v with
+        | legacyGround => cases hc
+        | sort right => exact .sort _
   universe_typed := by
     intro u hu
     cases hu with
@@ -1828,6 +1838,7 @@ def nbeConversionCheck {n : Nat} (fuel : NbEConversionFuel n)
     (left right : Tm Head n) : Bool :=
   nbeConvNf R root headEqB fuel left right
 
+omit [DecidableEq Head] [DecidableRel R.headTyping] [DecidablePred R.isUniverse] [∀ u v w, Decidable (R.join u v w)] [DecidableRel R.cumulative] in
 include hHeadEq in
 theorem nbeConversionCheck_sound {n : Nat} {fuel : NbEConversionFuel n}
     {left right : Tm Head n}
@@ -2417,54 +2428,57 @@ theorem judgment_iff_checkedRequestWithNbE
   · rintro ⟨context, nodes, rootIdx, checked⟩
     exact checkRequestWithNbE_sound R root headEqB hHeadEq j context nodes rootIdx checked
 
-/-- **NIK Stage A `ReplaySignature` and `SemanticQualification` for the NbE-Backed Checker**: -/
-def nbeJudgmentTheory : Mettapedia.GSLT.LanguageDef.TierLattice.Theory (Judgment Head) where
-  Step _ _ := False
-  Derivable j := FormationSensitive.Judgment R j.context j.subject j.type
-
-def nbeJudgmentTier :
-    Mettapedia.GSLT.LanguageDef.TierLattice.Tier (Judgment Head)
+/-- The formation-sensitive judgment checker accepts indexed tree evidence.
+Its cost and a native pattern codec are separate interfaces. -/
+def nbeJudgmentChecker :
+    Checker (Judgment Head)
       (Σ j : Judgment Head, ContextCodeWithNbE Head j.arity × CodeWithNbE Head j.arity) where
   check j cert :=
     if h : cert.1 = j then
       checkJudgmentWithNbE R root headEqB j.context j.subject j.type
         (h ▸ cert.2.1) (h ▸ cert.2.2)
     else false
-  decideTime _ := 1
-  certificateSize _ := 1
 
 include hHeadEq in
-theorem nbeJudgmentTier_locallySound :
-    (nbeJudgmentTier R root headEqB).LocallySound (nbeJudgmentTheory R) := by
+/-- Every accepted tree certificate establishes its complete formed judgment. -/
+theorem nbeJudgmentChecker_sound :
+    (nbeJudgmentChecker R root headEqB).Sound
+      (fun j => FormationSensitive.Judgment R j.context j.subject j.type) := by
   intro j ⟨j', cCode, tCode⟩ hCheck
-  dsimp [nbeJudgmentTier] at hCheck
+  dsimp [nbeJudgmentChecker] at hCheck
   split at hCheck
   · rename_i hEq
     subst hEq
     exact checkJudgmentWithNbE_sound R root headEqB hHeadEq hCheck
   · contradiction
 
-def nbeReplaySignature :
-    ReplaySignature (Judgment Head)
-      (Σ j : Judgment Head, ContextCodeWithNbE Head j.arity × CodeWithNbE Head j.arity) :=
-  (nbeJudgmentTier R root headEqB).replaySignature (nbeJudgmentTheory R)
+include hHeadEq in
+/-- Sound replay and complete certificate coverage use the same checker and
+judgment. Conversion completeness is required only for evidence coverage. -/
+theorem nbeJudgmentChecker_authority
+    (universes : FormationSensitive.UniverseRegularity R)
+    (hComplete : TypedConvComplete R root headEqB) :
+    (nbeJudgmentChecker R root headEqB).Authority
+      (fun j => FormationSensitive.Judgment R j.context j.subject j.type) where
+  sound := nbeJudgmentChecker_sound R root headEqB hHeadEq
+  complete := by
+    intro j derived
+    obtain ⟨contextCode, termCode, checked⟩ :=
+      (judgment_iff_checkedReplayWithNbE R root headEqB hHeadEq universes hComplete).mp derived
+    exact ⟨⟨j, contextCode, termCode⟩, by simp [nbeJudgmentChecker, checked]⟩
 
 include hHeadEq in
-theorem nbeReplaySignature_replayCorrect :
-    (nbeReplaySignature R root headEqB).ReplayCorrect :=
-  Mettapedia.GSLT.LanguageDef.TierLattice.Tier.LocallySound.replayCorrect
-    (nbeJudgmentTier_locallySound R root headEqB hHeadEq)
-
-include hHeadEq in
-def nbeSemanticQualification :
-    SemanticQualification (Judgment Head)
-      (Σ j : Judgment Head, ContextCodeWithNbE Head j.arity × CodeWithNbE Head j.arity) :=
-  (nbeReplaySignature R root headEqB).qualify
-    (nbeReplaySignature_replayCorrect R root headEqB hHeadEq)
+/-- Formed judgments coincide with the existence of accepted tree evidence. -/
+theorem nbeJudgmentChecker_iff
+    (universes : FormationSensitive.UniverseRegularity R)
+    (hComplete : TypedConvComplete R root headEqB) (j : Judgment Head) :
+    FormationSensitive.Judgment R j.context j.subject j.type ↔
+      ∃ certificate, (nbeJudgmentChecker R root headEqB).check j certificate = true :=
+  (nbeJudgmentChecker_authority R root headEqB hHeadEq universes hComplete).meaning_iff_exists_certificate j
 
 end NIKStageALink
 
-/-! ## 3. Deliverable 5: Positive and Negative Controls (`decide +kernel` & Declarative `¬ Typed`) -/
+/-! ## Positive and separating negative controls -/
 
 section Controls
 
@@ -2522,6 +2536,29 @@ theorem positive_control_cumulativity_and_poly_id :
       (.pi (uSort 0) (.pi (.var 0) (.var 1))) = true := by
   decide +kernel
 
+/-- The accepted polymorphic identity has its declarative dependent type. -/
+theorem polymorphic_identity_typed :
+    Typed Tower.rules .nil (.lam (.lam (.var 0)))
+      (.pi (uSort 0) (.pi (.var 0) (.var 1))) :=
+  towerNbEAccepts_sound positive_control_cumulativity_and_poly_id.2
+
+/-- The complete raw checker applies to this formed expected type. -/
+theorem polymorphic_identity_check_complete :
+    ∃ fuel, (towerNbECheck fuel .nil (.lam (.lam (.var 0)))
+      (.pi (uSort 0) (.pi (.var 0) (.var 1)))).isSome := by
+  exact (tower_typed_iff_exists_fuel_nbeCheck
+    (.lam (.lam (.synthesized (.var 0)))) .nil
+    (Typed.isType (S := TowerModel.setting (fun _ => 0)) polymorphic_identity_typed .nil)).mp
+      polymorphic_identity_typed
+
+/-- Full judgment completeness computes formation for the same dependent example. -/
+theorem polymorphic_identity_judgment_complete :
+    ∃ fuel, towerNbEAccepts fuel .nil (.lam (.lam (.var 0)))
+      (.pi (uSort 0) (.pi (.var 0) (.var 1))) = true := by
+  exact (tower_typed_iff_exists_fuel_nbeAccepts .nil
+    (.pi (.head _) (.pi (.var 0) (.var 1)))
+    (.lam (.lam (.synthesized (.var 0))))).mp ⟨.nil, polymorphic_identity_typed⟩
+
 /-- **Positive Control 4 (Recursor ι-Unfolding via Closure-Based NbE)**:
 The closure-based NbE machine `nbeNormTm` normalizes `copiedByRecursor 3` to
 `numeral 3`, and `towerNumbersNbEAcceptsEquality` accepts
@@ -2542,14 +2579,14 @@ theorem positive_control_recursor_nbe :
 zero step-by-step conversion certificates, whereas `StructuralConversionCode`
 requires an 8-step certificate chain. -/
 theorem positive_control_betaChain_nbeConv :
-    nbeConvNf Tower.rules towerEmptyRoot
+    nbeConvNf Tower.rules (fun _ => none)
       (fun h₁ h₂ => decide (h₁ = h₂ ∨ Tower.HeadEq h₁ h₂))
       30 (Separation.idBetaChain 8 (uSort 0 : Tower.Tm 0)) (uSort 0) = true := by
   decide +kernel
 
 theorem positive_control_betaChain_conv :
     Conv Tower.HeadEq (Separation.idBetaChain 8 (uSort 0 : Tower.Tm 0)) (uSort 0) :=
-  nbeConvNf_sound Tower.rules towerEmptyRoot
+  nbeConvNf_sound Tower.rules (fun _ => none)
     (fun _ _ h => of_decide_eq_true h) positive_control_betaChain_nbeConv
 
 /-! ### Negative Controls (Executable Rejection & Declarative `¬ Typed` Refutations) -/
@@ -2564,20 +2601,18 @@ theorem tower_not_typed_uSort_of_le {n : Nat} {Γ : Tower.Ctx n}
   have hSynth : Synth Tower.rules (fun _ => .rigid) Γ (uSort k) (.head (.sort (.succ (.const k)))) :=
     .head (.sort (.const k))
   apply Synth.not_typed (S := TowerModel.setting (fun _ => 0))
-    TowerModel.facts TowerModel.algebra TowerModel.heads_unique_type hSynth formed
+    TowerModel.facts TowerModel.algebra levelTower_headsTyped hSynth formed
   intro hBelow
   obtain ⟨v, _, eB, hCumul⟩ :=
     (Below.universe_iff (S := TowerModel.setting (fun _ => 0))
       TowerModel.facts TowerModel.algebra formed (.sort (.succ (.const k)))).1 hBelow
   have hSame :=
-    TypeEq.head_injective (S := TowerModel.setting (fun _ => 0)) TowerModel.facts eB formed
+    TypeEq.head_injective TowerModel.facts eB formed
   have hCumul₀ : Tower.rules.cumulative (.sort (.succ (.const k))) (.sort (.const m)) :=
     TowerModel.algebra.same_right hCumul (HeadSame.symm (TowerModel.levels (fun _ => 0)) hSame)
-  cases hCumul₀ with
-  | sorts hOrder =>
-      have hEval := hOrder (fun _ => 0)
-      change k + 1 ≤ m at hEval
-      omega
+  have hEval := hCumul₀ (fun _ => 0)
+  change k + 1 ≤ m at hEval
+  omega
 
 /-- **Negative Control 1 (`Type : Type` / `U0 : U0` Rejected — Executable & Declarative)**:
 `U0 : U0` is rejected by `towerNbEAccepts` AND declaratively refuted (`¬ Typed`). -/
@@ -2605,9 +2640,12 @@ theorem negative_control_ill_typed_app_not_typed (X : Tower.Tm 0) :
     .head .legacyGround
   have hRed : RedTy Tower.rules (fun _ => .rigid) .nil
       (.head (.sort LevelTower.zero)) (.head (.sort LevelTower.zero)) :=
-    RedTy.refl ⟨.sort (.succ LevelTower.zero), .sort _, .headType (.sort _)⟩ (by trivial)
+    RedTy.refl (roles := fun _ => .rigid)
+      (⟨.sort (.succ LevelTower.zero), LevelTower.IsUniverse.sort _,
+        (.headType (LevelTower.HeadTyping.sort _))⟩ : IsType Tower.rules .nil
+          (.head (.sort LevelTower.zero)))
   exact Synth.not_applicable (S := TowerModel.setting (fun _ => 0))
-    TowerModel.facts TowerModel.algebra TowerModel.heads_unique_type
+    TowerModel.facts TowerModel.algebra levelTower_headsTyped
     hSynth .nil hRed (.inl ⟨_, rfl⟩) (fun _ _ h => by cases h)
 
 theorem negative_control_unused_ill_typed_arg_not_typed (X : Tower.Tm 0) :
@@ -2615,6 +2653,23 @@ theorem negative_control_unused_ill_typed_arg_not_typed (X : Tower.Tm 0) :
   intro typing
   obtain ⟨A', _, _, ta, _⟩ := Typed.generation typing
   exact negative_control_ill_typed_app_not_typed A' ta
+
+/-- A reducible expected expression can hide an ill-typed argument. -/
+def unformedExpectedType : Tower.Tm 0 :=
+  .app (.lam (uSort 1)) (.app groundTm groundTm)
+
+/-- Raw term checking assumes an expected type; full judgment checking validates it. -/
+theorem raw_check_does_not_check_expected_formation :
+    (towerNbECheck 60 .nil (uSort 0) unformedExpectedType).isSome = true ∧
+      towerNbEAccepts 60 .nil (uSort 0) unformedExpectedType = false := by
+  decide +kernel
+
+/-- The rejected expected expression has no universe type, independently of fuel. -/
+theorem unformedExpectedType_not_isType :
+    ¬ IsType Tower.rules .nil unformedExpectedType := by
+  rintro ⟨u, _, typing⟩
+  obtain ⟨A, _, _, argument, _⟩ := Typed.generation typing
+  exact negative_control_ill_typed_app_not_typed A argument
 
 /-- **Negative Control 3 (Universe Lowering Rejected — Executable & Declarative)**:
 Checking `U1` (`uSort 1`) at `U0` or at `U1` is rejected by `towerNbEAccepts`
@@ -2664,9 +2719,9 @@ theorem negative_control_refl_zero_succ_not_typed (lv : LevelExpr Nat) :
   intro typing
   let S := TowerNumbersModel.setting lv (fun _ => 0)
   obtain ⟨A, _, le⟩ := Typed.generation typing
-  have isE := Typed.isType typing .nil
+  have isE := Typed.isType (S := S) typing .nil
   have e := TypeLe.id_eq (S := S) (TowerNumbersModel.facts lv) le isE .nil
-  obtain ⟨eA, _, ey⟩ := TypeEq.id_injective (S := S) (TowerNumbersModel.facts lv) e .nil
+  obtain ⟨eA, _, ey⟩ := TypeEq.id_injective (TowerNumbersModel.facts lv) e .nil
   have eq01 : Equal (TowerNumbersModel.rules lv) .nil
       ExecutableCheckingControls.zero
       (ExecutableCheckingControls.succ ExecutableCheckingControls.zero)
@@ -2716,7 +2771,7 @@ theorem negative_control_wrongPack_not_typed (lv : LevelExpr Nat) :
   obtain ⟨C, _, leId⟩ := Typed.generation tRefl
   have eId := TypeLe.id_eq (S := S) (TowerNumbersModel.facts lv)
     leId (Typed.isType tRefl .nil) .nil
-  obtain ⟨eC, ex, _⟩ := TypeEq.id_injective (S := S) (TowerNumbersModel.facts lv) eId .nil
+  obtain ⟨eC, ex, _⟩ := TypeEq.id_injective (TowerNumbersModel.facts lv) eId .nil
   have eq10 : Equal (TowerNumbersModel.rules lv) .nil
       (ExecutableCheckingControls.succ ExecutableCheckingControls.zero)
       ExecutableCheckingControls.zero
@@ -2726,7 +2781,7 @@ theorem negative_control_wrongPack_not_typed (lv : LevelExpr Nat) :
 
 end Controls
 
-/-! ## 4. Deliverable 6: Performance & Certificate-Size Comparison on β-Chains -/
+/-! ## Instrumented beta-chain and certificate-size comparison -/
 
 section PerformanceComparison
 
@@ -2760,37 +2815,38 @@ theorem convCodeStepCount_idBetaChain {Head : Type} {RootCode : Nat → Type} {n
       simp [idBetaChainConvCode, convCodeStepCount, ih, Nat.add_comm]
 
 /-- On `idBetaChain k groundTm`, the instrumented closure machine `nbeWhnfSteps`
-performs `3 * k + 1` evaluation steps ($O(k)$ time), while `codeCertSize` of the
+returns `some (3 * k + 1)` evaluation steps ($O(k)$ time), while `codeCertSize` of the
 explicit certificate `idBetaChainCode k groundTm` is $3k(k+1)/2 + 2k + 1$ ($\Theta(k^2)$). -/
 theorem nbeWhnfSteps_idBetaChain_groundTm (k : Nat) :
-    nbeWhnfSteps Tower.rules towerEmptyRoot (k + 1)
-      (Separation.idBetaChain k (groundTm : Tower.Tm 0)) = 3 * k + 1 := by
+    nbeWhnfSteps Tower.rules (fun _ => none) (2 * k + 1)
+      (Separation.idBetaChain k (groundTm : Tower.Tm 0)) = some (3 * k + 1) := by
   unfold nbeWhnfSteps
-  rw [whEvalSteps_idBetaChain Tower.rules towerEmptyRoot [] k 0
-    (groundTm : Tower.Tm 0) (.vNeu (.head .legacyGround) []) 1 rfl]
+  have fuel : 2 * k + 1 = 1 + 2 * k := by omega
+  rw [fuel, Separation.whEvalSteps_idBetaChain Tower.rules (fun _ => none)
+    k 1 (WhEnv.idEnv 0) (groundTm : Tower.Tm 0)]
   rfl
 
 /-- Benchmark row recording:
 1. chain length `k`,
 2. NbE conversion acceptance `nbeOk`,
 3. explicit replay acceptance `replayOk`,
-4. instrumented NbE machine step count `nbeSteps = 3 * k + 1` ($O(k)$ time),
+4. instrumented NbE machine step count `nbeSteps = some (3 * k + 1)` ($O(k)$ time),
 5. conversion step count `stepNodes = k`,
 6. total explicit certificate AST size `explicitCertNodes = 3k(k+1)/2 + 2k + 1` ($\Theta(k^2)$ size),
 7. NbE per-run conversion certificate size `nbeCertNodes = 0`. -/
-def betaChainBenchmarkRow (k : Nat) : Nat × Bool × Bool × Nat × Nat × Nat × Nat :=
+def betaChainBenchmarkRow (k : Nat) : Nat × Bool × Bool × Option Nat × Nat × Nat × Nat :=
   let lhs : Tower.Tm 0 := Separation.idBetaChain k groundTm
   let rhs : Tower.Tm 0 := groundTm
   let code : StructuralConversionCode.Code Tower.Head (fun _ => Empty) 0 :=
     Separation.idBetaChainCode k rhs
   let nbeOk :=
-    nbeConvNf Tower.rules towerEmptyRoot
+    nbeConvNf Tower.rules (fun _ => none)
       (fun h₁ h₂ => decide (h₁ = h₂ ∨ Tower.HeadEq h₁ h₂))
-      (k + 5) lhs rhs
+      (2 * k + 5) lhs rhs
   let replayChecker :=
     Separation.explicitConversionSizedChecker Tower.HeadEq 0
   let replayOk := replayChecker.check ⟨lhs, rhs⟩ code
-  let nbeSteps := nbeWhnfSteps Tower.rules towerEmptyRoot (k + 5) lhs
+  let nbeSteps := nbeWhnfSteps Tower.rules (fun _ => none) (2 * k + 1) lhs
   let stepNodes := convCodeStepCount code
   let explicitCertNodes := replayChecker.certificateSize code
   let nbeCertNodes := 0
@@ -2798,18 +2854,68 @@ def betaChainBenchmarkRow (k : Nat) : Nat × Bool × Bool × Nat × Nat × Nat �
 
 theorem nbe_and_syntactic_agree_on_betaChains :
     List.map betaChainBenchmarkRow [1, 2, 4, 8, 12, 16] =
-    [(1, true, true, 4, 1, 6, 0),
-     (2, true, true, 7, 2, 17, 0),
-     (4, true, true, 13, 4, 57, 0),
-     (8, true, true, 25, 8, 209, 0),
-     (12, true, true, 37, 12, 457, 0),
-     (16, true, true, 49, 16, 801, 0)] := by
-  decide +kernel
+    [(1, true, true, some 4, 1, 6, 0),
+     (2, true, true, some 7, 2, 17, 0),
+     (4, true, true, some 13, 4, 57, 0),
+     (8, true, true, some 25, 8, 209, 0),
+     (12, true, true, some 37, 12, 457, 0),
+     (16, true, true, some 49, 16, 801, 0)] := by
+  rfl
 
 #eval List.map betaChainBenchmarkRow [1, 2, 4, 8, 12, 16]
 
+/-- Executable regressions for dependent checking, formation boundaries and
+instrumented closure evaluation. -/
+def checkingVerdicts : List (String × Bool) :=
+  let piTy : Tower.Tm 0 := .pi (uSort 0) (uSort 0)
+  let sigmaTy : Tower.Tm 0 := .sigma (uSort 0) (uSort 0)
+  let lv : LevelExpr Nat := .const 0
+  [("NbE Pi eta", towerNbEAcceptsEquality 40 (.snoc .nil piTy)
+      (.var 0) (etaExpandPiTm (.var 0)) (.pi (uSort 0) (uSort 0))),
+   ("NbE Sigma eta", towerNbEAcceptsEquality 40 (.snoc .nil sigmaTy)
+      (.var 0) (etaExpandSigmaTm (.var 0)) (.sigma (uSort 0) (uSort 0))),
+   ("NbE cumulative universe", towerNbEAccepts 40 .nil (uSort 0) (uSort 3)),
+   ("NbE polymorphic identity", towerNbEAccepts 40 .nil (.lam (.lam (.var 0)))
+      (.pi (uSort 0) (.pi (.var 0) (.var 1)))),
+   ("NbE natural recursor", towerNumbersNbEAcceptsEquality lv 60 .nil
+      (ExecutableCheckingControls.copiedByRecursor 3)
+      (ExecutableCheckingControls.numeral 3) ExecutableCheckingControls.num),
+   ("NbE beta chain conversion", nbeConvNf Tower.rules (fun _ => none)
+      (fun first second => decide (first = second ∨ Tower.HeadEq first second))
+      30 (Separation.idBetaChain 8 (uSort 0 : Tower.Tm 0)) (uSort 0)),
+   ("NbE self universe refused", !(towerNbEAccepts 40 .nil (uSort 0) (uSort 0))),
+   ("NbE ill typed application refused", !(towerNbEAccepts 40 .nil
+      (.app groundTm groundTm) (uSort 0))),
+   ("NbE universe lowering refused", !(towerNbEAccepts 40 .nil (uSort 1) (uSort 0))),
+   ("NbE dependent pair mismatch refused", !(towerNumbersNbEAccepts lv 60 .nil
+      ExecutableCheckingControls.wrongPack ExecutableCheckingControls.packType)),
+   ("NbE identity endpoint mismatch refused", !(towerNumbersNbEAccepts lv 60 .nil
+      (.refl ExecutableCheckingControls.zero)
+      (.id ExecutableCheckingControls.num ExecutableCheckingControls.zero
+        (ExecutableCheckingControls.succ ExecutableCheckingControls.zero)))),
+   ("NbE raw check assumes formed expected type", (towerNbECheck 60 .nil
+      (uSort 0) unformedExpectedType).isSome),
+   ("NbE full judgment refuses unformed expected type", !(towerNbEAccepts 60 .nil
+      (uSort 0) unformedExpectedType)),
+   ("NbE exhausted fuel retains no cost", (nbeWhnfSteps Tower.rules (fun _ => none) 1
+      (Separation.idBetaChain 2 (groundTm : Tower.Tm 0))).isNone)] ++
+    [1, 2, 4, 8, 12, 16].map (fun k =>
+      (s!"NbE beta chain {k} exact steps", match nbeWhnfSteps Tower.rules (fun _ => none)
+          (2 * k + 1) (Separation.idBetaChain k (groundTm : Tower.Tm 0)) with
+        | none => false
+        | some steps => steps == 3 * k + 1))
+
+/-- The executable panel agrees with the checked positive and separating controls. -/
+theorem checkingVerdicts_all : checkingVerdicts.all Prod.snd = true := by
+  decide +kernel
+
 end PerformanceComparison
 
+#print axioms nbeJudgmentChecker_sound
+#print axioms nbeJudgmentChecker_authority
+#print axioms raw_check_does_not_check_expected_formation
+#print axioms unformedExpectedType_not_isType
+#print axioms nbeWhnfSteps_idBetaChain_groundTm
 #print axioms towerNbEAccepts_sound
 #print axioms towerNbEAcceptsEquality_sound
 #print axioms tower_typed_iff_exists_fuel_nbeCheck

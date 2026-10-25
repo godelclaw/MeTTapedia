@@ -2,6 +2,7 @@ import Mettapedia.GSLT.LanguageDef.CostRegionTree
 import Mettapedia.GSLT.LanguageDef.CostRegionNormalization
 import Mettapedia.GSLT.LanguageDef.CostElaborationTransport
 import Mettapedia.GSLT.LanguageDef.WellSortedFillInversion
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostFillDeterminism
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.EquationSubstitution
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInteraction
 import Mettapedia.OSLF.MeTTaIL.MatchSpec
@@ -2343,7 +2344,9 @@ private theorem rho_costAlgebraRule_shape
         rhoReflectivePresentation.toReflectivePresentationDecl).parallelUnitConstructor := by
   obtain ⟨parameterName, parameterShape⟩ := algebraRule.selfSorted
   have bare : UsesBareCollection rule :=
-    ⟨parameterName, kind, .base rule.category, parameterShape⟩
+    ⟨parameterName, kind, .base rule.category,
+      (GrammarRule.bareParams_cons_iff _ _ _).mpr
+        ⟨rho_costWholeLanguage_representation_bare rule algebraRule.authored, parameterShape⟩⟩
   have coreMembership : rule ∈ rhoCIGSLT.costCoreLanguage.terms := by
     simpa only [rhoCIGSLT.costWholeLanguage_terms] using algebraRule.authored
   obtain ⟨constructor, materializes⟩ :=
@@ -2359,7 +2362,8 @@ private theorem rho_costAlgebraRule_shape
   obtain ⟨sourceParameterName, sourceCollectionType, sourceElementType,
       sourceShape⟩ := preimage.usesBareCollection_iff.mp materializedBare
   have sourceRuleEquality : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
-    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2 sourceShape
+    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2
   have mappedShape := preimage.parametersMap
   rw [materializes, parameterShape, sourceRuleEquality] at mappedShape
   change [TermParam.simple parameterName (.collection kind (.base rule.category))] =
@@ -2404,7 +2408,9 @@ private theorem rho_costCollectionCarrierRule_hashSet_false
       rhoCIGSLT.costWholeLanguage rule .hashSet) : False := by
   obtain ⟨parameterName, elementType, parameterShape⟩ := carrier.selfSorted
   have bare : UsesBareCollection rule :=
-    ⟨parameterName, .hashSet, elementType, parameterShape⟩
+    ⟨parameterName, .hashSet, elementType,
+      (GrammarRule.bareParams_cons_iff _ _ _).mpr
+        ⟨rho_costWholeLanguage_representation_bare rule carrier.authored, parameterShape⟩⟩
   have coreMembership : rule ∈ rhoCIGSLT.costCoreLanguage.terms := by
     simpa only [rhoCIGSLT.costWholeLanguage_terms] using carrier.authored
   obtain ⟨constructor, materializes⟩ :=
@@ -2420,9 +2426,11 @@ private theorem rho_costCollectionCarrierRule_hashSet_false
   obtain ⟨sourceParameterName, sourceCollectionType, sourceElementType,
       sourceShape⟩ := preimage.usesBareCollection_iff.mp materializedBare
   have sourceRuleEquality : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
-    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2 sourceShape
+    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2
   have mappedShape := preimage.parametersMap
-  rw [materializes, parameterShape, sourceShape] at mappedShape
+  rw [materializes, parameterShape,
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2] at mappedShape
   have collectionTypeEquality : sourceCollectionType = .hashSet := by
     have shape : sourceParameterName = parameterName ∧
         sourceCollectionType = .hashSet ∧
@@ -2993,7 +3001,8 @@ theorem rho_collection_node_sourceSort_interacting
     have sourceCategoryEquality : node.sourceSort.1 = rule.category :=
       TypeExpr.base.inj sourceTypeEquality
     have ruleEquality : rule = rhoCalc.terms[3] :=
-      rho_rule_eq_parallel_of_bare_shape ruleMembership parameterShape
+      rho_rule_eq_parallel_of_bare_shape ruleMembership
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2
     have ruleCategory : rule.category = "Proc" := by
       rw [ruleEquality]
       rfl

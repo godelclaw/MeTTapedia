@@ -240,6 +240,8 @@ theorem rho_generatedParameter_reachable {rule : GrammarRule}
             rhoSourceParallel_bare
           exact absurd ⟨parameterName, collectionType,
             costBaseTypeExpr elementType, by
+              apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+              refine ⟨rho_costWholeLanguage_representation_bare _ membership, ?_⟩
               simp [costBaseConstructor_def, shape, costBaseParameter_def,
                 isSelectedContinuation, mapParameterType,
                 costBaseTypeExpr]⟩ notBare
@@ -277,6 +279,8 @@ theorem rho_generatedParameter_reachable {rule : GrammarRule}
           exact absurd ⟨parameterName, collectionType,
             costWrappedTypeExpr
               rhoIGSLT.presentation.interactingSort.1.name elementType, by
+                apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+                refine ⟨rho_costWholeLanguage_representation_bare _ membership, ?_⟩
                 rw [sourceEq]
                 simp [costWrappedConstructor, shape, mapParameterType,
                   costWrappedTypeExpr]⟩

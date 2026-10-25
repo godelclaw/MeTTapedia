@@ -5,13 +5,10 @@ import Mathlib.Analysis.Normed.Group.FunctionSeries
 /-!
 # Chart Fork on the Shared Mode State
 
-This file forces a concrete chart-style fork on the shared `ModeState`.
-
-* A soft support observable, built from the continuous scalar
-  `|t| / (1 + |t|)` and summable mode weights, lies on the good side: it is
-  continuous and truncation-friendly.
-* A hard support observable, recording whether any coefficient is nonzero, lies
-  on the bad side: it is not continuous at `modeZero`.
+The bounded continuous scalar `|t| / (1 + |t|)` gives summable soft support
+observations. Polynomial amplification can be supplied before that scalar
+without changing the envelope. The hard detector asks whether any coordinate
+is nonzero and is discontinuous at zero in the product topology.
 -/
 
 set_option autoImplicit false
@@ -58,69 +55,27 @@ theorem softSupportScalar_nonneg (t : ℝ) :
   unfold softSupportScalar
   positivity
 
-theorem softSupportScalar_le_one (t : ℝ) :
-    softSupportScalar t ≤ 1 := by
-  have hnonneg : 0 ≤ |t| := abs_nonneg t
-  have hle : |t| ≤ 1 + |t| := by linarith
-  have hden : 0 < 1 + |t| := by positivity
-  have hdiv : |t| / (1 + |t|) ≤ 1 := by
-    rw [_root_.div_le_iff₀ hden]
-    linarith
-  simpa [softSupportScalar] using hdiv
+theorem softSupportScalar_le_one (t : ℝ) : softSupportScalar t ≤ 1 := by
+  exact (div_le_one (by positivity : 0 < 1 + |t|)).mpr (by linarith [abs_nonneg t])
 
-theorem continuous_softSupportTerm (W : SummableModeWeights) (n : ℕ) :
-    Continuous fun x : ModeState => softSupportTerm W x n := by
-  exact (continuous_softSupportScalar.comp (continuous_coeffObservable n)).mul
-      (continuous_const : Continuous fun _ : ModeState => W.weight n)
-
-theorem norm_softSupportTerm_le (W : SummableModeWeights) (x : ModeState) (n : ℕ) :
-    ‖softSupportTerm W x n‖ ≤ W.weight n := by
-  have hterm_nonneg : 0 ≤ softSupportTerm W x n := by
-    exact mul_nonneg (softSupportScalar_nonneg (x.coeff n)) (W.weight_nonneg n)
-  calc
-    ‖softSupportTerm W x n‖ = softSupportTerm W x n := by
-      simp [Real.norm_eq_abs, abs_of_nonneg hterm_nonneg]
-    _ = softSupportScalar (x.coeff n) * W.weight n := rfl
-    _ ≤ W.weight n := by
-      nlinarith [softSupportScalar_nonneg (x.coeff n), softSupportScalar_le_one (x.coeff n),
-        W.weight_nonneg n]
+/-- Bounded soft support after an arbitrary coordinate amplification. -/
+def softSupportObservable (W : SummableModeWeights) (amplification : ℕ → ℝ) :
+    SummableCoordinateObservable where
+  envelope := W
+  response n t := softSupportScalar (amplification n * t) * W.weight n
+  continuous_response n := ((continuous_softSupportScalar.comp
+    (continuous_const.mul continuous_id)).mul continuous_const).continuousOn
+  norm_response_le n t _ := by
+    rw [Real.norm_eq_abs, abs_of_nonneg
+      (mul_nonneg (softSupportScalar_nonneg _) (W.weight_nonneg n))]
+    exact mul_le_of_le_one_left (W.weight_nonneg n) (softSupportScalar_le_one _)
 
 theorem continuous_softSupportRadius (W : SummableModeWeights) :
     Continuous (softSupportRadius W) := by
-  unfold softSupportRadius
-  refine continuous_tsum (fun n => continuous_softSupportTerm W n) W.summable_weight ?_
-  intro n x
-  exact norm_softSupportTerm_le W x n
-
-theorem continuous_softSupportStatistic (W : SummableModeWeights) :
-    Continuous (softSupportStatistic W) := by
-  unfold softSupportStatistic
-  exact (continuous_coeffObservable 0).add (continuous_softSupportRadius W)
-
-theorem tendsto_softSupportRadius_truncateModes (W : SummableModeWeights) (x : ModeState) :
-    Tendsto (fun N => softSupportRadius W (truncateModes N x))
-      Filter.atTop (nhds (softSupportRadius W x)) := by
-  exact (continuous_softSupportRadius W).continuousAt.tendsto.comp
-    (tendsto_truncateModes_modeState x)
-
-theorem tendsto_softSupportStatistic_truncateModes (W : SummableModeWeights) (x : ModeState) :
-    Tendsto (fun N => softSupportStatistic W (truncateModes N x))
-      Filter.atTop (nhds (softSupportStatistic W x)) := by
-  exact (continuous_softSupportStatistic W).continuousAt.tendsto.comp
-    (tendsto_truncateModes_modeState x)
-
-theorem continuous_softSupport_cutoffPotential
-    (W : SummableModeWeights) {cutoff : ℝ → ℝ} (hcutoff : Continuous cutoff) :
-    Continuous (cutoffPotential cutoff (softSupportRadius W) (softSupportStatistic W)) := by
-  exact continuous_cutoffPotential hcutoff
-    (continuous_softSupportRadius W) (continuous_softSupportStatistic W)
-
-theorem continuous_softSupport_coleHopfPhi
-    (W : SummableModeWeights) {ν : ℝ} {cutoff : ℝ → ℝ} (hcutoff : Continuous cutoff) :
-    Continuous (coleHopfPhi ν
-      (cutoffPotential cutoff (softSupportRadius W) (softSupportStatistic W))) := by
-  exact continuous_cutoffColeHopfPhi hcutoff
-    (continuous_softSupportRadius W) (continuous_softSupportStatistic W)
+  convert (softSupportObservable W (fun _ => 1)).continuous_value using 1
+  ext x
+  simp [SummableCoordinateObservable.value, SummableCoordinateObservable.term,
+    softSupportObservable, softSupportRadius, softSupportTerm]
 
 theorem not_continuousAt_hardSupportRadius_modeZero :
     ¬ ContinuousAt hardSupportRadius modeZero := by

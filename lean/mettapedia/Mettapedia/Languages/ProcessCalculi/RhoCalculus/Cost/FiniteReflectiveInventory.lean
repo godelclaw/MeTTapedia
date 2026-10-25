@@ -46,14 +46,14 @@ theorem nameResultsQuoted : ReflectiveNameResultsQuoted
     · decide +kernel
     · have params : (communicationDecoration.baseConstructor rhoCalc.terms[2]).params =
           [.simple "p" (.base (costBaseSortName "Proc"))] := by decide +kernel
-      simp only [UsesBareCollection, params, List.cons.injEq, TermParam.simple.injEq,
+      simp only [UsesBareCollection, GrammarRule.bareParams_cons_iff, params, List.cons.injEq, TermParam.simple.injEq,
         reduceCtorEq, and_false, false_and]
       simp
   · constructor
     · decide +kernel
     · have params : (costWrappedConstructor (theory := rhoSyncIGSLT) rhoCalc.terms[2]).params =
           [.simple "p" (.base costWrappedSortName)] := by decide +kernel
-      simp only [UsesBareCollection, params, List.cons.injEq, TermParam.simple.injEq,
+      simp only [UsesBareCollection, GrammarRule.bareParams_cons_iff, params, List.cons.injEq, TermParam.simple.injEq,
         reduceCtorEq, and_false, false_and]
       simp
 

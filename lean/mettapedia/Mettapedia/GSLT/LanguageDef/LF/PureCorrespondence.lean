@@ -6,8 +6,8 @@ import Mettapedia.GSLT.LanguageDef.Pure.BetaEtaAtomicRefinement
 
 The Pure refinement language and the executable LF checker use the same
 de Bruijn binding convention but different carriers.  This module gives the
-total translation from the universe-free Pure carrier to the indexed LF
-carrier and proves that the operations needed by conversion-aware proof
+total translation from the universe-free Pure carrier to the historical
+MettaKernel kind-result carrier and proves that the operations needed by conversion-aware proof
 checking commute with that translation.
 
 Pure's single sort is interpreted as LF `type`; the target LF profile remains

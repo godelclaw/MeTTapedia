@@ -85,7 +85,7 @@ theorem rhoSyncContinuationRetyping_redexRetypable :
         (rule := costBaseConstructor rhoSyncInteractionCut rhoCalc.terms[5])
       · exact rhoSyncContinuationRetyping.costBaseConstructor_mem_generated _
           rhoSyncInputConstructor.2
-      · simp [UsesBareCollection, rhoSync_costBaseInput_params]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, rhoSync_costBaseInput_params]
       · rw [rhoSync_costBaseInput_params]
         exact .cons trivial rfl (HasType.fvar rfl)
           (.cons trivial rfl (HasType.lambda (HasType.fvar rfl)) .nil)
@@ -94,7 +94,7 @@ theorem rhoSyncContinuationRetyping_redexRetypable :
           (rule := costBaseConstructor rhoSyncInteractionCut rhoSyncOutputRule)
         · exact rhoSyncContinuationRetyping.costBaseConstructor_mem_generated _
             rhoSyncOutputConstructor.2
-        · simp [UsesBareCollection, rhoSync_costBaseOutput_params]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, rhoSync_costBaseOutput_params]
         · rw [rhoSync_costBaseOutput_params]
           exact .cons trivial rfl (HasType.fvar rfl)
             (.cons trivial rfl (HasType.fvar rfl) (.cons trivial rfl (HasType.fvar rfl) .nil))

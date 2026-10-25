@@ -4,7 +4,7 @@ import Mettapedia.OSLF.Framework.WMCalculusCombinedGenericOpenCodec
 import Mettapedia.OSLF.Framework.WMCalculusSupportedContextCategory
 
 /-!
-# Computed open WM answers in Prime's semantic dependent families
+# Computed open WM answers in the staged semantic dependent families
 
 The combined WM reading interprets supported intrinsic constructor terms.
 Its evidence-answer predicate is lifted to a family in the staged families
@@ -14,7 +14,7 @@ equivalent, at every answer and model environment, to the source family pulled
 back along that computed substitution.
 
 This is a semantic family comparison on the supported first-order fragment.
-It adds no Prime syntax, does not totalize partial matching, and does not
+It adds no source syntax, does not totalize partial matching, and does not
 identify observational agreement with intensional identity.
 -/
 
@@ -128,7 +128,7 @@ def evidenceAnswerFamily_reindex_equiv {State Query Ev Ov Scope : Type}
 
 /-- A checked open Evidence match computes one source term and one
 constructor-tree substitution. The exact resulting target certificate gives
-an equivalence of Prime semantic answer fibres for every answer and every
+an equivalence of semantic answer fibres for every answer and every
 target environment, not just the environment used to obtain the receipt. -/
 theorem checkedOpenAnswers_computed_family
     {State Query Ev Ov Scope : Type}
@@ -319,7 +319,7 @@ structure IntrinsicSupportedRequestReceipt {State Query Ev Ov Scope : Type}
   checked : evidenceAnswerFamily reading extractRequestCertificate answer
     (requestEnvironment (Ev := Ev) (Ov := Ov) (Scope := Scope) state query)
 
-/-- At each request and answer, the existing observable GSLT-IL/Prime
+/-- At each request and answer, the existing observable GSLT-IL
 capability receipt is equivalent to a supported intrinsic `Extract` answer
 in the new environment-indexed family. The support premise is indispensable:
 the intrinsic observation alone remains defined at unsupported requests. -/

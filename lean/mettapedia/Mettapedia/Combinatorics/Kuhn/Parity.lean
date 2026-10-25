@@ -105,7 +105,19 @@ structure Proper (p : ℕ) {n : ℕ} (label : (Fin n → ℕ) → Fin (n + 1)) :
 
 namespace GridSimplex
 
-variable {q m : ℕ}
+variable {p n q m : ℕ}
+
+/-- The finite set counted by Kuhn's parity theorem.  Naming it once keeps the
+parity proof, existential theorem, and executable search on the same
+predicate. -/
+def completeSimplices (p n : ℕ) (label : (Fin n → ℕ) → Fin (n + 1)) :
+    Finset (GridSimplex p n) :=
+  univ.filter fun σ => σ.Complete label
+
+@[simp] theorem mem_completeSimplices {label : (Fin n → ℕ) → Fin (n + 1)}
+    {σ : GridSimplex p n} :
+    σ ∈ completeSimplices p n label ↔ σ.Complete label := by
+  simp [completeSimplices]
 
 /-- The simplices for which position `k` is a door. -/
 def doorsAt (label : (Fin (m + 1) → ℕ) → Fin (m + 2)) (k : Fin (m + 2)) :
@@ -320,7 +332,7 @@ theorem Proper.faceLabel {m p : ℕ} {label : (Fin (m + 1) → ℕ) → Fin (m +
 
 namespace GridSimplex
 
-variable {q m : ℕ} {label : (Fin (m + 1) → ℕ) → Fin (m + 2)}
+variable {q m n : ℕ} {label : (Fin (m + 1) → ℕ) → Fin (m + 2)}
 
 /-- The lifted simplex has a door at its first position exactly when `τ` is
 complete for the labelling of the face. -/
@@ -371,7 +383,7 @@ theorem doorsAt_zero_not_canRaise (proper : Proper (q + 1) label) :
 of completely labelled simplices is odd. -/
 theorem odd_card_complete (q : ℕ) :
     ∀ (n : ℕ) (label : (Fin n → ℕ) → Fin (n + 1)), Proper (q + 1) label →
-      Odd (univ.filter fun σ : GridSimplex (q + 1) n => σ.Complete label).card
+      Odd (completeSimplices (q + 1) n label).card
   | 0, label, _ => by
     have every : ∀ σ : GridSimplex (q + 1) 0, σ.Complete label := fun σ wanted =>
       ⟨0, Fin.ext (by
@@ -381,15 +393,15 @@ theorem odd_card_complete (q : ℕ) :
     have one : Fintype.card (GridSimplex (q + 1) 0) = 1 :=
       Fintype.card_eq_one_iff.mpr ⟨⟨Fin.elim0, 1⟩, fun σ =>
         GridSimplex.ext (funext fun i => i.elim0) (Subsingleton.elim _ _)⟩
-    rw [filter_true_of_mem fun σ _ => every σ, card_univ, one]
+    rw [completeSimplices, filter_true_of_mem fun σ _ => every σ, card_univ, one]
     exact odd_one
   | m + 1, label, proper => by
     have previous := odd_card_complete q m (faceLabel (q + 1) label) proper.faceLabel
     rw [← ZMod.natCast_eq_one_iff_odd] at previous ⊢
     -- simplex by simplex
-    have bySimplex : ((univ.filter fun σ : GridSimplex (q + 1) (m + 1) =>
-        σ.Complete label).card : ZMod 2) =
+    have bySimplex : ((completeSimplices (q + 1) (m + 1) label).card : ZMod 2) =
         ((∑ σ : GridSimplex (q + 1) (m + 1), (doors (σ.labels label) 0).card : ℕ) : ZMod 2) := by
+      unfold completeSimplices
       rw [card_filter, Nat.cast_sum, Nat.cast_sum]
       refine sum_congr rfl fun σ _ => ?_
       rw [natCast_card_doors]
@@ -420,8 +432,8 @@ theorem odd_card_complete (q : ℕ) :
       rw [card_doorsAt_zero_canRaise,
         filter_true_of_mem fun σ member => canLower_of_mem_doorsAt_last proper member]
     have boundary : ((doorsAt (q := q) label 0).filter fun σ => ¬σ.CanRaise).card =
-        (univ.filter fun τ : GridSimplex (q + 1) m =>
-          τ.Complete (faceLabel (q + 1) label)).card := by
+        (completeSimplices (q + 1) m (faceLabel (q + 1) label)).card := by
+      unfold completeSimplices
       rw [doorsAt_zero_not_canRaise proper, card_image_of_injective _ lift_injective]
     rw [bySimplex, byPosition, split, first, last, boundary]
     push_cast
@@ -433,10 +445,72 @@ theorem odd_card_complete (q : ℕ) :
 theorem exists_complete (q n : ℕ) (label : (Fin n → ℕ) → Fin (n + 1))
     (proper : Proper (q + 1) label) : ∃ σ : GridSimplex (q + 1) n, σ.Complete label := by
   have odd := odd_card_complete q n label proper
-  have positive : 0 < (univ.filter fun σ : GridSimplex (q + 1) n => σ.Complete label).card :=
+  have positive : 0 < (completeSimplices (q + 1) n label).card :=
     odd.pos
   obtain ⟨σ, member⟩ := card_pos.mp positive
-  exact ⟨σ, (mem_filter.mp member).2⟩
+  exact ⟨σ, mem_completeSimplices.mp member⟩
+
+/-! ## Certified exhaustive search -/
+
+/-- Return the first complete simplex in the explicit enumeration.  This is
+an executable exhaustive search; the enumeration order is deliberately not
+part of the mathematical specification. -/
+def findComplete? (q n : ℕ) (label : (Fin n → ℕ) → Fin (n + 1)) :
+    Option (GridSimplex (q + 1) n) :=
+  (enumerate (q + 1) n).find? fun σ => decide (σ.Complete label)
+
+theorem findComplete?_sound {label : (Fin n → ℕ) → Fin (n + 1)}
+    {σ : GridSimplex (q + 1) n} (found : findComplete? q n label = some σ) :
+    σ.Complete label := by
+  rw [findComplete?] at found
+  have decided : decide (σ.Complete label) = true :=
+    @List.find?_some _
+      (fun τ : GridSimplex (q + 1) n => decide (τ.Complete label)) σ _ found
+  exact of_decide_eq_true decided
+
+theorem findComplete?_eq_none_iff (q n : ℕ)
+    (label : (Fin n → ℕ) → Fin (n + 1)) :
+    findComplete? q n label = none ↔
+      ¬∃ σ : GridSimplex (q + 1) n, σ.Complete label := by
+  rw [findComplete?, List.find?_eq_none]
+  constructor
+  · intro none
+    rintro ⟨σ, complete⟩
+    exact none σ (mem_enumerate σ) (by simpa using complete)
+  · intro none σ _
+    exact fun complete => none ⟨σ, by simpa using complete⟩
+
+theorem findComplete?_isSome_iff (q n : ℕ)
+    (label : (Fin n → ℕ) → Fin (n + 1)) :
+    (findComplete? q n label).isSome = true ↔
+      ∃ σ : GridSimplex (q + 1) n, σ.Complete label := by
+  rw [findComplete?, List.find?_isSome]
+  constructor
+  · rintro ⟨σ, _, complete⟩
+    exact ⟨σ, of_decide_eq_true complete⟩
+  · rintro ⟨σ, complete⟩
+    exact ⟨σ, mem_enumerate σ, by simpa using complete⟩
+
+theorem findComplete?_isSome_iff_nonempty (q n : ℕ)
+    (label : (Fin n → ℕ) → Fin (n + 1)) :
+    (findComplete? q n label).isSome = true ↔
+      (completeSimplices (q + 1) n label).Nonempty := by
+  rw [findComplete?_isSome_iff]
+  constructor
+  · rintro ⟨σ, complete⟩
+    exact ⟨σ, mem_completeSimplices.mpr complete⟩
+  · rintro ⟨σ, member⟩
+    exact ⟨σ, mem_completeSimplices.mp member⟩
+
+theorem findComplete?_exists_of_proper (q n : ℕ)
+    (label : (Fin n → ℕ) → Fin (n + 1)) (proper : Proper (q + 1) label) :
+    ∃ σ : GridSimplex (q + 1) n,
+      findComplete? q n label = some σ ∧ σ.Complete label := by
+  have existsComplete : ∃ σ : GridSimplex (q + 1) n, σ.Complete label :=
+    exists_complete q n label proper
+  rw [← findComplete?_isSome_iff q n label] at existsComplete
+  obtain ⟨σ, found⟩ := Option.isSome_iff_exists.mp existsComplete
+  exact ⟨σ, found, findComplete?_sound found⟩
 
 end GridSimplex
 
@@ -515,6 +589,14 @@ theorem not_exists_complete_of_constant (q m : ℕ) :
   obtain ⟨k, same⟩ := complete 1
   have zero : (0 : Fin (m + 2)) = 1 := same
   exact absurd zero (by simp)
+
+/-- The executable search exposes the same negative control: without the
+boundary condition it can correctly return no witness. -/
+theorem GridSimplex.findComplete?_constant_eq_none (q m : ℕ) :
+    GridSimplex.findComplete? q (m + 1)
+        (fun _ : Fin (m + 1) → ℕ => (0 : Fin (m + 2))) = none := by
+  apply (GridSimplex.findComplete?_eq_none_iff q (m + 1) _).mpr
+  exact not_exists_complete_of_constant q m
 
 /-- The constant labelling violates the condition at the top face. -/
 theorem constant_not_proper (q m : ℕ) :

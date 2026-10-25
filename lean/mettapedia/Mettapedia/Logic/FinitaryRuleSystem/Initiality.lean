@@ -47,15 +47,8 @@ instance {A B : NodeAlgebra.{u, v, w} J W} :
 
 @[ext]
 theorem Hom.ext' {A B : NodeAlgebra.{u, v, w} J W} (f g : Hom A B)
-    (pointwise : ∀ value, f value = g value) : f = g := by
-  cases f with
-  | mk f preservesF =>
-      cases g with
-      | mk g preservesG =>
-          change ∀ value, f value = g value at pointwise
-          have functionsEqual : f = g := funext pointwise
-          subst g
-          rfl
+    (pointwise : ∀ value, f value = g value) : f = g :=
+  Hom.ext (funext pointwise)
 
 /-- Identity node-algebra homomorphism. -/
 def Hom.id (A : NodeAlgebra.{u, v, w} J W) : Hom A A where
@@ -109,17 +102,19 @@ theorem hom_eq_fold (A : NodeAlgebra.{u, v, max u v} J W)
   intro tree
   induction tree with
   | node conclusion witness n children ih =>
+      change f.toFun (.node conclusion witness n children) = fold A _
       calc
-        f.toFun (.node conclusion witness n children) =
-            A.node conclusion witness n (fun i => f.toFun (children i)) := by
-              simpa [derivationAlgebra] using
-                f.map_node conclusion witness n children
-        _ = A.node conclusion witness n
-            (fun i => fold A (children i)) := by
-              congr 1
-              funext i
-              exact ih i
-        _ = fold A (.node conclusion witness n children) := rfl
+        _ = A.node conclusion witness n (fun i => f.toFun (children i)) :=
+          f.map_node conclusion witness n children
+        _ = _ := congrArg (A.node conclusion witness n) (funext ih)
+
+/-- Interpreting a tree and then applying a node-preserving map is one fold
+into the target algebra. -/
+theorem fold_fusion {A B : NodeAlgebra.{u, v, max u v} J W}
+    (f : A ⟶ B) (tree : Derivation J W) :
+    f.toFun (fold A tree) = fold B tree :=
+  congrArg (fun g : derivationAlgebra ⟶ B => g.toFun tree)
+    (hom_eq_fold B (foldHom A ≫ f))
 
 /-- Finite derivation syntax is initial in the category of node algebras. -/
 def derivationAlgebra_isInitial : IsInitial (derivationAlgebra (J := J) (W := W)) :=
@@ -167,34 +162,13 @@ theorem fold_replay {rules : List J → J → Prop}
       (tree.concl, tree.valid interface) := by
   induction tree with
   | node conclusion witness n children ih =>
-      simp only [fold_node, replayAlgebra, Derivation.concl,
-        Derivation.valid, Prod.mk.injEq, true_and]
-      change
-        (interface.isInstance witness
-            (List.ofFn fun i : Fin n =>
-              (fold (replayAlgebra interface) (children i)).down.1)
-            conclusion &&
-          (List.ofFn fun i : Fin n =>
-            (fold (replayAlgebra interface) (children i)).down.2).all id) =
-        (interface.isInstance witness
-            (List.ofFn fun i : Fin n => (children i).concl) conclusion &&
-          (List.ofFn fun i : Fin n =>
-            (children i).valid interface).all id)
-      have conclusionsEqual :
-          (List.ofFn fun i : Fin n =>
-              (fold (replayAlgebra interface) (children i)).down.1) =
-            List.ofFn fun i : Fin n => (children i).concl := by
-        apply congrArg List.ofFn
-        funext i
-        exact congrArg Prod.fst (ih i)
-      have validityEqual :
-          (List.ofFn fun i : Fin n =>
-              (fold (replayAlgebra interface) (children i)).down.2) =
-            List.ofFn fun i : Fin n => (children i).valid interface := by
-        apply congrArg List.ofFn
-        funext i
-        exact congrArg Prod.snd (ih i)
-      rw [conclusionsEqual, validityEqual]
+      change (conclusion,
+        interface.isInstance witness
+          (List.ofFn fun i => (fold (replayAlgebra interface) (children i)).down.1)
+          conclusion &&
+        (List.ofFn fun i => (fold (replayAlgebra interface) (children i)).down.2).all id) = _
+      simp_rw [ih]
+      rfl
 
 /-- Root witness projection, used to state the non-faithfulness control. -/
 def rootWitness (tree : Derivation J W) : W :=

@@ -344,7 +344,9 @@ theorem expandRootMatch_found (frame : RootMatchFrame environment outer)
                 frame.rule.premises answer.assignment)
               (.rootBody frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
                 frame.declared frame.specified frame.admitted frame.sorted answer.trace answer.assignment
-                (GeneralScopedMatchMachine.answers_sound frame.reachable (List.mem_of_getElem? found))
+                (by simpa only [GeneralScopedMatchMachine.Answer.Valid,
+                    MatchingExecution.ordinary, ordinaryInterpretation] using
+                  GeneralScopedMatchMachine.answers_sound frame.reachable (List.mem_of_getElem? found))
                 (checkTypedAssignment_sound checked) frame.tail),
             .rootMatch { frame with cursor := frame.cursor + 1 }] }
       else { tasks := [.rootMatch { frame with cursor := frame.cursor + 1 }] } := by

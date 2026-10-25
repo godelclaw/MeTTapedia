@@ -290,6 +290,18 @@ theorem expandProof_isCore {φ : Formula Const Γ} (proof : ProofSyntax Const Δ
       falsity, conjunction, disjunction, existential, IsCore,
       weaken, rename, subst, instantiate, Subst.single, Subst.lift, Rename.weaken]
 
+/-- Connective expansion introduces no eta or function-extensionality use. -/
+theorem expandProof_functionExtensionalityFree {φ : Formula Const Γ}
+    (proof : ProofSyntax Const Δ φ) :
+    ProofSyntax.FunctionExtensionalityFree (expandProof proof) ↔
+      ProofSyntax.FunctionExtensionalityFree proof := by
+  induction proof with
+  | _ => simp_all [expandProof, convert, truthIntro, falsityElim,
+      conjunctionIntro, conjunctionLeft, conjunctionRight, conjunctionBeta,
+      disjunctionLeft, disjunctionRight, disjunctionElim, disjunctionBeta,
+      existentialIntro, existentialElim, existentialBeta, lambdaVariableBeta,
+      weakenProof, ProofSyntax.prepend, ProofSyntax.FunctionExtensionalityFree, and_assoc]
+
 set_option maxHeartbeats 800000 in
 /-- Fixed-size derived-rule expansions give a linear bound on rule nodes.
 This does not bound the size of repeated term annotations or compilation time. -/

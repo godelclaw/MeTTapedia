@@ -67,8 +67,7 @@ noncomputable def exactAffineDecisionListBitFamily (Z : Type*) (r k : ℕ) :
     (exactAffineColumnBitFamily Z k).decode (encodeAffineColumnIndex idx)
       = fun u : ExactVisiblePostSwitchData Z k => affineColumnPredict idx.1 idx.2 u.a := by
   funext u
-  have h := congrFun (affineColumnBitFamily_decode_encodeAffineColumnIndex (k := k) idx) u.a
-  simp [exactAffineColumnBitFamily, IndexedPredictorFamily.pullbackBitFamily, h]
+  exact congrFun (affineColumnBitFamily_decode_encodeAffineColumnIndex (k := k) idx) u.a
 
 @[simp] theorem exactAffineFeatureBitFamily_decode_code
     (code : AffineFeatureCode r k) :

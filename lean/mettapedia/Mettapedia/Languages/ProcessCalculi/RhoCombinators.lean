@@ -27,6 +27,7 @@ import Mettapedia.Languages.ProcessCalculi.RhoCombinators.OccurrenceDispatch
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.ReactiveSystem
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.RedexDecomposition
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.RuleSkeleton
+import Mettapedia.Languages.ProcessCalculi.RhoCombinators.ScopedContextSwitching
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.Seeds
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.Separation
 import Mettapedia.Languages.ProcessCalculi.RhoCombinators.SkeletonExtraction
@@ -65,10 +66,15 @@ sub-calculi are closed under their own reduction.
   admitted set is closed under what its own rules build.
 - `Termination.lean` — without the opener, reduction length is bounded by a
   weight on the top-level atoms.  The unweighted count of non-message atoms
-  does not bound it, and the three rules that defeat it are exhibited.
+  does not bound it, and the three rules that defeat it are exhibited. An
+  initially duplicator-free control loops by constructing and opening one;
+  this distinguishes syntactic absence from a rule-closed restriction.
 - `Translation.lean`, `Encoding.lean`, `FanOut.lean`, `FreshReads.lean` — the
   compiler from the source calculus, and the routing it needs.
 - `Blowup.lean`, `NameGrowth.lean` — how large a name gets.
+- `ScopedContextSwitching.lean` — independent prepared context execution,
+  support-sensitive coordinate transport and separate activation environments.
+  This fragment does not establish the full concurrent translation's hygiene.
 - `ReactiveSystem.lean`, `MinimalLabel.lean`, `RedexDecomposition.lean` — the
   labelled transitions, and the fact that a least label exists and is
   determined.

@@ -97,7 +97,7 @@ theorem licensed_authored_residual {language : LanguageDef} {free : FreeTypeCont
     {value : Pattern} {inner : SiteData} {rule : GrammarRule} {declaration : Nat}
     {parameterName : String}
     (declared : (rule, declaration) ∈ language.terms.zipIdx)
-    (shape : rule.params = [.simple parameterName (.collection kind elementType)])
+    (shape : rule.bareParams = [.simple parameterName (.collection kind elementType)])
     (permitted : kind ∈ permissions.collectionKinds)
     (typed : ElementsHaveType language free bound items elementType)
     (objects : isObjectPatternList items = true)
@@ -154,7 +154,7 @@ theorem authored_residual_coverage {language : LanguageDef} {free : FreeTypeCont
     {selected : Nat} {inner : SiteData} {rule : GrammarRule} {declaration : Nat}
     {parameterName : String}
     (declared : (rule, declaration) ∈ language.terms.zipIdx)
-    (shape : rule.params = [.simple parameterName (.collection kind elementType)])
+    (shape : rule.bareParams = [.simple parameterName (.collection kind elementType)])
     (unordered : kind ≠ .vec) (distinct : kind = .hashSet → items.Nodup)
     (within : selected < items.length)
     (permitted : kind ∈ permissions.collectionKinds)
@@ -217,7 +217,7 @@ theorem authored_site_coverage {language : LanguageDef} {free : FreeTypeContext}
     {selected : Nat} {inner : SiteData} {rule : GrammarRule} {declaration : Nat}
     {parameterName : String}
     (declared : (rule, declaration) ∈ language.terms.zipIdx)
-    (shape : rule.params = [.simple parameterName (.collection kind elementType)])
+    (shape : rule.bareParams = [.simple parameterName (.collection kind elementType)])
     (unordered : kind ≠ .vec) (distinct : kind = .hashSet → items.Nodup)
     (within : selected < items.length)
     (permitted : kind ∈ permissions.collectionKinds)

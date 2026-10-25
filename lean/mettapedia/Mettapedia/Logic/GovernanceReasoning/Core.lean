@@ -328,7 +328,7 @@ theorem dts_ob_pe_modal {S : Type*} (lts : LTS S DeonticAct)
     satisfies lts ρ (obFormula φ) s →
     satisfies lts ρ (peFormula φ) s := by
   intro hbox
-  simp only [obFormula, peFormula, satisfies, LTS.successors, Set.mem_setOf_eq] at *
+  simp only [obFormula, peFormula, satisfies, LTS.successors, Set.mem_ofPred_eq] at *
   obtain ⟨s', hs'⟩ := htotal s
   exact ⟨s', hser s s' hs', hbox s' hs'⟩
 
@@ -342,7 +342,7 @@ theorem rexist_reflexive_bridge {S : Type*} (lts : LTS S DeonticAct)
     satisfies lts ρ (rexistFormula φ) s →
     satisfies lts ρ φ s := by
   intro hbox
-  simp only [rexistFormula, satisfies, LTS.successors, Set.mem_setOf_eq] at hbox
+  simp only [rexistFormula, satisfies, LTS.successors, Set.mem_ofPred_eq] at hbox
   exact hbox s (hrefl s)
 
 /-- Diamond-box duality instantiated for the obligatory action. -/

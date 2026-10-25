@@ -396,7 +396,7 @@ theorem flatten_collection (strict : LawsTypedStrict laws language free) {permis
       cases same
     | @authoredCollection _ rule' declaration' parameterName' _ _ position item elementType' inner2 declared' shape'
         permitted' nestedTyped _ nestedSelected inner2Licensed =>
-      have homogeneous := strict.homogeneous law law.kind (by rw [sameKind]; exact found) rule'
+      have homogeneous := strict.homogeneous_bare law law.kind (by rw [sameKind]; exact found) rule'
         (List.fst_mem_of_mem_zipIdx declared') _ _ shape'
       subst homogeneous
       have inside := (List.getElem?_eq_some_iff.mp nestedSelected).1
@@ -512,7 +512,8 @@ theorem flatten_site (strict : LawsTypedStrict laws language free) {permissions 
   | @authoredCollection bound rule declaration parameterName kind elements index element elementType inner
       declared shape permitted typed objects selected innerLicensed ih =>
     intro boundOk expectedOk notFlat
-    have parameterOk := strict.parameters rule (List.fst_mem_of_mem_zipIdx declared) _ (by rw [shape]; exact .head _) _ rfl
+    have parameterOk := strict.parameters rule (List.fst_mem_of_mem_zipIdx declared) _
+      (by rw [((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2]; exact .head _) _ rfl
     by_cases innerFlat : PathFlat laws inner.context inner.focus
     · have levelSpliced : ∃ law, lawFor laws kind = some law ∧ splice law (normalize laws element) ≠ [normalize laws element] := by
         by_contra none
@@ -523,7 +524,7 @@ theorem flatten_site (strict : LawsTypedStrict laws language free) {permissions 
         rw [innerLicensed.source_eq]
         exact none law found
       obtain ⟨law, found, spliced⟩ := levelSpliced
-      have homogeneous := strict.homogeneous law kind found rule (List.fst_mem_of_mem_zipIdx declared) _ _ shape
+      have homogeneous := strict.homogeneous_bare law kind found rule (List.fst_mem_of_mem_zipIdx declared) _ _ shape
       exact flatten_collection strict (.authoredCollection declaration) (.inr ⟨declaration, rfl⟩)
         (fun typed' objects' selected' inner' => .authoredCollection declared shape permitted typed' objects' selected' inner')
         innerLicensed.enabled (.collectionConstructor (List.fst_mem_of_mem_zipIdx declared) shape typed) boundOk

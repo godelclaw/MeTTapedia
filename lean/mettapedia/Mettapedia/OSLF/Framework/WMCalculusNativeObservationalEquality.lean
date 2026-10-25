@@ -13,7 +13,7 @@ both state terms.
 
 The construction is an extensional equality predicate for the quotient.
 It does not install an intensional identity former or dependent eliminator
-in Prime's authored syntax.
+in any candidate's authored syntax.
 -/
 
 set_option autoImplicit false

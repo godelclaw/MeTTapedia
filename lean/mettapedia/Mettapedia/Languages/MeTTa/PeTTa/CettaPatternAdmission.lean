@@ -1023,10 +1023,10 @@ theorem admitted_match_iff (snapshot : Snapshot) (roots : List PatternRoot)
 theorem admitted_bind_transition (snapshot : Snapshot) (roots : List PatternRoot)
     (requirements : List Requirement) (accepted : prepare snapshot roots = .ok requirements)
     (root : PatternRoot) (member : root ∈ roots) (program : Program)
-    (world : CettaEagerDFS.World) (bindings bound : Subst) (value body : Atom)
-    (rest : List CettaEagerDFS.Frame)
+    (world : EagerDFS.World) (bindings bound : Subst) (value body : Atom)
+    (rest : List EagerDFS.Frame)
     (matched : MORK.MatchAtomRel bindings root.expression value bound) :
-    CettaEagerDFS.LocalTransition program world
+    EagerDFS.LocalTransition program world
       ⟨.returned value, .bind bindings root.expression body :: rest⟩
       world (.next ⟨.evaluate bound body, rest⟩) :=
   .bind_return ((admitted_match_iff snapshot roots requirements accepted root member bindings bound value).mpr matched)
@@ -1034,13 +1034,13 @@ theorem admitted_bind_transition (snapshot : Snapshot) (roots : List PatternRoot
 theorem admitted_bind_step (snapshot : Snapshot) (roots : List PatternRoot)
     (requirements : List Requirement) (accepted : prepare snapshot roots = .ok requirements)
     (root : PatternRoot) (member : root ∈ roots) (program : Program)
-    (world : CettaEagerDFS.World) (bindings bound : Subst) (value body : Atom)
-    (rest : List CettaEagerDFS.Frame)
+    (world : EagerDFS.World) (bindings bound : Subst) (value body : Atom)
+    (rest : List EagerDFS.Frame)
     (matched : MORK.MatchAtomRel bindings root.expression value bound) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.returned value, .bind bindings root.expression body :: rest⟩ =
       some (world, .next ⟨.evaluate bound body, rest⟩) :=
-  CettaEagerDFS.local_transition_step
+  EagerDFS.local_transition_step
     (admitted_bind_transition snapshot roots requirements accepted root member program world bindings bound value body rest matched)
 
 theorem ordinary_case_selection (cases : Cases)
@@ -1111,11 +1111,11 @@ theorem admitted_case_step (snapshot : Snapshot) (address : Address) (key : Atom
     (parsed : Eval.readCases rows = some cases)
     (extracted : controlRoots ⟨address, .expression [.symbol "case", key, .expression rows]⟩ = .ok roots)
     (accepted : prepare snapshot roots = .ok requirements) (program : Program)
-    (world : CettaEagerDFS.World) (bindings bound : Subst) (value body : Atom)
-    (rest : List CettaEagerDFS.Frame)
+    (world : EagerDFS.World) (bindings bound : Subst) (value body : Atom)
+    (rest : List EagerDFS.Frame)
     (selected : Mettapedia.GSLT.LanguageDef.NativeControlCase.selectArm
       (fun entry key pattern => MORK.matchAtom entry pattern key) bindings value cases = some (bound, body)) :
-    CettaEagerDFS.localStep program world
+    EagerDFS.localStep program world
       ⟨.returned value, .select bindings cases :: rest⟩ =
       some (world, .next ⟨.evaluate bound body, rest⟩) := by
   have covered := controlRoots_case_patterns address key rows cases roots parsed extracted
@@ -1130,7 +1130,7 @@ theorem admitted_case_step (snapshot : Snapshot) (address : Address) (key : Atom
   have sourceSelected : SpaceSemantics.selectCase bindings value cases = some (bound, body) := by
     rw [ordinary_case_selection cases ordinary bindings value]
     exact selected
-  exact CettaEagerDFS.local_transition_step (.case_return sourceSelected)
+  exact EagerDFS.local_transition_step (.case_return sourceSelected)
 
 /-! ## Small controls for the supplied-observation protocol
 

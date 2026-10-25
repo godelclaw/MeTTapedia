@@ -128,3 +128,140 @@ def stateTerm {environment : Environment} {outer : Goal} (state : State environm
   PremiseSchedulerExecution.schedulerStateTerm taskTerm resultTerm obligationTerm state
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentCodec
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.Scheduled
+
+open Mettapedia.GSLT.LanguageDef CettaWire
+open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching GeneralPremise
+open StructuralDescent.Scheduled
+open PremiseOperationsExecution.GeneralExecution (contextTerm queryRequestTerm queryObligationTerm)
+open RetainedMatchingWire (stepCallTerm)
+
+variable {matcher : MatchingExecution}
+
+open CompleteExecution.DescentCodec
+  (assignmentTerm typesTerm typeTerm patternTerm patternsTerm premiseTerm goalTerm obligationTerm)
+
+def answerTerm (codec : MatchingCodec matcher) {environment : Environment} {goal : Goal} : StructuralDescent.Scheduled.Interpreted.Result matcher environment goal → Term
+  | .premise assignment event _ => .application "PremiseAnswer" [assignmentTerm assignment, RetainedMatchingWire.eventTerm codec.choiceTerm event]
+  | .premises assignment events _ => .application "PremisesAnswer" [assignmentTerm assignment, RetainedMatchingWire.eventsTerm codec.choiceTerm events]
+  | .quantified assignment events _ =>
+      .application "QuantifiedAnswer" [assignmentTerm assignment, RetainedMatchingWire.quantifiedEventsTerm codec.choiceTerm events]
+  | .root trace captured completed events target _ => .application "RootAnswer"
+      [encodeList codec.choiceTerm trace, assignmentTerm captured, assignmentTerm completed, RetainedMatchingWire.eventsTerm codec.choiceTerm events, patternTerm target]
+  | .steps index trace captured completed events target _ _ => .application "StepsAnswer"
+      [.natural index, encodeList codec.choiceTerm trace, assignmentTerm captured, assignmentTerm completed, RetainedMatchingWire.eventsTerm codec.choiceTerm events,
+        patternTerm target]
+
+def resultTerm (codec : MatchingCodec matcher) {environment : Environment} {goal : Goal} (result : StructuralDescent.Scheduled.Interpreted.Result matcher environment goal) : Term :=
+  .application "PremiseResult" [goalTerm goal, answerTerm codec result]
+
+def continuationTerm (codec : MatchingCodec matcher) {environment : Environment} {goal outer : Goal} :
+    StructuralDescent.Scheduled.Interpreted.Continuation matcher environment goal outer → Term
+  | .done goal => .application "DescentDone" [goalTerm goal]
+  | .nextPremise depth context premise premises initial tail => .application "DescentNext"
+      [.natural depth, contextTerm context, premiseTerm premise, encodeList premiseTerm premises,
+        assignmentTerm initial, continuationTerm codec tail]
+  | .prepend depth context premise premises initial middle event _ tail => .application "DescentPrepend"
+      [.natural depth, contextTerm context, premiseTerm premise, encodeList premiseTerm premises,
+        assignmentTerm initial, assignmentTerm middle, RetainedMatchingWire.eventTerm codec.choiceTerm event, continuationTerm codec tail]
+  | .quantifier depth context collection parameter body initial kind elements _ tail =>
+      .application "DescentQuantifier" [.natural depth, contextTerm context, .string collection,
+        .string parameter, premiseTerm body, assignmentTerm initial, InferenceCettaWire.encodeCollectionType kind,
+        patternsTerm elements, continuationTerm codec tail]
+  | .element depth context parameter body index element elements initial _ tail => .application "DescentElement"
+      [.natural depth, contextTerm context, .string parameter, premiseTerm body, .natural index,
+        patternTerm element, patternsTerm elements, assignmentTerm initial, continuationTerm codec tail]
+  | .prependElement depth context parameter body index element elements initial middle event _ _ tail =>
+      .application "DescentPrependElement" [.natural depth, contextTerm context, .string parameter,
+        premiseTerm body, .natural index, patternTerm element, patternsTerm elements, assignmentTerm initial,
+        assignmentTerm middle, RetainedMatchingWire.eventTerm codec.choiceTerm event, continuationTerm codec tail]
+  | .rootBody depth bound type source index rule spec _ _ _ _ trace captured _ _ tail =>
+      .application "DescentRootBody" [.natural depth, typesTerm bound, typeTerm type, patternTerm source,
+        .natural index, InferenceCettaWire.AuthoredRule.rewriteTerm rule,
+        InferenceCettaWire.AuthoredRule.bindingSpecTerm spec, encodeList codec.choiceTerm trace, assignmentTerm captured,
+        continuationTerm codec tail]
+  | .searchedRoot depth bound type source index limit _ tail => .application "DescentSearchedRoot"
+      [.natural depth, typesTerm bound, typeTerm type, patternTerm source, .natural index, .natural limit,
+        continuationTerm codec tail]
+  | .stepped depth call tail => .application "DescentStepped" [.natural depth, stepCallTerm call, continuationTerm codec tail]
+
+def taskTerm (codec : MatchingCodec matcher) {environment : Environment} {outer : Goal} : StructuralDescent.Scheduled.Interpreted.Task matcher environment outer → Term
+  | .evaluate goal tail => .application "DescentEvaluate" [goalTerm goal, continuationTerm codec tail]
+  | .deliver result tail => .application "DescentDeliver" [resultTerm codec result, continuationTerm codec tail]
+  | .query depth request state cursor tail => .application "DescentQuery"
+      [.natural depth, queryRequestTerm request, RetainedMatchingWire.queryStateTerm codec state, .natural cursor, continuationTerm codec tail]
+  | .rootMatch frame => .application "DescentRootMatch"
+      [.natural frame.depth, typesTerm frame.bound, typeTerm frame.type, patternTerm frame.source,
+        .natural frame.index, InferenceCettaWire.AuthoredRule.rewriteTerm frame.rule,
+        InferenceCettaWire.AuthoredRule.bindingSpecTerm frame.spec, codec.stateTerm frame.state,
+        .natural frame.cursor, continuationTerm codec frame.tail]
+  | .targetMatch frame => .application "DescentTargetMatch"
+      [.natural frame.depth, stepCallTerm frame.call, .natural frame.index, encodeList codec.choiceTerm frame.trace,
+        assignmentTerm frame.captured, assignmentTerm frame.completed, RetainedMatchingWire.eventsTerm codec.choiceTerm frame.history,
+        patternTerm frame.target, codec.stateTerm frame.state, .natural frame.cursor, continuationTerm codec frame.tail]
+  | .scanChildren depth bound type source limit cursor tail => .application "DescentScanChildren"
+      [.natural depth, typesTerm bound, typeTerm type, patternTerm source, .natural limit, .natural cursor,
+        continuationTerm codec tail]
+
+def expansionTerm (codec : MatchingCodec matcher) {environment : Environment} {outer : Goal}
+    (expansion : Scheduler.Expansion (StructuralDescent.Scheduled.Interpreted.Task matcher environment outer) (StructuralDescent.Scheduled.Interpreted.Result matcher environment outer) Obligation) : Term :=
+  PremiseSchedulerExecution.schedulerExpansionTerm (taskTerm codec) (resultTerm codec) obligationTerm expansion
+
+def stateTerm (codec : MatchingCodec matcher) {environment : Environment} {outer : Goal} (state : State environment outer matcher) : Term :=
+  PremiseSchedulerExecution.schedulerStateTerm (taskTerm codec) (resultTerm codec) obligationTerm state
+
+
+
+open StructuralDescent.Scheduled
+
+theorem ordinary_answer {environment : Environment} {goal : Goal} (answer : Result environment goal) :
+    answerTerm ordinaryCodec answer = CompleteExecution.DescentCodec.answerTerm answer := by
+  cases answer with
+  | premise assignment event valid =>
+      simp only [answerTerm, CompleteExecution.DescentCodec.answerTerm]
+      rw [ordinary_event event]
+  | premises assignment events valid =>
+      simp only [answerTerm, CompleteExecution.DescentCodec.answerTerm]
+      rw [ordinary_events events]
+  | quantified assignment events valid =>
+      simp only [answerTerm, CompleteExecution.DescentCodec.answerTerm]
+      rw [ordinary_quantified events]
+  | root trace captured completed events target valid =>
+      simp only [answerTerm, CompleteExecution.DescentCodec.answerTerm]
+      rw [ordinary_events events]
+      rfl
+  | steps index trace captured completed events target earlier valid =>
+      simp only [answerTerm, CompleteExecution.DescentCodec.answerTerm]
+      rw [ordinary_events events]
+      rfl
+
+theorem ordinary_result {environment : Environment} {goal : Goal} (result : Result environment goal) :
+    resultTerm ordinaryCodec result = CompleteExecution.DescentCodec.resultTerm result := by
+  simp only [resultTerm, CompleteExecution.DescentCodec.resultTerm, ordinary_answer]
+
+theorem ordinary_continuation {environment : Environment} {goal outer : Goal}
+    (continuation : Continuation environment goal outer) :
+    continuationTerm ordinaryCodec continuation =
+      CompleteExecution.DescentCodec.continuationTerm continuation := by
+  induction continuation <;>
+    simp_all only [continuationTerm, CompleteExecution.DescentCodec.continuationTerm]
+  all_goals first | rfl | rw [ordinary_event]
+
+theorem ordinary_task {environment : Environment} {outer : Goal} (task : Task environment outer) :
+    taskTerm ordinaryCodec task = CompleteExecution.DescentCodec.taskTerm task := by
+  cases task <;> simp only [taskTerm, CompleteExecution.DescentCodec.taskTerm,
+    ordinary_result, ordinary_continuation, ordinary_query_state]
+  all_goals first | rfl | (rw [ordinary_events]; rfl)
+
+theorem ordinary_state {environment : Environment} {outer : Goal} (state : State environment outer) :
+    stateTerm ordinaryCodec state = CompleteExecution.DescentCodec.stateTerm state := by
+  have tasks : (taskTerm ordinaryCodec : Task environment outer → Term) =
+      CompleteExecution.DescentCodec.taskTerm := funext ordinary_task
+  have results : (resultTerm ordinaryCodec : Result environment outer → Term) =
+      CompleteExecution.DescentCodec.resultTerm := funext ordinary_result
+  unfold stateTerm CompleteExecution.DescentCodec.stateTerm
+  rw [tasks, results]
+
+
+end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.Scheduled

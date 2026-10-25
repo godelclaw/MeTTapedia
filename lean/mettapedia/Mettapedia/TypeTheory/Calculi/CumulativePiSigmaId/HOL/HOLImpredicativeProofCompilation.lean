@@ -45,6 +45,40 @@ def compileExpanded (signature : LogicalSignature Base Const) (proofName : DeclN
     (hypotheses : Fin (Δ.map expand).length → Tower.Tm n) : Option (Tower.Tm n) :=
   compile signature proofName operations (expandProof source) objects hypotheses
 
+/-- Successful compilation has its exact represented type even when some
+other proof operations are unavailable. -/
+theorem compileExpanded_typed (signature : LogicalSignature Base Const)
+    (proofName : DeclName) (operations : Operations signature proofName)
+    {Γ : HOL.Ctx Base} {Δ : List (HOL.Formula Const Γ)} {φ : HOL.Formula Const Γ}
+    (source : HOL.ProofSyntax Const Δ φ)
+    {n : Nat} {target : Tower.Ctx n} {objects : Sub Tower.Head Γ.length n}
+    {hypotheses : Fin (Δ.map expand).length → Tower.Tm n} {native : Tower.Tm n}
+    (objectTyped : GenericTyping.Objects signature target objects)
+    (hypothesisTyped : GenericTyping.Hypotheses signature operations target objects hypotheses)
+    (success : compileExpanded signature proofName operations source objects hypotheses = some native) :
+    Typing operations.target target native
+      (FormationSensitiveHOLGenericProofFamily.proof proofName
+        (subst objects (HOLImpredicativeRepresentation.translate signature φ))) := by
+  obtain ⟨code, represented, typed⟩ := GenericTyping.compile_typed signature proofName
+    operations (expandProof source) objectTyped hypothesisTyped success
+  rw [HOLImpredicativeRepresentation.translate_eq] at represented
+  cases Option.some.inj represented
+  exact typed
+
+theorem compileExpanded_closed_typed (signature : LogicalSignature Base Const)
+    (proofName : DeclName) (operations : Operations signature proofName)
+    {φ : HOL.Formula Const []} (source : HOL.ProofSyntax Const [] φ)
+    {native : Tower.Tm 0}
+    (success : compileExpanded signature proofName operations source Fin.elim0 Fin.elim0 = some native) :
+    Typing operations.target .nil native
+      (FormationSensitiveHOLGenericProofFamily.proof proofName
+        (HOLImpredicativeRepresentation.translate signature φ)) := by
+  obtain ⟨code, represented, typed⟩ := GenericTyping.compile_closed signature proofName
+    operations (expandProof source) success
+  rw [HOLImpredicativeRepresentation.translate_eq] at represented
+  cases Option.some.inj represented
+  exact typed
+
 theorem compileExpanded_isSome (signature : LogicalSignature Base Const)
     (proofName : DeclName) (operations : Operations signature proofName)
     (total : operations.raw.Total)
@@ -111,12 +145,8 @@ theorem translateProof_typed (signature : LogicalSignature Base Const) (proofNam
       (translateProof signature proofName operations total source objects hypotheses)
       (FormationSensitiveHOLGenericProofFamily.proof proofName
         (subst objects (HOLImpredicativeRepresentation.translate signature φ))) := by
-  obtain ⟨code, represented, typed⟩ := GenericTyping.compile_typed signature proofName
-    operations (expandProof source) objectTyped hypothesisTyped
-      (translateProof_eq signature proofName operations total source objects hypotheses)
-  rw [HOLImpredicativeRepresentation.translate_eq] at represented
-  cases Option.some.inj represented
-  exact typed
+  exact compileExpanded_typed signature proofName operations source objectTyped hypothesisTyped
+    (translateProof_eq signature proofName operations total source objects hypotheses)
 
 theorem translateProof_closed_typed (signature : LogicalSignature Base Const)
     (proofName : DeclName) (operations : Operations signature proofName)
@@ -126,12 +156,8 @@ theorem translateProof_closed_typed (signature : LogicalSignature Base Const)
       (translateProof signature proofName operations total source Fin.elim0 Fin.elim0)
       (FormationSensitiveHOLGenericProofFamily.proof proofName
         (HOLImpredicativeRepresentation.translate signature φ)) := by
-  obtain ⟨code, represented, typed⟩ := GenericTyping.compile_closed signature proofName
-    operations (expandProof source)
-      (translateProof_eq signature proofName operations total source Fin.elim0 Fin.elim0)
-  rw [HOLImpredicativeRepresentation.translate_eq] at represented
-  cases Option.some.inj represented
-  exact typed
+  exact compileExpanded_closed_typed signature proofName operations source
+    (translateProof_eq signature proofName operations total source Fin.elim0 Fin.elim0)
 
 /-- Semantic correctness at the exact expanded conclusion. Relating this
 formula to its original Henkin meaning uses `denote_expand`, not an assumed
@@ -194,6 +220,8 @@ theorem missing_equality_capabilities_rejected :
 
 end Controls
 
+#print axioms compileExpanded_typed
+#print axioms compileExpanded_closed_typed
 #print axioms compileExpanded_isSome
 #print axioms translateProof_typed
 #print axioms translateProof_substitute

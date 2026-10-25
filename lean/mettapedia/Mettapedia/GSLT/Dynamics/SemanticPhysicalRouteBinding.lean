@@ -100,7 +100,7 @@ variable {codec : PhysicalBindingCodec theory Backend StoreRevision Payload
 variable {claim : Article theory Backend StoreRevision Payload PlanId DeltaId}
 
 /-- The retained route is an actual two-step semantic history. -/
-def history (bound : BoundRoute codec claim) :
+theorem history (bound : BoundRoute codec claim) :
     theory.HistoryStep [claim.event.first, claim.event.second]
       claim.event.source bound.route.target :=
   .cons bound.route.firstStep (.single bound.route.secondStep)
@@ -395,7 +395,7 @@ namespace BindingAuthority
 variable {codec : PhysicalBindingCodec theory Backend StoreRevision Payload
   PlanId DeltaId RouteId}
 
-def projection (binding : BindingAuthority codec) :
+theorem projection (binding : BindingAuthority codec) :
     binding.checker.AuthorityProjection (Bound codec) (Bound codec) :=
   binding.authority.toProjection
 
@@ -434,7 +434,7 @@ def CombinedMeaning
     (claim : Article theory Backend StoreRevision Payload PlanId DeltaId) : Prop :=
   Meaning (backend := backend) claim /\ Bound codec claim
 
-def combinedProjection
+theorem combinedProjection
     (admission : AdmissionAuthority backend)
     (binding : BindingAuthority codec) :
     (combinedChecker admission binding).AuthorityProjection

@@ -1,10 +1,10 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CellCausalSemantics
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.CellCausalSemantics
 import Mettapedia.PLN.WorldModel.WorldModelOverlap
 
 /-!
-# Prime cell-causal explanations to overlap-aware world-model evidence
+# Cell-causal explanations to overlap-aware world-model evidence
 
-Prime supplies occurrence identity and causal receipts.  A world-model
+The cell-causal strategy study supplies occurrence identity and causal receipts.  A world-model
 interpretation supplies weights.  This bridge isolates the smallest example
 where retaining shared cause identity changes the answer: two rule
 occurrences supported by the same fair producer outcome have probability

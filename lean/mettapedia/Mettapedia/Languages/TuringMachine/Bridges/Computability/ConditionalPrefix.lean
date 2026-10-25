@@ -6,16 +6,14 @@ import Mettapedia.Computability.KolmogorovComplexity.PrefixMass
 /-!
 # Effective conditional prefix machines as authored Turing languages
 
-Each effective conditional prefix machine is compiled to a finite deterministic
-table. Binary program and auxiliary condition are encoded as finite work-tape
-input; the halting programs are prefix-free for each condition, and their
-length weight is the weight of the table's generated halting type. Completed
-outputs carry a discrete mass whose total agrees with this halting weight.
+Each effective conditional prefix machine compiles to a finite deterministic
+table, with binary programs and conditions encoded on the work tape. Its
+generated halting type has the source's prefix-free program mass. Completed
+output mass, including total readouts, has exactly that same total.
 
-The existing effective trimmed interpreter yields one table that uniformly
-hosts all effective conditional prefix machines, preserving outputs with a
-fixed compiler prefix per source machine. A one-way streaming input protocol
-requires a separate operational model.
+The effective trimmed interpreter supplies one table hosting every effective
+conditional prefix machine with a fixed compiler prefix and preserved outputs.
+A one-way streaming input protocol requires a separate operational model.
 -/
 
 set_option autoImplicit false
@@ -68,18 +66,14 @@ theorem input_state (program condition : BinString) :
 theorem halts_iff (program condition : BinString) :
     HaltsFrom (machine source effective) (inputConfiguration source effective program condition).term ↔
       source.compute program condition ≠ none := by
-  change HaltsFrom (PartrecBridge.machine _) (PartrecBridge.inputConfiguration _ _).term ↔ _
-  rw [PartrecBridge.halts_iff, programCode_eval]
+  simp only [machine, inputConfiguration, PartrecBridge.halts_iff, programCode_eval]
   cases result : source.compute program condition <;> simp [Part.ofOption]
 
 def HaltingPrograms (condition : BinString) : Set BinString :=
   {program | HaltsFrom (machine source effective) (inputConfiguration source effective program condition).term}
 
 theorem prefix_free (condition : BinString) : PrefixFree (HaltingPrograms source effective condition) := by
-  intro first firstHalts second secondHalts different isPrefix
-  have firstActive := (halts_iff source effective first condition).mp firstHalts
-  have secondActive := (halts_iff source effective second condition).mp secondHalts
-  exact secondActive (source.prefix_free condition first second isPrefix different firstActive)
+  simpa only [HaltingPrograms, halts_iff] using conditionalHaltingPrograms_prefixFree source condition
 
 theorem halting_type_iff (program condition : BinString) :
     Mettapedia.OSLF.Framework.FormulaFixpoint.lfp (haltingTransformer (machine source effective))
@@ -99,11 +93,15 @@ halting type under its binary program interface. -/
 theorem outputMass_total (condition : BinString) :
     (∑' output, prefixOutputMass (source.compute · condition) output) =
       haltingMass source effective condition := by
-  rw [prefixOutputMass_total]
-  unfold haltingMass
-  apply congrArg prefixProgramMass
-  ext program
-  exact (halts_iff source effective program condition).symm
+  simpa only [haltingMass, HaltingPrograms, halts_iff] using
+    prefixOutputMass_total (source.compute · condition)
+
+/-- A total output readout preserves the weight of the actual table's halting type. -/
+theorem observed_outputMass_total {Observed : Type*} (observe : BinString → Observed)
+    (condition : BinString) :
+    (∑' output, prefixOutputMass (fun program => (source.compute program condition).map observe) output) =
+      haltingMass source effective condition := by
+  simpa only [prefixOutputMass_total, ne_eq, Option.map_eq_none_iff] using outputMass_total source effective condition
 
 theorem outputMass_total_le_one (condition : BinString) :
     (∑' output, prefixOutputMass (source.compute · condition) output) ≤ 1 :=
@@ -116,9 +114,7 @@ theorem output_preserved (program condition output : BinString)
       (inputConfiguration source effective program condition) ∧
       PartrecBridge.Represents (programCode source effective)
         (Turing.PartrecToTM2.halt [Encodable.encode output]) final := by
-  apply PartrecBridge.eval_preserved
-  rw [programCode_eval, computed]
-  simp [Part.ofOption]
+  exact PartrecBridge.eval_preserved _ _ _ (by simp only [programCode_eval, computed, Part.ofOption]; simp)
 
 /-- Every terminal table run is certified by a returned source string. -/
 theorem output_reflected (program condition : BinString) {final : Configuration}
@@ -127,12 +123,11 @@ theorem output_reflected (program condition : BinString) {final : Configuration}
     ∃ output, source.compute program condition = some output ∧
       PartrecBridge.Represents (programCode source effective)
         (Turing.PartrecToTM2.halt [Encodable.encode output]) final := by
-  obtain ⟨result, sourceComputed, represented⟩ := PartrecBridge.eval_reflected
-    (programCode source effective) [Encodable.encode (program, condition)] computed
-  rw [programCode_eval] at sourceComputed
-  obtain ⟨output, member, rfl⟩ := (Part.mem_map_iff _).mp sourceComputed
-  refine ⟨output, ?_, represented⟩
-  simpa only [Part.mem_ofOption, Option.mem_def] using member
+  have reflected := PartrecBridge.eval_reflected (programCode source effective) _ computed
+  simp only [programCode_eval, Part.map_eq_map, Part.mem_map_iff, Part.mem_ofOption,
+    Option.mem_def, ← exists_and_right] at reflected
+  rw [exists_comm] at reflected
+  simpa only [and_assoc, exists_and_left, exists_eq_left'] using reflected
 
 noncomputable def universalMachine : Machine := machine trimmedIndexedHost trimmedIndexedHost_effective
 

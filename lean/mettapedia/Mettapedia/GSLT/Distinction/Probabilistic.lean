@@ -2,6 +2,10 @@ import Mettapedia.GSLT.Distinction.Probabilistic.KantorovichDuality
 import Mettapedia.GSLT.Distinction.Probabilistic.LogicalDistance
 import Mettapedia.GSLT.Distinction.Probabilistic.System
 import Mettapedia.GSLT.Distinction.Probabilistic.FiniteChains
+import Mettapedia.GSLT.Distinction.Probabilistic.FinitePrediction
+import Mettapedia.GSLT.Distinction.Probabilistic.FiniteSubprediction
+import Mettapedia.GSLT.Distinction.Probabilistic.FinitePredictionArray
+import Mettapedia.GSLT.Distinction.Probabilistic.FinitePredictionRounding
 import Mettapedia.GSLT.Distinction.Probabilistic.Completion
 import Mettapedia.GSLT.Distinction.Probabilistic.Domination
 import Mettapedia.GSLT.Distinction.Probabilistic.Controls
@@ -31,6 +35,15 @@ this layer reuses.
   bisimulation and its logical characterisation; the erasure of bisimulations.
 * `FiniteChains`: a finite chain is a probabilistic GSLT; Larsen–Skou
   bisimilarity, probabilistic bisimilarity and distance zero coincide.
+* `FinitePrediction`: the weighted-traversal module constructs finite kernel
+  predictions, with exact arithmetic interpretation and entry counts;
+  compatible observations preserve their probabilistic GSLT predicate masses.
+* `FiniteSubprediction`: the same traversal mixes subdistribution rows while
+  retaining enabled mass and refusal through stopped completion.
+* `FinitePredictionArray`: a two-sided array-fold realization computes those
+  rows with exact entry accounts and cost-qualified backend selection.
+* `FinitePredictionRounding`: per-operation numerical errors accumulate into
+  the same approximate-square budget as model abstraction error.
 * `Completion`: a finite probabilistic GSLT with sub-distributions is completed
   by a stopped state; its behavioural pseudometric is the Kantorovich fixed
   point of the completion, a logical distance, zero exactly on Larsen–Skou

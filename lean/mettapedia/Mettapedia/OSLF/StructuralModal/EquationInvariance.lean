@@ -304,7 +304,7 @@ mutual
     | .box inner, _, holds => fun edge targetEq =>
         satisfiesModuloOver_of_satisfiesOver reflexive span inner _ (holds edge targetEq)
     | .emptyColl _, _, shape => shape ▸ reflexive _
-    | .cut kind left right, _, ⟨leftElements, rightElements, shape, leftHolds, rightHolds⟩ =>
+    | .cut _ left right, _, ⟨leftElements, rightElements, shape, leftHolds, rightHolds⟩ =>
         ⟨leftElements, rightElements, shape ▸ reflexive _,
           satisfiesModuloOver_of_satisfiesOver reflexive span left _ leftHolds,
           satisfiesModuloOver_of_satisfiesOver reflexive span right _ rightHolds⟩

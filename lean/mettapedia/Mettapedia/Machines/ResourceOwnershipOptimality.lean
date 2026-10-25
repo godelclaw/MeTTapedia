@@ -1,4 +1,5 @@
 import Mettapedia.Machines.ResourceOwnership
+import Mettapedia.GSLT.Core.PolicyFamilyContextClosure
 
 /-!
 # Exact tracing minimizes retained cells under complete path observations
@@ -218,3 +219,309 @@ theorem missing_descendant_rejects_candidate :
 end Controls
 
 end Mettapedia.Machines.ResourceOwnership.Optimality
+
+namespace Mettapedia.Machines.ResourceOwnership.Optimality.ContextualReferences
+
+open Mettapedia.GSLT.Core
+open MutableObservation
+
+universe uValue uReadout
+
+variable {Address : Type} {Value : Type uValue} [DecidableEq Address]
+
+/-- One selected reference in an actual finite heap. -/
+structure Client (Address : Type) (Value : Type uValue) where
+  heap : Heap Address Value
+  reference : Address
+
+/-- One interaction scope; each edge writes its supplied payload at the
+selected reference. Starting allocated references remain allocated after every
+edge. This profile grants reads at every address and writes at the hole. -/
+inductive Scope (Value : Type uValue) where
+  | heap
+
+instance : Quiver (Scope Value) where
+  Hom := fun _ _ => Value
+
+def execute {a b : Scope Value} (value : a ⟶ b)
+    (client : Client Address Value) : Client Address Value :=
+  ⟨client.heap.writePayload client.reference value, client.reference⟩
+
+/-- `none` reads the selected reference; `some anchor` reads a fixed address.
+Absence is an explicit observation. All operations of this profile are total
+on heaps; it is not an interpretation of arbitrary foreign operations. -/
+def base (_scope : Scope Value) : PolicyFamily (Client Address Value) where
+  Policy := Option Address
+  Result := fun _ => Option Value
+  decide := fun anchor client => client.heap.readPayload (anchor.getD client.reference)
+
+/-- Reuse the existing finite-path closure, including its actual dependent
+policy indices, execution and greatest-stable-relation construction. -/
+def observations : PolicyFamily (Client Address Value) :=
+  PolicyFamily.ContextClosure.family execute base (.heap : Scope Value)
+
+omit [DecidableEq Address] in
+/-- Before permitting mutations, same-heap clients are identified precisely
+by their selected scalar observations, despite the available fixed anchors. -/
+theorem base_equivalent_iff (heap : Heap Address Value) (left right : Address) :
+    (base (.heap : Scope Value)).PolicyEquivalent ⟨heap, left⟩ ⟨heap, right⟩ ↔
+      PayloadEq heap left right := by
+  constructor
+  · intro same
+    exact same none
+  · intro same anchor
+    cases anchor with
+    | none => exact same
+    | some anchor => rfl
+
+/-- A one-edge path followed by the actual anchored read is a member of the
+constructed context family. No substitution-preservation law is assumed. -/
+theorem write_probe (heap : Heap Address Value) (left right : Address)
+    (same : observations.PolicyEquivalent
+      (⟨heap, left⟩ : Client Address Value) ⟨heap, right⟩)
+    (value : Value) (anchor : Address) :
+    (heap.writePayload left value).readPayload anchor =
+      (heap.writePayload right value).readPayload anchor := by
+  let operation : (Scope.heap : Scope Value) ⟶ Scope.heap := value
+  exact same ⟨.heap, operation.toPath, some anchor⟩
+
+/-- Closing scalar observations under the specified writes characterizes
+reference identity on allocated cells with two distinguishable payload values.
+It does not require an arbitrary comparison operator to promise this closure. -/
+theorem contextual_equivalent_iff [Nontrivial Value] (heap : Heap Address Value)
+    (left right : Address) (leftLive : left ∈ heap.allocated)
+    (rightLive : right ∈ heap.allocated) :
+    observations.PolicyEquivalent (⟨heap, left⟩ : Client Address Value) ⟨heap, right⟩ ↔
+      left = right := by
+  constructor
+  · intro same
+    apply (full_writeReadEq_iff heap left right leftLive rightLive).mp
+    intro value anchor
+    by_cases anchorLive : anchor ∈ heap.allocated
+    · simpa only [writeRead, leftLive, rightLive, anchorLive, and_self, if_true] using
+        write_probe heap left right same value anchor
+    · simp only [writeRead, anchorLive, and_false, if_false]
+  · rintro rfl policy
+    rfl
+
+/-- Every sufficient implementation of this declared workload must retain
+the selected-reference distinction. The conclusion concerns information;
+it gives no runtime lower bound or globally preferred representation. -/
+theorem sufficient_readout_separates_references [Nontrivial Value]
+    {Readout : Type uReadout} (readout : Client Address Value → Readout)
+    (realization : observations.ReadoutRealization readout)
+    (heap : Heap Address Value) (left right : Address)
+    (leftLive : left ∈ heap.allocated) (rightLive : right ∈ heap.allocated)
+    (same : readout ⟨heap, left⟩ = readout ⟨heap, right⟩) : left = right := by
+  apply (contextual_equivalent_iff heap left right leftLive rightLive).mp
+  intro policy
+  exact (realization.agrees policy ⟨heap, left⟩).symm.trans
+    ((congrArg (realization.run policy) same).trans
+      (realization.agrees policy ⟨heap, right⟩))
+
+namespace Controls
+
+open MutableObservation.Controls (pairHeap)
+
+/-- The same two allocated cells satisfy the coarser read-only promise and
+fail the mutation-closed promise. Both are actual nonempty policy families. -/
+theorem added_write_context_separates_equal_scalars :
+    (base (.heap : Scope Nat)).PolicyEquivalent
+      (⟨pairHeap, 0⟩ : Client (Fin 2) Nat) ⟨pairHeap, 1⟩ ∧
+    ¬ observations.PolicyEquivalent
+      (⟨pairHeap, 0⟩ : Client (Fin 2) Nat) ⟨pairHeap, 1⟩ := by
+  constructor
+  · exact (base_equivalent_iff pairHeap 0 1).mpr (by decide)
+  · intro same
+    have identity := (contextual_equivalent_iff pairHeap 0 1 (by decide) (by decide)).mp same
+    exact (by decide : (0 : Fin 2) ≠ 1) identity
+
+end Controls
+
+end Mettapedia.Machines.ResourceOwnership.Optimality.ContextualReferences
+
+/-!
+## Selected-only mutable observations
+
+The same writable client graph also admits a coarser contextual equivalence
+when every read is restricted to its selected cell. The following construction
+retains actual writes and all finite paths, while withholding fixed external
+anchors. It models this declared observation scope, not arbitrary read-dependent
+branching, physical exclusivity or a global comparison policy.
+-/
+
+namespace Mettapedia.Machines.ResourceOwnership.Optimality.ContextualReferences.SelectedOnly
+
+open Mettapedia.GSLT.Core
+
+universe uValue
+
+variable {Address : Type} {Value : Type uValue} [DecidableEq Address]
+
+/-- The original family is reindexed to its actual selected-cell coordinate.
+The unit policy index selects a real observation; it is not a constant answer. -/
+def base (scope : Scope Value) : PolicyFamily (Client Address Value) :=
+  (ContextualReferences.base scope).reindex (fun (_ : Unit) => none)
+
+/-- Close the restricted observers under the unchanged actual writes. -/
+def observations : PolicyFamily (Client Address Value) :=
+  PolicyFamily.ContextClosure.family execute base (.heap : Scope Value)
+
+/-- The existing restriction witness forgets only the fixed external anchors,
+while retaining all of the original write paths. -/
+def restriction : PolicyFamily.OperationReindex
+    (ContextualReferences.observations : PolicyFamily (Client Address Value)) observations id :=
+  PolicyFamily.ContextClosure.restrictConsumers execute ContextualReferences.base
+    (fun (_ : Scope Value) (_ : Unit) => none) .heap
+
+/-- The actual selected lookup in the client's explicit heap. -/
+def selectedRead (client : Client Address Value) : Option Value :=
+  client.heap.readPayload client.reference
+
+/-- A genuine write changes the selected observed value, while preserving
+honest absence. This law follows from the concrete heap update and lookup. -/
+theorem selectedRead_after_write {a b : Scope Value} (value : a ⟶ b)
+    (client : Client Address Value) :
+    selectedRead (execute value client) = (selectedRead client).map (fun _ => value) := by
+  cases found : client.heap.lookup client.reference <;>
+    simp [selectedRead, execute, Heap.readPayload, found]
+
+/-- Equality of selected observations survives every shared write operation,
+without requiring the references or the full heaps to agree. -/
+theorem selectedRead_write_stable {a b : Scope Value} (value : a ⟶ b)
+    (left right : Client Address Value) (same : selectedRead left = selectedRead right) :
+    selectedRead (execute value left) = selectedRead (execute value right) := by
+  rw [selectedRead_after_write, selectedRead_after_write, same]
+
+/-- This is a mutable observation relation closed under all finite paths of
+the existing write graph. Allocation hypotheses and two distinct payload
+values are not required for this selected-only characterization. -/
+theorem contextual_equivalent_iff (left right : Client Address Value) :
+    observations.PolicyEquivalent left right ↔ selectedRead left = selectedRead right := by
+  constructor
+  · intro same
+    exact same ⟨.heap, .nil, ()⟩
+  · intro same
+    apply PolicyFamily.ContextClosure.greatest execute base
+      (fun _ left right => selectedRead left = selectedRead right) ?_ ?_ same
+    · intro scope left right related policy
+      cases policy
+      exact related
+    · intro a b value left right related
+      exact selectedRead_write_stable value left right related
+
+/-- The same-initial-heap specialization compares the live scalar values,
+not the selected resource addresses. -/
+theorem same_heap_equivalent_iff (heap : Heap Address Value) (left right : Address) :
+    observations.PolicyEquivalent (⟨heap, left⟩ : Client Address Value) ⟨heap, right⟩ ↔
+      MutableObservation.PayloadEq heap left right :=
+  contextual_equivalent_iff _ _
+
+/-- The canonical operation-stability theorem applies to the actual restricted
+family; no substitution congruence is supplied as a premise. -/
+theorem operation_stable (value : Value) (left right : Client Address Value)
+    (same : observations.PolicyEquivalent left right) :
+    observations.PolicyEquivalent
+      (execute (a := (.heap : Scope Value)) (b := .heap) value left)
+      (execute (a := (.heap : Scope Value)) (b := .heap) value right) :=
+  PolicyFamily.ContextClosure.operation_stable execute base value same
+
+/-- Agreement holds after an arbitrary actual finite write path, including
+the empty path. This uses the constructed family, not another path evaluator. -/
+theorem actual_path_reads_agree (path : Quiver.Path (Scope.heap : Scope Value) .heap)
+    (left right : Client Address Value) (same : selectedRead left = selectedRead right) :
+    selectedRead (PolicyFamily.ContextClosure.runPath execute path left) =
+      selectedRead (PolicyFamily.ContextClosure.runPath execute path right) :=
+  (contextual_equivalent_iff left right).mpr same ⟨.heap, path, ()⟩
+
+theorem anchored_equivalence_implies_selected (left right : Client Address Value)
+    (same : ContextualReferences.observations.PolicyEquivalent left right) :
+    observations.PolicyEquivalent left right :=
+  restriction.preserves_policyEquivalent same
+
+namespace Controls
+
+open MutableObservation.Controls (pairHeap)
+
+def left : Client (Fin 2) Nat := ⟨pairHeap, 0⟩
+
+def right : Client (Fin 2) Nat := ⟨pairHeap, 1⟩
+
+/-- Both cells are actually allocated, distinct and mutably equivalent for
+the selected-only workload, yet the unchanged anchored family separates them. -/
+theorem distinct_mutable_cells_are_selected_equivalent :
+    left.reference ∈ left.heap.allocated ∧ right.reference ∈ right.heap.allocated ∧
+      left.reference ≠ right.reference ∧ observations.PolicyEquivalent left right ∧
+      ¬ ContextualReferences.observations.PolicyEquivalent left right := by
+  refine ⟨by decide, by decide, by decide, ?_, ?_⟩
+  · exact (contextual_equivalent_iff left right).mpr (by decide)
+  · exact ContextualReferences.Controls.added_write_context_separates_equal_scalars.2
+
+theorem genuine_write_changes_selected_observations :
+    selectedRead left = some 7 ∧ selectedRead right = some 7 ∧
+      selectedRead (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) left) = some 9 ∧
+      selectedRead (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) right) = some 9 := by decide
+
+theorem arbitrary_mutation_preserves_selected_equivalence (value : Nat) :
+    observations.PolicyEquivalent
+      (execute (a := (.heap : Scope Nat)) (b := .heap) value left) (execute (a := (.heap : Scope Nat)) (b := .heap) value right) :=
+  operation_stable value left right distinct_mutable_cells_are_selected_equivalent.2.2.2.1
+
+theorem arbitrary_finite_mutations_keep_selected_readouts_equal
+    (path : Quiver.Path (Scope.heap : Scope Nat) .heap) :
+    selectedRead (PolicyFamily.ContextClosure.runPath execute path left) =
+      selectedRead (PolicyFamily.ContextClosure.runPath execute path right) :=
+  actual_path_reads_agree path left right (by decide)
+
+/-- The writes affect different actual cells. The selected observations agree
+while the external anchor distinguishes the resulting heaps. -/
+theorem external_anchor_still_distinguishes_actual_writes :
+    (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) left).heap.readPayload 0 = some 9 ∧
+      (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) right).heap.readPayload 0 = some 7 ∧
+      selectedRead (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) left) =
+        selectedRead (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) right) := by decide
+
+/-- The characterization is not constant equivalence: the empty context
+separates different current selected values. -/
+theorem unequal_selected_values_are_not_equivalent :
+    ¬ observations.PolicyEquivalent
+      (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat) left) right := by
+  rw [contextual_equivalent_iff]
+  decide
+
+/-- A common write can erase an old observed distinction, although zero-step
+observations correctly distinguished the two clients before that write. -/
+theorem a_shared_write_can_merge_prior_value_classes :
+    ¬ observations.PolicyEquivalent (⟨pairHeap.writePayload 0 9, 0⟩ : Client (Fin 2) Nat) right ∧
+      observations.PolicyEquivalent
+        (execute (a := (.heap : Scope Nat)) (b := .heap) (3 : Nat) (⟨pairHeap.writePayload 0 9, 0⟩ : Client (Fin 2) Nat))
+        (execute (a := (.heap : Scope Nat)) (b := .heap) (3 : Nat) right) := by
+  constructor
+  · rw [contextual_equivalent_iff]
+    decide
+  · rw [contextual_equivalent_iff]
+    decide
+
+def emptyHeap : Heap (Fin 2) Nat where
+  lookup _ := none
+  allocated := ∅
+  allocated_iff _ := by simp
+  closed _ _ found _ _ := by cases found
+
+theorem absent_references_are_observably_absent_and_equivalent :
+    selectedRead (⟨emptyHeap, 0⟩ : Client (Fin 2) Nat) = none ∧
+      selectedRead (execute (a := (.heap : Scope Nat)) (b := .heap) (9 : Nat)
+        (⟨emptyHeap, 0⟩ : Client (Fin 2) Nat)) = none ∧
+      observations.PolicyEquivalent (⟨emptyHeap, 0⟩ : Client (Fin 2) Nat) ⟨emptyHeap, 1⟩ := by
+  refine ⟨rfl, by decide, ?_⟩
+  rw [contextual_equivalent_iff]
+  rfl
+
+theorem absence_and_allocated_value_are_distinguished :
+    ¬ observations.PolicyEquivalent (⟨emptyHeap, 0⟩ : Client (Fin 2) Nat) left := by
+  rw [contextual_equivalent_iff]
+  decide
+
+end Controls
+
+end Mettapedia.Machines.ResourceOwnership.Optimality.ContextualReferences.SelectedOnly

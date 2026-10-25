@@ -16,7 +16,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.UniversalAlgebra
 
-universe u v w
+universe u v w x
 
 namespace Signature
 
@@ -161,5 +161,34 @@ theorem Term.evaluate_translate {Carrier : Type w}
       simp only [Term.finSubstitution, below, dite_true]
       exact (Term.evaluate_translate interpretation targetModel valuation
         (arguments ⟨index, below⟩)).symm
+
+/-- Translation and model reducts agree in every supplied finite context. -/
+theorem Term.evaluateBelow_translate {Carrier : Type w} {bound : Nat}
+    (interpretation : Signature.Interpretation S T)
+    (targetModel : Model T Carrier) (valuation : Fin bound → Carrier)
+    (term : Term S) (bounded : term.VariablesBelow bound) :
+    (term.translate interpretation).evaluateBelow targetModel valuation
+        (Term.variablesBelow_translate interpretation bounded) =
+      term.evaluateBelow (targetModel.reduct interpretation) valuation bounded :=
+  Term.evaluateBelow_eq_of_evaluate_eq targetModel (targetModel.reduct interpretation)
+    (fun total => Term.evaluate_translate interpretation targetModel total term)
+    valuation (Term.variablesBelow_translate interpretation bounded) bounded
+
+/-- Reducing along the identity interpretation preserves the actual model. -/
+@[simp] theorem Model.reduct_id {Carrier : Type w} (model : Model S Carrier) :
+    model.reduct (Signature.Interpretation.id S) = model := by
+  cases model
+  rfl
+
+/-- Successive model reducts agree with the composite interpretation. -/
+theorem Model.reduct_comp {Carrier : Type x}
+    (first : Signature.Interpretation S T) (second : Signature.Interpretation T U)
+    (model : Model U Carrier) :
+    model.reduct (first.comp second) = (model.reduct second).reduct first := by
+  unfold Model.reduct
+  congr 1
+  funext symbol arguments
+  exact Term.evaluateBelow_translate second model arguments
+    (first.operation symbol).1 (first.operation symbol).2
 
 end Mettapedia.UniversalAlgebra

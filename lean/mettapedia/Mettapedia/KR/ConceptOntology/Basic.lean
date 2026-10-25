@@ -49,6 +49,7 @@ theorem memberEvidence_add'
 
 /-- Every evidence-valued membership context induces a generic additive world
 model on the query type `Obj × Con`. -/
+@[instance_reducible]
 def toAdditiveWorldModel
     (M : EvidenceMembershipContext State Obj Con Ev) :
     AdditiveWorldModel State (Obj × Con) Ev where

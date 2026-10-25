@@ -16,6 +16,12 @@ namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise.SchemaTyping
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
+/-- A schema tail is a declared collection-valued metavariable. Object
+patterns still require a closed tail at their separate admission boundary. -/
+def checkSchemaRest (free : FreeTypeContext) (kind : CollType) (element : TypeExpr) : Option String → Bool
+  | none => true
+  | some name => free name == some (.collection kind element)
+
 mutual
   /-- Check one raw pattern against an expected type in the exact authored
   free and bound contexts. -/
@@ -50,14 +56,16 @@ mutual
           match expected with
           | .collection actual elementType =>
               actual == collectionType &&
-                checkSchemaElements domains language free bound elements elementType
+                checkSchemaElements domains language free bound elements elementType &&
+                checkSchemaRest free collectionType elementType rest
           | _ => false
         let authored := language.terms.any fun rule =>
           match bareCollectionElementType? rule collectionType expected with
           | some elementType =>
-              checkSchemaElements domains language free bound elements elementType
+              checkSchemaElements domains language free bound elements elementType &&
+                checkSchemaRest free collectionType elementType rest
           | none => false
-        rest.isNone && (direct || authored)
+        direct || authored
 
   /-- Ordered argument-spine checker compiled from the authored parameter
   list. -/
@@ -208,15 +216,13 @@ theorem checkSchemaType_sound
       obtain ⟨domain, _, bodyChecked, replacementChecked⟩ := checked
       exact .subst (bodyHypothesis bodyChecked) (replacementHypothesis replacementChecked)
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [checkSchemaType, Bool.and_eq_true,
-        Bool.or_eq_true, List.any_eq_true] at checked
-      rcases checked with ⟨restIsNone, directOrAuthored⟩
-      cases directOrAuthored with
+      simp only [checkSchemaType, Bool.or_eq_true, List.any_eq_true] at checked
+      cases checked with
       | inl direct =>
           cases expected with
           | collection actual elementType =>
               simp only [Bool.and_eq_true, beq_iff_eq] at direct
-              rcases direct with ⟨actualEquality, elementsChecked⟩
+              rcases direct with ⟨⟨actualEquality, elementsChecked⟩, _⟩
               subst actual
               exact .collection
                 (checkSchemaElements_sound_of
@@ -242,7 +248,11 @@ theorem checkSchemaType_sound
               (checkSchemaElements_sound_of
                 (fun element membership elementChecked =>
                   inductionHypothesis element membership elementChecked)
-                ruleChecked)
+                (by
+                  have pair : checkSchemaElements domains language free bound elements elementType = true ∧
+                      checkSchemaRest free collectionType elementType rest = true := by
+                    simpa only [Bool.and_eq_true] using ruleChecked
+                  exact pair.1))
 
 /-- Every successful homogeneous element-spine check is a derivation in the
 sole authored typing relation. -/
@@ -297,7 +307,8 @@ mutual
         simp only [isObjectPattern, Bool.and_eq_true] at object
         have elementsChecked :=
           checkSchemaElements_complete_of_objects (domains := domains) elementsTyped object.2
-        simp [checkSchemaType, object.1, elementsChecked]
+        have closed : rest = none := by cases rest <;> simp_all
+        simp [checkSchemaType, closed, checkSchemaRest, elementsChecked]
     | @collectionConstructor bound rule parameterName collectionType elements
         rest elementType ruleMember parameterShape elementsTyped =>
         simp only [isObjectPattern, Bool.and_eq_true] at object
@@ -309,11 +320,11 @@ mutual
               ⟨rfl, parameterName, parameterShape⟩
         have elementsChecked :=
           checkSchemaElements_complete_of_objects (domains := domains) elementsTyped object.2
-        simp only [checkSchemaType, object.1, Bool.true_and, Bool.or_eq_true,
-          List.any_eq_true]
+        have closed : rest = none := by cases rest <;> simp_all
+        simp only [checkSchemaType, Bool.or_eq_true, List.any_eq_true]
         exact Or.inr ⟨rule, ruleMember, by
           rw [elementTypeEquation]
-          exact elementsChecked⟩
+          simp only [closed, checkSchemaRest, elementsChecked, Bool.and_self]⟩
 
   /-- Completeness companion for ordered constructor arguments. -/
   theorem checkSchemaArguments_complete_of_objects

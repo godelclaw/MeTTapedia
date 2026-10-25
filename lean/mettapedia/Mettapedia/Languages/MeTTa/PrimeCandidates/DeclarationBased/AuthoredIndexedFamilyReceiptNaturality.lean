@@ -83,7 +83,7 @@ namespace InventoryReceiptNaturality
 /-- Exact quotation transports inventory naturality to the corresponding
 source-directed presentation.  The named schema transport prevents this law
 from being hidden inside an opaque dependent cast. -/
-noncomputable def toPresented
+theorem toPresented
     {inventory : AuthoredCandidateInventory}
     (naturality : InventoryReceiptNaturality inventory) :
     ReceiptNaturality inventory.toPresentedCandidate where
@@ -258,7 +258,7 @@ theorem occurrenceIotaEquiv_substitute
       rfl
 
 /-- The finite authored List/identity inventory is natural before quotation. -/
-noncomputable def nativeListInventoryReceiptNaturality :
+theorem nativeListInventoryReceiptNaturality :
     InventoryReceiptNaturality nativeListInventory where
   rename := by
     intro n m left right occurrence renameMap
@@ -273,7 +273,7 @@ noncomputable def nativeListInventoryReceiptNaturality :
 
 /-- The authored List/identity package has a substitution-natural native
 receipt realization after exact quotation. -/
-noncomputable def nativeListReceiptNaturality :
+theorem nativeListReceiptNaturality :
     ReceiptNaturality nativeListPresentedCandidate :=
   nativeListInventoryReceiptNaturality.toPresented
 
@@ -375,7 +375,7 @@ theorem occurrenceIotaEquiv_substitute
 
 /-- Both candidate views of the shared source inherit the same natural
 proof-relevant receipt translation. -/
-noncomputable def natInventoryReceiptNaturality :
+theorem natInventoryReceiptNaturality :
     InventoryReceiptNaturality natInventory where
   rename := by
     intro n m left right occurrence renameMap
@@ -388,7 +388,7 @@ noncomputable def natInventoryReceiptNaturality :
       IotaEvidence.substitute (occurrenceIotaEquiv occurrence) substitution
     exact occurrenceIotaEquiv_substitute occurrence substitution
 
-noncomputable def vecInventoryReceiptNaturality :
+theorem vecInventoryReceiptNaturality :
     InventoryReceiptNaturality vecInventory where
   rename := by
     intro n m left right occurrence renameMap
@@ -401,11 +401,11 @@ noncomputable def vecInventoryReceiptNaturality :
       IotaEvidence.substitute (occurrenceIotaEquiv occurrence) substitution
     exact occurrenceIotaEquiv_substitute occurrence substitution
 
-noncomputable def natReceiptNaturality :
+theorem natReceiptNaturality :
     ReceiptNaturality natPresentedCandidate :=
   natInventoryReceiptNaturality.toPresented
 
-noncomputable def vecReceiptNaturality :
+theorem vecReceiptNaturality :
     ReceiptNaturality vecPresentedCandidate :=
   vecInventoryReceiptNaturality.toPresented
 

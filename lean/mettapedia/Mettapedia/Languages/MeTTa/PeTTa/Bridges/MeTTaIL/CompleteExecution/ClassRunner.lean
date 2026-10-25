@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.ClassAdvance
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Canonical
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RunnerSource
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.SearchRunner
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.QuoteDropNormal
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.ModelNormal
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.StandardWire
@@ -29,7 +30,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
 open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax
 open Mettapedia.OSLF.MeTTaIL.Complete.Footprint (Scope Declared KeyReady ClassReady)
-open Mettapedia.Machines.ResumableSearchRunner (Phase Machine)
+open Mettapedia.Machines.ResumableSearchRunner (Phase Status Machine)
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Effects (State)
 open Eval
@@ -41,8 +42,8 @@ open CanonicalCompare (Covered)
 /-- A fact of the canonical library at values, in the runner's runtime. -/
 syntax "canonical_lifted% " "[" str,* "] " term:max : term
 macro_rules
-  | `(canonical_lifted% [$names,*] $fact) => `(Library.lift_call runner_checked (by decide +kernel) (by decide)
-      (by decide +kernel) (by decide) [$names,*] (by decide) (by rfl) (by decide +kernel) $fact)
+  | `(canonical_lifted% [$names,*] $fact) =>
+      `(canonical_runner_lifted% [$names,*] $fact)
 
 /-- A fact of the laws library at values, in the runner's runtime. -/
 syntax "laws_lifted% " "[" str,* "] " term:max : term
@@ -190,17 +191,150 @@ theorem runner_standard_returns (state : State) (mode : Complete.Normalized.Comm
     runner_eval [normalized, canonical] unfolding [commitTerm, modelTerm, Complete.Normalized.commit,
       Complete.Normalized.standard, lawsValue, extrusionsValue, tableValue]
 
+/-! ## The native search-backend boundary -/
+
+/-- How a generic search status is written by the native backend. -/
+def searchStatusAtom : Status → Atom
+  | .complete => .symbol "SearchComplete"
+  | .blocked => .symbol "SearchBlocked"
+  | .pending => .symbol "SearchPending"
+
+/-- A zero-work native run only initializes the class search, so it needs declaration
+coverage but no executable round. -/
+theorem search_run_zero_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
+    (expected : TypeExpr) (footprint : List String) (tabled : table = plan.snapshot.free.entriesOn footprint)
+    (declared : Declared plan footprint) (source : Pattern)
+    (inside : ∀ name ∈ source.freeFvarNames, name ∈ footprint) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:search:run" [classSearchBackend, planValue plan table bound expected,
+        patternValue source, number 0]) state
+      (encoded (classStateTerm plan ((Complete.Classes.search plan bound expected).run source 0))) := by
+  have started := runner_lifted% ["plan", "source"]
+    (classes_begin_returns plan state table bound expected footprint tabled declared source inside)
+  have idle := runner_lifted% ["plan", "quantum", "program"]
+    (classes_rounds_zero_returns plan state table bound expected
+      (Complete.Classes.begin plan bound expected source))
+  runner_eval [started, idle]
+    unfolding [classSearchBackend, Complete.Classes.search, Complete.Classes.rounds]
+
+/-- **The class backend's native `run` is the Lean class search's `run`.** -/
+@[metta_head "gslt:search:run"]
+theorem search_run_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
+    (expected : TypeExpr) (footprint : List String) (tabled : table = plan.snapshot.free.entriesOn footprint)
+    (scope : Scope plan footprint) (source : Pattern)
+    (inside : ∀ name ∈ source.freeFvarNames, name ∈ footprint) (work : Nat) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:search:run" [classSearchBackend, planValue plan table bound expected,
+        patternValue source, number work]) state
+      (encoded (classStateTerm plan ((Complete.Classes.search plan bound expected).run source work))) := by
+  have started := runner_lifted% ["plan", "source"]
+    (classes_begin_returns plan state table bound expected footprint tabled scope.declared source inside)
+  have ready := Complete.Footprint.ready_begin (bound := bound) (expected := expected) scope inside
+  have resumed := runner_lifted% ["plan", "quantum", "program"]
+    (classes_rounds_returns plan state table bound expected footprint tabled scope work
+      (Complete.Classes.begin plan bound expected source) ready)
+  runner_eval [started, resumed]
+    unfolding [classSearchBackend, Complete.Classes.search, Complete.Classes.rounds]
+
+/-- **The class backend's native `resume` is the Lean class search's `resume`.** -/
+@[metta_head "gslt:search:resume"]
+theorem search_resume_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
+    (expected : TypeExpr) (footprint : List String) (tabled : table = plan.snapshot.free.entriesOn footprint)
+    (scope : Scope plan footprint) (run : Complete.Classes.State plan)
+    (ready : SearchReady bound expected footprint run) (work : Nat) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:search:resume" [classSearchBackend, planValue plan table bound expected,
+        encoded (classStateTerm plan run), number work]) state
+      (encoded (classStateTerm plan ((Complete.Classes.search plan bound expected).resume run work))) := by
+  have resumed := runner_lifted% ["plan", "quantum", "program"]
+    (classes_rounds_returns plan state table bound expected footprint tabled scope work run ready.1)
+  runner_eval [resumed] unfolding [classSearchBackend, Complete.Classes.search]
+
+/-- **The class backend publishes exactly the retained class log.** -/
+@[metta_head "gslt:search:publication"]
+theorem search_publication_returns (state : State) (run : Complete.Classes.State plan) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:search:publication" [classSearchBackend, encoded (classStateTerm plan run)]) state
+      (encoded (encodeList classReceiptTerm run.log)) := by
+  obtain ⟨round, reps, entries, log⟩ := run
+  runner_eval unfolding [classSearchBackend, classStateTerm, Complete.Classes.search]
+
+/-- **The class backend reports the Lean class search's status.** -/
+@[metta_head "gslt:search:status"]
+theorem search_status_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
+    (expected : TypeExpr) (run : Complete.Classes.State plan)
+    (licensed : ∀ entry ∈ run.entries, KeyLicensed plan bound expected entry.1) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:search:status" [classSearchBackend, planValue plan table bound expected,
+        encoded (classStateTerm plan run)]) state
+      (searchStatusAtom ((Complete.Classes.search plan bound expected).status run)) := by
+  obtain ⟨round, reps, entries, log⟩ := run
+  have done := runner_lifted% ["plan", "entries"]
+    (classes_entries_complete_returns plan state table bound expected entries licensed)
+  cases finished : entries.all fun entry => entry.2.complete <;>
+    runner_eval [done]
+      unfolding [classSearchBackend, classStateTerm, Complete.Classes.search, Complete.Classes.status,
+        Complete.Classes.complete, searchStatusAtom, finished]
+
+/-- **The class backend's native target is the committed Lean receipt target.** -/
+@[metta_head "gslt:search:target"]
+theorem search_target_returns (state : State) (mode : Complete.Normalized.Commit) (names : List String)
+    (named : TableFor plan names) (bound : List TypeExpr) (expected : TypeExpr)
+    (receipt : GeneralOccurrenceSemantics.Receipt) (checked : Complete.Classes.Checked plan bound expected receipt.target) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:search:target" [classSearchBackend, encoded (commitTerm plan mode names),
+        encoded (classReceiptTerm receipt)]) state
+      (patternValue ((Complete.Normalized.search plan bound expected mode).target receipt)) := by
+  have standard := runner_standard_returns plan state mode names named receipt.target
+    (commitReady_of_checked plan (mode := mode) named checked)
+  runner_eval [standard] unfolding [classSearchBackend, classReceiptTerm,
+    ScopedRuleJobReadoutExecution.receiptTerm, GeneralOccurrenceSemantics.Receipt.target,
+    Complete.Normalized.search]
+
+/-- The established search realizes the common native search algebra on its
+existing footprint and checked-target invariants. -/
+def classRealization (mode : Complete.Normalized.Commit) (names : List String)
+    (named : TableFor plan names) (table : List (String × TypeExpr))
+    (bound : List TypeExpr) (expected : TypeExpr) (footprint : List String)
+    (tabled : table = plan.snapshot.free.entriesOn footprint) (scope : Scope plan footprint) :
+    SearchRunner.Realization (Complete.Normalized.search plan bound expected mode) where
+  lawful := Complete.Normalized.search_lawful plan bound expected mode
+  stable := Complete.Settled.normalized_stable plan bound expected mode
+  backend := classSearchBackend
+  plan := planValue plan table bound expected
+  standard := encoded (commitTerm plan mode names)
+  runTerm := classStateTerm plan
+  receiptTerm := classReceiptTerm
+  SourceReady source := ∀ name ∈ source.freeFvarNames, name ∈ footprint
+  RunReady := SearchReady bound expected footprint
+  ReceiptReady receipt := Complete.Classes.Checked plan bound expected receipt.target
+  run_ready _ inside work :=
+    searchReady_rounds scope work (searchReady_begin scope inside)
+  resume_ready _ ready work := searchReady_rounds scope work ready
+  publication_ready _ ready receipt member := ready.2 receipt member
+  target_ready receipt ready :=
+    Complete.Normalized.target_within plan bound expected receipt footprint
+      (Complete.Footprint.sorted_within scope.declared ready) mode
+  run_returns state source inside work :=
+    search_run_returns plan state table bound expected footprint tabled scope source inside work
+  resume_returns state run ready work :=
+    search_resume_returns plan state table bound expected footprint tabled scope run ready work
+  publication_returns state run := search_publication_returns plan state run
+  status_returns state run ready :=
+    search_status_returns plan state table bound expected run
+      (fun entry member => key_licensed_of_ready (ready.1.entries entry member))
+  target_returns state receipt ready :=
+    search_target_returns plan state mode names named bound expected receipt ready
+
 @[metta_head "gslt:runner:target"]
 theorem runner_target_returns (state : State) (mode : Complete.Normalized.Commit) (names : List String)
     (named : TableFor plan names) (bound : List TypeExpr) (expected : TypeExpr)
     (receipt : GeneralOccurrenceSemantics.Receipt) (checked : Complete.Classes.Checked plan bound expected receipt.target) :
     PureReturns runnerLibrary.runtime [] state
-      (apply "gslt:runner:target" [encoded (commitTerm plan mode names), encoded (classReceiptTerm receipt)]) state
+      (apply "gslt:runner:target" [CompleteExecution.classSearchBackend, encoded (commitTerm plan mode names), encoded (classReceiptTerm receipt)]) state
       (patternValue ((Complete.Normalized.search plan bound expected mode).target receipt)) := by
-  have standard := runner_standard_returns plan state mode names named receipt.target
-    (commitReady_of_checked plan (mode := mode) named checked)
-  runner_eval [standard] unfolding [classReceiptTerm, ScopedRuleJobReadoutExecution.receiptTerm,
-    GeneralOccurrenceSemantics.Receipt.target, Complete.Normalized.search]
+  have target := search_target_returns plan state mode names named bound expected receipt checked
+  runner_eval [target] unfolding [classSearchBackend]
 
 /-- **A run starts at the source's standard form.** -/
 @[metta_head "gslt:runner:begin"]
@@ -210,19 +344,18 @@ theorem runner_begin_returns (state : State) (mode : Complete.Normalized.Commit)
     (declared : Declared plan footprint) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ footprint) (ready : CommitReady mode names source) :
     PureReturns runnerLibrary.runtime [] state
-      (apply "gslt:runner:begin" [planValue plan table bound expected, encoded (commitTerm plan mode names),
+      (apply "gslt:runner:begin" [CompleteExecution.classSearchBackend, planValue plan table bound expected, encoded (commitTerm plan mode names),
         patternValue source])
       state (encoded (classMachineTerm plan
         (Machine.begin (Complete.Normalized.search plan bound expected mode)
           (Complete.Normalized.commit plan mode source)))) := by
   have standard := runner_standard_returns plan state mode names named source ready
-  have started := runner_lifted% ["plan", "source"]
-    (classes_begin_returns plan state table bound expected footprint tabled declared
-      (Complete.Normalized.commit plan mode source)
-      (Complete.Normalized.commit_within plan mode source footprint inside))
+  have started := search_run_zero_returns plan state table bound expected footprint tabled declared
+    (Complete.Normalized.commit plan mode source)
+    (Complete.Normalized.commit_within plan mode source footprint inside)
   runner_eval [standard, started]
     unfolding [classMachineTerm, Machine.begin, Complete.Normalized.search, Complete.Classes.search,
-      Complete.Classes.rounds, classPhaseSymbol, encodeList, patternValue]
+      classSearchBackend, Complete.Classes.rounds, classPhaseSymbol, encodeList, patternValue]
 
 @[metta_head "gslt:runner:tick"]
 theorem runner_tick_returns (state : State) (mode : Complete.Normalized.Commit) (names : List String)
@@ -231,49 +364,13 @@ theorem runner_tick_returns (state : State) (mode : Complete.Normalized.Commit) 
     (scope : Scope plan footprint) (machine : ClassMachine plan)
     (ready : RunnerReady bound expected footprint machine) (quantum : Nat) :
     PureReturns runnerLibrary.runtime [] state
-      (apply "gslt:runner:tick" [planValue plan table bound expected, encoded (commitTerm plan mode names),
+      (apply "gslt:runner:tick" [CompleteExecution.classSearchBackend, planValue plan table bound expected, encoded (commitTerm plan mode names),
         encoded (classMachineTerm plan machine), number quantum])
       state (encoded (classMachineTerm plan
         (Machine.tick (Complete.Normalized.search plan bound expected mode) machine quantum))) := by
-  obtain ⟨phase, current, program, states, receipts⟩ := machine
-  cases phase with
-  | done =>
-    runner_eval unfolding [classMachineTerm, classPhaseSymbol, Machine.tick]
-  | blocked =>
-    runner_eval unfolding [classMachineTerm, classPhaseSymbol, Machine.tick]
-  | running =>
-    have programReady : SearchReady bound expected footprint program := ready
-    have resumedReady := searchReady_rounds scope quantum programReady
-    have resumed := runner_lifted% ["plan", "quantum", "program"]
-      (classes_rounds_returns plan state table bound expected footprint tabled scope quantum program programReady.1)
-    rcases hresumed : Complete.Classes.rounds plan bound expected quantum program with ⟨round, reps, entries, log⟩
-    rw [hresumed] at resumed resumedReady
-    cases log with
-    | cons receipt rest =>
-      have inside := Complete.Normalized.target_within plan bound expected receipt footprint
-        (resumedReady.1.log receipt (by simp)) mode
-      have target := runner_target_returns plan state mode names named bound expected receipt
-        (resumedReady.2 receipt (by simp))
-      have fresh := runner_lifted% ["plan", "source"]
-        (classes_begin_returns plan state table bound expected footprint tabled scope.declared
-          ((Complete.Normalized.search plan bound expected mode).target receipt) inside)
-      runner_eval [resumed, target, fresh]
-        unfolding [classMachineTerm, classPhaseSymbol, Machine.tick, Complete.Normalized.search,
-          Complete.Classes.search, hresumed, classStateTerm, encodeList, Complete.Classes.rounds, patternValue]
-    | nil =>
-      have licensed : ∀ entry ∈ entries, KeyLicensed plan bound expected entry.1 := fun entry member =>
-        key_licensed_of_ready (resumedReady.1.entries entry member)
-      have done := runner_lifted% ["plan", "entries"]
-        (classes_entries_complete_returns plan state table bound expected entries licensed)
-      cases finished : entries.all fun entry => entry.2.complete
-      · runner_eval [resumed, done]
-          unfolding [classMachineTerm, classPhaseSymbol, Machine.tick, Complete.Normalized.search,
-            Complete.Classes.search, hresumed, classStateTerm, encodeList, Complete.Classes.status,
-            Complete.Classes.complete, finished, Mettapedia.Machines.ResumableSearchRunner.phaseOf]
-      · runner_eval [resumed, done]
-          unfolding [classMachineTerm, classPhaseSymbol, Machine.tick, Complete.Normalized.search,
-            Complete.Classes.search, hresumed, classStateTerm, encodeList, Complete.Classes.status,
-            Complete.Classes.complete, finished, Mettapedia.Machines.ResumableSearchRunner.phaseOf]
+  exact SearchRunner.tick_returns
+    (classRealization plan mode names named table bound expected footprint tabled scope)
+    state machine ready quantum
 
 @[metta_head "gslt:runner:advance"]
 theorem runner_advance_returns (state : State) (mode : Complete.Normalized.Commit) (names : List String)
@@ -282,19 +379,14 @@ theorem runner_advance_returns (state : State) (mode : Complete.Normalized.Commi
     (scope : Scope plan footprint) (quantum : Nat) :
     ∀ (ticks : Nat) (machine : ClassMachine plan), RunnerReady bound expected footprint machine →
       PureReturns runnerLibrary.runtime [] state
-        (apply "gslt:runner:advance" [planValue plan table bound expected, encoded (commitTerm plan mode names),
+        (apply "gslt:runner:advance" [CompleteExecution.classSearchBackend, planValue plan table bound expected, encoded (commitTerm plan mode names),
           number ticks, number quantum, encoded (classMachineTerm plan machine)])
         state (encoded (classMachineTerm plan
           (Machine.advance (Complete.Normalized.search plan bound expected mode) ticks quantum machine)))
-  | 0, machine, _ => by
-    runner_eval unfolding [Machine.advance]
-  | ticks + 1, machine, ready => by
-    have once := runner_tick_returns plan state mode names named table bound expected footprint tabled scope machine
-      ready quantum
-    have later := runner_advance_returns state mode names named table bound expected footprint tabled scope quantum ticks
-      (Machine.tick (Complete.Normalized.search plan bound expected mode) machine quantum)
-      (runner_ready_tick scope mode ready quantum)
-    runner_eval [once, later] unfolding [Machine.advance]
+  | ticks, machine, ready => by
+      exact SearchRunner.advance_returns
+        (classRealization plan mode names named table bound expected footprint tabled scope)
+        state quantum ticks machine ready
 
 @[metta_head "gslt:runner:reverse-onto"]
 theorem runner_reverse_onto_returns (state : State) : ∀ (items tail : List Term),

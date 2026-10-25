@@ -179,6 +179,21 @@ def CSubstMor (P : ChurchRules R) {n m : Nat} (Γ : CCtx Head n) (Δ : CCtx Head
     (σ : CSub Head n m) : Prop :=
   ∀ i, CTyped P Δ (σ i) ((Γ.lookup i).subst σ)
 
+/-- Every substitution out of the empty context is typed. -/
+theorem CSubstMor.empty {P : ChurchRules R} {m : Nat} {Δ : CCtx Head m}
+    {σ : CSub Head 0 m} : CSubstMor P .nil Δ σ := fun i => i.elim0
+
+/-- Extend a typed substitution by a term at the substituted domain. -/
+theorem CSubstMor.cons {P : ChurchRules R} {n m : Nat}
+    {Γ : CCtx Head n} {Δ : CCtx Head m} {σ : CSub Head n m}
+    {A : CTm Head n} {a : CTm Head m} (typed : CSubstMor P Γ Δ σ)
+    (argument : CTyped P Δ a (A.subst σ)) :
+    CSubstMor P (.snoc Γ A) Δ (CTm.consSub a σ) := by
+  intro i
+  refine Fin.cases ?_ (fun j => ?_) i
+  · simpa only [CTm.consSub_zero, CCtx.lookup_snoc_zero, CTm.subst_consSub_wk] using argument
+  · simpa only [CTm.consSub_succ, CCtx.lookup_snoc_succ, CTm.subst_consSub_wk] using typed j
+
 theorem CSubstMor.lift {P : ChurchRules R} {n m : Nat} {Γ : CCtx Head n} {Δ : CCtx Head m}
     {σ : CSub Head n m} (typed : CSubstMor P Γ Δ σ) (A : CTm Head n) :
     CSubstMor P (.snoc Γ A) (.snoc Δ (A.subst σ)) (CTm.liftSub σ) := by

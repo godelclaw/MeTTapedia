@@ -25,6 +25,7 @@ import Mettapedia.Logic.LP.PathMapBridge
 import Mettapedia.Logic.LP.RangeRestriction
 import Mettapedia.Logic.LP.Narrowing
 import Mettapedia.Logic.LP.NarrowingLift
+import Mettapedia.Logic.LP.LinearUnification
 import Mettapedia.Logic.LP.HypotheticalPropositional
 
 /-!
@@ -59,5 +60,6 @@ Barrel import for the LP module stack:
 | `RangeRestriction` | `isUnit`, `isRangeRestricted`, unit-KB LHM characterization |
 | `Narrowing` | Rules used left to right: narrowing (unification may instantiate the query), rewriting as the narrowing that fixes it, paramodulation into a unit equation, soundness in models; `a ⟶ b`, `a ⟶ c` give `b = c` by paramodulation and no rewriting between `b` and `c`; `f x ⟶ f (g x)` has no reduction order |
 | `NarrowingLift` | A rewrite of an instantiated query at a non-variable subterm is an instance of a narrowing by a most general unifier |
+| `LinearUnification` | Linear terms (no variable twice): substitution and refilling keep them linear; unifying linear, variable-disjoint equations overlays them, the most general unifier sending left-side variables to linear terms with no shared variable |
 | `HypotheticalPropositional` | Propositional hypothetical Datalog: premises under discharged atomic hypotheses; a nested least fixed point decides derivability; weakening, cut, domination and blocking |
 -/

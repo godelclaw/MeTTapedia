@@ -30,7 +30,7 @@ def emptyUnitOccurrence (color : CostStaticColor) :
   .emptyUnit (parallelRule color) .hashBag (parallelAlgebra color)
     (unitName color) (parallelDeclaration color) rfl
     ⟨WellSorted.FreeTypeContext.empty, [], .collectionConstructor
-      (parallel_member color) (parallel_shape color) (.nil _ _)⟩
+      (parallel_member color) (parallel_bare_shape color) (.nil _ _)⟩
 
 theorem emptyUnit_declared (color : CostStaticColor) :
     DerivedInstance language (.collection .hashBag [] none)

@@ -85,6 +85,16 @@ theorem FormationSensitive.Typing.toTyped {n : Nat} {Γ : Ctx Head n} {t A : Tm 
       exact Typed.convType tt
         (Conv.toTypeEq facts roots heads church formed conversion tA hs (ihB formed) hu)
 
+/-- Formation-sensitive context formation transfers one prefix at a time,
+using the already transferred prefix to type the next entry. -/
+theorem FormationSensitive.ContextFormation.toTyped {n : Nat} {Γ : Ctx Head n}
+    (formed : FormationSensitive.ContextFormation S.R Γ) : CtxFormed S.R Γ := by
+  induction formed with
+  | nil => exact .nil
+  | snoc _ typed universeWitness ih =>
+      exact .snoc ih ⟨_, universeWitness,
+        FormationSensitive.Typing.toTyped facts roots heads church typed ih⟩
+
 end Conservativity
 
 end Normalization

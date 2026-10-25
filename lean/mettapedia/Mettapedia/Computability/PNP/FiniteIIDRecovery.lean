@@ -2,31 +2,20 @@ import Mettapedia.Computability.PNP.FiniteIIDFamilyBound
 import Mettapedia.Computability.PNP.FiniteUniformRate
 
 /-!
-# P vs NP background theory: finite weighted recovery bounds
+# Finite-sample recovery
 
-This file turns the weighted deceptive-family bound into a weighted recovery
-statement for ERM.
-
-The main results are:
-
-* the total `μ^m`-mass of the whole sample space is `1`,
-* the nondeceptive and deceptive weighted masses partition that total mass,
-* if the target is realized by the family, exact ERM recovery has at least the
-  nondeceptive mass,
-* therefore exact recovery has lower bounds of the form
-  `1 - deceptiveMass`, `1 - ∑ bad α_h^m`, and `1 - |Code(H)| q^m`.
+Deceptive and nondeceptive events partition product sampling. Realizability
+makes every nondeceptive sample yield exact ERM recovery. The lower bounds
+reuse code and distinct-predictor union estimates while retaining the chosen
+minimizer; coding invariance concerns the failure event, not that choice.
 -/
 
-namespace Mettapedia.Computability.PNP
+namespace Mettapedia.Computability.PNP.EncodedFamily
 
-open scoped ENNReal
-open scoped BigOperators
+open scoped ENNReal BigOperators
+open Mettapedia.ProbabilityTheory
 
 universe u v
-
-namespace EncodedFamily
-
-section WeightedRecovery
 
 variable {Input : Type u} {Output : Type v}
 variable [Fintype Input] [DecidableEq Output]
@@ -50,108 +39,63 @@ noncomputable instance instDecidableExactRecoverySample
   classical
   infer_instance
 
-theorem nondeceptiveSampleMass_eq_sum_indicator
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+variable [Nonempty H.Code] (μ : PMF Input) (target : Input → Output) (m : Nat)
+
+omit [Nonempty H.Code] in
+theorem nondeceptiveSampleMass_eq_sum_indicator :
     H.nondeceptiveSampleMass μ target m =
       ∑ sample : PointSample Input m,
         if ¬ H.IsDeceptiveSample target sample then sampleMass μ sample else 0 := by
-  classical
-  unfold nondeceptiveSampleMass
-  simpa [Finset.sum_filter] using
-    (Finset.sum_subtype_eq_sum_filter
-      (s := (Finset.univ : Finset (PointSample Input m)))
-      (f := fun sample : PointSample Input m => sampleMass μ sample)
-      (p := fun sample => ¬ H.IsDeceptiveSample target sample))
+  simpa [FiniteEventMass.mass, nondeceptiveSampleMass, NondeceptiveSamples] using
+    (FiniteEventMass.mass_subtype (sampleMass μ) (fun sample : PointSample Input m => ¬ H.IsDeceptiveSample target sample)).symm
 
-theorem exactRecoverySampleMass_eq_sum_indicator
-    [Nonempty H.Code]
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+theorem exactRecoverySampleMass_eq_sum_indicator :
     H.exactRecoverySampleMass μ target m =
       ∑ sample : PointSample Input m,
         if H.empiricalRiskPredictor (labeledByTarget target sample) = target then
           sampleMass μ sample
         else 0 := by
-  classical
-  unfold exactRecoverySampleMass
-  simpa [Finset.sum_filter] using
-    (Finset.sum_subtype_eq_sum_filter
-      (s := (Finset.univ : Finset (PointSample Input m)))
-      (f := fun sample : PointSample Input m => sampleMass μ sample)
-      (p := fun sample =>
-        H.empiricalRiskPredictor (labeledByTarget target sample) = target))
+  simpa [FiniteEventMass.mass, exactRecoverySampleMass, ExactRecoverySamples] using
+    (FiniteEventMass.mass_subtype (sampleMass μ) (fun sample : PointSample Input m => H.empiricalRiskPredictor (labeledByTarget target sample) = target)).symm
 
-theorem sampleMass_sum_eq_one
-    (μ : PMF Input) (m : ℕ) :
+theorem sampleMass_sum_eq_one :
     (∑ sample : PointSample Input m, sampleMass μ sample) = 1 := by
-  classical
-  unfold sampleMass
-  calc
-    (∑ sample : PointSample Input m, ∏ i, μ (sample i))
-      = (∑ a : Input, μ a) ^ m := by
-          symm
-          simpa using
-            (Finset.sum_pow'
-              (s := Finset.univ)
-              (f := fun a : Input => μ a)
-              (n := m))
-    _ = 1 ^ m := by
-          congr 1
-          calc
-            (∑ a : Input, μ a) = μ.toOuterMeasure (Set.univ : Set Input) := by
-              rw [μ.toOuterMeasure_apply_fintype]
-              simp
-            _ = 1 := by
-              simpa using
-                (μ.toOuterMeasure_apply_eq_one_iff (s := (Set.univ : Set Input))).2
-                  (by simp)
-    _ = 1 := by simp
+  change (∑ sample : Fin m → Input, ∏ i, μ (sample i)) = 1
+  rw [← Fintype.sum_pow]
+  have total : (∑ x, μ x) = 1 := by simpa [tsum_fintype] using μ.tsum_coe
+  simp only [total, one_pow]
 
-theorem nondeceptiveSampleMass_add_deceptiveSampleMass
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+omit [Nonempty H.Code] in
+theorem nondeceptiveSampleMass_add_deceptiveSampleMass :
     H.nondeceptiveSampleMass μ target m + H.deceptiveSampleMass μ target m = 1 := by
-  classical
-  rw [H.nondeceptiveSampleMass_eq_sum_indicator, H.deceptiveSampleMass_eq_sum_indicator]
-  calc
-    ((∑ sample : PointSample Input m,
-        if ¬ H.IsDeceptiveSample target sample then sampleMass μ sample else 0) +
-      (∑ sample : PointSample Input m,
-        if H.IsDeceptiveSample target sample then sampleMass μ sample else 0))
-      = ∑ sample : PointSample Input m,
-          ((if ¬ H.IsDeceptiveSample target sample then sampleMass μ sample else 0) +
-            (if H.IsDeceptiveSample target sample then sampleMass μ sample else 0)) := by
-              rw [Finset.sum_add_distrib]
-    _ = ∑ sample : PointSample Input m, sampleMass μ sample := by
-          refine Finset.sum_congr rfl ?_
-          intro sample _
-          by_cases hdec : H.IsDeceptiveSample target sample <;> simp [hdec]
-    _ = 1 := sampleMass_sum_eq_one μ m
+  rw [add_comm]
+  unfold nondeceptiveSampleMass deceptiveSampleMass
+  have partition := (Fintype.sum_subtype_add_sum_subtype (H.IsDeceptiveSample target)
+    (sampleMass μ)).trans (sampleMass_sum_eq_one μ m)
+  convert! partition using 1; congr!
 
-theorem one_sub_deceptiveSampleMass_le_nondeceptiveSampleMass
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+omit [Nonempty H.Code] in
+theorem one_sub_deceptiveSampleMass_le_nondeceptiveSampleMass :
     1 - H.deceptiveSampleMass μ target m ≤ H.nondeceptiveSampleMass μ target m := by
   apply tsub_le_iff_right.2
   simpa [add_comm] using
     (le_of_eq (H.nondeceptiveSampleMass_add_deceptiveSampleMass μ target m).symm)
 
 theorem exactRecoverySampleMass_ge_nondeceptiveSampleMass
-    [Nonempty H.Code]
-    (μ : PMF Input) (target : Input → Output) (m : ℕ)
     (htarget : ∃ c : H.Code, H.decode c = target) :
     H.nondeceptiveSampleMass μ target m ≤ H.exactRecoverySampleMass μ target m := by
   classical
-  rw [H.nondeceptiveSampleMass_eq_sum_indicator, H.exactRecoverySampleMass_eq_sum_indicator]
-  refine Finset.sum_le_sum ?_
-  intro sample _
-  by_cases hdec : H.IsDeceptiveSample target sample
-  · simp [hdec]
-  · have hexact :
-        H.empiricalRiskPredictor (labeledByTarget target sample) = target :=
-      H.empiricalRiskPredictor_eq_target_of_not_deceptive target sample htarget hdec
-    simp [hdec, hexact]
+  have bound := FiniteEventMass.mono (fun sample : PointSample Input m => sampleMass μ sample)
+      (fun _ => bot_le)
+      (first := fun sample => decide (¬ H.IsDeceptiveSample target sample))
+      (second := fun sample => decide (H.empiricalRiskPredictor (labeledByTarget target sample) = target))
+      (fun sample accepted => decide_eq_true
+        (H.empiricalRiskPredictor_eq_target_of_not_deceptive target sample htarget (of_decide_eq_true accepted)))
+  simp only [FiniteEventMass.mass_subtype] at bound
+  unfold nondeceptiveSampleMass exactRecoverySampleMass
+  convert! bound using 1
 
 theorem exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass
-    [Nonempty H.Code]
-    (μ : PMF Input) (target : Input → Output) (m : ℕ)
     (htarget : ∃ c : H.Code, H.decode c = target) :
     1 - H.deceptiveSampleMass μ target m ≤ H.exactRecoverySampleMass μ target m := by
   exact le_trans
@@ -159,42 +103,27 @@ theorem exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass
     (H.exactRecoverySampleMass_ge_nondeceptiveSampleMass μ target m htarget)
 
 theorem exactRecoverySampleMass_ge_one_sub_badCodeAgreementMassSum
-    [Nonempty H.Code]
-    (μ : PMF Input) (target : Input → Output) (m : ℕ)
     (htarget : ∃ c : H.Code, H.decode c = target) :
     1 - ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m ≤
       H.exactRecoverySampleMass μ target m := by
-  have hdeceptive :
-      H.deceptiveSampleMass μ target m ≤
-        ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m :=
-    H.deceptiveSampleMass_le_badCodeAgreementMassSum μ target m
-  have hone :
-      1 - ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m
-        ≤ 1 - H.deceptiveSampleMass μ target m := by
-    exact tsub_le_tsub_left hdeceptive 1
-  exact le_trans hone <|
-    H.exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass μ target m htarget
+  exact (tsub_le_tsub_left (H.deceptiveSampleMass_le_badCodeAgreementMassSum μ target m) 1).trans
+    (H.exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass μ target m htarget)
 
 theorem exactRecoverySampleMass_ge_one_sub_codeCard_mul_pow_of_agreementMass_le
-    [Nonempty H.Code]
-    (μ : PMF Input) (target : Input → Output) (m : ℕ)
     (htarget : ∃ c : H.Code, H.decode c = target)
     {q : ℝ≥0∞}
     (hq : ∀ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ≤ q) :
     1 - (Fintype.card H.Code : ℝ≥0∞) * q ^ m ≤
       H.exactRecoverySampleMass μ target m := by
-  have hdeceptive :
-      H.deceptiveSampleMass μ target m ≤ (Fintype.card H.Code : ℝ≥0∞) * q ^ m :=
-    H.deceptiveSampleMass_le_codeCard_mul_pow_of_agreementMass_le μ target m hq
-  have hone :
-      1 - (Fintype.card H.Code : ℝ≥0∞) * q ^ m
-        ≤ 1 - H.deceptiveSampleMass μ target m := by
-    exact tsub_le_tsub_left hdeceptive 1
-  exact le_trans hone <|
-    H.exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass μ target m htarget
+  exact (tsub_le_tsub_left (H.deceptiveSampleMass_le_codeCard_mul_pow_of_agreementMass_le μ target m hq) 1).trans
+    (H.exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass μ target m htarget)
 
-end WeightedRecovery
+/-- Exact recovery inherits the bound over distinct incorrect predictions. -/
+theorem exactRecoverySampleMass_ge_one_sub_badPredictorCard_mul_pow_of_agreementMass_le
+    (htarget : ∃ c : H.Code, H.decode c = target) {q : ℝ≥0∞}
+    (hq : ∀ h : H.BadPredictors target, agreementMass μ target h.1.1 ≤ q) :
+    1 - (Fintype.card (H.BadPredictors target) : ℝ≥0∞) * q ^ m ≤ H.exactRecoverySampleMass μ target m :=
+  (tsub_le_tsub_left (H.deceptiveSampleMass_le_badPredictorCard_mul_pow_of_agreementMass_le μ target m hq) 1).trans
+    (H.exactRecoverySampleMass_ge_one_sub_deceptiveSampleMass μ target m htarget)
 
-end EncodedFamily
-
-end Mettapedia.Computability.PNP
+end Mettapedia.Computability.PNP.EncodedFamily

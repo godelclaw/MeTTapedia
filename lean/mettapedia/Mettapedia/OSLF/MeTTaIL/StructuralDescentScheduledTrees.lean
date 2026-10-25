@@ -102,7 +102,8 @@ abbrev RootBodies (environment : Environment) (outer : Goal)
         frame.rule.premises answer.assignment)
       (.rootBody frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
         frame.declared frame.specified frame.admitted frame.sorted answer.trace answer.assignment
-        valid typed frame.tail))
+        (by simpa only [rootRequest, GeneralScopedMatchMachine.Answer.Valid,
+          MatchingExecution.ordinary, ordinaryInterpretation] using valid) typed frame.tail))
 
 def treeRootMatch (environment : Environment) (outer : Goal)
     (frame : RootMatchFrame environment outer) (bodies : RootBodies environment outer frame) :
@@ -113,7 +114,10 @@ def treeRootMatch (environment : Environment) (outer : Goal)
   · rename_i answer found
     have decrease := matcherDebt_cursor (rootRequest frame) frame.state frame.cursor answer found
     split
-    · exact .cons (bodies _ _ _)
+    · rename_i checked
+      exact .cons (bodies answer
+          (GeneralScopedMatchMachine.answers_sound frame.reachable (List.mem_of_getElem? found))
+          (checkTypedAssignment_sound checked))
         (.cons (treeRootMatch environment outer {frame with cursor := frame.cursor + 1} bodies) .nil)
     · exact .cons
         (treeRootMatch environment outer {frame with cursor := frame.cursor + 1} bodies) .nil

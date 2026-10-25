@@ -204,7 +204,7 @@ theorem atomic_endpoint_has_nonatomic_native_predecessor :
   have singleton : EquationEquiv (engineBasePremises RelationEnv.empty) piCalc
       (.collection .hashBag [.apply "PiNil" []] none) (.apply "PiNil" []) :=
     derivedInstance_equivalent (.singleton piBagTheory.bagAlgebraRule rfl
-      ⟨piNameContext, [], bag_hasType piBagTheory
+      ⟨piNameContext, [], bag_hasType (piBagTheory.asBare rfl)
         (.cons (piToPattern_hasType .nil) (.nil _ _))⟩)
   exact processMessageExchange_not_native_atomic
     ((pi_native_box_iff_raw _ _).mp boxed _ _ firing singleton)

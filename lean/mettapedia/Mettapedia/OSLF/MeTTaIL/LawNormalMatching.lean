@@ -145,45 +145,6 @@ theorem normalize_scoped (laws : List Laws) : ∀ {depth : Nat} (pattern : Patte
       exact each
 termination_by _ pattern => sizeOf pattern
 
-private theorem mapM_bvars {f : Pattern → Option Nat} (onlyVariables : ∀ argument index, f argument = some index → argument = .bvar index) :
-    ∀ {arguments : List Pattern} {found : List Nat}, arguments.mapM f = some found → arguments = found.map Pattern.bvar
-  | [], found, mapped => by
-    simp only [List.mapM_nil, pure, Option.some.injEq] at mapped; subst mapped; rfl
-  | argument :: arguments, found, mapped => by
-    simp only [List.mapM_cons, bind, Option.bind_eq_some_iff, pure, Option.some.injEq] at mapped
-    obtain ⟨head, image, tail, mappedTail, rfl⟩ := mapped
-    rw [onlyVariables _ _ image, mapM_bvars onlyVariables mappedTail]
-    rfl
-
-/-- A variable spine's arguments are its local variables. -/
-theorem variableSpine?_arguments {depth : Nat} {arguments : List Pattern} {indices : List Nat}
-    (spine : variableSpine? depth arguments = some indices) : arguments = indices.map Pattern.bvar := by
-  unfold variableSpine? at spine
-  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at spine
-  obtain ⟨found, mapped, rest⟩ := spine
-  have arguments_eq := mapM_bvars (fun argument index image => by
-    split at image
-    · split at image
-      · cases image; rfl
-      · cases image
-    · cases image) mapped
-  split at rest
-  · cases rest; exact arguments_eq
-  · cases rest
-
-/-- With a variable spine, instantiation renames indices. -/
-theorem occurrenceAssignment_eq {depth : Nat} {arguments : List Pattern} {indices : List Nat}
-    (spine : variableSpine? depth arguments = some indices) (dependencies : Nat) :
-    occurrenceAssignment dependencies depth arguments =
-      indexRenaming fun index => if index < dependencies then indices.getD index 0 else depth + (index - dependencies) := by
-  rw [variableSpine?_arguments spine]
-  funext index
-  unfold occurrenceAssignment
-  by_cases small : index < dependencies
-  · simp only [small, if_true, indexRenaming, List.getD_eq_getElem?_getD, List.getElem?_map]
-    cases indices[index]? <;> rfl
-  · simp only [small, if_false, indexRenaming]
-
 /-- **A capture recovered from a law-normal subject is the normal form of the capture
 recovered from the original.** -/
 theorem recoverValue?_normalize (laws : List Laws) {dependencies : List TypeExpr} {ambient depth : Nat}

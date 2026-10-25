@@ -260,6 +260,16 @@ theorem classes_rounds_returns (state : State) (table : List (String × TypeExpr
       (Complete.Classes.round plan bound expected search) (Complete.Footprint.ready_round scope ready)
     complete_eval [once, later] unfolding [Complete.Classes.rounds]
 
+/-- Zero rounds return the retained state without needing any lane-readiness hypothesis. -/
+theorem classes_rounds_zero_returns (state : State) (table : List (String × TypeExpr))
+    (bound : List TypeExpr) (expected : TypeExpr) (search : Complete.Classes.State plan) :
+    PureReturns runtime [] state
+      (apply "gslt:classes:rounds" [planValue plan table bound expected, number 0,
+        encoded (classStateTerm plan search)]) state
+      (encoded (classStateTerm plan search)) := by
+  metta_call complete_checked
+  metta_eval unfolding [Complete.Classes.rounds]
+
 @[metta_head "gslt:classes:entries-complete"]
 theorem classes_entries_complete_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
     (expected : TypeExpr) : ∀ entries : List (Complete.Classes.Entry plan),

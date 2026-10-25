@@ -1,3 +1,4 @@
+import Mettapedia.Machines.ReadOnlyQuery
 import Mettapedia.GSLT.Dynamics.StoreReachability
 import Mettapedia.Algebra.OccurrenceIdentity
 import Mettapedia.Logic.LP.FiniteDependencyClosure
@@ -4707,3 +4708,1537 @@ theorem second_observer_reads_notebook_note :
     simp [projectCell, sevenCell, sevenPayload]
 
 end Mettapedia.Machines.ResourceOwnership
+
+
+/-!
+# Admission of actual finite resource descriptors
+
+Input rows contain observed optional headers and ordered slots. Finite checks
+construct a reference-closed heap without a coherent input Heap or desired
+destination as a premise. Equal repeated observations are allowed; conflicting
+headers or slot orders are refused. An absent header is data, distinct from a
+service which refused to provide observations.
+
+This is a finite data admission check. Authentic capture execution, native
+current-view/lifetime/Need/canonical-identity grants and validator progress or
+physical prices are separate obligations.
+-/
+
+set_option autoImplicit false
+
+namespace Mettapedia.Machines.ResourceOwnership.DescriptorAdmission
+
+universe v
+variable {A : Type} {V : Type v} [DecidableEq A]
+
+abbrev Descriptor (A : Type) (V : Type v) := Option (Cell A V) × List A
+abbrev Rows (A : Type) (V : Type v) := List (A × Descriptor A V)
+
+/-- The existing association-list lookup keeps the first actual observation. -/
+def lookup (rows : Rows A V) (address : A) : Option (Descriptor A V) := rows.lookup address
+
+def header (rows : Rows A V) (address : A) : Option (Cell A V) :=
+  (lookup rows address).bind Prod.fst
+
+def slots (rows : Rows A V) (address : A) : List A :=
+  ((lookup rows address).map Prod.snd).getD []
+
+def allocated (rows : Rows A V) : Finset A :=
+  (rows.map Prod.fst).toFinset.filter fun address => (header rows address).isSome = true
+
+def consistent [DecidableEq V] (rows : Rows A V) : Bool :=
+  rows.all fun row => decide (lookup rows row.1 = some row.2)
+
+/-- Shape uses the actual ordered list; support checks every occurrence,
+including repetitions. Set conversion occurs only in the reference observation. -/
+def descriptorCheck (rows : Rows A V) (descriptor : Descriptor A V) : Bool :=
+  match descriptor.1 with
+  | none => descriptor.2.isEmpty
+  | some cell => decide (descriptor.2.toFinset = cell.references) &&
+      descriptor.2.all (fun child => (header rows child).isSome)
+
+def check [DecidableEq V] (rows : Rows A V) (roots : List A) : Bool :=
+  consistent rows && rows.all (fun row => descriptorCheck rows row.2) &&
+    roots.all (fun address => (header rows address).isSome)
+
+theorem lookup_mem (rows : Rows A V) (address : A) (descriptor : Descriptor A V)
+    (found : lookup rows address = some descriptor) : (address, descriptor) ∈ rows := by
+  obtain ⟨before, after, equal, _⟩ := List.lookup_eq_some_iff.mp found
+  rw [equal]
+  simp
+
+theorem header_has_row (rows : Rows A V) (address : A) (cell : Cell A V)
+    (found : header rows address = some cell) :
+    ∃ descriptor, lookup rows address = some descriptor ∧ descriptor.1 = some cell ∧
+      (address, descriptor) ∈ rows := by
+  obtain ⟨descriptor, atRow, atHeader⟩ := Option.bind_eq_some_iff.mp found
+  exact ⟨descriptor, atRow, atHeader, lookup_mem rows address descriptor atRow⟩
+
+theorem allocated_iff (rows : Rows A V) (address : A) :
+    address ∈ allocated rows ↔ ∃ cell, header rows address = some cell := by
+  constructor
+  · intro present
+    exact Option.isSome_iff_exists.mp (Finset.mem_filter.mp present).2
+  · rintro ⟨cell, found⟩
+    obtain ⟨descriptor, _, _, member⟩ := header_has_row rows address cell found
+    apply Finset.mem_filter.mpr
+    exact ⟨List.mem_toFinset.mpr (List.mem_map.mpr ⟨(address, descriptor), member, rfl⟩), by simp [found]⟩
+
+variable [DecidableEq V]
+
+theorem check_iff (rows : Rows A V) (roots : List A) :
+    check rows roots = true ↔
+      (∀ row ∈ rows, lookup rows row.1 = some row.2) ∧
+      (∀ row ∈ rows, descriptorCheck rows row.2 = true) ∧
+      (∀ address ∈ roots, (header rows address).isSome = true) := by
+  simp [check, consistent, List.all_eq_true, and_assoc]
+
+theorem row_consistency (rows : Rows A V) (roots : List A) (passed : check rows roots = true)
+    (row : A × Descriptor A V) (member : row ∈ rows) : lookup rows row.1 = some row.2 :=
+  (check_iff rows roots).mp passed |>.1 row member
+
+theorem row_shape (rows : Rows A V) (roots : List A) (passed : check rows roots = true)
+    (row : A × Descriptor A V) (member : row ∈ rows) : descriptorCheck rows row.2 = true :=
+  (check_iff rows roots).mp passed |>.2.1 row member
+
+omit [DecidableEq V] in
+theorem descriptor_present_fields (rows : Rows A V) (descriptor : Descriptor A V)
+    (cell : Cell A V) (present : descriptor.1 = some cell)
+    (checked : descriptorCheck rows descriptor = true) :
+    descriptor.2.toFinset = cell.references ∧
+      ∀ child ∈ descriptor.2, (header rows child).isSome = true := by
+  simpa [descriptorCheck, present, List.all_eq_true] using checked
+
+omit [DecidableEq V] in
+theorem descriptor_absent_slots (rows : Rows A V) (descriptor : Descriptor A V)
+    (absent : descriptor.1 = none) (checked : descriptorCheck rows descriptor = true) :
+    descriptor.2 = [] := by
+  simpa [descriptorCheck, absent] using checked
+
+theorem reference_closed (rows : Rows A V) (roots : List A) (passed : check rows roots = true)
+    (address : A) (cell : Cell A V) (found : header rows address = some cell)
+    (child : A) (edge : child ∈ cell.references) : child ∈ allocated rows := by
+  obtain ⟨descriptor, _, atHeader, member⟩ := header_has_row rows address cell found
+  obtain ⟨references, supported⟩ := descriptor_present_fields rows descriptor cell atHeader
+    (row_shape rows roots passed (address, descriptor) member)
+  have slot : child ∈ descriptor.2 := List.mem_toFinset.mp (references.symm ▸ edge)
+  exact (allocated_iff rows child).mpr (Option.isSome_iff_exists.mp (supported child slot))
+
+/-- This actual heap is built only from finite lookup entries; closure is the
+result of the executable support check rather than a caller-supplied map law. -/
+def makeHeap (rows : Rows A V) (roots : List A) (passed : check rows roots = true) : Heap A V where
+  lookup := header rows
+  allocated := allocated rows
+  allocated_iff := allocated_iff rows
+  closed := reference_closed rows roots passed
+
+theorem slots_exact (rows : Rows A V) (roots : List A) (passed : check rows roots = true)
+    (address : A) :
+    (slots rows address).toFinset = ((header rows address).map Cell.references).getD ∅ := by
+  cases observed : lookup rows address with
+  | none => simp [slots, header, observed]
+  | some descriptor =>
+      have member := lookup_mem rows address descriptor observed
+      have checked := row_shape rows roots passed (address, descriptor) member
+      cases found : descriptor.1 with
+      | none =>
+          have empty := descriptor_absent_slots rows descriptor found checked
+          simp [slots, header, observed, found, empty]
+      | some cell =>
+          have fields := descriptor_present_fields rows descriptor cell found checked
+          simpa [slots, header, observed, found] using fields.1
+
+/-- Admission retains the actual input rows and ordered roots. Its only proof
+field is earned by executing the finite check below, not supplied by a caller. -/
+structure Checked (A : Type) (V : Type v) [DecidableEq A] [DecidableEq V] where
+  rows : Rows A V
+  roots : List A
+  passed : check rows roots = true
+
+def Checked.heap (checked : Checked A V) : Heap A V :=
+  makeHeap checked.rows checked.roots checked.passed
+
+def Checked.slots (checked : Checked A V) : A → List A := DescriptorAdmission.slots checked.rows
+
+theorem Checked.slots_exact (checked : Checked A V) (address : A) :
+    (checked.slots address).toFinset =
+      ((checked.heap.lookup address).map Cell.references).getD ∅ :=
+  DescriptorAdmission.slots_exact checked.rows checked.roots checked.passed address
+
+theorem Checked.roots_allocated (checked : Checked A V) :
+    ∀ address ∈ checked.roots, address ∈ checked.heap.allocated := by
+  intro address member
+  have present := (check_iff checked.rows checked.roots).mp checked.passed |>.2.2 address member
+  exact (allocated_iff checked.rows address).mpr (Option.isSome_iff_exists.mp present)
+
+/-- Every repeated row is realized, including an explicit absent observation;
+no contradictory later row is silently overwritten by first-match lookup. -/
+theorem Checked.realizes_row (checked : Checked A V) (address : A) (descriptor : Descriptor A V)
+    (member : (address, descriptor) ∈ checked.rows) :
+    checked.heap.lookup address = descriptor.1 ∧ checked.slots address = descriptor.2 := by
+  have located := row_consistency checked.rows checked.roots checked.passed (address, descriptor) member
+  simp [Checked.heap, makeHeap, header, Checked.slots, DescriptorAdmission.slots, located]
+
+theorem repeated_rows_agree (rows : Rows A V) (roots : List A) (passed : check rows roots = true)
+    (address : A) (first second : Descriptor A V)
+    (firstMem : (address, first) ∈ rows) (secondMem : (address, second) ∈ rows) : first = second := by
+  have left := row_consistency rows roots passed (address, first) firstMem
+  have right := row_consistency rows roots passed (address, second) secondMem
+  exact Option.some.inj (left.symm.trans right)
+
+theorem conflicting_rows_reject (rows : Rows A V) (roots : List A) (address : A)
+    (first second : Descriptor A V) (firstMem : (address, first) ∈ rows)
+    (secondMem : (address, second) ∈ rows) (different : first ≠ second) : check rows roots = false := by
+  apply Bool.eq_false_iff.mpr
+  intro passed
+  exact different (repeated_rows_agree rows roots passed address first second firstMem secondMem)
+
+theorem missing_root_reject (rows : Rows A V) (roots : List A) (address : A)
+    (required : address ∈ roots) (missing : header rows address = none) : check rows roots = false := by
+  apply Bool.eq_false_iff.mpr
+  intro passed
+  have present := (check_iff rows roots).mp passed |>.2.2 address required
+  simp [missing] at present
+
+theorem missing_child_reject (rows : Rows A V) (roots : List A) (address child : A)
+    (cell : Cell A V) (ordered : List A) (member : (address, (some cell, ordered)) ∈ rows)
+    (required : child ∈ ordered) (missing : header rows child = none) : check rows roots = false := by
+  apply Bool.eq_false_iff.mpr
+  intro passed
+  have fields := descriptor_present_fields rows (some cell, ordered) cell rfl
+    (row_shape rows roots passed (address, (some cell, ordered)) member)
+  have present := fields.2 child required
+  simp [missing] at present
+
+theorem mismatched_header_slots_reject (rows : Rows A V) (roots : List A) (address : A)
+    (cell : Cell A V) (ordered : List A) (member : (address, (some cell, ordered)) ∈ rows)
+    (different : ordered.toFinset ≠ cell.references) : check rows roots = false := by
+  apply Bool.eq_false_iff.mpr
+  intro passed
+  exact different (descriptor_present_fields rows (some cell, ordered) cell rfl
+    (row_shape rows roots passed (address, (some cell, ordered)) member)).1
+
+theorem absent_header_with_slots_reject (rows : Rows A V) (roots : List A) (address : A)
+    (ordered : List A) (member : (address, (none, ordered)) ∈ rows) (nonempty : ordered ≠ []) :
+    check rows roots = false := by
+  apply Bool.eq_false_iff.mpr
+  intro passed
+  exact nonempty (descriptor_absent_slots rows (none, ordered) rfl
+    (row_shape rows roots passed (address, (none, ordered)) member))
+
+/-- The executable admission returns the data whose heap and ordered-slot
+realization were derived above. Failed checks return no substitute heap. -/
+def admitRows (rows : Rows A V) (roots : List A) : Option (Checked A V) :=
+  if passed : check rows roots = true then some ⟨rows, roots, passed⟩ else none
+
+theorem admit_isSome (rows : Rows A V) (roots : List A) :
+    (admitRows rows roots).isSome = check rows roots := by
+  cases passed : check rows roots <;> simp [admitRows, passed]
+
+theorem admit_of_passed (rows : Rows A V) (roots : List A) (passed : check rows roots = true) :
+    admitRows rows roots = some ⟨rows, roots, passed⟩ := by simp [admitRows, passed]
+
+theorem admit_of_rejected (rows : Rows A V) (roots : List A) (rejected : check rows roots = false) :
+    admitRows rows roots = none := by simp [admitRows, rejected]
+
+theorem admit_admitted (rows : Rows A V) (roots : List A) (checked : Checked A V)
+    (issued : admitRows rows roots = some checked) :
+    checked.rows = rows ∧ checked.roots = roots ∧ check rows roots = true := by
+  unfold admitRows at issued
+  split at issued
+  · rename_i passed
+    cases issued
+    exact ⟨rfl, rfl, passed⟩
+  · cases issued
+
+theorem admitted_heap_is_actual_rows (rows : Rows A V) (roots : List A) (checked : Checked A V)
+    (issued : admitRows rows roots = some checked) (address : A) :
+    checked.heap.lookup address = header rows address ∧
+      checked.heap.allocated = allocated rows ∧ checked.slots address = slots rows address ∧
+      checked.roots = roots := by
+  obtain ⟨sameRows, sameRoots, _⟩ := admit_admitted rows roots checked issued
+  exact ⟨congrArg (fun data => header data address) sameRows,
+    congrArg allocated sameRows, congrArg (fun data => slots data address) sameRows, sameRoots⟩
+
+theorem Checked.no_unrecorded_cells (checked : Checked A V) (address : A) (cell : Cell A V)
+    (found : checked.heap.lookup address = some cell) :
+    ∃ descriptor, (address, descriptor) ∈ checked.rows ∧ descriptor.1 = some cell := by
+  obtain ⟨descriptor, _, atHeader, member⟩ := header_has_row checked.rows address cell found
+  exact ⟨descriptor, member, atHeader⟩
+
+theorem Checked.recorded_slot (checked : Checked A V) (address : A) (cell : Cell A V)
+    (ordered : List A) (member : (address, (some cell, ordered)) ∈ checked.rows)
+    (index : Nat) (child : A) (atSlot : ordered[index]? = some child) :
+    (checked.slots address)[index]? = some child ∧ child ∈ checked.heap.allocated := by
+  have actual := checked.realizes_row address (some cell, ordered) member
+  have inSlots : child ∈ ordered := by
+    obtain ⟨bound, equal⟩ := List.getElem?_eq_some_iff.mp atSlot
+    exact equal ▸ List.getElem_mem bound
+  have supported := descriptor_present_fields checked.rows (some cell, ordered) cell rfl
+    (row_shape checked.rows checked.roots checked.passed (address, (some cell, ordered)) member)
+  exact ⟨actual.2 ▸ atSlot,
+    (allocated_iff checked.rows child).mpr (Option.isSome_iff_exists.mp (supported.2 child inSlots))⟩
+
+universe w
+inductive Error (Refusal : Type w) where
+  | serviceRefused (cause : Refusal)
+  | invalidRows
+  deriving DecidableEq
+
+/-- A service refusal is outside the descriptor's optional header. It cannot
+be reinterpreted as an ordinary absent resource or an empty successful capture. -/
+def admitService {Refusal : Type w} (input : Except Refusal (Rows A V)) (roots : List A) :
+    Except (Error Refusal) (Checked A V) :=
+  match input with
+  | .error cause => .error (.serviceRefused cause)
+  | .ok rows => match admitRows rows roots with
+    | none => .error .invalidRows
+    | some checked => .ok checked
+
+theorem service_refusal {Refusal : Type w} (cause : Refusal) (roots : List A) :
+    admitService (V := V) (.error cause) roots = .error (.serviceRefused cause) := rfl
+
+theorem service_refusal_is_not_success {Refusal : Type w} (cause : Refusal) (roots : List A) (checked : Checked A V) :
+    admitService (.error cause) roots ≠ .ok checked := by
+  intro impossible
+  cases impossible
+
+theorem service_accepted {Refusal : Type w} (rows : Rows A V) (roots : List A)
+    (passed : check rows roots = true) :
+    admitService (Refusal := Refusal) (.ok rows) roots = .ok ⟨rows, roots, passed⟩ := by
+  simp [admitService, admit_of_passed rows roots passed]
+
+theorem service_invalid_rows {Refusal : Type w} (rows : Rows A V) (roots : List A)
+    (rejected : check rows roots = false) :
+    admitService (Refusal := Refusal) (.ok rows) roots = .error .invalidRows := by
+  simp [admitService, admit_of_rejected rows roots rejected]
+
+namespace Controls
+
+private def cell (value : Nat) (ordered : List Nat) : Cell Nat Nat := ⟨value, ordered.toFinset, 8⟩
+private def row (address value : Nat) (ordered : List Nat) : Nat × Descriptor Nat Nat :=
+  (address, (some (cell value ordered), ordered))
+private def selfRows := [row 0 7 [0]]
+private def mutualRows := [row 0 7 [1], row 1 9 [0]]
+private def sharedRows := [row 0 7 [1, 1], row 1 9 []]
+
+theorem empty_capture_admits_empty_heap :
+    (admitRows ([] : Rows Nat Nat) []).isSome = true ∧
+      (admitRows ([] : Rows Nat Nat) []).map (fun checked => checked.heap.allocated.card) = some 0 := by decide
+
+theorem root_presence_alone_does_not_admit_missing_child :
+    ([0] : List Nat).all (fun address => (header [row 0 7 [1]] address).isSome) = true ∧
+      check [row 0 7 [1]] [0] = false := by decide
+
+theorem transitive_missing_descendant_is_rejected :
+    check [row 0 7 [1], row 1 9 [2]] [0] = false := by decide
+
+theorem explicit_absent_child_is_not_complete_support :
+    lookup [row 0 7 [1], (1, (none, []))] 1 = some (none, []) ∧
+      check [row 0 7 [1], (1, (none, []))] [0] = false := by decide
+
+theorem missing_root_is_rejected : check ([] : Rows Nat Nat) [0] = false := by decide
+
+theorem explicitly_absent_root_is_rejected :
+    check ([(0, (none, []))] : Rows Nat Nat) [0] = false := by decide
+
+theorem self_cycle_admits_with_actual_backedge :
+    (admitRows selfRows [0]).isSome = true ∧
+      (admitRows selfRows [0]).map (fun checked => checked.slots 0) = some [0] ∧
+      (admitRows selfRows [0]).map (fun checked => checked.heap.allocated.card) = some 1 := by decide
+
+theorem mutual_cycle_admits_both_directions :
+    (admitRows mutualRows [0]).isSome = true ∧
+      (admitRows mutualRows [0]).map (fun checked => (checked.slots 0, checked.slots 1)) = some ([1], [0]) ∧
+      (admitRows mutualRows [0]).map (fun checked => checked.heap.allocated.card) = some 2 := by decide
+
+theorem mutual_cycle_with_absent_peer_is_rejected :
+    check [row 0 7 [1], (1, (none, []))] [0] = false := by decide
+
+theorem equal_repeated_observations_are_accepted :
+    (admitRows [row 0 7 [0], row 0 7 [0]] [0, 0]).isSome = true ∧
+      (admitRows [row 0 7 [0], row 0 7 [0]] [0, 0]).map
+        (fun checked => (checked.rows.length, checked.heap.allocated.card, checked.roots)) = some (2, 1, [0, 0]) := by decide
+
+theorem arbitrary_equal_repeats_are_accepted (count : Nat) :
+    check (List.replicate (count + 1) (row 0 7 [0])) [0, 0] = true := by
+  simp [check, consistent, descriptorCheck, header, lookup, row, cell,
+    List.replicate_succ, List.lookup_cons]
+
+theorem conflicting_header_payload_is_rejected :
+    check [row 0 7 [0], row 0 8 [0]] [0] = false := by decide
+
+theorem conflicting_header_bytes_are_rejected :
+    check [(0, (some (cell 7 []), [])),
+      (0, (some {cell 7 [] with bytes := 9}, []))] ([] : List Nat) = false := by decide
+
+private def reorderedRows : Rows Nat Nat :=
+  [(0, (some (cell 7 [1, 2]), [1, 2])), (0, (some (cell 7 [1, 2]), [2, 1])),
+    row 1 9 [], row 2 9 []]
+
+theorem header_equal_reordered_slots_are_conflicting :
+    (reorderedRows[0]?).map (fun r => r.2.1) = (reorderedRows[1]?).map (fun r => r.2.1) ∧
+      consistent reorderedRows = false ∧ check reorderedRows [0] = false := by
+  exact ⟨rfl, by decide, by decide⟩
+
+theorem absent_then_present_observation_is_conflicting :
+    check [(0, (none, [])), row 0 7 []] ([] : List Nat) = false := by decide
+
+theorem present_then_absent_observation_is_conflicting :
+    check [row 0 7 [], (0, (none, []))] ([] : List Nat) = false := by decide
+
+theorem header_slot_disagreement_is_rejected :
+    check [(0, (some (cell 7 [1]), [])), row 1 9 []] [0] = false := by decide
+
+theorem absent_header_cannot_declare_children :
+    check ([(0, (none, [0]))] : Rows Nat Nat) [] = false := by decide
+
+theorem duplicate_slots_keep_order_and_multiplicity :
+    (admitRows sharedRows [0]).isSome = true ∧
+      (admitRows sharedRows [0]).map (fun checked => checked.slots 0) = some [1, 1] ∧
+      (admitRows sharedRows [0]).map (fun checked => checked.heap.allocated.card) = some 2 := by decide
+
+theorem equal_values_do_not_collapse_distinct_resource_identities :
+    (admitRows [row 0 7 [], row 1 7 []] [1, 0, 1]).map
+      (fun checked => (checked.heap.allocated.card, checked.roots)) = some (2, [1, 0, 1]) := by decide
+
+theorem ordinary_absence_is_retained_without_allocation :
+    (admitRows ([(4, (none, []))] : Rows Nat Nat) []).isSome = true ∧
+      (admitRows ([(4, (none, []))] : Rows Nat Nat) []).map
+        (fun checked => (lookup checked.rows 4, checked.heap.lookup 4, checked.heap.allocated.card)) =
+          some (some (none, []), none, 0) := by decide
+
+theorem service_refusal_is_not_ordinary_absence :
+    (admitRows ([(4, (none, []))] : Rows Nat Nat) []).isSome = true ∧
+      admitService (A := Nat) (V := Nat) (.error ()) [] = .error (.serviceRefused ()) := by
+  exact ⟨by decide, rfl⟩
+
+theorem invalid_observations_are_not_an_empty_success :
+    admitService (Refusal := Unit) (.ok [row 0 7 [1]]) [0] = .error .invalidRows :=
+  service_invalid_rows [row 0 7 [1]] [0] (by decide)
+
+end Controls
+
+end Mettapedia.Machines.ResourceOwnership.DescriptorAdmission
+
+/-!
+## Conditional identity separation and scalar comparison policies
+
+The following observations read the abstract `Cell.value`, not a recursive
+State graph. A payload write preserves the stored outgoing references, byte
+weight and allocation. Read and mutation admission are separate finite sets;
+neither payload equality nor allocation supplies either permission.
+
+Write-hole/read-anchor probes use those actual heap operations. Their identity
+separation theorem requires two distinguishable values, live resources, both
+write grants and a read grant for a discriminating alias. It does not apply to
+all restricted or frozen observers. No global language equality or conversion
+rule is chosen here.
+
+Identity comparison, explicitly world-indexed scalar comparison, and a pure
+comparison captured from an immutable heap coexist below. A fixed comparator
+cannot also promise to track independently mutable current payloads. This
+does not require every legitimate comparison policy to license substitution
+through writes. Constraint/unification policies, linear or persistent State
+designs, recursive graph equality and bisimulation need separate constructions.
+-/
+
+namespace Mettapedia.Machines.ResourceOwnership
+
+open Mettapedia.GSLT.Dynamics.StoreReachability (Reach)
+
+universe uValue uOwner
+
+variable {Address : Type} {Value : Type uValue} [DecidableEq Address]
+
+/-- One scalar observation in the explicitly selected heap. -/
+def Heap.readPayload (heap : Heap Address Value) (address : Address) : Option Value :=
+  (heap.lookup address).map Cell.value
+
+/-- Update the payload of an existing cell. Missing addresses remain missing;
+allocation and all outgoing references and byte weights stay unchanged. -/
+def Heap.writePayload (heap : Heap Address Value) (address : Address) (value : Value) :
+    Heap Address Value where
+  lookup query := if query = address then
+    (heap.lookup query).map (fun cell => { cell with value := value }) else heap.lookup query
+  allocated := heap.allocated
+  allocated_iff query := by
+    by_cases same : query = address
+    · simp only [same, if_true]
+      constructor
+      · intro live
+        obtain ⟨cell, found⟩ := (heap.allocated_iff address).mp live
+        exact ⟨{ cell with value := value }, by rw [found, Option.map_some]⟩
+      · rintro ⟨cell, found⟩
+        obtain ⟨original, present, _⟩ := Option.map_eq_some_iff.mp found
+        exact (heap.allocated_iff address).mpr ⟨original, present⟩
+    · simpa only [same, if_false] using heap.allocated_iff query
+  closed query cell found next reference := by
+    by_cases same : query = address
+    · simp only [same, if_true] at found
+      obtain ⟨original, present, equal⟩ := Option.map_eq_some_iff.mp found
+      cases equal
+      exact heap.closed address original present next reference
+    · simp only [same, if_false] at found
+      exact heap.closed query cell found next reference
+
+@[simp] theorem Heap.writePayload_lookup_same (heap : Heap Address Value)
+    (address : Address) (value : Value) :
+    (heap.writePayload address value).lookup address =
+      (heap.lookup address).map (fun cell => { cell with value := value }) := by
+  simp [Heap.writePayload]
+
+theorem Heap.writePayload_lookup_other (heap : Heap Address Value)
+    (address query : Address) (value : Value) (different : query ≠ address) :
+    (heap.writePayload address value).lookup query = heap.lookup query := by
+  simp [Heap.writePayload, different]
+
+@[simp] theorem Heap.writePayload_allocated (heap : Heap Address Value)
+    (address : Address) (value : Value) :
+    (heap.writePayload address value).allocated = heap.allocated := rfl
+
+theorem Heap.writePayload_dependencies (heap : Heap Address Value)
+    (address query : Address) (value : Value) :
+    (heap.writePayload address value).dependencies query = heap.dependencies query := by
+  by_cases same : query = address
+  · subst query
+    cases found : heap.lookup address <;> simp [Heap.dependencies, found]
+  · rw [Heap.dependencies, Heap.writePayload_lookup_other heap address query value same]
+    rfl
+
+theorem Heap.writePayload_bytes (heap : Heap Address Value)
+    (address query : Address) (value : Value) :
+    ((heap.writePayload address value).lookup query).map Cell.bytes =
+      (heap.lookup query).map Cell.bytes := by
+  by_cases same : query = address
+  · subst query
+    cases found : heap.lookup address <;> simp [found]
+  · rw [Heap.writePayload_lookup_other heap address query value same]
+
+/-- Scalar writes retain the existing reachability graph and owner roots.
+Allocation is unchanged and every actual edge keeps its stored target. -/
+theorem Heap.writePayload_live_iff {Owner : Type uOwner} (heap : Heap Address Value)
+    (roots : Roots Owner Address) (address : Address) (value : Value) (query : Address) :
+    Live (heap.writePayload address value) roots query ↔ Live heap roots query := by
+  have edges : ∀ start next,
+      ((heap.writePayload address value).toStore roots).pointsTo start next ↔
+        (heap.toStore roots).pointsTo start next := by
+    intro start next
+    by_cases same : start = address
+    · subst start
+      cases found : heap.lookup address <;> simp [Heap.toStore, found]
+    · simp only [Heap.toStore, Heap.writePayload_lookup_other heap address start value same]
+  constructor
+  · intro live
+    exact Reach.map (source := (heap.writePayload address value).toStore roots)
+      (target := heap.toStore roots) id (fun _ rooted => rooted)
+      (fun start next edge => (edges start next).mp edge) live
+  · intro live
+    exact Reach.map (source := heap.toStore roots)
+      (target := (heap.writePayload address value).toStore roots) id (fun _ rooted => rooted)
+      (fun start next edge => (edges start next).mpr edge) live
+
+/-- The exact existing ordered slot function remains a realization of the
+stored references after a scalar write. No slot is rebuilt or reordered. -/
+theorem DescriptorAdmission.Checked.slots_writePayload [DecidableEq Value]
+    (checked : DescriptorAdmission.Checked Address Value) (address query : Address) (value : Value) :
+    (checked.slots query).toFinset =
+      (checked.heap.writePayload address value).dependencies query := by
+  rw [Heap.writePayload_dependencies]
+  exact checked.slots_exact query
+
+theorem Heap.readPayload_write_same (heap : Heap Address Value)
+    (address : Address) (value : Value) (live : address ∈ heap.allocated) :
+    (heap.writePayload address value).readPayload address = some value := by
+  obtain ⟨cell, found⟩ := (heap.allocated_iff address).mp live
+  simp [Heap.readPayload, found]
+
+theorem Heap.readPayload_write_other (heap : Heap Address Value)
+    (address query : Address) (value : Value) (different : query ≠ address) :
+    (heap.writePayload address value).readPayload query = heap.readPayload query := by
+  rw [Heap.readPayload, Heap.writePayload_lookup_other heap address query value different]
+  rfl
+
+/-- An actual scalar write outside an observed support preserves every ordered
+read occurrence. Cached observations do not all become invalid after a write. -/
+theorem Heap.readPayload_list_write_outside (heap : Heap Address Value)
+    (address : Address) (value : Value) (queries : List Address)
+    (outside : address ∉ queries) :
+    queries.map (heap.writePayload address value).readPayload = queries.map heap.readPayload := by
+  apply List.map_congr_left
+  intro query member
+  apply Heap.readPayload_write_other
+  intro same
+  exact outside (same ▸ member)
+
+theorem walk_addresses_writePayload (heap : Heap Address Value)
+    (address : Address) (value : Value) (start : Address) (path : List Address) :
+    (walk (heap.writePayload address value) start path).map Prod.fst =
+      (walk heap start path).map Prod.fst := by
+  induction path generalizing start with
+  | nil =>
+      by_cases same : start = address
+      · subst start
+        cases found : heap.lookup address <;> simp [walk, found]
+      · simp only [walk, Heap.writePayload_lookup_other heap address start value same]
+  | cons next rest ih =>
+      by_cases same : start = address
+      · subst start
+        cases found : heap.lookup address with
+        | none => simp [walk, found]
+        | some cell =>
+            simp only [walk, Heap.writePayload_lookup_same, found, Option.map_some,
+              Option.bind_some]
+            split
+            next _ => exact ih next
+            next _ => rfl
+      · cases found : heap.lookup start with
+        | none => simp [walk, Heap.writePayload_lookup_other heap address start value same, found]
+        | some cell =>
+            simp only [walk, Heap.writePayload_lookup_other heap address start value same,
+              found, Option.bind_some]
+            split
+            next _ => exact ih next
+            next _ => rfl
+
+/-- Scalar mutation changes contents, while successful path alias identity is
+preserved and reflected, including cycles and repeated path occurrences. -/
+theorem aliases_writePayload (heap : Heap Address Value) (address : Address) (value : Value)
+    (leftStart rightStart : Address) (left right : List Address) :
+    Aliases (heap.writePayload address value) leftStart left rightStart right ↔
+      Aliases heap leftStart left rightStart right := by
+  unfold Aliases
+  rw [walk_addresses_writePayload, walk_addresses_writePayload]
+
+namespace MutableObservation
+
+/-- Fixed-heap scalar observations, including observable absence. This is not
+resource identity, authority or recursive graph equality. -/
+def PayloadEq (heap : Heap Address Value) (left right : Address) : Prop :=
+  heap.readPayload left = heap.readPayload right
+
+instance instDecidablePayloadEq [DecidableEq Value] (heap : Heap Address Value)
+    (left right : Address) : Decidable (PayloadEq heap left right) :=
+  inferInstanceAs (Decidable (heap.readPayload left = heap.readPayload right))
+
+omit [DecidableEq Address] in
+theorem payloadEq_equivalence (heap : Heap Address Value) : Equivalence (PayloadEq heap) := by
+  exact ⟨fun _ => rfl, fun equal => equal.symm, fun first second => first.trans second⟩
+
+omit [DecidableEq Address] in
+theorem payloadEq_readout {Result : Type} (heap : Heap Address Value)
+    (observe : Option Value → Result) {left right : Address} (same : PayloadEq heap left right) :
+    observe (heap.readPayload left) = observe (heap.readPayload right) :=
+  congrArg observe same
+
+/-- A fixed observer remains valid when the actual mutation misses both of its
+resource dependencies. The heap index is explicit in both sides of the law. -/
+theorem payloadEq_write_outside (heap : Heap Address Value) (address : Address) (value : Value)
+    (left right : Address) (leftOther : left ≠ address) (rightOther : right ≠ address) :
+    PayloadEq (heap.writePayload address value) left right ↔ PayloadEq heap left right := by
+  unfold PayloadEq
+  rw [Heap.readPayload_write_other heap address left value leftOther,
+    Heap.readPayload_write_other heap address right value rightOther]
+
+/-- Compose an admitted write at the hole with an admitted scalar read at the
+fixed anchor. Inadmitted contexts return `none`; a fully admitted live context
+always returns a value. The permission sets are supplied independently. -/
+def writeRead (heap : Heap Address Value) (writes reads : Finset Address)
+    (hole anchor : Address) (value : Value) : Option Value :=
+  if hole ∈ writes ∧ anchor ∈ reads ∧ hole ∈ heap.allocated ∧ anchor ∈ heap.allocated then
+    (heap.writePayload hole value).readPayload anchor else none
+
+theorem writeRead_same (heap : Heap Address Value) (writes reads : Finset Address)
+    (address : Address) (value : Value) (writable : address ∈ writes) (readable : address ∈ reads)
+    (live : address ∈ heap.allocated) :
+    writeRead heap writes reads address address value = some value := by
+  simp only [writeRead, writable, readable, live, and_self, if_true]
+  exact Heap.readPayload_write_same heap address value live
+
+theorem writeRead_other (heap : Heap Address Value) (writes reads : Finset Address)
+    (hole anchor : Address) (value : Value) (writable : hole ∈ writes) (readable : anchor ∈ reads)
+    (holeLive : hole ∈ heap.allocated) (anchorLive : anchor ∈ heap.allocated)
+    (different : anchor ≠ hole) :
+    writeRead heap writes reads hole anchor value = heap.readPayload anchor := by
+  simp only [writeRead, writable, readable, holeLive, anchorLive, and_self, if_true]
+  exact Heap.readPayload_write_other heap hole anchor value different
+
+theorem writeRead_admitted_isSome (heap : Heap Address Value) (writes reads : Finset Address)
+    (hole anchor : Address) (value : Value) (writable : hole ∈ writes) (readable : anchor ∈ reads)
+    (holeLive : hole ∈ heap.allocated) (anchorLive : anchor ∈ heap.allocated) :
+    (writeRead heap writes reads hole anchor value).isSome = true := by
+  by_cases same : anchor = hole
+  · subst anchor
+    rw [writeRead_same heap writes reads hole value writable readable holeLive]
+    rfl
+  · rw [writeRead_other heap writes reads hole anchor value writable readable holeLive
+      anchorLive same]
+    obtain ⟨cell, found⟩ := (heap.allocated_iff anchor).mp anchorLive
+    simp [Heap.readPayload, found]
+
+/-- Agreement in the concrete write-hole/read-anchor probes. The observer's
+admitted mutation and read sets stay fixed when the hole is replaced. -/
+def WriteReadEq (heap : Heap Address Value) (writes reads : Finset Address)
+    (left right : Address) : Prop :=
+  ∀ (value : Value) (anchor : Address),
+    writeRead heap writes reads left anchor value = writeRead heap writes reads right anchor value
+
+theorem writeReadEq_of_eq (heap : Heap Address Value) (writes reads : Finset Address)
+    {left right : Address} (same : left = right) : WriteReadEq heap writes reads left right := by
+  subst right
+  intro value anchor
+  rfl
+
+/-- Two real writes separate distinct live aliases. One of the two values must
+differ from the anchor's old payload; no assumption about that old payload is
+needed. This uses only the granted anchor read, not full heap visibility. -/
+theorem writeReadEq_respects_identity (heap : Heap Address Value) (writes reads : Finset Address)
+    (left right : Address) (leftLive : left ∈ heap.allocated) (rightLive : right ∈ heap.allocated)
+    (leftWrite : left ∈ writes) (rightWrite : right ∈ writes) (leftRead : left ∈ reads)
+    (first second : Value) (distinct : first ≠ second)
+    (same : WriteReadEq heap writes reads left right) : left = right := by
+  by_contra different
+  have firstProbe := same first left
+  have secondProbe := same second left
+  rw [writeRead_same heap writes reads left first leftWrite leftRead leftLive,
+    writeRead_other heap writes reads right left first rightWrite leftRead rightLive
+      leftLive different] at firstProbe
+  rw [writeRead_same heap writes reads left second leftWrite leftRead leftLive,
+    writeRead_other heap writes reads right left second rightWrite leftRead rightLive
+      leftLive different] at secondProbe
+  exact distinct (Option.some.inj (firstProbe.trans secondProbe.symm))
+
+/-- Full live-cell read/write visibility characterizes alias identity. A
+restricted observer or a one-value payload type need not separate aliases. -/
+theorem full_writeReadEq_iff [Nontrivial Value] (heap : Heap Address Value)
+    (left right : Address) (leftLive : left ∈ heap.allocated) (rightLive : right ∈ heap.allocated) :
+    WriteReadEq heap heap.allocated heap.allocated left right ↔ left = right := by
+  constructor
+  · intro same
+    obtain ⟨first, second, distinct⟩ := exists_pair_ne Value
+    exact writeReadEq_respects_identity heap _ _ left right leftLive rightLive leftLive rightLive
+      leftLive first second distinct same
+  · exact writeReadEq_of_eq heap _ _
+
+/-- Any relation that licenses replacement in these actual admitted contexts
+must respect identity on the live cells for which the contexts are available.
+No claim is made about ungranted writes, reads or hidden references. -/
+theorem substitutive_relation_respects_identity (heap : Heap Address Value)
+    (writes reads : Finset Address) (relation : Address → Address → Prop)
+    (licenses : ∀ left right, relation left right → WriteReadEq heap writes reads left right)
+    (left right : Address) (leftLive : left ∈ heap.allocated) (rightLive : right ∈ heap.allocated)
+    (leftWrite : left ∈ writes) (rightWrite : right ∈ writes) (leftRead : left ∈ reads)
+    (first second : Value) (distinct : first ≠ second) (related : relation left right) :
+    left = right :=
+  writeReadEq_respects_identity heap writes reads left right leftLive rightLive leftWrite rightWrite
+    leftRead first second distinct (licenses left right related)
+
+/-- Rooted liveness supplies the allocation conditions of the conditional
+identity-separation theorem; authority is still supplied separately. -/
+theorem writeReadEq_respects_live_identity {Owner : Type uOwner}
+    (heap : Heap Address Value) (roots : Roots Owner Address) (writes reads : Finset Address)
+    (left right : Address) (leftLive : Live heap roots left) (rightLive : Live heap roots right)
+    (leftWrite : left ∈ writes) (rightWrite : right ∈ writes) (leftRead : left ∈ reads)
+    (first second : Value) (distinct : first ≠ second)
+    (same : WriteReadEq heap writes reads left right) : left = right :=
+  writeReadEq_respects_identity heap writes reads left right (live_allocated heap roots leftLive)
+    (live_allocated heap roots rightLive) leftWrite rightWrite leftRead first second distinct same
+
+/-! ### Three simultaneously available scalar policies
+
+`identityCompare` has no heap argument. `payloadCompare` explicitly selects a
+heap. Partially applying the latter to an immutable captured heap gives the
+frozen policy; applying it to each selected current heap gives the live policy.
+No ambient-world lookup is hidden in the pure comparator. These policies make
+different promises on the same cells and are not mutually exclusive designs.
+-/
+
+def identityCompare (left right : Address) : Bool := decide (left = right)
+
+theorem identityCompare_true_iff (left right : Address) :
+    identityCompare left right = true ↔ left = right := by
+  simp [identityCompare]
+
+theorem identityCompare_refl (address : Address) : identityCompare address address = true := by
+  simp [identityCompare]
+
+theorem identityCompare_symm (left right : Address) :
+    identityCompare left right = identityCompare right left := by
+  simp only [identityCompare, eq_comm]
+
+theorem identityCompare_trans {left middle right : Address}
+    (first : identityCompare left middle = true) (second : identityCompare middle right = true) :
+    identityCompare left right = true :=
+  (identityCompare_true_iff left right).mpr
+    (((identityCompare_true_iff left middle).mp first).trans
+      ((identityCompare_true_iff middle right).mp second))
+
+/-- Compare just the scalar payload observations in this explicit heap.
+Absent/absent is an equal observation, not an assertion of live aliasing. -/
+def payloadCompare [DecidableEq Value] (heap : Heap Address Value) (left right : Address) : Bool :=
+  match heap.lookup left, heap.lookup right with
+  | none, none => true
+  | some first, some second => decide (first.value = second.value)
+  | _, _ => false
+
+omit [DecidableEq Address] in
+theorem payloadCompare_true_iff [DecidableEq Value] (heap : Heap Address Value)
+    (left right : Address) : payloadCompare heap left right = true ↔ PayloadEq heap left right := by
+  cases leftFound : heap.lookup left <;> cases rightFound : heap.lookup right <;>
+    simp [payloadCompare, PayloadEq, Heap.readPayload, leftFound, rightFound]
+
+omit [DecidableEq Address] in
+theorem payloadCompare_refl [DecidableEq Value] (heap : Heap Address Value) (address : Address) :
+    payloadCompare heap address address = true :=
+  (payloadCompare_true_iff heap address address).mpr rfl
+
+omit [DecidableEq Address] in
+theorem payloadCompare_symm [DecidableEq Value] (heap : Heap Address Value) (left right : Address) :
+    payloadCompare heap left right = payloadCompare heap right left := by
+  rw [Bool.eq_iff_iff, payloadCompare_true_iff, payloadCompare_true_iff]
+  exact ⟨Eq.symm, Eq.symm⟩
+
+omit [DecidableEq Address] in
+theorem payloadCompare_trans [DecidableEq Value] (heap : Heap Address Value)
+    {left middle right : Address} (first : payloadCompare heap left middle = true)
+    (second : payloadCompare heap middle right = true) : payloadCompare heap left right = true :=
+  (payloadCompare_true_iff heap left right).mpr
+    (((payloadCompare_true_iff heap left middle).mp first).trans
+      ((payloadCompare_true_iff heap middle right).mp second))
+
+omit [DecidableEq Address] in
+/-- Freezing the explicit heap selects a coherent fixed-world equivalence.
+It does not turn a mutable host pointer into an immutable snapshot. -/
+theorem frozen_payload_comparison_equivalence [DecidableEq Value] (snapshot : Heap Address Value) :
+    Equivalence (fun left right => payloadCompare snapshot left right = true) := by
+  exact ⟨payloadCompare_refl snapshot, fun same =>
+    (payloadCompare_true_iff snapshot _ _).mpr
+      ((payloadCompare_true_iff snapshot _ _).mp same).symm,
+    fun first second => payloadCompare_trans snapshot first second⟩
+
+theorem payloadCompare_write_outside [DecidableEq Value] (heap : Heap Address Value)
+    (address : Address) (value : Value) (left right : Address)
+    (leftOther : left ≠ address) (rightOther : right ≠ address) :
+    payloadCompare (heap.writePayload address value) left right = payloadCompare heap left right := by
+  rw [Bool.eq_iff_iff, payloadCompare_true_iff, payloadCompare_true_iff]
+  exact payloadEq_write_outside heap address value left right leftOther rightOther
+
+/-- Two independent writes realize the selected scalar values in an actual
+reference-closed heap. This derives the observation from mutation/read laws. -/
+theorem payloadEq_after_independent_writes (heap : Heap Address Value)
+    (left right : Address) (leftLive : left ∈ heap.allocated) (rightLive : right ∈ heap.allocated)
+    (different : left ≠ right) (first second : Value) :
+    PayloadEq ((heap.writePayload left first).writePayload right second) left right ↔
+      first = second := by
+  unfold PayloadEq
+  rw [Heap.readPayload_write_other (heap.writePayload left first) right left second different,
+    Heap.readPayload_write_same heap left first leftLive,
+    Heap.readPayload_write_same (heap.writePayload left first) right second rightLive]
+  exact ⟨Option.some.inj, congrArg some⟩
+
+/-- A world-independent pure comparator cannot agree with live scalar equality
+through all values of an independently writable cell. Two actual reachable
+heaps already contradict that promise. An explicitly heap-indexed comparator
+or a fixed snapshot comparator has no such conflicting requirement. -/
+theorem no_fixed_comparator_tracks_independent_write_worlds (heap : Heap Address Value)
+    (left right : Address) (leftLive : left ∈ heap.allocated) (rightLive : right ∈ heap.allocated)
+    (different : left ≠ right) (first second : Value) (distinct : first ≠ second) :
+    ¬ ∃ compare : Address → Address → Bool, ∀ current : Value,
+      (compare left right = true ↔
+        PayloadEq ((heap.writePayload left first).writePayload right current) left right) := by
+  rintro ⟨compare, accurate⟩
+  have equalWorld := (payloadEq_after_independent_writes heap left right leftLive rightLive
+    different first first).mpr rfl
+  have equalAnswer := (accurate first).mpr equalWorld
+  have unequalWorld := (accurate second).mp equalAnswer
+  exact distinct ((payloadEq_after_independent_writes heap left right leftLive rightLive
+    different first second).mp unequalWorld)
+
+end MutableObservation
+
+section WriteRelocation
+
+universe uDestinationValue
+
+variable {DestinationAddress : Type} {DestinationValue : Type uDestinationValue}
+variable [DecidableEq DestinationAddress]
+
+omit [DecidableEq Address] in
+/-- Scalar readout follows the payload interpretation, while the address map
+continues to name the actual resource. Payload interpretation need not be
+injective. -/
+theorem Relocation.readPayload {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (address : Address) :
+    destination.readPayload (copy.address address) =
+      (source.readPayload address).map copy.payload := by
+  simp only [Heap.readPayload, copy.lookup_eq, Option.map_map]
+  rfl
+
+/-- Transport the actual payload mutation. The resulting relocation is
+constructed from the original lookups and address injectivity; post-write
+lookup agreement is not assumed. -/
+def Relocation.writePayload {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (address : Address) (value : Value) :
+    Relocation (source.writePayload address value)
+      (destination.writePayload (copy.address address) (copy.payload value)) where
+  address := copy.address
+  payload := copy.payload
+  injective := copy.injective
+  lookup_eq query := by
+    by_cases same : query = address
+    · subst query
+      rw [Heap.writePayload_lookup_same, copy.lookup_eq, Heap.writePayload_lookup_same]
+      cases source.lookup address <;> rfl
+    · rw [Heap.writePayload_lookup_other destination (copy.address address) (copy.address query)
+        (copy.payload value) (fun equal => same (copy.injective equal)),
+        copy.lookup_eq, Heap.writePayload_lookup_other source address query value same]
+
+/-- Write/read probes commute with complete resource relocation. The law is
+about transported addresses in independent heaps, not mixed raw/copy aliases. -/
+theorem Relocation.write_readPayload {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (hole anchor : Address) (value : Value) :
+    (destination.writePayload (copy.address hole) (copy.payload value)).readPayload
+        (copy.address anchor) =
+      ((source.writePayload hole value).readPayload anchor).map copy.payload :=
+  (copy.writePayload hole value).readPayload anchor
+
+/-- The constructed post-write relocation preserves and reflects arbitrary
+successful path aliases, including repeated and cyclic paths. -/
+theorem Relocation.write_aliases_iff {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (hole : Address) (value : Value)
+    (leftStart rightStart : Address) (left right : List Address) :
+    Aliases (destination.writePayload (copy.address hole) (copy.payload value))
+        (copy.address leftStart) (left.map copy.address)
+        (copy.address rightStart) (right.map copy.address) ↔
+      Aliases (source.writePayload hole value) leftStart left rightStart right :=
+  (copy.writePayload hole value).aliases_iff leftStart rightStart left right
+
+omit [DecidableEq Address] in
+/-- Relocation reflects alias identity independently of whether distinct
+payload values are collapsed by the representation map. -/
+theorem Relocation.address_eq_iff {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (left right : Address) :
+    copy.address left = copy.address right ↔ left = right :=
+  copy.injective.eq_iff
+
+end WriteRelocation
+
+namespace MutableObservation.Controls
+
+/-- Equal scalar cells with distinct resource identities. -/
+def pairHeap : Heap (Fin 2) Nat where
+  lookup _ := some ⟨7, ∅, 8⟩
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ next _ := Finset.mem_univ next
+
+theorem equal_scalars_are_distinct_live_resources :
+    PayloadEq pairHeap 0 1 ∧ (0 : Fin 2) ≠ 1 ∧
+      0 ∈ pairHeap.allocated ∧ 1 ∈ pairHeap.allocated := by decide
+
+/-- Both observations return real values. The two write-hole substitutions
+give different results although the untouched payloads were equal. -/
+theorem equal_scalars_fail_write_substitution :
+    writeRead pairHeap pairHeap.allocated pairHeap.allocated 0 0 9 = some 9 ∧
+      writeRead pairHeap pairHeap.allocated pairHeap.allocated 1 0 9 = some 7 ∧
+      ¬ WriteReadEq pairHeap pairHeap.allocated pairHeap.allocated 0 1 := by
+  refine ⟨by decide, by decide, ?_⟩
+  intro same
+  exact (by decide : (0 : Fin 2) ≠ 1)
+    ((full_writeReadEq_iff pairHeap 0 1 (by decide) (by decide)).mp same)
+
+theorem actual_two_value_probes_force_identity (left right : Fin 2)
+    (same : WriteReadEq pairHeap pairHeap.allocated pairHeap.allocated left right) : left = right :=
+  writeReadEq_respects_identity pairHeap _ _ left right (by simp [pairHeap])
+    (by simp [pairHeap]) (by simp [pairHeap]) (by simp [pairHeap]) (by simp [pairHeap])
+    7 9 (by decide) same
+
+theorem same_reference_passes_all_write_read_probes (address : Fin 2) :
+    WriteReadEq pairHeap pairHeap.allocated pairHeap.allocated address address :=
+  writeReadEq_of_eq pairHeap _ _ rfl
+
+/-- Changing the selected world can invalidate scalar equality even though
+the addresses and their alias relation did not change. -/
+theorem world_change_invalidates_value_equality :
+    PayloadEq pairHeap 0 1 ∧ ¬ PayloadEq (pairHeap.writePayload 0 9) 0 1 ∧
+      (pairHeap.writePayload 0 9).readPayload 0 = some 9 ∧
+      pairHeap.readPayload 0 = some 7 ∧
+      Aliases (pairHeap.writePayload 0 9) 0 [] 0 [] := by
+  unfold Aliases
+  decide
+
+theorem mutation_retains_allocation_references_and_bytes :
+    (pairHeap.writePayload 0 9).allocated = pairHeap.allocated ∧
+      (pairHeap.writePayload 0 9).dependencies 0 = pairHeap.dependencies 0 ∧
+      ((pairHeap.writePayload 0 9).lookup 0).map Cell.bytes =
+        (pairHeap.lookup 0).map Cell.bytes := by
+  exact ⟨rfl, Heap.writePayload_dependencies pairHeap 0 0 9,
+    Heap.writePayload_bytes pairHeap 0 0 9⟩
+
+def pairRoots : Roots Unit (Fin 2) := {((), 0), ((), 1)}
+
+theorem actual_live_roots_supply_separating_context (left right : Fin 2)
+    (same : WriteReadEq pairHeap pairHeap.allocated pairHeap.allocated left right) :
+    Live (pairHeap.writePayload 0 9) pairRoots left ∧ left = right := by
+  have allocated : left ∈ pairHeap.allocated := by simp [pairHeap]
+  have rooted : ((), left) ∈ pairRoots := by
+    have alternatives : left = 0 ∨ left = 1 := by omega
+    rcases alternatives with rfl | rfl <;> decide
+  have leftLive := live_of_root pairHeap pairRoots rooted allocated
+  refine ⟨(Heap.writePayload_live_iff pairHeap pairRoots 0 9 left).mpr leftLive, ?_⟩
+  have rightRooted : ((), right) ∈ pairRoots := by
+    have alternatives : right = 0 ∨ right = 1 := by omega
+    rcases alternatives with rfl | rfl <;> decide
+  exact writeReadEq_respects_live_identity pairHeap pairRoots _ _ left right leftLive
+    (live_of_root pairHeap pairRoots rightRooted (by simp [pairHeap])) allocated
+    (by simp [pairHeap]) allocated 7 9 (by decide) same
+
+def threeHeap : Heap (Fin 3) Nat where
+  lookup _ := some ⟨7, ∅, 8⟩
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ next _ := Finset.mem_univ next
+
+/-- A restricted observer performs successful writes and reads, but cannot
+inspect either written alias. Such an observer cannot establish identity. -/
+theorem restricted_read_observer_does_not_separate_identity :
+    WriteReadEq threeHeap {0, 1} {2} 0 1 ∧ (0 : Fin 3) ≠ 1 ∧
+      writeRead threeHeap {0, 1} {2} 0 2 9 = some 7 ∧
+      writeRead threeHeap {0, 1} {2} 1 2 9 = some 7 := by
+  refine ⟨?_, by decide, by decide, by decide⟩
+  intro value anchor
+  have alternatives : anchor = 0 ∨ anchor = 1 ∨ anchor = 2 := by omega
+  rcases alternatives with rfl | rfl | rfl <;>
+    simp [writeRead, Heap.readPayload, Heap.writePayload, threeHeap]
+
+/-- Outside the actual observed support, scalar writes preserve a cached
+ordered readout, with duplicate observations retained. -/
+theorem writes_outside_duplicate_read_support_preserve_readout :
+    [1, 2, 1].map (threeHeap.writePayload 0 9).readPayload =
+      [1, 2, 1].map threeHeap.readPayload :=
+  Heap.readPayload_list_write_outside threeHeap 0 9 [1, 2, 1] (by decide)
+
+theorem unobserved_write_preserves_value_relation :
+    PayloadEq (threeHeap.writePayload 0 9) 1 2 ↔ PayloadEq threeHeap 1 2 :=
+  payloadEq_write_outside threeHeap 0 9 1 2 (by decide) (by decide)
+
+/-- Frozen readouts may coherently identify equal values without identifying
+the live mutable resources that produced them. -/
+theorem frozen_scalar_readouts_are_coherent :
+    (pairHeap.readPayload 0).map (fun value => value + 1) = some 8 ∧
+      (pairHeap.readPayload 1).map (fun value => value + 1) = some 8 ∧
+      ¬ WriteReadEq pairHeap pairHeap.allocated pairHeap.allocated 0 1 := by
+  exact ⟨by decide, by decide, equal_scalars_fail_write_substitution.2.2⟩
+
+/-- A single possible payload value cannot implement the two-value probe. -/
+def unitHeap : Heap (Fin 2) Unit where
+  lookup _ := some ⟨(), ∅, 8⟩
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ next _ := Finset.mem_univ next
+
+theorem one_value_payload_cannot_separate_identity :
+    WriteReadEq unitHeap unitHeap.allocated unitHeap.allocated 0 1 ∧ (0 : Fin 2) ≠ 1 := by
+  refine ⟨?_, by decide⟩
+  intro value anchor
+  cases value
+  have alternatives : anchor = 0 ∨ anchor = 1 := by omega
+  rcases alternatives with rfl | rfl <;> decide
+
+def cyclicCell (address : Fin 2) : Cell (Fin 2) Nat :=
+  ⟨7, {if address = 0 then 1 else 0}, 8⟩
+
+def cyclicHeap : Heap (Fin 2) Nat where
+  lookup address := some (cyclicCell address)
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ next _ := Finset.mem_univ next
+
+theorem scalar_write_preserves_cyclic_path_aliases :
+    Aliases (cyclicHeap.writePayload 0 9) 0 [1, 0, 1] 1 [] ∧
+      (cyclicHeap.writePayload 0 9).readPayload 0 ≠ cyclicHeap.readPayload 0 := by
+  unfold Aliases
+  decide
+
+/-- The isolated copy occupies fresh addresses beside retained source cells. -/
+def copyHeap : Heap (Fin 4) Nat where
+  lookup _ := some ⟨7, ∅, 8⟩
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ next _ := Finset.mem_univ next
+
+def copyAddress (address : Fin 2) : Fin 4 := ⟨address.val + 2, by omega⟩
+
+def freshCopy : Relocation pairHeap copyHeap where
+  address := copyAddress
+  payload := id
+  injective := by
+    intro left right same
+    apply Fin.ext
+    have values := congrArg Fin.val same
+    change left.val + 2 = right.val + 2 at values
+    omega
+  lookup_eq := by decide +kernel
+
+theorem fresh_clone_preserves_internal_alias_but_is_not_cached_source :
+    Aliases copyHeap (freshCopy.address 0) [] (freshCopy.address 0) [] ∧
+      ¬ Aliases copyHeap (freshCopy.address 0) [] 0 [] ∧
+      copyHeap.readPayload (freshCopy.address 0) = copyHeap.readPayload 0 := by
+  unfold Aliases
+  decide
+
+theorem clone_write_does_not_mutate_retained_source :
+    (copyHeap.writePayload (freshCopy.address 0) 9).readPayload (freshCopy.address 0) = some 9 ∧
+      (copyHeap.writePayload (freshCopy.address 0) 9).readPayload 0 = some 7 := by decide
+
+theorem actual_relocated_write_read :
+    (copyHeap.writePayload (freshCopy.address 0) 9).readPayload (freshCopy.address 0) =
+      (pairHeap.writePayload 0 9).readPayload 0 :=
+  freshCopy.write_readPayload 0 0 9
+
+theorem cyclic_relocation_and_write_preserve_actual_alias :
+    Aliases
+      (Mettapedia.Machines.ResourceOwnership.Examples.copiedHeap.writePayload
+        (Mettapedia.Machines.ResourceOwnership.Examples.shiftedCopy.address 0) (7 + 100))
+      (Mettapedia.Machines.ResourceOwnership.Examples.shiftedCopy.address 0)
+      ([1, 2].map Mettapedia.Machines.ResourceOwnership.Examples.shiftedCopy.address)
+      (Mettapedia.Machines.ResourceOwnership.Examples.shiftedCopy.address 2) [] := by
+  apply (Mettapedia.Machines.ResourceOwnership.Examples.shiftedCopy.write_aliases_iff 0 7 0 2 [1, 2] []).mpr
+  exact (aliases_writePayload Mettapedia.Machines.ResourceOwnership.Examples.cyclicHeap 0 7 0 2 [1, 2] []).mpr
+    Mettapedia.Machines.ResourceOwnership.Examples.two_paths_share_cyclic_endpoint
+
+def distinctHeap : Heap (Fin 2) Nat where
+  lookup address := some ⟨address.val, ∅, 8⟩
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ next _ := Finset.mem_univ next
+
+/-- A noninjective payload interpretation is a valid relocation; address
+injectivity and mutation alias identity remain separate obligations. -/
+def collapsedPayloadCopy : Relocation distinctHeap copyHeap where
+  address := copyAddress
+  payload _ := 7
+  injective := freshCopy.injective
+  lookup_eq := by decide +kernel
+
+theorem payload_collapse_does_not_collapse_resource_identity :
+    distinctHeap.readPayload 0 ≠ distinctHeap.readPayload 1 ∧
+      PayloadEq copyHeap (collapsedPayloadCopy.address 0) (collapsedPayloadCopy.address 1) ∧
+      collapsedPayloadCopy.address 0 ≠ collapsedPayloadCopy.address 1 ∧
+      ¬ Aliases copyHeap (collapsedPayloadCopy.address 0) []
+        (collapsedPayloadCopy.address 1) [] := by
+  unfold Aliases
+  decide
+
+theorem identity_transport_preserves_same_reference :
+    (Relocation.ofEquiv pairHeap (Equiv.refl (Fin 2)) id).address 0 = 0 ∧
+      (pairHeap.relabel (Equiv.refl (Fin 2)) id).readPayload 0 = pairHeap.readPayload 0 ∧
+      Aliases (pairHeap.relabel (Equiv.refl (Fin 2)) id) 0 [] 0 [] := by
+  unfold Aliases
+  decide
+
+def originalRegion : RequestBorrow.Region Nat (Fin 2) Nat := ⟨⟨3, 5⟩, pairHeap⟩
+
+def originalView : RequestBorrow.View Nat (Fin 2) := ⟨originalRegion.stamp, [(0, [])]⟩
+
+/-- Capture an actual pure comparison closure at the original immutable heap.
+Future current-world writes do not change this selected snapshot policy. -/
+def frozenComparison : Fin 2 → Fin 2 → Bool := payloadCompare originalRegion.heap
+
+theorem three_policies_coexist_on_the_same_heap :
+    identityCompare (0 : Fin 2) 1 = false ∧
+      payloadCompare pairHeap 0 1 = true ∧ frozenComparison 0 1 = true ∧
+      payloadCompare (pairHeap.writePayload 0 9) 0 1 = false ∧
+      identityCompare (0 : Fin 2) 0 = true ∧ frozenComparison 0 1 = true := by decide
+
+theorem live_comparator_tracks_explicit_written_world (leftValue rightValue : Nat) :
+    payloadCompare ((pairHeap.writePayload 0 leftValue).writePayload 1 rightValue) 0 1 = true ↔
+      leftValue = rightValue := by
+  rw [payloadCompare_true_iff]
+  exact payloadEq_after_independent_writes pairHeap 0 1 (by decide) (by decide) (by decide)
+    leftValue rightValue
+
+theorem frozen_policy_is_equivalence_with_distinct_equal_cells :
+    Equivalence (fun left right => frozenComparison left right = true) ∧
+      frozenComparison 0 1 = true ∧ (0 : Fin 2) ≠ 1 := by
+  exact ⟨frozen_payload_comparison_equivalence originalRegion.heap, by decide, by decide⟩
+
+theorem frozen_policy_does_not_promise_current_world_accuracy :
+    frozenComparison 0 1 = true ∧
+      ¬ PayloadEq (pairHeap.writePayload 0 9) 0 1 ∧
+      PayloadEq originalRegion.heap 0 1 := by decide
+
+theorem no_single_fixed_comparator_tracks_all_current_heaps :
+    ¬ ∃ compare : Fin 2 → Fin 2 → Bool, ∀ current : Heap (Fin 2) Nat,
+      (compare 0 1 = true ↔ PayloadEq current 0 1) := by
+  rintro ⟨compare, accurate⟩
+  apply no_fixed_comparator_tracks_independent_write_worlds pairHeap 0 1
+    (by decide) (by decide) (by decide) 7 9 (by decide)
+  exact ⟨compare, fun current => accurate _⟩
+
+theorem identity_policy_is_stable_across_payload_worlds (value : Nat) :
+    identityCompare (0 : Fin 2) 1 = false ∧
+      Aliases (pairHeap.writePayload 0 value) 0 [] 0 [] ∧
+      ¬ Aliases (pairHeap.writePayload 0 value) 0 [] 1 [] := by
+  refine ⟨by decide, ?_, ?_⟩
+  · exact (aliases_writePayload pairHeap 0 value 0 0 [] []).mpr (by unfold Aliases; decide)
+  · rw [aliases_writePayload]
+    unfold Aliases
+    decide
+
+theorem equal_contents_do_not_imply_same_generation :
+    originalRegion.heap.readPayload 0 =
+      (RequestBorrow.reset originalRegion pairHeap).heap.readPayload 0 ∧
+      originalRegion.stamp ≠ (RequestBorrow.reset originalRegion pairHeap).stamp ∧
+      RequestBorrow.read (RequestBorrow.reset originalRegion pairHeap) originalView = none := by
+  exact ⟨rfl, by decide,
+    RequestBorrow.read_reset_rejected originalRegion pairHeap originalView rfl⟩
+
+theorem equal_contents_do_not_imply_same_origin :
+    originalRegion.heap.readPayload 0 =
+      (RequestBorrow.Region.mk ⟨4, 5⟩ pairHeap).heap.readPayload 0 ∧
+      RequestBorrow.read (RequestBorrow.Region.mk ⟨4, 5⟩ pairHeap) originalView = none := by decide
+
+def lifetimeState : AcquiredUse.State Nat Nat Nat :=
+  ⟨true, {0}, {1}, none, some 7⟩
+
+def exclusiveState : AcquiredUse.State Nat Nat Nat :=
+  ⟨true, {0}, {1}, some 1, some 7⟩
+
+/-- Both states are obtained through actual use acquisition and expose the
+same payload. Only the separately issued exclusive use grants mutation. -/
+theorem equal_contents_do_not_imply_mutation_authority :
+    AcquiredUse.acquire 1 .lifetime 0 1 (AcquiredUse.initial 0 7) =
+        some ⟨lifetimeState, none⟩ ∧
+      AcquiredUse.acquire 1 .exclusive 0 1 (AcquiredUse.initial 0 7) =
+        some ⟨exclusiveState, none⟩ ∧
+      AcquiredUse.readUse 1 lifetimeState = AcquiredUse.readUse 1 exclusiveState ∧
+      ¬ AcquiredUse.mayMutate 1 lifetimeState ∧ AcquiredUse.mayMutate 1 exclusiveState := by decide
+
+end MutableObservation.Controls
+
+end Mettapedia.Machines.ResourceOwnership
+
+/-!
+## Finite ordered descriptor observations
+
+Ordinal paths use the existing adaptive read-only query program. Its replies
+are complete optional cell headers and ordered slot lists. The executed log
+retains repeated reads, negative lookups and the selected slot order. Scalar
+writes preserve topology; query replay follows from agreement on actual reads.
+
+The returned payload is the opaque `Cell.value`, not recursive State equality.
+The node-reply count does not price slot lookup, descriptor construction,
+allocation or native validation. Native current-view, canonical identity,
+lifetime, authority and refusal interpretation remain instance obligations.
+-/
+
+namespace Mettapedia.Machines.ResourceOwnership.OrderedObservation
+
+universe u
+variable {A : Type} {V : Type u}
+
+/-- An ordinal path is interpreted by the existing adaptive query program.
+Each actual reply includes both the optional header and its ordered slots. -/
+def program (start : A) : List Nat →
+    ReadOnlyQuery.Program A (DescriptorAdmission.Descriptor A V) (Option (A × Cell A V))
+  | [] => .read start fun reply => .pure (reply.1.map (start, ·))
+  | index :: rest => .read start fun reply =>
+      match reply.1 with
+      | none => .pure none
+      | some _ => match reply.2[index]? with
+        | none => .pure none
+        | some child => program child rest
+
+def provider (heap : Heap A V) (slots : A → List A) (address : A) :
+    DescriptorAdmission.Descriptor A V := (heap.lookup address, slots address)
+
+def observe (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) :=
+  ReadOnlyQuery.run (provider heap slots) (program start path)
+
+def result (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) :=
+  (observe heap slots start path).answer
+
+def target (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) :=
+  (result heap slots start path).map Prod.fst
+
+def payload (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) :=
+  (result heap slots start path).map (fun found => found.2.value)
+
+@[simp] theorem result_nil (heap : Heap A V) (slots : A → List A) (start : A) :
+    result heap slots start [] = (heap.lookup start).map (start, ·) := rfl
+
+@[simp] theorem result_cons (heap : Heap A V) (slots : A → List A)
+    (start : A) (index : Nat) (rest : List Nat) :
+    result heap slots start (index :: rest) =
+      (heap.lookup start).bind (fun _ =>
+        (slots start)[index]?.bind (fun child => result heap slots child rest)) := by
+  cases h : heap.lookup start <;>
+    simp [result, observe, ReadOnlyQuery.run, program, provider, h]
+  cases s : (slots start)[index]? <;> simp [ReadOnlyQuery.run]
+
+theorem result_lookup (heap : Heap A V) (slots : A → List A) (start end_ : A)
+    (path : List Nat) (cell : Cell A V) (found : result heap slots start path = some (end_, cell)) :
+    heap.lookup end_ = some cell := by
+  induction path generalizing start with
+  | nil =>
+      obtain ⟨original, atStart, equal⟩ := Option.map_eq_some_iff.mp found
+      cases equal
+      exact atStart
+  | cons index rest ih =>
+      rw [result_cons] at found
+      obtain ⟨_, _, found⟩ := Option.bind_eq_some_iff.mp found
+      obtain ⟨child, _, found⟩ := Option.bind_eq_some_iff.mp found
+      exact ih child found
+
+theorem reads_nonempty (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) :
+    (observe heap slots start path).reads ≠ [] := by
+  cases path <;> simp [observe, program, ReadOnlyQuery.run]
+
+theorem read_count (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) :
+    (observe heap slots start path).reads.length ≤ path.length + 1 := by
+  induction path generalizing start with
+  | nil => simp [observe, program, ReadOnlyQuery.run]
+  | cons index rest ih =>
+      cases h : heap.lookup start with
+      | none => simp [observe, program, ReadOnlyQuery.run, provider, h]
+      | some cell =>
+          cases s : (slots start)[index]? with
+          | none => simp [observe, program, ReadOnlyQuery.run, provider, h, s]
+          | some child =>
+              simpa [observe, program, ReadOnlyQuery.run, provider, h, s] using
+                Nat.add_le_add_right (ih child) 1
+
+/-- A finite path around a self-cycle repeats actual reads rather than
+deduplicating the request log or unfolding an infinite tree. -/
+theorem self_cycle_reads (heap : Heap A V) (slots : A → List A) (root : A)
+    (cell : Cell A V) (header : heap.lookup root = some cell)
+    (backedge : (slots root)[0]? = some root) (length : Nat) :
+    observe heap slots root (List.replicate length 0) =
+      ⟨some (root, cell), List.replicate (length + 1) (root, provider heap slots root)⟩ := by
+  induction length with
+  | zero => simp [observe, program, ReadOnlyQuery.run, provider, header]
+  | succ length ih =>
+      have extended := congrArg (fun observed : ReadOnlyQuery.Observation A
+          (DescriptorAdmission.Descriptor A V) (Option (A × Cell A V)) =>
+        (⟨observed.answer, (root, provider heap slots root) :: observed.reads⟩ :
+          ReadOnlyQuery.Observation A (DescriptorAdmission.Descriptor A V) (Option (A × Cell A V)))) ih
+      simpa only [observe, List.replicate_succ, program, ReadOnlyQuery.run,
+        provider, header, backedge] using extended
+
+variable [DecidableEq A]
+
+/-- Every successful ordinal query realizes an actual existing heap walk.
+The returned itinerary is extracted from its executed read log; cycles retain
+their repeated occurrences. Ordered-slot support is an explicit hypothesis. -/
+theorem successful_walk (heap : Heap A V) (slots : A → List A)
+    (exactSlots : ∀ a, (slots a).toFinset = heap.dependencies a)
+    (start end_ : A) (path : List Nat) (cell : Cell A V)
+    (found : result heap slots start path = some (end_, cell)) :
+    ∃ word : List A, (observe heap slots start path).reads.map Prod.fst = start :: word ∧
+      word.length = path.length ∧ walk heap start word = some (end_, cell) := by
+  induction path generalizing start with
+  | nil =>
+      obtain ⟨original, atStart, equal⟩ := Option.map_eq_some_iff.mp found
+      cases equal
+      change heap.lookup end_ = some cell at atStart
+      exact ⟨[], rfl, rfl, by simp [walk, atStart]⟩
+  | cons index rest ih =>
+      rw [result_cons] at found
+      obtain ⟨header, atStart, remaining⟩ := Option.bind_eq_some_iff.mp found
+      obtain ⟨child, atSlot, remaining⟩ := Option.bind_eq_some_iff.mp remaining
+      obtain ⟨word, logged, length, walked⟩ := ih child remaining
+      have member : child ∈ header.references := by
+        have inside : child ∈ (slots start).toFinset :=
+          List.mem_toFinset.mpr (List.mem_of_getElem? atSlot)
+        rw [exactSlots start] at inside
+        simpa [Heap.dependencies, atStart] using inside
+      refine ⟨child :: word, ?_, by simp [length], ?_⟩
+      · simpa [observe, program, ReadOnlyQuery.run, provider, atStart, atSlot] using
+          congrArg (List.cons start) logged
+      · simp [walk, atStart, member, walked]
+
+theorem successful_read_count (heap : Heap A V) (slots : A → List A)
+    (exactSlots : ∀ a, (slots a).toFinset = heap.dependencies a)
+    (start end_ : A) (path : List Nat) (cell : Cell A V)
+    (found : result heap slots start path = some (end_, cell)) :
+    (observe heap slots start path).reads.length = path.length + 1 := by
+  obtain ⟨word, logged, length, _⟩ := successful_walk heap slots exactSlots start end_ path cell found
+  have count := congrArg List.length logged
+  simpa only [List.length_map, List.length_cons, length] using count
+
+omit [DecidableEq A] in
+theorem target_allocated (heap : Heap A V) (slots : A → List A)
+    (start end_ : A) (path : List Nat) (found : target heap slots start path = some end_) :
+    end_ ∈ heap.allocated := by
+  obtain ⟨pair, answered, equal⟩ := Option.map_eq_some_iff.mp found
+  cases equal
+  exact (heap.allocated_iff pair.1).mpr ⟨pair.2, result_lookup heap slots start pair.1 path pair.2 answered⟩
+
+/-- Updating an unconsulted cell preserves the actual full reply log as well
+as the result, by the existing query replay theorem. -/
+theorem write_outside_reads (heap : Heap A V) (slots : A → List A)
+    (start address : A) (path : List Nat) (value : V)
+    (outside : address ∉ (observe heap slots start path).reads.map Prod.fst) :
+    observe (heap.writePayload address value) slots start path =
+      observe heap slots start path := by
+  apply ReadOnlyQuery.run_eq_of_agrees
+  intro reply member
+  have different : reply.1 ≠ address := by
+    intro equal
+    apply outside
+    exact equal ▸ List.mem_map_of_mem member
+  have old := ReadOnlyQuery.run_agrees (provider heap slots) (program start path) reply member
+  rw [← old]
+  simp only [provider, Heap.writePayload_lookup_other heap address reply.1 value different]
+
+/-- Writes preserve all path choices and alter only the final cell payload. -/
+theorem result_write (heap : Heap A V) (slots : A → List A) (start address : A)
+    (path : List Nat) (value : V) :
+    result (heap.writePayload address value) slots start path =
+      (result heap slots start path).map (fun found =>
+        (found.1, if found.1 = address then { found.2 with value := value } else found.2)) := by
+  induction path generalizing start with
+  | nil =>
+      by_cases same : start = address
+      · subst start
+        cases h : heap.lookup address <;> simp [h]
+      · rw [result_nil, Heap.writePayload_lookup_other heap address start value same]
+        cases h : heap.lookup start <;> simp [h, same]
+  | cons index rest ih =>
+      rw [result_cons, result_cons]
+      by_cases same : start = address
+      · subst start
+        cases h : heap.lookup address <;> simp only [Heap.writePayload_lookup_same, h,
+          Option.map_none, Option.bind_none, Option.map_some, Option.bind_some]
+        cases s : (slots address)[index]? <;> simp [ih]
+      · rw [Heap.writePayload_lookup_other heap address start value same]
+        cases h : heap.lookup start <;> simp only [Option.bind_none, Option.map_none,
+          Option.bind_some]
+        cases s : (slots start)[index]? <;> simp [ih]
+
+@[simp] theorem target_write (heap : Heap A V) (slots : A → List A)
+    (start address : A) (path : List Nat) (value : V) :
+    target (heap.writePayload address value) slots start path = target heap slots start path := by
+  rw [target, result_write]
+  cases h : result heap slots start path <;> simp [target, h]
+
+theorem payload_write (heap : Heap A V) (slots : A → List A)
+    (start address : A) (path : List Nat) (value : V) :
+    payload (heap.writePayload address value) slots start path =
+      if target heap slots start path = some address then some value else
+        payload heap slots start path := by
+  rw [payload, result_write]
+  cases h : result heap slots start path with
+  | none => simp [target, payload, h]
+  | some found =>
+      by_cases same : found.1 = address <;> simp [target, payload, h, same]
+
+/-- Invalid ordinal writes are explicit no-ops. They are not service refusal. -/
+def write (heap : Heap A V) (slots : A → List A) (start : A) (path : List Nat) (value : V) :
+    Heap A V :=
+  match target heap slots start path with
+  | none => heap
+  | some address => heap.writePayload address value
+
+/-- Two failed paths do not alias. Only a common allocated endpoint counts. -/
+def impact (heap : Heap A V) (slots : A → List A) (start : A)
+    (written read : List Nat) : Bool :=
+  match target heap slots start written, target heap slots start read with
+  | some left, some right => decide (left = right)
+  | _, _ => false
+
+@[simp] theorem target_after_write (heap : Heap A V) (slots : A → List A)
+    (start : A) (written read : List Nat) (value : V) :
+    target (write heap slots start written value) slots start read =
+      target heap slots start read := by
+  unfold write
+  split <;> simp
+
+@[simp] theorem impact_after_write (heap : Heap A V) (slots : A → List A)
+    (start : A) (written left right : List Nat) (value : V) :
+    impact (write heap slots start written value) slots start left right =
+      impact heap slots start left right := by
+  simp [impact]
+
+/-- The actual write/read law exposes precisely the alias incidence needed
+by the observer, without adding an otherwise invisible validity bit. -/
+theorem payload_after_write (heap : Heap A V) (slots : A → List A)
+    (start : A) (written read : List Nat) (value : V) :
+    payload (write heap slots start written value) slots start read =
+      if impact heap slots start written read then some value else
+        payload heap slots start read := by
+  unfold write impact
+  cases w : target heap slots start written with
+  | none => simp
+  | some address =>
+      rw [payload_write]
+      cases r : target heap slots start read with
+      | none => simp
+      | some other =>
+          by_cases same : address = other <;> simp [same, eq_comm]
+
+omit [DecidableEq A] in
+/-- Reference-set relocation alone forgets slot order. This additional
+ordered transport premise permits the actual query to follow copied slots. -/
+theorem result_relocation {B : Type} {W : Type} [DecidableEq B]
+    {old : Heap A V} {new : Heap B W} (copy : Relocation old new)
+    (oldSlots : A → List A) (newSlots : B → List B)
+    (ordered : ∀ a, newSlots (copy.address a) = (oldSlots a).map copy.address)
+    (start : A) (path : List Nat) :
+    result new newSlots (copy.address start) path =
+      (result old oldSlots start path).map (fun found =>
+        (copy.address found.1, found.2.relocate copy.address copy.payload)) := by
+  induction path generalizing start with
+  | nil =>
+      rw [result_nil, copy.lookup_eq, result_nil]
+      cases h : old.lookup start <;> rfl
+  | cons index rest ih =>
+      rw [result_cons, result_cons, copy.lookup_eq, ordered start]
+      cases h : old.lookup start <;> simp only [Option.map_none, Option.bind_none,
+        Option.map_some, Option.bind_some]
+      rw [List.getElem?_map]
+      cases s : (oldSlots start)[index]? <;> simp [ih]
+
+omit [DecidableEq A] in
+theorem target_relocation {B : Type} {W : Type} [DecidableEq B]
+    {old : Heap A V} {new : Heap B W} (copy : Relocation old new)
+    (oldSlots : A → List A) (newSlots : B → List B)
+    (ordered : ∀ a, newSlots (copy.address a) = (oldSlots a).map copy.address)
+    (start : A) (path : List Nat) :
+    target new newSlots (copy.address start) path =
+      (target old oldSlots start path).map copy.address := by
+  rw [target, result_relocation copy oldSlots newSlots ordered]
+  cases h : result old oldSlots start path <;> simp [target, h]
+
+omit [DecidableEq A] in
+theorem payload_relocation {B : Type} {W : Type} [DecidableEq B]
+    {old : Heap A V} {new : Heap B W} (copy : Relocation old new)
+    (oldSlots : A → List A) (newSlots : B → List B)
+    (ordered : ∀ a, newSlots (copy.address a) = (oldSlots a).map copy.address)
+    (start : A) (path : List Nat) :
+    payload new newSlots (copy.address start) path =
+      (payload old oldSlots start path).map copy.payload := by
+  rw [payload, result_relocation copy oldSlots newSlots ordered]
+  cases h : result old oldSlots start path <;> simp [payload, Cell.relocate, h]
+
+/-- Ordered queries inherit alias preservation from the existing injective
+relocation. Equality of copied scalar values alone would not imply this. -/
+theorem incidence_relocation {B : Type} {W : Type} [DecidableEq B]
+    {old : Heap A V} {new : Heap B W} (copy : Relocation old new)
+    (oldSlots : A → List A) (newSlots : B → List B)
+    (ordered : ∀ a, newSlots (copy.address a) = (oldSlots a).map copy.address)
+    (start : A) (written observed : List Nat) :
+    impact new newSlots (copy.address start) written observed =
+      impact old oldSlots start written observed := by
+  simp only [impact, target_relocation copy oldSlots newSlots ordered]
+  cases left : target old oldSlots start written <;>
+    cases right : target old oldSlots start observed <;>
+      simp [copy.injective.eq_iff]
+
+end Mettapedia.Machines.ResourceOwnership.OrderedObservation

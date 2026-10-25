@@ -53,6 +53,16 @@ theorem graphValuation_extend {Γ : Ctx Unit} {A : Ty Unit}
   funext B boundVar
   cases boundVar <;> rfl
 
+private theorem graphValuation_extend_material {Γ : Ctx Unit} {A : Ty Unit}
+    (ρ : Valuation.{u} Γ) (x : Value A) :
+    (graphValuation (extend ρ x) :
+      ZFSetSimpleTypeInterpretation.Valuation (fun _ => carrierCode.{u}) (A :: Γ)) =
+      (ZFSetSimpleTypeInterpretation.extend (fun _ => carrierCode.{u})
+        (graphValuation ρ) (graphEquiv A x) :
+          ZFSetSimpleTypeInterpretation.Valuation (fun _ => carrierCode.{u}) (A :: Γ)) := by
+  funext B boundVar
+  cases boundVar <;> rfl
+
 noncomputable def interpret {Const : Ty Unit → Type v}
     (constants : {A : Ty Unit} → Const A → Value.{u} A) :
     {Γ : Ctx Unit} → {A : Ty Unit} → Term Const Γ A → Valuation Γ → Value A
@@ -79,6 +89,7 @@ theorem graph_interpret {Const : Ty Unit → Type v}
     {Γ : Ctx Unit} {A : Ty Unit} (term : Term Const Γ A) (ρ : Valuation Γ) :
     graphEquiv A (interpret constants term ρ) =
       ZFSetHOLTermInterpretation.interpret graphConstants term (graphValuation ρ) := by
+  unfold ZFSetHOLTermInterpretation.interpret
   induction term with
   | var => rfl
   | const c => exact constant_law c
@@ -86,65 +97,68 @@ theorem graph_interpret {Const : Ty Unit → Type v}
       rw [interpret, graphEquiv_app, ihf, ihx]
       rfl
   | lam body ih =>
-      rw [interpret, graphEquiv_lam, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_lam, ZFSetSimpleTypeInterpretation.interpret]
+      unfold ZFSetHOLTypeInterpretation.lam ZFSetSimpleTypeInterpretation.lam
       congr 1
       funext x
-      rw [ih, graphValuation_extend, Equiv.apply_symm_apply]
+      rw [ih, graphValuation_extend_material, Equiv.apply_symm_apply]
   | top => exact graphEquiv_prop _
   | bot => exact graphEquiv_prop _
   | and p q ihp ihq =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       have hp := (graphEquiv_prop _).symm.trans (ihp ρ)
       have hq := (graphEquiv_prop _).symm.trans (ihq ρ)
       rw [hp, hq]
   | or p q ihp ihq =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       have hp := (graphEquiv_prop _).symm.trans (ihp ρ)
       have hq := (graphEquiv_prop _).symm.trans (ihq ρ)
       rw [hp, hq]
   | imp p q ihp ihq =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       have hp := (graphEquiv_prop _).symm.trans (ihp ρ)
       have hq := (graphEquiv_prop _).symm.trans (ihq ρ)
       rw [hp, hq]
   | not p ih =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       rw [(graphEquiv_prop _).symm.trans (ih ρ)]
   | eq x y ihx ihy =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       congr 1
       apply propext
       exact ((graphEquiv _).injective.eq_iff).symm.trans
         (iff_of_eq (congrArg₂ Eq (ihx ρ) (ihy ρ)))
   | @all A Γ p ih =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       congr 1
       apply propext
       constructor
       · intro hp x
         have value := hp ((graphEquiv A).symm x)
         have equal := (graphEquiv_prop _).symm.trans (ih (extend ρ ((graphEquiv A).symm x)))
-        rw [graphValuation_extend, Equiv.apply_symm_apply] at equal
-        exact equal ▸ value
+        rw [graphValuation_extend_material, Equiv.apply_symm_apply] at equal
+        exact (congrArg holds equal).mp value
       · intro hp x
         have equal := (graphEquiv_prop _).symm.trans (ih (extend ρ x))
-        rw [graphValuation_extend] at equal
-        exact equal.symm ▸ hp (graphEquiv A x)
+        rw [graphValuation_extend_material] at equal
+        apply (congrArg holds equal).mpr
+        exact hp (graphEquiv A x)
   | @ex A Γ p ih =>
-      rw [interpret, graphEquiv_prop, ZFSetHOLTermInterpretation.interpret]
+      rw [interpret, graphEquiv_prop, ZFSetSimpleTypeInterpretation.interpret]
       congr 1
       apply propext
       constructor
       · rintro ⟨x, hx⟩
         refine ⟨graphEquiv A x, ?_⟩
         have equal := (graphEquiv_prop _).symm.trans (ih (extend ρ x))
-        rw [graphValuation_extend] at equal
-        exact equal ▸ hx
+        rw [graphValuation_extend_material] at equal
+        exact (congrArg holds equal).mp hx
       · rintro ⟨x, hx⟩
         refine ⟨(graphEquiv A).symm x, ?_⟩
         have equal := (graphEquiv_prop _).symm.trans (ih (extend ρ ((graphEquiv A).symm x)))
-        rw [graphValuation_extend, Equiv.apply_symm_apply] at equal
-        exact equal.symm ▸ hx
+        rw [graphValuation_extend_material, Equiv.apply_symm_apply] at equal
+        apply (congrArg holds equal).mpr
+        exact hx
 
 /-! ## Reusing the same set operations, with trace-coded higher-order inputs -/
 

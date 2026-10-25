@@ -412,13 +412,20 @@
               ($tail (gslt:equations:jobs-lanes $plan $rest)))
          (gslt:automata:append $here $tail))))))
 
+; Equations are congruences: their sites are every well-sorted position, whatever reduction
+; contexts the plan's rewrites have (GeneralEquationJobs.jobs).
 (: gslt:equations:lanes (-> Atom Atom %Undefined%))
 (= (gslt:equations:lanes $plan $source)
    (case $plan
      (((CompletePlan (PremiseEnvironment $declarations $rewrites $specifications $provider $reflection $free)
          $permissions $bound $expected $rules $equations $admitted)
        (if (gslt:premise:open-well-sorted $declarations $free $bound $expected $source)
-         (let* (($sites (gslt:sites:generate $declarations $free $permissions $bound $expected $source))
+         (let* (($sites (gslt:sites:generate $declarations $free
+                   (OperationalPermissions PermissionYes PermissionYes LNil PermissionYes PermissionYes
+                     (LCons "Mettapedia.OSLF.MeTTaIL.Syntax.CollType.vec"
+                       (LCons "Mettapedia.OSLF.MeTTaIL.Syntax.CollType.hashBag"
+                         (LCons "Mettapedia.OSLF.MeTTaIL.Syntax.CollType.hashSet" LNil))))
+                   $bound $expected $source))
                 ($jobs (gslt:equations:jobs $equations $sites 0)))
            (gslt:equations:jobs-lanes $plan $jobs))
          LNil)))))

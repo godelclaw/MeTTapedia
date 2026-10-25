@@ -44,7 +44,7 @@ def delivered (environment : Environment) (outer : Goal) {goal : Goal}
       | .premise assignment event valid =>
           { tasks := [.evaluate
               (.quantified context parameter body (index + 1) elements
-                (restoreParameter parameter initial assignment))
+                initial)
               (.prependElement context parameter body index element elements initial assignment
                 event localTyped valid tail)] }
   | .prependElement _ _ _ index element _ _ _ event localTyped head tail =>

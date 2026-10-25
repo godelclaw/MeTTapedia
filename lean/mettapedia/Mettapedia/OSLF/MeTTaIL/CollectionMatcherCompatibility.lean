@@ -1,6 +1,7 @@
 import Mettapedia.OSLF.MeTTaIL.ScopedCollectionReplay
 import Mettapedia.OSLF.MeTTaIL.ScopedCollectionCanonical
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentFiniteServices
+import Mettapedia.OSLF.MeTTaIL.GeneralEquationMatcherWork
 
 /-!
 # Collection matching as ordinary matching at an equivalent presentation
@@ -327,6 +328,45 @@ def ordinaryAnswers (request : ScopedCollectionMachine.Request)
       answer.Valid (ordinaryRequest request receipt)} :=
   (StructuralDescent.FiniteServices.Matcher.answers (ordinaryRequest request receipt)).filter
     fun answer => answer.val.assignment == receipt.matching.assignment
+
+/-- The two complete matching strategies used by the semantic finite service
+and the emitted complete machine reach the identical final state. -/
+theorem finishMatcher_start_eq_finiteState (request : GeneralScopedMatchMachine.Request) :
+    GeneralEquationJobExecution.finishMatcher request
+        (GeneralScopedMatchMachine.start request) =
+      StructuralDescent.FiniteServices.Matcher.state request := by
+  unfold StructuralDescent.FiniteServices.Matcher.state
+  apply GeneralEquationJobExecution.finishMatcher_eq_run_of_enough
+  exact Nat.le_refl _
+
+/-- Erasing proof fields from `ordinaryAnswers` gives exactly the complete
+machine's ordered, trace-retaining filtered frontier. -/
+def ordinaryAnswerValues (request : ScopedCollectionMachine.Request)
+    (receipt : ScopedCollectionMachine.Receipt) :
+    List GeneralScopedMatchMachine.Answer :=
+  (ordinaryAnswers request receipt).map Subtype.val
+
+theorem finiteAnswerValues (request : GeneralScopedMatchMachine.Request) :
+    (StructuralDescent.FiniteServices.Matcher.answers request).map Subtype.val =
+      (StructuralDescent.FiniteServices.Matcher.state request).answers := by
+  unfold StructuralDescent.FiniteServices.Matcher.answers
+  rw [List.map_map]
+  simp [Function.comp_def]
+
+theorem ordinaryAnswerValues_eq (request : ScopedCollectionMachine.Request)
+    (receipt : ScopedCollectionMachine.Receipt) :
+    ordinaryAnswerValues request receipt =
+      (GeneralEquationJobExecution.finishMatcher (ordinaryRequest request receipt)
+        (GeneralScopedMatchMachine.start (ordinaryRequest request receipt))).answers.filter
+          fun answer => answer.assignment == receipt.matching.assignment := by
+  rw [finishMatcher_start_eq_finiteState]
+  unfold ordinaryAnswerValues ordinaryAnswers
+  change List.map Subtype.val
+      (List.filter ((fun answer : GeneralScopedMatchMachine.Answer =>
+        answer.assignment == receipt.matching.assignment) ∘ Subtype.val)
+        (StructuralDescent.FiniteServices.Matcher.answers
+          (ordinaryRequest request receipt))) = _
+  rw [← List.filter_map, finiteAnswerValues]
 
 /-- A checked collection receipt always has an ordinary checked answer at the
 deterministic equivalent presentation. This gives the generic premise machine

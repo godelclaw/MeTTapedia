@@ -1,7 +1,7 @@
 /-
-# Canonical forms for the simple erasure of indexed LF
+# Canonical forms for the simple erasure of the MettaKernel kind-result prototype
 
-The indexed LF profile is dependently typed, but hereditary substitution is
+The historical MettaKernel kind-result profile is dependently typed, but hereditary substitution is
 well-founded on the ordinary simple erasure of a cut type.  This module makes
 that erasure explicit.  `Normal` is intrinsically beta-normal and eta-long:
 function-shaped normal forms are lambdas, while neutral heads can appear as

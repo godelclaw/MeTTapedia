@@ -447,9 +447,10 @@ mutual
             object.2]
     | @collectionConstructor _ rule parameterName kind elements rest elementType member shape
         elementsTyped =>
+        have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
         have category : rule.category ∈ sorts := by simpa [resultIn] using inSorts
         have element := (apart rule member category).2 (.simple parameterName
-          (.collection kind elementType)) (by rw [shape]; exact List.mem_singleton.mpr rfl)
+          (.collection kind elementType)) (by rw [fullShape]; exact List.mem_singleton.mpr rfl)
           (.collection kind elementType) rfl
         simp only [isObjectPattern, Bool.and_eq_true] at object
         rw [contract, contractList_eq_map,

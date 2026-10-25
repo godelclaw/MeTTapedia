@@ -143,7 +143,7 @@ theorem realize_toFirstOrder (model : Model S Carrier)
     (valuation : Nat → Carrier) (term : Term S) :
     letI : S.toFirstOrderLanguage.Structure Carrier := model.toFirstOrderStructure
     term.toFirstOrder.realize valuation = term.evaluate model valuation := by
-  letI : S.toFirstOrderLanguage.Structure Carrier := model.toFirstOrderStructure
+  let : S.toFirstOrderLanguage.Structure Carrier := model.toFirstOrderStructure
   induction term with
   | var index => rfl
   | op operation arguments ih =>

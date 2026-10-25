@@ -4,74 +4,31 @@ import Mathlib.Data.Multiset.DershowitzManna
 import Mathlib.Tactic.Abel
 
 /-!
-# The measure for the simultaneous induction
+# Branching recursion over surreal birthdays
 
-Everything outstanding about surreal addition runs through one induction, which
-proves two statements together:
-
-```
-Mono a b c :  a < b  →  add a c < add b c
-Sep  x y   :  Separated (leftSum x y) (rightSum x y)
-```
-
-They are mutually dependent. `Sep x y` needs `add l y < add r y` for `l` a left
-and `r` a right option of `x`, which is `Mono l r y`; and `Mono a b c` needs
-`Sep b c` in order to know that `add l c` really is an option of `add b c`.
-
-The whole difficulty is a measure that falls on every call. This file supplies
-one and proves all five decreases, with no hypotheses left over.
-
-## Three measures that do not work, and why
-
-Writing `bx` for `birthday x`:
-
-* **Maximum** fails on `Mono a b c → Mono a l c` with `bl < bb`: when `ba ≥ bb`
-  both maxima are `ba` and nothing moves.
-* **The natural sum of birthdays** fails on `Sep x y → Mono l r y`, which would
-  need `bl ⊕ br < bx`. Two options of a number born on day `2` can both be born
-  on day `1`, and `1 ⊕ 1 = 2`. Measured, not assumed: `nadd_measure_fails` in
-  `Ordinal/NaturalSum.lean`'s controls.
-* **Ordinary ordinal addition** is not strictly monotone on the left at all:
-  `0 + ω = 1 + ω` (`NaturalSumControls.ordinal_add_not_strict_left`).
-
-A fourth candidate almost works, and recording why it does not is what points
-at the one that does. Weighing a number by `ω ^ bx` and combining with the
-natural sum makes every obligation a single ordinal comparison, because
-`ω`-powers are additively principal. But discharging `Sep → Mono` then needs
+Surreal addition proves monotonicity and separation by mutual induction:
+`Mono a b c` compares `a + c` and `b + c`, while `Sep x y` separates the
+option families defining `x + y`. Their dependency measures are
 
 ```
-naturalAdd (ω ^ a) (ω ^ b) < ω ^ c        for a < c and b < c
+tripleMeasure a b c = {birthday a, birthday b, birthday c}
+pairMeasure  x y   = {birthday x, birthday y}
 ```
 
-whose standard proof goes through Cantor normal form, which this development
-does not have. Raising to `ω` was a way of buying one property: *replacing one
-thing by two strictly smaller things must lower the measure.*
+Each call replaces a nonempty collection of birthdays by younger birthdays.
+In particular, `Sep x y → Mono l r y` replaces one birthday by two smaller
+ones. Mathlib's Dershowitz–Manna order covers replacement, deletion, and this
+split, and inherits well-foundedness from the ordinal order.
 
-## What works: order the birthdays as a multiset
+The measures certify termination rather than work counts. Maximum can stay
+fixed when one component decreases; a sum of birthdays can stay fixed when
+one component splits; cardinality can increase under a valid decrease.
+The controls retain all three boundaries, ordinary ordinal addition's lost
+strictness, and rejection of the reversed larger replacement. An encoding by
+ordinal powers would require its own correspondence; none is needed here.
 
-That property is the definition of the Dershowitz–Manna order, so take it
-directly instead of buying it. A number contributes its birthday, and an
-obligation contributes the multiset of birthdays it mentions:
-
-```
-tripleMeasure a b c = {ba, bb, bc}
-pairMeasure  x y   = {bx, by}
-```
-
-`Multiset.IsDershowitzMannaLT M N` holds when `M` is `N` with some elements
-replaced by finitely many strictly smaller ones; it is well founded over any
-well-founded order (`Multiset.wellFounded_isDershowitzMannaLT`), and `Ordinal`
-is one. Each of the five decreases is then an instance of that definition:
-
-* `tripleMeasure_lt_of_second`, `tripleMeasure_lt_of_first` — replace one birthday
-  by a smaller one;
-* `pairMeasure_lt_tripleMeasure_right`, `pairMeasure_lt_tripleMeasure_left` — drop a
-  birthday, which is replacing it by nothing;
-* `tripleMeasure_lt_pairMeasure` — **replace `bx` by the two option birthdays `bl`
-  and `br`**, which is the case this order exists for, and the one that every
-  ordinal-valued candidate failed.
-
-No hypotheses, no ordinal lemma, no lexicographic tag.
+One context-preserving replacement lemma supplies the concrete decreases
+consumed by `AdditionOrder`, `Associativity`, and `AdditionBirthday`.
 -/
 
 set_option autoImplicit false
@@ -81,6 +38,14 @@ namespace Mettapedia.SetTheory.SignExpansion
 namespace Surreal
 
 open Multiset
+
+/-- Keep the shared obligations and replace one parent by younger children. -/
+private theorem replace_lt {α : Type*} [Preorder α]
+    (shared children : Multiset α) (parent : α)
+    (younger : ∀ child ∈ children, child < parent) :
+    IsDershowitzMannaLT (shared + children) (shared + {parent}) :=
+  ⟨shared, children, {parent}, by simp, rfl, rfl,
+    fun child member => ⟨parent, by simp, younger child member⟩⟩
 
 /-! ## The two measures -/
 
@@ -103,23 +68,17 @@ replaced by a smaller one. -/
 theorem tripleMeasure_lt_of_second {a b c l : Surreal}
     (h : birthday l < birthday b) :
     IsDershowitzMannaLT (tripleMeasure a l c) (tripleMeasure a b c) := by
-  refine ⟨{birthday a} + {birthday c}, {birthday l}, {birthday b}, by simp, ?_, ?_, ?_⟩
-  · simp only [tripleMeasure]; abel
-  · simp only [tripleMeasure]; abel
-  · intro y hy
-    rw [Multiset.mem_singleton] at hy
-    exact ⟨birthday b, Multiset.mem_singleton_self _, hy ▸ h⟩
+  simpa [tripleMeasure, add_assoc, add_comm, add_left_comm] using
+    replace_lt ({birthday a} + {birthday c}) {birthday l} (birthday b)
+      (by simpa using h)
 
 /-- **`Mono a b c → Mono r b c`** for `r` an option of `a`. -/
 theorem tripleMeasure_lt_of_first {a b c r : Surreal}
     (h : birthday r < birthday a) :
     IsDershowitzMannaLT (tripleMeasure r b c) (tripleMeasure a b c) := by
-  refine ⟨{birthday b} + {birthday c}, {birthday r}, {birthday a}, by simp, ?_, ?_, ?_⟩
-  · simp only [tripleMeasure]; abel
-  · simp only [tripleMeasure]; abel
-  · intro y hy
-    rw [Multiset.mem_singleton] at hy
-    exact ⟨birthday a, Multiset.mem_singleton_self _, hy ▸ h⟩
+  simpa only [tripleMeasure, add_assoc, add_comm, add_left_comm] using
+    replace_lt ({birthday b} + {birthday c}) {birthday r} (birthday a)
+      (by simpa using h)
 
 /-- **Replacing the third entry by a younger number.**  Monotonicity never
 touches its third argument, but associativity recurses in all three slots, so
@@ -127,49 +86,35 @@ it needs this one too. -/
 theorem tripleMeasure_lt_of_third {a b c w : Surreal}
     (h : birthday w < birthday c) :
     IsDershowitzMannaLT (tripleMeasure a b w) (tripleMeasure a b c) := by
-  refine ⟨{birthday a} + {birthday b}, {birthday w}, {birthday c}, by simp, ?_, ?_, ?_⟩
-  · simp only [tripleMeasure]
-  · simp only [tripleMeasure]
-  · intro y hy
-    rw [Multiset.mem_singleton] at hy
-    exact ⟨birthday c, Multiset.mem_singleton_self _, hy ▸ h⟩
+  simpa [tripleMeasure] using
+    replace_lt ({birthday a} + {birthday b}) {birthday w} (birthday c)
+      (by simpa using h)
 
 /-- **`Mono a b c → Sep b c`**: a birthday is dropped, which is replacing it by
 nothing at all. -/
 theorem pairMeasure_lt_tripleMeasure_right (a b c : Surreal) :
     IsDershowitzMannaLT (pairMeasure b c) (tripleMeasure a b c) := by
-  refine ⟨{birthday b} + {birthday c}, 0, {birthday a}, by simp, ?_, ?_, ?_⟩
-  · simp only [pairMeasure]; abel
-  · simp only [tripleMeasure]; abel
-  · intro y hy
-    exact absurd hy (by simp)
+  simpa only [tripleMeasure, pairMeasure, add_zero, zero_add, add_assoc, add_comm, add_left_comm] using
+    replace_lt ({birthday b} + {birthday c}) 0 (birthday a) (by simp)
 
 /-- **`Mono a b c → Sep a c`.** -/
 theorem pairMeasure_lt_tripleMeasure_left (a b c : Surreal) :
     IsDershowitzMannaLT (pairMeasure a c) (tripleMeasure a b c) := by
-  refine ⟨{birthday a} + {birthday c}, 0, {birthday b}, by simp, ?_, ?_, ?_⟩
-  · simp only [pairMeasure]; abel
-  · simp only [tripleMeasure]; abel
-  · intro y hy
-    exact absurd hy (by simp)
+  simpa [tripleMeasure, pairMeasure, add_assoc, add_comm, add_left_comm] using
+    replace_lt ({birthday a} + {birthday c}) 0 (birthday b) (by simp)
 
 /-- **`Sep x y → Mono l r y`** for `l` and `r` options of `x`: the single
 birthday `bx` is replaced by the two smaller birthdays `bl` and `br`.
 
-This is the step every ordinal-valued candidate failed, and it is exactly the
-case the Dershowitz–Manna order is designed for. It needs nothing about
+This split is not justified by strict monotonicity of a binary birthday sum.
+The Dershowitz–Manna order needs nothing about
 ordinal arithmetic — only that both options are younger than `x`. -/
 theorem tripleMeasure_lt_pairMeasure {x y l r : Surreal}
     (hl : birthday l < birthday x) (hr : birthday r < birthday x) :
     IsDershowitzMannaLT (tripleMeasure l r y) (pairMeasure x y) := by
-  refine ⟨{birthday y}, {birthday l} + {birthday r}, {birthday x}, by simp, ?_, ?_, ?_⟩
-  · simp only [tripleMeasure]; abel
-  · simp only [pairMeasure]; abel
-  · intro z hz
-    refine ⟨birthday x, Multiset.mem_singleton_self _, ?_⟩
-    rcases Multiset.mem_add.mp hz with hz' | hz'
-    · rw [Multiset.mem_singleton] at hz'; exact hz' ▸ hl
-    · rw [Multiset.mem_singleton] at hz'; exact hz' ▸ hr
+  simpa [tripleMeasure, pairMeasure, add_assoc, add_comm, add_left_comm] using
+    replace_lt {birthday y} ({birthday l} + {birthday r}) (birthday x)
+      (by simpa using And.intro hl hr)
 
 /-! ## The order is well founded -/
 
@@ -215,23 +160,15 @@ separation argument recurse into a separation, not a monotonicity. -/
 theorem pairMeasure_lt_pairMeasure_left {x y u : Surreal}
     (h : birthday u < birthday x) :
     IsDershowitzMannaLT (pairMeasure u y) (pairMeasure x y) := by
-  refine ⟨{birthday y}, {birthday u}, {birthday x}, by simp, ?_, ?_, ?_⟩
-  · simp only [pairMeasure]; abel
-  · simp only [pairMeasure]; abel
-  · intro z hz
-    rw [Multiset.mem_singleton] at hz
-    exact ⟨birthday x, Multiset.mem_singleton_self _, hz ▸ h⟩
+  simpa [pairMeasure, add_comm] using
+    replace_lt {birthday y} {birthday u} (birthday x) (by simpa using h)
 
 /-- **`Sep x y → Sep x v`** for `v` an option of `y`. -/
 theorem pairMeasure_lt_pairMeasure_right {x y v : Surreal}
     (h : birthday v < birthday y) :
     IsDershowitzMannaLT (pairMeasure x v) (pairMeasure x y) := by
-  refine ⟨{birthday x}, {birthday v}, {birthday y}, by simp, ?_, ?_, ?_⟩
-  · simp only [pairMeasure]
-  · simp only [pairMeasure]
-  · intro z hz
-    rw [Multiset.mem_singleton] at hz
-    exact ⟨birthday y, Multiset.mem_singleton_self _, hz ▸ h⟩
+  simpa [pairMeasure] using
+    replace_lt {birthday x} {birthday v} (birthday y) (by simpa using h)
 
 /-! ## Controls -/
 
@@ -260,12 +197,7 @@ is the `Sep → Mono` shape in miniature, and it is what no ordinal-valued
 measure gave for free. -/
 theorem two_below_one :
     IsDershowitzMannaLT ({0, 0} : Multiset Ordinal.{0}) ({1} : Multiset Ordinal.{0}) := by
-  refine ⟨0, {0, 0}, {1}, by simp, by simp, by simp, ?_⟩
-  intro y hy
-  refine ⟨1, Multiset.mem_singleton_self _, ?_⟩
-  rcases Multiset.mem_cons.mp hy with h | h
-  · subst h; exact zero_lt_one
-  · rw [Multiset.mem_singleton] at h; subst h; exact zero_lt_one
+  simpa using replace_lt (0 : Multiset Ordinal.{0}) {0, 0} 1 (by simp)
 
 /-- **And it is not degenerate**: the reverse replacement, by something
 *larger*, is not a decrease. Without this the order could be trivial. -/

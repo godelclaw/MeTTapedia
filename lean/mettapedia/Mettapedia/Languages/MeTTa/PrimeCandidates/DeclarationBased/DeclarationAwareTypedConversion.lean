@@ -141,8 +141,7 @@ theorem prior_conversion_images_disjoint :
     · cases typing
       cases conversion
       simp [towerRootCodec, sumOfDisjoint, towerJudgmentCodec,
-        towerTypingClaimCodec, typingClaimCodec, encodeTypingClaim,
-        typedConversionQueryCodec, encodeTypedConversionQuery,
+        towerTypingClaimCodec, typingClaimCodec,         typedConversionQueryCodec, encodeTypedConversionQuery,
         typedConversionPattern] at equality
     · cases context
       cases conversion
@@ -253,7 +252,7 @@ private theorem typedConversionTarget_valid :
     DeclarationAwareDataLanguage.definition,
     DeclarationAwareDataLanguage.constructorArities,
     DeclarationAwareDataLanguage.kernelDataType,
-    TypeDecl.plain, encodeTowerHead, LevelTower.zero, encodeLevel, encodeNat,
+    TypeDecl.plain, encodeTowerHead, LevelTower.zero, encodeNat,
     encodeCtx, CalculusLanguageDef.ruleIds,
     CalculusLanguageDef.judgmentSignatureValid, CalculusLanguageDef.judgmentHeads,
     CalculusLanguageDef.conversionDeclarationValid,
@@ -542,8 +541,8 @@ private def typedConversionAddedMeaning
                     exact
                       ⟨⟨⟨fun typingQuery equality => by
                               cases typingQuery
-                              simp [towerTypingClaimCodec, typingClaimCodec,
-                                encodeTypingClaim] at equality,
+                              simp [towerTypingClaimCodec, typingClaimCodec
+                                ] at equality,
                             fun contextQuery equality => by
                               cases contextQuery
                               simp [contextFormationQueryCodec,

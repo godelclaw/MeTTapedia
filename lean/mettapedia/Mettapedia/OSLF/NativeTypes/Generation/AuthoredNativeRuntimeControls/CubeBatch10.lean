@@ -8,7 +8,7 @@ namespace Mettapedia.OSLF.NativeTypes.Generation.AuthoredNativeRuntimeControls.C
 
 def batchIndex : Nat := 10
 
-set_option stderrAsMessages false in
-#eval Mettapedia.OSLF.NativeTypes.Generation.AuthoredPipeline.Controls.runCubeFixturesBatch batchIndex
+def check : IO Unit :=
+  Mettapedia.OSLF.NativeTypes.Generation.AuthoredPipeline.Controls.runCubeFixturesBatch batchIndex
 
 end Mettapedia.OSLF.NativeTypes.Generation.AuthoredNativeRuntimeControls.CubeBatch10

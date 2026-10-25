@@ -19,6 +19,17 @@ Positive example:
 
 Negative example:
 - a faithful query backend does not by itself grant runtime-rule execution.
+
+Relation to occurrence-level refinement: this seam fixes one HE space and
+compares supports. `SpaceKindRefinement` states refinement of space kinds at
+the level of occurrence bags, for every program. `SpaceKindSupportBridge`
+proves that a refinement of the atom kind induces this seam after every
+program whose equations are closed (`sharedQueryRefinement_of_refines`), that
+for equations with variables no store knowing only the bag can match HE's
+query support, since HE renames equation variables by list position
+(`no_bag_level_query_support`), and that the converse fails: a store of the
+support alone yields this seam without being an atom engine
+(`seam_without_atom_refinement`).
 -/
 
 namespace Mettapedia.Languages.MeTTa.CeTTaSpaceEngineRefinement

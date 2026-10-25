@@ -1,6 +1,7 @@
 import Mettapedia.GSLT.Core.GSLT
 import Mettapedia.GSLT.Core.GSLTConstructions
 import Mettapedia.GSLT.Core.InteractionEvent
+import Mettapedia.GSLT.Core.InteractionComposition
 import Mettapedia.GSLT.Causality.Trace
 import Mettapedia.GSLT.Dynamics.CostExactness
 import Mettapedia.GSLT.LanguageDef.Cost.Elaboration.ReplayKey
@@ -199,11 +200,61 @@ namespace OccurrencePath
 
 variable {P : InteractionPresentation.{uSite, uEvent} theory}
 
+/-- Unpack each occurrence into the canonical interaction-path presentation.
+The site and its event evidence are retained, including repeated sites. -/
+def toEventPath {source target : theory.Term} :
+    OccurrencePath P source target →
+      Core.InteractionComposition.EventPath P source target
+  | .refl term => .nil term
+  | .cons occurrence rest => .cons occurrence.evidence (toEventPath rest)
+
+/-- Package an interaction edge as an occurrence. This is a change of path
+representation, rather than an erasure to the endpoint reachability relation. -/
+def ofEventPath {source target : theory.Term} :
+    Core.InteractionComposition.EventPath P source target →
+      OccurrencePath P source target
+  | .nil term => .refl term
+  | .cons (site := site) event rest => .cons ⟨site, event⟩ (ofEventPath rest)
+
+@[simp] theorem of_toEventPath {source target : theory.Term}
+    (path : OccurrencePath P source target) :
+    ofEventPath (toEventPath path) = path := by
+  induction path with
+  | refl => rfl
+  | cons occurrence rest ih => cases occurrence; simp only [toEventPath, ofEventPath, ih]
+
+@[simp] theorem to_ofEventPath {source target : theory.Term}
+    (path : Core.InteractionComposition.EventPath P source target) :
+    toEventPath (ofEventPath path) = path := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih => simp only [ofEventPath, toEventPath, ih]
+
+/-- Occurrence paths and interaction paths retain exactly the same edges.
+This equivalence is indexed by both endpoints and the same presentation. -/
+def eventPathEquiv (source target : theory.Term) :
+    OccurrencePath P source target ≃
+      Core.InteractionComposition.EventPath P source target where
+  toFun := toEventPath
+  invFun := ofEventPath
+  left_inv := of_toEventPath
+  right_inv := to_ofEventPath
+
 def append {source middle target : theory.Term} :
     OccurrencePath P source middle → OccurrencePath P middle target →
       OccurrencePath P source target
   | .refl _, q => q
   | .cons o rest, q => .cons o (append rest q)
+
+@[simp] theorem toEventPath_append {source middle target : theory.Term}
+    (first : OccurrencePath P source middle) (second : OccurrencePath P middle target) :
+    toEventPath (append first second) =
+      Core.InteractionComposition.EventPath.append P
+        (toEventPath first) (toEventPath second) := by
+  induction first with
+  | refl => rfl
+  | cons occurrence rest ih =>
+      simp only [append, toEventPath, Core.InteractionComposition.EventPath.append, ih]
 
 @[simp] theorem refl_append {source target : theory.Term}
     (p : OccurrencePath P source target) :
@@ -220,14 +271,22 @@ theorem append_assoc {a b c d : theory.Term}
     (p : OccurrencePath P a b) (q : OccurrencePath P b c)
     (r : OccurrencePath P c d) :
     append (append p q) r = append p (append q r) := by
-  induction p with
-  | refl => rfl
-  | cons o rest ih => simp [append, ih]
+  apply (eventPathEquiv a d).injective
+  change toEventPath _ = toEventPath _
+  simp only [toEventPath_append, Core.InteractionComposition.EventPath.append_assoc]
 
 /-- Site list of a path (order-sensitive readout). -/
 def sites {s t : theory.Term} : OccurrencePath P s t → List P.Site
   | .refl _ => []
   | .cons o rest => o.site :: sites rest
+
+@[simp] theorem toEventPath_sites {source target : theory.Term}
+    (path : OccurrencePath P source target) :
+    Core.InteractionComposition.EventPath.sites P (toEventPath path) = sites path := by
+  induction path with
+  | refl => rfl
+  | cons occurrence rest ih =>
+      simp only [toEventPath, Core.InteractionComposition.EventPath.sites, sites, ih]
 
 /-- Site bag of a path (order-insensitive readout). -/
 def siteBag {s t : theory.Term} (p : OccurrencePath P s t) : Multiset P.Site :=

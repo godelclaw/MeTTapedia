@@ -23,18 +23,18 @@ open Mettapedia.OSLF.Binding
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
 open CollectionEquationFamily
 
-/-- The actual collection row and its exact self-sorted parameter. -/
+/-- The actual bare collection row and its exact self-sorted parameter. -/
 structure Row (language : LanguageDef) (kind : CollType) where
   rule : GrammarRule
   member : rule ∈ language.terms
   parameter : String
-  shape : rule.params = [.simple parameter (.collection kind (.base rule.category))]
+  shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))]
 
 /-- Reconstruct the source carrier row from checked finite inventory data. -/
 def Row.ofRule? (language : LanguageDef) (kind : CollType) (rule : GrammarRule)
     (parameter : String) : Option (Row language kind) :=
   if member : rule ∈ language.terms then
-    if shape : rule.params = [.simple parameter (.collection kind (.base rule.category))] then
+    if shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))] then
       some ⟨rule, member, parameter, shape⟩
     else none
   else none
@@ -47,7 +47,7 @@ theorem Row.ofRule?_complete {language : LanguageDef} {kind : CollType} (row : R
 theorem Row.ofRule?_exact (language : LanguageDef) (kind : CollType) (rule : GrammarRule)
     (parameter : String) :
     (∃ row, Row.ofRule? language kind rule parameter = some row) ↔
-      rule ∈ language.terms ∧ rule.params = [.simple parameter (.collection kind (.base rule.category))] := by
+      rule ∈ language.terms ∧ rule.bareParams = [.simple parameter (.collection kind (.base rule.category))] := by
   simp only [ofRule?]
   split
   · split
@@ -144,7 +144,8 @@ theorem Generator.flattening?_complete {language : LanguageDef} {kind : CollType
     {Γ : List TypeExpr} (pre inner post : Values row Γ) :
     Generator.flattening? row algebra pre inner post =
       some (.flattening row algebra declaration enabled pre inner post) := by
-  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration row.shape
+  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp row.shape).2
   simp only [flattening?, read, enabled, dite_true]
   rfl
 
@@ -154,7 +155,8 @@ theorem Generator.singletonCollapse?_complete {language : LanguageDef} {kind : C
     {Γ : List TypeExpr} (value : Term (signatureOf language) Γ (.base row.rule.category)) :
     Generator.singletonCollapse? row algebra value =
       some (.singletonCollapse row algebra declaration enabled value) := by
-  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration row.shape
+  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp row.shape).2
   simp only [singletonCollapse?, read, enabled, dite_true]
   rfl
 
@@ -165,7 +167,8 @@ theorem Generator.unitElimination?_complete {language : LanguageDef} {kind : Col
     {Γ : List TypeExpr} (pre post : Values row Γ) :
     Generator.unitElimination? row algebra unit pre post =
       some (.unitElimination row algebra declaration unit selected pre post) := by
-  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration row.shape
+  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp row.shape).2
   simp only [unitElimination?, read, selected, dite_true]
   rfl
 
@@ -175,7 +178,8 @@ theorem Generator.emptyUnit?_complete {language : LanguageDef} {kind : CollType}
     (unit : String) (selected : algebra.unit = some unit) (Γ : List TypeExpr) :
     Generator.emptyUnit? row algebra unit Γ =
       some (.emptyUnit row algebra declaration unit selected Γ) := by
-  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration row.shape
+  obtain ⟨receipt, read⟩ := checkedAlgebra?_complete declaration
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp row.shape).2
   simp only [emptyUnit?, read, selected, dite_true]
   rfl
 

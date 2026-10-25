@@ -24,6 +24,76 @@ namespace Mettapedia.Algebra.QuadraticPresentation
 open Module
 open scoped BigOperators
 
+section GeneratorChange
+
+variable {R : Type*} [CommRing R]
+
+/-- Coefficients of the relation for `β = u + vω`. -/
+def shiftedConstant (a b u v : R) : R := v ^ 2 * a - u ^ 2 - u * v * b
+
+def shiftedLinear (b u v : R) : R := 2 * u + v * b
+
+/-- An affine equivalence with explicit coefficient equalities. Keeping the
+endpoints explicit preserves executable coordinate projections under transport. -/
+def affineEquiv (a b c d u : R) (v : Rˣ)
+    (constant : c = shiftedConstant a b u v) (linear : d = shiftedLinear b u v) :
+    QuadraticAlgebra R c d ≃ₐ[R] QuadraticAlgebra R a b where
+  toFun z := ⟨z.re + u * z.im, (v : R) * z.im⟩
+  invFun z := ⟨z.re - u * (↑(v⁻¹) : R) * z.im, (↑(v⁻¹) : R) * z.im⟩
+  left_inv z := by ext <;> simp [← mul_assoc]
+  right_inv z := by ext <;> simp [← mul_assoc]
+  map_mul' z w := by
+    ext
+    · change z.re * w.re + c * z.im * w.im +
+        u * (z.re * w.im + z.im * w.re + d * z.im * w.im) =
+        (z.re + u * z.im) * (w.re + u * w.im) + a * ((v : R) * z.im) * ((v : R) * w.im)
+      generalize z.re = x, z.im = y, w.re = r, w.im = s
+      rw [constant, linear]
+      unfold shiftedConstant shiftedLinear
+      ring
+    · change (v : R) * (z.re * w.im + z.im * w.re + d * z.im * w.im) =
+        (z.re + u * z.im) * ((v : R) * w.im) + ((v : R) * z.im) * (w.re + u * w.im) +
+          b * ((v : R) * z.im) * ((v : R) * w.im)
+      generalize z.re = x, z.im = y, w.re = r, w.im = s
+      rw [linear]
+      unfold shiftedLinear
+      ring
+  map_add' z w := by ext <;> simp [mul_add, add_assoc, add_left_comm]
+  commutes' r := by ext <;> simp
+
+/-- Invertible generator change `β = u + vω`, from its new presentation to the old one. -/
+def changeGenerator (a b u : R) (v : Rˣ) :
+    QuadraticAlgebra R (shiftedConstant a b u v) (shiftedLinear b u v) ≃ₐ[R]
+      QuadraticAlgebra R a b := affineEquiv a b _ _ u v rfl rfl
+
+@[simp] theorem changeGenerator_re (a b u : R) (v : Rˣ) (z) :
+    (changeGenerator a b u v z).re = z.re + u * z.im := rfl
+
+@[simp] theorem changeGenerator_im (a b u : R) (v : Rˣ) (z) :
+    (changeGenerator a b u v z).im = (v : R) * z.im := rfl
+
+/-- Trace and norm are observations of the algebraic value, not of its coordinates. -/
+theorem changeGenerator_observations (a b u : R) (v : Rˣ) (z) :
+    QuadraticAlgebra.trace (changeGenerator a b u v z) = QuadraticAlgebra.trace z ∧
+      QuadraticAlgebra.norm (changeGenerator a b u v z) = QuadraticAlgebra.norm z := by
+  constructor
+  · change 2 * (z.re + u * z.im) + b * ((v : R) * z.im) =
+      2 * z.re + shiftedLinear b u v * z.im
+    unfold shiftedLinear
+    ring
+  · change (z.re + u * z.im) * (z.re + u * z.im) +
+      b * (z.re + u * z.im) * ((v : R) * z.im) - a * ((v : R) * z.im) * ((v : R) * z.im) =
+        z.re * z.re + shiftedLinear b u v * z.re * z.im - shiftedConstant a b u v * z.im * z.im
+    unfold shiftedConstant shiftedLinear
+    ring
+
+theorem shifted_discriminant (a b u v : R) :
+    shiftedLinear b u v ^ 2 + 4 * shiftedConstant a b u v = v ^ 2 * (b ^ 2 + 4 * a) := by
+  unfold shiftedLinear shiftedConstant
+  ring
+
+end GeneratorChange
+
 variable {R A : Type*} [Field R] [Ring A] [Algebra R A]
 
 /-- The constant coordinate of the square of the second basis vector. -/

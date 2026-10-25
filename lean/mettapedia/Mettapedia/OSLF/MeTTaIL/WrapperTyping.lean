@@ -95,7 +95,8 @@ theorem WrapperStep.hasType (admission : WrappersTyped laws language) {left righ
     cases typed with
     | collection _ => exact absurd noLaw.1 (by rw [found]; simp)
     | @collectionConstructor _ rule parameterName _ _ _ elementType declared parameters elements =>
-      have same := admission.homogeneous law kind found rule declared parameterName elementType parameters
+      have same := admission.homogeneous law kind found rule declared parameterName elementType
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
       subst same
       exact elementsHaveType_iff.mp elements element (.head _)
   | @empty kind law label found unit =>
@@ -104,9 +105,14 @@ theorem WrapperStep.hasType (admission : WrappersTyped laws language) {left righ
     | collection _ => exact absurd noLaw.1 (by rw [found]; simp)
     | @collectionConstructor _ rule parameterName _ _ _ elementType declared parameters _ =>
       obtain ⟨unitRule, unitDeclared, unitLabel, unitParameters, unitCategory⟩ :=
-        admission.units law kind found label unit rule declared parameterName elementType parameters
+        admission.units law kind found label unit rule declared parameterName elementType
+          ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
       rw [← unitCategory, ← unitLabel]
-      exact .constructor unitDeclared (by rintro ⟨_, _, _, same⟩; rw [unitParameters] at same; cases same)
+      exact .constructor unitDeclared (by
+        rintro ⟨_, _, _, same⟩
+        have raw := ((GrammarRule.bareParams_cons_iff _ _ _).mp same).2
+        rw [unitParameters] at raw
+        cases raw)
         (by rw [unitParameters]; exact .nil)
   | @apply label before after argument changed inner ih =>
     intro bound type object _ typed
@@ -146,6 +152,7 @@ theorem WrapperStep.hasType (admission : WrappersTyped laws language) {left righ
     | collection elements => exact .collection (pointwise noLaw.2 elements)
     | @collectionConstructor _ rule parameterName _ _ _ elementType declared parameters elements =>
       exact .collectionConstructor declared parameters
-        (pointwise (admission.bareElements rule declared parameterName kind elementType parameters) elements)
+        (pointwise (admission.bareElements rule declared parameterName kind elementType
+          ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2) elements)
 
 end Mettapedia.OSLF.MeTTaIL.Wrappers

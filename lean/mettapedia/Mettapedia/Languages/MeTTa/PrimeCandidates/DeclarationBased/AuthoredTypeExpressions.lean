@@ -2502,7 +2502,8 @@ def operatorImage (installed : Installation language) :
   | _, .collectionConstructor rule member parameter kind element shape count, _, _, _ =>
       CollectionConstructors.program
         (AuthoredBindingDeclarations.Functional.constructorIndex rule member)
-        (CollectionConstructors.elementSort installed rule member parameter kind element shape) count
+        (CollectionConstructors.elementSort installed rule member parameter kind element
+          ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2) count
   | _, .lambda _ _, _, _, _ => ClosedOperators.Derived.identity
   | _, .multiLambda _ _ count, _, _, _ => NativeSequenceBindings.introduction count
   | _, .subst _ _, _, _, _ => ClosedOperators.Derived.identity
@@ -2526,7 +2527,8 @@ theorem operatorImage_typed (installed : Installation language) {sourceResult : 
   | constructor rule member ordinary scopes =>
       exact ConstructorPrograms.sourceProgram_typed installed rule member scopes arity projects result resultRead
   | collectionConstructor rule member parameter kind element shape count =>
-      let selected := CollectionConstructors.elementSort installed rule member parameter kind element shape
+      let selected := CollectionConstructors.elementSort installed rule member parameter kind element
+          ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
       let origin := AuthoredBindingDeclarations.Functional.constructorIndex rule member
       have aritySame : arity = List.replicate count ([], selected) := by
         apply Binding.mapArities_injective Subtype.val_injective
@@ -2538,7 +2540,8 @@ theorem operatorImage_typed (installed : Installation language) {sourceResult : 
         have row := AuthoredBindingDeclarations.Functional.constructorIndex_read rule member
         exact actual.trans ((congrArg (fun selected => TypeExpr.base selected.category) row).trans resultRead.symm)
       subst arity
-      exact resultSame ▸ CollectionConstructors.program_typed installed rule member parameter kind element shape count
+      exact resultSame ▸ CollectionConstructors.program_typed installed rule member parameter kind element
+        ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2 count
   | lambda domain codomain =>
       have formed : DeclaredType language (.arrow domain codomain) := resultRead ▸ result.property
       cases formed with

@@ -18,8 +18,8 @@ negative canary proves why retaining the graph matters: two semantic witnesses
 may produce the same native artifact while remaining distinct in the retained
 realization.
 
-The construction is deliberately independent of Prime syntax.  A Prime
-instance chooses intrinsically typed contextual terms as its artifacts; a
+The construction is deliberately independent of any Prime candidate's syntax.  A candidate
+instance may choose intrinsically typed contextual terms as its artifacts; a
 different SemanticService-hosted language may choose its own maximal native calculus.
 -/
 

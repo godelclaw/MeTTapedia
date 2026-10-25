@@ -6,9 +6,9 @@ open Mettapedia.OSLF.Framework
 /-!
 # Spatial formers recovered from authored collection declarations
 
-A self-sorted hash-bag constructor with a flattening declaration supplies a
-spatial join. Its parameter, algebra and optional unit are checked against
-the original grammar. The join uses the actual bare collection carrier.
+A bare self-sorted hash-bag constructor with a flattening declaration supplies
+a spatial join. Its representation, parameter, algebra and optional unit are
+checked against the original grammar.
 -/
 
 set_option autoImplicit false
@@ -33,11 +33,21 @@ def unitAuthored? (language : LanguageDef) (declaration : GrammarRule)
         candidate.params.isEmpty
 
 def spatialShape? (language : LanguageDef) (declaration : GrammarRule) : Option SpatialShape :=
-  match declaration.params, declaration.algebra? with
-  | [.simple name (.collection .hashBag (.base category))], some algebra =>
-      if category == declaration.category && algebra.flatten &&
-          unitAuthored? language declaration algebra then some ⟨name, algebra⟩ else none
-  | _, _ => none
+  if declaration.collectionRepresentation = .bare then
+    match declaration.params, declaration.algebra? with
+    | [.simple name (.collection .hashBag (.base category))], some algebra =>
+        if category == declaration.category && algebra.flatten &&
+            unitAuthored? language declaration algebra then some ⟨name, algebra⟩ else none
+    | _, _ => none
+  else none
+
+theorem spatialShape?_bare {language : LanguageDef} {declaration : GrammarRule}
+    {shape : SpatialShape} (checked : spatialShape? language declaration = some shape) :
+    declaration.collectionRepresentation = .bare := by
+  by_cases bare : declaration.collectionRepresentation = .bare
+  · exact bare
+  · simp only [spatialShape?, bare, ↓reduceIte] at checked
+    cases checked
 
 theorem unitAuthored?_sound {language : LanguageDef} {declaration : GrammarRule}
     {algebra : CollectionAlgebra} (checked : unitAuthored? language declaration algebra = true) :
@@ -56,7 +66,8 @@ theorem spatialShape?_sound {language : LanguageDef} {declaration : GrammarRule}
       (.collection .hashBag (.base declaration.category))] ∧
       declaration.algebra? = some shape.algebra ∧ shape.algebra.flatten = true ∧
       unitAuthored? language declaration shape.algebra = true := by
-  unfold spatialShape? at checked
+  have bare := spatialShape?_bare checked
+  simp only [spatialShape?, bare, ↓reduceIte] at checked
   split at checked
   · rename_i name category algebra params declared
     split at checked

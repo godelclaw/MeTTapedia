@@ -2,6 +2,8 @@ import Mettapedia.Machines.BranchLocalNeed.InferenceControl
 import Mettapedia.Machines.BranchLocalNeed.FrontierLaws
 import Mettapedia.Machines.BranchLocalNeed.InteractionValuation
 import Mettapedia.GSLT.Dynamics.WeightedBranchingResumption
+import Mettapedia.GSLT.Dynamics.ProbabilisticResumption
+import Mathlib.Data.NNRat.BigOperators
 import Mettapedia.GSLT.Causality.OccurrenceMachineHistory
 
 /-!
@@ -18,6 +20,11 @@ transition cost. A returned leaf is proved halted; exhausting an unfolding
 budget does not certify closure. Production-only semantic factors agree with
 the existing chronological history account without discarding delivery or
 administrative transitions.
+
+`Stochastic` supplies an explicit uniform-per-transition probability policy.
+Its rows are normalized because every running reference configuration advances,
+and finite cuts retain a probability on complete returned or pending worlds.
+Exact rational execution computes this law through a proved coefficient change.
 -/
 
 set_option autoImplicit false
@@ -291,6 +298,119 @@ theorem retained_transition_cost [Monoid V] (coefficient :
     (generated_retained spec coefficient fuel (.root (by simp)) member)
 
 end WeightedExecution
+
+/-! ## An explicit stochastic resolution of the reference machine -/
+
+namespace Stochastic
+
+open Mettapedia.GSLT.Dynamics.ProbabilisticResumption
+open scoped NNReal ENNReal NNRat Classical
+
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type*}
+variable (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+
+/-- Resolve each nonterminal transition uniformly over its physical successor
+positions. This is a chosen probability policy, not a reinterpretation of
+unresolved nondeterminism or uniform sampling from the final answer list. -/
+def uniformCoefficient (R : Type*) [DivisionSemiring R]
+    (before : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (_after : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) : R :=
+  ((step spec before).length : R)⁻¹
+
+def uniformSource (R : Type*) [DivisionSemiring R] : WeightedBranchingResumption.Coalgebra
+    (WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect) R :=
+  source spec (uniformCoefficient spec R)
+
+/-- Every running reference configuration has a successor, including explicit
+faults. Thus the constructed stochastic profile has normalized rows everywhere. -/
+theorem uniformSource_normalized : Normalized (uniformSource spec ℝ≥0) := by
+  intro before rows inspected
+  have running : isHalted before.state = false := by
+    cases halted : isHalted before.state with
+    | false => rfl
+    | true =>
+        have returned := (source_return_iff spec (uniformCoefficient spec ℝ≥0) before before).mpr
+          ⟨rfl, halted⟩
+        have impossible := returned.symm.trans inspected
+        cases impossible
+  have nonempty : step spec before.state ≠ [] := by
+    intro empty
+    have halted := (NeedFrontierLaws.step_empty_iff spec before.state).mp empty
+    simp [running] at halted
+  have positive : (step spec before.state).length ≠ 0 :=
+    fun zero => nonempty (List.length_eq_zero_iff.mp zero)
+  have same : rows = successors spec (uniformCoefficient spec ℝ≥0) before :=
+    Sum.inr.inj (inspected.symm.trans
+      (source_branches spec (uniformCoefficient spec ℝ≥0) before running))
+  rw [same]
+  simp [total, SemiringTraversal.weightSum, successors, uniformCoefficient,
+    List.map_map, Function.comp_def, List.sum_replicate, nsmul_eq_mul, positive]
+
+/-- Changing the coefficient representation leaves successor positions and
+their complete worlds unchanged. This permits exact rational execution. -/
+theorem uniformContributions_map {R S : Type*} [DivisionSemiring R] [DivisionSemiring S]
+    (change : R →+* S) (fuel : Nat)
+    (before : WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    WeightedBranchingResumption.contributions (uniformSource spec S) fuel before =
+      mapCoefficients change
+        (WeightedBranchingResumption.contributions (uniformSource spec R) fuel before) :=
+  by
+    have coeChange : (change.toMonoidHom : R → S) = (change : R → S) := rfl
+    simpa only [coeChange] using
+      WeightedBranchingResumption.contributions_change_coefficients change.toMonoidHom
+        (uniformSource spec R) (uniformSource spec S)
+        (by
+          intro state
+          cases control : state.state.control <;>
+            simp [uniformSource, source, control, successors, uniformCoefficient,
+              mapCoefficients, List.map_map, Function.comp_def]) fuel before
+
+/-- Probability of completed or retained worlds at any finite machine cut. -/
+noncomputable def uniformLaw (fuel : Nat)
+    (before : WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect) :=
+  law (uniformSource spec ℝ≥0) (uniformSource_normalized spec) fuel before
+
+/-- A probability observation may be calculated from the exact rational
+execution, after the complete operational frontier has been constructed. -/
+theorem uniformLaw_map_apply {Observed : Type*} (fuel : Nat)
+    (before : WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (readout : WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect ⊕
+      WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect → Observed)
+    (answer : Observed) :
+    ((uniformLaw spec fuel before).map readout) answer =
+      (((((WeightedBranchingResumption.contributions (uniformSource spec ℚ≥0) fuel before).map
+        fun row => if answer = readout row.1 then row.2 else 0).sum : ℚ≥0) : ℝ≥0) : ℝ≥0∞) := by
+  rw [uniformLaw, law_map_apply, uniformContributions_map spec (NNRat.castHom ℝ≥0)]
+  have mapped := map_list_sum (ENNReal.ofNNRealHom.comp (NNRat.castHom ℝ≥0))
+    ((WeightedBranchingResumption.contributions (uniformSource spec ℚ≥0) fuel before).map
+      fun row => if answer = readout row.1 then row.2 else 0)
+  have castFunction : (ENNReal.ofNNRealHom.comp (NNRat.castHom ℝ≥0) : ℚ≥0 → ℝ≥0∞) =
+      (fun value : ℚ≥0 => ((value : ℝ≥0) : ℝ≥0∞)) := rfl
+  rw [castFunction] at mapped
+  simpa [mapCoefficients, List.map_map, Function.comp_def, apply_ite] using mapped.symm
+
+/-- A completed rational frontier certifies stability of the full machine
+probability law. No world, receipt or occurrence identity is erased here. -/
+theorem uniformLaw_stable (fuel extra : Nat)
+    (before : WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (completed : (WeightedBranchingResumption.contributions (uniformSource spec ℚ≥0) fuel before).all
+      (fun row => row.1.isLeft) = true) :
+    uniformLaw spec (fuel + extra) before = uniformLaw spec fuel before := by
+  apply law_stable_of_completed
+  simpa only [uniformContributions_map spec (NNRat.castHom ℝ≥0),
+    mapCoefficients, List.all_map, Function.comp_def] using completed
+
+/-- The entire world is resumed, including shared choices, heap and receipts;
+the PMF bind carries the earlier occurrence's probability into the suffix. -/
+theorem uniformLaw_resume (first second : Nat)
+    (before : WorkState Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    uniformLaw spec (first + second) before =
+      (uniformLaw spec first before).bind
+        (resumeLaw (uniformSource spec ℝ≥0) (uniformSource_normalized spec) second) :=
+  law_add (uniformSource spec ℝ≥0) (uniformSource_normalized spec) first second before
+
+end Stochastic
 
 /-! ## Histories of the weighted Need execution -/
 

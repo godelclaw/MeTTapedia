@@ -1,25 +1,18 @@
-import Mettapedia.Coalgebra.CoherentPrefixTower
+import Mettapedia.Coalgebra.FiniteViewComputationalTrinity
 import Mettapedia.Coalgebra.StreamGSLT
-import Mettapedia.Computability.ComputationalTrinity
-import Mathlib.CategoryTheory.Discrete.Basic
 
 /-!
 # Coalgebraic behavior in the computational trinity
 
-A deterministic coalgebra supplies three semantically distinct faces:
+This is the stream instance of `FiniteViewComputationalTrinity`. Final
+unfolding supplies the operational-to-behavior map; compatible prefixes give
+the view map. The existing stream GSLT supplies operational transitions.
 
-* operational states;
-* their final stream behaviors; and
-* coherent towers of finite observations.
+Streams and coherent prefix towers are equivalent. State identity agrees
+exactly with behavior only when unfolding is both faithful and complete.
+The witnesses below retain agreement with that unfolding, and the controls
+separate loss of operational identity from incomplete behavior coverage.
 
-They form a commuting computational-trinity comparison.  The behavior and
-finite-view-tower faces are always equivalent.  Operational states join an
-exact trinity only when unfolding is both faithful and complete.  Faithfulness
-alone reflects operational distinctions but does not assert that every
-behavior is represented; completeness alone represents every behavior but
-may identify distinct operational states.
-
-This is a choice-surface theorem, not a proposed language definition.
 -/
 
 set_option autoImplicit false
@@ -30,18 +23,18 @@ open CategoryTheory
 open Mettapedia.Coalgebra.StreamFinality
 open Mettapedia.Coalgebra.StreamGSLT
 open Mettapedia.Coalgebra.CoherentPrefixTower
+open Mettapedia.Coalgebra.CoherentFiniteViewSystem
 open Mettapedia.Computability.ComputationalTrinity
 
 universe u
 
-abbrev Context := Discrete PUnit
+variable {Label : Type u}
 
-private def here : Contextᵒᵖ :=
-  Opposite.op (Discrete.mk PUnit.unit)
+abbrev Context := Discrete PUnit
 
 /-! ## The three faces and their comparison -/
 
-def stateFace {Label : Type u}
+def stateFace
     (coalgebra : Coalgebra.{u, u} Label) :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj coalgebra.Carrier
@@ -54,7 +47,7 @@ def towerFace (Label : Type u) :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj (Tower Label)
 
-def stateToBehavior {Label : Type u}
+def stateToBehavior
     (coalgebra : Coalgebra.{u, u} Label) :
     stateFace coalgebra ⟶ behaviorFace Label :=
   (Functor.const Contextᵒᵖ).map
@@ -65,7 +58,7 @@ def behaviorToTower (Label : Type u) :
   (Functor.const Contextᵒᵖ).map
     (↾(Tower.ofStream : Stream Label → Tower Label))
 
-def stateToTower {Label : Type u}
+def stateToTower
     (coalgebra : Coalgebra.{u, u} Label) :
     stateFace coalgebra ⟶ towerFace Label :=
   (Functor.const Contextᵒᵖ).map
@@ -73,33 +66,33 @@ def stateToTower {Label : Type u}
 
 /-- Operational states, final behavior, and coherent finite-view towers form
 a commuting comparison without any exactness assumption. -/
-def comparison {Label : Type u}
+def comparison
     (coalgebra : Coalgebra.{u, u} Label) :
-    Comparison.{0, 0, u} Context where
-  program := stateFace coalgebra
-  logic := behaviorFace Label
-  space := towerFace Label
-  programToLogic := stateToBehavior coalgebra
-  logicToSpace := behaviorToTower Label
-  programToSpace := stateToTower coalgebra
-  coherence := by
-    ext context state
-    rfl
+    Comparison.{0, 0, u} Context :=
+  (FiniteViewComputationalTrinity.comparison
+    (unfold coalgebra) (streamObservation Label)).transportSpace
+    ((Functor.const Contextᵒᵖ).mapIso (streamTowerEquiv Label).toIso)
+
+/-- Transport recovers all three independently defined stream interpretation maps. -/
+theorem comparison_maps_agree (coalgebra : Coalgebra.{u, u} Label) :
+    (comparison coalgebra).programToLogic = stateToBehavior coalgebra ∧
+      (comparison coalgebra).logicToSpace = behaviorToTower Label ∧
+      (comparison coalgebra).programToSpace = stateToTower coalgebra :=
+  ⟨rfl, rfl, rfl⟩
 
 /-! ## Exactness property bag -/
 
 /-- Every stream behavior is represented by some operational state. -/
-def BehaviorallyComplete {Label : Type u}
+def BehaviorallyComplete
     (coalgebra : Coalgebra.{u, u} Label) : Prop :=
   Function.Surjective (unfold coalgebra)
 
 /-- Operational state identity and stream behavior coincide exactly. -/
-def BehaviorallyExact {Label : Type u}
+def BehaviorallyExact
     (coalgebra : Coalgebra.{u, u} Label) : Prop :=
   Function.Bijective (unfold coalgebra)
 
 theorem behaviorallyExact_iff_faithful_and_complete
-    {Label : Type u}
     (coalgebra : Coalgebra.{u, u} Label) :
     BehaviorallyExact coalgebra ↔
       BehaviorallyFaithful coalgebra ∧ BehaviorallyComplete coalgebra :=
@@ -119,37 +112,20 @@ theorem behaviorTowerIso_hom (Label : Type u) :
 /-- A compatible operational/behavioral isomorphism is stronger than merely
 postulating some isomorphism between the carrier types: its forward map must
 be the independently defined final unfolding. -/
-structure ExactBehaviorWitness {Label : Type u}
+structure ExactBehaviorWitness
     (coalgebra : Coalgebra.{u, u} Label) where
   isomorphism : stateFace coalgebra ≅ behaviorFace Label
   agrees : isomorphism.hom = stateToBehavior coalgebra
 
 namespace ExactBehaviorWitness
 
-variable {Label : Type u}
 variable {coalgebra : Coalgebra.{u, u} Label}
 
 theorem behaviorallyExact
     (witness : ExactBehaviorWitness coalgebra) :
-    BehaviorallyExact coalgebra := by
-  have componentAgreement :=
-    congrArg (fun transformation => transformation.app here) witness.agrees
-  constructor
-  · intro left right sameBehavior
-    apply (witness.isomorphism.app here).toEquiv.injective
-    change witness.isomorphism.hom.app here left =
-      witness.isomorphism.hom.app here right
-    rw [componentAgreement]
-    exact sameBehavior
-  · intro behavior
-    obtain ⟨state, represents⟩ :=
-      (witness.isomorphism.app here).toEquiv.surjective behavior
-    change coalgebra.Carrier at state
-    change witness.isomorphism.hom.app here state = behavior at represents
-    refine ⟨state, ?_⟩
-    change (stateToBehavior coalgebra).app here state = behavior
-    rw [← componentAgreement]
-    exact represents
+    BehaviorallyExact coalgebra :=
+  FiniteViewComputationalTrinity.constantIso_bijective (unfold coalgebra)
+    witness.isomorphism witness.agrees
 
 /-- A compatible operational/behavioral isomorphism and the canonical
 behavior/tower equivalence yield an exact computational trinity. -/
@@ -171,19 +147,16 @@ end ExactBehaviorWitness
 /-- A bijective unfolding constructs the compatible exact-behavior witness.
 The inverse is selected from the supplied surjectivity proof. -/
 noncomputable def exactBehaviorWitnessOfBehaviorallyExact
-    {Label : Type u}
     (coalgebra : Coalgebra.{u, u} Label)
     (exact : BehaviorallyExact coalgebra) :
-    ExactBehaviorWitness coalgebra where
-  isomorphism :=
-    (Functor.const Contextᵒᵖ).mapIso
-      (Equiv.ofBijective (unfold coalgebra) exact).toIso
-  agrees := rfl
+    ExactBehaviorWitness coalgebra := by
+  let generic := FiniteViewComputationalTrinity.exactTrinityWitnessOfBijective
+    (unfold coalgebra) (streamObservation Label) exact (streamObservation_exact Label)
+  exact ⟨generic.stateBehavior, generic.stateBehavior_agrees⟩
 
 /-- Exact operational/behavioral compatibility exists exactly when unfolding
 is bijective. -/
 theorem exactBehaviorWitness_nonempty_iff
-    {Label : Type u}
     (coalgebra : Coalgebra.{u, u} Label) :
     Nonempty (ExactBehaviorWitness coalgebra) ↔
       BehaviorallyExact coalgebra := by
@@ -196,22 +169,18 @@ theorem exactBehaviorWitness_nonempty_iff
 /-! ## Information loss is exactly behavioral collision -/
 
 theorem comparison_loses_iff_behavior_collision
-    {Label : Type u}
     (coalgebra : Coalgebra.{u, u} Label) :
     (comparison coalgebra).LosesProgramInformation ↔
       ∃ left right : coalgebra.Carrier,
         left ≠ right ∧ unfold coalgebra left = unfold coalgebra right := by
-  constructor
-  · rintro ⟨context, left, right, different, sameTower⟩
-    refine ⟨left, right, different, ?_⟩
-    apply Tower.ofStream_injective
-    exact sameTower
-  · rintro ⟨left, right, different, sameBehavior⟩
-    refine ⟨here, left, right, different, ?_⟩
-    exact congrArg Tower.ofStream sameBehavior
+  exact (Comparison.transportSpace_loses_iff
+    (FiniteViewComputationalTrinity.comparison (unfold coalgebra) (streamObservation Label))
+    ((Functor.const Contextᵒᵖ).mapIso (streamTowerEquiv Label).toIso)).trans
+      ((FiniteViewComputationalTrinity.comparison_loses_iff_composite_collision
+        (unfold coalgebra) (streamObservation Label)).trans
+          (by simp only [(streamObservation_exact Label).1.eq_iff]))
 
 theorem faithful_not_loses
-    {Label : Type u}
     (coalgebra : Coalgebra.{u, u} Label)
     (faithful : BehaviorallyFaithful coalgebra) :
     ¬ (comparison coalgebra).LosesProgramInformation := by
@@ -238,20 +207,15 @@ theorem unfold_constantBool (label : Bool) :
 
 theorem constantBool_faithful :
     BehaviorallyFaithful constantBoolCoalgebra := by
-  intro left right sameBehavior
-  have atZero := congrFun sameBehavior 0
-  change left = right at atZero
-  exact atZero
+  change Function.Injective (unfold constantBoolCoalgebra)
+  rw [funext unfold_constantBool]
+  exact FiniteViewComputationalTrinity.Canary.constantBehavior_injective
 
 theorem constantBool_not_complete :
     ¬ BehaviorallyComplete constantBoolCoalgebra := by
-  intro complete
-  obtain ⟨label, represents⟩ :=
-    complete (changedAt 0 false true)
-  have represents := (unfold_constantBool label).symm.trans represents
-  have atZero := congrFun represents 0
-  have atOne := congrFun represents 1
-  cases label <;> simp [constant, changedAt] at atZero atOne
+  change ¬ Function.Surjective (unfold constantBoolCoalgebra)
+  rw [funext unfold_constantBool]
+  exact FiniteViewComputationalTrinity.Canary.constantBehavior_not_surjective
 
 /-- Add an operational tag which final stream behavior deliberately ignores. -/
 def taggedStreamCoalgebra : Coalgebra Bool where
@@ -267,26 +231,19 @@ def taggedProjectionHom :
 
 theorem unfold_taggedStream (state : taggedStreamCoalgebra.Carrier) :
     unfold taggedStreamCoalgebra state = state.1 := by
-  have equality := congrFun
-    (hom_to_stream_eq_unfold taggedStreamCoalgebra taggedProjectionHom) state
-  exact equality.symm
+  exact congrFun (hom_to_stream_eq_unfold taggedStreamCoalgebra taggedProjectionHom).symm state
 
 theorem taggedStream_complete :
     BehaviorallyComplete taggedStreamCoalgebra := by
-  intro stream
-  exact ⟨(stream, false), unfold_taggedStream (stream, false)⟩
+  change Function.Surjective (unfold taggedStreamCoalgebra)
+  rw [funext unfold_taggedStream]
+  exact FiniteViewComputationalTrinity.Canary.taggedBehavior_surjective
 
 theorem taggedStream_not_faithful :
     ¬ BehaviorallyFaithful taggedStreamCoalgebra := by
-  intro faithful
-  have sameBehavior :
-      unfold taggedStreamCoalgebra (constant false, false) =
-        unfold taggedStreamCoalgebra (constant false, true) := by
-    exact (unfold_taggedStream (constant false, false)).trans
-      (unfold_taggedStream (constant false, true)).symm
-  have statesEqual := faithful sameBehavior
-  have tagsEqual := congrArg Prod.snd statesEqual
-  exact Bool.false_ne_true tagsEqual
+  change ¬ Function.Injective (unfold taggedStreamCoalgebra)
+  rw [funext unfold_taggedStream]
+  exact FiniteViewComputationalTrinity.Canary.taggedBehavior_not_injective
 
 theorem unfold_streamCoalgebra_eq_id (Label : Type u) :
     unfold (streamCoalgebra Label) = _root_.id := by
@@ -323,20 +280,5 @@ theorem faithful_comparison_need_not_be_exact :
 
 end Canary
 
-/-! ## Axiom audit -/
-
-#print axioms behaviorallyExact_iff_faithful_and_complete
-#print axioms behaviorTowerIso
-#print axioms ExactBehaviorWitness.behaviorallyExact
-#print axioms exactBehaviorWitness_nonempty_iff
-#print axioms comparison_loses_iff_behavior_collision
-#print axioms faithful_not_loses
-#print axioms Canary.constantBool_faithful
-#print axioms Canary.constantBool_not_complete
-#print axioms Canary.taggedStream_complete
-#print axioms Canary.taggedStream_not_faithful
-#print axioms Canary.streamCoalgebra_exact
-#print axioms Canary.faithfulness_completeness_independent
-#print axioms Canary.faithful_comparison_need_not_be_exact
 
 end Mettapedia.Coalgebra.ComputationalTrinity

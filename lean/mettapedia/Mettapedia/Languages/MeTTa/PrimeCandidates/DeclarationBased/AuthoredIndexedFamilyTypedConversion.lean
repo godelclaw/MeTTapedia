@@ -183,7 +183,7 @@ namespace PreservingPresentedCandidate
 
 /-- Every authored occurrence has logical support in the candidate
 signature, obtained from its exact native receipt. -/
-def declaredSupport (authorized : PreservingPresentedCandidate)
+theorem declaredSupport (authorized : PreservingPresentedCandidate)
     {n : Nat} {left right : Tower.Tm n}
     (occurrence : EquationOccurrence
       (equationSchemas (elaborate authorized.presented.source)) left right) :

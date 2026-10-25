@@ -95,6 +95,7 @@ theorem existsUnique_aggregate :
 
 /-- The sufficient-statistic encoder induces a generic world model over multisets
 of observations. -/
+@[instance_reducible]
 noncomputable def inducedWorldModel :
     AdditiveWorldModel (Multiset Obs) Query Ev :=
   AdditiveWorldModel.genericWorldModelOfAtomicEvidence S.observe
@@ -106,7 +107,7 @@ canonical additive extension of the observation encoder. -/
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q =
       aggregate S σ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   rfl
 
 /-- The induced generic world model is exactly the canonical multiset-based
@@ -209,7 +210,7 @@ theorem evidence_isAdditiveExtension_of_zero
         letI : AdditiveWorldModel (Multiset Obs) Query Ev := G
         AdditiveWorldModel.extract
           (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := G
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := G
   refine
     { zero := hzero
       singleton := ?_
@@ -235,7 +236,7 @@ model is recovered pointwise by aggregating its singleton observation encoder. -
         (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q =
       aggregate
         (singletonEncoder (Obs := Obs) (Query := Query) (Ev := Ev) G) σ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := G
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := G
   have hEq :=
     aggregate_eq_of_isAdditiveExtension
       (S := singletonEncoder (Obs := Obs) (Query := Query) (Ev := Ev) G)
@@ -316,8 +317,8 @@ agrees pointwise with the existing additive `BinaryWorldModel` construction. -/
     letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
     AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := BinaryEvidence) σ q =
       BinaryWorldModel.evidence (State := Multiset Obs) (Query := Query) σ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence := S.inducedWorldModel
-  letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence := S.inducedWorldModel
+  let : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   rw [inducedWorldModel_evidence_eq_aggregate (S := S), aggregate_eq_additiveExtension (S := S)]
   rfl
 
@@ -330,8 +331,8 @@ match the original `BinaryWorldModel` total-evidence view. -/
     AdditiveWorldModel.queryObservationCount
         (State := Multiset Obs) (Query := Query) (Ev := BinaryEvidence) σ q =
       (BinaryWorldModel.evidence (State := Multiset Obs) (Query := Query) σ q).total := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence := S.inducedWorldModel
-  letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence := S.inducedWorldModel
+  let : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   exact
     AdditiveWorldModel.queryObservationCount_eq_binary_total
       (State := Multiset Obs) (Query := Query) σ q
@@ -345,8 +346,8 @@ theorem queryObservationConfidence_inducedWorldModel_eq_worldModel_queryConfiden
     AdditiveWorldModel.queryObservationConfidence
         (State := Multiset Obs) (Query := Query) (Ev := BinaryEvidence) κ σ q =
       BinaryWorldModel.queryConfidence (State := Multiset Obs) (Query := Query) κ σ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence := S.inducedWorldModel
-  letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence := S.inducedWorldModel
+  let : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   exact
     AdditiveWorldModel.queryObservationConfidence_eq_queryConfidence
       (State := Multiset Obs) (Query := Query) κ σ q
@@ -469,7 +470,7 @@ theorem posterior_eq_of_inducedWorldModelEvidence
     P.posterior prior σ q =
       lift prior q
         (AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := P.stat.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := P.stat.inducedWorldModel
   simpa [SufficientStatisticEncoder.inducedWorldModel_evidence_eq_aggregate (S := P.stat)] using
     hlift prior σ q
 
@@ -536,7 +537,7 @@ theorem posterior_ne_of_inducedWorldModelEvidence_ne
       AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := Ev) σ₁ q ≠
         AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := Ev) σ₂ q) :
     P.posterior prior σ₁ q ≠ P.posterior prior σ₂ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := P.stat.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := P.stat.inducedWorldModel
   exact
     P.posterior_ne_of_aggregate_ne
       (lift := lift) (hlift := hlift) (hinj := hinj) (prior := prior) (q := q)
@@ -626,7 +627,7 @@ theorem evidence_inducedWorldModel_double_ne_single_of_unit_nonempty
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := Ev) (σ + σ) q ≠
       AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   simpa [evidence_inducedWorldModel_eq_aggregate (S := S)] using
     aggregate_double_ne_single_of_unit_nonempty (S := S) hunit hσ q
 
@@ -638,7 +639,7 @@ conjugate-evidence observation count of the aggregated sufficient statistic. -/
     AdditiveWorldModel.queryObservationCount
         (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q =
       ConjugateEvidence.observationCount (aggregate S σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   simp [AdditiveWorldModel.queryObservationCount,
     evidence_inducedWorldModel_eq_aggregate (S := S)]
 
@@ -650,7 +651,7 @@ count-based confidence of the aggregated sufficient statistic. -/
     AdditiveWorldModel.queryObservationConfidence
         (State := Multiset Obs) (Query := Query) (Ev := Ev) κ σ q =
       observationConfidence κ (aggregate S σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   simp [AdditiveWorldModel.queryObservationConfidence,
     evidence_inducedWorldModel_eq_aggregate (S := S)]
 
@@ -662,7 +663,7 @@ theorem queryObservationCount_inducedWorldModel_of_unit
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     AdditiveWorldModel.queryObservationCount (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q =
       (σ.card : ℝ≥0∞) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   exact AdditiveWorldModel.queryObservationCount_of_unit S.observe hunit σ q
 
 /-- The generic world model induced by a unit-observation encoder has confidence
@@ -673,7 +674,7 @@ theorem queryObservationConfidence_inducedWorldModel_of_unit
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     AdditiveWorldModel.queryObservationConfidence (State := Multiset Obs) (Query := Query) (Ev := Ev) κ σ q =
       (σ.card : ℝ≥0∞) / ((σ.card : ℝ≥0∞) + κ) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   exact AdditiveWorldModel.queryObservationConfidence_of_unit κ S.observe hunit σ q
 
 /-- In a unit-observation induced world model, an idempotent revision fragment
@@ -687,7 +688,7 @@ theorem queryObservationCount_inducedWorldModel_eq_zero_of_revision_idempotent_o
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     AdditiveWorldModel.queryObservationCount
         (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q = 0 := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   apply AdditiveWorldModel.queryObservationCount_eq_zero_of_revision_idempotent
     (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q
   · rw [queryObservationCount_inducedWorldModel_of_unit (S := S) hunit]
@@ -706,7 +707,7 @@ theorem revision_idempotent_inducedWorldModel_implies_empty_of_unit
   have hzero :=
     queryObservationCount_inducedWorldModel_eq_zero_of_revision_idempotent_of_unit
       (S := S) hunit σ q hidem
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   rw [queryObservationCount_inducedWorldModel_of_unit (S := S) hunit] at hzero
   have hcard : σ.card = 0 := by
     exact_mod_cast hzero
@@ -722,7 +723,7 @@ theorem not_exists_revision_idempotent_inducedWorldModel_with_nonzero_queryObser
         AdditiveWorldModel.queryObservationCount
             (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q ≠ 0 ∧
         (σ + σ : Multiset Obs) = σ := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   intro hExists
   rcases hExists with ⟨σ, hcount, hidem⟩
   exact
@@ -741,7 +742,7 @@ theorem revision_idempotent_inducedWorldModel_iff_queryObservationCount_eq_zero_
     ((σ + σ : Multiset Obs) = σ ↔
       AdditiveWorldModel.queryObservationCount
           (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q = 0) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   constructor
   · exact
       queryObservationCount_inducedWorldModel_eq_zero_of_revision_idempotent_of_unit
@@ -763,7 +764,7 @@ theorem queryObservationCount_inducedWorldModel_eq_zero_iff_empty_of_unit
     (AdditiveWorldModel.queryObservationCount
         (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q = 0 ↔
       σ = 0) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   constructor
   · intro hcount
     rw [queryObservationCount_inducedWorldModel_of_unit (S := S) hunit] at hcount
@@ -784,7 +785,7 @@ theorem queryObservationCount_inducedWorldModel_ne_zero_iff_nonempty_of_unit
     (AdditiveWorldModel.queryObservationCount
         (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q ≠ 0 ↔
       σ ≠ 0) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   constructor
   · intro hcount hσ
     exact
@@ -804,7 +805,7 @@ theorem revision_idempotent_inducedWorldModel_iff_empty_of_unit
     (σ : Multiset Obs) (q : Query) :
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     ((σ + σ : Multiset Obs) = σ ↔ σ = 0) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   constructor
   · exact revision_idempotent_inducedWorldModel_implies_empty_of_unit (S := S) hunit σ q
   · intro hσ
@@ -817,7 +818,7 @@ theorem revision_not_idempotent_inducedWorldModel_iff_nonempty_of_unit
     (σ : Multiset Obs) (q : Query) :
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     ((σ + σ : Multiset Obs) ≠ σ ↔ σ ≠ 0) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   constructor
   · intro hneq hσ
     exact hneq (by simp [hσ])
@@ -838,7 +839,7 @@ theorem revision_not_idempotent_inducedWorldModel_iff_queryObservationCount_ne_z
     ((σ + σ : Multiset Obs) ≠ σ ↔
       AdditiveWorldModel.queryObservationCount
           (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q ≠ 0) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   rw [queryObservationCount_inducedWorldModel_ne_zero_iff_nonempty_of_unit (S := S) hunit σ q]
   exact revision_not_idempotent_inducedWorldModel_iff_nonempty_of_unit (S := S) hunit σ q
 
@@ -850,7 +851,7 @@ theorem revision_not_idempotent_inducedWorldModel_of_unit_nonempty
     {σ : Multiset Obs} (hσ : σ ≠ 0) (q : Query) :
     letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
     (σ + σ : Multiset Obs) ≠ σ := by
-  letI : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
+  let : AdditiveWorldModel (Multiset Obs) Query Ev := S.inducedWorldModel
   apply AdditiveWorldModel.not_revision_idempotent_of_finite_nonzero_queryObservationCount
     (State := Multiset Obs) (Query := Query) (Ev := Ev) σ q
   · rw [queryObservationCount_inducedWorldModel_of_unit (S := S) hunit]
@@ -1247,7 +1248,7 @@ theorem bernoulliStatistic_inducedWorldModelEvidence_pos_neg
       AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := BinaryEvidence) σ q
     e.pos = (σ.countP (fun o => classify o q = true) : ℝ≥0∞) ∧
       e.neg = (σ.countP (fun o => classify o q = false) : ℝ≥0∞) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
     (bernoulliStatistic classify).inducedWorldModel
   constructor
   · rw [SufficientStatisticEncoder.inducedWorldModel_evidence_eq_aggregate
@@ -1270,7 +1271,7 @@ theorem bernoulliConjugatePosteriorModel_exists_counts_of_inducedWorldModelEvide
       e.neg = (nNeg : ℝ≥0∞) ∧
       (bernoulliConjugatePosteriorModel classify).posterior params σ q =
         bernoulliPosteriorFromCounts params nPos nNeg := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
     (bernoulliStatistic classify).inducedWorldModel
   refine ⟨σ.countP (fun o => classify o q = true),
     σ.countP (fun o => classify o q = false), ?_, ?_, ?_⟩
@@ -1337,7 +1338,7 @@ theorem bernoulliConjugatePosteriorModel_eq_of_inducedWorldModelEvidence
       bernoulliPosteriorFromEvidence params
         (AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query)
           (Ev := BinaryEvidence) σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
     (bernoulliStatistic classify).inducedWorldModel
   refine
     ConjugatePosteriorModel.posterior_eq_of_inducedWorldModelEvidence
@@ -1383,7 +1384,7 @@ theorem bernoulliConjugatePosteriorModel_ne_of_inducedWorldModelEvidence_ne
         AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query) (Ev := BinaryEvidence) σ₂ q) :
     (bernoulliConjugatePosteriorModel classify).posterior params σ₁ q ≠
       (bernoulliConjugatePosteriorModel classify).posterior params σ₂ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
+  let : AdditiveWorldModel (Multiset Obs) Query BinaryEvidence :=
     (bernoulliStatistic classify).inducedWorldModel
   intro hEq
   let e₁ :=
@@ -1749,7 +1750,7 @@ theorem categoricalConjugatePosteriorModel_eq_of_inducedWorldModelEvidence {k : 
       categoricalPosteriorFromAggregate params
         (AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query)
           (Ev := MultiEvidence k) σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query (MultiEvidence k) :=
+  let : AdditiveWorldModel (Multiset Obs) Query (MultiEvidence k) :=
     (categoricalStatistic classify).inducedWorldModel
   exact
     ConjugatePosteriorModel.posterior_eq_of_inducedWorldModelEvidence
@@ -1787,7 +1788,7 @@ theorem categoricalConjugatePosteriorModel_ne_of_inducedWorldModelEvidence_ne {k
           (State := Multiset Obs) (Query := Query) (Ev := MultiEvidence k) σ₂ q) :
     (categoricalConjugatePosteriorModel classify).posterior params σ₁ q ≠
       (categoricalConjugatePosteriorModel classify).posterior params σ₂ q := by
-  letI : AdditiveWorldModel (Multiset Obs) Query (MultiEvidence k) :=
+  let : AdditiveWorldModel (Multiset Obs) Query (MultiEvidence k) :=
     (categoricalStatistic classify).inducedWorldModel
   exact
     ConjugatePosteriorModel.posterior_ne_of_inducedWorldModelEvidence_ne
@@ -2155,7 +2156,7 @@ theorem gaussianConjugatePosteriorModel_eq_of_inducedWorldModelEvidence
       gaussianPosteriorFromAggregate prior
         (AdditiveWorldModel.extract (State := Multiset Obs) (Query := Query)
           (Ev := NormalGammaEvidence) σ q) := by
-  letI : AdditiveWorldModel (Multiset Obs) Query NormalGammaEvidence :=
+  let : AdditiveWorldModel (Multiset Obs) Query NormalGammaEvidence :=
     (gaussianStatistic value).inducedWorldModel
   exact
     ConjugatePosteriorModel.posterior_eq_of_inducedWorldModelEvidence

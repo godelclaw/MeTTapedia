@@ -1,5 +1,8 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPlanExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionBackendSource
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Candidates
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentExpand
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Positions
 import Mettapedia.OSLF.MeTTaIL.CollectionMatcherBackend
 
 /-!
@@ -21,16 +24,13 @@ open Mettapedia.OSLF.MeTTaIL Syntax CollectionSelection
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Effects (State)
 open Eval BridgeKit WireKit
+open CompleteExecution.DescentCodec
 open scoped ProgramQuotation
 
 private abbrev a (head : String) (arguments : List Atom) : Atom :=
   .expression (.symbol head :: arguments)
 private abbrev v (name : String) : Atom := .var name
 
-def source : ProgramQuotation.QuotedProgram :=
-  petta_source_file%
-    "../../../../../../../../metta/gslt/lib/gslt_collection_backend.metta"
-    sha256 "e401dcd56c3e456ecf28547ee295a67683b5ee59af7134bfc7ce5499d471a31e"
 
 def collectionBaseSource : SpaceSemantics.Program :=
   CollectionSelectionExecution.source.program.append ScopedCollectionExecution.source.program
@@ -231,6 +231,57 @@ def backendAnswers (request : ScopedCollectionMachine.Request)
   filterAnswers receipt.matching.assignment
     (CompleteExecution.finishedAnswers (rawOrdinaryRequest request receipt))
 
+theorem rawOrdinaryTarget_eq_of_valid
+    {request : ScopedCollectionMachine.Request}
+    {receipt : ScopedCollectionMachine.Receipt}
+    (fixed : CanonicalBags.arrange request.kind request.targets = request.targets)
+    (valid : ScopedCollectionMachine.Valid request receipt) :
+    rawOrdinaryTarget request receipt =
+      CollectionMatcherCompatibility.ordinaryTarget request receipt := by
+  apply rawOrdinaryTarget_eq
+  apply ScopedCollectionMachine.allocation_residual_fixed request fixed
+  have recovered := CollectionSelection.replay_complete valid.2.1
+  simpa only [ScopedCollectionMachine.Request.allocations, valid.1,
+    CollectionSelection.Allocation.erase] using recovered
+
+/-- On an admitted canonical carrier, the emitted complete matcher returns
+exactly the proof-erased semantic adapter frontier, in the same order and with
+the same traces. -/
+theorem backendAnswers_eq_ordinary
+    {request : ScopedCollectionMachine.Request}
+    {receipt : ScopedCollectionMachine.Receipt}
+    (fixed : CanonicalBags.arrange request.kind request.targets = request.targets)
+    (valid : ScopedCollectionMachine.Valid request receipt) :
+    backendAnswers request receipt =
+      CollectionMatcherCompatibility.ordinaryAnswerValues request receipt := by
+  have targetEq := rawOrdinaryTarget_eq_of_valid fixed valid
+  have requestEq : rawOrdinaryRequest request receipt =
+      CollectionMatcherCompatibility.ordinaryRequest request receipt := by
+    simp only [rawOrdinaryRequest, CollectionMatcherCompatibility.ordinaryRequest,
+      ScopedCollectionMachine.Request.machine, targetEq]
+  rw [CollectionMatcherCompatibility.ordinaryAnswerValues_eq]
+  simp only [backendAnswers, filterAnswers, CompleteExecution.finishedAnswers, requestEq]
+
+theorem backendAnswers_eq_rawRootAnswerValues
+    {query : ScopedCollectionMachine.Request} {receipt : ScopedCollectionMachine.Receipt}
+    (ready : CollectionMatcherBackend.RootReady query)
+    (fixed : CanonicalBags.arrange query.kind query.targets = query.targets)
+    (valid : ScopedCollectionMachine.Valid query receipt) :
+    backendAnswers query receipt =
+      (CollectionMatcherBackend.rawRootAnswers query receipt ready).map Subtype.val := by
+  rw [backendAnswers_eq_ordinary fixed valid,
+    CollectionMatcherBackend.rawRootAnswerValues_eq_ordinary]
+
+theorem backendAnswers_eq_rootAnswerValues
+    {firing : CollectionPlanMachine.Firing}
+    (ready : CollectionMatcherBackend.RootReady firing.request)
+    (fixed : CanonicalBags.arrange firing.request.kind firing.request.targets =
+      firing.request.targets)
+    (valid : firing.Valid) :
+    backendAnswers firing.request firing.receipt.source =
+      (CollectionMatcherBackend.rootAnswers firing ready).map Subtype.val :=
+  backendAnswers_eq_rawRootAnswerValues ready fixed valid.1
+
 @[metta_head "gslt:collection-backend:answers"]
 theorem answers_returns (state : State)
     (request : ScopedCollectionMachine.Request)
@@ -262,5 +313,214 @@ theorem answers_returns (state : State)
     (CompleteExecution.finishedAnswers (rawOrdinaryRequest request receipt))
   metta_call checked
   metta_eval [answered, filtered] with checked unfolding [backendAnswers]
+
+private def certifiedValues {request : GeneralScopedMatchMachine.Request}
+    (answers : List {answer : GeneralScopedMatchMachine.Answer // answer.Valid request}) :
+    List GeneralScopedMatchMachine.Answer :=
+  answers.map Subtype.val
+
+/-- A finite frontier from any certified matcher backend enters the generic
+scheduled post-match continuation. -/
+@[metta_head "gslt:collection-backend:continue-answers"]
+theorem continue_answers_returns (state : State)
+    (environment : GeneralPremise.Environment) (footprint : List String)
+    {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : GeneralPremise.specification? environment index = some spec)
+    (admitted : RuleBinding.admittedFor rule spec = true)
+    (sorted : Mettapedia.GSLT.LanguageDef.WellSorted.OpenPatternWellSorted
+      environment.language environment.free bound type source)
+    (tail : StructuralDescent.Scheduled.Continuation environment
+      (.root (depth + 1) bound type source index) outer)
+    (next : List (StructuralDescent.Scheduled.Task environment outer)) :
+    ∀ answers : List {answer : GeneralScopedMatchMachine.Answer //
+        answer.Valid ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩},
+      (∀ answer ∈ answers,
+        ScopedRuleMatching.assignmentFreeWithin footprint answer.val.assignment) →
+      PureReturns library.runtime [] state
+        (apply "gslt:collection-backend:continue-answers"
+          [CompleteExecution.environmentValue environment (environment.free.entriesOn footprint),
+            number depth,
+            encoded (PremiseOperationsExecution.GeneralExecution.Base.typesTerm bound),
+            encoded (InferenceCettaWire.AuthoredRule.typeTerm type),
+            encoded (InferenceCettaWire.encodePattern source), number index,
+            encoded (InferenceCettaWire.AuthoredRule.rewriteTerm rule),
+            encoded (InferenceCettaWire.AuthoredRule.bindingSpecTerm spec),
+            encoded (encodeList RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm
+              (certifiedValues answers)),
+            encoded (continuationTerm tail), encoded (encodeList taskTerm next)])
+        state (encoded (encodeOption expansionTerm (some
+          (StructuralDescent.Scheduled.continueRootAnswers environment outer depth bound
+            type source index rule spec declared specified admitted sorted answers tail next))))
+  | [], _ => by
+      collection_backend_eval unfolding [certifiedValues,
+        StructuralDescent.Scheduled.continueRootAnswers]
+  | answer :: rest, covered => by
+      have later := continue_answers_returns state environment footprint depth bound type source
+        index rule spec declared specified admitted sorted tail next rest
+        (fun item member => covered item (List.mem_cons_of_mem answer member))
+      have continuedAtDescent := CompleteExecution.descent_continue_root_answer_returns state
+        environment footprint depth bound type source index rule spec declared specified admitted
+        sorted answer.val answer.property (covered answer List.mem_cons_self) tail
+        (StructuralDescent.Scheduled.continueRootAnswers environment outer depth bound type source
+          index rule spec declared specified admitted sorted rest tail next).tasks
+      have continuedAtComplete := by
+        metta_lift CompleteExecution.complete_checked
+          ["environment", "depth", "bound", "type", "source", "index", "rule", "spec",
+            "answer", "tail", "next"] continuedAtDescent
+      have continuedAtCollection := by
+        metta_lift collectionBase_checked
+          ["environment", "depth", "bound", "type", "source", "index", "rule", "spec",
+            "answer", "tail", "next"] continuedAtComplete
+      have continued := by
+        metta_lift checked
+          ["environment", "depth", "bound", "type", "source", "index", "rule", "spec",
+            "answer", "tail", "next"] continuedAtCollection
+      have laterAnswers :
+          (StructuralDescent.Scheduled.continueRootAnswers environment outer depth bound
+            type source index rule spec declared specified admitted sorted rest tail next).answers = [] :=
+        StructuralDescent.Scheduled.continueRootAnswers_answers ..
+      have laterUnresolved :
+          (StructuralDescent.Scheduled.continueRootAnswers environment outer depth bound
+            type source index rule spec declared specified admitted sorted rest tail next).unresolved = [] :=
+        StructuralDescent.Scheduled.continueRootAnswers_unresolved ..
+      collection_backend_eval [later, continued] unfolding [certifiedValues,
+        StructuralDescent.Scheduled.continueRootAnswers,
+        laterAnswers, laterUnresolved, expansionTerm,
+        PremiseSchedulerExecution.schedulerExpansionTerm, encodeOption,
+        CettaWireAtom.encode, CettaWireAtom.encodeMany, encodeList,
+        RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm,
+        RuleInstantiationExecution.GeneralExecution.traceTerm]
+
+def expansionState {environment : GeneralPremise.Environment}
+    {goal : StructuralDescent.Scheduled.Goal}
+    (expansion : GeneralPremise.Scheduler.Expansion
+      (StructuralDescent.Scheduled.Task environment goal)
+      (StructuralDescent.Scheduled.Result environment goal)
+      StructuralDescent.Scheduled.Obligation) :
+    StructuralDescent.Scheduled.State environment goal :=
+  { agenda := expansion.tasks, answers := expansion.answers,
+    unresolved := expansion.unresolved, work := 0 }
+
+@[metta_head "gslt:collection-backend:expansion-state"]
+theorem expansion_state_returns (state : State)
+    {environment : GeneralPremise.Environment}
+    {goal : StructuralDescent.Scheduled.Goal}
+    (expansion : GeneralPremise.Scheduler.Expansion
+      (StructuralDescent.Scheduled.Task environment goal)
+      (StructuralDescent.Scheduled.Result environment goal)
+      StructuralDescent.Scheduled.Obligation) :
+    PureReturns library.runtime [] state
+      (apply "gslt:collection-backend:expansion-state"
+        [encoded (encodeOption expansionTerm (some expansion))])
+      state (encoded (stateTerm (expansionState expansion))) := by
+  collection_backend_eval unfolding [expansionState, expansionTerm, stateTerm,
+    PremiseSchedulerExecution.schedulerExpansionTerm,
+    PremiseSchedulerExecution.schedulerStateTerm, encodeOption]
+
+/-- A raw match starts the existing typed/premise continuation through one
+ordinary validating witness. No provisional right-hand side is required. -/
+@[metta_head "gslt:collection-backend:begin-match"]
+theorem begin_match_returns (state : State)
+    (environment : GeneralPremise.Environment) (footprint : List String)
+    (depth : Nat) (type : TypeExpr) (ordinal : Nat)
+    (query : ScopedCollectionMachine.Request) (receipt : ScopedCollectionMachine.Receipt)
+    (ready : CollectionMatcherBackend.RootReady query)
+    (fixed : CanonicalBags.arrange query.kind query.targets =
+      query.targets)
+    (valid : ScopedCollectionMachine.Valid query receipt)
+    (declared : environment.language.rewrites[ordinal]? = some query.rule)
+    (specified : GeneralPremise.specification? environment ordinal =
+      some query.spec)
+    (admitted : RuleBinding.admittedFor query.rule query.spec = true)
+    (sorted : Mettapedia.GSLT.LanguageDef.WellSorted.OpenPatternWellSorted
+      environment.language environment.free [] type
+      (CollectionMatcherCompatibility.ordinaryTarget query receipt))
+    (covered : ∀ answer ∈ CollectionMatcherBackend.rawRootAnswers query receipt ready,
+      ScopedRuleMatching.assignmentFreeWithin footprint answer.val.assignment) :
+    PureReturns library.runtime [] state
+      (apply "gslt:collection-backend:begin-match"
+        [CompleteExecution.environmentValue environment (environment.free.entriesOn footprint),
+          number depth, encoded (InferenceCettaWire.AuthoredRule.typeTerm type),
+          number ordinal, encoded (ScopedCollectionExecution.requestTerm query),
+          encoded (ScopedCollectionExecution.receiptTerm receipt)])
+      state (encoded (stateTerm (CollectionMatcherBackend.startRequest environment depth type
+        ordinal query receipt ready declared specified admitted sorted))) := by
+  let presented := CollectionMatcherCompatibility.ordinaryTarget query receipt
+  let goal : StructuralDescent.Scheduled.Goal := .root (depth + 1) [] type presented ordinal
+  have targetEq := rawOrdinaryTarget_eq_of_valid fixed valid
+  have ordinary := ordinary_target_returns state query receipt
+  rw [targetEq] at ordinary
+  have requested := ordinary_request_returns state query receipt
+  have answers := answers_returns state query receipt
+  have answersEq := backendAnswers_eq_rawRootAnswerValues ready fixed valid
+  rw [answersEq] at answers
+  have takenAtComplete := CompleteExecution.take_list_returns
+    RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm state 1
+    ((CollectionMatcherBackend.rawRootAnswers query receipt ready).map Subtype.val)
+  rw [← List.map_take] at takenAtComplete
+  have takenAtBase := by
+    metta_lift collectionBase_checked ["count", "items"] takenAtComplete
+  have taken := by
+    metta_lift checked ["count", "items"] takenAtBase
+  have continued := continue_answers_returns state environment footprint depth [] type presented
+    ordinal query.rule query.spec declared specified admitted sorted
+    (.done goal) [] (((CollectionMatcherBackend.rawRootAnswers query receipt ready).take 1))
+    (fun answer present => covered answer (List.mem_of_mem_take present))
+  have expanded := expansion_state_returns state
+    (StructuralDescent.Scheduled.continueRootAnswers environment goal depth [] type presented
+      ordinal query.rule query.spec declared specified admitted sorted
+      (((CollectionMatcherBackend.rawRootAnswers query receipt ready).take 1)) (.done goal) [])
+  collection_backend_eval [ordinary, requested, answers, taken, continued, expanded]
+    unfolding [CollectionPlanExecution.planFiringTerm, ScopedCollectionExecution.requestTerm,
+      ScopedCollectionExecution.firingTerm, ScopedCollectionExecution.receiptTerm,
+      CollectionSelectionExecution.allocationTerm, CollectionMatcherBackend.startRequest,
+      CollectionMatcherBackend.rawRootAnswers, expansionState, presented, goal,
+      ready.schema, ready.ambient, ready.site, ready.path, ready.depth, ready.index,
+      ready.initial, rawOrdinaryRequest, ScopedCollectionMachine.Request.machine,
+      targetEq, certifiedValues, goalTerm, continuationTerm,
+      RuleInstantiationExecution.GeneralExecution.matcherRequestTerm,
+      RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm,
+      RuleInstantiationExecution.GeneralExecution.traceTerm,
+      RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
+      InferenceCettaWire.encodePattern, InferenceCettaWire.encodePatterns_eq_encodeList,
+      InferenceCettaWire.encodeCollectionType, InferenceCettaWire.encodeRest,
+      InferenceCettaWire.AuthoredRule.siteTerm, encodeList]
+
+
+/-- A retained root firing starts the existing scheduled continuation through
+one ordinary validating witness. The initial scheduled state is reconstructed
+from the firing, not supplied as input. -/
+@[metta_head "gslt:collection-backend:begin"]
+theorem begin_returns (state : State)
+    (environment : GeneralPremise.Environment) (footprint : List String)
+    (depth : Nat) (type : TypeExpr) (firing : CollectionPlanMachine.Firing)
+    (ready : CollectionMatcherBackend.RootReady firing.request)
+    (fixed : CanonicalBags.arrange firing.request.kind firing.request.targets =
+      firing.request.targets)
+    (valid : firing.Valid)
+    (declared : environment.language.rewrites[firing.ordinal]? = some firing.request.rule)
+    (specified : GeneralPremise.specification? environment firing.ordinal =
+      some firing.request.spec)
+    (admitted : RuleBinding.admittedFor firing.request.rule firing.request.spec = true)
+    (sorted : Mettapedia.GSLT.LanguageDef.WellSorted.OpenPatternWellSorted
+      environment.language environment.free [] type
+      (CollectionMatcherCompatibility.ordinaryTarget firing.request firing.receipt.source))
+    (covered : ∀ answer ∈ CollectionMatcherBackend.rootAnswers firing ready,
+      ScopedRuleMatching.assignmentFreeWithin footprint answer.val.assignment) :
+    PureReturns library.runtime [] state
+      (apply "gslt:collection-backend:begin"
+        [CompleteExecution.environmentValue environment (environment.free.entriesOn footprint),
+          number depth, encoded (InferenceCettaWire.AuthoredRule.typeTerm type),
+          encoded (CollectionPlanExecution.planFiringTerm firing)])
+      state (encoded (stateTerm (CollectionMatcherBackend.startFiring environment depth type
+        firing ready declared specified admitted sorted))) := by
+  have started := begin_match_returns state environment footprint depth type firing.ordinal
+    firing.request firing.receipt.source ready fixed valid.1 declared specified admitted sorted covered
+  collection_backend_eval [started]
+    unfolding [CollectionPlanExecution.planFiringTerm, ScopedCollectionExecution.firingTerm,
+      CollectionMatcherBackend.startFiring]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution

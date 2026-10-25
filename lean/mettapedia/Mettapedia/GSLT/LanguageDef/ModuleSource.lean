@@ -1,5 +1,10 @@
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Syntax
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Elaborate
+import Mettapedia.GSLT.LanguageDef.ModuleSource.ReplacementTyping
+import Mettapedia.GSLT.LanguageDef.ModuleSource.ReplacementTypingControls
+import Mettapedia.GSLT.LanguageDef.ModuleSource.AlgebraExtraction
+import Mettapedia.GSLT.LanguageDef.ModuleSource.AlgebraInterpretation
+import Mettapedia.GSLT.LanguageDef.ModuleSource.AlgebraExtractionControls
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Printer
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Controls

@@ -23,6 +23,7 @@ inside the definition of the native type.
 namespace Mettapedia.GraphTheory.Walk.NativeTypeTheory
 
 open Mettapedia.GSLT
+open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.CarrierWellSorted
 open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.GraphTheory.Walk.LanguageDef
@@ -257,130 +258,75 @@ theorem vertexPattern_typed (vertex : Nat) :
         · exact inductionHypothesis
         · exact Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
 
-/-- Canonical walk values and their recursive nodes are both typed solely by
-the authored constructor inventory. -/
+private theorem typed_parameter_cons {name sort : String} {argument : Pattern}
+    {arguments : List Pattern} {parameters : List TermParam}
+    (head : CarrierWellSorted.HasType language FreeTypeContext.empty [] argument (.base sort))
+    (tail : CarrierWellSorted.ArgumentsHaveTypes language FreeTypeContext.empty [] arguments parameters) :
+    CarrierWellSorted.ArgumentsHaveTypes language FreeTypeContext.empty [] (argument :: arguments)
+      (parameter name sort :: parameters) :=
+  .cons (by trivial) rfl head tail
+
+/-- Typing introduction for the authored empty-walk node. -/
+theorem walkNil_typed {vertex : Pattern}
+    (typed : CarrierWellSorted.HasType language FreeTypeContext.empty [] vertex (.base "Vertex")) :
+    CarrierWellSorted.HasType language FreeTypeContext.empty []
+      (.apply "WalkNil" [vertex]) (.base "WalkNode") := by
+  apply CarrierWellSorted.HasType.constructor
+    (rule := constructor "WalkNil" "WalkNode" [parameter "vertex" "Vertex"])
+  · simp [language, terms, LanguageDef.ofCore]
+  · simp [UsesBareCollection, constructor, parameter]
+  · exact typed_parameter_cons typed .nil
+
+/-- Constructor typing checks sorts; adjacency is checked by execution. -/
+theorem walkCons_typed {source next target tail : Pattern}
+    (sourceTyped : CarrierWellSorted.HasType language FreeTypeContext.empty [] source (.base "Vertex"))
+    (nextTyped : CarrierWellSorted.HasType language FreeTypeContext.empty [] next (.base "Vertex"))
+    (targetTyped : CarrierWellSorted.HasType language FreeTypeContext.empty [] target (.base "Vertex"))
+    (tailTyped : grammarHasType tail) :
+    CarrierWellSorted.HasType language FreeTypeContext.empty []
+      (.apply "WalkCons" [source, next, target, tail]) (.base "WalkNode") := by
+  apply CarrierWellSorted.HasType.constructor
+    (rule := constructor "WalkCons" "WalkNode"
+      [parameter "source" "Vertex", parameter "next" "Vertex",
+        parameter "target" "Vertex", parameter "tail" "Walk"])
+  · simp [language, terms, LanguageDef.ofCore]
+  · simp [UsesBareCollection, constructor, parameter]
+  · exact typed_parameter_cons sourceTyped (typed_parameter_cons nextTyped
+      (typed_parameter_cons targetTyped (typed_parameter_cons tailTyped .nil)))
+
+/-- Assemble the statically sorted endpoint wrapper around a walk node. -/
+theorem walkValue_typed {source target node : Pattern}
+    (sourceTyped : CarrierWellSorted.HasType language FreeTypeContext.empty [] source (.base "Vertex"))
+    (targetTyped : CarrierWellSorted.HasType language FreeTypeContext.empty [] target (.base "Vertex"))
+    (nodeTyped : CarrierWellSorted.HasType language FreeTypeContext.empty [] node (.base "WalkNode")) :
+    grammarHasType (.apply "WalkValue" [source, target, node]) := by
+  apply CarrierWellSorted.HasType.constructor
+    (rule := constructor "WalkValue" "Walk"
+      [parameter "source" "Vertex", parameter "target" "Vertex", parameter "node" "WalkNode"])
+  · simp [language, terms, LanguageDef.ofCore]
+  · simp [UsesBareCollection, constructor, parameter]
+  · exact typed_parameter_cons sourceTyped (typed_parameter_cons targetTyped
+      (typed_parameter_cons nodeTyped .nil))
+
+/-- Canonical walk values and nodes are typed by the authored constructors. -/
 theorem walkPattern_and_node_typed {n : Nat}
     {graph : SimpleGraph (Fin n)} {start finish : Fin n}
     (walk : graph.Walk start finish) :
     grammarHasType (walkPattern walk) ∧
-      Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType
-        language FreeTypeContext.empty [] (walkNodePattern walk)
-          (.base "WalkNode") := by
+      CarrierWellSorted.HasType language FreeTypeContext.empty []
+        (walkNodePattern walk) (.base "WalkNode") := by
   induction walk with
   | @nil vertex =>
-      simp only [walkPattern, walkNodePattern]
-      have vertexTyped := vertexPattern_typed vertex.val
-      have nodeTyped :
-          Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType
-            language FreeTypeContext.empty []
-              (.apply "WalkNil" [finPattern vertex]) (.base "WalkNode") := by
-        apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType.constructor
-          (rule := constructor "WalkNil" "WalkNode"
-            [parameter "vertex" "Vertex"])
-        · simp [language, terms, LanguageDef.ofCore]
-        · simp [Mettapedia.GSLT.LanguageDef.WellSorted.UsesBareCollection,
-            constructor, parameter]
-        · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-          · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-              parameter]
-          · rfl
-          · exact vertexTyped
-          · exact Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
-      constructor
-      · unfold grammarHasType
-        apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType.constructor
-          (rule := constructor "WalkValue" "Walk"
-            [parameter "source" "Vertex", parameter "target" "Vertex",
-              parameter "node" "WalkNode"])
-        · simp [language, terms, LanguageDef.ofCore]
-        · simp [Mettapedia.GSLT.LanguageDef.WellSorted.UsesBareCollection,
-            constructor, parameter]
-        · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-          · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-              parameter]
-          · rfl
-          · exact vertexTyped
-          · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-            · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                parameter]
-            · rfl
-            · exact vertexTyped
-            · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-              · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                  parameter]
-              · rfl
-              · exact nodeTyped
-              · exact Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
-      · exact nodeTyped
-  | @cons start next finish edge tail inductionHypothesis =>
-      simp only [walkPattern, walkNodePattern]
-      have startTyped := vertexPattern_typed start.val
-      have nextTyped := vertexPattern_typed next.val
-      have finishTyped := vertexPattern_typed finish.val
-      have tailWalkTyped := inductionHypothesis.1
-      simp only [walkPattern] at tailWalkTyped
-      have nodeTyped :
-          Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType
-            language FreeTypeContext.empty []
-              (.apply "WalkCons"
-                [finPattern start, finPattern next, finPattern finish,
-                  .apply "WalkValue"
-                    [finPattern next, finPattern finish,
-                      walkNodePattern tail]]) (.base "WalkNode") := by
-        apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType.constructor
-          (rule := constructor "WalkCons" "WalkNode"
-            [parameter "source" "Vertex", parameter "next" "Vertex",
-              parameter "target" "Vertex", parameter "tail" "Walk"])
-        · simp [language, terms, LanguageDef.ofCore]
-        · simp [Mettapedia.GSLT.LanguageDef.WellSorted.UsesBareCollection,
-            constructor, parameter]
-        · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-          · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-              parameter]
-          · rfl
-          · exact startTyped
-          · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-            · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                parameter]
-            · rfl
-            · exact nextTyped
-            · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-              · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                  parameter]
-              · rfl
-              · exact finishTyped
-              · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-                · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                    parameter]
-                · rfl
-                · exact tailWalkTyped
-                · exact Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
-      constructor
-      · unfold grammarHasType
-        apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType.constructor
-          (rule := constructor "WalkValue" "Walk"
-            [parameter "source" "Vertex", parameter "target" "Vertex",
-              parameter "node" "WalkNode"])
-        · simp [language, terms, LanguageDef.ofCore]
-        · simp [Mettapedia.GSLT.LanguageDef.WellSorted.UsesBareCollection,
-            constructor, parameter]
-        · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-          · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-              parameter]
-          · rfl
-          · exact startTyped
-          · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-            · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                parameter]
-            · rfl
-            · exact finishTyped
-            · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-              · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                  parameter]
-              · rfl
-              · exact nodeTyped
-              · exact Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
-      · exact nodeTyped
+      have node := walkNil_typed (vertexPattern_typed vertex.val)
+      simpa only [walkPattern, walkNodePattern, finPattern] using
+        And.intro (walkValue_typed (vertexPattern_typed vertex.val)
+        (vertexPattern_typed vertex.val) node) node
+  | @cons start next finish edge tail ih =>
+      have node := walkCons_typed (vertexPattern_typed start.val)
+        (vertexPattern_typed next.val) (vertexPattern_typed finish.val) ih.1
+      simpa only [walkPattern, walkNodePattern, finPattern] using
+        And.intro (walkValue_typed (vertexPattern_typed start.val)
+        (vertexPattern_typed finish.val) node) node
 
 theorem vertexPattern_object (vertex : Nat) :
     isObjectPattern (vertexPattern vertex) = true := by
@@ -400,6 +346,16 @@ theorem vertexPattern_checked (vertex : Nat) :
     (vertexPattern_typed vertex)
   exact vertexPattern_object vertex
 
+/-- The generated wrapper check separates into its three authored argument checks. -/
+theorem grammarWalk_value_iff (source target node : Pattern) :
+    grammarWalk (.apply "WalkValue" [source, target, node]) ↔
+      CarrierWellSorted.checkHasType language FreeTypeContext.empty [] source (.base "Vertex") = true ∧
+      CarrierWellSorted.checkHasType language FreeTypeContext.empty [] target (.base "Vertex") = true ∧
+      CarrierWellSorted.checkHasType language FreeTypeContext.empty [] node (.base "WalkNode") = true := by
+  simp [grammarWalk, CarrierWellSorted.checkHasType, language, terms, LanguageDef.ofCore,
+    constructor, parameter, CarrierWellSorted.checkArgumentsHaveTypes,
+    parameterType?, matchesParameterRepresentation?, usesBareCollection?]
+
 /-- Inverting the generated `WalkValue` check recovers the recursively checked
 node argument.  This is a compiler theorem for the authored constructor row,
 not a separately maintained graph recognizer. -/
@@ -408,28 +364,8 @@ theorem grammarWalk_node_checked {n : Nat}
     (checked : grammarWalk (.apply "WalkValue"
       [finPattern start, finPattern finish, node])) :
     Mettapedia.GSLT.LanguageDef.CarrierWellSorted.checkHasType
-      language FreeTypeContext.empty [] node (.base "WalkNode") = true := by
-  unfold grammarWalk at checked
-  simp only [
-    Mettapedia.GSLT.LanguageDef.CarrierWellSorted.checkHasType,
-    Bool.or_eq_true, Bool.and_eq_true, List.isEmpty_cons,
-    Bool.false_and, List.any_eq_true, beq_iff_eq,
-    Bool.not_eq_true'] at checked
-  rcases checked with impossible | ⟨rule, ruleMember, checks⟩
-  · contradiction
-  simp only [language, terms, LanguageDef.ofCore, List.mem_cons,
-    List.mem_nil_iff, or_false] at ruleMember
-  rcases ruleMember with
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
-  all_goals try {simp_all [constructor, parameter]}
-  case inr.inr.inr.inr.inr.inl =>
-    have argumentChecks := checks.2
-    simp [constructor, parameter,
-      Mettapedia.GSLT.LanguageDef.CarrierWellSorted.checkArgumentsHaveTypes,
-      parameterType?, matchesParameterRepresentation?] at argumentChecks
-    exact argumentChecks.2.2
+      language FreeTypeContext.empty [] node (.base "WalkNode") = true :=
+  ((grammarWalk_value_iff (finPattern start) (finPattern finish) node).1 checked).2.2
 
 /-- The generated checker admits exactly the two authored outer forms of a
 walk node.  Recursive endpoint and adjacency coherence are deliberately left
@@ -581,6 +517,117 @@ theorem walkPattern_inhabits_nativeWalk {n m : Nat}
     ⟨reversePath source target hom walk⟩, ?_⟩
   exact ⟨walkNodePattern walk.reverse, by simp [donePattern, walkPattern]⟩
 
+/-! ## Exact characterization of accepted raw terms -/
+
+/-- Every successful raw scanner path reconstructs its suffix and computes
+its exact reverse-append result. -/
+theorem reverse_scan_path_reconstruct {n m : Nat}
+    (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
+    [DecidableRel graph.Adj] [DecidableRel other.Adj]
+    (hom : graph →g other) {before result : Pattern}
+    (path : (theory graph other hom).RewritePath before result) :
+    ∀ (current target origin : Fin n) (node : Pattern)
+      (accumulator : graph.Walk current origin),
+      before = rawReverseScanPattern target node accumulator →
+      (∃ value, result = .apply "WalkDone" [value]) →
+      ∃ remaining : graph.Walk current target,
+        node = walkNodePattern remaining ∧
+        result = donePattern (remaining.reverseAux accumulator) := by
+  refine GSLT.RewritePath.rec (S := theory graph other hom)
+    (motive := fun before result _ =>
+      ∀ (current target origin : Fin n) (node : Pattern)
+        (accumulator : graph.Walk current origin),
+        before = rawReverseScanPattern target node accumulator →
+        (∃ value, result = .apply "WalkDone" [value]) →
+        ∃ remaining : graph.Walk current target,
+          node = walkNodePattern remaining ∧
+          result = donePattern (remaining.reverseAux accumulator)) ?_ ?_ path
+  · intro before current target origin node accumulator shape terminal
+    obtain ⟨value, finalShape⟩ := terminal
+    rw [shape] at finalShape
+    have labels := (Pattern.apply.inj finalShape).1
+    simp at labels
+  · intro before middle result first rest ih current target origin node accumulator shape terminal
+    have step := (step_iff_mem_rewriteOnce graph other hom before middle).1 first
+    rw [shape] at step
+    rcases reverse_raw_scan_cases graph other hom accumulator step with
+      ⟨endpoint, nodeShape, output⟩ | ⟨next, edge, tail, nodeShape, output⟩
+    · subst current node middle
+      have finalEq : donePattern accumulator = result := by
+        rcases (theory graph other hom).rewritePath_eq_or_first rest with same | ⟨mid, step, _⟩
+        · exact same
+        · have member := (step_iff_mem_rewriteOnce graph other hom _ _).1 step
+          simp only [donePattern, done_irreducible] at member
+          exact (List.not_mem_nil member).elim
+      exact ⟨Walk.nil, by simp [walkNodePattern], finalEq.symm⟩
+    · obtain ⟨remaining, tailEq, resultEq⟩ :=
+        ih next target origin tail (Walk.cons edge.symm accumulator) output terminal
+      refine ⟨Walk.cons edge remaining, ?_, resultEq⟩
+      simp only [nodeShape, walkNodePattern, walkPattern, tailEq]
+
+/-- Native acceptance reconstructs an actual dependent graph walk from the
+raw term.  No grammar or walk-recognition witness is supplied to the induction. -/
+theorem nativeWalk_reconstruct {n m : Nat}
+    (source : SimpleGraph (Fin n)) (target : SimpleGraph (Fin m))
+    [DecidableRel source.Adj] [DecidableRel target.Adj]
+    (hom : source →g target) {start finish : Fin n} {term : Pattern}
+    (native : NativeWalk source target hom start finish term) :
+    ∃ walk : source.Walk start finish, term = walkPattern walk := by
+  obtain ⟨_, ⟨node, rfl⟩, result, ⟨path⟩, terminal⟩ :=
+    (nativeWalk_iff source target hom start finish term).1 native
+  rcases (theory source target hom).rewritePath_eq_or_first path with
+    same | ⟨middle, first, ⟨rest⟩⟩
+  · obtain ⟨lastNode, finalShape⟩ := terminal
+    simp [← same] at finalShape
+  · have step := (step_iff_mem_rewriteOnce source target hom _ _).1 first
+    rw [reverse_raw_start_exact] at step
+    have middleEq := List.mem_singleton.mp step
+    obtain ⟨walk, nodeEq, _⟩ := reverse_scan_path_reconstruct source target hom rest start finish start node
+      (Walk.nil : source.Walk start start)
+      (by simpa only [rawReverseScanPattern, walkPattern, walkNodePattern] using middleEq)
+      (by obtain ⟨lastNode, finalShape⟩ := terminal; exact ⟨_, finalShape⟩)
+    exact ⟨walk, by simp only [walkPattern, nodeEq]⟩
+
+/-- The generated native walk type has neither junk terms nor ambiguous walks. -/
+theorem nativeWalk_iff_existsUnique {n m : Nat}
+    (source : SimpleGraph (Fin n)) (target : SimpleGraph (Fin m))
+    [DecidableRel source.Adj] [DecidableRel target.Adj]
+    (hom : source →g target) (start finish : Fin n) (term : Pattern) :
+    NativeWalk source target hom start finish term ↔
+      ∃! walk : source.Walk start finish, term = walkPattern walk := by
+  constructor
+  · intro native
+    obtain ⟨walk, encoded⟩ := nativeWalk_reconstruct source target hom native
+    exact ⟨walk, encoded, fun other same => walkPattern_injective (same.symm.trans encoded)⟩
+  · rintro ⟨walk, rfl, _⟩
+    exact walkPattern_inhabits_nativeWalk source target hom walk
+
+/-- Native cons admission exposes the actual edge and the native tail. -/
+theorem nativeWalk_cons_iff {n m : Nat}
+    (source : SimpleGraph (Fin n)) (target : SimpleGraph (Fin m))
+    [DecidableRel source.Adj] [DecidableRel target.Adj]
+    (hom : source →g target) (start finish : Fin n) (next tail : Pattern) :
+    NativeWalk source target hom start finish
+      (.apply "WalkValue" [finPattern start, finPattern finish,
+        .apply "WalkCons" [finPattern start, next, finPattern finish, tail]]) ↔
+      ∃ vertex : Fin n, next = finPattern vertex ∧ source.Adj start vertex ∧
+        NativeWalk source target hom vertex finish tail := by
+  constructor
+  · intro native
+    obtain ⟨walk, encoded⟩ := nativeWalk_reconstruct source target hom native
+    cases walk with
+    | nil => simp [walkPattern, walkNodePattern] at encoded
+    | @cons _ vertex _ edge rest =>
+        simp only [walkPattern, walkNodePattern, Pattern.apply.injEq,
+          List.cons.injEq, and_true, true_and] at encoded
+        obtain ⟨rfl, rfl⟩ := encoded
+        exact ⟨vertex, rfl, edge, by simpa only [walkPattern] using
+          walkPattern_inhabits_nativeWalk source target hom rest⟩
+  · rintro ⟨vertex, rfl, edge, nativeTail⟩
+    obtain ⟨rest, rfl⟩ := nativeWalk_reconstruct source target hom nativeTail
+    simpa only [walkPattern, walkNodePattern] using
+      walkPattern_inhabits_nativeWalk source target hom (Walk.cons edge rest)
+
 /-! ## Exact-work behavioral native judgments -/
 
 theorem append_inhabits_exact_work_type {n m : Nat}
@@ -667,6 +714,9 @@ section AxiomAudit
 #print axioms grammarWalk_node_checked
 #print axioms checkedWalkNode_outer_shape
 #print axioms walkPattern_injective
+#print axioms reverse_scan_path_reconstruct
+#print axioms nativeWalk_iff_existsUnique
+#print axioms nativeWalk_cons_iff
 #print axioms walkPattern_inhabits_nativeWalk
 #print axioms append_inhabits_exact_work_type
 #print axioms reverse_inhabits_exact_work_type

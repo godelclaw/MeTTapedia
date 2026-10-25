@@ -1644,6 +1644,27 @@ theorem freshName_not_mem (avoid : List Name) : freshName avoid ∉ avoid := by
   have := namespaceComponents_length_le_maxNamespaceLength member
   simp [freshName] at this
 
+
+/-- The particular fresh binder name computed by the reverse translation. -/
+def freshBinderName {Γ : HOL.Ctx AtomicTy} (names : Naming Γ) {σ τ : HOL.Ty AtomicTy}
+    (body : HOL.Term Symbol (σ :: Γ) τ) (hypotheses : List (HOL.Formula Symbol Γ)) : Name :=
+  freshName (Naming.toList names ++ variableSymbolNames body ++ hypotheses.flatMap variableSymbolNames)
+
+/-- The computed name, rather than a propositionally chosen witness, has all
+three side conditions required by binder compilation. -/
+theorem freshBinderName_spec {Γ : HOL.Ctx AtomicTy} (names : Naming Γ) {σ τ : HOL.Ty AtomicTy}
+    (body : HOL.Term Symbol (σ :: Γ) τ) (hypotheses : List (HOL.Formula Symbol Γ)) :
+    Naming.Avoids names ⟨freshBinderName names body hypotheses, reverseTy σ⟩ ∧
+      HOL.NoConstOccurrence (Symbol.ofVar ⟨freshBinderName names body hypotheses, reverseTy σ⟩) body ∧
+      ∀ formula ∈ hypotheses,
+        HOL.NoConstOccurrence (Symbol.ofVar ⟨freshBinderName names body hypotheses, reverseTy σ⟩) formula := by
+  have fresh := freshName_not_mem
+    (Naming.toList names ++ variableSymbolNames body ++ hypotheses.flatMap variableSymbolNames)
+  simp only [List.mem_append, List.mem_flatMap, not_or, not_exists, not_and] at fresh
+  exact ⟨Naming.avoids_of_not_mem_toList names fresh.1.1 _,
+    noConstOccurrence_of_not_mem_variableSymbolNames _ body fresh.1.2,
+    fun formula member => noConstOccurrence_of_not_mem_variableSymbolNames _ formula (fresh.2 formula member)⟩
+
 /-- A name for a new innermost variable that is avoided by the naming and by
 every variable symbol of the body and of the hypotheses: the side conditions
 of `abstractionSemantics_reverseCanonical_cons`,
@@ -1654,13 +1675,7 @@ theorem exists_fresh_name {Γ : HOL.Ctx AtomicTy} (names : Naming Γ) (σ : HOL.
     ∃ name : Name, Naming.Avoids names ⟨name, reverseTy σ⟩ ∧
       HOL.NoConstOccurrence (Symbol.ofVar ⟨name, reverseTy σ⟩) body ∧
       ∀ ψ ∈ hypotheses, HOL.NoConstOccurrence (Symbol.ofVar ⟨name, reverseTy σ⟩) ψ := by
-  let avoid := Naming.toList names ++ variableSymbolNames body ++
-    hypotheses.flatMap variableSymbolNames
-  have fresh := freshName_not_mem avoid
-  simp only [avoid, List.mem_append, List.mem_flatMap, not_or, not_exists, not_and] at fresh
-  refine ⟨freshName avoid, Naming.avoids_of_not_mem_toList names fresh.1.1 _,
-    noConstOccurrence_of_not_mem_variableSymbolNames _ body fresh.1.2, fun ψ hψ => ?_⟩
-  exact noConstOccurrence_of_not_mem_variableSymbolNames _ ψ (fresh.2 ψ hψ)
+  exact ⟨freshBinderName names body hypotheses, freshBinderName_spec names body hypotheses⟩
 
 /-! ## The defined connectives against the primitive ones -/
 

@@ -59,6 +59,20 @@ theorem methods_match_reference (A : Type) :
   change compiledMethods Unit = _
   decide +kernel
 
+/-- The independently checked append methods compute back to both written
+source clauses, including the recursive call's original argument order. -/
+theorem methods_reconstruct_source (A : Type) :
+    List.Forall₂ (fun pair compiled => ∃ source,
+      adaptFields pair.1.name pair.1.fields pair.2 = some source ∧
+      TypedEquality.Reduces Programs.rules
+        (TypedEquality.Normalization.appSpine
+          (rename (TypedEquality.Normalization.wkN pair.1.fields) compiled)
+          (TypedEquality.Normalization.fieldVars 5 pair.1.fields ++ pair.1.recursiveCalls)) source)
+      (((admitted A).constructors.map (fun constructor => plan (indices A) constructor callTemplate)).zip clauses)
+      [(.var 0), appendCons (.var 4) (.var 2)] :=
+  (compileMethods_reduces (R := Programs.rules) (indices A) (admitted A) self callTemplate clauses
+    [(.var 0), appendCons (.var 4) (.var 2)] (methods_match_reference A)).2
+
 noncomputable def compileClosed (A : Type) : Option (Tower.Tm 0) := do
   let methods ← compiledMethods A
   return TelescopeAbstraction.closeTerm appendContext

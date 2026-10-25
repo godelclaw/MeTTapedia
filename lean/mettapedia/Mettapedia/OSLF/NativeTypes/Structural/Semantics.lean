@@ -208,6 +208,7 @@ theorem holds_spatial_exact {language : LanguageDef} {free : FreeTypeContext}
 theorem binary_not_bare {declaration : GrammarRule} {first second : TermParam}
     (arity : declaration.params = [first, second]) : ¬ UsesBareCollection declaration := by
   rintro ⟨name, kind, elementType, bare⟩
+  have bare := (GrammarRule.bareParams_cons_iff _ _ _).mp bare |>.2
   rw [arity] at bare
   cases bare
 

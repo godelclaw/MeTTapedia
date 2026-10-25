@@ -1393,7 +1393,7 @@ theorem punitMinor_not_typed :
   intro reductTyped
   have declared : LambdaPiModulo leanTheoryExplicit punitContext (.var 1)
       (eps levelZero (.app (.var 2) unitValueExplicit)) := .var rfl
-  have convertible := HasType.unique Example.basic_functional leanTheoryExplicit_confluent
+  have convertible := HasType.unique Example.standardLF_functional leanTheoryExplicit_confluent
     leanTheoryExplicit_headed leanTheoryExplicit_closedBodies (.var 1) declared reductTyped
   exact not_conv_of_normal leanTheoryExplicit_confluent
     (normalExplicit_of_stepOnce (by decide +kernel)) (normalExplicit_of_stepOnce (by decide +kernel))

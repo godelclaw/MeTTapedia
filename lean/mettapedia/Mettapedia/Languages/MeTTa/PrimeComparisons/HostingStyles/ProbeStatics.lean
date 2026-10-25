@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NucleusDerivedModalTyping
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.NucleusDerivedModalTyping
 import Mettapedia.GSLT.LanguageDef.Contexts.Presented
 import Mettapedia.OSLF.MeTTaIL.MatchSpec
 import Mettapedia.Logic.HostingStyles.ContextShape

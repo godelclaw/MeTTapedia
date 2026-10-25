@@ -7,7 +7,7 @@ import Mettapedia.GSLT.LanguageDef.LF.FirstOrderMeTTaRender
 
 This exporter serializes the validated conversion source together with closed
 beta, eta, and transitive conversion certificates.  The generated artifact
-binds each certificate to the LF terms presented to the indexed kernel; the
+binds each certificate to the LF terms presented to the profile-parametric checker; the
 runtime bridge reconstructs the first-order goals from those terms before
 calling the source-indexed generic checker.
 -/

@@ -4,6 +4,7 @@ import Mettapedia.GSLT.LanguageDef.IndexedInductiveElimination
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveExamples
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveGenerated
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveNatVec
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLFacts
 import Mettapedia.GSLT.LanguageDef.ModuleSource.IndexedNatVecNames
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveGuest
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveGuestTypes

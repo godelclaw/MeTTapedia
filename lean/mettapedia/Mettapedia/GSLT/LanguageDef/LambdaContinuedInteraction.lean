@@ -307,7 +307,7 @@ theorem lambdaContinuationRetyping_redexRetypable :
         lambdaValidatedLanguageDef, lambdaCalc]
     exact lambdaContinuationRetyping.costBaseConstructor_mem_generated
       lambdaCalc.terms[0] membership
-  · simp [UsesBareCollection, lambda_costBaseApplication_params]
+  · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, lambda_costBaseApplication_params]
   · rw [lambda_costBaseApplication_params]
     apply ArgumentsHaveTypes.cons
     · trivial
@@ -320,7 +320,7 @@ theorem lambdaContinuationRetyping_redexRetypable :
             lambdaValidatedLanguageDef, lambdaCalc]
         exact lambdaContinuationRetyping.costBaseConstructor_mem_generated
           lambdaCalc.terms[1] membership
-      · simp [UsesBareCollection, lambda_costBaseAbstraction_params]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, lambda_costBaseAbstraction_params]
       · rw [lambda_costBaseAbstraction_params]
         apply ArgumentsHaveTypes.cons
         · trivial

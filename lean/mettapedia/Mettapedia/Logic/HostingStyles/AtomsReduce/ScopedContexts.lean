@@ -446,8 +446,9 @@ def binderContext (presentation : ValidatedLanguageDef) {rule : GrammarRule}
     subst category
     have plain : ¬ UsesBareCollection rule := by
       rintro ⟨_, _, _, bare⟩
-      rw [params] at bare
-      simp at bare
+      have full := ((GrammarRule.bareParams_cons_iff _ _ _).mp bare).2
+      rw [params] at full
+      simp at full
     have typed : ArgumentsHaveTypes target.language FreeTypeContext.empty
         (stage.map (mapTypeExpr morphism.symbols))
         [(filling false).1, .lambda none (filling true).1]

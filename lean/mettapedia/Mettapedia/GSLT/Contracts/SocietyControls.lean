@@ -2,6 +2,11 @@ import Mettapedia.GSLT.Contracts.ContractDimensions
 import Mettapedia.GSLT.Contracts.ReifiedActions
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.Powerset
+import Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation
+import Mettapedia.MachineLearning.SearchGuidance.ProgramDiscovery.EvidenceBridge
+import Mettapedia.PLN.Evidence.SourceReliability
+import Mathlib.Data.Finset.Sort
+import Mettapedia.TypeTheory.Authority
 
 /-!
 # Controls for contracts among several agents
@@ -389,5 +394,815 @@ theorem late_validation_keeps_publication :
 #print axioms consumers_overlap
 #print axioms late_validation_same_verdicts
 #print axioms late_validation_keeps_publication
+
+/-! ## Provenance-aware consumers of the raw additive ledger -/
+
+namespace Provenance
+
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.Evidence.EvidentialLedger
+open Mettapedia.MachineLearning.SearchGuidance.ProgramDiscovery
+
+variable {Source Scope Trial : Type} [DecidableEq Scope] [LinearOrder Trial]
+
+/-- Registry entries are the authenticated atomic observations of the service
+profile. `none` is unfinished/under-observed, never a negative observation. -/
+structure Registry (Scope Trial : Type) where
+  scopeOf : Trial → Scope
+  outcome : Trial → Option Bool
+
+structure Packet (Source Scope Trial : Type) where
+  reporter : Source
+  scope : Scope
+  roots : Finset Trial
+  route : List Source
+
+/-- A forwarded packet names its original atomic roots. Reporter labels and
+routes cannot manufacture additional trials or change their registry scope. -/
+def roots (registry : Registry Scope Trial) (scope : Scope) : List (Packet Source Scope Trial) → Finset Trial
+  | [] => ∅
+  | packet :: rest =>
+      if packet.scope = scope then
+        packet.roots.filter (fun trial => registry.scopeOf trial = scope) ∪ roots registry scope rest
+      else roots registry scope rest
+
+theorem roots_append (registry : Registry Scope Trial) (scope : Scope)
+    (first second : List (Packet Source Scope Trial)) :
+    roots registry scope (first ++ second) = roots registry scope first ∪ roots registry scope second := by
+  induction first with
+  | nil => simp [roots]
+  | cons packet rest ih =>
+      by_cases same : packet.scope = scope <;> simp [roots, same, ih, Finset.union_assoc]
+
+def sample (registry : Registry Scope Trial) (trials : Finset Trial) : FiniteBinarySample Trial where
+  trials := trials.filter (fun trial => (registry.outcome trial).isSome)
+  successes := trials.filter (fun trial => registry.outcome trial = some true)
+  successes_subset := by
+    intro trial member
+    obtain ⟨included, positive⟩ := Finset.mem_filter.mp member
+    exact Finset.mem_filter.mpr ⟨included, by simp [positive]⟩
+
+def pending (registry : Registry Scope Trial) (trials : Finset Trial) : Finset Trial :=
+  trials.filter (fun trial => registry.outcome trial = none)
+
+/-- The raw additive owner is called once per distinct registered root. Its
+own list fold and source-forgetting policy are unchanged. -/
+def atom (registry : Registry Scope Trial) (trial : Trial) : SourceItem Trial Unit where
+  source := trial
+  kind := .empirical
+  support _ := match registry.outcome trial with
+    | none => 0
+    | some true => ⟨1, 0⟩
+    | some false => ⟨0, 1⟩
+  note := "registered atomic observation"
+
+def aggregateRoots (registry : Registry Scope Trial) (trials : Finset Trial) : BinEvNat :=
+  aggregate ((trials.sort (· ≤ ·)).map (atom registry)) ()
+
+def aggregateView (registry : Registry Scope Trial) (scope : Scope)
+    (packets : List (Packet Source Scope Trial)) : BinEvNat × Finset Trial :=
+  let selected := roots registry scope packets
+  (aggregateRoots registry selected, pending registry selected)
+
+omit [LinearOrder Trial] in
+private theorem raw_aggregate_eq_sum (items : List (SourceItem Trial Unit)) :
+    aggregate items () = (items.map (fun item => item.support ())).sum := by
+  induction items with
+  | nil => rfl
+  | cons item rest ih => rw [aggregate_cons, List.map_cons, List.sum_cons, ih]
+
+omit [DecidableEq Scope] in
+theorem aggregateRoots_eq_sum (registry : Registry Scope Trial) (trials : Finset Trial) :
+    aggregateRoots registry trials = trials.sum (fun trial => (atom registry trial).support ()) := by
+  rw [aggregateRoots, raw_aggregate_eq_sum, List.map_map]
+  rw [← Multiset.sum_coe, ← Multiset.map_coe, Finset.sort_eq]
+  rfl
+
+theorem replay_is_idempotent (registry : Registry Scope Trial) (scope : Scope)
+    (packets : List (Packet Source Scope Trial)) :
+    aggregateView registry scope (packets ++ packets) = aggregateView registry scope packets := by
+  simp only [aggregateView, roots_append, Finset.union_self]
+
+omit [DecidableEq Scope] in
+theorem sample_union (registry : Registry Scope Trial) (first second : Finset Trial) :
+    sample registry (first ∪ second) = (sample registry first).merge (sample registry second) := by
+  simp only [sample, FiniteBinarySample.merge, Finset.filter_union]
+
+omit [DecidableEq Scope] in
+theorem disjoint_roots_add (registry : Registry Scope Trial) (first second : Finset Trial)
+    (independent : Disjoint first second) :
+    aggregateRoots registry (first ∪ second) = aggregateRoots registry first + aggregateRoots registry second ∧
+      (sample registry (first ∪ second)).observations =
+        Mettapedia.PLN.Evidence.Convergence.BernoulliObservations.combine
+          (sample registry first).observations (sample registry second).observations := by
+  refine ⟨?_, ?_⟩
+  · simp only [aggregateRoots_eq_sum]
+    exact Finset.sum_union independent
+  · rw [sample_union]
+    apply FiniteBinarySample.observations_merge_of_disjoint
+    exact independent.mono (Finset.filter_subset _ _) (Finset.filter_subset _ _)
+
+/-- Root disjointness licenses count addition; it asserts no probabilistic IID property. -/
+theorem independent_packet_groups_add (registry : Registry Scope Trial) (scope : Scope)
+    (first second : List (Packet Source Scope Trial))
+    (independent : Disjoint (roots registry scope first) (roots registry scope second)) :
+    (aggregateView registry scope (first ++ second)).1 =
+      (aggregateView registry scope first).1 + (aggregateView registry scope second).1 := by
+  simp only [aggregateView, roots_append]
+  exact (disjoint_roots_add registry _ _ independent).1
+
+structure Assessment (Scope Dependency : Type) where
+  scope : Scope
+  profile : Mettapedia.PLN.Evidence.SourceReliability.ReliabilityProfile
+  dependencies : Finset Dependency
+  kind : Mettapedia.PLN.Evidence.EvidenceKind
+
+/-- Calibration is selected at the complete identity/task/context/epoch key.
+An installed prior or justified indirect profile is allowed; no learner is
+claimed, and selecting it does not establish any report's truth. -/
+def calibrationAt {Dependency : Type} (scope : Scope) (assessment : Assessment Scope Dependency) :
+    Option Mettapedia.PLN.Evidence.SourceReliability.ReliabilityProfile :=
+  if assessment.scope = scope then some assessment.profile else none
+
+def adjustedAt {Dependency : Type}
+    (registry : Registry Scope Trial) (scope : Scope) (assessment : Assessment Scope Dependency)
+    (packets : List (Packet Source Scope Trial)) : Option (BinEvNat × Finset Trial) :=
+  (calibrationAt scope assessment).map fun profile =>
+    (Mettapedia.PLN.Evidence.SourceReliability.reliabilityAdjust profile (aggregateView registry scope packets).1,
+      (aggregateView registry scope packets).2)
+
+theorem wrong_scope_does_not_transfer_calibration {Dependency : Type}
+    (scope : Scope) (assessment : Assessment Scope Dependency) (different : assessment.scope ≠ scope) :
+    calibrationAt scope assessment = none := by simp only [calibrationAt, if_neg different]
+
+namespace Adoption
+
+open Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance
+open Mettapedia.TypeTheory.AuthorityTheory
+open Mettapedia.GSLT.LanguageDef.OperationCostProtocol.Indexed
+
+variable {Dependency : Type} [DecidableEq Dependency]
+variable (meaning : Dependency → Prop) {target : Mettapedia.GSLT.LanguageDef.SemanticEvidence.AdmissionObject.{0}}
+
+structure Policy where
+  requiredPositive : Nat
+
+/-- The positive constructor means policy eligibility of conditional data,
+not an inhabitant of `TypeTheory.Authority.Evidence`. An unfinished check
+retains its pending trials in the incomplete constructor. -/
+abbrev Choice := Mettapedia.TypeTheory.AuthorityTheory.Outcome
+  (Conditional meaning target × (BinEvNat × Finset Trial)) PEmpty.{1}
+  (Conditional meaning target) (Conditional meaning target × (BinEvNat × Finset Trial))
+
+def consider (registry : Registry Scope Trial) (scope : Scope)
+    (assessment : Assessment Scope Dependency) (factOf : Trial ↪ Dependency)
+    (packets : List (Packet Source Scope Trial)) (policy : Policy) (result : Conditional meaning target) :
+    Choice (Trial := Trial) (target := target) meaning :=
+  if assessment.scope = scope then
+    let observations := aggregateView registry scope packets
+    let weighted := (Mettapedia.PLN.Evidence.SourceReliability.reliabilityAdjust assessment.profile observations.1,
+      observations.2)
+    let retained := result.require (assessment.dependencies ∪ (roots registry scope packets).image factOf)
+    if policy.requiredPositive ≤ weighted.1.pos ∧ weighted.2 = ∅ then
+      .established (retained, weighted)
+    else .incomplete (retained, weighted)
+  else .outsideFragment result
+
+theorem eligible_retains_all_relied_on_dependencies (registry : Registry Scope Trial) (scope : Scope)
+    (assessment : Assessment Scope Dependency) (factOf : Trial ↪ Dependency)
+    (packets : List (Packet Source Scope Trial)) (policy : Policy) (result retained : Conditional meaning target)
+    (evidence : BinEvNat × Finset Trial)
+    (eligible : consider meaning registry scope assessment factOf packets policy result = .established (retained, evidence)) :
+    assessment.scope = scope ∧ result.dependencies ⊆ retained.dependencies ∧
+      assessment.dependencies ⊆ retained.dependencies ∧
+      ∀ trial ∈ roots registry scope packets, factOf trial ∈ retained.dependencies := by
+  unfold consider at eligible
+  split at eligible
+  · rename_i sameScope
+    dsimp only at eligible
+    split at eligible
+    · have fields := Prod.mk.inj (Mettapedia.TypeTheory.AuthorityTheory.Outcome.established.inj eligible)
+      cases fields.1
+      refine ⟨sameScope, Finset.subset_union_right, ?_, ?_⟩
+      · exact Finset.subset_union_left.trans Finset.subset_union_left
+      · intro trial member
+        exact Finset.mem_union_left _ (Finset.mem_union_right _ (Finset.mem_image.mpr ⟨trial, member, rfl⟩))
+    · cases eligible
+  · cases eligible
+
+variable {Provider Resource Authority : Type} [DecidableEq Provider] [DecidableEq Resource]
+variable [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+
+/-- Reputation selects a reliance candidate; the existing current-grant
+adoption remains the final boundary. Every unsuccessful branch retains its
+original policy outcome, including incompleteness and its exact premises. -/
+def adoptChoice (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (choice : Choice (Trial := Trial) (target := target) meaning) :
+    Except (Choice (Trial := Trial) (target := target) meaning) (Conditional meaning target × (BinEvNat × Finset Trial)) :=
+  match choice with
+  | .established (result, evidence) =>
+      match Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance.adopt meaning requirement current active result with
+      | .ok adopted => .ok (adopted, evidence)
+      | .error _ => .error choice
+  | .refuted impossible => nomatch impossible
+  | .outsideFragment _ | .incomplete _ => .error choice
+
+omit [LinearOrder Trial] [DecidableEq Dependency] in
+theorem adopted_choice_has_current_permission (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available requirement.required)]
+    (active : Dependency → Bool) (choice : Choice (Trial := Trial) (target := target) meaning)
+    (result : Conditional meaning target) (evidence : BinEvNat × Finset Trial)
+    (accepted : adoptChoice meaning requirement current active choice = .ok (result, evidence)) :
+    requirement.Current current ∧ ∀ dependency ∈ result.dependencies, active dependency = true := by
+  cases choice with
+  | established payload =>
+      rcases payload with ⟨original, recorded⟩
+      change (match Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance.adopt
+          meaning requirement current active original with
+        | .ok adopted => (Except.ok (adopted, recorded) : Except (Choice (Trial := Trial) (target := target) meaning) _)
+        | .error _ => Except.error (.established (original, recorded))) = Except.ok (result, evidence) at accepted
+      cases issued : Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance.adopt
+          meaning requirement current active original with
+      | error _ => simp only [issued] at accepted; cases accepted
+      | ok candidate =>
+          rw [issued] at accepted
+          have same := Prod.mk.inj (Except.ok.inj accepted)
+          obtain ⟨grant, live, rfl⟩ := adopt_admitted meaning requirement current active original candidate issued
+          exact ⟨grant, by simpa only [← same.1] using live⟩
+  | refuted impossible => cases impossible
+  | outsideFragment _ => cases accepted
+  | incomplete _ => cases accepted
+
+def profileTarget : Mettapedia.GSLT.LanguageDef.SemanticEvidence.AdmissionObject.{0} :=
+  ⟨Mettapedia.PLN.Evidence.SourceReliability.ReliabilityProfile,
+    fun profile => profile.tpRate ≤ 1000 ∧ profile.tnRate ≤ 1000⟩
+
+abbrev CalibrationStore := Mettapedia.Machines.BindingPublication.Environment Scope (Assessment Scope Dependency) Unit
+
+/-- A profile is installed through current adoption, at the server-selected
+scope requirement. Its prior/indirect provenance remains a named dependency
+set. This is an installation policy, not a statistical learning algorithm. -/
+def install (requiredAt : Scope → CheckedGrant.Requirement Provider Resource Authority)
+    (scope : Scope) (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available (requiredAt scope).required)]
+    (active : Dependency → Bool) (store : CalibrationStore (Scope := Scope) (Dependency := Dependency))
+    (profile : Conditional meaning profileTarget) (kind : Mettapedia.PLN.Evidence.EvidenceKind) :
+    Except (Conditional meaning profileTarget × CalibrationStore (Scope := Scope) (Dependency := Dependency))
+      (CalibrationStore (Scope := Scope) (Dependency := Dependency)) :=
+  match Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance.adopt meaning (requiredAt scope) current active profile with
+  | .error retained => .error (retained, store)
+  | .ok admitted =>
+      .ok (Mettapedia.Machines.BindingPublication.applyPatch store
+        ⟨[(scope, ⟨scope, admitted.value, admitted.dependencies, kind⟩)], ()⟩)
+
+omit [DecidableEq Dependency] in
+theorem installed_profile_has_current_authority
+    (requiredAt : Scope → CheckedGrant.Requirement Provider Resource Authority)
+    (scope : Scope) (current : CheckedGrant.View Provider Resource Authority)
+    [Decidable (FrameUpdate current.available (requiredAt scope).required)]
+    (active : Dependency → Bool) (store next : CalibrationStore (Scope := Scope) (Dependency := Dependency))
+    (profile : Conditional meaning profileTarget) (kind : Mettapedia.PLN.Evidence.EvidenceKind)
+    (accepted : install meaning requiredAt scope current active store profile kind = .ok next) :
+    (requiredAt scope).Current current ∧
+      next.get scope = some ⟨scope, profile.value, profile.dependencies, kind⟩ ∧
+      ∀ other, other ≠ scope → next.get other = store.get other := by
+  unfold install at accepted
+  split at accepted
+  · cases accepted
+  · rename_i admitted adopted
+    obtain ⟨authority, _, rfl⟩ := adopt_admitted meaning (requiredAt scope) current active profile admitted adopted
+    cases Except.ok.inj accepted
+    refine ⟨authority, ?_, ?_⟩
+    · simp [Mettapedia.Machines.BindingPublication.applyPatch, Mettapedia.Machines.BindingPublication.applyWrites]
+    · intro other different
+      simp [Mettapedia.Machines.BindingPublication.applyPatch, Mettapedia.Machines.BindingPublication.applyWrites,
+        Function.update_of_ne different]
+
+def considerInstalled (registry : Registry Scope Trial) (scope : Scope)
+    (store : CalibrationStore (Scope := Scope) (Dependency := Dependency)) (factOf : Trial ↪ Dependency)
+    (packets : List (Packet Source Scope Trial)) (policy : Policy) (result : Conditional meaning target) :
+    Choice (Trial := Trial) (target := target) meaning :=
+  match store.get scope with
+  | none => .incomplete (result, aggregateView registry scope packets)
+  | some assessment => consider meaning registry scope assessment factOf packets policy result
+
+end Adoption
+
+namespace Controls
+
+open Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.OperationCostProtocol.Indexed
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.PLN.Evidence.SourceReliability
+
+abbrev ScopeKey := Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.Reliance.Scope Nat Nat Nat Nat
+
+def scope : ScopeKey := ⟨7, 9, 11, 3⟩
+def registry : Registry ScopeKey Nat :=
+  ⟨fun trial => if trial = 3 then {scope with task := 10} else scope,
+    fun trial => if trial = 2 then none else if trial = 4 then some false else some true⟩
+def original : Packet Nat ScopeKey Nat := ⟨7, scope, {0}, [7]⟩
+def forwarded : Packet Nat ScopeKey Nat := ⟨8, scope, {0}, [7, 8]⟩
+def independent : Packet Nat ScopeKey Nat := ⟨7, scope, {1}, [7]⟩
+def unfinished : Packet Nat ScopeKey Nat := ⟨7, scope, {2}, [7]⟩
+def misScoped : Packet Nat ScopeKey Nat := ⟨7, {scope with task := 10}, {0}, [7]⟩
+
+theorem correlated_forwarding_does_not_create_an_independent_trial :
+    aggregate [atom registry 0, atom registry 0] () = ⟨2, 0⟩ ∧
+      aggregateView registry scope [original, forwarded] = (⟨1, 0⟩, ∅) ∧
+      ¬ Disjoint (roots registry scope [original]) (roots registry scope [forwarded]) := by
+  simp only [aggregateView, aggregateRoots_eq_sum]
+  decide
+
+theorem independent_trials_by_one_source_remain_distinct :
+    original.reporter = independent.reporter ∧
+      Disjoint (roots registry scope [original]) (roots registry scope [independent]) ∧
+      aggregateView registry scope [original, independent] = (⟨2, 0⟩, ∅) ∧
+      (sample registry (roots registry scope [original, independent])).observations.successes = 2 := by
+  simp only [aggregateView, aggregateRoots_eq_sum]
+  decide
+
+theorem unfinished_and_wrong_scope_do_not_become_negative_or_new_counts :
+    aggregateView registry scope [unfinished] = (⟨0, 0⟩, {2}) ∧
+      aggregateView registry scope [misScoped] = (⟨0, 0⟩, ∅) ∧
+      aggregateView registry scope [⟨7, scope, {3}, [7]⟩] = (⟨0, 0⟩, ∅) ∧
+      aggregateView registry scope [⟨7, scope, {4}, [7]⟩] = (⟨0, 1⟩, ∅) := by
+  simp only [aggregateView, aggregateRoots_eq_sum]
+  decide
+
+/-- A model's competence is an external predicate, not a consequence of its
+label, its bounded parameter fields, or the local policy's acceptance. -/
+inductive Fact where
+  | report (occurrence claim : Nat)
+  | calibration (scope : ScopeKey) (profile : ReliabilityProfile)
+  deriving DecidableEq
+
+def meaning (calibrated : ScopeKey → ReliabilityProfile → Prop) : Fact → Prop
+  | .report _ claim => claim ≠ 0
+  | .calibration key profile => calibrated key profile
+
+def factOf : Nat ↪ Fact where
+  toFun trial := .report (100 + trial) 2
+  inj' := by intro first second same; have equal := (Fact.report.inj same).1; omega
+
+variable (calibrated : ScopeKey → ReliabilityProfile → Prop)
+
+def result (claim : Nat) : Conditional (meaning calibrated) AdmissionCanary.positiveNaturals :=
+  ⟨claim, {.report 50 claim}, fun supplied =>
+    show claim ≠ 0 from supplied (.report 50 claim) (Finset.mem_singleton_self _)⟩
+
+def priorProfile : Conditional (meaning calibrated) Adoption.profileTarget :=
+  ⟨perfectProfile, {.calibration scope perfectProfile}, fun _ => show perfectProfile.tpRate ≤ 1000 ∧ perfectProfile.tnRate ≤ 1000 from by decide⟩
+
+def prior : Assessment ScopeKey Fact :=
+  ⟨scope, perfectProfile, {.calibration scope perfectProfile}, .expertElicited⟩
+def indirect : Assessment ScopeKey Fact :=
+  ⟨scope, uninformativeProfile, {.calibration scope uninformativeProfile}, .modelDerived⟩
+
+def choice := Adoption.consider (meaning calibrated) registry scope prior factOf [original, independent]
+  ⟨2⟩ (result calibrated 6)
+def pendingChoice := Adoption.consider (meaning calibrated) registry scope prior factOf [original, unfinished]
+  ⟨1⟩ (result calibrated 6)
+def falseChoice := Adoption.consider (meaning calibrated) registry scope prior factOf [original, independent]
+  ⟨2⟩ (result calibrated 0)
+
+def choiceView {target : AdmissionObject.{0}} (value : Adoption.Choice (Trial := Nat) (meaning calibrated) (target := target)) :
+    Nat × Finset Fact × BinEvNat × Finset Nat :=
+  match value with
+  | .established (retained, counts, pending) => (0, retained.dependencies, counts, pending)
+  | .refuted impossible => nomatch impossible
+  | .outsideFragment retained => (1, retained.dependencies, 0, ∅)
+  | .incomplete (retained, counts, pending) => (2, retained.dependencies, counts, pending)
+
+private theorem two_counts : aggregateView registry scope [original, independent] = (⟨2, 0⟩, ∅) :=
+  independent_trials_by_one_source_remain_distinct.2.2.1
+
+private theorem pending_counts : aggregateView registry scope [original, unfinished] = (⟨1, 0⟩, {2}) := by
+  simp only [aggregateView, aggregateRoots_eq_sum]
+  decide
+
+def eligibleResult (claim : Nat) := (result calibrated claim).require
+  (prior.dependencies ∪ (roots registry scope [original, independent]).image factOf)
+
+private theorem consider_data (claim : Nat) :
+    Adoption.consider (meaning calibrated) registry scope prior factOf [original, independent]
+      ⟨2⟩ (result calibrated claim) = .established (eligibleResult calibrated claim, ⟨2, 0⟩, ∅) := by
+  simp only [Adoption.consider]
+  rw [if_pos (show prior.scope = scope from rfl)]
+  rw [two_counts, show prior.profile = perfectProfile from rfl, perfect_preserves]
+  rfl
+
+theorem actual_eligible_policy_retains_report_calibration_and_trial_premises :
+    choiceView calibrated (choice calibrated) =
+      (0, {.report 50 6, .calibration scope perfectProfile, factOf 0, factOf 1}, ⟨2, 0⟩, ∅) := by
+  rw [choice, consider_data]
+  dsimp only [choiceView, eligibleResult, Conditional.require, result]
+  decide
+
+theorem perfect_prior_cannot_complete_an_unfinished_observation :
+    (choiceView calibrated (pendingChoice calibrated)).1 = 2 ∧
+      (choiceView calibrated (pendingChoice calibrated)).2.2.2 = {2} := by
+  simp only [pendingChoice, Adoption.consider]
+  rw [if_pos (show prior.scope = scope from rfl)]
+  rw [pending_counts, show prior.profile = perfectProfile from rfl, perfect_preserves]
+  exact ⟨rfl, rfl⟩
+
+theorem identity_task_context_epoch_all_scope_calibration :
+    calibrationAt {scope with principal := 8} prior = none ∧
+      calibrationAt {scope with task := 10} prior = none ∧
+      calibrationAt {scope with context := 12} prior = none ∧
+      calibrationAt {scope with epoch := 4} prior = none := by decide
+
+theorem indirect_and_prior_models_change_weights_without_forging_direct_trials :
+    (adjustedAt registry scope prior [original, independent]).map Prod.fst = some ⟨2, 0⟩ ∧
+      (adjustedAt registry scope indirect [original, independent]).map Prod.fst = some ⟨0, 0⟩ ∧
+      roots registry scope [original, independent] = {0, 1} := by
+  simp only [adjustedAt, two_counts]
+  exact ⟨rfl, rfl, by decide⟩
+
+local instance : Fintype Access :=
+  ⟨{.none, .read, .consume}, by intro access; cases access <;> simp⟩
+
+def requiredAt (key : ScopeKey) : CheckedGrant.Requirement Nat ScopeKey Access := ⟨⟨0, key, 3⟩, .consume⟩
+def current : CheckedGrant.View Nat ScopeKey Access := ⟨⟨0, scope, 3⟩, .consume⟩
+def revoked : CheckedGrant.View Nat ScopeKey Access := ⟨⟨0, scope, 3⟩, .none⟩
+def regranted : CheckedGrant.View Nat ScopeKey Access := ⟨⟨0, scope, 4⟩, .consume⟩
+local instance (grant : CheckedGrant.View Nat ScopeKey Access) :
+    Decidable (FrameUpdate grant.available (requiredAt scope).required) :=
+  inferInstanceAs (Decidable (∀ frame : Access,
+    Access.separate grant.available frame = true → Access.separate Access.consume frame = true))
+
+def store : Adoption.CalibrationStore (Scope := ScopeKey) (Dependency := Fact) := ⟨fun _ => none, ()⟩
+def installed := Adoption.install (meaning calibrated) requiredAt scope current (fun _ => true) store
+  (priorProfile calibrated) .expertElicited
+def installedStore : Adoption.CalibrationStore (Scope := ScopeKey) (Dependency := Fact) :=
+  match installed calibrated with
+  | .ok committed => committed
+  | .error (_, old) => old
+
+def installedChoice := Adoption.considerInstalled (meaning calibrated) registry scope (installedStore calibrated)
+  factOf [original, independent] ⟨2⟩ (result calibrated 6)
+
+def acceptedView {target : AdmissionObject.{0}}
+    (value : Except (Adoption.Choice (Trial := Nat) (meaning calibrated) (target := target))
+      (Conditional (meaning calibrated) target × (BinEvNat × Finset Nat))) : Bool × Finset Fact :=
+  match value with
+  | .ok (retained, _) => (true, retained.dependencies)
+  | .error original => (false, (choiceView calibrated original).2.1)
+
+theorem actual_profile_installation_changes_only_the_scoped_record :
+    ((installedStore calibrated).get scope).map Assessment.dependencies = some (priorProfile calibrated).dependencies ∧
+      ((installedStore calibrated).get scope).map Assessment.kind = some .expertElicited ∧
+      (installedStore calibrated).get {scope with task := 10} = none ∧
+      choiceView calibrated (installedChoice calibrated) = choiceView calibrated (choice calibrated) := by
+  refine ⟨rfl, rfl, rfl, ?_⟩
+  unfold installedChoice
+  rw [Adoption.considerInstalled, show (installedStore calibrated).get scope = some prior from rfl]
+  rfl
+
+private theorem installedChoice_eq : installedChoice calibrated = choice calibrated := by
+  unfold installedChoice
+  rw [Adoption.considerInstalled, show (installedStore calibrated).get scope = some prior from rfl]
+  rfl
+
+theorem installed_policy_adoption_rechecks_revocation_and_generation :
+    (acceptedView calibrated (Adoption.adoptChoice (meaning calibrated) (requiredAt scope) current
+      (fun _ => true) (installedChoice calibrated))).1 = true ∧
+      (acceptedView calibrated (Adoption.adoptChoice (meaning calibrated) (requiredAt scope) revoked
+        (fun _ => true) (installedChoice calibrated))).1 = false ∧
+      (acceptedView calibrated (Adoption.adoptChoice (meaning calibrated) (requiredAt scope) regranted
+        (fun _ => true) (installedChoice calibrated))).1 = false ∧
+      (acceptedView calibrated (Adoption.adoptChoice (meaning calibrated) (requiredAt scope) current
+        (fun _ => false) (installedChoice calibrated))).1 = false := by
+  simp only [installedChoice_eq, choice, consider_data, Adoption.adoptChoice, acceptedView]
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem admitted_reputation_still_does_not_prove_the_report :
+    (acceptedView calibrated (Adoption.adoptChoice (meaning calibrated) (requiredAt scope) current
+      (fun _ => true) (falseChoice calibrated))).1 = true ∧
+      ¬ AdmissionCanary.positiveNaturals.Meaning (result calibrated 0).value := by
+  constructor
+  · rw [falseChoice, consider_data]
+    rfl
+  · exact fun purported => purported rfl
+
+end Controls
+
+end Provenance
+
+/-! ## Epoch-scoped peer votes and decisions from available local evidence -/
+
+namespace Peer
+
+open Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+
+variable {size : Nat}
+
+abbrev VoteKey := Nat × Nat × Nat
+abbrev GrantResource := Nat × Nat × Nat
+
+structure Message (size : Nat) where
+  sender : Fin size
+  recipient : Fin size
+  epoch : Nat
+  task : Nat
+  context : Nat
+  value : Bool
+  deriving DecidableEq
+
+def Message.key (message : Message size) : VoteKey :=
+  (message.epoch, message.task, message.context)
+
+structure State (size : Nat) where
+  service : Nat
+  epoch : Nat
+  members : Finset (Fin size)
+  commitments : Fin size × VoteKey → Option Bool
+  sent : List (Message size)
+
+def initial (size service epoch : Nat) : State size :=
+  ⟨service, epoch, Finset.univ, fun _ => none, []⟩
+
+structure Request (size : Nat) where
+  epoch : Nat
+  task : Nat
+  context : Nat
+  recipient : Fin size
+  value : Bool
+  deriving DecidableEq
+
+def sendHandle (state : State size) (principal : Fin size) (task context : Nat) : Handle Nat GrantResource :=
+  ⟨state.service, (principal.val, task, context), state.epoch⟩
+
+/-- The caller identity is a separately supplied service principal. The
+request has no sender field. Honest senders commit to one value per epoch/
+task/context; a tolerated faulty sender may equivocate under its own identity. -/
+def send (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (state : State size) (principal : Fin size) (request : Request size) : Option (State size) :=
+  if request.epoch = state.epoch ∧ principal ∈ state.members ∧ request.recipient ∈ state.members ∧
+      authorizedB frontier principal (sendHandle state principal request.task request.context) = true then
+    let key : VoteKey := (state.epoch, request.task, request.context)
+    if principal ∈ faulty ∨ state.commitments (principal, key) = none ∨
+        state.commitments (principal, key) = some request.value then
+      some {state with
+        commitments := Function.update state.commitments (principal, key) (some request.value)
+        sent := state.sent ++ [⟨principal, request.recipient, state.epoch, request.task, request.context, request.value⟩]}
+    else none
+  else none
+
+theorem send_admitted (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (state next : State size) (principal : Fin size) (request : Request size)
+    (accepted : send faulty frontier state principal request = some next) :
+    request.epoch = state.epoch ∧ principal ∈ state.members ∧ request.recipient ∈ state.members ∧
+      Authorized frontier principal (sendHandle state principal request.task request.context) ∧
+      (principal ∈ faulty ∨ state.commitments (principal, (state.epoch, request.task, request.context)) = none ∨
+        state.commitments (principal, (state.epoch, request.task, request.context)) = some request.value) ∧
+      next = {state with
+        commitments := Function.update state.commitments (principal, (state.epoch, request.task, request.context)) (some request.value)
+        sent := state.sent ++ [⟨principal, request.recipient, state.epoch, request.task, request.context, request.value⟩]} := by
+  unfold send at accepted
+  split at accepted
+  · rename_i admitted
+    dsimp only at accepted
+    split at accepted
+    · exact ⟨admitted.1, admitted.2.1, admitted.2.2.1, admitted.2.2.2, by assumption,
+        (Option.some.inj accepted).symm⟩
+    · cases accepted
+  · cases accepted
+
+/-- The historical log agrees with each nonfaulty sender's actual committed
+value. This invariant is derived from the concrete guarded send transition. -/
+def HonestLog (faulty : Finset (Fin size)) (state : State size) : Prop :=
+  ∀ message ∈ state.sent, message.sender ∉ faulty →
+    state.commitments (message.sender, message.key) = some message.value
+
+theorem initial_honest (faulty : Finset (Fin size)) (service epoch : Nat) :
+    HonestLog faulty (initial size service epoch) := by
+  intro message member
+  cases member
+
+theorem send_honest (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (state next : State size) (principal : Fin size) (request : Request size)
+    (before : HonestLog faulty state)
+    (accepted : send faulty frontier state principal request = some next) : HonestLog faulty next := by
+  obtain ⟨_, _, _, _, licensed, rfl⟩ := send_admitted faulty frontier state next principal request accepted
+  intro message member honest
+  rcases List.mem_append.mp member with old | fresh
+  · have committed := before message old honest
+    by_cases same : (message.sender, message.key) = (principal, (state.epoch, request.task, request.context))
+    · have principalHonest : principal ∉ faulty := by
+        have senderEqual : message.sender = principal := congrArg Prod.fst same
+        simpa only [← senderEqual] using honest
+      have previous := committed
+      rw [same] at previous
+      have value : message.value = request.value := by
+        rcases licensed with bad | absent | agreed
+        · exact False.elim (principalHonest bad)
+        · rw [previous] at absent
+          cases absent
+        · exact Option.some.inj (previous.symm.trans agreed)
+      change Function.update state.commitments (principal, (state.epoch, request.task, request.context))
+        (some request.value) (message.sender, message.key) = some message.value
+      rw [same, Function.update_self, value]
+    · simpa only [Function.update_of_ne same] using committed
+  · simp only [List.mem_singleton] at fresh
+    subst message
+    simp [Message.key]
+
+def Step (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (before after : State size) : Prop :=
+  ∃ principal request, send faulty frontier before principal request = some after
+
+theorem reached_honest (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (start finish : State size) (initially : HonestLog faulty start)
+    (trace : Relation.ReflTransGen (Step faulty frontier) start finish) : HonestLog faulty finish := by
+  induction trace with
+  | refl => exact initially
+  | tail _ move ih =>
+      obtain ⟨principal, request, accepted⟩ := move
+      exact send_honest faulty frontier _ _ principal request ih accepted
+
+theorem honest_sender_does_not_equivocate (faulty : Finset (Fin size)) (state : State size)
+    (lawful : HonestLog faulty state) (first second : Message size)
+    (firstSent : first ∈ state.sent) (secondSent : second ∈ state.sent)
+    (samePrincipal : first.sender = second.sender) (sameKey : first.key = second.key)
+    (honest : first.sender ∉ faulty) : first.value = second.value := by
+  have a := lawful first firstSent honest
+  have b := lawful second secondSent (by simpa only [← samePrincipal] using honest)
+  rw [← samePrincipal, ← sameKey] at b
+  exact Option.some.inj (a.symm.trans b)
+
+/-- Available authenticated evidence is selected by actual log positions.
+Missing positions yield no message; repeated positions do not create voters. -/
+def localView (state : State size) (recipient : Fin size) (task context : Nat) (positions : List Nat) :
+    List (Message size) :=
+  (positions.filterMap fun index => state.sent[index]?).filter fun message =>
+    message.recipient = recipient ∧ message.epoch = state.epoch ∧ message.task = task ∧ message.context = context
+
+def voters (value : Bool) (view : List (Message size)) : Finset (Fin size) :=
+  ((view.filter (fun message => message.value = value)).map Message.sender).toFinset
+
+/-- This decision function reads only the supplied local messages. It does
+not consult truth, faults, remote inboxes or a global consensus witness. -/
+def decideLocal (threshold : Nat) (view : List (Message size)) : Option Bool :=
+  if threshold ≤ (voters true view).card then some true
+  else if threshold ≤ (voters false view).card then some false else none
+
+theorem decided_has_quorum (threshold : Nat) (view : List (Message size)) (value : Bool)
+    (decided : decideLocal threshold view = some value) : threshold ≤ (voters value view).card := by
+  unfold decideLocal at decided
+  split at decided
+  · cases Option.some.inj decided
+    assumption
+  · split at decided
+    · cases Option.some.inj decided
+      assumption
+    · cases decided
+
+theorem voter_has_local_message (value : Bool) (view : List (Message size)) (principal : Fin size)
+    (present : principal ∈ voters value view) :
+    ∃ message ∈ view, message.sender = principal ∧ message.value = value := by
+  obtain ⟨message, member, equal⟩ := List.mem_map.mp (List.mem_toFinset.mp present)
+  obtain ⟨inView, agrees⟩ := List.mem_filter.mp member
+  exact ⟨message, inView, equal, of_decide_eq_true agrees⟩
+
+theorem local_message_is_authentic (state : State size) (recipient : Fin size) (task context : Nat)
+    (positions : List Nat) (message : Message size) (present : message ∈ localView state recipient task context positions) :
+    message ∈ state.sent ∧ message.recipient = recipient ∧ message.key = (state.epoch, task, context) := by
+  obtain ⟨selected, fieldCheck⟩ := List.mem_filter.mp present
+  obtain ⟨index, _, found⟩ := List.mem_filterMap.mp selected
+  have fields := of_decide_eq_true fieldCheck
+  exact ⟨List.mem_of_getElem? found, fields.1,
+    by simp only [Message.key, fields.2.1, fields.2.2.1, fields.2.2.2]⟩
+
+theorem honest_quorum_overlap (faulty first second : Finset (Fin 4))
+    (faultBound : faulty.card ≤ 1) (firstSize : 3 ≤ first.card) (secondSize : 3 ≤ second.card) :
+    ∃ principal, principal ∈ first ∧ principal ∈ second ∧ principal ∉ faulty := by
+  have whole : (first ∪ second).card ≤ 4 := by simpa using Finset.card_le_univ (first ∪ second)
+  have count := Finset.card_union_add_card_inter first second
+  have overlap : 2 ≤ (first ∩ second).card := by omega
+  by_contra noHonest
+  have contained : first ∩ second ⊆ faulty := by
+    intro principal member
+    by_contra honest
+    exact noHonest ⟨principal, (Finset.mem_inter.mp member).1, (Finset.mem_inter.mp member).2, honest⟩
+  have bound := Finset.card_le_card contained
+  omega
+
+theorem complement_supplies_quorum (faulty : Finset (Fin 4)) (faultBound : faulty.card ≤ 1) :
+    3 ≤ (Finset.univ \ faulty).card ∧ Disjoint (Finset.univ \ faulty) faulty := by
+  constructor
+  · rw [Finset.card_sdiff]
+    simp only [Finset.inter_univ, Finset.card_univ, Fintype.card_fin]
+    omega
+  · exact Finset.sdiff_disjoint
+
+theorem decisions_agree_from_available_local_views (faulty : Finset (Fin 4)) (state : State 4)
+    (faultBound : faulty.card ≤ 1) (lawful : HonestLog faulty state)
+    (firstRecipient secondRecipient : Fin 4) (task context : Nat) (firstPositions secondPositions : List Nat)
+    (first second : Bool)
+    (firstDecision : decideLocal 3 (localView state firstRecipient task context firstPositions) = some first)
+    (secondDecision : decideLocal 3 (localView state secondRecipient task context secondPositions) = some second) :
+    first = second := by
+  obtain ⟨principal, inFirst, inSecond, honest⟩ := honest_quorum_overlap faulty _ _ faultBound
+    (decided_has_quorum 3 _ first firstDecision) (decided_has_quorum 3 _ second secondDecision)
+  obtain ⟨message, received, sender, value⟩ := voter_has_local_message first _ principal inFirst
+  obtain ⟨message', received', sender', value'⟩ := voter_has_local_message second _ principal inSecond
+  have actual := local_message_is_authentic state firstRecipient task context firstPositions message received
+  have actual' := local_message_is_authentic state secondRecipient task context secondPositions message' received'
+  have equal := honest_sender_does_not_equivocate faulty state lawful message message' actual.1 actual'.1
+    (sender.trans sender'.symm) (actual.2.2.trans actual'.2.2.symm) (by simpa only [sender] using honest)
+  exact value.symm.trans (equal.trans value')
+
+abbrev Holdings (size : Nat) := Fin size → Excl VoteKey
+
+def coalition (key : VoteKey) (principals : Finset (Fin size)) : Holdings size :=
+  fun principal => if principal ∈ principals then .own key else .empty
+
+theorem quorums_overlap_at_realized_honest_resource (faulty first second : Finset (Fin 4))
+    (key : VoteKey) (faultBound : faulty.card ≤ 1) (firstSize : 3 ≤ first.card) (secondSize : 3 ≤ second.card) :
+    ∃ principal, principal ∉ faulty ∧ coalition key first principal = .own key ∧
+      coalition key second principal = .own key ∧ ¬ coalition key first ## coalition key second := by
+  obtain ⟨principal, left, right, honest⟩ := honest_quorum_overlap faulty first second faultBound firstSize secondSize
+  refine ⟨principal, honest, by simp [coalition, left], by simp [coalition, right], ?_⟩
+  intro separate
+  exact Excl.not_separate_own key key (by simpa only [coalition, if_pos left, if_pos right] using separate principal)
+
+/-- An ordinary request word uses the same guarded handler. The fault family
+is a specification parameter; the local decision procedure never receives it. -/
+def issueWord (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (state : State size) (requests : List (Fin size × Request size)) : Option (State size) :=
+  requests.foldlM (fun current request => send faulty frontier current request.1 request.2) state
+
+theorem issued_word_honest (faulty : Finset (Fin size)) (frontier : Frontier Nat GrantResource (Fin size))
+    (requests : List (Fin size × Request size)) (state finish : State size)
+    (before : HonestLog faulty state) (accepted : issueWord faulty frontier state requests = some finish) :
+    HonestLog faulty finish := by
+  induction requests generalizing state with
+  | nil => cases Option.some.inj accepted; exact before
+  | cons request rest ih =>
+      obtain ⟨next, issued, remaining⟩ := Option.bind_eq_some_iff.mp accepted
+      exact ih next (send_honest faulty frontier state next request.1 request.2 before issued) remaining
+
+namespace Controls
+
+def frontier (size : Nat) : Frontier Nat GrantResource (Fin size) :=
+  ((List.finRange size).map fun principal =>
+    (⟨⟨17, (principal.val, 9, 11), 3⟩, principal, .owned⟩ : Lease Nat GrantResource (Fin size)))
+
+def request {size : Nat} (recipient : Fin size) (value : Bool) : Request size := ⟨3, 9, 11, recipient, value⟩
+def goodRequests : List (Fin 4 × Request 4) :=
+  [(0, request 0 true), (1, request 0 true), (2, request 0 true),
+   (1, request 1 true), (2, request 1 true), (3, request 1 true)]
+def goodWord := issueWord {3} (frontier 4) (initial 4 17 3) goodRequests
+def good : State 4 := goodWord.get (by decide)
+
+theorem real_peer_word_has_honest_commitments : HonestLog {3} good :=
+  issued_word_honest {3} (frontier 4) goodRequests (initial 4 17 3) good
+    (initial_honest {3} 17 3) (by rfl)
+
+theorem nontrivial_local_quorums_decide_with_available_authentic_messages :
+    voters true (localView good 0 9 11 [0, 1, 2]) = {0, 1, 2} ∧
+      voters true (localView good 1 9 11 [3, 4, 5]) = {1, 2, 3} ∧
+      decideLocal 3 (localView good 0 9 11 [0, 1, 2]) = some true ∧
+      decideLocal 3 (localView good 1 9 11 [3, 4, 5]) = some true := by decide
+
+theorem any_two_actual_decisions_agree (first second : Bool)
+    (firstDecision : decideLocal 3 (localView good 0 9 11 [0, 1, 2]) = some first)
+    (secondDecision : decideLocal 3 (localView good 1 9 11 [3, 4, 5]) = some second) : first = second :=
+  decisions_agree_from_available_local_views {3} good (by decide) real_peer_word_has_honest_commitments
+    0 1 9 11 [0, 1, 2] [3, 4, 5] first second firstDecision secondDecision
+
+theorem unseen_replayed_and_foreign_context_messages_do_not_decide :
+    decideLocal 3 (localView good 0 9 11 []) = none ∧
+      decideLocal 3 (localView good 0 9 11 [0, 0, 1, 999]) = none ∧
+      decideLocal 3 (localView good 0 10 11 [0, 1, 2, 3, 4, 5]) = none ∧
+      (⟨3, 0, 3, 9, 11, true⟩ : Message 4) ∉ localView good 0 9 11 [0, 1, 2, 3, 4, 5] := by decide
+
+theorem wrong_epoch_missing_grant_and_honest_equivocation_are_refused :
+    (send {3} (frontier 4) good 0 {request 1 false with epoch := 2}).isNone = true ∧
+      (send {3} 0 good 0 (request 1 true)).isNone = true ∧
+      (send {3} (frontier 4) good 0 (request 1 false)).isNone = true := by decide
+
+def badRequests : List (Fin 3 × Request 3) :=
+  [(0, request 0 true), (1, request 0 true), (1, request 2 false), (2, request 2 false)]
+def badWord := issueWord {1} (frontier 3) (initial 3 17 3) badRequests
+def bad : State 3 := badWord.get (by decide)
+
+theorem faulty_overlap_has_authentic_conflicting_local_decisions :
+    HonestLog {1} bad ∧
+      ({0, 1} ∩ {1, 2} : Finset (Fin 3)) ⊆ {1} ∧
+      decideLocal 2 (localView bad 0 9 11 [0, 1]) = some true ∧
+      decideLocal 2 (localView bad 2 9 11 [2, 3]) = some false := by
+  refine ⟨issued_word_honest {1} (frontier 3) badRequests (initial 3 17 3) bad
+    (initial_honest {1} 17 3) (by rfl), by decide, by decide, by decide⟩
+
+end Controls
+
+end Peer
 
 end Mettapedia.GSLT.Contracts.Society

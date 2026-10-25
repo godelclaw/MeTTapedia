@@ -3,7 +3,7 @@
   (case $receipts
     ((LNil False)
      ((LCons $receipt $rest)
-       (let $next (gslt:runner:target $standard $receipt)
+       (let $next (gslt:runner:target ClassSearch $standard $receipt)
          (if (== $next $target) True (rho:native:hit $standard $target $rest)))))))
 (: rho:native:verdict (-> Atom Atom Atom %Undefined%))
 (= (rho:native:verdict $standard $target $readout)

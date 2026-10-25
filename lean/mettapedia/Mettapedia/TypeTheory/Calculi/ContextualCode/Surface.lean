@@ -2,9 +2,9 @@ import Mathlib.Logic.Equiv.Basic
 import Mettapedia.TypeTheory.Calculi.ContextualCode.Confluence
 
 /-!
-# Reading Prime's surface syntax
+# Reading the Prime draft's surface syntax
 
-`Surface` is the syntax as Prime writes it, with names. `resolve` reads it in
+`Surface` is the syntax as the Prime C draft writes it, with names. `resolve` reads it in
 a context of bound names: a bound name becomes a variable, any other name a
 symbol, so unknown names stay data.
 
@@ -29,7 +29,7 @@ namespace Mettapedia.TypeTheory.Calculi.ContextualCode
 
 open Term
 
-/-- Prime's surface syntax. `quote M k xs` is `(quote M (xs 0 … xs (k-1)))`. -/
+/-- The Prime draft's surface syntax. `quote M k xs` is `(quote M (xs 0 … xs (k-1)))`. -/
 inductive Surface : Type where
   | atom : String → Surface
   | lam : String → Surface → Surface

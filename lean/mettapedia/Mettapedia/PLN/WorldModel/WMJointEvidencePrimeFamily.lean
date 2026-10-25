@@ -2,14 +2,14 @@ import Mettapedia.PLN.WorldModel.WMJointEvidenceCapabilitySpace
 import Mettapedia.TypeTheory.Models.RevisionedFamilies.CapabilityPiRepresentability
 
 /-!
-# ProbLog joint evidence in Prime's observable receipt family
+# ProbLog joint evidence in the staged observable receipt family
 
 The compiled ProbLog state has a checked, supported full-event mass receipt.
-That receipt inhabits the same dependent family used by Prime's semantic
+That receipt inhabits the same dependent family used by the staged
 families CwF and the OSLF native supported graph. The backend remains partial:
 the zero-mass state prevents a global dependent receipt section and hence a
 total semantic GSLT-IL representation. This comparison does not claim an
-executable query provider or an authored Prime term for every semantic state.
+executable query provider or an authored source term for every semantic state.
 -/
 
 open Mettapedia.TypeTheory.Calculi.StagedScopedReflective
@@ -70,7 +70,7 @@ theorem probLog_fullEvent_nativeSupported
         p normalized world queryName compiled)
 
 /-- A supported compiled request does not make the backend globally total.
-The zero-mass semantic state has no normalizable request, so Prime's
+The zero-mass semantic state has no normalizable request, so the
 dependent product over all observable requests has no section. -/
 theorem jointEvidenceBackend_no_globalReceiptPi
     (world : String → JointEvidence n)

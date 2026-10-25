@@ -4,8 +4,8 @@ import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 /-!
 # Windowed Smooth-Transition Energy Profile Obstruction
 
-This module was split out of `ModeStateEnergyProfileFork.lean` to keep the
-Navier-Stokes route-audit library organized by mathematical role.
+A windowed smooth profile turns on and later off, so it vanishes at a positive input and
+is no `EnergyProfile`.
 -/
 
 set_option autoImplicit false

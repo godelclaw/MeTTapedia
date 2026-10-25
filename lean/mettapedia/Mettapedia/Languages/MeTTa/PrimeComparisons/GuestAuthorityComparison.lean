@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.AuthorityLedger
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
+import Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflective.LanguageDef
 import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareAuthority
 import Mettapedia.Languages.Megalodon.ImplicationalSemanticAuthority
@@ -15,7 +15,7 @@ tagged dispatcher:
 * a Megalodon implicational fragment with independent valuation semantics;
 * Megalodon's selected-environment Mathdata kernel.
 
-This is guest coexistence, not the intrinsic STT fragment of Prime DTT.
+This is guest coexistence, not the intrinsic STT fragment of a candidate DTT.
 The coproduct is deliberately conservative.  It does not identify their
 claims, proof objects, signatures, or meanings, and it supplies no automatic
 translation between them.  Such a translation must be authored separately

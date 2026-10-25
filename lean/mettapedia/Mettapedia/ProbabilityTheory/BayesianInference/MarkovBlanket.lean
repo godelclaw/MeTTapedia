@@ -1,4 +1,4 @@
-import Mettapedia.InformationTheory.FiniteProbability
+import Mettapedia.InformationTheory.ConditionalMutualInformation
 import Mathlib.Algebra.BigOperators.Field
 
 /-!

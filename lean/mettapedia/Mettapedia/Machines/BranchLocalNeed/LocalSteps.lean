@@ -1,4 +1,5 @@
 import Mettapedia.Machines.BranchLocalNeed.CacheLaws
+import Mettapedia.Machines.BranchLocalNeed.ExecutionMachine
 
 /-!
 # A conservative candidate for language-local Need transitions
@@ -75,6 +76,65 @@ def answers
     (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
     List (Produced Value StableFault RetryableFault) :=
   (runFrontier extension fuel [machine]).filterMap haltedOutcome
+
+/-- The existing receipt-policy executor handles protocol operations. Only a
+language-local control transition is intercepted, just as in the reference
+extension; it neither allocates a cell nor fabricates a receipt. -/
+def coreStep
+    (extension : Extension Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : NeedExecution.CoreMachine Origin Local Resume Rule Value StableFault
+      RetryableFault Effect) :
+    List (NeedExecution.CoreMachine Origin Local Resume Rule Value StableFault
+      RetryableFault Effect) :=
+  match machine.control with
+  | .run state stack =>
+      match extension.localStep state with
+      | some next => [{
+          world := machine.world
+          control := .run next stack
+          work := machine.work.bump 0 0 0 0 }]
+      | none => NeedExecution.step extension.reference machine
+  | _ => NeedExecution.step extension.reference machine
+
+/-- Local interception and the independently implemented protocol executor
+commute with receipt selection. This is a one-step list equality, preserving
+the position and multiplicity of every alternative, not a whole-run premise. -/
+theorem project_local_step (keepReceipts : Bool)
+    (extension : Extension Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    (step extension machine).map (NeedExecution.projectMachine keepReceipts) =
+      coreStep extension (NeedExecution.projectMachine keepReceipts machine) := by
+  cases control : machine.control with
+  | run state stack =>
+      cases selected : extension.localStep state with
+      | none =>
+          simpa only [step, coreStep, NeedExecution.projectMachine, control, selected] using
+            NeedExecution.project_step_commutes extension.reference machine
+      | some next =>
+          simp only [step, coreStep, NeedExecution.projectMachine, control, selected,
+            List.map_cons, List.map_nil, finished]
+  | force cell stack =>
+      simpa only [step, coreStep, NeedExecution.projectMachine, control] using
+        NeedExecution.project_step_commutes extension.reference machine
+  | returned outcome stack =>
+      simpa only [step, coreStep, NeedExecution.projectMachine, control] using
+        NeedExecution.project_step_commutes extension.reference machine
+  | halted outcome =>
+      simpa only [step, coreStep, NeedExecution.projectMachine, control] using
+        NeedExecution.project_step_commutes extension.reference machine
+
+/-- No projected successor can be invented by local interception or by the
+receipt-policy executor. Equal-valued alternatives still have their original
+list occurrences in `project_local_step`. -/
+theorem core_step_lifts (keepReceipts : Bool)
+    (extension : Extension Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    {machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    {next : NeedExecution.CoreMachine Origin Local Resume Rule Value StableFault
+      RetryableFault Effect}
+    (member : next ∈ coreStep extension (NeedExecution.projectMachine keepReceipts machine)) :
+    ∃ rich ∈ step extension machine, NeedExecution.projectMachine keepReceipts rich = next := by
+  rw [← project_local_step keepReceipts extension machine] at member
+  exact List.mem_map.mp member
 
 variable
   (extension : Extension Origin Local Resume Rule Value StableFault RetryableFault Effect)
@@ -170,6 +230,106 @@ theorem step_preserves_completed
   · simpa only [same] using lookup
   · exact NeedCacheLaws.step_preserves_completed extension.reference machine successor
       reference lookup completed
+
+/-- Completion roles inspect the preserved heap and control. They remain
+available when the implementation's causal recording coordinate is absent. -/
+theorem project_completed_observation (keepReceipts : Bool) :
+    NeedCacheLaws.completedObservation? machine.world.heap machine.control =
+      NeedCacheLaws.completedObservation?
+        (NeedExecution.projectMachine keepReceipts machine).world.heap
+        (NeedExecution.projectMachine keepReceipts machine).control := rfl
+
+/-- A completed-cache observation can never be an intercepted local step.
+It is an actual force or owner-matched commit of the reference protocol. -/
+theorem completed_observation_reference
+    {successor : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    {observed : NeedCacheLaws.CompletedObservation Value StableFault RetryableFault}
+    (classified : NeedCacheLaws.completedObservation? machine.world.heap machine.control = some observed)
+    (member : successor ∈ step extension machine) :
+    successor ∈ NeedReference.step extension.reference machine := by
+  cases control : machine.control with
+  | run state stack => simp [NeedCacheLaws.completedObservation?, control] at classified
+  | halted outcome => simp [NeedCacheLaws.completedObservation?, control] at classified
+  | force cell stack => simpa only [step, control] using member
+  | returned outcome stack => simpa only [step, control] using member
+
+/-- The common observation describes the receipt actually appended by this
+extended source step. The statement is about the existing graph transition;
+it does not infer production from an arbitrary supplied trace. -/
+theorem completed_observation_step
+    {successor : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    {observed : NeedCacheLaws.CompletedObservation Value StableFault RetryableFault}
+    (classified : NeedCacheLaws.completedObservation? machine.world.heap machine.control = some observed)
+    (member : successor ∈ step extension machine) :
+    let receipt := NeedCacheLaws.completedReceipt machine observed.kind observed.cell observed.outcome
+    successor.world.receipts.nodes =
+      ⟨receipt.id, machine.world.receipts.roots, .observe observed.cell observed.outcome⟩ ::
+        machine.world.receipts.nodes ∧
+      successor.world.receipts.roots = [receipt.id] ∧
+      successor.world.receipts.nextSerial = machine.world.receipts.nextSerial + 1 := by
+  exact NeedCacheLaws.completedReceipt?_step_receipt extension.reference
+    (by simp only [NeedCacheLaws.completedReceipt?, classified, Option.map_some])
+    (completed_observation_reference extension machine classified member)
+
+/-- Source firing metadata is read from the actual suspended producer's
+ordered alternatives. A cache delivery, running local step or unsuccessful
+force contributes no source firing. -/
+def firingChoices
+    (reference : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (heap : Heap Origin Value StableFault)
+    (control : Control Local Resume Value StableFault RetryableFault) : List (CellId × Rule) :=
+  match control with
+  | .force cell _ => match heap.lookup cell with
+    | some ⟨origin, .suspended⟩ => (reference.alternatives origin).map (fun row => (cell, row.1))
+    | _ => []
+  | _ => []
+
+/-- The same reader works on the real implementation heap/control, even
+when it has no causal receipt graph. No history is synthesized by this map. -/
+theorem project_firing_choices (keepReceipts : Bool) :
+    firingChoices extension.reference machine.world.heap machine.control =
+      firingChoices extension.reference
+        (NeedExecution.projectMachine keepReceipts machine).world.heap
+        (NeedExecution.projectMachine keepReceipts machine).control := rfl
+
+def receiptRule {Origin Rule Value StableFault RetryableFault Effect : Type*}
+    (node : ReceiptNode Origin Rule Value StableFault RetryableFault Effect) : Option (CellId × Rule) :=
+  match node.payload with
+  | .chooseRule cell rule => some (cell, rule)
+  | _ => none
+
+private theorem branch_firing_choices
+    (base : World Origin Rule Value StableFault RetryableFault Effect)
+    (cell : CellId) (record : CellRecord Origin Value StableFault) (owner : EvaluatorId)
+    (stack : List (Frame Resume)) (index : Nat) (alternatives : List (Rule × Local)) :
+    (branchAlternatives machine base cell record owner stack index alternatives).filterMap
+      (fun successor => successor.world.receipts.nodes.head?.bind receiptRule) =
+      alternatives.map (fun row => (cell, row.1)) := by
+  induction alternatives generalizing index with
+  | nil => rfl
+  | cons row rest ih =>
+      simp only [branchAlternatives, List.filterMap_cons, List.map_cons, finished,
+        recorded, World.record, ReceiptGraph.append, List.head?_cons, Option.bind_some,
+        receiptRule, ih]
+
+/-- Ordered firing metadata agrees with the actual new choice receipts
+produced by a suspended-cell force. This includes the empty-alternative
+retry case; it does not mistake that case for a successful empty answer. -/
+theorem firing_choices_are_recorded
+    {cell : CellId} {stack : List (Frame Resume)} {origin : Origin}
+    (control : machine.control = .force cell stack)
+    (suspended : machine.world.heap.lookup cell = some ⟨origin, .suspended⟩) :
+    (step extension machine).filterMap
+      (fun successor => successor.world.receipts.nodes.head?.bind receiptRule) =
+      firingChoices extension.reference machine.world.heap machine.control := by
+  cases alternatives : extension.reference.alternatives origin with
+  | nil =>
+      simp only [step, control, NeedReference.step, suspended, alternatives, firingChoices,
+        List.map_nil, List.filterMap_cons, List.filterMap_nil, retryMachine, finished,
+        recorded, World.record, ReceiptGraph.append, List.head?_cons, Option.bind_some, receiptRule]
+  | cons row rest =>
+      simp only [step, control, NeedReference.step, suspended, alternatives, firingChoices]
+      exact branch_firing_choices machine _ _ _ _ _ _ _
 
 theorem force_cached_value_step {cell : CellId} {stack : List (Frame Resume)}
     {origin : Origin} {value : Value}

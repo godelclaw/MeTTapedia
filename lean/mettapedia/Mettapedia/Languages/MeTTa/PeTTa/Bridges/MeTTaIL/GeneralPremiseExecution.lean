@@ -1604,7 +1604,7 @@ theorem rule_agreement : ProgramAgreementOn ruleHeads RuleExecutionProgram.progr
 def sourceTypeHeadNames : List String :=
   ["==",
    "FVar",
-   "GrammarTypingV1",
+   "GrammarTypingV1", "GrammarTypingWrappedV1",
    "LCons",
    "LNil",
    "PApp",

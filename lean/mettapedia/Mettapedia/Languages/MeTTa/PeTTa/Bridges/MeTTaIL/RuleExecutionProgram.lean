@@ -29,7 +29,7 @@ def source : ProgramQuotation.QuotedProgram :=
 def premiseSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../metta/gslt/lib/gslt_premise_operations.metta"
-    sha256 "c52fb422a6eddee21458ca6a560c55cc468d4b33ac34f65418ea80df1af9616f"
+    sha256 "3c31d2c0e7c722fc24b9eab379bba9a74b80b52c8f572dad76aeb3dc2840302c"
 
 def program : Program :=
   MatchAutomataProgram.program.append (source.program.append premiseSource.program)
@@ -102,7 +102,7 @@ The quoted artifact is independent of the source execution judgments. -/
 def scopedSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../metta/gslt/lib/gslt_scoped_execution.metta"
-    sha256 "fc5299ce7c11b012277e07aff675758bb7fbd9f42ac9c9d487a6f887d074de57"
+    sha256 "42c94c5dbf89bdef0685f0a911f6372a7ef4e715fd2f55aa97abdac5d8c6a07e"
 
 def scopedProgram : Program := scopedSource.program
 

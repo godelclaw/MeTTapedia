@@ -66,7 +66,7 @@ theorem node_value (color : CostStaticColor) {Γ : List TypeExpr}
       stage Γ) (point : stage) :
     processRead color ((interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) values)).value
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) values)).value
         stage above environment point) =
       (values.map (fun value => processRead color
         ((interpret value).value stage above environment point))).sum := by
@@ -81,19 +81,20 @@ theorem row_classification {kind : CollType}
     (row : CollectionEquationGenerators.Row language kind) :
     ∃ color : CostStaticColor, row.rule = GeneratedCollectionEquationModel.parallelRule color ∧
       row.parameter = "ps" ∧ kind = .hashBag := by
+  have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp row.shape).2
   have filtered : row.rule ∈ language.terms.filter GeneratedAtomicSignatureReadout.bareCollection :=
-    List.mem_filter.mpr ⟨row.member, by rw [GeneratedAtomicSignatureReadout.bareCollection, row.shape]⟩
+    List.mem_filter.mpr ⟨row.member, by rw [GeneratedAtomicSignatureReadout.bareCollection, fullShape]⟩
   rw [GeneratedAtomicSignatureReadout.bare_inventory] at filtered
   simp only [List.mem_cons, List.mem_nil_iff, or_false] at filtered
   rcases filtered with same | same
   · refine ⟨.base, same, ?_⟩
-    have types := (GeneratedCollectionEquationModel.parallel_shape .base).symm.trans
+    have types := (GeneratedCollectionEquationModel.parallel_bare_shape .base).symm.trans
       (same ▸ row.shape)
     simp only [List.cons.injEq, TermParam.simple.injEq,
       TypeExpr.collection.injEq, and_true] at types
     exact ⟨types.1.symm, types.2.symm⟩
   · refine ⟨.wrapped, same, ?_⟩
-    have types := (GeneratedCollectionEquationModel.parallel_shape .wrapped).symm.trans
+    have types := (GeneratedCollectionEquationModel.parallel_bare_shape .wrapped).symm.trans
       (same ▸ row.shape)
     simp only [List.cons.injEq, TermParam.simple.injEq,
       TypeExpr.collection.injEq, and_true] at types
@@ -182,10 +183,10 @@ theorem permutation_fold (color : CostStaticColor) {Γ : List TypeExpr}
     (permutation : first.Perm second) :
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) first) =
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) first) =
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) second) := by
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) second) := by
   apply process_ext color
   intro stage above environment point
   rw [node_value, node_value]
@@ -197,13 +198,13 @@ theorem flatten_fold (color : CostStaticColor) {Γ : List TypeExpr}
       (.base (GeneratedCollectionEquationModel.parallelRule color).category))) :
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color)
+      (GeneratedCollectionEquationModel.parallel_bare_shape color)
       (pre ++ node (GeneratedCollectionEquationModel.parallelRule color)
         (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-        (GeneratedCollectionEquationModel.parallel_shape color) inner :: post)) =
+        (GeneratedCollectionEquationModel.parallel_bare_shape color) inner :: post)) =
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) (pre ++ inner ++ post)) := by
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) (pre ++ inner ++ post)) := by
   apply process_ext color
   intro stage above environment point
   rw [node_value, node_value]
@@ -219,7 +220,7 @@ theorem singleton_fold (color : CostStaticColor) {Γ : List TypeExpr}
       (.base (GeneratedCollectionEquationModel.parallelRule color).category)) :
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) [value]) = interpret value := by
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) [value]) = interpret value := by
   apply process_ext color
   intro stage above environment point
   rw [node_value]
@@ -258,13 +259,13 @@ theorem unit_elimination_fold (color : CostStaticColor)
       (.base (GeneratedCollectionEquationModel.parallelRule color).category))) :
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color)
+      (GeneratedCollectionEquationModel.parallel_bare_shape color)
       (pre ++ declaredUnit (GeneratedCollectionEquationModel.parallelRule color)
         .hashBag (GeneratedCollectionEquationModel.parallelAlgebra color) declaration
         (GeneratedCollectionEquationModel.unitName color) rfl :: post)) =
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) (pre ++ post)) := by
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) (pre ++ post)) := by
   apply process_ext color
   intro stage above environment point
   rw [node_value, node_value]
@@ -277,7 +278,7 @@ theorem empty_unit_fold (color : CostStaticColor)
       .hashBag (GeneratedCollectionEquationModel.parallelAlgebra color)) (Γ : List TypeExpr) :
     interpret (node (GeneratedCollectionEquationModel.parallelRule color)
       (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
-      (GeneratedCollectionEquationModel.parallel_shape color) (Γ := Γ) []) =
+      (GeneratedCollectionEquationModel.parallel_bare_shape color) (Γ := Γ) []) =
     interpret (declaredUnit (GeneratedCollectionEquationModel.parallelRule color)
       .hashBag (GeneratedCollectionEquationModel.parallelAlgebra color) declaration
       (GeneratedCollectionEquationModel.unitName color) rfl) := by

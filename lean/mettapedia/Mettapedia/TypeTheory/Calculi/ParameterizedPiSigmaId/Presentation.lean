@@ -1,4 +1,5 @@
 import Mathlib.Logic.Relation
+import Mettapedia.Logic.FinCases
 
 /-!
 # Parameterized dependent Pi/Sigma/identity syntax and judgments

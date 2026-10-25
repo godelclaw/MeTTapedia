@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.MeTTaIL.CanonicalRenaming
 import Mettapedia.OSLF.MeTTaIL.GeneralScopedMatch
+import Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachine
 
 /-!
 # Matching at canonical forms
@@ -196,6 +197,255 @@ mutual
       rw [← residual] at tailCanon
       exact .cons position inside headCanon tailCanon
   termination_by sizeOf schemas
+end
+
+/-! ## Retaining traces when the subject is already canonical -/
+
+theorem canonical_of_map_eq {patterns : List Pattern}
+    (fixed : patterns.map canon = patterns) : ∀ pattern ∈ patterns, canon pattern = pattern := by
+  induction patterns with
+  | nil => simp
+  | cons head tail ih =>
+    have parts := List.cons.inj fixed
+    intro pattern member
+    rcases List.mem_cons.mp member with rfl | later
+    · exact parts.1
+    · exact ih parts.2 pattern later
+
+theorem canonical_of_arranged {kind : CollType} {patterns : List Pattern}
+    (fixed : arrange kind (patterns.map canon) = patterns) :
+    ∀ pattern ∈ patterns, canon pattern = pattern := by
+  intro pattern member
+  have arranged : pattern ∈ arrange kind (patterns.map canon) := by rw [fixed]; exact member
+  obtain ⟨original, _, rfl⟩ := List.mem_map.mp ((arrange_mem pattern).mp arranged)
+  exact canon_idempotent original
+
+/-- Every retained residual of an already canonical collection is canonical.
+For sets, both sortedness and absence of repeated elements are inherited. -/
+theorem arranged_sublist {kind : CollType} {patterns residual : List Pattern}
+    (fixed : arrange kind (patterns.map canon) = patterns) (retained : residual.Sublist patterns) :
+    arrange kind (residual.map canon) = residual := by
+  have mapped : residual.map canon = residual := by
+    conv_rhs => rw [← List.map_id residual]
+    exact List.map_congr_left (fun pattern member => canonical_of_arranged fixed pattern (retained.subset member))
+  rw [mapped]
+  cases kind with
+  | vec => rfl
+  | hashBag =>
+    have sorted : patterns.Pairwise PatternLe := by
+      rw [← fixed]
+      exact sortLex_pairwise _
+    exact List.Perm.eq_of_pairwise' (sortLex_pairwise _) (sorted.sublist retained) (sortLex_perm _)
+  | hashSet =>
+    have sorted : patterns.Pairwise PatternLe := by
+      rw [← fixed]
+      exact (sortLex_pairwise _).sublist (List.dedup_sublist _)
+    have unique : patterns.Nodup := by rw [← fixed]; exact List.nodup_dedup _
+    have sortedResidual : sortLex residual = residual :=
+      List.Perm.eq_of_pairwise' (sortLex_pairwise _) (sorted.sublist retained) (sortLex_perm _)
+    rw [arrange_set, sortedResidual]
+    exact List.dedup_eq_self.mpr (unique.sublist retained)
+
+mutual
+  /-- On canonical subjects, canonicalizing captures preserves an ordinary
+  traced match and its exact allocation history. Unlike arbitrary-subject
+  normalization, this statement needs no set-free schema restriction. -/
+  theorem traced_matches_canonical_subject {rule : RewriteRule} {spec : RuleBindingSpec}
+      (increasing : IncreasingSpines rule spec)
+      {ambient : Nat} {site : RulePatternSite} {path : List Nat} {depth : Nat}
+      {initial final : Assignment} {schema target : Pattern}
+      {trace : List GeneralScopedMatchMachine.BagChoice}
+      (matched : GeneralScopedMatchMachine.TracedMatches rule spec ambient site path depth
+        initial schema target trace final) (canonical : canon target = target) :
+      GeneralScopedMatchMachine.TracedMatches rule spec ambient site path depth
+        (canonAssignment initial) schema target trace (canonAssignment final) := by
+    cases matched with
+    | capture captured =>
+      exact .capture (by simpa only [canonical] using capture?_canon increasing captured)
+    | bound => exact .bound
+    | constructor arguments =>
+      simp only [canon_apply, Pattern.apply.injEq, true_and] at canonical
+      exact .constructor (traced_arguments_canonical_subject increasing arguments
+        (canonical_of_map_eq canonical))
+    | binder body =>
+      simp only [canon, Pattern.lambda.injEq, true_and] at canonical
+      exact .binder (traced_matches_canonical_subject increasing body canonical)
+    | binders body =>
+      simp only [canon, Pattern.multiLambda.injEq, true_and] at canonical
+      exact .binders (traced_matches_canonical_subject increasing body canonical)
+    | substitution body replacement =>
+      simp only [canon, Pattern.subst.injEq] at canonical
+      exact .substitution
+        (traced_matches_canonical_subject increasing body canonical.1)
+        (traced_matches_canonical_subject increasing replacement canonical.2)
+    | bag notVector matching =>
+      simp only [canon_collection, Pattern.collection.injEq, true_and, and_true] at canonical
+      exact .bag notVector (traced_bag_canonical_subject increasing matching canonical)
+    | vector arguments =>
+      simp only [canon_collection, arrange_vec, Pattern.collection.injEq, true_and, and_true] at canonical
+      exact .vector (traced_arguments_canonical_subject increasing arguments (canonical_of_map_eq canonical))
+    | vectorRest arguments captured =>
+      simp only [canon_collection, arrange_vec, Pattern.collection.injEq, true_and, and_true] at canonical
+      have each := canonical_of_map_eq canonical
+      have rest := captureRest?_canon increasing captured
+      rw [arranged_sublist (kind := .vec) canonical (List.drop_sublist _ _)] at rest
+      exact .vectorRest
+        (traced_arguments_canonical_subject increasing arguments
+          (fun pattern member => each pattern (List.mem_of_mem_take member))) rest
+  termination_by sizeOf schema
+
+  theorem traced_arguments_canonical_subject {rule : RewriteRule} {spec : RuleBindingSpec}
+      (increasing : IncreasingSpines rule spec)
+      {ambient : Nat} {site : RulePatternSite} {path : List Nat} {depth index : Nat}
+      {initial final : Assignment} {schemas targets : List Pattern}
+      {trace : List GeneralScopedMatchMachine.BagChoice}
+      (matched : GeneralScopedMatchMachine.TracedArguments rule spec ambient site path depth
+        initial index schemas targets trace final)
+      (canonical : ∀ target ∈ targets, canon target = target) :
+      GeneralScopedMatchMachine.TracedArguments rule spec ambient site path depth
+        (canonAssignment initial) index schemas targets trace (canonAssignment final) := by
+    cases matched with
+    | nil => exact .nil
+    | cons head tail =>
+      exact .cons (traced_matches_canonical_subject increasing head (canonical _ List.mem_cons_self))
+        (traced_arguments_canonical_subject increasing tail
+          (fun target member => canonical target (List.mem_cons_of_mem _ member)))
+  termination_by sizeOf schemas
+
+  theorem traced_bag_canonical_subject {rule : RewriteRule} {spec : RuleBindingSpec}
+      (increasing : IncreasingSpines rule spec)
+      {ambient : Nat} {site : RulePatternSite} {path : List Nat} {depth index : Nat}
+      {initial final : Assignment} {schemas targets : List Pattern} {kind : CollType}
+      {rest : Option String} {trace : List GeneralScopedMatchMachine.BagChoice}
+      (matched : GeneralScopedMatchMachine.TracedBag rule spec ambient site path depth
+        initial index schemas rest kind targets trace final)
+      (canonical : arrange kind (targets.map canon) = targets) :
+      GeneralScopedMatchMachine.TracedBag rule spec ambient site path depth
+        (canonAssignment initial) index schemas rest kind targets trace (canonAssignment final) := by
+    cases matched with
+    | nil => exact .nil
+    | rest captured =>
+      exact .rest (by simpa only [canonical] using captureRest?_canon increasing captured)
+    | cons selected within head tail =>
+      exact .cons selected within
+        (traced_matches_canonical_subject increasing head
+          (canonical_of_arranged canonical _ (List.getElem_mem within)))
+        (traced_bag_canonical_subject increasing tail
+          (arranged_sublist canonical (List.eraseIdx_sublist _ _)))
+  termination_by sizeOf schemas
+end
+
+/-! ## Exact reads of canonical provider values -/
+
+mutual
+  /-- The existing object-template fragment, with every used occurrence
+  supplied by an increasing variable renaming. Explicit substitution needs
+  its own operation coherence; an open collection tail is not an object
+  template. The check inspects actual occurrence addresses and binder depths. -/
+  def checkCanonicalRead (rule : RewriteRule) (spec : RuleBindingSpec)
+      (site : RulePatternSite) (path : List Nat) (depth : Nat) : Pattern → Bool
+    | .fvar name =>
+        (arguments? rule spec name site path).any fun arguments =>
+          (variableSpine? depth arguments).any fun indices => decide (indices.Pairwise (· < ·))
+    | .bvar _ => true
+    | .apply _ arguments => checkCanonicalReadArgs rule spec site path depth 0 arguments
+    | .lambda _ body => checkCanonicalRead rule spec site (path ++ [0]) (depth + 1) body
+    | .multiLambda arity _ body => checkCanonicalRead rule spec site (path ++ [0]) (depth + arity) body
+    | .subst _ _ => false
+    | .collection _ elements rest => rest.isNone && checkCanonicalReadArgs rule spec site path depth 0 elements
+  termination_by pattern => sizeOf pattern
+
+  def checkCanonicalReadArgs (rule : RewriteRule) (spec : RuleBindingSpec)
+      (site : RulePatternSite) (path : List Nat) (depth index : Nat) : List Pattern → Bool
+    | [] => true
+    | pattern :: patterns =>
+        checkCanonicalRead rule spec site (path ++ [index]) depth pattern &&
+          checkCanonicalReadArgs rule spec site path depth (index + 1) patterns
+  termination_by patterns => sizeOf patterns
+end
+
+mutual
+  /-- Any checked object template which originally reads a canonical value
+  reads exactly that same value after capture normalization. The theorem is
+  structural in the entire template, rather than specific to bare variables. -/
+  theorem instantiateWith?_canonical_result (operation : Pattern → Pattern → Pattern)
+      (rule : RewriteRule) (spec : RuleBindingSpec) (ambient : Nat)
+      (site : RulePatternSite) (path : List Nat) (depth : Nat)
+      (assignment : Assignment) (pattern result : Pattern)
+      (checked : checkCanonicalRead rule spec site path depth pattern = true)
+      (read : ScopedRuleMatching.instantiateWith? operation rule spec ambient site path depth assignment pattern = some result)
+      (canonical : canon result = result) :
+      ScopedRuleMatching.instantiateWith? operation rule spec ambient site path depth
+        (canonAssignment assignment) pattern = some result := by
+    cases pattern with
+    | fvar name =>
+      simp only [checkCanonicalRead, Option.any_eq_true, decide_eq_true_eq] at checked
+      obtain ⟨arguments, declared, indices, spine, increasing⟩ := checked
+      simp only [ScopedRuleMatching.instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read ⊢
+      obtain ⟨value, found, actual, actualFound, projected⟩ := read
+      cases Option.some.inj (declared.symm.trans actualFound)
+      refine ⟨canonValue value, ?_, arguments, declared, ?_⟩
+      · rw [lookup_canonAssignment, found]; rfl
+      · simpa only [canonValue, canonical] using instantiateValue?_canon spine increasing projected
+    | bvar index => simpa only [ScopedRuleMatching.instantiateWith?] using read
+    | apply label arguments =>
+      simp only [ScopedRuleMatching.instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff,
+        Option.some.injEq] at read ⊢
+      obtain ⟨values, valuesRead, rfl⟩ := read
+      simp only [canon_apply, Pattern.apply.injEq, true_and] at canonical
+      exact ⟨values, instantiateArgsWith?_canonical_results operation rule spec ambient site path depth
+        assignment 0 arguments values (by simpa only [checkCanonicalRead] using checked) valuesRead (canonical_of_map_eq canonical), rfl⟩
+    | lambda binder body =>
+      simp only [ScopedRuleMatching.instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff,
+        Option.some.injEq] at read ⊢
+      obtain ⟨value, valueRead, rfl⟩ := read
+      simp only [canon, Pattern.lambda.injEq, true_and] at canonical
+      exact ⟨value, instantiateWith?_canonical_result operation rule spec ambient site (path ++ [0])
+        (depth + 1) assignment body value (by simpa only [checkCanonicalRead] using checked) valueRead canonical, rfl⟩
+    | multiLambda arity binders body =>
+      simp only [ScopedRuleMatching.instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff,
+        Option.some.injEq] at read ⊢
+      obtain ⟨value, valueRead, rfl⟩ := read
+      simp only [canon, Pattern.multiLambda.injEq, true_and] at canonical
+      exact ⟨value, instantiateWith?_canonical_result operation rule spec ambient site (path ++ [0])
+        (depth + arity) assignment body value (by simpa only [checkCanonicalRead] using checked) valueRead canonical, rfl⟩
+    | subst body replacement => simp only [checkCanonicalRead, Bool.false_eq_true] at checked
+    | collection kind elements rest =>
+      cases rest with
+      | some name => simp only [checkCanonicalRead, Option.isNone_some, Bool.false_and, Bool.false_eq_true] at checked
+      | none =>
+        simp only [checkCanonicalRead, Option.isNone_none, Bool.true_and] at checked
+        simp only [ScopedRuleMatching.instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff,
+          Option.some.injEq] at read ⊢
+        obtain ⟨values, valuesRead, rfl⟩ := read
+        simp only [canon_collection, Pattern.collection.injEq, true_and, and_true] at canonical
+        exact ⟨values, instantiateArgsWith?_canonical_results operation rule spec ambient site path depth
+          assignment 0 elements values checked valuesRead (canonical_of_arranged canonical), rfl⟩
+  termination_by sizeOf pattern
+
+  theorem instantiateArgsWith?_canonical_results (operation : Pattern → Pattern → Pattern)
+      (rule : RewriteRule) (spec : RuleBindingSpec) (ambient : Nat)
+      (site : RulePatternSite) (path : List Nat) (depth : Nat)
+      (assignment : Assignment) (index : Nat) (patterns results : List Pattern)
+      (checked : checkCanonicalReadArgs rule spec site path depth index patterns = true)
+      (read : ScopedRuleMatching.instantiateArgsWith? operation rule spec ambient site path depth
+        assignment index patterns = some results)
+      (canonical : ∀ result ∈ results, canon result = result) :
+      ScopedRuleMatching.instantiateArgsWith? operation rule spec ambient site path depth
+        (canonAssignment assignment) index patterns = some results := by
+    cases patterns with
+    | nil => simpa only [ScopedRuleMatching.instantiateArgsWith?] using read
+    | cons pattern patterns =>
+      simp only [checkCanonicalReadArgs, Bool.and_eq_true] at checked
+      simp only [ScopedRuleMatching.instantiateArgsWith?, Option.bind_eq_bind, Option.bind_eq_some_iff,
+        Option.some.injEq] at read ⊢
+      obtain ⟨head, headRead, tail, tailRead, rfl⟩ := read
+      exact ⟨head, instantiateWith?_canonical_result operation rule spec ambient site (path ++ [index]) depth
+        assignment pattern head checked.1 headRead (canonical head List.mem_cons_self),
+        tail, instantiateArgsWith?_canonical_results operation rule spec ambient site path depth assignment
+          (index + 1) patterns tail checked.2 tailRead
+          (fun result member => canonical result (List.mem_cons_of_mem _ member)), rfl⟩
+  termination_by sizeOf patterns
 end
 
 end Mettapedia.OSLF.MeTTaIL.CanonicalBags

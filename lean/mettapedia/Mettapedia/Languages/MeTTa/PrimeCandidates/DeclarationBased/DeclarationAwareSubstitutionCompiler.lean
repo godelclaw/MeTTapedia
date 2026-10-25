@@ -381,8 +381,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
            instantiateRule?, CalculusLanguageDef.lookupRule?,
            instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
            instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
-           encodeNat_argumentValid, weakensAt, indexLt, tmVar, encodeNat,
-           zero, succ, ruleId, below,
+           encodeNat_argumentValid, weakensAt, indexLt, tmVar,            ruleId, below,
            DeclarationAwareDataLanguage.checked,
            DeclarationAwareDataLanguage.definition]
         simpa [definition, substitutionExtension,
@@ -404,7 +403,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
            instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
            instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
            encodeNat_argumentValid, weakensAt, indexLt, tmVar, encodeNat,
-           zero, succ, ruleId, below,
+           succ, ruleId, below,
            DeclarationAwareDataLanguage.checked,
            DeclarationAwareDataLanguage.definition]
         simpa [definition, substitutionExtension,
@@ -425,8 +424,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
          instantiateRule?, CalculusLanguageDef.lookupRule?,
          instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
          instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
-         encodeNat_argumentValid, encodeDeclName_ground,
-         encodeDeclName_canonical, weakensAt, tmConst, ruleId,
+         encodeNat_argumentValid,          weakensAt, tmConst, ruleId,
          DeclarationAwareDataLanguage.checked,
          DeclarationAwareDataLanguage.definition]
   | head head =>
@@ -440,8 +438,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
          instantiateRule?, CalculusLanguageDef.lookupRule?,
          instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
          instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
-         encodeNat_argumentValid, encodeTowerHead_argumentValid,
-         weakensAt, tmHead, ruleId,
+         encodeNat_argumentValid,          weakensAt, tmHead, ruleId,
          DeclarationAwareDataLanguage.checked,
          DeclarationAwareDataLanguage.definition]
   | pi domain body domainIH bodyIH =>
@@ -456,7 +453,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
          instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
          instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
          encodeNat_argumentValid, encodeRaw_argumentValid,
-         weakensAt, tmPi, succ, encodeNat, ruleId,
+         weakensAt, tmPi, succ, ruleId,
          DeclarationAwareDataLanguage.checked,
          DeclarationAwareDataLanguage.definition]
       exact ⟨domainIH cutoff, bodyIH (cutoff + 1)⟩
@@ -472,7 +469,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
          instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
          instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
          encodeNat_argumentValid, encodeRaw_argumentValid,
-         weakensAt, tmSigma, succ, encodeNat, ruleId,
+         weakensAt, tmSigma, succ, ruleId,
          DeclarationAwareDataLanguage.checked,
          DeclarationAwareDataLanguage.definition]
       exact ⟨domainIH cutoff, bodyIH (cutoff + 1)⟩
@@ -504,7 +501,7 @@ theorem weakenRawProof_accepts (cutoff : Nat) (term : RawTerm) :
          instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
          instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
          encodeNat_argumentValid, encodeRaw_argumentValid,
-         weakensAt, tmLam, succ, encodeNat, ruleId,
+         weakensAt, tmLam, succ, ruleId,
          DeclarationAwareDataLanguage.checked,
          DeclarationAwareDataLanguage.definition]
       exact bodyIH (cutoff + 1)
@@ -755,8 +752,8 @@ theorem substituteRawProof_accepts
              instantiateSchema?, instantiateSchemaAt?, instantiateSchemas?,
              instantiateSchemasAt?, lookupArgumentAt?, argumentsValidAt,
              encodeNat_argumentValid, encodeRaw_argumentValid,
-             substitutesAt, indexLt, tmVar, succ, encodeNat, equal, below,
-             above, ruleId,
+             substitutesAt, indexLt, tmVar, succ, equal, below,
+             ruleId,
              DeclarationAwareDataLanguage.checked,
              DeclarationAwareDataLanguage.definition]
           constructor

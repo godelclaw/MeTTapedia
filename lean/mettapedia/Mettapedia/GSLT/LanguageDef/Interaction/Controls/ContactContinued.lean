@@ -213,7 +213,7 @@ theorem bareContinuationRetyping_redexRetypable :
   apply HasType.constructor (rule := costBaseConstructor bareCut terms[7])
   · exact bareContinuationRetyping.costBaseConstructor_mem_generated terms[7]
       (List.getElem_mem (by decide))
-  · simp [UsesBareCollection, bare_costBaseJoin_params]
+  · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, bare_costBaseJoin_params]
   · rw [bare_costBaseJoin_params]
     apply ArgumentsHaveTypes.cons
     · trivial
@@ -221,7 +221,7 @@ theorem bareContinuationRetyping_redexRetypable :
     · apply HasType.constructor (rule := costBaseConstructor bareCut terms[5])
       · exact bareContinuationRetyping.costBaseConstructor_mem_generated terms[5]
           (List.getElem_mem (by decide))
-      · simp [UsesBareCollection, bare_costBaseIn_params]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, bare_costBaseIn_params]
       · rw [bare_costBaseIn_params]
         exact .cons trivial rfl (HasType.fvar rfl) .nil
     · apply ArgumentsHaveTypes.cons
@@ -230,7 +230,7 @@ theorem bareContinuationRetyping_redexRetypable :
       · apply HasType.constructor (rule := costBaseConstructor bareCut terms[6])
         · exact bareContinuationRetyping.costBaseConstructor_mem_generated terms[6]
             (List.getElem_mem (by decide))
-        · simp [UsesBareCollection, bare_costBaseOut_params]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, bare_costBaseOut_params]
         · rw [bare_costBaseOut_params]
           exact .cons trivial rfl (HasType.fvar rfl) .nil
       · exact .nil

@@ -12,6 +12,8 @@ import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceSpec
 import Mettapedia.Machines.BranchLocalNeed.Weighted.WeightedRelNeedModel
 import Mettapedia.Machines.BranchLocalNeed.Weighted.TypedFragmentAdequacy
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceAdequacy
+import Mettapedia.Machines.BranchLocalNeed.WeightedResumption
+import Mettapedia.GSLT.Core.NonFactorization
 
 /-!
 # Stress Tests (5a–5d) and Commitment Agreement & Support Theorems (Task 6)
@@ -152,6 +154,13 @@ theorem ThunkWeb.length_toList_le {A : Type _} :
   | _ + 1, .inl () => Nat.zero_le _
   | _ + 1, .inr (_, rest) => Nat.succ_le_succ (ThunkWeb.length_toList_le rest)
 
+/-- Quote a force of the captured cell and activate that code twice. -/
+def capturedCellBody : Comp :=
+  .seq (.quote (.force (.var 0)))
+    (.seq (.run (.var 0))
+      (.seq (.run (.var 1))
+        (.ret (vPair (.var 1) (.var 0)))))
+
 /-- **Task 5(a) Program (`capturedCellInCode`):**
 A `need` cell `c := need coin` is created outside `quote`, captured inside
 `q := quote (force (.var 0))`, and `q` is `run` twice in sequence:
@@ -163,12 +172,11 @@ A `need` cell `c := need coin` is created outside `quote`, captured inside
 4. `seq (run (.var 1))` runs `.code 1` a second time (reading the already committed `.need 0`!),
    binding `y` at `.var 0` in `ρ₄ = [y, x, .code 1, .need 0]`;
 5. `ret (vPair (.var 1) (.var 0))` returns `valPair x y`. -/
-def capturedCellInCode : Comp :=
-  .need NeedScopeComp.coinComp
-    (.seq (.quote (.force (.var 0)))
-      (.seq (.run (.var 0))
-        (.seq (.run (.var 1))
-          (.ret (vPair (.var 1) (.var 0))))))
+def capturedCellInCode : Comp := .need NeedScopeComp.coinComp capturedCellBody
+
+/-- The same quoted consumer, with its captured suspension resampled on each
+force rather than committed on the first force. -/
+def resampledCellInCode : Comp := .delay NeedScopeComp.coinComp capturedCellBody
 
 /-- `Rel_ℕ` model prediction for `capturedCellInCode`:
 Even though `q` is `run` twice, the captured outer cell `c : NeedWeb Bool` is contracted
@@ -1076,5 +1084,168 @@ theorem machine_unused_failure_separates_need_and_eager (P : Program) :
     ((eagerRun fuel ((le_max_right _ _).trans enough)).2.1 false).trans eagerCount⟩
 
 end MachineAdequacy
+
+/-! ## Probabilities of actual shared and resampled machine executions -/
+
+namespace ProbabilityControls
+
+open NeedReference NeedWeightedResumption Stochastic
+open Mettapedia.GSLT.Dynamics WeightedResumption WeightedBranchingResumption
+open scoped NNReal ENNReal NNRat
+
+abbrev Occurrence := WorkState (Comp × MEnv) MLocal MResume MRule MVal Empty MFault Nat
+
+def initial (code : Comp) : Occurrence := ⟨initialMachine code, []⟩
+
+/-- Observe Boolean constructor pairs only after return. The probability law
+before this readout still retains every pending state and fault in full. -/
+def pairReadout : Occurrence ⊕ Occurrence → Option (Bool × Bool)
+  | .inl finished =>
+    match finished.state.control with
+    | .halted (.value value) =>
+      if value = MachineAdequacy.groundValue (G := .pair .bool .bool) (false, false) then
+        some (false, false)
+      else if value = MachineAdequacy.groundValue (G := .pair .bool .bool) (false, true) then
+        some (false, true)
+      else if value = MachineAdequacy.groundValue (G := .pair .bool .bool) (true, false) then
+        some (true, false)
+      else if value = MachineAdequacy.groundValue (G := .pair .bool .bool) (true, true) then
+        some (true, true)
+      else none
+    | _ => none
+  | .inr _ => none
+
+def rationalRows (fuel : Nat) (code : Comp) :=
+  contributions (uniformSource (machineSpec []) ℚ≥0) fuel (initial code)
+
+def pairRows (fuel : Nat) (code : Comp) :=
+  (rationalRows fuel code).map fun row => (pairReadout row.1, row.2)
+
+/-- The list is calculated by the existing reference machine, including each
+local choice's factor, rather than chosen from the expected distribution. -/
+theorem captured_rows : pairRows 50 capturedCellInCode =
+    [(some (false, false), 1 / 2), (some (true, true), 1 / 2)] := by decide +kernel
+
+theorem resampled_rows : pairRows 50 resampledCellInCode =
+    [(some (false, false), 1 / 4), (some (false, true), 1 / 4),
+      (some (true, false), 1 / 4), (some (true, true), 1 / 4)] := by decide +kernel
+
+theorem captured_completed :
+    (rationalRows 50 capturedCellInCode).all (fun row => row.1.isLeft) = true := by decide +kernel
+
+theorem resampled_completed :
+    (rationalRows 50 resampledCellInCode).all (fun row => row.1.isLeft) = true := by decide +kernel
+
+noncomputable def pairLaw (fuel : Nat) (code : Comp) : PMF (Option (Bool × Bool)) :=
+  (uniformLaw (machineSpec []) fuel (initial code)).map pairReadout
+
+theorem pairLaw_map_apply {Observed : Type*} [DecidableEq Observed]
+    (fuel : Nat) (code : Comp) (readout : Option (Bool × Bool) → Observed) (answer : Observed) :
+    ((pairLaw fuel code).map readout) answer =
+      (((((pairRows fuel code).map fun row =>
+        if answer = readout row.1 then row.2 else 0).sum : ℚ≥0) : ℝ≥0) : ℝ≥0∞) := by
+  rw [pairLaw, PMF.map_comp, uniformLaw_map_apply]
+  simp only [pairRows, rationalRows, List.map_map, Function.comp_def]
+  apply congrArg (fun weights : List ℚ≥0 => ((weights.sum : ℝ≥0) : ℝ≥0∞))
+  apply List.map_congr_left
+  intro row _
+  split_ifs <;> rfl
+
+theorem pairLaw_apply (fuel : Nat) (code : Comp) (answer : Option (Bool × Bool)) :
+    pairLaw fuel code answer =
+      (((((pairRows fuel code).map fun row =>
+        if answer = row.1 then row.2 else 0).sum : ℚ≥0) : ℝ≥0) : ℝ≥0∞) := by
+  simpa only [PMF.map_id, id_eq] using pairLaw_map_apply fuel code id answer
+
+private theorem pairLaw_stable (code : Comp)
+    (completed : (rationalRows 50 code).all (fun row => row.1.isLeft) = true)
+    (fuel : Nat) (enough : 50 ≤ fuel) : pairLaw fuel code = pairLaw 50 code := by
+  obtain ⟨extra, rfl⟩ := Nat.exists_eq_add_of_le enough
+  exact congrArg (fun probability => probability.map pairReadout)
+    (uniformLaw_stable (machineSpec []) 50 extra (initial code) completed)
+
+/-- All sufficiently large budgets give the correlated diagonal law. -/
+theorem captured_probability (fuel : Nat) (enough : 50 ≤ fuel) (first second : Bool) :
+    pairLaw fuel capturedCellInCode (some (first, second)) =
+      if first = second then 1 / 2 else 0 := by
+  rw [pairLaw_stable _ captured_completed fuel enough, pairLaw_apply, captured_rows]
+  cases first <;> cases second <;> norm_num
+
+/-- The same quoted consumer with a resampled capture gives four equal masses. -/
+theorem resampled_probability (fuel : Nat) (enough : 50 ≤ fuel) (first second : Bool) :
+    pairLaw fuel resampledCellInCode (some (first, second)) = 1 / 4 := by
+  rw [pairLaw_stable _ resampled_completed fuel enough, pairLaw_apply, resampled_rows]
+  cases first <;> cases second <;> norm_num
+
+theorem no_unreturned_mass (fuel : Nat) (enough : 50 ≤ fuel) :
+    pairLaw fuel capturedCellInCode none = 0 ∧ pairLaw fuel resampledCellInCode none = 0 := by
+  rw [pairLaw_stable _ captured_completed fuel enough,
+    pairLaw_stable _ resampled_completed fuel enough]
+  simp only [pairLaw_apply, captured_rows, resampled_rows]
+  norm_num
+  decide
+
+def coordinate (first : Bool) : Option (Bool × Bool) → Option Bool :=
+  Option.map fun pair => if first then pair.1 else pair.2
+
+/-- Each individual observation is fair under both programs. This does not
+determine their joint law or authorize replacing a retained capture. -/
+theorem same_marginals (fuel : Nat) (enough : 50 ≤ fuel) (first : Bool) :
+    (pairLaw fuel capturedCellInCode).map (coordinate first) =
+      (pairLaw fuel resampledCellInCode).map (coordinate first) := by
+  rw [pairLaw_stable _ captured_completed fuel enough,
+    pairLaw_stable _ resampled_completed fuel enough]
+  ext answer
+  rw [pairLaw_map_apply, pairLaw_map_apply, captured_rows, resampled_rows]
+  cases first <;> cases answer with
+  | none => simp [coordinate]
+  | some value => cases value <;> norm_num [coordinate]
+
+theorem different_joint (fuel : Nat) (enough : 50 ≤ fuel) :
+    pairLaw fuel capturedCellInCode ≠ pairLaw fuel resampledCellInCode := by
+  intro same
+  have different := congrArg (fun probability => probability (some (false, true))) same
+  rw [captured_probability fuel enough, resampled_probability fuel enough] at different
+  have realDifferent := congrArg ENNReal.toReal different
+  norm_num at realDifferent
+
+/-- The existing distinction-theoretic nonfactorization criterion applies to
+actual machine observations: no function of one marginal recovers every joint. -/
+theorem joint_not_factors_marginal (fuel : Nat) (enough : 50 ≤ fuel) (first : Bool) :
+    ¬ Mettapedia.GSLT.Core.NonFactorization.Factors
+      (fun code => (pairLaw fuel code).map (coordinate first)) (pairLaw fuel) := by
+  apply Mettapedia.GSLT.Core.NonFactorization.NonTrivialFiber.not_factors
+  exact ⟨capturedCellInCode, resampledCellInCode,
+    same_marginals fuel enough first, different_joint fuel enough⟩
+
+/-- The full retained-machine resumption law specializes to every cut of
+these programs, including cuts before and after the first shared production. -/
+theorem resumed_pairLaw (code : Comp) (first second : Nat) :
+    ((uniformLaw (machineSpec []) first (initial code)).bind
+      (Mettapedia.GSLT.Dynamics.ProbabilisticResumption.resumeLaw
+        (uniformSource (machineSpec []) ℝ≥0) (uniformSource_normalized (machineSpec [])) second)).map
+        pairReadout = pairLaw (first + second) code := by
+  rw [← uniformLaw_resume]
+  rfl
+
+theorem resumed_captured_probability (first second : Nat) (enough : 50 ≤ first + second)
+    (left right : Bool) :
+    (((uniformLaw (machineSpec []) first (initial capturedCellInCode)).bind
+      (Mettapedia.GSLT.Dynamics.ProbabilisticResumption.resumeLaw
+        (uniformSource (machineSpec []) ℝ≥0) (uniformSource_normalized (machineSpec [])) second)).map
+        pairReadout) (some (left, right)) = if left = right then 1 / 2 else 0 := by
+  rw [resumed_pairLaw]
+  exact captured_probability _ enough left right
+
+theorem resumed_resampled_probability (first second : Nat) (enough : 50 ≤ first + second)
+    (left right : Bool) :
+    (((uniformLaw (machineSpec []) first (initial resampledCellInCode)).bind
+      (Mettapedia.GSLT.Dynamics.ProbabilisticResumption.resumeLaw
+        (uniformSource (machineSpec []) ℝ≥0) (uniformSource_normalized (machineSpec [])) second)).map
+        pairReadout) (some (left, right)) = 1 / 4 := by
+  rw [resumed_pairLaw]
+  exact resampled_probability _ enough left right
+
+end ProbabilityControls
 
 end Mettapedia.Machines.BranchLocalNeed.Weighted

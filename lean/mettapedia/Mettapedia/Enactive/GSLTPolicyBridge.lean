@@ -1,9 +1,9 @@
-import Mettapedia.Enactive.Bennett2023
+import Mettapedia.Enactive.SemanticClosure
 import Mettapedia.Enactive.RelationalSupport
 import Mettapedia.GSLT.Core.PolicyFamilyTransport
 
 /-!
-# Completion queries as a GSLT policy family
+# World and completion queries as GSLT policy families
 
 Michael Timothy Bennett's task policies are aspects whose completion cones
 select correct outputs.  A `GSLT.Core.PolicyFamily` is a different object: it
@@ -16,6 +16,11 @@ characteristic function of the state's extension.  Thus Bennett's extension
 becomes an instance of the existing least-sufficient-readout theory, and
 relation embeddings transport every completion query naturally.  A concrete
 non-surjective presentation map shows why reflection still requires coverage.
+
+World queries ask which worlds realize a statement instead. Their least
+sufficient readout is semantic closure. It supports all completion queries
+only in layers where every statement is already closed: logical redundancy
+can be invisible to worlds while remaining visible to completion observers.
 -/
 
 set_option autoImplicit false
@@ -266,6 +271,136 @@ theorem nonsurjective_map_can_hide_completion_refusal :
     bool_completion_queries_refuse_collapsed⟩
 
 end Bennett
+
+namespace WorldQuery
+
+universe uWorld
+variable {World : Type uWorld} [Fintype World] [DecidableEq World]
+
+/-- The observer asks whether a named world realizes every authored fact. -/
+abbrev family (layer : Finite.Layer World) : PolicyFamily layer.Statement where
+  Policy := World
+  Result := fun _ => Bool
+  decide := fun world source => Finite.realizesB world source.val
+
+/-- The closed fact set is an observation, rather than a replacement for the
+authored statement and its completion opportunities. -/
+def closureReadout (layer : Finite.Layer World) (source : layer.Statement) :
+    Finset (Finset World) := (layer.semanticClosure source).val
+
+/-- An executable world-query runner over closed facts. -/
+def closureRealization (layer : Finite.Layer World) :
+    (family layer).ReadoutRealization (closureReadout layer) where
+  run := fun world facts => Finite.realizesB world facts
+  agrees := fun world source =>
+    decide_eq_decide.mpr (layer.realizes_semanticClosure_iff source world)
+
+theorem supports_closure (layer : Finite.Layer World) :
+    (family layer).SupportsReadout (closureReadout layer) :=
+  ⟨closureRealization layer⟩
+
+/-- Recover the available consequences from the complete world-answer vector.
+The raw finset codomain does not require a realizing world for arbitrary,
+possibly unreachable answer vectors. -/
+def closureFromWorldAnswers (layer : Finite.Layer World) (answers : World → Bool) :
+    Finset (Finset World) :=
+  layer.vocabulary.filter fun fact => ∀ world, answers world = true → world ∈ fact
+
+theorem closureFromWorldAnswers_vector (layer : Finite.Layer World) (source : layer.Statement) :
+    closureFromWorldAnswers layer ((family layer).vector source) = closureReadout layer source := by
+  ext fact
+  simp only [closureFromWorldAnswers, Finset.mem_filter, closureReadout,
+    Finite.Layer.mem_semanticClosure]
+  change (fact ∈ layer.vocabulary ∧
+    ∀ world, decide (Finite.Realizes world source.val) = true → world ∈ fact) ↔ _
+  simp only [decide_eq_true_eq]
+
+/-- Closure is sufficient for world queries, and every sufficient readout
+recovers it. This is the existing policy-family factorization criterion. -/
+theorem closure_isLeastSufficient (layer : Finite.Layer World) :
+    (family layer).SupportsReadout (closureReadout layer) ∧
+      ∀ (Readout : Type*) (readout : layer.Statement → Readout),
+        (family layer).SupportsReadout readout →
+          NonFactorization.Factors readout (closureReadout layer) := by
+  refine ⟨supports_closure layer, ?_⟩
+  intro Readout readout supported
+  obtain ⟨recover, agrees⟩ := ((family layer).supportsReadout_iff_vectorFactors readout).mp supported
+  exact ⟨closureFromWorldAnswers layer ∘ recover, fun source => by
+    rw [Function.comp_apply, agrees, closureFromWorldAnswers_vector]⟩
+
+/-- The closed fact set identifies precisely the states indistinguishable by
+all world queries. -/
+theorem vector_eq_iff_closure_eq (layer : Finite.Layer World) (left right : layer.Statement) :
+    (family layer).vector left = (family layer).vector right ↔
+      layer.semanticClosure left = layer.semanticClosure right := by
+  constructor
+  · intro equal
+    apply Subtype.ext
+    change closureReadout layer left = closureReadout layer right
+    rw [← closureFromWorldAnswers_vector, ← closureFromWorldAnswers_vector, equal]
+  · intro equal
+    exact (closureRealization layer).vectorFactors.constantOnFibers left right
+      (congrArg Subtype.val equal)
+
+/-- Completion queries can use the semantic quotient exactly when that
+quotient forgets no authored statement. -/
+theorem completionQueries_support_closure_iff (layer : Finite.Layer World) :
+    (Bennett.completionQueries layer).SupportsReadout (closureReadout layer) ↔
+      ∀ source, layer.semanticClosure source = source := by
+  constructor
+  · rintro ⟨runner⟩ source
+    apply Bennett.completionQueryVector_injective layer
+    exact runner.vectorFactors.constantOnFibers (layer.semanticClosure source) source
+      (congrArg Subtype.val (layer.semanticClosure_idem source))
+  · intro closed
+    refine ⟨{
+      run := fun candidate facts => decide (facts ⊆ candidate.val)
+      agrees := ?_ }⟩
+    intro candidate source
+    change decide ((layer.semanticClosure source).val ⊆ candidate.val) =
+      decide (source.val ⊆ candidate.val)
+    rw [closed source]
+
+namespace Canary
+
+open Mettapedia.Enactive.Finite.Canary
+
+theorem same_world_answers :
+    (family boolLayer).vector trueStatement =
+      (family boolLayer).vector (boolLayer.semanticClosure trueStatement) :=
+  (vector_eq_iff_closure_eq boolLayer _ _).mpr (boolLayer.semanticClosure_idem _).symm
+
+/-- The original statement completes itself, but not the larger closed statement. -/
+theorem different_completion_answers :
+    (Bennett.completionQueries boolLayer).decide trueStatement trueStatement = true ∧
+      (Bennett.completionQueries boolLayer).decide trueStatement
+        (boolLayer.semanticClosure trueStatement) = false := by
+  change decide (trueStatement.val ⊆ trueStatement.val) = true ∧
+    decide ((boolLayer.semanticClosure trueStatement).val ⊆ trueStatement.val) = false
+  decide
+
+/-- The decoder can receive an impossible answer vector, but never packages
+its contradictory facts as a realizable statement. -/
+theorem impossible_answers_not_statement :
+    closureFromWorldAnswers boolLayer (fun _ => false) ∉ boolLayer.statements := by decide
+
+theorem closure_refuses_completion_queries :
+    ¬ (Bennett.completionQueries boolLayer).SupportsReadout (closureReadout boolLayer) := by
+  rw [completionQueries_support_closure_iff]
+  intro closed
+  exact Finite.Layer.Canary.semanticClosure_changes_statement (closed trueStatement)
+
+/-- The identity-closure boundary is attained, rather than merely necessary. -/
+theorem singleton_supports_completion_queries :
+    (Bennett.completionQueries RelationalSupport.Completion.singletonLayer).SupportsReadout
+      (closureReadout RelationalSupport.Completion.singletonLayer) := by
+  rw [completionQueries_support_closure_iff]
+  intro source
+  exact (RelationalSupport.Completion.singletonLayer_statement_eq _).trans
+    (RelationalSupport.Completion.singletonLayer_statement_eq source).symm
+
+end Canary
+end WorldQuery
 
 #print axioms CompletionQuery.vector_injective_of_reflexive_antisymmetric
 #print axioms CompletionQuery.supportsReadout_iff_of_relEmbedding

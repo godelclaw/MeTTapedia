@@ -51,7 +51,9 @@ def check (plan : Plan) : Bool :=
   (inheritedObligations plan).isEmpty &&
     (!plan.permissions.sites.collectionKinds.contains .hashSet &&
       (plan.rules.all (fun rule => ruleReady rule.rule) &&
-        plan.equations.all (fun equation => setFreeEquation equation.authored)))
+        (plan.rules.all (fun rule =>
+          RuleBinding.admittedFor rule.rule rule.binding.spec) &&
+          plan.equations.all (fun equation => setFreeEquation equation.authored))))
 
 structure Certificate (plan : Plan) : Type where
   checked : check plan = true
@@ -69,6 +71,8 @@ theorem inherited_discharged {plan : Plan} (certificate : Certificate plan) :
   have parts : (inheritedObligations plan).isEmpty = true ∧
       (!plan.permissions.sites.collectionKinds.contains .hashSet) = true ∧
       plan.rules.all (fun rule => ruleReady rule.rule) = true ∧
+      plan.rules.all (fun rule =>
+        RuleBinding.admittedFor rule.rule rule.binding.spec) = true ∧
       plan.equations.all (fun equation => setFreeEquation equation.authored) = true := by
     simpa only [check, Bool.and_eq_true] using checked
   exact List.isEmpty_iff.mp parts.1
@@ -79,6 +83,8 @@ theorem no_set_descent {plan : Plan} (certificate : Certificate plan) :
   have parts : (inheritedObligations plan).isEmpty = true ∧
       (!plan.permissions.sites.collectionKinds.contains .hashSet) = true ∧
       plan.rules.all (fun rule => ruleReady rule.rule) = true ∧
+      plan.rules.all (fun rule =>
+        RuleBinding.admittedFor rule.rule rule.binding.spec) = true ∧
       plan.equations.all (fun equation => setFreeEquation equation.authored) = true := by
     simpa only [check, Bool.and_eq_true] using checked
   simpa [NoSetDescent] using parts.2.1
@@ -89,9 +95,24 @@ theorem rules_ready {plan : Plan} (certificate : Certificate plan) {rule : RuleP
   have parts : (inheritedObligations plan).isEmpty = true ∧
       (!plan.permissions.sites.collectionKinds.contains .hashSet) = true ∧
       plan.rules.all (fun rule => ruleReady rule.rule) = true ∧
+      plan.rules.all (fun rule =>
+        RuleBinding.admittedFor rule.rule rule.binding.spec) = true ∧
       plan.equations.all (fun equation => setFreeEquation equation.authored) = true := by
     simpa only [check, Bool.and_eq_true] using checked
   exact List.all_eq_true.mp parts.2.2.1 rule member
+
+theorem rules_admitted {plan : Plan} (certificate : Certificate plan) {rule : RulePlan}
+    (member : rule ∈ plan.rules) :
+    RuleBinding.admittedFor rule.rule rule.binding.spec = true := by
+  have checked := certificate.checked
+  have parts : (inheritedObligations plan).isEmpty = true ∧
+      (!plan.permissions.sites.collectionKinds.contains .hashSet) = true ∧
+      plan.rules.all (fun rule => ruleReady rule.rule) = true ∧
+      plan.rules.all (fun rule =>
+        RuleBinding.admittedFor rule.rule rule.binding.spec) = true ∧
+      plan.equations.all (fun equation => setFreeEquation equation.authored) = true := by
+    simpa only [check, Bool.and_eq_true] using checked
+  exact List.all_eq_true.mp parts.2.2.2.1 rule member
 
 theorem root_set_rule_unconditional {plan : Plan} (certificate : Certificate plan)
     {declaration : RulePlan} (member : declaration ∈ plan.rules)
@@ -113,9 +134,11 @@ theorem equations_set_free {plan : Plan} (certificate : Certificate plan)
   have parts : (inheritedObligations plan).isEmpty = true ∧
       (!plan.permissions.sites.collectionKinds.contains .hashSet) = true ∧
       plan.rules.all (fun rule => ruleReady rule.rule) = true ∧
+      plan.rules.all (fun rule =>
+        RuleBinding.admittedFor rule.rule rule.binding.spec) = true ∧
       plan.equations.all (fun equation => setFreeEquation equation.authored) = true := by
     simpa only [check, Bool.and_eq_true] using checked
-  exact List.all_eq_true.mp parts.2.2.2 equation member
+  exact List.all_eq_true.mp parts.2.2.2.2 equation member
 
 /-- A source-derived request for the admitted root-collection matcher. The
 selected declaration and its inferred binding specification remain intact. -/
@@ -161,6 +184,33 @@ theorem request?_unordered {plan : Plan} {certificate : Certificate plan}
       cases made
       intro impossible
       cases impossible
+
+theorem arrange_fixed (kind : CollType) (items : List Pattern) :
+    arrange kind (arrange kind items) = arrange kind items := by
+  cases kind with
+  | vec => rfl
+  | hashBag =>
+      simp only [arrange_bag]
+      exact PatternLexOrder.sortLex_eq_of_perm
+        (PatternLexOrder.sortLex_perm items)
+  | hashSet =>
+      rw [arrange_set, arrange_set]
+      have sorted : PatternLexOrder.sortLex
+          (PatternLexOrder.sortLex items).dedup =
+          (PatternLexOrder.sortLex items).dedup :=
+        List.Perm.eq_of_pairwise'
+          (PatternLexOrder.sortLex_pairwise _)
+          ((PatternLexOrder.sortLex_pairwise items).sublist (List.dedup_sublist _))
+          (PatternLexOrder.sortLex_perm _)
+      rw [sorted, List.dedup_idem]
+
+theorem request?_fixed {plan : Plan} {certificate : Certificate plan}
+    {ordinal : Nat} {targets : List Pattern} {request : ScopedCollectionMachine.Request}
+    (made : request? plan certificate ordinal targets = some request) :
+    arrange request.kind request.targets = request.targets := by
+  obtain ⟨_, _, _, _, targetEq⟩ := request?_selected made
+  rw [targetEq]
+  exact arrange_fixed request.kind targets
 
 /-- Dispatch a concrete root collection only to rules declaring the same
 collection kind. Source wrappers and open collection rests are rejected. -/
@@ -212,6 +262,14 @@ theorem requestForSource?_target {plan : Plan} {certificate : Certificate plan}
                 exact ⟨targets, by rw [same], targetEq⟩
               · simp [generated, same] at made
   | _ => simp [requestForSource?] at made
+
+theorem requestForSource?_fixed {plan : Plan} {certificate : Certificate plan}
+    {ordinal : Nat} {source : Pattern} {request : ScopedCollectionMachine.Request}
+    (made : requestForSource? plan certificate ordinal source = some request) :
+    arrange request.kind request.targets = request.targets := by
+  obtain ⟨targets, _, targetEq⟩ := requestForSource?_target made
+  rw [targetEq]
+  exact arrange_fixed request.kind targets
 
 theorem requestForSource?_requested {plan : Plan} {certificate : Certificate plan}
     {ordinal : Nat} {source : Pattern} {request : ScopedCollectionMachine.Request}

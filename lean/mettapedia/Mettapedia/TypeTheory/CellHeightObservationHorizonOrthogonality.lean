@@ -17,7 +17,7 @@ finite determination.  Consequently neither axis implies the other.
 The examples use the standard thin-below/thick-next globular towers and
 Cantor-prefix observations.  They are logical independence controls, not a
 claim that these two structures must be combined by a particular product in
-the eventual Prime semantics.
+any Prime candidate's semantics.
 -/
 
 set_option autoImplicit false

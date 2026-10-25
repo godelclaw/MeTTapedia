@@ -56,7 +56,7 @@ inductive ConstructorValue (language : LanguageDef) (free : FreeTypeContext)
       (typed : ArgumentsHaveTypes language free bound arguments declaration.params)
   | collection (parameterName : String) (kind : CollType) (elementType : TypeExpr)
       (elements : List Pattern) (rest : Option String)
-      (shape : declaration.params =
+      (shape : declaration.bareParams =
         [.simple parameterName (.collection kind elementType)])
       (typed : ElementsHaveType language free bound elements elementType)
 
@@ -87,7 +87,7 @@ theorem arguments_typed (value : ConstructorValue language free bound declaratio
   cases value with
   | ordinary arguments ordinary typed => exact typed
   | collection parameterName kind elementType elements rest shape typed =>
-      rw [shape]
+      rw [(GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2]
       exact .cons trivial rfl (.collection typed) .nil
 
 theorem arguments_length (value : ConstructorValue language free bound declaration) :
@@ -116,7 +116,7 @@ theorem structural_former_exact (language : LanguageDef) (free : FreeTypeContext
           ArgumentsHaveTypes language free bound arguments former.declaration.params ∧
           equation term (.apply former.declaration.label arguments)) ∨
         ∃ parameterName kind elementType elements rest,
-          former.declaration.params =
+          former.declaration.bareParams =
             [.simple parameterName (.collection kind elementType)] ∧
           ElementsHaveType language free bound elements elementType ∧
           equation term (.collection kind elements rest)) := by

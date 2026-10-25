@@ -88,7 +88,7 @@ theorem communicationDecoration_redexRetypable : communicationDecoration.RedexRe
     · apply HasType.constructor
         (rule := communicationDecoration.baseConstructor rhoCalc.terms[5])
       · exact communicationDecoration.baseConstructor_mem _ rhoSyncInputConstructor.2
-      · simp [UsesBareCollection, communicationDecoration_input_parameters]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, communicationDecoration_input_parameters]
       · rw [communicationDecoration_input_parameters]
         exact .cons trivial rfl (HasType.fvar rfl)
           (.cons trivial rfl (HasType.lambda (HasType.fvar rfl)) .nil)
@@ -96,7 +96,7 @@ theorem communicationDecoration_redexRetypable : communicationDecoration.RedexRe
       · apply HasType.constructor
           (rule := communicationDecoration.baseConstructor rhoSyncOutputRule)
         · exact communicationDecoration.baseConstructor_mem _ rhoSyncOutputConstructor.2
-        · simp [UsesBareCollection, communicationDecoration_output_parameters]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, communicationDecoration_output_parameters]
         · rw [communicationDecoration_output_parameters]
           exact .cons trivial rfl (HasType.fvar rfl)
             (.cons trivial rfl (HasType.fvar rfl) (.cons trivial rfl (HasType.fvar rfl) .nil))
@@ -136,7 +136,7 @@ theorem communicationDecoration_wrappable : communicationDecoration.Wrappable :=
         · exact communicationDecoration.wrappedConstructor_mem rhoSyncQuoteConstructor
             (mem_continuationConstructors_of_label_ne rhoSyncInteractionCut rhoSyncQuoteConstructor
               (by decide) (by decide))
-        · simp [UsesBareCollection, rhoSync_costWrappedQuote_params]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, rhoSync_costWrappedQuote_params]
         · rw [rhoSync_costWrappedQuote_params]
           exact .cons trivial rfl (HasType.fvar rfl) .nil
     · exact .cons (HasType.fvar rfl) (.nil _ _)

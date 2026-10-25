@@ -135,12 +135,10 @@ theorem delivered_free_within (footprint : List String) (environment : Environme
   | element depth context parameter body index element elements initial localTyped tail =>
       cases result with
       | premise assignment event valid =>
-          have restored := Query.restored_parameter_free_within footprint parameter initial assignment
-            continued.1.2.1 produced.2
           constructor
           · intro task member
             rcases List.mem_singleton.mp member with rfl
-            refine ⟨⟨continued.1.1, restored, ?_⟩, continued.1, produced.2, continued.2⟩
+            refine ⟨⟨continued.1.1, continued.1.2.1, ?_⟩, continued.1, produced.2, continued.2⟩
             intro pattern member name occurs
             exact continued.1.2.2 pattern (List.mem_cons_of_mem _ member) name occurs
           · intro answer member; cases member
@@ -333,6 +331,8 @@ theorem root_match_expansion_free_within (footprint : List String) (environment 
   unfold expandRootMatch
   split
   · rename_i answer found
+    dsimp only
+    unfold continueRootAnswer
     dsimp only
     split
     · have captured := matcher_answer_free_within _ frame.state frame.reachable answer

@@ -90,6 +90,77 @@ def Expands (head : String) (state : State) (environment : Environment) (footpri
     (apply head [environmentValue environment (environment.free.entriesOn footprint), encoded (taskTerm task)])
     state (encoded (encodeOption expansionTerm (some expansion)))
 
+/-- **`gslt:descent:continue-root-answer` is `continueRootAnswer`.**
+Any certified matcher backend may enter here after it has produced one valid
+root answer; typing, premise replay and reduct construction remain shared. -/
+@[metta_head "gslt:descent:continue-root-answer"]
+theorem descent_continue_root_answer_returns (state : State)
+    (environment : Environment) (footprint : List String) {outer : Goal}
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : Mettapedia.GSLT.LanguageDef.WellSorted.OpenPatternWellSorted
+      environment.language environment.free bound type source)
+    (answer : GeneralScopedMatchMachine.Answer)
+    (valid : answer.Valid ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩)
+    (captured : assignmentFreeWithin footprint answer.assignment)
+    (tail : Continuation environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Task environment outer)) :
+    PureReturns descentLibrary.runtime [] state
+      (apply "gslt:descent:continue-root-answer"
+        [environmentValue environment (environment.free.entriesOn footprint), number depth,
+          encoded (PremiseOperationsExecution.GeneralExecution.Base.typesTerm bound),
+          encoded (InferenceCettaWire.AuthoredRule.typeTerm type),
+          encoded (InferenceCettaWire.encodePattern source), number index,
+          encoded (InferenceCettaWire.AuthoredRule.rewriteTerm rule),
+          encoded (InferenceCettaWire.AuthoredRule.bindingSpecTerm spec),
+          encoded (RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm answer),
+          encoded (continuationTerm tail), encoded (encodeList taskTerm next)])
+      state (encoded (encodeOption expansionTerm (some
+        (StructuralDescent.Scheduled.continueRootAnswer environment outer depth bound type
+          source index rule spec declared specified admitted sorted answer valid tail next)))) := by
+  have snapshot := ConditionalEquationExecution.checkAssignment_snapshot
+    environment.language environment.free bound rule spec answer.assignment footprint
+    (ConditionalEquationExecution.assignment_free_names_covered footprint _ captured)
+  have check := descent_check_assignment_returns state environment.language
+    (environment.free.entriesOn footprint) bound rule spec answer.assignment
+  by_cases checked : checkTypedAssignment environment
+      ⟨index, rule, spec, bound, 0, 0⟩ answer.assignment = true
+  · rw [show StructuralDescent.Scheduled.continueRootAnswer environment outer depth bound type
+        source index rule spec declared specified admitted sorted answer valid tail next =
+        { tasks := .evaluate (.premises depth ⟨index, rule, spec, bound, 0, 0⟩
+            rule.premises answer.assignment)
+            (.rootBody depth bound type source index rule spec declared specified admitted sorted
+              answer.trace answer.assignment
+              (by simpa [GeneralScopedMatchMachine.Answer.Valid, MatchingExecution.ordinary,
+                ordinaryInterpretation] using valid)
+              (checkTypedAssignment_sound checked) tail) :: next } by
+      simp only [StructuralDescent.Scheduled.continueRootAnswer, checked, ↓reduceDIte]]
+    have answered : ConditionalEquationExecution.checkAssignment environment.language
+        (FreeTypeContext.ofList (environment.free.entriesOn footprint)) bound rule spec
+        answer.assignment = true := by rw [snapshot]; exact checked
+    descent_eval_bound [check]
+      unfolding [answered, matcher_answer_term,
+        InferenceCettaWire.AuthoredRule.rewriteTerm,
+        PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+  · have checkedFalse : checkTypedAssignment environment
+        ⟨index, rule, spec, bound, 0, 0⟩ answer.assignment = false :=
+      Bool.eq_false_iff.mpr checked
+    rw [show StructuralDescent.Scheduled.continueRootAnswer environment outer depth bound type
+        source index rule spec declared specified admitted sorted answer valid tail next =
+        { tasks := next } by
+      simp only [StructuralDescent.Scheduled.continueRootAnswer, checkedFalse,
+        Bool.false_eq_true, ↓reduceDIte]]
+    have answered : ConditionalEquationExecution.checkAssignment environment.language
+        (FreeTypeContext.ofList (environment.free.entriesOn footprint)) bound rule spec
+        answer.assignment = false := by rw [snapshot]; exact checkedFalse
+    descent_eval_bound [check]
+      unfolding [answered, matcher_answer_term,
+        InferenceCettaWire.AuthoredRule.rewriteTerm,
+        PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+
 /-- **`gslt:descent:root-match` is `expandRootMatch`.** -/
 @[metta_head "gslt:descent:root-match"]
 theorem descent_root_match_returns (state : State) (environment : Environment) (footprint : List String)
@@ -123,31 +194,17 @@ theorem descent_root_match_returns (state : State) (environment : Environment) (
     rw [StructuralDescent.Scheduled.expandRootMatch_found frame found]
     have captured := GeneralScopedMatchMachine.matcher_answer_free_within _ frame.state frame.reachable answer (List.mem_of_getElem? found)
       footprint (by intro entry member; cases member) source
-    have snapshot := ConditionalEquationExecution.checkAssignment_snapshot environment.language environment.free
-      frame.bound frame.rule frame.spec answer.assignment footprint
-      (ConditionalEquationExecution.assignment_free_names_covered footprint _ captured)
-    have check := descent_check_assignment_returns state environment.language (environment.free.entriesOn footprint)
-      frame.bound frame.rule frame.spec answer.assignment
-    by_cases checked : checkTypedAssignment environment ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩
-        answer.assignment = true
-    · rw [dif_pos checked]
-      have answered : ConditionalEquationExecution.checkAssignment environment.language
-          (FreeTypeContext.ofList (environment.free.entriesOn footprint)) frame.bound frame.rule frame.spec
-          answer.assignment = true := by
-        rw [snapshot]
-        exact checked
-      descent_eval_bound [row, check]
-        unfolding [found, answered, RuleInstantiationExecution.GeneralExecution.matcherStateTerm, matcher_answer_term,
-          InferenceCettaWire.AuthoredRule.rewriteTerm, PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
-    · rw [dif_neg checked]
-      have answered : ConditionalEquationExecution.checkAssignment environment.language
-          (FreeTypeContext.ofList (environment.free.entriesOn footprint)) frame.bound frame.rule frame.spec
-          answer.assignment = false := by
-        rw [snapshot]
-        exact Bool.eq_false_iff.mpr checked
-      descent_eval_bound [row, check]
-        unfolding [found, answered, RuleInstantiationExecution.GeneralExecution.matcherStateTerm, matcher_answer_term,
-          InferenceCettaWire.AuthoredRule.rewriteTerm, PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+    have valid := GeneralScopedMatchMachine.answers_sound frame.reachable
+      (List.mem_of_getElem? found)
+    let later : Task environment outer := .rootMatch { frame with cursor := frame.cursor + 1 }
+    have continued := descent_continue_root_answer_returns state environment footprint
+      frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
+      frame.declared frame.specified frame.admitted frame.sorted answer valid captured
+      frame.tail [later]
+    descent_eval_bound [row, continued]
+      unfolding [found, later, RuleInstantiationExecution.GeneralExecution.matcherStateTerm,
+        matcher_answer_term, InferenceCettaWire.AuthoredRule.rewriteTerm,
+        PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
 
 /-- **`gslt:descent:target-match` is `expandTargetMatch`.** -/
 @[metta_head "gslt:descent:target-match"]

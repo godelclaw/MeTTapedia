@@ -101,7 +101,7 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
           change ExpansionAccepts
             { tasks := [.evaluate
                 (.quantified context parameter body (index + 1) elements
-                  (restoreParameter parameter initial middle))
+                  initial)
                 (.prependElement context parameter body index element elements initial middle
                   event localTyped head tail)] } wanted
           simp only [ExpansionAccepts, List.not_mem_nil, false_or,
@@ -668,11 +668,10 @@ theorem delivered_free_within (footprint : List String) (environment : Environme
   | element context parameter body index element elements initial localTyped tail =>
       cases result with
       | premise assignment event valid =>
-          have restored := restored_parameter_free_within footprint parameter initial assignment continued.1.2.1 produced.2
           constructor
           · intro task member
             rcases List.mem_singleton.mp member with rfl
-            refine ⟨⟨continued.1.1, restored, ?_⟩, continued.1, produced.2, continued.2⟩
+            refine ⟨⟨continued.1.1, continued.1.2.1, ?_⟩, continued.1, produced.2, continued.2⟩
             intro pattern member name occurs
             exact continued.1.2.2 pattern (List.mem_cons_of_mem _ member) name occurs
           · intro answer member; cases member

@@ -39,7 +39,7 @@ theorem runElements_complete (environment : Environment) (context : Context)
       apply List.mem_map.mpr
       refine ⟨⟨final, events, tail⟩,
         runElements_complete environment context parameter body executeBody budget bodyComplete
-          (index + 1) elements (restoreParameter parameter initial middle) _ bounded.2, rfl⟩
+          (index + 1) elements initial _ bounded.2, rfl⟩
 termination_by elements.length
 
 theorem runPremise_complete (environment : Environment) (oracle : Oracle environment)

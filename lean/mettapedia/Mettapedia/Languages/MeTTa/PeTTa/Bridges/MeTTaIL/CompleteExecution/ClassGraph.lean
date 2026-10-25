@@ -36,17 +36,19 @@ theorem explore_receipt_edges_returns (state : State) (mode : Complete.Normalize
     (current : Pattern) : ∀ receipts : List GeneralOccurrenceSemantics.Receipt,
       (∀ receipt ∈ receipts, Complete.Classes.Checked plan bound expected receipt.target) →
       PureReturns runnerLibrary.runtime [] state
-        (apply "gslt:explore:receipt-edges" [encoded (commitTerm plan mode names),
+        (apply "gslt:explore:receipt-edges" [CompleteExecution.classSearchBackend, encoded (commitTerm plan mode names),
           encoded (InferenceCettaWire.encodePattern current), encoded (encodeList classReceiptTerm receipts)])
         state (encoded (encodeList edgeTerm (receipts.map fun receipt =>
           (current, receipt, (Complete.Normalized.search plan bound expected mode).target receipt))))
   | [], _ => by
     runner_eval unfolding [encodeList]
   | receipt :: rest, checked => by
-    have target := runner_target_returns plan state mode names named bound expected receipt (checked receipt (by simp))
+    have target := search_target_returns plan state mode names named bound expected receipt
+      (checked receipt (by simp))
     have later := explore_receipt_edges_returns state mode names named bound expected current rest
       (fun other member => checked other (by simp [member]))
-    runner_eval [target, later] unfolding [encodeList, List.map_cons, edgeTerm, patternValue]
+    runner_eval [target, later]
+      unfolding [classSearchBackend, encodeList, List.map_cons, edgeTerm, patternValue]
 
 /-- The transitions of a list of nodes. -/
 @[metta_head "gslt:explore:node-edges"]
@@ -54,13 +56,15 @@ theorem explore_node_edges_returns (state : State) (mode : Complete.Normalized.C
     (named : TableFor plan names) (bound : List TypeExpr) (expected : TypeExpr) :
     ∀ nodes : List (ClassNode plan), (∀ node ∈ nodes, Complete.Classes.LogChecked plan bound expected node.run) →
       PureReturns runnerLibrary.runtime [] state
-        (apply "gslt:explore:node-edges" [encoded (commitTerm plan mode names),
+        (apply "gslt:explore:node-edges" [CompleteExecution.classSearchBackend, encoded (commitTerm plan mode names),
           encoded (encodeList (nodeTerm plan) nodes)])
         state (encoded (encodeList edgeTerm
           (nodes.flatMap (Complete.Graph.nodeEdges (Complete.Normalized.search plan bound expected mode)))))
   | [], _ => by
     runner_eval unfolding [encodeList, List.flatMap_nil]
   | ⟨current, receipts, states, born, ⟨round, reps, entries, log⟩, consumed⟩ :: rest, checked => by
+    have published := search_publication_returns plan state
+      (⟨round, reps, entries, log⟩ : Complete.Classes.State plan)
     have mine := explore_receipt_edges_returns plan state mode names named bound expected current log
       (checked ⟨current, receipts, states, born, ⟨round, reps, entries, log⟩, consumed⟩ (by simp))
     have later := explore_node_edges_returns state mode names named bound expected rest
@@ -73,7 +77,8 @@ theorem explore_node_edges_returns (state : State) (mode : Complete.Normalized.C
         log.map (fun receipt => (current, receipt, (Complete.Normalized.search plan bound expected mode).target receipt)) ++
           rest.flatMap (Complete.Graph.nodeEdges (Complete.Normalized.search plan bound expected mode)) := rfl
     rw [shape]
-    runner_eval [mine, later, joined] unfolding [encodeList, nodeTerm, classStateTerm]
+    runner_eval [published, mine, later, joined]
+      unfolding [classSearchBackend, encodeList, nodeTerm, classStateTerm]
 
 /-- **The explored transition graph** (`Complete.Graph.edges`). -/
 @[metta_head "gslt:explore:edges"]
@@ -81,7 +86,7 @@ theorem explore_edges_returns (state : State) (mode : Complete.Normalized.Commit
     (named : TableFor plan names) (bound : List TypeExpr) (expected : TypeExpr)
     (explorer : ClassExplorer plan) (checked : ∀ node ∈ explorer.nodes, Complete.Classes.LogChecked plan bound expected node.run) :
     PureReturns runnerLibrary.runtime [] state
-      (apply "gslt:explore:edges" [encoded (commitTerm plan mode names), encoded (explorerTerm plan explorer)])
+      (apply "gslt:explore:edges" [CompleteExecution.classSearchBackend, encoded (commitTerm plan mode names), encoded (explorerTerm plan explorer)])
       state (encoded (encodeList edgeTerm
         (Complete.Graph.edges (Complete.Normalized.search plan bound expected mode) explorer))) := by
   obtain ⟨round, nodes⟩ := explorer

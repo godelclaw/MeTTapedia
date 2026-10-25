@@ -26,6 +26,12 @@ import Mettapedia.TypeTheory.BubbleSelection
 import Mettapedia.TypeTheory.BubbleWeakness
 import Mettapedia.TypeTheory.BubbleSchematic
 import Mettapedia.TypeTheory.HypercubeBubbles
+import Mettapedia.TypeTheory.ReifiedIndexElaboration
+import Mettapedia.TypeTheory.HypercubeHOLHub
+import Mettapedia.TypeTheory.HypercubeProfileStratification
+import Mettapedia.TypeTheory.HypercubeSortRenaming
+import Mettapedia.TypeTheory.BubbleElaboration
+import Mettapedia.TypeTheory.SortSpineElaborationBoundary
 import Mettapedia.TypeTheory.CategoryIndexedFamilyCwf
 import Mettapedia.TypeTheory.CategoryIndexedFamilyTypeFormers
 import Mettapedia.TypeTheory.CategoryIndexedFamilyThinDescentTypeFormers
@@ -44,24 +50,6 @@ import Mettapedia.TypeTheory.ContextualIdentityTypes
 import Mettapedia.TypeTheory.ContextualIdentitySubstitution
 import Mettapedia.TypeTheory.ContextualTypeOperations
 import Mettapedia.TypeTheory.ContextualBasedIdentityOperations
-import Mettapedia.TypeTheory.ContextualCBPVSyntax
-import Mettapedia.TypeTheory.ContextualCBPVSemantics
-import Mettapedia.TypeTheory.ContextualCBPVOperational
-import Mettapedia.TypeTheory.ContextualCBPVNormalization
-import Mettapedia.TypeTheory.ContextualCBPVEquations
-import Mettapedia.TypeTheory.ContextualCBPVZero
-import Mettapedia.TypeTheory.ContextualCBPVNeed
-import Mettapedia.TypeTheory.ContextualCBPVLicense
-import Mettapedia.TypeTheory.ContextualCBPVScopedNeed
-import Mettapedia.TypeTheory.ContextualCBPVScopedNeedComplete
-import Mettapedia.TypeTheory.ContextualCBPVStrategyElaboration
-import Mettapedia.TypeTheory.ContextualCBPVPolarizedValues
-import Mettapedia.TypeTheory.ContextualCBPVPolarizedNeedCells
-import Mettapedia.TypeTheory.ContextualCBPVPolarizedFresh
-import Mettapedia.TypeTheory.ContextualCBPVPolarizedComplete
-import Mettapedia.TypeTheory.ContextualCBPVStrategyThunks
-import Mettapedia.TypeTheory.ContextualCBPVStrategyLaws
-import Mettapedia.TypeTheory.ContextualCBPVDataAtomCoherence
 import Mettapedia.TypeTheory.HenkinLogicalCodeDescent
 import Mettapedia.TypeTheory.ContextualModalCapabilities
 import Mettapedia.TypeTheory.ContextualModalLawCapabilities
@@ -105,7 +93,14 @@ import Mettapedia.TypeTheory.IdentityEliminationCapabilities
 import Mettapedia.TypeTheory.IdentityNotions
 import Mettapedia.TypeTheory.IdentityRouteCapabilities
 import Mettapedia.TypeTheory.IndexedContainer
+import Mettapedia.TypeTheory.IndexedContainerInduction
+import Mettapedia.TypeTheory.IndexedPositiveContainer
+import Mettapedia.TypeTheory.IndexedPositiveContainerInduction
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.FormationSensitiveIndexedContainerBundleRealization
+import Mettapedia.TypeTheory.PositiveInductiveBlock
+import Mettapedia.TypeTheory.PositiveInductiveScenarios
 import Mettapedia.TypeTheory.IndexedPolynomial
+import Mettapedia.TypeTheory.IndexedPolynomialEquivalence
 import Mettapedia.TypeTheory.IndexedPolynomialDescription
 import Mettapedia.TypeTheory.IndexedPolynomialInduction
 import Mettapedia.TypeTheory.IndexedPolynomialInductionControls
@@ -186,9 +181,12 @@ import Mettapedia.TypeTheory.TarskiCumulativeCodeCoherenceBoundary
 import Mettapedia.TypeTheory.UnityIsNotUIP
 import Mettapedia.TypeTheory.WitnessRetainingDependentSequencing
 import Mettapedia.TypeTheory.WriterSetFamilyDependentExtension
-import Mettapedia.TypeTheory.DesignDetermination
-import Mettapedia.TypeTheory.DesignStudy
 import Mettapedia.TypeTheory.MetatheoryChoiceConstraints
+
+import Mettapedia.TypeTheory.NbE.BidirectionalCheckerAndNIK
+
+import Mettapedia.TypeTheory.Models.UnitypedDisplayedTyping
+import Mettapedia.TypeTheory.Models.UnitypedDisplayedTypingCoherence
 
 /-!
 # Type theory: structures, calculi and models

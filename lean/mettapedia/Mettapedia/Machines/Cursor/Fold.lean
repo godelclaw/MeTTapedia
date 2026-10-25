@@ -3,6 +3,7 @@ import Mettapedia.Machines.SnapshotBatch
 import Mettapedia.Machines.BindingPublication
 import Mettapedia.Machines.SubstitutionFold
 import Mettapedia.GSLT.LanguageDef.OperationCostProtocol
+import Mathlib.Data.List.MinMax
 
 /-!
 # A resumable fold client for a pull protocol
@@ -133,6 +134,318 @@ theorem replay_duplicates_delivered_items :
   cases readout
 
 end Controls
+
+/-! ## Stable minimum selection over an actual retained candidate stream
+
+A supplied ordered key and traversal determine the policy. Equal keys keep
+that traversal's first occurrence. The accumulator keeps its pull position,
+so even equal payloads have distinct source occurrence addresses. The ordinary
+fold cursor retains every unscanned candidate and exposes a final selection
+only after exhaustion and return, never from a provisional prefix winner.
+-/
+
+namespace StableMinimum
+
+variable {Key : Type} [LinearOrder Key] (key : Item → Key)
+
+abbrev Occurrence (Item : Type) := Item × Nat
+
+structure Scan (Item : Type) where
+  seen : Nat
+  best : Option (Occurrence Item)
+  deriving DecidableEq, Repr
+
+def initial : Scan Item := ⟨0, none⟩
+
+/-- Strict replacement retains the first encountered occurrence on ties. -/
+def choose (previous : Option (Occurrence Item)) (candidate : Occurrence Item) : Option (Occurrence Item) :=
+  match previous with
+  | none => some candidate
+  | some incumbent => if key candidate.1 < key incumbent.1 then some candidate else some incumbent
+
+def consume (scan : Scan Item) (item : Item) : Scan Item :=
+  ⟨scan.seen + 1, choose key scan.best (item, scan.seen)⟩
+
+abbrev reader := Fold.client (consume key)
+abbrev Saved (source : Provider (Sequence.protocol Item)) := Nat × Outcome source (reader key) ()
+
+def run (source : Provider (Sequence.protocol Item)) (fuel : Nat) (state : source.State () ()) : Saved key source :=
+  advance source (reader key) (fun _ _ => 1) fuel (Fold.start source (consume key) state initial)
+
+def resume (source : Provider (Sequence.protocol Item)) (fuel : Nat) (saved : Saved key source) : Saved key source :=
+  Cursor.resume source (reader key) (fun _ _ => 1) fuel saved
+
+/-- `none` is unfinished. `some none` is a completed empty candidate stream;
+`some (some occurrence)` is a final selected occurrence. The full saved cursor
+still carries provisional control and the complete producer residual. -/
+def published {source : Provider (Sequence.protocol Item)} (saved : Saved key source) :
+    Option (Option (Occurrence Item)) :=
+  match saved.2 with
+  | .paused _ => none
+  | .done result => some result.2.1.best
+
+private theorem choose_eq_argAux (previous : Option (Occurrence Item)) (candidate : Occurrence Item) :
+    choose key previous candidate = List.argAux (fun next incumbent => key next.1 < key incumbent.1) previous candidate := by
+  cases previous <;> rfl
+
+/-- The positional fold is compared to an independently enumerated source.
+The source is not deduplicated, sorted, or represented by its answer payload. -/
+theorem scan_fold_enumerated (items : List Item) (offset : Nat) (previous : Option (Occurrence Item)) :
+    items.foldl (consume key) ⟨offset, previous⟩ =
+      ⟨offset + items.length,
+        (items.zipIdx offset).foldl (choose key) previous⟩ := by
+  induction items generalizing offset previous with
+  | nil => simp
+  | cons item rest ih =>
+      change rest.foldl (consume key) ⟨offset + 1, choose key previous (item, offset)⟩ = _
+      rw [ih]
+      simp only [List.length_cons, List.zipIdx_cons, List.foldl_cons]
+      congr 1
+      omega
+
+private theorem scan_best_eq_argmin (items : List Item) :
+    (items.foldl (consume key) initial).best = List.argmin (fun occurrence => key occurrence.1) items.zipIdx := by
+  rw [initial, scan_fold_enumerated]
+  change (items.zipIdx).foldl (choose key) none =
+    (items.zipIdx).foldl (List.argAux (fun next incumbent => key next.1 < key incumbent.1)) none
+  have functions : choose key = List.argAux (fun next incumbent => key next.1 < key incumbent.1) :=
+    funext fun previous => funext fun candidate => choose_eq_argAux key previous candidate
+  rw [functions]
+
+private theorem index_of_zipIdx [DecidableEq (Occurrence Item)] (items : List Item) (occurrence : Occurrence Item)
+    (member : occurrence ∈ items.zipIdx) : items.zipIdx.idxOf occurrence = occurrence.2 := by
+  have bound := List.idxOf_lt_length_of_mem member
+  have selectedAt : items.zipIdx[items.zipIdx.idxOf occurrence] = occurrence := List.getElem_idxOf bound
+  have position := congrArg Prod.snd selectedAt
+  simpa only [List.getElem_zipIdx, Nat.zero_add] using position
+
+/-- Independent finite policy: select a real source occurrence with least key,
+and no later position when an equal-or-better-key occurrence is available. -/
+def IsFirstMinimum (items : List Item) (selected : Occurrence Item) : Prop :=
+  selected ∈ items.zipIdx ∧
+    (∀ other ∈ items.zipIdx, key selected.1 ≤ key other.1) ∧
+    ∀ other ∈ items.zipIdx, key other.1 ≤ key selected.1 → selected.2 ≤ other.2
+
+def Specification (items : List Item) : Option (Occurrence Item) → Prop
+  | none => items = []
+  | some selected => IsFirstMinimum key items selected
+
+/-- Completion is characterized by source membership, least key and the
+first-on-equal-key rule, rather than an assumed whole-run equivalence. -/
+theorem scan_specification (items : List Item) (selected : Option (Occurrence Item)) :
+    (items.foldl (consume key) initial).best = selected ↔ Specification key items selected := by
+  classical
+  rw [scan_best_eq_argmin]
+  cases selected with
+  | none => simp only [Specification, List.argmin_eq_none, List.zipIdx_eq_nil_iff]
+  | some selected =>
+      rw [List.argmin_eq_some_iff]
+      change (_ ∧ _ ∧ _) ↔ (_ ∧ _ ∧ _)
+      constructor
+      · rintro ⟨member, least, first⟩
+        refine ⟨member, least, ?_⟩
+        intro other included noWorse
+        simpa only [index_of_zipIdx items selected member, index_of_zipIdx items other included]
+          using first other included noWorse
+      · rintro ⟨member, least, first⟩
+        refine ⟨member, least, ?_⟩
+        intro other included noWorse
+        simpa only [index_of_zipIdx items selected member, index_of_zipIdx items other included]
+          using first other included noWorse
+
+theorem specification_unique (items : List Item) (first second : Option (Occurrence Item))
+    (firstSpec : Specification key items first) (secondSpec : Specification key items second) : first = second :=
+  ((scan_specification key items first).mpr firstSpec).symm.trans ((scan_specification key items second).mpr secondSpec)
+
+theorem zero_retains_every_candidate (items : List Item) :
+    run key (Sequence.tails Item) 0 items =
+      (0, .paused (Fold.start _ (consume key) items initial)) := rfl
+
+theorem prefix_keeps_exact_occurrences (items : List Item) (fuel : Nat) (within : fuel ≤ items.length) :
+    run key (Sequence.tails Item) fuel items =
+      (fuel, .paused (Fold.start _ (consume key) (items.drop fuel)
+        ⟨fuel, ((items.take fuel).zipIdx).foldl (choose key) none⟩)) := by
+  change advance (Sequence.tails Item) (reader key) (fun _ _ => 1) fuel
+    (Fold.start _ (consume key) items initial) = _
+  rw [Fold.prefix_exact _ _ _ _ within, initial, scan_fold_enumerated]
+  simp only [List.length_take_of_le within, Nat.zero_add]
+
+theorem completion_is_exact (items : List Item) :
+    run key (Sequence.tails Item) (items.length + 2) items =
+      (items.length + 1, .done ⟨(), items.foldl (consume key) initial, []⟩) :=
+  Fold.complete_exact (consume key) items initial
+
+theorem completed_selection_iff_specification (items : List Item) (selected : Option (Occurrence Item)) :
+    published key (run key (Sequence.tails Item) (items.length + 2) items) = some selected ↔
+      Specification key items selected := by
+  rw [completion_is_exact]
+  change some (items.foldl (consume key) initial).best = some selected ↔ _
+  rw [Option.some.injEq, scan_specification]
+
+theorem incomplete_prefix_has_no_final_selection (items : List Item) (fuel : Nat) (within : fuel ≤ items.length) :
+    published key (run key (Sequence.tails Item) fuel items) = none := by
+  rw [prefix_keeps_exact_occurrences key items fuel within]
+  rfl
+
+theorem split_resume_full_account (source : Provider (Sequence.protocol Item))
+    (state : source.State () ()) (first second : Nat) :
+    resume key source second (run key source first state) = run key source (first + second) state :=
+  (advance_add source (reader key) (fun _ _ => 1) first second (Fold.start _ (consume key) state initial)).symm
+
+theorem resume_zero (source : Provider (Sequence.protocol Item)) (saved : Saved key source) :
+    resume key source 0 saved = saved := Cursor.resume_zero _ _ _ saved
+
+/-- One request discovers source exhaustion; the next client inspection
+returns the result without another pull. Neither inspection is a candidate. -/
+theorem exhaustion_is_still_retained (items : List Item) :
+    run key (Sequence.tails Item) (items.length + 1) items =
+      (items.length + 1, .paused ⟨(), .finished (items.foldl (consume key) initial), []⟩) := by
+  change advance (Sequence.tails Item) (reader key) (fun _ _ => 1) (items.length + 1)
+    (Fold.start _ (consume key) items initial) = _
+  rw [advance_add _ _ _ items.length 1,
+    Fold.prefix_exact (consume key) items initial items.length (Nat.le_refl _)]
+  simp only [List.drop_length, List.take_length]
+  rfl
+
+/-- An independently implemented provider transports the same whole retained
+packet and paid pulls through its existing local transition homomorphism. -/
+theorem transport_account {source : Provider (Sequence.protocol Item)}
+    (h : Hom source (Sequence.tails Item)) (state : source.State () ()) (fuel : Nat) :
+    ((run key source fuel state).1, h.outcome (reader key) (run key source fuel state).2) =
+      run key (Sequence.tails Item) fuel (h.map state) :=
+  h.advance_account (reader key) (fun _ _ => 1) (fun _ _ => 1) (fun _ _ => rfl) fuel
+    (Fold.start _ (consume key) state initial)
+
+theorem transport_resume_account {source : Provider (Sequence.protocol Item)}
+    (h : Hom source (Sequence.tails Item)) (saved : Saved key source) (fuel : Nat) :
+    ((resume key source fuel saved).1, h.outcome (reader key) (resume key source fuel saved).2) =
+      resume key (Sequence.tails Item) fuel (saved.1, h.outcome (reader key) saved.2) :=
+  h.resume_account (reader key) (fun _ _ => 1) (fun _ _ => 1) (fun _ _ => rfl) fuel saved
+
+
+theorem published_transport {source : Provider (Sequence.protocol Item)}
+    (h : Hom source (Sequence.tails Item)) (saved : Saved key source) :
+    published key (saved.1, h.outcome (reader key) saved.2) = published key saved := by
+  rcases saved with ⟨paid, outcome⟩
+  cases outcome <;> rfl
+
+/-- Finite completion and its independent selection policy transfer together
+with the whole account; no source-to-target whole-run equality is assumed. -/
+theorem transported_completion_iff_specification {source : Provider (Sequence.protocol Item)}
+    (h : Hom source (Sequence.tails Item)) (state : source.State () ()) (selected : Option (Occurrence Item)) :
+    published key (run key source ((h.map state).length + 2) state) = some selected ↔
+      Specification key (h.map state) selected := by
+  have observed := congrArg (published key)
+    (transport_account key h state ((h.map state).length + 2))
+  rw [published_transport key h] at observed
+  rw [observed]
+  exact completed_selection_iff_specification key (h.map state) selected
+
+/-- This invoice counts provider pulls, including the exhaustion request.
+It does not price key comparisons, payload callbacks, preparation, export,
+allocation or native service time. Those need their own local contracts. -/
+theorem completion_pull_account (items : List Item) :
+    (run key (Sequence.tails Item) (items.length + 2) items).1 = items.length + 1 := by
+  rw [completion_is_exact]
+
+
+/-- Every finite budget has an exact pull account, including zero, a complete
+candidate prefix without exhaustion, the exhaustion request, and inert work
+after return. This equation does not price the client callbacks. -/
+theorem pull_account_exact (items : List Item) (fuel : Nat) :
+    (run key (Sequence.tails Item) fuel items).1 = min fuel (items.length + 1) := by
+  by_cases within : fuel ≤ items.length
+  · rw [prefix_keeps_exact_occurrences key items fuel within]
+    exact (Nat.min_eq_left (by omega)).symm
+  · by_cases exhaustion : fuel = items.length + 1
+    · rw [exhaustion, exhaustion_is_still_retained]
+      exact (Nat.min_self _).symm
+    · have enough : items.length + 2 ≤ fuel := by omega
+      have splitFuel : fuel = items.length + 2 + (fuel - (items.length + 2)) := by omega
+      have partition := congrArg Prod.fst
+        (split_resume_full_account key (Sequence.tails Item) items (items.length + 2) (fuel - (items.length + 2)))
+      rw [completion_is_exact key items] at partition
+      have paid : items.length + 1 =
+          (run key (Sequence.tails Item) (items.length + 2 + (fuel - (items.length + 2))) items).1 := by
+        simpa only [resume, Cursor.resume_done] using partition
+      rw [splitFuel]
+      exact paid.symm.trans (Nat.min_eq_right (by omega)).symm
+
+theorem completed_resume_is_inert (items : List Item) (fuel : Nat) :
+    resume key (Sequence.tails Item) fuel (run key (Sequence.tails Item) (items.length + 2) items) =
+      run key (Sequence.tails Item) (items.length + 2) items := by
+  rw [completion_is_exact]
+  rfl
+
+namespace Controls
+
+structure Candidate where
+  identity : Nat
+  payload : Nat
+  priority : Nat
+  deriving DecidableEq, Repr
+
+def priorityKey (candidate : Candidate) := candidate.priority
+def first : Candidate := ⟨17, 7, 5⟩
+def tied : Candidate := ⟨18, 7, 5⟩
+def cheaper : Candidate := ⟨19, 7, 2⟩
+def expensive : Candidate := ⟨20, 7, 8⟩
+def candidates := [first, tied, cheaper, cheaper, expensive]
+
+theorem equal_keys_and_payloads_retain_the_first_occurrence :
+    published priorityKey (run priorityKey (Sequence.tails Candidate) 4 [first, tied]) = some (some (first, 0)) ∧
+      published priorityKey (run priorityKey (Sequence.tails Candidate) 4 [first, first]) = some (some (first, 0)) ∧
+      published priorityKey (run priorityKey (Sequence.tails Candidate) 7 candidates) = some (some (cheaper, 2)) := ⟨rfl, rfl, rfl⟩
+
+theorem provisional_winner_is_not_a_final_empty_or_selected_result :
+    published priorityKey (run priorityKey (Sequence.tails Candidate) 1 candidates) = none ∧
+      published priorityKey (run priorityKey (Sequence.tails Candidate) 0 []) = none ∧
+      published priorityKey (run priorityKey (Sequence.tails Candidate) 2 []) = some none ∧
+      (run priorityKey (Sequence.tails Candidate) 1 candidates).2 =
+        .paused (Fold.start _ (consume priorityKey) [tied, cheaper, cheaper, expensive] ⟨1, some (first, 0)⟩) :=
+  ⟨rfl, rfl, rfl, rfl⟩
+
+theorem completed_exhaustion_and_client_return_are_distinct :
+    published priorityKey (run priorityKey (Sequence.tails Candidate) 6 candidates) = none ∧
+      published priorityKey (resume priorityKey (Sequence.tails Candidate) 1 (run priorityKey (Sequence.tails Candidate) 6 candidates)) =
+        some (some (cheaper, 2)) ∧
+      (resume priorityKey (Sequence.tails Candidate) 1 (run priorityKey (Sequence.tails Candidate) 6 candidates)).1 = 6 :=
+  ⟨rfl, rfl, rfl⟩
+
+
+theorem last_on_equal_key_and_prefix_publication_violate_the_independent_policy :
+    ¬ Specification priorityKey [first, tied] (some (tied, 1)) ∧
+      ¬ Specification priorityKey candidates (some (first, 0)) ∧
+      ¬ Specification priorityKey candidates (some (cheaper, 0)) := by
+  simp only [Specification, IsFirstMinimum]
+  decide
+
+theorem a_declared_traversal_is_observable_on_equal_keys :
+    published priorityKey (run priorityKey (Sequence.tails Candidate) 4 [first, tied]) = some (some (first, 0)) ∧
+      published priorityKey (run priorityKey (Sequence.tails Candidate) 4 [tied, first]) = some (some (tied, 0)) ∧
+      first.payload = tied.payload ∧ first.identity ≠ tied.identity := ⟨rfl, rfl, rfl, by decide⟩
+
+def window : Sequence.Slice Candidate :=
+  ⟨#[expensive, first, tied, cheaper, cheaper, expensive, first], 1, 5⟩
+
+theorem array_window_and_tail_keep_the_same_paid_residual :
+    ((run priorityKey (Sequence.slices Candidate) 3 window).1,
+      (Sequence.sliceHom Candidate).outcome (reader priorityKey) (run priorityKey (Sequence.slices Candidate) 3 window).2) =
+      run priorityKey (Sequence.tails Candidate) 3 candidates :=
+  transport_account priorityKey (Sequence.sliceHom Candidate) window 3
+
+theorem actual_window_resume_keeps_storage_position_and_exact_selected_occurrence :
+    published priorityKey (resume priorityKey (Sequence.slices Candidate) 4 (run priorityKey (Sequence.slices Candidate) 3 window)) =
+        some (some (cheaper, 2)) ∧
+      (resume priorityKey (Sequence.slices Candidate) 4 (run priorityKey (Sequence.slices Candidate) 3 window)).1 = 6 ∧
+      (match (resume priorityKey (Sequence.slices Candidate) 4 (run priorityKey (Sequence.slices Candidate) 3 window)).2 with
+        | .paused _ => none
+        | .done result => some (result.2.2.offset, result.2.2.remaining, result.2.2.storage)) =
+          some (6, 0, window.storage) := ⟨rfl, rfl, rfl⟩
+
+end Controls
+
+end StableMinimum
 
 /-! ## An owned pending-return boundary
 

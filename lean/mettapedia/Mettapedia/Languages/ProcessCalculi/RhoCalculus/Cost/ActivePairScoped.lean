@@ -184,14 +184,14 @@ theorem fundedPair_typed {free : FreeTypeContext} {ambient : List TypeExpr}
       · apply HasType.constructor
           (rule := communicationDecoration.baseConstructor rhoCalc.terms[5])
         · decide +kernel
-        · simp [UsesBareCollection, communicationDecoration_input_parameters]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, communicationDecoration_input_parameters]
         · rw [communicationDecoration_input_parameters]
           exact .cons trivial rfl channelTyped (.cons trivial rfl (.lambda bodyTyped) .nil)
       · apply ElementsHaveType.cons
         · apply HasType.constructor
             (rule := communicationDecoration.baseConstructor rhoSyncOutputRule)
           · decide +kernel
-          · simp [UsesBareCollection, communicationDecoration_output_parameters]
+          · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, communicationDecoration_output_parameters]
           · rw [communicationDecoration_output_parameters]
             exact .cons trivial rfl channelTyped
               (.cons trivial rfl sentTyped (.cons trivial rfl afterTyped .nil))
@@ -216,7 +216,7 @@ theorem fundedResidual_typed {free : FreeTypeContext} {ambient : List TypeExpr}
     apply HasType.constructor
       (rule := costWrappedConstructor (theory := rhoSyncIGSLT) rhoCalc.terms[2])
     · decide +kernel
-    · simp [UsesBareCollection, rhoSync_costWrappedQuote_params]
+    · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, rhoSync_costWrappedQuote_params]
     · rw [rhoSync_costWrappedQuote_params]
       exact .cons trivial rfl sentTyped .nil
   have payloadTyped : HasSort language free ambient

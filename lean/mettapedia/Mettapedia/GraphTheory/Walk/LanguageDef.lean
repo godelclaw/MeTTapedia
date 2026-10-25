@@ -43,7 +43,7 @@ def parameter (name typeName : String) : TermParam :=
 
 def constructor (label category : String) (params : List TermParam) :
     GrammarRule :=
-  GrammarRule.mk label category params [] none none
+  GrammarRule.mk label category params [] none none .bare
 
 /-- The complete sorted constructor inventory.  `WalkValue` records the
 endpoints of its recursive node, while `FramesCons` stores one reversed edge
@@ -378,6 +378,18 @@ def decodeVertex? : Pattern → Option Nat
   | succ vertex inductionHypothesis =>
       simp [vertexPattern, decodeVertex?, inductionHypothesis]
 
+/-- Successful vertex decoding recovers the complete authored constructor tree. -/
+theorem decodeVertex?_eq_some {pattern : Pattern} {vertex : Nat}
+    (decoded : decodeVertex? pattern = some vertex) :
+    pattern = vertexPattern vertex := by
+  fun_induction decodeVertex? pattern generalizing vertex with
+  | case1 => cases decoded; rfl
+  | case2 child inductionHypothesis =>
+      simp only [Option.map_eq_some_iff] at decoded
+      obtain ⟨previous, found, rfl⟩ := decoded
+      simp [vertexPattern, inductionHypothesis found]
+  | case3 => simp_all
+
 def decodeFin? (n : Nat) (pattern : Pattern) : Option (Fin n) := do
   let vertex ← decodeVertex? pattern
   if within : vertex < n then
@@ -388,6 +400,23 @@ def decodeFin? (n : Nat) (pattern : Pattern) : Option (Fin n) := do
 @[simp] theorem decodeFin?_finPattern {n : Nat} (vertex : Fin n) :
     decodeFin? n (finPattern vertex) = some vertex := by
   simp [decodeFin?, finPattern]
+
+/-- A finite vertex accepted by a relation query has exactly its canonical
+encoding; malformed or out-of-range vertices cannot enter through a guard. -/
+theorem decodeFin?_eq_some {n : Nat} {pattern : Pattern} {vertex : Fin n}
+    (decoded : decodeFin? n pattern = some vertex) :
+    pattern = finPattern vertex := by
+  unfold decodeFin? at decoded
+  cases found : decodeVertex? pattern with
+  | none => simp [found] at decoded
+  | some value =>
+      simp only [found] at decoded
+      dsimp at decoded
+      split at decoded
+      next within =>
+        cases decoded
+        exact decodeVertex?_eq_some found
+      next => contradiction
 
 theorem finPattern_injective {n : Nat} :
     Function.Injective (@finPattern n) := by
@@ -532,6 +561,8 @@ theorem theory_equiv_iff_eq {n m : Nat}
 
 #print axioms language_validates
 #print axioms decodeVertex?_vertexPattern
+#print axioms decodeVertex?_eq_some
+#print axioms decodeFin?_eq_some
 #print axioms decodeFin?_finPattern
 #print axioms finPattern_injective
 #print axioms sourceAdjacent_exact

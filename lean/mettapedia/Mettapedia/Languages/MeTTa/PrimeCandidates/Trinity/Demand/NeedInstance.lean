@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.RecursionReference
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Strategies.RecursionReference
 
 /-!
 # Demand on the reference machine

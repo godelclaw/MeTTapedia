@@ -23,7 +23,7 @@ are introduced.
 
 No common store or heap interface is asserted here.  The CEK environment and
 the Krivine thunk environment are components of their derived controls, while
-Prime's call-by-need heap additionally requires memoization, update, and cycle
+the Prime C draft's call-by-need heap additionally requires memoization, update, and cycle
 laws absent from call-by-name.  A shared store interface belongs only after
 those concrete machines supply refinement maps into it.
 -/

@@ -2,7 +2,7 @@ import Mettapedia.GSLT.LanguageDef.ConversionCertificate
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
 
 /-!
-# Rooted beta-eta conversion for indexed LF
+# Rooted beta-eta conversion for LF terms
 
 This module places the structural beta-eta reduction rules used by the LF
 checker inside one authoritative `CalculusLanguageDef`.  Rule application is
@@ -19,6 +19,10 @@ that both compared LF terms are well formed at the selected PTS profile.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.LFRootedBetaEtaConversion
+
+/- The `indexed-lf` strings below are frozen source-identity values in existing
+generated artifacts. They name this term-indexed conversion presentation, not
+an LF/PTS formation profile. -/
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Substitution

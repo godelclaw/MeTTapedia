@@ -3,7 +3,7 @@ import Mathlib.Data.Finset.Basic
 /-!
 # Receipt-DAG reachability
 
-Native Prime receipts form a directed acyclic graph: a newly allocated frame
+Execution receipts, as the Prime C draft records them, form a directed acyclic graph: a newly allocated frame
 may point to immediate parent frames, and every parent has strictly smaller
 depth in the same receipt session.  This module isolates the reachability
 relation that any receipt index must preserve.

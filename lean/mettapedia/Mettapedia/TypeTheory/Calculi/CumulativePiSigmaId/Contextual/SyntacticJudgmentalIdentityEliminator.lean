@@ -146,21 +146,21 @@ end NativeIotaCell
 /-! ## The formed declaration telescope of identity elimination -/
 
 /-- Formation of the element-type binder. -/
-def contextAWellFormed : ContextWellFormed rules contextA :=
+theorem contextAWellFormed : ContextWellFormed rules contextA :=
   .snoc .nil (.headType (.sort elementLevel))
     (.sort (.succ elementLevel))
 
 /-- Formation of the distinguished left endpoint binder. -/
-def contextAXWellFormed : ContextWellFormed rules contextAX :=
+theorem contextAXWellFormed : ContextWellFormed rules contextAX :=
   .snoc contextAWellFormed (HasType.var 0) (.sort elementLevel)
 
 /-- Formation of the path-induction motive binder. -/
-def contextAXPWellFormed : ContextWellFormed rules contextAXP :=
+theorem contextAXPWellFormed : ContextWellFormed rules contextAXP :=
   .snoc contextAXWellFormed identityMotiveType_hasType
     (.sort identityMotiveLevel)
 
 /-- Formation of the reflexivity-method binder. -/
-def contextAXPDWellFormed : ContextWellFormed rules contextAXPD :=
+theorem contextAXPDWellFormed : ContextWellFormed rules contextAXPD :=
   .snoc contextAXPWellFormed identityReflCaseType_hasType
     (.sort motiveLevel)
 

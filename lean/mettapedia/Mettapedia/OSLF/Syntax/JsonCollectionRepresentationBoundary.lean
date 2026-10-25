@@ -146,6 +146,7 @@ def arrayEvidence : EmptyRowEvidence where
   elementType := .base "Value"
   member := by simp [arrayRow, authored]
   result := rfl
+  representation := rfl
   parameterShape := rfl
   elementsTyped := ElementsHaveType.nil [] (.base "Value")
 
@@ -155,6 +156,7 @@ def objectEvidence : EmptyRowEvidence where
   elementType := .base "Field"
   member := by simp [objectRow, authored]
   result := rfl
+  representation := rfl
   parameterShape := rfl
   elementsTyped := ElementsHaveType.nil [] (.base "Field")
 

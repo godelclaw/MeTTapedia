@@ -101,7 +101,7 @@ abbrev emptyRules : Rules Tower.Head :=
 abbrev EmptyHasType {n : Nat} :=
   @Presentation.HasType Tower.Head emptyRules n
 
-def includeReceiptTyping {context : Tower.Ctx n}
+theorem includeReceiptTyping {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : ReceiptHasType context term type) :
     EmptyHasType context term type :=
@@ -260,7 +260,7 @@ theorem rawEmptySignature_fresh {name : DeclName}
   · simp [rawEmptySignature, emptyDeclarations, Signature.ofList,
       Signature.insert, Signature.empty, isEmpty, isEliminate] at lookup
 
-def rawEmptySignature_formed : rawEmptySignature.Formed receiptRules where
+theorem rawEmptySignature_formed : rawEmptySignature.Formed receiptRules where
   fresh := rawEmptySignature_fresh
   types := rawEmptySignature_types_formed
   values := by

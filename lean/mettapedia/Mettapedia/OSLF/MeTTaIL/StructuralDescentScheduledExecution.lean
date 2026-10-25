@@ -19,9 +19,9 @@ namespace Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled
 open Syntax RuleBinding ScopedRuleMatching GeneralPremise
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
-def delivered (environment : Environment) (outer : Goal) {goal : Goal}
-    (result : Result environment goal) (continuation : Continuation environment goal outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+def delivered {matcher : MatchingExecution} (environment : Environment) (outer : Goal) {goal : Goal}
+    (result : Interpreted.Result matcher environment goal) (continuation : Interpreted.Continuation matcher environment goal outer) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
   match continuation with
   | .done _ => { answers := [result] }
   | .nextPremise depth context premise premises initial tail =>
@@ -44,7 +44,7 @@ def delivered (environment : Environment) (outer : Goal) {goal : Goal}
       | .premise assignment event valid =>
           { tasks := [.evaluate
               (.quantified depth context parameter body (index + 1) elements
-                (restoreParameter parameter initial assignment))
+                initial)
               (.prependElement depth context parameter body index element elements initial assignment
                 event localTyped valid tail)] }
   | .prependElement depth _ _ _ index element _ _ _ event localTyped head tail =>
@@ -86,19 +86,19 @@ def delivered (environment : Environment) (outer : Goal) {goal : Goal}
               history := events
               target := target
               valid := valid
-              state := GeneralScopedMatchMachine.start request
-              reachable := .start
+              state := matcher.start request
+              reachable := matcher.start_reachable request
               cursor := 0
               tail := tail }] }
 
-def evaluatePremise (environment : Environment) (outer : Goal) (depth : Nat) (context : Context)
+def evaluatePremise {matcher : MatchingExecution} (environment : Environment) (outer : Goal) (depth : Nat) (context : Context)
     (premise : Premise) (initial : Assignment)
-    (tail : Continuation environment (.premise depth context premise initial) outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+    (tail : Interpreted.Continuation matcher environment (.premise depth context premise initial) outer) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
   match premise with
   | .relationQuery relation arguments =>
       let request : Query.Request := ⟨context, relation, arguments, initial⟩
-      { tasks := [.query depth request (Query.start environment request) 0 tail] }
+      { tasks := [.query depth request (Query.start environment request matcher) 0 tail] }
   | .freshness condition =>
       match read : freshnessSubject? context.rule context.spec context.bound context.premiseIndex
           context.quantifierDepth initial condition with
@@ -123,7 +123,7 @@ def evaluatePremise (environment : Environment) (outer : Goal) (depth : Nat) (co
               (context.site 0) [] 0 initial source with
           | none => { unresolved := [.stepProjection context.premiseIndex context.quantifierDepth] }
           | some actualSource =>
-              let call : StepCall environment := {
+              let call : StepCall environment matcher := {
                 context := context
                 premise := .congruence source target
                 initial := initial
@@ -140,7 +140,7 @@ def evaluatePremise (environment : Environment) (outer : Goal) (depth : Nat) (co
           (context.site 0) [] step.binders.length initial step.source with
       | none => { unresolved := [.stepProjection context.premiseIndex context.quantifierDepth] }
       | some actualSource =>
-          let call : StepCall environment := {
+          let call : StepCall environment matcher := {
             context := context
             premise := .scopedStep step
             initial := initial
@@ -154,10 +154,10 @@ def evaluatePremise (environment : Environment) (outer : Goal) (depth : Nat) (co
               (.steps depth (step.binders ++ context.bound) step.resultType actualSource environment.language.rewrites.length)
               (.stepped depth call tail)] }
 
-def evaluateRoot (environment : Environment) (outer : Goal) (depth : Nat) (bound : List TypeExpr)
+def evaluateRoot {matcher : MatchingExecution} (environment : Environment) (outer : Goal) (depth : Nat) (bound : List TypeExpr)
     (type : TypeExpr) (source : Pattern) (index : Nat)
-    (tail : Continuation environment (.root depth bound type source index) outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+    (tail : Interpreted.Continuation matcher environment (.root depth bound type source index) outer) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
   match depth with
   | 0 => { unresolved := [.depthExhausted index] }
   | depth + 1 =>
@@ -183,16 +183,16 @@ def evaluateRoot (environment : Environment) (outer : Goal) (depth : Nat) (bound
                       specified := specified
                       admitted := admitted
                       sorted := checkOpenPatternWellSorted_sound checked
-                      state := GeneralScopedMatchMachine.start request
-                      reachable := .start
+                      state := matcher.start request
+                      reachable := matcher.start_reachable request
                       cursor := 0
                       tail := tail }] }
                 else { unresolved := [.sourceRejected index] }
               else { unresolved := [.bindingRejected index] }
 
-def evaluate (environment : Environment) (outer : Goal) (goal : Goal)
-    (tail : Continuation environment goal outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+def evaluate {matcher : MatchingExecution} (environment : Environment) (outer : Goal) (goal : Goal)
+    (tail : Interpreted.Continuation matcher environment goal outer) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
   match goal with
   | .premise depth context premise initial => evaluatePremise environment outer depth context premise initial tail
   | .premises depth context premises initial =>
@@ -214,11 +214,11 @@ def evaluate (environment : Environment) (outer : Goal) (goal : Goal)
   | .root depth bound type source index => evaluateRoot environment outer depth bound type source index tail
   | .steps depth bound type source limit => { tasks := [.scanChildren depth bound type source limit 0 tail] }
 
-def expandQuery (environment : Environment) (outer : Goal) (depth : Nat) (request : Query.Request)
-    (state : Query.State environment request) (cursor : Nat)
-    (tail : Continuation environment
+def expandQuery {matcher : MatchingExecution} (environment : Environment) (outer : Goal) (depth : Nat) (request : Query.Request)
+    (state : Query.State environment request matcher) (cursor : Nat)
+    (tail : Interpreted.Continuation matcher environment
       (.premise depth request.context (.relationQuery request.relation request.arguments) request.initial) outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
   match _found : state.answers[cursor]? with
   | some answer =>
       { tasks := [
@@ -233,75 +233,186 @@ def expandQuery (environment : Environment) (outer : Goal) (depth : Nat) (reques
 /-- The shared scheduled continuation after any root matcher backend returns a
 checked answer. The backend supplies only matching evidence; this continuation
 owns typed captures, premises and the final reduct. -/
-def continueRootAnswer (environment : Environment) (outer : Goal)
+def continueRootAnswer {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
     (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
     (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
     (declared : environment.language.rewrites[index]? = some rule)
     (specified : specification? environment index = some spec)
     (admitted : admittedFor rule spec = true)
     (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
-    (answer : GeneralScopedMatchMachine.Answer)
-    (valid : answer.Valid ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩)
-    (tail : Continuation environment (.root (depth + 1) bound type source index) outer)
-    (next : List (Task environment outer)) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+    (answer : matcher.Answer)
+    (valid : matcher.meaning.Matches ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+      (matcher.trace answer) (matcher.assignment answer))
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
   let context : Context := ⟨index, rule, spec, bound, 0, 0⟩
-  if checked : checkTypedAssignment environment context answer.assignment then
+  if checked : checkTypedAssignment environment context (matcher.assignment answer) then
     { tasks :=
-        .evaluate (.premises depth context rule.premises answer.assignment)
+        .evaluate (.premises depth context rule.premises (matcher.assignment answer))
           (.rootBody depth bound type source index rule spec declared specified admitted sorted
-            answer.trace answer.assignment valid (checkTypedAssignment_sound checked) tail) :: next }
+            (matcher.trace answer) (matcher.assignment answer) valid (checkTypedAssignment_sound checked) tail) :: next }
   else { tasks := next }
 
-def expandRootMatch (environment : Environment) (outer : Goal)
-    (frame : RootMatchFrame environment outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
-  match found : frame.state.answers[frame.cursor]? with
+@[simp] theorem continueRootAnswer_answers {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (answer : matcher.Answer)
+    (valid : matcher.meaning.Matches ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+      (matcher.trace answer) (matcher.assignment answer))
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    (continueRootAnswer environment outer depth bound type source index rule spec declared
+      specified admitted sorted answer valid tail next).answers = [] := by
+  unfold continueRootAnswer
+  dsimp only
+  split <;> rfl
+
+@[simp] theorem continueRootAnswer_unresolved {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (answer : matcher.Answer)
+    (valid : matcher.meaning.Matches ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+      (matcher.trace answer) (matcher.assignment answer))
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    (continueRootAnswer environment outer depth bound type source index rule spec declared
+      specified admitted sorted answer valid tail next).unresolved = [] := by
+  unfold continueRootAnswer
+  dsimp only
+  split <;> rfl
+
+/-- Fold a finite certified matcher frontier through the shared root
+continuation.  Backends may enumerate answers differently, while typing,
+premises, reducts and publication remain identical. -/
+def continueRootAnswers {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (answers : List {answer : matcher.Answer //
+      matcher.meaning.Matches ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+      (matcher.trace answer) (matcher.assignment answer)})
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
+  match answers with
+  | [] => { tasks := next }
+  | answer :: rest =>
+      let later := continueRootAnswers environment outer depth bound type source index
+        rule spec declared specified admitted sorted rest tail next
+      continueRootAnswer environment outer depth bound type source index rule spec
+        declared specified admitted sorted answer.val answer.property tail later.tasks
+
+@[simp] theorem continueRootAnswers_nil {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    continueRootAnswers environment outer depth bound type source index rule spec
+      declared specified admitted sorted [] tail next = { tasks := next } := rfl
+
+@[simp] theorem continueRootAnswers_answers {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (answers : List {answer : matcher.Answer //
+      matcher.meaning.Matches ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+      (matcher.trace answer) (matcher.assignment answer)})
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    (continueRootAnswers environment outer depth bound type source index rule spec declared
+      specified admitted sorted answers tail next).answers = [] := by
+  induction answers with
+  | nil => rfl
+  | cons answer rest ih =>
+      simp only [continueRootAnswers, continueRootAnswer_answers]
+
+@[simp] theorem continueRootAnswers_unresolved {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (answers : List {answer : matcher.Answer //
+      matcher.meaning.Matches ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+      (matcher.trace answer) (matcher.assignment answer)})
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Interpreted.Task matcher environment outer)) :
+    (continueRootAnswers environment outer depth bound type source index rule spec declared
+      specified admitted sorted answers tail next).unresolved = [] := by
+  induction answers with
+  | nil => rfl
+  | cons answer rest ih =>
+      simp only [continueRootAnswers, continueRootAnswer_unresolved]
+
+def expandRootMatch {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (frame : RootMatchFrame environment outer matcher) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
+  match found : (matcher.answers frame.state)[frame.cursor]? with
   | some answer =>
-      let tail := Task.rootMatch { frame with cursor := frame.cursor + 1 }
+      let tail := Interpreted.Task.rootMatch { frame with cursor := frame.cursor + 1 }
       continueRootAnswer environment outer frame.depth frame.bound frame.type frame.source
         frame.index frame.rule frame.spec frame.declared frame.specified frame.admitted frame.sorted
-        answer (GeneralScopedMatchMachine.answers_sound frame.reachable
+        answer (matcher.answers_sound frame.reachable
           (List.mem_of_getElem? found)) frame.tail [tail]
   | none =>
-      if GeneralScopedMatchMachine.complete frame.state then {}
+      if matcher.complete frame.state then {}
       else
         let request : GeneralScopedMatchMachine.Request :=
           ⟨frame.rule, frame.spec, frame.bound.length, .left, [], 0, [], frame.rule.left, frame.source⟩
         { tasks := [.rootMatch { frame with
-            state := GeneralScopedMatchMachine.tick request frame.state
-            reachable := GeneralScopedMatchMachine.reachable_tick frame.reachable }] }
+            state := matcher.tick request frame.state
+            reachable := matcher.tick_reachable frame.reachable }] }
 
-def expandTargetMatch (environment : Environment) (outer : Goal)
-    (frame : TargetMatchFrame environment outer) :
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
-  match found : frame.state.answers[frame.cursor]? with
+def expandTargetMatch {matcher : MatchingExecution} (environment : Environment) (outer : Goal)
+    (frame : TargetMatchFrame environment outer matcher) :
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation :=
+  match found : (matcher.answers frame.state)[frame.cursor]? with
   | some answer =>
-      let tail := Task.targetMatch { frame with cursor := frame.cursor + 1 }
-      if checked : checkTypedAssignment environment frame.call.context answer.assignment then
-        have valid := GeneralScopedMatchMachine.answers_sound frame.reachable
+      let tail := Interpreted.Task.targetMatch { frame with cursor := frame.cursor + 1 }
+      if checked : checkTypedAssignment environment frame.call.context (matcher.assignment answer) then
+        have valid := matcher.answers_sound frame.reachable
           (List.mem_of_getElem? found)
         { tasks := [
-            .deliver (.premise answer.assignment
+            .deliver (.premise (matcher.assignment answer)
               (.child frame.call.context.premiseIndex frame.call.context.quantifierDepth frame.index
                 (frame.call.binders ++ frame.call.context.bound) frame.call.source frame.target
-                frame.trace answer.trace frame.captured frame.completed frame.history)
+                frame.trace (matcher.trace answer) frame.captured frame.completed frame.history)
               (frame.call.conclude _ _ _ _ _ _ _ _ frame.valid valid
                 (checkTypedAssignment_sound checked))) frame.tail, tail] }
       else { tasks := [tail] }
   | none =>
-      if GeneralScopedMatchMachine.complete frame.state then {}
+      if matcher.complete frame.state then {}
       else
         let request : GeneralScopedMatchMachine.Request :=
           ⟨frame.call.context.rule, frame.call.context.spec, frame.call.context.bound.length,
             frame.call.context.site 1, [], frame.call.binders.length, frame.call.initial,
             frame.call.targetSchema, frame.target⟩
         { tasks := [.targetMatch { frame with
-            state := GeneralScopedMatchMachine.tick request frame.state
-            reachable := GeneralScopedMatchMachine.reachable_tick frame.reachable }] }
+            state := matcher.tick request frame.state
+            reachable := matcher.tick_reachable frame.reachable }] }
 
-def expand (environment : Environment) (outer : Goal) : Task environment outer →
-    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation
+def expand {matcher : MatchingExecution} (environment : Environment) (outer : Goal) : Interpreted.Task matcher environment outer →
+    Scheduler.Expansion (Interpreted.Task matcher environment outer) (Interpreted.Result matcher environment outer) Obligation
   | .evaluate goal tail => evaluate environment outer goal tail
   | .deliver result tail => delivered environment outer result tail
   | .query depth request state cursor tail => expandQuery environment outer depth request state cursor tail
@@ -315,31 +426,32 @@ def expand (environment : Environment) (outer : Goal) : Task environment outer �
             .scanChildren depth bound type source limit (cursor + 1) tail] }
       else {}
 
-def start (environment : Environment) (goal : Goal) : State environment goal :=
+def start (environment : Environment) (goal : Goal)
+    (matcher : MatchingExecution := MatchingExecution.ordinary) : State environment goal matcher :=
   { agenda := [.evaluate goal (.done goal)] }
 
-def tick (environment : Environment) (goal : Goal) (state : State environment goal) :
-    State environment goal := Scheduler.tick (expand environment goal) state
+def tick {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (state : State environment goal matcher) :
+    State environment goal matcher := Scheduler.tick (expand environment goal) state
 
-def run (environment : Environment) (goal : Goal) (fuel : Nat) (state : State environment goal) :
-    State environment goal := Scheduler.run (expand environment goal) fuel state
+def run {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (fuel : Nat) (state : State environment goal matcher) :
+    State environment goal matcher := Scheduler.run (expand environment goal) fuel state
 
-def complete (environment : Environment) (goal : Goal) (state : State environment goal) : Bool :=
+def complete {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (state : State environment goal matcher) : Bool :=
   Scheduler.complete state
 
-theorem run_add (environment : Environment) (goal : Goal) (first second : Nat)
-    (state : State environment goal) :
+theorem run_add {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (first second : Nat)
+    (state : State environment goal matcher) :
     run environment goal (first + second) state =
       run environment goal second (run environment goal first state) :=
   Scheduler.run_add _ _ _ _
 
-theorem receipts_prefix (environment : Environment) (goal : Goal) (fuel : Nat)
-    (state : State environment goal) :
+theorem receipts_prefix {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (fuel : Nat)
+    (state : State environment goal matcher) :
     Scheduler.Prefix state.answers (run environment goal fuel state).answers :=
   Scheduler.run_answers_prefix _ _ _
 
-theorem work_add (environment : Environment) (goal : Goal) (first second : Nat)
-    (state : State environment goal) :
+theorem work_add {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (first second : Nat)
+    (state : State environment goal matcher) :
     Scheduler.spent (expand environment goal) (first + second) state =
       Scheduler.spent (expand environment goal) first state +
       Scheduler.spent (expand environment goal) second (run environment goal first state) :=
@@ -347,13 +459,13 @@ theorem work_add (environment : Environment) (goal : Goal) (first second : Nat)
 
 /-- The real scheduled frames instantiate the shared continuation law.
 Observations retain obligations and the entire agenda, not just endpoints. -/
-def trajectory (environment : Environment) (goal : Goal) (state : State environment goal) :
+def trajectory {matcher : MatchingExecution} (environment : Environment) (goal : Goal) (state : State environment goal matcher) :
     Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory (run environment goal) state :=
   Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.canonical
     (run environment goal) state (fun _ => rfl) (run_add environment goal)
 
-theorem trajectory_answers_prefix (environment : Environment) (goal : Goal)
-    (state : State environment goal) (first extra : Nat) :
+theorem trajectory_answers_prefix {matcher : MatchingExecution} (environment : Environment) (goal : Goal)
+    (state : State environment goal matcher) (first extra : Nat) :
     ((trajectory environment goal state).observation first).answers <+:
       ((trajectory environment goal state).observation (first + extra)).answers := by
   apply (trajectory environment goal state).observer_prefix_after_resume (·.answers)
@@ -361,8 +473,8 @@ theorem trajectory_answers_prefix (environment : Environment) (goal : Goal)
   obtain ⟨tail, appended⟩ := receipts_prefix environment goal fuel current
   exact ⟨tail, appended.symm⟩
 
-theorem trajectory_obligations_prefix (environment : Environment) (goal : Goal)
-    (state : State environment goal) (first extra : Nat) :
+theorem trajectory_obligations_prefix {matcher : MatchingExecution} (environment : Environment) (goal : Goal)
+    (state : State environment goal matcher) (first extra : Nat) :
     ((trajectory environment goal state).observation first).unresolved <+:
       ((trajectory environment goal state).observation (first + extra)).unresolved := by
   apply (trajectory environment goal state).observer_prefix_after_resume (·.unresolved)
@@ -372,8 +484,8 @@ theorem trajectory_obligations_prefix (environment : Environment) (goal : Goal)
 
 /-- A drained agenda stays fixed even when unresolved obligations block
 completion. Budget exhaustion alone is not this settlement condition. -/
-theorem trajectory_settled (environment : Environment) (goal : Goal)
-    (state : State environment goal) (first extra : Nat)
+theorem trajectory_settled {matcher : MatchingExecution} (environment : Environment) (goal : Goal)
+    (state : State environment goal matcher) (first extra : Nat)
     (settled : ((trajectory environment goal state).observation first).agenda = []) :
     (trajectory environment goal state).observation (first + extra) =
       (trajectory environment goal state).observation first := by

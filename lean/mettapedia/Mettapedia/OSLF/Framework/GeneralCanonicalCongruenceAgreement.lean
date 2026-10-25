@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.Framework.GeneralCanonicalQueryAgreement
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseExecutionOrder
+import Mettapedia.OSLF.MeTTaIL.ContextualStepFuel
 
 /-!
 # Agreement for first-order rules with premises
@@ -21,69 +22,6 @@ namespace Mettapedia.OSLF.Framework.GeneralCanonicalAgreement
 
 open Mettapedia.OSLF.MeTTaIL
 open MeTTaIL.Syntax MeTTaIL.Match MeTTaIL.ContextualStep
-
-/-! ## The canonical step is monotone in its contextual depth -/
-
-theorem StepAt.mono_fuel {base : BasePremiseEvaluator} {language : LanguageDef} :
-    ∀ {fuel larger : Nat} {source target : Pattern}, fuel ≤ larger →
-      StepAt base language fuel source target → StepAt base language larger source target := by
-  intro fuel
-  induction fuel with
-  | zero => intro _ _ _ _ evidence; cases evidence
-  | succ fuel inductionHypothesis =>
-    intro larger source target le evidence
-    obtain ⟨larger, rfl⟩ : ∃ smaller, larger = smaller + 1 :=
-      ⟨larger - 1, by omega⟩
-    have bounded : fuel ≤ larger := by omega
-    have premiseMono : ∀ {initial final : Bindings} {premise : Premise},
-        PremiseAt base language fuel initial premise final →
-          PremiseAt base language larger initial premise final := by
-      intro initial final premise premiseEvidence
-      cases premiseEvidence with
-      | freshness member => exact .freshness member
-      | relationQuery member => exact .relationQuery member
-      | forAll member => exact .forAll member
-      | congruence recursive matched merged =>
-          exact .congruence (inductionHypothesis bounded recursive) matched merged
-      | scopedRoot empty recursive matched merged =>
-          exact .scopedRoot empty (inductionHypothesis bounded recursive) matched merged
-    have premisesMono : ∀ {initial final : Bindings} {premises : List Premise},
-        PremisesAt base language fuel initial premises final →
-          PremisesAt base language larger initial premises final := by
-      intro initial final premises premisesEvidence
-      induction premises generalizing initial final with
-      | nil => cases premisesEvidence; exact .nil initial
-      | cons premise premises premisesHypothesis =>
-        cases premisesEvidence with
-        | cons first rest => exact .cons (premiseMono first) (premisesHypothesis rest)
-    cases evidence with
-    | rule member matched premises reduct =>
-        exact .rule member matched (premisesMono premises) reduct
-
-theorem PremiseAt.mono_fuel {base : BasePremiseEvaluator} {language : LanguageDef}
-    {fuel larger : Nat} (le : fuel ≤ larger) {initial final : Bindings} {premise : Premise}
-    (evidence : PremiseAt base language fuel initial premise final) :
-    PremiseAt base language larger initial premise final := by
-  cases evidence with
-  | freshness member => exact .freshness member
-  | relationQuery member => exact .relationQuery member
-  | forAll member => exact .forAll member
-  | congruence recursive matched merged =>
-      exact .congruence (StepAt.mono_fuel le recursive) matched merged
-  | scopedRoot empty recursive matched merged =>
-      exact .scopedRoot empty (StepAt.mono_fuel le recursive) matched merged
-
-theorem PremisesAt.mono_fuel {base : BasePremiseEvaluator} {language : LanguageDef}
-    {fuel larger : Nat} (le : fuel ≤ larger) :
-    ∀ {initial final : Bindings} {premises : List Premise},
-      PremisesAt base language fuel initial premises final →
-        PremisesAt base language larger initial premises final := by
-  intro initial final premises evidence
-  induction premises generalizing initial final with
-  | nil => cases evidence; exact .nil initial
-  | cons premise premises inductionHypothesis =>
-    cases evidence with
-    | cons first rest => exact .cons (PremiseAt.mono_fuel le first) (inductionHypothesis rest)
 
 open MeTTaIL.ScopedRuleMatching MeTTaIL.RuleBinding MeTTaIL.GeneralFirstOrderProjection
 open Mettapedia.GSLT.LanguageDef.WellSorted
@@ -404,7 +342,7 @@ mutual
         (fun other member => congruent other (List.mem_cons_of_mem _ member)) zero later roots
         declaredNames middleBound tailSupported middleCompatible middleUnique middleNames
     exact ⟨max headFuel tailFuel, result,
-      .cons (PremiseAt.mono_fuel (le_max_left _ _) headAt) (PremisesAt.mono_fuel (le_max_right _ _) tailAt),
+      .cons (headAt.mono_fuel (le_max_left _ _)) (tailAt.mono_fuel (le_max_right _ _)),
       resultCompatible, resultUnique, resultNames⟩
  termination_by structural held
 

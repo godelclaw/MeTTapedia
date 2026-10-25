@@ -38,7 +38,7 @@ open Presentation
 
 /-- OSLF soundness is inherited from the existing compositional
 interpretation of all four declaration-aware structural rules. -/
-def structuralSoundModel :
+theorem structuralSoundModel :
     SoundModel checked (fun goal ↦ Nonempty (CanonicalMeaning goal)) :=
   SoundModel.ofProofRelevant structuralSemantics
 

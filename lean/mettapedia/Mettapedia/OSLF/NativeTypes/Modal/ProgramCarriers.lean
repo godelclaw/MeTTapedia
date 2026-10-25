@@ -96,8 +96,9 @@ theorem classified_program_type_candidate {language : LanguageDef} {rule : Rewri
       cases typed with
       | collectionConstructor declared shape elementsTyped =>
           rename_i constructor parameterName elementType
+          have parameters := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
           have selected : constructor ∈ collectionDeclarations language kind := by
-            simp [collectionDeclarations, declared, shape]
+            simp [collectionDeclarations, declared, parameters]
           have accepted := List.all_eq_true.mp
             (by simpa only [classifyingProgramSource?, left] using classified) constructor selected
           exact result_declared accepted

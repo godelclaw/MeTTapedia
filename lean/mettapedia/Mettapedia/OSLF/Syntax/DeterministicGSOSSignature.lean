@@ -2,6 +2,7 @@ import Mettapedia.TypeTheory.IndexedPolynomialAdjunction
 import Mettapedia.TypeTheory.IndexedPolynomialFreeMapInjective
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finite.Defs
+import Mathlib.CategoryTheory.Limits.Shapes.IsTerminal
 
 /-!
 # First-order signatures for deterministic operational rules
@@ -10,6 +11,7 @@ The signature records output sorts, individually addressed finite argument
 positions, and each argument's sort. Its free terms and categorical monad
 are the existing indexed polynomial construction. Variables range over
 arbitrary families; neither variable sets nor action sets are finite here.
+The empty family is initial, and terms over it are the closed terms.
 -/
 
 set_option autoImplicit false
@@ -65,6 +67,21 @@ noncomputable abbrev rename {X Y : S.Families} (mapping : X ⟶ Y)
 abbrev Arguments (X : S.Families) {sort : S.Srt}
     (operator : S.Operator sort) :=
   (position : S.Position operator) → X PUnit.unit (S.argument operator position)
+
+/-- No variables at any sort. -/
+abbrev noVariables : S.Families := fun _ _ => PEmpty.{u + 1}
+
+/-- The empty family is initial among families. -/
+def noVariablesInitial : Limits.IsInitial S.noVariables :=
+  Limits.IsInitial.ofUniqueHom (fun _ _ _ => ↾(fun value => PEmpty.elim value))
+    (fun _ _ => by
+      funext base sort
+      apply ConcreteCategory.hom_ext
+      intro value
+      exact PEmpty.elim value)
+
+/-- Closed terms: free syntax over no variables. -/
+abbrev ClosedTerm (sort : S.Srt) := S.Term S.noVariables sort
 
 end Signature
 

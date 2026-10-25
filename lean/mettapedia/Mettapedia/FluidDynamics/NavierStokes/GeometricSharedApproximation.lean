@@ -24,7 +24,6 @@ namespace FluidDynamics
 namespace NavierStokes
 
 open Filter
-open ProbabilityTheory
 open Mettapedia.ProbabilityTheory
 open scoped BigOperators
 

@@ -1151,7 +1151,7 @@ private theorem apply_hasType {bound : List TypeExpr} {label category : String}
   subst labelled
   refine .constructor (List.mem_of_find?_eq_some found) ?_ typed
   rintro ⟨name, kind, element, shape⟩
-  exact applied name kind element shape
+  exact applied name kind element ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
 
 private theorem bag_hasType {bound : List TypeExpr} {label category name : String}
     {element : TypeExpr} {elements : List Pattern}
@@ -1162,7 +1162,13 @@ private theorem bag_hasType {bound : List TypeExpr} {label category name : Strin
       (.collection .hashBag elements none) (.base category) := by
   obtain ⟨rule, found, same⟩ := Option.map_eq_some_iff.mp row
   obtain ⟨rfl, parameters⟩ := Prod.mk.inj same
-  exact .collectionConstructor (List.mem_of_find?_eq_some found) parameters typed
+  have allBare : rhoCIGSLT.costWholeLanguage.terms.all
+      (fun row => row.collectionRepresentation == .bare) = true := by decide +kernel
+  have bare : rule.collectionRepresentation = .bare := by
+    simpa only [beq_iff_eq] using
+      (List.all_eq_true.mp allBare rule (List.mem_of_find?_eq_some found))
+  exact .collectionConstructor (List.mem_of_find?_eq_some found)
+    ((GrammarRule.bareParams_cons_iff _ _ _).mpr ⟨bare, parameters⟩) typed
 
 private abbrev nameSort : TypeExpr := .base (costBaseSortName "Name")
 private abbrev procSort : TypeExpr := .base (costBaseSortName "Proc")

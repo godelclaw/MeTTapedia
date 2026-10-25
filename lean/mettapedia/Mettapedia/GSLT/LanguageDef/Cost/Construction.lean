@@ -475,7 +475,8 @@ theorem costClosure_typingProfile_mem_generated
       target.label = source.costClosureSymbols.constructor rule.label ∧
       target.category = source.costClosureSymbols.sort rule.category ∧
       target.params = rule.params.map
-        (mapTermParam source.costClosureSymbols) := by
+        (mapTermParam source.costClosureSymbols) ∧
+      target.collectionRepresentation = rule.collectionRepresentation := by
   let authored :
       DeclaredConstructor source.costIGSLT.presentation.presentation :=
     ⟨rule, membership⟩
@@ -489,7 +490,9 @@ theorem costClosure_typingProfile_mem_generated
       source.costContinuationRetyping.costBaseConstructor_mem_generated
         source.costInteractionCut.program.constructor.1
           source.costInteractionCut.program.constructor.2,
-      source.costClosure_program_typingProfile⟩
+      (by
+        rcases source.costClosure_program_typingProfile with ⟨label, category, parameters⟩
+        exact ⟨label, category, parameters, rfl⟩)⟩
   · by_cases environment :
         authored = source.costInteractionCut.environment.constructor
     · have ruleEquality := congrArg Subtype.val environment
@@ -500,14 +503,18 @@ theorem costClosure_typingProfile_mem_generated
         source.costContinuationRetyping.costBaseConstructor_mem_generated
           source.costInteractionCut.environment.constructor.1
             source.costInteractionCut.environment.constructor.2,
-        source.costClosure_environment_typingProfile⟩
+        (by
+          rcases source.costClosure_environment_typingProfile with ⟨label, category, parameters⟩
+          exact ⟨label, category, parameters, rfl⟩)⟩
     · exact ⟨_,
         source.costContinuationRetyping.costWrappedConstructor_mem_generated
           authored
             ((source.costContinuationRetyping.mem_wrappedConstructors_iff
               authored).2 ⟨program, environment⟩),
-        source.costClosure_nonprincipal_typingProfile authored
-          program environment⟩
+        (by
+          rcases source.costClosure_nonprincipal_typingProfile authored program environment with
+            ⟨label, category, parameters⟩
+          exact ⟨label, category, parameters, rfl⟩)⟩
 
 /-- Repeated Cost has a declaration-derived typing map into the next layer.
 It transports sorts and constructor parameter profiles, which suffice for
@@ -980,15 +987,17 @@ mutual
               rw [source.costWholeLanguage_terms]
               exact List.mem_append_left _ membership
             obtain ⟨targetRule, targetMembership, _targetLabel,
-                targetCategory, targetParameters⟩ :=
+                targetCategory, targetParameters, targetRepresentation⟩ :=
               source.costClosureTyping.mapsTerms rule wholeMembership
             have targetShape :
-                targetRule.params =
+                targetRule.bareParams =
                   [.simple parameterName
                     (.collection collectionType
                       (mapTypeExpr source.costClosureSymbols
                         elementType))] := by
-              rw [targetParameters, parameterShape]
+              apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+              refine ⟨targetRepresentation.trans ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).1, ?_⟩
+              rw [targetParameters, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2]
               rfl
             have targetCategory' :
                 targetRule.category =

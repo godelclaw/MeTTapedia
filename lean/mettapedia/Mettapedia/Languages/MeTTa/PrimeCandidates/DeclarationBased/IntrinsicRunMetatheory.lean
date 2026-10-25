@@ -376,7 +376,7 @@ abbrev runRules : Rules Tower.Head :=
 abbrev RunHasType {n : Nat} :=
   @Presentation.HasType Tower.Head runRules n
 
-def includeOutcomeTyping {context : Tower.Ctx n}
+theorem includeOutcomeTyping {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : IntrinsicHasType context term type) :
     RunHasType context term type :=
@@ -1160,7 +1160,7 @@ theorem rawRunSignature_fresh {name : DeclName}
       Signature.insert, Signature.empty, isRun, isOk, isFault,
       isEliminate] at lookup
 
-def rawRunSignature_formed : rawRunSignature.Formed outcomeRules where
+theorem rawRunSignature_formed : rawRunSignature.Formed outcomeRules where
   fresh := rawRunSignature_fresh
   types := rawRunSignature_types_formed
   values := by
@@ -1174,7 +1174,7 @@ def rawRunSignature_formed : rawRunSignature.Formed outcomeRules where
 
 /-! ### Strict positivity -/
 
-def runFamilyApplication (signature judgment : Tower.Tm n)
+theorem runFamilyApplication (signature judgment : Tower.Tm n)
     (signatureFree : FreeOf runName signature)
     (judgmentFree : FreeOf runName judgment) :
     FamilyApplication runName 2 (runApp signature judgment) :=
@@ -1185,19 +1185,19 @@ def runFamilyApplication (signature judgment : Tower.Tm n)
     · exact signatureFree
     · exact judgmentFree) rfl
 
-def outcomeSignatureTypeFreeOfRun : FreeOf runName outcomeSignatureType :=
+theorem outcomeSignatureTypeFreeOfRun : FreeOf runName outcomeSignatureType :=
   outcomeSignatureTypeFreeOf runName
 
 /-- Like `OutcomeSignature`, `RunSignature` is structural and therefore free
 of every prospective family name. -/
-def runSignatureTypeFreeOf (family : DeclName) :
+theorem runSignatureTypeFreeOf (family : DeclName) :
     FreeOf family runSignatureType := by
   unfold runSignatureType runSignatureBody familyType signatureJudgment
     sortTm
   exact .sigma (outcomeSignatureTypeFreeOf family)
     (.pi (.fst (.var 0)) (.head _))
 
-def runSignatureTypeFree : FreeOf runName runSignatureType :=
+theorem runSignatureTypeFree : FreeOf runName runSignatureType :=
   runSignatureTypeFreeOf runName
 
 def runOkConstructorPositive :

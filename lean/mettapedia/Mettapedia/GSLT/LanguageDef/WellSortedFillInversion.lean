@@ -22,6 +22,31 @@ namespace Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 
+/-- Select one declared parameter together with its actual argument and
+binding representation. No out-of-range default term is introduced. -/
+theorem ArgumentsHaveTypes.argument_at
+    {language : LanguageDef} {free : FreeTypeContext} {bound : List TypeExpr}
+    {arguments : List Pattern} {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes language free bound arguments parameters)
+    {index : Nat} {parameter : TermParam} (selected : parameters[index]? = some parameter) :
+    ∃ argument expected, arguments[index]? = some argument ∧
+      parameterType? parameter = some expected ∧ MatchesParameterRepresentation parameter argument ∧
+      HasType language free bound argument expected := by
+  induction index generalizing arguments parameters with
+  | zero =>
+    cases typed with
+    | nil => cases selected
+    | cons represented typeFound argumentTyped rest =>
+      cases Option.some.inj selected
+      exact ⟨_, _, rfl, typeFound, represented, argumentTyped⟩
+  | succ index ih =>
+    cases typed with
+    | nil => cases selected
+    | cons represented typeFound argumentTyped rest =>
+      obtain ⟨argument, expected, found, parameterType, representation, result⟩ :=
+        ih rest (by simpa using selected)
+      exact ⟨argument, expected, by simpa using found, parameterType, representation, result⟩
+
 /-- The active element of an object-pattern list is an object pattern. -/
 theorem isObjectPatternList_append_cons
     {before : List Pattern} {middle : Pattern} {after : List Pattern}
@@ -118,7 +143,7 @@ theorem hasType_collection_inversion
     (∃ elementType, type = .collection collectionType elementType ∧
         ElementsHaveType language free bound elements elementType) ∨
       (∃ rule parameterName elementType, rule ∈ language.terms ∧
-        rule.params =
+        rule.bareParams =
           [.simple parameterName (.collection collectionType elementType)] ∧
         type = .base rule.category ∧
         ElementsHaveType language free bound elements elementType) := by
@@ -139,9 +164,9 @@ def CollectionChoiceDeterministic (language : LanguageDef) : Prop :=
   ∀ {leftRule rightRule : GrammarRule} {leftName rightName : String}
     {collectionType : CollType} {leftElementType rightElementType : TypeExpr},
     leftRule ∈ language.terms → rightRule ∈ language.terms →
-    leftRule.params =
+    leftRule.bareParams =
       [.simple leftName (.collection collectionType leftElementType)] →
-    rightRule.params =
+    rightRule.bareParams =
       [.simple rightName (.collection collectionType rightElementType)] →
     leftRule.category = rightRule.category →
     leftElementType = rightElementType
@@ -150,7 +175,7 @@ def CollectionChoiceDeterministic (language : LanguageDef) : Prop :=
 term list. -/
 def collectionChoiceCheck (terms : List GrammarRule) : Bool :=
   terms.all fun left => terms.all fun right =>
-    match left.params, right.params with
+    match left.bareParams, right.bareParams with
     | [.simple _ (.collection leftCollection leftElement)],
       [.simple _ (.collection rightCollection rightElement)] =>
         !(leftCollection == rightCollection &&

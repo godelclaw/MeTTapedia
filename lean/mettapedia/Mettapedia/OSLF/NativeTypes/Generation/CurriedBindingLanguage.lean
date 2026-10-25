@@ -127,7 +127,7 @@ theorem ordinary_constructor {language : LanguageDef} {sort : String}
     (origin : Origin language sort) : ¬ UsesBareCollection language.terms[origin.index.val] := by
   rintro ⟨name, kind, element, shape⟩
   have supported := origin.parameters (.simple name (.collection kind element))
-    (by rw [shape]; exact List.mem_singleton_self _)
+    (by rw [((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2]; exact List.mem_singleton_self _)
   obtain ⟨scope, result, impossible⟩ := supported
   cases impossible
 

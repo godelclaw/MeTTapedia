@@ -42,7 +42,8 @@ theorem mapStatic_reflectiveSupport
       ∃ targetRule ∈ profile.costWholeLanguage.terms,
         targetRule.label = (color.symbolsOf theory).constructor rule.label ∧
         targetRule.category = (color.symbolsOf theory).sort rule.category ∧
-        targetRule.params = rule.params.map (mapTermParam (color.symbolsOf theory)) := by
+        targetRule.params = rule.params.map (mapTermParam (color.symbolsOf theory)) ∧
+        targetRule.collectionRepresentation = rule.collectionRepresentation := by
     intro rule member admitted
     obtain ⟨targetRule, targetMember, rest⟩ := profile.staticRows nonprincipal color rule member admitted
     exact ⟨targetRule, profile.generatedTerms_mem_costWhole targetRule targetMember, rest⟩

@@ -40,9 +40,9 @@ def Concludes {environment : Environment} {goal outer : Goal}
             (.quantified read held)) wanted
   | .element context parameter body index element elements initial localTyped tail =>
       match result with
-      | .premise middle event head =>
+      | .premise _middle event head =>
           ∃ (final : Assignment) (events : List (Nat × Pattern × List Event)) (rest : QuantifiedElements environment context parameter body
-              (index + 1) elements (restoreParameter parameter initial middle) final events),
+              (index + 1) elements initial final events),
             quantifiedOrdered context.ruleIndex events = true ∧
             Concludes tail (.quantified final ((index, element, [event]) :: events)
               (.cons localTyped head rest)) wanted

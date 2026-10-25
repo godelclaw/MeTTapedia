@@ -58,7 +58,7 @@ variable {environment : Environment} {outer : Goal}
     delivered environment outer (.premise assignment event valid)
         (.element depth context parameter body index element elements initial localTyped tail) =
       { tasks := [.evaluate
-          (.quantified depth context parameter body (index + 1) elements (restoreParameter parameter initial assignment))
+          (.quantified depth context parameter body (index + 1) elements initial)
           (.prependElement depth context parameter body index element elements initial assignment
             event localTyped valid tail)] } := rfl
 
@@ -70,7 +70,7 @@ variable {environment : Environment} {outer : Goal}
     (head : PremiseHolds environment context.quantified body
       (bindParameter parameter (localValue context.bound element) initial) middle event)
     (valid : QuantifiedElements environment context parameter body (index + 1) elements
-      (restoreParameter parameter initial middle) assignment events)
+      initial assignment events)
     (tail : Continuation environment (.quantified depth context parameter body index (element :: elements) initial) outer) :
     delivered environment outer (.quantified assignment events valid)
         (.prependElement depth context parameter body index element elements initial middle event localTyped head tail) =

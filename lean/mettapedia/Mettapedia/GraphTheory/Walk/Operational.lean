@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.Walk.LanguageDef
 import Mettapedia.GSLT.Dynamics.PathIntegral
+import Mettapedia.OSLF.MeTTaIL.MatchSpec
 
 /-!
 # Exact execution of the finite-graph walk LanguageDef
@@ -22,6 +23,7 @@ open Mettapedia.GraphTheory.Walk.LanguageDef
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.MeTTaIL.Match
+open Mettapedia.OSLF.MeTTaIL.MatchSpec
 open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
 open Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution
 open Mettapedia.OSLF.MeTTaIL.RelationQueryAdmission
@@ -47,6 +49,14 @@ def appendRebuildPattern {n : Nat} {graph : SimpleGraph (Fin n)}
   .apply "AppendRebuild"
     [finPattern current, finPattern target, framesPattern frames,
       walkPattern result]
+
+/-- A reversal state whose unchecked suffix is still an arbitrary node.
+The accumulator records precisely the graph edges already checked. -/
+def rawReverseScanPattern {n : Nat} {graph : SimpleGraph (Fin n)}
+    {current origin : Fin n} (target : Fin n) (node : Pattern)
+    (accumulator : graph.Walk current origin) : Pattern :=
+  .apply "ReverseScan" [finPattern current, finPattern target, finPattern origin,
+    node, walkPattern accumulator]
 
 def reverseScanPattern {n : Nat} {graph : SimpleGraph (Fin n)}
     {current target origin : Fin n} (remaining : graph.Walk current target)
@@ -77,6 +87,39 @@ def mapRebuildPattern {m : Nat} {target : SimpleGraph (Fin m)}
 changes bindings.  This reusable lemma keeps the public relation-query
 admission boundary visible in the executable step proofs below. -/
 
+/-- Fully bound adjacency queries either retain the bindings or reject them. -/
+theorem sourceAdjacent_premise_decoded {n m : Nat}
+    (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
+    [DecidableRel graph.Adj] [DecidableRel other.Adj]
+    (hom : graph →g other) (bindings : Bindings)
+    (sourceName targetName : String) {source target : Pattern}
+    (sourceBound : bindings.lookup sourceName = some source)
+    (targetBound : bindings.lookup targetName = some target) :
+    premiseStepUsing (engineBasePremises (relationEnv graph other hom))
+        language (fun _ => []) bindings (sourceAdjacent sourceName targetName) =
+      match decodeFin? n source, decodeFin? n target with
+      | some u, some v => if graph.Adj u v then [bindings] else []
+      | _, _ => [] := by
+  change relationQueryStep (relationEnv graph other hom) language bindings
+    "SourceAdjacent" [.fvar sourceName, .fvar targetName] = _
+  cases left : decodeFin? n source <;> cases right : decodeFin? n target
+  all_goals dsimp only
+  all_goals try split
+  all_goals
+    first
+    | exact relationQueryStep_boundVariables_echo_eq
+        (relEnv := relationEnv graph other hom) (language := language)
+        (bindings := bindings) (relation := "SourceAdjacent")
+        (names := [sourceName, targetName]) (values := [source, target])
+        (condition := true) (.cons sourceBound (.cons targetBound .nil))
+        (by rfl) (by simp_all [relationEnv, relationTuples])
+    | exact relationQueryStep_boundVariables_echo_eq
+        (relEnv := relationEnv graph other hom) (language := language)
+        (bindings := bindings) (relation := "SourceAdjacent")
+        (names := [sourceName, targetName]) (values := [source, target])
+        (condition := false) (.cons sourceBound (.cons targetBound .nil))
+        (by rfl) (by simp_all [relationEnv, relationTuples])
+
 theorem sourceAdjacent_premise_exact {n m : Nat}
     (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
     [DecidableRel graph.Adj] [DecidableRel other.Adj]
@@ -88,18 +131,8 @@ theorem sourceAdjacent_premise_exact {n m : Nat}
     premiseStepUsing (engineBasePremises (relationEnv graph other hom))
         language (fun _ => []) bindings
         (sourceAdjacent sourceName targetName) = [bindings] := by
-  change relationQueryStep (relationEnv graph other hom) language bindings
-    "SourceAdjacent" [Pattern.fvar sourceName, Pattern.fvar targetName] =
-      [bindings]
-  have exactEcho := relationQueryStep_boundVariables_echo_eq
-    (relEnv := relationEnv graph other hom) (language := language)
-    (bindings := bindings) (relation := "SourceAdjacent")
-    (names := [sourceName, targetName])
-    (values := [finPattern source, finPattern target])
-    (condition := true)
-    (.cons sourceBound (.cons targetBound .nil)) (by rfl)
-    (by simp [relationEnv, relationTuples, edge])
-  simpa using exactEcho
+  simpa [edge] using sourceAdjacent_premise_decoded graph other hom bindings
+    sourceName targetName sourceBound targetBound
 
 theorem sourceAdjacent_premise_empty {n m : Nat}
     (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
@@ -112,17 +145,8 @@ theorem sourceAdjacent_premise_empty {n m : Nat}
     premiseStepUsing (engineBasePremises (relationEnv graph other hom))
         language (fun _ => []) bindings
         (sourceAdjacent sourceName targetName) = [] := by
-  change relationQueryStep (relationEnv graph other hom) language bindings
-    "SourceAdjacent" [Pattern.fvar sourceName, Pattern.fvar targetName] = []
-  have exactEcho := relationQueryStep_boundVariables_echo_eq
-    (relEnv := relationEnv graph other hom) (language := language)
-    (bindings := bindings) (relation := "SourceAdjacent")
-    (names := [sourceName, targetName])
-    (values := [finPattern source, finPattern target])
-    (condition := false)
-    (.cons sourceBound (.cons targetBound .nil)) (by rfl)
-    (by simp [relationEnv, relationTuples, nonedge])
-  simpa using exactEcho
+  simpa [nonedge] using sourceAdjacent_premise_decoded graph other hom bindings
+    sourceName targetName sourceBound targetBound
 
 theorem targetAdjacent_premise_exact {n m : Nat}
     (source : SimpleGraph (Fin n)) (target : SimpleGraph (Fin m))
@@ -296,6 +320,53 @@ theorem reverse_raw_start_exact {n m : Nat}
               .apply "WalkNil" [finPattern start]]]] := by
   walk_rewrite
 
+/-- Raw cons execution checks the next vertex and edge before advancing. -/
+theorem reverse_raw_scan_cons_exact {n m : Nat}
+    (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
+    [DecidableRel graph.Adj] [DecidableRel other.Adj]
+    (hom : graph →g other) {current target origin : Fin n}
+    (next tail : Pattern) (accumulator : graph.Walk current origin) :
+    rewriteOnce graph other hom
+      (rawReverseScanPattern target
+        (.apply "WalkCons" [finPattern current, next, finPattern target,
+          .apply "WalkValue" [next, finPattern target, tail]]) accumulator) =
+      match decodeFin? n next with
+      | some next => if edge : graph.Adj current next then
+          [rawReverseScanPattern target tail (Walk.cons edge.symm accumulator)]
+        else []
+      | none => [] := by
+  have adjacency := sourceAdjacent_premise_decoded graph other hom
+    [("Target", finPattern target), ("Tail", tail), ("Next", next),
+      ("Accumulator", walkNodePattern accumulator),
+      ("Origin", finPattern origin), ("Current", finPattern current)]
+    "Next" "Current" (source := next) (target := finPattern current)
+    (by simp [Bindings.lookup]) (by simp [Bindings.lookup])
+  simp only [decodeFin?_finPattern] at adjacency
+  cases found : decodeFin? n next with
+  | none =>
+      simp only [found] at adjacency ⊢
+      simp only [rawReverseScanPattern]
+      walk_rewrite
+      simpa only [relationEnv, sourceAdjacent] using adjacency
+  | some vertex =>
+      have encoded := decodeFin?_eq_some found
+      subst next
+      simp only [decodeFin?_finPattern] at adjacency ⊢
+      split
+      next edge =>
+        simp only [if_pos edge.symm] at adjacency
+        simp only [rawReverseScanPattern]
+        walk_rewrite
+        simp only [relationEnv, sourceAdjacent] at adjacency
+        simp [adjacency]
+      next nonedge =>
+        have reverseNonedge : ¬ graph.Adj vertex current := fun edge => nonedge edge.symm
+        simp only [if_neg reverseNonedge] at adjacency
+        simp only [rawReverseScanPattern]
+        walk_rewrite
+        simp only [relationEnv, sourceAdjacent] at adjacency
+        simp [adjacency]
+
 theorem reverse_scan_cons_exact {n m : Nat}
     (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
     [DecidableRel graph.Adj] [DecidableRel other.Adj]
@@ -305,30 +376,10 @@ theorem reverse_scan_cons_exact {n m : Nat}
     rewriteOnce graph other hom
         (reverseScanPattern (Walk.cons edge tail) accumulator) =
       [reverseScanPattern tail (Walk.cons edge.symm accumulator)] := by
-  have adjacency := sourceAdjacent_premise_exact graph other hom
-    [("Target", finPattern target), ("Tail", walkNodePattern tail),
-      ("Next", finPattern next),
-      ("Accumulator", walkNodePattern accumulator),
-      ("Origin", finPattern origin), ("Current", finPattern current)]
-    "Next" "Current" (source := next) (target := current)
-    (by simp [Bindings.lookup]) (by simp [Bindings.lookup]) edge.symm
-  have adjacency' :
-      premiseStepUsing
-          (engineBasePremises { tuples := relationTuples graph other hom })
-          language (fun _ => [])
-          [("Target", finPattern target), ("Tail", walkNodePattern tail),
-            ("Next", finPattern next),
-            ("Accumulator", walkNodePattern accumulator),
-            ("Origin", finPattern origin), ("Current", finPattern current)]
-          (.relationQuery "SourceAdjacent"
-            [.fvar "Next", .fvar "Current"]) =
-        [[("Target", finPattern target), ("Tail", walkNodePattern tail),
-          ("Next", finPattern next),
-          ("Accumulator", walkNodePattern accumulator),
-          ("Origin", finPattern origin), ("Current", finPattern current)]] := by
-    simpa [relationEnv, sourceAdjacent] using adjacency
-  walk_rewrite
-  simp [adjacency']
+  simpa only [decodeFin?_finPattern, dif_pos edge, rawReverseScanPattern,
+    reverseScanPattern, walkNodePattern, walkPattern] using
+    reverse_raw_scan_cons_exact graph other hom (target := target) (finPattern next)
+      (walkNodePattern tail) accumulator
 
 theorem reverse_scan_nil_exact {n m : Nat}
     (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
@@ -339,6 +390,80 @@ theorem reverse_scan_nil_exact {n m : Nat}
         (reverseScanPattern (Walk.nil : graph.Walk target target)
           accumulator) =
       [donePattern accumulator] := by
+  walk_rewrite
+
+private theorem reverse_scan_matched_shape {n : Nat} {graph : SimpleGraph (Fin n)}
+    {current target origin : Fin n} {node : Pattern}
+    (accumulator : graph.Walk current origin) {rule : RewriteRule} {bindings : Bindings}
+    (member : rule ∈ rewrites)
+    (matched : bindings ∈ matchPattern rule.left
+      (rawReverseScanPattern target node accumulator)) :
+    (rule = reverseScanNilRule ∧ current = target ∧
+      node = .apply "WalkNil" [finPattern target]) ∨
+    (rule = reverseScanConsRule ∧ ∃ next tail,
+      node = .apply "WalkCons" [finPattern current, next, finPattern target,
+        .apply "WalkValue" [next, finPattern target, tail]]) := by
+  simp only [rewrites, List.mem_cons, List.mem_nil_iff, or_false] at member
+  rcases member with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl
+  all_goals
+    have shape := matchPattern_correct matched (by decide)
+    simp [appendStartRule, appendScanConsRule, appendScanNilRule,
+      appendRebuildConsRule, appendRebuildNilRule,
+      reverseStartRule, reverseScanConsRule, reverseScanNilRule,
+      mapStartRule, mapScanConsRule, mapScanNilRule,
+      mapRebuildConsRule, mapRebuildNilRule,
+      rawReverseScanPattern, walkPattern, applyBindings] at shape
+  · obtain ⟨hcurrent, htarget, horigin, hnode, hacc⟩ := shape
+    exact Or.inr ⟨rfl, _, _, by simpa only [hcurrent, htarget] using hnode.symm⟩
+  · obtain ⟨hcurrent, htarget, horigin, hnode, hacc⟩ := shape
+    exact Or.inl ⟨rfl, finPattern_injective (hcurrent.symm.trans htarget),
+      by simpa only [htarget] using hnode.symm⟩
+
+/-- Every actual scanner transition either finishes an empty walk or consumes
+one graph edge, retaining the raw remaining node for subsequent checking. -/
+theorem reverse_raw_scan_cases {n m : Nat}
+    (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
+    [DecidableRel graph.Adj] [DecidableRel other.Adj]
+    (hom : graph →g other) {current target origin : Fin n} {node after : Pattern}
+    (accumulator : graph.Walk current origin)
+    (transition : after ∈ rewriteOnce graph other hom
+      (rawReverseScanPattern target node accumulator)) :
+    (current = target ∧ node = .apply "WalkNil" [finPattern target] ∧
+      after = donePattern accumulator) ∨
+    ∃ (next : Fin n) (edge : graph.Adj current next) (tail : Pattern),
+      node = .apply "WalkCons" [finPattern current, finPattern next, finPattern target,
+        .apply "WalkValue" [finPattern next, finPattern target, tail]] ∧
+      after = rawReverseScanPattern target tail (Walk.cons edge.symm accumulator) := by
+  obtain ⟨rule, member, applied⟩ := List.mem_flatMap.mp transition
+  obtain ⟨bindings, matched, _⟩ := List.mem_flatMap.mp applied
+  change bindings ∈ matchPattern rule.left _ at matched
+  rcases reverse_scan_matched_shape accumulator member matched with
+    ⟨rfl, endpoint, nodeShape⟩ | ⟨rfl, next, tail, nodeShape⟩
+  · subst current node
+    have step := reverse_scan_nil_exact graph other hom accumulator
+    simp only [reverseScanPattern, walkNodePattern] at step
+    simp only [rawReverseScanPattern] at transition
+    exact Or.inl ⟨rfl, rfl, by simpa only [step, List.mem_singleton] using transition⟩
+  · subst node
+    rw [reverse_raw_scan_cons_exact] at transition
+    cases decoded : decodeFin? n next with
+    | none => simp [decoded] at transition
+    | some vertex =>
+        have encoded := decodeFin?_eq_some decoded
+        subst next
+        simp only [decodeFin?_finPattern] at transition
+        split at transition
+        next edge =>
+          exact Or.inr ⟨vertex, edge, tail, rfl, List.mem_singleton.mp transition⟩
+        next => contradiction
+
+/-- Successful walk states have no outgoing authored rewrite. -/
+theorem done_irreducible {n m : Nat}
+    (graph : SimpleGraph (Fin n)) (other : SimpleGraph (Fin m))
+    [DecidableRel graph.Adj] [DecidableRel other.Adj]
+    (hom : graph →g other) (value : Pattern) :
+    rewriteOnce graph other hom (.apply "WalkDone" [value]) = [] := by
   walk_rewrite
 
 theorem map_start_exact {n m : Nat}
@@ -570,29 +695,10 @@ theorem reverse_nonedge_scan_rejected {n m : Nat}
     (nonedge : ¬ graph.Adj current next) :
     rewriteOnce graph other hom
       (uncheckedReverseScanPattern tail accumulator) = [] := by
-  have reversedNonedge : ¬ graph.Adj next current := by
-    simpa [SimpleGraph.adj_comm] using nonedge
-  have rejected := sourceAdjacent_premise_empty graph other hom
-    [("Target", finPattern target), ("Tail", walkNodePattern tail),
-      ("Next", finPattern next),
-      ("Accumulator", walkNodePattern accumulator),
-      ("Origin", finPattern origin), ("Current", finPattern current)]
-    "Next" "Current" (source := next) (target := current)
-    (by simp [Bindings.lookup]) (by simp [Bindings.lookup]) reversedNonedge
-  have rejected' :
-      premiseStepUsing
-          (engineBasePremises { tuples := relationTuples graph other hom })
-          language (fun _ => [])
-          [("Target", finPattern target), ("Tail", walkNodePattern tail),
-            ("Next", finPattern next),
-            ("Accumulator", walkNodePattern accumulator),
-            ("Origin", finPattern origin), ("Current", finPattern current)]
-          (.relationQuery "SourceAdjacent"
-            [.fvar "Next", .fvar "Current"]) = [] := by
-    simpa [relationEnv, sourceAdjacent] using rejected
-  simp only [uncheckedReverseScanPattern]
-  walk_rewrite
-  simp [rejected']
+  simpa only [decodeFin?_finPattern, dif_neg nonedge, rawReverseScanPattern,
+    uncheckedReverseScanPattern, walkPattern] using
+    reverse_raw_scan_cons_exact graph other hom (target := target) (finPattern next)
+      (walkNodePattern tail) accumulator
 
 /-! ## Proof-relevant GSLT executions -/
 
@@ -988,6 +1094,7 @@ noncomputable def mapPath {n m : Nat}
 #print axioms appendPath_length
 #print axioms reversePath_length
 #print axioms mapPath_length
+#print axioms reverse_raw_scan_cases
 #print axioms reverse_raw_start_exact
 #print axioms reverse_nonedge_scan_rejected
 

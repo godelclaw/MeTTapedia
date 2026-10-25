@@ -1,5 +1,5 @@
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
-import Mettapedia.UniversalAlgebra.ConservativeExtension
+import Mettapedia.UniversalAlgebra.Model
 
 /-!
 # Universal-algebra terms with a finite variable bound
@@ -17,7 +17,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.UniversalAlgebra
 
-universe u v
+universe u v w
 
 variable {S : Signature.{u}}
 
@@ -136,6 +136,25 @@ theorem evaluateBelow_eq_evaluate {bound : Nat} {Carrier : Type v}
       funext position
       exact ih position (bounded position)
 
+/-- Equality under all total valuations descends to the supplied finite context.
+The terms may belong to different signatures. An evaluated term supplies the
+otherwise unused extension value, so no carrier inhabitant is assumed. -/
+theorem evaluateBelow_eq_of_evaluate_eq {T : Signature.{v}} {Carrier : Type w}
+    (leftModel : Model S Carrier) (rightModel : Model T Carrier)
+    {left : Term S} {right : Term T}
+    (equal : ∀ valuation, left.evaluate leftModel valuation = right.evaluate rightModel valuation)
+    {bound : Nat} (valuation : Fin bound → Carrier)
+    (leftBounded : left.VariablesBelow bound) (rightBounded : right.VariablesBelow bound) :
+    left.evaluateBelow leftModel valuation leftBounded =
+      right.evaluateBelow rightModel valuation rightBounded := by
+  let total : Nat → Carrier := fun index => if below : index < bound then
+    valuation ⟨index, below⟩ else left.evaluateBelow leftModel valuation leftBounded
+  have agrees (index : Nat) (below : index < bound) :
+      valuation ⟨index, below⟩ = total index := by simp [total, below]
+  rw [evaluateBelow_eq_evaluate leftModel valuation total agrees,
+    evaluateBelow_eq_evaluate rightModel valuation total agrees]
+  exact equal total
+
 /-- Substituting a finite argument vector into a bounded template and then
 evaluating is exactly direct bounded evaluation of the template. -/
 theorem evaluate_subst_finSubstitution {bound : Nat} {Carrier : Type v}
@@ -151,6 +170,26 @@ theorem evaluate_subst_finSubstitution {bound : Nat} {Carrier : Type v}
   apply evaluateBelow_eq_evaluate
   intro index below
   simp only [finSubstitution, below, dite_true]
+
+/-- Evaluate finite simultaneous substitution directly in its declared contexts.
+No total valuation or carrier inhabitant is required. -/
+theorem evaluateBelow_subst {sourceBound targetBound : Nat} {Carrier : Type v}
+    (model : Model S Carrier) (valuation : Fin targetBound → Carrier)
+    (substitution : Nat → Term S)
+    (substitutionBounded : ∀ index, index < sourceBound →
+      (substitution index).VariablesBelow targetBound)
+    (term : Term S) (bounded : term.VariablesBelow sourceBound) :
+    (term.subst substitution).evaluateBelow model valuation
+        (variablesBelow_subst bounded substitution substitutionBounded) =
+      term.evaluateBelow model (fun position =>
+        (substitution position.val).evaluateBelow model valuation
+          (substitutionBounded position.val position.isLt)) bounded := by
+  induction term with
+  | var index => rfl
+  | op operation arguments ih =>
+      apply congrArg (model.interpret operation)
+      funext position
+      exact ih position (bounded position)
 
 end Term
 

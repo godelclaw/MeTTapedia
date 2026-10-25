@@ -374,7 +374,7 @@ abbrev rules : Rules Tower.Head :=
     Intrinsic.listName, Intrinsic.nilName, Intrinsic.consName,
     Intrinsic.eliminateName, Intrinsic.identityEliminateName]
 
-def listSignatureExtension :
+theorem listSignatureExtension :
     Intrinsic.rawSignature.Extends rawSignature where
   entries := by
     intro name entry prior
@@ -396,7 +396,7 @@ def listSignatureExtension :
     rcases step with ⟨evidence⟩
     exact ⟨.list evidence⟩
 
-def includeListTyping {context : Tower.Ctx n} {term type : Tower.Tm n}
+theorem includeListTyping {context : Tower.Ctx n} {term type : Tower.Tm n}
     (typing : Intrinsic.HasType context term type) :
     HasType rules context term type :=
   Presentation.Declaration.HasType.monoSignature Tower.rules
@@ -1775,7 +1775,7 @@ theorem rawSignature_fresh {name : DeclName} {entry : Entry Tower.Head}
     Tower.rules.constantType name = none :=
   rfl
 
-def rawSignature_formed : rawSignature.Formed Tower.rules where
+theorem rawSignature_formed : rawSignature.Formed Tower.rules where
   fresh := rawSignature_fresh
   types := rawSignature_types_formed
   values := by
@@ -2084,31 +2084,31 @@ def consIotaReceipt :
 
 /-! ## Structural positivity -/
 
-def freeListApp {element : Tower.Tm n}
+theorem freeListApp {element : Tower.Tm n}
     (elementFree : FreeOf mapRelName element) :
     FreeOf mapRelName (Intrinsic.listApp element) :=
   .app (.const (by decide)) elementFree
 
-def freeNilApp {element : Tower.Tm n}
+theorem freeNilApp {element : Tower.Tm n}
     (elementFree : FreeOf mapRelName element) :
     FreeOf mapRelName (Intrinsic.nilApp element) :=
   .app (.const (by decide)) elementFree
 
-def freeConsApp {element head tail : Tower.Tm n}
+theorem freeConsApp {element head tail : Tower.Tm n}
     (elementFree : FreeOf mapRelName element)
     (headFree : FreeOf mapRelName head)
     (tailFree : FreeOf mapRelName tail) :
     FreeOf mapRelName (Intrinsic.consApp element head tail) :=
   .app (.app (.app (.const (by decide)) elementFree) headFree) tailFree
 
-def freeRelationApplication {relation source target : Tower.Tm n}
+theorem freeRelationApplication {relation source target : Tower.Tm n}
     (relationFree : FreeOf mapRelName relation)
     (sourceFree : FreeOf mapRelName source)
     (targetFree : FreeOf mapRelName target) :
     FreeOf mapRelName (.app (.app relation source) target) :=
   .app (.app relationFree sourceFree) targetFree
 
-def mapRelFamilyApplication
+theorem mapRelFamilyApplication
     (source target relation sourceList targetList : Tower.Tm n)
     (sourceFree : FreeOf mapRelName source)
     (targetFree : FreeOf mapRelName target)
@@ -2127,7 +2127,7 @@ def mapRelFamilyApplication
     · exact sourceListFree
     · exact targetListFree) rfl
 
-def relationTypeFree : FreeOf mapRelName relationType := by
+theorem relationTypeFree : FreeOf mapRelName relationType := by
   unfold relationType
   exact .pi (.var 1) (.pi (.var 1) (.head _))
 
@@ -2319,7 +2319,7 @@ noncomputable def mapRelCandidate : Candidate Tower.rules where
 
 /-! ## Positive and negative controls -/
 
-def canonicalNilFamilyApplication :
+theorem canonicalNilFamilyApplication :
     FamilyApplication mapRelName 5 nilRelBodyType := by
   unfold nilRelBodyType
   exact mapRelFamilyApplication (.var 2) (.var 1) (.var 0)
@@ -2330,7 +2330,7 @@ def canonicalNilFamilyApplication :
 def recursiveDomainCanary : Tower.Tm 5 :=
   mapRelApp (.var 4) (.var 3) (.var 2) (.var 1) (.var 0)
 
-def recursiveDomainApplication :
+theorem recursiveDomainApplication :
     FamilyApplication mapRelName 5 recursiveDomainCanary := by
   unfold recursiveDomainCanary
   exact mapRelFamilyApplication (.var 4) (.var 3) (.var 2) (.var 1)

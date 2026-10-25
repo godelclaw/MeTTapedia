@@ -1,7 +1,6 @@
 import Mathlib.CategoryTheory.Category.Basic
 import Mettapedia.UniversalAlgebra.BoundedTerm
-import Mettapedia.UniversalAlgebra.EquationSystemInterpretation
-import Mettapedia.UniversalAlgebra.FreeModelInvariance
+import Mettapedia.UniversalAlgebra.EquationalLogic
 
 /-!
 # The finite-context syntactic category of an equation system

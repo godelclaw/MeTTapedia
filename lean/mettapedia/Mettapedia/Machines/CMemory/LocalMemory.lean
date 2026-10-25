@@ -172,6 +172,7 @@ def result : Flow → Result
 
 /-- Argument values bind to the parsed parameter names and types in order. -/
 def argumentFits (type : CType) : ScalarRead.Value Ptr → Bool
+  | .byte _ => false
   | .signed _ => false
   | .unsigned _ => type == ⟨"uint32_t".toList, 0⟩
   | .unsigned64 _ => false
@@ -232,6 +233,12 @@ theorem unknown_allocator_not_called :
 /-- This UInt32 allocator profile does not silently admit a signed argument. -/
 theorem signed_argument_is_not_reinterpreted (value : Int32) :
     argumentFits ⟨"uint32_t".toList, 0⟩ (.signed value) = false := rfl
+
+theorem word_argument_is_admitted (value : UInt32) :
+    argumentFits ⟨"uint32_t".toList, 0⟩ (.unsigned value) = true := rfl
+
+theorem byte_argument_is_not_reinterpreted (value : UInt8) :
+    argumentFits ⟨"uint32_t".toList, 0⟩ (.byte value) = false := rfl
 
 theorem wide_argument_is_not_narrowed (value : UInt64) :
     argumentFits ⟨"uint32_t".toList, 0⟩ (.unsigned64 value) = false := rfl

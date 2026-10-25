@@ -56,6 +56,11 @@ theorem parallel_shape (color : CostStaticColor) :
       [.simple "ps" (.collection .hashBag (.base (parallelRule color).category))] := by
   cases color <;> rfl
 
+theorem parallel_bare_shape (color : CostStaticColor) :
+    (parallelRule color).bareParams =
+      [.simple "ps" (.collection .hashBag (.base (parallelRule color).category))] := by
+  cases color <;> rfl
+
 theorem parallelDeclaration (color : CostStaticColor) :
     AlgebraRule language (parallelRule color) .hashBag (parallelAlgebra color) where
   authored := parallel_member color
@@ -93,31 +98,31 @@ noncomputable def sourcePresheafInterpretation :=
 def permutationAxiom (color : CostStaticColor) {Γ : List TypeExpr}
     (first second : List (Term (signatureOf language) Γ (.base (parallelRule color).category)))
     (permutation : first.Perm second) : DeclaredAxiom language :=
-  bagPermutation (parallelRule color) (parallel_member color) "ps" (parallel_shape color)
+  bagPermutation (parallelRule color) (parallel_member color) "ps" (parallel_bare_shape color)
     first second permutation
 
 def flattenAxiom (color : CostStaticColor) {Γ : List TypeExpr}
     (pre inner post : List (Term (signatureOf language) Γ (.base (parallelRule color).category))) :
     DeclaredAxiom language :=
   flattening (parallelRule color) .hashBag (parallelAlgebra color) (parallelDeclaration color)
-    "ps" (parallel_shape color) rfl pre inner post
+    "ps" (parallel_bare_shape color) rfl pre inner post
 
 def singletonAxiom (color : CostStaticColor) {Γ : List TypeExpr}
     (value : Term (signatureOf language) Γ (.base (parallelRule color).category)) :
     DeclaredAxiom language :=
   singletonCollapse (parallelRule color) .hashBag (parallelAlgebra color) (parallelDeclaration color)
-    "ps" (parallel_shape color) rfl value
+    "ps" (parallel_bare_shape color) rfl value
 
 noncomputable def unitEliminationAxiom (color : CostStaticColor) {Γ : List TypeExpr}
     (pre post : List (Term (signatureOf language) Γ (.base (parallelRule color).category))) :
     DeclaredAxiom language :=
   unitElimination (parallelRule color) .hashBag (parallelAlgebra color) (parallelDeclaration color)
-    "ps" (parallel_shape color) (unitName color) rfl pre post
+    "ps" (parallel_bare_shape color) (unitName color) rfl pre post
 
 noncomputable def emptyUnitAxiom (color : CostStaticColor) (Γ : List TypeExpr) :
     DeclaredAxiom language :=
   emptyUnit (Γ := Γ) (parallelRule color) .hashBag (parallelAlgebra color)
-    (parallelDeclaration color) "ps" (parallel_shape color) (unitName color) rfl
+    (parallelDeclaration color) "ps" (parallel_bare_shape color) (unitName color) rfl
 
 /-- Every declared collection law has a full contextual semantic instance;
 in particular its ordinary replacements may themselves contain accounts. -/

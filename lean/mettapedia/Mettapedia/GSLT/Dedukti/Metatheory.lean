@@ -420,12 +420,12 @@ theorem nonFunctional_two_sorts :
   ⟨.pi (.con rfl) (.con rfl) (by decide), .pi (.con rfl) (.con rfl) (by decide)⟩
 
 /-- **Positive**: the existing profile of λΠ is functional. -/
-theorem basic_functional : Functional LFProfile.basic := by
+theorem standardLF_functional : Functional LFProfile.standardLF := by
   intro first firstMember second secondMember domains codomains
   have firstCases : first = LFProfile.typeTypeType ∨ first = LFProfile.typeKindKind := by
-    simpa [LFProfile.basic] using firstMember
+    simpa [LFProfile.standardLF] using firstMember
   have secondCases : second = LFProfile.typeTypeType ∨ second = LFProfile.typeKindKind := by
-    simpa [LFProfile.basic] using secondMember
+    simpa [LFProfile.standardLF] using secondMember
   rcases firstCases with rfl | rfl <;> rcases secondCases with rfl | rfl <;>
     first | rfl | (cases codomains)
 

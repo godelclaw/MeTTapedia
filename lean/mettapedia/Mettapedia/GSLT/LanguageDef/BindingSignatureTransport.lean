@@ -79,7 +79,7 @@ def mapOperator {source target : ValidatedLanguageDef}
   | _, .collectionConstructor rule member name kind element shape count =>
       .collectionConstructor (mapGrammarRule morphism.symbols rule)
         (morphism.mapsTerms rule member) name kind (mapTypeExpr morphism.symbols element)
-        (by simp only [mapGrammarRule, shape, List.map_cons, List.map_nil,
+        (by simp only [bareParams_mapGrammarRule, shape, List.map_cons, List.map_nil,
           mapTermParam, mapTypeExpr]) count
   | _, .lambda domain codomain =>
       .lambda (mapTypeExpr morphism.symbols domain) (mapTypeExpr morphism.symbols codomain)
@@ -380,8 +380,8 @@ private theorem constructor_heq {language : LanguageDef} {first second : Grammar
 private theorem collectionConstructor_heq {language : LanguageDef} {first second : GrammarRule}
     (firstMember : first ∈ language.terms) (secondMember : second ∈ language.terms)
     (name : String) (kind : CollType) (element other : TypeExpr)
-    (firstShape : first.params = [.simple name (.collection kind element)])
-    (secondShape : second.params = [.simple name (.collection kind other)]) (count : Nat)
+    (firstShape : first.bareParams = [.simple name (.collection kind element)])
+    (secondShape : second.bareParams = [.simple name (.collection kind other)]) (count : Nat)
     (rules : first = second) (elements : element = other) :
     HEq (Operator.collectionConstructor first firstMember name kind element firstShape count)
       (Operator.collectionConstructor second secondMember name kind other secondShape count) := by

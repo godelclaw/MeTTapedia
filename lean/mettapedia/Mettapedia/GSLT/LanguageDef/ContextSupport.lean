@@ -278,7 +278,7 @@ mutual
     | collectionConstructor
         {bound rule parameterName collectionType elements rest elementType}
         {membership : rule ∈ language.terms}
-        {parameterShape : rule.params =
+        {parameterShape : rule.bareParams =
           [.simple parameterName (.collection collectionType elementType)]}
         {elementsTyped : ElementsHaveType language free bound elements elementType}
         {name occurrenceBound}
@@ -439,7 +439,7 @@ mutual
     | collectionConstructor
         {bound rule parameterName collectionType elements rest elementType}
         {membership : rule ∈ language.terms}
-        {parameterShape : rule.params =
+        {parameterShape : rule.bareParams =
           [.simple parameterName (.collection collectionType elementType)]}
         {elementsTyped : ElementsHaveType language free bound elements elementType}
         {available name occurrenceSupport}
@@ -643,7 +643,7 @@ mutual
     | collectionConstructor
         {bound rule parameterName collectionType elements rest elementType}
         {membership : rule ∈ language.terms}
-        {parameterShape : rule.params =
+        {parameterShape : rule.bareParams =
           [.simple parameterName (.collection collectionType elementType)]}
         {elementsTyped : ElementsHaveType language free bound elements elementType}
         {available : List TypeExpr} {binderImage : TypeExpr → TypeExpr}

@@ -74,7 +74,7 @@ theorem ccsRetyping_redexRetypable : ccsRetyping.RedexRetypable := by
         (rule := costBaseConstructor ccsInteractionCut ccsCalc.terms[2])
       · exact ccsRetyping.costBaseConstructor_mem_generated ccsCalc.terms[2]
           ccsActionConstructor.2
-      · simp [UsesBareCollection, ccs_costBaseAct_params]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, ccs_costBaseAct_params]
       · rw [ccs_costBaseAct_params]
         exact .cons trivial rfl (HasType.fvar rfl) (.cons trivial rfl (HasType.fvar rfl) .nil)
     · apply ElementsHaveType.cons
@@ -82,7 +82,7 @@ theorem ccsRetyping_redexRetypable : ccsRetyping.RedexRetypable := by
           (rule := costBaseConstructor ccsInteractionCut ccsCalc.terms[3])
         · exact ccsRetyping.costBaseConstructor_mem_generated ccsCalc.terms[3]
             ccsCoActionConstructor.2
-        · simp [UsesBareCollection, ccs_costBaseCoAct_params]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, ccs_costBaseCoAct_params]
         · rw [ccs_costBaseCoAct_params]
           exact .cons trivial rfl (HasType.fvar rfl)
             (.cons trivial rfl (HasType.fvar rfl) .nil)

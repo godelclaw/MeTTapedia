@@ -1,3 +1,4 @@
+import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.LocallyNameless
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.BoundedConversion
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.BudgetedBatch
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.CanonicalCode

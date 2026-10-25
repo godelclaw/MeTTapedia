@@ -693,20 +693,11 @@ theorem transport_teleReduces {m : Nat} {Δ : CCtx Tower.Head m} :
   have mor : CSubstMor X.church cTransportTele Δ (CTm.consSub e (CTm.consSub x
       (CTm.consSub mv (CTm.consSub f (CTm.consSub P (CTm.consSub A
         fun i => .var (Fin.elim0 i))))))) := by
-    intro i
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact te
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tx
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tmv
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tf
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tP
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tA
-    exact i.elim0
+    exact CSubstMor.cons
+      (CSubstMor.cons
+        (CSubstMor.cons
+          (CSubstMor.cons
+            (CSubstMor.cons (CSubstMor.cons CSubstMor.empty tA) tP) tf) tmv) tx) te
   have eL : elabLeft objectDecls
       (applyClosed transportTelescope Presentation.ids (.const transportName)) =
       (CTm.appSpine (.const transportName) [.var 5, .var 4, .var 3, .var 2, .var 1, .var 0] :
@@ -873,20 +864,11 @@ theorem compose_teleReduces {m : Nat} {Δ : CCtx Tower.Head m} :
   have mor : CSubstMor X.church cComposeTele Δ (CTm.consSub e (CTm.consSub x
       (CTm.consSub g (CTm.consSub f (CTm.consSub P (CTm.consSub A
         fun i => .var (Fin.elim0 i))))))) := by
-    intro i
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact te
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tx
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tg
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tf
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tP
-    refine Fin.cases ?_ (fun i => ?_) i
-    · exact tA
-    exact i.elim0
+    exact CSubstMor.cons
+      (CSubstMor.cons
+        (CSubstMor.cons
+          (CSubstMor.cons
+            (CSubstMor.cons (CSubstMor.cons CSubstMor.empty tA) tP) tf) tg) tx) te
   have eL : elabLeft objectDecls
       (applyClosed composeTelescope Presentation.ids (.const composeName)) =
       (CTm.appSpine (.const composeName) [.var 5, .var 4, .var 3, .var 2, .var 1, .var 0] :

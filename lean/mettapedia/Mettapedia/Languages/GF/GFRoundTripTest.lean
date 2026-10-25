@@ -34,7 +34,10 @@ example : paperRewriteCount = 0 := rfl
 -- ═══════════════════════════════════════════════════════════════════
 
 private def rustOutput : String := renderLanguage paperSyntaxLang
-private def gfOutput : String := renderGFAbstract paperSyntaxLang
+private def gfOutput : String :=
+  match renderGFAbstract paperSyntaxLang with
+  | .ok text => text
+  | .error reason => s!"refused: {reason}"
 
 private def hasSubstring (needle haystack : String) : Bool :=
   (haystack.splitOn needle).length > 1

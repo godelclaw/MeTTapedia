@@ -190,7 +190,7 @@ structure RevisionStampedWitnessBridgeProfile where
 
 /-- Compact profile for the stamped-provenance guard in front of raw
 finite-source Revision. -/
-noncomputable def revisionStampedWitnessBridgeProfile :
+theorem revisionStampedWitnessBridgeProfile :
     RevisionStampedWitnessBridgeProfile (Stamp := Stamp) where
   guardedComputesRawRevisionIffPairwise :=
     guardedRevisionManyEvidence_eq_some_revisionMany_iff_pairwise

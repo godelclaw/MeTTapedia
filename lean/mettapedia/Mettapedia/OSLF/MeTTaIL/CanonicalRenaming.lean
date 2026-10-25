@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.MeTTaIL.CanonicalBags
 import Mettapedia.OSLF.MeTTaIL.ScopedPattern
+import Mathlib.Data.List.GetD
 
 /-!
 # Canonical forms commute with order-preserving renamings
@@ -598,6 +599,89 @@ theorem variableSpine?_lt {depth : Nat} {arguments : List Pattern} {indices : Li
     · cases image; assumption
     · cases image
   · cases image
+
+private theorem mapM_bvars {f : Pattern → Option Nat} (onlyVariables : ∀ argument index, f argument = some index → argument = .bvar index) :
+    ∀ {arguments : List Pattern} {found : List Nat}, arguments.mapM f = some found → arguments = found.map Pattern.bvar
+  | [], found, mapped => by
+    simp only [List.mapM_nil, pure, Option.some.injEq] at mapped; subst mapped; rfl
+  | argument :: arguments, found, mapped => by
+    simp only [List.mapM_cons, bind, Option.bind_eq_some_iff, pure, Option.some.injEq] at mapped
+    obtain ⟨head, image, tail, mappedTail, rfl⟩ := mapped
+    rw [onlyVariables _ _ image, mapM_bvars onlyVariables mappedTail]
+    rfl
+
+/-- A variable spine's arguments are its local variables. -/
+theorem variableSpine?_arguments {depth : Nat} {arguments : List Pattern} {indices : List Nat}
+    (spine : variableSpine? depth arguments = some indices) : arguments = indices.map Pattern.bvar := by
+  unfold variableSpine? at spine
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at spine
+  obtain ⟨found, mapped, rest⟩ := spine
+  have arguments_eq := mapM_bvars (fun argument index image => by
+    split at image
+    · split at image
+      · cases image; rfl
+      · cases image
+    · cases image) mapped
+  split at rest
+  · cases rest; exact arguments_eq
+  · cases rest
+
+/-- With a variable spine, instantiation renames indices. -/
+theorem occurrenceAssignment_eq {depth : Nat} {arguments : List Pattern} {indices : List Nat}
+    (spine : variableSpine? depth arguments = some indices) (dependencies : Nat) :
+    occurrenceAssignment dependencies depth arguments =
+      indexRenaming fun index => if index < dependencies then indices.getD index 0 else depth + (index - dependencies) := by
+  rw [variableSpine?_arguments spine]
+  funext index
+  unfold occurrenceAssignment
+  by_cases small : index < dependencies
+  · simp only [small, if_true, indexRenaming, List.getD_eq_getElem?_getD, List.getElem?_map]
+    cases indices[index]? <;> rfl
+  · simp only [small, if_false, indexRenaming]
+
+/-- An increasing local-variable spine, followed by the ambient variables,
+is a strictly increasing renaming of the entire contextual body. -/
+theorem occurrenceIndex_strictMono {depth : Nat} {indices : List Nat}
+    (increasing : indices.Pairwise (· < ·))
+    (below : ∀ index ∈ indices, index < depth) :
+    StrictMono (fun index => if index < indices.length then indices.getD index 0
+      else depth + (index - indices.length)) := by
+  intro first second less
+  by_cases firstLocal : first < indices.length <;> by_cases secondLocal : second < indices.length
+  · simp only [firstLocal, secondLocal, if_true, List.getD_eq_getElem _ _ firstLocal,
+      List.getD_eq_getElem _ _ secondLocal]
+    exact increasing.rel_get_of_lt (a := ⟨first, firstLocal⟩) (b := ⟨second, secondLocal⟩) less
+  · have bounded := below indices[first] (List.getElem_mem firstLocal)
+    simp only [firstLocal, secondLocal, if_true, if_false, List.getD_eq_getElem _ _ firstLocal]
+    omega
+  · omega
+  · simp only [firstLocal, secondLocal, if_false]
+    omega
+
+/-- Instantiation along an increasing variable spine commutes exactly with
+canonicalization. Arbitrary term-valued occurrence substitutions are not
+covered by this renaming law. -/
+theorem instantiateValue?_canon {value : ContextualValue} {ambient depth : Nat}
+    {arguments : List Pattern} {indices : List Nat} {result : Pattern}
+    (spine : variableSpine? depth arguments = some indices)
+    (increasing : indices.Pairwise (· < ·))
+    (read : instantiateValue? value ambient depth arguments = some result) :
+    instantiateValue? { value with body := canon value.body } ambient depth arguments = some (canon result) := by
+  obtain ⟨other, otherRead, _⟩ := instantiateValue?_same
+    (show ValueSame value { value with body := canon value.body } from
+      ⟨rfl, rfl, (canon_idempotent value.body).symm⟩) ambient depth arguments result read
+  obtain ⟨_, arity, _, _, sourceBody, _⟩ :=
+    (instantiateValue?_eq_some_iff _ _ _ _ _).mp read
+  obtain ⟨_, _, _, _, targetBody, _⟩ :=
+    (instantiateValue?_eq_some_iff _ _ _ _ _).mp otherRead
+  have length : indices.length = value.dependencies.length := by
+    simpa only [variableSpine?_arguments spine, List.length_map] using arity
+  have normalized : canon result = other := by
+    rw [← sourceBody, ← targetBody, occurrenceAssignment_eq spine, ← length]
+    exact canon_rename _ Set.univ
+      ((occurrenceIndex_strictMono increasing (variableSpine?_lt spine)).strictMonoOn Set.univ)
+      value.body (fun _ _ => Set.mem_univ _)
+  simpa only [normalized] using otherRead
 
 /-- **On a canonical subject, a capture with an increasing spine recovers the canonical form of
 the value it recovers from the subject.** -/

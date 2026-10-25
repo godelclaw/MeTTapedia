@@ -2,8 +2,9 @@
 # The current one-root conversion boundary
 
 This module records the conversion boundary encountered while routing the
-immutable DTTBench traces from the syntactic Pure checker to indexed LF.  The
-generic proof-calculus vocabulary now contains both binder-eliminating
+immutable DTTBench traces from the syntactic Pure checker to the historical
+MettaKernel kind-result profile.  The generic proof-calculus vocabulary now
+contains both binder-eliminating
 substitution and unused-binder elimination.  This module establishes two
 executable facts:
 

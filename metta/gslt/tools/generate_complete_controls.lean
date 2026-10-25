@@ -139,8 +139,8 @@ def runnerControl (label : String) (plan : GeneralExecutionAdmission.Plan) (type
   "!(let* (($p (quote " ++ render (planTerm plan [] type source) ++ "))\n" ++
   "        ($x (quote " ++ render (encodePattern source) ++ "))\n" ++
   "        ($s (quote " ++ render (StandardWire.standardTerm plan) ++ "))\n" ++
-  "        ($b (gslt:runner:begin $p $s $x))\n" ++
-  "        ($m (gslt:runner:advance $p $s " ++ toString ticks ++ " " ++ toString quantum ++ " $b))\n" ++
+  "        ($b (gslt:runner:begin ClassSearch $p $s $x))\n" ++
+  "        ($m (gslt:runner:advance ClassSearch $p $s " ++ toString ticks ++ " " ++ toString quantum ++ " $b))\n" ++
   "        ($r (gslt:runner:trace $m)))\n" ++
   "  (println! (RunnerControl " ++ reprStr label ++ " (== $r (quote " ++ render expected ++ ")))))"
 
@@ -152,8 +152,8 @@ def exploreControl (label : String) (plan : GeneralExecutionAdmission.Plan) (typ
   "!(let* (($p (quote " ++ render (planTerm plan [] type source) ++ "))\n" ++
   "        ($x (quote " ++ render (encodePattern source) ++ "))\n" ++
   "        ($s (quote " ++ render (StandardWire.standardTerm plan) ++ "))\n" ++
-  "        ($b (gslt:explore:begin $p $s $x))\n" ++
-  "        ($e (gslt:explore:rounds $p $s " ++ toString work ++ " $b))\n" ++
+  "        ($b (gslt:explore:begin ClassSearch $p $s $x))\n" ++
+  "        ($e (gslt:explore:rounds ClassSearch $p $s " ++ toString work ++ " $b))\n" ++
   "        ($r (gslt:explore:states $e)))\n" ++
   "  (println! (ExploreControl " ++ reprStr label ++ " (== $r (quote " ++ render expected ++ ")))))"
 

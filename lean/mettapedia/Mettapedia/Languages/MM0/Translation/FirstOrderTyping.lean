@@ -321,6 +321,7 @@ theorem parameters?_no_bare_collection {sorts : List String} {rule : GrammarRule
     {context : Context} (compiled : parameters? sorts rule.params = some context) :
     ¬ UsesBareCollection rule := by
   rintro ⟨name, collection, element, shape⟩
+  have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
   simp [shape, parameters?, type?] at compiled
 
 theorem parameters?_eq_nil_iff (sorts : List String) (parameters : List TermParam) :

@@ -1,4 +1,5 @@
 import Mettapedia.UniversalAI.UniversalPrediction.ConvergenceCriteria
+import Mettapedia.DecisionTheory.FiniteRisk
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!
@@ -17,7 +18,7 @@ Chapter 3 of Hutter's "Universal Artificial Intelligence".
 
 ## Main Results
 
-* Theorem 3.36: E^ξ - E^μ ≤ √(4·E^μ·S_n) + S_n
+* Sharp error regret: `S + sqrt (4 E S + S²)`, hence `2 S + 2 sqrt (E S)`.
 
 ## References
 
@@ -40,7 +41,7 @@ namespace ErrorBounds
 def optimalPrediction (μ : PrefixMeasure) (x : BinString) : Bool :=
   FiniteHorizon.condProb μ.toSemimeasure x true ≥ 1/2
 
-/-- Universal prediction at time t given history x: predict argmax_b ξ(b|x).
+/-- Threshold prediction at time t given history x.
     For binary alphabet, predict true if ξ(true|x) ≥ 1/2. -/
 def universalPrediction (ξ : Semimeasure) (x : BinString) : Bool :=
   FiniteHorizon.condProb ξ x true ≥ 1/2
@@ -106,62 +107,20 @@ theorem errorProb_nonneg (μ : PrefixMeasure) (b : Bool) (x : BinString) :
     This is inequality (3.35): E^μ_n ≤ E^p_n for any predictor p. -/
 theorem optimalErrorProb_le_errorProb (μ : PrefixMeasure) (x : BinString) (b : Bool) :
     optimalErrorProb μ x ≤ errorProb μ b x := by
-  -- The optimal predictor chooses argmax μ(·|x), minimizing 1 - μ(·|x)
-  unfold optimalErrorProb optimalPrediction errorProb
-  -- Handle μ x = 0 case: both conditionals are 0, so all errors are 1
-  by_cases hμx : μ x = 0
-  · -- When μ x = 0, condProb is 0 (division by 0)
-    have hpt0 : FiniteHorizon.condProb μ.toSemimeasure x true = 0 := by
-      simp only [FiniteHorizon.condProb, conditionalENN]
-      simp [hμx]
-    have hpf0 : FiniteHorizon.condProb μ.toSemimeasure x false = 0 := by
-      simp only [FiniteHorizon.condProb, conditionalENN]
-      simp [hμx]
-    -- Both errors are 1, optimal prediction is false (since 0 < 1/2)
-    have hpt_lt_half : FiniteHorizon.condProb μ.toSemimeasure x true < 1/2 := by simp [hpt0]
-    have hpred_eq : (decide (FiniteHorizon.condProb μ.toSemimeasure x true ≥ 1/2)) = false := by
-      simp only [decide_eq_false_iff_not, not_le]; exact hpt_lt_half
-    -- Now simplify: optimalErrorProb = 1 - condProb(false) = 1 - 0 = 1
-    rw [hpred_eq, hpf0]
-    -- Goal: 1 - 0 ≤ 1 - condProb b
-    match b with
-    | false => rw [hpf0]
-    | true => rw [hpt0]
-  · -- When μ x ≠ 0, use pt + pf = 1
-    have hsum : FiniteHorizon.condProb μ.toSemimeasure x true +
-                FiniteHorizon.condProb μ.toSemimeasure x false = 1 :=
-      Convergence.condProb_sum_eq_one μ x hμx
-    have hpf_eq : FiniteHorizon.condProb μ.toSemimeasure x false =
-                  1 - FiniteHorizon.condProb μ.toSemimeasure x true := by linarith
-    -- Now analyze based on whether condProb true ≥ 1/2
-    by_cases hpt_ge : FiniteHorizon.condProb μ.toSemimeasure x true ≥ 1/2
-    · -- optimalPrediction = true
-      have hpred_eq : (decide (FiniteHorizon.condProb μ.toSemimeasure x true ≥ 1/2)) = true := by
-        simp only [decide_eq_true_iff]; exact hpt_ge
-      rw [hpred_eq]
-      -- optimalErrorProb = 1 - condProb true (error for true)
-      match b with
-      | false =>
-        -- errorProb false = 1 - condProb false = 1 - (1 - condProb true) = condProb true
-        -- Need: 1 - condProb true ≤ 1 - condProb false, i.e., condProb false ≤ condProb true
-        rw [hpf_eq]
-        linarith
-      | true => rfl
-    · -- optimalPrediction = false
-      push_neg at hpt_ge
-      have hpred_eq : (decide (FiniteHorizon.condProb μ.toSemimeasure x true ≥ 1/2)) = false := by
-        simp only [decide_eq_false_iff_not, not_le]; exact hpt_ge
-      rw [hpred_eq]
-      -- optimalErrorProb = 1 - condProb false (error for false)
-      match b with
-      | false => rfl
-      | true =>
-        -- errorProb true = 1 - condProb true
-        -- Need: 1 - condProb false ≤ 1 - condProb true, i.e., condProb true ≤ condProb false
-        rw [hpf_eq]
-        linarith
+  by_cases zero : μ x = 0
+  · have values (b : Bool) : FiniteHorizon.condProb μ.toSemimeasure x b = 0 := by
+      simp [FiniteHorizon.condProb, conditionalENN, zero]
+    simp only [optimalErrorProb, errorProb, values, sub_zero, le_refl]
+  · have total := Convergence.condProb_sum_eq_one μ x zero
+    unfold optimalErrorProb optimalPrediction errorProb
+    by_cases h : FiniteHorizon.condProb μ.toSemimeasure x true ≥ 1 / 2
+    · simp only [h, decide_true]
+      cases b <;> linarith
+    · simp only [h, decide_false]
+      have smaller := lt_of_not_ge h
+      cases b <;> linarith
 
-/-- Expected errors for optimal predictor ≤ expected errors for universal predictor. -/
+/-- Integrating pointwise optimality preserves the comparison. -/
 theorem expectedOptimalErrors_le_universal (μ : PrefixMeasure) (ξ : Semimeasure) (n : ℕ) :
     expectedOptimalErrors μ n ≤ expectedUniversalErrors μ ξ n := by
   unfold expectedOptimalErrors expectedUniversalErrors
@@ -454,7 +413,7 @@ theorem errorDiff_le_sqDist (μ : PrefixMeasure) (ξ : Semimeasure) (x : BinStri
           _ ≤ A * (optimalErrorProb μ x + universalErrorProb μ ξ x) + B * sqDistStep μ ξ x :=
             hRHS_nonneg
       · -- u > 0: need the full argument
-        push_neg at hu_neg
+        push Not at hu_neg
         -- u > 0 and error_sum = 1, so u = |2p - 1| by the error_diff lemma
         have hu_abs : u = |2 * p - 1| := by
           -- From the error_diff_eq_abs_two_p_minus_one lemma, |u| = |2p - 1|
@@ -589,248 +548,50 @@ theorem error_bound_sqrt (μ : PrefixMeasure) (ξ : Semimeasure) (n : ℕ) :
     expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n ≤
     Real.sqrt (2 * (expectedOptimalErrors μ n + expectedUniversalErrors μ ξ n) *
       totalSqDist μ ξ n) := by
-  set X := expectedOptimalErrors μ n + expectedUniversalErrors μ ξ n with hX_def
-  set S := totalSqDist μ ξ n with hS_def
-  have hEμ_nonneg := expectedOptimalErrors_nonneg μ n
-  have hEξ_nonneg := expectedUniversalErrors_nonneg μ ξ n
-  have hS_nonneg := totalSqDist_nonneg μ ξ n
-  have hX_nonneg : 0 ≤ X := add_nonneg hEμ_nonneg hEξ_nonneg
-  -- Edge cases: X = 0 or S = 0
-  by_cases hX : X = 0
-  · -- X = 0 means both errors are 0, so difference is 0
-    have hEμ : expectedOptimalErrors μ n = 0 := by linarith
-    have hEξ : expectedUniversalErrors μ ξ n = 0 := by linarith
-    simp only [hEμ, hEξ, sub_self]
-    exact Real.sqrt_nonneg _
-  by_cases hS : S = 0
-  · -- S = 0, so √(2*X*0) = 0. Need to show difference ≤ 0.
-    simp only [hS, mul_zero, Real.sqrt_zero]
-    -- When S = 0, sqDistStep = 0 everywhere, so predictions agree.
-    -- By limit argument with error_bound_AB: for any ε > 0, diff ≤ ε*X + 0 → diff ≤ 0.
-    have h_ge : expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n ≥ 0 := by
-      linarith [expectedOptimalErrors_le_universal μ ξ n]
-    have hX_pos : X > 0 := by
-      rcases lt_or_eq_of_le hX_nonneg with hlt | heq
-      · exact hlt
-      · exact absurd heq.symm hX
-    -- For any ε > 0, error_bound_AB gives diff ≤ ε*X + (1/(2ε))*0 = ε*X
-    -- As ε → 0, diff ≤ 0
-    have h_le : expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n ≤ 0 := by
-      by_contra h_neg
-      push_neg at h_neg
-      set δ := expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n
-      have hδ_pos : δ > 0 := h_neg
-      have hε : δ / (2 * X) > 0 := div_pos hδ_pos (mul_pos (by norm_num : (0:ℝ) < 2) hX_pos)
-      have hB : 1 / (2 * (δ / (2 * X))) > 0 := by
-        rw [one_div]; apply inv_pos_of_pos; apply mul_pos (by norm_num : (0:ℝ) < 2) hε
-      have hAB : 2 * (δ / (2 * X)) * (1 / (2 * (δ / (2 * X)))) = 1 := by field_simp
-      have hAB_ge : 2 * (δ / (2 * X)) * (1 / (2 * (δ / (2 * X)))) ≥ 1 := le_of_eq hAB.symm
-      have hbound := error_bound_AB μ ξ n (δ / (2 * X)) (1 / (2 * (δ / (2 * X)))) hAB_ge hε hB
-      simp only [hS_def.symm, hS, mul_zero, add_zero] at hbound
-      have h_calc : (δ / (2 * X)) * X = δ / 2 := by field_simp
-      linarith [hbound, h_calc]
-    linarith
-  · -- Main case: X > 0 and S > 0
-    have hX_pos : 0 < X := lt_of_le_of_ne hX_nonneg (Ne.symm hX)
-    have hS_pos : 0 < S := lt_of_le_of_ne hS_nonneg (Ne.symm hS)
-    -- Define optimal A = √(S/(2X)), B = √(X/(2S))
-    set A := Real.sqrt (S / (2 * X)) with hA_def
-    set B := Real.sqrt (X / (2 * S)) with hB_def
-    -- Show A > 0 and B > 0
-    have hA_pos : A > 0 := by
-      rw [hA_def]
-      exact Real.sqrt_pos.mpr (div_pos hS_pos (mul_pos (by norm_num : (0:ℝ) < 2) hX_pos))
-    have hB_pos : B > 0 := by
-      rw [hB_def]
-      exact Real.sqrt_pos.mpr (div_pos hX_pos (mul_pos (by norm_num : (0:ℝ) < 2) hS_pos))
-    -- Show 2AB = 1
-    have hS2X_nonneg : 0 ≤ S / (2 * X) := div_nonneg (le_of_lt hS_pos) (by linarith)
-    have hX2S_nonneg : 0 ≤ X / (2 * S) := div_nonneg (le_of_lt hX_pos) (by linarith)
-    have h2AB : 2 * A * B = 1 := by
-      rw [hA_def, hB_def]
-      -- 2 * √(S/(2X)) * √(X/(2S)) = 2 * √((S/(2X)) * (X/(2S))) = 2 * √(1/4) = 1
-      have hprod : S / (2 * X) * (X / (2 * S)) = 1 / 4 := by field_simp; ring
-      have hsqrt14 : Real.sqrt (1 / 4) = 1 / 2 := by
-        rw [show (1 : ℝ) / 4 = (1/2)^2 by norm_num]
-        exact Real.sqrt_sq (by norm_num : (0:ℝ) ≤ 1/2)
-      have hsqrt_prod : Real.sqrt (S / (2 * X)) * Real.sqrt (X / (2 * S)) = 1 / 2 := by
-        rw [← Real.sqrt_mul hS2X_nonneg, hprod, hsqrt14]
-      calc 2 * Real.sqrt (S / (2 * X)) * Real.sqrt (X / (2 * S))
-          = 2 * (Real.sqrt (S / (2 * X)) * Real.sqrt (X / (2 * S))) := by ring
-        _ = 2 * (1 / 2) := by rw [hsqrt_prod]
-        _ = 1 := by ring
-    have h2AB_ge : 2 * A * B ≥ 1 := le_of_eq h2AB.symm
-    -- Apply error_bound_AB
-    have hbound := error_bound_AB μ ξ n A B h2AB_ge hA_pos hB_pos
-    -- Now show A*X + B*S = √(2*X*S)
-    have hAX_BS_eq : A * X + B * S = Real.sqrt (2 * X * S) := by
-      rw [hA_def, hB_def]
-      -- Direct approach: prove (A*X + B*S)² = 2XS, then use sqrt properties
-      have h2XS_nonneg : 0 ≤ 2 * X * S := mul_nonneg (mul_nonneg (by norm_num) hX_nonneg) hS_nonneg
-      have hlhs_nonneg : 0 ≤ Real.sqrt (S / (2 * X)) * X + Real.sqrt (X / (2 * S)) * S := by
-        apply add_nonneg
-        · exact mul_nonneg (Real.sqrt_nonneg _) hX_nonneg
-        · exact mul_nonneg (Real.sqrt_nonneg _) hS_nonneg
-      -- Use: √x = y ↔ x = y^2 when 0 ≤ x and 0 ≤ y
-      symm
-      rw [Real.sqrt_eq_iff_eq_sq h2XS_nonneg hlhs_nonneg]
-      -- Show (√(S/(2X))*X + √(X/(2S))*S)² = 2XS
-      have hsqS2X : (Real.sqrt (S / (2 * X))) ^ 2 = S / (2 * X) := Real.sq_sqrt hS2X_nonneg
-      have hsqX2S : (Real.sqrt (X / (2 * S))) ^ 2 = X / (2 * S) := Real.sq_sqrt hX2S_nonneg
-      -- (√a * b + √c * d)² = a*b² + c*d² + 2*√a*b*√c*d = a*b² + c*d² + 2*√(ac)*bd
-      -- = SX/2 + XS/2 + 2*X*S*(1/2) = XS + XS = 2XS ✓
-      have hprod14 : S / (2 * X) * (X / (2 * S)) = 1 / 4 := by field_simp; ring
-      have hsqrt14 : Real.sqrt (1 / 4) = 1 / 2 := by
-        rw [show (1 : ℝ) / 4 = (1/2)^2 by norm_num]
-        exact Real.sqrt_sq (by norm_num : (0:ℝ) ≤ 1/2)
-      have hsqrt_prod : Real.sqrt (S / (2 * X)) * Real.sqrt (X / (2 * S)) = 1 / 2 := by
-        rw [← Real.sqrt_mul hS2X_nonneg, hprod14, hsqrt14]
-      have hX_ne : X ≠ 0 := ne_of_gt hX_pos
-      have hS_ne : S ≠ 0 := ne_of_gt hS_pos
-      -- Goal after rw is: 2 * X * S = (√(S/(2X))*X + √(X/(2S))*S)^2
-      -- Start from the expanded form and work backwards
-      have hexpand : (Real.sqrt (S / (2 * X)) * X + Real.sqrt (X / (2 * S)) * S) ^ 2 =
-          (Real.sqrt (S / (2 * X))) ^ 2 * X ^ 2 +
-          (Real.sqrt (X / (2 * S))) ^ 2 * S ^ 2 +
-          2 * (Real.sqrt (S / (2 * X)) * X) * (Real.sqrt (X / (2 * S)) * S) := by ring
-      have hsimp1 : (Real.sqrt (S / (2 * X))) ^ 2 * X ^ 2 = S * X / 2 := by
-        rw [hsqS2X]; field_simp
-      have hsimp2 : (Real.sqrt (X / (2 * S))) ^ 2 * S ^ 2 = X * S / 2 := by
-        rw [hsqX2S]; field_simp
-      have hsimp3 : 2 * (Real.sqrt (S / (2 * X)) * X) * (Real.sqrt (X / (2 * S)) * S) =
-          2 * (Real.sqrt (S / (2 * X)) * Real.sqrt (X / (2 * S))) * X * S := by ring
-      calc 2 * X * S
-          = S * X / 2 + X * S / 2 + X * S := by ring
-        _ = (Real.sqrt (S / (2 * X))) ^ 2 * X ^ 2 +
-            (Real.sqrt (X / (2 * S))) ^ 2 * S ^ 2 +
-            2 * (1 / 2) * X * S := by rw [hsimp1, hsimp2]; ring
-        _ = (Real.sqrt (S / (2 * X))) ^ 2 * X ^ 2 +
-            (Real.sqrt (X / (2 * S))) ^ 2 * S ^ 2 +
-            2 * (Real.sqrt (S / (2 * X)) * Real.sqrt (X / (2 * S))) * X * S := by rw [hsqrt_prod]
-        _ = (Real.sqrt (S / (2 * X))) ^ 2 * X ^ 2 +
-            (Real.sqrt (X / (2 * S))) ^ 2 * S ^ 2 +
-            2 * (Real.sqrt (S / (2 * X)) * X) * (Real.sqrt (X / (2 * S)) * S) := by rw [hsimp3]
-        _ = (Real.sqrt (S / (2 * X)) * X + Real.sqrt (X / (2 * S)) * S) ^ 2 := by rw [hexpand]
-    -- From error_bound_AB: diff ≤ A*(X) + B*S = A*X + B*S
-    -- Since expectedOptimalErrors + expectedUniversalErrors = X
-    calc expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n
-        ≤ A * (expectedOptimalErrors μ n + expectedUniversalErrors μ ξ n) +
-          B * totalSqDist μ ξ n := hbound
-      _ = A * X + B * S := by rfl
-      _ = Real.sqrt (2 * X * S) := hAX_BS_eq
-      _ = Real.sqrt (2 * (expectedOptimalErrors μ n + expectedUniversalErrors μ ξ n) *
-            totalSqDist μ ξ n) := by rfl
+  apply Mettapedia.DecisionTheory.le_sqrt_of_linear_tradeoff
+    (expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n)
+    (expectedOptimalErrors μ n + expectedUniversalErrors μ ξ n) (totalSqDist μ ξ n)
+    (add_nonneg (expectedOptimalErrors_nonneg μ n) (expectedUniversalErrors_nonneg μ ξ n))
+    (totalSqDist_nonneg μ ξ n)
+  intro a ha
+  have reciprocal : 0 < 1 / (2 * a) := by positivity
+  have bound := error_bound_AB μ ξ n a (1 / (2 * a)) (by field_simp; norm_num) ha reciprocal
+  simpa only [one_div, div_eq_mul_inv, one_mul, mul_comm] using bound
 
-/-- Main bound from Theorem 3.36 (second form):
-    E^ξ - E^μ ≤ √(4·E^μ·S_n) + 2·S_n
+/-- The sharp zero/one regret bound in terms of cumulative squared distance. -/
+theorem error_bound_sharp (μ : PrefixMeasure) (ξ : Semimeasure) (n : ℕ) :
+    expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n ≤
+      totalSqDist μ ξ n + Real.sqrt (4 * expectedOptimalErrors μ n * totalSqDist μ ξ n +
+        (totalSqDist μ ξ n) ^ 2) := by
+  have gap : 0 ≤ expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n :=
+    sub_nonneg.mpr (expectedOptimalErrors_le_universal μ ξ n)
+  have ho := expectedOptimalErrors_nonneg μ n
+  have hu := expectedUniversalErrors_nonneg μ ξ n
+  have hs := totalSqDist_nonneg μ ξ n
+  have base := error_bound_sqrt μ ξ n
+  have square := (sq_le_sq₀ gap (Real.sqrt_nonneg _)).mpr base
+  rw [Real.sq_sqrt (by positivity : 0 ≤ 2 *
+    (expectedOptimalErrors μ n + expectedUniversalErrors μ ξ n) * totalSqDist μ ξ n)] at square
+  exact Mettapedia.DecisionTheory.sharp_of_quadratic
+    (expectedUniversalErrors μ ξ n) (expectedOptimalErrors μ n) (totalSqDist μ ξ n)
+    ho hs (by simpa only [add_comm] using square)
 
-    Derived from error_bound_sqrt by solving for E^ξ - E^μ:
-    1. From error_bound_sqrt: E^ξ - E^μ ≤ √(2(E^μ + E^ξ)·S_n)
-    2. Let δ = E^ξ - E^μ. Then δ ≤ √(2(2E^μ + δ)·S_n)
-    3. Square: δ² ≤ 4E^μ·S_n + 2δ·S_n
-    4. Rearrange: δ² - 2δ·S_n - 4E^μ·S_n ≤ 0
-    5. By quadratic formula: δ ≤ S_n + √(S_n² + 4E^μ·S_n)
-    6. Using √(a+b) ≤ √a + √b: √(S_n² + 4E^μ·S_n) ≤ S_n + √(4E^μ·S_n)
-    7. Therefore: δ ≤ 2·S_n + √(4E^μ·S_n)
-
-    **Note**: The coefficient 2 on S_n is tight for this derivation method.
-    Hutter (2005) Theorem 3.36 claims coefficient 1, which may require
-    a different approach or additional assumptions. -/
+/-- The quadratic regret comparison gives the familiar simpler error bound. -/
 theorem error_bound_main (μ : PrefixMeasure) (ξ : Semimeasure) (n : ℕ) :
     expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n ≤
     Real.sqrt (4 * expectedOptimalErrors μ n * totalSqDist μ ξ n) +
     2 * totalSqDist μ ξ n := by
-  set δ := expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n with hδ_def
-  set E := expectedOptimalErrors μ n with hE_def
-  set S := totalSqDist μ ξ n with hS_def
-  have hE_nonneg := expectedOptimalErrors_nonneg μ n
-  have hS_nonneg := totalSqDist_nonneg μ ξ n
-  -- From error_bound_sqrt: δ ≤ √(2(E + E^ξ)S) = √(2(2E + δ)S)
-  have hsqrt := error_bound_sqrt μ ξ n
-  rw [← hδ_def, ← hE_def, ← hS_def] at hsqrt
-  have hEξ : expectedUniversalErrors μ ξ n = E + δ := by
-    rw [hδ_def, hE_def]; ring
-  rw [hEξ] at hsqrt
-  -- hsqrt: δ ≤ √(2(E + (E + δ))S) = √(2(2E + δ)S)
-  have hsqrt' : δ ≤ Real.sqrt (2 * (2 * E + δ) * S) := by
-    convert hsqrt using 2; ring
-  -- Edge case: S = 0
-  by_cases hS0 : S = 0
-  · -- When S = 0, from error_bound_sqrt we have δ ≤ √0 = 0
-    have h : δ ≤ Real.sqrt 0 := by
-      calc δ ≤ Real.sqrt (2 * (2 * E + δ) * S) := hsqrt'
-        _ = Real.sqrt (2 * (2 * E + δ) * 0) := by rw [hS0]
-        _ = Real.sqrt 0 := by ring_nf
-    simp only [Real.sqrt_zero] at h
-    simp only [hS0, mul_zero, Real.sqrt_zero, add_zero]
-    exact h
-  have hS_pos : 0 < S := lt_of_le_of_ne hS_nonneg (Ne.symm hS0)
-  -- Edge case: δ ≤ 0 (trivial)
-  by_cases hδ_nonpos : δ ≤ 0
-  · calc δ ≤ 0 := hδ_nonpos
-      _ ≤ Real.sqrt (4 * E * S) + 2 * S := by
-          apply add_nonneg (Real.sqrt_nonneg _)
-          linarith
-  push_neg at hδ_nonpos
-  have hδ_pos : 0 < δ := hδ_nonpos
-  -- Square the inequality: δ² ≤ 2(2E + δ)S = 4ES + 2δS
-  have h2E_δ_nonneg : 0 ≤ 2 * E + δ := by linarith
-  have hsqrt_sq : δ ^ 2 ≤ 2 * (2 * E + δ) * S := by
-    have hrhs_nonneg : 0 ≤ 2 * (2 * E + δ) * S := by positivity
-    have hδ_nonneg : 0 ≤ δ := le_of_lt hδ_pos
-    calc δ ^ 2 = δ * δ := by ring
-      _ ≤ Real.sqrt (2 * (2 * E + δ) * S) * Real.sqrt (2 * (2 * E + δ) * S) := by
-          apply mul_le_mul hsqrt' hsqrt' hδ_nonneg (Real.sqrt_nonneg _)
-      _ = (Real.sqrt (2 * (2 * E + δ) * S)) ^ 2 := by ring
-      _ = 2 * (2 * E + δ) * S := Real.sq_sqrt hrhs_nonneg
-  -- Expand: δ² ≤ 4ES + 2δS
-  have hquad : δ ^ 2 - 2 * δ * S - 4 * E * S ≤ 0 := by linarith [hsqrt_sq]
-  -- Use quadratic bound: δ ≤ S + √(S² + 4ES)
-  -- Define the discriminant and root
-  have hdisc_nonneg : 0 ≤ S ^ 2 + 4 * E * S := by positivity
-  have hroot := S + Real.sqrt (S ^ 2 + 4 * E * S)
-  -- Show δ ≤ hroot via the quadratic formula argument
-  -- For quadratic aδ² + bδ + c ≤ 0 with a > 0, δ ≤ (-b + √(b² - 4ac))/(2a)
-  -- Here: δ² - 2Sδ - 4ES ≤ 0, so a=1, b=-2S, c=-4ES
-  -- Root = (2S + √(4S² + 16ES))/2 = S + √(S² + 4ES)
-  have hδ_le_root : δ ≤ S + Real.sqrt (S ^ 2 + 4 * E * S) := by
-    -- Quadratic: (δ - S)² ≤ S² + 4ES
-    have hcomplete : (δ - S) ^ 2 ≤ S ^ 2 + 4 * E * S := by linarith [hquad]
-    -- Use abs_le_of_sq_le_sq: |a| ≤ b given a² ≤ b² and 0 ≤ b
-    have habs : |δ - S| ≤ Real.sqrt (S ^ 2 + 4 * E * S) := by
-      apply abs_le_of_sq_le_sq _ (Real.sqrt_nonneg _)
-      rw [Real.sq_sqrt hdisc_nonneg]
-      exact hcomplete
-    rw [abs_le] at habs
-    linarith [habs.2]
-  -- Now bound √(S² + 4ES) ≤ S + √(4ES) using √(a+b) ≤ √a + √b
-  -- Proof: (√a + √b)² = a + b + 2√(ab) ≥ a + b
-  have h4ES_nonneg : 0 ≤ 4 * E * S := by positivity
-  have hS2_nonneg : 0 ≤ S ^ 2 := sq_nonneg _
-  have hsqrt_triangle : Real.sqrt (S ^ 2 + 4 * E * S) ≤ S + Real.sqrt (4 * E * S) := by
-    have hS_nonneg' : 0 ≤ S := le_of_lt hS_pos
-    have hrhs_nonneg : 0 ≤ S + Real.sqrt (4 * E * S) := by
-      apply add_nonneg hS_nonneg' (Real.sqrt_nonneg _)
-    -- Use: √x ≤ y ↔ 0 ≤ y ∧ x ≤ y²
-    rw [Real.sqrt_le_iff]
-    constructor
-    · exact hrhs_nonneg
-    -- Need: S² + 4ES ≤ (S + √(4ES))²
-    -- (S + √(4ES))² = S² + 2S√(4ES) + (√(4ES))² = S² + 2S√(4ES) + 4ES
-    have hsq4ES : Real.sqrt (4 * E * S) ^ 2 = 4 * E * S := Real.sq_sqrt h4ES_nonneg
-    calc S ^ 2 + 4 * E * S
-        = S ^ 2 + 4 * E * S + 0 := by ring
-      _ ≤ S ^ 2 + 4 * E * S + 2 * S * Real.sqrt (4 * E * S) := by
-          apply add_le_add_right
-          apply mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hS_nonneg') (Real.sqrt_nonneg _)
-      _ = S ^ 2 + 2 * S * Real.sqrt (4 * E * S) + Real.sqrt (4 * E * S) ^ 2 := by
-          rw [hsq4ES]
-          ring
-      _ = (S + Real.sqrt (4 * E * S)) ^ 2 := by ring
-  -- Combine: δ ≤ S + √(S² + 4ES) ≤ S + S + √(4ES) = 2S + √(4ES)
-  calc δ ≤ S + Real.sqrt (S ^ 2 + 4 * E * S) := hδ_le_root
-    _ ≤ S + (S + Real.sqrt (4 * E * S)) := add_le_add_right hsqrt_triangle S
-    _ = Real.sqrt (4 * E * S) + 2 * S := by ring
+  have sharp := error_bound_sharp μ ξ n
+  have simple := Mettapedia.DecisionTheory.sharp_le_simple _ _
+    (expectedOptimalErrors_nonneg μ n) (totalSqDist_nonneg μ ξ n)
+  have root : Real.sqrt (4 * expectedOptimalErrors μ n * totalSqDist μ ξ n) =
+      2 * Real.sqrt (expectedOptimalErrors μ n * totalSqDist μ ξ n) := by
+    rw [show 4 * expectedOptimalErrors μ n * totalSqDist μ ξ n =
+      4 * (expectedOptimalErrors μ n * totalSqDist μ ξ n) by ring,
+      Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)]
+    rw [show (4 : ℝ) = (2 : ℝ) ^ 2 by norm_num, Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)]
+  rw [root]
+  linarith
 
 /-- Corollary: Under dominance, error regret is bounded by log(1/c).
     E^ξ - E^μ ≤ √(4·E^μ·log(1/c)) + 2·log(1/c) -/
@@ -895,6 +656,56 @@ theorem finite_errors_deterministic (μ : PrefixMeasure) (ξ : Semimeasure) {c :
   calc expectedUniversalErrors μ ξ n
       ≤ 2 * Real.log (1 / c.toReal) := hbound
     _ ≤ 2 * Real.log (1 / c.toReal) + 1 := by linarith
+
+/-- Instantaneous threshold-error regret; null histories are excluded explicitly. -/
+theorem instantaneous_error_bound (μ : PrefixMeasure) (ξ : Semimeasure) (x : BinString)
+    (hx : μ x ≠ 0) :
+    |universalErrorProb μ ξ x - optimalErrorProb μ x| ≤ 2 * Real.sqrt (sqDistStep μ ξ x) := by
+  by_cases agrees : universalPrediction ξ x = optimalPrediction μ x
+  · rw [error_eq_when_predictions_agree μ ξ x agrees, sub_self, abs_zero]
+    positivity
+  · rw [error_diff_eq_abs_two_p_minus_one μ ξ x hx agrees]
+    have bound := sqDistStep_ge_error_diff_sq μ ξ x agrees
+    have square := Real.sq_sqrt (sqDistStep_nonneg μ ξ x)
+    apply (sq_le_sq₀ (abs_nonneg _) (by positivity)).mp
+    nlinarith [sq_abs (2 * condProb μ.toSemimeasure x true - 1)]
+
+theorem expectedOptimalErrors_le_horizon (μ : PrefixMeasure) (n : ℕ) : expectedOptimalErrors μ n ≤ n := by
+  calc
+    _ ≤ ∑ k ∈ Finset.range n, (1 : ℝ) := Finset.sum_le_sum fun k _ => by
+      apply (expectPrefix_mono μ k (g := fun _ => 1) ?_).trans_eq (expectPrefix_const μ k 1)
+      intro x
+      exact sub_le_self 1 (show 0 ≤ FiniteHorizon.condProb μ.toSemimeasure x (optimalPrediction μ x) from
+        ENNReal.toReal_nonneg)
+    _ = _ := by simp
+
+/-- The historical threshold-error predictor retains its vanishing average regret. -/
+theorem average_error_regret_vanishes (μ : PrefixMeasure) (ξ : Semimeasure) {c : ENNReal}
+    (dominates : Dominates ξ μ c) (hc : c ≠ 0)
+    (positiveTrue : ∀ (k : ℕ) (x : BinString), x.length = k →
+      FiniteHorizon.condProb ξ x true ∈ Set.Ioo (0 : ℝ) 1)
+    (positiveFalse : ∀ (k : ℕ) (x : BinString), x.length = k →
+      0 < FiniteHorizon.condProb ξ x false) :
+    Filter.Tendsto (fun n => (expectedUniversalErrors μ ξ n - expectedOptimalErrors μ n) / n)
+      Filter.atTop (nhds 0) := by
+  have hd : 0 ≤ Real.log (1 / c.toReal) := (relEntropy_zero_nonneg μ ξ dominates hc).trans
+    (relEntropy_le_log_inv_of_dominates μ ξ dominates hc 0)
+  apply Mettapedia.DecisionTheory.average_of_root_bound _ _ hd
+    (fun n => sub_nonneg.mpr (expectedOptimalErrors_le_universal μ ξ n))
+  intro n
+  have bound := error_bound_dominance μ ξ dominates hc n positiveTrue positiveFalse
+  have root : Real.sqrt (4 * expectedOptimalErrors μ n * Real.log (1 / c.toReal)) ≤
+      2 * Real.sqrt ((n : ℝ) * Real.log (1 / c.toReal)) := by
+    calc
+      _ ≤ Real.sqrt (4 * (n : ℝ) * Real.log (1 / c.toReal)) := Real.sqrt_le_sqrt
+        (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
+          (expectedOptimalErrors_le_horizon μ n) (by norm_num : (0 : ℝ) ≤ 4)) hd)
+      _ = _ := by
+        rw [show 4 * (n : ℝ) * Real.log (1 / c.toReal) =
+          4 * ((n : ℝ) * Real.log (1 / c.toReal)) by ring,
+          Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4),
+          show (4 : ℝ) = (2 : ℝ) ^ 2 by norm_num, Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)]
+  linarith
 
 end ErrorBounds
 

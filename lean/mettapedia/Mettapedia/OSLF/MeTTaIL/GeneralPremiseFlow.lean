@@ -143,9 +143,9 @@ theorem BoundNames.eraseDups {assignment : Assignment} {names : List String}
   intro name member
   exact bound name (List.mem_eraseDups.mp member)
 
-theorem PremiseHolds.bindingFlow {environment : Environment} {context : Context}
+theorem Interpreted.PremiseHolds.bindingFlow {environment : Environment} {context : Context}
     {premise : Premise} {initial final : Assignment} {event : Event}
-    (held : PremiseHolds environment context premise initial final event)
+    (held : GeneralPremise.PremiseHolds environment context premise initial final event)
     (available : List String) (bound : BoundNames initial available) :
     BoundNames final (premiseFlow environment.language environment.provider context.rule context.spec
       available premise).available := by
@@ -171,9 +171,9 @@ theorem PremiseHolds.bindingFlow {environment : Environment} {context : Context}
       simp only [forall_flow_preserves_available]
       exact bound.extension (PremiseHolds.quantified read elements).extension
 
-theorem PremisesHold.bindingFlow {environment : Environment} {context : Context}
+theorem Interpreted.PremisesHold.bindingFlow {environment : Environment} {context : Context}
     {premises : List Premise} {initial final : Assignment} {events : List Event}
-    (held : PremisesHold environment context premises initial final events)
+    (held : GeneralPremise.PremisesHold environment context premises initial final events)
     (available : List String) (bound : BoundNames initial available) :
     BoundNames final (premisesFlow environment.language environment.provider context.rule context.spec
       available premises).available :=

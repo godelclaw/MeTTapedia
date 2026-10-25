@@ -7,7 +7,7 @@ import Mettapedia.OSLF.MeTTaIL.Complete.RhoWrappers
 # The emitted rho module explores the presented rho calculus
 
 The rho calculus of `GeneralRho.Standard`, emitted as a complete module that commits canonical
-forms: every process reachable from a well-sorted source by the presented GSLT (COMM modulo the
+forms and searches by classes: every process reachable from a well-sorted source by the presented GSLT (COMM modulo the
 parallel laws and the order of parallel components) is, up to that equality, among the processes
 the PeTTa run of the explore entry prints after some number of rounds (`rho_emitted_explores`).
 
@@ -36,7 +36,7 @@ private abbrev a (head : String) (arguments : List Atom) : Atom := .expression (
 def rhoSpec : Spec := ⟨GeneralRho.Standard.plan, [], .base "Proc", .canonical⟩
 
 /-- **The emitted rho module explores the presented rho calculus.** -/
-theorem rho_emitted_explores {name : String} {emitted : Program} (ok : emit? rhoSpec name = .ok emitted)
+theorem rho_emitted_explores {name : String} {emitted : Program} (ok : emit? rhoSpec name .classes = .ok emitted)
     (state : State) (source : Pattern)
     (sorted : OpenPatternWellSorted (GeneralPlanEnvironment.environment GeneralRho.Standard.plan).language
       GeneralRho.Standard.plan.snapshot.free [] (.base "Proc") source)

@@ -160,6 +160,67 @@ theorem no_selected_occurrence_decoder :
   exact (decodes first).symm.trans
     ((congrArg decode same_endpoint).trans (decodes second))
 
+/-! ## Checked full-source occurrence coordinates -/
+
+/-- Equal outputs at separate source positions remain separate addresses,
+even though their complete semantic endpoints agree. -/
+theorem full_source_duplicate_occurrences : first.fullAddress ≠ second.fullAddress ∧
+    first.target = second.target :=
+  ⟨fun same => different_occurrences (Firing.fullAddress_injective duplicates same), same_endpoint⟩
+
+theorem full_source_same_input : first.fullAddress.inputIndex = second.fullAddress.inputIndex := rfl
+
+theorem full_source_distinct_outputs : first.fullAddress.outputIndex ≠ second.fullAddress.outputIndex := by
+  intro same
+  exact full_source_duplicate_occurrences.1 (FullSource.Address.ext full_source_same_input same)
+
+/-- The output-after-erasure traversal preserves the two duplicate positions
+in their original full-source order. -/
+theorem full_source_output_order : first.fullAddress.outputIndex.val < second.fullAddress.outputIndex.val := by
+  change (if 0 < selected.position.val then 0 else 1) <
+    (if 1 < selected.position.val then 1 else 2)
+  split_ifs <;> omega
+
+theorem full_source_duplicate_decodes :
+    FullSource.decode duplicates first.fullAddress.inputIndex.val first.fullAddress.outputIndex.val = some first ∧
+    FullSource.decode duplicates second.fullAddress.inputIndex.val second.fullAddress.outputIndex.val = some second :=
+  ⟨FullSource.decode_firing _ first, FullSource.decode_firing _ second⟩
+
+/-- Either chosen output leaves exactly the other physical output unmatched. -/
+theorem full_source_complete_residues :
+    first.fullAddress.tail = [output channel payload] ∧
+    second.fullAddress.tail = [output channel payload] := by
+  rw [Firing.fullAddress_tail, Firing.fullAddress_tail, first_tail, second_tail]
+  exact ⟨rfl, rfl⟩
+
+theorem full_source_decoded_ground_rule :
+    (FullSource.decode duplicates first.fullAddress.inputIndex.val first.fullAddress.outputIndex.val).map
+      Firing.rule = some rule := by
+  rw [FullSource.decode_firing]
+  rfl
+
+theorem full_source_decoded_endpoint_inventory :
+    (FullSource.decode duplicates second.fullAddress.inputIndex.val second.fullAddress.outputIndex.val).map
+      (fun firing => firing.target.1) = some (([payload, output channel payload] : List Pattern) : Multiset Pattern) := by
+  rw [FullSource.decode_firing]
+  change some second.target.1 = _
+  rw [← same_endpoint, complete_endpoint_inventory]
+
+theorem full_source_equal_positions_refused : FullSource.decode duplicates 0 0 = none :=
+  FullSource.decode_same _ _
+
+theorem full_source_input_out_of_range_refused :
+    FullSource.decode duplicates (ordered duplicates.1).length 0 = none :=
+  FullSource.decode_input_out_of_range _ _ _ (Nat.le_refl _)
+
+theorem full_source_output_out_of_range_refused :
+    FullSource.decode duplicates 0 (ordered duplicates.1).length = none :=
+  FullSource.decode_output_out_of_range _ _ _ (Nat.le_refl _)
+
+theorem full_source_swapped_constructors_refused :
+    FullSource.decode duplicates first.fullAddress.outputIndex.val first.fullAddress.inputIndex.val = none :=
+  FullSource.decode_swapped_firing _ first
+
 def alternateChannel : Pattern := .apply "NQuote" [.apply "PDrop" [channel]]
 
 theorem literal_names_distinct : alternateChannel ≠ channel := by

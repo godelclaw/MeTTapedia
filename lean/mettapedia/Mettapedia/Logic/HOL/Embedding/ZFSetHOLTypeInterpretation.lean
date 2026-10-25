@@ -77,10 +77,26 @@ theorem truthCode_mem {U a : ZFSet.{u}} (closed : Closed U) (ha : a ∈ U) :
 
 /-! ## Recursive type codes and decoding -/
 
-@[reducible] noncomputable def typeCode : Ty Unit → ZFSet.{u + 1}
+/-- Actual set codes for simple types over a supplied set of base values.
+The function-space constructor is the existing set of total functional graphs. -/
+@[reducible] noncomputable def simpleTypeCode {Base : Type}
+    (bases : Base → ZFSet.{u + 1}) : Ty Base → ZFSet.{u + 1}
   | .prop => truthCode
-  | .base _ => carrierCode.{u}
-  | .arr A B => piSet (typeCode A) (fun _ => typeCode B)
+  | .base base => bases base
+  | .arr A B => piSet (simpleTypeCode bases A) (fun _ => simpleTypeCode bases B)
+
+/-- Closure of the actual recursive type codes, with both atomic obligations
+visible. No existence of an enclosing universe is postulated here. -/
+theorem simpleTypeCode_mem {Base : Type} (bases : Base → ZFSet.{u + 1})
+    {U : ZFSet.{u + 1}} (closed : Closed U) (propositions : truthCode ∈ U)
+    (baseMembers : ∀ base, bases base ∈ U) (type : Ty Base) : simpleTypeCode bases type ∈ U := by
+  induction type with
+  | prop => exact propositions
+  | base base => exact baseMembers base
+  | arr A B ihA ihB => exact closed.piSet_mem ihA _ (fun _ _ => ihB)
+
+@[reducible] noncomputable def typeCode : Ty Unit → ZFSet.{u + 1} :=
+  simpleTypeCode (fun _ => carrierCode.{u})
 
 abbrev Value (A : Ty Unit) := Elements (typeCode.{u} A)
 
@@ -92,12 +108,51 @@ def functionEquiv {A : Type*} {B : Type*} {C : Type*} {D : Type*}
   left_inv := by intro f; funext x; simp
   right_inv := by intro f; funext x; simp
 
-noncomputable def decode : (A : Ty Unit) →
-    Value.{u} A ≃ Ty.denote.{0, u + 1} ZFSetHenkinInterpretation.carrier.{u} A
+/-- Decode function graphs by actual domain and codomain equivalences.
+The base comparison may cross universes, as for the set of codes of small
+hypersets. The proposition comparison retains its classical host dependency. -/
+noncomputable def simpleTypeEquiv {Base : Type} {Carrier : Base → Type (u + 1)}
+    (bases : Base → ZFSet.{u + 1}) (baseComparison : ∀ base, Elements (bases base) ≃ Carrier base) :
+    (type : Ty Base) → Elements (simpleTypeCode bases type) ≃ Ty.denote.{0, u + 1} Carrier type
   | .prop => truthEquiv
-  | .base _ => carrierEquiv
-  | .arr A B => (piEquiv (typeCode A) (fun _ => typeCode B)).trans
-      (functionEquiv (decode A) (decode B))
+  | .base base => baseComparison base
+  | .arr A B => (piEquiv (simpleTypeCode bases A) (fun _ => simpleTypeCode bases B)).trans
+      (functionEquiv (simpleTypeEquiv bases baseComparison A) (simpleTypeEquiv bases baseComparison B))
+
+
+/-- Applying a material function graph agrees with ordinary application after decoding. -/
+theorem simpleTypeEquiv_app {Base : Type} {Carrier : Base → Type (u + 1)}
+    (bases : Base → ZFSet.{u + 1}) (baseComparison : ∀ base, Elements (bases base) ≃ Carrier base)
+    {A B : Ty Base} (function : Elements (simpleTypeCode bases (.arr A B)))
+    (argument : Elements (simpleTypeCode bases A)) :
+    simpleTypeEquiv bases baseComparison B (graphValue function argument) =
+      simpleTypeEquiv bases baseComparison (.arr A B) function
+        (simpleTypeEquiv bases baseComparison A argument) := by
+  change simpleTypeEquiv bases baseComparison B (graphValue function argument) =
+    simpleTypeEquiv bases baseComparison B
+      (graphValue function ((simpleTypeEquiv bases baseComparison A).symm
+        (simpleTypeEquiv bases baseComparison A argument)))
+  rw [Equiv.symm_apply_apply]
+
+/-- A graph lambda decodes to the actual function on the compared values. -/
+theorem simpleTypeEquiv_lam {Base : Type} {Carrier : Base → Type (u + 1)}
+    (bases : Base → ZFSet.{u + 1}) (baseComparison : ∀ base, Elements (bases base) ≃ Carrier base)
+    {A B : Ty Base} (body : Elements (simpleTypeCode bases A) → Elements (simpleTypeCode bases B)) :
+    simpleTypeEquiv bases baseComparison (.arr A B)
+      (encodeFunction (a := simpleTypeCode bases A) (b := fun _ => simpleTypeCode bases B) body) =
+      fun value => simpleTypeEquiv bases baseComparison B
+        (body ((simpleTypeEquiv bases baseComparison A).symm value)) := by
+  funext value
+  change simpleTypeEquiv bases baseComparison B
+    (graphValue (encodeFunction (a := simpleTypeCode bases A)
+      (b := fun _ => simpleTypeCode bases B) body)
+      ((simpleTypeEquiv bases baseComparison A).symm value)) = _
+  rw [congrFun (decode_encode_function (a := simpleTypeCode bases A)
+    (b := fun _ => simpleTypeCode bases B) body) _]
+
+noncomputable def decode : (A : Ty Unit) →
+    Value.{u} A ≃ Ty.denote.{0, u + 1} ZFSetHenkinInterpretation.carrier.{u} A :=
+  simpleTypeEquiv (fun _ => carrierCode.{u}) (fun _ => carrierEquiv)
 
 theorem typeCode_mem {U : ZFSet.{u + 1}} (closed : Closed U)
     (carrier_mem : carrierCode.{u} ∈ U) (A : Ty Unit) : typeCode A ∈ U := by

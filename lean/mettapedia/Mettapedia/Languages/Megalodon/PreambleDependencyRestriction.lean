@@ -238,7 +238,7 @@ theorem models_conclusion_iff {α : Type u} (membership : α → α → Prop) (p
   · intro holds value; exact holds (.up value)
   · intro holds value; exact holds value.down
 
-def checkedDefinitions : CheckedPlainDefinitions restrictedEnvironment where
+theorem checkedDefinitions : CheckedPlainDefinitions restrictedEnvironment where
   body := by
     intro name declaration body lookup defined eligible
     have primitive := noDefinitions restrictedEnvironment rfl name declaration lookup

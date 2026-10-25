@@ -4,7 +4,7 @@ import Mettapedia.GSLT.LanguageDef.SequentialBindingDiscipline
 # Template scope, part 1: scope-bearing terms and the environment action
 
 The term language of the template-scope study.  It is the smallest language
-in which the activation question of Prime's binding structure can be stated:
+in which the activation question of the Prime draft's binding structure can be stated:
 
 * symbols, references to program equations, store-name occurrences,
   lambda-parameter occurrences, a one-parameter `lam`, application,

@@ -26,12 +26,6 @@ namespace DualConcept
 
 variable {Obj : Type u} {Attr : Type v}
 
-@[ext] theorem ext {A B : DualConcept Obj Attr}
-    (hExtent : A.extent = B.extent) (hIntent : A.intent = B.intent) : A = B := by
-  cases A
-  cases B
-  simp_all
-
 /-- Positive extensional witnesses: objects in both extents. -/
 def positiveExtensionalWitnesses (A B : DualConcept Obj Attr) : Set Obj :=
   A.extent ∩ B.extent
@@ -53,17 +47,11 @@ def negativeIntensionalWitnesses (A B : DualConcept Obj Attr) : Set Attr :=
 
 theorem negativeExtensionalWitnesses_eq_empty_of_extensionalInherits
     {A B : DualConcept Obj Attr} (hAB : ExtensionalInherits A B) :
-    negativeExtensionalWitnesses A B = ∅ := by
-  apply Set.eq_empty_iff_forall_notMem.mpr
-  intro x hx
-  exact hx.2 (hAB hx.1)
+    negativeExtensionalWitnesses A B = ∅ := sdiff_eq_bot_iff.mpr hAB
 
 theorem negativeIntensionalWitnesses_eq_empty_of_intensionalInherits
     {A B : DualConcept Obj Attr} (hAB : IntensionalInherits A B) :
-    negativeIntensionalWitnesses A B = ∅ := by
-  apply Set.eq_empty_iff_forall_notMem.mpr
-  intro a ha
-  exact ha.2 (hAB ha.1)
+    negativeIntensionalWitnesses A B = ∅ := sdiff_eq_bot_iff.mpr hAB
 
 theorem negativeWitnesses_eq_empty_of_inherits
     {A B : DualConcept Obj Attr} (hAB : Inherits A B) :
@@ -150,6 +138,18 @@ omit [Fintype Obj] [DecidableEq Obj] in
   classical
   simp [finiteNegativeIntensionalWitnesses, negativeIntensionalWitnesses]
 
+omit [Fintype Attr] [DecidableEq Attr] in
+@[simp] theorem finiteNegativeExtensionalWitnesses_eq_empty_iff (A B : DualConcept Obj Attr) :
+    finiteNegativeExtensionalWitnesses A B = ∅ ↔ ExtensionalInherits A B := by
+  simp only [finiteNegativeExtensionalWitnesses, Finset.sdiff_eq_empty_iff_subset,
+    Finset.subset_iff, mem_finiteExtent_iff, ExtensionalInherits, Set.subset_def]
+
+omit [Fintype Obj] [DecidableEq Obj] in
+@[simp] theorem finiteNegativeIntensionalWitnesses_eq_empty_iff (A B : DualConcept Obj Attr) :
+    finiteNegativeIntensionalWitnesses A B = ∅ ↔ IntensionalInherits A B := by
+  simp only [finiteNegativeIntensionalWitnesses, Finset.sdiff_eq_empty_iff_subset,
+    Finset.subset_iff, mem_finiteIntent_iff, IntensionalInherits, Set.subset_def]
+
 /-- Finite witness counts lifted into the shared `BinaryEvidence` carrier. -/
 noncomputable def finiteInheritanceEvidence
     (A B : DualConcept Obj Attr) : BinaryEvidence where
@@ -163,23 +163,10 @@ noncomputable def finiteInheritanceEvidence
 theorem finiteInheritanceEvidence_neg_eq_zero_of_inherits
     {A B : DualConcept Obj Attr} (hAB : Inherits A B) :
     (finiteInheritanceEvidence A B).neg = 0 := by
-  have hExt :
-      finiteNegativeExtensionalWitnesses A B = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro x hx
-    have hx' : x ∈ negativeExtensionalWitnesses A B := by
-      simpa using hx
-    exact Set.notMem_empty x <|
-      (negativeExtensionalWitnesses_eq_empty_of_extensionalInherits hAB.1) ▸ hx'
-  have hInt :
-      finiteNegativeIntensionalWitnesses A B = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro a ha
-    have ha' : a ∈ negativeIntensionalWitnesses A B := by
-      simpa using ha
-    exact Set.notMem_empty a <|
-      (negativeIntensionalWitnesses_eq_empty_of_intensionalInherits hAB.2) ▸ ha'
-  simp [finiteInheritanceEvidence, hExt, hInt]
+  simp only [finiteInheritanceEvidence,
+    (finiteNegativeExtensionalWitnesses_eq_empty_iff _ _).mpr hAB.1,
+    (finiteNegativeIntensionalWitnesses_eq_empty_iff _ _).mpr hAB.2,
+    Finset.card_empty, Nat.cast_zero, zero_add]
 
 end Finite
 
@@ -220,6 +207,14 @@ theorem toNARSFrame_meaning_atom_eq
     simp [Interpretation.toNARSFrame, Mettapedia.NARS.Logic.Inheritance.Frame.interpretation,
       DualConcept.finiteIntent]
 
+/-- Finite realization commutes with every compound term, not only atoms. -/
+theorem toNARSFrame_meaning_eq_denote
+    (I : Interpretation Carrier Obj Attr) (t : Term Carrier) :
+    I.toNARSFrame.interpretation.meaning t = t.denote I.meaning := by
+  induction t <;> simp_all only [Term.denote, Frame.interpretation_inter,
+    Frame.interpretation_iinter, Frame.interpretation_diff, Frame.interpretation_idiff,
+    toNARSFrame_meaning_atom_eq]
+
 theorem toNARSFrame_extensionalInherits_atom_iff
     (I : Interpretation Carrier Obj Attr) (a b : Carrier) :
     I.toNARSFrame.ExtensionalInherits (.atom a) (.atom b) ↔ I.ExtensionalInherits a b := by
@@ -250,7 +245,13 @@ theorem toNARSFrame_plnEvidence_atom_eq_finiteInheritanceEvidence
 
 end Interpretation
 
+end Mettapedia.KR.ConceptGeometry.AbstractInheritance
+
 namespace Mettapedia.NARS.Logic.Inheritance.Frame
+
+open Mettapedia.KR.ConceptGeometry.AbstractInheritance
+
+universe u v w
 
 variable {Atom : Type u} {Obj : Type v} {Attr : Type w}
 variable [DecidableEq Obj] [DecidableEq Attr]
@@ -304,6 +305,10 @@ end Mettapedia.NARS.Logic.Inheritance.Frame
 
 namespace Mettapedia.NARS.Bridges.PLN.InheritanceEvidence
 
+open Mettapedia.KR.ConceptGeometry.AbstractInheritance
+
+universe u v w
+
 variable {Atom : Type u} {Obj : Type v} {Attr : Type w}
 variable [DecidableEq Obj] [DecidableEq Attr]
 variable [Fintype Obj] [Fintype Attr]
@@ -317,5 +322,3 @@ theorem evidence_eq_finiteInheritanceEvidence
     DualConcept.finiteInheritanceEvidence]
 
 end Mettapedia.NARS.Bridges.PLN.InheritanceEvidence
-
-end Mettapedia.KR.ConceptGeometry.AbstractInheritance

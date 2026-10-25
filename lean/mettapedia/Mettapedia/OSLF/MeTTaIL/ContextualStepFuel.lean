@@ -92,4 +92,25 @@ theorem StepAt.mono_fuel {base : BasePremiseEvaluator} {lang : LanguageDef}
   apply mem_rewriteAt_iff_stepAt.mp
   exact rewriteAt_mono_fuel base lang le source (mem_rewriteAt_iff_stepAt.mpr step)
 
+theorem PremiseAt.mono_fuel {base : BasePremiseEvaluator} {lang : LanguageDef}
+    {first second : Nat} {initial final : Bindings} {premise : Premise}
+    (evidence : PremiseAt base lang first initial premise final) (le : first ≤ second) :
+    PremiseAt base lang second initial premise final := by
+  cases evidence with
+  | freshness member => exact .freshness member
+  | relationQuery member => exact .relationQuery member
+  | forAll member => exact .forAll member
+  | congruence recursive matched merged => exact .congruence (recursive.mono_fuel le) matched merged
+  | scopedRoot empty recursive matched merged => exact .scopedRoot empty (recursive.mono_fuel le) matched merged
+
+theorem PremisesAt.mono_fuel {base : BasePremiseEvaluator} {lang : LanguageDef}
+    {first second : Nat} {initial final : Bindings} {premises : List Premise}
+    (evidence : PremisesAt base lang first initial premises final) (le : first ≤ second) :
+    PremisesAt base lang second initial premises final := by
+  induction premises generalizing initial final with
+  | nil => cases evidence; exact .nil initial
+  | cons premise premises inductionHypothesis =>
+    cases evidence with
+    | cons head tail => exact .cons (head.mono_fuel le) (inductionHypothesis tail)
+
 end Mettapedia.OSLF.MeTTaIL.ContextualStep

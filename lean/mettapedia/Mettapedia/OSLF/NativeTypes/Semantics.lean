@@ -22,6 +22,7 @@ import Mettapedia.OSLF.NativeTypes.Decision.FiniteFixedPointsControls
 import Mettapedia.OSLF.NativeTypes.Decision.FiniteGraphControls
 import Mettapedia.OSLF.NativeTypes.Semantics.ObservedFixedPointControls
 import Mettapedia.OSLF.NativeTypes.Semantics.ObservedModalFormula
+import Mettapedia.OSLF.NativeTypes.Semantics.ModalSimulation
 
 open Mettapedia.OSLF.Framework
 

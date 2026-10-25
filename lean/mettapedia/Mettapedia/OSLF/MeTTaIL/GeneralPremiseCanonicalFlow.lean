@@ -5,7 +5,7 @@ import Mettapedia.OSLF.MeTTaIL.GeneralPremiseCanonicalCaptures
 
 Provider outputs and directed child targets use their checked canonical
 carriers. Quantifiers bind canonical elements from the actual collection
-read and restore their lexical parameter. These laws preserve the complete
+read and return to their enclosing assignment. These laws preserve the complete
 captured bodies independently of equality between answer readouts.
 -/
 
@@ -71,29 +71,29 @@ theorem ArgumentsHold.canonical {context : Context} {index : Nat}
     | output matching =>
       exact ih (matching_canonicalValues before valuesCanonical.1 matching) valuesCanonical.2
 
-theorem TracedQuery.canonical {environment : Environment} {context : Context}
+theorem Interpreted.TracedQuery.canonical {environment : Environment} {context : Context}
     {relation : String} {arguments : List Pattern} {initial final : Assignment}
     {rowIndex : Nat} {origins : List (Nat × List GeneralScopedMatchMachine.BagChoice)}
-    (held : TracedQuery environment context relation arguments initial rowIndex final origins)
+    (held : GeneralPremise.TracedQuery environment context relation arguments initial rowIndex final origins)
     (before : CanonicalValues initial) : CanonicalValues final := by
   cases held with
   | row _ _ rowTyped arguments _ => exact arguments.readout.canonical before rowTyped.2.canonical
   | dynamicRow _ _ _ _ _ rowTyped arguments _ =>
       exact arguments.readout.canonical before rowTyped.2.canonical
 
-theorem RootFiring.target_canonical {environment : Environment} {bound : List TypeExpr}
+theorem Interpreted.RootFiring.target_canonical {environment : Environment} {bound : List TypeExpr}
     {type : TypeExpr} {source target : Pattern} {index : Nat}
     {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
     {history : List Event}
-    (held : RootFiring environment bound type source index trace captured completed history target) :
+    (held : GeneralPremise.RootFiring environment bound type source index trace captured completed history target) :
     target.hasCanonicalBinderMetadata = true := by
   cases held with
   | fire _ _ _ _ _ _ _ _ targetTyped => exact targetTyped.2.1
 
 mutual
-  theorem PremiseHolds.canonical {environment : Environment} {context : Context}
+  theorem Interpreted.PremiseHolds.canonical {environment : Environment} {context : Context}
       {premise : Premise} {initial final : Assignment} {event : Event}
-      (held : PremiseHolds environment context premise initial final event)
+      (held : GeneralPremise.PremiseHolds environment context premise initial final event)
       (before : CanonicalValues initial) : CanonicalValues final := by
     cases held with
     | query query => exact query.canonical before
@@ -102,32 +102,24 @@ mutual
       exact matching_canonicalValues before child.target_canonical matching.matching
     | scopedStep _ child matching _ =>
       exact matching_canonicalValues before child.target_canonical matching.matching
-    | quantified read elements =>
-      exact elements.canonical before (finiteCollection?_canonical before read)
+    | quantified _ elements => exact elements.canonical before
 
-  theorem PremisesHold.canonical {environment : Environment} {context : Context}
+  theorem Interpreted.PremisesHold.canonical {environment : Environment} {context : Context}
       {premises : List Premise} {initial final : Assignment} {events : List Event}
-      (held : PremisesHold environment context premises initial final events)
+      (held : GeneralPremise.PremisesHold environment context premises initial final events)
       (before : CanonicalValues initial) : CanonicalValues final :=
     match held with
     | .nil => before
     | .cons head tail => tail.canonical (head.canonical before)
 
-  theorem QuantifiedElements.canonical {environment : Environment} {context : Context}
+  theorem Interpreted.QuantifiedElements.canonical {environment : Environment} {context : Context}
       {parameter : String} {body : Premise} {index : Nat} {elements : List Pattern}
       {initial final : Assignment} {events : List (Nat × Pattern × List Event)}
-      (held : QuantifiedElements environment context parameter body index elements initial final events)
-      (before : CanonicalValues initial)
-      (elementsCanonical : Pattern.hasCanonicalBinderMetadataList elements = true) :
+      (held : GeneralPremise.QuantifiedElements environment context parameter body index elements initial final events)
+      (before : CanonicalValues initial) :
       CanonicalValues final := by
-    cases held with
-    | nil => exact before
-    | cons _ head tail =>
-      simp only [Pattern.hasCanonicalBinderMetadataList, Bool.and_eq_true] at elementsCanonical
-      exact tail.canonical
-        (before.restoreParameter
-          (head.canonical (before.bindParameter parameter elementsCanonical.1)) parameter)
-        elementsCanonical.2
+    rw [held.final_eq_initial]
+    exact before
 end
 
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise

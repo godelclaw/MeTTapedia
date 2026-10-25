@@ -108,7 +108,8 @@ theorem historyTerms_notBare {rule : GrammarRule} (membership : rule ∈ history
     ¬ UsesBareCollection rule := by
   rintro ⟨name, collectionType, elementType, parameters⟩
   have plain := List.all_eq_true.mp historyTerms_plainParameters rule membership
-  simp [plainParameters, parameters] at plain
+  have ordinaryParameters := (GrammarRule.bareParams_cons_iff _ _ _).mp parameters |>.2
+  simp [plainParameters, ordinaryParameters] at plain
 
 /-- Typing an application of the constructor at a given position of the
 signature. -/

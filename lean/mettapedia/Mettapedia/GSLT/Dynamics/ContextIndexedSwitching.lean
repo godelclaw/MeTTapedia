@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Dynamics.RepresentationSwitching
+import Mettapedia.GSLT.Core.NonFactorization
 
 /-!
 # Context-indexed residual execution across representations
@@ -21,6 +22,7 @@ namespace Mettapedia.GSLT.Dynamics.ContextIndexedSwitching
 
 open RegionHolePlan RepresentationSwitching OrderedOccurrenceBodyAlgebra
 open Mettapedia.GraphTheory.Representation
+open Mettapedia.GSLT.Core.NonFactorization
 
 /-- A staged implementation of one context family. The prepared inventory is
 supplied before execution; an executor does not compile on each read. -/
@@ -42,7 +44,26 @@ structure ActivationKey where
   generation : Nat
   deriving DecidableEq, Repr
 
+theorem handle_does_not_recover_generation :
+    ¬ Factors ActivationKey.handle ActivationKey.generation := by
+  let collision : NonTrivialFiber ActivationKey.handle ActivationKey.generation :=
+    ⟨⟨7, 0⟩, ⟨7, 1⟩, rfl, by decide⟩
+  exact collision.not_factors
+
 abbrev Store (Coordinate Value : Type) := ActivationKey → Coordinate → Value
+
+/-- Replace one activation's environment using its complete identity. -/
+def Store.replace (store : Store Coordinate Value) (key : ActivationKey)
+    (environment : Coordinate → Value) : Store Coordinate Value :=
+  Function.update store key environment
+
+@[simp] theorem Store.replace_at (store : Store Coordinate Value) (key : ActivationKey)
+    (environment : Coordinate → Value) :
+    store.replace key environment key = environment := by simp [Store.replace]
+
+@[simp] theorem Store.replace_other (store : Store Coordinate Value) (key other : ActivationKey)
+    (environment : Coordinate → Value) (apart : other ≠ key) :
+    store.replace key environment other = store other := by simp [Store.replace, apart]
 
 structure Job where
   activation : ActivationKey
@@ -168,6 +189,39 @@ theorem decode_boundary (boundary : Boundary Coordinate Value) (state : IndexedS
     decode (indexedBoundary boundary state) = treeBoundary boundary (decode state) := by
   cases boundary <;> simp [decode, treeBoundary, indexedBoundary]
 
+/-- Updating an activation absent from the residual jobs commutes with the
+next source step, including retained publication and control. -/
+theorem treeStep_replace_other (program : Kernel Coordinate Value)
+    (state : TreeState Coordinate Value) (key : ActivationKey) (environment : Coordinate → Value)
+    (unread : ∀ job ∈ state.pending, job.activation ≠ key) :
+    treeStep program (treeBoundary (.environment (fun store => store.replace key environment)) state) =
+      treeBoundary (.environment (fun store => store.replace key environment)) (treeStep program state) := by
+  cases pending : state.pending with
+  | nil => simp [treeStep, treeBoundary, pending]
+  | cons job rest =>
+      have apart := unread job (by simp [pending])
+      simp [treeStep, treeBoundary, pending, apart]
+
+theorem treeStep_pending_subset (program : Kernel Coordinate Value) (state : TreeState Coordinate Value) :
+    ∀ job ∈ (treeStep program state).pending, job ∈ state.pending := by
+  cases pending : state.pending with
+  | nil => simp [treeStep, pending]
+  | cons first rest => simp [treeStep, pending]; tauto
+
+/-- An unused activation can be replaced across any finite source run. -/
+theorem repeats_replace_other (program : Kernel Coordinate Value) (count : Nat)
+    (state : TreeState Coordinate Value) (key : ActivationKey) (environment : Coordinate → Value)
+    (unread : ∀ job ∈ state.pending, job.activation ≠ key) :
+    repeats (treeStep program) count
+        (treeBoundary (.environment (fun store => store.replace key environment)) state) =
+      treeBoundary (.environment (fun store => store.replace key environment))
+        (repeats (treeStep program) count state) := by
+  induction count generalizing state with
+  | zero => rfl
+  | succ count ih =>
+      rw [repeats, treeStep_replace_other program state key environment unread]
+      exact ih _ (fun job member => unread job (treeStep_pending_subset program state job member))
+
 def regionCategory : IndexedCategory Unit (fun _ _ : Unit => Nat) where
   identity _ := 0
   compose first second := first + second
@@ -239,6 +293,8 @@ theorem mixed_execution_exact (program : Kernel Coordinate Value)
   have square := congrFun (Execution.denote_decode execution) initial
   exact square
 
+#print axioms repeats_replace_other
+#print axioms handle_does_not_recover_generation
 #print axioms decode_indexedStep
 #print axioms decode_boundary
 #print axioms mixed_execution_exact

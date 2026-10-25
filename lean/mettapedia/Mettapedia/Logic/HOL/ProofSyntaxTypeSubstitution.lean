@@ -120,7 +120,7 @@ theorem nodeCount_mapTypes
   all_goals first
     | rfl
     | (change 1 + _ = 1 + _
-       simp_all [nodeCount, Fin.sum_univ_succ, observe_nodeCount_castIndices])
+       simp_all [nodeCount, observe_nodeCount_castIndices])
 
 set_option backward.isDefEq.respectTransparency false in
 /-- Each rule tag, including the selected hypothesis occurrence, survives

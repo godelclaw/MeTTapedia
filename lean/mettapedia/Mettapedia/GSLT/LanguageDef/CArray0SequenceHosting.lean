@@ -331,7 +331,7 @@ def compileStep {source target : SequenceTerm α}
       subst targetEq
       exact one (ArrayStep.run _ _)
 
-def preservesMeaning {term : SequenceTerm α}
+theorem preservesMeaning {term : SequenceTerm α}
     (meaning : SequenceMeaning term) : ArrayMeaning (compileTerm term) := by
   cases meaning with
   | request operation values =>

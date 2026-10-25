@@ -43,7 +43,7 @@ theorem completed_typed {ambient : List String} {sort : String}
     TypedAssignment (GeneralPlanEnvironment.environment plan) (context schema ambient)
       point.val.receipt.completed := by
   obtain ⟨rule, spec, declared, specified, typed⟩ :=
-    RootFiring.completed_typed point.val.receipt.valid
+    Interpreted.RootFiring.completed_typed point.val.receipt.valid
   rw [point.property] at declared specified
   have authored := GeneralPlanEnvironment.selected_rule plan
     (List.mk_mem_zipIdx_iff_getElem?.mp schema.declared)

@@ -6,7 +6,7 @@ import Mettapedia.OSLF.MeTTaIL.Complete.WrapperCoherence
 /-!
 # Emitted complete modules run their language
 
-For a module that `CompleteEmission.emit?` returns, loaded after the runner's runtime, the actual
+For a module emitted with the class search profile, loaded after the runner's runtime, the actual
 PeTTa run of each entry is the model:
 
 - `name:begin source` is the runner at the source;
@@ -44,7 +44,8 @@ private abbrev a (head : String) (arguments : List Atom) : Atom := .expression (
 private abbrev v (name : String) : Atom := .var name
 
 /-- The runtime with the module loaded after it. -/
-def emittedRuntime (spec : Spec) (name : String) : Program := runtime.append (program spec name)
+def emittedRuntime (spec : Spec) (name : String) (profile : SearchProfile spec := .classes) : Program :=
+  runtime.append (program spec name profile)
 
 /-- What the bridge theorems need of an emitted plan: its search stays within its declared
 footprint, and its free names are distinct. -/
@@ -69,17 +70,17 @@ theorem footprinted_of_compiled {snapshot : GeneralExecutionAdmission.Snapshot}
 
 section Transport
 
-variable {spec : Spec} {name : String}
+variable {spec : Spec} {name : String} {profile : SearchProfile spec}
 
-private theorem fresh_parts (fresh : namesFresh spec name = true) :
+theorem fresh_parts (fresh : namesFresh spec name profile = true) :
     (entries name).Nodup ∧
     (∀ head ∈ entries name, specialHeads.contains head = false ∧ ioHead head = false ∧ StdLib.known head = false) ∧
     allowed name "let" = true ∧
     runtime.equations.all (fun equation => allowed name equation.head && codeWithin (allowed name) equation.body)
       = true ∧
     runtime.declarations.all (declaredHeadAllowed name) = true ∧
-    codeWithin (allowed name) (beginBody spec) = true ∧ codeWithin (allowed name) (runBody spec) = true ∧
-    codeWithin (allowed name) (exploreBody spec) = true ∧ codeWithin (allowed name) (edgesBody spec) = true := by
+    codeWithin (allowed name) (beginBody spec profile) = true ∧ codeWithin (allowed name) (runBody spec profile) = true ∧
+    codeWithin (allowed name) (exploreBody spec profile) = true ∧ codeWithin (allowed name) (edgesBody spec profile) = true := by
   simp only [namesFresh, Bool.and_eq_true, decide_eq_true_eq] at fresh
   obtain ⟨⟨⟨⟨⟨⟨⟨⟨distinct, heads⟩, letAllowed⟩, bodies⟩, declarations⟩, beginCode⟩, runCode⟩, exploreCode⟩,
     edgesCode⟩ := fresh
@@ -89,27 +90,27 @@ private theorem fresh_parts (fresh : namesFresh spec name = true) :
   simp only [Bool.and_eq_true, Bool.not_eq_true'] at row
   exact ⟨row.1.1, row.1.2, row.2⟩
 
-private theorem entry_facts (fresh : namesFresh spec name = true) {head : String} (member : head ∈ entries name) :
+theorem entry_facts (fresh : namesFresh spec name profile = true) {head : String} (member : head ∈ entries name) :
     head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"] ∧ ioHead head = false ∧
       StdLib.known head = false := by
   obtain ⟨special, io, known⟩ := (fresh_parts fresh).2.1 head member
   exact ⟨by simpa [specialHeads] using special, io, known⟩
 
-theorem runtime_closed (fresh : namesFresh spec name = true) : ProgramClosed (allowed name) runtime := by
+theorem runtime_closed (fresh : namesFresh spec name profile = true) : ProgramClosed (allowed name) runtime := by
   obtain ⟨_, _, letAllowed, bodies, _⟩ := fresh_parts fresh
   refine ⟨letAllowed, fun equation member _ => ?_⟩
   have row := List.all_eq_true.mp bodies equation member
   simp only [Bool.and_eq_true] at row
   exact row.2
 
-private theorem own_heads_not_allowed : ∀ equation ∈ (program spec name).equations,
+private theorem own_heads_not_allowed : ∀ equation ∈ (program spec name profile).equations,
     allowed name equation.head = false := by
   intro equation member
   simp only [program, List.mem_cons, List.not_mem_nil, or_false] at member
   rcases member with rfl | rfl | rfl | rfl <;>
     simp [allowed, entries, beginEquation, runEquation, exploreEquation, edgesEquation]
 
-theorem runtime_agreement : ProgramAgreementOn (allowed name) runtime (emittedRuntime spec name) := by
+theorem runtime_agreement : ProgramAgreementOn (allowed name) runtime (emittedRuntime spec name profile) := by
   apply appended_program_agreement
   · exact own_heads_not_allowed
   · intro head types member
@@ -120,16 +121,16 @@ theorem runtime_agreement : ProgramAgreementOn (allowed name) runtime (emittedRu
         simp [allowed, entries]
 
 /-- Runtime code runs unchanged in the runtime with the module. -/
-theorem transport (fresh : namesFresh spec name = true) {caller : Subst} {before after : State}
+theorem transport (fresh : namesFresh spec name profile = true) {caller : Subst} {before after : State}
     {code answer : Atom} (supported : codeWithin (allowed name) code = true)
     (returned : PureReturns runtime caller before code after answer) :
-    PureReturns (emittedRuntime spec name) caller before code after answer :=
+    PureReturns (emittedRuntime spec name profile) caller before code after answer :=
   path_of_closed_agreement (runtime_closed fresh) runtime_agreement ⟨supported, rfl⟩ returned
 
 /-- Only the module defines its entries. -/
-private theorem entry_row (fresh : namesFresh spec name = true) (equation : SpaceSemantics.Equation)
-    (listed : equation ∈ (program spec name).equations) :
-    (emittedRuntime spec name).equations.filter (fun row => row.head == equation.head) = [equation] := by
+theorem entry_row (fresh : namesFresh spec name profile = true) (equation : SpaceSemantics.Equation)
+    (listed : equation ∈ (program spec name profile).equations) :
+    (emittedRuntime spec name profile).equations.filter (fun row => row.head == equation.head) = [equation] := by
   obtain ⟨distinct, _, _, bodies, _⟩ := fresh_parts fresh
   have below : runtime.equations.filter (fun row => row.head == equation.head) = [] := by
     rw [List.filter_eq_nil_iff]
@@ -138,7 +139,7 @@ private theorem entry_row (fresh : namesFresh spec name = true) (equation : Spac
     simp only [Bool.and_eq_true] at checked
     rw [beq_iff_eq.mp same, own_heads_not_allowed equation listed] at checked
     exact Bool.false_ne_true checked.1
-  have split : (emittedRuntime spec name).equations = runtime.equations ++ (program spec name).equations := rfl
+  have split : (emittedRuntime spec name profile).equations = runtime.equations ++ (program spec name profile).equations := rfl
   rw [split, List.filter_append, below, List.nil_append]
   simp only [entries, List.nodup_cons, List.mem_cons, not_or, List.not_mem_nil,
     not_false_eq_true, List.nodup_nil, and_true] at distinct
@@ -149,9 +150,9 @@ private theorem entry_row (fresh : namesFresh spec name = true) (equation : Spac
       beginEdges, runEdges, exploreEdges, Ne.symm beginRun, Ne.symm beginExplore, Ne.symm runExplore,
       Ne.symm beginEdges, Ne.symm runEdges, Ne.symm exploreEdges]
 
-private theorem entry_raw (head : String) (arity : Nat) (known : StdLib.known head = false)
-    (declared : declaration head arity ∈ (program spec name).declarations) :
-    ∀ index < arity, argumentIsRaw (emittedRuntime spec name) head index = true := by
+theorem entry_raw (head : String) (arity : Nat) (known : StdLib.known head = false)
+    (declared : declaration head arity ∈ (program spec name profile).declarations) :
+    ∀ index < arity, argumentIsRaw (emittedRuntime spec name profile) head index = true := by
   intro index bounded
   unfold argumentIsRaw
   rw [known]
@@ -165,13 +166,13 @@ end Transport
 
 /-! ## The entries run the model -/
 
-private theorem closed_arguments (values : List Atom) : values.map (applySubst []) = values := by
+theorem closed_arguments (values : List Atom) : values.map (applySubst []) = values := by
   have unchanged : applySubst [] = id := by
     funext value
     exact Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil value
   simp only [unchanged, List.map_id]
 
-private theorem runtime_raw (head : String) (count : Nat)
+theorem runtime_raw (head : String) (count : Nat)
     (checked : (List.range count).all (fun index => argumentIsRaw runtime head index) = true) :
     ∀ index < count, argumentIsRaw runtime head index = true :=
   fun index bounded => List.all_eq_true.mp checked index (List.mem_range.mpr bounded)
@@ -192,13 +193,13 @@ private theorem begin_call (footprinted : Footprinted spec) (caller : Subst) (st
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source)
     (captured : applySubst caller (v "source") = CompleteExecution.patternValue source) :
-    PureReturns runtime caller state (a "gslt:runner:begin" [planAtom spec, standardAtom spec, v "source"]) state
+    PureReturns runtime caller state (a "gslt:runner:begin" [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "source"]) state
       (encoded (classMachineTerm spec.plan (begun spec source))) := by
   apply PureData.raw_capture_returns runtime [] caller state state "gslt:runner:begin"
-    [planAtom spec, standardAtom spec, CompleteExecution.patternValue source]
-    [planAtom spec, standardAtom spec, v "source"] _ (by decide +kernel)
-    (runtime_raw "gslt:runner:begin" 3 (by decide +kernel)) (by decide)
-  · simp [captured, planAtom, standardAtom]
+    [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, CompleteExecution.patternValue source]
+    [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "source"] _ (by decide +kernel)
+    (runtime_raw "gslt:runner:begin" 4 (by decide +kernel)) (by decide)
+  · simp [captured, planAtom, standardAtom]; rfl
   · exact CompleteExecution.runner_begin_returns spec.plan state spec.mode (table spec) (table_for spec) _ spec.bound
       spec.expected _ footprinted.tabled footprinted.scope.declared source inside ready
 
@@ -242,11 +243,11 @@ private theorem run_body_returns (footprinted : Footprinted spec) (state : State
   · apply let_returns runtime withMachine withPaged state state state (v "paged") _ _
       (encoded (classMachineTerm spec.plan (paged spec source ticks quantum)))
     · apply PureData.raw_capture_returns runtime [] withMachine state state "gslt:runner:advance"
-        [CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
+        [CompleteExecution.classSearchBackend, CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
           encoded (commitTerm spec.plan spec.mode (table spec)), number ticks, number quantum,
           encoded (classMachineTerm spec.plan (begun spec source))]
-        [planAtom spec, standardAtom spec, v "ticks", v "quantum", v "machine"] _
-        (by decide +kernel) (runtime_raw "gslt:runner:advance" 5 (by decide +kernel)) (by decide)
+        [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "ticks", v "quantum", v "machine"] _
+        (by decide +kernel) (runtime_raw "gslt:runner:advance" 6 (by decide +kernel)) (by decide)
       · simp [withMachine, caller, planAtom, standardAtom, applySubst, Subst.lookup]
       · exact CompleteExecution.runner_advance_returns spec.plan state spec.mode (table spec) (table_for spec) _
           spec.bound spec.expected _ footprinted.tabled footprinted.scope quantum ticks (begun spec source) searchReady
@@ -314,10 +315,10 @@ private theorem explore_body_returns (footprinted : Footprinted spec) (state : S
   apply let_returns runtime caller withExplorer state state state (v "explorer") _ _
     (encoded (explorerTerm spec.plan start))
   · apply PureData.raw_capture_returns runtime [] caller state state "gslt:explore:begin"
-      [CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
+      [CompleteExecution.classSearchBackend, CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
         encoded (commitTerm spec.plan spec.mode (table spec)), CompleteExecution.patternValue source]
-      [planAtom spec, standardAtom spec, v "source"] _ (by decide +kernel)
-      (runtime_raw "gslt:explore:begin" 3 (by decide +kernel)) (by decide)
+      [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "source"] _ (by decide +kernel)
+      (runtime_raw "gslt:explore:begin" 4 (by decide +kernel)) (by decide)
     · simp [caller, planAtom, standardAtom, applySubst, Subst.lookup]
     · exact CompleteExecution.explore_begin_returns spec.plan state spec.mode (table spec) (table_for spec) _
         spec.bound spec.expected _ footprinted.tabled footprinted.scope.declared source inside ready
@@ -325,10 +326,10 @@ private theorem explore_body_returns (footprinted : Footprinted spec) (state : S
   · apply let_returns runtime withExplorer withExplored state state state (v "explored") _ _
       (encoded (explorerTerm spec.plan final))
     · apply PureData.raw_capture_returns runtime [] withExplorer state state "gslt:explore:rounds"
-        [CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
+        [CompleteExecution.classSearchBackend, CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
           encoded (commitTerm spec.plan spec.mode (table spec)), number work, encoded (explorerTerm spec.plan start)]
-        [planAtom spec, standardAtom spec, v "work", v "explorer"] _
-        (by decide +kernel) (runtime_raw "gslt:explore:rounds" 4 (by decide +kernel)) (by decide)
+        [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "work", v "explorer"] _
+        (by decide +kernel) (runtime_raw "gslt:explore:rounds" 5 (by decide +kernel)) (by decide)
       · simp [withExplorer, caller, planAtom, standardAtom, applySubst, Subst.lookup]
       · exact rounds
     · simp [withExplored, withExplorer, caller, SpaceSemantics.matchBinding, SpaceSemantics.matchValue, matchAtom,
@@ -398,10 +399,10 @@ private theorem edges_body_returns (footprinted : Footprinted spec) (state : Sta
   apply let_returns runtime caller withExplorer state state state (v "explorer") _ _
     (encoded (explorerTerm spec.plan start))
   · apply PureData.raw_capture_returns runtime [] caller state state "gslt:explore:begin"
-      [CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
+      [CompleteExecution.classSearchBackend, CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
         encoded (commitTerm spec.plan spec.mode (table spec)), CompleteExecution.patternValue source]
-      [planAtom spec, standardAtom spec, v "source"] _ (by decide +kernel)
-      (runtime_raw "gslt:explore:begin" 3 (by decide +kernel)) (by decide)
+      [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "source"] _ (by decide +kernel)
+      (runtime_raw "gslt:explore:begin" 4 (by decide +kernel)) (by decide)
     · simp [caller, planAtom, standardAtom, applySubst, Subst.lookup]
     · exact CompleteExecution.explore_begin_returns spec.plan state spec.mode (table spec) (table_for spec) _
         spec.bound spec.expected _ footprinted.tabled footprinted.scope.declared source inside ready
@@ -409,18 +410,18 @@ private theorem edges_body_returns (footprinted : Footprinted spec) (state : Sta
   · apply let_returns runtime withExplorer withExplored state state state (v "explored") _ _
       (encoded (explorerTerm spec.plan final))
     · apply PureData.raw_capture_returns runtime [] withExplorer state state "gslt:explore:rounds"
-        [CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
+        [CompleteExecution.classSearchBackend, CompleteExecution.planValue spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected,
           encoded (commitTerm spec.plan spec.mode (table spec)), number work, encoded (explorerTerm spec.plan start)]
-        [planAtom spec, standardAtom spec, v "work", v "explorer"] _
-        (by decide +kernel) (runtime_raw "gslt:explore:rounds" 4 (by decide +kernel)) (by decide)
+        [CompleteExecution.classSearchBackend, planAtom spec, standardAtom spec, v "work", v "explorer"] _
+        (by decide +kernel) (runtime_raw "gslt:explore:rounds" 5 (by decide +kernel)) (by decide)
       · simp [withExplorer, caller, planAtom, standardAtom, applySubst, Subst.lookup]
       · exact rounds
     · simp [withExplored, withExplorer, caller, SpaceSemantics.matchBinding, SpaceSemantics.matchValue, matchAtom,
         Subst.lookup]
     · apply PureData.raw_capture_returns runtime [] withExplored state state "gslt:explore:edges"
-        [encoded (commitTerm spec.plan spec.mode (table spec)), encoded (explorerTerm spec.plan final)]
-        [standardAtom spec, v "explored"] _
-        (by decide +kernel) (runtime_raw "gslt:explore:edges" 2 (by decide +kernel)) (by decide)
+        [CompleteExecution.classSearchBackend, encoded (commitTerm spec.plan spec.mode (table spec)), encoded (explorerTerm spec.plan final)]
+        [CompleteExecution.classSearchBackend, standardAtom spec, v "explored"] _
+        (by decide +kernel) (runtime_raw "gslt:explore:edges" 3 (by decide +kernel)) (by decide)
       · simp [withExplored, withExplorer, caller, standardAtom, applySubst, Subst.lookup]
       · exact CompleteExecution.explore_edges_returns spec.plan state spec.mode (table spec) (table_for spec)
           spec.bound spec.expected final fun node member =>
@@ -450,12 +451,12 @@ theorem edges_entry_returns {name : String} (fresh : namesFresh spec name = true
 
 /-! ## What an emitted module gives -/
 
-/-- **Emitted complete modules run their language.** For every module that `emit?` returns
+/-- **Emitted complete modules run their language.** For every class-profile module that `emit?` returns
 for a footprinted plan, and every source whose free names are declared, the actual PeTTa runs of
 its entries print the model: the run entry prints the trace of the runner over the search
 modulo equations after any page of ticks, and the explore entry prints the states every path
 has reached after any number of fair rounds. -/
-theorem emitted_complete {name : String} {emitted : Program} (ok : emit? spec name = .ok emitted)
+theorem emitted_complete {name : String} {emitted : Program} (ok : emit? spec name .classes = .ok emitted)
     (footprinted : Footprinted spec) (state : State) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source) :
@@ -471,7 +472,7 @@ theorem emitted_complete {name : String} {emitted : Program} (ok : emit? spec na
     fun work => explore_entry_returns admitted.fresh footprinted state source inside ready work⟩
 
 /-- **Emitted complete modules run their language, modulo its equations, in committed form.**
-For every module that `emit?` returns for a footprinted plan, and every source whose free names
+For every class-profile module that `emit?` returns for a footprinted plan, and every source whose free names
 are declared and which its commit mode can commit:
 
 - after any page of ticks, the PeTTa run of the run entry prints the trace of a machine whose
@@ -482,7 +483,7 @@ are declared and which its commit mode can commit:
   scope-extrusion laws, every state reachable from the source by finitely many GSLT steps is, up
   to the equations, among the states the PeTTa run of the explore entry prints after some number
   of rounds. -/
-theorem emitted_runs_language {name : String} {emitted : Program} (ok : emit? spec name = .ok emitted)
+theorem emitted_runs_language {name : String} {emitted : Program} (ok : emit? spec name .classes = .ok emitted)
     (footprinted : Footprinted spec) (state : State) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source) :
@@ -524,13 +525,13 @@ theorem emitted_runs_language {name : String} {emitted : Program} (ok : emit? sp
     exact ⟨work, node.state, List.mem_map.mpr ⟨node, same ▸ member, rfl⟩, related,
       explore_entry_returns admitted.fresh footprinted state source inside ready work⟩
 
-/-- **Emitted modules committing canonical forms explore the presented GSLT.** For every module
+/-- **Emitted modules committing canonical forms explore the presented GSLT.** For every class-profile module
 that `emit?` returns for a footprinted plan committing canonical forms, without scope extrusion,
 whose canonical explorer is complete for the presented GSLT at the source (`explores`, which
 `CanonicalCoherence` and `DescentCoherence` prove for admitted plans), every state reachable from
 the source by the presented GSLT (steps modulo equality in the model) is, up to that equality,
 among the states the PeTTa run of the explore entry prints after some number of rounds. -/
-theorem emitted_explores_presented {name : String} {emitted : Program} (ok : emit? spec name = .ok emitted)
+theorem emitted_explores_presented {name : String} {emitted : Program} (ok : emit? spec name .classes = .ok emitted)
     (footprinted : Footprinted spec) (state : State) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source)
@@ -557,13 +558,13 @@ theorem emitted_explores_presented {name : String} {emitted : Program} (ok : emi
     explore_entry_returns admitted.fresh footprinted state source inside ready work⟩
 
 /-- **Emitted modules committing quote-drop normal forms explore the model with the name
-equation.** For every module that `emit?` returns for a footprinted plan committing the canonical
+equation.** For every class-profile module that `emit?` returns for a footprinted plan committing the canonical
 form of the quote-drop normal form of a reflective presentation, without scope extrusion, whose
 explorer is complete modulo that model at the source (`explores`, which
 `QuoteDropCoherence.presented_explores_quoteDrop` proves for admitted plans), every state reachable
 from the source by steps modulo the model is, up to that model, among the states the PeTTa run of the
 explore entry prints after some number of rounds. -/
-theorem emitted_explores_quoteDrop {name : String} {emitted : Program} (ok : emit? spec name = .ok emitted)
+theorem emitted_explores_quoteDrop {name : String} {emitted : Program} (ok : emit? spec name .classes = .ok emitted)
     (footprinted : Footprinted spec) (state : State) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source) {declaration : ReflectivePresentationDecl}
@@ -592,13 +593,13 @@ theorem emitted_explores_quoteDrop {name : String} {emitted : Program} (ok : emi
     explore_entry_returns admitted.fresh footprinted state source inside ready work⟩
 
 /-- **Emitted modules committing model normal forms explore the model of the declared collection
-algebra.** For every module that `emit?` returns for a footprinted plan committing the canonical form of
+algebra.** For every class-profile module that `emit?` returns for a footprinted plan committing the canonical form of
 the model normal form of a reflective presentation, without scope extrusion, whose explorer is complete
 modulo that model at the source (`explores`, which `WrapperCoherence.presented_explores_wrappers` proves
 for admitted plans), every state reachable from the source by steps modulo the declared collection
 algebra, its wrapper laws and the name equation is, up to that model, among the states the PeTTa run of
 the explore entry prints after some number of rounds. -/
-theorem emitted_explores_model {name : String} {emitted : Program} (ok : emit? spec name = .ok emitted)
+theorem emitted_explores_model {name : String} {emitted : Program} (ok : emit? spec name .classes = .ok emitted)
     (footprinted : Footprinted spec) (state : State) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source) {declaration : ReflectivePresentationDecl}
@@ -636,7 +637,7 @@ the edges entry prints the transitions of the exploration stopped once settled, 
 - for a module committing standard forms of a language that declares no collection or
   scope-extrusion laws, once settled, every GSLT step out of an explored state is printed, up to
   the equations. -/
-theorem emitted_graph {name : String} {emitted : Program} (ok : emit? spec name = .ok emitted)
+theorem emitted_graph {name : String} {emitted : Program} (ok : emit? spec name .classes = .ok emitted)
     (footprinted : Footprinted spec) (state : State) (source : Pattern)
     (inside : ∀ name ∈ source.freeFvarNames, name ∈ declaredFootprint spec.plan)
     (ready : CommitReady spec.mode (table spec) source) (work : Nat) :

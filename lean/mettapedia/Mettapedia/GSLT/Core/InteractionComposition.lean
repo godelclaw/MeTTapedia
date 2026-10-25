@@ -15,6 +15,84 @@ already existing enabled-event family.  Thus execution and inspection need no
 second source of semantic steps.
 -/
 
+namespace Mettapedia.GSLT.RewritePath
+
+variable {source middle target : GSLT}
+
+/-- Concatenate the retained steps of two rewrite paths. -/
+def append {first cut last : source.Term} :
+    source.RewritePath first cut → source.RewritePath cut last →
+      source.RewritePath first last
+  | .nil _, suffix => suffix
+  | .cons step rest, suffix => .cons step (append rest suffix)
+
+@[simp] theorem nil_append {first last : source.Term}
+    (path : source.RewritePath first last) : append (.nil first) path = path := rfl
+
+@[simp] theorem append_nil {first last : source.Term}
+    (path : source.RewritePath first last) : append path (.nil last) = path := by
+  induction path with
+  | nil => rfl
+  | cons step rest ih => simp only [append, ih]
+
+@[simp] theorem append_assoc {first second third fourth : source.Term}
+    (one : source.RewritePath first second) (two : source.RewritePath second third)
+    (three : source.RewritePath third fourth) :
+    append (append one two) three = append one (append two three) := by
+  induction one with
+  | nil => rfl
+  | cons step rest ih => simp only [append, ih]
+
+/-- Map the actual steps of a path through a supplied one-step simulation. -/
+def map (states : source.Term → target.Term)
+    (steps : ∀ {first last}, source.Step first last →
+      target.Step (states first) (states last)) :
+    {first last : source.Term} → source.RewritePath first last →
+      target.RewritePath (states first) (states last)
+  | _, _, .nil first => .nil (states first)
+  | _, _, .cons step rest => .cons (steps step) (map states steps rest)
+
+@[simp] theorem map_length (states : source.Term → target.Term)
+    (steps : ∀ {first last}, source.Step first last →
+      target.Step (states first) (states last))
+    {first last : source.Term} (path : source.RewritePath first last) :
+    (map states steps path).length = path.length := by
+  induction path with
+  | nil => rfl
+  | cons step rest ih => simp only [map, GSLT.RewritePath.length, ih]
+
+@[simp] theorem map_append (states : source.Term → target.Term)
+    (steps : ∀ {first last}, source.Step first last →
+      target.Step (states first) (states last))
+    {first cut last : source.Term}
+    (prefixPath : source.RewritePath first cut) (suffix : source.RewritePath cut last) :
+    map states steps (append prefixPath suffix) =
+      append (map states steps prefixPath) (map states steps suffix) := by
+  induction prefixPath with
+  | nil => rfl
+  | cons step rest ih => simp only [map, append, ih]
+
+@[simp] theorem map_id {first last : source.Term}
+    (path : source.RewritePath first last) : map id (fun step => step) path = path := by
+  induction path with
+  | nil => rfl
+  | cons step rest ih => simp only [map, ih]
+
+@[simp] theorem map_comp (firstMap : source.Term → middle.Term)
+    (firstSteps : ∀ {first last}, source.Step first last →
+      middle.Step (firstMap first) (firstMap last))
+    (secondMap : middle.Term → target.Term)
+    (secondSteps : ∀ {first last}, middle.Step first last →
+      target.Step (secondMap first) (secondMap last))
+    {first last : source.Term} (path : source.RewritePath first last) :
+    map secondMap secondSteps (map firstMap firstSteps path) =
+      map (secondMap ∘ firstMap) (fun step => secondSteps (firstSteps step)) path := by
+  induction path with
+  | nil => rfl
+  | cons step rest ih => simp only [map, ih]
+
+end Mettapedia.GSLT.RewritePath
+
 namespace Mettapedia.GSLT.Core.InteractionComposition
 
 open Mettapedia.GSLT
@@ -34,6 +112,47 @@ inductive EventPath : theory.Term → theory.Term → Type _ where
       (rest : EventPath middle target) : EventPath source target
 
 namespace EventPath
+
+/-- Map each authenticated event through the supplied state, site and event
+maps. No event is reconstructed from its endpoints. -/
+def map {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (events : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last)) :
+    {first last : theory.Term} → EventPath presentation first last →
+      EventPath target (states first) (states last)
+  | _, _, .nil first => .nil (states first)
+  | _, _, .cons event rest =>
+      .cons (events event) (map target states sites events rest)
+
+@[simp] theorem map_id {first last : theory.Term}
+    (path : EventPath presentation first last) :
+    map presentation presentation id id (fun event => event) path = path := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih => simp only [map, ih]
+
+@[simp] theorem map_comp {middleTheory targetTheory : GSLT}
+    (middle : InteractionPresentation middleTheory)
+    (target : InteractionPresentation targetTheory)
+    (firstMap : theory.Term → middleTheory.Term)
+    (firstSites : presentation.Site → middle.Site)
+    (firstEvents : ∀ {site first last}, presentation.Event site first last →
+      middle.Event (firstSites site) (firstMap first) (firstMap last))
+    (secondMap : middleTheory.Term → targetTheory.Term)
+    (secondSites : middle.Site → target.Site)
+    (secondEvents : ∀ {site first last}, middle.Event site first last →
+      target.Event (secondSites site) (secondMap first) (secondMap last))
+    {first last : theory.Term} (path : EventPath presentation first last) :
+    map middle target secondMap secondSites secondEvents
+        (map presentation middle firstMap firstSites firstEvents path) =
+      map presentation target (secondMap ∘ firstMap) (secondSites ∘ firstSites)
+        (fun event => secondEvents (firstEvents event)) path := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih => simp only [map, ih]
 
 /-- Length of an occurrence-preserving event path. -/
 def pathLength : {source target : theory.Term} →
@@ -85,6 +204,62 @@ def append {source middle target : theory.Term} :
   | nil => simp [append, pathLength]
   | cons event rest inductionHypothesis =>
       simp [append, pathLength, inductionHypothesis, Nat.add_assoc]
+
+@[simp] theorem map_length {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (events : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last))
+    {first last : theory.Term} (path : EventPath presentation first last) :
+    pathLength target (map presentation target states sites events path) =
+      pathLength presentation path := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih => simp only [map, pathLength, ih]
+
+@[simp] theorem map_append {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (events : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last))
+    {first cut last : theory.Term}
+    (prefixPath : EventPath presentation first cut) (suffix : EventPath presentation cut last) :
+    map presentation target states sites events (append presentation prefixPath suffix) =
+      append target (map presentation target states sites events prefixPath)
+        (map presentation target states sites events suffix) := by
+  induction prefixPath with
+  | nil => rfl
+  | cons event rest ih => simp only [map, append, ih]
+
+/-- Read the interaction sites in chronological order, retaining repeated
+occurrences even when their endpoints coincide. -/
+def sites : {first last : theory.Term} → EventPath presentation first last →
+    List presentation.Site
+  | _, _, .nil _ => []
+  | _, _, .cons (site := site) _ rest => site :: sites rest
+
+@[simp] theorem sites_append {first cut last : theory.Term}
+    (earlier : EventPath presentation first cut) (later : EventPath presentation cut last) :
+    sites presentation (append presentation earlier later) =
+      sites presentation earlier ++ sites presentation later := by
+  induction earlier with
+  | nil => rfl
+  | cons event rest ih => simp only [append, sites, List.cons_append, ih]
+
+@[simp] theorem sites_map {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (siteMap : presentation.Site → target.Site)
+    (evidence : ∀ {site first last}, presentation.Event site first last →
+      target.Event (siteMap site) (states first) (states last))
+    {first last : theory.Term} (path : EventPath presentation first last) :
+    sites target (map presentation target states siteMap evidence path) =
+      (sites presentation path).map siteMap := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih => simp only [map, sites, List.map_cons, ih]
 
 section QuiverPaths
 
@@ -149,6 +324,32 @@ def erase : {source target : theory.Term} →
   | _, _, .nil term => .nil term
   | _, _, .cons event rest =>
       .cons (presentation.sound event) (erase rest)
+
+@[simp] theorem erase_append {first cut last : theory.Term}
+    (prefixPath : EventPath presentation first cut) (suffix : EventPath presentation cut last) :
+    erase presentation (append presentation prefixPath suffix) =
+      Mettapedia.GSLT.RewritePath.append (erase presentation prefixPath) (erase presentation suffix) := by
+  induction prefixPath with
+  | nil => rfl
+  | cons event rest ih => simp only [erase, append, Mettapedia.GSLT.RewritePath.append, ih]
+
+/-- Erasing event transport maps exactly the same states and semantic steps.
+The semantic step witnesses are propositions; occurrence evidence remains in
+the unerased path. -/
+theorem erase_map {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (events : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last))
+    (steps : ∀ {first last}, theory.Step first last →
+      targetTheory.Step (states first) (states last))
+    {first last : theory.Term} (path : EventPath presentation first last) :
+    erase target (map presentation target states sites events path) =
+      Mettapedia.GSLT.RewritePath.map states steps (erase presentation path) := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih => simp only [erase, map, Mettapedia.GSLT.RewritePath.map, ih]
 
 /-- Event paths and their endpoint erasures have the same length. -/
 @[simp] theorem erase_length {source target : theory.Term}

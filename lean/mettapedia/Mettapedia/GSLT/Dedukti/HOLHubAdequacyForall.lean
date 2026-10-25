@@ -444,7 +444,7 @@ theorem proofTheory_unique {Base : Type u} {Const : Ty Base → Type v} {e : Enc
     {context : LFTyping.Ctx} {M A B : LF.Term}
     (first : LambdaPiModulo (sttfaProofTheory e) context M A)
     (second : LambdaPiModulo (sttfaProofTheory e) context M B) : Conv STTfa.theory A B :=
-  conv_proofTheory (HasType.unique Example.basic_functional (proofTheory_confluent e)
+  conv_proofTheory (HasType.unique Example.standardLF_functional (proofTheory_confluent e)
     (proofTheory_headed e) (sttfaProofTheory_closedBodies e) M first second)
 
 section Typing

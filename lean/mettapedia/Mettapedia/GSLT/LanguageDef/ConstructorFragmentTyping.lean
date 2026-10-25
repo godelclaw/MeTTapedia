@@ -23,7 +23,8 @@ mutual
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       {free : FreeTypeContext} {bound : List TypeExpr}
       {pattern : Pattern} {type : TypeExpr}
       (typed : HasTypeWithConstructors source allowed free bound pattern type) :
@@ -50,7 +51,7 @@ mutual
             mappedLookup)
     | @constructor bound rule arguments supported membership notBareCollection argumentsTyped =>
         obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-          targetParameters⟩ := rows rule membership supported
+          targetParameters, targetRepresentation⟩ := rows rule membership supported
         have mappedArguments := argumentsTyped.mapRows symbols rows
         have mappedNotBareCollection :
             ¬ UsesBareCollection (mapGrammarRule symbols rule) :=
@@ -67,7 +68,8 @@ mutual
         simpa [mapPattern, targetLabel, targetCategory, mapTypeExpr] using
           (HasType.constructor
             targetMembership (by
-              simpa [UsesBareCollection, targetParameters, mapGrammarRule] using
+              simpa [UsesBareCollection, GrammarRule.bareParams, targetParameters,
+                targetRepresentation, mapGrammarRule] using
                 mappedNotBareCollection)
             targetArguments)
     | @lambda bound binder body domain codomain bodyTyped =>
@@ -95,14 +97,17 @@ mutual
     | @collectionConstructor bound rule parameterName collectionType elements rest
         elementType supported membership parameterShape elementsTyped =>
         obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-          targetParameters⟩ := rows rule membership supported
+          targetParameters, targetRepresentation⟩ := rows rule membership supported
         have mappedElements := elementsTyped.mapRows symbols rows
         have mappedParameterShape :
-            targetRule.params =
+            targetRule.bareParams =
               [.simple parameterName
                 (.collection collectionType
                   (mapTypeExpr symbols elementType))] := by
-          simp [targetParameters, parameterShape, mapTermParam, mapTypeExpr]
+          have sourceShape := (GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape
+          have targetBare := targetRepresentation.trans sourceShape.1
+          simp [GrammarRule.bareParams_of_bare _ targetBare, targetParameters,
+            sourceShape.2, mapTermParam, mapTypeExpr]
         simpa [mapPattern, targetLabel, targetCategory, mapTypeExpr] using
           (HasType.collectionConstructor
             targetMembership mappedParameterShape
@@ -116,7 +121,8 @@ mutual
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       {free : FreeTypeContext} {bound : List TypeExpr}
       {arguments : List Pattern} {parameters : List TermParam}
       (typed : ArgumentsHaveTypesWithConstructors source allowed free bound
@@ -149,7 +155,8 @@ mutual
         ∃ targetRule ∈ target.terms,
           targetRule.label = symbols.constructor rule.label ∧
           targetRule.category = symbols.sort rule.category ∧
-          targetRule.params = rule.params.map (mapTermParam symbols))
+          targetRule.params = rule.params.map (mapTermParam symbols) ∧
+          targetRule.collectionRepresentation = rule.collectionRepresentation)
       {free : FreeTypeContext} {bound : List TypeExpr}
       {elements : List Pattern} {elementType : TypeExpr}
       (typed : ElementsHaveTypeWithConstructors source allowed free bound

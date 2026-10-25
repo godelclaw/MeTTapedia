@@ -94,7 +94,8 @@ theorem TypedAt.map {source target : ValidatedLanguageDef}
       exact TypedAt.collectionConstructor (rule := mapGrammarRule morphism.symbols rule)
         (parameter := parameter)
         (morphism.mapsTerms rule membership)
-        (by simp [mapGrammarRule, shape, mapTermParam, mapTypeExpr])
+        (by simp only [bareParams_mapGrammarRule, shape, List.map_cons, List.map_nil,
+          mapTermParam, mapTypeExpr])
         mappedElements recurse
 
 end Mettapedia.GSLT.LanguageDef.WellSorted

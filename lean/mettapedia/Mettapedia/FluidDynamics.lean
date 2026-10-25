@@ -5,6 +5,7 @@ import Mettapedia.FluidDynamics.NavierStokes.ColeHopfTopology
 import Mettapedia.FluidDynamics.NavierStokes.CutoffContinuity
 import Mettapedia.FluidDynamics.NavierStokes.FiniteModeKernelLimit
 import Mettapedia.FluidDynamics.NavierStokes.FiniteModeLimit
+import Mettapedia.FluidDynamics.NavierStokes.FiniteObservation
 import Mettapedia.FluidDynamics.NavierStokes.GeometricColeHopfHeatApproximation
 import Mettapedia.FluidDynamics.NavierStokes.GeometricColeHopfPackage
 import Mettapedia.FluidDynamics.NavierStokes.GeometricColeHopfSharedApproximation

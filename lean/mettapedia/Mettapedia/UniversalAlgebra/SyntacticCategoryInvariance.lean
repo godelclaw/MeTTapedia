@@ -1,5 +1,6 @@
 import Mathlib.CategoryTheory.Equivalence
 import Mettapedia.UniversalAlgebra.SyntacticFiniteProducts
+import Mettapedia.UniversalAlgebra.ConsequenceEquivalence
 
 /-!
 # Invariance of the equational syntactic category

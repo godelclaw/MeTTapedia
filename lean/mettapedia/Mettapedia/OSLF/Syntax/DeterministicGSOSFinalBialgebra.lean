@@ -11,6 +11,11 @@ free-term algebra action. The unit and multiplication laws, terminality
 among compatible algebras and algebraic final observation are earned
 from the shared categorical construction. Complete action and observation
 readouts identify these maps with actual operational path unfolding.
+
+Closed terms with their operational behaviour form the initial compatible
+algebra. The semantics is the unique compatible map from it to the final
+algebra; it unfolds each closed term, and two closed terms have the same
+semantics exactly when they are bisimilar.
 -/
 
 set_option autoImplicit false
@@ -93,5 +98,37 @@ theorem operational_observation (object : Endofunctor.Coalgebra (behaviourFuncto
     (FinalSemantics.observe_unique S Actions (Operational.liftObject law object)
       ((Distributive.lifting law).map (FinalSemantics.observe S Actions object) ≫
         (finalAlgebra law).a))
+
+/-! ## Closed terms: the initial compatible algebra -/
+
+/-- The operational coalgebra of closed terms. -/
+noncomputable abbrev closedOperational : Endofunctor.Coalgebra (behaviourFunctor S Actions) :=
+  Operational.liftObject law
+    (CoalgebraMonadBialgebra.initialCoalgebra (B := behaviourFunctor S Actions) S.noVariablesInitial)
+
+/-- Closed terms with their operational behaviour. -/
+noncomputable def initialAlgebra : CompatibleAlgebra law :=
+  CoalgebraMonadBialgebra.initialAlgebra (Distributive.lifting law) S.noVariablesInitial
+
+/-- Closed terms are initial among compatible algebras. -/
+noncomputable def isInitial : Limits.IsInitial (initialAlgebra law) :=
+  CoalgebraMonadBialgebra.isInitialAlgebra (Distributive.lifting law) S.noVariablesInitial
+
+/-- The unique compatible map from closed syntax to final behaviour. -/
+noncomputable def semantics : initialAlgebra law ⟶ finalAlgebra law :=
+  CoalgebraMonadBialgebra.semantics (Distributive.lifting law)
+    (FinalSemantics.isFinal S Actions) S.noVariablesInitial
+
+/-- The semantics of a closed term is the final unfolding of its operational behaviour. -/
+theorem semantics_readout :
+    (semantics law).f = FinalSemantics.observe S Actions (closedOperational law) :=
+  FinalSemantics.observe_unique S Actions _ _
+
+/-- Two closed terms have the same semantics exactly when they are bisimilar. -/
+theorem semantics_eq_iff_bisimilar (sort : S.Srt) (first second : S.ClosedTerm sort) :
+    (semantics law).f.f PUnit.unit sort first = (semantics law).f.f PUnit.unit sort second ↔
+      Bisimulation.Related (closedOperational law) PUnit.unit sort first second := by
+  rw [semantics_readout]
+  exact FinalSemantics.kernel_iff_bisimilar S Actions (closedOperational law) PUnit.unit sort first second
 
 end Mettapedia.OSLF.DeterministicGSOS.FinalBialgebra

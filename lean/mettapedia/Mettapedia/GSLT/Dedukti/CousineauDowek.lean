@@ -248,7 +248,7 @@ theorem type_sortCode (context : Ctx) {source target : Srt}
     LambdaPiModulo (cdTheory profile) context (sortCode source) (codeType target) :=
   .con (by rw [constType_symbol]; simp [Symbol.declaredType, axiomHolds])
 
-theorem arrow_rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+theorem arrow_rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
 
 theorem type_prodCode {context : Ctx} {rule : ProductRule} (member : rule ∈ profile.products)
     {domain body : Term}

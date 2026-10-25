@@ -225,7 +225,7 @@ theorem sqDistStep_le_stepRelEntropy (μ : PrefixMeasure) (ξ : Semimeasure) (x 
       ring
     rw [← hkl_eq]
     exact h_sq_le_kl'
-  · push_neg at hp1
+  · push Not at hp1
     have hp_lt1 : p < 1 := lt_of_le_of_ne hp_le hp1
     have h1mp_pos : 0 < 1 - p := by linarith
 

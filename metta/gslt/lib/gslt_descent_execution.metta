@@ -54,7 +54,7 @@
       ((DescentElement $depth $context $parameter $body $index $element $elements $initial $tail)
        (case $result
          (((PremiseResult $goal (PremiseAnswer $assignment $event))
-           (let* (($restored (gslt:premise:scope-restore $parameter $initial $assignment))
+           (let* (($restored $initial)
                   ($next (+ $index 1)))
              (Some (PremiseExpansion
                (LCons (DescentEvaluate
@@ -290,6 +290,32 @@
             ($badGoal None)))))
       ($badEnvironment None))))
 
+; Shared continuation after any certified root matcher backend publishes one
+; answer.  Ordinary incremental matching and collection matching both enter
+; here, so typing, premise replay and reduct construction have one owner.
+(: gslt:descent:continue-root-answer
+  (-> Atom Atom Atom Atom Atom Atom Atom Atom Atom Atom Atom %Undefined%))
+(= (gslt:descent:continue-root-answer
+     $environment $depth $bound $type $source $index $rule $spec $answer $tail $next)
+   (case $environment
+     (((PremiseEnvironment $declarations $rewrites $specifications $provider $reflection $free)
+       (case $rule
+         (((ScopedRewriteRuleV1 $name $types $premises $left $right $bindings)
+           (case $answer
+             (((ScopedMatcherAnswer $assignment $trace)
+               (if (gslt:premise:check-assignment $declarations $free $bound $rule $spec $assignment)
+                 (Some (PremiseExpansion
+                   (LCons (DescentEvaluate
+                     (DescentPremisesGoal $depth
+                       (PremiseContext $index $rule $spec $bound 0 0) $premises $assignment)
+                     (DescentRootBody $depth $bound $type $source $index $rule $spec
+                       $trace $assignment $tail)) $next)
+                   LNil LNil))
+                 (Some (PremiseExpansion $next LNil LNil))))
+              ($badAnswer None))))
+          ($badRule None))))
+      ($badEnvironment None))))
+
 (: gslt:descent:root-match (-> Atom Atom %Undefined%))
 (= (gslt:descent:root-match $environment $task)
    (case $environment
@@ -304,13 +330,9 @@
                      (((Some (ScopedMatcherAnswer $assignment $trace))
                        (let* (($next (+ $cursor 1))
                               ($later (DescentRootMatch $depth $bound $type $source $index $rule $spec $matcher $next $tail)))
-                         (if (gslt:premise:check-assignment $declarations $free $bound $rule $spec $assignment)
-                           (Some (PremiseExpansion
-                             (LCons (DescentEvaluate
-                               (DescentPremisesGoal $depth (PremiseContext $index $rule $spec $bound 0 0) $premises $assignment)
-                               (DescentRootBody $depth $bound $type $source $index $rule $spec $trace $assignment $tail))
-                               (LCons $later LNil)) LNil LNil))
-                           (Some (PremiseExpansion (LCons $later LNil) LNil LNil)))))
+                         (gslt:descent:continue-root-answer $environment $depth $bound $type $source
+                           $index $rule $spec (ScopedMatcherAnswer $assignment $trace) $tail
+                           (LCons $later LNil))))
                       (None
                        (if (gslt:rule:scope-matcher-complete $matcher)
                          (Some (PremiseExpansion LNil LNil LNil))

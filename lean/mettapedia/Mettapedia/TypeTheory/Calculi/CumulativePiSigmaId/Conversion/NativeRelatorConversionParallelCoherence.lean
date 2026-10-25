@@ -176,7 +176,7 @@ theorem authored_conv_join (diamond : Diamond) {left right : Tower.Tm n}
 
 /-- Qualification of actual native Pi conversion from the independently
 proved diamond of its conservative completed parallel presentation. -/
-def piConversionBoundaryOfDiamond (diamond : Diamond) :
+theorem piConversionBoundaryOfDiamond (diamond : Diamond) :
     PiConversionBoundary IntrinsicRelator.rules where
   components := by
     intro n A A' B B' conversion
@@ -198,7 +198,7 @@ def piConversionBoundaryOfDiamond (diamond : Diamond) :
     cases headShape
 
 /-- The same checked argument qualifies native Sigma conversion. -/
-def sigmaConversionBoundaryOfDiamond (diamond : Diamond) :
+theorem sigmaConversionBoundaryOfDiamond (diamond : Diamond) :
     SigmaConversionBoundary IntrinsicRelator.rules where
   components := by
     intro n A A' B B' conversion

@@ -1,4 +1,5 @@
 import Mathlib.SetTheory.Ordinal.Family
+import Mathlib.Order.SuccPred.CompleteLinearOrder
 
 /-!
 # The natural sum of ordinals
@@ -19,10 +20,10 @@ and strict monotonicity in each argument is immediate from the definition:
 replacing an argument by a smaller one produces a term that the supremum
 already dominates, with a successor to spare.
 
-Only what a recursion needs is proved here: the operation exists, it is
-strictly monotone in each argument separately, and it is monotone in the weak
-sense. Commutativity and associativity are true and are not needed, so they
-are not claimed.
+Symmetry derives the mirrored order laws. On a finite argument the operation
+agrees with right ordinal addition, giving exact finite values rather than
+only upper bounds. These are bounds for fixed-arity recursion: replacing one
+argument by several younger arguments instead requires a multiset measure.
 
 The suprema are legitimate because `Set.Iio a` is small, so upstream's
 `Ordinal.le_iSup` and `Ordinal.iSup_le` apply.
@@ -53,6 +54,17 @@ theorem naturalAdd_def (a b : Ordinal.{u}) :
         (⨆ y : Set.Iio b, naturalAdd a y.1 + 1) := by
   rw [naturalAdd]
 
+/-- Interchanging arguments interchanges the two recursive families. -/
+theorem naturalAdd_comm (a b : Ordinal.{u}) : naturalAdd a b = naturalAdd b a := by
+  induction a using WellFoundedLT.induction generalizing b with
+  | ind a ih =>
+    induction b using WellFoundedLT.induction with
+    | ind b jh =>
+      rw [naturalAdd_def a b, naturalAdd_def b a, max_comm]
+      exact congrArg₂ max
+        (congrArg iSup (funext fun x => congrArg (fun z : Ordinal => z + 1) (jh x.val x.property)))
+        (congrArg iSup (funext fun y => congrArg (fun z : Ordinal => z + 1) (ih y.val y.property b)))
+
 /-! ## Strict monotonicity, the property the recursions need -/
 
 /-- **Lowering the left argument strictly lowers the sum.** -/
@@ -68,36 +80,25 @@ theorem naturalAdd_lt_naturalAdd_left {a a' b : Ordinal.{u}} (h : a' < a) :
 /-- **And lowering the right argument.** -/
 theorem naturalAdd_lt_naturalAdd_right {a b b' : Ordinal.{u}} (h : b' < b) :
     naturalAdd a b' < naturalAdd a b := by
-  have hmem : naturalAdd a b' + 1 ≤ ⨆ y : Set.Iio b, naturalAdd a y.1 + 1 :=
-    Ordinal.le_iSup (fun y : Set.Iio b => naturalAdd a y.1 + 1) ⟨b', h⟩
-  calc naturalAdd a b'
-      < naturalAdd a b' + 1 := lt_add_one _
-    _ ≤ ⨆ y : Set.Iio b, naturalAdd a y.1 + 1 := hmem
-    _ ≤ naturalAdd a b := by rw [naturalAdd_def a b]; exact le_max_right _ _
+  simpa only [naturalAdd_comm a] using naturalAdd_lt_naturalAdd_left (b := a) h
+
+theorem naturalAdd_le_naturalAdd_left {a a' b : Ordinal.{u}} (h : a' ≤ a) :
+    naturalAdd a' b ≤ naturalAdd a b :=
+  (show StrictMono (fun x => naturalAdd x b) from
+    fun _ _ => naturalAdd_lt_naturalAdd_left).monotone h
+
+theorem naturalAdd_le_naturalAdd_right {a b b' : Ordinal.{u}} (h : b' ≤ b) :
+    naturalAdd a b' ≤ naturalAdd a b :=
+  (show StrictMono (naturalAdd a) from
+    fun _ _ => naturalAdd_lt_naturalAdd_right).monotone h
 
 /-- Both at once: lowering either argument, or both, strictly lowers the sum
 unless nothing moved. -/
 theorem naturalAdd_lt_naturalAdd {a a' b b' : Ordinal.{u}} (ha : a' ≤ a) (hb : b' ≤ b)
     (hne : a' < a ∨ b' < b) : naturalAdd a' b' < naturalAdd a b := by
   rcases hne with h | h
-  · rcases lt_or_eq_of_le hb with hb' | rfl
-    · exact (naturalAdd_lt_naturalAdd_right hb').trans (naturalAdd_lt_naturalAdd_left h)
-    · exact naturalAdd_lt_naturalAdd_left h
-  · rcases lt_or_eq_of_le ha with ha' | rfl
-    · exact (naturalAdd_lt_naturalAdd_left ha').trans (naturalAdd_lt_naturalAdd_right h)
-    · exact naturalAdd_lt_naturalAdd_right h
-
-theorem naturalAdd_le_naturalAdd_left {a a' b : Ordinal.{u}} (h : a' ≤ a) :
-    naturalAdd a' b ≤ naturalAdd a b := by
-  rcases lt_or_eq_of_le h with h' | rfl
-  · exact le_of_lt (naturalAdd_lt_naturalAdd_left h')
-  · exact le_refl _
-
-theorem naturalAdd_le_naturalAdd_right {a b b' : Ordinal.{u}} (h : b' ≤ b) :
-    naturalAdd a b' ≤ naturalAdd a b := by
-  rcases lt_or_eq_of_le h with h' | rfl
-  · exact le_of_lt (naturalAdd_lt_naturalAdd_right h')
-  · exact le_refl _
+  · exact (naturalAdd_lt_naturalAdd_left h).trans_le (naturalAdd_le_naturalAdd_right hb)
+  · exact (naturalAdd_le_naturalAdd_left ha).trans_lt (naturalAdd_lt_naturalAdd_right h)
 
 /-! ## The unit, and the comparison a mixed-arity measure needs -/
 
@@ -106,43 +107,17 @@ one is the supremum of successors below `b`. -/
 theorem naturalAdd_zero_left (b : Ordinal.{u}) : naturalAdd 0 b = b := by
   induction b using WellFoundedLT.induction with
   | _ b ih =>
-    rw [naturalAdd_def]
-    have h1 : (⨆ x : Set.Iio (0 : Ordinal.{u}), naturalAdd x.1 b + 1) = 0 := by
-      apply le_antisymm _ zero_le
-      exact Ordinal.iSup_le fun x => absurd x.2 (by simp)
-    have h2 : (⨆ y : Set.Iio b, naturalAdd 0 y.1 + 1) = b := by
-      apply le_antisymm
-      · refine Ordinal.iSup_le fun y => ?_
-        rw [ih y.1 y.2]
-        exact Order.succ_le_of_lt y.2
-      · by_contra hcon
-        push Not at hcon
-        have hlt := Ordinal.lt_iSup_add_one
-          (fun y : Set.Iio b => naturalAdd 0 y.1) ⟨_, hcon⟩
-        rw [ih _ hcon] at hlt
-        exact absurd hlt (lt_irrefl _)
-    rw [h1, h2, max_eq_right zero_le]
+    rw [naturalAdd_def, ciSup_of_empty, max_eq_right bot_le]
+    calc
+      _ = ⨆ y : Set.Iio b, Order.succ y.val := by
+        congr 1
+        funext y
+        rw [ih y.val y.property, Order.succ_eq_add_one]
+      _ = b := iSup_succ b
 
 /-- `a ⊕ 0 = a`, the mirror of `naturalAdd_zero_left`. -/
 theorem naturalAdd_zero_right (a : Ordinal.{u}) : naturalAdd a 0 = a := by
-  induction a using WellFoundedLT.induction with
-  | _ a ih =>
-    rw [naturalAdd_def]
-    have h2 : (⨆ y : Set.Iio (0 : Ordinal.{u}), naturalAdd a y.1 + 1) = 0 := by
-      apply le_antisymm _ zero_le
-      exact Ordinal.iSup_le fun y => absurd y.2 (by simp)
-    have h1 : (⨆ x : Set.Iio a, naturalAdd x.1 0 + 1) = a := by
-      apply le_antisymm
-      · refine Ordinal.iSup_le fun x => ?_
-        rw [ih x.1 x.2]
-        exact Order.succ_le_of_lt x.2
-      · by_contra hcon
-        push Not at hcon
-        have hlt := Ordinal.lt_iSup_add_one
-          (fun x : Set.Iio a => naturalAdd x.1 0) ⟨_, hcon⟩
-        rw [ih _ hcon] at hlt
-        exact absurd hlt (lt_irrefl _)
-    rw [h1, h2, max_eq_left zero_le]
+  rw [naturalAdd_comm, naturalAdd_zero_left]
 
 /-- **A summand never exceeds the natural sum.**  This is what lets a measure
 over two arguments be compared with one over three. -/
@@ -163,85 +138,56 @@ theorem lt_naturalAdd_left {b : Ordinal.{u}} (a : Ordinal.{u}) (hb : 0 < b) :
   rwa [naturalAdd_zero_right] at h
 
 theorem le_naturalAdd_right (a b : Ordinal.{u}) : a ≤ naturalAdd a b := by
-  induction a using WellFoundedLT.induction with
-  | _ a ih =>
-    by_contra hcon
-    push Not at hcon
-    have h1 : naturalAdd (naturalAdd a b) b + 1
-        ≤ ⨆ x : Set.Iio a, naturalAdd x.1 b + 1 :=
-      Ordinal.le_iSup (fun x : Set.Iio a => naturalAdd x.1 b + 1) ⟨naturalAdd a b, hcon⟩
-    have h2 : (⨆ x : Set.Iio a, naturalAdd x.1 b + 1) ≤ naturalAdd a b := by
-      rw [naturalAdd_def a b]; exact le_max_left _ _
-    have h3 : naturalAdd a b ≤ naturalAdd (naturalAdd a b) b := ih _ hcon
-    have h4 : naturalAdd (naturalAdd a b) b < naturalAdd a b :=
-      lt_of_lt_of_le (lt_add_one _) (le_trans h1 h2)
-    exact absurd (lt_of_lt_of_le h4 h3) (lt_irrefl _)
+  exact (show StrictMono (fun x => naturalAdd x b) from
+    fun _ _ => naturalAdd_lt_naturalAdd_left).le_apply
 
-/-! ## Controls -/
+/-! ## Finite arguments -/
 
-/-! ## Finiteness
+/-- A finite argument agrees with ordinary addition on the right. -/
+theorem naturalAdd_natCast_right (a : Ordinal.{u}) (n : ℕ) :
+    naturalAdd a (n : Ordinal) = a + n := by
+  induction a using WellFoundedLT.induction generalizing n with
+  | ind a ih =>
+    induction n with
+    | zero => simp only [Nat.cast_zero, naturalAdd_zero_right, add_zero]
+    | succ n jh =>
+      apply le_antisymm
+      · rw [naturalAdd_def]
+        refine max_le (Ordinal.iSup_le ?_) (Ordinal.iSup_le ?_)
+        · rintro ⟨x, hx⟩
+          rw [ih x hx]
+          have hs := Order.add_one_le_of_lt
+            (naturalAdd_lt_naturalAdd_left (b := (n : Ordinal)) hx)
+          rw [ih x hx n, jh] at hs
+          simpa only [Nat.cast_succ, add_assoc] using add_le_add hs (le_refl 1)
+        · rintro ⟨y, hy⟩
+          have hle : y ≤ (n : Ordinal) := by
+            apply Order.lt_add_one_iff.mp
+            simpa only [Nat.cast_succ] using Set.mem_Iio.mp hy
+          have hs := add_le_add (naturalAdd_le_naturalAdd_right (a := a) hle) (le_refl 1)
+          simpa only [jh, Nat.cast_succ, add_assoc] using hs
+      · have hs := Order.add_one_le_of_lt
+          (naturalAdd_lt_naturalAdd_right (a := a)
+            (show (n : Ordinal) < ((n + 1 : ℕ) : Ordinal) by exact_mod_cast Nat.lt_succ_self n))
+        simpa only [jh, Nat.cast_succ, add_assoc] using hs
 
-The natural sum of two finite ordinals is finite. The recursion is over both
-arguments at once, so the bound is proved by strong induction on the sum of the
-two naturals rather than on either alone. -/
+theorem naturalAdd_natCast_left (n : ℕ) (a : Ordinal.{u}) :
+    naturalAdd (n : Ordinal) a = a + n := by
+  rw [naturalAdd_comm, naturalAdd_natCast_right]
 
-private theorem natCast_le_aux : ∀ (s m n : ℕ), m + n ≤ s →
-    naturalAdd ((m : ℕ) : Ordinal.{u}) ((n : ℕ) : Ordinal.{u})
-      ≤ (((m + n : ℕ)) : Ordinal.{u}) := by
-  intro s
-  induction s using Nat.strong_induction_on with
-  | _ s IH =>
-    intro m n hmn
-    rw [naturalAdd_def]
-    refine max_le (Ordinal.iSup_le ?_) (Ordinal.iSup_le ?_)
-    · rintro ⟨x, hx⟩
-      have hxlt : x < ((m : ℕ) : Ordinal.{u}) := Set.mem_Iio.mp hx
-      obtain ⟨p, rfl⟩ := Ordinal.lt_omega0.mp (lt_trans hxlt (Ordinal.natCast_lt_omega0 m))
-      have hp : p < m := by exact_mod_cast hxlt
-      have hrec := IH (p + n) (by omega) p n (le_refl _)
-      refine le_trans (add_le_add hrec (le_refl 1)) ?_
-      have hnat : (p + n + 1 : ℕ) ≤ (m + n : ℕ) := by omega
-      calc (((p + n : ℕ)) : Ordinal.{u}) + 1
-          = (((p + n + 1 : ℕ)) : Ordinal.{u}) := (Nat.cast_succ (p + n)).symm
-        _ ≤ (((m + n : ℕ)) : Ordinal.{u}) := by exact_mod_cast hnat
-    · rintro ⟨y, hy⟩
-      have hylt : y < ((n : ℕ) : Ordinal.{u}) := Set.mem_Iio.mp hy
-      obtain ⟨q, rfl⟩ := Ordinal.lt_omega0.mp (lt_trans hylt (Ordinal.natCast_lt_omega0 n))
-      have hq : q < n := by exact_mod_cast hylt
-      have hrec := IH (m + q) (by omega) m q (le_refl _)
-      refine le_trans (add_le_add hrec (le_refl 1)) ?_
-      have hnat : (m + q + 1 : ℕ) ≤ (m + n : ℕ) := by omega
-      calc (((m + q : ℕ)) : Ordinal.{u}) + 1
-          = (((m + q + 1 : ℕ)) : Ordinal.{u}) := (Nat.cast_succ (m + q)).symm
-        _ ≤ (((m + n : ℕ)) : Ordinal.{u}) := by exact_mod_cast hnat
+/-- Exact agreement on finite ordinals. -/
+theorem naturalAdd_natCast (m n : ℕ) :
+    naturalAdd (m : Ordinal.{u}) (n : Ordinal) = ((m + n : ℕ) : Ordinal) := by
+  rw [naturalAdd_natCast_right, Nat.cast_add]
 
-/-- **Adding one is adding one.**  The natural sum agrees with ordinal
-addition when the right argument is `1`, which is what a step of the integer
-recursion needs.
-
-The lower bound is immediate from `lt_naturalAdd_left`; only the upper bound
-needs the recursion, and there each term of the left supremum is
-`naturalAdd x 1 + 1 ≤ (x + 1) + 1 ≤ a + 1`. -/
 theorem naturalAdd_one_right (a : Ordinal.{u}) : naturalAdd a 1 = a + 1 := by
-  refine le_antisymm ?_ (Order.add_one_le_of_lt (lt_naturalAdd_left a zero_lt_one))
-  induction a using WellFoundedLT.induction with
-  | ind a IH =>
-    rw [naturalAdd_def]
-    refine max_le (Ordinal.iSup_le ?_) (Ordinal.iSup_le ?_)
-    · rintro ⟨x, hx⟩
-      have hxa : x < a := Set.mem_Iio.mp hx
-      exact le_trans (add_le_add (IH x hxa) (le_refl 1))
-        (add_le_add (Order.add_one_le_of_lt hxa) (le_refl 1))
-    · rintro ⟨y, hy⟩
-      have hy1 : y = 0 := Order.lt_one_iff.mp (Set.mem_Iio.mp hy)
-      subst hy1
-      rw [naturalAdd_zero_right]
+  simpa using naturalAdd_natCast_right a 1
 
 /-- **The natural sum of naturals is bounded by their sum.** -/
 theorem naturalAdd_natCast_le (m n : ℕ) :
     naturalAdd ((m : ℕ) : Ordinal.{u}) ((n : ℕ) : Ordinal.{u})
       ≤ (((m + n : ℕ)) : Ordinal.{u}) :=
-  natCast_le_aux (m + n) m n (le_refl _)
+  (naturalAdd_natCast m n).le
 
 /-- **So finiteness is preserved**, which is what the birthday of a dyadic
 needs: a finite birthday plus a finite birthday stays below `ω`. -/
@@ -255,14 +201,7 @@ namespace NaturalSumControls
 
 /-- `0 ⊕ 0 = 0`: both suprema are over empty families. -/
 theorem naturalAdd_zero_zero : naturalAdd 0 0 = 0 := by
-  rw [naturalAdd_def]
-  have h1 : (⨆ x : Set.Iio (0 : Ordinal), naturalAdd x.1 0 + 1) = 0 := by
-    apply le_antisymm _ zero_le
-    exact Ordinal.iSup_le fun x => absurd x.2 (by simp)
-  have h2 : (⨆ y : Set.Iio (0 : Ordinal), naturalAdd 0 y.1 + 1) = 0 := by
-    apply le_antisymm _ zero_le
-    exact Ordinal.iSup_le fun y => absurd y.2 (by simp)
-  rw [h1, h2, max_self]
+  exact naturalAdd_zero_left 0
 
 /-- **This is exactly what ordinary ordinal addition fails to do.**  Ordinal
 addition is constant in its left argument here, so it could never serve as the
@@ -277,14 +216,11 @@ theorem naturalAdd_strict_left_here :
 
 /-- **And the natural sum of two ordinals is not enough on its own** as a
 recursion measure over options: two options born on day `1` already reach the
-parent's day `2`, because `1 ⊕ 1 = 2`.  This is why a measure over surreal
-options raises to `ω` first. -/
+parent's day `2`, because `1 ⊕ 1 = 2`. Branching recursion instead uses
+the multiset replacement order. -/
 theorem nadd_measure_fails : ¬ (naturalAdd (1 : Ordinal.{u}) 1 < 1 + 1) := by
-  have h : (1 : Ordinal.{u}) < naturalAdd 1 1 := by
-    have hlt := naturalAdd_lt_naturalAdd_left
-      (a := (1 : Ordinal.{u})) (a' := 0) (b := 1) zero_lt_one
-    rwa [naturalAdd_zero_left] at hlt
-  exact not_lt.mpr (Order.add_one_le_iff.mpr h)
+  rw [naturalAdd_one_right]
+  exact lt_irrefl _
 
 end NaturalSumControls
 

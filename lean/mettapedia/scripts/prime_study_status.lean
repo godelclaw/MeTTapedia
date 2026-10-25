@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeComparisons
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DevelopmentPlan
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Index.DevelopmentPlan
 
 /-! Readout of the broad candidate-specification inventory. This is not the
 higher-order MeTTa integration agenda or its readiness measure. -/
@@ -116,4 +116,4 @@ def reportStudy : IO Unit := do
 #eval reportStudy
 
 -- The finite example checks evidence against actual semantic requirements.
-#eval Mettapedia.TypeTheory.DesignStudy.EvaluationStudy.demandEvidence.remaining
+#eval Mettapedia.Languages.MeTTa.PrimeCandidates.QuotationDemand.RequirementControls.demandEvidence.remaining

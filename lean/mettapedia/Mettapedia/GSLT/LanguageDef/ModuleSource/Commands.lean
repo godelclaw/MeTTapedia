@@ -205,7 +205,9 @@ private def blockTerm : TSyntax `moduleBlock → Expand Term
   | other => Macro.throwErrorAt other "unsupported block"
 
 private partial def exprTerm : TSyntax `moduleExpr → Expand Term
-  | `(moduleExpr| $ref:ident) => `(Expr.ref $(str ref.getId.toString))
+  | `(moduleExpr| $ref:ident) =>
+      if ref.getId == `Empty then `(Expr.extend none [])
+      else `(Expr.ref $(str ref.getId.toString))
   | `(moduleExpr| $target:ident ( $args:moduleExpr,* )) => do
       let args ← listTerm (← args.getElems.mapM exprTerm)
       `(Expr.apply $(← pathTerm target.getId) $args)

@@ -510,7 +510,7 @@ theorem costCanonicalTypeRoute_of_collectionChoice
         parameterName, parameterShape, _elementsChecked⟩
     subst choice
     exact ⟨.bareCollectionElement (prior.castEndpoint expectedEq) membership
-      wrapped parameterShape⟩
+      wrapped ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2⟩
 
 /-! ## Lockstep transport -/
 

@@ -99,7 +99,7 @@ inductive Operator (language : LanguageDef) : TypeExpr → Type where
       Operator language (.base rule.category)
   | collectionConstructor (rule : GrammarRule) (member : rule ∈ language.terms)
       (parameterName : String) (kind : CollType) (elementType : TypeExpr)
-      (shape : rule.params = [.simple parameterName (.collection kind elementType)])
+      (shape : rule.bareParams = [.simple parameterName (.collection kind elementType)])
       (count : Nat) : Operator language (.base rule.category)
   | lambda (domain codomain : TypeExpr) : Operator language (.arrow domain codomain)
   | multiLambda (domain codomain : TypeExpr) (count : Nat) :

@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Syntax
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Presentation
 import Mettapedia.OSLF.MeTTaIL.Substitution
+import Mettapedia.OSLF.MeTTaIL.CollectionLaws
+import Mettapedia.GSLT.LanguageDef.WellSortedChecker
 
 /-!
 # Elaborating `.module` into `LanguageDef`
@@ -102,6 +104,10 @@ structure Value where
   entries : List Item
   exports : List String := []
   instanceOf : List String := []
+  /-- Origins that were introduced as binary operations and subsequently
+  presented by a collection constructor. Variadic declarations do not acquire
+  this authority merely by satisfying their binary associativity instance. -/
+  binaryCollections : List Origin := []
 
 /-- Why a module does not elaborate. -/
 inductive Error where
@@ -112,10 +118,12 @@ inductive Error where
   | collision (witness : Option (Item × Item))
   | replaceMissing (label : String)
   | replaceShape (old new : String)
+  | replaceTyping (old new : String)
   | renameMissing (sort : String)
   | importMissing (file : String)
   | noEntry
   | replaceAddsLaws (old new law : String)
+  | replaceCollectionBasis (old new : String)
   | requiresIndexedAdmission
 
 instance : Repr Error where
@@ -130,10 +138,14 @@ instance : Repr Error where
     | .collision none, _ => "join collision"
     | .replaceMissing label, _ => s!"no constructor {label} to replace"
     | .replaceShape old new, _ => s!"cannot map the arguments of {old} onto {new}"
+    | .replaceTyping old new, _ =>
+        s!"replacing {old} by {new} changes its result sort or argument typing profile"
     | .renameMissing sort, _ => s!"no sort {sort} to export"
     | .importMissing file, _ => s!"import {file} is not available"
     | .noEntry, _ => "the module has no entry theory"
     | .replaceAddsLaws old new law, _ => s!"replacing {old} by {new} would add {law}, which {old} does not have"
+    | .replaceCollectionBasis old new, _ =>
+        s!"replacing {old} by {new} requires a binary associative operation and a declared unit"
     | .requiresIndexedAdmission, _ => "inductive declarations require the indexed admission route"
 
 /-- Elaboration threads the next instance id. -/
@@ -164,7 +176,8 @@ def joinEntries (first second : List Item) : Except Error (List Item) :=
 def joinValues (left right : Value) : Except Error Value := do
   let entries ← joinEntries left.entries right.entries
   pure { entries, exports := (left.exports ++ right.exports).eraseDups,
-         instanceOf := (left.instanceOf ++ right.instanceOf).eraseDups }
+         instanceOf := (left.instanceOf ++ right.instanceOf).eraseDups,
+         binaryCollections := (left.binaryCollections ++ right.binaryCollections).eraseDups }
 
 theorem joinEntries_isSome_iff (first second : List Item) :
     (∃ joined, joinEntries first second = .ok joined) ↔
@@ -318,12 +331,48 @@ def paramName : TermParam → String
   | .abstractionNamed _ name _ => name
   | .multiAbstractionNamed _ name _ => name
 
+/-- Parameter names select an argument permutation; they grant no authority
+to change the selected argument's type or binding representation. -/
+def namedArguments? (old new : GrammarRule) : Bool :=
+  let oldNames := old.params.map paramName
+  let newNames := new.params.map paramName
+  newNames.length = oldNames.length && newNames.all oldNames.contains && newNames.Nodup
+
+/-- The declaration-derived parameter type and its required term form.
+Binder display names do not alter either component. -/
+def compatibleParameter? (old new : TermParam) : Bool :=
+  let sameForm := match old, new with
+    | .simple _ _, .simple _ _ => true
+    | .abstractionNamed _ _ _, .abstractionNamed _ _ _ => true
+    | .multiAbstractionNamed _ _ _, .multiAbstractionNamed _ _ _ => true
+    | _, _ => false
+  sameForm && (WellSorted.parameterType? old).isSome &&
+    WellSorted.parameterType? old == WellSorted.parameterType? new
+
+/-- Constructor replacement keeps its result sort. Named arguments keep
+their types and binding forms; binary collection packing has a homogeneous
+carrier. Sort renaming is the separate `Exports` operation. -/
+def checkReplacementTyping (old new : GrammarRule) : Bool :=
+  old.category == new.category &&
+    if namedArguments? old new then
+      WellSorted.usesBareCollection? old == WellSorted.usesBareCollection? new &&
+        new.params.all fun parameter =>
+          (old.params[(old.params.map paramName).idxOf (paramName parameter)]?).any
+            (fun previous => compatibleParameter? previous parameter)
+    else match new.params with
+      | [.simple _ (.collection _ (.base element))] =>
+          old.params.length == 2 && old.category == element &&
+            old.params.all (fun parameter => match parameter with
+              | .simple _ (.base sort) => sort == element
+              | _ => false)
+      | _ => false
+
 /-- How the old constructor's arguments become the new one's: by parameter name, or, for a bag
 constructor of the old parameters' sort, collected into the bag. -/
 def argumentMap (old new : GrammarRule) : Option (List Pattern → List Pattern) :=
   let oldNames := old.params.map paramName
   let newNames := new.params.map paramName
-  if newNames.length = oldNames.length && newNames.all oldNames.contains && newNames.Nodup then
+  if namedArguments? old new then
     some fun arguments => newNames.map fun name => (arguments[oldNames.idxOf name]?).getD (.fvar name)
   else
     match new.params with
@@ -354,10 +403,57 @@ def holdsOf (value : Value) (law : String → Pattern → Pattern → Bool) (op 
     | .equation row => row.premises.isEmpty && (law op row.left row.right || law op row.right row.left)
     | _ => false
 
+/-- Binary associativity in the source operation, before collection lowering. -/
+def statesBinaryAssociative (op : String) (left right : Pattern) : Bool :=
+  match left, right with
+  | .apply a [.apply b [.fvar x, .fvar y], .fvar z],
+      .apply c [.fvar x', .apply d [.fvar y', .fvar z']] =>
+      a == op && b == op && c == op && d == op &&
+        x == x' && y == y' && z == z' && decide [x, y, z].Nodup
+  | _, _ => false
+
+/-- A named left or right unit of the source binary operation. -/
+def binaryUnit (op : String) (left right : Pattern) : Option (String × Bool) :=
+  match left, right with
+  | .apply head [.fvar x, .apply unit []], .fvar x' =>
+      if head == op && x == x' then some (unit, false) else none
+  | .apply head [.apply unit [], .fvar x], .fvar x' =>
+      if head == op && x == x' then some (unit, true) else none
+  | _, _ => none
+
+def binaryUnits (value : Value) (op : String) : List (String × Bool) :=
+  value.entries.flatMap fun item => match item.body with
+    | .equation row =>
+        if row.premises.isEmpty then
+          (binaryUnit op row.left row.right).toList ++
+            (binaryUnit op row.right row.left).toList
+        else []
+    | _ => []
+
+/-- An unrestricted finite collection needs an empty value as well as a
+binary operation. A source semigroup alone cannot authorize that extension. -/
+def binaryFoldReady (value : Value) (op : String) : Bool :=
+  let units := binaryUnits value op
+  holdsOf value statesBinaryAssociative op && units.any fun candidate =>
+    units.any fun other => candidate.1 == other.1 && candidate.2 != other.2 ||
+      holdsOf value statesCommutative op
+
+/-- The parameter carrier, independently of whether its constructor label
+is retained in the target representation. -/
+def collectionParameterKind (rule : GrammarRule) : Option CollType :=
+  match rule.params with
+  | [.simple _ (.collection kind _)] => some kind
+  | _ => none
+
 /-- **A replacement re-spells an operation; it never adds laws.** A binary operation becomes a bag
 constructor only when it commutes, and a set constructor only when it is also idempotent, because
 those collections quotient out exactly that. -/
-def checkFaithful (value : Value) (old : GrammarRule) (new : GrammarRule) : Except Error Unit :=
+def checkFaithful (value : Value) (old : GrammarRule) (new : GrammarRule) : Except Error Unit := do
+  match collectionParameterKind old,
+      collectionParameterKind new with
+  | some first, some second =>
+      unless first == second do throw (.replaceShape old.label new.label)
+  | _, _ => pure ()
   match new.params with
   | [.simple _ (.collection kind _)] =>
       if 2 ≤ old.params.length then
@@ -368,10 +464,19 @@ def checkFaithful (value : Value) (old : GrammarRule) (new : GrammarRule) : Exce
         else .ok ()
       else .ok ()
   | _ => .ok ()
+  if (collectionParameterKind new).isSome &&
+      (collectionParameterKind old).isNone then
+    unless old.params.length == 2 && binaryFoldReady value old.label do
+      throw (.replaceCollectionBasis old.label new.label)
 
 section Constructor
 
 variable (old new : String) (map : List Pattern → List Pattern)
+
+/-- Algebra units are constructor references. They follow the same symbol
+action as term occurrences, while the declaration's other fields remain. -/
+def renameUnitReferences (rule : GrammarRule) : GrammarRule :=
+  { rule with algebra? := rule.algebra?.map (StructuralMorphism.mapCollectionAlgebra (renameName old new)) }
 
 def renameConstructor : Pattern → Pattern
   | .bvar index => .bvar index
@@ -395,6 +500,7 @@ def replacePremise : Premise → Premise
   | .forAll index element body => .forAll index element (replacePremise body)
 
 def replaceDecl : Decl → Decl
+  | .term rule => .term (renameUnitReferences old new rule)
   | .equation row => .equation { row with premises := row.premises.map (replacePremise old new map),
                                           left := renameConstructor old new map row.left,
                                           right := renameConstructor old new map row.right }
@@ -408,7 +514,10 @@ end Constructor
 /-- The constructor `old` becomes `rule`, keeping its origin; every reference follows. -/
 def replaceItems (items : List Item) (row : Replacement) (map : List Pattern → List Pattern) : List Item :=
   items.map fun item =>
-    if item.label = (.term, row.old) then { item with label := (.term, row.rule.label), body := .term row.rule }
+    if item.label = (.term, row.old) then
+      { item with
+        label := (.term, row.rule.label)
+        body := .term (renameUnitReferences row.old row.rule.label row.rule) }
     else { item with body := replaceDecl row.old row.rule.label map item.body }
 
 /-- **Replacing a constructor keeps every origin.** -/
@@ -442,9 +551,15 @@ def replaceRow (value : Value) (row : Replacement) : Except Error Value := do
   let some found := value.entries.find? (·.label == (.term, row.old)) | throw (.replaceMissing row.old)
   let .term oldRule := found.body | throw (.replaceMissing row.old)
   let some map := argumentMap oldRule row.rule | throw (.replaceShape row.old row.rule.label)
+  unless checkReplacementTyping oldRule row.rule do throw (.replaceTyping row.old row.rule.label)
   checkFaithful value oldRule row.rule
   let entries ← recheck (replaceItems value.entries row map)
-  pure { value with entries }
+  let binaryCollections :=
+    if oldRule.params.length == 2 &&
+        (collectionParameterKind row.rule).isSome then
+      found.origin :: value.binaryCollections
+    else value.binaryCollections
+  pure { value with entries, binaryCollections }
 
 /-- The nullary constructors a value declares. -/
 def nullaries (value : Value) : List String :=
@@ -637,15 +752,15 @@ def unitsOf (label : String) (row : Equation) : List (String × Bool) :=
 
 /-- The kind of a bare collection constructor of its own sort. -/
 def ownKind (rule : GrammarRule) : Option CollType :=
-  match rule.params with
+  match rule.bareParams with
   | [.simple _ (.collection kind (.base element))] => if element == rule.category then some kind else none
   | _ => none
 
-/-- **The algebra the equations state for one collection constructor**, and the equations it
-replaces. A unit counts when its equations hold on both sides, or on one side of an unordered
-collection; a constructor that does not flatten declares nothing. Commutativity goes, since an
-unordered collection's laws permute; idempotence stays an equation, since the collection laws do not
-quotient a set by repetition. -/
+/-- A candidate fold algebra read from the translated binary equations.
+This recognizer alone does not authorize interpreting an arbitrary variadic
+constructor as a fold: extraction also requires its binary source origin.
+Unit and singleton equations remain explicit because the standard collection
+normalizer does not itself remove their outer wrappers. -/
 def statedAlgebra (equations : List Equation) (rule : GrammarRule) : Option (CollectionAlgebra × (Equation → Bool)) := do
   let kind ← ownKind rule
   let free := equations.filter (·.premises.isEmpty)
@@ -660,23 +775,39 @@ def statedAlgebra (equations : List Equation) (rule : GrammarRule) : Option (Col
     | none => none
   let replaced (row : Equation) : Bool :=
     row.premises.isEmpty &&
-      (eitherWay (statesFlatten rule.label) row || eitherWay (statesSingleton rule.label) row ||
-        (unit?.isSome && (unitsOf rule.label row).any (some ·.1 == unit?)) ||
+      (eitherWay (statesFlatten rule.label) row ||
         (unordered && eitherWay (statesCommuting rule.label) row))
   return (⟨true, unit?⟩, replaced)
 
-/-- Every collection constructor's stated algebra becomes its declaration; a constructor that
-already declares one keeps it. -/
-def declareAlgebras (language : LanguageDef) : LanguageDef :=
-  language.terms.foldl (fun current rule =>
-    if rule.algebra?.isSome then current
+/-- The normalizer selects collection laws by kind only when the language
+has one constructor of that kind. Extraction must use the same boundary:
+otherwise deleting a source equation would leave no law implementing it. -/
+def uniqueCollectionKind (language : LanguageDef) (rule : GrammarRule) : Bool :=
+  match Mettapedia.OSLF.MeTTaIL.CollectionLaws.bareKind rule with
+  | none => false
+  | some kind =>
+      (language.terms.filter fun other =>
+        Mettapedia.OSLF.MeTTaIL.CollectionLaws.bareKind other == some kind).length == 1
+
+/-- An inferred collection algebra requires a binary replacement origin,
+a unit for the empty fold, and one constructor of its kind. Other source
+equations remain explicit. Existing algebra declarations are retained. -/
+def extractAlgebra (language : LanguageDef) (binaryLabels : List String)
+    (current : LanguageDef) (rule : GrammarRule) : LanguageDef :=
+    if rule.algebra?.isSome || !uniqueCollectionKind language rule ||
+        !binaryLabels.contains rule.label then current
     else match statedAlgebra current.equations rule with
       | some (algebra, replaced) =>
-          { current with
-            terms := current.terms.map fun other =>
-              if other.label == rule.label then { other with algebra? := some algebra } else other
-            equations := current.equations.filter (!replaced ·) }
-      | none => current) language
+          if algebra.unit.isSome then
+            { current with
+              terms := current.terms.map fun other =>
+                if other.label == rule.label then { other with algebra? := some algebra } else other
+              equations := current.equations.filter (!replaced ·) }
+          else current
+      | none => current
+
+def declareAlgebras (language : LanguageDef) (binaryLabels : List String := []) : LanguageDef :=
+  language.terms.foldl (extractAlgebra language binaryLabels) language
 
 /-- A value's declarations in order, before nullary names are resolved. -/
 def flattenRaw (name : String) (value : Value) : LanguageDef where
@@ -690,9 +821,29 @@ def flattenRaw (name : String) (value : Value) : LanguageDef where
   rewrites := value.entries.filterMap fun item => match item.body with
     | .rewrite row => some row | _ => none
 
+/-- Sharing a collection carrier does not identify two declared operations.
+Retain their labels whenever bare erasure would merge distinct constructors.
+The equations remain available to the ordinary equation machinery. -/
+def retainSharedCollectionLabels (language : LanguageDef) : LanguageDef :=
+  { language with terms := language.terms.map fun rule =>
+      match collectionParameterKind rule with
+      | none => rule
+      | some kind =>
+          if language.terms.any (fun other =>
+              other.label != rule.label && collectionParameterKind other == some kind) then
+            { rule with collectionRepresentation := .wrapped }
+          else rule }
+
 /-- A value as a `LanguageDef`, its declarations in order, with the collection algebras its
 equations state declared. -/
-def flatten (name : String) (value : Value) : LanguageDef := declareAlgebras (flattenRaw name value)
+def flatten (name : String) (value : Value) : LanguageDef :=
+  let binaryLabels := value.entries.filterMap fun item =>
+    if value.binaryCollections.contains item.origin then
+      match item.body with
+      | .term rule => some rule.label
+      | _ => none
+    else none
+  declareAlgebras (retainSharedCollectionLabels (flattenRaw name value)) binaryLabels
 
 /-- The value of applying a theory to arguments, within a module. -/
 def applyTheory (library : List (String × Module)) (module : Module) (path : Path) (args : List Expr) :

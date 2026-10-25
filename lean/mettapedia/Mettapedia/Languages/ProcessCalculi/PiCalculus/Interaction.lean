@@ -413,7 +413,7 @@ theorem piContinuationRetyping_redexRetypable :
     · apply HasType.constructor (rule := costBaseConstructor piInteractionCut piCalc.terms[2])
       · exact piContinuationRetyping.costBaseConstructor_mem_generated _
           piInputConstructor.2
-      · simp [UsesBareCollection, pi_costBaseInput_params]
+      · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, pi_costBaseInput_params]
       · rw [pi_costBaseInput_params]
         exact .cons trivial rfl (HasType.fvar rfl)
           (.cons trivial rfl (HasType.lambda (HasType.fvar rfl)) .nil)
@@ -422,7 +422,7 @@ theorem piContinuationRetyping_redexRetypable :
           (rule := costBaseConstructor piInteractionCut piCalc.terms[3])
         · exact piContinuationRetyping.costBaseConstructor_mem_generated _
             piOutputConstructor.2
-        · simp [UsesBareCollection, pi_costBaseOutput_params]
+        · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, pi_costBaseOutput_params]
         · rw [pi_costBaseOutput_params]
           exact .cons trivial rfl (HasType.fvar rfl) (.cons trivial rfl (HasType.fvar rfl) .nil)
       · exact .nil _ _

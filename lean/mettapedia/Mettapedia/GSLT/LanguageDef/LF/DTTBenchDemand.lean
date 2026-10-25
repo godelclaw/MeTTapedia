@@ -8,6 +8,8 @@ result against the source-extracted profiles in `Profiles.lean`.
 -/
 
 import Mettapedia.GSLT.LanguageDef.LF.Profiles
+import Mettapedia.GSLT.LanguageDef.LF.PureCorrespondence
+import Mettapedia.GSLT.Dedukti.PureTypeSystem
 import Mettapedia.GSLT.LanguageDef.Pure.BetaEtaConversion
 import Mettapedia.GSLT.LanguageDef.Pure.DTTBench31
 
@@ -127,20 +129,22 @@ def demandRow (profile : Profile) (statement : Statement) : DemandRow :=
     resultSort := inferSort analysisFuel profile [] statement.goal
     rules := (demand? profile statement.goal).getD [] }
 
-def indexedRows : List DemandRow := statements.map (demandRow indexed)
+def prototypeRows : List DemandRow :=
+  statements.map (demandRow mettaKernelKindResultPrototype)
 
-def allWithinIndexed : Bool := statements.all (statementWithin indexed)
+def allWithinMettaKernelPrototype : Bool :=
+  statements.all (statementWithin mettaKernelKindResultPrototype)
 
-def allWithinBasic : Bool := statements.all (statementWithin basic)
+def allWithinStandardLF : Bool := statements.all (statementWithin standardLF)
 
 /-- The two rows selected before the native T1 pilot. -/
 def pilotNames : List String := ["Eq_congrFun", "sSup_inter_le"]
 
 def pilotRows : List DemandRow :=
-  indexedRows.filter fun row => row.name ∈ pilotNames
+  prototypeRows.filter fun row => row.name ∈ pilotNames
 
 def allDemandRules : List ProductRule :=
-  (indexedRows.flatMap DemandRow.rules).eraseDups
+  (prototypeRows.flatMap DemandRow.rules).eraseDups
 
 /-! ## Closed-corpus demand theorems
 
@@ -150,27 +154,28 @@ judgment is replayed here.
 -/
 
 /-- The analysis visits exactly the 31 frozen DTTBench statements. -/
-theorem indexedRows_length : indexedRows.length = 31 := by
-  simp [indexedRows, statements_length]
+theorem prototypeRows_length : prototypeRows.length = 31 := by
+  simp [prototypeRows, statements_length]
 
-/-- Every frozen statement is formable at the indexed profile. -/
-theorem allWithinIndexed_eq_true : allWithinIndexed = true := by
+/-- Every frozen statement is formable at the historical four-rule
+curriculum profile. -/
+theorem allWithinMettaKernelPrototype_eq_true :
+    allWithinMettaKernelPrototype = true := by
   rfl
 
-/-- Statement-level form of the indexed coverage result: membership in the
-frozen 31-row collection is enough to recover the row's successful formation
-check.  Future runtime parity fixtures consume this theorem one row at a time. -/
-theorem statementWithin_indexed_of_mem {statement : Statement}
+/-- Statement-level form of the prototype coverage result. -/
+theorem statementWithin_mettaKernelPrototype_of_mem {statement : Statement}
     (hstatement : statement ∈ statements) :
-    statementWithin indexed statement = true :=
-  (List.all_eq_true.mp allWithinIndexed_eq_true) statement hstatement
+    statementWithin mettaKernelKindResultPrototype statement = true :=
+  (List.all_eq_true.mp allWithinMettaKernelPrototype_eq_true) statement hstatement
 
-/-- The basic profile is too small for the frozen statement collection. -/
-theorem allWithinBasic_eq_false : allWithinBasic = false := by
+/-- Standard LF is too small for the frozen statement collection. -/
+theorem allWithinStandardLF_eq_false : allWithinStandardLF = false := by
   rfl
 
-/-- The corpus exercises every indexed product rule, including both added rules. -/
-theorem allDemandRules_eq_indexed :
+/-- The corpus exercises every product rule of the historical four-rule
+prototype, including both additions to standard LF. -/
+theorem allDemandRules_eq_mettaKernelPrototype :
     allDemandRules =
       [kindKindKind, typeKindKind, kindTypeKind, typeTypeType] := by
   set_option maxRecDepth 100000 in
@@ -179,23 +184,23 @@ theorem allDemandRules_eq_indexed :
 /-- The `Eq_congrFun` statement requires the Type-parameter product. -/
 theorem Eq_congrFun_requires_kindKindKind :
     kindKindKind ∈
-      (demand? indexed goal_Eq_Eq_congrFun).getD [] := by
+      (demand? mettaKernelKindResultPrototype goal_Eq_Eq_congrFun).getD [] := by
   decide
 
-/-- The basic profile cannot form the `Eq_congrFun` statement. -/
-theorem Eq_congrFun_not_within_basic :
-    demand? basic goal_Eq_Eq_congrFun = none := by
+/-- Standard LF cannot form the `Eq_congrFun` statement. -/
+theorem Eq_congrFun_not_within_standardLF :
+    demand? standardLF goal_Eq_Eq_congrFun = none := by
   rfl
 
 /-- The `sSup_inter_le` statement also requires the Type-parameter product. -/
 theorem sSup_inter_le_requires_kindKindKind :
     kindKindKind ∈
-      (demand? indexed goal_Leq_sSup_inter_le).getD [] := by
+      (demand? mettaKernelKindResultPrototype goal_Leq_sSup_inter_le).getD [] := by
   decide
 
-/-- The basic profile cannot form the `sSup_inter_le` statement. -/
-theorem sSup_inter_le_not_within_basic :
-    demand? basic goal_Leq_sSup_inter_le = none := by
+/-- Standard LF cannot form the `sSup_inter_le` statement. -/
+theorem sSup_inter_le_not_within_standardLF :
+    demand? standardLF goal_Leq_sSup_inter_le = none := by
   rfl
 
 /-- A profile contains the DTTBench point when it contains its sort axiom and
@@ -204,43 +209,104 @@ def ContainsDTTBench (profile : Profile) : Prop :=
   profile.sortAxiom .type = some .kind ∧
     ∀ rule, rule ∈ allDemandRules → rule ∈ profile.products
 
-/-- The source-extracted indexed profile contains the DTTBench statement point. -/
-theorem indexed_contains_DTTBench : ContainsDTTBench indexed := by
+/-- The source-extracted MettaKernel prototype contains the frozen DTTBench
+statement point. -/
+theorem mettaKernelPrototype_contains_DTTBench :
+    ContainsDTTBench mettaKernelKindResultPrototype := by
   constructor
   · rfl
   · intro rule hrule
-    rw [allDemandRules_eq_indexed] at hrule
-    simp [indexed] at hrule ⊢
+    rw [allDemandRules_eq_mettaKernelPrototype] at hrule
+    simp [mettaKernelKindResultPrototype] at hrule ⊢
     aesop
 
-/-- The source-extracted basic profile does not contain the DTTBench point. -/
-theorem basic_does_not_contain_DTTBench : ¬ ContainsDTTBench basic := by
+/-- Standard LF does not contain the frozen DTTBench point. -/
+theorem standardLF_does_not_contain_DTTBench :
+    ¬ ContainsDTTBench standardLF := by
   intro hcontains
   have hdemand : kindKindKind ∈ allDemandRules := by
-    rw [allDemandRules_eq_indexed]
+    rw [allDemandRules_eq_mettaKernelPrototype]
     simp
   have hbasic := hcontains.2 kindKindKind hdemand
-  simp [basic, kindKindKind, typeTypeType, typeKindKind] at hbasic
+  simp [standardLF, kindKindKind, typeTypeType, typeKindKind] at hbasic
 
 /-- T2 minimality crown: every profile containing the frozen DTTBench demand
-subsumes the indexed profile. -/
-theorem indexed_minimal_for_DTTBench {profile : Profile}
-    (hcontains : ContainsDTTBench profile) : indexed ⊑ profile := by
+subsumes the historical four-rule prototype. -/
+theorem mettaKernelPrototype_minimal_for_DTTBench {profile : Profile}
+    (hcontains : ContainsDTTBench profile) :
+    mettaKernelKindResultPrototype ⊑ profile := by
   constructor
   · intro source target haxiom
-    cases source <;> simp [indexed, typeAxiom] at haxiom
+    cases source <;> simp [mettaKernelKindResultPrototype, typeAxiom] at haxiom
     · cases haxiom
       exact hcontains.1
   · intro rule hrule
     apply hcontains.2 rule
-    rw [allDemandRules_eq_indexed]
-    simp [indexed] at hrule ⊢
+    rw [allDemandRules_eq_mettaKernelPrototype]
+    simp [mettaKernelKindResultPrototype] at hrule ⊢
     aesop
 
-#print axioms allWithinIndexed_eq_true
-#print axioms statementWithin_indexed_of_mem
+/-! ## Typability under CoC formation
+
+The demand above is computed while inferring at the historical prototype.
+It is not a profile-independent lower bound on the rules needed to type the
+same raw statements: changing the result sort changes later premises.  The
+independently proved conversion-capable checker gives the relevant typability
+test for the CoC profile.
+-/
+
+def cocInferenceFuel : Nat := 4096
+
+def cocInferredType? (statement : Statement) : Option LF.Term :=
+  LFConversionProfileChecker.infer cocInferenceFuel
+    Mettapedia.GSLT.Dedukti.constructions [] []
+      (LFPureCorrespondence.encodeExpr statement.goal)
+
+def statementTypableInCoc (statement : Statement) : Bool :=
+  cocInferredType? statement == some (.srt .type)
+
+def allStatementsTypableInCoc : Bool :=
+  statements.all statementTypableInCoc
+
+/-- Every one of the 31 frozen statement types is inferred at sort `Type` by
+the generic checker instantiated with CoC formation. -/
+theorem allStatementsTypableInCoc_eq_true :
+    allStatementsTypableInCoc = true := by
+  rfl
+
+theorem coc_inferredType_of_mem {statement : Statement}
+    (member : statement ∈ statements) :
+    cocInferredType? statement = some (.srt .type) := by
+  have checked :=
+    (List.all_eq_true.mp allStatementsTypableInCoc_eq_true) statement member
+  simpa [statementTypableInCoc] using checked
+
+/-- Statement formation is not merely a Boolean observation: sound inference
+constructs the independently specified declarative CoC typing judgment. -/
+theorem coc_typable_of_mem {statement : Statement}
+    (member : statement ∈ statements) :
+    LFConversionProfileChecker.Deriv Mettapedia.GSLT.Dedukti.constructions
+      [] [] (LFPureCorrespondence.encodeExpr statement.goal) (.srt .type) :=
+  (LFConversionProfileChecker.infer_check_sound cocInferenceFuel).1
+    Mettapedia.GSLT.Dedukti.constructions [] []
+      (LFPureCorrespondence.encodeExpr statement.goal) (.srt .type)
+      (coc_inferredType_of_mem member)
+
+/-- The prototype-specific demand contains its unusual result rule, while
+CoC types the whole raw corpus without that rule.  Thus the computed demand
+separates inference profiles, not the statements' typability. -/
+theorem prototype_demand_not_necessary_for_coc_typability :
+    kindTypeKind ∉ Mettapedia.GSLT.Dedukti.constructions.products ∧
+      allStatementsTypableInCoc = true :=
+  ⟨by decide, allStatementsTypableInCoc_eq_true⟩
+
+#print axioms allWithinMettaKernelPrototype_eq_true
+#print axioms statementWithin_mettaKernelPrototype_of_mem
 #print axioms Eq_congrFun_requires_kindKindKind
 #print axioms sSup_inter_le_requires_kindKindKind
-#print axioms indexed_minimal_for_DTTBench
+#print axioms mettaKernelPrototype_minimal_for_DTTBench
+#print axioms allStatementsTypableInCoc_eq_true
+#print axioms coc_typable_of_mem
+#print axioms prototype_demand_not_necessary_for_coc_typability
 
 end Mettapedia.GSLT.LanguageDef.LFDTTBenchDemand

@@ -1,4 +1,5 @@
 import Mathlib.Tactic
+import Mathlib.Algebra.Ring.Idempotent
 
 /-!
 # Gradient-projection memory
@@ -71,7 +72,7 @@ def representationResidual
     (memory : Matrix Coordinate Basis ℝ)
     (representation : Matrix Coordinate Sample ℝ) :
     Matrix Coordinate Sample ℝ :=
-  representation - projector memory * representation
+  convolutionalUpdate memory representation
 
 omit [Fintype Coordinate] [DecidableEq Coordinate]
     [DecidableEq Basis] in
@@ -89,13 +90,8 @@ theorem projector_idempotent
     (orthonormal : HasOrthonormalColumns memory) :
     projector memory * projector memory = projector memory := by
   unfold projector
-  calc
-    (memory * memory.transpose) * (memory * memory.transpose) =
-        memory * (memory.transpose * memory) * memory.transpose := by
-      simp only [Matrix.mul_assoc]
-    _ = memory * memory.transpose := by
-      rw [orthonormal]
-      simp
+  rw [Matrix.mul_assoc, ← Matrix.mul_assoc memory.transpose,
+    orthonormal, Matrix.one_mul]
 
 /-- The complementary projector is idempotent as well. -/
 theorem residualProjector_idempotent
@@ -103,17 +99,7 @@ theorem residualProjector_idempotent
     (orthonormal : HasOrthonormalColumns memory) :
     residualProjector memory * residualProjector memory =
       residualProjector memory := by
-  have storedIdempotent :=
-    projector_idempotent memory orthonormal
-  unfold residualProjector
-  calc
-    (1 - projector memory) * (1 - projector memory) =
-        1 - projector memory - projector memory +
-          projector memory * projector memory := by
-      noncomm_ring
-    _ = 1 - projector memory := by
-      rw [storedIdempotent]
-      module
+  exact (IsIdempotentElem.one_sub (projector_idempotent memory orthonormal))
 
 omit [DecidableEq Basis] in
 /-- Equation (6) is equivalently right multiplication by the complementary
@@ -167,12 +153,11 @@ theorem representationResidual_annihilates_basis
     (orthonormal : HasOrthonormalColumns memory)
     (representation : Matrix Coordinate Sample ℝ) :
     memory.transpose * representationResidual memory representation = 0 := by
-  unfold HasOrthonormalColumns at orthonormal
-  simp [representationResidual, projector, Matrix.mul_sub,
-    ← Matrix.mul_assoc, orthonormal]
+  exact convolutionalUpdate_annihilates_basis memory orthonormal representation
 
 /-! ## Growing the constrained gradient space -/
 
+omit [DecidableEq Coordinate] in
 /-- Two idempotent projectors with mutually annihilating ranges combine into
 another idempotent projector. -/
 theorem add_orthogonal_projectors_idempotent
@@ -182,15 +167,8 @@ theorem add_orthogonal_projectors_idempotent
     (firstThenSecond : first * second = 0)
     (secondThenFirst : second * first = 0) :
     (first + second) * (first + second) = first + second := by
-  calc
-    (first + second) * (first + second) =
-        first * first + first * second +
-          (second * first + second * second) := by
-      noncomm_ring
-    _ = first + second := by
-      rw [firstIdempotent, secondIdempotent, firstThenSecond,
-        secondThenFirst]
-      simp
+  exact IsIdempotentElem.add firstIdempotent secondIdempotent
+    (by rw [firstThenSecond, secondThenFirst, add_zero])
 
 omit [DecidableEq Coordinate] in
 /-- Residual projection by a newly added orthogonal subspace is exactly the
@@ -230,7 +208,7 @@ omit [DecidableEq Coordinate] [DecidableEq Basis] in
     representationResidual
         (0 : Matrix Coordinate Basis ℝ) representation =
       representation := by
-  simp [representationResidual, projector]
+  exact convolutionalUpdate_zeroMemory representation
 
 /-- If stored directions span the entire coordinate space, GPM has no
 remaining fully connected plasticity. -/
@@ -302,19 +280,9 @@ theorem nonorthonormal_memory_breaks_orthogonality :
   intro memory representation orthogonal
   have entry := congrFun (congrFun orthogonal 0) 0
   norm_num [memory, representation, scalarBasisMemory,
-    scalarRepresentation, representationResidual, projector,
+    scalarRepresentation, representationResidual, convolutionalUpdate, projector,
     Matrix.mul_apply] at entry
 
-#print axioms projector_idempotent
-#print axioms residualProjector_idempotent
-#print axioms fullyConnectedUpdate_annihilates_basis
-#print axioms convolutionalUpdate_annihilates_basis
-#print axioms representationResidual_annihilates_basis
-#print axioms add_orthogonal_projectors_idempotent
-#print axioms sequential_leftResidual_eq_combined
-#print axioms firstAxis_projection
-#print axioms nonorthonormal_memory_breaks_idempotence
-#print axioms nonorthonormal_memory_breaks_orthogonality
 
 end
 

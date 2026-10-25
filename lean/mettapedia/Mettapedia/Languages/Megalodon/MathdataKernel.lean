@@ -95,6 +95,17 @@ def Environment.lookupKnown? (environment : Environment) (name : Name) :
     Option Tm :=
   lookupKnownList? environment.known name
 
+/-- A term found by name in a declaration list belongs to it. -/
+theorem lookupTermList?_mem {declaration : TermDecl} :
+    (declarations : List TermDecl) → (name : Name) →
+      lookupTermList? declarations name = some declaration → declaration ∈ declarations
+  | [], _, found => by simp [lookupTermList?] at found
+  | head :: rest, name, found => by
+      simp only [lookupTermList?] at found
+      split at found
+      · exact (Option.some.inj found) ▸ List.mem_cons_self
+      · exact List.mem_cons_of_mem _ (lookupTermList?_mem rest name found)
+
 namespace Tp
 
 /-- Plain types exclude `all`; Megalodon admits `all` only as a prefix through
@@ -370,6 +381,45 @@ def deltaNormalize (environment : Environment) : Nat → Tm → Option Tm
 def normalize (environment : Environment) (fuel : Nat) (term : Tm) :
     Option Tm := do
   Tm.normalize fuel (← deltaNormalize environment fuel term)
+
+/-- In an environment of primitives, delta-normalization is the identity at
+every fuel.  The kernel's delta-normalizer is defined by well-founded
+recursion, so this is what lets its verdicts be computed symbolically. -/
+theorem deltaNormalize_of_primitive (primitives : Environment)
+    (primitive : ∀ name declaration,
+      primitives.lookupTerm? name = some declaration → declaration.definition = none) :
+    ∀ fuel term, deltaNormalize primitives fuel term = some term := by
+  intro fuel term
+  induction term generalizing fuel with
+  | named name =>
+      have lookup : ∀ declaration, primitives.lookupTerm? name = some declaration →
+          declaration.definition = none :=
+        primitive name
+      cases fuel with
+      | zero =>
+          simp only [deltaNormalize]
+          split
+          · rename_i declaration found
+            exact absurd (lookup _ found) (by simp)
+          · rfl
+      | succ fuel =>
+          simp only [deltaNormalize]
+          split
+          · rename_i declaration found
+            exact absurd (lookup _ found) (by simp)
+          · rfl
+  | app function argument functionIdentity argumentIdentity =>
+      cases fuel <;> simp [deltaNormalize, functionIdentity, argumentIdentity]
+  | lam type body bodyIdentity => cases fuel <;> simp [deltaNormalize, bodyIdentity]
+  | imp domain codomain domainIdentity codomainIdentity =>
+      cases fuel <;> simp [deltaNormalize, domainIdentity, codomainIdentity]
+  | all type body bodyIdentity => cases fuel <;> simp [deltaNormalize, bodyIdentity]
+  | typeApp function type functionIdentity =>
+      cases fuel <;> simp [deltaNormalize, functionIdentity]
+  | typeLam body bodyIdentity => cases fuel <;> simp [deltaNormalize, bodyIdentity]
+  | typeAll body bodyIdentity => cases fuel <;> simp [deltaNormalize, bodyIdentity]
+  | db _ => cases fuel <;> simp [deltaNormalize]
+  | prim _ => cases fuel <;> simp [deltaNormalize]
 
 /-- Synthesize the type of one term, corresponding to Megalodon's
 `extr_tpoftm`. -/

@@ -364,10 +364,10 @@ what is left are its three obligations, that its declared types are types,
 that its definitions have their declared types, and that its rules keep the
 type of their left sides. -/
 theorem typePreservation_explicit
-    (signature : leanTheoryExplicit.FormedSignature LFProfile.basic)
-    (bodies : leanTheoryExplicit.TypedBodies LFProfile.basic)
-    (rules : leanTheoryExplicit.RulesPreserveTypes LFProfile.basic) {context : Ctx}
-    {source target type : Term} (wellFormed : WellFormedCtx LFProfile.basic leanTheoryExplicit context)
+    (signature : leanTheoryExplicit.FormedSignature LFProfile.standardLF)
+    (bodies : leanTheoryExplicit.TypedBodies LFProfile.standardLF)
+    (rules : leanTheoryExplicit.RulesPreserveTypes LFProfile.standardLF) {context : Ctx}
+    {source target type : Term} (wellFormed : WellFormedCtx LFProfile.standardLF leanTheoryExplicit context)
     (typed : LambdaPiModulo leanTheoryExplicit context source type)
     (step : Step leanTheoryExplicit source target) :
     LambdaPiModulo leanTheoryExplicit context target type :=
@@ -398,8 +398,8 @@ def punitRedex : Term := ap "PUnit_rec" [instAt [levelOne, levelZero], .var 2, .
 /-- The type of the redex, `ε |0| (Q x)`. -/
 def punitRedexType : Term := eps levelZero (.app (.var 2) (.var 0))
 
-theorem punitContext_wellFormed : WellFormedCtx LFProfile.basic leanTheoryExplicit punitContext := by
-  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+theorem punitContext_wellFormed : WellFormedCtx LFProfile.standardLF leanTheoryExplicit punitContext := by
+  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
   have uZero (context : Ctx) : LambdaPiModulo leanTheoryExplicit context (U levelZero) (.srt .type) :=
     app_at (.con rfl) (levelZero_typed_explicit context) rfl
   have motive : LambdaPiModulo leanTheoryExplicit [] punitMotiveType (.srt .type) :=
@@ -419,7 +419,7 @@ def punitRecAt : Term :=
 
 theorem punitRedex_typed :
     LambdaPiModulo leanTheoryExplicit punitContext punitRedex punitRedexType := by
-  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.basic.products := by decide
+  have rule : (⟨.type, .type, .type⟩ : ProductRule) ∈ LFProfile.standardLF.products := by decide
   have levels := instAt_typed_explicit punitContext [levelOne, levelZero] (fun level member => by
     simp only [List.mem_cons, List.not_mem_nil, or_false] at member
     rcases member with rfl | rfl
@@ -452,7 +452,7 @@ theory with explicit level substitution: its left side `PUnit.rec Q h x` has
 the type `ε |0| (Q x)` and its right side `h` has not, since `Q PUnit.unit`
 and `Q x` are distinct normal forms. -/
 theorem punitRec_breaks_preservation :
-    ¬ leanTheoryExplicit.RulesPreserveTypes LFProfile.basic := by
+    ¬ leanTheoryExplicit.RulesPreserveTypes LFProfile.standardLF := by
   intro preserving
   have member : leanTheoryExplicit.rule punitRecRuleExplicit := by
     show punitRecRuleExplicit ∈ explicitRules
@@ -469,7 +469,7 @@ theorem punitRec_breaks_preservation :
   rw [rhsSame] at rhsTyped
   have declared : LambdaPiModulo leanTheoryExplicit punitContext (.var 1)
       (eps levelZero (.app (.var 2) unitValueExplicit)) := .var rfl
-  have convertible := HasType.unique Example.basic_functional leanTheoryExplicit_confluent
+  have convertible := HasType.unique Example.standardLF_functional leanTheoryExplicit_confluent
     leanTheoryExplicit_headed leanTheoryExplicit_closedBodies (.var 1) declared rhsTyped
   exact not_conv_of_normal leanTheoryExplicit_confluent
     (normalExplicit_of_stepOnce (by decide +kernel)) (normalExplicit_of_stepOnce (by decide +kernel))

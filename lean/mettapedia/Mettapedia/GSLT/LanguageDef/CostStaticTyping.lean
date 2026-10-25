@@ -1489,19 +1489,20 @@ theorem staticRows (profile : ContinuationDecorationProfile cut)
     ∃ targetRule ∈ profile.generatedLanguage.terms,
       targetRule.label = (color.symbolsOf theory).constructor rule.label ∧
       targetRule.category = (color.symbolsOf theory).sort rule.category ∧
-      targetRule.params = rule.params.map (mapTermParam (color.symbolsOf theory)) := by
+      targetRule.params = rule.params.map (mapTermParam (color.symbolsOf theory)) ∧
+      targetRule.collectionRepresentation = rule.collectionRepresentation := by
   let authored : DeclaredConstructor theory.presentation.presentation := ⟨rule, member⟩
   have included : authored ∈ profile.constructorClosure :=
     (profile.mem_wrappedLabels_iff authored).mp supported
   cases color with
   | base =>
       refine ⟨profile.baseConstructor rule, profile.baseConstructor_mem rule member,
-        rfl, rfl, ?_⟩
+        rfl, rfl, ?_, rfl⟩
       exact profile.baseConstructor_params_eq_map_of_mem_wrappedLabels nonprincipal
         rule member supported
   | wrapped =>
       refine ⟨costWrappedConstructor (theory := theory) rule,
-        profile.wrappedConstructor_mem authored included, rfl, rfl, ?_⟩
+        profile.wrappedConstructor_mem authored included, rfl, rfl, ?_, rfl⟩
       simp [costWrappedConstructor, CostStaticColor.symbolsOf]
 
 /-- Uniform static transport into the actual finite generated signature. -/
@@ -1558,7 +1559,8 @@ theorem CIGSLT.costStaticRows (source : CIGSLT) (color : CostStaticColor)
     ∃ targetRule ∈ source.costWholeLanguage.terms,
       targetRule.label = (color.symbols source).constructor rule.label ∧
       targetRule.category = (color.symbols source).sort rule.category ∧
-      targetRule.params = rule.params.map (mapTermParam (color.symbols source)) := by
+      targetRule.params = rule.params.map (mapTermParam (color.symbols source)) ∧
+      targetRule.collectionRepresentation = rule.collectionRepresentation := by
   obtain ⟨targetRule, targetMember, rest⟩ :=
     (ContinuationDecorationProfile.ofRetypingPlan source.continuationRetyping).staticRows
       (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal source.continuationRetyping)

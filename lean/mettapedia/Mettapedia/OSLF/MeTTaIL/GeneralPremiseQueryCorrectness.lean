@@ -299,7 +299,7 @@ theorem expandArguments_accepts_iff (environment : Environment) (request : Reque
             · rintro ⟨branch, rfl, rowSame, traces, tail, typed, originsSame⟩
               refine ⟨rowSame, (frame.index, []) :: traces, ?_, typed, ?_⟩
               · rw [schemasFound, valuesFound, modesFound]
-                exact .input (by simpa only [beq_iff_eq.mp same] using interpreted) tail
+                exact .input (by simpa only [beq_iff_eq.mp same, matchingRequest] using interpreted) tail
               · simpa only [List.append_assoc, List.singleton_append] using originsSame
             · rintro ⟨rowSame, traces, held, typed, originsSame⟩
               rw [schemasFound, valuesFound, modesFound] at held
@@ -367,6 +367,7 @@ theorem expandMatcher_accepts_iff (environment : Environment) (request : Request
         exact ⟨_, .inl rfl, rowSame, traces, tail, typed, originsSame⟩
       · exact ⟨_, .inr rfl, remainingBound, rowSame, matched, traces, later, tail, typed, originsSame⟩
   · rename_i unavailable
+    change frame.state.answers[frame.cursor]? = none at unavailable
     split
     · rename_i completed
       simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff]

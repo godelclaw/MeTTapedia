@@ -1,6 +1,6 @@
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Algebra.BigOperators.Fin
-import Mettapedia.InformationTheory.Basic
+import Mettapedia.InformationTheory.FiniteProbability
 
 /-!
 # Conditional mutual information and the Markov coarsening identity (finite case)
@@ -206,74 +206,6 @@ theorem klSum_self_eq_zero (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) : klSum p 
 /-! ## Pushforward (law of a random variable) -/
 
 variable {α β γ : Type*} [DecidableEq α] [DecidableEq β] [DecidableEq γ]
-
-/-- The law of the random variable `φ` under the weights `p`. -/
-noncomputable def pushforward (p : Ω → ℝ) (φ : Ω → α) (a : α) : ℝ :=
-  ∑ ω ∈ Finset.univ.filter (fun ω => φ ω = a), p ω
-
-theorem pushforward_eq_sum_ite (p : Ω → ℝ) (φ : Ω → α) (a : α) :
-    pushforward p φ a = ∑ ω, if φ ω = a then p ω else 0 := by
-  unfold pushforward
-  rw [Finset.sum_filter]
-
-theorem pushforward_nonneg (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (φ : Ω → α) (a : α) :
-    0 ≤ pushforward p φ a :=
-  Finset.sum_nonneg fun ω _ => hp ω
-
-theorem sum_pushforward [Fintype α] (p : Ω → ℝ) (φ : Ω → α) :
-    ∑ a, pushforward p φ a = ∑ ω, p ω := by
-  unfold pushforward
-  exact Finset.sum_fiberwise Finset.univ φ p
-
-/-- Expectation of a function of `φ` may be computed on `Ω` or on the law of `φ`. -/
-theorem sum_pushforward_mul [Fintype α] (p : Ω → ℝ) (φ : Ω → α) (L : α → ℝ) :
-    ∑ a, pushforward p φ a * L a = ∑ ω, p ω * L (φ ω) := by
-  unfold pushforward
-  simp only [Finset.sum_mul]
-  rw [← Finset.sum_fiberwise Finset.univ φ (fun ω => p ω * L (φ ω))]
-  refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun ω hω => ?_
-  rw [Finset.mem_filter] at hω
-  rw [hω.2]
-
-theorem le_pushforward (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (φ : Ω → α) (ω : Ω) :
-    p ω ≤ pushforward p φ (φ ω) := by
-  unfold pushforward
-  exact Finset.single_le_sum (f := p) (fun ω' _ => hp ω') (by simp)
-
-theorem pushforward_pos_of_pos (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (φ : Ω → α) {ω : Ω}
-    (h : 0 < p ω) : 0 < pushforward p φ (φ ω) :=
-  lt_of_lt_of_le h (le_pushforward p hp φ ω)
-
-/-- Two maps with the same fibre at `ω` give the same law value there. -/
-theorem pushforward_congr_fiber (p : Ω → ℝ) (φ : Ω → α) (ψ : Ω → β) (ω : Ω)
-    (h : ∀ ω', φ ω' = φ ω ↔ ψ ω' = ψ ω) :
-    pushforward p φ (φ ω) = pushforward p ψ (ψ ω) := by
-  unfold pushforward
-  congr 1
-  ext ω'
-  simp [h ω']
-
-theorem pushforward_of_injective (p : Ω → ℝ) (φ : Ω → α) (hφ : Function.Injective φ) (ω : Ω) :
-    pushforward p φ (φ ω) = p ω := by
-  unfold pushforward
-  rw [Finset.sum_eq_single ω]
-  · intro ω' hω' hne
-    exact (hne (hφ (Finset.mem_filter.1 hω').2)).elim
-  · intro h
-    exact (h (by simp)).elim
-
-theorem pushforward_pushforward [Fintype α] (p : Ω → ℝ) (φ : Ω → α) (ψ : α → β) (b : β) :
-    pushforward (pushforward p φ) ψ b = pushforward p (ψ ∘ φ) b := by
-  rw [pushforward_eq_sum_ite (pushforward p φ) ψ b]
-  have : ∀ a, (if ψ a = b then pushforward p φ a else 0) =
-      pushforward p φ a * (if ψ a = b then 1 else 0) := by
-    intro a; split_ifs <;> simp
-  rw [Finset.sum_congr rfl fun a _ => this a,
-    sum_pushforward_mul p φ (fun a => if ψ a = b then 1 else 0)]
-  rw [pushforward_eq_sum_ite]
-  refine Finset.sum_congr rfl fun ω _ => ?_
-  simp only [Function.comp]
-  split_ifs <;> simp
 
 /-- Finite data processing: divergence does not increase under a common pushforward. -/
 theorem klSum_pushforward_le [Fintype α] (p q : Ω → ℝ) (φ : Ω → α)

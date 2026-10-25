@@ -11,6 +11,30 @@ monad algebra and its earned coalgebra compatibility. A final coalgebra
 has a unique such action, obtained from its final map; the algebra laws
 and finality in the compatible-algebra category follow from coalgebra
 finality. Every final observation is therefore an algebra morphism.
+
+## From the initial to the final compatible algebra
+
+An initial object carries exactly one coalgebra structure, and that coalgebra
+is initial (`isInitialCoalgebra`). The lifted monad's free algebra on it is
+initial among compatible algebras (`isInitialAlgebra`): for a GSOS lifting it
+is the closed syntax with its operational behaviour. The unique compatible
+map from it to the final compatible algebra is the semantics (`semantics`).
+
+* Every compatible algebra lies on a commuting triangle between the two ends
+  (`semantics_factors`); neither end is presupposed by the other.
+* The semantics is at once the final coalgebra map of the operational model
+  (`semantics_operational`) and the initial algebra map of the syntax into the
+  algebra carried by the final behaviours (`semantics_denotational`), so the
+  operational and denotational readings are one arrow (`operational_eq_denotational`).
+* The kernel of any compatible map, in particular of the semantics, is closed
+  under the monad action (`kernel_closed`): behavioural equivalence is a
+  congruence.
+
+This is the bialgebraic semantics of D. Turi and G. Plotkin, *Towards a
+mathematical operational semantics*, LICS 1997; see B. Klin, *Bialgebras for
+structural operational semantics: an introduction*, TCS 412(38), 2011.
+For a single endofunctor, `Coalgebra.InitialFinal.meeting_underlying_eq`
+records the corresponding identification of the algebra and coalgebra maps.
 -/
 
 set_option autoImplicit false
@@ -127,5 +151,88 @@ theorem observation_action (algebra : CompatibleAlgebra lifting) :
         (finality.from (lifting.object finalObject)).f =
       algebra.a.f ≫ (finality.from algebra.A).f :=
   congrArg Endofunctor.Coalgebra.Hom.f (observation lifting finality algebra).h
+
+/-! ## The initial compatible algebra and the semantics -/
+
+/-- The kernel of a compatible algebra map is closed under the monad action:
+two generalized elements identified by the map stay identified after the same
+term context is applied and the source action evaluates it. -/
+theorem kernel_closed {source target : CompatibleAlgebra lifting} (mapping : source ⟶ target)
+    {X : C} (first second : X ⟶ source.A.V)
+    (same : first ≫ mapping.f.f = second ≫ mapping.f.f) :
+    T.map first ≫ source.a.f ≫ mapping.f.f = T.map second ≫ source.a.f ≫ mapping.f.f := by
+  have square : T.map mapping.f.f ≫ target.a.f = source.a.f ≫ mapping.f.f :=
+    congrArg Endofunctor.Coalgebra.Hom.f mapping.h
+  rw [← square, ← Category.assoc, ← T.map_comp, same, T.map_comp, Category.assoc]
+
+/-- The free algebra of a monad on an initial object is initial among its algebras. -/
+def freeIsInitial {D : Type*} [Category D] (M : Monad D) {start : D}
+    (initial : Limits.IsInitial start) : Limits.IsInitial (M.free.obj start) :=
+  Limits.IsInitial.ofUniqueHom
+    (fun algebra => (M.adj.homEquiv start algebra).symm (initial.to algebra.A))
+    (fun algebra _ =>
+      (M.adj.homEquiv start algebra).eq_symm_apply.mpr (initial.hom_ext _ _))
+
+variable {zero : C} (initial : Limits.IsInitial zero)
+
+/-- The unique coalgebra structure on an initial object. -/
+def initialCoalgebra : Endofunctor.Coalgebra B where
+  V := zero
+  str := initial.to (B.obj zero)
+
+/-- The coalgebra on an initial object is initial among all coalgebras. -/
+def isInitialCoalgebra : Limits.IsInitial (initialCoalgebra (B := B) initial) :=
+  Limits.IsInitial.ofUniqueHom
+    (fun object => { f := initial.to object.V, h := initial.hom_ext _ _ })
+    (fun _ _ => Endofunctor.Coalgebra.Hom.ext (initial.hom_ext _ _))
+
+/-- Syntax over no variables, with its lifted behaviour: the free compatible
+algebra on the initial coalgebra. -/
+def initialAlgebra : CompatibleAlgebra lifting :=
+  (liftedMonad lifting).free.obj (initialCoalgebra initial)
+
+/-- The free compatible algebra on the initial coalgebra is initial. -/
+def isInitialAlgebra : Limits.IsInitial (initialAlgebra lifting initial) :=
+  freeIsInitial (liftedMonad lifting) (isInitialCoalgebra initial)
+
+/-- The semantics: the unique compatible algebra map from syntax to behaviour. -/
+def semantics : initialAlgebra lifting initial ⟶ finalAlgebra lifting finality :=
+  (isInitialAlgebra lifting initial).to (finalAlgebra lifting finality)
+
+/-- Initiality and finality select the same map. -/
+theorem semantics_eq_observation :
+    semantics lifting finality initial = observation lifting finality (initialAlgebra lifting initial) :=
+  observation_unique lifting finality _ _
+
+/-- Every compatible algebra lies between syntax and behaviour on a commuting
+triangle; the two legs are its unique incoming and outgoing compatible maps. -/
+theorem semantics_factors (algebra : CompatibleAlgebra lifting) :
+    (isInitialAlgebra lifting initial).to algebra ≫ observation lifting finality algebra =
+      semantics lifting finality initial :=
+  (isInitialAlgebra lifting initial).hom_ext _ _
+
+/-- Operationally, the semantics is the final coalgebra map of the lifted
+behaviour on the syntax over the initial object. -/
+theorem semantics_operational :
+    (semantics lifting finality initial).f =
+      finality.from (lifting.object (initialCoalgebra initial)) :=
+  finality.hom_ext _ _
+
+/-- Denotationally, the semantics is the initial monad-algebra map from the
+syntax over the initial object into the algebra carried by the final behaviours. -/
+theorem semantics_denotational :
+    (semantics lifting finality initial).f.f =
+      ((freeIsInitial T initial).to
+        (underlyingAlgebra lifting (finalAlgebra lifting finality))).f :=
+  congrArg Monad.Algebra.Hom.f ((freeIsInitial T initial).hom_ext
+    (underlyingMap lifting (semantics lifting finality initial)) _)
+
+/-- The operational and the denotational semantics are the same arrow. -/
+theorem operational_eq_denotational :
+    (finality.from (lifting.object (initialCoalgebra initial))).f =
+      ((freeIsInitial T initial).to
+        (underlyingAlgebra lifting (finalAlgebra lifting finality))).f :=
+  (congrArg Endofunctor.Coalgebra.Hom.f (semantics_operational lifting finality initial)).symm.trans
+    (semantics_denotational lifting finality initial)
 
 end Mettapedia.CategoryTheory.CoalgebraMonadBialgebra

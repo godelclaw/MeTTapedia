@@ -1,10 +1,11 @@
 import Mettapedia.FluidDynamics.NavierStokes.ModeStateEnergyProfileConcrete
 
 /-!
-# Energy Profile Equivalences with Existing ModeState Radii
+# Hard profile detectors agree with the hard Sobolev radius
 
-This module was split out of `ModeStateEnergyProfileFork.lean` to keep the
-Navier-Stokes route-audit library organized by mathematical role.
+For each strictly positive concrete profile, the induced hard detector is the hard
+Sobolev radius. The identity and logarithmic equivalences live with their charts, in
+`ModeStateEnergyProfileFork` and `ModeStateLogEnergyChartFork`.
 -/
 
 set_option autoImplicit false
@@ -19,57 +20,6 @@ open Filter
 open scoped Classical
 
 section ModeStateEnergyProfileEquivalences
-
-theorem profiledEnergyTerm_identity_eq_sobolevEnergyTerm
-    (m : ℕ) (x : ModeState) (n : ℕ) :
-    profiledEnergyTerm identityEnergyProfile m x n = sobolevEnergyTerm m x n := by
-  simp [profiledEnergyTerm, identityEnergyProfile, sobolevEnergyTerm]
-
-theorem profiledEnergyRadius_identity_eq_sobolevEnergyRadius
-    (m : ℕ) :
-    profiledEnergyRadius identityEnergyProfile m = sobolevEnergyRadius m := by
-  funext x
-  unfold profiledEnergyRadius sobolevEnergyRadius
-  simp [profiledEnergyTerm_identity_eq_sobolevEnergyTerm]
-
-theorem profiledEnergyTerm_logOnePlusMax_eq_logEnergyTerm
-    (m : ℕ) (x : ModeState) (n : ℕ) :
-    profiledEnergyTerm logOnePlusMaxEnergyProfile m x n = logEnergyTerm m x n := by
-  have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-  simp [profiledEnergyTerm, logOnePlusMaxEnergyProfile, logEnergyTerm, max_eq_left hsq_nonneg]
-
-theorem profiledEnergyRadius_logOnePlusMax_eq_logEnergyRadius
-    (m : ℕ) :
-    profiledEnergyRadius logOnePlusMaxEnergyProfile m = logEnergyRadius m := by
-  funext x
-  unfold profiledEnergyRadius logEnergyRadius
-  simp [profiledEnergyTerm_logOnePlusMax_eq_logEnergyTerm]
-
-theorem hardProfileThresholdRadius_logOnePlusMax_eq_hardLogEnergyThresholdRadius
-    (m : ℕ) :
-    hardProfileThresholdRadius logOnePlusMaxEnergyProfile m = hardLogEnergyThresholdRadius m := by
-  funext x
-  let p : Prop := ∃ n, 0 < logOnePlusMaxEnergyProfile.profile ((sobolevAmplification m x n) ^ (2 : ℕ))
-  let q : Prop := ∃ n, 0 < Real.log (1 + (sobolevAmplification m x n) ^ (2 : ℕ))
-  have hpq : p ↔ q := by
-    constructor
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-      simpa [p, q, logOnePlusMaxEnergyProfile, max_eq_left hsq_nonneg] using hn
-    · intro h
-      rcases h with ⟨n, hn⟩
-      refine ⟨n, ?_⟩
-      have hsq_nonneg : 0 ≤ (sobolevAmplification m x n) ^ (2 : ℕ) := by positivity
-      simpa [p, q, logOnePlusMaxEnergyProfile, max_eq_left hsq_nonneg] using hn
-  by_cases hp : p
-  · have hq : q := hpq.mp hp
-    simp [hardProfileThresholdRadius, hardLogEnergyThresholdRadius, p, q, hp, hq]
-  · have hq : ¬ q := by
-      intro hq
-      exact hp (hpq.mpr hq)
-    simp [hardProfileThresholdRadius, hardLogEnergyThresholdRadius, p, q, hp, hq]
 
 theorem hardProfileThresholdRadius_rationalMax_eq_hardSobolevRadius
     (m : ℕ) :

@@ -170,7 +170,7 @@ theorem pi_bagTheory : BagTheory piCalc piParallelConstructor.1 (some "PiNil") :
 
 /-- The bag normal form is a section of asynchronous pi. -/
 def piCanonicalSection : ComputableCanonicalSection piIGSLT :=
-  bagCanonicalSection piIGSLT pi_bagTheory
+  bagCanonicalSection piIGSLT (pi_bagTheory.asBare rfl)
 
 /-- The three clauses for asynchronous pi. -/
 def piContinuedPresentation : ContinuedPresentation piIGSLT where
@@ -206,7 +206,7 @@ theorem piSync_bagTheory : BagTheory piSyncCalc piSyncParallelConstructor.1 (som
 
 /-- The bag normal form is a section of synchronous pi. -/
 def piSyncCanonicalSection : ComputableCanonicalSection piSyncIGSLT :=
-  bagCanonicalSection piSyncIGSLT piSync_bagTheory
+  bagCanonicalSection piSyncIGSLT (piSync_bagTheory.asBare rfl)
 
 /-- The three clauses for synchronous pi. -/
 def piSyncContinuedPresentation : ContinuedPresentation piSyncIGSLT where

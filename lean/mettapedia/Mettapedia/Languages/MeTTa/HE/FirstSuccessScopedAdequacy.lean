@@ -10,9 +10,10 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 # Checked Scoped HE Worker Adequacy
 
 This module proves closed-annotation adequacy and local correspondence laws for
-the checked configuration-scoped HE worker. Arbitrary recursive schematic
-execution still requires the transition simulation and its admission invariant;
-the local controls below do not establish that principal theorem.
+the checked configuration-scoped HE worker. The downstream
+`FirstSuccessScopedRecursiveAdequacy` module uses these laws to earn its
+ordinary recursive profile. The local controls below alone do not establish
+that principal theorem or its remaining construct extensions.
 
 1. **Closed-Annotation Transfer (`ClosedTypeAnnotations`)**:
    Whenever a space has closed type declarations (`∀ subject, ∀ sig ∈ getAtomTypes space subject,
@@ -22870,7 +22871,7 @@ theorem ScopedOpenEquationWorksSpine.contextual_invocationEquations_localSteps
 
 /-! #### Inductive Constructors Discharging Equation Producer & Return Premises -/
 
-private theorem worker_producedRaw_silent_step
+theorem worker_producedRaw_silent_step
     (space : Space) (dispatch : HE.GroundedDispatch)
     (wVal : Atom) (wB : Bindings) (fuel : Nat) (live : List Atom)
     (caller : Option Atom)

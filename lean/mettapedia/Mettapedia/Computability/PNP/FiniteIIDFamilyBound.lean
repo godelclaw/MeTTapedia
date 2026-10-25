@@ -1,33 +1,19 @@
 import Mettapedia.Computability.PNP.FiniteIIDAgreement
 
 /-!
-# P vs NP background theory: finite weighted family bounds
+# Finite-family agreement bounds
 
-This file lifts the one-predictor weighted agreement law from
-`FiniteIIDAgreement.lean` to a whole finite encoded family.
-
-For a finite `PMF μ`, a target `f`, and an encoded family `H`, we define the
-total `μ^m`-mass of deceptive samples: length-`m` samples on which some bad code
-still agrees with all target labels.  The main theorems are:
-
-* the deceptive mass is bounded by the sum of the bad-code agreement masses,
-* if every bad code has one-step agreement mass at most `q`, then the deceptive
-  mass is at most `|Code(H)| * q^m`.
-
-This is the clean weighted union-bound layer that should sit between the current
-finite combinatorial groundwork and any later PAC-style or asymptotic argument.
+The shared union bound controls samples consistent with an incorrect decoded
+predictor. Code-indexed bounds retain the authored encoding; bounds over
+realized predictors account for each distinct function once.
 -/
 
-namespace Mettapedia.Computability.PNP
+namespace Mettapedia.Computability.PNP.EncodedFamily
 
-open scoped ENNReal
-open scoped BigOperators
+open scoped ENNReal BigOperators
+open Mettapedia.ProbabilityTheory
 
 universe u v w
-
-namespace EncodedFamily
-
-section WeightedFamilyBound
 
 variable {Input : Type u} {Output : Type v}
 variable [Fintype Input] [DecidableEq Output]
@@ -35,36 +21,29 @@ variable (H : EncodedFamily Input Output)
 
 instance instDecidableAgreesWithTarget
     (target predict : Input → Output) {m : ℕ} (sample : PointSample Input m) :
-    Decidable (AgreesWithTarget target predict sample) := by
-  classical
-  unfold AgreesWithTarget
-  infer_instance
+    Decidable (AgreesWithTarget target predict sample) :=
+  inferInstanceAs (Decidable (∀ i, predict (sample i) = target (sample i)))
 
 instance instDecidableIsDeceptiveSample
     (target : Input → Output) {m : ℕ} (sample : PointSample Input m) :
-    Decidable (H.IsDeceptiveSample target sample) := by
-  classical
-  unfold EncodedFamily.IsDeceptiveSample
-  infer_instance
+    Decidable (H.IsDeceptiveSample target sample) :=
+  inferInstanceAs (Decidable (∃ c : H.Code, H.decode c ≠ target ∧
+    AgreesWithTarget target (H.decode c) sample))
+
+variable (μ : PMF Input) (target : Input → Output) (m : Nat)
 
 /-- The total `μ^m`-mass of deceptive samples for `target`. -/
-noncomputable def deceptiveSampleMass
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) : ℝ≥0∞ :=
+noncomputable def deceptiveSampleMass : ℝ≥0∞ :=
   ∑ sample : H.DeceptiveSamples target m, sampleMass μ sample.1
 
 /-- The weighted deceptive mass as a full sample-space sum with an indicator. -/
-theorem deceptiveSampleMass_eq_sum_indicator
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+theorem deceptiveSampleMass_eq_sum_indicator :
     H.deceptiveSampleMass μ target m =
       ∑ sample : PointSample Input m,
         if H.IsDeceptiveSample target sample then sampleMass μ sample else 0 := by
   classical
-  unfold deceptiveSampleMass
-  simpa [Finset.sum_filter] using
-    (Finset.sum_subtype_eq_sum_filter
-      (s := (Finset.univ : Finset (PointSample Input m)))
-      (f := fun sample : PointSample Input m => sampleMass μ sample)
-      (p := fun sample => H.IsDeceptiveSample target sample))
+  simpa [FiniteEventMass.mass, deceptiveSampleMass, DeceptiveSamples] using
+    (FiniteEventMass.mass_subtype (sampleMass μ) (H.IsDeceptiveSample target)).symm
 
 /-- The samples consistent with any fixed bad code form a subevent of the
 deceptive samples. -/
@@ -98,113 +77,87 @@ theorem regionMass_pow_le_deceptiveSampleMass_of_badCode_agrees_on
 
 /-- The weighted deceptive mass is bounded by the sum of the weighted consistent
 sample masses of the bad codes. -/
-theorem deceptiveSampleMass_le_badCodeConsistentMassSum
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+theorem deceptiveSampleMass_le_badCodeConsistentMassSum :
     H.deceptiveSampleMass μ target m ≤
       ∑ c : H.BadCodes target, consistentSampleMass μ target (H.decode c.1) m := by
   classical
-  rw [H.deceptiveSampleMass_eq_sum_indicator]
-  calc
-    (∑ sample : PointSample Input m,
-        if H.IsDeceptiveSample target sample then sampleMass μ sample else 0)
-      ≤
-        ∑ sample : PointSample Input m,
-          ∑ c : H.BadCodes target,
-            if AgreesWithTarget target (H.decode c.1) sample then sampleMass μ sample else 0 := by
-            refine Finset.sum_le_sum ?_
-            intro sample _
-            by_cases hdec : H.IsDeceptiveSample target sample
-            · rcases hdec with ⟨c, hcneq, hcagree⟩
-              have hdec' : H.IsDeceptiveSample target sample := ⟨c, hcneq, hcagree⟩
-              let cbad : H.BadCodes target := ⟨c, hcneq⟩
-              have hsingle :
-                  sampleMass μ sample ≤
-                    ∑ d : H.BadCodes target,
-                      if AgreesWithTarget target (H.decode d.1) sample then
-                        sampleMass μ sample
-                      else 0 := by
-                simpa [cbad, hcagree] using
-                  (Finset.single_le_sum
-                    (f := fun d : H.BadCodes target =>
-                      if AgreesWithTarget target (H.decode d.1) sample then
-                        sampleMass μ sample
-                      else 0)
-                    (fun d _ => by
-                      by_cases hd : AgreesWithTarget target (H.decode d.1) sample <;>
-                        simp [hd])
-                    (Finset.mem_univ cbad))
-              calc
-                (if H.IsDeceptiveSample target sample then sampleMass μ sample else 0)
-                  = sampleMass μ sample := by simp [hdec']
-                _ ≤ ∑ d : H.BadCodes target,
-                    if AgreesWithTarget target (H.decode d.1) sample then
-                      sampleMass μ sample
-                    else 0 := hsingle
-            · simp [hdec]
-    _ = ∑ c : H.BadCodes target,
-          ∑ sample : PointSample Input m,
-            if AgreesWithTarget target (H.decode c.1) sample then sampleMass μ sample else 0 := by
-          rw [Finset.sum_comm]
-    _ = ∑ c : H.BadCodes target, consistentSampleMass μ target (H.decode c.1) m := by
-          refine Finset.sum_congr rfl ?_
-          intro c _
-          rw [show
-              (∑ sample : PointSample Input m,
-                if AgreesWithTarget target (H.decode c.1) sample then sampleMass μ sample else 0) =
-                consistentSampleMass μ target (H.decode c.1) m from by
-                  symm
-                  unfold consistentSampleMass
-                  simpa [Finset.sum_filter] using
-                    (Finset.sum_subtype_eq_sum_filter
-                      (s := (Finset.univ : Finset (PointSample Input m)))
-                      (f := fun sample : PointSample Input m => sampleMass μ sample)
-                      (p := fun sample =>
-                        AgreesWithTarget target (H.decode c.1) sample))]
+  have bound := FiniteEventMass.union_le (fun sample : PointSample Input m => sampleMass μ sample)
+    (fun _ => bot_le) (fun (c : H.BadCodes target) sample =>
+      decide (AgreesWithTarget target (H.decode c.1) sample))
+  simp [FiniteEventMass.mass_subtype, BadCodes, IsDeceptiveSample,
+    ConsistentSamples, DeceptiveSamples, deceptiveSampleMass, consistentSampleMass] at bound ⊢
+  convert! bound using 1; congr!
+  all_goals exact congrArg (@Fintype.elems _) (Subsingleton.elim _ _)
 
 /-- The weighted deceptive mass is bounded by the sum of the bad-code
 one-step agreement masses raised to the sample length. -/
-theorem deceptiveSampleMass_le_badCodeAgreementMassSum
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) :
+theorem deceptiveSampleMass_le_badCodeAgreementMassSum :
     H.deceptiveSampleMass μ target m ≤
       ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m := by
-  calc
-    H.deceptiveSampleMass μ target m
-      ≤ ∑ c : H.BadCodes target, consistentSampleMass μ target (H.decode c.1) m :=
-        H.deceptiveSampleMass_le_badCodeConsistentMassSum μ target m
-    _ = ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m := by
-      refine Finset.sum_congr rfl ?_
-      intro c _
-      rw [consistentSampleMass_eq_agreementMass_pow]
+  simpa only [consistentSampleMass_eq_agreementMass_pow] using
+    H.deceptiveSampleMass_le_badCodeConsistentMassSum μ target m
 
 /-- Uniform weighted union bound: if every bad code has one-step agreement mass
 at most `q`, then the total deceptive mass is at most `|Code(H)| * q^m`. -/
-theorem deceptiveSampleMass_le_codeCard_mul_pow_of_agreementMass_le
-    (μ : PMF Input) (target : Input → Output) (m : ℕ) {q : ℝ≥0∞}
+theorem deceptiveSampleMass_le_codeCard_mul_pow_of_agreementMass_le {q : ℝ≥0∞}
     (hq : ∀ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ≤ q) :
     H.deceptiveSampleMass μ target m ≤ (Fintype.card H.Code : ℝ≥0∞) * q ^ m := by
-  have hbad :
-      ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m
-        ≤ ∑ _c : H.BadCodes target, q ^ m := by
-    refine Finset.sum_le_sum ?_
-    intro c _
-    exact (pow_left_mono m) (hq c)
-  have hcard :
-      (Fintype.card (H.BadCodes target) : ℝ≥0∞) * q ^ m ≤
-        (Fintype.card H.Code : ℝ≥0∞) * q ^ m := by
-    have hbadCard :
-        (Fintype.card (H.BadCodes target) : ℝ≥0∞) ≤ Fintype.card H.Code := by
-      exact_mod_cast (Fintype.card_subtype_le (fun c : H.Code => H.decode c ≠ target))
-    exact mul_le_mul_left hbadCard (q ^ m)
+  refine (H.deceptiveSampleMass_le_badCodeAgreementMassSum μ target m).trans ?_
   calc
-    H.deceptiveSampleMass μ target m
-      ≤ ∑ c : H.BadCodes target, agreementMass μ target (H.decode c.1) ^ m :=
-        H.deceptiveSampleMass_le_badCodeAgreementMassSum μ target m
-    _ ≤ ∑ _c : H.BadCodes target, q ^ m := hbad
+    _ ≤ ∑ _c : H.BadCodes target, q ^ m :=
+      Finset.sum_le_sum fun c _ => (pow_left_mono m) (hq c)
     _ = (Fintype.card (H.BadCodes target) : ℝ≥0∞) * q ^ m := by simp
-    _ ≤ (Fintype.card H.Code : ℝ≥0∞) * q ^ m := hcard
+    _ ≤ (Fintype.card H.Code : ℝ≥0∞) * q ^ m := by
+      gcongr
+      exact_mod_cast Fintype.card_subtype_le (fun c : H.Code => H.decode c ≠ target)
 
-end WeightedFamilyBound
+/-- Distinct incorrect predictions, independent of how many codes denote each one. -/
+abbrev BadPredictors (target : Input → Output) := {h : H.realized // h.1 ≠ target}
 
-end EncodedFamily
+noncomputable instance badPredictorsFintype (target : Input → Output) :
+    Fintype (H.BadPredictors target) := Fintype.ofFinite _
 
-end Mettapedia.Computability.PNP
+omit [Fintype Input] [DecidableEq Output] in
+theorem card_badPredictors_le_badCodes :
+    Fintype.card (H.BadPredictors target) ≤ Fintype.card (H.BadCodes target) := by
+  apply Fintype.card_le_of_surjective (fun c : H.BadCodes target =>
+    (⟨⟨H.decode c.1, ⟨c.1, rfl⟩⟩, c.2⟩ : H.BadPredictors target))
+  rintro ⟨⟨_, ⟨c, rfl⟩⟩, bad⟩
+  exact ⟨⟨c, bad⟩, rfl⟩
+
+omit [Fintype Input] [DecidableEq Output] in
+theorem isDeceptiveSample_iff_realized (target : Input → Output) {m : Nat} (sample : PointSample Input m) :
+    H.IsDeceptiveSample target sample ↔
+      ∃ h ∈ H.realized, h ≠ target ∧ AgreesWithTarget target h sample := by
+  constructor
+  · rintro ⟨c, bad, agrees⟩; exact ⟨H.decode c, ⟨c, rfl⟩, bad, agrees⟩
+  · rintro ⟨_, ⟨c, rfl⟩, bad, agrees⟩; exact ⟨c, bad, agrees⟩
+
+theorem deceptiveSampleMass_eq_of_realized_eq (K : EncodedFamily Input Output)
+    (same : H.realized = K.realized) (μ : PMF Input) (target : Input → Output) (m : Nat) :
+    H.deceptiveSampleMass μ target m = K.deceptiveSampleMass μ target m := by
+  rw [H.deceptiveSampleMass_eq_sum_indicator, K.deceptiveSampleMass_eq_sum_indicator]
+  exact Finset.sum_congr rfl fun sample _ => if_congr
+    (by rw [H.isDeceptiveSample_iff_realized, K.isDeceptiveSample_iff_realized, same]) rfl rfl
+
+/-- The union bound over predictions avoids overcounting duplicate encodings. -/
+theorem deceptiveSampleMass_le_badPredictorAgreementMassSum :
+    H.deceptiveSampleMass μ target m ≤
+      ∑ h : H.BadPredictors target, agreementMass μ target h.1.1 ^ m := by
+  classical
+  have bound := FiniteEventMass.union_le (fun sample : PointSample Input m => sampleMass μ sample)
+    (fun _ => bot_le) (fun (h : H.BadPredictors target) sample =>
+      decide (AgreesWithTarget target h.1.1 sample))
+  simp_rw [← consistentSampleMass_eq_agreementMass_pow]
+  simp [FiniteEventMass.mass_subtype, BadPredictors, realized, IsDeceptiveSample,
+    ConsistentSamples, DeceptiveSamples, deceptiveSampleMass, consistentSampleMass] at bound ⊢
+  convert! bound using 1; congr!
+  all_goals exact congrArg (@Fintype.elems _) (Subsingleton.elim _ _)
+
+theorem deceptiveSampleMass_le_badPredictorCard_mul_pow_of_agreementMass_le {q : ℝ≥0∞}
+    (hq : ∀ h : H.BadPredictors target, agreementMass μ target h.1.1 ≤ q) :
+    H.deceptiveSampleMass μ target m ≤ (Fintype.card (H.BadPredictors target) : ℝ≥0∞) * q ^ m := by
+  refine (H.deceptiveSampleMass_le_badPredictorAgreementMassSum μ target m).trans ?_
+  simpa using Finset.sum_le_sum (s := Finset.univ) (fun h _ => (pow_left_mono m) (hq h))
+
+end Mettapedia.Computability.PNP.EncodedFamily

@@ -1,7 +1,7 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.SNValueSound
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.ConsistencySound
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.ExecutableModel.Comparison
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLayeredCrown
+import Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflective.GSLTILLayeredCrown
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.HazardControl
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Impredicative.ValueSide.TransportReadout
 import Mettapedia.OSLF.Framework.GSLTTypeSynthesis

@@ -1,4 +1,4 @@
-import Mettapedia.TypeTheory.DesignStudy
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Index.Requirements
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputationQualification
 
 /-!
@@ -29,7 +29,7 @@ namespace ScopedComputation
 namespace ImplementationStudy
 
 open Mettapedia.GSLT.Dynamics.ContextualEffectHandlers
-open Mettapedia.TypeTheory.DesignStudy
+open Mettapedia.Languages.MeTTa.PrimeCandidates.Requirements
 
 universe uState uIntent
 

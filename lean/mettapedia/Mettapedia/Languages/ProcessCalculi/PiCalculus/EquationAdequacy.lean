@@ -33,13 +33,13 @@ theorem pi_equations_iff_normal_form (left right : Process) :
       (piToPattern left) (piToPattern right) ↔
     normalForm (some "PiNil") (piToPattern left) =
       normalForm (some "PiNil") (piToPattern right) :=
-  equationEquiv_iff_normalForm_eq piBagTheory _
+  equationEquiv_iff_normalForm_eq (piBagTheory.asBare rfl) _
     (piToPattern_admissible left) (piToPattern_admissible right) rfl
 
 def decideNamedEquation (left right : Process) :
     Decidable (EquationEquiv (engineBasePremises RelationEnv.empty) piCalc
       (piToPattern left) (piToPattern right)) :=
-  decideEquationEquiv piBagTheory _ (piToPattern_admissible left) (piToPattern_admissible right) rfl
+  decideEquationEquiv (piBagTheory.asBare rfl) _ (piToPattern_admissible left) (piToPattern_admissible right) rfl
 
 /-- Vacuous restriction is a named structural law absent from the monoid quotient. -/
 theorem restriction_unit_equation_boundary :

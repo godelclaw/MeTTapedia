@@ -29,7 +29,7 @@ open Syntax Substitution
 
 /-- The collection kind of a bare collection constructor. -/
 def bareKind (rule : GrammarRule) : Option CollType :=
-  match rule.params with
+  match rule.bareParams with
   | [.simple _ (.collection kind _)] => some kind
   | _ => none
 

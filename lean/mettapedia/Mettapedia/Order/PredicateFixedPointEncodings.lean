@@ -8,9 +8,37 @@ The least predicate belongs to every pre-fixed predicate. The greatest
 predicate belongs to some post-fixed predicate. These formulas are formed
 independently of the lattice fixed-point construction and compared with
 it by their induction and coinduction properties.
+
+An order isomorphism that intertwines the operators transports their fixed
+points. The transport law below works on arbitrary complete lattices; the
+quantified predicate encodings are its powerset instance.
 -/
 
 set_option autoImplicit false
+
+namespace Mettapedia.Order.FixedPointTransport
+
+variable {α β : Type*} [CompleteLattice α] [CompleteLattice β]
+  (comparison : α ≃o β) (source : α →o α) (target : β →o β)
+  (intertwines : ∀ x, comparison (source x) = target (comparison x))
+
+include intertwines
+
+/-- Conjugate monotone operators have corresponding least fixed points. -/
+theorem lfp_comparison : comparison source.lfp = target.lfp := by
+  let forward := comparison.toOrderEmbedding.toOrderHom
+  let pulled := source.comp comparison.symm.toOrderEmbedding.toOrderHom
+  have left : pulled.comp forward = source := by ext x; simp [pulled, forward]
+  have right : forward.comp pulled = target := by
+    ext x
+    simpa [pulled, forward] using intertwines (comparison.symm x)
+  simpa [left, right, forward] using forward.map_lfp_comp pulled
+
+/-- Greatest-point transport is least-point transport in the order dual. -/
+theorem gfp_comparison : comparison source.gfp = target.gfp :=
+  lfp_comparison comparison.dual source.dual target.dual intertwines
+
+end Mettapedia.Order.FixedPointTransport
 
 namespace Mettapedia.Order.PredicateFixedPointEncodings
 
@@ -48,13 +76,11 @@ theorem greatest_eq_gfp (transformer : Set State →o Set State) :
 
 theorem least_unfold (transformer : Set State →o Set State) :
     transformer (least transformer) = least transformer := by
-  rw [least_eq_lfp]
-  exact transformer.map_lfp
+  simp only [least_eq_lfp, OrderHom.map_lfp]
 
 theorem greatest_unfold (transformer : Set State →o Set State) :
     transformer (greatest transformer) = greatest transformer := by
-  rw [greatest_eq_gfp]
-  exact transformer.map_gfp
+  simp only [greatest_eq_gfp, OrderHom.map_gfp]
 
 theorem least_is_least_fixed (transformer : Set State →o Set State)
     (predicate : Set State) (fixed : transformer predicate = predicate) :
@@ -66,13 +92,11 @@ theorem greatest_is_greatest_fixed (transformer : Set State →o Set State)
 
 theorem least_mono {first second : Set State →o Set State} (compared : first ≤ second) :
     least first ⊆ least second := by
-  rw [least_eq_lfp, least_eq_lfp]
-  exact OrderHom.lfp.monotone compared
+  simpa only [least_eq_lfp] using OrderHom.lfp.monotone compared
 
 theorem greatest_mono {first second : Set State →o Set State} (compared : first ≤ second) :
     greatest first ⊆ greatest second := by
-  rw [greatest_eq_gfp, greatest_eq_gfp]
-  exact OrderHom.gfp.monotone compared
+  simpa only [greatest_eq_gfp] using OrderHom.gfp.monotone compared
 
 section Comparison
 
@@ -83,34 +107,12 @@ variable {Other : Type v} (comparison : Set State ≃o Set Other)
 include intertwines
 
 theorem least_comparison : comparison (least source) = least target := by
-  have sourceFixed := least_unfold source
-  have targetFixed := least_unfold target
-  apply le_antisymm
-  · have pulled : source (comparison.symm (least target)) ⊆
-        comparison.symm (least target) := by
-      apply comparison.le_iff_le.mp
-      simpa only [intertwines, comparison.apply_symm_apply] using targetFixed.le
-    exact (comparison.monotone
-      (least_induction source (comparison.symm (least target)) pulled)).trans_eq
-        (comparison.apply_symm_apply (least target))
-  · have pushed : target (comparison (least source)) ⊆ comparison (least source) := by
-      rw [← intertwines, sourceFixed]
-    exact least_induction target (comparison (least source)) pushed
+  simpa only [least_eq_lfp] using
+    FixedPointTransport.lfp_comparison comparison source target intertwines
 
 theorem greatest_comparison : comparison (greatest source) = greatest target := by
-  have sourceFixed := greatest_unfold source
-  have targetFixed := greatest_unfold target
-  apply le_antisymm
-  · have pushed : comparison (greatest source) ⊆ target (comparison (greatest source)) := by
-      rw [← intertwines, sourceFixed]
-    exact greatest_coinduction target (comparison (greatest source)) pushed
-  · have pulled : comparison.symm (greatest target) ⊆
-        source (comparison.symm (greatest target)) := by
-      apply comparison.le_iff_le.mp
-      simpa only [intertwines, comparison.apply_symm_apply] using targetFixed.symm.le
-    exact (comparison.apply_symm_apply (greatest target)).symm.le.trans
-      (comparison.monotone
-        (greatest_coinduction source (comparison.symm (greatest target)) pulled))
+  simpa only [greatest_eq_gfp] using
+    FixedPointTransport.gfp_comparison comparison source target intertwines
 
 end Comparison
 

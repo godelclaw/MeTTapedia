@@ -34,7 +34,7 @@ theorem ccs_bagTheory : BagTheory ccsCalc ccsParallelConstructor.1 (some "CNil")
 
 /-- **The canonical section of CCS.** -/
 def ccsCanonicalSection : ComputableCanonicalSection ccsIGSLT :=
-  bagCanonicalSection ccsIGSLT ccs_bagTheory
+  bagCanonicalSection ccsIGSLT (ccs_bagTheory.asBare rfl)
 
 /-- The section computes the bag normal form of the underlying pattern. -/
 theorem ccsCanonicalSection_normalize_val (term : ccsIGSLT.toGSLT.Term) :

@@ -10,6 +10,13 @@ import Mettapedia.OSLF.NativeTypes.Runtime.Profiles
 import Mettapedia.OSLF.NativeTypes.Runtime.Local
 import Mettapedia.OSLF.NativeTypes.Executable.FiniteMaterial
 import Mettapedia.OSLF.NativeTypes.Executable.Successor
+import Mettapedia.OSLF.NativeTypes.Executable.ExploredControls
+import Mettapedia.OSLF.NativeTypes.Executable.BackwardCounters
+import Mettapedia.OSLF.NativeTypes.Executable.BackwardBinderControls
+import Mettapedia.OSLF.NativeTypes.Executable.ContextualControls
+import Mettapedia.OSLF.NativeTypes.Executable.FiniteModelBinderControls
+import Mettapedia.OSLF.NativeTypes.Executable.FiniteModelControls
+import Mettapedia.OSLF.NativeTypes.Executable.FiniteModelKripkeControls
 import Mettapedia.OSLF.NativeTypes.Decision.ModalEmbedding
 import Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceCoverageClaims
 

@@ -525,7 +525,7 @@ def indexSuccessorRows (owner : Atom) (count : Nat) : List Atom :=
       [.symbol "mm-index-successor", owner,
         natAtom position, natAtom (position + 1)]
 
-@[simp] theorem indexedRows_length {Source : Type}
+@[simp] theorem prototypeRows_length {Source : Type}
     (family : String) (owner : Atom) (encode : Source → Atom)
     (values : List Source) :
     (indexedRows family owner encode values).length = values.length := by

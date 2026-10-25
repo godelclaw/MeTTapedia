@@ -1,4 +1,4 @@
-import Mettapedia.Logic.HOL.Embedding.ZFSetHOLTypeInterpretation
+import Mettapedia.Logic.HOL.Embedding.ZFSetSimpleTypeInterpretation
 import Mettapedia.Logic.HOL.Embedding.ZFSetLiftedUniverseClosure
 import Mettapedia.Logic.HOL.Embedding.ZFSetUniverseInterpretation
 
@@ -60,6 +60,12 @@ def extend {Γ : Ctx Unit} {A : Ty Unit} (ρ : Valuation.{u} Γ)
   | _, .vz => x
   | _, .vs v => ρ v
 
+theorem extend_simple {Γ : Ctx Unit} {A : Ty Unit} (ρ : Valuation.{u} Γ) (x : Value A) :
+    (ZFSetSimpleTypeInterpretation.extend (fun _ => carrierCode.{u}) ρ x : Valuation (A :: Γ)) =
+      (extend ρ x : Valuation (A :: Γ)) := by
+  funext B index
+  cases index <;> rfl
+
 theorem decode_extend {Const : Ty Unit → Type v}
     (denotation : {A : Ty Unit} → Const A → Ty.denote.{0, u + 1} carrier.{u} A)
     {Γ : Ctx Unit} {A : Ty Unit} (ρ : Valuation.{u} Γ) (x : Value A) :
@@ -73,27 +79,8 @@ theorem decode_extend {Const : Ty Unit → Type v}
 
 noncomputable def interpret {Const : Ty Unit → Type v}
     (constants : {A : Ty Unit} → Const A → Value.{u} A) :
-    {Γ : Ctx Unit} → {A : Ty Unit} → Term Const Γ A → Valuation Γ → Value A
-  | _, _, .var v, ρ => ρ v
-  | _, _, .const c, _ => constants c
-  | _, _, .app f x, ρ => app (interpret constants f ρ) (interpret constants x ρ)
-  | _, _, .lam body, ρ => lam (fun x => interpret constants body (extend ρ x))
-  | _, _, .top, _ => truth True
-  | _, _, .bot, _ => truth False
-  | _, _, .and p q, ρ => truth (holds (interpret constants p ρ) ∧ holds (interpret constants q ρ))
-  | _, _, .or p q, ρ => truth (holds (interpret constants p ρ) ∨ holds (interpret constants q ρ))
-  | _, _, .imp p q, ρ => truth (holds (interpret constants p ρ) → holds (interpret constants q ρ))
-  | _, _, .not p, ρ => truth (¬ holds (interpret constants p ρ))
-  | _, _, .eq x y, ρ => truth (interpret constants x ρ = interpret constants y ρ)
-  | _, _, .all p, ρ => truth (∀ x, holds (interpret constants p (extend ρ x)))
-  | _, _, .ex p, ρ => truth (∃ x, holds (interpret constants p (extend ρ x)))
-
-private theorem standard_eqv_of_eq {Const : Ty Unit → Type v}
-    (denotation : {A : Ty Unit} → Const A → Ty.denote.{0, u + 1} carrier.{u} A)
-    {A : Ty Unit} {x y : Ty.denote.{0, u + 1} carrier.{u} A} (equal : x = y) :
-    (HenkinModel.standard carrier denotation).Eqv A x y := by
-  subst y
-  exact (HenkinModel.standard carrier denotation).eqv_refl trivial
+    {Γ : Ctx Unit} → {A : Ty Unit} → Term Const Γ A → Valuation Γ → Value A :=
+  ZFSetSimpleTypeInterpretation.interpret (fun _ => carrierCode.{u}) constants
 
 /-- The only parameterized law concerns constant denotations. Both concrete
 set signatures discharge it using actual set-operation theorems below. -/
@@ -103,96 +90,9 @@ theorem decode_interpret {Const : Ty Unit → Type v}
     (constant_law : ∀ {A} (c : Const A), decode A (constants c) = denotation c)
     {Γ : Ctx Unit} {A : Ty Unit} (term : Term Const Γ A) (ρ : Valuation Γ) :
     decode A (interpret constants term ρ) =
-      (HenkinModel.standard carrier denotation).denote term (decodeValuation ρ) := by
-  induction term with
-  | var => rfl
-  | const c => exact constant_law c
-  | app f x ihf ihx =>
-      rw [interpret, decode_app, ihf, ihx]
-      rfl
-  | lam body ih =>
-      rw [interpret, decode_lam]
-      funext x
-      rw [ih, decode_extend, Equiv.apply_symm_apply]
-      rfl
-  | top => exact decode_truth True
-  | bot => exact decode_truth False
-  | and p q ihp ihq =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      change (holds (interpret constants p ρ) ∧ holds (interpret constants q ρ)) = _
-      change ((decode .prop (interpret constants p ρ)).down ∧
-        (decode .prop (interpret constants q ρ)).down) = _
-      rw [ihp, ihq]
-      rfl
-  | or p q ihp ihq =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      change ((decode .prop (interpret constants p ρ)).down ∨
-        (decode .prop (interpret constants q ρ)).down) = _
-      rw [ihp, ihq]
-      rfl
-  | imp p q ihp ihq =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      change ((decode .prop (interpret constants p ρ)).down →
-        (decode .prop (interpret constants q ρ)).down) = _
-      rw [ihp, ihq]
-      rfl
-  | not p ih =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      change (¬ (decode .prop (interpret constants p ρ)).down) = _
-      rw [ih]
-      rfl
-  | eq x y ihx ihy =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      apply propext
-      change interpret constants x ρ = interpret constants y ρ ↔
-        (HenkinModel.standard carrier denotation).Eqv _ _ _
-      constructor
-      · intro equal
-        have valueEqual := congrArg (decode _) equal
-        rw [ihx, ihy] at valueEqual
-        exact standard_eqv_of_eq denotation valueEqual
-      · intro equal
-        apply (decode _).injective
-        rw [ihx, ihy]
-        exact (HenkinModel.standard carrier denotation).eq_of_eqv_of_fullDomains
-          (HenkinModel.fullDomains_standard carrier denotation) equal
-  | @all A Γ p ih =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      apply propext
-      change (∀ x, (decode .prop (interpret constants p (extend ρ x))).down) ↔
-        ∀ x, True → _
-      simp only [ih, decode_extend denotation]
-      constructor
-      · intro hp x _
-        have hx := hp ((decode A).symm x)
-        exact Eq.mp (congrArg (fun y : Ty.denote.{0, u + 1} carrier A =>
-          ((HenkinModel.standard carrier denotation).denote p
-            ((HenkinModel.standard carrier denotation).extend (decodeValuation ρ) y)).down)
-          (Equiv.apply_symm_apply (decode A) x)) hx
-      · intro hp x
-        exact hp (decode A x) trivial
-  | @ex A Γ p ih =>
-      rw [interpret, decode_truth]
-      apply ULift.ext
-      apply propext
-      change (∃ x, (decode .prop (interpret constants p (extend ρ x))).down) ↔
-        ∃ x, True ∧ _
-      simp only [ih, decode_extend denotation]
-      constructor
-      · rintro ⟨x, hx⟩
-        exact ⟨decode A x, trivial, hx⟩
-      · rintro ⟨x, _, hx⟩
-        refine ⟨(decode A).symm x, ?_⟩
-        exact Eq.mpr (congrArg (fun y : Ty.denote.{0, u + 1} carrier A =>
-          ((HenkinModel.standard carrier denotation).denote p
-            ((HenkinModel.standard carrier denotation).extend (decodeValuation ρ) y)).down)
-          (Equiv.apply_symm_apply (decode A) x)) hx
+      (HenkinModel.standard carrier denotation).denote term (decodeValuation ρ) :=
+  ZFSetSimpleTypeInterpretation.decode_interpret (fun _ => carrierCode.{u}) (fun _ => carrierEquiv)
+    denotation constants constant_law term ρ
 
 /-! ## Actual lifted set constants -/
 
@@ -372,7 +272,8 @@ def applicationEta : ClosedFormula Symbol :=
     (.var .vz : Expr [mapping] mapping))
 
 theorem coded_function_eta : holds (interpret constants.{u} applicationEta emptyValuation) := by
-  simp only [applicationEta, interpret, extend, holds_truth]
+  simp only [applicationEta, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    ZFSetSimpleTypeInterpretation.extend, holds_truth]
   exact lam_eta
 
 def allFunctionsIdentity : ClosedFormula Symbol :=
@@ -381,9 +282,11 @@ def allFunctionsIdentity : ClosedFormula Symbol :=
 theorem not_all_functions_identity :
     ¬ holds (interpret constants.{u} allFunctionsIdentity emptyValuation) := by
   intro claim
-  simp only [allFunctionsIdentity, interpret, extend, holds_truth] at claim
-  have equality := claim (lam (fun _ => carrierEmpty))
+  simp only [allFunctionsIdentity, interpret, ZFSetSimpleTypeInterpretation.interpret,
+    ZFSetSimpleTypeInterpretation.extend, holds_truth] at claim
+  have equality := claim (lam (A := set) (B := set) (fun _ => carrierEmpty))
     (carrierPower carrierEmpty)
+  change app (A := set) (B := set) (lam (A := set) (B := set) (fun _ => carrierEmpty)) (carrierPower carrierEmpty) = carrierPower carrierEmpty at equality
   rw [app_lam] at equality
   have decoded := congrArg carrierEquiv equality
   rw [decode_empty, decode_power, decode_empty] at decoded

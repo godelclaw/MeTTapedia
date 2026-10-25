@@ -1,3 +1,4 @@
+import Mettapedia.Hyperseed.VisibleConsequence
 import Mettapedia.Hyperseed.Basic
 import Mettapedia.Hyperseed.ObservationTrace
 import Mettapedia.Hyperseed.Closure

@@ -46,7 +46,7 @@ open TranslationTransport
 
 universe u v
 
-theorem kind_rule : (⟨.type, .kind, .kind⟩ : LFProfile.ProductRule) ∈ LFProfile.basic.products := by
+theorem kind_rule : (⟨.type, .kind, .kind⟩ : LFProfile.ProductRule) ∈ LFProfile.standardLF.products := by
   decide
 
 section Declarations
@@ -152,7 +152,7 @@ theorem declaredType_formed (s : Symbol Base Const) :
         (arr_typed names var_codes_typed boolTyped) boolTyped)) arrow_rule⟩
 
 /-- **Every declared type of the typed hub is a type.** -/
-theorem formedSignature : (sttfaProofTheory e).FormedSignature LFProfile.basic := by
+theorem formedSignature : (sttfaProofTheory e).FormedSignature LFProfile.standardLF := by
   have declares := proofTheory_declares names
   have boolDecoding : ∀ {context : LFTyping.Ctx}, LambdaPiModulo (sttfaProofTheory e) context
       (.app (.con "eta") (.con (e.name .bool))) (.srt .type) := by
@@ -182,7 +182,7 @@ theorem formedSignature : (sttfaProofTheory e).FormedSignature LFProfile.basic :
 end Signature
 
 theorem typedBodies {Base : Type u} {Const : Ty Base → Type v} (e : Encoding Base Const) :
-    (sttfaProofTheory e).TypedBodies LFProfile.basic := by
+    (sttfaProofTheory e).TypedBodies LFProfile.standardLF := by
   intro name body type defined _
   simp [sttfaProofTheory, Encoding.typedTheory, STTfa.theory, Theory.ofSig, lookupBody] at defined
 
@@ -205,7 +205,7 @@ theorem retype {context : LFTyping.Ctx} {M A B : LF.Term}
 
 /-- A type that converts with `Type` is typed at a sort. -/
 theorem formed_of_conv_type {context : LFTyping.Ctx} {M A : LF.Term}
-    (wellFormed : WellFormedCtx LFProfile.basic (sttfaProofTheory e) context)
+    (wellFormed : WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) context)
     (typed : LambdaPiModulo (sttfaProofTheory e) context M A)
     (converted : Conv STTfa.theory (.srt .type) A) :
     ∃ sort, LambdaPiModulo (sttfaProofTheory e) context A (.srt sort) := by
@@ -221,7 +221,7 @@ theorem formed_of_conv_type {context : LFTyping.Ctx} {M A : LF.Term}
 
 /-- A type that converts with a product is typed at a sort. -/
 theorem formed_of_conv_pi {context : LFTyping.Ctx} {M A domain body : LF.Term}
-    (wellFormed : WellFormedCtx LFProfile.basic (sttfaProofTheory e) context)
+    (wellFormed : WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) context)
     (typed : LambdaPiModulo (sttfaProofTheory e) context M A)
     (converted : Conv STTfa.theory (.pi domain body) A) :
     ∃ sort, LambdaPiModulo (sttfaProofTheory e) context A (.srt sort) := by
@@ -332,7 +332,7 @@ theorem constType_impl :
     names.arrow]
 
 /-- **The rules of the hub keep the types of their left sides.** -/
-theorem rulesPreserveTypes : (sttfaProofTheory e).RulesPreserveTypes LFProfile.basic := by
+theorem rulesPreserveTypes : (sttfaProofTheory e).RulesPreserveTypes LFProfile.standardLF := by
   have headed := STTfa.orthogonal.leftAlgebraic.headed
   intro rule assignment context type member wellFormed typed
   have member' : STTfa.theory.rule rule := member
@@ -443,7 +443,7 @@ theorem rulesPreserveTypes : (sttfaProofTheory e).RulesPreserveTypes LFProfile.b
 /-- **Type preservation in the typed STTfa hub**: every reduct of a term typed
 in a well-formed context has its type. -/
 theorem sttfa_typePreservation {context : LFTyping.Ctx} {source target type : LF.Term}
-    (wellFormed : WellFormedCtx LFProfile.basic (sttfaProofTheory e) context)
+    (wellFormed : WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) context)
     (typed : LambdaPiModulo (sttfaProofTheory e) context source type)
     (reduces : Reduces (sttfaProofTheory e) source target) :
     LambdaPiModulo (sttfaProofTheory e) context target type :=

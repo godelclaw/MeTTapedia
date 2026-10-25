@@ -32,8 +32,8 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 namespace DeclarationAwareComputationalTrinityCalibration
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.Mettapedia.CategoryTheory
+open scoped _root_.Mettapedia.CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.CalculusAsLanguage
@@ -93,7 +93,7 @@ def forgetOccurrence : ProgramCarrier → LogicCarrier :=
 
 /-- Every retained derivation executes as a proof-search path from its
 singleton obligation to the empty obligation list. -/
-def proofSearchTrace (run : ProgramCarrier) :
+theorem proofSearchTrace (run : ProgramCarrier) :
     (proofSearchGSLT formedTypingExtension.target).MultiStep
       [encodeFormedTypingQuery run.1] [] :=
   derivationToProofSearch run.2.2

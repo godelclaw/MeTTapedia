@@ -546,12 +546,12 @@ theorem qSatisfies_iff_satisfies (lts : LTS S Act) (ρ : Env S n)
       exact or_congr (leftHypothesis ρ state) (rightHypothesis ρ state)
   | diamond action formula inductionHypothesis =>
       simp only [qSatisfies, satisfies, ofLTS, LTS.successors,
-        Set.mem_setOf_eq, prop_mul_iff, iSup_Prop_eq]
+        Set.mem_ofPred_eq, prop_mul_iff, iSup_Prop_eq]
       exact exists_congr fun target =>
         and_congr Iff.rfl (inductionHypothesis ρ target)
   | box action formula inductionHypothesis =>
       simp only [qSatisfies, satisfies, ofLTS, LTS.successors,
-        Set.mem_setOf_eq, prop_leftResiduate_iff, iInf_Prop_eq]
+        Set.mem_ofPred_eq, prop_leftResiduate_iff, iInf_Prop_eq]
       exact forall_congr' fun target =>
         imp_congr Iff.rfl (inductionHypothesis ρ target)
   | mu body inductionHypothesis =>

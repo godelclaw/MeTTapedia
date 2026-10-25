@@ -22,7 +22,7 @@ model assumption is needed to translate a derivation.
 The resulting theorems are observed in their native OpenTheory reachable
 states by the existing WM reading. WM reduction preserves that observation;
 it is not another type theory or an identification of kernel carriers.
-The Prime DTT-to-set/universe kernel translation remains a separate obligation.
+Translating a Prime candidate's DTT into the set/universe kernel remains a separate obligation.
 -/
 
 set_option autoImplicit false

@@ -92,7 +92,7 @@ def rawReceiptEquiv (capability : WMCapability R)
     cases receipt
     rfl
 
-/-- The Prime semantic receipt fibre, GSLT-IL's retained answer receipt,
+/-- The staged semantic receipt fibre, GSLT-IL's retained answer receipt,
 and OSLF's native supported graph agree on one raw request and answer.
 The comparison uses actual graph membership, not merely a matching name. -/
 theorem observableReceipt_iff_nativeSupportedGraph

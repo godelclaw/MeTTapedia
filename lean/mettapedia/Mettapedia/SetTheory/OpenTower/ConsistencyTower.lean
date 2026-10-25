@@ -50,6 +50,14 @@ and the tower is the tower of these presentations.
 a set model one stage up: that is the stratified escape (`ProvabilityStage.Model.consistent`)
 seen by the host.  Here the certification is internal to the next stage, as an axiom true in
 the standard model.
+
+**Checking without detaching.**  A stage proves, of every theorem of its zoom-out, that the
+zoom-out proves it (`checks_next`): a weaker checker verifies the stronger theory's
+derivations.  It cannot pass from that verification to the theorem itself: local reflection
+of the zoom-out at `Con` of the stage is unprovable in the stage
+(`not_detaches_next_consistency`; at `𝗣𝗔`, `peano_not_detaches_next_consistency`).  The
+standard model, one level up, validates every such reflection statement
+(`standardModel_detaches_next`).
 -/
 
 set_option autoImplicit false
@@ -136,6 +144,27 @@ theorem abstract_zoomOut :
       S.next.theory ⊢ (S.theory.standardProvability ⊥ ➝ ⊥) ⭤ ↑S.theory.consistent :=
     Entailment.WeakerThan.pbl (Arithmetic.consistency_equivalent S.theory)
   exact K!_right equivalent ⨀ S.next_proves_consistency
+
+/-! ### Checking without detaching -/
+
+/-- **A stage verifies its zoom-out's theorems**: whatever the next stage proves, this stage
+proves that the next stage proves it. -/
+theorem checks_next {σ : ArithmeticSentence} (proved : S.next.theory ⊢ σ) :
+    S.theory ⊢ S.next.theory.standardProvability σ :=
+  Entailment.WeakerThan.pbl (ProvabilityAbstraction.D1 (𝔅 := S.next.theory.standardProvability) proved)
+
+/-- **A stage cannot detach what it verifies.**  The stage proves that the next stage proves
+its consistency, and does not prove local reflection of the next stage at that sentence:
+detaching would prove its own consistency. -/
+theorem not_detaches_next_consistency :
+    S.theory ⊬ (S.next.theory.standardProvability ↑S.theory.consistent ➝ ↑S.theory.consistent) :=
+  fun detach => S.not_proves_own_consistency (detach ⨀ S.checks_next S.next_proves_consistency)
+
+/-- **The standard model detaches.**  One level up, every local reflection statement of the
+next stage is true. -/
+theorem standardModel_detaches_next (σ : ArithmeticSentence) :
+    ℕ ⊧ₘ (S.next.theory.standardProvability σ ➝ σ) :=
+  (Arithmetic.standardReflectiveModel S.next.theory).holds_localReflection σ
 
 /-- **The tower**: the finite levels of the progression of consistency extensions. -/
 noncomputable def tower : ℕ → SoundStage
@@ -241,6 +270,16 @@ theorem peano_tower_true_unprovable (n : ℕ) :
     ∃ σ : ArithmeticSentence, ℕ ⊧ₘ σ ∧ (peano.tower n).theory ⊬ σ :=
   ⟨_, (peano.tower n).consistency_true, (peano.tower n).not_proves_own_consistency⟩
 
+/-- **`𝗣𝗔` verifies that `𝗣𝗔 + Con(𝗣𝗔)` proves `Con(𝗣𝗔)`.** -/
+theorem peano_checks_next_consistency :
+    𝗣𝗔 ⊢ peano.next.theory.standardProvability ↑𝗣𝗔.consistent :=
+  peano.checks_next peano.next_proves_consistency
+
+/-- **`𝗣𝗔` cannot detach `Con(𝗣𝗔)` from that verification.** -/
+theorem peano_not_detaches_next_consistency :
+    𝗣𝗔 ⊬ (peano.next.theory.standardProvability ↑𝗣𝗔.consistent ➝ ↑𝗣𝗔.consistent) :=
+  peano.not_detaches_next_consistency
+
 /-! ### Controls -/
 
 /-- Positive control: `𝗣𝗔 + Con(𝗣𝗔)` proves `Con(𝗣𝗔)`. -/
@@ -297,5 +336,10 @@ theorem trueArith_proves_truths (σ : ArithmeticSentence) (true : ℕ ⊧ₘ σ)
 #print axioms iSigmaOne_not_proves_consistency
 #print axioms trueArith_not_delta1
 #print axioms trueArith_proves_truths
+#print axioms SoundStage.checks_next
+#print axioms SoundStage.not_detaches_next_consistency
+#print axioms SoundStage.standardModel_detaches_next
+#print axioms peano_checks_next_consistency
+#print axioms peano_not_detaches_next_consistency
 
 end Mettapedia.SetTheory.OpenTower.ConsistencyTower

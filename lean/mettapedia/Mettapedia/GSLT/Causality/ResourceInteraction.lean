@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Causality.EventConcurrency
+import Mettapedia.GSLT.Dynamics.InteractionEventValuation
 import Mathlib.Algebra.Order.Sub.Basic
 import Mathlib.Data.Multiset.AddSub
 import Mathlib.Tactic.Abel
@@ -27,7 +28,7 @@ open Mettapedia.GSLT.Core.InteractionEvent
 open Mettapedia.GSLT.Causality.OccurrenceHistory
 open Mettapedia.GSLT.Causality.EventConcurrency
 
-universe uRes uRule
+universe uRes uRule uEvent
 
 /-- Rule instances over resources `R`: each consumes, reads and produces a bag. -/
 structure System (R : Type uRes) where
@@ -192,6 +193,142 @@ consumed. Two equations for one call are conflicting alternatives: each run
 takes one, and an all-answer search collects both. Two calls answered by one
 equation are concurrent: they are two firings of one rule instance. -/
 
+/-! ## Algebra-first linear effects -/
+
+/-- Exact linear effect of one occurrence.  `site` classifies the interaction;
+the resource multisets govern concurrent ownership. -/
+structure LinearEffect (Site : Type uRule) (Resource : Type uRes) where
+  site : Site
+  consumed : Multiset Resource
+  produced : Multiset Resource
+
+/-- Proof-relevant common-source decomposition of two linear effects. -/
+structure PairSeparation {Site : Type uRule} {Resource : Type uRes}
+    (source : Multiset Resource)
+    (left right : LinearEffect Site Resource) : Type uRes where
+  frame : Multiset Resource
+  source_eq : source = left.consumed + right.consumed + frame
+
+namespace PairSeparation
+
+variable {Site : Type uRule} {Resource : Type uRes} [DecidableEq Resource]
+variable {source : Multiset Resource}
+variable {left right : LinearEffect Site Resource}
+
+/-- The exact demand placed on the common source. -/
+def demand (_source : Multiset Resource)
+    (left right : LinearEffect Site Resource) : Multiset Resource :=
+  left.consumed + right.consumed
+
+/-- Construct the canonical remainder from a successful linear-resource
+check. -/
+def of_le (funded : demand source left right ≤ source) :
+    PairSeparation source left right where
+  frame := source - demand source left right
+  source_eq := by
+    rw [add_comm]
+    exact (Multiset.sub_add_cancel funded).symm
+
+/-- Executable pair analysis.  There is no fallback meaning for a failed
+resource check. -/
+def analyze? (source : Multiset Resource)
+    (left right : LinearEffect Site Resource) :
+    Option (PairSeparation source left right) :=
+  if funded : demand source left right ≤ source then
+    some (of_le funded)
+  else
+    none
+
+/-- Analysis succeeds exactly when the combined linear demand fits the
+source. -/
+theorem analyze?_isSome_iff :
+    (analyze? source left right).isSome = true ↔
+      demand source left right ≤ source := by
+  by_cases funded : demand source left right ≤ source
+  · simp [analyze?, funded]
+  · simp [analyze?, funded]
+
+/-- A supplied separation certificate is never rejected by the executable
+analysis. -/
+theorem analyze?_complete
+    (separation : PairSeparation source left right) :
+    (analyze? source left right).isSome = true := by
+  rw [analyze?_isSome_iff]
+  apply Multiset.le_iff_exists_add.mpr
+  exact ⟨separation.frame, separation.source_eq⟩
+
+/-- A successful result exposes its exact common-source equation. -/
+theorem source_eq_of_analyze?_eq_some
+    {separation : PairSeparation source left right}
+    (_result : analyze? source left right = some separation) :
+    source = left.consumed + right.consumed + separation.frame :=
+  separation.source_eq
+
+end PairSeparation
+
+/-! ## Exact occurrence analyses -/
+
+/-- An occurrence-effect analysis assigns exact linear effects to the
+proof-relevant occurrences of one interaction presentation. -/
+structure OccurrenceEffectAnalysis {theory : GSLT}
+    (presentation : InteractionPresentation.{uRule, uEvent} theory)
+    (Resource : Type uRes) where
+  effect : Mettapedia.GSLT.Dynamics.InteractionEventValuation.Occurrence presentation → LinearEffect presentation.Site Resource
+
+namespace OccurrenceEffectAnalysis
+
+variable {theory : GSLT}
+variable {presentation : InteractionPresentation.{uRule, uEvent} theory}
+variable {Resource : Type uRes} [DecidableEq Resource]
+
+/-- Analyze two exact occurrences against one resource inventory. -/
+def separate? (analysis : OccurrenceEffectAnalysis presentation Resource)
+    (source : Multiset Resource)
+    (left right : Mettapedia.GSLT.Dynamics.InteractionEventValuation.Occurrence presentation) :
+    Option (PairSeparation source (analysis.effect left)
+      (analysis.effect right)) :=
+  PairSeparation.analyze? source (analysis.effect left)
+    (analysis.effect right)
+
+end OccurrenceEffectAnalysis
+
+
+/-- Forget persistent reads explicitly when projecting a resource firing to
+its consumed and produced linear effects. -/
+def System.linearEffect {R : Type uRes} (system : System.{uRes, uRule} R)
+    {site : system.Site} (firing : system.Instance site) :
+    LinearEffect system.Site R where
+  site := site
+  consumed := system.consume firing
+  produced := system.produce firing
+
+/-- Exact linear pair decomposition is precisely the submultiset condition;
+the proof-relevant certificate also retains the untouched frame. -/
+theorem PairSeparation.nonempty_iff {Site : Type uRule} {R : Type uRes}
+    {source : Multiset R} {left right : LinearEffect Site R} :
+    Nonempty (PairSeparation source left right) ↔
+      left.consumed + right.consumed ≤ source := by
+  constructor
+  · rintro ⟨separation⟩
+    exact Multiset.le_iff_exists_add.mpr ⟨separation.frame, separation.source_eq⟩
+  · intro fits
+    obtain ⟨frame, equal⟩ := Multiset.le_iff_exists_add.mp fits
+    exact ⟨⟨frame, equal⟩⟩
+
+/-- The linear separation check agrees exactly with the existing concurrency
+judgment for firings with no persistent reads. -/
+theorem System.pairSeparation_iff_concurrent {R : Type uRes}
+    (system : System.{uRes, uRule} R) (source : Multiset R)
+    {leftSite rightSite : system.Site}
+    (left : system.Instance leftSite) (right : system.Instance rightSite)
+    (leftRead : system.read left = 0) (rightRead : system.read right = 0) :
+    Nonempty (PairSeparation source (system.linearEffect left)
+      (system.linearEffect right)) ↔ system.Concurrent source left right := by
+  rw [PairSeparation.nonempty_iff]
+  simp only [System.linearEffect, System.Concurrent, leftRead, rightRead,
+    add_zero, and_self]
+
+
 namespace Controls
 
 /-- Messages on one channel, a receiver, and received values. -/
@@ -299,6 +436,28 @@ theorem shared_answers_commute :
     Trace.mk (T := space.concurrency.tiles) (sharedPair.route space.concurrency) =
       Trace.mk (sharedPair.swapped space.concurrency) :=
   Trace.mk_sound (.tile (T := space.concurrency.tiles) sharedPair)
+
+/-- With two actual linear receivers the shared separation theorem licenses
+both firings; neither receiver occurrence is contracted. -/
+theorem two_linear_receivers_are_separated :
+    linearReceiver.Concurrent (twoMessages + {Res.receiver}) (take 1) (take 2) := by
+  apply (linearReceiver.pairSeparation_iff_concurrent
+    (twoMessages + {Res.receiver}) (take 1) (take 2) rfl rfl).mp
+  exact PairSeparation.nonempty_iff.mpr (by decide)
+
+/-- Consumption-only separation cannot replace a shared-read requirement:
+the messages fit, but their persistent receiver is absent. -/
+theorem consumption_separation_does_not_supply_reads :
+    Nonempty (PairSeparation ({Res.message 1, Res.message 2} : Multiset Res)
+      (persistentReceiver.linearEffect (takeAgain 1))
+      (persistentReceiver.linearEffect (takeAgain 2))) ∧
+      ¬ persistentReceiver.Concurrent {Res.message 1, Res.message 2}
+        (takeAgain 1) (takeAgain 2) := by
+  constructor
+  · exact PairSeparation.nonempty_iff.mpr (by decide)
+  · unfold System.Concurrent persistentReceiver takeAgain
+    decide
+
 
 end Controls
 

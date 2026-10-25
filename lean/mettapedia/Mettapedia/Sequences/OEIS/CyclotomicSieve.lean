@@ -4,235 +4,20 @@ import Mathlib.Data.Nat.Factorization.Induction
 import Mathlib.NumberTheory.Multiplicity
 import Mathlib.Tactic
 import Mettapedia.Sequences.OEIS.Basic
+import Mettapedia.Algorithms.DivisibilityScan
 
 /-!
 # A divisibility sieve for cyclotomic values
 
-This file separates a general arithmetic sieve from the OEIS specification
-whose values are evaluations of cyclotomic polynomials.  The sieve keeps its
+The shared ordered divisibility scan realizes an OEIS specification whose
+values are evaluations of cyclotomic polynomials. The sieve keeps its
 previous outputs in reverse chronological order and removes each divisor at
 most once from a new candidate.
 -/
 
 namespace Mettapedia.Sequences.OEIS.CyclotomicSieve
 
-/-- Divide by `divisor` once when it divides `candidate`. -/
-def removeIfDivides (candidate divisor : Nat) : Nat :=
-  if candidate % divisor = 0 then candidate / divisor else candidate
-
-theorem removeIfDivides_pos {candidate divisor : Nat}
-    (candidatePositive : 0 < candidate) (divisorPositive : 0 < divisor) :
-    0 < removeIfDivides candidate divisor := by
-  unfold removeIfDivides
-  split
-  next divides =>
-    have divisorDvd : divisor ∣ candidate := Nat.dvd_of_mod_eq_zero divides
-    exact Nat.div_pos (Nat.le_of_dvd candidatePositive divisorDvd) divisorPositive
-  next => exact candidatePositive
-
-/-- Scan divisors from the head of a reverse-chronological history. -/
-def scan : List Nat → Nat → Nat
-  | [], candidate => candidate
-  | divisor :: divisors, candidate =>
-      scan divisors (removeIfDivides candidate divisor)
-
-@[simp] theorem scan_nil (candidate : Nat) : scan [] candidate = candidate := rfl
-
-@[simp] theorem scan_cons (divisor : Nat) (divisors : List Nat) (candidate : Nat) :
-    scan (divisor :: divisors) candidate =
-      scan divisors (removeIfDivides candidate divisor) := rfl
-
-theorem scan_append (first second : List Nat) (candidate : Nat) :
-    scan (first ++ second) candidate = scan second (scan first candidate) := by
-  induction first generalizing candidate with
-  | nil => rfl
-  | cons divisor divisors inductionHypothesis =>
-      simp only [List.cons_append, scan_cons]
-      exact inductionHypothesis (removeIfDivides candidate divisor)
-
-/-- When the entire divisor product divides the candidate, the conditional
-scan performs exact division by that product. -/
-theorem scan_eq_div_prod_of_prod_dvd :
-    ∀ (divisors : List Nat) (candidate : Nat),
-      divisors.prod ∣ candidate →
-        scan divisors candidate = candidate / divisors.prod := by
-  intro divisors
-  induction divisors with
-  | nil => simp
-  | cons divisor divisors inductionHypothesis =>
-      intro candidate productDivides
-      change divisor * divisors.prod ∣ candidate at productDivides
-      change scan (divisor :: divisors) candidate =
-        candidate / (divisor * divisors.prod)
-      have divisorDivides : divisor ∣ candidate :=
-        dvd_trans (dvd_mul_right divisor divisors.prod) productDivides
-      have tailProductDivides : divisors.prod ∣ candidate / divisor := by
-        rw [Nat.dvd_div_iff_mul_dvd divisorDivides]
-        simpa [mul_comm] using productDivides
-      rw [scan_cons, removeIfDivides,
-        if_pos (Nat.dvd_iff_mod_eq_zero.mp divisorDivides),
-        inductionHypothesis (candidate / divisor) tailProductDivides,
-        Nat.div_div_eq_div_mul]
-
-/-- A list whose members do not divide the candidate leaves it unchanged. -/
-theorem scan_eq_self_of_forall_not_dvd :
-    ∀ (divisors : List Nat) (candidate : Nat),
-      (∀ divisor ∈ divisors, ¬divisor ∣ candidate) →
-        scan divisors candidate = candidate := by
-  intro divisors
-  induction divisors with
-  | nil => simp
-  | cons divisor divisors inductionHypothesis =>
-      intro candidate noneDivides
-      have headDoesNotDivide : ¬divisor ∣ candidate :=
-        noneDivides divisor (by simp)
-      have tailDoesNotDivide : ∀ value ∈ divisors, ¬value ∣ candidate := by
-        intro value membership
-        exact noneDivides value (by simp [membership])
-      simp only [scan_cons, removeIfDivides,
-        Nat.dvd_iff_mod_eq_zero.not.mp headDoesNotDivide, if_false]
-      exact inductionHypothesis candidate tailDoesNotDivide
-
-/-- A general correctness theorem for conditional scans.  If the product of
-the selected values divides the candidate, while every unselected value does
-not divide it, then scanning every value is equivalent to exact division by
-the selected product. -/
-theorem scan_map_eq_div_filter_prod
-    {α : Type*} [DecidableEq α]
-    (items : List α) (value : α → Nat) (selected : α → Prop)
-    [DecidablePred selected] (candidate : Nat)
-    (selectedProductDivides :
-      ((items.filter selected).map value).prod ∣ candidate)
-    (unselectedDoesNotDivide :
-      ∀ item ∈ items, ¬selected item → ¬value item ∣ candidate) :
-    scan (items.map value) candidate =
-      candidate / ((items.filter selected).map value).prod := by
-  induction items generalizing candidate with
-  | nil => simp
-  | cons item items inductionHypothesis =>
-      by_cases itemSelected : selected item
-      · have itemDivides : value item ∣ candidate := by
-          exact dvd_trans
-            (dvd_mul_right (value item)
-              ((items.filter selected).map value).prod)
-            (by simpa [itemSelected] using selectedProductDivides)
-        have tailProductDivides :
-            ((items.filter selected).map value).prod ∣
-              candidate / value item := by
-          rw [Nat.dvd_div_iff_mul_dvd itemDivides]
-          simpa [itemSelected] using selectedProductDivides
-        have quotientDivides : candidate / value item ∣ candidate :=
-          Nat.div_dvd_of_dvd itemDivides
-        have tailUnselectedDoesNotDivide :
-            ∀ other ∈ items, ¬selected other →
-              ¬value other ∣ candidate / value item := by
-          intro other membership otherUnselected otherDivides
-          exact unselectedDoesNotDivide other (by simp [membership])
-            otherUnselected (dvd_trans otherDivides quotientDivides)
-        rw [List.map_cons, scan_cons, removeIfDivides,
-          if_pos (Nat.dvd_iff_mod_eq_zero.mp itemDivides),
-          inductionHypothesis (candidate / value item)
-            tailProductDivides tailUnselectedDoesNotDivide,
-          Nat.div_div_eq_div_mul]
-        simp [itemSelected]
-      · have itemDoesNotDivide : ¬value item ∣ candidate :=
-          unselectedDoesNotDivide item (by simp) itemSelected
-        have tailUnselectedDoesNotDivide :
-            ∀ other ∈ items, ¬selected other → ¬value other ∣ candidate := by
-          intro other membership otherUnselected
-          exact unselectedDoesNotDivide other (by simp [membership]) otherUnselected
-        rw [List.map_cons, scan_cons, removeIfDivides,
-          if_neg (Nat.dvd_iff_mod_eq_zero.not.mp itemDoesNotDivide),
-          inductionHypothesis candidate]
-        · simp [itemSelected]
-        · simpa [itemSelected] using selectedProductDivides
-        · exact tailUnselectedDoesNotDivide
-
-/-- Order-aware scan correctness with persistent nondivisors.  Unlike
-`scan_map_eq_div_filter_prod`, an unselected value need not be known absent
-only from the initial candidate: it must be absent from every residual that
-divides that candidate.  This is the form supplied naturally by a
-divisibility-separating prime. -/
-theorem scan_map_eq_div_filter_prod_of_persistent_nondivisors
-    {α : Type*} [DecidableEq α]
-    (items : List α) (value : α → Nat) (selected : α → Prop)
-    [DecidablePred selected] (candidate : Nat)
-    (selectedProductDivides :
-      ((items.filter selected).map value).prod ∣ candidate)
-    (unselectedPersistent :
-      ∀ item ∈ items, ¬selected item →
-        ∀ residual, residual ∣ candidate → ¬value item ∣ residual) :
-    scan (items.map value) candidate =
-      candidate / ((items.filter selected).map value).prod := by
-  induction items generalizing candidate with
-  | nil => simp
-  | cons item items inductionHypothesis =>
-      by_cases itemSelected : selected item
-      · have itemDivides : value item ∣ candidate :=
-          dvd_trans
-            (dvd_mul_right (value item)
-              ((items.filter selected).map value).prod)
-            (by simpa [itemSelected] using selectedProductDivides)
-        have tailProductDivides :
-            ((items.filter selected).map value).prod ∣
-              candidate / value item := by
-          rw [Nat.dvd_div_iff_mul_dvd itemDivides]
-          simpa [itemSelected] using selectedProductDivides
-        have quotientDivides : candidate / value item ∣ candidate :=
-          Nat.div_dvd_of_dvd itemDivides
-        have tailPersistent :
-            ∀ other ∈ items, ¬selected other →
-              ∀ residual, residual ∣ candidate / value item →
-                ¬value other ∣ residual := by
-          intro other membership otherUnselected residual residualDivides
-          exact unselectedPersistent other (by simp [membership])
-            otherUnselected residual
-            (dvd_trans residualDivides quotientDivides)
-        rw [List.map_cons, scan_cons, removeIfDivides,
-          if_pos (Nat.dvd_iff_mod_eq_zero.mp itemDivides),
-          inductionHypothesis (candidate / value item)
-            tailProductDivides tailPersistent,
-          Nat.div_div_eq_div_mul]
-        simp [itemSelected]
-      · have itemDoesNotDivide : ¬value item ∣ candidate :=
-          unselectedPersistent item (by simp) itemSelected candidate
-            (dvd_refl candidate)
-        have tailPersistent :
-            ∀ other ∈ items, ¬selected other →
-              ∀ residual, residual ∣ candidate → ¬value other ∣ residual := by
-          intro other membership otherUnselected
-          exact unselectedPersistent other (by simp [membership])
-            otherUnselected
-        rw [List.map_cons, scan_cons, removeIfDivides,
-          if_neg (Nat.dvd_iff_mod_eq_zero.not.mp itemDoesNotDivide),
-          inductionHypothesis candidate]
-        · simp [itemSelected]
-        · simpa [itemSelected] using selectedProductDivides
-        · exact tailPersistent
-
-theorem removeIfDivides_dvd_candidate (candidate divisor : Nat) :
-    removeIfDivides candidate divisor ∣ candidate := by
-  unfold removeIfDivides
-  split
-  next divides =>
-    exact Nat.div_dvd_of_dvd (Nat.dvd_of_mod_eq_zero divides)
-  next => exact dvd_refl candidate
-
-theorem scan_dvd_candidate : ∀ (divisors : List Nat) (candidate : Nat),
-    scan divisors candidate ∣ candidate := by
-  intro divisors
-  induction divisors with
-  | nil => exact fun candidate => dvd_refl candidate
-  | cons divisor divisors inductionHypothesis =>
-      intro candidate
-      exact dvd_trans
-        (inductionHypothesis (removeIfDivides candidate divisor))
-        (removeIfDivides_dvd_candidate candidate divisor)
-
-/-- The scan is intentionally order-sensitive when no global product
-divisibility invariant is available. -/
-theorem scan_order_sensitive : scan [4, 6] 12 ≠ scan [6, 4] 12 := by
-  decide
+open Mettapedia.Algorithms.DivisibilityScan
 
 /-- The positive integer obtained by evaluating the `index`-th cyclotomic
 polynomial at two. -/
@@ -265,7 +50,7 @@ theorem cyclotomicAtTwo_positive (index : Nat) : 0 < cyclotomicAtTwo index := by
 
 @[simp] theorem cyclotomicAtTwo_five : cyclotomicAtTwo 5 = 31 := by
   unfold cyclotomicAtTwo
-  letI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  let : Fact (Nat.Prime 5) := ⟨by norm_num⟩
   rw [Polynomial.cyclotomic_prime]
   norm_num
 
@@ -275,7 +60,7 @@ theorem cyclotomicAtTwo_isRoot {index prime : Nat}
     (primeIsPrime : prime.Prime)
     (primeDivides : prime ∣ cyclotomicAtTwo index) :
     (Polynomial.cyclotomic index (ZMod prime)).IsRoot (2 : ZMod prime) := by
-  letI : Fact prime.Prime := ⟨primeIsPrime⟩
+  let : Fact prime.Prime := ⟨primeIsPrime⟩
   rw [Polynomial.IsRoot]
   calc
     Polynomial.eval (2 : ZMod prime)
@@ -298,11 +83,11 @@ theorem orderOf_two_eq_ordCompl_of_prime_dvd_cyclotomicAtTwo
     (primeIsPrime : prime.Prime)
     (primeDivides : prime ∣ cyclotomicAtTwo index) :
     orderOf (2 : ZMod prime) = ordCompl[prime] index := by
-  letI : Fact prime.Prime := ⟨primeIsPrime⟩
+  let : Fact prime.Prime := ⟨primeIsPrime⟩
   have root := cyclotomicAtTwo_isRoot primeIsPrime primeDivides
   have primeFree : ¬prime ∣ ordCompl[prime] index :=
     Nat.not_dvd_ordCompl primeIsPrime indexPositive.ne'
-  letI : NeZero ((ordCompl[prime] index : Nat) : ZMod prime) :=
+  let : NeZero ((ordCompl[prime] index : Nat) : ZMod prime) :=
     NeZero.of_not_dvd (ZMod prime) primeFree
   have decomposition :
       prime ^ index.factorization prime * ordCompl[prime] index = index :=
@@ -322,10 +107,10 @@ theorem prime_dvd_cyclotomicAtTwo_iff_orderOf_eq_ordCompl
   · exact orderOf_two_eq_ordCompl_of_prime_dvd_cyclotomicAtTwo
       indexPositive primeIsPrime
   · intro orderEquality
-    letI : Fact prime.Prime := ⟨primeIsPrime⟩
+    let : Fact prime.Prime := ⟨primeIsPrime⟩
     have primeFree : ¬prime ∣ ordCompl[prime] index :=
       Nat.not_dvd_ordCompl primeIsPrime indexPositive.ne'
-    letI : NeZero ((ordCompl[prime] index : Nat) : ZMod prime) :=
+    let : NeZero ((ordCompl[prime] index : Nat) : ZMod prime) :=
       NeZero.of_not_dvd (ZMod prime) primeFree
     have primitive : IsPrimitiveRoot (2 : ZMod prime) (ordCompl[prime] index) :=
       IsPrimitiveRoot.iff_orderOf.mpr orderEquality
@@ -462,18 +247,18 @@ theorem intrinsic_prime_unique {index first second : Nat}
   have firstRoot := cyclotomicAtTwo_isRoot firstIsPrime firstDividesValue
   have secondRoot := cyclotomicAtTwo_isRoot secondIsPrime secondDividesValue
   have firstCoprime : Nat.Coprime 2 first := by
-    letI : Fact first.Prime := ⟨firstIsPrime⟩
+    let : Fact first.Prime := ⟨firstIsPrime⟩
     exact Polynomial.coprime_of_root_cyclotomic indexPositive firstRoot
   have secondCoprime : Nat.Coprime 2 second := by
-    letI : Fact second.Prime := ⟨secondIsPrime⟩
+    let : Fact second.Prime := ⟨secondIsPrime⟩
     exact Polynomial.coprime_of_root_cyclotomic indexPositive secondRoot
   have firstOrderDivides : orderOf (2 : ZMod first) ∣ first - 1 := by
-    letI : Fact first.Prime := ⟨firstIsPrime⟩
+    let : Fact first.Prime := ⟨firstIsPrime⟩
     exact ZMod.orderOf_dvd_card_sub_one
       (mt (CharP.cast_eq_zero_iff (ZMod first) first 2).1
         (firstIsPrime.coprime_iff_not_dvd.mp firstCoprime.symm))
   have secondOrderDivides : orderOf (2 : ZMod second) ∣ second - 1 := by
-    letI : Fact second.Prime := ⟨secondIsPrime⟩
+    let : Fact second.Prime := ⟨secondIsPrime⟩
     exact ZMod.orderOf_dvd_card_sub_one
       (mt (CharP.cast_eq_zero_iff (ZMod second) second 2).1
         (secondIsPrime.coprime_iff_not_dvd.mp secondCoprime.symm))
@@ -521,7 +306,7 @@ def separatingPrimeOfPrimeDvdCyclotomicAtTwo
     (primeDivides : prime ∣ cyclotomicAtTwo index)
     (primeDoesNotDivideIndex : ¬prime ∣ index) :
     DivisibilitySeparatingPrime 2 index (cyclotomicAtTwo index) := by
-  letI : Fact prime.Prime := ⟨primeIsPrime⟩
+  let : Fact prime.Prime := ⟨primeIsPrime⟩
   have evaluationIsZero :
       Int.castRingHom (ZMod prime)
           ((Polynomial.cyclotomic index Int).eval 2) = 0 := by
@@ -909,7 +694,7 @@ theorem cyclotomicAtTwo_eq_prime_of_no_separatingPrime
       primeDividesValue
   have root := cyclotomicAtTwo_isRoot primeIsPrime primeDividesValue
   have primeCoprime : Nat.Coprime 2 prime := by
-    letI : Fact prime.Prime := ⟨primeIsPrime⟩
+    let : Fact prime.Prime := ⟨primeIsPrime⟩
     exact Polynomial.coprime_of_root_cyclotomic indexPositive root
   have primeIsNotTwo : prime ≠ 2 := by
     intro primeIsTwo
@@ -1266,7 +1051,7 @@ theorem exists_separatingPrime_of_index_ne_six
   have indexPositive : 0 < index := by omega
   have root := cyclotomicAtTwo_isRoot primeIsPrime primeDividesValue
   have primeCoprime : Nat.Coprime 2 prime := by
-    letI : Fact prime.Prime := ⟨primeIsPrime⟩
+    let : Fact prime.Prime := ⟨primeIsPrime⟩
     exact Polynomial.coprime_of_root_cyclotomic indexPositive root
   have primeIsNotTwo : prime ≠ 2 := by
     intro primeIsTwo
@@ -1307,10 +1092,7 @@ theorem exists_separatingPrime_of_index_ne_six
 theorem toList_map_prod {α M : Type*} [DecidableEq α] [CommMonoid M]
     (items : Finset α) (f : α → M) :
     (items.toList.map f).prod = ∏ item ∈ items, f item := by
-  induction items using Finset.induction_on with
-  | empty => simp
-  | @insert item items itemFresh inductionHypothesis =>
-      simp [itemFresh]
+  exact Finset.prod_map_toList items f
 
 /-- Values at two for the proper divisors of `index`.  Their list order is
 irrelevant because their full product is known to divide the candidate. -/
@@ -1715,22 +1497,6 @@ theorem scan_descendingValues_eq_cyclotomicAtTwo
         cyclotomicAtTwo_three, cyclotomicAtTwo_four,
         cyclotomicAtTwo_five, cyclotomicAtTwo_six]
 
-theorem scan_pos : ∀ {divisors : List Nat} {candidate : Nat},
-    0 < candidate → (∀ divisor ∈ divisors, 0 < divisor) →
-      0 < scan divisors candidate := by
-  intro divisors
-  induction divisors with
-  | nil =>
-      intro candidate candidatePositive divisorsPositive
-      exact candidatePositive
-  | cons divisor divisors inductionHypothesis =>
-      intro candidate candidatePositive divisorsPositive
-      apply inductionHypothesis
-      · exact removeIfDivides_pos candidatePositive
-          (divisorsPositive divisor (by simp))
-      · intro value membership
-        exact divisorsPositive value (by simp [membership])
-
 /-- A nonempty reverse history of positive sieve values. -/
 structure State where
   history : List Nat
@@ -1746,7 +1512,7 @@ def State.advance (state : State) (exponent : Nat) (exponentPositive : 0 < expon
     omega
   let next := scan state.history candidate
   have nextPositive : 0 < next :=
-    scan_pos candidatePositive state.positive
+    scan_pos candidatePositive
   exact
     { history := next :: state.history
       nonempty := by simp

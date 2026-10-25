@@ -168,7 +168,7 @@ def parallelOperation (color : CostStaticColor) (count : Nat) :
   .inl (.collectionConstructor (GeneratedCollectionEquationModel.parallelRule color)
     (GeneratedCollectionEquationModel.parallel_member color) "ps" .hashBag
     (.base (GeneratedCollectionEquationModel.parallelRule color).category)
-    (GeneratedCollectionEquationModel.parallel_shape color) count)
+    (GeneratedCollectionEquationModel.parallel_bare_shape color) count)
 
 /-- Actual generated parallel operators preserve each supplied occurrence,
 including accounts carried by arbitrary contextual values. -/

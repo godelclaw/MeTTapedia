@@ -13,6 +13,7 @@ import Mettapedia.Cybernetics.ApproximateAdequacy.Combined
 import Mettapedia.Cybernetics.ApproximateAdequacy.DeliveryExample
 import Mettapedia.Cybernetics.ApproximateAdequacy.RoadMapExample
 import Mettapedia.Cybernetics.ApproximateAdequacy.DelayedFailureExample
+import Mettapedia.ProbabilityTheory.FiniteApproximateLumpability
 
 /-!
 # Approximate adequacy of a model of a world
@@ -58,4 +59,7 @@ certificates relate and compose.
   over a slippery bridge and on the road map under revision.
 * `DelayedFailureExample`: discounting forgives a delayed failure that no
   approximate bisimulation below `1` tolerates.
+* `FiniteApproximateLumpability`: rowwise finite-distribution errors form
+  approximate observation squares, mix through priors, compose by coupling
+  costs, and inherit additive or geometric iteration bounds.
 -/

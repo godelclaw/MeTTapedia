@@ -55,7 +55,7 @@ def reverseTop : Pattern → Pattern
 
 /-- Reversing the outermost bag is one step of the static equivalence, or
 none. -/
-theorem path_reverseTop (laws : BagTheory language bag unit) (base : BasePremiseEvaluator)
+theorem path_reverseTop (laws : BareBagTheory language bag unit) (base : BasePremiseEvaluator)
     {free : FreeTypeContext} {bound : List TypeExpr} {type : TypeExpr} {pattern : Pattern}
     (admissible : Admissible language free bound type pattern)
     (collectionless : collectionFree type = true) :
@@ -79,7 +79,7 @@ theorem path_reverseTop (laws : BagTheory language bag unit) (base : BasePremise
 
 /-- The same re-choice on the closed interacting fibre. -/
 def reverseTopClosed (theory : IGSLT)
-    (laws : BagTheory theory.presentation.presentation.language bag unit)
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit)
     (term : theory.toGSLT.Term) : theory.toGSLT.Term :=
   ⟨reverseTop term.1,
     (presented_of_path laws
@@ -88,7 +88,7 @@ def reverseTopClosed (theory : IGSLT)
 
 /-- It stays within the class. -/
 theorem reverseTopClosed_equivalent (theory : IGSLT)
-    (laws : BagTheory theory.presentation.presentation.language bag unit)
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit)
     (term : theory.toGSLT.Term) :
     theory.toGSLT.equations.r (reverseTopClosed theory laws term) term :=
   theory.toGSLT.equations.iseqv.symm
@@ -99,13 +99,13 @@ theorem reverseTopClosed_equivalent (theory : IGSLT)
 /-- **A second section of a bag theory**: the bag normal form with the
 outermost bag listed in the opposite order. -/
 def reversedBagSection (theory : IGSLT)
-    (laws : BagTheory theory.presentation.presentation.language bag unit) :
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit) :
     ComputableCanonicalSection theory :=
   (bagCanonicalSection theory laws).rerepresent (reverseTopClosed theory laws)
     (reverseTopClosed_equivalent theory laws)
 
 @[simp] theorem reversedBagSection_normalize_val (theory : IGSLT)
-    (laws : BagTheory theory.presentation.presentation.language bag unit)
+    (laws : BareBagTheory theory.presentation.presentation.language bag unit)
     (term : theory.toGSLT.Term) :
     ((reversedBagSection theory laws).normalize term).1 =
       reverseTop (normalForm unit term.1) :=
@@ -122,7 +122,7 @@ open BagNormalForm
 
 /-- The second section of CCS. -/
 def ccsReversedSection : ComputableCanonicalSection ccsIGSLT :=
-  reversedBagSection ccsIGSLT ccs_bagTheory
+  reversedBagSection ccsIGSLT (ccs_bagTheory.asBare rfl)
 
 /-- The two sections choose different representatives of the handshake. -/
 theorem ccs_sections_differ : ccsCanonicalSection ≠ ccsReversedSection := by

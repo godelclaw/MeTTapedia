@@ -105,7 +105,8 @@ def mm2Candidate : Candidate SExprVar where
   name := "mm2"
   capabilities := [.fusedExec, .collections, .metavariables, .inertUnknowns]
 
-/-- The prime point: every capability in the current enumeration. -/
+/-- The memo's prime point: every capability in the current enumeration.
+It is the top of this lattice, not the definition of a Prime candidate. -/
 def primeCandidate : Candidate SExprVar where
   name := "prime"
   capabilities :=

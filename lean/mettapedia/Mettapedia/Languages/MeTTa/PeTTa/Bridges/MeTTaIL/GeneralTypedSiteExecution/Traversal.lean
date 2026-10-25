@@ -451,43 +451,52 @@ private theorem collection_row_shape : (equation .collectionRow).body =
 private theorem collection_row_fallback (caller : Subst) (row : GrammarRule) (expected : TypeExpr)
     (fresh : Subst.lookup caller "ordinary" = none)
     (unsupported : ¬ ∃ name actual type sort,
-      row.params = [.simple name (.collection actual type)] ∧ expected = .base sort) :
+      row.bareParams = [.simple name (.collection actual type)] ∧ expected = .base sort) :
     SpaceSemantics.selectCase caller (.expression [encoded (typingDeclarationTerm row), encoded (typeTerm expected)])
       collectionRowCases = some (("ordinary", .expression [encoded (typingDeclarationTerm row), encoded (typeTerm expected)]) :: caller,
         .symbol "LNil") := by
   simp only [Subst.lookup] at fresh
-  cases row with
-  | mk label category parameters syntaxPattern evalPolicy =>
-    cases expected <;> cases parameters with
-    | nil => simp [collectionRowCases, typingDeclarationTerm, typeTerm, encodeList,
-        InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
-        SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
-        matchAtom, Subst.lookup, fresh]
-    | cons parameter rest =>
-      cases rest with
-      | cons next tail => simp [collectionRowCases, typingDeclarationTerm, typeTerm, encodeList,
+  cases mode : row.collectionRepresentation with
+  | wrapped =>
+    simp [collectionRowCases, typingDeclarationTerm, mode, CettaWireAtom.encode,
+      CettaWireAtom.encodeMany, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
+      SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, fresh]
+  | bare =>
+    have bareShape : row.bareParams = row.params := by
+      simp [GrammarRule.bareParams, mode]
+    rw [bareShape] at unsupported
+    cases row with
+    | mk label category parameters syntaxPattern evalPolicy algebra representation =>
+      change representation = .bare at mode
+      cases expected <;> cases parameters with
+      | nil => simp [collectionRowCases, typingDeclarationTerm, typeTerm, encodeList,
           InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
-          matchAtom, Subst.lookup, fresh]
-      | nil =>
-        cases parameter with
-        | simple name type =>
-          cases type <;>
-            first
-            | (exfalso; apply unsupported; exact ⟨_, _, _, _, rfl, rfl⟩)
-            | simp [collectionRowCases, typingDeclarationTerm, parameterTerm, typeTerm, encodeList,
-                InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
-                SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
-                matchAtom, Subst.lookup, fresh]
-        | abstractionNamed binder name type => simp [collectionRowCases, typingDeclarationTerm, parameterTerm, typeTerm, encodeList,
+          matchAtom, Subst.lookup, fresh, mode]
+      | cons parameter rest =>
+        cases rest with
+        | cons next tail => simp [collectionRowCases, typingDeclarationTerm, typeTerm, encodeList,
             InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
             SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
-            matchAtom, Subst.lookup, fresh]
-        | multiAbstractionNamed binders name type => simp [collectionRowCases, typingDeclarationTerm, parameterTerm, typeTerm, encodeList,
-            InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
-            SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
-            matchAtom, Subst.lookup, fresh]
-
+            matchAtom, Subst.lookup, fresh, mode]
+        | nil =>
+          cases parameter with
+          | simple name type =>
+            cases type <;>
+              first
+              | (exfalso; apply unsupported; exact ⟨_, _, _, _, rfl, rfl⟩)
+              | simp [collectionRowCases, typingDeclarationTerm, parameterTerm, typeTerm, encodeList,
+                  InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+                  SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
+                  matchAtom, Subst.lookup, fresh, mode]
+          | abstractionNamed binder name type => simp [collectionRowCases, typingDeclarationTerm, parameterTerm, typeTerm, encodeList,
+              InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+              SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
+              matchAtom, Subst.lookup, fresh, mode]
+          | multiAbstractionNamed binders name type => simp [collectionRowCases, typingDeclarationTerm, parameterTerm, typeTerm, encodeList,
+              InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+              SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
+              matchAtom, Subst.lookup, fresh, mode]
 private theorem collection_row_returns_of (state : State) (language : LanguageDef)
     (free : List (String × TypeExpr)) (permissions : OperationalPermissions) (bound : List TypeExpr)
     (expected : TypeExpr) (kind : CollType) (elements : List Pattern) (row : GrammarRule) (declaration : Nat)
@@ -510,15 +519,16 @@ private theorem collection_row_returns_of (state : State) (language : LanguageDe
     simpa [caller, values, rowValues, environment, Helper.names, applySubst, Subst.lookup] using
       PureData.variables_return program caller state ["row", "expected"]
   by_cases supported : ∃ name actual type sort,
-      row.params = [.simple name (.collection actual type)] ∧ expected = .base sort
+      row.bareParams = [.simple name (.collection actual type)] ∧ expected = .base sort
   · obtain ⟨name, actual, type, sort, shape, rfl⟩ := supported
+    obtain ⟨mode, shape⟩ := (GrammarRule.bareParams_cons_iff _ _ _).mp shape
     let selected := ("sort", encoded (.string sort)) :: ("type", encoded (typeTerm type)) ::
       ("actual", encoded (InferenceCettaWire.encodeCollectionType actual)) :: ("name", encoded (.string name)) ::
       ("category", encoded (.string row.category)) :: ("label", encoded (.string row.label)) :: caller
     apply case_returns program caller selected state state state (.expression [v "row", v "expected"])
       (.expression [encoded (typingDeclarationTerm row), encoded (typeTerm (.base sort))])
       collectionRowCategory _ _ collectionRowCases (read_cases_encoded _) readValues
-    · simp [collectionRowCases, typingDeclarationTerm, shape, parameterTerm, typeTerm, encodeList,
+    · simp [collectionRowCases, typingDeclarationTerm, mode, shape, parameterTerm, typeTerm, encodeList,
         InferenceCettaWire.encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
         SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
         matchAtom, selected, caller, values, rowValues, environment, Helper.names, Subst.lookup]
@@ -546,11 +556,11 @@ private theorem collection_row_returns_of (state : State) (language : LanguageDe
                 simp [selected, caller, values, rowValues, environment, Helper.names, applySubst, Subst.lookup]
               · cases checked : checkElementsHaveType language (FreeTypeContext.ofList free) bound elements type with
                 | false =>
-                    simpa [collectionRowSites, bareCollectionElementType?, shape, categorySame, kindSame, checked,
+                    simpa [collectionRowSites, bareCollectionElementType?, GrammarRule.bareParams, mode, shape, categorySame, kindSame, checked,
                       sitesValue, encodeList, CettaWireAtom.encode] using symbol_returns program selected state "LNil"
                 | true =>
                     simp only [ite_true]
-                    simp only [collectionRowSites, bareCollectionElementType?, shape, categorySame, kindSame,
+                    simp only [collectionRowSites, bareCollectionElementType?, GrammarRule.bareParams, mode, shape, categorySame, kindSame,
                       and_self, ite_true, checked]
                     let frame := encoded (typingFrameTerm (.authoredCollection declaration))
                     let final := ("frame", frame) :: selected
@@ -571,9 +581,9 @@ private theorem collection_row_returns_of (state : State) (language : LanguageDe
                           (.authoredCollection declaration) elements 0 (children type))
                       simp [final, frame, selected, caller, values, rowValues, collectionChildrenValues,
                         environment, Helper.names, applySubst, Subst.lookup]
-            · simpa [kindSame, collectionRowSites, bareCollectionElementType?, shape,
+            · simpa [kindSame, collectionRowSites, bareCollectionElementType?, GrammarRule.bareParams, mode, shape,
                 sitesValue, encodeList, CettaWireAtom.encode] using symbol_returns program selected state "LNil"
-        · simpa [categorySame, collectionRowSites, bareCollectionElementType?, shape,
+        · simpa [categorySame, collectionRowSites, bareCollectionElementType?, GrammarRule.bareParams, mode, shape,
             sitesValue, encodeList, CettaWireAtom.encode] using symbol_returns program selected state "LNil"
   · let selected := ("ordinary", .expression [encoded (typingDeclarationTerm row), encoded (typeTerm expected)]) :: caller
     apply case_returns program caller selected state state state (.expression [v "row", v "expected"])
@@ -871,24 +881,28 @@ private def applicationRowParameterCases : SpaceSemantics.Cases :=
    (v "ordinary", applicationArgumentsBody)]
 private def applicationRowParameters : Atom := a "case"
   [v "parameters", .expression (applicationRowParameterCases.map fun row => .expression [row.1, row.2])]
-private def applicationRowResult : Atom := a "let"
+private def applicationRowResult (mode : CollectionRepresentation) : Atom := a "let"
   [v "result", a "TBase" [v "category"],
-    a "if" [a "==" [v "expected", v "result"], applicationRowParameters, .symbol "LNil"]]
-private def applicationRowBody : Atom := a "if"
-  [a "==" [v "label", v "constructor"], applicationRowResult, .symbol "LNil"]
+    a "if" [a "==" [v "expected", v "result"],
+      (match mode with | .bare => applicationRowParameters | .wrapped => applicationArgumentsBody), .symbol "LNil"]]
+private def applicationRowBody (mode : CollectionRepresentation) : Atom := a "if"
+  [a "==" [v "label", v "constructor"], applicationRowResult mode, .symbol "LNil"]
 private def applicationRowCases : SpaceSemantics.Cases :=
-  [(a "GrammarTypingV1" [v "label", v "category", v "parameters"], applicationRowBody)]
+  [(a "GrammarTypingV1" [v "label", v "category", v "parameters"], applicationRowBody .bare),
+   (a "GrammarTypingWrappedV1" [v "label", v "category", v "parameters"], applicationRowBody .wrapped)]
 private theorem application_row_shape : (equation .applicationRow).body =
     a "case" [v "row", .expression (applicationRowCases.map fun row => .expression [row.1, row.2])] := by
   decide +kernel
 
 private theorem application_parameters_fallback (caller : Subst) (row : GrammarRule)
+    (mode : row.collectionRepresentation = .bare)
     (fresh : Subst.lookup caller "ordinary" = none) (notBare : usesBareCollection? row = false) :
     SpaceSemantics.selectCase caller (encoded (encodeList parameterTerm row.params)) applicationRowParameterCases =
       some (("ordinary", encoded (encodeList parameterTerm row.params)) :: caller, applicationArgumentsBody) := by
   simp only [Subst.lookup] at fresh
   cases row with
-  | mk label category parameters syntaxPattern evalPolicy =>
+  | mk label category parameters syntaxPattern evalPolicy algebra representation =>
+    change representation = .bare at mode
     cases parameters with
     | nil => simp [applicationRowParameterCases, encodeList, CettaWireAtom.encode,
         SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom, Subst.lookup, fresh]
@@ -900,7 +914,7 @@ private theorem application_parameters_fallback (caller : Subst) (row : GrammarR
         cases parameter with
         | simple name type =>
           cases type with
-          | collection kind element => simp [usesBareCollection?] at notBare
+          | collection kind element => simp [usesBareCollection?, GrammarRule.bareParams, mode] at notBare
           | _ => simp [applicationRowParameterCases, parameterTerm, typeTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
               SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, fresh]
         | abstractionNamed binder name type => simp [applicationRowParameterCases, parameterTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
@@ -928,10 +942,10 @@ private theorem application_row_returns_of (state : State) (language : LanguageD
       Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil])
   rw [application_row_shape]
   apply case_returns program caller selected state state state (v "row") (encoded (typingDeclarationTerm row))
-    applicationRowBody _ _ applicationRowCases (read_cases_encoded _)
+    (applicationRowBody row.collectionRepresentation) _ _ applicationRowCases (read_cases_encoded _)
   · simpa [caller, values, rowValues, environment, Helper.names, applySubst, Subst.lookup] using
       variable_returns program caller state "row"
-  · simp [applicationRowCases, typingDeclarationTerm, InferenceCettaWire.encodeList,
+  · cases mode : row.collectionRepresentation <;> simp [mode, applicationRowCases, typingDeclarationTerm, InferenceCettaWire.encodeList,
       CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase,
       SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom,
       selected, caller, values, rowValues, environment, Helper.names, Subst.lookup]
@@ -962,45 +976,70 @@ private theorem application_row_returns_of (state : State) (language : LanguageD
               (by simp [result, applySubst, Subst.lookup])
           · by_cases typeSame : expected = .base row.category
             · simp only [typeSame, decide_true, ite_true]
-              unfold applicationRowParameters
-              by_cases bare : usesBareCollection? row = true
-              · obtain ⟨name, kind, element, shape⟩ := (usesBareCollection?_eq_true_iff row).mp bare
-                let rejected := ("element", encoded (typeTerm element)) :: ("kind", encoded (InferenceCettaWire.encodeCollectionType kind)) ::
-                  ("name", encoded (.string name)) :: result
-                apply case_returns program result rejected state state state (v "parameters") (encoded (encodeList parameterTerm row.params))
-                  (.symbol "LNil") _ _ applicationRowParameterCases (read_cases_encoded _)
-                · simpa [result, selected, applySubst, Subst.lookup] using variable_returns program result state "parameters"
-                · simp [applicationRowParameterCases, shape, parameterTerm, typeTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
-                    SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom,
-                    rejected, result, selected, caller, values, rowValues, environment, Helper.names, Subst.lookup]
-                · simpa [applicationRowSites, bare, sitesValue, encodeList, CettaWireAtom.encode] using
-                    symbol_returns program rejected state "LNil"
-              · have notBare : usesBareCollection? row = false := Bool.eq_false_iff.mpr bare
-                let ordinary := ("ordinary", encoded (encodeList parameterTerm row.params)) :: result
-                apply case_returns program result ordinary state state state (v "parameters") (encoded (encodeList parameterTerm row.params))
-                  applicationArgumentsBody _ _ applicationRowParameterCases (read_cases_encoded _)
-                · simpa [result, selected, applySubst, Subst.lookup] using variable_returns program result state "parameters"
-                · exact application_parameters_fallback result row
-                    (by simp [result, selected, caller, values, rowValues, environment, Helper.names, Subst.lookup]) notBare
-                · unfold applicationArgumentsBody
-                  apply bool_if_returns program ordinary state _
-                    (checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments row.params)
-                  · apply retained_returns (by simp [codeWithin, atomsWithin, expressionHeadWithin, retainedHead])
-                    apply PremiseOperationsExecution.DeclarationTyping.check_arguments_have_types_captured_returns
-                      ordinary state language free bound arguments row.params
-                    simp [ordinary, result, selected, caller, values, rowValues, environment, Helper.names, applySubst, Subst.lookup]
-                  · cases checked : checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments row.params with
-                    | false =>
-                        simpa [applicationRowSites, checked, sitesValue, encodeList, CettaWireAtom.encode] using
-                          symbol_returns program ordinary state "LNil"
-                    | true =>
-                        simp only [ite_true, applicationRowSites, labelSame, notBare, checked, and_self]
-                        apply helper_capture .applicationChildren ordinary state _
-                          (applicationChildrenValues language free permissions bound constructor arguments row.params declaration arguments 0)
-                          _ rfl _ (application_children_returns_of state language free permissions bound constructor arguments row.params declaration
-                            arguments 0 children)
-                        simp [ordinary, result, selected, caller, values, rowValues, applicationChildrenValues,
-                          environment, Helper.names, applySubst, Subst.lookup]
+              cases mode : row.collectionRepresentation with
+              | wrapped =>
+                have notBare : usesBareCollection? row = false := by
+                  simp [usesBareCollection?, GrammarRule.bareParams, mode]
+                unfold applicationArgumentsBody
+                apply bool_if_returns program result state _
+                  (checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments row.params)
+                · apply retained_returns (by simp [codeWithin, atomsWithin, expressionHeadWithin, retainedHead])
+                  apply PremiseOperationsExecution.DeclarationTyping.check_arguments_have_types_captured_returns
+                    result state language free bound arguments row.params
+                  simp [result, selected, caller, values, rowValues, environment, Helper.names, applySubst, Subst.lookup]
+                · cases checked : checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments row.params with
+                  | false =>
+                      simpa [applicationRowSites, GrammarRule.bareParams, mode, usesBareCollection?, checked, sitesValue, encodeList, CettaWireAtom.encode] using
+                        symbol_returns program result state "LNil"
+                  | true =>
+                      simp only [ite_true, applicationRowSites, labelSame, notBare, checked, and_self]
+                      apply helper_capture .applicationChildren result state _
+                        (applicationChildrenValues language free permissions bound constructor arguments row.params declaration arguments 0)
+                        _ rfl _ (application_children_returns_of state language free permissions bound constructor arguments row.params declaration
+                          arguments 0 children)
+                      simp [result, selected, caller, values, rowValues, applicationChildrenValues,
+                        environment, Helper.names, applySubst, Subst.lookup]
+              | bare =>
+                unfold applicationRowParameters
+                by_cases bare : usesBareCollection? row = true
+                · obtain ⟨name, kind, element, shape⟩ := (usesBareCollection?_eq_true_iff row).mp bare
+                  have shape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
+                  let rejected := ("element", encoded (typeTerm element)) :: ("kind", encoded (InferenceCettaWire.encodeCollectionType kind)) ::
+                    ("name", encoded (.string name)) :: result
+                  apply case_returns program result rejected state state state (v "parameters") (encoded (encodeList parameterTerm row.params))
+                    (.symbol "LNil") _ _ applicationRowParameterCases (read_cases_encoded _)
+                  · simpa [result, selected, applySubst, Subst.lookup] using variable_returns program result state "parameters"
+                  · simp [applicationRowParameterCases, shape, parameterTerm, typeTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+                      SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom,
+                      rejected, result, selected, caller, values, rowValues, environment, Helper.names, Subst.lookup]
+                  · simpa [applicationRowSites, bare, sitesValue, encodeList, CettaWireAtom.encode] using
+                      symbol_returns program rejected state "LNil"
+                · have notBare : usesBareCollection? row = false := Bool.eq_false_iff.mpr bare
+                  let ordinary := ("ordinary", encoded (encodeList parameterTerm row.params)) :: result
+                  apply case_returns program result ordinary state state state (v "parameters") (encoded (encodeList parameterTerm row.params))
+                    applicationArgumentsBody _ _ applicationRowParameterCases (read_cases_encoded _)
+                  · simpa [result, selected, applySubst, Subst.lookup] using variable_returns program result state "parameters"
+                  · exact application_parameters_fallback result row mode
+                      (by simp [result, selected, caller, values, rowValues, environment, Helper.names, Subst.lookup]) notBare
+                  · unfold applicationArgumentsBody
+                    apply bool_if_returns program ordinary state _
+                      (checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments row.params)
+                    · apply retained_returns (by simp [codeWithin, atomsWithin, expressionHeadWithin, retainedHead])
+                      apply PremiseOperationsExecution.DeclarationTyping.check_arguments_have_types_captured_returns
+                        ordinary state language free bound arguments row.params
+                      simp [ordinary, result, selected, caller, values, rowValues, environment, Helper.names, applySubst, Subst.lookup]
+                    · cases checked : checkArgumentsHaveTypes language (FreeTypeContext.ofList free) bound arguments row.params with
+                      | false =>
+                          simpa [applicationRowSites, checked, sitesValue, encodeList, CettaWireAtom.encode] using
+                            symbol_returns program ordinary state "LNil"
+                      | true =>
+                          simp only [ite_true, applicationRowSites, labelSame, notBare, checked, and_self]
+                          apply helper_capture .applicationChildren ordinary state _
+                            (applicationChildrenValues language free permissions bound constructor arguments row.params declaration arguments 0)
+                            _ rfl _ (application_children_returns_of state language free permissions bound constructor arguments row.params declaration
+                              arguments 0 children)
+                          simp [ordinary, result, selected, caller, values, rowValues, applicationChildrenValues,
+                            environment, Helper.names, applySubst, Subst.lookup]
             · simpa [typeSame, applicationRowSites, sitesValue, encodeList, CettaWireAtom.encode] using
                 symbol_returns program result state "LNil"
       · simpa [labelSame, applicationRowSites, sitesValue, encodeList, CettaWireAtom.encode] using

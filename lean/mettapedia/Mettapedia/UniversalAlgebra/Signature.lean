@@ -65,4 +65,16 @@ def Term.subst (substitution : Nat → Term S) : Term S → Term S
       funext i
       exact Term.subst_variables (arguments i)
 
+/-- Successive simultaneous substitutions compose pointwise. -/
+theorem Term.subst_subst (first second : Nat → Term S) :
+    ∀ term : Term S,
+      (term.subst first).subst second =
+        term.subst (fun index => (first index).subst second)
+  | .var _ => rfl
+  | .op operation arguments => by
+      simp only [Term.subst_op]
+      congr 1
+      funext position
+      exact Term.subst_subst first second (arguments position)
+
 end Mettapedia.UniversalAlgebra

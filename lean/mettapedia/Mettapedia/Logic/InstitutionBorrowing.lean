@@ -38,7 +38,11 @@ below every route (`Conservative.fewerCommitments`), and a route below the
 identity is conservative.  A composite keeps every commitment of its first leg
 (`borrowed_subset_comp`), adds exactly the pullback of the second leg's
 commitments (`addedCommitments_comp`), and adds nothing through a
-conservative second leg (`borrowed_comp_of_conservative`).  For a monotone
+conservative second leg (`borrowed_comp_of_conservative`).  A composite is
+conservative exactly when its first leg is and its second leg reflects
+theoremhood on the first leg's image (`conservative_comp_iff`): for a route
+through a framework, adequacy of the framework encoding plus conservativity of
+the framework's interpretation on that image.  For a monotone
 weakness measure of model classes, fewer commitments mean at least as much
 weakness, and a conservative route keeps the source theory's weakness
 (`weakness_le_of_fewerCommitments`, `Conservative.weakness_eq`).
@@ -175,6 +179,24 @@ theorem Conservative.comp {first : TheoryRoute theory theory'}
     (secondConservative : second.Conservative) : (first.comp second).Conservative := by
   rw [Conservative, borrowed_comp_of_conservative first secondConservative]
   exact firstConservative
+
+/-- **Conservativity of a composite**: a composite route is conservative exactly
+when its first leg is conservative and its second leg reflects theoremhood on
+the image of the first.  For a route through a framework, `K → FW(K) → C`, the
+first condition is adequacy of the framework encoding and the second is
+conservativity of the framework's interpretation on that encoding's image. -/
+theorem conservative_comp_iff (first : TheoryRoute theory theory')
+    (second : TheoryRoute theory' theory'') :
+    (first.comp second).Conservative ↔
+      first.Conservative ∧
+        ∀ sentence, second.translate (first.translate sentence) ∈ theory'' →
+          first.translate sentence ∈ theory' := by
+  constructor
+  · intro conservative
+    exact ⟨fun _ translated => conservative (second.preserves translated),
+      fun _ translated => first.preserves (conservative translated)⟩
+  · rintro ⟨firstConservative, reflects⟩ sentence translated
+    exact firstConservative (reflects sentence translated)
 
 /-- A composite whose first leg is not conservative is not conservative. -/
 theorem not_conservative_comp_of_first {first : TheoryRoute theory theory'}
@@ -803,6 +825,7 @@ end Control
 
 #print axioms TheoryRoute.addedCommitments_comp
 #print axioms TheoryRoute.borrowed_comp_of_conservative
+#print axioms TheoryRoute.conservative_comp_iff
 #print axioms TheoryRoute.Conservative.fewerCommitments
 #print axioms TheoryRoute.Conservative.weakness_eq
 #print axioms TheoryRoute.decide

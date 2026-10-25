@@ -25,9 +25,9 @@ inhabits it:
   different block-`b` statistics: the phase carried by ℂ is real information
   that no per-block probability sees.
 
-## Application to CeTTa Prime's V/value/choice channel
+## Application to a V/value/choice channel over choice branches
 
-If Prime's V channel over choice branches carries ℂ (amplitudes) with
+If a Prime candidate's V channel over choice branches carries ℂ (amplitudes) with
 branch-aggregation `+` and readout `normSq` only at observation boundaries,
 then: (1) each observer's compatible query set is a Boolean block; (2)
 incompatible observers (different readout bases, different observation
@@ -37,8 +37,8 @@ observables that no per-branch probability channel can express; (4) the
 absence of a global valuation across blocks is the same no-global-view
 discipline the anti-magic/ε-visibility results already impose — a
 complete-bag observer of amplitudes would destroy exactly the information
-that makes the ℂ carrier worth having.  Whether Prime ever selects this
-vertex is a profile decision; the mathematics of the option is now real.
+that makes the ℂ carrier worth having.  Whether any candidate adopts this
+vertex is an open design question; the mathematics of the option is now real.
 -/
 
 set_option autoImplicit false

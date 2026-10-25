@@ -898,21 +898,33 @@ theorem parameterTerm_injective : Function.Injective parameterTerm := by
   have decoded := congrArg decodeParameter? same
   simpa only [decodeParameter?_parameterTerm, Option.some.injEq] using decoded
 
-/-- The fields read by declaration-derived typing. Syntax printing, evaluation
-policy and collection algebra remain owned by the full authored declaration. -/
+/-- The native typing view retains the collection representation. The
+existing bare packet and the wrapped packet have distinct tags. -/
 def typingDeclarationTerm (declaration : GrammarRule) : CettaTerm :=
-  .application "GrammarTypingV1" [.string declaration.label,
-    .string declaration.category, encodeList parameterTerm declaration.params]
+  .application
+    (match declaration.collectionRepresentation with
+     | .bare => "GrammarTypingV1"
+     | .wrapped => "GrammarTypingWrappedV1")
+    [.string declaration.label, .string declaration.category, encodeList parameterTerm declaration.params]
 
-def decodeTypingDeclaration? : CettaTerm → Option (String × String × List TermParam)
+def decodeTypingDeclaration? : CettaTerm → Option (String × String × List TermParam × CollectionRepresentation)
   | .application "GrammarTypingV1" [.string label, .string category, parameters] => do
-      pure (label, category, ← decodeList decodeParameter? parameters)
+      pure (label, category, ← decodeList decodeParameter? parameters, .bare)
+  | .application "GrammarTypingWrappedV1" [.string label, .string category, parameters] => do
+      pure (label, category, ← decodeList decodeParameter? parameters, .wrapped)
   | _ => none
 
 @[simp] theorem decodeTypingDeclaration?_typingDeclarationTerm (declaration : GrammarRule) :
     decodeTypingDeclaration? (typingDeclarationTerm declaration) =
-      some (declaration.label, declaration.category, declaration.params) := by
-  simp [typingDeclarationTerm, decodeTypingDeclaration?, decodeList_encodeList]
+      some (declaration.label, declaration.category, declaration.params, declaration.collectionRepresentation) := by
+  cases mode : declaration.collectionRepresentation <;>
+    simp [typingDeclarationTerm, decodeTypingDeclaration?, decodeList_encodeList, mode]
+
+/-- A change in representation cannot disappear in the native typing view. -/
+theorem typing_representation_distinct (declaration : GrammarRule) :
+    typingDeclarationTerm { declaration with collectionRepresentation := .bare } ≠
+      typingDeclarationTerm { declaration with collectionRepresentation := .wrapped } := by
+  simp [typingDeclarationTerm]
 
 #print axioms decodeTypingDeclaration?_typingDeclarationTerm
 

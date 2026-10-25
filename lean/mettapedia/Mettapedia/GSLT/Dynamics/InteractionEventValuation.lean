@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Core.InteractionComposition
+import Mettapedia.GSLT.Causality.OccurrenceHistory
 import Mettapedia.GSLT.Dynamics.IndexedEventValuation
 import Mathlib.Algebra.Ring.Nat
 
@@ -28,6 +29,18 @@ variable {theory : GSLT}
 abbrev Occurrence : Type _ :=
   Σ source, presentation.Enabled source
 
+/-- Transport a packaged occurrence using the same state, site and evidence
+maps as its containing interaction path. -/
+def mapOccurrence {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (evidence : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last)) :
+    Occurrence presentation → Occurrence target
+  | ⟨first, event⟩ =>
+      ⟨states first, ⟨sites event.site, states event.target, evidence event.evidence⟩⟩
+
 namespace EventPath
 
 /-- The chronological occurrence history retained by a path. -/
@@ -38,6 +51,25 @@ def events : {source target : theory.Term} →
   | source, _, .cons (site := site) event rest =>
       ⟨source, { site := site, target := _, evidence := event }⟩ ::
         events rest
+
+/-- Mapping a path maps each occurrence exactly once and in the same order. -/
+@[simp] theorem events_map {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (evidence : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last))
+    {first last : theory.Term}
+    (path : Core.InteractionComposition.EventPath presentation first last) :
+    events target
+        (Core.InteractionComposition.EventPath.map presentation target states sites evidence path) =
+      (events presentation path).map
+        (mapOccurrence presentation target states sites evidence) := by
+  induction path with
+  | nil => rfl
+  | cons event rest ih =>
+      simp only [Core.InteractionComposition.EventPath.map, events,
+        List.map_cons, mapOccurrence, ih]
 
 /-- Path composition is chronological event-list concatenation. -/
 @[simp] theorem events_append {source middle target : theory.Term}
@@ -80,6 +112,24 @@ def grade
       presentation source target) :
     Option valuation.Grade :=
   valuation.historyGrade (events presentation path)
+
+/-- Occurrence-path transport and valuation pullback form one commuting
+square. The chosen grade algebra is preserved, including undefined grades. -/
+theorem grade_map {targetTheory : GSLT}
+    (target : InteractionPresentation targetTheory)
+    (states : theory.Term → targetTheory.Term)
+    (sites : presentation.Site → target.Site)
+    (evidence : ∀ {site first last}, presentation.Event site first last →
+      target.Event (sites site) (states first) (states last))
+    (valuation : Valuation (Occurrence target))
+    {first last : theory.Term}
+    (path : Core.InteractionComposition.EventPath presentation first last) :
+    grade target valuation
+        (Core.InteractionComposition.EventPath.map presentation target states sites evidence path) =
+      grade presentation
+        (valuation.pullback (mapOccurrence presentation target states sites evidence)) path := by
+  unfold grade
+  rw [events_map, Valuation.pullback_historyGrade]
 
 /-- Path valuation composes in the same chronological order as path
 composition. -/
@@ -137,3 +187,38 @@ abbrev additiveEventCost {Cost : Type uGrade} [AddMonoid Cost]
   additive fun occurrence => cost.cost occurrence.2.evidence
 
 end Mettapedia.GSLT.Dynamics.InteractionEventValuation
+
+namespace Mettapedia.GSLT.Causality.OccurrenceHistory.OccurrenceValuation
+
+open Mettapedia.GSLT
+open Mettapedia.GSLT.Core.InteractionEvent
+open Mettapedia.GSLT.Dynamics.IndexedEventValuation
+open Mettapedia.GSLT.Dynamics.InteractionEventValuation
+
+universe uSite uEvent uGrade
+
+variable {theory : GSLT}
+  {presentation : InteractionPresentation.{uSite, uEvent} theory}
+  {Grade : Type uGrade} [AddMonoid Grade]
+
+/-- A total additive occurrence valuation is the total part of the indexed
+partial valuation interface. No event or grade is identified by this map. -/
+abbrev toIndexedValuation (valuation : OccurrenceValuation presentation Grade) :
+    Valuation (Dynamics.InteractionEventValuation.Occurrence presentation) :=
+  additive fun occurrence => valuation.grade ⟨occurrence.2.site, occurrence.2.evidence⟩
+
+/-- The categorical and indexed valuation interfaces compute the same grade
+on the two equivalent representations of a complete occurrence path. -/
+theorem grade_toEventPath (valuation : OccurrenceValuation presentation Grade)
+    {source target : theory.Term} (path : OccurrencePath presentation source target) :
+    EventPath.grade presentation valuation.toIndexedValuation path.toEventPath =
+      some (valuation.onPath path) := by
+  induction path with
+  | refl => rfl
+  | cons occurrence rest ih =>
+      simp only [OccurrencePath.toEventPath, EventPath.grade, EventPath.events,
+        Valuation.historyGrade_cons] at ih ⊢
+      rw [ih]
+      rfl
+
+end Mettapedia.GSLT.Causality.OccurrenceHistory.OccurrenceValuation

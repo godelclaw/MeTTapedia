@@ -163,9 +163,11 @@ enriched metagraphs, and
 distinction graphs; and transport of connectedness, bipartiteness, acyclicity,
 degree, and Hamiltonicity.  Ore's and Dirac's theorems are proved over
 Mathlib's graph semantics and then transported through every representation
-conversion.  A work-in-progress appendix marks the later arrows: detailed
+conversion.  Raw native walk terms are characterized by unique dependent
+Mathlib walks, preserving exact length and repeated-edge evidence.
+A work-in-progress appendix marks the later arrows: detailed
 matrix-to-row and row-to-CSR machines, walk cancellation and incremental
-trail/path admission, the raw-pattern no-junk theorem, an exact executable
+trail/path admission, an exact executable
 syntax and elaborator, certified SAT/DQBF refinement, and a CeTTa runtime
 realization.
 The result is both a graph library and a worked
@@ -528,7 +530,7 @@ The detailed state machine also has an authored source in the shared
 \code{LanguageDef} format.  It declares five sorts and nine sorted
 constructors:
 \[
-\begin{array}{rcl@{\qquad}rcl}
+\begin{array}{rcl@{\quad}rcl}
 \mathsf{VertexZero}&:&\mathsf{Vertex} &
 \mathsf{VertexSucc}&:&\mathsf{Vertex}\to\mathsf{Vertex}\\
 \mathsf{EdgeValue}&:&\mathsf{Vertex}^2\to\mathsf{Edge} &
@@ -748,18 +750,24 @@ argument checking consumes exactly one argument per authored parameter; a
 checked \code{WalkValue} exposes a checked \code{WalkNode}; and every checked
 walk node has outer form exactly \code{WalkNil} or \code{WalkCons}.  These
 facts are derived from the constructor table rather than duplicated in a
-graph-specific parser.  They isolate the remaining no-junk obligation to
-dynamic inversion of the guarded reversal scan.
+graph-specific parser.  Small constructor-typing lemmas serve both canonical
+walks and deliberately forged examples.
 
-The present adequacy theorem goes in the semantically important direction:
-for every \(p:\mathsf{Walk}_G(u,v)\), its canonical encoding inhabits
-\(\mathsf{NativeWalk}(G,u,v)\).  The proof combines a derivation from the
-constructor table with the retained reversal path.  Canonical encoding is
-injective, so two Mathlib proof objects cannot be collapsed by their native
-terms.  The reverse, raw-pattern no-junk theorem---that every term inhabiting
-the native type is the encoding of some Mathlib walk---remains open and is
-stated as such in Appendix~\ref{app:walk-rewriting}; it is not assumed by the
-library organization below.
+The adequacy theorem now characterizes arbitrary raw terms:
+\[
+  \mathsf{NativeWalk}(G,u,v,t)
+  \quad\Longleftrightarrow\quad
+  \exists! p:\mathsf{Walk}_G(u,v),\quad t=\mathsf{encode}(p).
+\]
+The forward reconstruction inverts the actual guarded reversal path.
+Matching exposes either the nil row, whose repeated endpoint must coincide,
+or the cons row, whose adjacency query decodes an in-range next vertex and
+certifies the edge.  With an arbitrary checked accumulator \(a\), induction
+on the remaining execution reconstructs a suffix \(p\) and identifies the
+terminal result as \(\mathsf{WalkDone}(p^{\mathsf{rev}}\mathbin{++}a)\).
+The converse combines constructor typing with the retained canonical
+reversal path; encoding injectivity supplies uniqueness.  Neither the native
+predicate nor its rewrite rules contain an added host-language walk decoder.
 
 The distinction between static and dynamic typing is load-bearing.  On the
 three-vertex graph \(0--1--2\), a manually formed
@@ -771,9 +779,13 @@ successor is licensed because \code{SourceAdjacent(2,0)} is false.  Conversely,
 an empty walk at vertex \(0\) fails the \(0\to1\) fibre before dynamics are
 considered.  Thus constructor sorting, endpoint indexing, and operational
 adjacency are three distinct judgments with distinct negative controls.
+Further controls reject a sort-correct out-of-range interior vertex, a
+sort-correct tail with inconsistent endpoints, and a malformed nil arity.
 
 For library use, a \emph{native reachability proof} pairs a Mathlib walk with
-its generated native certificate.  These canonical proof objects support
+its generated native certificate.  Exact reconstruction gives an equivalence
+between this existing proof carrier and the subtype of all accepted raw
+terms, with both round trips proved.  These proof objects support
 \[
 \begin{aligned}
   \mathsf{id}_u &: u\longrightarrow u,\\
@@ -789,7 +801,14 @@ proved by transporting Mathlib's walk laws through the injective canonical
 encoding.  They are also computational statements: composition, inversion,
 and map inhabit the exact-length path modalities with the work counts proved
 in Section~\ref{sec:walk-langdef}.  Closed walks are already the diagonal
-native fibres \(\mathsf{NativeWalk}(G,u,u)\).  Trail and path refinements will
+native fibres \(\mathsf{NativeWalk}(G,u,u)\).
+
+The equivalence transports every proof observer to accepted syntax.  Applying
+the generic observer-factorization transport law retains the distinction
+between the two-edge direct walk and a four-edge detour at the same endpoint
+fibre: exact length is preserved by native encoding and lost by endpoint-only
+erasure.  Reversal is involutive, but a walk followed by its reverse retains
+its edges; it is not identified with the empty walk.  Trail and path refinements will
 be subtypes only after their own incremental admission machines exist.
 
 \section{What exactly is ``the semantics''?}
@@ -1013,7 +1032,7 @@ implementations to compete while preserving the same semantic square.
 \section{The ordinary matrix bridge}
 \label{sec:matrix}
 
-The graph adjacency-matrix carrier is connected to the standard Mathlib matrix
+The graph adjacency-matrix carrier is connected to Mathlib's matrix
 type \(\mathsf{Matrix}(\Fin n)(\Fin n)\,\mathsf{Bool}\).  Its image is
 characterized by
 \[
@@ -1545,7 +1564,10 @@ are given rather than unstable line numbers.
 \centering
 \footnotesize
 \renewcommand{\arraystretch}{1.13}
-\begin{tabularx}{\textwidth}{@{}p{.34\textwidth}X@{}}
+\renewcommand{\code}[1]{\nolinkurl{#1}}
+\def\UrlBreaks{\do\.}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.34\textwidth}
+  >{\raggedright\arraybackslash}X@{}}
 \toprule
 Module family & Principal checked content \\
 \midrule
@@ -1579,9 +1601,13 @@ and exact one-layer execution for congruence-free LanguageDefs.\\
 \code{GraphTheory.Walk.NativeTypeTheory},
 \code{GraphTheory.Walk.ProofTheory},
 \code{GraphTheory.Walk.NativeTypeExamples} & Generated static/dynamic native
-walk judgment, canonical Mathlib inhabitation, injective encoding, exact-work
-behavioral types, reachability category/groupoid operations, functorial map,
-and endpoint/non-edge native-type controls.\\
+walk judgment, unique reconstruction of arbitrary accepted terms, equivalence
+with dependent walk proofs, exact-work behavioral types, walk-category
+operations, involutive reversal, functorial map, and endpoint, non-edge,
+out-of-range and malformed-arity controls.\\
+\code{GraphTheory.Walk.ObserverLicences} & Transport of every proof observer
+to accepted syntax; endpoint erasure retains endpoint observations and loses
+exact length, witnessed by the direct walk and a repeated-edge detour.\\
 \code{GSLT.Core.SemanticInvariant}, \code{SemanticTransport} & Invariants,
 semantic fibres, equivalence with discrete realizations, denotation squares,
 composition and path commutation.\\
@@ -1708,14 +1734,11 @@ with append, and correspondence with the intended quotient of Mathlib walks.
 It must also distinguish cancellation of immediate backtracking from the
 stronger and generally false claim that arbitrary cycles disappear.
 
-A separate exactness obligation remains for the present native type.  The
-solid development proves that every Mathlib walk has an injective canonical
-native encoding and supplies discriminating negative cases.  Full no-junk
-requires inversion of arbitrary generated reversal paths to reconstruct a
-dependent Mathlib walk from every accepted raw pattern.  That theorem must be
-proved from the constructor checker, the guarded scan rows, and relation-query
-exactness; it may not be obtained by adding a hidden host-language decoder to
-the definition of \code{NativeWalk}.
+The present native type's raw-pattern exactness obligation is discharged in
+Section~\ref{sec:walk-ntt}: every accepted term encodes one unique dependent
+Mathlib walk.  Its reconstruction theorem uses the existing guarded scan
+rows and relation-query exactness.  It does not introduce cancellation or
+identify distinct walks with the same endpoints.
 
 Two further extensions should remain separate.  An incremental trail/path
 admission machine can carry visited edge or vertex sets and reject the first
@@ -1792,8 +1815,7 @@ The remaining research programme is:
 \begin{enumerate}[label=\arabic*.,leftmargin=2.2em]
   \item complete and compose the detailed matrix-to-rows and rows-to-CSR
         machines;
-  \item prove raw-pattern no-junk for \code{NativeWalk}, then add terminating
-        and confluent immediate-backtrack cancellation plus incremental
+  \item add terminating and confluent immediate-backtrack cancellation plus incremental
         trail/path admission;
   \item generalize the selected operational \code{LanguageDef} into a
         canonical graph-payload codec and endpoint-safe typed plan compiler;

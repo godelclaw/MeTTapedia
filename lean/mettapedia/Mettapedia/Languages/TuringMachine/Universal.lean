@@ -826,7 +826,7 @@ private theorem not_bare {rule : GrammarRule}
       rule.params ≠ [.simple name (.collection kind element)]) :
     ¬ UsesBareCollection rule := by
   rintro ⟨name, kind, element, same⟩
-  exact shape name kind element same
+  exact shape name kind element ((GrammarRule.bareParams_cons_iff _ _ _).mp same).2
 
 theorem universal_hasType_stateTerm (index : Nat) :
     HasType universalTheory free bound (stateTerm index) (.base "State") :=

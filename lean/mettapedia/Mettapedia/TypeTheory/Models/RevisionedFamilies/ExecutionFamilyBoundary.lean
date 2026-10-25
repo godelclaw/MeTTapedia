@@ -42,7 +42,7 @@ theorem observableReceipt_subsingleton (capability : WMCapability R)
   cases second
   rfl
 
-/-- Forget typed constructor-position traces to Prime's observable
+/-- Forget typed constructor-position traces to the observable
 dependent receipt, keeping the actual checked answer. -/
 def traceToObservableReceipt (laws : R.CoreLaws)
     (capability : WMCapability R) (source : TermRequest) (answer : V) :

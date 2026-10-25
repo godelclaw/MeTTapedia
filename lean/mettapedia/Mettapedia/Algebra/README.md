@@ -43,7 +43,8 @@ Three threads run through the directory:
 | `OrderedSemigroups.lean` | re-export of the external `ordered_semigroups` Lake library (below); anomalous pairs, the no-anomalous-pair ⇒ commutative/Archimedean lemmas, and the Hölder embedding into the reals |
 | `QuantaleWeakness.lean` | the quantale "weakness" measure `w(H)` (Bennett's counting weakness, its probabilistic form, and the general quantale `⊕`/`⊗` form) over `ℝ≥0∞` |
 | `ReferenceClassQuality.lean` | reference-class quality `Q(R→T) = P(R\|T)`, structural weakness `1 − Q`, and weakness composition via probabilistic OR `w₁ ⊕ w₂ = 1 − (1−w₁)(1−w₂)` |
-| `Hyperstructure.lean` | hyperoperations / hypermagmas / hypersemigroups built on Mathlib's `Set` (powerset) monad; hyperassociativity = Set-monad bind associativity |
+| `Hyperstructure.lean` | multivalued operations, exact maps, and finite occurrence tables; binary associativity iff associativity of set extension, with independent associativity and totality checkers |
+| `HyperstructureQuantale.lean` | operation-indexed powerset quantales, direct-image preservation of multiplication and arbitrary joins, and the universal-output interpretation of residuation |
 | `SplitComplex.lean` | the split-complex numbers (`j^2 = +1`): zero divisors, idempotents `(1±j)/2`, the `a²−b²` norm, ring iso to `ℝ × ℝ` |
 | `TwoDimClassification.lean` | the classification of 2-dimensional unital real algebras into complex / dual / split-complex by the sign of the "completed-square" parameter `μ` |
 | `FootprintQuantale.lean` | axiom/rule footprints as the quantale `((Set α)ᵒᵈ, ∪, ∅, ⊇)` — reverse inclusion, so a smaller footprint is a *stronger* claim and the unit `∅` is `⊤`; includes why plain inclusion fails to be a quantale |
@@ -66,9 +67,24 @@ path depends on it.
 
 ## Formalization status
 
-All 13 `Mettapedia/Algebra` source files are `sorry`-free. No `axiom` declarations
-appear in these files — this is a source-level grep, *not* a per-theorem
-`#print axioms` audit (a theorem can still inherit a Mathlib axiom transitively).
+Qualification is scoped to the modules actually checked; the component table
+is an overview rather than a complete file inventory. Source-level placeholder
+scans and transitive kernel axiom checks are separate checks.
+
+The multivalued-algebra development keeps three laws distinct: monadic
+sequencing, associativity of a particular binary operation, and nonempty
+outputs. Singleton-valued NAND separates the first two; the empty operation
+separates associativity from totality. Exact surjections transport associativity
+and exact injections reflect it, with counterexamples to reversing these
+conditions.
+
+The [finite table module](../GSLT/LanguageDef/HyperoperationModule.lean) compiles
+every row occurrence into a ground rewrite. The generic executor and the
+independent table scan agree as ordered lists; passing to support forgets
+multiplicity explicitly. Canonical module text and UTF-8 decoding recover the
+complete declaration before execution, including the finite carrier size;
+that size cannot be inferred from a partial table. These are Lean execution and codec
+theorems, not a native-runtime correspondence claim.
 
 The negative results in `WorkSpanInformationLoss`, `ResourceValuations`, and
 `OccurrenceIdentity` are stated as genuine non-existence or separation claims with

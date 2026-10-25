@@ -1,3 +1,4 @@
+import Mettapedia.Logic.HOL.SetOperationSignature
 import Mathlib.SetTheory.ZFC.Basic
 import Mettapedia.Logic.HOL.Embedding.HenkinPredicateFamilyCoherence
 
@@ -28,18 +29,6 @@ open HenkinDependentFamilyInterpretation HenkinPredicateFamilyInterpretation
 
 universe u
 
-abbrev set : Ty Unit := .base ()
-abbrev predicate : Ty Unit := set ⇒ .prop
-abbrev mapping : Ty Unit := set ⇒ set
-
-/-- Typed mathematical constants; logical connectives remain HOL syntax. -/
-inductive Symbol : Ty Unit → Type where
-  | member : Symbol (set ⇒ set ⇒ .prop)
-  | empty : Symbol set
-  | union : Symbol mapping
-  | power : Symbol mapping
-  | separate : Symbol (set ⇒ predicate ⇒ set)
-  | replace : Symbol (set ⇒ mapping ⇒ set)
 
 abbrev Expr (Γ : Ctx Unit) (A : Ty Unit) := Term Symbol Γ A
 
@@ -140,6 +129,21 @@ def setInduction : ClosedFormula Symbol :=
         (.app (.var (.vs (.vs .vz))) (.var .vz))))
       (.app (.var (.vs .vz)) (.var .vz))))
     (.all (.app (.var (.vs .vz)) (.var .vz))))
+
+set_option backward.isDefEq.respectTransparency false in
+/-- A retained proof from the actual powerset axiom, with no semantic
+oracle or additional set-theory axiom. -/
+def emptyInPowerEmptyProof : ProofSyntax Symbol [powerLaw]
+    (member (.const .empty) (.app (.const .power) (.const .empty))) := by
+  have axiomProof : ProofSyntax Symbol [powerLaw] powerLaw := .hyp 0
+  have specialized := ProofSyntax.allE (Term.const Symbol.empty)
+    (ProofSyntax.allE (Term.const Symbol.empty) axiomProof)
+  exact .impE (.andER specialized) (.allI (.impI (.hyp 0)))
+
+/-- The empty-set axiom rules out membership of the empty set in itself. -/
+def emptyNotSelfProof : ProofSyntax Symbol [emptyLaw]
+    (.not (member (.const .empty) (.const .empty))) :=
+  ProofSyntax.allE (Term.const Symbol.empty) (.hyp 0 : ProofSyntax Symbol [emptyLaw] emptyLaw)
 
 theorem extensionality_valid : model.{u}.models extensionality := by
   intro a _ b _ h

@@ -1152,7 +1152,7 @@ abbrev receiptRules : Rules Tower.Head :=
 abbrev ReceiptHasType {n : Nat} :=
   @Presentation.HasType Tower.Head receiptRules n
 
-def includeRunTyping {context : Tower.Ctx n}
+theorem includeRunTyping {context : Tower.Ctx n}
     {term type : Tower.Tm n}
     (typing : RunHasType context term type) :
     ReceiptHasType context term type :=
@@ -2027,7 +2027,7 @@ theorem rawReceiptSignature_fresh {name : DeclName}
       Signature.insert, Signature.empty, isReceipt, isMake,
       isEliminate] at lookup
 
-def rawReceiptSignature_formed : rawReceiptSignature.Formed runRules where
+theorem rawReceiptSignature_formed : rawReceiptSignature.Formed runRules where
   fresh := rawReceiptSignature_fresh
   types := rawReceiptSignature_types_formed
   values := by
@@ -2041,7 +2041,7 @@ def rawReceiptSignature_formed : rawReceiptSignature.Formed runRules where
 
 /-! ### Strict positivity -/
 
-def receiptFamilyApplication
+theorem receiptFamilyApplication
     (signature key budget judgment : Tower.Tm n)
     (signatureFree : FreeOf receiptName signature)
     (keyFree : FreeOf receiptName key)
@@ -2060,7 +2060,7 @@ def receiptFamilyApplication
 
 /-- Receipt signatures, like their Outcome and Run components, are
 structural data and contain no occurrence of the receipt family constant. -/
-def receiptSignatureTypeFree : FreeOf receiptName receiptSignatureType := by
+theorem receiptSignatureTypeFree : FreeOf receiptName receiptSignatureType := by
   unfold receiptSignatureType receiptSignatureBody sortTm
   exact .sigma (runSignatureTypeFreeOf receiptName)
     (.sigma (.head _)

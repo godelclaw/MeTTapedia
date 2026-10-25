@@ -76,7 +76,7 @@ is bounded by K(PLN) + K(μ). This section formalizes what we can prove.
 **What IS proven:**
 - Both μ and PLN are dominated by ξ (they're in the mixture)
 - ξ has bounded regret relative to μ
-- For 0-1 loss, `average_regret_vanishes` shows ξ's average error → 0
+- For 0-1 loss, `ErrorBounds.average_error_regret_vanishes` shows ξ's average excess error → 0
 -/
 
 /-- **The proven chain components.**

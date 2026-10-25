@@ -1772,7 +1772,7 @@ def tags : Fin 14 → String :=
   !["a", "h", "z", "l", "m", "s", "c", "b", "v", "n", "o", "0", "1", "e"]
 
 abbrev words := Dictionary.words Codec.string tags
-abbrev machine := Mettapedia.Computability.FiniteWordClassifier.machine words
+@[reducible, macro_inline] def machine := Mettapedia.Computability.FiniteWordClassifier.machine words
 abbrev result := Dictionary.result Codec.string tags
 abbrev output := Dictionary.output Codec.string tags
 

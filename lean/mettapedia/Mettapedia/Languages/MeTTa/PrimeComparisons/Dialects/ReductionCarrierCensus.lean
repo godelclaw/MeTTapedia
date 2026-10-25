@@ -2,7 +2,7 @@ import Mettapedia.Languages.MeTTa.HE.HELanguageDef
 import Mettapedia.Languages.MeTTa.OSLFCore.FullLanguageDef
 import Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Pattern.Core
 import Mettapedia.Languages.MeTTa.MeTTaZero
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
+import Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflective.LanguageDef
 import Mettapedia.OSLF.Framework.ConstructorCategory
 
 /-!
@@ -15,7 +15,7 @@ crossing has that name as its domain.  Those are facts about authored
 LanguageDef data.  They are **not** theorems about the running MeTTa
 engines, and they must not be read as any of the following:
 
-* that MeTTa atoms do not evaluate — real HE, PeTTa, and Prime evaluate
+* that MeTTa atoms do not evaluate — real HE, PeTTa, and the Prime C draft evaluate
   atoms; the presentations below model evaluation by rewriting explicit
   request/state terms, which is a modelling choice, not a semantic claim;
 * that a presentation's `State`/`Process`/`Control` sort is the surface

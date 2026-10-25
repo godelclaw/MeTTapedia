@@ -5,7 +5,7 @@ import Mettapedia.GSLT.LanguageDef.GradedLanguageDef
 import Mettapedia.Algebra.TropicalAffineSummary
 import Mettapedia.Algorithms.CertifiedRealCircuit
 import Mettapedia.Algorithms.OrdinalPriority
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeOrdinalAdvice
+import Mettapedia.Languages.MeTTa.PrimeCandidates.Native.NativeOrdinalAdvice
 import Mettapedia.GSLT.Core.WeightOrderedSelection
 import Mettapedia.Algebra.FiniteCoordinateBuffer
 import Mettapedia.GSLT.Dynamics.WeightedResumptionControls

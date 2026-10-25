@@ -75,11 +75,13 @@ theorem Deriv.mono {first second : Profile} (hprofiles : first ⊑ second)
   | app _ _ ihFunction ihArgument =>
       exact .app ihFunction ihArgument
 
-/-- T1 transport for complete typing derivations, not just formations. -/
-theorem basic_deriv_embed {signature : Signature} {context : Context}
-    {term type : Term} (derivation : Deriv basic signature context term type) :
-    Deriv indexed signature context term type :=
-  derivation.mono basic_subsumed_indexed
+/-- Transport standard-LF derivations into the historical four-rule
+curriculum profile. -/
+theorem standardLF_deriv_embed {signature : Signature} {context : Context}
+    {term type : Term}
+    (derivation : Deriv standardLF signature context term type) :
+    Deriv mettaKernelKindResultPrototype signature context term type :=
+  derivation.mono standardLF_subsumed_mettaKernelKindResultPrototype
 
 /-- Explicit proof trees consumed by the executable checker. -/
 inductive Proof where
@@ -204,11 +206,13 @@ theorem exists_checkProof_iff_deriv {profile : Profile} {signature : Signature}
     exact checkProof_sound hcheck
   · exact exists_checkProof_of_deriv
 
-/-- T4 indexed-instance crown. -/
-theorem indexed_check_accept_iff_deriv {signature : Signature}
+/-- Exact checker crown specialized to the historical four-rule curriculum
+profile. -/
+theorem mettaKernelPrototype_check_accept_iff_deriv {signature : Signature}
     {context : Context} {term type : Term} :
-    (∃ proof, checkProof indexed signature context proof term type = true) ↔
-      Deriv indexed signature context term type :=
+    (∃ proof, checkProof mettaKernelKindResultPrototype signature context
+      proof term type = true) ↔
+      Deriv mettaKernelKindResultPrototype signature context term type :=
   exists_checkProof_iff_deriv
 
 /-! ## Positive and negative profile/boundary fixtures -/
@@ -216,13 +220,13 @@ theorem indexed_check_accept_iff_deriv {signature : Signature}
 def typeParameterProof : Proof :=
   .pi .kind .kind .kind .sort .sort
 
-theorem indexed_accepts_typeParameterProduct :
-    checkProof indexed [] [] typeParameterProof
+theorem mettaKernelPrototype_accepts_typeParameterProduct :
+    checkProof mettaKernelKindResultPrototype [] [] typeParameterProof
       (.pi (.srt .type) (.srt .type)) (.srt .kind) = true := by
   decide
 
-theorem basic_rejects_typeParameterProduct :
-    checkProof basic [] [] typeParameterProof
+theorem standardLF_rejects_typeParameterProduct :
+    checkProof standardLF [] [] typeParameterProof
       (.pi (.srt .type) (.srt .type)) (.srt .kind) = false := by
   decide
 
@@ -233,14 +237,16 @@ def exactTypeSignature : Signature :=
   [.const "betaTyped" betaRedexType]
 
 theorem exact_type_accepts :
-    checkProof indexed exactTypeSignature [] .con (.con "betaTyped")
+    checkProof mettaKernelKindResultPrototype exactTypeSignature [] .con
+      (.con "betaTyped")
       betaRedexType = true := by
   decide
 
 /-- Boundary fixture matching the Eq_symm diagnostic in miniature: a
 beta-equivalent but syntactically different expected type is rejected. -/
 theorem beta_equivalent_type_is_not_syntactically_accepted :
-    checkProof indexed exactTypeSignature [] .con (.con "betaTyped")
+    checkProof mettaKernelKindResultPrototype exactTypeSignature [] .con
+      (.con "betaTyped")
       (.srt .type) = false := by
   decide
 
@@ -248,7 +254,7 @@ theorem beta_equivalent_type_is_not_syntactically_accepted :
 #print axioms checkProof_sound
 #print axioms exists_checkProof_of_deriv
 #print axioms exists_checkProof_iff_deriv
-#print axioms indexed_check_accept_iff_deriv
+#print axioms mettaKernelPrototype_check_accept_iff_deriv
 #print axioms beta_equivalent_type_is_not_syntactically_accepted
 
 end Mettapedia.GSLT.LanguageDef.LFProfileChecker

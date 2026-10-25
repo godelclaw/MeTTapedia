@@ -2,8 +2,10 @@ import Mettapedia.GSLT.LanguageDef.OperationContracts
 import Mettapedia.Machines.NativeCostLedger
 import Mettapedia.Machines.Cursor.Protocol
 import Mettapedia.Machines.ReadOnlyQuery
+import Mettapedia.Machines.ReadyQueue
 import Mettapedia.Machines.ValidatedCommit
 import Mettapedia.GSLT.Contracts.IndexedAuthority
+import Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
 
 /-!
 # Operation invoices, retained budgets and cursor outcomes
@@ -77,6 +79,39 @@ theorem complete_agrees (abstract : Key → Resource) (declared : Footprint Reso
   rw [complete.2]
   exact agrees
 
+/-- An accepted validated publication whose manifest completely captures the
+actual observations has all three boundaries simultaneously: the actual reads
+conform to the declared may-footprint, the proposal carries those exact
+ordered observations, and those observations agree with the current store.
+The resulting store applies exactly the proposal's writes.
+
+This is a model composition theorem. It does not prove that a native observer
+captured every read, that native writes realize `proposal.writes`, or that an
+effect declaration by itself supplies either fact. -/
+theorem commit_of_complete_capture [DecidableEq Key] [DecidableEq Value]
+    (abstract : Key → Resource) (declared : Footprint Resource)
+    (observed : ReadOnlyQuery.Reads Key Value)
+    (proposal : ValidatedCommit.Proposal Key Value)
+    (complete : Complete abstract declared observed proposal.reads)
+    (current next : Key → Value)
+    (accepted : ValidatedCommit.commit current proposal = some next) :
+    Conforms abstract (footprint observed) declared ∧
+      proposal.reads = observed ∧
+      ReadOnlyQuery.Agrees current observed ∧
+      next = ValidatedCommit.write current proposal.writes := by
+  have manifestAgrees : ReadOnlyQuery.Agrees current proposal.reads := by
+    unfold ValidatedCommit.commit at accepted
+    split at accepted
+    · rename_i checked
+      exact (ReadOnlyQuery.checkReads_iff _ _).mp checked
+    · contradiction
+  have observedAgrees : ReadOnlyQuery.Agrees current observed := by
+    rw [← complete.2]
+    exact manifestAgrees
+  have exactWrite := ValidatedCommit.commit_of_agrees current proposal manifestAgrees
+  rw [exactWrite] at accepted
+  exact ⟨complete.1, complete.2, observedAgrees, (Option.some.inj accepted).symm⟩
+
 namespace Controls
 
 /-- The second key is selected by the first observed value. -/
@@ -109,6 +144,13 @@ def operation : Option Operation := decodeOperation declaration
 
 def placement : Option WorkerPlacementAdvice := examplePlacement declaration
 
+def writes : ValidatedCommit.Writes Nat Nat :=
+  [(2, (ReadOnlyQuery.run snapshot adaptive).answer)]
+
+def completeProposal : ValidatedCommit.Proposal Nat Nat := ⟨observed, writes⟩
+
+def missingProposal : ValidatedCommit.Proposal Nat Nat := ⟨missing, writes⟩
+
 /-- Positive: the adaptive run captures both ordered observations, conforms to
 the declared may-read and detects a change in the selected dependency. -/
 theorem complete_capture_detects_selected_change :
@@ -134,12 +176,52 @@ theorem may_read_placement_does_not_capture_a_missing_read :
       ReadOnlyQuery.run]
   · simp [Complete, missing, observed, adaptive, snapshot, ReadOnlyQuery.run]
 
+/-- Positive publication control: exact adaptive capture licenses the existing
+current-store validator and exposes the declaration, exact manifest, current
+agreement and resulting write in one theorem. -/
+theorem complete_capture_justifies_validated_publication :
+    ValidatedCommit.commit snapshot completeProposal =
+        some (ValidatedCommit.write snapshot writes) ∧
+      Conforms abstract (footprint observed) declared ∧
+      completeProposal.reads = observed ∧
+      ReadOnlyQuery.Agrees snapshot observed := by
+  have complete : Complete abstract declared observed completeProposal.reads := by
+    exact ⟨by simp [Conforms, footprint, observed, adaptive, snapshot, abstract, declared,
+      ReadOnlyQuery.run], rfl⟩
+  have accepted : ValidatedCommit.commit snapshot completeProposal =
+      some (ValidatedCommit.write snapshot writes) := by rfl
+  have joined := commit_of_complete_capture abstract declared observed completeProposal
+    complete snapshot (ValidatedCommit.write snapshot writes) accepted
+  exact ⟨accepted, joined.1, joined.2.1, joined.2.2.1⟩
+
+/-- Negative publication control: declaration and coordinator placement remain
+true, yet omitting the adaptive second read admits stale writes. The exact
+proposal refuses the same changed store. -/
+theorem declaration_without_capture_cannot_justify_publication :
+    operation.map Operation.footprint = some (some declared) ∧
+      placement = some .coordinator ∧
+      Conforms abstract (footprint observed) declared ∧
+      ¬ Complete abstract declared observed missingProposal.reads ∧
+      ValidatedCommit.commit changed missingProposal =
+        some (ValidatedCommit.write changed writes) ∧
+      (ValidatedCommit.write changed writes) 2 = 7 ∧
+      (ReadOnlyQuery.run changed adaptive).answer = 8 ∧
+      ValidatedCommit.commit changed completeProposal = none := by
+  refine ⟨by decide, by decide, ?_, ?_, rfl, rfl, rfl, rfl⟩
+  · simp [Conforms, footprint, observed, adaptive, snapshot, abstract, declared,
+      ReadOnlyQuery.run]
+  · simp [Complete, missingProposal, missing, observed, adaptive, snapshot,
+      ReadOnlyQuery.run]
+
 end Controls
 
 #print axioms run_complete
 #print axioms complete_agrees
+#print axioms commit_of_complete_capture
 #print axioms Controls.complete_capture_detects_selected_change
 #print axioms Controls.may_read_placement_does_not_capture_a_missing_read
+#print axioms Controls.complete_capture_justifies_validated_publication
+#print axioms Controls.declaration_without_capture_cannot_justify_publication
 
 end ObservedReadManifest
 
@@ -499,6 +581,506 @@ theorem prepare_twice {profile : Profile} {firstReplay secondReplay : Bool}
   obtain ⟨costOne, historyOne, callsOne, _⟩ := prepare_ok one
   obtain ⟨costTwo, historyTwo, callsTwo, _⟩ := prepare_ok two
   exact ⟨by omega, by omega, by rw [historyTwo, historyOne]⟩
+
+/-! ## Complete service-slot receipts and progress realization
+
+`ReadyQueue` already owns the whole-slot service account and its cumulative
+bound.  The bridge below keeps one chronological native receipt, tags every
+occurrence by the part of the slot that caused it, and projects that receipt
+to the existing three-part ready-queue charge.  The phase tag does not replace
+the native event identity or its order.
+
+Progress metadata contributes an admission requirement.  It does not prove
+that a handler meets a bound, yields with an exact residual, or executes behind
+an isolation boundary; those are separate realization obligations.  Effect
+declaration, current authority and ordered-output permission also remain
+separate contracts.
+-/
+
+inductive HandlerBoundary where
+  | local
+  | isolated
+deriving DecidableEq, Repr
+
+inductive ProgressAdvice where
+  | bounded (inspections : Nat)
+  | yielding
+  | isolated
+  | unresolved
+deriving DecidableEq, Repr
+
+/-- Explicit isolation is a host choice.  A local bounded declaration retains
+its positive inspection allowance; this number is not a work bound or a proof
+of termination.  `steps`/`suspends` require a resumable yielding realization.
+Unknown metadata remains unresolved. -/
+def progressAdvice (profile : Profile) : HandlerBoundary → ProgressAdvice
+  | .isolated => .isolated
+  | .local =>
+      match profile.progress, profile.bound with
+      | .single, some 1 => .bounded 1
+      | .bounded, some (bound + 1) => .bounded (bound + 1)
+      | .steps, none | .suspends, none => .yielding
+      | _, _ => .unresolved
+
+/-- The three physical boundaries at which generated placement and progress
+advice are consumed. A coordinator is still an inline service boundary; an
+isolated handler is a separate execution boundary. -/
+inductive ServiceBoundary where
+  | worker
+  | coordinator
+  | isolated
+deriving DecidableEq, Repr
+
+/-- Bounded and yielding handlers may occupy a responsive inline slot.
+Isolation and unresolved progress require another boundary. -/
+def ProgressAdvice.inline : ProgressAdvice → Bool
+  | .bounded _ | .yielding => true
+  | .isolated | .unresolved => false
+
+/-- Join effect-derived placement with progress advice at the selected native
+boundary. This is admission advice, not a proof that a C handler conforms to
+either declaration. -/
+def admitsServiceBoundary (boundary : ServiceBoundary)
+    (placement : WorkerPlacementAdvice) (progress : ProgressAdvice) : Bool :=
+  match boundary with
+  | .worker => placement == .local && progress.inline
+  | .coordinator => placement != .unresolved && progress.inline
+  | .isolated => placement != .unresolved && progress == .isolated
+
+/-- Positive bounded/yielding controls and separating coordinator, isolated
+and unresolved controls for the combined admission boundary. -/
+theorem admitsServiceBoundary_controls :
+    admitsServiceBoundary .worker .local (.bounded 1) = true ∧
+    admitsServiceBoundary .worker .local .yielding = true ∧
+    admitsServiceBoundary .worker .coordinator .yielding = false ∧
+    admitsServiceBoundary .coordinator .coordinator .yielding = true ∧
+    admitsServiceBoundary .coordinator .coordinator .isolated = false ∧
+    admitsServiceBoundary .isolated .coordinator .isolated = true ∧
+    admitsServiceBoundary .isolated .unresolved .isolated = false := by
+  decide
+
+#print axioms admitsServiceBoundary_controls
+
+/-- Phases of the exact service receipt.  Arrival processing and queue
+bookkeeping remain separate because the maintained ready-queue theorem prices
+them separately from handling the visited task. -/
+inductive SlotPhase where
+  | admission
+  | preparation
+  | execution
+  | delivery
+  | teardown
+  | arrivals
+  | bookkeeping
+deriving DecidableEq, Repr
+
+abbrev PhasedEvent := SlotPhase × Event
+abbrev SlotReceipt := List PhasedEvent
+
+/-- Erasing phase tags preserves the exact chronological native receipt. -/
+def slotInvoice (receipt : SlotReceipt) : List Event := receipt.map Prod.snd
+
+/-- Project a phase-tagged receipt to the existing ready-queue charge.  The
+first five phases are the complete handling lifecycle; arrivals and queue
+bookkeeping retain their existing independent components. -/
+def slotCharge : SlotReceipt → ReadyQueue.SlotCharge Nat
+  | [] => ⟨0, 0, 0⟩
+  | (phase, event) :: rest =>
+      let later := slotCharge rest
+      match phase with
+      | .admission | .preparation | .execution | .delivery | .teardown =>
+          ⟨event.2.units + later.handling, later.arrivals, later.bookkeeping⟩
+      | .arrivals =>
+          ⟨later.handling, event.2.units + later.arrivals, later.bookkeeping⟩
+      | .bookkeeping =>
+          ⟨later.handling, later.arrivals, event.2.units + later.bookkeeping⟩
+
+/-- Phase projection neither loses nor duplicates work. -/
+theorem slotCharge_total_eq_work (receipt : SlotReceipt) :
+    (slotCharge receipt).total = work (slotInvoice receipt) := by
+  induction receipt with
+  | nil => rfl
+  | cons head rest ih =>
+      rcases head with ⟨phase, event⟩
+      change (slotCharge rest).handling + (slotCharge rest).arrivals +
+        (slotCharge rest).bookkeeping = work (rest.map Prod.snd) at ih
+      cases phase <;>
+        simp only [slotCharge, slotInvoice, List.map_cons, work_cons,
+          ReadyQueue.SlotCharge.total] <;> omega
+
+/-! ### Ordered native poll receipts
+
+The retained-host poll account exposes exact callback counts and three work
+deltas, but those aggregates do not contain occurrence order or identity.  A
+lossless native boundary therefore needs the initial pending state, the final
+step verdict and an ordered tagged native event list.  The last admission
+verdict is derived from that list rather than stored a second time.
+
+This is the model schema the native boundary can realize.  It is not a claim
+that the current C aggregate already emits these events.
+-/
+
+namespace NativePoll
+
+inductive AdmissionVerdict where
+  | ready
+  | paused
+  | refused
+  | invalidated
+deriving DecidableEq, Repr
+
+inductive StepVerdict where
+  | returned
+  | complete
+  | paused
+  | handoff
+  | interrupted
+deriving DecidableEq, Repr
+
+/-- Tags whose counts or work deltas are exposed by one retained-host poll.
+The native event still carries its physical identity, origin, ledger kind and
+units.  A call marker may have zero units; a later native price may give it a
+nonzero event without changing the schema. -/
+inductive Tag where
+  | setup
+  | admission (verdict : AdmissionVerdict)
+  | producer
+  | sourceWork
+  | preparation
+  | consumer
+  | transport
+  | finalCurrent
+  | retirement
+deriving DecidableEq, Repr
+
+abbrev Occurrence := Tag × Event
+
+structure Receipt where
+  initialPending : Bool
+  step : StepVerdict
+  occurrences : List Occurrence
+deriving DecidableEq, Repr
+
+abbrev History := List Receipt
+
+def receiptEvents (receipt : Receipt) : List Event := receipt.occurrences.map Prod.snd
+
+def historyEvents (history : History) : List Event := history.flatMap receiptEvents
+
+theorem historyEvents_append (first second : History) :
+    historyEvents (first ++ second) = historyEvents first ++ historyEvents second := by
+  simp [historyEvents]
+
+/-- The aggregate currently available at the native poll boundary.  `none`
+means that no admission callback was observed. -/
+structure Aggregate where
+  initialPending : Bool
+  step : StepVerdict
+  lastAdmission : Option AdmissionVerdict := none
+  setupWork : Nat := 0
+  admissionCalls : Nat := 0
+  producerCalls : Nat := 0
+  consumerCalls : Nat := 0
+  finalCurrentCalls : Nat := 0
+  retirements : Nat := 0
+  sourceWork : Nat := 0
+  preparationWork : Nat := 0
+  transportWork : Nat := 0
+deriving DecidableEq, Repr
+
+def addOccurrence (aggregate : Aggregate) (occurrence : Occurrence) : Aggregate :=
+  match occurrence.1 with
+  | .setup => { aggregate with setupWork := aggregate.setupWork + occurrence.2.2.units }
+  | .admission verdict => { aggregate with
+      lastAdmission := some verdict
+      admissionCalls := aggregate.admissionCalls + 1 }
+  | .producer => { aggregate with producerCalls := aggregate.producerCalls + 1 }
+  | .sourceWork => { aggregate with
+      sourceWork := aggregate.sourceWork + occurrence.2.2.units }
+  | .preparation => { aggregate with
+      preparationWork := aggregate.preparationWork + occurrence.2.2.units }
+  | .consumer => { aggregate with consumerCalls := aggregate.consumerCalls + 1 }
+  | .transport => { aggregate with
+      transportWork := aggregate.transportWork + occurrence.2.2.units }
+  | .finalCurrent => { aggregate with
+      finalCurrentCalls := aggregate.finalCurrentCalls + 1 }
+  | .retirement => { aggregate with retirements := aggregate.retirements + 1 }
+
+def summarize (receipt : Receipt) : Aggregate :=
+  receipt.occurrences.foldl addOccurrence
+    { initialPending := receipt.initialPending, step := receipt.step }
+
+/-- The generic slot phase is a deliberate erasure of the more precise native
+poll tag. -/
+def Tag.slotPhase : Tag → SlotPhase
+  | .setup => .preparation
+  | .admission _ => .admission
+  | .producer | .sourceWork => .execution
+  | .preparation => .preparation
+  | .consumer | .transport | .finalCurrent => .delivery
+  | .retirement => .teardown
+
+def toSlotReceipt (receipt : Receipt) : SlotReceipt :=
+  receipt.occurrences.map fun occurrence => (occurrence.1.slotPhase, occurrence.2)
+
+/-- Erasing poll tags preserves the exact ordered native events. -/
+theorem slotInvoice_toSlotReceipt (receipt : Receipt) :
+    slotInvoice (toSlotReceipt receipt) = receiptEvents receipt := by
+  unfold slotInvoice toSlotReceipt receiptEvents
+  rw [List.map_map]
+  apply List.map_congr_left
+  intro occurrence _
+  rfl
+
+/-- The ordered schema is extensionally sufficient: initial pending state,
+final verdict and the tagged occurrence sequence determine the receipt. -/
+def orderedView (receipt : Receipt) : Bool × StepVerdict × List Occurrence :=
+  (receipt.initialPending, receipt.step, receipt.occurrences)
+
+theorem orderedView_injective : Function.Injective orderedView := by
+  rintro ⟨pendingA, stepA, occurrencesA⟩ ⟨pendingB, stepB, occurrencesB⟩ equal
+  simp only [orderedView, Prod.mk.injEq] at equal
+  cases equal.1
+  cases equal.2.1
+  cases equal.2.2
+  rfl
+
+#print axioms slotInvoice_toSlotReceipt
+#print axioms historyEvents_append
+#print axioms orderedView_injective
+
+end NativePoll
+
+abbrev SlotReceiptMeter := ReadyQueue.State → Bool → List Nat → SlotReceipt
+
+/-- Feed exact phase receipts to the maintained ready-queue service account. -/
+def receiptServiceMeter (meter : SlotReceiptMeter) : ReadyQueue.ServiceMeter Nat :=
+  fun state keep offered => slotCharge (meter state keep offered)
+
+@[simp] theorem receiptServiceMeter_total (meter : SlotReceiptMeter)
+    (state : ReadyQueue.State) (keep : Bool) (offered : List Nat) :
+    (receiptServiceMeter meter state keep offered).total =
+      work (slotInvoice (meter state keep offered)) :=
+  slotCharge_total_eq_work _
+
+/-- An explicit bound on every complete receipt discharges the existing
+whole-slot service admission contract.  No dispatch-count premise appears. -/
+theorem serviceCostBound_of_receipts (meter : SlotReceiptMeter) (bound slots : Nat)
+    (keep : Nat → Bool) (offered : Nat → List Nat) (state : ReadyQueue.State)
+    (bounded : ∀ n, n < slots →
+      work (slotInvoice (meter (ReadyQueue.serviceRun n keep offered state).2
+        (keep n) (offered n))) ≤ bound) :
+    ReadyQueue.ServiceCostBound (receiptServiceMeter meter) bound slots keep offered state := by
+  intro n before
+  simpa only [receiptServiceMeter_total] using bounded n before
+
+/-- The finite exact account can quote and debit a complete phase receipt in
+one operation.  Handler conformance to that quoted receipt remains a native
+obligation. -/
+def prepareSlot (profile : Profile) (replay : Bool) (receipt : SlotReceipt)
+    (account : Account) : Except Refusal Account :=
+  prepare profile replay (slotInvoice receipt) account
+
+theorem prepareSlot_ok {profile : Profile} {replay : Bool} {receipt : SlotReceipt}
+    {before after : Account} (accepted : prepareSlot profile replay receipt before = .ok after) :
+    after.remaining + (slotCharge receipt).total = before.remaining ∧
+      after.events = before.events ++ slotInvoice receipt ∧
+      after.calls = before.calls + 1 := by
+  have exact := prepare_ok accepted
+  rw [slotCharge_total_eq_work]
+  exact ⟨exact.1, exact.2.1, exact.2.2.1⟩
+
+/-- A selectable work ceiling over the separately retained receipt.
+`unlimited` performs no finite balance comparison or subtraction. -/
+inductive WorkAllowance where
+  | unlimited
+  | finite (remaining : Nat)
+deriving DecidableEq, Repr
+
+def debitAllowance : WorkAllowance → List Event → Option WorkAllowance
+  | .unlimited, _ => some .unlimited
+  | .finite remaining, events => (debit remaining events).map .finite
+
+@[simp] theorem debitAllowance_unlimited (events : List Event) :
+    debitAllowance .unlimited events = some .unlimited := rfl
+
+theorem debitAllowance_finite_some_iff (remaining after : Nat) (events : List Event) :
+    debitAllowance (.finite remaining) events = some (.finite after) ↔
+      work events ≤ remaining ∧ after + work events = remaining := by
+  simp [debitAllowance, debit_some_iff]
+
+#print axioms slotCharge_total_eq_work
+#print axioms serviceCostBound_of_receipts
+#print axioms prepareSlot_ok
+#print axioms debitAllowance_finite_some_iff
+
+/-! ## Post-commit delivery and recovery policies
+
+This handler starts only after validated publication.  A stable key can make
+the local durable delivery operation idempotent.  An external operation whose
+outcome cannot be queried instead remains explicitly unknown after a lost
+acknowledgment; the handler does not replay it automatically.
+
+The `effects` list is a mathematical observation of physical attempts.  It is
+not a claim that an arbitrary remote service is exactly-once, transactional or
+recoverable from this local model.
+-/
+
+namespace DeliveryRecovery
+
+inductive Policy where
+  | idempotentByKey
+  | explicitUnknown
+deriving DecidableEq, Repr
+
+structure State (Key Payload : Type) where
+  pending : List Key := []
+  records : List (Key × Payload) := []
+  effects : List (Key × Payload) := []
+deriving DecidableEq, Repr
+
+def State.lookup {Key Payload : Type} [DecidableEq Key]
+    (state : State Key Payload) (key : Key) : Option Payload :=
+  (state.records.find? fun entry => decide (entry.1 = key)).map Prod.snd
+
+def State.retire {Key Payload : Type} [DecidableEq Key]
+    (state : State Key Payload) (key : Key) : List Key :=
+  state.pending.filter fun other => decide (other ≠ key)
+
+/-- `stored` is evidence from the durable result ledger.  `acknowledged` is
+only the caller's observed outcome for an effect without such a ledger; it
+does not make that effect queryable after recovery. -/
+inductive Status where
+  | pending
+  | stored
+  | acknowledged
+  | conflict
+  | unknown
+deriving DecidableEq, Repr
+
+structure Result (Key Payload : Type) where
+  status : Status
+  state : State Key Payload
+  history : NativePoll.History
+deriving DecidableEq, Repr
+
+def attempt {Key Payload : Type} [DecidableEq Key] [DecidableEq Payload]
+    (policy : Policy) (acknowledged : Bool) (state : State Key Payload)
+    (history : NativePoll.History) (receipt : NativePoll.Receipt)
+    (key : Key) (payload : Payload) : Result Key Payload :=
+  let laterHistory := history ++ [receipt]
+  match policy with
+  | .idempotentByKey =>
+      let status := if acknowledged then Status.stored else .unknown
+      match state.lookup key with
+      | none =>
+          if key ∈ state.pending then
+            ⟨status, ⟨state.retire key, state.records ++ [(key, payload)],
+              state.effects ++ [(key, payload)]⟩, laterHistory⟩
+          else ⟨.unknown, state, laterHistory⟩
+      | some previous =>
+          if previous = payload then ⟨status, state, laterHistory⟩
+          else ⟨.conflict, state, laterHistory⟩
+  | .explicitUnknown =>
+      if key ∈ state.pending then
+        let pending := if acknowledged then state.retire key else state.pending
+        let status := if acknowledged then Status.acknowledged else .unknown
+        ⟨status, ⟨pending, state.records, state.effects ++ [(key, payload)]⟩, laterHistory⟩
+      else ⟨.unknown, state, laterHistory⟩
+
+/-- Query the durable result ledger without executing the effect.  Its three
+answers correspond to STORED, PENDING and UNKNOWN. -/
+def queryReceipt {Key Payload : Type} [DecidableEq Key]
+    (state : State Key Payload) (history : NativePoll.History)
+    (receipt : NativePoll.Receipt) (key : Key) : Result Key Payload :=
+  let status := match state.lookup key with
+    | some _ => Status.stored
+    | none => if key ∈ state.pending then .pending else .unknown
+  ⟨status, state, history ++ [receipt]⟩
+
+/-- Retry only the policy whose stable key makes repetition observationally
+idempotent.  Explicitly unknown effects remain parked for inspection or an
+authorized external resolution. -/
+def recover {Key Payload : Type} [DecidableEq Key] [DecidableEq Payload]
+    (policy : Policy) (result : Result Key Payload)
+    (receipt : NativePoll.Receipt) (key : Key) : Result Key Payload :=
+  match result.status with
+  | .unknown => match policy with
+      | .idempotentByKey => queryReceipt result.state result.history receipt key
+      | .explicitUnknown => result
+  | _ => result
+
+theorem attempt_history {Key Payload : Type} [DecidableEq Key] [DecidableEq Payload]
+    (policy : Policy) (acknowledged : Bool) (state : State Key Payload)
+    (history : NativePoll.History) (receipt : NativePoll.Receipt)
+    (key : Key) (payload : Payload) :
+    (attempt policy acknowledged state history receipt key payload).history = history ++ [receipt] := by
+  cases policy <;> simp only [attempt]
+  · cases found : state.lookup key <;> simp only
+    · split <;> rfl
+    · split <;> rfl
+  · split <;> rfl
+
+theorem queryReceipt_history {Key Payload : Type} [DecidableEq Key]
+    (state : State Key Payload) (history : NativePoll.History)
+    (receipt : NativePoll.Receipt) (key : Key) :
+    (queryReceipt state history receipt key).history = history ++ [receipt] := by
+  simp [queryReceipt]
+
+@[simp] theorem queryReceipt_state {Key Payload : Type} [DecidableEq Key]
+    (state : State Key Payload) (history : NativePoll.History)
+    (receipt : NativePoll.Receipt) (key : Key) :
+    (queryReceipt state history receipt key).state = state := by
+  simp [queryReceipt]
+
+/-- Repeating the same keyed payload cannot append another durable effect.
+The acknowledgment may still be lost, so this theorem deliberately says
+nothing stronger than preservation of the durable state. -/
+theorem repeated_same_payload_preserves_state {Key Payload : Type}
+    [DecidableEq Key] [DecidableEq Payload]
+    (acknowledged : Bool) (state : State Key Payload)
+    (history : NativePoll.History) (receipt : NativePoll.Receipt)
+    (key : Key) (payload : Payload)
+    (stored : state.lookup key = some payload) :
+    (attempt .idempotentByKey acknowledged state history receipt key payload).state = state := by
+  simp [attempt, stored]
+
+/-- Reusing a durable key with different bytes is a conflict and leaves the
+stored result and physical-effect observation unchanged. -/
+theorem changed_payload_conflicts {Key Payload : Type}
+    [DecidableEq Key] [DecidableEq Payload]
+    (acknowledged : Bool) (state : State Key Payload)
+    (history : NativePoll.History) (receipt : NativePoll.Receipt)
+    (key : Key) (previous payload : Payload)
+    (stored : state.lookup key = some previous) (changed : previous ≠ payload) :
+    let result := attempt .idempotentByKey acknowledged state history receipt key payload
+    result.status = .conflict ∧ result.state = state := by
+  simp [attempt, stored, changed]
+
+theorem idempotent_recovery_queries_unknown {Key Payload : Type}
+    [DecidableEq Key] [DecidableEq Payload]
+    (result : Result Key Payload) (receipt : NativePoll.Receipt) (key : Key)
+    (unknown : result.status = .unknown) :
+    recover .idempotentByKey result receipt key =
+      queryReceipt result.state result.history receipt key := by
+  simp [recover, unknown]
+
+theorem explicitUnknown_recovery_holds {Key Payload : Type}
+    [DecidableEq Key] [DecidableEq Payload]
+    (result : Result Key Payload) (receipt : NativePoll.Receipt) (key : Key)
+    (unknown : result.status = .unknown) :
+    recover .explicitUnknown result receipt key = result := by
+  simp [recover, unknown]
+
+#print axioms attempt_history
+#print axioms queryReceipt_history
+#print axioms queryReceipt_state
+#print axioms repeated_same_payload_preserves_state
+#print axioms changed_payload_conflicts
+#print axioms idempotent_recovery_queries_unknown
+#print axioms explicitUnknown_recovery_holds
+
+end DeliveryRecovery
 
 /-! ## A stateful provider for the existing cursor protocol -/
 
@@ -1317,6 +1899,17 @@ def Invocation.account {base : Base}
       source gate profiles replay invoice reader notice base) : Account :=
   accountOf source gate profiles replay invoice reader notice held.outcome
 
+/-- Every operation event retained by the invocation occurs, in order, in the
+native poll history.  The history may additionally contain admission,
+preparation, delivery and teardown events owned by the surrounding service.
+Authenticity and completeness of the native history remain realization
+obligations. -/
+def Invocation.PollHistoryCovers {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (history : NativePoll.History) : Prop :=
+  held.account.events.Sublist (NativePoll.historyEvents history)
+
 /-- Install the service owner's current gate without changing the submission,
 manifest, paid work, private source state or reply-selected continuation. -/
 def Invocation.replaceGate (next : Gate (Denied := Denied) source) {base : Base}
@@ -1419,6 +2012,913 @@ def Invocation.Ready {base : Base}
     ∃ state : source.State base index × Account,
       held.outcome = Cursor.Outcome.done ⟨index, .inl value, state⟩ ∧
         writes value = (ReadOnlyQuery.run held.submission.1 held.submission.2).answer
+
+/-! ## Generation-stamped authority at resumable boundaries -/
+
+namespace PrincipalIncarnation
+
+open Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+
+/-- One service's current binding from an externally authenticated account to
+its nonreused incarnation generation.  The registry does not claim to detect
+operating-system account deletion or uid reuse; an owner or trusted launcher
+must request rotation at that lifecycle boundary. -/
+structure Registry (Service Account : Type) where
+  service : Service
+  nextGeneration : Nat
+  binding : Account → Option Nat
+
+def Registry.empty {Service Account : Type} (service : Service) : Registry Service Account where
+  service := service
+  nextGeneration := 0
+  binding := fun _ => none
+
+/-- Every installed generation was minted by this registry and is nonzero. -/
+def Registry.Lawful {Service Account : Type} (registry : Registry Service Account) : Prop :=
+  ∀ account generation, registry.binding account = some generation →
+    0 < generation ∧ generation ≤ registry.nextGeneration
+
+/-- A service-wide generation identifies at most one current account binding.
+Historical handles may retain older generations, but no live binding reuses
+one for another account. -/
+def Registry.Unique {Service Account : Type} (registry : Registry Service Account) : Prop :=
+  ∀ left right generation,
+    registry.binding left = some generation →
+    registry.binding right = some generation → left = right
+
+/-- A principal reference is current only at its issuing service and exact
+account-incarnation generation. -/
+def Registry.Current {Service Account : Type}
+    (registry : Registry Service Account) (reference : Handle Service Account) : Prop :=
+  reference.provider = registry.service ∧
+    registry.binding reference.resource = some reference.generation
+
+/-- Explicitly rotate one account to the next nonreused generation. -/
+def Registry.rotate {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account) :
+    Handle Service Account × Registry Service Account :=
+  let generation := registry.nextGeneration + 1
+  (⟨registry.service, account, generation⟩,
+    { service := registry.service
+      nextGeneration := generation
+      binding := fun candidate =>
+        if candidate = account then some generation else registry.binding candidate })
+
+/-- Resolve the account's current incarnation, minting the next generation
+only when no binding exists.  This is the first-grant path; repeated grants do
+not silently rotate an account. -/
+def Registry.ensure {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account) :
+    Handle Service Account × Registry Service Account :=
+  match registry.binding account with
+  | some generation => (⟨registry.service, account, generation⟩, registry)
+  | none => registry.rotate account
+
+theorem Registry.empty_lawful {Service Account : Type} (service : Service) :
+    (Registry.empty (Account := Account) service).Lawful := by
+  intro account generation installed
+  cases installed
+
+theorem Registry.empty_unique {Service Account : Type} (service : Service) :
+    (Registry.empty (Account := Account) service).Unique := by
+  intro left right generation installed
+  cases installed
+
+theorem Registry.rotate_current {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account) :
+    (registry.rotate account).2.Current (registry.rotate account).1 := by
+  simp [Registry.rotate, Registry.Current]
+
+theorem Registry.ensure_current {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account) :
+    (registry.ensure account).2.Current (registry.ensure account).1 := by
+  cases installed : registry.binding account with
+  | none => simp [Registry.ensure, installed, Registry.rotate_current]
+  | some generation => simp [Registry.ensure, installed, Registry.Current]
+
+theorem Registry.ensure_existing {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account) (generation : Nat)
+    (installed : registry.binding account = some generation) :
+    registry.ensure account = (⟨registry.service, account, generation⟩, registry) := by
+  simp [Registry.ensure, installed]
+
+theorem Registry.ensure_missing {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account)
+    (missing : registry.binding account = none) :
+    registry.ensure account = registry.rotate account := by
+  simp [Registry.ensure, missing]
+
+theorem Registry.rotate_lawful {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account)
+    (lawful : registry.Lawful) : (registry.rotate account).2.Lawful := by
+  intro candidate generation installed
+  by_cases same : candidate = account
+  · subst candidate
+    simp [Registry.rotate] at installed
+    subst generation
+    change 0 < registry.nextGeneration + 1 ∧
+      registry.nextGeneration + 1 ≤ registry.nextGeneration + 1
+    exact ⟨Nat.zero_lt_succ _, le_rfl⟩
+  · have prior : registry.binding candidate = some generation := by
+      simpa [Registry.rotate, same] using installed
+    obtain ⟨positive, bounded⟩ := lawful candidate generation prior
+    change 0 < generation ∧ generation ≤ registry.nextGeneration + 1
+    exact ⟨positive, bounded.trans (Nat.le_succ _)⟩
+
+theorem Registry.rotate_unique {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account)
+    (lawful : registry.Lawful) (unique : registry.Unique) :
+    (registry.rotate account).2.Unique := by
+  intro left right generation leftInstalled rightInstalled
+  by_cases leftTarget : left = account
+  · subst left
+    simp [Registry.rotate] at leftInstalled
+    subst generation
+    by_cases rightTarget : right = account
+    · exact rightTarget.symm
+    · have prior : registry.binding right = some (registry.nextGeneration + 1) := by
+        simpa [Registry.rotate, rightTarget] using rightInstalled
+      have bounded := (lawful right (registry.nextGeneration + 1) prior).2
+      omega
+  · have leftPrior : registry.binding left = some generation := by
+      simpa [Registry.rotate, leftTarget] using leftInstalled
+    by_cases rightTarget : right = account
+    · subst right
+      simp [Registry.rotate] at rightInstalled
+      subst generation
+      have bounded := (lawful left (registry.nextGeneration + 1) leftPrior).2
+      omega
+    · have rightPrior : registry.binding right = some generation := by
+        simpa [Registry.rotate, rightTarget] using rightInstalled
+      exact unique left right generation leftPrior rightPrior
+
+theorem Registry.ensure_lawful {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account)
+    (lawful : registry.Lawful) : (registry.ensure account).2.Lawful := by
+  cases installed : registry.binding account with
+  | none =>
+      simpa [Registry.ensure, installed] using registry.rotate_lawful account lawful
+  | some generation => simpa [Registry.ensure, installed] using lawful
+
+theorem Registry.ensure_unique {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account)
+    (lawful : registry.Lawful) (unique : registry.Unique) :
+    (registry.ensure account).2.Unique := by
+  cases installed : registry.binding account with
+  | none =>
+      simpa [Registry.ensure, installed] using registry.rotate_unique account lawful unique
+  | some generation => simpa [Registry.ensure, installed] using unique
+
+theorem Registry.current_generation_identifies_account
+    {Service Account : Type} (registry : Registry Service Account)
+    (unique : registry.Unique) (left right : Handle Service Account)
+    (leftCurrent : registry.Current left) (rightCurrent : registry.Current right)
+    (sameGeneration : left.generation = right.generation) :
+    left.resource = right.resource := by
+  apply unique left.resource right.resource left.generation leftCurrent.2
+  simpa [sameGeneration] using rightCurrent.2
+
+/-- Rotation preserves a different account's exact current reference. -/
+theorem Registry.rotate_preserves_other {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (account : Account)
+    (reference : Handle Service Account)
+    (different : reference.resource ≠ account)
+    (current : registry.Current reference) :
+    (registry.rotate account).2.Current reference := by
+  exact ⟨current.1, by simpa [Registry.rotate, different] using current.2⟩
+
+/-- Rotation cannot revive or silently retarget the prior incarnation. -/
+theorem Registry.rotate_invalidates_prior {Service Account : Type} [DecidableEq Account]
+    (registry : Registry Service Account) (reference : Handle Service Account)
+    (lawful : registry.Lawful) (current : registry.Current reference) :
+    ¬ (registry.rotate reference.resource).2.Current reference := by
+  intro retained
+  have bounded := (lawful reference.resource reference.generation current.2).2
+  have reused : registry.nextGeneration + 1 = reference.generation := by
+    simpa [Registry.rotate] using retained.2
+  omega
+
+/-- A raw account spelling cannot identify an incarnation: equal account
+components coexist with distinct principal references. -/
+theorem same_account_does_not_identify_incarnation
+    {Service Account : Type} (service : Service) (account : Account)
+    (first second : Nat) (different : first ≠ second) :
+    (⟨service, account, first⟩ : Handle Service Account) ≠
+      ⟨service, account, second⟩ := by
+  intro equal
+  exact different (congrArg Handle.generation equal)
+
+namespace Controls
+
+def initial : Registry Nat Nat := Registry.empty 5
+def first : Handle Nat Nat × Registry Nat Nat := initial.rotate 17
+def second : Handle Nat Nat × Registry Nat Nat := first.2.rotate 17
+def ensured : Handle Nat Nat × Registry Nat Nat := first.2.ensure 17
+
+theorem first_rotation_is_current_and_lawful :
+    first.2.Current first.1 ∧ first.2.Lawful := by
+  exact ⟨Registry.rotate_current initial 17,
+    Registry.rotate_lawful initial 17 (Registry.empty_lawful 5)⟩
+
+theorem first_rotation_is_unique : first.2.Unique := by
+  exact Registry.rotate_unique initial 17
+    (Registry.empty_lawful 5) (Registry.empty_unique 5)
+
+theorem second_rotation_invalidates_first :
+    second.2.Current second.1 ∧ ¬ second.2.Current first.1 := by
+  exact ⟨Registry.rotate_current first.2 17,
+    Registry.rotate_invalidates_prior first.2 first.1
+      first_rotation_is_current_and_lawful.2 first_rotation_is_current_and_lawful.1⟩
+
+theorem account_value_alone_is_unchanged :
+    first.1.resource = second.1.resource ∧ first.1 ≠ second.1 := by
+  exact ⟨rfl, same_account_does_not_identify_incarnation 5 17 1 2 (by decide)⟩
+
+theorem repeated_ensure_preserves_incarnation :
+    ensured.1 = first.1 ∧ ensured.2 = first.2 := by
+  simp [ensured, first, initial, Registry.ensure, Registry.rotate]
+
+end Controls
+
+#print axioms Registry.empty_lawful
+#print axioms Registry.empty_unique
+#print axioms Registry.rotate_current
+#print axioms Registry.ensure_current
+#print axioms Registry.ensure_existing
+#print axioms Registry.ensure_missing
+#print axioms Registry.rotate_lawful
+#print axioms Registry.rotate_unique
+#print axioms Registry.ensure_lawful
+#print axioms Registry.ensure_unique
+#print axioms Registry.current_generation_identifies_account
+#print axioms Registry.rotate_preserves_other
+#print axioms Registry.rotate_invalidates_prior
+#print axioms same_account_does_not_identify_incarnation
+#print axioms Controls.first_rotation_is_current_and_lawful
+#print axioms Controls.first_rotation_is_unique
+#print axioms Controls.second_rotation_invalidates_first
+#print axioms Controls.account_value_alone_is_unchanged
+#print axioms Controls.repeated_ensure_preserves_incarnation
+
+end PrincipalIncarnation
+
+namespace CheckedGrant
+
+open Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+
+/-- A retained operation requires an authority resource at one exact provider,
+resource and generation.  `Handle` is the existing nominal foreign-resource
+identity; this interface does not introduce another capability identity. -/
+structure Requirement (Provider Resource Authority : Type) where
+  handle : Handle Provider Resource
+  required : Authority
+
+/-- A current grant view joins the exact live handle to the authority available
+at it.  Authentic construction of this view remains a native monitor duty. -/
+structure View (Provider Resource Authority : Type) where
+  handle : Handle Provider Resource
+  available : Authority
+
+/-- The retained requirement is current exactly when both its nominal
+generation and its required frame-preserving authority remain current. -/
+def Requirement.Current
+    {Provider Resource Authority : Type}
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (requirement : Requirement Provider Resource Authority)
+    (view : View Provider Resource Authority) : Prop :=
+  requirement.handle = view.handle ∧ FrameUpdate view.available requirement.required
+
+theorem Requirement.current_iff
+    {Provider Resource Authority : Type}
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (requirement : Requirement Provider Resource Authority)
+    (view : View Provider Resource Authority) :
+    requirement.Current view ↔
+      requirement.handle = view.handle ∧ FrameUpdate view.available requirement.required :=
+  Iff.rfl
+
+/-- Replacing a grant with a distinct generation cannot revive a requirement
+issued for the old generation, even when its rights spelling is restored. -/
+theorem Requirement.not_current_of_generation_ne
+    {Provider Resource Authority : Type}
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (requirement : Requirement Provider Resource Authority)
+    (view : View Provider Resource Authority)
+    (different : requirement.handle.generation ≠ view.handle.generation) :
+    ¬ requirement.Current view := by
+  intro current
+  exact different (congrArg Handle.generation current.1)
+
+end CheckedGrant
+
+namespace CheckedDecision
+
+/-- A durable decision keeps the exact grant requirement even when its full
+reply has left the bounded reply cache.  `none` is an explicit retired reply,
+not absence of a decision. -/
+structure Decision (Provider Resource Authority Reply : Type) where
+  requirement : CheckedGrant.Requirement Provider Resource Authority
+  reply : Option Reply
+
+/-- Retire only the bounded reply payload.  The durable decision and its exact
+grant requirement remain available for retry classification and historical
+observations. -/
+def Decision.retireReply
+    {Provider Resource Authority Reply : Type}
+    (decision : Decision Provider Resource Authority Reply) :
+    Decision Provider Resource Authority Reply :=
+  { decision with reply := none }
+
+/-- Retrying a request is distinct from observing a cached reply, a known
+decision whose reply was retired, or a decision whose authority is stale. -/
+inductive RetryResult (Reply : Type) where
+  | execute
+  | cached (reply : Reply)
+  | unknown
+  | refused
+  deriving DecidableEq, Repr
+
+def retry
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (decision : Option (Decision Provider Resource Authority Reply)) : RetryResult Reply :=
+  match decision with
+  | none => .execute
+  | some decision =>
+      if decision.requirement.handle = view.handle then
+        if FrameUpdate view.available decision.requirement.required then
+          match decision.reply with
+          | some reply => .cached reply
+          | none => .unknown
+        else .refused
+      else .refused
+
+@[simp] theorem retry_missing
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority) :
+    retry permission view (none : Option (Decision Provider Resource Authority Reply)) = .execute :=
+  rfl
+
+theorem retry_current
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (decision : Decision Provider Resource Authority Reply)
+    (current : decision.requirement.Current view) :
+    retry permission view (some decision) =
+      match decision.reply with
+      | some reply => .cached reply
+      | none => .unknown := by
+  simp [retry, current.1, current.2]
+
+theorem retry_stale_generation
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (decision : Decision Provider Resource Authority Reply)
+    (stale : decision.requirement.handle.generation ≠ view.handle.generation) :
+    retry permission view (some decision) = .refused := by
+  have different : decision.requirement.handle ≠ view.handle := by
+    intro same
+    exact stale (congrArg (fun handle => handle.generation) same)
+  simp [retry, different]
+
+theorem retry_authority_refused
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (decision : Decision Provider Resource Authority Reply)
+    (same : decision.requirement.handle = view.handle)
+    (refused : ¬FrameUpdate view.available decision.requirement.required) :
+    retry permission view (some decision) = .refused := by
+  simp [retry, same, refused]
+
+/-- A known decision never re-enters execution.  A retired reply becomes
+explicitly unknown, and stale authority becomes refused. -/
+theorem retry_existing_ne_execute
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (decision : Decision Provider Resource Authority Reply) :
+    retry permission view (some decision) ≠ .execute := by
+  by_cases same : decision.requirement.handle = view.handle
+  · by_cases allowed : FrameUpdate view.available decision.requirement.required
+    · cases reply : decision.reply <;> simp [retry, same, allowed, reply]
+    · simp [retry, same, allowed]
+  · simp [retry, same]
+
+theorem retry_eq_execute_iff
+    {Provider Resource Authority Reply : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (decision : Option (Decision Provider Resource Authority Reply)) :
+    retry permission view decision = .execute ↔ decision = none := by
+  cases decision with
+  | none => simp [retry]
+  | some decision =>
+      constructor
+      · intro executes
+        exact (retry_existing_ne_execute permission view decision executes).elim
+      · intro impossible
+        cases impossible
+
+/-! ### Historical account origin
+
+An account-origin reference is copyable evidence, not authority.  Its
+protection comes from lookup in the service-private durable decision table;
+constructing the record below is therefore a native issuance obligation.  The
+observation deliberately omits the cached reply and any claimed agent label.
+-/
+
+namespace AccountOrigin
+
+structure Reference (Service Principal Request Nonce : Type) where
+  service : Service
+  principal : Principal
+  request : Request
+  nonce : Nonce
+  deriving DecidableEq, Repr
+
+structure Record (Provider Resource Authority Reply Service Principal Request Nonce Digest : Type)
+    where
+  reference : Reference Service Principal Request Nonce
+  decision : CheckedDecision.Decision Provider Resource Authority Reply
+  effectDigest : Digest
+
+structure Observation (Provider Resource Authority Service Principal Request Nonce Digest : Type)
+    where
+  reference : Reference Service Principal Request Nonce
+  requirement : CheckedGrant.Requirement Provider Resource Authority
+  effectDigest : Digest
+
+def Record.observe
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest) :
+    Observation Provider Resource Authority Service Principal Request Nonce Digest :=
+  ⟨record.reference, record.decision.requirement, record.effectDigest⟩
+
+/-- Reply-cache retirement changes only the decision's optional reply.  The
+historical origin record remains the same observation. -/
+def Record.retireReply
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest) :
+    Record Provider Resource Authority Reply Service Principal Request Nonce Digest :=
+  { record with decision := record.decision.retireReply }
+
+/-- Full reply retention and historical origin have independent lifetimes. -/
+theorem observe_reply_irrelevant
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    (reference : Reference Service Principal Request Nonce)
+    (requirement : CheckedGrant.Requirement Provider Resource Authority)
+    (first second : Option Reply) (digest : Digest) :
+    (⟨reference, ⟨requirement, first⟩, digest⟩ :
+      Record Provider Resource Authority Reply Service Principal Request Nonce Digest).observe =
+    (⟨reference, ⟨requirement, second⟩, digest⟩ :
+      Record Provider Resource Authority Reply Service Principal Request Nonce Digest).observe :=
+  rfl
+
+/-- Inspecting historical origin checks the current service and either the
+authenticated originating account or the service owner.  It never checks or
+restores current mutation authority. -/
+def inspect
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    (service : Service) (requester : Principal) (owner : Bool)
+    (reference : Reference Service Principal Request Nonce)
+    (stored : Option
+      (Record Provider Resource Authority Reply Service Principal Request Nonce Digest)) :
+    Option (Observation Provider Resource Authority Service Principal Request Nonce Digest) :=
+  match stored with
+  | none => none
+  | some record =>
+      if service = record.reference.service ∧ reference = record.reference ∧
+          (owner = true ∨ requester = record.reference.principal) then
+        some record.observe
+      else none
+
+@[simp] theorem inspect_missing
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    (service : Service) (requester : Principal) (owner : Bool)
+    (reference : Reference Service Principal Request Nonce) :
+    inspect (Provider := Provider) (Resource := Resource) (Authority := Authority) (Reply := Reply)
+      (Digest := Digest) service requester owner reference none = none :=
+  rfl
+
+theorem inspect_owner
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    (requester : Principal)
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest) :
+    inspect record.reference.service requester true record.reference (some record) =
+      some record.observe := by
+  simp [inspect]
+
+theorem inspect_originating_account
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest) :
+    inspect record.reference.service record.reference.principal false record.reference
+      (some record) = some record.observe := by
+  simp [inspect]
+
+theorem inspect_other_account_refused
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    (requester : Principal)
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest)
+    (other : requester ≠ record.reference.principal) :
+    inspect record.reference.service requester false record.reference (some record) = none := by
+  simp [inspect, other]
+
+theorem inspect_forged_reference_refused
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    (requester : Principal) (owner : Bool)
+    (reference : Reference Service Principal Request Nonce)
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest)
+    (forged : reference ≠ record.reference) :
+    inspect record.reference.service requester owner reference (some record) = none := by
+  simp [inspect, forged]
+
+/-- Evicting a current decision's bounded reply makes retry explicitly
+unknown, while the originating account still observes the same historical
+origin. -/
+theorem retired_reply_unknown_and_origin_preserved
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest)
+    (current : record.decision.requirement.Current view) :
+    retry permission view (some record.retireReply.decision) = .unknown ∧
+      inspect record.reference.service record.reference.principal false record.reference
+        (some record.retireReply) = some record.observe := by
+  constructor
+  · simp [retry, Record.retireReply, Decision.retireReply, current.1, current.2]
+  · simp [inspect, Record.retireReply, Decision.retireReply, Record.observe]
+
+/-- Replacing a grant generation refuses retry but does not rewrite historical
+origin.  The reference remains readable by the originating account. -/
+theorem stale_generation_refused_and_origin_preserved
+    {Provider Resource Authority Reply Service Principal Request Nonce Digest : Type}
+    [DecidableEq Provider] [DecidableEq Resource]
+    [DecidableEq Service] [DecidableEq Principal] [DecidableEq Request] [DecidableEq Nonce]
+    [Zero Authority] [Add Authority] [Mettapedia.GSLT.SeparationAlgebra.SepAlgebra Authority]
+    (permission : ∀ current required : Authority, Decidable (FrameUpdate current required))
+    (view : CheckedGrant.View Provider Resource Authority)
+    (record : Record Provider Resource Authority Reply Service Principal Request Nonce Digest)
+    (stale : record.decision.requirement.handle.generation ≠ view.handle.generation) :
+    retry permission view (some record.decision) = .refused ∧
+      inspect record.reference.service record.reference.principal false record.reference
+        (some record) = some record.observe := by
+  exact ⟨retry_stale_generation permission view record.decision stale,
+    inspect_originating_account record⟩
+
+namespace Controls
+
+def requirement : CheckedGrant.Requirement Nat Nat Nat := ⟨⟨3, 7, 11⟩, 1⟩
+def decision : CheckedDecision.Decision Nat Nat Nat Nat := ⟨requirement, some 99⟩
+def reference : Reference Nat Nat Nat Nat := ⟨5, 17, 23, 29⟩
+def record : Record Nat Nat Nat Nat Nat Nat Nat Nat Nat := ⟨reference, decision, 31⟩
+
+abbrev Incarnation := ForeignCapabilityLightcone.Handle Nat Nat
+def incarnationReference : Reference Nat Incarnation Nat Nat :=
+  ⟨5, PrincipalIncarnation.Controls.first.1, 23, 29⟩
+def incarnationRecord : Record Nat Nat Nat Nat Nat Incarnation Nat Nat Nat :=
+  ⟨incarnationReference, decision, 31⟩
+
+theorem owner_reads_historical_origin :
+    inspect 5 999 true reference (some record) = some record.observe := by
+  exact inspect_owner 999 record
+
+theorem originating_account_reads_historical_origin :
+    inspect 5 17 false reference (some record) = some record.observe := by
+  exact inspect_originating_account record
+
+theorem another_account_cannot_read_origin :
+    inspect 5 18 false reference (some record) = none := by
+  exact inspect_other_account_refused 18 record (by decide)
+
+theorem changed_nonce_is_not_the_origin :
+    inspect 5 17 false { reference with nonce := 30 } (some record) = none := by
+  exact inspect_forged_reference_refused 17 false { reference with nonce := 30 } record (by decide)
+
+theorem rotated_same_account_cannot_read_prior_origin :
+    inspect 5 PrincipalIncarnation.Controls.second.1 false incarnationReference
+      (some incarnationRecord) = none := by
+  have different : PrincipalIncarnation.Controls.second.1 ≠
+      PrincipalIncarnation.Controls.first.1 :=
+    Ne.symm PrincipalIncarnation.Controls.account_value_alone_is_unchanged.2
+  simpa [incarnationRecord, incarnationReference] using
+    (inspect_other_account_refused PrincipalIncarnation.Controls.second.1
+      incarnationRecord different)
+
+theorem owner_still_reads_prior_incarnation_origin :
+    inspect 5 PrincipalIncarnation.Controls.second.1 true incarnationReference
+      (some incarnationRecord) = some incarnationRecord.observe := by
+  exact inspect_owner PrincipalIncarnation.Controls.second.1 incarnationRecord
+
+end Controls
+
+#print axioms inspect_missing
+#print axioms observe_reply_irrelevant
+#print axioms inspect_owner
+#print axioms inspect_originating_account
+#print axioms inspect_other_account_refused
+#print axioms inspect_forged_reference_refused
+#print axioms retired_reply_unknown_and_origin_preserved
+#print axioms stale_generation_refused_and_origin_preserved
+#print axioms Controls.owner_reads_historical_origin
+#print axioms Controls.originating_account_reads_historical_origin
+#print axioms Controls.another_account_cannot_read_origin
+#print axioms Controls.changed_nonce_is_not_the_origin
+#print axioms Controls.rotated_same_account_cannot_read_prior_origin
+#print axioms Controls.owner_still_reads_prior_incarnation_origin
+
+end AccountOrigin
+
+end CheckedDecision
+
+/-- Programmable publication keeps current-authority refusal, dependency
+conflict and accepted commitment distinct.  Both retry cases return the exact
+invocation and ordered native poll history.  A committed result omits the
+invocation from this interface; external delivery and crash recovery are later
+services over the committed state, not part of this transition. -/
+inductive Invocation.PublicationResult (base : Base) where
+  | authorityRefused (reason : Denied)
+      (held : Invocation (Key := Key) (Value := Value)
+        source gate profiles replay invoice reader notice base)
+      (history : NativePoll.History)
+  | dependencyConflict
+      (held : Invocation (Key := Key) (Value := Value)
+        source gate profiles replay invoice reader notice base)
+      (history : NativePoll.History)
+  | committed (next : Key → Value) (history : NativePoll.History)
+
+/-- Invoke the later delivery handler only from a committed publication.
+Authority refusal and dependency conflict cannot send.  The committed store is
+not revalidated here: durable delivery and its receipt policy are a separate
+service boundary. -/
+def Invocation.PublicationResult.deliver
+    {DeliveryKey Payload : Type} [DecidableEq DeliveryKey] [DecidableEq Payload]
+    {base : Base}
+    (publication : Invocation.PublicationResult (Key := Key) (Value := Value)
+      (source := source) (gate := gate) (profiles := profiles) (replay := replay)
+      (invoice := invoice) (reader := reader) (notice := notice) base)
+    (policy : DeliveryRecovery.Policy) (acknowledged : Bool)
+    (state : DeliveryRecovery.State DeliveryKey Payload)
+    (receipt : NativePoll.Receipt) (key : DeliveryKey) (payload : Payload) :
+    Option (DeliveryRecovery.Result DeliveryKey Payload) :=
+  match publication with
+  | .committed _ history =>
+      some (DeliveryRecovery.attempt policy acknowledged state history receipt key payload)
+  | .authorityRefused _ _ _ | .dependencyConflict _ _ => none
+
+/-- Recheck current world-indexed authority, then use the existing validated
+commit.  No application or policy callback occurs between those model
+boundaries.  The ordered poll history is transported unchanged rather than
+reconstructed from aggregate counters. -/
+def Invocation.publishCurrent
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld] {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (_ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority) (required : authority.Fibre point.world)
+    [Decidable (FrameUpdate point.authority required)] (denied : Denied)
+    (current : Key → Value) :
+    Invocation.PublicationResult (Key := Key) (Value := Value)
+      (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) base :=
+  if FrameUpdate point.authority required then
+    match ValidatedCommit.commit current
+      (ValidatedCommit.propose held.submission.1 held.submission.2) with
+    | none => .dependencyConflict held history
+    | some next => .committed next history
+  else .authorityRefused denied held history
+
+/-- Recheck the exact generation-bearing grant before the existing current
+world authority and dependency checks.  A stale handle returns the same retry
+residual and history; a matching handle delegates to `publishCurrent`. -/
+def Invocation.publishCheckedGrant
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {Provider Resource : Type} [DecidableEq Provider] [DecidableEq Resource]
+    {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority)
+    (requirement : CheckedGrant.Requirement Provider Resource (authority.Fibre point.world))
+    (currentHandle : Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone.Handle Provider Resource)
+    [Decidable (FrameUpdate point.authority requirement.required)] (denied : Denied)
+    (current : Key → Value) :
+    Invocation.PublicationResult (Key := Key) (Value := Value)
+      (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) base :=
+  if requirement.handle = currentHandle then
+    held.publishCurrent source gate profiles replay invoice reader notice writes ready history
+      authority point requirement.required denied current
+  else .authorityRefused denied held history
+
+theorem Invocation.publishCheckedGrant_stale
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {Provider Resource : Type} [DecidableEq Provider] [DecidableEq Resource]
+    {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority)
+    (requirement : CheckedGrant.Requirement Provider Resource (authority.Fibre point.world))
+    (currentHandle : Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone.Handle Provider Resource)
+    [Decidable (FrameUpdate point.authority requirement.required)] (denied : Denied)
+    (current : Key → Value) (stale : requirement.handle ≠ currentHandle) :
+    held.publishCheckedGrant source gate profiles replay invoice reader notice writes ready history
+      authority point requirement currentHandle denied current =
+        .authorityRefused denied held history := by
+  simp [Invocation.publishCheckedGrant, stale]
+
+theorem Invocation.publishCheckedGrant_current
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {Provider Resource : Type} [DecidableEq Provider] [DecidableEq Resource]
+    {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority)
+    (requirement : CheckedGrant.Requirement Provider Resource (authority.Fibre point.world))
+    (currentHandle : Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone.Handle Provider Resource)
+    [Decidable (FrameUpdate point.authority requirement.required)] (denied : Denied)
+    (current : Key → Value) (same : requirement.handle = currentHandle) :
+    held.publishCheckedGrant source gate profiles replay invoice reader notice writes ready history
+      authority point requirement currentHandle denied current =
+    held.publishCurrent source gate profiles replay invoice reader notice writes ready history
+      authority point requirement.required denied current := by
+  simp [Invocation.publishCheckedGrant, same]
+
+theorem Invocation.publishCurrent_authorityRefused
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld] {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority) (required : authority.Fibre point.world)
+    [Decidable (FrameUpdate point.authority required)] (denied : Denied)
+    (current : Key → Value) (refused : ¬ FrameUpdate point.authority required) :
+    held.publishCurrent source gate profiles replay invoice reader notice writes ready history
+      authority point required denied current =
+        .authorityRefused denied held history := by
+  simp [Invocation.publishCurrent, refused]
+
+theorem Invocation.publishCurrent_dependencyConflict
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld] {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority) (required : authority.Fibre point.world)
+    [Decidable (FrameUpdate point.authority required)] (denied : Denied)
+    (current : Key → Value) (permitted : FrameUpdate point.authority required)
+    (changed : ¬ ReadOnlyQuery.Agrees current held.reads) :
+    held.publishCurrent source gate profiles replay invoice reader notice writes ready history
+      authority point required denied current = .dependencyConflict held history := by
+  have commitRefused : ValidatedCommit.commit current
+      (ValidatedCommit.propose held.submission.1 held.submission.2) = none :=
+    (ValidatedCommit.commit_refused_iff held.submission.1 current held.submission.2).2 changed
+  simp [Invocation.publishCurrent, permitted, commitRefused]
+
+/-- Accepted current-authority publication is the independently rerun current
+transaction, and its terminal value realizes those writes.  Ordered poll
+history coverage is preserved as a separately stated native premise. -/
+theorem Invocation.publishCurrent_fresh
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld] {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority) (required : authority.Fibre point.world)
+    [Decidable (FrameUpdate point.authority required)] (denied : Denied)
+    (current next : Key → Value)
+    (accepted : held.publishCurrent source gate profiles replay invoice reader notice writes ready history
+      authority point required denied current = .committed next history) :
+    FrameUpdate point.authority required ∧
+      next = ValidatedCommit.write current
+        (ReadOnlyQuery.run current held.submission.2).answer ∧
+      ∃ index : Index base, ∃ value : Return base index,
+        ∃ state : source.State base index × Account,
+          held.outcome = Cursor.Outcome.done ⟨index, .inl value, state⟩ ∧
+            writes value = (ReadOnlyQuery.run current held.submission.2).answer := by
+  unfold Invocation.publishCurrent at accepted
+  split at accepted
+  · rename_i permitted
+    cases committed : ValidatedCommit.commit current
+        (ValidatedCommit.propose held.submission.1 held.submission.2) with
+    | none =>
+        rw [committed] at accepted
+        cases accepted
+    | some actual =>
+        rw [committed] at accepted
+        cases accepted
+        have fresh := ValidatedCommit.commit_fresh held.submission.1 current held.submission.2 next committed
+        have valid : ReadOnlyQuery.checkReads current
+            (ReadOnlyQuery.run held.submission.1 held.submission.2).reads = true := by
+          unfold ValidatedCommit.commit ValidatedCommit.propose at committed
+          split at committed
+          · assumption
+          · contradiction
+        have sameAnswer := ReadOnlyQuery.validated_answer held.submission.1 current
+          held.submission.2 valid
+        obtain ⟨index, value, state, terminal, realizes⟩ := ready
+        exact ⟨permitted, fresh, index, value, state, terminal,
+          realizes.trans sameAnswer.symm⟩
+  · cases accepted
+
+/-- Accepted generation-checked publication carries both the exact current
+grant identity and all existing current-authority/fresh-commit conclusions. -/
+theorem Invocation.publishCheckedGrant_fresh
+    [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {Provider Resource : Type} [DecidableEq Provider] [DecidableEq Resource]
+    {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source gate profiles replay invoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := gate) (profiles := profiles)
+      (replay := replay) (invoice := invoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority)
+    (requirement : CheckedGrant.Requirement Provider Resource (authority.Fibre point.world))
+    (currentHandle : Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone.Handle Provider Resource)
+    [Decidable (FrameUpdate point.authority requirement.required)] (denied : Denied)
+    (current next : Key → Value)
+    (accepted : held.publishCheckedGrant source gate profiles replay invoice reader notice
+      writes ready history authority point requirement currentHandle denied current =
+        .committed next history) :
+    requirement.handle = currentHandle ∧
+      FrameUpdate point.authority requirement.required ∧
+      next = ValidatedCommit.write current
+        (ReadOnlyQuery.run current held.submission.2).answer ∧
+      ∃ index : Index base, ∃ value : Return base index,
+        ∃ state : source.State base index × Account,
+          held.outcome = Cursor.Outcome.done ⟨index, .inl value, state⟩ ∧
+            writes value = (ReadOnlyQuery.run current held.submission.2).answer := by
+  unfold Invocation.publishCheckedGrant at accepted
+  split at accepted
+  · rename_i same
+    exact ⟨same, Invocation.publishCurrent_fresh source gate profiles replay invoice reader notice
+      writes held ready history authority point requirement.required denied current next accepted⟩
+  · cases accepted
+
 
 /-- Publish a genuinely ready invocation.  Authority refusal and dependency
 refusal remain different branches.  The invocation itself is immutable and
@@ -1525,6 +3025,365 @@ theorem Invocation.commitAll_serial {base : Base} (store : Key → Value)
       ValidatedCommit.serial store (ValidatedCommit.commitAll store submissions).2 :=
   ValidatedCommit.commitAll_serial store (held.map Invocation.submission)
 
+/-! ### Substitution of a realized indexed handler
+
+The local representation map below reuses `Cursor.Hom`.  Its additional laws
+concern the four inputs to admission at each actual request, rather than
+assuming equivalence of complete executions.  Exact invoice equality retains
+event identities and order.  It concerns the declared semantic account;
+different physical implementations need not have equal instruction counts or
+elapsed costs.
+
+The lift constructs the homomorphism of the decorated providers.  Bounded
+execution and retained resumption then use the generic cursor theorems, with
+no second runner or invocation semantics. -/
+
+structure HandlerHom (source target : Cursor.Provider P)
+    (sourceGate : Gate (Denied := Denied) source)
+    (targetGate : Gate (Denied := Denied) target)
+    (sourceProfiles targetProfiles :
+      {base : Base} → {index : Index base} → P.Shape base index → Profile)
+    (sourceReplay targetReplay :
+      {base : Base} → {index : Index base} → P.Shape base index → Bool)
+    (sourceInvoice : Invoice source) (targetInvoice : Invoice target) where
+  representation : Cursor.Hom source target
+  gate_eq : ∀ {base index} (state : source.State base index) (request : P.Shape base index),
+    sourceGate state request = targetGate (representation.map state) request
+  profiles_eq : ∀ {base index} (request : P.Shape base index),
+    sourceProfiles request = targetProfiles request
+  replay_eq : ∀ {base index} (request : P.Shape base index),
+    sourceReplay request = targetReplay request
+  invoice_eq : ∀ {base index} (state : source.State base index) (request : P.Shape base index),
+    sourceInvoice state request = targetInvoice (representation.map state) request
+
+namespace HandlerHom
+
+variable {source target : Cursor.Provider P}
+  {sourceGate : Gate (Denied := Denied) source}
+  {targetGate : Gate (Denied := Denied) target}
+  {sourceProfiles targetProfiles :
+    {base : Base} → {index : Index base} → P.Shape base index → Profile}
+  {sourceReplay targetReplay :
+    {base : Base} → {index : Index base} → P.Shape base index → Bool}
+  {sourceInvoice : Invoice source} {targetInvoice : Invoice target}
+  (h : HandlerHom source target sourceGate targetGate sourceProfiles targetProfiles
+    sourceReplay targetReplay sourceInvoice targetInvoice)
+
+theorem admit_eq {base : Base} {index : Index base}
+    (state : source.State base index) (request : P.Shape base index) (account : Account) :
+    admit source sourceGate sourceProfiles sourceReplay sourceInvoice state request account =
+      admit target targetGate targetProfiles targetReplay targetInvoice
+        (h.representation.map state) request account := by
+  dsimp only [admit]
+  rw [h.gate_eq, h.profiles_eq, h.replay_eq, h.invoice_eq]
+
+/-- The original step law and request-level admission laws construct a real
+homomorphism after authority, replay and account decoration.  Refusal maps the
+unchanged private state; an accepted reply maps its actual successor. -/
+def lift : Cursor.Hom
+    (provider source sourceGate sourceProfiles sourceReplay sourceInvoice)
+    (provider target targetGate targetProfiles targetReplay targetInvoice) where
+  map state := (h.representation.map state.1, state.2)
+  step state request := by
+    dsimp only [provider]
+    rw [← h.admit_eq]
+    cases admitted : admit source sourceGate sourceProfiles sourceReplay sourceInvoice
+        state.1 request state.2 with
+    | error reason => rfl
+    | ok account =>
+        rw [← h.representation.step state.1 request]
+
+theorem charge_eq {base : Base} {index : Index base}
+    (state : source.State base index × Account) (request : P.Shape base index) :
+    charge source sourceGate sourceProfiles sourceReplay sourceInvoice state request =
+      charge target targetGate targetProfiles targetReplay targetInvoice (h.lift.map state) request := by
+  dsimp only [charge, lift]
+  rw [← h.admit_eq, h.invoice_eq]
+
+variable (reader : Cursor.Client (P := P) (Return := Return)) (notice : Notice P Denied)
+
+def mapOutcome {base : Base}
+    (outcome : Outcome source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    Outcome target targetGate targetProfiles targetReplay targetInvoice reader notice base :=
+  h.lift.outcome (client reader notice) outcome
+
+theorem mapOutcome_account {base : Base}
+    (outcome : Outcome source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    accountOf target targetGate targetProfiles targetReplay targetInvoice reader notice
+      (h.mapOutcome reader notice outcome) =
+        accountOf source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice outcome := by
+  cases outcome with
+  | paused packet => rcases packet with ⟨index, control, state⟩; rfl
+  | done result => rcases result with ⟨index, value, state⟩; rfl
+
+/-- Rearming transports only the refusal notice.  The retained reply-selected
+continuation and its already paid account are the same on both sides. -/
+theorem mapOutcome_retry {base : Base}
+    (outcome : Outcome source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    h.mapOutcome reader notice
+      (retry source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice outcome) =
+        retry target targetGate targetProfiles targetReplay targetInvoice reader notice
+          (h.mapOutcome reader notice outcome) := by
+  cases outcome with
+  | paused packet => rcases packet with ⟨index, control, state⟩; rfl
+  | done result => rcases result with ⟨index, value, state⟩; cases value <;> rfl
+
+theorem run (fuel : Nat) {base : Base}
+    (packet : Cursor.Packet
+      (provider source sourceGate sourceProfiles sourceReplay sourceInvoice)
+      (client (Denied := Denied) reader notice) base) :
+    ((Indexed.run source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice fuel packet).1,
+      h.mapOutcome reader notice
+        (Indexed.run source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice fuel packet).2) =
+      Indexed.run target targetGate targetProfiles targetReplay targetInvoice reader notice fuel
+        (h.lift.packet (client reader notice) packet) :=
+  h.lift.advance_account (client reader notice)
+    (charge source sourceGate sourceProfiles sourceReplay sourceInvoice)
+    (charge target targetGate targetProfiles targetReplay targetInvoice)
+    h.charge_eq fuel packet
+
+theorem resume (fuel : Nat) {base : Base}
+    (previous : Nat × Outcome source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    ((Indexed.resume source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice fuel previous).1,
+      h.mapOutcome reader notice
+        (Indexed.resume source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice fuel previous).2) =
+      Indexed.resume target targetGate targetProfiles targetReplay targetInvoice reader notice fuel
+        (previous.1, h.mapOutcome reader notice previous.2) :=
+  h.lift.resume_account (client reader notice)
+    (charge source sourceGate sourceProfiles sourceReplay sourceInvoice)
+    (charge target targetGate targetProfiles targetReplay targetInvoice)
+    h.charge_eq fuel previous
+
+/-- Replacing the current permission test requires a new local agreement law;
+the old permission is not retained as authority inside the mapped state. -/
+def withGates (nextSource : Gate (Denied := Denied) source)
+    (nextTarget : Gate (Denied := Denied) target)
+    (agrees : ∀ {base index} (state : source.State base index) (request : P.Shape base index),
+      nextSource state request = nextTarget (h.representation.map state) request) :
+    HandlerHom source target nextSource nextTarget sourceProfiles targetProfiles
+      sourceReplay targetReplay sourceInvoice targetInvoice where
+  representation := h.representation
+  gate_eq := agrees
+  profiles_eq := h.profiles_eq
+  replay_eq := h.replay_eq
+  invoice_eq := h.invoice_eq
+
+theorem mapOutcome_replaceGate (nextSource : Gate (Denied := Denied) source)
+    (nextTarget : Gate (Denied := Denied) target)
+    (agrees : ∀ {base index} (state : source.State base index) (request : P.Shape base index),
+      nextSource state request = nextTarget (h.representation.map state) request)
+    {base : Base}
+    (previous : Outcome source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    (h.withGates nextSource nextTarget agrees).mapOutcome reader notice
+      (replaceGate source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice nextSource previous) =
+      replaceGate target targetGate targetProfiles targetReplay targetInvoice reader notice nextTarget
+        (h.mapOutcome reader notice previous) := by
+  cases previous with
+  | paused packet => rcases packet with ⟨index, control, state⟩; rfl
+  | done result => rcases result with ⟨index, value, state⟩; rfl
+
+/-- Local handler substitutions compose through the actual intermediate
+representation.  The composed decorator still checks the current target gate
+and retains exactly the source's ordered semantic invoice. -/
+def comp {third : Cursor.Provider P}
+    {thirdGate : Gate (Denied := Denied) third}
+    {thirdProfiles : {base : Base} → {index : Index base} → P.Shape base index → Profile}
+    {thirdReplay : {base : Base} → {index : Index base} → P.Shape base index → Bool}
+    {thirdInvoice : Invoice third}
+    (next : HandlerHom target third targetGate thirdGate targetProfiles thirdProfiles
+      targetReplay thirdReplay targetInvoice thirdInvoice) :
+    HandlerHom source third sourceGate thirdGate sourceProfiles thirdProfiles
+      sourceReplay thirdReplay sourceInvoice thirdInvoice where
+  representation := h.representation.comp next.representation
+  gate_eq state request := (h.gate_eq state request).trans (next.gate_eq _ request)
+  profiles_eq request := (h.profiles_eq request).trans (next.profiles_eq request)
+  replay_eq request := (h.replay_eq request).trans (next.replay_eq request)
+  invoice_eq state request := (h.invoice_eq state request).trans (next.invoice_eq _ request)
+
+theorem lift_comp {third : Cursor.Provider P}
+    {thirdGate : Gate (Denied := Denied) third}
+    {thirdProfiles : {base : Base} → {index : Index base} → P.Shape base index → Profile}
+    {thirdReplay : {base : Base} → {index : Index base} → P.Shape base index → Bool}
+    {thirdInvoice : Invoice third}
+    (next : HandlerHom target third targetGate thirdGate targetProfiles thirdProfiles
+      targetReplay thirdReplay targetInvoice thirdInvoice) :
+    (h.comp next).lift = h.lift.comp next.lift := rfl
+
+/-- Transport the existing invocation without re-running its submission,
+prefix, or transaction.  Only the provider's private representation changes. -/
+def invocation {Key Value : Type} {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    Invocation (Key := Key) (Value := Value)
+      target targetGate targetProfiles targetReplay targetInvoice reader notice base where
+  submission := held.submission
+  spent := held.spent
+  outcome := h.mapOutcome reader notice held.outcome
+
+@[simp] theorem invocation_submission {Key Value : Type} {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    (h.invocation reader notice held).submission = held.submission := rfl
+
+@[simp] theorem invocation_reads {Key Value : Type} {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    (h.invocation reader notice held).reads = held.reads := rfl
+
+@[simp] theorem invocation_spent {Key Value : Type} {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    (h.invocation reader notice held).spent = held.spent := rfl
+
+theorem invocation_account {Key Value : Type} {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    (h.invocation reader notice held).account = held.account :=
+  h.mapOutcome_account reader notice held.outcome
+
+theorem invocation_history_iff {Key Value : Type} {base : Base}
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base)
+    (history : NativePoll.History) :
+    Invocation.PollHistoryCovers (source := target) (gate := targetGate) (profiles := targetProfiles)
+      (replay := targetReplay) (invoice := targetInvoice) (reader := reader) (notice := notice)
+      (h.invocation reader notice held) history ↔
+    Invocation.PollHistoryCovers (source := source) (gate := sourceGate) (profiles := sourceProfiles)
+      (replay := sourceReplay) (invoice := sourceInvoice) (reader := reader) (notice := notice)
+      held history := by
+  unfold Invocation.PollHistoryCovers
+  rw [h.invocation_account]
+
+/-- Readiness is witnessed by the same actual terminal reply and writes, at
+its reply-selected index; it is never inferred merely from a copied payload. -/
+theorem invocation_ready {Key Value : Type} {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := sourceGate) (profiles := sourceProfiles)
+      (replay := sourceReplay) (invoice := sourceInvoice) (reader := reader) (notice := notice) writes held) :
+    Invocation.Ready (source := target) (gate := targetGate) (profiles := targetProfiles)
+      (replay := targetReplay) (invoice := targetInvoice) (reader := reader) (notice := notice)
+      writes (h.invocation reader notice held) := by
+  obtain ⟨index, value, state, terminal, realizes⟩ := ready
+  refine ⟨index, value, h.lift.map state, ?_, realizes⟩
+  change h.mapOutcome reader notice held.outcome = _
+  rw [terminal]
+  rfl
+
+/-- Handler replacement and installing current permission commute with actual
+retained retry/resumption.  The already paid prefix is transported, not run
+again, and the next source and target gates govern all new requests. -/
+theorem invocation_resumeWith {Key Value : Type} {base : Base}
+    (nextSource : Gate (Denied := Denied) source)
+    (nextTarget : Gate (Denied := Denied) target)
+    (agrees : ∀ {base index} (state : source.State base index) (request : P.Shape base index),
+      nextSource state request = nextTarget (h.representation.map state) request)
+    (fuel : Nat)
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base) :
+    (h.withGates nextSource nextTarget agrees).invocation reader notice
+      (held.resumeWith source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice nextSource fuel) =
+      (h.invocation reader notice held).resumeWith
+        target targetGate targetProfiles targetReplay targetInvoice reader notice nextTarget fuel := by
+  have transported := (h.withGates nextSource nextTarget agrees).resume reader notice fuel
+    (held.spent, retry source nextSource sourceProfiles sourceReplay sourceInvoice reader notice
+      (replaceGate source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice
+        nextSource held.outcome))
+  rw [mapOutcome_retry, h.mapOutcome_replaceGate reader notice nextSource nextTarget agrees] at transported
+  exact congrArg
+    (fun result : Nat × Outcome target nextTarget targetProfiles targetReplay targetInvoice reader notice base =>
+      (⟨held.submission, result.1, result.2⟩ : Invocation (Key := Key) (Value := Value)
+        target nextTarget targetProfiles targetReplay targetInvoice reader notice base)) transported
+
+/-- Retry branches retain the transported invocation and exact history;
+committed branches retain the same resulting shared store and history. -/
+def publication {Key Value : Type} {base : Base} :
+    Invocation.PublicationResult (Key := Key) (Value := Value)
+      (source := source) (gate := sourceGate) (profiles := sourceProfiles)
+      (replay := sourceReplay) (invoice := sourceInvoice) (reader := reader) (notice := notice) base →
+    Invocation.PublicationResult (Key := Key) (Value := Value)
+      (source := target) (gate := targetGate) (profiles := targetProfiles)
+      (replay := targetReplay) (invoice := targetInvoice) (reader := reader) (notice := notice) base
+  | .authorityRefused reason held history => .authorityRefused reason (h.invocation reader notice held) history
+  | .dependencyConflict held history => .dependencyConflict (h.invocation reader notice held) history
+  | .committed next history => .committed next history
+
+/-- A representation substitution preserves the current-authority and
+dependency-validation decision, including the complete retained retry branch.
+The authority input is supplied now, independently of the phase handler. -/
+theorem publishCurrent {Key Value : Type} [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld] {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := sourceGate) (profiles := sourceProfiles)
+      (replay := sourceReplay) (invoice := sourceInvoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority) (required : authority.Fibre point.world)
+    [Decidable (FrameUpdate point.authority required)] (denied : Denied)
+    (current : Key → Value) :
+    h.publication reader notice
+      (held.publishCurrent source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice
+        writes ready history authority point required denied current) =
+      (h.invocation reader notice held).publishCurrent
+        target targetGate targetProfiles targetReplay targetInvoice reader notice writes
+        (h.invocation_ready reader notice writes held ready) history authority point required denied current := by
+  dsimp only [Invocation.publishCurrent, invocation]
+  split
+  · cases ValidatedCommit.commit current
+      (ValidatedCommit.propose held.submission.1 held.submission.2) <;> rfl
+  · rfl
+
+/-- The full generation-bearing handle is a current publication input on both
+representations.  Substitution cannot revive an earlier grant incarnation. -/
+theorem publishCheckedGrant {Key Value : Type} [DecidableEq Key] [DecidableEq Value]
+    {AuthorityWorld : Type} [Category.{0} AuthorityWorld]
+    {Provider Resource : Type} [DecidableEq Provider] [DecidableEq Resource]
+    {base : Base}
+    (writes : {index : Index base} → Return base index → ValidatedCommit.Writes Key Value)
+    (held : Invocation (Key := Key) (Value := Value)
+      source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice base)
+    (ready : Invocation.Ready (source := source) (gate := sourceGate) (profiles := sourceProfiles)
+      (replay := sourceReplay) (invoice := sourceInvoice) (reader := reader) (notice := notice) writes held)
+    (history : NativePoll.History)
+    (authority : IndexedAuthority.{0, 0, 0} AuthorityWorld)
+    (point : IndexedAuthority.Point authority)
+    (requirement : CheckedGrant.Requirement Provider Resource (authority.Fibre point.world))
+    (currentHandle : ForeignCapabilityLightcone.Handle Provider Resource)
+    [Decidable (FrameUpdate point.authority requirement.required)] (denied : Denied)
+    (current : Key → Value) :
+    h.publication reader notice
+      (held.publishCheckedGrant source sourceGate sourceProfiles sourceReplay sourceInvoice reader notice
+        writes ready history authority point requirement currentHandle denied current) =
+      (h.invocation reader notice held).publishCheckedGrant
+        target targetGate targetProfiles targetReplay targetInvoice reader notice writes
+        (h.invocation_ready reader notice writes held ready) history authority point requirement
+        currentHandle denied current := by
+  dsimp only [Invocation.publishCheckedGrant]
+  split
+  · exact h.publishCurrent reader notice writes held ready history authority point requirement.required denied current
+  · rfl
+
+end HandlerHom
+
+#print axioms HandlerHom.admit_eq
+#print axioms HandlerHom.lift
+#print axioms HandlerHom.charge_eq
+#print axioms HandlerHom.run
+#print axioms HandlerHom.resume
+#print axioms HandlerHom.mapOutcome_account
+#print axioms HandlerHom.mapOutcome_retry
+#print axioms HandlerHom.mapOutcome_replaceGate
+#print axioms HandlerHom.lift_comp
+#print axioms HandlerHom.invocation_account
+#print axioms HandlerHom.invocation_history_iff
+#print axioms HandlerHom.invocation_ready
+#print axioms HandlerHom.invocation_resumeWith
+#print axioms HandlerHom.publishCurrent
+#print axioms HandlerHom.publishCheckedGrant
+
 #print axioms currentGate_ok_iff
 #print axioms step_account
 #print axioms advance_account
@@ -1537,6 +3396,20 @@ theorem Invocation.commitAll_serial {base : Base} (store : Key → Value)
 #print axioms resume_account
 #print axioms Invocation.replaceGate_account
 #print axioms Invocation.resumeWith_account
+#print axioms CheckedGrant.Requirement.current_iff
+#print axioms CheckedGrant.Requirement.not_current_of_generation_ne
+#print axioms CheckedDecision.retry_missing
+#print axioms CheckedDecision.retry_current
+#print axioms CheckedDecision.retry_stale_generation
+#print axioms CheckedDecision.retry_authority_refused
+#print axioms CheckedDecision.retry_existing_ne_execute
+#print axioms CheckedDecision.retry_eq_execute_iff
+#print axioms Invocation.publishCheckedGrant_stale
+#print axioms Invocation.publishCheckedGrant_current
+#print axioms Invocation.publishCheckedGrant_fresh
+#print axioms Invocation.publishCurrent_authorityRefused
+#print axioms Invocation.publishCurrent_dependencyConflict
+#print axioms Invocation.publishCurrent_fresh
 #print axioms Invocation.publish_denied
 #print axioms Invocation.publish_refused_iff
 #print axioms Invocation.publish_fresh

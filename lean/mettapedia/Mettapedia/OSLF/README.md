@@ -278,23 +278,24 @@ This is the core "derive a type system from operational semantics" path.
 
 ### Native-type endpoints
 
-`Mettapedia/OSLF/NativeType/` implements the components identified by
-`Mettapedia/OSLF/Framework/NTTClaimTracker.lean`. The tracker distinguishes proved
-endpoints from remaining source obligations; its metadata checks do not prove
-that an endpoint has the mathematical strength of the cited paper statement.
+`Mettapedia/OSLF/PresheafNativeType/` and `Mettapedia/GSLT/Topos/` implement the
+components identified by `Mettapedia/OSLF/Framework/NTTClaimTracker.lean`. The tracker
+distinguishes proved endpoints from remaining source obligations; its metadata checks
+do not prove that an endpoint has the mathematical strength of the cited paper
+statement.
 
-- `Construction.lean`
-  - `NatType`
+- `Mettapedia/OSLF/PresheafNativeType/PresheafSemantics.lean`
   - `piType`
   - `sigmaType`
   - `TheoryMorphism`
-- `CodomainFibration.lean`
-  - `Prop 12`
-  - `Prop 14`
-  - `Prop 17`
-  - `Def 21`
-  - `Sec 4`
-  - `Thm 23`
+- `Mettapedia/OSLF/PresheafNativeType/InternalLanguage.lean`
+  - Prop 12: `prop12_package`, `prop12_beckChevalley`
+  - Prop 14: `prop14_cosmicFibration`
+  - Def 21: `def21_codomainFibration`
+  - Sec 4: the image–comprehension adjunction
+  - Thm 23: `thm23_internalLanguagePackage`
+- `Mettapedia/GSLT/Topos/PresheafPredicateReification.lean`
+  - Prop 17: `reify_adjunction`
 - `Mettapedia/OSLF/Framework/NTTClaimTracker.lean`
   - `AssumptionNecessity.types_nonempty_necessary_for_piSigma`
 
@@ -360,7 +361,7 @@ The current boundary isn't full premise-rich MeTTaFull ingestion.
 ## References
 
 - L. Gregory Meredith and Mike Stay, ["Operational Semantics in Logical Form" (2020)](../../../../papers/references.bib) — the source OSLF algorithm, cited in the local bibliography; see also this project's [Lean 4 OSLF writeup](../../../../papers/leanOSLF.pdf).
-- Christian Williams and Mike Stay, ["Native Type Theory"](https://arxiv.org/abs/2102.04672) — categorical foundation for the [`NativeType/`](NativeType/) endpoints and [`NTTClaimTracker.lean`](Framework/NTTClaimTracker.lean).
+- Christian Williams and Mike Stay, ["Native Type Theory"](https://arxiv.org/abs/2102.04672) — categorical foundation for the [`PresheafNativeType/`](PresheafNativeType/) endpoints and [`NTTClaimTracker.lean`](Framework/NTTClaimTracker.lean).
 - Mike Stay, L. Gregory Meredith, and Christian Wells, ["Generating Hypercubes of Type Systems"](https://github.com/F1R3FLY-io/publications/blob/main/drafts/Hypercube/main.pdf) — modal type-former and hypercube background for [`ModalHypercube.lean`](Framework/ModalHypercube.lean) and related GSLT functor files.
 - [`../../../../papers/leanOSLF.pdf`](../../../../papers/leanOSLF.pdf) — this project's Lean 4 formalization writeup.
 - [`../../../../papers/MeTTaIL.pdf`](../../../../papers/MeTTaIL.pdf) and [`F1R3FLY-io/mettail-rust`](https://github.com/F1R3FLY-io/mettail-rust) — the MeTTaIL specification/runtime-generation companion.

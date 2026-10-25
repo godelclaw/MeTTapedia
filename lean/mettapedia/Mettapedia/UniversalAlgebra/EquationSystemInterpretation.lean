@@ -1,4 +1,5 @@
 import Mettapedia.UniversalAlgebra.Interpretation
+import Mettapedia.UniversalAlgebra.EquationalLogic
 
 /-!
 # Interpretations between equation systems
@@ -40,32 +41,6 @@ theorem translate_comp (first : Signature.Interpretation S T)
 
 end Equation
 
-namespace EquationalConsequence
-
-/-- Equational consequence is congruent under arbitrary simultaneous
-substitution into a common term context. -/
-theorem substitution_congr {system : EquationSystem S} (context : Term S)
-    (left right : Nat → Term S)
-    (components : ∀ index,
-      EquationalConsequence system (left index, right index)) :
-    EquationalConsequence system (context.subst left, context.subst right) := by
-  induction context with
-  | var index => exact components index
-  | op symbol arguments ih =>
-      refine Derives.node
-        (List.ofFn fun position =>
-          ((arguments position).subst left,
-            (arguments position).subst right)) _
-        (EquationalRule.congruence symbol
-          (fun position => (arguments position).subst left)
-          (fun position => (arguments position).subst right)) ?_
-      intro premise member
-      rw [List.mem_ofFn] at member
-      obtain ⟨position, rfl⟩ := member
-      exact ih position
-
-end EquationalConsequence
-
 namespace EquationSystem
 
 /-- A structural interpretation of one equation system in another.  The
@@ -88,59 +63,34 @@ theorem mapConsequence {source : EquationSystem S}
       EquationalConsequence target
         (equation.translate interpretation.symbols) := by
   intro derivation
-  refine Derives.least
-    (fun equation : Equation S => EquationalConsequence target
-      (equation.translate interpretation.symbols)) ?_ derivation
-  intro premises conclusion rule premiseDerivations
-  cases rule with
-  | systemInstance member substitution =>
-      have translatedAxiom := interpretation.axiom_consequence _ member
-      have substituted := EquationalConsequence.subst translatedAxiom
-        (fun index => (substitution index).translate interpretation.symbols)
-      simpa only [Equation.translate, Equation.subst, Term.translate_subst]
-        using substituted
-  | refl term =>
-      exact Derives.node [] _
-        (EquationalRule.refl (term.translate interpretation.symbols))
-        (by intro premise member; cases member)
-  | symm left right =>
-      refine Derives.node
-        [(left.translate interpretation.symbols,
-          right.translate interpretation.symbols)] _
-        (EquationalRule.symm _ _) ?_
-      intro premise member
-      simp only [List.mem_singleton] at member
-      subst premise
-      exact premiseDerivations (left, right) (by simp)
-  | trans left middle right =>
-      refine Derives.node
-        [(left.translate interpretation.symbols,
-          middle.translate interpretation.symbols),
-         (middle.translate interpretation.symbols,
-          right.translate interpretation.symbols)] _
-        (EquationalRule.trans _ _ _) ?_
-      intro premise member
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at member
-      rcases member with rfl | rfl
-      · exact premiseDerivations (left, middle) (by simp)
-      · exact premiseDerivations (middle, right) (by simp)
-  | congruence symbol left right =>
-      apply EquationalConsequence.substitution_congr
-        (interpretation.symbols.operation symbol).1
-        (Term.finSubstitution (fun position =>
-          (left position).translate interpretation.symbols))
-        (Term.finSubstitution (fun position =>
-          (right position).translate interpretation.symbols))
-      intro index
-      by_cases below : index < S.arity symbol
-      · simp only [Term.finSubstitution, below, dite_true]
-        exact premiseDerivations (left ⟨index, below⟩, right ⟨index, below⟩)
-          (by
-            rw [List.mem_ofFn]
-            exact ⟨⟨index, below⟩, rfl⟩)
-      · simp only [Term.finSubstitution, below, dite_false]
-        exact Derives.node [] _ (EquationalRule.refl (.var index))
-          (by intro premise member; cases member)
+  refine derivation.induction_on
+    (P := fun equation => EquationalConsequence target
+      (equation.translate interpretation.symbols)) ?_ ?_ ?_ ?_ ?_
+  · intro equation member substitution
+    have translatedAxiom := interpretation.axiom_consequence _ member
+    have substituted := EquationalConsequence.subst translatedAxiom
+      (fun index => (substitution index).translate interpretation.symbols)
+    simpa only [Equation.translate, Equation.subst, Term.translate_subst]
+      using substituted
+  · intro term
+    exact EquationalConsequence.refl target (term.translate interpretation.symbols)
+  · intro _ _ derived
+    exact EquationalConsequence.symm derived
+  · intro _ _ _ first second
+    exact EquationalConsequence.trans first second
+  · intro symbol left right components
+    apply EquationalConsequence.substitution_congr
+      (interpretation.symbols.operation symbol).1
+      (Term.finSubstitution (fun position =>
+        (left position).translate interpretation.symbols))
+      (Term.finSubstitution (fun position =>
+        (right position).translate interpretation.symbols))
+    intro index
+    by_cases below : index < S.arity symbol
+    · simp only [Term.finSubstitution, below, dite_true]
+      exact components ⟨index, below⟩
+    · simp only [Term.finSubstitution, below, dite_false]
+      exact EquationalConsequence.refl target (.var index)
 
 /-- The identity signature interpretation preserves every equation system. -/
 def id (system : EquationSystem S) : Interpretation system system where
@@ -203,11 +153,7 @@ theorem holds_translate_iff_reduct {Carrier : Type w}
     (targetModel : Model T Carrier) (equation : Equation S) :
     (equation.translate interpretation).Holds targetModel ↔
       equation.Holds (targetModel.reduct interpretation) := by
-  constructor <;> intro holds valuation
-  · simpa only [Equation.translate, Equation.Holds,
-      Term.evaluate_translate] using holds valuation
-  · simpa only [Equation.translate, Equation.Holds,
-      Term.evaluate_translate] using holds valuation
+  simp only [Equation.Holds, Equation.translate, Term.evaluate_translate]
 
 end Equation
 

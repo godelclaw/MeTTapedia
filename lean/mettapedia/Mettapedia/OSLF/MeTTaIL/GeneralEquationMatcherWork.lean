@@ -55,6 +55,38 @@ theorem finishMatcher_tick (request : GeneralScopedMatchMachine.Request)
     finishMatcher request (GeneralScopedMatchMachine.tick request state) = finishMatcher request state := by
   rw [finishMatcher.eq_def request state, dif_neg (Bool.eq_false_iff.mp pending)]
 
+/-- The structurally recursive finisher agrees with any sufficiently long
+run of the small-step matcher.  This identifies the complete-machine runtime
+strategy with the finite-service strategy used by semantic clients. -/
+theorem finishMatcher_eq_run_of_enough (request : GeneralScopedMatchMachine.Request)
+    (state : GeneralScopedMatchMachine.State) (fuel : Nat)
+    (enough : agendaCost request state.agenda ≤ fuel) :
+    finishMatcher request state = GeneralScopedMatchMachine.run request fuel state := by
+  induction fuel generalizing state with
+  | zero =>
+      cases agenda : state.agenda with
+      | nil =>
+          have finished : GeneralScopedMatchMachine.complete state = true := by
+            simp [GeneralScopedMatchMachine.complete, agenda]
+          rw [finishMatcher_finished request state finished]
+          rfl
+      | cons work rest =>
+          have positive : 0 < agendaCost request state.agenda := by
+            rw [agenda, agendaCost_cons, workCost_eq]
+            omega
+          omega
+  | succ fuel ih =>
+      by_cases finished : GeneralScopedMatchMachine.complete state = true
+      · rw [finishMatcher_finished request state finished,
+          GeneralScopedMatchMachine.run_complete finished]
+      · have pending : GeneralScopedMatchMachine.complete state = false :=
+          Bool.eq_false_iff.mpr finished
+        rw [GeneralScopedMatchMachine.run,
+          ← finishMatcher_tick request state pending]
+        apply ih
+        have decrease := tick_cost (request := request) pending
+        omega
+
 theorem matcher_tick_prefix (request : GeneralScopedMatchMachine.Request)
     (state : GeneralScopedMatchMachine.State) :
     GeneralPremise.Scheduler.Prefix state.answers (GeneralScopedMatchMachine.tick request state).answers := by

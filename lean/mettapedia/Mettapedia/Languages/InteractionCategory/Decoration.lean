@@ -61,14 +61,14 @@ theorem visibleDecoration_redexRetypable : visibleDecoration.RedexRetypable := b
     intro left right next leftType rightType nextType
     apply HasType.constructor (rule := visibleDecoration.baseConstructor terms[3])
     · exact visibleDecoration.baseConstructor_mem _ (List.getElem_mem (by decide))
-    · simp [UsesBareCollection, visibleDecoration_act_parameters]
+    · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, visibleDecoration_act_parameters]
     · rw [visibleDecoration_act_parameters]
       exact .cons trivial rfl (HasType.fvar leftType)
         (.cons trivial rfl (HasType.fvar rightType)
           (.cons trivial rfl (HasType.fvar nextType) .nil))
   apply HasType.constructor (rule := visibleDecoration.baseConstructor terms[4])
   · exact visibleDecoration.baseConstructor_mem _ (List.getElem_mem (by decide))
-  · simp [UsesBareCollection, visibleDecoration_comp_parameters]
+  · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff, visibleDecoration_comp_parameters]
   · rw [visibleDecoration_comp_parameters]
     exact .cons trivial rfl (actTyped "a" "b" "p" rfl rfl rfl)
       (.cons trivial rfl (actTyped "b" "c" "q" rfl rfl rfl) .nil)
@@ -99,8 +99,7 @@ theorem visibleDecoration_wrappable : visibleDecoration.Wrappable := by
       (rule := costWrappedConstructor (theory := theory .visible) terms[4])
     · exact visibleDecoration.wrappedConstructor_mem (presentation .visible).contactConstructor
         (List.mem_attach _ _)
-    · simp [UsesBareCollection, costWrappedConstructor, terms, mapParameterType,
-        costWrappedTypeExpr]
+    · simp [UsesBareCollection, costWrappedConstructor, terms, mapParameterType]
     · change ArgumentsHaveTypes _ _ [] [.fvar "p", .fvar "q"]
         [.simple "first" (.base costWrappedSortName),
           .simple "second" (.base costWrappedSortName)]
@@ -110,8 +109,7 @@ theorem visibleDecoration_wrappable : visibleDecoration.Wrappable := by
     (rule := costWrappedConstructor (theory := theory .visible) terms[3])
   · exact visibleDecoration.wrappedConstructor_mem (actConstructor .visible)
       (List.mem_attach _ _)
-  · simp [UsesBareCollection, costWrappedConstructor, terms, mapParameterType,
-      costWrappedTypeExpr]
+  · simp [UsesBareCollection, costWrappedConstructor, terms, mapParameterType]
   · change ArgumentsHaveTypes _ _ []
       [.fvar "a", .fvar "c", .apply (costWrappedConstructorName "Comp") [.fvar "p", .fvar "q"]]
       [.simple "left" (.base (costBaseSortName "Label")),

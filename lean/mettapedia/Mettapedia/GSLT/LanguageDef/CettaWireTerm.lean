@@ -87,6 +87,34 @@ termination_by term => sizeOf term
   | cons value values inductionHypothesis =>
       simp [encodeList, decodeList, roundTrip, inductionHypothesis]
 
+/-- Successful decoding retains the complete source spelling when the
+element codec has the same property. Extra structure cannot disappear into
+an accepted list value. -/
+theorem encodeList_decodeList {α : Type u}
+    (decode : Term → Option α) (encode : α → Term)
+    (elementExact : ∀ term value, decode term = some value → encode value = term)
+    (term : Term) (values : List α)
+    (accepted : decodeList decode term = some values) :
+    encodeList encode values = term := by
+  unfold decodeList at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    rfl
+  · rename_i head tail
+    cases headDecoded : decode head with
+    | none => simp [headDecoded] at accepted
+    | some value =>
+        cases tailDecoded : decodeList decode tail with
+        | none => simp [headDecoded, tailDecoded] at accepted
+        | some rest =>
+            have same : value :: rest = values := by
+              simpa [headDecoded, tailDecoded] using accepted
+            subst values
+            rw [encodeList, elementExact head value headDecoded,
+              encodeList_decodeList decode encode elementExact tail rest tailDecoded]
+  · cases accepted
+termination_by sizeOf term
+
 /-- A verified element decoder gives an exact injective list encoder. -/
 theorem encodeList_injective_of_decode {α : Type u}
     (decode : Term → Option α) (encode : α → Term)

@@ -203,7 +203,7 @@ def shorterCode : Candidate where
   rw [show {x : ℝ≥0∞ | (1 = x ∨ 2 = x) ∨ 2 = x ∨ 4 = x} =
       ({1, 2, 4} : Set ℝ≥0∞) by
     ext x
-    simp only [Set.mem_setOf_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+    simp only [Set.mem_ofPred_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
     tauto]
   norm_num
 

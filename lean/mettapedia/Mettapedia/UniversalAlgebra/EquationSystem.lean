@@ -26,6 +26,11 @@ abbrev Equation (S : Signature.{u}) := Term S × Term S
 instance : Membership (Equation S) (EquationSystem S) :=
   ⟨fun system equation => equation ∈ system.equations⟩
 
+/-- Apply one simultaneous substitution to both sides of an equation. -/
+def Equation.subst (equation : Equation S) (substitution : Nat → Term S) : Equation S :=
+  (equation.1.subst substitution, equation.2.subst substitution)
+
+
 /-- An equation holds in a model when every valuation gives equal results. -/
 def Equation.Holds {Carrier : Type v} (model : Model S Carrier)
     (equation : Equation S) : Prop :=

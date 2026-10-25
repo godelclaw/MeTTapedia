@@ -75,7 +75,7 @@ theorem descent_deliver_inline_returns (state : State) (environment : Environmen
     cases result with
     | premise assignment event valid =>
       metta_call descent_checked
-      metta_eval [descent_scope_restore_returns state parameter initial assignment] with descent_checked
+      metta_eval with descent_checked
         unfolding [continuationTerm, resultTerm, answerTerm, goalTerm, expansionTerm, schedulerExpansionTerm, taskTerm,
           encodeList, encodeOption]
   | prependElement depth context parameter body index element elements initial middle event localTyped head tail =>

@@ -4,8 +4,9 @@ import Mettapedia.GSLT.LanguageDef.LF.Profiles
 /-!
 # Conversion-capable profile-parametric LF checker
 
-This is the executable reference for the indexed LF product profile combined
-with beta-delta-eta conversion.  The checker first establishes that a claimed
+This is the executable reference used with the historical MettaKernel
+kind-result curriculum profile and beta-delta-eta conversion.  The checker
+itself is profile-parametric.  It first establishes that a claimed
 type itself has a sort, then compares inferred and claimed types through the
 proved conversion normalizer.  Its soundness theorem targets an independently
 stated declarative typing relation.
@@ -324,12 +325,12 @@ private def typeTerm : Term := .srt .type
 private def typeIdentity : Term := .lam typeTerm (.var 0)
 private def typeIdentityType : Term := .pi typeTerm typeTerm
 
-theorem indexed_accepts_type_identity :
-    check 64 indexed [] [] typeIdentity typeIdentityType = true := by
+theorem mettaKernelPrototype_accepts_type_identity :
+    check 64 mettaKernelKindResultPrototype [] [] typeIdentity typeIdentityType = true := by
   decide
 
-theorem basic_rejects_type_identity :
-    check 64 basic [] [] typeIdentity typeIdentityType = false := by
+theorem standardLF_rejects_type_identity :
+    check 64 standardLF [] [] typeIdentity typeIdentityType = false := by
   decide
 
 private def etaConstructorType : Term := .pi typeTerm typeTerm
@@ -347,25 +348,28 @@ private def etaSignature : Sig :=
 
 /-- The typing checker uses eta conversion in a type argument, not merely in an
 isolated Boolean fixture. -/
-theorem indexed_accepts_eta_equivalent_type :
-    check 128 indexed etaSignature [] (.con "x") etaExpectedType = true := by
+theorem mettaKernelPrototype_accepts_eta_equivalent_type :
+    check 128 mettaKernelKindResultPrototype etaSignature [] (.con "x")
+      etaExpectedType = true := by
   decide
 
 private def unrelatedExpectedType : Term :=
   .app (.con "P") (.lam typeTerm typeTerm)
 
-theorem indexed_rejects_nonconvertible_type :
-    check 128 indexed etaSignature [] (.con "x") unrelatedExpectedType =
+theorem mettaKernelPrototype_rejects_nonconvertible_type :
+    check 128 mettaKernelKindResultPrototype etaSignature [] (.con "x")
+      unrelatedExpectedType =
       false := by
   decide
 
-theorem indexed_eta_fixture_sound :
-    Deriv indexed etaSignature [] (.con "x") etaExpectedType :=
-  S1 indexed_accepts_eta_equivalent_type
+theorem mettaKernelPrototype_eta_fixture_sound :
+    Deriv mettaKernelKindResultPrototype etaSignature [] (.con "x")
+      etaExpectedType :=
+  S1 mettaKernelPrototype_accepts_eta_equivalent_type
 
 #print axioms productResult?_mem
 #print axioms infer_check_sound
 #print axioms S1
-#print axioms indexed_eta_fixture_sound
+#print axioms mettaKernelPrototype_eta_fixture_sound
 
 end Mettapedia.GSLT.LanguageDef.LFConversionProfileChecker

@@ -55,7 +55,7 @@ private theorem typed_components {free : FreeTypeContext} {bound : List TypeExpr
   cases P <;> try exact .cons typed (.nil _ _)
   case collection kind elements rest =>
     cases kind <;> cases rest <;> try exact .cons typed (.nil _ _)
-    exact (bag_typing piBagTheory typed rfl).2.2
+    exact (bag_typing (piBagTheory.asBare rfl) typed rfl).2.2
 
 /-- Parallel composition preserves the process sort in any typing context. -/
 theorem piPar_hasType {free : FreeTypeContext} {bound : List TypeExpr}
@@ -64,7 +64,7 @@ theorem piPar_hasType {free : FreeTypeContext} {bound : List TypeExpr}
     (hQ : HasType piCalc free bound Q (.base "Proc")) :
     HasType piCalc free bound (piPar P Q) (.base "Proc") := by
   rw [piPar_components]
-  apply bag_hasType piBagTheory
+  apply bag_hasType (piBagTheory.asBare rfl)
   apply elementsHaveType_iff.mpr
   intro element member
   rcases List.mem_append.mp member with member | member
@@ -79,7 +79,7 @@ theorem piPar_equivalent_bag {free : FreeTypeContext} {bound : List TypeExpr}
     EquationEquiv (engineBasePremises RelationEnv.empty) piCalc
       (.collection .hashBag [P, Q] none) (piPar P Q) := by
   have initial : HasType piCalc free bound (.collection .hashBag [P, Q] none)
-      (.base "Proc") := bag_hasType piBagTheory (.cons hP (.cons hQ (.nil _ _)))
+      (.base "Proc") := bag_hasType (piBagTheory.asBare rfl) (.cons hP (.cons hQ (.nil _ _)))
   have sorted : SortedAt piCalc (.collection .hashBag [P, Q] none) "Proc" :=
     ⟨free, bound, initial⟩
   unfold piPar
@@ -87,7 +87,7 @@ theorem piPar_equivalent_bag {free : FreeTypeContext} {bound : List TypeExpr}
   · rename_i first second
     have firstStep := DerivedInstance.flatten piBagTheory.bagAlgebraRule rfl
       (pre := []) (inner := first) (post := [.collection .hashBag second none]) sorted
-    have intermediate := derived_hasType piBagTheory firstStep initial rfl
+    have intermediate := derived_hasType (piBagTheory.asBare rfl) firstStep initial rfl
     have secondStep := DerivedInstance.flatten piBagTheory.bagAlgebraRule rfl
       (pre := first) (inner := second) (post := []) ⟨free, bound, intermediate⟩
     exact .trans _ _ _ (derivedInstance_equivalent firstStep)
@@ -141,7 +141,7 @@ theorem piComm_named_semantic_step (channel bound datum : Name) (P : Process) :
       (piToPattern (P.substitute bound datum)) := by
   refine ⟨_, _, .refl _, piComm_named_step channel bound datum P [], ?_⟩
   exact derivedInstance_equivalent (.singleton piBagTheory.bagAlgebraRule rfl
-    ⟨piNameContext, [], bag_hasType piBagTheory (.cons (piToPattern_hasType _) (.nil _ _))⟩)
+    ⟨piNameContext, [], bag_hasType (piBagTheory.asBare rfl) (.cons (piToPattern_hasType _) (.nil _ _))⟩)
 
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open Mettapedia.OSLF.Framework.TypeSynthesis
@@ -218,7 +218,7 @@ theorem piPar_equivalent_comm {free : FreeTypeContext} {bound : List TypeExpr}
     EquationEquiv (engineBasePremises RelationEnv.empty) piCalc (piPar P Q) (piPar Q P) := by
   have swapped := derivedInstance_equivalent (base := engineBasePremises RelationEnv.empty)
     (DerivedInstance.bagPerm piBagTheory.bagCarrier
-      ⟨free, bound, bag_hasType piBagTheory (.cons hP (.cons hQ (.nil _ _)))⟩
+      ⟨free, bound, bag_hasType (piBagTheory.asBare rfl) (.cons hP (.cons hQ (.nil _ _)))⟩
       (List.Perm.swap Q P []))
   exact .trans _ _ _ (.symm _ _ (piPar_equivalent_bag hP hQ))
     (.trans _ _ _ swapped (piPar_equivalent_bag hQ hP))
@@ -232,9 +232,9 @@ theorem piPar_equivalent_unit_left {free : FreeTypeContext} {bound : List TypeEx
       (by simp [UsesBareCollection, piCalc]) .nil
   have erase := DerivedInstance.unitElim piBagTheory.bagAlgebraRule rfl
     (pre := []) (post := [P])
-    ⟨free, bound, bag_hasType piBagTheory (.cons nilTyped (.cons hP (.nil _ _)))⟩
+    ⟨free, bound, bag_hasType (piBagTheory.asBare rfl) (.cons nilTyped (.cons hP (.nil _ _)))⟩
   have single := DerivedInstance.singleton piBagTheory.bagAlgebraRule rfl
-    ⟨free, bound, bag_hasType piBagTheory (.cons hP (.nil _ _))⟩
+    ⟨free, bound, bag_hasType (piBagTheory.asBare rfl) (.cons hP (.nil _ _))⟩
   exact .trans _ _ _ (.symm _ _ (piPar_equivalent_bag nilTyped hP))
     (.trans _ _ _ (derivedInstance_equivalent erase) (derivedInstance_equivalent single))
 
@@ -260,16 +260,16 @@ theorem piPar_equivalent_assoc {free : FreeTypeContext} {bound : List TypeExpr}
   have leftFlat := derivedInstance_equivalent (base := engineBasePremises RelationEnv.empty)
     (DerivedInstance.flatten piBagTheory.bagAlgebraRule rfl
       (pre := []) (inner := [P,Q]) (post := [R])
-      ⟨free, bound, bag_hasType piBagTheory (.cons
-        (bag_hasType piBagTheory (.cons hP (.cons hQ (.nil _ _)))) (.cons hR (.nil _ _)))⟩)
+      ⟨free, bound, bag_hasType (piBagTheory.asBare rfl) (.cons
+        (bag_hasType (piBagTheory.asBare rfl) (.cons hP (.cons hQ (.nil _ _)))) (.cons hR (.nil _ _)))⟩)
   have rightOuter := piPar_equivalent_bag hP (piPar_hasType hQ hR)
   have rightInner := equationEquiv_fill (.collection .hashBag [P] .hole [] none)
     (.symm _ _ (piPar_equivalent_bag hQ hR))
   have rightFlat := derivedInstance_equivalent (base := engineBasePremises RelationEnv.empty)
     (DerivedInstance.flatten piBagTheory.bagAlgebraRule rfl
       (pre := [P]) (inner := [Q,R]) (post := [])
-      ⟨free, bound, bag_hasType piBagTheory (.cons hP (.cons
-        (bag_hasType piBagTheory (.cons hQ (.cons hR (.nil _ _)))) (.nil _ _)))⟩)
+      ⟨free, bound, bag_hasType (piBagTheory.asBare rfl) (.cons hP (.cons
+        (bag_hasType (piBagTheory.asBare rfl) (.cons hQ (.cons hR (.nil _ _)))) (.nil _ _)))⟩)
   have left : EquationEquiv (engineBasePremises RelationEnv.empty) piCalc
       (piPar (piPar P Q) R) (.collection .hashBag [P,Q,R] none) :=
     .trans _ _ _ (.symm _ _ leftOuter) (.trans _ _ _ leftInner leftFlat)

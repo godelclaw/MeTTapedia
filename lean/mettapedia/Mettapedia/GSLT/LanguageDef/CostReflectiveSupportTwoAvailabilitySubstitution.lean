@@ -235,7 +235,7 @@ inductive CollectionSupportView
   | collectionConstructor {rule : GrammarRule} {parameterName : String}
       {elementType : TypeExpr}
       (membership : rule ∈ language.terms)
-      (parameterShape : rule.params =
+      (parameterShape : rule.bareParams =
         [.simple parameterName (.collection collectionType elementType)])
       (typeEquality : type = .base rule.category)
       {elementsTyped : ElementsHaveType language free bound elements

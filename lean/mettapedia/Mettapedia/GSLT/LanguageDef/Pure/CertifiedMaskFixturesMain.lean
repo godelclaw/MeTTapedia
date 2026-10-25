@@ -74,9 +74,11 @@ private def renderIdentityInitial : String :=
 
 private def renderConversionBoundary : String :=
   let exactAccept :=
-    checkProof indexed exactTypeSignature [] .con (.con "betaTyped") betaRedexType
+    checkProof mettaKernelKindResultPrototype exactTypeSignature [] .con
+      (.con "betaTyped") betaRedexType
   let betaEquivalentAccept :=
-    checkProof indexed exactTypeSignature [] .con (.con "betaTyped") (.srt .type)
+    checkProof mettaKernelKindResultPrototype exactTypeSignature [] .con
+      (.con "betaTyped") (.srt .type)
   "{" ++
     "\"kind\":\"trust_boundary\"," ++
     "\"name\":\"beta_equivalent_not_syntactically_equal\"," ++

@@ -20,6 +20,7 @@ open Mettapedia.GSLT.LanguageDef.GauthierE2ListSemantics
 open Mettapedia.GSLT.LanguageDef.GauthierOEISSequenceSemantics
 open Mettapedia.Sequences.OEIS
 open Mettapedia.Sequences.OEIS.HofstadterConway
+open Mettapedia.Algorithms.DivisibilityScan
 
 /-- Reported program for OEIS A004001. -/
 def reportedA004001 : FrozenCandidate where
@@ -676,11 +677,12 @@ theorem reportedA000002_correct :
 private def cyclotomicPowerBody : GauthierE2ListSemantics.Program :=
   P.addi P.o (P.addi P.X P.X)
 
-private def cyclotomicStripBody : GauthierE2ListSemantics.Program :=
+/-- Remove one positive divisor from the candidate, retaining its archive. -/
+def divisibilityStripBody : GauthierE2ListSemantics.Program :=
   P.cond (P.modu P.X P.Y) (P.divi P.X P.Y) P.X
 
 private def cyclotomicOuterBody : GauthierE2ListSemantics.Program :=
-  P.loop2 cyclotomicStripBody (P.pop P.Y) P.Y
+  P.loop2 divisibilityStripBody (P.pop P.Y) P.Y
     (P.push (P.loop cyclotomicPowerBody P.Y P.o) P.X) P.X
 
 private theorem cyclotomicPowerBody_eval (exponent : Nat) (counter : Int) :
@@ -725,15 +727,13 @@ private theorem cyclotomicPowerBody_iterates (iterations : Nat) (counter : Int) 
       [Int.ofNat (2 ^ (iterations + 1) - 1)] := by
   simpa using cyclotomicPowerBody_iterates_from iterations 0 counter
 
-private theorem cyclotomicStripBody_eval
+theorem divisibilityStripBody_eval
     (candidate divisor : Nat) (archive divisorTail : List Nat)
     (divisorPositive : 0 < divisor) :
-    ListEval cyclotomicStripBody
+    ListEval divisibilityStripBody
       (Int.ofNat candidate :: archive.map Int.ofNat)
       (Int.ofNat divisor :: divisorTail.map Int.ofNat)
-      (Int.ofNat
-          (Mettapedia.Sequences.OEIS.CyclotomicSieve.removeIfDivides
-            candidate divisor) :: archive.map Int.ofNat) := by
+      (Int.ofNat (removeIfDivides candidate divisor) :: archive.map Int.ofNat) := by
   have xResult := list_x
     (Int.ofNat candidate :: archive.map Int.ofNat)
     (Int.ofNat divisor :: divisorTail.map Int.ofNat)
@@ -759,8 +759,7 @@ private theorem cyclotomicStripBody_eval
     rw [quotientEquality] at quotient
     have selected := list_cond_nonpositive (elseBranch := P.X) modulus
       (by simp [divides]) quotient
-    simpa [cyclotomicStripBody,
-      Mettapedia.Sequences.OEIS.CyclotomicSieve.removeIfDivides, divides]
+    simpa [divisibilityStripBody, removeIfDivides, divides]
       using selected
   · have remainderPositive : 0 < candidate % divisor :=
       Nat.pos_of_ne_zero divides
@@ -768,19 +767,16 @@ private theorem cyclotomicStripBody_eval
       (by
         rw [Int.ofNat_eq_natCast]
         exact Int.natCast_pos.mpr remainderPositive) xResult
-    simpa [cyclotomicStripBody,
-      Mettapedia.Sequences.OEIS.CyclotomicSieve.removeIfDivides, divides]
+    simpa [divisibilityStripBody, removeIfDivides, divides]
       using selected
 
-private theorem cyclotomicStrip_iterates : ∀ (divisors archive : List Nat)
+theorem divisibilityScan_iterates : ∀ (divisors archive : List Nat)
     (candidate : Nat),
     (∀ divisor ∈ divisors, 0 < divisor) →
-    Iterates2 cyclotomicStripBody (P.pop P.Y) divisors.length
+    Iterates2 divisibilityStripBody (P.pop P.Y) divisors.length
       (Int.ofNat candidate :: archive.map Int.ofNat)
       (divisors.map Int.ofNat)
-      (Int.ofNat
-          (Mettapedia.Sequences.OEIS.CyclotomicSieve.scan divisors candidate) ::
-        archive.map Int.ofNat) := by
+      (Int.ofNat (scan divisors candidate) :: archive.map Int.ofNat) := by
   intro divisors
   induction divisors with
   | nil =>
@@ -791,7 +787,7 @@ private theorem cyclotomicStrip_iterates : ∀ (divisors archive : List Nat)
       intro archive candidate divisorsPositive
       have divisorPositive : 0 < divisor :=
         divisorsPositive divisor (by simp)
-      have firstStep := cyclotomicStripBody_eval
+      have firstStep := divisibilityStripBody_eval
         candidate divisor archive divisors divisorPositive
       cases divisors with
       | nil =>
@@ -800,10 +796,8 @@ private theorem cyclotomicStrip_iterates : ∀ (divisors archive : List Nat)
               (Int.ofNat candidate :: archive.map Int.ofNat)
               [Int.ofNat divisor])
           have rest := Iterates2.zero
-            (first := cyclotomicStripBody) (second := P.pop P.Y)
-            (Int.ofNat
-                (Mettapedia.Sequences.OEIS.CyclotomicSieve.removeIfDivides
-                  candidate divisor) :: archive.map Int.ofNat)
+            (first := divisibilityStripBody) (second := P.pop P.Y)
+            (Int.ofNat (removeIfDivides candidate divisor) :: archive.map Int.ofNat)
             [Int.ofNat divisor]
           have execution := Iterates2.succ firstStep secondStep rest
           simpa using execution
@@ -816,10 +810,31 @@ private theorem cyclotomicStrip_iterates : ∀ (divisors archive : List Nat)
             intro value membership
             exact divisorsPositive value (by simp [membership])
           have rest := inductionHypothesis archive
-            (Mettapedia.Sequences.OEIS.CyclotomicSieve.removeIfDivides
-              candidate divisor) tailPositive
+            (removeIfDivides candidate divisor) tailPositive
           have execution := Iterates2.succ firstStep secondStep rest
           simpa using execution
+
+/-- Every successful fuelled run has exactly the arithmetic endpoint and
+the original archive. Conversely, that result has a successful run. -/
+theorem divisibilityScan_loop_result_iff (divisors archive : List Nat)
+    (candidate : Nat) (result : List Int)
+    (positive : ∀ divisor ∈ divisors, 0 < divisor) :
+    (∃ fuel, GauthierE2.loop2Iter fuel GauthierSkeleton.orgMemoSignature
+      divisibilityStripBody (P.pop P.Y) divisors.length
+      (Int.ofNat candidate :: archive.map Int.ofNat) (divisors.map Int.ofNat)
+      defaultWorld = some result) ↔
+    result = Int.ofNat (scan divisors candidate) ::
+      archive.map Int.ofNat := by
+  obtain ⟨goodFuel, good⟩ := loop2Iter_of_iterates
+    (divisibilityScan_iterates divisors archive candidate positive)
+  constructor
+  · rintro ⟨fuel, run⟩
+    have actual := GauthierE2Fuel.loop2Iter_mono_of_some (Nat.le_max_left fuel goodFuel) run
+    have expected := GauthierE2Fuel.loop2Iter_mono_of_some (Nat.le_max_right fuel goodFuel) good
+    rw [expected] at actual
+    exact (Option.some.inj actual).symm
+  · rintro rfl
+    exact ⟨goodFuel, good⟩
 
 private def cyclotomicHistory (step : Nat) : List Int :=
   (Mettapedia.Sequences.OEIS.CyclotomicSieve.build step).history.map Int.ofNat
@@ -851,14 +866,14 @@ private theorem cyclotomicOuterBody_eval (step : Nat) :
     (Mettapedia.Sequences.OEIS.CyclotomicSieve.build step).history
   have historyPositive : ∀ value ∈ history, 0 < value :=
     (Mettapedia.Sequences.OEIS.CyclotomicSieve.build step).positive
-  have stripExecution := cyclotomicStrip_iterates history history
+  have stripExecution := divisibilityScan_iterates history history
     (2 ^ (step + 2) - 1) historyPositive
   have stripExecution' :
-      Iterates2 cyclotomicStripBody (P.pop P.Y) (step + 1)
+      Iterates2 divisibilityStripBody (P.pop P.Y) (step + 1)
         (Int.ofNat (2 ^ (step + 1 + 1) - 1) :: cyclotomicHistory step)
         (cyclotomicHistory step)
         (Int.ofNat
-            (Mettapedia.Sequences.OEIS.CyclotomicSieve.scan history
+            (scan history
               (2 ^ (step + 2) - 1)) :: cyclotomicHistory step) := by
     simpa [history, cyclotomicHistory, add_assoc] using stripExecution
   have loopResult := list_loop2 countResult firstInitial
@@ -869,7 +884,7 @@ private theorem cyclotomicOuterBody_eval (step : Nat) :
   have mappedNext := congrArg (List.map Int.ofNat) nextHistory
   have targetHistory : cyclotomicHistory (step + 1) =
       Int.ofNat
-          (Mettapedia.Sequences.OEIS.CyclotomicSieve.scan history
+          (scan history
             (2 ^ (step + 2) - 1)) :: cyclotomicHistory step := by
     simpa [cyclotomicHistory, history] using mappedNext
   rw [targetHistory]
@@ -930,7 +945,7 @@ theorem reportedA070526_computes_sieve (position : Nat) :
   rw [cyclotomicHistory_shape] at loopResult
   refine ⟨(cyclotomicHistory
     (Mettapedia.Sequences.OEIS.CyclotomicSieve.outerIterations position)).tail, ?_⟩
-  simpa [reportedA070526, cyclotomicOuterBody, cyclotomicStripBody,
+  simpa [reportedA070526, cyclotomicOuterBody, divisibilityStripBody,
     cyclotomicPowerBody] using loopResult
 
 /-- The reported nested-loop program realizes OEIS A070526 at every

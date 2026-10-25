@@ -468,15 +468,20 @@ private def parameterBody : Atom :=
     a "if" [a "gslt:premise:parameter-representation" [v "parameter", v "filled"],
       recurseBody, Effects.boolean false]]
 
-private def parameterCases : SpaceSemantics.Cases :=
-  [(a "Some" [v "parameter"], parameterBody), (v "_____________", Effects.boolean false)]
+private def parameterFallback : CollectionRepresentation → String
+  | .bare => "_____________"
+  | .wrapped => "______________"
 
-private def declarationBody : Atom := a "case" [a "gslt:rule:row-at" [v "index", v "parameters"],
-  .expression (parameterCases.map fun row => .expression [row.1, row.2])]
+private def parameterCases (mode : CollectionRepresentation) : SpaceSemantics.Cases :=
+  [(a "Some" [v "parameter"], parameterBody), (v (parameterFallback mode), Effects.boolean false)]
+
+private def declarationBody (mode : CollectionRepresentation) : Atom := a "case" [a "gslt:rule:row-at" [v "index", v "parameters"],
+  .expression ((parameterCases mode).map fun row => .expression [row.1, row.2])]
 
 private def declarationCases : SpaceSemantics.Cases :=
-  [(a "Some" [a "GrammarTypingV1" [v "label", v "category", v "parameters"]], declarationBody),
-   (v "______________", Effects.boolean false)]
+  [(a "Some" [a "GrammarTypingV1" [v "label", v "category", v "parameters"]], declarationBody .bare),
+   (a "Some" [a "GrammarTypingWrappedV1" [v "label", v "category", v "parameters"]], declarationBody .wrapped),
+   (v "_______________", Effects.boolean false)]
 
 private def applicationBody : Atom := a "case" [a "gslt:rule:row-at" [v "declaration", v "declarations"],
   .expression (declarationCases.map fun row => .expression [row.1, row.2])]
@@ -493,7 +498,7 @@ private def representationCases : SpaceSemantics.Cases :=
       a "LCons" [a "TypingDirectCollection" [v "frameKind"], v "tail"]], recurseBody),
    (a "ReplacementShape" [a "ContextCollection" [v "kind", v "before", v "inner", v "after", v "rest"],
       a "LCons" [a "TypingAuthoredCollection" [v "declaration"], v "tail"]], recurseBody),
-   (v "_______________", Effects.boolean false)]
+   (v "________________", Effects.boolean false)]
 
 private theorem representation_shape : (equation .represented).body =
     a "case" [a "ReplacementShape" [v "context", v "frames"],
@@ -524,7 +529,7 @@ private def representationBindings (context : OneHoleContext) (frames : List Typ
        ("rest", encoded (InferenceCettaWire.encodeRest rest)), ("after", encoded (InferenceCettaWire.encodePatterns after)),
        ("inner", contextValue inner), ("before", encoded (InferenceCettaWire.encodePatterns before)),
        ("kind", encoded (InferenceCettaWire.encodeCollectionType kind))]
-  | context, frames => [("_______________", a "ReplacementShape" [contextValue context, framesValue frames])]
+  | context, frames => [("________________", a "ReplacementShape" [contextValue context, framesValue frames])]
 
 private def representationBody : OneHoleContext → List TypingFrame → Atom
   | .hole, [] => Effects.boolean true
@@ -611,7 +616,7 @@ private theorem representation_application_returns (state : State) (language : L
   unfold applicationBody
   cases declared : language.terms[declaration]? with
   | none =>
-      apply branch_returns caller (("______________", .symbol "None") :: caller) state
+      apply branch_returns caller (("_______________", .symbol "None") :: caller) state
         (a "gslt:rule:row-at" [v "declaration", v "declarations"]) (.symbol "None")
         declarationCases (Effects.boolean false)
       · simpa [declared, encodeOption, CettaWireAtom.encode] using lookup
@@ -625,13 +630,13 @@ private theorem representation_application_returns (state : State) (language : L
       apply branch_returns caller parsed state
         (a "gslt:rule:row-at" [v "declaration", v "declarations"])
         (encoded (.application "Some" [InferenceCettaWire.AuthoredRule.typingDeclarationTerm grammar]))
-        declarationCases declarationBody
+        declarationCases (declarationBody grammar.collectionRepresentation)
       · simpa [declared, encodeOption, CettaWireAtom.encode] using lookup
-      · simp [declarationCases, parsed, declarationCaller, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
+      · cases mode : grammar.collectionRepresentation <;> simp [mode, declarationCases, parsed, declarationCaller, InferenceCettaWire.AuthoredRule.typingDeclarationTerm,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
           matchAtom, Subst.lookup, caller, applicationCaller, representationBindings, environment,
           representationValues, Helper.names, CettaWireAtom.encode, CettaWireAtom.encodeMany]
-        rfl
+        all_goals rfl
       · have lookupParameter := row_captured_returns parsed state index grammar.params
           InferenceCettaWire.AuthoredRule.parameterTerm "index" "parameters" (by
             simp [parsed, declarationCaller, caller, applicationCaller, representationBindings,
@@ -639,11 +644,11 @@ private theorem representation_application_returns (state : State) (language : L
         unfold declarationBody
         cases parameterFound : grammar.params[index]? with
         | none =>
-            apply branch_returns parsed (("_____________", .symbol "None") :: parsed) state
+            apply branch_returns parsed ((parameterFallback grammar.collectionRepresentation, .symbol "None") :: parsed) state
               (a "gslt:rule:row-at" [v "index", v "parameters"]) (.symbol "None")
-              parameterCases (Effects.boolean false)
+              (parameterCases grammar.collectionRepresentation) (Effects.boolean false)
             · simpa [parameterFound, encodeOption, CettaWireAtom.encode] using lookupParameter
-            · simp [parameterCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
+            · cases grammar.collectionRepresentation <;> simp [parameterCases, parameterFallback, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
                 matchAtom, Subst.lookup, parsed, declarationCaller,
                 caller, applicationCaller, representationBindings, environment, representationValues, Helper.names]
             · simpa [GeneralTypedOccurrence.replacementRepresentations?, declared, parameterFound,
@@ -652,9 +657,9 @@ private theorem representation_application_returns (state : State) (language : L
             let selected := ("parameter", encoded (InferenceCettaWire.AuthoredRule.parameterTerm parameter)) :: parsed
             apply branch_returns parsed selected state (a "gslt:rule:row-at" [v "index", v "parameters"])
               (encoded (.application "Some" [InferenceCettaWire.AuthoredRule.parameterTerm parameter]))
-              parameterCases parameterBody
+              (parameterCases grammar.collectionRepresentation) parameterBody
             · simpa [parameterFound, encodeOption, CettaWireAtom.encode] using lookupParameter
-            · simp [parameterCases, selected, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
+            · cases grammar.collectionRepresentation <;> simp [parameterCases, parameterFallback, selected, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
                 SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, parsed, declarationCaller,
                 caller, applicationCaller, representationBindings, environment, representationValues,
                 Helper.names, CettaWireAtom.encode, CettaWireAtom.encodeMany]
@@ -1055,6 +1060,7 @@ def executionHeadNames : List String :=
    "ContextSubstReplacement",
    "FVar",
    "GrammarTypingV1",
+   "GrammarTypingWrappedV1",
    "LCons",
    "LNil",
    "None",

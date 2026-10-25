@@ -126,9 +126,10 @@ theorem arguments_complete {context : Context} {index : Nat} {initial final : As
   induction held with
   | nil => rfl
   | input interpreted tail ih =>
+      dsimp only [ordinaryInterpretation] at interpreted
       obtain ⟨later, ran, same⟩ := Option.map_eq_some_iff.mp ih
       cases same
-      simp only [arguments?.eq_2, interpreted, ↓reduceDIte, ran]
+      simp only [arguments?.eq_2, interpreted, true_and, ↓reduceDIte, ran]
       rfl
   | @output index initial middle final schema value schemas values modes trace origins matching tail ih =>
       obtain ⟨later, ran, same⟩ := Option.map_eq_some_iff.mp ih
@@ -391,7 +392,7 @@ def quantified? (environment : Environment) (context : Context) (parameter : Str
         let first ← premise? environment context.quantified body
           (bindParameter parameter (localValue context.bound element) initial) event
         let later ← quantified? environment context parameter body (index + 1) elements
-          (restoreParameter parameter initial first.val) events
+          initial events
         pure ⟨later.val, by
           rcases metadata with ⟨rfl, rfl, typed⟩
           exact .cons (checkTypedAssignment_sound typed) first.property later.property⟩

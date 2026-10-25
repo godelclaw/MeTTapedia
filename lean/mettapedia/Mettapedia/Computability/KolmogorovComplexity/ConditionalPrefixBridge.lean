@@ -3,10 +3,9 @@ import Mettapedia.Computability.KolmogorovComplexity.PrefixComplexity
 /-!
 # Conditional slices and effective reference-machine bounds
 
-Fixing an auxiliary condition preserves programs, outputs and shortest-program
-lengths. Output completeness gives the ordinary Kraft bounds; effective
-reference machines supply it at every condition. No simulation of arbitrary
-set-theoretic machines is assumed.
+Fixing a condition preserves programs, outputs and shortest lengths. Represented
+outputs have pointwise mass bounds; effective reference machines give the global
+Kraft bounds uniformly in the condition, without simulating arbitrary machines.
 -/
 
 namespace KolmogorovComplexity
@@ -18,6 +17,14 @@ theorem conditionalComplexity_eq_prefixComplexity_slice
     (U : ConditionalPrefixFreeMachine) (condition output : BinString) :
     Kc[U](output | condition) = Kpf[conditionalSlice U condition](output) :=
   conditionalComplexity_eq_kolmogorovComplexity_slice U condition output
+
+/-- A represented conditional output has at least its shortest-description weight. -/
+theorem conditionalComplexityWeight_le_outputMass (U : ConditionalPrefixFreeMachine)
+    (condition output : BinString) (represented : HasProgram U condition output) :
+    ENNReal.ofReal ((2 : ℝ) ^ (-(Kc[U](output | condition) : Int))) ≤
+      prefixOutputMass (U.compute · condition) output := by
+  rw [conditionalComplexity_eq_prefixComplexity_slice]
+  exact prefixComplexityWeight_le_outputMass (conditionalSlice U condition) output represented
 
 /-- A shortest program at any condition of an effective reference machine. -/
 noncomputable def shortestConditionalProgram
@@ -43,11 +50,9 @@ theorem sum_weightByConditionalComplexity_le_one
     (condition : BinString) (outputs : Finset BinString) :
     (∑ output ∈ outputs,
       (2 : ENNReal) ^ (-(Kc[U](output | condition) : Int))) ≤ 1 := by
-  let _ : OutputComplete (conditionalSlice U condition) :=
-    ⟨reference.hasProgram condition⟩
-  simpa only [conditionalComplexity_eq_prefixComplexity_slice] using
-    (sum_weightByKpf_le_one_ennreal
-      (U := conditionalSlice U condition) outputs)
+  simpa only [← ofReal_two_zpow_neg_nat, conditionalComplexity_eq_prefixComplexity_slice] using
+    sum_weightByKpf_le_one_on (conditionalSlice U condition) outputs
+      (fun output _ => reference.hasProgram condition output)
 
 /-- Countable conditional Kraft bound inherited from the fixed-condition slice. -/
 theorem tsum_weightByConditionalComplexity_le_one
@@ -55,10 +60,8 @@ theorem tsum_weightByConditionalComplexity_le_one
     (condition : BinString) :
     (∑' output : BinString,
       (2 : ENNReal) ^ (-(Kc[U](output | condition) : Int))) ≤ 1 := by
-  let _ : OutputComplete (conditionalSlice U condition) :=
-    ⟨reference.hasProgram condition⟩
-  simpa only [conditionalComplexity_eq_prefixComplexity_slice] using
-    (tsum_weightByKpf_le_one_ennreal (U := conditionalSlice U condition))
+  rw [ENNReal.tsum_eq_iSup_sum]
+  exact iSup_le (sum_weightByConditionalComplexity_le_one U reference condition)
 
 /-- Freezing a condition does not add missing outputs. -/
 theorem fixedEmptySlice_not_outputComplete :
@@ -72,11 +75,5 @@ theorem fixedEmptyMachine_not_reference : ¬ IsReferenceMachine fixedEmptyMachin
   intro reference
   obtain ⟨program, computes⟩ := reference.hasProgram [] [true]
   simp [IsProgram, fixedEmptyMachine] at computes
-
-#print axioms conditionalComplexity_eq_prefixComplexity_slice
-#print axioms shortestConditionalProgram_spec
-#print axioms sum_weightByConditionalComplexity_le_one
-#print axioms tsum_weightByConditionalComplexity_le_one
-#print axioms fixedEmptyMachine_not_reference
 
 end KolmogorovComplexity

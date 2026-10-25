@@ -1,6 +1,7 @@
 import Mettapedia.Combinatorics.Kuhn.LabelSequences
 import Mathlib.Logic.Equiv.Fin.Rotate
 import Mathlib.GroupTheory.Perm.Basic
+import Mathlib.GroupTheory.Perm.Fin
 import Mathlib.Data.Fintype.Perm
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.Sigma
@@ -46,9 +47,117 @@ namespace GridSimplex
 
 variable {p n m : ℕ}
 
+/-! ## The coordinate schedule -/
+
+/-- The authored order of coordinate increments as an occurrence-sensitive
+list.  This is the executable view of the permutation stored by a simplex. -/
+def schedule (σ : GridSimplex p n) : List (Fin n) :=
+  List.ofFn σ.order
+
+@[simp] theorem schedule_length (σ : GridSimplex p n) :
+    σ.schedule.length = n :=
+  List.length_ofFn
+
+theorem schedule_nodup (σ : GridSimplex p n) : σ.schedule.Nodup :=
+  List.nodup_ofFn.mpr σ.order.injective
+
+@[simp] theorem mem_schedule (σ : GridSimplex p n) (i : Fin n) :
+    i ∈ σ.schedule := by
+  rw [schedule, List.mem_ofFn]
+  exact ⟨σ.order.symm i, σ.order.apply_symm_apply i⟩
+
+/-- A coordinate occurs in a schedule prefix exactly after its scheduled
+position has been reached. -/
+theorem mem_schedule_take_iff (σ : GridSimplex p n) (k : Fin (n + 1)) (i : Fin n) :
+    i ∈ σ.schedule.take k ↔ (σ.order.symm i : ℕ) < (k : ℕ) := by
+  rw [List.mem_take_iff_getElem]
+  have kn : (k : ℕ) ≤ n := Nat.le_of_lt_succ k.isLt
+  constructor
+  · rintro ⟨j, hj, same⟩
+    have jk : j < (k : ℕ) := by
+      simpa [schedule_length, Nat.min_eq_left kn] using hj
+    have jn : j < n := lt_of_lt_of_le jk kn
+    have applied : σ.order ⟨j, jn⟩ = i := by
+      simpa [schedule, List.getElem_ofFn] using same
+    have position : (⟨j, jn⟩ : Fin n) = σ.order.symm i := by
+      apply σ.order.injective
+      simpa using applied
+    simpa [← position] using jk
+  · intro before
+    refine ⟨(σ.order.symm i : ℕ), ?_, ?_⟩
+    · simpa [schedule_length, Nat.min_eq_left kn] using before
+    · simp [schedule, List.getElem_ofFn]
+
+/-- Interpret a schedule prefix geometrically, without referring to the
+closed formula used by `vertex`. -/
+def prefixPoint (σ : GridSimplex p n) (k : Fin (n + 1)) : Fin n → ℕ :=
+  fun i => (σ.base i : ℕ) + if i ∈ σ.schedule.take k then 1 else 0
+
 /-- The vertex reached after the first `k` steps. -/
 def vertex (σ : GridSimplex p n) (k : Fin (n + 1)) : Fin n → ℕ :=
   fun i => (σ.base i : ℕ) + if (σ.order.symm i : ℕ) < (k : ℕ) then 1 else 0
+
+@[simp] theorem prefixPoint_eq_vertex (σ : GridSimplex p n) (k : Fin (n + 1)) :
+    σ.prefixPoint k = σ.vertex k := by
+  funext i
+  simp only [prefixPoint, vertex, mem_schedule_take_iff]
+
+/-! ## Explicit finite enumeration -/
+
+/-- All lower corners, in an explicit executable order. -/
+def enumerateBases (p : ℕ) : (n : ℕ) → List (Fin n → Fin p)
+  | 0 => [Fin.elim0]
+  | n + 1 => (List.finRange p).flatMap fun head =>
+      (enumerateBases p n).map (Fin.cases head)
+
+theorem mem_enumerateBases (base : Fin n → Fin p) :
+    base ∈ enumerateBases p n := by
+  induction n with
+  | zero =>
+      have same : base = Fin.elim0 := funext fun i => Fin.elim0 i
+      simp [enumerateBases, same]
+  | succ n inductionHypothesis =>
+      rw [enumerateBases, List.mem_flatMap]
+      let tail : Fin n → Fin p := fun i => base i.succ
+      refine ⟨base 0, List.mem_finRange _, ?_⟩
+      rw [List.mem_map]
+      refine ⟨tail, inductionHypothesis tail, ?_⟩
+      funext i
+      refine Fin.cases ?_ (fun _ => ?_) i <;> rfl
+
+/-- All coordinate permutations, in an explicit executable order. -/
+def enumeratePermutations : (n : ℕ) → List (Equiv.Perm (Fin n))
+  | 0 => [1]
+  | n + 1 => (List.finRange (n + 1)).flatMap fun head =>
+      (enumeratePermutations n).map fun tail =>
+        (Equiv.Perm.decomposeFin).symm (head, tail)
+
+theorem mem_enumeratePermutations (order : Equiv.Perm (Fin n)) :
+    order ∈ enumeratePermutations n := by
+  induction n with
+  | zero =>
+      have same : order = 1 := Subsingleton.elim _ _
+      simp [enumeratePermutations, same]
+  | succ n inductionHypothesis =>
+      rw [enumeratePermutations, List.mem_flatMap]
+      let parts := Equiv.Perm.decomposeFin order
+      refine ⟨parts.1, List.mem_finRange _, ?_⟩
+      rw [List.mem_map]
+      refine ⟨parts.2, inductionHypothesis parts.2, ?_⟩
+      exact Equiv.symm_apply_apply Equiv.Perm.decomposeFin order
+
+/-- Every grid simplex, in a deterministic executable enumeration.  The
+mathematical statements below use membership, not any claim that this order is
+canonical. -/
+def enumerate (p n : ℕ) : List (GridSimplex p n) :=
+  (enumerateBases p n).flatMap fun base =>
+    (enumeratePermutations n).map fun order => ⟨base, order⟩
+
+theorem mem_enumerate (σ : GridSimplex p n) : σ ∈ enumerate p n := by
+  rw [enumerate, List.mem_flatMap]
+  refine ⟨σ.base, mem_enumerateBases σ.base, ?_⟩
+  rw [List.mem_map]
+  exact ⟨σ.order, mem_enumeratePermutations σ.order, rfl⟩
 
 /-- Every vertex lies in the cell of the simplex. -/
 theorem base_le_vertex (σ : GridSimplex p n) (k : Fin (n + 1)) (i : Fin n) :

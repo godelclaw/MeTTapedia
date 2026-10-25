@@ -104,9 +104,9 @@ theorem drained_receipts_complete (environment : Environment)
   let wanted : Result environment (sourceGoal environment bound type source) :=
     .steps answer.index answer.trace answer.captured answer.completed answer.history
       answer.target (root_index_bound answer) answer.valid
-  have bounded : wanted.ordered = true := by
+  have bounded : Interpreted.Result.ordered wanted = true := by
     have earned := firing_depth_bound environment admitted source bound type answer
-    simpa [wanted, Result.ordered, Execution.RootAnswer.requiredDepth, sourceGoal] using earned
+    simpa [wanted, Interpreted.Result.ordered, Execution.RootAnswer.requiredDepth, sourceGoal] using earned
   have initial : StateAccepts (begin environment bound type source) wanted := by
     right
     exact ⟨_, List.mem_cons_self, wanted, bounded, rfl⟩

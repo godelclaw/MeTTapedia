@@ -1299,7 +1299,7 @@ private theorem reflectiveSupportSafeAt_collectionData
                 binderImage) ∨
       (∃ rule parameterName elementType,
         ∃ _membership : rule ∈ source.costWholeLanguage.terms,
-          ∃ _parameterShape : rule.params =
+          ∃ _parameterShape : rule.bareParams =
               [.simple parameterName
                 (.collection collectionType elementType)],
             ∃ elementsTyped : WellSorted.ElementsHaveType
@@ -1326,7 +1326,7 @@ private theorem collectionConstructorSafeAt_elements
     {parameterName : String} {collectionType : CollType}
     {elements : List Pattern} {rest : Option String} {elementType : TypeExpr}
     {membership : rule ∈ source.costWholeLanguage.terms}
-    {parameterShape : rule.params =
+    {parameterShape : rule.bareParams =
       [.simple parameterName (.collection collectionType elementType)]}
     {elementsTyped : WellSorted.ElementsHaveType source.costWholeLanguage
       targetFree targetBound elements elementType}
@@ -1753,12 +1753,14 @@ theorem collectionElementsSafe
         have parameterEquality :=
           costBaseConstructor_params_eq_map_of_mem_wrappedLabels source.continuationRetyping rule
             ruleMembership wrappedMembership
-        have targetShape : (costBaseConstructor source.cut rule).params =
+        have targetShape : (costBaseConstructor source.cut rule).bareParams =
             [.simple parameterName
               (.collection collectionType
                 (mapTypeExpr (CostStaticColor.base.symbols source)
                   sourceElementType))] := by
-          simp [parameterEquality, parameterShape,
+          apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+          refine ⟨by simpa using ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).1, ?_⟩
+          simp [parameterEquality, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2,
             mapTermParam_costBaseStaticSymbols, CostStaticColor.symbols, CostStaticColor.symbolsOf,
             mapParameterType, costBaseTypeExpr]
         have selectedSafe :
@@ -1785,12 +1787,14 @@ theorem collectionElementsSafe
           (source.continuationRetyping.mem_wrappedLabels_iff authored).mp
             wrappedMembership
         have targetShape :
-            (costWrappedConstructor (theory := source.theory) rule).params =
+            (costWrappedConstructor (theory := source.theory) rule).bareParams =
               [.simple parameterName
                 (.collection collectionType
                   (mapTypeExpr (CostStaticColor.wrapped.symbols source)
                     sourceElementType))] := by
-          simp [costWrappedConstructor, parameterShape,
+          apply (GrammarRule.bareParams_cons_iff _ _ _).mpr
+          refine ⟨((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).1, ?_⟩
+          simp [costWrappedConstructor, ((GrammarRule.bareParams_cons_iff _ _ _).mp parameterShape).2,
             CostStaticColor.symbols, CostStaticColor.symbolsOf, mapParameterType, costWrappedTypeExpr]
         have selectedSafe :
             (WellSorted.HasType.collectionConstructor (rest := rest)

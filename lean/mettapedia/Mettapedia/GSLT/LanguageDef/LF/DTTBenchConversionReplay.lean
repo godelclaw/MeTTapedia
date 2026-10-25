@@ -6,7 +6,8 @@ import Mettapedia.GSLT.LanguageDef.Pure.DTTBench31
 
 Calibration fixture: an untrusted producer replays the frozen external
 traces and emits candidate LF terms.  Acceptance comes only from the
-generic conversion-capable indexed LF checker below.  The candidate and
+generic conversion-capable checker instantiated at the historical
+MettaKernel kind-result profile below.  The candidate and
 source artifacts are identified by SHA-256 strings; this module adds no
 benchmark-specific typing rule.
 -/
@@ -28,7 +29,7 @@ structure ReplayCase where
   candidate : LF.Term
 
 def accepts (entry : ReplayCase) : Bool :=
-  LFConversionProfileChecker.check 128 LFProfile.indexed [] []
+  LFConversionProfileChecker.check 128 LFProfile.mettaKernelKindResultPrototype [] []
     entry.candidate entry.goal
 
 def candidate_Eq_symm : LF.Term :=
@@ -61,7 +62,7 @@ theorem replay_Eq_symm_accepted : accepts replay_Eq_symm = true := by
   decide
 
 theorem replay_Eq_symm_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Eq_symm (encodeExpr PureDTTBench31.goal_Eq_Eq_symm) :=
   LFConversionProfileChecker.S1 replay_Eq_symm_accepted
 
@@ -95,7 +96,7 @@ theorem replay_Eq_trans_accepted : accepts replay_Eq_trans = true := by
   decide
 
 theorem replay_Eq_trans_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Eq_trans (encodeExpr PureDTTBench31.goal_Eq_Eq_trans) :=
   LFConversionProfileChecker.S1 replay_Eq_trans_accepted
 
@@ -129,7 +130,7 @@ theorem replay_Eq_congrArg_accepted : accepts replay_Eq_congrArg = true := by
   decide
 
 theorem replay_Eq_congrArg_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Eq_congrArg (encodeExpr PureDTTBench31.goal_Eq_Eq_congrArg) :=
   LFConversionProfileChecker.S1 replay_Eq_congrArg_accepted
 
@@ -163,7 +164,7 @@ theorem replay_Eq_congr_accepted : accepts replay_Eq_congr = true := by
   decide
 
 theorem replay_Eq_congr_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Eq_congr (encodeExpr PureDTTBench31.goal_Eq_Eq_congr) :=
   LFConversionProfileChecker.S1 replay_Eq_congr_accepted
 
@@ -197,7 +198,7 @@ theorem replay_Eq_congrFun_accepted : accepts replay_Eq_congrFun = true := by
   decide
 
 theorem replay_Eq_congrFun_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Eq_congrFun (encodeExpr PureDTTBench31.goal_Eq_Eq_congrFun) :=
   LFConversionProfileChecker.S1 replay_Eq_congrFun_accepted
 
@@ -231,7 +232,7 @@ theorem replay_Eq_mp_accepted : accepts replay_Eq_mp = true := by
   decide
 
 theorem replay_Eq_mp_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Eq_mp (encodeExpr PureDTTBench31.goal_Eq_Eq_mp) :=
   LFConversionProfileChecker.S1 replay_Eq_mp_accepted
 
@@ -265,7 +266,7 @@ theorem replay_Nat_zero_le_accepted : accepts replay_Nat_zero_le = true := by
   decide
 
 theorem replay_Nat_zero_le_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Nat_zero_le (encodeExpr PureDTTBench31.goal_Leq_Nat_zero_le) :=
   LFConversionProfileChecker.S1 replay_Nat_zero_le_accepted
 
@@ -299,7 +300,7 @@ theorem replay_Nat_succ_le_succ_accepted : accepts replay_Nat_succ_le_succ = tru
   decide
 
 theorem replay_Nat_succ_le_succ_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Nat_succ_le_succ (encodeExpr PureDTTBench31.goal_Leq_Nat_succ_le_succ) :=
   LFConversionProfileChecker.S1 replay_Nat_succ_le_succ_accepted
 
@@ -333,7 +334,7 @@ theorem replay_Nat_le_trans_accepted : accepts replay_Nat_le_trans = true := by
   decide
 
 theorem replay_Nat_le_trans_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Nat_le_trans (encodeExpr PureDTTBench31.goal_Leq_Nat_le_trans) :=
   LFConversionProfileChecker.S1 replay_Nat_le_trans_accepted
 
@@ -367,7 +368,7 @@ theorem replay_sSup_inter_le_accepted : accepts replay_sSup_inter_le = true := b
   decide
 
 theorem replay_sSup_inter_le_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_sSup_inter_le (encodeExpr PureDTTBench31.goal_Leq_sSup_inter_le) :=
   LFConversionProfileChecker.S1 replay_sSup_inter_le_accepted
 
@@ -401,7 +402,7 @@ theorem replay_Iff_refl_accepted : accepts replay_Iff_refl = true := by
   decide
 
 theorem replay_Iff_refl_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Iff_refl (encodeExpr PureDTTBench31.goal_Logic_Iff_refl) :=
   LFConversionProfileChecker.S1 replay_Iff_refl_accepted
 
@@ -435,7 +436,7 @@ theorem replay_Or_elim_accepted : accepts replay_Or_elim = true := by
   decide
 
 theorem replay_Or_elim_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Or_elim (encodeExpr PureDTTBench31.goal_Logic_Or_elim) :=
   LFConversionProfileChecker.S1 replay_Or_elim_accepted
 
@@ -469,7 +470,7 @@ theorem replay_False_elim_accepted : accepts replay_False_elim = true := by
   decide
 
 theorem replay_False_elim_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_False_elim (encodeExpr PureDTTBench31.goal_Logic_False_elim) :=
   LFConversionProfileChecker.S1 replay_False_elim_accepted
 
@@ -503,7 +504,7 @@ theorem replay_peirce_accepted : accepts replay_peirce = true := by
   decide
 
 theorem replay_peirce_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_peirce (encodeExpr PureDTTBench31.goal_Logic_peirce) :=
   LFConversionProfileChecker.S1 replay_peirce_accepted
 
@@ -537,7 +538,7 @@ theorem replay_PUnit_ext_accepted : accepts replay_PUnit_ext = true := by
   decide
 
 theorem replay_PUnit_ext_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_PUnit_ext (encodeExpr PureDTTBench31.goal_Logic_PUnit_ext) :=
   LFConversionProfileChecker.S1 replay_PUnit_ext_accepted
 
@@ -571,7 +572,7 @@ theorem replay_Exists_imp_accepted : accepts replay_Exists_imp = true := by
   decide
 
 theorem replay_Exists_imp_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Exists_imp (encodeExpr PureDTTBench31.goal_Logic_Exists_imp) :=
   LFConversionProfileChecker.S1 replay_Exists_imp_accepted
 
@@ -605,7 +606,7 @@ theorem replay_Relation_TransGen_trans_accepted : accepts replay_Relation_TransG
   decide
 
 theorem replay_Relation_TransGen_trans_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Relation_TransGen_trans (encodeExpr PureDTTBench31.goal_Relation_Relation_TransGen_trans) :=
   LFConversionProfileChecker.S1 replay_Relation_TransGen_trans_accepted
 
@@ -639,7 +640,7 @@ theorem replay_ReflGen_to_reflTransGen_accepted : accepts replay_ReflGen_to_refl
   decide
 
 theorem replay_ReflGen_to_reflTransGen_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_ReflGen_to_reflTransGen (encodeExpr PureDTTBench31.goal_Relation_ReflGen_to_reflTransGen) :=
   LFConversionProfileChecker.S1 replay_ReflGen_to_reflTransGen_accepted
 
@@ -673,7 +674,7 @@ theorem replay_ReflGen_mono_accepted : accepts replay_ReflGen_mono = true := by
   decide
 
 theorem replay_ReflGen_mono_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_ReflGen_mono (encodeExpr PureDTTBench31.goal_Relation_ReflGen_mono) :=
   LFConversionProfileChecker.S1 replay_ReflGen_mono_accepted
 
@@ -707,7 +708,7 @@ theorem replay_ReflTransGen_trans_accepted : accepts replay_ReflTransGen_trans =
   decide
 
 theorem replay_ReflTransGen_trans_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_ReflTransGen_trans (encodeExpr PureDTTBench31.goal_Relation_ReflTransGen_trans) :=
   LFConversionProfileChecker.S1 replay_ReflTransGen_trans_accepted
 
@@ -741,7 +742,7 @@ theorem replay_ReflTransGen_head_accepted : accepts replay_ReflTransGen_head = t
   decide
 
 theorem replay_ReflTransGen_head_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_ReflTransGen_head (encodeExpr PureDTTBench31.goal_Relation_ReflTransGen_head) :=
   LFConversionProfileChecker.S1 replay_ReflTransGen_head_accepted
 
@@ -775,7 +776,7 @@ theorem replay_ReflTransGen_symmetric_accepted : accepts replay_ReflTransGen_sym
   decide
 
 theorem replay_ReflTransGen_symmetric_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_ReflTransGen_symmetric (encodeExpr PureDTTBench31.goal_Relation_ReflTransGen_symmetric) :=
   LFConversionProfileChecker.S1 replay_ReflTransGen_symmetric_accepted
 
@@ -809,7 +810,7 @@ theorem replay_TransGen_to_reflTransGen_accepted : accepts replay_TransGen_to_re
   decide
 
 theorem replay_TransGen_to_reflTransGen_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_TransGen_to_reflTransGen (encodeExpr PureDTTBench31.goal_Relation_TransGen_to_reflTransGen) :=
   LFConversionProfileChecker.S1 replay_TransGen_to_reflTransGen_accepted
 
@@ -843,7 +844,7 @@ theorem replay_TransGen_trans_left_accepted : accepts replay_TransGen_trans_left
   decide
 
 theorem replay_TransGen_trans_left_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_TransGen_trans_left (encodeExpr PureDTTBench31.goal_Relation_TransGen_trans_left) :=
   LFConversionProfileChecker.S1 replay_TransGen_trans_left_accepted
 
@@ -877,7 +878,7 @@ theorem replay_TransGen_to_self_accepted : accepts replay_TransGen_to_self = tru
   decide
 
 theorem replay_TransGen_to_self_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_TransGen_to_self (encodeExpr PureDTTBench31.goal_Relation_TransGen_to_self) :=
   LFConversionProfileChecker.S1 replay_TransGen_to_self_accepted
 
@@ -911,7 +912,7 @@ theorem replay_TransGen_lift_accepted : accepts replay_TransGen_lift = true := b
   decide
 
 theorem replay_TransGen_lift_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_TransGen_lift (encodeExpr PureDTTBench31.goal_Relation_TransGen_lift) :=
   LFConversionProfileChecker.S1 replay_TransGen_lift_accepted
 
@@ -945,7 +946,7 @@ theorem replay_TransGen_swap_accepted : accepts replay_TransGen_swap = true := b
   decide
 
 theorem replay_TransGen_swap_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_TransGen_swap (encodeExpr PureDTTBench31.goal_Relation_TransGen_swap) :=
   LFConversionProfileChecker.S1 replay_TransGen_swap_accepted
 
@@ -979,7 +980,7 @@ theorem replay_ReflTransGen_swap_accepted : accepts replay_ReflTransGen_swap = t
   decide
 
 theorem replay_ReflTransGen_swap_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_ReflTransGen_swap (encodeExpr PureDTTBench31.goal_Relation_ReflTransGen_swap) :=
   LFConversionProfileChecker.S1 replay_ReflTransGen_swap_accepted
 
@@ -1013,7 +1014,7 @@ theorem replay_EqvGen_mono_accepted : accepts replay_EqvGen_mono = true := by
   decide
 
 theorem replay_EqvGen_mono_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_EqvGen_mono (encodeExpr PureDTTBench31.goal_Relation_EqvGen_mono) :=
   LFConversionProfileChecker.S1 replay_EqvGen_mono_accepted
 
@@ -1047,7 +1048,7 @@ theorem replay_powerset_mono_accepted : accepts replay_powerset_mono = true := b
   decide
 
 theorem replay_powerset_mono_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_powerset_mono (encodeExpr PureDTTBench31.goal_Set_powerset_mono) :=
   LFConversionProfileChecker.S1 replay_powerset_mono_accepted
 
@@ -1081,7 +1082,7 @@ theorem replay_Cantor_accepted : accepts replay_Cantor = true := by
   decide
 
 theorem replay_Cantor_sound :
-    LFConversionProfileChecker.Deriv LFProfile.indexed [] []
+    LFConversionProfileChecker.Deriv LFProfile.mettaKernelKindResultPrototype [] []
       candidate_Cantor (encodeExpr PureDTTBench31.goal_Set_Cantor) :=
   LFConversionProfileChecker.S1 replay_Cantor_accepted
 

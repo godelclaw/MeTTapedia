@@ -87,6 +87,7 @@ theorem expandMatcher_decreases (environment : Environment) (request : Request)
   unfold expandMatcher at member
   split at member
   · rename_i answer found
+    change frame.state.answers[frame.cursor]? = some answer at found
     have within := (List.getElem?_eq_some_iff.mp found).1
     simp only [List.mem_cons, List.not_mem_nil, or_false] at member
     rcases member with same | same <;> subst branch

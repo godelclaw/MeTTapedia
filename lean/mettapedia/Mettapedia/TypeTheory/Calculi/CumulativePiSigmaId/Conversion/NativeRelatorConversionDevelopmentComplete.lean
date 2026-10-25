@@ -227,10 +227,10 @@ theorem conversion_join {left right : Tower.Tm n} (conversion : AuthoredConv lef
     ∃ common, ParStar left common ∧ ParStar right common :=
   authored_conv_join diamond conversion
 
-def nativePiConversionBoundary : PiConversionBoundary NativeIndexedFamilies.IntrinsicRelator.rules :=
+theorem nativePiConversionBoundary : PiConversionBoundary NativeIndexedFamilies.IntrinsicRelator.rules :=
   piConversionBoundaryOfDiamond diamond
 
-def nativeSigmaConversionBoundary : SigmaConversionBoundary NativeIndexedFamilies.IntrinsicRelator.rules :=
+theorem nativeSigmaConversionBoundary : SigmaConversionBoundary NativeIndexedFamilies.IntrinsicRelator.rules :=
   sigmaConversionBoundaryOfDiamond diamond
 
 #print axioms cofinal_beta

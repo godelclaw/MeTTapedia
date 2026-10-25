@@ -3,13 +3,13 @@ import Mettapedia.Languages.OpenTheory.WorldModelQueryGSLT
 import Mettapedia.OSLF.Framework.WMCalculusQuotientFunctor
 
 /-!
-# WM observational equality as an identity fibre in Prime's semantic CwF
+# WM observational equality as an identity fibre in the staged families CwF
 
 The existing semantic families CwF has identity formation, reflexivity,
 substitution and J-elimination. Interpreting its carrier as the quotient of
 WM states by all queries makes the resulting identity fibre correspond
 exactly to behavioral agreement. It does not turn equality of raw backend
-states into identity, nor interpret Prime's authored identity syntax.
+states into identity, nor interpret an authored identity syntax.
 -/
 
 open Mettapedia.TypeTheory.Calculi.StagedScopedReflective
@@ -159,7 +159,7 @@ theorem observableJTransport_trans (P : ObsState R → Type)
       (observableJTransport R P firstPath value) := by
   exact jTransport_comp_eq P firstPath.down secondPath.down value
 
-/-- Contextual WM computation supplies an identity witness in Prime's
+/-- Contextual WM computation supplies an identity witness in the
 semantic observable-state fibre, using the existing subject-reduction proof. -/
 def contextualComputationIdentity (laws : R.CoreLaws)
     {source target : WMTerm .state} (steps : WMContextStepStar source target) :
@@ -210,7 +210,7 @@ theorem contextualJTransport_trans (laws : R.CoreLaws)
     (contextualComputationIdentity R laws second) value
 
 /-- The theorem-list backend supplies distinct raw histories that inhabit
-the same observable identity fibre. Hence this specialization of Prime's
+the same observable identity fibre. Hence this specialization of the staged
 semantic J is not an unqualified identity former for backend states. -/
 theorem theoremList_observableIdentity_not_rawIdentity
     (atoms : TheoremAtoms)

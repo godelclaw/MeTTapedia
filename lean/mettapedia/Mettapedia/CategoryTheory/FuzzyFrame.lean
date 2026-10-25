@@ -1,50 +1,27 @@
 import Mathlib.Order.Heyting.Basic
-import Mathlib.Order.CompleteLattice.Basic
 import Mathlib.Order.CompleteLatticeIntervals
-import Mathlib.Order.ConditionallyCompleteLattice.Basic
-import Mathlib.Data.Real.Basic
-import Mathlib.Algebra.Order.Archimedean.Real.Basic
-import Mathlib.Topology.Order.Basic
+import Mathlib.Algebra.Order.Interval.Set.Instances
+import Mathlib.Algebra.Order.Quantale
+import Mathlib.Topology.UnitInterval
+import Mathlib.Tactic.Linarith
 import KnuthSkilling.Literature.Residuated
 
 /-!
-# The Unit Interval [0,1] as a Frame
+# Frame and product-quantale semantics on the unit interval
 
-This file proves that the unit interval [0,1] ⊂ ℝ forms a Frame
-(complete Heyting algebra), which we use as the fiber for PLN truth values.
-
-## Main Result
-
-We prove that `unitInterval := {x : ℝ | 0 ≤ x ∧ x ≤ 1}` has:
-1. Complete lattice structure (inf, sup, Inf, Sup)
-2. Heyting implication (⇨)
-3. Frame law: a ⊓ sSup S = sSup ((a ⊓ ·) '' S)
-
-## Fuzzy Logic Interpretation
-
-For fuzzy logic / many-valued logic:
-- Meet (⊓): minimum `a ⊓ b = min a b`
-- Join (⊔): `a ⊔ b = max a b`
-- Implication (⇨): Gödel implication `a ⇨ b = if a ≤ b then 1 else b`
-
-The separately defined product residuum belongs to multiplication, not to
-the lattice meet or the frame's Heyting implication.
-
-## References
-
-- Hájek, "Metamathematics of Fuzzy Logic" (1998)
-- Goguen, "L-fuzzy sets" (1967)
-- Wikipedia: T-norm fuzzy logics
+A single inherited closed-interval order supplies minimum, maximum, and arbitrary
+infima and suprema. The authored binary formulas retain their concrete meanings.
+Minimum has Gödel implication as right adjoint; multiplication has the distinct
+product implication. Product is bounded by minimum, but fails its idempotence
+away from the endpoints. Its adjunction supplies arbitrary-join preservation
+and Mathlib's quantale structure, without identifying these two connectives.
 -/
+
+set_option autoImplicit false
 
 namespace Mettapedia.CategoryTheory.FuzzyFrame
 
 open Set Classical
-
-/-! ## Step 1: Define the Unit Interval
-
-We use a subtype of ℝ for the unit interval.
--/
 
 /-- The unit interval [0,1] as a subtype of ℝ -/
 def UnitInterval : Type := {x : ℝ // 0 ≤ x ∧ x ≤ 1}
@@ -57,8 +34,14 @@ namespace UnitInterval
 @[ext]
 theorem ext {a b : 𝕀} (h : a.val = b.val) : a = b := Subtype.ext h
 
-/-- Coercion to ℝ -/
-instance : Coe 𝕀 ℝ := ⟨Subtype.val⟩
+/-- One inherited order supplies all lattice operations and their laws. -/
+noncomputable instance : CompleteLinearOrder 𝕀 :=
+  inferInstanceAs (CompleteLinearOrder (Set.Icc (0 : ℝ) 1))
+
+noncomputable instance : CommMonoid 𝕀 :=
+  inferInstanceAs (CommMonoid (Set.Icc (0 : ℝ) 1))
+
+instance : Zero 𝕀 := inferInstanceAs (Zero (Set.Icc (0 : ℝ) 1))
 
 /-- Zero in the unit interval -/
 def zero : 𝕀 := ⟨0, by norm_num, by norm_num⟩
@@ -66,28 +49,9 @@ def zero : 𝕀 := ⟨0, by norm_num, by norm_num⟩
 /-- One in the unit interval -/
 def one : 𝕀 := ⟨1, by norm_num, by norm_num⟩
 
-instance : Zero 𝕀 := ⟨zero⟩
-instance : One 𝕀 := ⟨one⟩
-
-/-- Decidable equality for unit interval -/
-noncomputable instance : DecidableEq 𝕀 := inferInstance
-
-/-- Order on the unit interval (inherited from ℝ) -/
-instance : LE 𝕀 := ⟨fun a b => a.val ≤ b.val⟩
-
-/-- Partial order on the unit interval -/
-instance : PartialOrder 𝕀 where
-  le := fun a b => a.val ≤ b.val
-  le_refl a := le_refl a.val
-  le_trans a b c := le_trans
-  le_antisymm a b hab hba := by
-    ext
-    exact le_antisymm hab hba
-
-/-! ## Step 2: Lattice Operations
-
-We define meet (min) and join (max).
--/
+@[simp] theorem zero_val : (0 : 𝕀).val = 0 := rfl
+@[simp] theorem one_val : (1 : 𝕀).val = 1 := rfl
+@[simp] theorem inf_val (a b : 𝕀) : (a ⊓ b).val = min a.val b.val := rfl
 
 /-- Meet: minimum of two values -/
 def inf (a b : 𝕀) : 𝕀 :=
@@ -103,97 +67,6 @@ def sup (a b : 𝕀) : 𝕀 :=
     · exact le_max_iff.mpr (Or.inl a.prop.1)
     · exact max_le a.prop.2 b.prop.2⟩
 
-instance : Min 𝕀 := ⟨inf⟩
-instance : Max 𝕀 := ⟨sup⟩
-
-/-- The unit interval is a bounded lattice -/
-instance : BoundedOrder 𝕀 where
-  top := one
-  le_top a := a.prop.2
-  bot := zero
-  bot_le a := a.prop.1
-
-/-! ## Step 3: Complete Lattice Structure
-
-We define Inf and Sup for arbitrary sets.
--/
-
-/-- Infimum of a set in `[0,1]`, computed via `sInf` on the real image. -/
-noncomputable def sInf' (S : Set 𝕀) : 𝕀 :=
-  by
-    classical
-    by_cases h : S.Nonempty
-    · let T : Set ℝ := Subtype.val '' S
-      have hTnonempty : T.Nonempty := by
-        rcases h with ⟨x, hx⟩
-        exact ⟨x.val, ⟨x, hx, rfl⟩⟩
-      have hTbdd : BddBelow T := by
-        refine ⟨0, ?_⟩
-        intro y hy
-        rcases hy with ⟨x, hx, rfl⟩
-        exact x.prop.1
-      have h0 : 0 ≤ sInf T := by
-        exact le_csInf hTnonempty (by
-          intro y hy
-          rcases hy with ⟨x, hx, rfl⟩
-          exact x.prop.1)
-      have h1 : sInf T ≤ 1 := by
-        rcases hTnonempty with ⟨y, hy⟩
-        exact (csInf_le hTbdd hy).trans (by
-          rcases hy with ⟨x, hx, rfl⟩
-          exact x.prop.2)
-      exact ⟨sInf T, ⟨h0, h1⟩⟩
-    · -- Empty set has Inf = ⊤.
-      exact one
-
-/-- Supremum of a set in `[0,1]`, computed via `sSup` on the real image. -/
-noncomputable def sSup' (S : Set 𝕀) : 𝕀 :=
-  by
-    classical
-    by_cases h : S.Nonempty
-    · let T : Set ℝ := Subtype.val '' S
-      have hTnonempty : T.Nonempty := by
-        rcases h with ⟨x, hx⟩
-        exact ⟨x.val, ⟨x, hx, rfl⟩⟩
-      have hTbdd : BddAbove T := by
-        refine ⟨1, ?_⟩
-        intro y hy
-        rcases hy with ⟨x, hx, rfl⟩
-        exact x.prop.2
-      have h0 : 0 ≤ sSup T := by
-        rcases hTnonempty with ⟨y, hy⟩
-        have hy0 : 0 ≤ y := by
-          rcases hy with ⟨x, hx, rfl⟩
-          exact x.prop.1
-        exact hy0.trans (le_csSup hTbdd hy)
-      have h1 : sSup T ≤ 1 := by
-        exact csSup_le hTnonempty (by
-          intro y hy
-          rcases hy with ⟨x, hx, rfl⟩
-          exact x.prop.2)
-      exact ⟨sSup T, ⟨h0, h1⟩⟩
-    · -- Empty set has Sup = ⊥.
-      exact zero
-
-noncomputable instance : InfSet 𝕀 := ⟨sInf'⟩
-noncomputable instance : SupSet 𝕀 := ⟨sSup'⟩
-
-/-- `[0,1]` inherits a complete lattice structure from interval subtypes. -/
-noncomputable instance : CompleteLattice 𝕀 := by
-  change CompleteLattice (Set.Icc (0 : ℝ) 1)
-  infer_instance
-
-/-- `[0,1]` is a frame (finite meets distribute over arbitrary joins). -/
-noncomputable instance : Order.Frame 𝕀 := by
-  change Order.Frame (Set.Icc (0 : ℝ) 1)
-  infer_instance
-
-/-! ## Step 4: Product T-Norm (Meet for Fuzzy Logic)
-
-For the quantale structure, we use the product t-norm as our meet.
-This gives us the tensor product for the quantale.
--/
-
 /-- Product t-norm: a ⊗ b = a * b -/
 def product (a b : 𝕀) : 𝕀 :=
   ⟨a.val * b.val, by
@@ -202,8 +75,6 @@ def product (a b : 𝕀) : 𝕀 :=
     · calc a.val * b.val
         _ ≤ 1 * 1 := mul_le_mul a.prop.2 b.prop.2 b.prop.1 (by norm_num)
         _ = 1 := by norm_num⟩
-
-instance : Mul 𝕀 := ⟨product⟩
 
 @[simp] theorem product_val (a b : 𝕀) : (a * b).val = a.val * b.val := rfl
 
@@ -227,26 +98,12 @@ theorem one_product (a : 𝕀) : (1 : 𝕀) * a = a := by
   ext
   exact one_mul a.val
 
-instance : CommMonoid 𝕀 where
-  mul := (· * ·)
-  one := 1
-  mul_assoc := product_assoc
-  one_mul := one_product
-  mul_one := product_one
-  mul_comm := product_comm
-
-/-! ## Step 5: Heyting Implication
-
-We use the Gödel implication: a ⇨ b = if a ≤ b then 1 else b.
-(But for product t-norm, we should use: a ⇨ b = min(1, b/a))
--/
-
 /-- Gödel implication (residuation for min) -/
 noncomputable def himp (a b : 𝕀) : 𝕀 :=
   if a.val ≤ b.val then
     one
   else
-    b  -- For min-based logic
+    b
 
 /-- Product implication (residuation for product t-norm) -/
 noncomputable def productImp (a b : 𝕀) : 𝕀 :=
@@ -265,20 +122,6 @@ noncomputable def productImp (a b : 𝕀) : 𝕀 :=
 @[simp] theorem productImp_val_of_ne (a b : 𝕀) (ha : a.val ≠ 0) :
     (productImp a b).val = min 1 (b.val / a.val) := by
   simp [productImp, ha]
-
-/-! ## Step 6: Frame Laws
-
-We need to prove that the unit interval satisfies the Frame axioms.
-
-The proofs are non-trivial and involve ℝ analysis. For theorems that
-require these structures, we use section variables (explicit hypotheses)
-rather than global axioms.
--/
-
-/-! ## Step 7: Residuation for Product T-Norm
-
-The key property: a * b ≤ c ↔ b ≤ a ⇨ c (where ⇨ is productImp).
--/
 
 theorem product_residuation (a b c : 𝕀) :
     a * b ≤ c ↔ b ≤ productImp a c := by
@@ -332,20 +175,69 @@ theorem productImp_exchange (a b c : 𝕀) :
     productImp (a * b) c = productImp a (productImp b c) :=
   KnuthSkilling.Literature.ResiduatedMonoidLemmas.exchange (α := 𝕀) a b c
 
+/-- The authored constants and binary formulas agree with the inherited operations. -/
+@[simp] theorem zero_eq : zero = 0 := rfl
+@[simp] theorem one_eq : one = 1 := rfl
+@[simp] theorem inf_eq (a b : 𝕀) : inf a b = a ⊓ b := rfl
+@[simp] theorem sup_eq (a b : 𝕀) : sup a b = a ⊔ b := rfl
+@[simp] theorem product_eq (a b : 𝕀) : product a b = a * b := rfl
+
+/-- Gödel implication belongs to the minimum connective. -/
+theorem himp_eq_canonical (a b : 𝕀) : himp a b = (a ⇨ b) := rfl
+
+theorem himp_residuation (a b c : 𝕀) : a ⊓ b ≤ c ↔ b ≤ himp a c := by
+  rw [himp_eq_canonical]
+  exact le_himp_iff'.symm
+
+/-- Product multiplication is a left adjoint and therefore preserves arbitrary joins. -/
+theorem product_galoisConnection (a : 𝕀) : GaloisConnection (a * ·) (productImp a) :=
+  fun b c => product_residuation a b c
+
+noncomputable instance : IsQuantale 𝕀 where
+  mul_sSup_distrib a S := (product_galoisConnection a).l_sSup
+  sSup_mul_distrib S a := by simpa only [mul_comm] using (product_galoisConnection a).l_sSup (s := S)
+
+/-- The concrete quotient formula is the product quantale's order-theoretic residual. -/
+theorem productImp_eq_rightMulResiduation (a b : 𝕀) : productImp a b = Quantale.rightMulResiduation a b := by
+  apply le_antisymm
+  · exact Quantale.rightMulResiduation_le_iff_mul_le.mpr ((product_residuation a _ b).mpr le_rfl)
+  · exact (product_residuation a _ b).mp (Quantale.rightMulResiduation_le_iff_mul_le.mp le_rfl)
+
+theorem himp_le_productImp (a b : 𝕀) : himp a b ≤ productImp a b := by
+  apply (product_residuation a _ b).mp
+  exact (product_le_inf _ _).trans ((himp_residuation a _ b).mpr le_rfl)
+
+/-- Product has only the endpoint idempotents; minimum is idempotent everywhere. -/
+theorem product_idempotent_iff (a : 𝕀) : a * a = a ↔ a = 0 ∨ a = 1 := by
+  constructor
+  · intro h
+    have value := congrArg Subtype.val h
+    change a.val * a.val = a.val at value
+    have factor : a.val * (a.val - 1) = 0 := by nlinarith [value]
+    rcases mul_eq_zero.mp factor with h | h
+    · left; exact Subtype.ext h
+    · right; exact Subtype.ext (sub_eq_zero.mp h)
+  · rintro (rfl | rfl) <;> apply Subtype.ext <;> norm_num
+
+/-- The same carrier supports different implication and multiplication observations. -/
+theorem connective_separation :
+    let half : 𝕀 := ⟨1 / 2, by norm_num, by norm_num⟩
+    let quarter : 𝕀 := ⟨1 / 4, by norm_num, by norm_num⟩
+    (himp half quarter).val = 1 / 4 ∧ (productImp half quarter).val = 1 / 2 ∧
+      half * half ≠ half ⊓ half := by
+  let half : 𝕀 := ⟨1 / 2, by norm_num, by norm_num⟩
+  let quarter : 𝕀 := ⟨1 / 4, by norm_num, by norm_num⟩
+  change (himp half quarter).val = 1 / 4 ∧ (productImp half quarter).val = 1 / 2 ∧
+    half * half ≠ half ⊓ half
+  refine ⟨?_, ?_, ?_⟩
+  · rw [himp, if_neg (by norm_num [half, quarter] : ¬ half.val ≤ quarter.val)]
+  · rw [productImp_val_of_ne _ _ (by norm_num [half])]
+    norm_num [half, quarter]
+  · intro h
+    have values := congrArg Subtype.val h
+    change (1 / 2 : ℝ) * (1 / 2) = min (1 / 2) (1 / 2) at values
+    norm_num at values
+
 end UnitInterval
-
-/-! ## Summary
-
-We've defined the unit interval [0,1] with:
-1. ✅ Basic structure (0, 1, min, max)
-2. ✅ Product t-norm (multiplication)
-3. ✅ Product implication operation
-4. ✅ Complete lattice structure (via interval instance)
-5. ✅ Frame structure (via interval instance)
-6. ✅ Product-residuation law (`product_residuation`)
-
-For now, this gives us enough structure to use [0,1] as the fiber
-for PLN truth values in the lambda theory framework.
--/
 
 end Mettapedia.CategoryTheory.FuzzyFrame

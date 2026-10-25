@@ -1,14 +1,24 @@
 import Mettapedia.Languages.MeTTa.Translation.HEPeTTaSound
-import Mettapedia.Languages.MeTTa.PeTTa.CettaDFSStreaming
+import Mettapedia.Languages.MeTTa.PeTTa.EagerDFSStreaming
 import Mettapedia.Machines.OrderedProtocol
+
+/-!
+# Open recursive HE--PeTTa comparison
+
+This owner completes the first-order E2 comparison under the passive-environment
+admission established in `HEPeTTaSound`. The branch-tree and scoped depth-first
+linearization theorems preserve open caller correlations and ordered physical
+occurrences. They describe a shared fragment of the existing dialects; they do
+not define MeTTa or constrain HO MeTTa Prime.
+-/
 
 set_option autoImplicit false
 
 namespace Mettapedia.Languages.MeTTa.Translation.OpenRecursive
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
-open Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
-open Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination.Source
 open Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
 open Mettapedia.Languages.MeTTa.Translation.PureConstructor
 open Mettapedia.Languages.MeTTa.Translation.PureConstructor.RecursiveTransport
@@ -335,7 +345,7 @@ end
 /-- Source preparation changes only the active goal list, so the persistent
 allocator boundary is exactly unchanged. -/
 theorem Prepared.persistentSupport_eq
-    {policy : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Policy}
+    {policy : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination.Policy}
     {program : Program} {control next : Control} {destination : Atom}
     {older : List Goal} {expression : Atom}
     (prepared : Prepared policy program control destination older expression next) :
@@ -806,25 +816,26 @@ end
 
 namespace CollectionLinearization
 
-open Mettapedia.Languages.MeTTa.PeTTa.CettaDFSStreaming.Scoped
-open Mettapedia.Languages.MeTTa.PeTTa.CettaDFSStreaming.Scoped.ProtectedContinuation
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFSStreaming.Scoped
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFSStreaming.Scoped.ProtectedContinuation
 open Mettapedia.GSLT.Distinction.ProductiveBlocks
 open Mettapedia.Machines.OrderedProtocol.Completion
 
 /-- A concrete scoped-machine control represents a raw open-recursive control
-with a finite stack of predicate-return delimiters inserted immediately before
-the current outer continuation.  The current `cutBoundary` is intentionally
-absent: it belongs to the active concrete clause, while the saved boundaries
-are restored before the raw continuation is observed. -/
-structure DelimitedControl (older : List Goal) (raw actual : Control) : Type where
+with a finite stack of predicate-return delimiters before its concrete
+continuation.  Source and concrete continuations may differ structurally when
+an outer delimiter follows pending siblings, but expose the same atom support. -/
+structure DelimitedControl (sourceOlder actualOlder : List Goal)
+    (raw actual : Control) : Type where
   bindings : actual.bindings = raw.bindings
   destination : actual.destination = raw.destination
   reserved : actual.reserved = raw.reserved
+  older_atoms : actualOlder.flatMap Goal.atoms = sourceOlder.flatMap Goal.atoms
   restores : List Nat
   activePrefix : List Goal
-  raw_goals : raw.goals = activePrefix ++ older
+  raw_goals : raw.goals = activePrefix ++ sourceOlder
   actual_goals : actual.goals =
-    activePrefix ++ restores.map Goal.restoreCommit ++ older
+    activePrefix ++ restores.map Goal.restoreCommit ++ actualOlder
 
 private theorem restoreCommit_atoms (restores : List Nat) :
     (restores.map Goal.restoreCommit).flatMap Goal.atoms = [] := by
@@ -835,29 +846,372 @@ private theorem restoreCommit_atoms (restores : List Nat) :
         inductionHypothesis]
 
 /-- Inserting logical choice delimiters changes no variable support. -/
-theorem DelimitedControl.support_eq {older : List Goal} {raw actual : Control}
-    (related : DelimitedControl older raw actual) :
+theorem DelimitedControl.support_eq {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) :
     actual.support = raw.support := by
   rcases related with
-    ⟨bindings,destination,reserved,restores,activePrefix,rawGoals,actualGoals⟩
+    ⟨bindings,destination,reserved,olderAtoms,restores,activePrefix,rawGoals,actualGoals⟩
   simp only [Control.support,bindings,destination,reserved,actualGoals,rawGoals,
-    List.flatMap_append,restoreCommit_atoms,List.append_nil]
+    List.flatMap_append,restoreCommit_atoms,List.append_nil,olderAtoms]
 
-theorem DelimitedControl.freshName_eq {older : List Goal} {raw actual : Control}
-    (related : DelimitedControl older raw actual) (index : Nat) :
+theorem DelimitedControl.freshName_eq {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) (index : Nat) :
     freshName actual index = freshName raw index := by
   simp only [freshName,related.support_eq]
 
-theorem DelimitedControl.freshSlots_eq {older : List Goal} {raw actual : Control}
-    (related : DelimitedControl older raw actual) (count : Nat) :
+theorem DelimitedControl.freshSlots_eq {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) (count : Nat) :
     freshSlots actual count = freshSlots raw count := by
   simp only [freshSlots,related.freshName_eq]
 
+/-- Extending both controls by the same allocator boundary preserves their
+exact delimited relation.  This is the boundary used by the retained DFS
+machine before scanning an equation frontier. -/
+def DelimitedControl.protect {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (boundary : Finset String) :
+    DelimitedControl sourceOlder actualOlder (protectControl raw boundary)
+      (protectControl actual boundary) := by
+  exact ⟨by simpa only [protectControl] using related.bindings,
+    by simpa only [protectControl] using related.destination,
+    by simp only [protectControl,related.reserved],related.older_atoms,
+    related.restores,related.activePrefix,
+    by simpa only [protectControl] using related.raw_goals,
+    by simpa only [protectControl] using related.actual_goals⟩
+
+/-- Install the concrete clause delimiter while retaining the source-selected
+bindings, body and public continuation. -/
+def delimitedClauseChoice (cutBoundary : Nat) (restores : List Nat)
+    (older : List Goal) (choice : Control) : Control :=
+  { choice with
+    cutBoundary := cutBoundary
+    goals := match choice.goals with
+      | body :: _ => body :: restores.map Goal.restoreCommit ++ older
+      | [] => restores.map Goal.restoreCommit ++ older }
+
+/-- Equal protected reserves are the exact synchronization condition needed
+for two delimited controls to allocate the same fresh clause instance. -/
+theorem DelimitedControl.protected_support_eq {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (extra boundary : Finset String)
+    (sameReserved : (protectControl actual boundary).reserved =
+      (protectControl raw extra).reserved) :
+    (protectControl actual boundary).support =
+      (protectControl raw extra).support := by
+  have reserves : actual.reserved ∪ boundary = raw.reserved ∪ extra := by
+    simpa only [protectControl] using sameReserved
+  rcases related with
+    ⟨bindings,destination,_reserved,olderAtoms,restores,activePrefix,rawGoals,actualGoals⟩
+  simp only [Control.support,protectControl,bindings,destination,
+    actualGoals,rawGoals,List.flatMap_append,restoreCommit_atoms,List.append_nil,olderAtoms]
+  rw [reserves]
+
+theorem DelimitedControl.protected_freshPattern_eq {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (extra boundary : Finset String)
+    (sameReserved : (protectControl actual boundary).reserved =
+      (protectControl raw extra).reserved)
+    (occurrence : Nat) (equation : Equation) :
+    ClauseChoice.freshPattern (protectControl actual boundary) occurrence equation =
+      ClauseChoice.freshPattern (protectControl raw extra) occurrence equation := by
+  have namesEqual : ClauseChoice.rename (protectControl actual boundary) occurrence
+      (ClauseChoice.clauseAtoms equation) =
+      ClauseChoice.rename (protectControl raw extra) occurrence
+        (ClauseChoice.clauseAtoms equation) := by
+    funext name
+    simp only [ClauseChoice.rename,freshName,
+      related.protected_support_eq extra boundary sameReserved]
+  exact congrArg (fun rename =>
+    HE.Spec.Type.RuntimeRefinement.renameTypeVars rename (ClauseChoice.pattern equation))
+    namesEqual
+
+theorem DelimitedControl.protected_freshBody_eq {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (extra boundary : Finset String)
+    (sameReserved : (protectControl actual boundary).reserved =
+      (protectControl raw extra).reserved)
+    (occurrence : Nat) (equation : Equation) :
+    ClauseChoice.freshBody (protectControl actual boundary) occurrence equation =
+      ClauseChoice.freshBody (protectControl raw extra) occurrence equation := by
+  have namesEqual : ClauseChoice.rename (protectControl actual boundary) occurrence
+      (ClauseChoice.clauseAtoms equation) =
+      ClauseChoice.rename (protectControl raw extra) occurrence
+        (ClauseChoice.clauseAtoms equation) := by
+    funext name
+    simp only [ClauseChoice.rename,freshName,
+      related.protected_support_eq extra boundary sameReserved]
+  exact congrArg (fun rename =>
+    HE.Spec.Type.RuntimeRefinement.renameTypeVars rename equation.body) namesEqual
+
+/-- A complete source row decision transports across a delimiter stack once
+the source and retained-machine protection sets synchronize their reserves. -/
+theorem DelimitedControl.decision_lift {program : Program}
+    {sourceOlder actualOlder : List Goal}
+    {raw actual : Control} {extra boundary : Finset String} {head : String}
+    {arguments : List Atom} {destination : Atom} {occurrence : Nat}
+    {result : Option Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (sameReserved : (protectControl actual boundary).reserved =
+      (protectControl raw extra).reserved)
+    (source : ClauseChoice.Decision program (protectControl raw extra) head
+      arguments destination sourceOlder occurrence result) :
+    ClauseChoice.Decision program (protectControl actual boundary) head arguments
+      destination (related.restores.map Goal.restoreCommit ++ actualOlder) occurrence
+      (result.map
+        (delimitedClauseChoice actual.cutBoundary related.restores actualOlder)) := by
+  cases source with
+  | other equation row different => exact .other equation row different
+  | refused equation row sameHead incompatible =>
+      apply ClauseChoice.Decision.refused equation row sameHead
+      rw [related.protected_freshPattern_eq extra boundary sameReserved occurrence equation]
+      simpa only [protectControl,related.bindings] using incompatible
+  | selected equation bindings row sameHead compatible =>
+      have accepted : Refinement (protectControl actual boundary).bindings
+          (.expression (.symbol head :: arguments))
+          (ClauseChoice.freshPattern (protectControl actual boundary) occurrence equation)
+          (some bindings) := by
+        rw [related.protected_freshPattern_eq extra boundary sameReserved occurrence equation]
+        simpa only [protectControl,related.bindings] using compatible
+      have chosen := ClauseChoice.Decision.selected
+        (program := program) (control := protectControl actual boundary)
+        (head := head) (arguments := arguments) (destination := destination)
+        (older := related.restores.map Goal.restoreCommit ++ actualOlder)
+        equation bindings row sameHead accepted
+      let rawChoice : Control :=
+        { bindings := bindings
+          goals := .evaluate
+            (ClauseChoice.freshBody (protectControl raw extra) occurrence equation)
+              destination :: sourceOlder
+          destination := (protectControl raw extra).destination
+          reserved := (protectControl raw extra).reserved
+          cutBoundary := (protectControl raw extra).cutBoundary }
+      let actualChoice : Control :=
+        { bindings := bindings
+          goals := .evaluate
+            (ClauseChoice.freshBody (protectControl actual boundary) occurrence equation)
+              destination :: related.restores.map Goal.restoreCommit ++ actualOlder
+          destination := (protectControl actual boundary).destination
+          reserved := (protectControl actual boundary).reserved
+          cutBoundary := (protectControl actual boundary).cutBoundary }
+      have bodyEq :=
+        related.protected_freshBody_eq extra boundary sameReserved occurrence equation
+      have destinationEq : (protectControl actual boundary).destination =
+          (protectControl raw extra).destination := by
+        simpa only [protectControl] using related.destination
+      have choiceEq : delimitedClauseChoice actual.cutBoundary related.restores actualOlder
+          rawChoice = actualChoice := by
+        simp only [delimitedClauseChoice,rawChoice,actualChoice]
+        rw [bodyEq,destinationEq,sameReserved]
+        simp only [protectControl]
+      simpa only [rawChoice,actualChoice,Option.map_some,choiceEq,
+        List.cons_append] using chosen
+
+/-- Complete frontiers transport position-for-position.  Accepted duplicate
+occurrences remain duplicate entries in the same order. -/
+theorem DelimitedControl.frontier_lift {program : Program}
+    {sourceOlder actualOlder : List Goal}
+    {raw actual : Control} {extra boundary : Finset String} {head : String}
+    {arguments : List Atom} {destination : Atom} {positions : List Nat}
+    {choices : List (Nat × Control)}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (sameReserved : (protectControl actual boundary).reserved =
+      (protectControl raw extra).reserved)
+    (source : ClauseChoice.Frontier program (protectControl raw extra) head
+      arguments destination sourceOlder positions choices) :
+    ClauseChoice.Frontier program (protectControl actual boundary) head arguments
+      destination (related.restores.map Goal.restoreCommit ++ actualOlder) positions
+      (choices.map fun row =>
+        (row.1,delimitedClauseChoice actual.cutBoundary related.restores actualOlder row.2)) := by
+  induction source with
+  | nil => exact .nil
+  | skip decision _rest inductionHypothesis =>
+      exact .skip (related.decision_lift sameReserved decision) inductionHypothesis
+  | keep decision _rest inductionHypothesis =>
+      exact .keep (related.decision_lift sameReserved decision) inductionHypothesis
+
+/-- Entering a selected predicate installs its current cut delimiter in front
+of the older delimiter stack while leaving the raw clause body unchanged. -/
+def DelimitedControl.of_predicateEntry {sourceOlder actualOlder : List Goal}
+    {raw actual selected : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    {body destination : Atom}
+    (atGoal : selected.goals = .evaluate body destination :: sourceOlder)
+    (retained : Nat) :
+    DelimitedControl sourceOlder actualOlder selected
+      (predicateEntry retained
+        (delimitedClauseChoice actual.cutBoundary related.restores actualOlder selected)) := by
+  refine ⟨rfl,rfl,rfl,related.older_atoms,actual.cutBoundary :: related.restores,
+    [.evaluate body destination],?_,?_⟩
+  · simpa only [List.singleton_append] using atGoal
+  · simp only [predicateEntry,delimitedClauseChoice,atGoal,List.map_cons,
+      List.cons_append,List.nil_append]
+
+/-- Support retained behind the current work item in its DFS queue. -/
+def pendingSupport {Context : Type} (pending : List (CollectionWork Context)) :
+    Finset String :=
+  pending.foldr (fun work names => work.1.support ∪ names) ∅
+
+/-- Support already published in the current root scope together with every
+outer retained scope.  The active work item and its queue tail are accounted
+for separately. -/
+def collectedSupport {Context : Type} (parents : List (CollectionScope Context))
+    (scope : CollectionScope Context) : Finset String :=
+  scope.collected.foldr (fun answer names => answer.support ∪ names) ∅ ∪
+    parents.foldr (fun parent names => CollectionScope.support parent ∪ names) ∅
+
+/-- The retained work installed for one selected source occurrence. -/
+def enteredEquationWork {Context : Type} (cutBoundary : Nat) (restores : List Nat)
+    (actualOlder : List Goal) (retained : Nat) (context : Context) (origins : List Nat)
+    (row : Nat × Control) : CollectionWork Context :=
+  (predicateEntry retained
+      (delimitedClauseChoice cutBoundary restores actualOlder row.2),
+    context,origins ++ [row.1])
+
+/-- Every selected clause supplied to `Bodies` begins with its fresh body at
+the declared destination and exact older continuation. -/
+theorem Bodies.selected_ready {program : Program} {destination : Atom}
+    {older : List Goal} {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes) :
+    ∀ row ∈ selected,
+      ∃ body, row.2.goals = .evaluate body destination :: older := by
+  match source with
+  | .nil => simp
+  | @Bodies.cons _ _ _ position selected remaining body children rest atGoal first later =>
+      intro row member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ⟨body,atGoal⟩
+      · exact Bodies.selected_ready later row member
+termination_by structural source
+
+/-- The support of entered equation alternatives is exactly the support of
+their raw selected controls followed by the pre-existing queue tail. -/
+theorem DelimitedControl.pendingSupport_enteredEquationWork {Context : Type}
+    {sourceOlder actualOlder : List Goal} {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) {destination : Atom}
+    (choices : List (Nat × Control)) (retained : Nat) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (ready : ∀ row ∈ choices,
+      ∃ body, row.2.goals = .evaluate body destination :: sourceOlder) :
+    pendingSupport
+        (choices.map (enteredEquationWork actual.cutBoundary related.restores actualOlder
+          retained context origins) ++ pending) =
+      choices.foldr (fun row names => row.2.support ∪ names)
+        (pendingSupport pending) := by
+  induction choices with
+  | nil => rfl
+  | cons row choices inductionHypothesis =>
+      obtain ⟨body,atGoal⟩ := ready row List.mem_cons_self
+      have supportEq :=
+        (related.of_predicateEntry (selected := row.2) atGoal retained).support_eq
+      simp only [List.map_cons,List.cons_append,pendingSupport,List.foldr_cons,
+        enteredEquationWork,supportEq]
+      exact congrArg (fun names => row.2.support ∪ names)
+        (inductionHypothesis
+          (fun candidate member => ready candidate (List.mem_cons_of_mem row member)))
+
+/-- Concrete queued work realizes raw continuation roots in order.  Each item
+records its source trace, physical origin path and exact support of the work
+remaining behind it. -/
+inductive QueuedWorkRel {Context : Type} (program : Program)
+    (sourceOlder actualOlder : List Goal) (root : Control)
+    (baseOrigins : List Nat) (basePending : List (CollectionWork Context)) :
+    List (Control × Finset String) → List (CollectionWork Context) → Prop where
+  | nil : QueuedWorkRel program sourceOlder actualOlder root baseOrigins basePending [] []
+  | cons {raw actual : Control} {pSupp : Finset String} {context : Context}
+      {origins trace : List Nat} {queued : List (Control × Finset String)}
+      {work : List (CollectionWork Context)}
+      (related : Nonempty (DelimitedControl sourceOlder actualOlder raw actual))
+      (path : BranchTrace program root trace raw)
+      (originsEq : origins = baseOrigins ++ trace)
+      (supportEq : pSupp = pendingSupport (work ++ basePending))
+      (rest : QueuedWorkRel program sourceOlder actualOlder root baseOrigins
+        basePending queued work) :
+      QueuedWorkRel program sourceOlder actualOlder root baseOrigins basePending
+        ((raw,pSupp) :: queued) ((actual,context,origins) :: work)
+
+/-- Queue-support assignment for a complete selected equation frontier. -/
+def queuedSelections (base : Finset String) :
+    List (Nat × Control) → List (Control × Finset String)
+  | [] => []
+  | row :: remaining =>
+      (row.2,remaining.foldr (fun next names => next.2.support ∪ names) base) ::
+        queuedSelections base remaining
+
+/-- A complete source body list supplies the exact concrete predicate-entry
+queue used by the retained DFS machine, including occurrence paths and the
+support of every remaining suffix. -/
+theorem Bodies.queuedWorkRel {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {root actual : Control}
+    {head : String} {arguments : List Atom} {destination : Atom}
+    {environment : Environment} {allChoices selected : List (Nat × Control)}
+    {outcomes : List Control}
+    (bodies : Bodies program destination sourceOlder selected outcomes)
+    (related : DelimitedControl sourceOlder actualOlder root actual)
+    (atCall : root.goals = .invoke head arguments destination :: sourceOlder)
+    (resolved : resolve root.bindings = some environment)
+    {extra : Finset String}
+    (coverage : ClauseChoice.Frontier program (protectControl root extra) head
+      (arguments.map (read environment)) destination sourceOlder
+      (List.range program.equations.length) allChoices)
+    (included : ∀ row ∈ selected, row ∈ allChoices)
+    (baseOrigins : List Nat) (basePending : List (CollectionWork Context))
+    (context : Context) :
+    QueuedWorkRel program sourceOlder actualOlder root baseOrigins basePending
+      (queuedSelections (pendingSupport basePending) selected)
+      (selected.map (enteredEquationWork actual.cutBoundary related.restores actualOlder
+        basePending.length context baseOrigins)) := by
+  match bodies with
+  | .nil => exact .nil
+  | @Bodies.cons _ _ _ position selected remaining body children rest atBody first later =>
+      have enteredRelated :=
+        related.of_predicateEntry (selected := selected) atBody basePending.length
+      have selectedPath : BranchTrace program root [position] selected :=
+        .selected atCall resolved coverage
+          (included (position,selected) List.mem_cons_self) (.refl selected)
+      have remainingSupport := related.pendingSupport_enteredEquationWork
+        (destination := destination) remaining basePending.length context baseOrigins
+        basePending (Bodies.selected_ready later)
+      refine .cons ⟨enteredRelated⟩ selectedPath rfl ?_ ?_
+      · exact remainingSupport.symm
+      · exact Bodies.queuedWorkRel later related atCall resolved coverage
+          (fun row member => included row (List.mem_cons_of_mem _ member))
+          baseOrigins basePending context
+termination_by structural bodies
+
+/-- At a root collection scope, total allocator support factors into the raw
+active control, the exact queue tail, and previously retained observations.
+Delimiter goals and occurrence paths contribute no names. -/
+theorem DelimitedControl.collectionSupport_eq {Context : Type}
+    {sourceOlder actualOlder : List Goal} {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
+    (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
+    (context : Context) (origins : List Nat)
+    (pending : List (CollectionWork Context))
+    (frontier : scope.frontier = (actual,context,origins) :: pending)
+    (root : scope.caller = none) :
+    collectionSupport
+        (⟨world,scope :: parents⟩ : CollectionConfiguration Context) =
+      raw.support ∪ pendingSupport pending ∪ collectedSupport parents scope := by
+  simp only [collectionSupport,List.foldr_cons,CollectionScope.support,frontier,
+    root,Option.map_none,Option.getD_none,pendingSupport,collectedSupport,
+    related.support_eq,Finset.union_empty]
+  ac_rfl
+
 /-- At the return boundary of the active subcomputation, the delimiter stack
 is the whole difference between the concrete and raw goal lists. -/
-theorem DelimitedControl.at_continuation {older : List Goal} {raw actual : Control}
-    (related : DelimitedControl older raw actual) (atEnd : raw.goals = older) :
-    actual.goals = related.restores.map Goal.restoreCommit ++ older := by
+theorem DelimitedControl.at_continuation {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (atEnd : raw.goals = sourceOlder) :
+    actual.goals = related.restores.map Goal.restoreCommit ++ actualOlder := by
   have prefixLength : related.activePrefix.length = 0 := by
     have same := congrArg List.length (related.raw_goals.symm.trans atEnd)
     simp only [List.length_append] at same
@@ -865,66 +1219,213 @@ theorem DelimitedControl.at_continuation {older : List Goal} {raw actual : Contr
   have prefixNil := List.eq_nil_of_length_eq_zero prefixLength
   simpa only [prefixNil,List.nil_append] using related.actual_goals
 
-theorem DelimitedControl.entry_goals {older : List Goal} {raw actual : Control}
-    (related : DelimitedControl older raw actual) (goal : Goal)
-    (atGoal : raw.goals = goal :: older) :
-    actual.goals = goal :: related.restores.map Goal.restoreCommit ++ older := by
-  have same : related.activePrefix ++ older = [goal] ++ older :=
-    related.raw_goals.symm.trans (by simpa only [List.singleton_append] using atGoal)
-  have prefixEq : related.activePrefix = [goal] := List.append_cancel_right same
-  simpa only [prefixEq,List.singleton_append,List.cons_append,List.nil_append]
-    using related.actual_goals
+/-- Any active source prefix remains before the delimiter stack.  This is the
+two-continuation law used when unevaluated siblings precede an outer caller. -/
+theorem DelimitedControl.prefix_goals {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) (active : List Goal)
+    (atPrefix : raw.goals = active ++ sourceOlder) :
+    actual.goals = active ++ related.restores.map Goal.restoreCommit ++ actualOlder := by
+  have same : related.activePrefix ++ sourceOlder = active ++ sourceOlder :=
+    related.raw_goals.symm.trans atPrefix
+  have prefixEq : related.activePrefix = active := List.append_cancel_right same
+  simpa only [prefixEq] using related.actual_goals
 
-def DelimitedControl.replace_prefix {older : List Goal} {raw actual : Control}
-    (related : DelimitedControl older raw actual) (active : List Goal) :
-    DelimitedControl older (replace raw (active ++ older))
-      (replace actual (active ++ related.restores.map Goal.restoreCommit ++ older)) := by
+theorem DelimitedControl.entry_goals {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) (goal : Goal)
+    (atGoal : raw.goals = goal :: sourceOlder) :
+    actual.goals = goal :: related.restores.map Goal.restoreCommit ++ actualOlder := by
+  have atPrefix : raw.goals = [goal] ++ sourceOlder := by
+    simpa only [List.singleton_append] using atGoal
+  simpa only [List.singleton_append,List.cons_append,List.nil_append] using
+    related.prefix_goals [goal] atPrefix
+
+def DelimitedControl.replace_prefix {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual) (active : List Goal) :
+    DelimitedControl sourceOlder actualOlder (replace raw (active ++ sourceOlder))
+      (replace actual
+        (active ++ related.restores.map Goal.restoreCommit ++ actualOlder)) := by
   exact ⟨by simpa only [replace] using related.bindings,
     by simpa only [replace] using related.destination,
-    by simpa only [replace] using related.reserved,
+    by simpa only [replace] using related.reserved,related.older_atoms,
     related.restores,active,rfl,rfl⟩
 
 /-- One ordinary evaluation expansion commutes with an already installed
 delimiter stack when its syntax-directed work prefix is the same. -/
 theorem DelimitedControl.expanded_replace {Context : Type} {program : Program}
-    {raw actual : Control} {expression destination : Atom} {older active : List Goal}
-    (related : DelimitedControl older raw actual)
-    (atGoal : raw.goals = .evaluate expression destination :: older)
+    {raw actual : Control} {expression destination : Atom}
+    {sourceOlder actualOlder active : List Goal}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (atGoal : raw.goals = .evaluate expression destination :: sourceOlder)
     (ordinary : scopedForm expression = false)
     (prepared : Prepared .eagerValue program actual destination
-      (related.restores.map Goal.restoreCommit ++ older) expression
-      (replace actual (active ++ related.restores.map Goal.restoreCommit ++ older)))
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World) (context : Context) :
-    ∃ _ : DelimitedControl older (replace raw (active ++ older))
-        (replace actual (active ++ related.restores.map Goal.restoreCommit ++ older)),
+      (related.restores.map Goal.restoreCommit ++ actualOlder) expression
+      (replace actual
+        (active ++ related.restores.map Goal.restoreCommit ++ actualOlder)))
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World) (context : Context) :
+    ∃ _ : DelimitedControl sourceOlder actualOlder
+        (replace raw (active ++ sourceOlder))
+        (replace actual
+          (active ++ related.restores.map Goal.restoreCommit ++ actualOlder)),
       Source.Step .eagerValue program (⟨world,actual,context⟩ : Cursor Context)
         (.silent (⟨world,
-          replace actual (active ++ related.restores.map Goal.restoreCommit ++ older),context⟩ :
+          replace actual
+            (active ++ related.restores.map Goal.restoreCommit ++ actualOlder),context⟩ :
           Cursor Context)) := by
-  exact ⟨related.replace_prefix active,.expanded expression destination
-    (related.restores.map Goal.restoreCommit ++ older) _
-    (related.entry_goals (.evaluate expression destination) atGoal) ordinary prepared⟩
+  exact ⟨related.replace_prefix active,
+    .expanded expression destination
+      (related.restores.map Goal.restoreCommit ++ actualOlder) _
+      (related.entry_goals (.evaluate expression destination) atGoal) ordinary prepared⟩
 
 /-- Accepted logical refinement commutes with the delimiter stack and exposes
 the same reached binding store at the raw continuation. -/
 theorem DelimitedControl.accepted_step {Context : Type} {program : Program}
-    {raw actual : Control} {value destination : Atom} {older : List Goal}
-    {after : Equations} (related : DelimitedControl older raw actual)
-    (atGoal : raw.goals = .equate value destination :: older)
+    {raw actual : Control} {value destination : Atom}
+    {sourceOlder actualOlder : List Goal} {after : Equations}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (atGoal : raw.goals = .equate value destination :: sourceOlder)
     (accepted : Refinement raw.bindings value destination (some after))
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World) (context : Context) :
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World) (context : Context) :
     let reached : Control :=
-      { actual with bindings := after, goals := related.restores.map Goal.restoreCommit ++ older }
-    ∃ _ : DelimitedControl older {raw with bindings := after,goals := older} reached,
+      { bindings := after
+        goals := related.restores.map Goal.restoreCommit ++ actualOlder
+        destination := actual.destination
+        reserved := actual.reserved
+        cutBoundary := actual.cutBoundary }
+    ∃ _ : DelimitedControl sourceOlder actualOlder
+        {raw with bindings := after,goals := sourceOlder} reached,
       Source.Step .eagerValue program (⟨world,actual,context⟩ : Cursor Context)
         (.silent (⟨world,reached,context⟩ : Cursor Context)) := by
   dsimp only
   have actualAccepted : Refinement actual.bindings value destination (some after) := by
     simpa only [related.bindings] using accepted
-  refine ⟨⟨rfl,related.destination,related.reserved,related.restores,[],rfl,rfl⟩,
+  refine ⟨⟨rfl,related.destination,related.reserved,related.older_atoms,
+    related.restores,[],rfl,rfl⟩,
     .accepted value destination
-    (related.restores.map Goal.restoreCommit ++ older) after
+    (related.restores.map Goal.restoreCommit ++ actualOlder) after
     (related.entry_goals (.equate value destination) atGoal) actualAccepted⟩
+
+/-- Enter one argument evaluation by moving its remaining sibling and final
+goals into the source and concrete continuations.  Outer delimiters stay after
+those siblings; the child starts with an empty inner delimiter stack. -/
+def DelimitedControl.enter_argument {sourceOlder actualOlder : List Goal}
+    {raw actual : Control}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    {source slot : Atom} {rows : List (Atom × Atom)} {final : Goal}
+    (atGoal : raw.goals =
+      .evaluate source slot :: (evaluationGoals rows ++ final :: sourceOlder)) :
+    DelimitedControl
+      (evaluationGoals rows ++ final :: sourceOlder)
+      (evaluationGoals rows ++ final ::
+        (related.restores.map Goal.restoreCommit ++ actualOlder))
+      raw actual := by
+  have prefixEq : related.activePrefix =
+      .evaluate source slot :: (evaluationGoals rows ++ [final]) := by
+    have same : related.activePrefix ++ sourceOlder =
+        (.evaluate source slot :: (evaluationGoals rows ++ [final])) ++ sourceOlder := by
+      simpa only [List.cons_append,List.append_assoc,List.singleton_append,
+        List.nil_append] using
+        related.raw_goals.symm.trans atGoal
+    exact List.append_cancel_right same
+  refine ⟨related.bindings,related.destination,related.reserved,?_,[],
+    [.evaluate source slot],?_,?_⟩
+  · simp only [List.flatMap_append,List.flatMap_cons,restoreCommit_atoms,
+      List.nil_append,related.older_atoms]
+  · simpa only [List.singleton_append,List.cons_append,List.append_assoc,
+      List.nil_append] using atGoal
+  · simpa only [prefixEq,List.map_nil,List.nil_append,List.singleton_append,
+      List.cons_append,List.append_assoc] using related.actual_goals
+
+/-- After a child has popped its inner delimiters, its sibling continuation
+reconstitutes the enclosing delimiter relation. -/
+def DelimitedControl.exit_argument {sourceOlder actualOlder : List Goal}
+    (olderAtoms : actualOlder.flatMap Goal.atoms = sourceOlder.flatMap Goal.atoms)
+    (outerRestores : List Nat) {rows : List (Atom × Atom)} {final : Goal}
+    {head reached : Control}
+    (bindings : reached.bindings = head.bindings)
+    (destination : reached.destination = head.destination)
+    (reserved : reached.reserved = head.reserved)
+    (headGoals : head.goals = evaluationGoals rows ++ final :: sourceOlder)
+    (reachedGoals : reached.goals = evaluationGoals rows ++ final ::
+      (outerRestores.map Goal.restoreCommit ++ actualOlder)) :
+    DelimitedControl sourceOlder actualOlder head reached := by
+  refine ⟨bindings,destination,reserved,olderAtoms,outerRestores,
+    evaluationGoals rows ++ [final],?_,?_⟩
+  · simpa only [List.append_assoc,List.singleton_append] using headGoals
+  · simpa only [List.append_assoc,List.singleton_append,List.cons_append,
+      List.nil_append] using reachedGoals
+
+/-- A source preparation is representation-independent across every concrete
+continuation with the same atom support.  Control forms which inspect the
+current cut boundary are discharged by their own component law. -/
+def PreparedDelimitedRel {program : Program} {raw next : Control}
+    {expression destination : Atom} {sourceOlder : List Goal}
+    (_source : Prepared .eagerValue program raw destination sourceOlder expression next) : Prop :=
+  ∀ (actualOlder : List Goal) (actual : Control),
+    ∀ (related : DelimitedControl sourceOlder actualOlder raw actual),
+      ∃ actualNext,
+        Nonempty (DelimitedControl sourceOlder actualOlder next actualNext) ∧
+        Prepared .eagerValue program actual destination
+          (related.restores.map Goal.restoreCommit ++ actualOlder) expression actualNext
+
+theorem PreparedDelimitedRel.of_source {program : Program} {raw firstNext secondNext : Control}
+    {expression destination : Atom} {sourceOlder : List Goal}
+    (first : Prepared .eagerValue program raw destination sourceOlder expression firstNext)
+    (second : Prepared .eagerValue program raw destination sourceOlder expression secondNext)
+    (valid : PreparedDelimitedRel second) : PreparedDelimitedRel first := by
+  have same : firstNext = secondNext := first.execution.symm.trans second.execution
+  subst secondNext
+  exact valid
+
+theorem PreparedDelimitedRel.application {program : Program} {raw : Control}
+    {destination : Atom} {sourceOlder : List Goal} (head : String)
+    (arguments : List Atom)
+    (ordinary : lexicalForm (.expression (.symbol head :: arguments)) = false)
+    (declared : callable program head = true) :
+    PreparedDelimitedRel
+      (Prepared.application (policy := Policy.eagerValue) (control := raw)
+        (destination := destination) (older := sourceOlder)
+        head arguments ordinary declared) := by
+  intro actualOlder actual related
+  let active :=
+    (callArguments program head arguments (freshSlots raw arguments.length)).1 ++
+      [.invoke head
+        (callArguments program head arguments (freshSlots raw arguments.length)).2 destination]
+  have slots := related.freshSlots_eq arguments.length
+  refine ⟨replace actual
+      (active ++ related.restores.map Goal.restoreCommit ++ actualOlder),
+    ⟨by simpa only [active,List.append_assoc] using related.replace_prefix active⟩,?_⟩
+  simpa only [active,slots,List.append_assoc] using
+    (Prepared.application (policy := Policy.eagerValue) (program := program)
+      (control := actual) (destination := destination)
+      (older := related.restores.map Goal.restoreCommit ++ actualOlder)
+      head arguments ordinary declared)
+
+theorem PreparedDelimitedRel.construction {program : Program} {raw : Control}
+    {destination : Atom} {sourceOlder : List Goal} (head : String)
+    (arguments : List Atom)
+    (ordinary : lexicalForm (.expression (.symbol head :: arguments)) = false)
+    (data : callable program head = false) :
+    PreparedDelimitedRel
+      (Prepared.construction (policy := Policy.eagerValue) (control := raw)
+        (destination := destination) (older := sourceOlder)
+        head arguments ordinary data) := by
+  intro actualOlder actual related
+  let active : List Goal :=
+    (arguments.zip (freshSlots raw arguments.length)).map
+        (fun row => Goal.evaluate row.1 row.2) ++
+      [Goal.equate (.expression (.symbol head :: freshSlots raw arguments.length)) destination]
+  have slots := related.freshSlots_eq arguments.length
+  refine ⟨replace actual
+      (active ++ related.restores.map Goal.restoreCommit ++ actualOlder),
+    ⟨by simpa only [active,List.append_assoc] using related.replace_prefix active⟩,?_⟩
+  simpa only [active,slots,List.append_assoc] using
+    (Prepared.construction (policy := Policy.eagerValue) (program := program)
+      (control := actual) (destination := destination)
+      (older := related.restores.map Goal.restoreCommit ++ actualOlder)
+      head arguments ordinary data)
 
 /-- Reflexive-transitive silent execution in the maintained pre-return source
 profile.  This is a path in the existing scoped source rules, not a second
@@ -955,22 +1456,83 @@ theorem PreReturnPath.trans {Context : Type} {policy : Policy} {program : Progra
   exact ⟨firstFuel + secondFuel,by
     simpa only [List.nil_append] using firstPath.resume secondPath⟩
 
+/-- A synchronized source frontier is installed by one actual retained-scope
+step.  Every selected occurrence receives the current predicate delimiter;
+the queue order and physical occurrence path are unchanged. -/
+theorem DelimitedControl.equations_step {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {raw actual : Control} {extra : Finset String}
+    {head : String} {arguments : List Atom} {destination : Atom}
+    {environment : Environment} {choices : List (Nat × Control)}
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (atGoal : raw.goals = .invoke head arguments destination :: sourceOlder)
+    (resolved : resolve raw.bindings = some environment)
+    (ordinary : head ≠ "parse")
+    (unknown : Mettapedia.Languages.MeTTa.PeTTa.StdLib.known head = false)
+    (notIO : Mettapedia.Languages.MeTTa.PeTTa.Eval.ioHead head = false)
+    (declared : program.equations.any (·.head == head) = true)
+    (coverage : ClauseChoice.Frontier program (protectControl raw extra) head
+      (arguments.map (read environment)) destination sourceOlder
+      (List.range program.equations.length) choices)
+    (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
+    (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
+    (context : Context) (origins : List Nat)
+    (pending : List (CollectionWork Context))
+    (frontier : scope.frontier = (actual,context,origins) :: pending)
+    (synchronized :
+      (protectControl actual (collectionSupport
+        (⟨world,scope :: parents⟩ : CollectionConfiguration Context))).reserved =
+        (protectControl raw extra).reserved) :
+    let actualChoices := choices.map fun row =>
+      (row.1,delimitedClauseChoice actual.cutBoundary related.restores actualOlder row.2)
+    PreReturnPath .eagerValue program
+      (supply,⟨world,scope :: parents⟩)
+      (supply,⟨world,{scope with frontier :=
+        (actualChoices.map (fun row =>
+          (predicateEntry pending.length row.2,context,origins ++ [row.1]))) ++ pending} ::
+        parents⟩) := by
+  dsimp only
+  let boundary := collectionSupport
+    (⟨world,scope :: parents⟩ : CollectionConfiguration Context)
+  have sameReserved : (protectControl actual boundary).reserved =
+      (protectControl raw extra).reserved := by
+    simpa only [boundary] using synchronized
+  have targetCoverage := related.frontier_lift sameReserved coverage
+  have actualAtGoal : actual.goals = .invoke head arguments destination ::
+      related.restores.map Goal.restoreCommit ++ actualOlder :=
+    related.entry_goals (.invoke head arguments destination) atGoal
+  have actualResolved : resolve actual.bindings = some environment := by
+    simpa only [related.bindings] using resolved
+  let actualChoices := choices.map fun row =>
+    (row.1,delimitedClauseChoice actual.cutBoundary related.restores actualOlder row.2)
+  have localStep : PreReturnStep .eagerValue program
+      (supply,⟨world,scope :: parents⟩)
+      (supply,⟨world,{scope with frontier :=
+        (actualChoices.map (fun row =>
+          (predicateEntry pending.length row.2,context,origins ++ [row.1]))) ++ pending} ::
+        parents⟩) := by
+    exact PreReturnStep.equations supply world scope parents actual context origins pending
+      head arguments destination (related.restores.map Goal.restoreCommit ++ actualOlder)
+      environment actualChoices frontier actualAtGoal actualResolved ordinary unknown notIO
+      declared (by simpa only [boundary,actualChoices] using targetCoverage)
+  simpa only [actualChoices] using PreReturnPath.single localStep
+
 private theorem drain_restoreCommits_aux {Context : Type} (program : Program)
     (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
     (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
-    (raw actual : Control) (older : List Goal) (context : Context) (origins : List Nat)
+    (raw actual : Control) (actualOlder : List Goal) (context : Context) (origins : List Nat)
     (pending : List (CollectionWork Context)) (restores : List Nat)
     (bindings : actual.bindings = raw.bindings)
     (destination : actual.destination = raw.destination)
     (reserved : actual.reserved = raw.reserved)
-    (actualGoals : actual.goals = restores.map Goal.restoreCommit ++ older)
+    (actualGoals : actual.goals = restores.map Goal.restoreCommit ++ actualOlder)
     (frontier : scope.frontier = (actual,context,origins) :: pending) :
     ∃ reached,
       reached.bindings = raw.bindings ∧
       reached.destination = raw.destination ∧
       reached.reserved = raw.reserved ∧
-      reached.goals = older ∧
+      reached.goals = actualOlder ∧
       PreReturnPath .eagerValue program
         (supply,⟨world,scope :: parents⟩)
         (supply,⟨world,{scope with frontier := (reached,context,origins) :: pending} :: parents⟩) := by
@@ -986,13 +1548,13 @@ private theorem drain_restoreCommits_aux {Context : Type} (program : Program)
           (PreReturnPath.refl .eagerValue program (supply,⟨world,scope :: parents⟩))
   | cons boundary restores inductionHypothesis =>
       let reachedControl : Control :=
-        {actual with goals := restores.map Goal.restoreCommit ++ older, cutBoundary := boundary}
+        {actual with goals := restores.map Goal.restoreCommit ++ actualOlder, cutBoundary := boundary}
       let reachedScope : CollectionScope Context :=
         {scope with frontier := (reachedControl,context,origins) :: pending}
       have localStep : Source.Step .eagerValue program
           (⟨world,actual,context⟩ : Cursor Context)
           (.silent (⟨world,reachedControl,context⟩ : Cursor Context)) := by
-        apply Source.Step.restoring boundary (restores.map Goal.restoreCommit ++ older)
+        apply Source.Step.restoring boundary (restores.map Goal.restoreCommit ++ actualOlder)
         simpa only [List.map_cons,List.cons_append] using actualGoals
       have scopedStep : PreReturnStep .eagerValue program
           (supply,⟨world,scope :: parents⟩)
@@ -1016,21 +1578,23 @@ Bindings, destination, reserved support, world, context, origins and the queue
 tail are unchanged. -/
 theorem drain_restoreCommits {Context : Type} (program : Program)
     (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
     (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
-    (raw actual : Control) (older : List Goal) (context : Context) (origins : List Nat)
+    (raw actual : Control) (sourceOlder actualOlder : List Goal)
+    (context : Context) (origins : List Nat)
     (pending : List (CollectionWork Context))
-    (related : DelimitedControl older raw actual) (atEnd : raw.goals = older)
+    (related : DelimitedControl sourceOlder actualOlder raw actual)
+    (atEnd : raw.goals = sourceOlder)
     (frontier : scope.frontier = (actual,context,origins) :: pending) :
     ∃ reached,
       reached.bindings = raw.bindings ∧
       reached.destination = raw.destination ∧
       reached.reserved = raw.reserved ∧
-      reached.goals = older ∧
+      reached.goals = actualOlder ∧
       PreReturnPath .eagerValue program
         (supply,⟨world,scope :: parents⟩)
         (supply,⟨world,{scope with frontier := (reached,context,origins) :: pending} :: parents⟩) :=
-  drain_restoreCommits_aux program supply world parents scope raw actual older context origins pending
+  drain_restoreCommits_aux program supply world parents scope raw actual actualOlder context origins pending
     related.restores related.bindings related.destination related.reserved
     (related.at_continuation atEnd) frontier
 
@@ -1071,11 +1635,11 @@ exactly one answer.  The older queue, prior collected answers and occurrence
 path are retained verbatim. -/
 theorem root_terminal_drain {Context : Type} (program : Program)
     (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
     (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
     (raw actual : Control) (context : Context) (origins : List Nat)
     (pending : List (CollectionWork Context)) (environment : Environment)
-    (related : DelimitedControl [] raw actual) (atEnd : raw.goals = [])
+    (related : DelimitedControl [] [] raw actual) (atEnd : raw.goals = [])
     (frontier : scope.frontier = (actual,context,origins) :: pending)
     (root : scope.caller = none) (resolved : resolve raw.bindings = some environment) :
     let answer : CollectedAnswer :=
@@ -1084,12 +1648,12 @@ theorem root_terminal_drain {Context : Type} (program : Program)
       ScopedSourcePath .eagerValue program
         (supply,⟨world,scope :: parents⟩) [answer]
         (supply,⟨world,
-          Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Scope.record
+          Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Scope.record
             scope pending answer :: parents⟩) := by
   dsimp only
   obtain ⟨reached,reachedBindings,reachedDestination,reachedReserved,reachedGoals,
       restorePath⟩ :=
-    drain_restoreCommits program supply world parents scope raw actual [] context origins
+    drain_restoreCommits program supply world parents scope raw actual [] [] context origins
       pending related atEnd frontier
   let restoredScope : CollectionScope Context :=
     {scope with frontier := (reached,context,origins) :: pending}
@@ -1106,7 +1670,7 @@ theorem root_terminal_drain {Context : Type} (program : Program)
       (supply,⟨world,restoredScope :: parents⟩)
       (.publish [answer]
         (supply,⟨world,
-          Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Scope.record
+          Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Scope.record
             scope pending answer :: parents⟩)) := by
     have active := Source.ScopedStep.active (fresh := Source.FreshOperations.owned)
       (policy := Policy.eagerValue) supply world restoredScope parents reached context origins
@@ -1117,11 +1681,11 @@ theorem root_terminal_drain {Context : Type} (program : Program)
         (⟨world,reached,context⟩ : Cursor Context) localReturn)
     simpa only [restoredScope,root,Option.isNone_none,if_true,answer,
       reachedBindings,reachedDestination,
-      Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Scope.record] using active
+      Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Scope.record] using active
   have finalStep : ScopedSourcePath .eagerValue program
       (supply,⟨world,restoredScope :: parents⟩) [answer]
       (supply,⟨world,
-        Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Scope.record
+        Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Scope.record
           scope pending answer :: parents⟩) := by
     refine ⟨1,?_⟩
     simpa only [zero_add,List.append_nil] using
@@ -1142,22 +1706,66 @@ def OriginAnswerRel (program : Program) (root : Control) (baseOrigins : List Nat
   ∃ trace, BranchTrace program root trace terminal ∧
     ResolvedAnswer (baseOrigins ++ trace) terminal answer
 
+/-- Support contributed by the answer of one resolvable terminal control.
+Occurrence origins are intentionally absent because they contain no names. -/
+def rawAnswerSupport (raw : Control) : Finset String :=
+  match resolve raw.bindings with
+  | some environment =>
+      operandSupport
+        (read environment raw.destination ::
+          raw.bindings.flatMap (fun pair => [pair.1,pair.2]))
+  | none => ∅
+
+theorem resolvedAnswer_support (raw : Control) (origins : List Nat)
+    (environment : Environment) (resolved : resolve raw.bindings = some environment) :
+    (⟨read environment raw.destination,raw.bindings,origins,[]⟩ : CollectedAnswer).support =
+      rawAnswerSupport raw := by
+  simp only [CollectedAnswer.support,rawAnswerSupport,resolved,List.append_nil]
+
+private theorem foldCollectedSupport (answers : List CollectedAnswer)
+    (initial : Finset String) :
+    answers.foldr (fun answer names => answer.support ∪ names) initial =
+      answers.foldr (fun answer names => answer.support ∪ names) ∅ ∪ initial := by
+  induction answers with
+  | nil => simp
+  | cons answer answers inductionHypothesis =>
+      simp only [List.foldr_cons,inductionHypothesis]
+      ac_rfl
+
+theorem collectedSupport_append_answer {Context : Type}
+    (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
+    (pending : List (CollectionWork Context)) (answer : CollectedAnswer) :
+    collectedSupport parents
+        {scope with frontier := pending,collected := scope.collected ++ [answer]} =
+      collectedSupport parents scope ∪ answer.support := by
+  unfold collectedSupport
+  rw [List.foldr_append,foldCollectedSupport]
+  simp only [List.foldr_cons,List.foldr_nil,Finset.union_empty]
+  ac_rfl
+
 /-- Continuation-passing root contract for one raw source control.  It is
-parametric in the concrete delimiter representation and queue tail.  Draining
-the control appends an ordered block of terminal answers and exposes exactly
-the saved tail. -/
-def RootContinuationContract {Context : Type} (program : Program) (older : List Goal)
-    (raw : Control) (terminals : List Control) : Prop :=
+parametric in the concrete delimiter representation.  Its explicit support
+indices make the source freshening boundary independent of the concrete queue
+representation while preserving the exact ordered answer block. -/
+def RootContinuationContract {Context : Type} (program : Program)
+    (sourceOlder actualOlder : List Goal)
+    (raw : Control) (pSupp cSupp : Finset String)
+    (terminals : List Control) (cSuppAfter : Finset String) : Prop :=
   ∀ (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
     (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
     (actual : Control) (context : Context) (origins : List Nat)
     (pending : List (CollectionWork Context)),
-    DelimitedControl older raw actual →
+    DelimitedControl sourceOlder actualOlder raw actual →
     scope.frontier = (actual,context,origins) :: pending →
     scope.caller = none →
+    pendingSupport pending = pSupp →
+    collectedSupport parents scope = cSupp →
     ∃ answers,
       List.Forall₂ (OriginAnswerRel program raw origins) terminals answers ∧
+      collectedSupport parents
+          {scope with frontier := pending,collected := scope.collected ++ answers} =
+        cSuppAfter ∧
       ScopedSourcePath .eagerValue program
         (supply,⟨world,scope :: parents⟩) answers
         (supply,⟨world,
@@ -1166,32 +1774,33 @@ def RootContinuationContract {Context : Type} (program : Program) (older : List 
 /-- One or more silent pre-return source steps transport every concrete
 delimiter representation of `raw` to a representation of `next`, without
 touching the queue tail or occurrence path. -/
-def DelimitedTransition {Context : Type} (program : Program) (older : List Goal)
+def DelimitedTransition {Context : Type} (program : Program)
+    (sourceOlder actualOlder : List Goal)
     (raw next : Control) : Prop :=
   ∀ (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
-    (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
     (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
     (actual : Control) (context : Context) (origins : List Nat)
     (pending : List (CollectionWork Context)),
-    DelimitedControl older raw actual →
+    DelimitedControl sourceOlder actualOlder raw actual →
     scope.frontier = (actual,context,origins) :: pending →
     ∃ actualNext,
-      Nonempty (DelimitedControl older next actualNext) ∧
+      Nonempty (DelimitedControl sourceOlder actualOlder next actualNext) ∧
       PreReturnPath .eagerValue program
         (supply,⟨world,scope :: parents⟩)
         (supply,⟨world,
           { scope with frontier := (actualNext,context,origins) :: pending } :: parents⟩)
 
 theorem DelimitedTransition.of_local {Context : Type} {program : Program}
-    {older : List Goal} {raw next : Control}
-    (lift : ∀ (world : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.World)
+    {sourceOlder actualOlder : List Goal} {raw next : Control}
+    (lift : ∀ (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
       (context : Context) (actual : Control),
-      DelimitedControl older raw actual →
+      DelimitedControl sourceOlder actualOlder raw actual →
       ∃ actualNext,
-        Nonempty (DelimitedControl older next actualNext) ∧
+        Nonempty (DelimitedControl sourceOlder actualOlder next actualNext) ∧
         Source.Step .eagerValue program (⟨world,actual,context⟩ : Cursor Context)
           (.silent (⟨world,actualNext,context⟩ : Cursor Context))) :
-    DelimitedTransition (Context := Context) program older raw next := by
+    DelimitedTransition (Context := Context) program sourceOlder actualOlder raw next := by
   intro supply world parents scope actual context origins pending related frontier
   obtain ⟨actualNext,nextRelated,localStep⟩ := lift world context actual related
   let nextScope : CollectionScope Context :=
@@ -1205,11 +1814,37 @@ theorem DelimitedTransition.of_local {Context : Type} {program : Program}
   exact ⟨actualNext,nextRelated,by
     simpa only [nextScope] using PreReturnPath.single scopedStep⟩
 
+theorem DelimitedTransition.of_prepared {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {raw next : Control}
+    {expression destination : Atom}
+    (atGoal : raw.goals = .evaluate expression destination :: sourceOlder)
+    (ordinary : scopedForm expression = false)
+    (prepared : Prepared .eagerValue program raw destination sourceOlder expression next)
+    (compatible : PreparedDelimitedRel prepared) :
+    DelimitedTransition (Context := Context) program sourceOlder actualOlder raw next ∧
+      BranchTrace program raw [] next := by
+  constructor
+  · apply DelimitedTransition.of_local
+    intro world context actual related
+    obtain ⟨actualNext,nextRelated,actualPrepared⟩ :=
+      compatible actualOlder actual related
+    have actualAtGoal : actual.goals = .evaluate expression destination ::
+        related.restores.map Goal.restoreCommit ++ actualOlder :=
+      related.entry_goals (.evaluate expression destination) atGoal
+    exact ⟨actualNext,nextRelated,
+      .expanded expression destination
+        (related.restores.map Goal.restoreCommit ++ actualOlder)
+        actualNext actualAtGoal ordinary actualPrepared⟩
+  · exact .expanded atGoal ordinary prepared (.refl next)
+
 theorem DelimitedTransition.trans {Context : Type} {program : Program}
-    {older : List Goal} {first middle last : Control}
-    (beforeTransition : DelimitedTransition (Context := Context) program older first middle)
-    (afterTransition : DelimitedTransition (Context := Context) program older middle last) :
-    DelimitedTransition (Context := Context) program older first last := by
+    {sourceOlder actualOlder : List Goal} {first middle last : Control}
+    (beforeTransition : DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder first middle)
+    (afterTransition : DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder middle last) :
+    DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder first last := by
   intro supply world parents scope actual context origins pending related frontier
   obtain ⟨actualMiddle,⟨middleRelated⟩,firstPath⟩ :=
     beforeTransition supply world parents scope actual context origins pending related frontier
@@ -1223,15 +1858,19 @@ theorem DelimitedTransition.trans {Context : Type} {program : Program}
   simpa only [middleScope] using joined
 
 theorem DelimitedTransition.expanded_replace {Context : Type} {program : Program}
-    {raw actualNext : Control} {expression destination : Atom} {older active : List Goal}
-    (atGoal : raw.goals = .evaluate expression destination :: older)
+    {raw actualNext : Control} {expression destination : Atom}
+    {sourceOlder actualOlder active : List Goal}
+    (atGoal : raw.goals = .evaluate expression destination :: sourceOlder)
     (ordinary : scopedForm expression = false)
-    (nextEq : actualNext = replace raw (active ++ older))
-    (prepared : ∀ (actual : Control) (related : DelimitedControl older raw actual),
+    (nextEq : actualNext = replace raw (active ++ sourceOlder))
+    (prepared : ∀ (actual : Control)
+      (related : DelimitedControl sourceOlder actualOlder raw actual),
       Prepared .eagerValue program actual destination
-        (related.restores.map Goal.restoreCommit ++ older) expression
-        (replace actual (active ++ related.restores.map Goal.restoreCommit ++ older))) :
-    DelimitedTransition (Context := Context) program older raw actualNext := by
+        (related.restores.map Goal.restoreCommit ++ actualOlder) expression
+        (replace actual
+          (active ++ related.restores.map Goal.restoreCommit ++ actualOlder))) :
+    DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder raw actualNext := by
   subst actualNext
   apply DelimitedTransition.of_local
   intro world context actual related
@@ -1240,87 +1879,1247 @@ theorem DelimitedTransition.expanded_replace {Context : Type} {program : Program
   exact ⟨_,⟨nextRelated⟩,localStep⟩
 
 theorem DelimitedTransition.accepted {Context : Type} {program : Program}
-    {raw : Control} {value destination : Atom} {older : List Goal} {after : Equations}
-    (atGoal : raw.goals = .equate value destination :: older)
+    {raw : Control} {value destination : Atom} {sourceOlder actualOlder : List Goal}
+    {after : Equations} (atGoal : raw.goals = .equate value destination :: sourceOlder)
     (accepted : Refinement raw.bindings value destination (some after)) :
-    DelimitedTransition (Context := Context) program older raw
-      {raw with bindings := after,goals := older} := by
+    DelimitedTransition (Context := Context) program sourceOlder actualOlder raw
+      {raw with bindings := after,goals := sourceOlder} := by
   apply DelimitedTransition.of_local
   intro world context actual related
   obtain ⟨nextRelated,localStep⟩ := related.accepted_step atGoal accepted world context
   exact ⟨_,⟨nextRelated⟩,localStep⟩
 
+/-- The common two-step leaf pattern—syntax expansion followed by accepted
+equation refinement—lifts once for variables, symbols, grounded atoms and the
+empty tuple. -/
+theorem direct_evaluation_transition {Context : Type} {program : Program}
+    {raw : Control} {expression value destination : Atom}
+    {sourceOlder actualOlder : List Goal}
+    {after : Equations}
+    (atGoal : raw.goals = .evaluate expression destination :: sourceOlder)
+    (ordinary : scopedForm expression = false)
+    (preparedRaw : Prepared .eagerValue program raw destination sourceOlder expression
+      (replace raw ([.equate value destination] ++ sourceOlder)))
+    (preparedActual : ∀ (actual : Control)
+      (related : DelimitedControl sourceOlder actualOlder raw actual),
+      Prepared .eagerValue program actual destination
+        (related.restores.map Goal.restoreCommit ++ actualOlder) expression
+        (replace actual ([.equate value destination] ++
+          related.restores.map Goal.restoreCommit ++ actualOlder)))
+    (accepted : Refinement raw.bindings value destination (some after)) :
+    DelimitedTransition (Context := Context) program sourceOlder actualOlder raw
+        {raw with bindings := after,goals := sourceOlder} ∧
+      BranchTrace program raw []
+        {raw with bindings := after,goals := sourceOlder} := by
+  let middle : Control := replace raw ([.equate value destination] ++ sourceOlder)
+  have expanded : DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder raw middle := by
+    apply DelimitedTransition.expanded_replace atGoal ordinary rfl
+    exact preparedActual
+  have middleAccepted : Refinement middle.bindings value destination (some after) := by
+    simpa only [middle,replace] using accepted
+  have refined : DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder middle
+      {middle with bindings := after,goals := sourceOlder} :=
+    DelimitedTransition.accepted rfl middleAccepted
+  have combined := expanded.trans refined
+  have trace : BranchTrace program raw []
+      {middle with bindings := after,goals := sourceOlder} :=
+    .expanded atGoal ordinary preparedRaw (.accepted rfl middleAccepted (.refl _))
+  simpa only [middle,replace] using And.intro combined trace
+
 /-- A silent delimited prefix composes in front of any root continuation
 contract. -/
 theorem RootContinuationContract.prepend {Context : Type} {program : Program}
-    {older : List Goal} {raw next : Control} {terminals : List Control}
+    {sourceOlder actualOlder : List Goal} {raw next : Control}
+    {pSupp cSupp cSuppAfter : Finset String}
+    {terminals : List Control}
     (sourceTrace : BranchTrace program raw [] next)
-    (beforeTransition : DelimitedTransition (Context := Context) program older raw next)
-    (suffix : RootContinuationContract (Context := Context) program older next terminals) :
-    RootContinuationContract (Context := Context) program older raw terminals := by
+    (beforeTransition : DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder raw next)
+    (suffix : RootContinuationContract (Context := Context) program
+      sourceOlder actualOlder next
+      pSupp cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program sourceOlder actualOlder raw
+      pSupp cSupp terminals cSuppAfter := by
   intro supply world parents scope actual context origins pending related frontier root
+    pendingEq collectedEq
   obtain ⟨actualNext,⟨nextRelated⟩,beforePath⟩ :=
     beforeTransition supply world parents scope actual context origins pending related frontier
   let nextScope : CollectionScope Context :=
     { scope with frontier := (actualNext,context,origins) :: pending }
-  obtain ⟨answers,answersRelated,afterPath⟩ :=
+  obtain ⟨answers,answersRelated,supportAfter,afterPath⟩ :=
     suffix supply world parents nextScope actualNext context origins pending nextRelated rfl
-      (by simpa only [nextScope] using root)
+      (by simpa only [nextScope] using root) pendingEq
+      (by
+        change collectedSupport parents scope = cSupp
+        exact collectedEq)
   have rebased : List.Forall₂ (OriginAnswerRel program raw origins) terminals answers :=
     answersRelated.imp fun terminal answer related => by
       obtain ⟨trace,path,resolved⟩ := related
       exact ⟨trace,by simpa only [List.nil_append] using sourceTrace.trans path,resolved⟩
-  refine ⟨answers,rebased,?_⟩
+  refine ⟨answers,rebased,by simpa only [nextScope] using supportAfter,?_⟩
   have joined := beforePath.toScoped.trans afterPath
   simpa only [nextScope,List.nil_append] using joined
 
+/-- A continuation for argument heads lifts across the sibling goals of the
+current argument.  Inner predicate delimiters are popped first; the enclosing
+delimiter stack is then reconstructed behind the siblings. -/
+theorem RootContinuationContract.lift_argument {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal}
+    (olderAtoms : actualOlder.flatMap Goal.atoms = sourceOlder.flatMap Goal.atoms)
+    (outerRestores : List Nat) {rows : List (Atom × Atom)} {final : Goal}
+    {head : Control} {pSupp cSupp cSuppAfter : Finset String}
+    {terminals : List Control}
+    (headGoals : head.goals = evaluationGoals rows ++ final :: sourceOlder)
+    (outer : RootContinuationContract (Context := Context) program
+      sourceOlder actualOlder head pSupp cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program
+      (evaluationGoals rows ++ final :: sourceOlder)
+      (evaluationGoals rows ++ final ::
+        (outerRestores.map Goal.restoreCommit ++ actualOlder))
+      head pSupp cSupp terminals cSuppAfter := by
+  intro supply world parents scope actualHead context origins pending related frontier root
+    pendingEq collectedEq
+  obtain ⟨reached,reachedBindings,reachedDestination,reachedReserved,reachedGoals,
+      restorePath⟩ :=
+    drain_restoreCommits program supply world parents scope head actualHead
+      (evaluationGoals rows ++ final :: sourceOlder)
+      (evaluationGoals rows ++ final ::
+        (outerRestores.map Goal.restoreCommit ++ actualOlder))
+      context origins pending related headGoals frontier
+  have outerRelated : DelimitedControl sourceOlder actualOlder head reached :=
+    DelimitedControl.exit_argument olderAtoms outerRestores reachedBindings
+      reachedDestination reachedReserved headGoals reachedGoals
+  let reachedScope : CollectionScope Context :=
+    {scope with frontier := (reached,context,origins) :: pending}
+  obtain ⟨answers,answersRelated,supportAfter,afterPath⟩ :=
+    outer supply world parents reachedScope reached context origins pending outerRelated rfl
+      (by simpa only [reachedScope] using root) pendingEq
+      (by
+        change collectedSupport parents scope = cSupp
+        exact collectedEq)
+  refine ⟨answers,answersRelated,by simpa only [reachedScope] using supportAfter,?_⟩
+  have joined := restorePath.toScoped.trans afterPath
+  simpa only [reachedScope,List.nil_append] using joined
+
+/-- Total support added by a consecutive block of outcome continuations. -/
+def supportIncrement (increments : List (Finset String)) : Finset String :=
+  increments.foldr (· ∪ ·) ∅
+
+def zipSupportIncrements (queued : List (Control × Finset String))
+    (increments : List (Finset String)) :
+    List ((Control × Finset String) × Finset String) :=
+  queued.zip increments
+
+/-- One ordered occurrence consumes the accumulated support state and returns
+the exact state obtained by adjoining its declared continuation increment. -/
+def RootContinuationStep {Context : Type} (program : Program)
+    (sourceOlder actualOlder : List Goal) :
+    ((Control × Finset String) × Finset String) →
+      Finset String → List Control → Finset String → Prop :=
+  fun item before block after =>
+    after = before ∪ item.2 ∧
+      RootContinuationContract (Context := Context) program sourceOlder actualOlder item.1.1
+        item.1.2 before block (before ∪ item.2)
+
 /-- Existing ordered state-flat-map composition is the continuation chain for
 successive DFS occurrences.  No second list-fold or scheduler is introduced. -/
-abbrev RootContinuationChain {Context : Type} (program : Program) (older : List Goal)
-    (controls terminals : List Control) : Prop :=
-  OrderedStateFlatMapRel
-    (fun control (_ : Unit) block (_ : Unit) =>
-      RootContinuationContract (Context := Context) program older control block)
-    controls () terminals ()
+abbrev RootContinuationChain {Context : Type} (program : Program)
+    (sourceOlder actualOlder : List Goal)
+    (queued : List (Control × Finset String))
+    (increments : List (Finset String)) (cSupp : Finset String)
+    (terminals : List Control) (cSuppAfter : Finset String) : Prop :=
+  queued.length = increments.length ∧
+    OrderedStateFlatMapRel
+      (RootContinuationStep (Context := Context) program sourceOlder actualOlder)
+      (zipSupportIncrements queued increments) cSupp terminals cSuppAfter
+
+private theorem rootContinuationRun_cSuppAfter_eq {Context : Type}
+    {program : Program} {sourceOlder actualOlder : List Goal}
+    {items : List ((Control × Finset String) × Finset String)}
+    {cSupp cSuppAfter : Finset String} {terminals : List Control}
+    (source : OrderedStateFlatMapRel
+      (RootContinuationStep (Context := Context) program sourceOlder actualOlder)
+      items cSupp terminals cSuppAfter) :
+    cSuppAfter = cSupp ∪ supportIncrement (items.map Prod.snd) := by
+  induction source with
+  | nil => simp [supportIncrement]
+  | cons head _tail inductionHypothesis =>
+      rcases head with ⟨rfl,_contract⟩
+      rw [inductionHypothesis]
+      simp only [List.map_cons,supportIncrement,List.foldr_cons]
+      ac_rfl
+
+theorem RootContinuationChain.cSuppAfter_eq {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {queued : List (Control × Finset String)}
+    {increments : List (Finset String)} {cSupp cSuppAfter : Finset String}
+    {terminals : List Control}
+    (source : RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      queued increments cSupp terminals cSuppAfter) :
+    cSuppAfter = cSupp ∪ supportIncrement increments := by
+  rw [rootContinuationRun_cSuppAfter_eq source.2]
+  unfold zipSupportIncrements
+  rw [List.map_snd_zip (le_of_eq source.1.symm)]
+
+/-- Split an ordered continuation chain at a structural source boundary.  The
+middle support is the state actually reached after the left answer block. -/
+theorem RootContinuationChain.split_append {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {left right : List (Control × Finset String)}
+    {leftIncrements rightIncrements : List (Finset String)}
+    {cSupp cSuppAfter : Finset String} {terminals : List Control}
+    (source : RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      (left ++ right) (leftIncrements ++ rightIncrements)
+      cSupp terminals cSuppAfter)
+    (leftLength : left.length = leftIncrements.length) :
+    ∃ middle leftTerminals rightTerminals,
+      terminals = leftTerminals ++ rightTerminals ∧
+      RootContinuationChain (Context := Context) program sourceOlder actualOlder
+        left leftIncrements cSupp leftTerminals middle ∧
+      RootContinuationChain (Context := Context) program sourceOlder actualOlder
+        right rightIncrements middle rightTerminals cSuppAfter := by
+  have rightLength : right.length = rightIncrements.length := by
+    have totalLength := source.1
+    simp only [List.length_append] at totalLength
+    omega
+  have run : OrderedStateFlatMapRel
+      (RootContinuationStep (Context := Context) program sourceOlder actualOlder)
+      (zipSupportIncrements left leftIncrements ++
+        zipSupportIncrements right rightIncrements)
+      cSupp terminals cSuppAfter := by
+    simpa only [zipSupportIncrements,List.zip_append leftLength] using source.2
+  obtain ⟨middle,leftTerminals,rightTerminals,terminalsEq,leftRun,rightRun⟩ :=
+    OrderedStateFlatMapRel.split
+      (zipSupportIncrements left leftIncrements)
+      (zipSupportIncrements right rightIncrements) run
+  exact ⟨middle,leftTerminals,rightTerminals,terminalsEq,
+    ⟨leftLength,leftRun⟩,⟨rightLength,rightRun⟩⟩
+
+/-- Execute an ordered continuation chain against its concrete retained queue.
+The resulting answers are rebased to the common source root and base origin
+path, preserving every occurrence and its order. -/
+theorem RootContinuationChain.run_queue {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {rootControl : Control}
+    {baseOrigins : List Nat} {basePending : List (CollectionWork Context)}
+    {queued : List (Control × Finset String)} {work : List (CollectionWork Context)}
+    {increments : List (Finset String)} {cSupp cSuppAfter : Finset String}
+    {terminals : List Control}
+    (source : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder queued increments cSupp terminals cSuppAfter)
+    (related : QueuedWorkRel program sourceOlder actualOlder rootControl
+      baseOrigins basePending queued work)
+    (supply : Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared.Allocator)
+    (world : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.World)
+    (parents : List (CollectionScope Context)) (scope : CollectionScope Context)
+    (frontier : scope.frontier = work ++ basePending)
+    (root : scope.caller = none)
+    (collectedEq : collectedSupport parents scope = cSupp) :
+    ∃ answers,
+      List.Forall₂ (OriginAnswerRel program rootControl baseOrigins) terminals answers ∧
+      collectedSupport parents
+          {scope with frontier := basePending,collected := scope.collected ++ answers} =
+        cSuppAfter ∧
+      ScopedSourcePath .eagerValue program
+        (supply,⟨world,scope :: parents⟩) answers
+        (supply,⟨world,
+          {scope with frontier := basePending,collected := scope.collected ++ answers} ::
+          parents⟩) := by
+  induction related generalizing increments cSupp terminals scope with
+  | nil =>
+      have incrementsNil : increments = [] := by
+        apply List.eq_nil_of_length_eq_zero
+        simpa only [List.length_nil] using source.1.symm
+      subst increments
+      cases source.2
+      have sameScope :
+          {scope with frontier := basePending,collected := scope.collected} = scope := by
+        cases scope
+        simp_all
+      refine ⟨[],.nil,?_,?_⟩
+      · simpa only [List.append_nil,sameScope] using collectedEq
+      · have path := (PreReturnPath.refl .eagerValue program
+          (supply,⟨world,scope :: parents⟩)).toScoped
+        simpa only [List.append_nil,sameScope] using path
+  | @cons raw actual pSupp context origins trace queued work related path originsEq
+      supportEq rest inductionHypothesis =>
+      cases increments with
+      | nil =>
+          have impossible := source.1
+          simp at impossible
+      | cons increment increments =>
+          rcases source with ⟨lengthEq,run⟩
+          cases run with
+          | @cons _ _ _ middle _ headTerminals tailTerminals headStep tailRun =>
+              rcases headStep with ⟨rfl,headContract⟩
+              obtain ⟨relatedProof⟩ := related
+              have headFrontier : scope.frontier =
+                  (actual,context,origins) :: (work ++ basePending) := by
+                simpa only [List.cons_append] using frontier
+              obtain ⟨headAnswers,headRelated,headSupport,headPath⟩ :=
+                headContract supply world parents scope actual context origins
+                  (work ++ basePending) relatedProof headFrontier root
+                  supportEq.symm collectedEq
+              let middleScope : CollectionScope Context :=
+                { frontier := work ++ basePending
+                  collected := scope.collected ++ headAnswers
+                  caller := scope.caller }
+              have tailLength : queued.length = increments.length := by
+                simpa only [List.length_cons,Nat.succ.injEq] using lengthEq
+              obtain ⟨tailAnswers,tailRelated,tailSupport,tailPath⟩ :=
+                inductionHypothesis
+                  (source := ⟨tailLength,tailRun⟩)
+                  (scope := middleScope) (frontier := rfl)
+                  (root := by simpa only [middleScope] using root)
+                  (collectedEq := by simpa only [middleScope] using headSupport)
+              have rebasedHead : List.Forall₂
+                  (OriginAnswerRel program rootControl baseOrigins)
+                  headTerminals headAnswers :=
+                headRelated.imp fun terminal answer answerRelated => by
+                  obtain ⟨suffix,suffixPath,resolved⟩ := answerRelated
+                  exact ⟨trace ++ suffix,path.trans suffixPath,by
+                    simpa only [originsEq,List.append_assoc] using resolved⟩
+              refine ⟨headAnswers ++ tailAnswers,
+                List.rel_append rebasedHead tailRelated,?_,?_⟩
+              · simpa only [middleScope,List.append_assoc] using tailSupport
+              · have joined := headPath.trans tailPath
+                simpa only [middleScope,List.append_assoc] using joined
+
+/-- Lift every argument-head continuation across the same remaining sibling
+goals and enclosing delimiter stack. -/
+theorem RootContinuationChain.lift_argument {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal}
+    (olderAtoms : actualOlder.flatMap Goal.atoms = sourceOlder.flatMap Goal.atoms)
+    (outerRestores : List Nat) {rows : List (Atom × Atom)} {final : Goal}
+    {queued : List (Control × Finset String)}
+    {increments : List (Finset String)} {cSupp cSuppAfter : Finset String}
+    {terminals : List Control}
+    (ready : ∀ item ∈ queued,
+      item.1.goals = evaluationGoals rows ++ final :: sourceOlder)
+    (source : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder queued increments cSupp terminals cSuppAfter) :
+    RootContinuationChain (Context := Context) program
+      (evaluationGoals rows ++ final :: sourceOlder)
+      (evaluationGoals rows ++ final ::
+        (outerRestores.map Goal.restoreCommit ++ actualOlder))
+      queued increments cSupp terminals cSuppAfter := by
+  induction queued generalizing increments cSupp terminals with
+  | nil =>
+      have incrementsNil : increments = [] := by
+        apply List.eq_nil_of_length_eq_zero
+        simpa only [List.length_nil] using source.1.symm
+      subst increments
+      cases source.2
+      exact ⟨rfl,.nil _⟩
+  | cons item queued inductionHypothesis =>
+      cases increments with
+      | nil =>
+          have impossible := source.1
+          simp at impossible
+      | cons increment increments =>
+          rcases source with ⟨lengthEq,run⟩
+          cases run with
+          | cons first rest =>
+              have tailLength : queued.length = increments.length := by
+                simpa only [List.length_cons,Nat.succ.injEq] using lengthEq
+              have liftedFirst : RootContinuationStep (Context := Context) program
+                  (evaluationGoals rows ++ final :: sourceOlder)
+                  (evaluationGoals rows ++ final ::
+                    (outerRestores.map Goal.restoreCommit ++ actualOlder))
+                  (item,increment) _ _ _ := ⟨first.1,
+                first.2.lift_argument olderAtoms outerRestores
+                  (ready item List.mem_cons_self)⟩
+              have liftedRest := inductionHypothesis
+                (increments := increments)
+                (ready := fun candidate member =>
+                  ready candidate (List.mem_cons_of_mem item member))
+                (source := ⟨tailLength,rest⟩)
+              exact ⟨lengthEq,.cons liftedFirst liftedRest.2⟩
+
+theorem RootContinuationChain.singleton_inv {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {control : Control}
+    {pSupp cSupp cSuppAfter : Finset String}
+    {increment : Finset String} {terminals : List Control}
+    (source : RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      [(control,pSupp)] [increment] cSupp terminals cSuppAfter) :
+    cSuppAfter = cSupp ∪ increment ∧
+      RootContinuationContract (Context := Context) program sourceOlder actualOlder control
+        pSupp cSupp terminals (cSupp ∪ increment) := by
+  rcases source with ⟨_length,run⟩
+  cases run with
+  | cons head tail =>
+      cases tail
+      simpa only [zipSupportIncrements,List.zip_cons_cons,List.zip_nil_left,
+        List.append_nil,RootContinuationStep] using head
+
+theorem RootContinuationChain.singleton_contract {Context : Type} {program : Program}
+    {sourceOlder actualOlder : List Goal} {control : Control}
+    {pSupp cSupp cSuppAfter : Finset String} {increments : List (Finset String)}
+    {terminals : List Control}
+    (source : RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      [(control,pSupp)] increments cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program sourceOlder actualOlder
+      control pSupp cSupp terminals cSuppAfter := by
+  cases increments with
+  | nil =>
+      have impossible := source.1
+      simp at impossible
+  | cons increment increments =>
+      have tailNil : increments = [] := by
+        apply List.eq_nil_of_length_eq_zero
+        have lengthEq : 1 = Nat.succ increments.length := by
+          simpa only [List.length_cons,List.length_nil] using source.1
+        omega
+      subst increments
+      obtain ⟨rfl,contract⟩ := RootContinuationChain.singleton_inv source
+      exact contract
+
+theorem direct_evaluation_contract {Context : Type} {program : Program}
+    {raw after : Control} {sourceOlder actualOlder : List Goal}
+    {pSupp cSupp cSuppAfter : Finset String}
+    {increments : List (Finset String)} {terminals : List Control}
+    (transition : DelimitedTransition (Context := Context) program
+      sourceOlder actualOlder raw after)
+    (trace : BranchTrace program raw [] after)
+    (continuation : RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      [(after,pSupp)] increments cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program sourceOlder actualOlder raw
+      pSupp cSupp terminals cSuppAfter := by
+  exact continuation.singleton_contract.prepend trace transition
 
 theorem root_terminal_contract {Context : Type} (program : Program) (raw : Control)
-    (atEnd : raw.goals = []) (resolvable : ∃ environment, resolve raw.bindings = some environment) :
-    RootContinuationContract (Context := Context) program [] raw [raw] := by
+    (pSupp cSupp : Finset String) (atEnd : raw.goals = [])
+    (resolvable : ∃ environment, resolve raw.bindings = some environment) :
+    RootContinuationContract (Context := Context) program [] [] raw pSupp cSupp [raw]
+      (cSupp ∪ rawAnswerSupport raw) := by
   intro supply world parents scope actual context origins pending related frontier root
+    _pendingEq collectedEq
   obtain ⟨environment,resolved⟩ := resolvable
   let answer : CollectedAnswer :=
     ⟨read environment raw.destination,raw.bindings,origins,[]⟩
   have drained := root_terminal_drain program supply world parents scope raw actual context origins
     pending environment related atEnd frontier root resolved
-  refine ⟨[answer],?_,?_⟩
+  refine ⟨[answer],?_,?_,?_⟩
   · exact .cons ⟨[],.refl raw,by simpa only [List.append_nil,answer] using drained.1⟩ .nil
-  · simpa only [Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Scope.record,answer]
+  · calc
+      collectedSupport parents
+          {scope with frontier := pending,collected := scope.collected ++ [answer]} =
+          collectedSupport parents scope ∪ answer.support :=
+        collectedSupport_append_answer parents scope pending answer
+      _ = cSupp ∪ rawAnswerSupport raw := by
+        rw [collectedEq,resolvedAnswer_support raw origins environment resolved]
+  · simpa only [Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Scope.record,answer]
       using drained.2
 
 /-- Every ordered list of terminal outcomes supplies its own singleton block;
-the common ordered traversal concatenates those blocks without merging equal
-answers. -/
+the queue-support assignments are supplied by the source tree, so pending
+intermediate alternatives are retained exactly. -/
 theorem root_terminal_chain {Context : Type} (program : Program)
-    (outcomes : List Control)
+    (outcomes : List Control) (queued : List (Control × Finset String))
+    (cSupp : Finset String) (aligned : queued.map Prod.fst = outcomes)
     (ready : ∀ outcome ∈ outcomes,
       outcome.goals = [] ∧ ∃ environment, resolve outcome.bindings = some environment) :
-    RootContinuationChain (Context := Context) program [] outcomes outcomes := by
-  induction outcomes with
-  | nil => exact .nil ()
+      RootContinuationChain (Context := Context) program [] []
+      queued (outcomes.map rawAnswerSupport)
+      cSupp outcomes (cSupp ∪ supportIncrement (outcomes.map rawAnswerSupport)) := by
+  induction outcomes generalizing queued cSupp with
+  | nil =>
+      have queuedNil : queued = [] := by
+        cases queued with
+        | nil => rfl
+        | cons item queued => simp at aligned
+      subst queued
+      exact ⟨rfl,by
+        simpa only [List.map_nil,zipSupportIncrements,List.zip_nil_left,
+          supportIncrement,List.foldr_nil,Finset.union_empty] using
+          (OrderedStateFlatMapRel.nil
+            (step := RootContinuationStep (Context := Context) program [] []) cSupp)⟩
   | cons outcome outcomes inductionHypothesis =>
-      have head := root_terminal_contract (Context := Context) program outcome
-        (ready outcome List.mem_cons_self).1 (ready outcome List.mem_cons_self).2
-      have tail := inductionHypothesis fun candidate member =>
-        ready candidate (List.mem_cons_of_mem _ member)
-      simpa only [List.singleton_append] using
-        (OrderedStateFlatMapRel.cons head tail)
+      cases queued with
+      | nil => simp at aligned
+      | cons item queued =>
+        rcases item with ⟨actualOutcome,pSupp⟩
+        simp only [List.map_cons,List.cons.injEq] at aligned
+        rcases aligned with ⟨actualEq,tailAligned⟩
+        subst actualOutcome
+        have head := root_terminal_contract (Context := Context) program outcome
+          pSupp cSupp
+          (ready outcome List.mem_cons_self).1 (ready outcome List.mem_cons_self).2
+        have tail := inductionHypothesis
+          queued (cSupp := cSupp ∪ rawAnswerSupport outcome) tailAligned
+          (fun candidate member => ready candidate (List.mem_cons_of_mem _ member))
+        have headStep :
+            RootContinuationStep (Context := Context) program [] []
+              ((outcome,pSupp),rawAnswerSupport outcome)
+              cSupp [outcome] (cSupp ∪ rawAnswerSupport outcome) := ⟨rfl,head⟩
+        refine ⟨?_,?_⟩
+        · simpa only [List.length_cons,List.length_map] using
+            congrArg Nat.succ tail.1
+        simpa only [List.map_cons,zipSupportIncrements,List.zip_cons_cons,
+          List.singleton_append,supportIncrement,List.foldr_cons,Finset.union_assoc] using
+            (OrderedStateFlatMapRel.cons
+              (step := RootContinuationStep (Context := Context) program [] []) headStep tail.2)
+
+mutual
+/-- Static queue-tail support carried by every outcome of a source subtree.
+The assignment follows DFS order and does not mention a machine execution. -/
+def Evaluation.queuedOutcomes {program : Program} {control : Control}
+    {expression destination : Atom} {older : List Goal} {outcomes : List Control}
+    (source : Evaluation program control expression destination older outcomes)
+    (pSupp : Finset String) : List (Control × Finset String) :=
+  match source with
+  | @Evaluation.variable _ control _ _ older after _ _ _ |
+    @Evaluation.symbol _ control _ _ older after _ _ _ |
+    @Evaluation.grounded _ control _ _ older after _ _ _ |
+    @Evaluation.unit _ control _ older after _ _ _ =>
+      [({control with bindings := after,goals := older},pSupp)]
+  | .constructor _ _ _ _ argumentsRun | .call _ _ _ _ argumentsRun =>
+      Arguments.queuedOutcomes argumentsRun pSupp
+termination_by structural source
+
+def Arguments.queuedOutcomes {program : Program} {control : Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : Arguments program control rows assembled destination final older outcomes)
+    (pSupp : Finset String) : List (Control × Finset String) :=
+  match source with
+  | .nil _ continued => Invocation.queuedOutcomes continued pSupp
+  | .cons _ first branches =>
+      ArgumentBranches.queuedOutcomes branches (Evaluation.queuedOutcomes first pSupp)
+termination_by structural source
+
+def ArgumentBranches.queuedOutcomes {program : Program} {heads : List Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final older outcomes)
+    (headsQueued : List (Control × Finset String)) : List (Control × Finset String) :=
+  match source,headsQueued with
+  | .nil,_ => []
+  | .cons first remaining,(_,headPSupp) :: restQueued =>
+      Arguments.queuedOutcomes first headPSupp ++
+        ArgumentBranches.queuedOutcomes remaining restQueued
+  | .cons _ _,[] => []
+termination_by structural source
+
+def Invocation.queuedOutcomes {program : Program} {control : Control}
+    {assembled destination : Atom} {final : Goal} {older : List Goal}
+    {outcomes : List Control}
+    (source : Invocation program control assembled destination final older outcomes)
+    (pSupp : Finset String) : List (Control × Finset String) :=
+  match source with
+  | @Invocation.constructor _ control _ _ _ older after _ _ _ _ =>
+      [({control with bindings := after,goals := older},pSupp)]
+  | .equations _ _ _ _ _ _ _ bodies => Bodies.queuedOutcomes bodies pSupp
+termination_by structural source
+
+def Bodies.queuedOutcomes {program : Program} {destination : Atom} {older : List Goal}
+    {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes)
+    (pSupp : Finset String) : List (Control × Finset String) :=
+  match source with
+  | .nil => []
+  | @Bodies.cons _ _ _ _ _ remaining _ _ _ _ first later =>
+      let pSuppHead := remaining.foldr (fun row names => row.2.support ∪ names) pSupp
+      Evaluation.queuedOutcomes first pSuppHead ++ Bodies.queuedOutcomes later pSupp
+termination_by structural source
+end
+
+/-- Collapse the continuation-support slices of each head occurrence into the
+single increment seen while producing that head. -/
+def ArgumentBranches.headContSupports {program : Program} {heads : List Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final older outcomes)
+    (contSupports : List (Finset String)) : List (Finset String) :=
+  match source with
+  | .nil => []
+  | @ArgumentBranches.cons _ _ _ _ _ _ _ _ children _ first remaining =>
+      supportIncrement (contSupports.take children.length) ::
+        ArgumentBranches.headContSupports remaining (contSupports.drop children.length)
+termination_by structural source
+
+/-- Collapse each selected clause body's final continuation-support slice into
+the single increment of that selected work item. -/
+def Bodies.headContSupports {program : Program} {destination : Atom}
+    {older : List Goal} {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes)
+    (contSupports : List (Finset String)) : List (Finset String) :=
+  match source with
+  | .nil => []
+  | @Bodies.cons _ _ _ _ _ _ _ children _ _ first later =>
+      supportIncrement (contSupports.take children.length) ::
+        Bodies.headContSupports later (contSupports.drop children.length)
+termination_by structural source
+
+mutual
+/-- Pure synchronization of equation-freshening boundaries with the static
+DFS queue support and the support accumulated by outer continuations. -/
+def Evaluation.ExtraSynchronized {program : Program} {control : Control}
+    {expression destination : Atom} {older : List Goal} {outcomes : List Control}
+    (source : Evaluation program control expression destination older outcomes)
+    (pSupp cSupp : Finset String) (contSupports : List (Finset String)) : Prop :=
+  match source with
+  | .variable _ _ _ | .symbol _ _ _ | .grounded _ _ _ | .unit _ _ _ => True
+  | .constructor _ _ _ prepared argumentsRun | .call _ _ _ prepared argumentsRun =>
+      PreparedDelimitedRel prepared ∧
+        Arguments.ExtraSynchronized argumentsRun pSupp cSupp contSupports
+termination_by structural source
+
+def Arguments.ExtraSynchronized {program : Program} {control : Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : Arguments program control rows assembled destination final older outcomes)
+    (pSupp cSupp : Finset String) (contSupports : List (Finset String)) : Prop :=
+  match source with
+  | .nil _ continued => Invocation.ExtraSynchronized continued pSupp cSupp contSupports
+  | .cons _ first branches =>
+      Evaluation.ExtraSynchronized first pSupp cSupp
+          (ArgumentBranches.headContSupports branches contSupports) ∧
+        ArgumentBranches.ExtraSynchronized branches
+          (Evaluation.queuedOutcomes first pSupp) cSupp contSupports
+termination_by structural source
+
+def ArgumentBranches.ExtraSynchronized {program : Program} {heads : List Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final older outcomes)
+    (headsQueued : List (Control × Finset String)) (cSupp : Finset String)
+    (contSupports : List (Finset String)) : Prop :=
+  match source,headsQueued with
+  | .nil,_ => True
+  | @ArgumentBranches.cons _ _ _ _ _ _ _ _ children _ first remaining,
+      (_,headPSupp) :: restQueued =>
+      Arguments.ExtraSynchronized first headPSupp cSupp
+          (contSupports.take children.length) ∧
+        ArgumentBranches.ExtraSynchronized remaining restQueued
+          (cSupp ∪ supportIncrement (contSupports.take children.length))
+          (contSupports.drop children.length)
+  | .cons _ _,[] => False
+termination_by structural source
+
+def Invocation.ExtraSynchronized {program : Program} {control : Control}
+    {assembled destination : Atom} {final : Goal} {older : List Goal}
+    {outcomes : List Control}
+    (source : Invocation program control assembled destination final older outcomes)
+    (pSupp cSupp : Finset String) (contSupports : List (Finset String)) : Prop :=
+  match source with
+  | .constructor _ _ _ _ => True
+  | @Invocation.equations _ control extra _ _ _ _ _ _ _ _ _ _ _ _ _ _ bodies =>
+      (protectControl control (control.support ∪ pSupp ∪ cSupp)).reserved =
+          (protectControl control extra).reserved ∧
+        Bodies.ExtraSynchronized bodies pSupp cSupp contSupports
+termination_by structural source
+
+def Bodies.ExtraSynchronized {program : Program} {destination : Atom} {older : List Goal}
+    {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes)
+    (pSupp cSupp : Finset String) (contSupports : List (Finset String)) : Prop :=
+  match source with
+  | .nil => True
+  | @Bodies.cons _ _ _ _ _ remaining _ children _ _ first later =>
+      Evaluation.ExtraSynchronized first
+          (remaining.foldr (fun row names => row.2.support ∪ names) pSupp)
+          cSupp (contSupports.take children.length) ∧
+        Bodies.ExtraSynchronized later pSupp
+          (cSupp ∪ supportIncrement (contSupports.take children.length))
+          (contSupports.drop children.length)
+termination_by structural source
+end
+
+mutual
+/-- Structural height shared by proofs which recurse across the five mutually
+inductive open-source judgments. -/
+def Evaluation.height {program : Program} {control : Control}
+    {expression destination : Atom} {older : List Goal} {outcomes : List Control}
+    (source : Evaluation program control expression destination older outcomes) : Nat :=
+  match source with
+  | .variable _ _ _ | .symbol _ _ _ | .grounded _ _ _ | .unit _ _ _ => 1
+  | .constructor _ _ _ _ argumentsRun | .call _ _ _ _ argumentsRun =>
+      Arguments.height argumentsRun + 1
+termination_by structural source
+
+def Arguments.height {program : Program} {control : Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : Arguments program control rows assembled destination final older outcomes) : Nat :=
+  match source with
+  | .nil _ continued => Invocation.height continued + 1
+  | .cons _ first branches =>
+      Nat.max (Evaluation.height first) (ArgumentBranches.height branches) + 1
+termination_by structural source
+
+def ArgumentBranches.height {program : Program} {heads : List Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final older outcomes) : Nat :=
+  match source with
+  | .nil => 1
+  | .cons first remaining =>
+      Nat.max (Arguments.height first) (ArgumentBranches.height remaining) + 1
+termination_by structural source
+
+def Invocation.height {program : Program} {control : Control}
+    {assembled destination : Atom} {final : Goal} {older : List Goal}
+    {outcomes : List Control}
+    (source : Invocation program control assembled destination final older outcomes) : Nat :=
+  match source with
+  | .constructor _ _ _ _ => 1
+  | .equations _ _ _ _ _ _ _ bodies => Bodies.height bodies + 1
+termination_by structural source
+
+def Bodies.height {program : Program} {destination : Atom} {older : List Goal}
+    {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes) : Nat :=
+  match source with
+  | .nil => 1
+  | .cons _ first later =>
+      Nat.max (Evaluation.height first) (Bodies.height later) + 1
+termination_by structural source
+end
+
+mutual
+theorem Evaluation.queuedOutcomes_fst {program : Program} {control : Control}
+    {expression destination : Atom} {older : List Goal} {outcomes : List Control}
+    (source : Evaluation program control expression destination older outcomes)
+    (pSupp : Finset String) :
+    (Evaluation.queuedOutcomes source pSupp).map Prod.fst = outcomes := by
+  match source with
+  | .variable _ _ _ | .symbol _ _ _ | .grounded _ _ _ | .unit _ _ _ => rfl
+  | .constructor _ _ _ _ argumentsRun | .call _ _ _ _ argumentsRun =>
+      exact Arguments.queuedOutcomes_fst argumentsRun pSupp
+termination_by Evaluation.height source
+decreasing_by all_goals simp [Evaluation.height]
+
+theorem Arguments.queuedOutcomes_fst {program : Program} {control : Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : Arguments program control rows assembled destination final older outcomes)
+    (pSupp : Finset String) :
+    (Arguments.queuedOutcomes source pSupp).map Prod.fst = outcomes := by
+  match source with
+  | .nil _ continued => exact Invocation.queuedOutcomes_fst continued pSupp
+  | .cons _ first branches =>
+      exact ArgumentBranches.queuedOutcomes_fst branches
+        (Evaluation.queuedOutcomes first pSupp)
+        (Evaluation.queuedOutcomes_fst first pSupp)
+termination_by Arguments.height source
+decreasing_by all_goals simp [Arguments.height]
+
+theorem ArgumentBranches.queuedOutcomes_fst {program : Program} {heads : List Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {older : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final older outcomes)
+    (headsQueued : List (Control × Finset String))
+    (aligned : headsQueued.map Prod.fst = heads) :
+    (ArgumentBranches.queuedOutcomes source headsQueued).map Prod.fst = outcomes := by
+  match source with
+  | .nil =>
+      cases headsQueued with
+      | nil => rfl
+      | cons head tail => simp at aligned
+  | .cons first remaining =>
+      cases headsQueued with
+      | nil => simp at aligned
+      | cons queuedHead restQueued =>
+          rcases queuedHead with ⟨actualHead,headPSupp⟩
+          simp only [List.map_cons,List.cons.injEq] at aligned
+          rcases aligned with ⟨_headAligned,restAligned⟩
+          simp only [ArgumentBranches.queuedOutcomes,List.map_append,
+            Arguments.queuedOutcomes_fst first headPSupp,
+            ArgumentBranches.queuedOutcomes_fst remaining restQueued restAligned]
+termination_by ArgumentBranches.height source
+decreasing_by all_goals simp [ArgumentBranches.height]
+
+theorem Invocation.queuedOutcomes_fst {program : Program} {control : Control}
+    {assembled destination : Atom} {final : Goal} {older : List Goal}
+    {outcomes : List Control}
+    (source : Invocation program control assembled destination final older outcomes)
+    (pSupp : Finset String) :
+    (Invocation.queuedOutcomes source pSupp).map Prod.fst = outcomes := by
+  match source with
+  | .constructor _ _ _ _ => rfl
+  | .equations _ _ _ _ _ _ _ bodies => exact Bodies.queuedOutcomes_fst bodies pSupp
+termination_by Invocation.height source
+decreasing_by all_goals simp [Invocation.height]
+
+theorem Bodies.queuedOutcomes_fst {program : Program} {destination : Atom}
+    {older : List Goal} {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes)
+    (pSupp : Finset String) :
+    (Bodies.queuedOutcomes source pSupp).map Prod.fst = outcomes := by
+  match source with
+  | .nil => rfl
+  | @Bodies.cons _ _ _ _ _ remaining _ _ _ _ first later =>
+      simp only [Bodies.queuedOutcomes,List.map_append,
+        Evaluation.queuedOutcomes_fst first
+          (remaining.foldr (fun row names => row.2.support ∪ names) pSupp),
+        Bodies.queuedOutcomes_fst later pSupp]
+termination_by Bodies.height source
+decreasing_by all_goals simp [Bodies.height]
+end
+
+theorem Evaluation.queuedOutcomes_length {program : Program} {control : Control}
+    {expression destination : Atom} {older : List Goal} {outcomes : List Control}
+    (source : Evaluation program control expression destination older outcomes)
+    (pSupp : Finset String) :
+    (Evaluation.queuedOutcomes source pSupp).length = outcomes.length := by
+  have same := congrArg List.length (Evaluation.queuedOutcomes_fst source pSupp)
+  simpa only [List.length_map] using same
+
+theorem ArgumentBranches.headContSupports_length {program : Program}
+    {heads : List Control} {rows : List (Atom × Atom)} {assembled destination : Atom}
+    {final : Goal} {older : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final older outcomes)
+    (contSupports : List (Finset String))
+    (sameLength : contSupports.length = outcomes.length) :
+    (ArgumentBranches.headContSupports source contSupports).length = heads.length := by
+  match source with
+  | .nil => rfl
+  | @ArgumentBranches.cons _ _ _ _ _ _ _ _ children rest first remaining =>
+      have restLength : (contSupports.drop children.length).length = rest.length := by
+        simp only [List.length_drop,List.length_append] at sameLength ⊢
+        omega
+      simp only [ArgumentBranches.headContSupports,List.length_cons,
+        ArgumentBranches.headContSupports_length remaining
+          (contSupports.drop children.length) restLength]
+termination_by structural source
+
+theorem Bodies.headContSupports_length {program : Program} {destination : Atom}
+    {older : List Goal} {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination older selected outcomes)
+    (contSupports : List (Finset String))
+    (sameLength : contSupports.length = outcomes.length) :
+    (Bodies.headContSupports source contSupports).length = selected.length := by
+  match source with
+  | .nil => rfl
+  | @Bodies.cons _ _ _ _ _ _ _ children rest _ first later =>
+      have restLength : (contSupports.drop children.length).length = rest.length := by
+        simp only [List.length_drop,List.length_append] at sameLength ⊢
+        omega
+      simp only [Bodies.headContSupports,List.length_cons,
+        Bodies.headContSupports_length later (contSupports.drop children.length) restLength]
+termination_by structural source
+
+theorem queuedSelections_length (base : Finset String)
+    (selected : List (Nat × Control)) :
+    (queuedSelections base selected).length = selected.length := by
+  induction selected with
+  | nil => rfl
+  | cons row selected inductionHypothesis =>
+      simp only [queuedSelections,List.length_cons,inductionHypothesis]
+
+theorem queuedSelections_fst (base : Finset String)
+    (selected : List (Nat × Control)) :
+    (queuedSelections base selected).map Prod.fst = selected.map Prod.snd := by
+  induction selected with
+  | nil => rfl
+  | cons row selected inductionHypothesis =>
+      simp only [queuedSelections,List.map_cons,inductionHypothesis]
+
+mutual
+theorem Evaluation.drain {Context : Type} {program : Program} {control : Control}
+    {expression destination : Atom} {sourceOlder : List Goal} {outcomes : List Control}
+    (source : Evaluation program control expression destination sourceOlder outcomes)
+    {actualOlder : List Goal} {pSupp cSupp cSuppAfter : Finset String}
+    {contSupports : List (Finset String)} {terminals : List Control}
+    (sync : Evaluation.ExtraSynchronized source pSupp cSupp contSupports)
+    (continuation : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder (Evaluation.queuedOutcomes source pSupp)
+      contSupports cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program sourceOlder actualOlder
+      control pSupp cSupp terminals cSuppAfter := by
+  match source with
+  | @Evaluation.variable _ control sourceName slotName sourceOlder after
+      _private atGoal accepted =>
+      have transition := direct_evaluation_transition (Context := Context) (program := program)
+        (sourceOlder := sourceOlder) (actualOlder := actualOlder)
+        atGoal rfl (.variableValue (program := program) sourceName)
+        (fun _actual _related => .variableValue (program := program) sourceName) accepted
+      exact direct_evaluation_contract transition.1 transition.2 continuation
+  | @Evaluation.symbol _ control name destination sourceOlder after
+      _private atGoal accepted =>
+      have transition := direct_evaluation_transition (Context := Context) (program := program)
+        (sourceOlder := sourceOlder) (actualOlder := actualOlder)
+        atGoal rfl (.symbol (program := program) name)
+        (fun _actual _related => .symbol (program := program) name) accepted
+      exact direct_evaluation_contract transition.1 transition.2 continuation
+  | @Evaluation.grounded _ control value destination sourceOlder after
+      _private atGoal accepted =>
+      have transition := direct_evaluation_transition (Context := Context) (program := program)
+        (sourceOlder := sourceOlder) (actualOlder := actualOlder)
+        atGoal rfl (.grounded (program := program) value)
+        (fun _actual _related => .grounded (program := program) value) accepted
+      exact direct_evaluation_contract transition.1 transition.2 continuation
+  | @Evaluation.unit _ control destination sourceOlder after _private atGoal accepted =>
+      have transition := direct_evaluation_transition (Context := Context) (program := program)
+        (sourceOlder := sourceOlder) (actualOlder := actualOlder)
+        atGoal rfl (.tuple (program := program) [] (by simp))
+        (fun _actual _related => .tuple (program := program) [] (by simp)) accepted
+      exact direct_evaluation_contract transition.1 transition.2 continuation
+  | @Evaluation.constructor _ control opened head arguments destination sourceOlder outcomes
+      passive _private atGoal prepared argumentsRun =>
+      have syncParts : PreparedDelimitedRel prepared ∧
+          Arguments.ExtraSynchronized argumentsRun pSupp cSupp contSupports := by
+        simpa only [Evaluation.ExtraSynchronized] using sync
+      have suffix := Arguments.drain (Context := Context) argumentsRun syncParts.2 continuation
+      have ordinary : scopedForm (.expression (.symbol head :: arguments)) = false := by
+        rcases passive.1 with ⟨_io,_known,excluded⟩
+        simp only [scopedForm]
+        split <;> simp_all
+      have transition := DelimitedTransition.of_prepared (Context := Context)
+        (actualOlder := actualOlder) atGoal ordinary prepared syncParts.1
+      exact suffix.prepend transition.2 transition.1
+  | @Evaluation.call _ control opened head arguments destination sourceOlder outcomes
+      defined _private atGoal prepared argumentsRun =>
+      have syncParts : PreparedDelimitedRel prepared ∧
+          Arguments.ExtraSynchronized argumentsRun pSupp cSupp contSupports := by
+        simpa only [Evaluation.ExtraSynchronized] using sync
+      have suffix := Arguments.drain (Context := Context) argumentsRun syncParts.2 continuation
+      have ordinary : scopedForm (.expression (.symbol head :: arguments)) = false := by
+        rcases defined.1 with ⟨_io,_known,excluded⟩
+        simp only [scopedForm]
+        split <;> simp_all
+      have transition := DelimitedTransition.of_prepared (Context := Context)
+        (actualOlder := actualOlder) atGoal ordinary prepared syncParts.1
+      exact suffix.prepend transition.2 transition.1
+termination_by Evaluation.height source
+decreasing_by all_goals simp [Evaluation.height]
+
+theorem Arguments.drain {Context : Type} {program : Program} {control : Control}
+    {rows : List (Atom × Atom)} {assembled destination : Atom} {final : Goal}
+    {sourceOlder : List Goal} {outcomes : List Control}
+    (source : Arguments program control rows assembled destination final sourceOlder outcomes)
+    {actualOlder : List Goal} {pSupp cSupp cSuppAfter : Finset String}
+    {contSupports : List (Finset String)} {terminals : List Control}
+    (sync : Arguments.ExtraSynchronized source pSupp cSupp contSupports)
+    (continuation : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder (Arguments.queuedOutcomes source pSupp)
+      contSupports cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program sourceOlder actualOlder
+      control pSupp cSupp terminals cSuppAfter := by
+  match source with
+  | .nil _atGoal continued =>
+      exact Invocation.drain (Context := Context) continued
+        (by simpa only [Arguments.ExtraSynchronized] using sync) continuation
+  | @Arguments.cons _ control sourceAtom slot rows assembled destination final sourceOlder
+      heads outcomes atGoal first branches =>
+      have syncParts :
+          Evaluation.ExtraSynchronized first pSupp cSupp
+              (ArgumentBranches.headContSupports branches contSupports) ∧
+            ArgumentBranches.ExtraSynchronized branches
+              (Evaluation.queuedOutcomes first pSupp) cSupp contSupports := by
+        simpa only [Arguments.ExtraSynchronized] using sync
+      let headsQueued := Evaluation.queuedOutcomes first pSupp
+      have headsAligned : headsQueued.map Prod.fst = heads :=
+        Evaluation.queuedOutcomes_fst first pSupp
+      have branchesContinuation : RootContinuationChain (Context := Context) program
+          sourceOlder actualOlder
+          (ArgumentBranches.queuedOutcomes branches headsQueued)
+          contSupports cSupp terminals cSuppAfter := by
+        simpa only [Arguments.queuedOutcomes,headsQueued] using continuation
+      have headsOuter := ArgumentBranches.drain (Context := Context) branches headsQueued
+        headsAligned syncParts.2 branchesContinuation
+      intro supply world parents scope actual context origins pending related frontier root
+        pendingEq collectedEq
+      have readyQueued : ∀ item ∈ headsQueued,
+          item.1.goals = evaluationGoals rows ++ final :: sourceOlder := by
+        intro item member
+        have rawMember : item.1 ∈ heads := by
+          rw [← headsAligned]
+          exact List.mem_map_of_mem member
+        exact (first.outcomes_ready item.1 rawMember).1
+      have headsChild := headsOuter.lift_argument related.older_atoms related.restores
+        readyQueued
+      have firstContract := Evaluation.drain (Context := Context) first syncParts.1 headsChild
+      exact firstContract supply world parents scope actual context origins pending
+        (related.enter_argument atGoal) frontier root pendingEq collectedEq
+termination_by Arguments.height source
+decreasing_by all_goals simp [Arguments.height]
+
+theorem ArgumentBranches.drain {Context : Type} {program : Program}
+    {heads : List Control} {rows : List (Atom × Atom)} {assembled destination : Atom}
+    {final : Goal} {sourceOlder : List Goal} {outcomes : List Control}
+    (source : ArgumentBranches program heads rows assembled destination final sourceOlder outcomes)
+    (headsQueued : List (Control × Finset String))
+    (aligned : headsQueued.map Prod.fst = heads)
+    {actualOlder : List Goal} {cSupp cSuppAfter : Finset String}
+    {contSupports : List (Finset String)} {terminals : List Control}
+    (sync : ArgumentBranches.ExtraSynchronized source headsQueued cSupp contSupports)
+    (continuation : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder (ArgumentBranches.queuedOutcomes source headsQueued)
+      contSupports cSupp terminals cSuppAfter) :
+    RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      headsQueued (ArgumentBranches.headContSupports source contSupports)
+      cSupp terminals cSuppAfter := by
+  match source with
+  | .nil =>
+      have headsQueuedNil : headsQueued = [] := by
+        cases headsQueued with
+        | nil => rfl
+        | cons item rest => simp at aligned
+      subst headsQueued
+      have contSupportsNil : contSupports = [] := by
+        apply List.eq_nil_of_length_eq_zero
+        simpa only [ArgumentBranches.queuedOutcomes,List.length_nil] using continuation.1.symm
+      subst contSupports
+      simpa only [ArgumentBranches.queuedOutcomes,
+        ArgumentBranches.headContSupports] using continuation
+  | @ArgumentBranches.cons _ head heads rows assembled destination final sourceOlder
+      children rest first remaining =>
+      cases headsQueued with
+      | nil => simp at aligned
+      | cons queuedHead restQueued =>
+          rcases queuedHead with ⟨actualHead,headPSupp⟩
+          simp only [List.map_cons,List.cons.injEq] at aligned
+          rcases aligned with ⟨headEq,restAligned⟩
+          let firstCont := contSupports.take children.length
+          let restCont := contSupports.drop children.length
+          have contLength : contSupports.length = (children ++ rest).length := by
+            have queuedLength := congrArg List.length
+              (ArgumentBranches.queuedOutcomes_fst
+                (.cons first remaining) ((actualHead,headPSupp) :: restQueued)
+                (by simp only [List.map_cons,headEq,restAligned]))
+            simp only [List.length_map] at queuedLength
+            exact continuation.1.symm.trans queuedLength
+          have contEq : firstCont ++ restCont = contSupports := by
+            exact List.take_append_drop children.length contSupports
+          have firstContLength : firstCont.length = children.length := by
+            simp only [firstCont,List.length_take,List.length_append] at contLength ⊢
+            omega
+          have firstQueuedLength :
+              (Arguments.queuedOutcomes first headPSupp).length = firstCont.length := by
+            have firstLength := congrArg List.length
+              (Arguments.queuedOutcomes_fst first headPSupp)
+            simpa only [List.length_map,firstContLength] using firstLength
+          have repacked : RootContinuationChain (Context := Context) program
+              sourceOlder actualOlder
+              (Arguments.queuedOutcomes first headPSupp ++
+                ArgumentBranches.queuedOutcomes remaining restQueued)
+              (firstCont ++ restCont) cSupp terminals cSuppAfter := by
+            simpa only [ArgumentBranches.queuedOutcomes,contEq] using continuation
+          obtain ⟨middle,firstTerminals,restTerminals,rfl,firstChain,restChain⟩ :=
+            repacked.split_append firstQueuedLength
+          have middleEq := firstChain.cSuppAfter_eq
+          subst middle
+          have syncParts :
+              Arguments.ExtraSynchronized first headPSupp cSupp firstCont ∧
+                ArgumentBranches.ExtraSynchronized remaining restQueued
+                  (cSupp ∪ supportIncrement firstCont) restCont := by
+            simpa only [ArgumentBranches.ExtraSynchronized,firstCont,restCont] using sync
+          have firstContract := Arguments.drain (Context := Context) first syncParts.1 firstChain
+          have restResult := ArgumentBranches.drain (Context := Context) remaining
+            restQueued restAligned syncParts.2 restChain
+          subst actualHead
+          have headStep : RootContinuationStep (Context := Context) program
+              sourceOlder actualOlder
+              ((head,headPSupp),supportIncrement firstCont) cSupp firstTerminals
+              (cSupp ∪ supportIncrement firstCont) := ⟨rfl,firstContract⟩
+          refine ⟨?_,?_⟩
+          · simpa only [ArgumentBranches.headContSupports,List.length_cons] using
+              congrArg Nat.succ restResult.1
+          · simpa only [ArgumentBranches.headContSupports,firstCont,restCont,
+              zipSupportIncrements,List.zip_cons_cons,List.singleton_append] using
+              (OrderedStateFlatMapRel.cons
+                (step := RootContinuationStep (Context := Context) program
+                  sourceOlder actualOlder) headStep restResult.2)
+termination_by ArgumentBranches.height source
+decreasing_by all_goals simp [ArgumentBranches.height]
+
+theorem Invocation.drain {Context : Type} {program : Program} {control : Control}
+    {assembled destination : Atom} {final : Goal} {sourceOlder : List Goal}
+    {outcomes : List Control}
+    (source : Invocation program control assembled destination final sourceOlder outcomes)
+    {actualOlder : List Goal} {pSupp cSupp cSuppAfter : Finset String}
+    {contSupports : List (Finset String)} {terminals : List Control}
+    (sync : Invocation.ExtraSynchronized source pSupp cSupp contSupports)
+    (continuation : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder (Invocation.queuedOutcomes source pSupp)
+      contSupports cSupp terminals cSuppAfter) :
+    RootContinuationContract (Context := Context) program sourceOlder actualOlder
+      control pSupp cSupp terminals cSuppAfter := by
+  match source with
+  | @Invocation.constructor _ control head arguments destination sourceOlder after
+      _passive _private atGoal accepted =>
+      have transition : DelimitedTransition (Context := Context) program
+          sourceOlder actualOlder control
+          {control with bindings := after,goals := sourceOlder} :=
+        DelimitedTransition.accepted atGoal accepted
+      have trace : BranchTrace program control []
+          {control with bindings := after,goals := sourceOlder} :=
+        .accepted atGoal accepted (.refl _)
+      exact direct_evaluation_contract transition trace continuation
+  | @Invocation.equations _ control extra head arguments destination sourceOlder
+      environment selected outcomes defined _private atGoal resolved _supported coverage
+      _nonempty bodies =>
+      have syncParts :
+          (protectControl control (control.support ∪ pSupp ∪ cSupp)).reserved =
+              (protectControl control extra).reserved ∧
+            Bodies.ExtraSynchronized bodies pSupp cSupp contSupports := by
+        simpa only [Invocation.ExtraSynchronized] using sync
+      have bodiesChain := Bodies.drain (Context := Context) bodies syncParts.2 continuation
+      intro supply world parents scope actual context origins pending related frontier root
+        pendingEq collectedEq
+      have supportEq := related.collectionSupport_eq world parents scope context origins
+        pending frontier root
+      rw [pendingEq,collectedEq] at supportEq
+      have synchronized :
+          (protectControl actual (collectionSupport
+            (⟨world,scope :: parents⟩ : CollectionConfiguration Context))).reserved =
+            (protectControl control extra).reserved := by
+        calc
+          _ = (protectControl control
+                (control.support ∪ pSupp ∪ cSupp)).reserved := by
+              simp only [protectControl,related.reserved,supportEq]
+          _ = _ := syncParts.1
+      have ordinary : head ≠ "parse" := by
+        intro same
+        subst head
+        have unknown := defined.1.2.1
+        simp [Mettapedia.Languages.MeTTa.PeTTa.StdLib.known] at unknown
+      have declared : program.equations.any (·.head == head) = true := by
+        obtain ⟨equation,member,same⟩ := defined.2
+        exact List.any_eq_true.mpr ⟨equation,member,by simp [same]⟩
+      have equationPath := related.equations_step atGoal resolved ordinary
+        defined.1.2.1 defined.1.1 declared coverage supply world parents scope context
+        origins pending frontier synchronized
+      let actualChoices := selected.map fun row =>
+        (row.1,delimitedClauseChoice actual.cutBoundary related.restores actualOlder row.2)
+      let enteredWork := selected.map
+        (enteredEquationWork actual.cutBoundary related.restores actualOlder
+          pending.length context origins)
+      let enteredScope : CollectionScope Context :=
+        { frontier := enteredWork ++ pending
+          collected := scope.collected
+          caller := scope.caller }
+      have workRelated : QueuedWorkRel program sourceOlder actualOlder control origins pending
+          (queuedSelections pSupp selected) enteredWork := by
+        simpa only [pendingEq,enteredWork] using
+          (Bodies.queuedWorkRel bodies related atGoal resolved coverage
+            (fun _ member => member) origins pending context)
+      obtain ⟨answers,answersRelated,supportAfter,afterPath⟩ :=
+        bodiesChain.run_queue workRelated supply world parents enteredScope rfl
+          (by simpa only [enteredScope] using root)
+          (by
+            change collectedSupport parents scope = cSupp
+            exact collectedEq)
+      refine ⟨answers,answersRelated,by simpa only [enteredScope] using supportAfter,?_⟩
+      have beforePath : ScopedSourcePath .eagerValue program
+          (supply,⟨world,scope :: parents⟩) []
+          (supply,⟨world,enteredScope :: parents⟩) := by
+        have sameWork :
+            actualChoices.map (fun row =>
+              (predicateEntry pending.length row.2,context,origins ++ [row.1])) =
+              enteredWork := by
+          dsimp only [actualChoices,enteredWork,enteredEquationWork]
+          rw [List.map_map]
+          apply List.map_congr_left
+          intro row _member
+          rcases row with ⟨position,selectedControl⟩
+          rfl
+        dsimp only at equationPath
+        rw [sameWork] at equationPath
+        simpa only [enteredScope] using equationPath.toScoped
+      have joined := beforePath.trans afterPath
+      simpa only [List.nil_append,enteredScope] using joined
+termination_by Invocation.height source
+decreasing_by all_goals simp [Invocation.height]
+
+theorem Bodies.drain {Context : Type} {program : Program} {destination : Atom}
+    {sourceOlder : List Goal} {selected : List (Nat × Control)} {outcomes : List Control}
+    (source : Bodies program destination sourceOlder selected outcomes)
+    {actualOlder : List Goal} {pSupp cSupp cSuppAfter : Finset String}
+    {contSupports : List (Finset String)} {terminals : List Control}
+    (sync : Bodies.ExtraSynchronized source pSupp cSupp contSupports)
+    (continuation : RootContinuationChain (Context := Context) program
+      sourceOlder actualOlder (Bodies.queuedOutcomes source pSupp)
+      contSupports cSupp terminals cSuppAfter) :
+    RootContinuationChain (Context := Context) program sourceOlder actualOlder
+      (queuedSelections pSupp selected) (Bodies.headContSupports source contSupports)
+      cSupp terminals cSuppAfter := by
+  match source with
+  | .nil =>
+      have contSupportsNil : contSupports = [] := by
+        apply List.eq_nil_of_length_eq_zero
+        simpa only [Bodies.queuedOutcomes,List.length_nil] using continuation.1.symm
+      subst contSupports
+      simpa only [Bodies.queuedOutcomes,queuedSelections,Bodies.headContSupports]
+        using continuation
+  | @Bodies.cons _ destination sourceOlder position selected remaining body children rest
+      atGoal first later =>
+      let pSuppHead := remaining.foldr (fun row names => row.2.support ∪ names) pSupp
+      let firstCont := contSupports.take children.length
+      let restCont := contSupports.drop children.length
+      have contLength : contSupports.length = (children ++ rest).length := by
+        have queuedLength := congrArg List.length (Bodies.queuedOutcomes_fst
+          (.cons (position := position) atGoal first later) pSupp)
+        simp only [List.length_map] at queuedLength
+        exact continuation.1.symm.trans queuedLength
+      have contEq : firstCont ++ restCont = contSupports :=
+        List.take_append_drop children.length contSupports
+      have firstContLength : firstCont.length = children.length := by
+        simp only [firstCont,List.length_take,List.length_append] at contLength ⊢
+        omega
+      have firstQueuedLength :
+          (Evaluation.queuedOutcomes first pSuppHead).length = firstCont.length := by
+        have firstLength := Evaluation.queuedOutcomes_length first pSuppHead
+        exact firstLength.trans firstContLength.symm
+      have repacked : RootContinuationChain (Context := Context) program
+          sourceOlder actualOlder
+          (Evaluation.queuedOutcomes first pSuppHead ++ Bodies.queuedOutcomes later pSupp)
+          (firstCont ++ restCont) cSupp terminals cSuppAfter := by
+        simpa only [Bodies.queuedOutcomes,pSuppHead,contEq] using continuation
+      obtain ⟨middle,firstTerminals,restTerminals,rfl,firstChain,restChain⟩ :=
+        repacked.split_append firstQueuedLength
+      have middleEq := firstChain.cSuppAfter_eq
+      subst middle
+      have syncParts :
+          Evaluation.ExtraSynchronized first pSuppHead cSupp firstCont ∧
+            Bodies.ExtraSynchronized later pSupp
+              (cSupp ∪ supportIncrement firstCont) restCont := by
+        simpa only [Bodies.ExtraSynchronized,pSuppHead,firstCont,restCont] using sync
+      have firstContract := Evaluation.drain (Context := Context) first syncParts.1 firstChain
+      have restResult := Bodies.drain (Context := Context) later syncParts.2 restChain
+      have headStep : RootContinuationStep (Context := Context) program
+          sourceOlder actualOlder
+          ((selected,pSuppHead),supportIncrement firstCont) cSupp firstTerminals
+          (cSupp ∪ supportIncrement firstCont) := ⟨rfl,firstContract⟩
+      refine ⟨?_,?_⟩
+      · simpa only [queuedSelections,Bodies.headContSupports,List.length_cons] using
+          congrArg Nat.succ restResult.1
+      · simpa only [queuedSelections,Bodies.headContSupports,pSuppHead,firstCont,restCont,
+          zipSupportIncrements,List.zip_cons_cons,List.singleton_append] using
+          (OrderedStateFlatMapRel.cons
+            (step := RootContinuationStep (Context := Context) program
+              sourceOlder actualOlder) headStep restResult.2)
+termination_by Bodies.height source
+decreasing_by all_goals simp [Bodies.height]
+end
+
+/-- A synchronized root source tree drains through the actual retained DFS
+queue to the same ordered terminal occurrences. -/
+theorem Evaluation.root_drain {Context : Type} {program : Program}
+    {control : Control} {expression destination : Atom} {outcomes : List Control}
+    (source : Evaluation program control expression destination [] outcomes)
+    (pSupp cSupp : Finset String)
+    (sync : Evaluation.ExtraSynchronized source pSupp cSupp
+      (outcomes.map rawAnswerSupport)) :
+    RootContinuationContract (Context := Context) program [] [] control pSupp cSupp
+      outcomes (cSupp ∪ supportIncrement (outcomes.map rawAnswerSupport)) := by
+  have terminalChain := root_terminal_chain (Context := Context) program outcomes
+    (Evaluation.queuedOutcomes source pSupp) cSupp
+    (Evaluation.queuedOutcomes_fst source pSupp) source.outcomes_ready
+  exact Evaluation.drain source sync terminalChain
 
 #print axioms Evaluation.traces
 #print axioms Evaluation.outcomes_ready
 #print axioms DelimitedControl.support_eq
+#print axioms DelimitedControl.enter_argument
 #print axioms drain_restoreCommits
 #print axioms root_terminal_drain
 #print axioms root_terminal_chain
+#print axioms RootContinuationChain.run_queue
+#print axioms Evaluation.drain
+#print axioms Bodies.drain
+#print axioms Evaluation.root_drain
 
 end CollectionLinearization
 
@@ -1416,7 +3215,7 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Eval.Completed
 open Mettapedia.Languages.MeTTa.Translation.PureConstructor
 open Mettapedia.Languages.MeTTa.Translation.PureConstructor.RecursiveTransport
 open Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics (Program)
-open Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination
 open Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
 open Mettapedia.Languages.MeTTa.Translation.ConstructorMatch
 
@@ -1701,10 +3500,10 @@ theorem Value.typeVars_mem_scope
 theorem SupportRel.of_prepared
     {scope : List String} {live : List Atom} {incoming : HE.Bindings}
     {hePacket sourcePacket : List Atom} {control opened : Control}
-    {policy : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Policy}
+    {policy : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination.Policy}
     {program : Program} {destination : Atom} {older : List Goal} {expression : Atom}
     (supported : SupportRel scope live incoming hePacket sourcePacket control)
-    (prepared : Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source.Prepared
+    (prepared : Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination.Source.Prepared
       policy program control destination older expression opened) :
     SupportRel scope live incoming hePacket sourcePacket opened := by
   have same := Mettapedia.Languages.MeTTa.Translation.OpenRecursive.Prepared.persistentSupport_eq
@@ -3912,6 +5711,56 @@ theorem Evaluation.transport
   exact ⟨results,completed,outcomesRelated,source.paths,
     OutcomeRel.packet_list_eq outcomesRelated⟩
 
+namespace CollectionLinearization
+
+/-- Principal E2/E3 composition theorem.  One admitted open recursive source
+tree earns both its contextual HE derivation and its exact retained DFS queue
+drain.  The only scheduling premise is the structural freshening synchronization
+computed from the source tree and queue-support indices. -/
+theorem Evaluation.realize_root
+    {Context : Type} {program : Program} {control : Control}
+    {sourceValue destination : Atom}
+    {outcomes : List Control}
+    (source : OpenRecursive.Evaluation program control sourceValue destination [] outcomes)
+    (patterns : ConstructorPatterns program) (programCode : CodeProgram program)
+    (machineScope : List String) (live : List Atom) (scope : List String)
+    (frame : Frame) (input : Entry.Value)
+    (sourceInstance : InputInstance program scope sourceValue input)
+    (passive : PassiveEnvironment program scope frame.environment)
+    (heFront sourceFront hePending sourcePending : List Atom)
+    (frontLength : heFront.length = sourceFront.length)
+    (related : HE.Spec.Bindings.ScopeObservation.observedTuples frame.bindings
+        (heFront ++ input.erase :: hePending) =
+      solutionTuples control.bindings (sourceFront ++ sourceValue :: sourcePending))
+    (supported : SupportRel scope live frame.bindings
+      (heFront ++ input.erase :: hePending)
+      (sourceFront ++ sourceValue :: sourcePending) control)
+    (allocated : source.Allocated sourceFront sourcePending)
+    (pSupp cSupp : Finset String)
+    (sync : Evaluation.ExtraSynchronized source pSupp cSupp
+      (outcomes.map rawAnswerSupport)) :
+    ∃ results,
+      AtomRel (equationSpace program) noForeign rawLookup live machineScope input
+        Atom.undefinedType frame results
+        (policy := HE.Spec.Eval.Completed.Policy.unmarked) ∧
+      List.Forall₂ (OutcomeRel program scope heFront sourceFront hePending sourcePending
+        destination [] control) results outcomes ∧
+      (∀ outcome ∈ outcomes, BranchPath program control outcome) ∧
+      observedOutcomePackets heFront hePending results =
+        solutionOutcomePackets sourceFront sourcePending destination outcomes ∧
+      RootContinuationContract (Context := Context) program [] [] control pSupp cSupp outcomes
+        (cSupp ∪ supportIncrement (outcomes.map rawAnswerSupport)) := by
+  obtain ⟨results,completed,outcomesRelated,paths,packets⟩ :=
+    OpenRecursive.Evaluation.transport source patterns programCode machineScope live scope
+      frame input sourceInstance passive heFront sourceFront hePending sourcePending
+      frontLength related supported allocated
+  exact ⟨results,completed,outcomesRelated,paths,packets,
+    Evaluation.root_drain source pSupp cSupp sync⟩
+
+#print axioms Evaluation.realize_root
+
+end CollectionLinearization
+
 #print axioms Evaluation.paths
 #print axioms Evaluation.forward
 #print axioms Arguments.forward
@@ -3930,11 +5779,12 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.MeTTa.HE.Spec.Eval
 open Mettapedia.Languages.MeTTa.HE.Spec.Eval.Completed
 open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
-open Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
-open Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination
+open Mettapedia.Languages.MeTTa.PeTTa.EagerDFS.Destination.Source
 open Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
 open Mettapedia.Languages.MeTTa.Translation.PureConstructor
 open Mettapedia.Languages.MeTTa.Translation.ConstructorMatch
+open Mettapedia.Languages.MeTTa.Translation.OpenRecursive.CollectionLinearization
 
 /-!
 The positive control below exercises open argument materialization, duplicate
@@ -3962,6 +5812,13 @@ private def rootOpened : Control :=
 private theorem rootPrepared :
     Prepared .eagerValue program rootControl (.var "out") [] query rootOpened :=
   prepare_has_source _ _ _ _ _ _
+
+private theorem rootPrepared_delimited : PreparedDelimitedRel rootPrepared := by
+  let canonical := Prepared.application (policy := Policy.eagerValue)
+    (program := program) (control := rootControl) (destination := (.var "out" : Atom))
+    (older := []) "fork" [.var "x"] (by rfl) (by rfl)
+  exact PreparedDelimitedRel.of_source rootPrepared canonical
+    (PreparedDelimitedRel.application "fork" [.var "x"] (by rfl) (by rfl))
 
 private theorem rootOpened_bindings :
     rootOpened.bindings = [(.var "x",.symbol "Z")] := by
@@ -4021,7 +5878,21 @@ private theorem rootSolvable :
   · exact (read_zero_var "x").trans (read_zero_symbol "Z").symm
   · simp [rootSlot,read_zero_var]
 
-private def guardedRoot : Control := protectControl rootArgumentAfter ∅
+/-- Source-level freshening choices for the recursive control fixture.  E2 is
+parametric in this profile; E3 chooses the live retained-scope supports. -/
+class FresheningProfile where
+  rootExtra : Finset String
+  stripExtra : Nat → Finset String
+
+abbrev FresheningProfile.empty : FresheningProfile :=
+  ⟨∅,fun _ => ∅⟩
+
+section
+variable [profile : FresheningProfile]
+include profile
+
+private def guardedRoot : Control :=
+  protectControl rootArgumentAfter profile.rootExtra
 
 private theorem guardedRoot_bindings :
     guardedRoot.bindings = [(.var "x",.symbol "Z"),(.var "x",rootSlot)] := by
@@ -4104,6 +5975,16 @@ private theorem stripPrepared (occurrence : Nat) :
       (forkBody occurrence) (stripOpened occurrence) :=
   prepare_has_source _ _ _ _ _ _
 
+private theorem stripPrepared_delimited (occurrence : Nat) :
+    PreparedDelimitedRel (stripPrepared occurrence) := by
+  let canonical := Prepared.application (policy := Policy.eagerValue)
+    (program := program) (control := forkChoice occurrence)
+    (destination := (.var "out" : Atom)) (older := [])
+    "strip" [.var (forkVariable occurrence)] (by rfl) (by rfl)
+  exact PreparedDelimitedRel.of_source (stripPrepared occurrence) canonical
+    (PreparedDelimitedRel.application "strip" [.var (forkVariable occurrence)]
+      (by rfl) (by rfl))
+
 private theorem stripOpened_bindings (occurrence : Nat) :
     (stripOpened occurrence).bindings = forkBindings occurrence := by
   exact (stripPrepared occurrence).retains_frame.1.trans rfl
@@ -4117,6 +5998,7 @@ private def stripArgumentAfter (occurrence : Nat) : Control :=
       [(.var (forkVariable occurrence),stripSlot occurrence)]
     goals := [.invoke "strip" [stripSlot occurrence] (.var "out")] }
 
+omit profile in
 private theorem freshName_storeFresh (control : Control) (index : Nat) :
     ∀ pair ∈ control.bindings,
       freshName control index ∉ HE.Spec.Type.Presentation.TypeSubst.typeVars pair.1 ∧
@@ -4149,6 +6031,7 @@ private theorem forkVariable_ne_out (occurrence : Nat) :
   rw [same]
   exact out_mem_guardedRoot_support
 
+omit profile in
 private theorem rootSlot_ne_out : freshName rootControl 0 ≠ "out" := by
   intro same
   apply freshName_not_mem rootControl 0
@@ -4271,7 +6154,7 @@ private theorem solved_stripArgument_reads_slot
   exact linked.symm.trans (solved_forkBindings_reads_variable occurrence environment old)
 
 private def stripGuard (occurrence : Nat) : Control :=
-  protectControl (stripArgumentAfter occurrence) ∅
+  protectControl (stripArgumentAfter occurrence) (profile.stripExtra occurrence)
 
 private def stripQuery : Atom := .expression [.symbol "strip",.symbol "Z"]
 
@@ -4366,6 +6249,15 @@ private theorem boxPrepared (occurrence : Nat) :
     Prepared .eagerValue program (baseChoice occurrence) (.var "out") []
       boxed (boxOpened occurrence) :=
   prepare_has_source _ _ _ _ _ _
+
+private theorem boxPrepared_delimited (occurrence : Nat) :
+    PreparedDelimitedRel (boxPrepared occurrence) := by
+  let canonical := Prepared.construction (policy := Policy.eagerValue)
+    (program := program) (control := baseChoice occurrence)
+    (destination := (.var "out" : Atom)) (older := [])
+    "Box" [.symbol "Z"] (by rfl) (by rfl)
+  exact PreparedDelimitedRel.of_source (boxPrepared occurrence) canonical
+    (PreparedDelimitedRel.construction "Box" [.symbol "Z"] (by rfl) (by rfl))
 
 private theorem boxOpened_bindings (occurrence : Nat) :
     (boxOpened occurrence).bindings = baseBindings occurrence := by
@@ -4469,16 +6361,19 @@ private def boxReturnPrivate (occurrence : Nat) :
 private def boxEnvironment : Environment :=
   fun name => if name = "out" then encode boxed else encode (.symbol "Z")
 
+omit profile in
 private theorem boxEnvironment_read_out :
     read boxEnvironment (.var "out") = boxed := by
   rw [read_eq_applyTypeValuation]
   simp [boxEnvironment,HE.Spec.Type.RuntimeRefinement.applyTypeValuation]
 
+omit profile in
 private theorem boxEnvironment_read_other (name : String) (different : name ≠ "out") :
     read boxEnvironment (.var name) = .symbol "Z" := by
   rw [read_eq_applyTypeValuation]
   simp [boxEnvironment,HE.Spec.Type.RuntimeRefinement.applyTypeValuation,different]
 
+omit profile in
 private theorem boxEnvironment_agrees_without_out (atom : Atom)
     (fresh : "out" ∉ HE.Spec.Type.Presentation.TypeSubst.typeVars atom) :
     read boxEnvironment atom = read zeroEnvironment atom := by
@@ -4597,14 +6492,15 @@ private noncomputable def stripInvocation (occurrence : Nat) :
   have readSlot := solved_stripArgument_reads_slot occurrence
     (stripEnvironment occurrence) solved
   have frontier : ClauseChoice.Frontier program
-      (protectControl (stripArgumentAfter occurrence) ∅) "strip"
+      (protectControl (stripArgumentAfter occurrence) (profile.stripExtra occurrence)) "strip"
       ([stripSlot occurrence].map (read (stripEnvironment occurrence))) (.var "out") []
       (List.range program.equations.length) [(0,baseChoice occurrence)] := by
     simpa only [stripGuard,List.map_cons,List.map_nil,readSlot] using stripFrontier occurrence
   have bodies : Bodies program (.var "out") [] [(0,baseChoice occurrence)]
       [boxResult occurrence] :=
     .cons (by simp [baseChoice,baseBody_eq,boxed]) (boxedEvaluation occurrence) .nil
-  apply Invocation.equations (extra := ∅) defined_strip (stripReturnPrivate occurrence) rfl
+  apply Invocation.equations (extra := profile.stripExtra occurrence)
+    defined_strip (stripReturnPrivate occurrence) rfl
     (stripResolved occurrence)
   · intro name member
     simp only [List.map_cons,List.map_nil,readSlot,
@@ -4640,10 +6536,12 @@ private noncomputable def stripEvaluation (occurrence : Nat) :
 private noncomputable def rootEnvironment : Environment :=
   Classical.choose rootSolvable
 
+omit profile in
 private theorem rootResolved :
     resolve rootArgumentAfter.bindings = some rootEnvironment :=
   Classical.choose_spec rootSolvable
 
+omit profile in
 private theorem solved_root_reads_slot
     (environment : Environment) (solved : Solves environment rootArgumentAfter.bindings) :
     read environment rootSlot = .symbol "Z" := by
@@ -4676,7 +6574,7 @@ private noncomputable def rootInvocation :
   have solved := resolve_sound rootResolved
   have readSlot := solved_root_reads_slot rootEnvironment solved
   have frontier : ClauseChoice.Frontier program
-      (protectControl rootArgumentAfter ∅) "fork"
+      (protectControl rootArgumentAfter profile.rootExtra) "fork"
       ([rootSlot].map (read rootEnvironment)) (.var "out") []
       (List.range program.equations.length) [(2,forkChoice 2),(3,forkChoice 3)] := by
     simpa only [guardedRoot,List.map_cons,List.map_nil,readSlot] using forkFrontier
@@ -4686,7 +6584,8 @@ private noncomputable def rootInvocation :
       (Bodies.cons (by simp [forkChoice,forkBody_eq,forkBody]) (stripEvaluation 2)
         (Bodies.cons (by simp [forkChoice,forkBody_eq,forkBody])
           (stripEvaluation 3) Bodies.nil))
-  apply Invocation.equations (extra := ∅) defined_fork rootReturnPrivate rfl rootResolved
+  apply Invocation.equations (extra := profile.rootExtra)
+    defined_fork rootReturnPrivate rfl rootResolved
   · intro name member
     simp only [List.map_cons,List.map_nil,readSlot,
       HE.Spec.Type.Presentation.TypeSubst.typeVarsList,
@@ -4721,6 +6620,7 @@ private def openBindings : HE.Bindings := ⟨[("x",.symbol "Z")],[]⟩
 
 private def openEnvironment : Entry.Value.Environment := [("x",.symbol "Z")]
 
+omit profile in
 private theorem openCertified :
     HE.Spec.Type.Presentation.BindingTheory.ReadoutCertificate openBindings
       (Entry.Value.eraseEnvironment openEnvironment) := by
@@ -4736,6 +6636,7 @@ private theorem openCertified :
 
 private def openFrame : Frame := ⟨openBindings,openEnvironment,openCertified⟩
 
+omit profile in
 private theorem openPassive : PassiveEnvironment program ["x"] openFrame.environment := by
   intro pair member
   obtain rfl := List.mem_singleton.mp member
@@ -4744,6 +6645,7 @@ private theorem openPassive : PassiveEnvironment program ["x"] openFrame.environ
     by simpa only [Entry.Value.erase] using
       (NoErrorSymbol.symbol (by decide +kernel : "Z" ≠ "Error"))⟩
 
+omit profile in
 private theorem queryInstance :
     InputInstance program ["x"] query (Entry.Value.ofAtom query) := by
   apply InputInstance.raw
@@ -4755,6 +6657,7 @@ private theorem queryInstance :
     exact .variable (by simp)
   simpa [query,Entry.Value.ofAtom] using admitted
 
+omit profile in
 private theorem initialPacket :
     observedTuples openFrame.bindings [query,.var "x"] =
       solutionTuples rootControl.bindings [query,.var "x"] := by
@@ -4764,6 +6667,7 @@ private theorem initialPacket :
     HE.Spec.Type.Presentation.BindingTheory.bindingAtomEquations] using
       (solves_binding_equations environment openBindings).symm
 
+omit profile in
 private theorem rootSupport :
     SupportRel ["x"] [] openFrame.bindings [query,.var "x"]
       [query,.var "x"] rootControl := by
@@ -4786,12 +6690,14 @@ private theorem rootSupport :
     subst name
     simp [PersistentSupport,rootControl]
 
+omit profile in
 private theorem freshName_ne_supported (control : Control) (index : Nat)
     (name : String) (supported : name ∈ control.support) :
     freshName control index ≠ name := by
   intro same
   exact freshName_not_mem control index (same ▸ supported)
 
+omit profile in
 private theorem root_x_supported : "x" ∈ rootControl.support := by
   simp [Control.support,rootControl]
 
@@ -4818,6 +6724,7 @@ private theorem baseChoice_x_supported (occurrence : Nat) :
     exact List.mem_cons_self
   · simp [HE.Spec.Type.Presentation.TypeSubst.typeVars]
 
+omit profile in
 private theorem name_avoids_one_freshSlot (control : Control) (name : String)
     (different : freshName control 0 ≠ name) :
     name ∉ HE.Spec.Type.Presentation.TypeSubst.typeVarsList (freshSlots control 1) := by
@@ -4957,22 +6864,181 @@ private theorem outcome_negative (occurrence : Nat) :
     (xBound.trans readZ).symm.trans returnedX
   cases impossible
 
-/-- Positive E2 control: an open caller binding flows through argument
-evaluation, two duplicate clause occurrences, recursive calls and constructor
-assembly.  The paired negative observation shows that the caller correlation
-was retained rather than independently resampled. -/
-theorem open_recursive_duplicate_transport :
+private theorem openRecursiveSource_synchronized_of (pSupp cSupp : Finset String)
+    (rootSync :
+      (protectControl rootArgumentAfter
+        (rootArgumentAfter.support ∪ (pSupp ∪ cSupp))).reserved =
+        (protectControl rootArgumentAfter profile.rootExtra).reserved)
+    (strip2Sync :
+      (protectControl (stripArgumentAfter 2)
+        ((stripArgumentAfter 2).support ∪
+          ((forkChoice 3).support ∪ (pSupp ∪ cSupp)))).reserved =
+        (protectControl (stripArgumentAfter 2) (profile.stripExtra 2)).reserved)
+    (strip3Sync :
+      (protectControl (stripArgumentAfter 3)
+        ((stripArgumentAfter 3).support ∪
+          (pSupp ∪ (cSupp ∪ rawAnswerSupport (boxResult 2))))).reserved =
+        (protectControl (stripArgumentAfter 3) (profile.stripExtra 3)).reserved) :
+    Evaluation.ExtraSynchronized openRecursiveSource pSupp cSupp
+      ([boxResult 2,boxResult 3].map rawAnswerSupport) := by
+  simp only [openRecursiveSource,rootInvocation,stripEvaluation,stripInvocation,
+    boxedEvaluation,boxInvocation,rootArgument,stripArgument,boxArgument,id,
+    Evaluation.ExtraSynchronized,Arguments.ExtraSynchronized,
+    ArgumentBranches.ExtraSynchronized,Invocation.ExtraSynchronized,
+    Bodies.ExtraSynchronized,Evaluation.queuedOutcomes,supportIncrement]
+  simp [rootSync,strip2Sync,strip3Sync,Finset.union_assoc]
+  exact ⟨rootPrepared_delimited,
+    ⟨⟨stripPrepared_delimited 2,boxPrepared_delimited 2⟩,
+      ⟨stripPrepared_delimited 3,boxPrepared_delimited 3⟩⟩⟩
+
+end
+
+/-- The root call is freshened against exactly the active control, queued work,
+and already collected answers visible at its collection cut. -/
+private abbrev rootFresheningStage (pSupp cSupp : Finset String) : FresheningProfile :=
+  ⟨rootArgumentAfter.support ∪ (pSupp ∪ cSupp),fun _ => ∅⟩
+
+/-- After choosing the first duplicate clause, the second clause is already in
+the DFS queue.  Its support therefore contributes to the first recursive call's
+freshening boundary. -/
+private def strip2Extra (pSupp cSupp : Finset String) : Finset String :=
+  let stage := rootFresheningStage pSupp cSupp
+  (stripArgumentAfter (profile := stage) 2).support ∪
+    ((forkChoice (profile := stage) 3).support ∪ (pSupp ∪ cSupp))
+
+/-- The profile after entering the first selected clause. -/
+private abbrev firstBranchFresheningStage
+    (pSupp cSupp : Finset String) : FresheningProfile :=
+  ⟨rootArgumentAfter.support ∪ (pSupp ∪ cSupp),
+    fun occurrence => if occurrence = 2 then strip2Extra pSupp cSupp else ∅⟩
+
+/-- The second recursive call sees the first answer in the retained collection
+and no selected clause behind it. -/
+private def strip3Extra (pSupp cSupp : Finset String) : Finset String :=
+  let stage := firstBranchFresheningStage pSupp cSupp
+  (stripArgumentAfter (profile := stage) 3).support ∪
+    (pSupp ∪
+      (cSupp ∪ rawAnswerSupport (boxResult (profile := stage) 2)))
+
+/-- Concrete freshening choices induced by the retained DFS collection state.
+The definition follows the queue order: root, first duplicate, then second
+duplicate after the first answer has been collected. -/
+abbrev collectionFresheningProfile
+    (pSupp cSupp : Finset String) : FresheningProfile :=
+  ⟨rootArgumentAfter.support ∪ (pSupp ∪ cSupp),
+    fun occurrence =>
+      if occurrence = 2 then strip2Extra pSupp cSupp
+      else if occurrence = 3 then strip3Extra pSupp cSupp
+      else ∅⟩
+
+/-- The recursive duplicate-clause source tree uses exactly the protection
+sets computed by the concrete collection queue at every equation dispatch. -/
+theorem open_recursive_duplicate_synchronized (pSupp cSupp : Finset String) :
+    Evaluation.ExtraSynchronized
+      (openRecursiveSource (profile := collectionFresheningProfile pSupp cSupp))
+      pSupp cSupp
+      ([boxResult (profile := collectionFresheningProfile pSupp cSupp) 2,
+          boxResult (profile := collectionFresheningProfile pSupp cSupp) 3].map
+        rawAnswerSupport) := by
+  let profile : FresheningProfile := collectionFresheningProfile pSupp cSupp
+  change Evaluation.ExtraSynchronized
+    (openRecursiveSource (profile := profile)) pSupp cSupp
+    ([boxResult (profile := profile) 2,boxResult (profile := profile) 3].map
+      rawAnswerSupport)
+  exact openRecursiveSource_synchronized_of (profile := profile) pSupp cSupp
+    rfl rfl rfl
+
+/-- Positive E3 control: the retained DFS collection machine drains the same
+two recursive duplicate-clause occurrences, in source order, with the exact
+live support used for every freshening decision. -/
+theorem open_recursive_duplicate_root_drain {Context : Type}
+    (pSupp cSupp : Finset String) :
+    RootContinuationContract (Context := Context) program [] [] rootControl
+      pSupp cSupp
+      [boxResult (profile := collectionFresheningProfile pSupp cSupp) 2,
+        boxResult (profile := collectionFresheningProfile pSupp cSupp) 3]
+      (cSupp ∪ supportIncrement
+        ([boxResult (profile := collectionFresheningProfile pSupp cSupp) 2,
+            boxResult (profile := collectionFresheningProfile pSupp cSupp) 3].map
+          rawAnswerSupport)) := by
+  exact Evaluation.root_drain
+    (openRecursiveSource (profile := collectionFresheningProfile pSupp cSupp))
+    pSupp cSupp (open_recursive_duplicate_synchronized pSupp cSupp)
+
+#print axioms open_recursive_duplicate_synchronized
+#print axioms open_recursive_duplicate_root_drain
+
+/-- End-to-end E2/E3 control.  The same open recursive source tree realizes
+the contextual HE relation and the retained PeTTa DFS queue, preserving the
+two physical clause occurrences, their order and their shared caller binding. -/
+theorem open_recursive_duplicate_realization {Context : Type}
+    (pSupp cSupp : Finset String) :
+    let profile := collectionFresheningProfile pSupp cSupp
     ∃ results,
       AtomRel (equationSpace program) noForeign rawLookup [] ["x"]
         (Entry.Value.ofAtom query) Atom.undefinedType openFrame results
         (policy := Policy.unmarked) ∧
       List.Forall₂ (OutcomeRel program ["x"] [] [] [.var "x"] [.var "x"]
-        (.var "out") [] rootControl) results [boxResult 2,boxResult 3] ∧
-      (∀ outcome ∈ [boxResult 2,boxResult 3], BranchPath program rootControl outcome) ∧
+        (.var "out") [] rootControl) results
+        [boxResult (profile := profile) 2,boxResult (profile := profile) 3] ∧
+      (∀ outcome ∈ [boxResult (profile := profile) 2,boxResult (profile := profile) 3],
+        BranchPath program rootControl outcome) ∧
       observedOutcomePackets [] [.var "x"] results =
-        solutionOutcomePackets [] [.var "x"] (.var "out") [boxResult 2,boxResult 3] ∧
+        solutionOutcomePackets [] [.var "x"] (.var "out")
+          [boxResult (profile := profile) 2,boxResult (profile := profile) 3] ∧
+      RootContinuationContract (Context := Context) program [] [] rootControl
+        pSupp cSupp
+        [boxResult (profile := profile) 2,boxResult (profile := profile) 3]
+        (cSupp ∪ supportIncrement
+          ([boxResult (profile := profile) 2,boxResult (profile := profile) 3].map
+            rawAnswerSupport)) ∧
       results.length = 2 ∧
-      ∀ outcome ∈ [boxResult 2,boxResult 3],
+      ∀ outcome ∈ [boxResult (profile := profile) 2,boxResult (profile := profile) 3],
+        [boxed,.symbol "Z"] ∈ solutionTuples outcome.bindings [.var "out",.var "x"] ∧
+        [boxed,.expression [.symbol "S",.symbol "Z"]] ∉
+          solutionTuples outcome.bindings [.var "out",.var "x"] := by
+  dsimp only
+  let profile : FresheningProfile := collectionFresheningProfile pSupp cSupp
+  obtain ⟨results,completed,outcomesRelated,paths,packets,drain⟩ :=
+    CollectionLinearization.Evaluation.realize_root (Context := Context)
+      (openRecursiveSource (profile := profile)) constructor_patterns program_code
+      ["x"] [] ["x"] openFrame (Entry.Value.ofAtom query) queryInstance openPassive
+      [] [] [.var "x"] [.var "x"] rfl
+      (by simpa only [List.nil_append,Entry.Value.erase_ofAtom] using initialPacket)
+      (by simpa only [List.nil_append,Entry.Value.erase_ofAtom] using rootSupport)
+      openAllocated pSupp cSupp
+      (open_recursive_duplicate_synchronized pSupp cSupp)
+  refine ⟨results,completed,outcomesRelated,paths,packets,drain,?_,?_⟩
+  · simpa using outcomesRelated.length_eq
+  · intro outcome member
+    simp only [List.mem_cons] at member
+    rcases member with rfl | member
+    · exact ⟨outcome_positive 2,outcome_negative 2⟩
+    · rcases member with rfl | impossible
+      · exact ⟨outcome_positive 3,outcome_negative 3⟩
+      · cases impossible
+
+#print axioms open_recursive_duplicate_realization
+
+/-- Positive E2 control: an open caller binding flows through argument
+evaluation, two duplicate clause occurrences, recursive calls and constructor
+assembly.  The paired negative observation shows that the caller correlation
+was retained rather than independently resampled. -/
+theorem open_recursive_duplicate_transport [profile : FresheningProfile] :
+    ∃ results,
+      AtomRel (equationSpace program) noForeign rawLookup [] ["x"]
+        (Entry.Value.ofAtom query) Atom.undefinedType openFrame results
+        (policy := Policy.unmarked) ∧
+      List.Forall₂ (OutcomeRel program ["x"] [] [] [.var "x"] [.var "x"]
+        (.var "out") [] rootControl) results
+        [boxResult (profile := profile) 2,boxResult (profile := profile) 3] ∧
+      (∀ outcome ∈ [boxResult (profile := profile) 2,boxResult (profile := profile) 3],
+        BranchPath program rootControl outcome) ∧
+      observedOutcomePackets [] [.var "x"] results =
+        solutionOutcomePackets [] [.var "x"] (.var "out")
+          [boxResult (profile := profile) 2,boxResult (profile := profile) 3] ∧
+      results.length = 2 ∧
+      ∀ outcome ∈ [boxResult (profile := profile) 2,boxResult (profile := profile) 3],
         [boxed,.symbol "Z"] ∈ solutionTuples outcome.bindings [.var "out",.var "x"] ∧
         [boxed,.expression [.symbol "S",.symbol "Z"]] ∉
           solutionTuples outcome.bindings [.var "out",.var "x"] := by

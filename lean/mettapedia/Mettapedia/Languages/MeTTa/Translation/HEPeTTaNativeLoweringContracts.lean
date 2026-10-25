@@ -4,7 +4,7 @@ import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
 import Mettapedia.Languages.MeTTa.HE.EquationScope
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
-import Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS
+import Mettapedia.Languages.MeTTa.PeTTa.EagerDFS
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Mettapedia.Languages.MeTTa.HE.BindingComposition
 open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
@@ -314,7 +314,7 @@ open private lookup_ground hasAssignedVar_false_of_ground mergeGround?
   mergeBindings_ground_eq_mergeGround matchAtoms_mono_add matchAtoms_ground_canon
   from Mettapedia.Languages.MeTTa.HE.BindingComposition
 
-open PeTTa.CettaEagerDFS.Destination
+open PeTTa.EagerDFS.Destination
 
 /-- A PeTTa source clause instance is also a legal HE source instance whenever
 the retained PeTTa scope contains the HE caller's visible names. The two
@@ -802,13 +802,13 @@ theorem joint_pending_prepend_fresh
       exact ⟨valuation,model,rfl⟩
     obtain ⟨environment,old,pendingSame⟩ := packet
     let extended : Environment := fun key =>
-      if key ∈ TypeSubst.typeVarsList freshAtoms then PeTTa.CettaEagerDFS.Destination.encode (valuation key)
+      if key ∈ TypeSubst.typeVarsList freshAtoms then PeTTa.EagerDFS.Destination.encode (valuation key)
       else environment key
     have preserved (atom : Atom)
         (disjoint : ∀ key ∈ TypeSubst.typeVars atom, key ∉ TypeSubst.typeVarsList freshAtoms) :
         read extended atom = read environment atom := by
-      rw [PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation extended atom,
-        PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation environment atom]
+      rw [PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation extended atom,
+        PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation environment atom]
       apply applyTypeValuation_congr_of_typeVars
       intro key member
       dsimp only [extended]
@@ -819,14 +819,14 @@ theorem joint_pending_prepend_fresh
         preserved pair.2 (fun key occurs fresh => (sourceFresh key fresh).1 pair member |>.2 occurs)]
       exact old pair member
     have front : freshAtoms.map (read extended) = freshAtoms.map (applyTypeValuation valuation) := by
-      simp only [show read extended = _ from funext (PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation extended)]
+      simp only [show read extended = _ from funext (PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation extended)]
       apply applyTypeValuationList_congr_of_typeVars
       intro key member
       dsimp only [extended]
-      rw [if_pos member,PeTTa.CettaEagerDFS.Destination.decode_encode]
+      rw [if_pos member,PeTTa.EagerDFS.Destination.decode_encode]
     have tail : sourcePending.map (read extended) = sourcePending.map (read environment) := by
-      simp only [show read extended = _ from funext (PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation extended),
-        show read environment = _ from funext (PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation environment)]
+      simp only [show read extended = _ from funext (PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation extended),
+        show read environment = _ from funext (PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation environment)]
       apply applyTypeValuationList_congr_of_typeVars
       intro key member
       dsimp only [extended]
@@ -841,7 +841,7 @@ theorem joint_pending_prepend_fresh
       exact ⟨environment,model,rfl⟩
     obtain ⟨valuation,old,pendingSame⟩ := packet
     let extended : String → Atom := fun key =>
-      if key ∈ TypeSubst.typeVarsList freshAtoms then PeTTa.CettaEagerDFS.Destination.decode (environment key)
+      if key ∈ TypeSubst.typeVarsList freshAtoms then PeTTa.EagerDFS.Destination.decode (environment key)
       else valuation key
     have kept : TypeBindingSatisfied extended incoming := by
       apply (specTypeBindingSatisfied_congr_of_bindingVars (left := valuation) (right := extended) ?_).mp old
@@ -849,7 +849,7 @@ theorem joint_pending_prepend_fresh
       dsimp only [extended]
       rw [if_neg (fun fresh => (heFresh key fresh).1 member)]
     have front : freshAtoms.map (applyTypeValuation extended) = freshAtoms.map (read environment) := by
-      simp only [show read environment = _ from funext (PeTTa.CettaEagerDFS.Destination.read_eq_applyTypeValuation environment)]
+      simp only [show read environment = _ from funext (PeTTa.EagerDFS.Destination.read_eq_applyTypeValuation environment)]
       apply applyTypeValuationList_congr_of_typeVars
       intro key member
       dsimp only [extended]
@@ -1926,7 +1926,7 @@ theorem duplicate_positions : selected.map Prod.fst = [0,1] := by
 private def bodies : List (Option Atom) := selected.map fun next => do
   let environment ← resolve next.2.bindings
   match next.2.goals with
-  | .evaluate body _ :: _ => some (PeTTa.CettaEagerDFS.Destination.read environment body)
+  | .evaluate body _ :: _ => some (PeTTa.EagerDFS.Destination.read environment body)
   | _ => none
 
 #guard bodies == [some (.expression [.symbol "Pair",.symbol "A",.symbol "A"]),
@@ -2029,7 +2029,7 @@ excludes an inconsistent cross-pair. Its output need not be ground, and no
 caller binding is reset when the solved presentation is published. -/
 theorem completed_open_head_keeps_aliases {Context : Type}
     (policy : Policy) (program : PeTTa.SpaceSemantics.Program)
-    (world : PeTTa.CettaEagerDFS.World) (context : Context) :
+    (world : PeTTa.EagerDFS.World) (context : Context) :
     let cursor : Cursor Context := ⟨world,
       {bindings := before,goals := [],destination := .var "x"},context⟩
     ∃ value,
@@ -2114,7 +2114,7 @@ the next complete clause query. No literal encoding of the reached equation
 record is required. The next query and pending caller packet are arbitrary. -/
 theorem reached_head_then_frontier {Context : Type}
     (policy : Policy) (program : PeTTa.SpaceSemantics.Program)
-    (world : PeTTa.CettaEagerDFS.World) (context : Context)
+    (world : PeTTa.EagerDFS.World) (context : Context)
     (head : String) (arguments : List Atom) (destination output : Atom)
     (older : List Goal) (live pending : List Atom) :
     let caller : Control :=
@@ -2711,8 +2711,8 @@ theorem fresh_candidate_iff_raw_solution
     obtain ⟨base,satisfied⟩ := caller
     obtain ⟨combined,retained,patternRead,_agrees⟩ :=
       HE.EquationScope.fresh_pattern_model variant base rule satisfied
-    let environment : PeTTa.CettaEagerDFS.Destination.Environment := fun name =>
-      PeTTa.CettaEagerDFS.Destination.encode (combined name)
+    let environment : PeTTa.EagerDFS.Destination.Environment := fun name =>
+      PeTTa.EagerDFS.Destination.encode (combined name)
     apply (petta_accepted_iff_he_candidate incoming query pattern).mp
     refine ⟨_,.accepted environment ?_ ?_⟩
     · apply (solves_binding_equations environment incoming).mpr

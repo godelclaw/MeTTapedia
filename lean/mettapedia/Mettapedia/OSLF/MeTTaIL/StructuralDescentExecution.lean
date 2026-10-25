@@ -65,7 +65,7 @@ def runElements (environment : Environment) (context : Context)
       if checked : checkTypedAssignment environment context.quantified localAssignment then
         (executeBody localAssignment).flatMap fun answer =>
           (runElements environment context parameter body executeBody (index + 1) elements
-            (restoreParameter parameter initial answer.assignment)).map fun rest =>
+            initial).map fun rest =>
               ⟨rest.assignment, (index, element, [answer.event]) :: rest.history,
                 .cons (checkTypedAssignment_sound checked) answer.valid rest.valid⟩
       else []

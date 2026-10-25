@@ -17,8 +17,8 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
 
 /-- The declaration order is unrestricted. The bound measures the nesting
 of actual child-event certificates, not declaration indices. -/
-def Result.ordered {environment : Environment} {goal : Goal}
-    (result : Result environment goal) : Bool :=
+def Interpreted.Result.ordered {matcher : MatchingExecution} {environment : Environment} {goal : Goal}
+    (result : Interpreted.Result matcher environment goal) : Bool :=
   match goal, result with
   | .premise depth _ _ _, .premise _ event _ => decide (eventDepth event ≤ depth)
   | .premises depth _ _ _, .premises _ events _ => decide (eventsDepth events ≤ depth)
@@ -26,15 +26,15 @@ def Result.ordered {environment : Environment} {goal : Goal}
   | .root depth _ _ _ _, .root _ _ _ events _ _ => decide (1 + eventsDepth events ≤ depth)
   | .steps depth _ _ _ _, .steps _ _ _ _ events _ _ _ => decide (1 + eventsDepth events ≤ depth)
 
-def Concludes {environment : Environment} {goal outer : Goal}
-    (tail : Continuation environment goal outer) (result : Result environment goal)
-    (wanted : Result environment outer) : Prop :=
+def Concludes {matcher : MatchingExecution} {environment : Environment} {goal outer : Goal}
+    (tail : Interpreted.Continuation matcher environment goal outer) (result : Interpreted.Result matcher environment goal)
+    (wanted : Interpreted.Result matcher environment outer) : Prop :=
   match tail with
   | .done _ => result = wanted
   | .nextPremise depth context premise premises initial tail =>
       match result with
       | .premise middle event head =>
-          ∃ (final : Assignment) (events : List Event) (rest : PremisesHold environment context.next premises middle final events),
+          ∃ (final : Assignment) (events : List (Event matcher.Choice)) (rest : GeneralPremise.Interpreted.PremisesHold matcher.meaning environment context.next premises middle final events),
             eventsDepth events ≤ depth ∧
             Concludes tail (.premises final (event :: events) (.cons head rest)) wanted
   | .prepend depth _ _ _ _ _ event head tail =>
@@ -49,9 +49,9 @@ def Concludes {environment : Environment} {goal outer : Goal}
             (.quantified read held)) wanted
   | .element depth context parameter body index element elements initial localTyped tail =>
       match result with
-      | .premise middle event head =>
-          ∃ (final : Assignment) (events : List (Nat × Pattern × List Event)) (rest : QuantifiedElements environment context parameter body
-              (index + 1) elements (restoreParameter parameter initial middle) final events),
+      | .premise _middle event head =>
+          ∃ (final : Assignment) (events : List (Nat × Pattern × List (Event matcher.Choice))) (rest : GeneralPremise.Interpreted.QuantifiedElements matcher.meaning environment context parameter body
+              (index + 1) elements initial final events),
             elementsDepth events ≤ depth ∧
             Concludes tail (.quantified final ((index, element, [event]) :: events)
               (.cons localTyped head rest)) wanted
@@ -76,10 +76,10 @@ def Concludes {environment : Environment} {goal outer : Goal}
   | .stepped depth call tail =>
       match result with
       | .steps index trace captured completed events target _ held =>
-          ∃ (final : Assignment) (targetTrace : List GeneralScopedMatchMachine.BagChoice)
-              (matched : GeneralScopedMatchMachine.TracedMatches call.context.rule call.context.spec
-                call.context.bound.length (call.context.site 1) [] call.binders.length
-                call.initial call.targetSchema target targetTrace final)
+          ∃ (final : Assignment) (targetTrace : List matcher.Choice)
+              (matched : matcher.meaning.Matches ⟨call.context.rule, call.context.spec,
+                call.context.bound.length, call.context.site 1, [], call.binders.length,
+                call.initial, call.targetSchema, target⟩ targetTrace final)
               (typed : TypedAssignment environment call.context final),
             Concludes tail (.premise final
               (.child call.context.premiseIndex call.context.quantifierDepth index
@@ -89,8 +89,8 @@ def Concludes {environment : Environment} {goal outer : Goal}
 
 /-- Pending evaluations denote actual independent semantic results, together
 with the meaning of the retained continuation. -/
-def EvaluatesTo {environment : Environment} {goal outer : Goal}
-    (tail : Continuation environment goal outer) (wanted : Result environment outer) : Prop :=
-  ∃ result : Result environment goal, result.ordered = true ∧ Concludes tail result wanted
+def EvaluatesTo {matcher : MatchingExecution} {environment : Environment} {goal outer : Goal}
+    (tail : Interpreted.Continuation matcher environment goal outer) (wanted : Interpreted.Result matcher environment outer) : Prop :=
+  ∃ result : Interpreted.Result matcher environment goal, result.ordered = true ∧ Concludes tail result wanted
 
 end Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled

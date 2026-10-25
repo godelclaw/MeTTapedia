@@ -1,5 +1,6 @@
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Normalization.WeakHead
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Functionality
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.HeadMorphism
 import Mettapedia.TypeTheory.UniverseLevel.Order
 
 /-!
@@ -139,6 +140,15 @@ theorem IsType.rename {R : Rules Head} {n m : Nat} {Γ : Ctx Head n} {Δ : Ctx H
   obtain ⟨u, hu, t⟩ := formed
   exact ⟨u, hu, by simpa [Presentation.rename] using t.rename compatible⟩
 
+/-- Formation follows the same rule morphism as its typing witness. -/
+theorem IsType.mapHead {SourceHead TargetHead : Type}
+    {source : Rules SourceHead} {target : Rules TargetHead}
+    {map : SourceHead → TargetHead} (morphism : source.Morphism target map)
+    {n : Nat} {Γ : Ctx SourceHead n} {A : Tm SourceHead n}
+    (formed : IsType source Γ A) : IsType target (Γ.mapHead map) (A.mapHead map) := by
+  obtain ⟨u, hu, typed⟩ := formed
+  exact ⟨map u, morphism.isUniverse hu, by simpa only [Tm.mapHead] using typed.mapHead morphism⟩
+
 /-! ## Formed contexts and Kripke worlds -/
 
 /-- Every telescope entry is a type. -/
@@ -146,6 +156,20 @@ inductive CtxFormed (R : Rules Head) : {n : Nat} → Ctx Head n → Prop where
   | nil : CtxFormed R .nil
   | snoc {n : Nat} {Γ : Ctx Head n} {A : Tm Head n} :
       CtxFormed R Γ → IsType R Γ A → CtxFormed R (.snoc Γ A)
+
+theorem CtxFormed.mapHead {SourceHead TargetHead : Type}
+    {source : Rules SourceHead} {target : Rules TargetHead}
+    {map : SourceHead → TargetHead} (morphism : source.Morphism target map)
+    {n : Nat} {Γ : Ctx SourceHead n} (formed : CtxFormed source Γ) :
+    CtxFormed target (Γ.mapHead map) := by
+  induction formed with
+  | nil => exact .nil
+  | snoc _ type ih => exact .snoc ih (type.mapHead morphism)
+
+theorem CtxFormed.of_morphism {source target : Rules Head}
+    (morphism : source.Morphism target (fun head => head))
+    {n : Nat} {Γ : Ctx Head n} (formed : CtxFormed source Γ) : CtxFormed target Γ := by
+  simpa only [Ctx.mapHead_id] using formed.mapHead morphism
 
 theorem CtxFormed.lookup {R : Rules Head} {n : Nat} {Γ : Ctx Head n}
     (formed : CtxFormed R Γ) (i : Fin n) : IsType R Γ (Ctx.lookup Γ i) := by

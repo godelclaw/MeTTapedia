@@ -220,7 +220,7 @@ theorem name_is_quoteHeaded {term : Pattern}
           injection typeEq with categoryEq
           exact categoryEq.symm
         have noCollectionName : ∀ candidate ∈ platform.terms,
-            candidate.category = "Name" → candidate.params.all
+            candidate.category = "Name" → candidate.bareParams.all
               (fun parameter => match parameter with
                 | .simple _ (.collection _ _) => false
                 | _ => true) = true := by
@@ -264,7 +264,7 @@ theorem derived_not_quoteHeaded {source target : Pattern}
       · exact absurd typeEq (by simp)
       · have elementProc : elementType = .base "Proc" := by
           have onlyPar : ∀ candidate ∈ platform.terms,
-              candidate.params.all (fun parameter =>
+              candidate.bareParams.all (fun parameter =>
                 match parameter with
                 | .simple _ (.collection _ elementType') =>
                     elementType' == TypeExpr.base "Proc"

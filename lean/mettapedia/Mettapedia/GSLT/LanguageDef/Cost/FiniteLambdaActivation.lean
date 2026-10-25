@@ -64,7 +64,7 @@ theorem abstraction_typed {free : FreeTypeContext} {bound : List TypeExpr} {body
     HasSort profile.costCoreLanguage free bound (abstraction body) (costBaseSortName "Term") := by
   apply HasType.constructor (rule := profile.baseConstructor lambdaCalc.terms[1])
   · exact List.mem_append_left _ (profile.baseConstructor_mem _ lambdaAbstractionConstructor.2)
-  · simp [UsesBareCollection]
+  · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff]
   · rw [abstraction_parameters]
     exact .cons trivial rfl (.lambda bodyTyped) .nil
 
@@ -77,7 +77,7 @@ theorem betaRedex_typed {free : FreeTypeContext} {bound : List TypeExpr}
       (costBaseSortName "Term") := by
   apply HasType.constructor (rule := profile.baseConstructor lambdaCalc.terms[0])
   · exact List.mem_append_left _ (profile.baseConstructor_mem _ lambdaApplicationConstructor.2)
-  · simp [UsesBareCollection]
+  · simp [UsesBareCollection, GrammarRule.bareParams_cons_iff]
   · rw [application_parameters]
     exact .cons trivial rfl (abstraction_typed bodyTyped)
       (.cons trivial rfl argumentTyped .nil)

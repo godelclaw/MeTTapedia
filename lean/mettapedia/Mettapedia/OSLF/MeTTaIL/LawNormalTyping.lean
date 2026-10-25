@@ -40,10 +40,18 @@ structure LawsTyped (laws : List Laws) (language : LanguageDef) (free : FreeType
 
 variable {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
 
+theorem LawsTyped.homogeneous_bare (admission : LawsTyped laws language free)
+    (law : Laws) (kind : CollType) (found : lawFor laws kind = some law)
+    (rule : GrammarRule) (declared : rule ∈ language.terms) (name : String) (element : TypeExpr)
+    (parameters : rule.bareParams = [.simple name (.collection kind element)]) :
+    element = .base rule.category :=
+  admission.homogeneous law kind found rule declared name element
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
+
 theorem hasType_collection_inv {bound : List TypeExpr} {kind : CollType} {elements : List Pattern}
     {rest : Option String} {type : TypeExpr} (typed : HasType language free bound (.collection kind elements rest) type) :
     (∃ element, type = .collection kind element ∧ ElementsHaveType language free bound elements element) ∨
-      ∃ rule name element, rule ∈ language.terms ∧ rule.params = [.simple name (.collection kind element)] ∧
+      ∃ rule name element, rule ∈ language.terms ∧ rule.bareParams = [.simple name (.collection kind element)] ∧
         type = .base rule.category ∧ ElementsHaveType language free bound elements element := by
   cases typed with
   | collection elements => exact .inl ⟨_, rfl, elements⟩
@@ -81,7 +89,7 @@ theorem splice_typed (admission : LawsTyped laws language free) {law : Laws} {ki
         rw [isLaw] at typed
         rcases hasType_collection_inv typed with ⟨inner, same, _⟩ | ⟨rule, name, inner, declared, parameters, same, items⟩
         · exact absurd same (notCollection inner)
-        · have homogeneous := admission.homogeneous law law.kind found rule declared name inner parameters
+        · have homogeneous := admission.homogeneous_bare law law.kind found rule declared name inner parameters
           subst homogeneous
           rw [same]
           exact elementsHaveType_iff.mp items item member
@@ -163,11 +171,12 @@ mutual
       rcases hasType_collection_inv typed with ⟨element, rfl, items⟩ | ⟨rule, name, element, declared, parameters, rfl, items⟩
       · exact .collection (spliced typeOk.1 typeOk.2 items)
       · have parameterOk := admission.parameters rule declared (.simple name (.collection kind element))
-          (by rw [parameters]; exact .head _) (.collection kind element) rfl
+          (by rw [((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2]; exact .head _)
+          (.collection kind element) rfl
         have elementOk : NoNested laws element := by unfold NoNested at parameterOk; exact parameterOk.1
         refine .collectionConstructor declared parameters (spliced elementOk ?_ items)
         intro law found inner same
-        rw [admission.homogeneous law kind found rule declared name element parameters] at same
+        rw [admission.homogeneous_bare law kind found rule declared name element parameters] at same
         cases same
   termination_by _ _ pattern => sizeOf pattern
 
@@ -317,7 +326,7 @@ def LawTypeOk (laws : List Laws) (language : LanguageDef) : TypeExpr → Prop
   | .multiBinder domain => LawTypeOk laws language domain
   | .collection kind element =>
       (lawFor laws kind = none ∧ LawTypeOk laws language element) ∨
-        ∃ rule ∈ language.terms, ∃ name, rule.params = [.simple name (.collection kind (.base rule.category))] ∧
+        ∃ rule ∈ language.terms, ∃ name, rule.bareParams = [.simple name (.collection kind (.base rule.category))] ∧
           element = .base rule.category
 
 theorem LawTypeOk.element {kind : CollType} {element : TypeExpr}
@@ -328,7 +337,7 @@ theorem LawTypeOk.element {kind : CollType} {element : TypeExpr}
 
 theorem LawTypeOk.lawful {kind : CollType} {law : Laws} {element : TypeExpr} (found : lawFor laws kind = some law)
     (ok : LawTypeOk laws language (.collection kind element)) :
-    ∃ rule ∈ language.terms, ∃ name, rule.params = [.simple name (.collection kind (.base rule.category))] ∧
+    ∃ rule ∈ language.terms, ∃ name, rule.bareParams = [.simple name (.collection kind (.base rule.category))] ∧
       element = .base rule.category := by
   rcases ok with ⟨unlawful, _⟩ | witness
   · rw [found] at unlawful; cases unlawful
@@ -346,6 +355,24 @@ structure LawsTypedStrict (laws : List Laws) (language : LanguageDef) (free : Fr
   parameters : ∀ rule ∈ language.terms, ∀ parameter ∈ rule.params, ∀ type, parameterType? parameter = some type →
     LawTypeOk laws language type
   freeNames : ∀ name type, free name = some type → LawTypeOk laws language type
+
+theorem LawsTypedStrict.homogeneous_bare (admission : LawsTypedStrict laws language free)
+    (law : Laws) (kind : CollType) (found : lawFor laws kind = some law)
+    (rule : GrammarRule) (declared : rule ∈ language.terms) (name : String) (element : TypeExpr)
+    (parameters : rule.bareParams = [.simple name (.collection kind element)]) :
+    element = .base rule.category :=
+  admission.homogeneous law kind found rule declared name element
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
+
+theorem LawsTypedStrict.units_bare (admission : LawsTypedStrict laws language free)
+    (law : Laws) (kind : CollType) (found : lawFor laws kind = some law)
+    (label : String) (unit : law.unit = some label)
+    (rule : GrammarRule) (declared : rule ∈ language.terms) (name : String) (element : TypeExpr)
+    (parameters : rule.bareParams = [.simple name (.collection kind element)]) :
+    ∃ unitRule ∈ language.terms, unitRule.label = label ∧ unitRule.params = [] ∧
+      unitRule.category = rule.category :=
+  admission.units law kind found label unit rule declared name element
+    ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
 
 theorem LawStep.objectPattern_eq {left right : Pattern} (step : LawStep laws left right) :
     isObjectPattern left = isObjectPattern right := by
@@ -475,13 +502,13 @@ theorem LawStep.hasType_iff (admission : LawsTypedStrict laws language free) {le
       · have nested := elementsHaveType_iff.mp items (.collection kind inner none) (by simp)
         rcases hasType_collection_inv nested with ⟨_, same, _⟩ | ⟨rule', name', element', declared', parameters', same, innerItems⟩
         · cases same
-        · have homogeneous' := admission.homogeneous law kind found rule' declared' name' element' parameters'
+        · have homogeneous' := admission.homogeneous_bare law kind found rule' declared' name' element' parameters'
           subst homogeneous'
           rw [same]
           exact elementsHaveType_iff.mp innerItems item inInner
       · exact elementsHaveType_iff.mp items item (by simp [inAfter])
     have unflattenElements : ∀ {rule : GrammarRule} {name : String}, rule ∈ language.terms →
-        rule.params = [.simple name (.collection kind (.base rule.category))] →
+        rule.bareParams = [.simple name (.collection kind (.base rule.category))] →
         ElementsHaveType language free bound (before ++ inner ++ after) (.base rule.category) →
         ElementsHaveType language free bound (before ++ .collection kind inner none :: after) (.base rule.category) := by
       intro rule name declared parameters items
@@ -498,14 +525,14 @@ theorem LawStep.hasType_iff (admission : LawsTypedStrict laws language free) {le
       rcases hasType_collection_inv typed with ⟨element, rfl, items⟩ | ⟨rule, name, element, declared, parameters, rfl, items⟩
       · obtain ⟨_, _, _, _, rfl⟩ := typeOk.lawful found
         exact .collection (flattenElements items)
-      · have homogeneous := admission.homogeneous law kind found rule declared name element parameters
+      · have homogeneous := admission.homogeneous_bare law kind found rule declared name element parameters
         subst homogeneous
         exact .collectionConstructor declared parameters (flattenElements items)
     · intro typed
       rcases hasType_collection_inv typed with ⟨element, rfl, items⟩ | ⟨rule, name, element, declared, parameters, rfl, items⟩
       · obtain ⟨witness, witnessDeclared, witnessName, witnessParameters, rfl⟩ := typeOk.lawful found
         exact .collection (unflattenElements witnessDeclared witnessParameters items)
-      · have homogeneous := admission.homogeneous law kind found rule declared name element parameters
+      · have homogeneous := admission.homogeneous_bare law kind found rule declared name element parameters
         subst homogeneous
         exact .collectionConstructor declared parameters (unflattenElements declared parameters items)
   | @unit kind law label before after rest found unit =>
@@ -515,12 +542,12 @@ theorem LawStep.hasType_iff (admission : LawsTypedStrict laws language free) {le
       fun items => elementsHaveType_iff.mpr fun item member =>
         elementsHaveType_iff.mp items item (by simp only [List.mem_append, List.mem_cons] at member ⊢; tauto)
     have insertUnit : ∀ {rule : GrammarRule} {name : String}, rule ∈ language.terms →
-        rule.params = [.simple name (.collection kind (.base rule.category))] →
+        rule.bareParams = [.simple name (.collection kind (.base rule.category))] →
         ElementsHaveType language free bound (before ++ after) (.base rule.category) →
         ElementsHaveType language free bound (before ++ .apply label [] :: after) (.base rule.category) := by
       intro rule name declared parameters items
       obtain ⟨unitRule, unitDeclared, unitLabel, unitParams, unitCategory⟩ :=
-        admission.units law kind found label unit rule declared name _ parameters
+        admission.units_bare law kind found label unit rule declared name _ parameters
       apply elementsHaveType_iff.mpr
       intro item member
       simp only [List.mem_append, List.mem_cons] at member
@@ -528,7 +555,10 @@ theorem LawStep.hasType_iff (admission : LawsTypedStrict laws language free) {le
       · exact elementsHaveType_iff.mp items item (by simp [inBefore])
       · have typedUnit := HasType.constructor (language := language) (free := free) (bound := bound)
           (rule := unitRule) (arguments := []) unitDeclared
-          (fun ⟨_, _, _, bare⟩ => by rw [unitParams] at bare; cases bare) (by rw [unitParams]; exact .nil)
+          (fun ⟨_, _, _, bare⟩ => by
+            have raw := ((GrammarRule.bareParams_cons_iff _ _ _).mp bare).2
+            rw [unitParams] at raw
+            cases raw) (by rw [unitParams]; exact .nil)
         rw [unitLabel, unitCategory] at typedUnit
         exact typedUnit
       · exact elementsHaveType_iff.mp items item (by simp [inAfter])
@@ -541,7 +571,7 @@ theorem LawStep.hasType_iff (admission : LawsTypedStrict laws language free) {le
       rcases hasType_collection_inv typed with ⟨element, rfl, items⟩ | ⟨rule, name, element, declared, parameters, rfl, items⟩
       · obtain ⟨witness, witnessDeclared, witnessName, witnessParameters, rfl⟩ := typeOk.lawful found
         exact .collection (insertUnit witnessDeclared witnessParameters items)
-      · have homogeneous := admission.homogeneous law kind found rule declared name element parameters
+      · have homogeneous := admission.homogeneous_bare law kind found rule declared name element parameters
         subst homogeneous
         exact .collectionConstructor declared parameters (insertUnit declared parameters items)
   | @apply label before after argument changed inner ih =>
@@ -604,12 +634,13 @@ theorem LawStep.hasType_iff (admission : LawsTypedStrict laws language free) {le
       simp only [isObjectPattern, Bool.and_eq_true, isObjectPatternList_eq_all, List.all_eq_true] at object
       exact object.2 element (by simp)
     have elementOk : ∀ {elementType : TypeExpr}, (type = .collection kind elementType ∨
-        ∃ rule name, rule ∈ language.terms ∧ rule.params = [.simple name (.collection kind elementType)] ∧
+        ∃ rule name, rule ∈ language.terms ∧ rule.bareParams = [.simple name (.collection kind elementType)] ∧
           type = .base rule.category) → LawTypeOk laws language elementType := by
       intro elementType origin
       rcases origin with rfl | ⟨rule, name, declared, parameters, rfl⟩
       · exact typeOk.element
-      · exact (admission.parameters rule declared _ (by rw [parameters]; exact .head _) _ rfl).element
+      · exact (admission.parameters rule declared _
+          (by rw [((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2]; exact .head _) _ rfl).element
     constructor
     · intro typed
       rcases hasType_collection_inv typed with ⟨elementType, rfl, items⟩ | ⟨rule, name, elementType, declared, parameters, rfl, items⟩

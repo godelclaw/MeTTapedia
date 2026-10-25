@@ -64,29 +64,6 @@ theorem blanketEmission_nonneg (reading : Bool × Bool) : 0 ≤ blanketEmission 
   unfold blanketEmission
   split_ifs <;> norm_num
 
-theorem bind_dirac {S C : Type*} [Fintype S] [Fintype C] [DecidableEq S]
-    (state : S) (kernel : S → Prob C) :
-    bind (dirac state) kernel = kernel state := by
-  apply Subtype.ext
-  funext outcome
-  rw [bind_apply]
-  exact expectation_dirac state fun source => (kernel source).1 outcome
-
-theorem evidence_dirac {S : Type*} [Fintype S] [DecidableEq S]
-    (state : S) (likelihood : S → ℝ) :
-    evidence (dirac state) likelihood = likelihood state :=
-  expectation_dirac state likelihood
-
-theorem bind_const_dirac {S C : Type*} [Fintype S] [Fintype C] [DecidableEq C]
-    (prior : Prob S) (point : C) :
-    bind prior (fun _ => dirac point) = dirac point := by
-  apply Subtype.ext
-  funext outcome
-  simp only [bind_apply, dirac_apply, mul_ite, mul_one, mul_zero]
-  by_cases same : outcome = point
-  · simp [same, prior.2.2]
-  · simp [same]
-
 theorem copy_same_sensory :
     sensory (false, true, false) = sensory (false, true, true) :=
   rfl
@@ -105,6 +82,14 @@ theorem copy_not_lumpable : ¬ StrongLumpability sensory copyInternal := by
   intro lumpable
   exact copy_splits_future
     (lumpable () (false, true, false) (false, true, true) copy_same_sensory)
+
+/-- No coarse stochastic model predicts this hidden-state copy for every prior. -/
+theorem copy_has_no_exact_prediction :
+    ¬ ∃ coarse : Unit → (Bool × Bool) → Prob (Bool × Bool),
+      ∀ action prior, coarsen (bind prior (copyInternal action)) sensory =
+        bind (coarsen prior sensory) (coarse action) := by
+  rw [← strongLumpability_iff_prediction sensory copyInternal sensoryRep sensory_section]
+  exact copy_not_lumpable
 
 /-- A fork law is conditionally independent for every choice of its factors.
 The copy kernel on the same carrier is still not strongly lumpable. -/
@@ -149,7 +134,7 @@ theorem apply_lumped (action : Bool) :
 theorem intervention_prediction (prior : Prob World) (action : Bool) :
     coarsen (bind prior (intervene action)) sensory = dirac (action, false) := by
   rw [coarsen_predict sensory intervene sensoryRep sensory_section intervene_lumpable,
-    intervene_lumped, bind_const_dirac]
+    intervene_lumped, bind_const]
 
 theorem apply_prediction (prior : Prob World) (action : Bool) :
     coarsen (bind prior (applyAction action)) sensory =

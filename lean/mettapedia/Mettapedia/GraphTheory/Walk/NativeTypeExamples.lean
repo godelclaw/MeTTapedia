@@ -93,81 +93,12 @@ sorts are correct.  Its later rejection is therefore genuinely due to the
 dynamic adjacency premise. -/
 theorem forgedWalk02_has_static_type : grammarWalk forgedWalk02 := by
   unfold grammarWalk
-  apply
-    Mettapedia.GSLT.LanguageDef.CarrierWellSorted.checkHasType_complete_of_object
-  · unfold forgedWalk02
-    have startTyped := vertexPattern_typed vertex0.val
-    have nextTyped := vertexPattern_typed vertex2.val
-    have targetTyped := vertexPattern_typed vertex2.val
-    have tailTyped :=
-      (walkPattern_and_node_typed
-        (Walk.nil : pathGraph.Walk vertex2 vertex2)).1
-    have nodeTyped :
-        Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType language
-          Mettapedia.GSLT.LanguageDef.WellSorted.FreeTypeContext.empty []
-          (.apply "WalkCons"
-            [finPattern vertex0, finPattern vertex2, finPattern vertex2,
-              walkPattern (Walk.nil : pathGraph.Walk vertex2 vertex2)])
-          (.base "WalkNode") := by
-      apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType.constructor
-        (rule := constructor "WalkCons" "WalkNode"
-          [parameter "source" "Vertex", parameter "next" "Vertex",
-            parameter "target" "Vertex", parameter "tail" "Walk"])
-      · simp [language, terms, LanguageDef.ofCore]
-      · simp [Mettapedia.GSLT.LanguageDef.WellSorted.UsesBareCollection,
-          constructor, parameter]
-      · apply
-          Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-        · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-            parameter]
-        · rfl
-        · exact startTyped
-        · apply
-            Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-          · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-              parameter]
-          · rfl
-          · exact nextTyped
-          · apply
-              Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-            · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                parameter]
-            · rfl
-            · exact targetTyped
-            · apply
-                Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-              · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-                  parameter]
-              · rfl
-              · exact tailTyped
-              · exact
-                  Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
-    apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.HasType.constructor
-      (rule := constructor "WalkValue" "Walk"
-        [parameter "source" "Vertex", parameter "target" "Vertex",
-          parameter "node" "WalkNode"])
-    · simp [language, terms, LanguageDef.ofCore]
-    · simp [Mettapedia.GSLT.LanguageDef.WellSorted.UsesBareCollection,
-        constructor, parameter]
-    · apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-      · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-          parameter]
-      · rfl
-      · exact startTyped
-      · apply
-          Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-        · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-            parameter]
-        · rfl
-        · exact targetTyped
-        · apply
-            Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.cons
-          · simp [Mettapedia.GSLT.LanguageDef.WellSorted.MatchesParameterRepresentation,
-              parameter]
-          · rfl
-          · exact nodeTyped
-          · exact
-              Mettapedia.GSLT.LanguageDef.CarrierWellSorted.ArgumentsHaveTypes.nil
+  apply Mettapedia.GSLT.LanguageDef.CarrierWellSorted.checkHasType_complete_of_object
+  · exact walkValue_typed (vertexPattern_typed vertex0.val)
+      (vertexPattern_typed vertex2.val)
+      (walkCons_typed (vertexPattern_typed vertex0.val)
+        (vertexPattern_typed vertex2.val) (vertexPattern_typed vertex2.val)
+        (walkPattern_and_node_typed (Walk.nil : pathGraph.Walk vertex2 vertex2)).1)
   · simp [forgedWalk02, walkPattern, walkNodePattern, finPattern,
       Mettapedia.GSLT.LanguageDef.WellSorted.isObjectPattern,
       Mettapedia.GSLT.LanguageDef.WellSorted.isObjectPatternList,
@@ -186,39 +117,79 @@ theorem forgedWalk02_reverse_start :
         [finPattern vertex0, finPattern vertex2, finPattern vertex2,
           walkPattern (Walk.nil : pathGraph.Walk vertex2 vertex2)]))
 
-/-- The dynamic half of the native type rejects a forged non-edge.  The proof
-decomposes the retained path twice: the request reaches the scanner, and the
-scanner has no licensed successor because its adjacency premise fails. -/
+/-- Sort-correct syntax still requires a real first edge. -/
 theorem forged_nonedge_not_native :
     ¬ NativeWalk pathGraph pathGraph Hom.id vertex0 vertex2 forgedWalk02 := by
   intro native
-  rcases
-      (nativeWalk_iff pathGraph pathGraph Hom.id vertex0 vertex2
-        forgedWalk02).1 native with
-    ⟨grammar, indexed, result, ⟨path⟩, done⟩
-  rcases Mettapedia.GSLT.GSLT.rewritePath_eq_or_first
-      (theory pathGraph pathGraph Hom.id) path with
-    endpointEquality | ⟨next, first, ⟨rest⟩⟩
-  · rw [← endpointEquality] at done
-    rcases done with ⟨node, impossible⟩
-    simp [forgedWalk02] at impossible
-  · have firstMember :=
-      (step_iff_mem_rewriteOnce pathGraph pathGraph Hom.id _ _).1 first
-    rw [forgedWalk02_reverse_start] at firstMember
-    have firstEquality := List.mem_singleton.mp firstMember
-    cases firstEquality
-    rcases Mettapedia.GSLT.GSLT.rewritePath_eq_or_first
-        (theory pathGraph pathGraph Hom.id) rest with
-      endpointEquality | ⟨next, second, suffix⟩
-    · rw [← endpointEquality] at done
-      rcases done with ⟨node, impossible⟩
-      simp [uncheckedReverseScanPattern] at impossible
-    · have secondMember :=
-        (step_iff_mem_rewriteOnce pathGraph pathGraph Hom.id _ _).1 second
-      rw [reverse_nonedge_scan_rejected pathGraph pathGraph Hom.id
-        (Walk.nil : pathGraph.Walk vertex2 vertex2)
-        (Walk.nil : pathGraph.Walk vertex0 vertex0) nonedge02] at secondMember
-      exact List.not_mem_nil secondMember
+  obtain ⟨next, encoded, edge, _⟩ :=
+    (nativeWalk_cons_iff pathGraph pathGraph Hom.id vertex0 vertex2 _ _).1 native
+  have same : vertex2 = next := finPattern_injective encoded
+  subst next
+  exact nonedge02 edge
+
+/-- Every repeated endpoint is consistent, but the interior vertex is outside
+`Fin 3`.  Unary vertex syntax alone does not enforce the finite bound. -/
+def outOfRangeWalk : Pattern :=
+  .apply "WalkValue" [finPattern vertex0, finPattern vertex1,
+    .apply "WalkCons" [finPattern vertex0, vertexPattern 3, finPattern vertex1,
+      .apply "WalkValue" [vertexPattern 3, finPattern vertex1,
+        .apply "WalkCons" [vertexPattern 3, finPattern vertex1, finPattern vertex1,
+          walkPattern (Walk.nil : pathGraph.Walk vertex1 vertex1)]]]]
+
+theorem outOfRangeWalk_has_static_type : grammarWalk outOfRangeWalk := by
+  simp only [outOfRangeWalk, walkPattern, walkNodePattern]
+  unfold grammarWalk
+  decide +kernel
+
+theorem outOfRangeWalk_not_native :
+    ¬ NativeWalk pathGraph pathGraph Hom.id vertex0 vertex1 outOfRangeWalk := by
+  intro native
+  obtain ⟨next, encoded, _, _⟩ :=
+    (nativeWalk_cons_iff pathGraph pathGraph Hom.id vertex0 vertex1 _ _).1 native
+  have decoded := congrArg (decodeFin? 3) encoded
+  simp only [decodeFin?_finPattern] at decoded
+  simp [decodeFin?] at decoded
+
+/-- The first edge exists, but its tail starts at zero instead of one. -/
+def inconsistentTailWalk : Pattern :=
+  .apply "WalkValue" [finPattern vertex0, finPattern vertex0,
+    .apply "WalkCons" [finPattern vertex0, finPattern vertex1, finPattern vertex0,
+      walkPattern (Walk.nil : pathGraph.Walk vertex0 vertex0)]]
+
+theorem inconsistentTailWalk_has_static_type : grammarWalk inconsistentTailWalk := by
+  simp only [inconsistentTailWalk, walkPattern, walkNodePattern]
+  unfold grammarWalk
+  decide +kernel
+
+theorem inconsistentTailWalk_not_native :
+    ¬ NativeWalk pathGraph pathGraph Hom.id vertex0 vertex0 inconsistentTailWalk := by
+  intro native
+  obtain ⟨next, encoded, _, tail⟩ :=
+    (nativeWalk_cons_iff pathGraph pathGraph Hom.id vertex0 vertex0 _ _).1 native
+  have same : vertex1 = next := finPattern_injective encoded
+  subst next
+  obtain ⟨_, ⟨node, shape⟩, _⟩ :=
+    (nativeWalk_iff pathGraph pathGraph Hom.id vertex1 vertex0 _).1 tail
+  simp [walkPattern, walkNodePattern, finPattern, vertex0, vertex1, vertexPattern] at shape
+
+/-- An empty `WalkNil` application violates its authored unary arity. -/
+theorem malformed_nil_not_native :
+    ¬ NativeWalk pathGraph pathGraph Hom.id vertex0 vertex0
+      (.apply "WalkValue" [finPattern vertex0, finPattern vertex0, .apply "WalkNil" []]) := by
+  intro native
+  have checked := (nativeWalk_iff pathGraph pathGraph Hom.id vertex0 vertex0 _).1 native |>.1
+  have rejected : ¬ grammarWalk
+      (.apply "WalkValue" [finPattern vertex0, finPattern vertex0, .apply "WalkNil" []]) := by
+    unfold grammarWalk
+    decide +kernel
+  exact rejected checked
+
+/-- Decoding preserves the repeated-edge closed walk as a proof object. -/
+theorem closed_walk_roundtrip :
+    (NativeProof.ofAccepted pathGraph closedAtOne).walk = walk12.append walk12.reverse := by
+  have roundtrip := (NativeProof.acceptedEquiv pathGraph vertex1 vertex1).symm_apply_apply
+    (NativeProof.ofWalk pathGraph (walk12.append walk12.reverse))
+  exact congrArg NativeProof.walk roundtrip
 
 section AxiomAudit
 
@@ -228,6 +199,12 @@ section AxiomAudit
 #print axioms wrong_endpoint_not_native
 #print axioms forgedWalk02_has_static_type
 #print axioms forged_nonedge_not_native
+#print axioms outOfRangeWalk_has_static_type
+#print axioms outOfRangeWalk_not_native
+#print axioms inconsistentTailWalk_has_static_type
+#print axioms inconsistentTailWalk_not_native
+#print axioms malformed_nil_not_native
+#print axioms closed_walk_roundtrip
 
 end AxiomAudit
 

@@ -1238,7 +1238,7 @@ private def deliverElementData : Atom := tasksData
         Base.v "elements", Base.v "initial", Base.v "assignment", Base.v "event", Base.v "tail"]])
 private def deliverElementBody : Atom :=
   Base.a "let*" [.expression
-    [.expression [Base.v "restored", Base.a "gslt:premise:scope-restore" [Base.v "parameter", Base.v "initial", Base.v "assignment"]],
+    [.expression [Base.v "restored", Base.v "initial"],
       .expression [Base.v "next", Base.a "+" [Base.v "index", Base.number 1]]], deliverElementData]
 private def deliverElementCases : SpaceSemantics.Cases :=
   [(Base.a "PremiseResult" [Base.v "goal", Base.a "PremiseAnswer" [Base.v "assignment", Base.v "event"]], deliverElementBody),
@@ -1287,7 +1287,7 @@ private def machineDataHeads : List String :=
     "QuantifiedAnswer", "StepsAnswer", "PremisePrepend", "ForAll", "PremiseQuantifiedEvent",
     "PremisePrependElement", "QuantifiedElement", "PremiseNext", "PremiseElement", "PremiseQuantifier",
     "PremiseScanChildren", "RootGoal", "PremiseSearchedRoot", "PremiseQuantifiedAssignment",
-    "PremiseCollectionProjection", "GrammarTypingV1", "TBase", "PremiseSignature", "PremiseProviderRow"]
+    "PremiseCollectionProjection", "GrammarTypingV1", "GrammarTypingWrappedV1", "TBase", "PremiseSignature", "PremiseProviderRow"]
 
 private theorem machine_data_template (head : String) (arguments : List Atom)
     (supported : head ∈ machineDataHeads)
@@ -1529,8 +1529,8 @@ theorem delivered_quantifier_returns (state : State) (env : Environment) (outer 
               Base.number, CettaWireAtom.encode, CettaWireAtom.encodeMany] using
               PureData.template_return Base.runtime contextual state _ templated
 
-/-- Returning from one quantified body restores the original lexical
-parameter and retains all other completed captures before the next element. -/
+/-- Returning from one quantified body resumes the original enclosing
+assignment. The complete body event remains in the retained history. -/
 theorem delivered_element_returns (state : State) (env : Environment) (outer : Goal)
     (context : GeneralPremise.Context) (parameter : String) (body : Premise)
     (index : Nat) (element : Pattern) (elements : List Pattern) (initial : Assignment)
@@ -1552,7 +1552,7 @@ theorem delivered_element_returns (state : State) (env : Environment) (outer : G
         (expansionValue (env := env) (outer := outer)
           { tasks := [.evaluate
               (.quantified context parameter body (index + 1) elements
-                (GeneralPremise.restoreParameter parameter initial assignment))
+                initial)
               (.prependElement context parameter body index element elements initial assignment
                 event localTyped valid tail)] })
       let result : Result env (.premise context.quantified body
@@ -1566,7 +1566,7 @@ theorem delivered_element_returns (state : State) (env : Environment) (outer : G
       let selected := [("event", eventValue event), ("assignment", assignmentValue assignment),
         ("goal", goalValue (.premise context.quantified body
           (GeneralPremise.bindParameter parameter (GeneralPremise.localValue context.bound element) initial)))] ++ framed
-      let restored := ("restored", assignmentValue (GeneralPremise.restoreParameter parameter initial assignment)) :: selected
+      let restored := ("restored", assignmentValue initial) :: selected
       let bound := ("next", Base.number (index + 1)) :: restored
       apply helper_call .deliver [] state _ _ _ rfl (Base.captured_closed _)
       rw [deliver_shape]
@@ -1588,15 +1588,13 @@ theorem delivered_element_returns (state : State) (env : Environment) (outer : G
             SpaceSemantics.matchValue.matchValues, matchAtom, CettaWireAtom.encode,
             CettaWireAtom.encodeMany, goalValue, assignmentValue, eventValue, Subst.lookup]
         · apply PureData.let_bindings_return (pairs := [
-            (Base.v "restored", Base.a "gslt:premise:scope-restore" [Base.v "parameter", Base.v "initial", Base.v "assignment"]),
+            (Base.v "restored", Base.v "initial"),
             (Base.v "next", Base.a "+" [Base.v "index", Base.number 1])]) (final := bound) (middle := state)
             _ state deliverElementData _ _
           · apply PureData.BindingsReturn.cons (bound := restored) (middle := state)
-              (value := assignmentValue (GeneralPremise.restoreParameter parameter initial assignment))
-            · exact Base.previous_returns (by decide +kernel)
-                (QuantifiedLocal.restore_parameter_captured_returns selected state parameter initial assignment
-                  (Base.v "parameter") (Base.v "initial") (Base.v "assignment") (by
-                    simp [selected, framed, caller, environment, Helper.names, applySubst, Subst.lookup]))
+              (value := assignmentValue initial)
+            · simpa [selected, framed, caller, environment, Helper.names, applySubst, Subst.lookup] using
+                variable_returns Base.runtime selected state "initial"
             · simp [SpaceSemantics.matchBinding, SpaceSemantics.matchValue, matchAtom,
                 restored, selected, framed, caller, environment, Helper.names, Subst.lookup]
             · apply PureData.BindingsReturn.cons (bound := bound) (middle := state)
@@ -1632,7 +1630,7 @@ theorem delivered_prepend_element_returns (state : State) (env : Environment) (o
       (GeneralPremise.bindParameter parameter (GeneralPremise.localValue context.bound element) initial) middle event)
     (tail : Continuation env (.quantified context parameter body index (element :: elements) initial) outer)
     (result : Result env (.quantified context parameter body (index + 1) elements
-      (GeneralPremise.restoreParameter parameter initial middle))) :
+      initial)) :
     PureReturns Base.runtime [] state
       (Base.a "gslt:premise:machine-deliver" [resultValue result,
         continuationValue (.prependElement context parameter body index element elements initial middle
@@ -1649,7 +1647,7 @@ theorem delivered_prepend_element_returns (state : State) (env : Environment) (o
           { tasks := [.deliver (.quantified assignment ((index, element, [event]) :: events)
               (.cons localTyped head valid)) tail] })
       let result : Result env (.quantified context parameter body (index + 1) elements
-          (GeneralPremise.restoreParameter parameter initial middle)) := .quantified assignment events valid
+          initial) := .quantified assignment events valid
       let caller := environment .deliver [resultValue result,
         continuationValue (.prependElement context parameter body index element elements initial middle
           event localTyped head tail)]
@@ -1659,7 +1657,7 @@ theorem delivered_prepend_element_returns (state : State) (env : Environment) (o
         ("body", premiseValue body), ("parameter", Base.stringValue parameter), ("context", contextValue context)] ++ caller
       let selected := [("events", quantifiedEventsValue events), ("assignment", assignmentValue assignment),
         ("goal", goalValue (.quantified context parameter body (index + 1) elements
-          (GeneralPremise.restoreParameter parameter initial middle)))] ++ framed
+          initial))] ++ framed
       apply helper_call .deliver [] state _ _ _ rfl (Base.captured_closed _)
       rw [deliver_shape]
       apply Base.branch_returns caller framed state _
@@ -2864,3 +2862,173 @@ theorem evaluate_quantified_cons_free_returns (state : State) (env : Environment
 #print axioms evaluate_quantified_cons_free_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution.GeneralExecution
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire
+
+open Mettapedia.GSLT.LanguageDef CettaWire
+open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching GeneralPremise
+open PremiseOperationsExecution.GeneralExecution
+  (contextTerm signatureTerm queryRequestTerm queryObligationTerm)
+
+private abbrev assignmentTerm := RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm
+
+structure MatchingCodec (matcher : MatchingExecution) where
+  choiceTerm : matcher.Choice → Term
+  stateTerm : matcher.State → Term
+
+def ordinaryCodec : MatchingCodec MatchingExecution.ordinary where
+  choiceTerm := RuleInstantiationExecution.GeneralExecution.bagChoiceTerm
+  stateTerm := RuleInstantiationExecution.GeneralExecution.matcherStateTerm
+
+/-- Reading an answer preserves its assignment and ordered occurrence trace. -/
+def matcherAnswerTerm {matcher : MatchingExecution} (codec : MatchingCodec matcher)
+    (answer : matcher.Answer) : Term :=
+  .application "ScopedMatcherAnswer" [assignmentTerm (matcher.assignment answer),
+    encodeList codec.choiceTerm (matcher.trace answer)]
+
+theorem ordinary_matcherAnswer (answer : GeneralScopedMatchMachine.Answer) :
+    matcherAnswerTerm ordinaryCodec answer =
+      RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm answer := rfl
+
+def originsTerm {Choice : Type} (choiceTerm : Choice → Term)
+    (origins : List (Nat × List Choice)) : Term :=
+  encodeList (fun origin => .application "ArgumentOrigin"
+    [.natural origin.1, encodeList choiceTerm origin.2]) origins
+
+mutual
+def eventTerm {Choice : Type} (choiceTerm : Choice → Term) : GeneralPremise.Event Choice → Term
+  | .query index quantifiers row origins => .application "PremiseQueryEvent"
+      [.natural index, .natural quantifiers, .natural row, originsTerm choiceTerm origins]
+  | .freshness index quantifiers atom subject => .application "PremiseFreshnessEvent"
+      [.natural index, .natural quantifiers, .string atom, InferenceCettaWire.encodePattern subject]
+  | .quantified index quantifiers kind elements => .application "PremiseQuantifiedEvent"
+      [.natural index, .natural quantifiers, InferenceCettaWire.encodeCollectionType kind,
+        quantifiedEventsTerm choiceTerm elements]
+  | .child index quantifiers declaration bound source target trace targetTrace captured completed history =>
+      .application "PremiseChildEvent" [.natural index, .natural quantifiers, .natural declaration,
+        PremiseOperationsExecution.GeneralExecution.Base.typesTerm bound,
+        InferenceCettaWire.encodePattern source, InferenceCettaWire.encodePattern target,
+        encodeList choiceTerm trace, encodeList choiceTerm targetTrace,
+        assignmentTerm captured, assignmentTerm completed, eventsTerm choiceTerm history]
+termination_by event => sizeOf event
+
+def eventsTerm {Choice : Type} (choiceTerm : Choice → Term) : List (GeneralPremise.Event Choice) → Term
+  | [] => .symbol "LNil"
+  | event :: events => .application "LCons" [eventTerm choiceTerm event, eventsTerm choiceTerm events]
+termination_by events => sizeOf events
+
+def quantifiedEventsTerm {Choice : Type} (choiceTerm : Choice → Term) :
+    List (Nat × Pattern × List (GeneralPremise.Event Choice)) → Term
+  | [] => .symbol "LNil"
+  | (index, element, history) :: rest => .application "LCons"
+      [.application "QuantifiedElement" [.natural index, InferenceCettaWire.encodePattern element,
+        eventsTerm choiceTerm history], quantifiedEventsTerm choiceTerm rest]
+termination_by elements => sizeOf elements
+end
+
+def stepCallTerm {environment : Environment} {matcher : MatchingExecution}
+    (call : GeneralPremise.Execution.StepCall environment matcher) : Term :=
+  .application "PremiseStepCall" [contextTerm call.context,
+    InferenceCettaWire.AuthoredRule.premiseTerm call.premise,
+    assignmentTerm call.initial, PremiseOperationsExecution.GeneralExecution.Base.typesTerm call.binders,
+    InferenceCettaWire.AuthoredRule.typeTerm call.type,
+    InferenceCettaWire.encodePattern call.source, InferenceCettaWire.encodePattern call.targetSchema]
+
+def queryTaskTerm {environment : Environment} {request : Query.Request} {matcher : MatchingExecution}
+    (codec : MatchingCodec matcher) : Query.Task environment request matcher → Term
+  | .start => .symbol "PremiseQueryStart"
+  | .rows frame => .application "PremiseQueryRows" [signatureTerm frame.signature, .natural frame.cursor]
+  | .dynamicInputs frame => .application "PremiseQueryDynamicInputs"
+      [signatureTerm frame.signature, .natural frame.index,
+        InferenceCettaWire.encodePatterns frame.schemas,
+        encodeList PremiseOperationsExecution.GeneralExecution.modeTerm frame.modes,
+        InferenceCettaWire.encodePatterns frame.resolvedRev]
+  | .dynamicRows frame => .application "PremiseQueryDynamicRows"
+      [signatureTerm frame.signature, InferenceCettaWire.encodePatterns frame.resolved,
+        encodeList InferenceCettaWire.encodePatterns frame.rows, .natural frame.cursor]
+  | .arguments frame => .application "PremiseQueryArguments"
+      [.natural frame.rowIndex, .natural frame.index, assignmentTerm frame.assignment,
+        InferenceCettaWire.encodePatterns frame.schemas, InferenceCettaWire.encodePatterns frame.values,
+        encodeList PremiseOperationsExecution.GeneralExecution.modeTerm frame.modes,
+        originsTerm codec.choiceTerm frame.origins]
+  | .matcher frame => .application "PremiseQueryMatcher"
+      [.natural frame.rowIndex, .natural frame.argumentIndex, InferenceCettaWire.encodePatterns frame.schemas,
+        InferenceCettaWire.encodePatterns frame.values,
+        encodeList PremiseOperationsExecution.GeneralExecution.modeTerm frame.modes,
+        originsTerm codec.choiceTerm frame.origins,
+        RuleInstantiationExecution.GeneralExecution.matcherRequestTerm frame.query,
+        codec.stateTerm frame.state, .natural frame.cursor]
+
+def queryAnswerTerm {environment : Environment} {request : Query.Request} {matcher : MatchingExecution}
+    (codec : MatchingCodec matcher) (answer : Query.Answer environment request matcher) : Term :=
+  .application "PremiseQueryAnswer" [.natural answer.rowIndex,
+    assignmentTerm answer.assignment, originsTerm codec.choiceTerm answer.origins]
+
+def queryStateTerm {environment : Environment} {request : Query.Request} {matcher : MatchingExecution}
+    (codec : MatchingCodec matcher) (state : Query.State environment request matcher) : Term :=
+  PremiseSchedulerExecution.schedulerStateTerm (queryTaskTerm codec) (queryAnswerTerm codec)
+    queryObligationTerm state
+
+end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire
+
+open Mettapedia.GSLT.LanguageDef CettaWire
+open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching GeneralPremise
+
+mutual
+theorem ordinary_event : ∀ event : GeneralPremise.Event,
+    eventTerm ordinaryCodec.choiceTerm event = PremiseOperationsExecution.GeneralExecution.eventTerm event
+  | .query _ _ _ _ => by
+      simp only [eventTerm, PremiseOperationsExecution.GeneralExecution.eventTerm]
+      rfl
+  | .freshness _ _ _ _ => by
+      simp only [eventTerm, PremiseOperationsExecution.GeneralExecution.eventTerm]
+  | .quantified index quantifiers kind elements => by
+      simp only [eventTerm, PremiseOperationsExecution.GeneralExecution.eventTerm,
+        ordinary_quantified elements]
+  | .child index quantifiers declaration bound source target trace targetTrace captured completed history => by
+      simp only [eventTerm, PremiseOperationsExecution.GeneralExecution.eventTerm,
+        ordinary_events history]
+      rfl
+termination_by event => sizeOf event
+
+theorem ordinary_events : ∀ events : List GeneralPremise.Event,
+    eventsTerm ordinaryCodec.choiceTerm events = PremiseOperationsExecution.GeneralExecution.eventsTerm events
+  | [] => by simp only [eventsTerm, PremiseOperationsExecution.GeneralExecution.eventsTerm]
+  | event :: events => by
+      simp only [eventsTerm, PremiseOperationsExecution.GeneralExecution.eventsTerm,
+        ordinary_event event, ordinary_events events]
+termination_by events => sizeOf events
+
+theorem ordinary_quantified : ∀ elements : List (Nat × Pattern × List GeneralPremise.Event),
+    quantifiedEventsTerm ordinaryCodec.choiceTerm elements =
+      PremiseOperationsExecution.GeneralExecution.quantifiedEventsTerm elements
+  | [] => by simp only [quantifiedEventsTerm, PremiseOperationsExecution.GeneralExecution.quantifiedEventsTerm]
+  | (index, element, history) :: rest => by
+      simp only [quantifiedEventsTerm, PremiseOperationsExecution.GeneralExecution.quantifiedEventsTerm,
+        ordinary_events history, ordinary_quantified rest]
+termination_by elements => sizeOf elements
+end
+
+theorem ordinary_query_task {environment : Environment} {request : Query.Request}
+    (task : Query.Task environment request) :
+    queryTaskTerm ordinaryCodec task = PremiseOperationsExecution.GeneralExecution.queryTaskTerm task := by
+  cases task <;> rfl
+
+theorem ordinary_query_answer {environment : Environment} {request : Query.Request}
+    (answer : Query.Answer environment request) :
+    queryAnswerTerm ordinaryCodec answer =
+      PremiseOperationsExecution.GeneralExecution.QueryExecution.queryAnswerTerm answer := rfl
+
+theorem ordinary_query_state {environment : Environment} {request : Query.Request}
+    (state : Query.State environment request) :
+    queryStateTerm ordinaryCodec state = PremiseOperationsExecution.GeneralExecution.queryStateTerm state := by
+  have tasks : (queryTaskTerm ordinaryCodec : Query.Task environment request → Term) =
+      PremiseOperationsExecution.GeneralExecution.queryTaskTerm := funext ordinary_query_task
+  have answers : (queryAnswerTerm ordinaryCodec : Query.Answer environment request → Term) =
+      PremiseOperationsExecution.GeneralExecution.QueryExecution.queryAnswerTerm := funext ordinary_query_answer
+  unfold queryStateTerm PremiseOperationsExecution.GeneralExecution.queryStateTerm
+  rw [tasks, answers]
+
+end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire

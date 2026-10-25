@@ -7,7 +7,7 @@ import Mettapedia.GSLT.LanguageDef.LF.FirstOrderMeTTaRender
 The exporter applies one generic proof producer to every frozen calibration
 entry and serializes both completed normal-form paths.  The resulting MeTTa
 artifact rechecks the exact validated conversion source, both conversion proof
-trees, and the normalized indexed-LF typing judgment.
+trees, and the normalized MettaKernel kind-result-prototype typing judgment.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.LFDTTBenchProofCarryingMeTTaExport

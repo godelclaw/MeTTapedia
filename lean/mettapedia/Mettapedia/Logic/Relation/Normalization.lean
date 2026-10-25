@@ -39,6 +39,27 @@ def Confluent (r : α → α → Prop) : Prop :=
   ∀ source left right, ReflTransGen r source left →
     ReflTransGen r source right → Join (ReflTransGen r) left right
 
+/-- Newman's lemma: terminating local forks give confluence of finite paths. -/
+theorem confluent_of_accessible_forks
+    (accessible : ∀ source, Acc (fun target source => r source target) source)
+    (forks : ∀ source left right, r source left → r source right →
+      Join (ReflTransGen r) left right) : Confluent r := by
+  intro source
+  induction accessible source with
+  | intro source _ ih =>
+      intro left right leftSteps rightSteps
+      rcases leftSteps.cases_head with same | ⟨first, firstStep, leftRest⟩
+      · subst left
+        exact ⟨right, rightSteps, .refl⟩
+      · rcases rightSteps.cases_head with same | ⟨second, secondStep, rightRest⟩
+        · subst right
+          exact ⟨left, .refl, leftSteps⟩
+        · obtain ⟨middle, firstJoin, secondJoin⟩ := forks source first second firstStep secondStep
+          obtain ⟨next, leftJoin, middleJoin⟩ := ih first firstStep left middle leftRest firstJoin
+          obtain ⟨final, rightJoin, nextJoin⟩ :=
+            ih second secondStep right next rightRest (secondJoin.trans middleJoin)
+          exact ⟨final, leftJoin.trans nextJoin, rightJoin⟩
+
 /-- Under confluence, the equivalence closure is exactly joinability. -/
 theorem Confluent.eqvGen_iff_join (confluent : Confluent r) {left right : α} :
     EqvGen r left right ↔ Join (ReflTransGen r) left right := by
@@ -56,6 +77,73 @@ structure NormalizationResult (r : α → α → Prop) (source : α) where
   normalForm : α
   reduces : ReflTransGen r source normalForm
   irreducible : IsNormal r normalForm
+
+/-- Accessibility implies existence of a reachable normal element. This
+classical existence theorem is separate from the executable selector below. -/
+theorem exists_normalForm_of_acc {source : α}
+    (accessible : Acc (fun target source => r source target) source) :
+    ∃ target, ReflTransGen r source target ∧ IsNormal r target := by
+  classical
+  induction accessible with
+  | intro source _ ih =>
+      by_cases normal : IsNormal r source
+      · exact ⟨source, ReflTransGen.refl, normal⟩
+      · have nextExists : ∃ next, r source next :=
+          Classical.byContradiction (fun denied => normal (fun next step => denied ⟨next, step⟩))
+        obtain ⟨next, step⟩ := nextExists
+        obtain ⟨target, steps, finished⟩ := ih next step
+        exact ⟨target, ReflTransGen.head step steps, finished⟩
+
+/-- Accessibility is retained when a recursive call follows a nonempty path. -/
+theorem accessible_transitiveClosure {source : α} (accessible : Acc r source) :
+    Acc (TransGen r) source := by
+  induction accessible with
+  | intro source _ ih =>
+      refine Acc.intro source ?_
+      intro target steps
+      cases steps with
+      | single step => exact ih target step
+      | tail before last => exact (ih _ last).inv before
+
+/-- Strong postponement preserves termination when two terminating relations
+are interleaved. The first relation retains a nonempty path when moved before
+one step of the second relation. -/
+theorem stronglyNormalizing_union_of_postponement {s : α → α → Prop}
+    (left : ∀ source, Acc (fun target source => r source target) source)
+    (right : ∀ source, Acc (fun target source => s source target) source)
+    (postpones : ∀ {source middle target}, s source middle → TransGen r middle target →
+      ∃ next, TransGen r source next ∧ ReflTransGen s next target) :
+    ∀ source, Acc (fun target source => r source target ∨ s source target) source := by
+  have carry {source target : α}
+      (accessible : Acc (fun target source => r source target ∨ s source target) source)
+      (steps : ReflTransGen s source target) :
+      Acc (fun target source => r source target ∨ s source target) target := by
+    induction steps with
+    | refl => exact accessible
+    | tail _ step ih => exact ih.inv (Or.inr step)
+  have alongRight (source : α) (accessible : Acc (fun target source => s source target) source) :
+      (∀ target, TransGen r source target →
+        Acc (fun target source => r source target ∨ s source target) target) →
+      Acc (fun target source => r source target ∨ s source target) source := by
+    induction accessible with
+    | intro source _ ih =>
+        intro descendants
+        refine Acc.intro source ?_
+        intro target step
+        rcases step with first | second
+        · exact descendants target (.single first)
+        · apply ih target second
+          intro next after
+          obtain ⟨middle, moved, last⟩ := postpones second after
+          exact carry (descendants middle moved) last
+  intro source
+  induction left source with
+  | intro source _ ih =>
+      apply alongRight source (right source)
+      intro target steps
+      induction steps with
+      | single step => exact ih _ step
+      | tail _ step ready => exact ready.inv (Or.inl step)
 
 /-- Convertible sources have equal normal forms in a confluent relation.
 The normal forms can come from different algorithms. -/

@@ -383,7 +383,7 @@ def proofRelevantIotaComputation :
 identity and composite substitutions.  In particular, the `J` computation
 rule is not merely available at closed terms: it is natural in its ambient
 context, as required of a dependent eliminator. -/
-def proofRelevantIotaSubstitutionCoherent :
+theorem proofRelevantIotaSubstitutionCoherent :
     proofRelevantIotaComputation.SubstitutionCoherent where
   substitute_ids := by
     intro n left right evidence
@@ -422,7 +422,7 @@ abbrev rules : Rules Tower.Head :=
 /-- Native iota equations never rewrite a dependent-function constructor or
 a universe head at the root.  They act only on fully applied eliminators;
 computation inside Pi components remains available through congruence. -/
-def rootPiHeadNeutral : RootPiHeadNeutral rules where
+theorem rootPiHeadNeutral : RootPiHeadNeutral rules where
   pi := by
     intro n domain codomain target rootStep
     cases rootStep with
@@ -441,7 +441,7 @@ def rootPiHeadNeutral : RootPiHeadNeutral rules where
 /-- For the native declaration calculus, beta/iota Church--Rosser is now the
 only remaining premise needed to obtain Pi injectivity and Pi/head
 disjointness. -/
-def piConversionBoundaryOfChurchRosser
+theorem piConversionBoundaryOfChurchRosser
     (churchRosser : ConversionCoherence.ChurchRosser rules) :
     PiConversionBoundary rules :=
   ConversionCoherence.piConversionBoundaryOfChurchRosser
@@ -1314,7 +1314,7 @@ def TypedIotaInstance.toDeclaredReceipt
   occurrence.toReceipt.toDeclaredReceipt
 
 /-- Subject preservation is structural on the exact proof-carrying image. -/
-def TypedIotaInstance.targetTyping
+theorem TypedIotaInstance.targetTyping
     {context : Tower.Ctx n} {left right type : Tower.Tm n}
     (occurrence : TypedIotaInstance context left right type) :
     HasType context right type :=
@@ -1354,7 +1354,7 @@ def TypedIotaInstance.Adjusted.toReceipt
 
 /-- In particular, an adjusted occurrence retains target typing at the exact
 displayed judgment. -/
-def TypedIotaInstance.Adjusted.targetTyping
+theorem TypedIotaInstance.Adjusted.targetTyping
     {context : Tower.Ctx n} {left right displayedType : Tower.Tm n}
     (occurrence : TypedIotaInstance.Adjusted context left right displayedType) :
     HasType context right displayedType :=
@@ -1731,7 +1731,7 @@ private theorem identityEndpointPiAlignment
 strictly smaller conversion boundary.  The proof is structural on the named
 spines: constants use functional declaration lookup, and each partial
 application propagates alignment by generic application generation. -/
-def nativeSpineAlignmentOfPiConversionBoundary
+theorem nativeSpineAlignmentOfPiConversionBoundary
     (boundary : PiConversionBoundary rules) : NativeSpineAlignment where
   align := by
     intro n context term domain₁ domain₂ codomain₁ codomain₂ recognized
@@ -2644,7 +2644,7 @@ theorem rawSignature_fresh {name : DeclName} {entry : Entry Tower.Head}
 /-- The formation/freshness/value portion of `Signature.WellFormed` is fully
 discharged.  Constructor ι-preservation remains a separate theorem
 obligation; no checked-authority package is exported before it is proved. -/
-def rawSignature_formed : rawSignature.Formed Tower.rules where
+theorem rawSignature_formed : rawSignature.Formed Tower.rules where
   fresh := rawSignature_fresh
   types := rawSignature_types_formed
   values := by
@@ -2665,7 +2665,7 @@ receipts. -/
 
 /-- An exact unary occurrence `List A`; the element index must not itself
 mention the family being declared. -/
-def listFamilyApplication (element : Tower.Tm n)
+theorem listFamilyApplication (element : Tower.Tm n)
     (elementFree : FreeOf listName element) :
     FamilyApplication listName 1 (listApp element) :=
   .intro [element] rfl (by
@@ -2853,7 +2853,7 @@ def remainingRootPreservation :
 /-- An iota-preservation family is sufficient to construct the complete
 well-formed signature.  Formation, freshness, and value obligations have
 already been discharged above. -/
-def wellFormedOfIotaPreservation (preserves : IotaPreservation) :
+theorem wellFormedOfIotaPreservation (preserves : IotaPreservation) :
     rawSignature.WellFormed Tower.rules :=
   rawSignature_formed.withPreservation
     (declaredPreservesOfFamily preserves)
@@ -2866,7 +2866,7 @@ def iotaPreservationOfNativeSpineAlignment
   iotaPreservationOfCoverage
     (typedIotaCoverageOfNativeSpineAlignment alignment)
 
-def wellFormedOfNativeSpineAlignment
+theorem wellFormedOfNativeSpineAlignment
     (alignment : NativeSpineAlignment) :
     rawSignature.WellFormed Tower.rules :=
   wellFormedOfIotaPreservation
@@ -2880,7 +2880,7 @@ def iotaPreservationOfPiConversionBoundary
   iotaPreservationOfCoverage
     (typedIotaCoverageOfPiConversionBoundary boundary)
 
-def wellFormedOfPiConversionBoundary
+theorem wellFormedOfPiConversionBoundary
     (boundary : PiConversionBoundary rules) :
     rawSignature.WellFormed Tower.rules :=
   wellFormedOfIotaPreservation
@@ -2889,7 +2889,7 @@ def wellFormedOfPiConversionBoundary
 /-- The native signature becomes checked authority as soon as its beta/iota
 conversion relation earns Church--Rosser.  Root constructor neutrality and
 all typing reconstruction obligations are already discharged. -/
-def wellFormedOfChurchRosser
+theorem wellFormedOfChurchRosser
     (churchRosser : ConversionCoherence.ChurchRosser rules) :
     rawSignature.WellFormed Tower.rules :=
   wellFormedOfPiConversionBoundary
@@ -2902,7 +2902,7 @@ def iotaPreservationOfPiCoherence
   iotaPreservationOfNativeSpineAlignment
     (coherence.toAlignmentOn NativeFunctionSpine)
 
-def wellFormedOfPiCoherence
+theorem wellFormedOfPiCoherence
     (coherence : PiTypingCoherence rules) :
     rawSignature.WellFormed Tower.rules :=
   wellFormedOfIotaPreservation (iotaPreservationOfPiCoherence coherence)
@@ -2922,7 +2922,7 @@ theorem wellFormed_iff_iotaPreservation_inhabited :
 
 /-- Once iota preservation is supplied, every native combined root step
 preserves typing. -/
-def combinedRootPreservesOfIota (preserves : IotaPreservation) :
+theorem combinedRootPreservesOfIota (preserves : IotaPreservation) :
     ∀ {n : Nat} {context : Tower.Ctx n}
         {left right type : Tower.Tm n},
       rules.computation.step left right →

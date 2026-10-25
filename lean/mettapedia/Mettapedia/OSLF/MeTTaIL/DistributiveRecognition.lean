@@ -26,7 +26,7 @@ open Syntax
 
 /-- A bare collection constructor of a sort: its collection kind and declared algebra. -/
 def collectionAlgebra? (category : String) (rule : GrammarRule) : Option (CollType × CollectionAlgebra) :=
-  match rule.params, rule.algebra? with
+  match rule.bareParams, rule.algebra? with
   | [.simple _ (.collection kind (.base element))], some algebra =>
       if rule.category = category ∧ element = category ∧ algebra.flatten = true then some (kind, algebra) else none
   | _, _ => none

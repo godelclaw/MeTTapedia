@@ -73,7 +73,7 @@ mutual
         {kind : CollType} {elements : List Pattern}
         {rest : Option String} {elementType : TypeExpr} :
         rule ∈ language.terms →
-        rule.params = [.simple parameterName (.collection kind elementType)] →
+        rule.bareParams = [.simple parameterName (.collection kind elementType)] →
         ElementsHaveType language free bound elements elementType →
         RestHasType free kind elementType rest →
         HasType language free bound (.collection kind elements rest)
