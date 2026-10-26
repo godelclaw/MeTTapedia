@@ -6,6 +6,8 @@ import Mettapedia.Protocols.Nostr.Filter
 import Mettapedia.Protocols.Nostr.Relay
 import Mettapedia.Protocols.Nostr.Mailbox
 import Mettapedia.Protocols.Nostr.Bridge
+import Mettapedia.Protocols.Nostr.Sealed
+import Mettapedia.Protocols.Nostr.SymbolicAuthorship
 import Mettapedia.Protocols.Symbolic.Knowledge
 import Mettapedia.Protocols.Symbolic.Equational
 import Mettapedia.Protocols.Symbolic.Label
@@ -15,3 +17,4 @@ import Mettapedia.Protocols.Symbolic.Invariant
 import Mettapedia.Protocols.Symbolic.Message
 import Mettapedia.Protocols.Symbolic.Destructors
 import Mettapedia.Protocols.Symbolic.SealedMessage
+import Mettapedia.Protocols.Symbolic.Reading
