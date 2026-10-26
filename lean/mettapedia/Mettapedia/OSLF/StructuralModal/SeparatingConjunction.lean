@@ -935,11 +935,11 @@ theorem leaves_fill (context : Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleCo
 /-- The only declared collections are sequences, and the only declared algebra
 is the sequence former's, which has no unit. -/
 private theorem no_bag_or_set_carrier {rule : GrammarRule} {kind : CollType}
-    (declaration : CollectionCarrierRule language rule kind) : kind = .vec := by
-  obtain ⟨authored, parameterName, elementType, parameters⟩ := declaration
-  simp only [language, List.mem_cons, List.not_mem_nil, or_false] at authored
-  rcases authored with rfl | rfl | rfl <;>
-    simp_all [atomRule, seqRule]
+    {elements : List Pattern} (declaration : rule ∈ language.terms)
+    (typed : Mettapedia.GSLT.LanguageDef.WellSorted.CollectionTypedAt language rule kind elements) :
+    kind = .vec := by
+  have used := usesCollection_eq_true_of_collectionTypedAt declaration typed
+  cases kind <;> first | rfl | (revert used; decide)
 
 private theorem algebra_has_no_unit {rule : GrammarRule} {kind : CollType}
     {algebra : CollectionAlgebra} (declaration : AlgebraRule language rule kind algebra) :
@@ -958,9 +958,9 @@ theorem generator_leaves {base : BasePremiseEvaluator} {source target : Pattern}
   rcases generator with authored | derived
   · exact absurd authored (no_equationInstance_of_equations_eq_nil rfl _ _)
   · cases derived with
-    | bagPerm declaration _ _ => cases no_bag_or_set_carrier declaration
-    | setPerm declaration _ _ => cases no_bag_or_set_carrier declaration
-    | setDedup declaration _ => cases no_bag_or_set_carrier declaration
+    | bagPerm declaration typed _ => cases no_bag_or_set_carrier declaration typed
+    | setPerm declaration typed _ => cases no_bag_or_set_carrier declaration typed
+    | setDedup declaration typed => cases no_bag_or_set_carrier declaration typed
     | flatten _ _ _ => simp [leaves, leavesList_append, leavesList]
     | singleton _ _ _ => simp [leaves, leavesList]
     | unitElim declaration isUnit _ =>
