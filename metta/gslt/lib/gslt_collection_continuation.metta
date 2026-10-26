@@ -5,12 +5,19 @@
      $environment $depth $bound $type $index $rule $spec $prepared)
   (case $prepared
     (((PreparedCollectionMatch $source $answer $history)
-      (let* (($next-depth (+ $depth 1))
+      (let* (($seed
+               (case $environment
+                 (((InterpretedPremiseEnvironment $names $core)
+                   (case $answer
+                     (((ScopedMatcherAnswer $captured $ordinary-trace)
+                       (ScopedMatcherAnswer $captured $history)))))
+                  ($ordinary $answer))))
+             ($next-depth (+ $depth 1))
              ($goal (DescentRootGoal $next-depth $bound $type $source $index))
              ($tail (DescentDone $goal))
              ($expanded (gslt:descent:continue-root-answer
                $environment $depth $bound $type $source $index $rule $spec
-               $answer $tail LNil))
+               $seed $tail LNil))
              ($state (gslt:collection-backend:expansion-state $expanded)))
         (RecursiveCollectionContinuation $prepared $state))))))
 

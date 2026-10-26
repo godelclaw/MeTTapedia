@@ -281,3 +281,42 @@
        (if (gslt:premise:object-pattern $pattern)
          (let $depth (gslt:automata:length $bound)
            (gslt:rule:scope-well-scoped $depth $pattern)) False) False) False))
+
+(: gslt:premise:matching-environment (-> Atom %Undefined%))
+(= (gslt:premise:matching-environment $environment)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core) $core)
+      ($ordinary $ordinary))))
+(: gslt:premise:matching-start (-> Atom Atom %Undefined%))
+(= (gslt:premise:matching-start $environment $request)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-start $names $request))
+      ($ordinary (gslt:rule:scope-matcher-start $request)))))
+(: gslt:premise:matching-tick (-> Atom Atom Atom %Undefined%))
+(= (gslt:premise:matching-tick $environment $request $state)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-tick $names $state))
+      ($ordinary (gslt:rule:scope-matcher-tick $request $state)))))
+(: gslt:premise:matching-complete (-> Atom Atom %Undefined%))
+(= (gslt:premise:matching-complete $environment $state)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-complete $state))
+      ($ordinary (gslt:rule:scope-matcher-complete $state)))))
+(: gslt:premise:matching-answer-at (-> Atom Atom Atom %Undefined%))
+(= (gslt:premise:matching-answer-at $environment $state $cursor)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-answer-at $state $cursor))
+      ($ordinary
+       (case $state
+         (((ScopedMatcherState $agenda $answers) (gslt:rule:row-at $cursor $answers))
+          ($bad None)))))))
+(: gslt:premise:matching-input (-> Atom Atom Atom %Undefined%))
+(= (gslt:premise:matching-input $environment $actual $expected)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-input $names $actual $expected))
+      ($ordinary (== $actual $expected)))))
