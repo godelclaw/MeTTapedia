@@ -36,9 +36,9 @@ def rule {language : LanguageDef} {left right : Pattern} :
 theorem rule_mem {language : LanguageDef} {left right : Pattern} :
     (witness : DerivedGeneratorWitness language left right) →
       witness.rule ∈ language.terms
-  | .bagPerm _ _ _ carrier _ _ => carrier.authored
-  | .setPerm _ _ _ carrier _ _ => carrier.authored
-  | .setDedup _ _ _ carrier _ => carrier.authored
+  | .bagPerm _ _ _ carrier _ _ => carrier
+  | .setPerm _ _ _ carrier _ _ => carrier
+  | .setDedup _ _ _ carrier _ => carrier
   | .flatten _ _ _ _ _ _ algebra _ _ => algebra.authored
   | .singleton _ _ _ _ algebra _ _ => algebra.authored
   | .unitElim _ _ _ _ _ _ algebra _ _ => algebra.authored
