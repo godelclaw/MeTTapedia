@@ -313,7 +313,10 @@ reduct. The GSLT structure is pulled back along the embedding. -/
 inductive FragTerm : Type
   | redex
   | reduct
-  deriving DecidableEq, Fintype
+  deriving DecidableEq
+
+instance : Fintype FragTerm :=
+  ⟨{FragTerm.redex, FragTerm.reduct}, by intro x; cases x <;> simp⟩
 
 /-- Embed the fragment into ρ-calculus patterns. -/
 def fragEmbed : FragTerm → Pattern
@@ -492,7 +495,10 @@ continuation drops the received name. -/
 inductive Frag2Term : Type
   | redex2
   | reduct2
-  deriving DecidableEq, Fintype
+  deriving DecidableEq
+
+instance : Fintype Frag2Term :=
+  ⟨{Frag2Term.redex2, Frag2Term.reduct2}, by intro x; cases x <;> simp⟩
 
 /-- Embed the reflection fragment into ρ-calculus patterns. The redex sends
 `nil` on the free name `n` to a receiver that drops what it receives. -/
@@ -607,5 +613,158 @@ theorem frag2_massWeakness_eq_sixteen :
       Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
       by simp [frag2MassEvidence, WeaknessBridge.GSLTEvidence.toWeightFn,
         frag2_mass_redex]; norm_num⟩
+
+/-! ## Mass Evidence for General Agent Populations
+
+Generalizes `frag2MassEvidence` from a two-element fragment to arbitrary
+`AgentPopulation`. Each agent class is weighted by `rhoPatternMass r + 1`
+where `r` is a representative term, ensuring positive weight (non-degenerate).
+The non-distinction weakness is the supremum of squared weights — the maximum
+per-agent self-weight, not an aggregate sum.
+-/
+
+/-- The carrier of a population: subtype of bisimulation classes in `pop.agents`. -/
+def PopulationCarrier {S : GSLT} {W : Type*} (pop : AgentPopulation S W) : Type :=
+  { a : BisimQuotient S // a ∈ pop.agents }
+
+/-- Obligation 1: The carrier is finite because `pop.agents` is a `Finset`. -/
+instance populationCarrierFintype {S : GSLT} {W : Type*} (pop : AgentPopulation S W) :
+    Fintype (PopulationCarrier pop) :=
+  ⟨pop.agents.attach, fun _ => Finset.mem_attach _ _⟩
+
+/-- Obligation 2: Mass-derived evidence for general agent populations.
+Each agent class is weighted by `rhoPatternMass (embed representative) + 1`,
+ensuring positive (non-degenerate) weights. -/
+noncomputable def massEvidence {S : GSLT} {W : Type*} (pop : AgentPopulation S W)
+    (embed : S.Term → Pattern) :
+    WeaknessBridge.GSLTEvidence (PopulationCarrier pop) ENNReal :=
+  ⟨fun c => (rhoPatternMass (embed (Quotient.out c.val)) + 1 : ENNReal)⟩
+
+noncomputable instance {S : GSLT} {W : Type*} (pop : AgentPopulation S W) :
+    DecidableEq (PopulationCarrier pop) := Classical.decEq _
+
+/-- Obligation 3: The non-distinction weakness of mass evidence equals
+the supremum of squared per-agent weights. Diagonal pairs (c, c) in the
+non-distinction event give weight c * weight c, and every agent appears
+on the diagonal. -/
+theorem mass_nonDistinctionWeakness_eq_iSup_sq
+    {S : GSLT} {W : Type*} (pop : AgentPopulation S W) (embed : S.Term → Pattern) :
+    WeaknessBridge.nonDistinctionWeakness (massEvidence pop embed) =
+    ⨆ c : PopulationCarrier pop,
+      (massEvidence pop embed).weight c * (massEvidence pop embed).weight c := by
+  classical
+  unfold WeaknessBridge.nonDistinctionWeakness WeaknessBridge.gsltWeakness
+    Mettapedia.Algebra.QuantaleWeakness.weakness
+    Mettapedia.Algebra.QuantaleWeakness.nonDistinctionEvent
+  apply le_antisymm
+  · apply sSup_le
+    rintro x ⟨p, hp, rfl⟩
+    rw [Finset.mem_filter] at hp
+    obtain ⟨_, hdiag⟩ := hp
+    rw [hdiag]
+    simp only [WeaknessBridge.GSLTEvidence.toWeightFn, massEvidence]
+    exact le_iSup (fun c : PopulationCarrier pop =>
+      (rhoPatternMass (embed (Quotient.out c.val)) + 1 : ENNReal) *
+      (rhoPatternMass (embed (Quotient.out c.val)) + 1 : ENNReal)) p.2
+  · apply iSup_le
+    intro c
+    apply le_sSup
+    exact ⟨(c, c), Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
+      by simp only [WeaknessBridge.GSLTEvidence.toWeightFn, massEvidence]⟩
+
+/-- Obligation 4a: Each agent's mass-evidence weight is at least 1,
+since rhoPatternMass is a natural number and we add 1. -/
+theorem massEvidence_weight_ge_one
+    {S : GSLT} {W : Type*} (pop : AgentPopulation S W) (embed : S.Term → Pattern)
+    (c : PopulationCarrier pop) :
+    1 ≤ (massEvidence pop embed).weight c := by
+  simp only [massEvidence]
+  exact_mod_cast Nat.succ_le_succ (Nat.zero_le _)
+
+/-- Obligation 4b: Monotonicity of nonDistinctionWeakness for mass evidence.
+Follows from the generic `nonDistinctionWeakness_mono` above. -/
+theorem mass_nonDistinctionWeakness_mono
+    {S : GSLT} {W : Type*} (pop : AgentPopulation S W) (embed embed' : S.Term → Pattern)
+    (h : ∀ c, (massEvidence pop embed).weight c ≤ (massEvidence pop embed').weight c) :
+    WeaknessBridge.nonDistinctionWeakness (massEvidence pop embed) ≤
+      WeaknessBridge.nonDistinctionWeakness (massEvidence pop embed') :=
+  nonDistinctionWeakness_mono _ _ h
+
+/-- Obligation 5a: General diagonal reduction — nonDistinctionWeakness equals
+the supremum of squared weights for any GSLTEvidence over ENNReal. -/
+theorem gslt_nonDistinctionWeakness_eq_iSup_sq
+    {U : Type*} [Fintype U] [DecidableEq U]
+    (ev : WeaknessBridge.GSLTEvidence U ENNReal) :
+    WeaknessBridge.nonDistinctionWeakness ev =
+    ⨆ c : U, ev.weight c * ev.weight c := by
+  unfold WeaknessBridge.nonDistinctionWeakness WeaknessBridge.gsltWeakness
+    Mettapedia.Algebra.QuantaleWeakness.weakness
+    Mettapedia.Algebra.QuantaleWeakness.nonDistinctionEvent
+  apply le_antisymm
+  · apply sSup_le
+    rintro x ⟨p, hp, rfl⟩
+    rw [Finset.mem_filter] at hp
+    obtain ⟨_, hdiag⟩ := hp
+    rw [hdiag]
+    simp only [WeaknessBridge.GSLTEvidence.toWeightFn]
+    exact le_iSup (fun c : U => ev.weight c * ev.weight c) p.2
+  · apply iSup_le
+    intro c
+    apply le_sSup
+    exact ⟨(c, c), Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
+      by simp only [WeaknessBridge.GSLTEvidence.toWeightFn]⟩
+
+/-- Obligation 5b: If all weights are zero, nonDistinctionWeakness is zero. -/
+theorem gslt_nonDistinctionWeakness_zero
+    {U : Type*} [Fintype U] [DecidableEq U]
+    (ev : WeaknessBridge.GSLTEvidence U ENNReal) (h : ∀ c, ev.weight c = 0) :
+    WeaknessBridge.nonDistinctionWeakness ev = 0 := by
+  rw [gslt_nonDistinctionWeakness_eq_iSup_sq]
+  simp [h]
+
+/-- Obligation 5c: Empty carrier gives zero weakness. -/
+theorem gslt_nonDistinctionWeakness_empty
+    {U : Type*} [Fintype U] [DecidableEq U] [IsEmpty U]
+    (ev : WeaknessBridge.GSLTEvidence U ENNReal) :
+    WeaknessBridge.nonDistinctionWeakness ev = 0 := by
+  rw [gslt_nonDistinctionWeakness_eq_iSup_sq]
+  simp
+
+/-- Obligation 6: massEvidence weight is determined by the Quotient.out representative.
+The weight is well-defined: for each bisim class, Quotient.out picks a deterministic
+representative and rhoPatternMass computes its structural size.
+Note: NOT bisim-invariant -- obligation 7 addresses presentation dependence. -/
+theorem massEvidence_weight_eq
+    {S : GSLT} {W : Type*} (pop : AgentPopulation S W) (embed : S.Term -> Pattern)
+    (c : PopulationCarrier pop) :
+    (massEvidence pop embed).weight c =
+    (rhoPatternMass (embed (Quotient.out c.val)) + 1 : ENNReal) := by
+  simp only [massEvidence]
+
+/-! Obligation 7: Presentation Dependence.
+
+The `massEvidence` weight function depends on the choice of `Quotient.out` representative
+from each bisimilarity class. Since `rhoPatternMass` is a structural size measure (counting
+binders and applications), bisimilar terms may have different pattern masses: e.g., a redex
+and its reduct are bisimilar but may differ in structural size.
+
+This means `massEvidence` is NOT bisim-invariant: two populations whose agents are bisimilar
+but presented with different syntactic forms may yield different `nonDistinctionWeakness` values.
+This presentation dependence is a known limitation of the structural-cost approach.
+
+Future work: investigate invariant mass functions (e.g., normal-form-based measures) or
+quotient the pattern space by structural equivalence before computing mass. -/
+
+/-- Obligation 8: Recover fragEvidence2 weakness=4 via the general iSup_sq theorem.
+
+The general theorem `gslt_nonDistinctionWeakness_eq_iSup_sq` proves weakness equals
+the supremum of squared weights for ANY `GSLTEvidence`. The specific `fragEvidence2`
+(weight 2 on the redex class, 1 elsewhere) was proven to have weakness 4 by direct computation.
+This theorem confirms the iSup of squared weights also equals 4, showing the general
+framework is consistent with and subsumes the specific fragment proof. -/
+theorem frag_iSup_sq_eq_four :
+    ⨆ c : BisimQuotient fragGSLT, fragEvidence2.weight c * fragEvidence2.weight c = 4 := by
+  rw [← gslt_nonDistinctionWeakness_eq_iSup_sq]
+  exact frag_nonDistinctionWeakness_two_eq_four
 
 end Mettapedia.GSLT.Meredith
