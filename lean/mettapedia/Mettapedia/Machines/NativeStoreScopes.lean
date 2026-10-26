@@ -30,6 +30,50 @@ def commit (live : Store) (proposal : Proposal) (reads : List Scope) : Except Re
     revision := live.revision + 1
     rows := applyBatch live.rows proposal.operations }
 
+def coveredBy (writes : List Scope) (operations : List Mutation) : Bool :=
+  operations.all (fun operation => writes.any (fun scope => scope operation.row))
+
+/-- The service compares each declared view independently. Combining write
+patterns into a union would add an undeclared dependency on their cross-view
+order. Write coverage uses the union, but view validation does not. -/
+def commitViews (live captured : Store) (reads writes : List Scope)
+    (operations : List Mutation) : Except Rejection Store :=
+  if !coveredBy writes operations then .error .scope
+  else if live.identity ≠ captured.identity then .error .identity
+  else if !compatible captured live (writes ++ reads) then .error .stale
+  else .ok { live with
+    revision := live.revision + 1
+    rows := applyBatch live.rows operations }
+
+theorem singleton_write_view (live : Store) (proposal : Proposal) (reads : List Scope) :
+    commitViews live proposal.captured reads [proposal.writes] proposal.operations =
+      commit live proposal reads := by
+  simp [commitViews, commit, coveredBy, covered]
+
+theorem committed_views_exact (live captured next : Store) (reads writes : List Scope)
+    (operations : List Mutation) :
+    commitViews live captured reads writes operations = .ok next ↔
+      coveredBy writes operations = true ∧ live.identity = captured.identity ∧
+      compatible captured live (writes ++ reads) = true ∧
+      next = { live with
+        revision := live.revision + 1
+        rows := applyBatch live.rows operations } := by
+  cases coverage : coveredBy writes operations with
+  | false => simp [commitViews, coverage]
+  | true =>
+      by_cases identity : live.identity = captured.identity
+      · cases views : compatible captured live (writes ++ reads) <;>
+          simp [commitViews, coverage, identity, views, eq_comm]
+      · simp [commitViews, coverage, identity]
+
+theorem independent_write_views_do_not_require_cross_view_order :
+    let captured : Store := ⟨1, 0, [7, 8]⟩
+    let live : Store := ⟨1, 1, [8, 7]⟩
+    commitViews live captured [] [(· == 7), (· == 8)] [.add 7] =
+      .ok ⟨1, 2, [8, 7, 7]⟩ ∧
+    commit live ⟨captured, fun row => row == 7 || row == 8, [.add 7]⟩ [] =
+      .error .stale := by decide
+
 private theorem filter_erase_outside (rows : List Nat) (scope : Scope) (row : Nat)
     (outside : scope row = false) :
     (rows.erase row).filter scope = rows.filter scope := by
@@ -202,7 +246,7 @@ not be inferred from a successful mutation, because a rejected proposal
 and a no-op both retire their observation too. -/
 
 inductive ScopedCommand where
-  | observe (name : Nat) (reads : List WriteScope) (writes : WriteScope)
+  | observe (name : Nat) (reads writes : List WriteScope)
   | external (operations : List Mutation)
   | commit (name : Nat) (operations : List Mutation)
   | close (name : Nat)
@@ -213,7 +257,7 @@ structure ScopedCapture where
   name : Nat
   captured : Store
   reads : List WriteScope
-  writes : WriteScope
+  writes : List WriteScope
 
 structure ScopedTrace where
   store : Store := ⟨1, 0, []⟩
@@ -234,8 +278,8 @@ def scopedStep (state : ScopedTrace) (command : ScopedCommand) : String × Scope
       | none => ("retired", state, [])
       | some captured =>
           let retired := { state with observations := state.observations.filter (·.name != name) }
-          match commit state.store ⟨captured.captured, captured.writes.admits, operations⟩
-              (captured.reads.map WriteScope.admits) with
+          match commitViews state.store captured.captured
+              (captured.reads.map WriteScope.admits) (captured.writes.map WriteScope.admits) operations with
           | .ok next => ("committed", { retired with store := next }, [])
           | .error .scope => ("scope", retired, [])
           | .error .stale => ("stale", retired, [])
@@ -244,6 +288,37 @@ def scopedStep (state : ScopedTrace) (command : ScopedCommand) : String × Scope
       (if state.observations.any (·.name == name) then "closed" else "retired",
         { state with observations := state.observations.filter (·.name != name) }, [])
   | .restart => ("restarted", { state with observations := [] }, [])
+
+private theorem find_retired (captures : List ScopedCapture) (name : Nat) :
+    (captures.filter (·.name != name)).find? (·.name == name) = none := by
+  apply List.find?_eq_none.mpr
+  intro capture member
+  have different : capture.name ≠ name := by simpa using (List.mem_filter.mp member).2
+  simp [different]
+
+/-- A real state transition removes the observation from lookup, whether
+the evaluated proposal publishes or is refused. This is stronger than
+setting an isolated Boolean availability flag to false. -/
+theorem commit_retires_lookup (state : ScopedTrace) (name : Nat) (operations : List Mutation) :
+    ((scopedStep state (.commit name operations)).2.1.observations.find? (·.name == name)) = none := by
+  cases found : state.observations.find? (·.name == name) with
+  | none => simp [scopedStep, found]
+  | some captured =>
+      cases result : commitViews state.store captured.captured
+        (captured.reads.map WriteScope.admits) (captured.writes.map WriteScope.admits) operations with
+      | ok next => simpa only [scopedStep, found, result] using find_retired state.observations name
+      | error reason => cases reason <;>
+          simpa only [scopedStep, found, result] using find_retired state.observations name
+
+private theorem missing_commit_is_retired (state : ScopedTrace) (name : Nat)
+    (operations : List Mutation) (absent : state.observations.find? (·.name == name) = none) :
+    (scopedStep state (.commit name operations)).1 = "retired" := by
+  simp [scopedStep, absent]
+
+theorem a_second_commit_without_a_new_observation_is_retired (state : ScopedTrace)
+    (name : Nat) (first second : List Mutation) :
+    (scopedStep (scopedStep state (.commit name first)).2.1 (.commit name second)).1 = "retired" := by
+  exact missing_commit_is_retired _ name second (commit_retires_lookup state name first)
 
 def scopedTraceLines (state : ScopedTrace) : List ScopedCommand → List String
   | [] => []
