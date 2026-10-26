@@ -23,6 +23,8 @@ set_option autoImplicit false
 
 namespace Mettapedia.Hyperseed.PBitQuantale
 
+noncomputable section
+
 open Mettapedia.CategoryTheory.FuzzyFrame
 open Mettapedia.CategoryTheory.FuzzyFrame.UnitInterval
 open Mettapedia.Algebra.QuantaleWeakness
@@ -143,4 +145,5 @@ theorem lattice_bottom_eq_neither : (⊥ : PBit) = neither := rfl
 #print axioms Mettapedia.Hyperseed.PBitQuantale.tensor_residuation
 #print axioms Mettapedia.Hyperseed.PBitQuantale.quantale_unit_eq_both
 
+end
 end Mettapedia.Hyperseed.PBitQuantale
