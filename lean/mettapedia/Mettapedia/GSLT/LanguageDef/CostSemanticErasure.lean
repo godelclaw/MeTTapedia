@@ -479,7 +479,6 @@ theorem CostSemanticTree.normalizationSound
         simp [current, CostSemanticTree.normalizedAvailable_pattern,
           CostSemanticTree.originalAvailable_pattern, CostSemanticTree.normalize]
       rw [endpoint]
-      exact Relation.EqvGen.refl _
     refine ⟨termSound, ?_⟩
     intro parameter representation parameterType canonical object scope
     cases parameter with
@@ -511,7 +510,6 @@ theorem CostSemanticTree.normalizationSound
         simp [current, CostSemanticTree.normalizedAvailable_pattern,
           CostSemanticTree.originalAvailable_pattern, CostSemanticTree.normalize]
       rw [endpoint]
-      exact Relation.EqvGen.refl _
     refine ⟨termSound, ?_⟩
     intro parameter representation parameterType canonical object scope
     cases parameter with
@@ -1100,7 +1098,6 @@ theorem CostSemanticTree.normalizationSound
     rename_i color
     intro name type lookup inner
     simp [CostSemanticBoundaryTrees.normalize]
-    exact Relation.EqvGen.refl _
   · intros
     rename_i color occurrence occurrences boundary content tail value values head
       children headSound childrenSound
