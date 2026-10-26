@@ -228,11 +228,14 @@ def traceStep (state : TraceState) (command : TraceCommand) : String × TraceSta
           | .error .scope => ("scope", state)
           | .error .stale => ("stale", state)
 
+def traceRows (rows : List Nat) : String :=
+  "[" ++ String.intercalate "," (rows.map toString) ++ "]"
+
 def traceLines (state : TraceState) : List TraceCommand → List String
   | [] => []
   | command :: rest =>
       let (status, next) := traceStep state command
-      (status ++ "|" ++ toString next.store.revision ++ "|" ++ reprStr next.store.rows) ::
+      (status ++ "|" ++ toString next.store.revision ++ "|" ++ traceRows next.store.rows) ::
         traceLines next rest
 
 end Mettapedia.Machines.NativeStoreTransactions

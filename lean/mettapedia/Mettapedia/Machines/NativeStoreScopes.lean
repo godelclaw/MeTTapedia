@@ -11,6 +11,8 @@ The theorem is about observable scopes. Independent appends to an ordered
 global journal need not commute as complete lists; their per-channel views
 can remain unchanged. A matcher/codec implements these predicates, and the
 storage owner must validate and publish without an intervening mutation.
+The mutation model is the `native-ordered` profile. Unordered bag removal
+has different sequence observations and is not modeled by `List.erase`.
 -/
 
 namespace Mettapedia.Machines.NativeStoreScopes
@@ -247,7 +249,7 @@ def scopedTraceLines (state : ScopedTrace) : List ScopedCommand → List String
   | [] => []
   | command :: rest =>
       let (status, next, views) := scopedStep state command
-      (status ++ "|" ++ toString next.store.revision ++ "|" ++ reprStr next.store.rows ++
-        "|" ++ reprStr views) :: scopedTraceLines next rest
+      (status ++ "|" ++ toString next.store.revision ++ "|" ++ traceRows next.store.rows ++
+        "|[" ++ String.intercalate "," (views.map traceRows) ++ "]") :: scopedTraceLines next rest
 
 end Mettapedia.Machines.NativeStoreScopes
