@@ -41,11 +41,11 @@ theorem cons_each_returns (state : State) (item : Pattern) : ∀ rows : List (Li
     PureReturns runtime [] state (apply "gslt:complete:cons-each" [patternValue item, rowsValue rows]) state
       (rowsValue (rows.map (item :: ·)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue]
   | row :: rest => by
-    metta_call complete_checked
-    metta_eval [cons_each_returns state item rest] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [cons_each_returns state item rest] with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternValue, encodePatterns]
 
 /-- `gslt:complete:append-each` puts the same tail after every list. -/
@@ -54,11 +54,11 @@ theorem append_each_returns (state : State) (back : List Pattern) : ∀ rows : L
     PureReturns runtime [] state (apply "gslt:complete:append-each" [rowsValue rows, patternsValue back]) state
       (rowsValue (rows.map (· ++ back)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue]
   | row :: rest => by
-    metta_call complete_checked
-    metta_eval [complete_append_patterns state row back, append_each_returns state back rest] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [complete_append_patterns state row back, append_each_returns state back rest] with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternsValue, encodePatterns, List.map_cons]
 
 /-- `gslt:complete:insertions` is `Inversion.insertions`. -/
@@ -67,12 +67,12 @@ theorem insertions_returns (state : State) (item : Pattern) : ∀ items : List P
     PureReturns runtime [] state (apply "gslt:complete:insertions" [patternValue item, patternsValue items]) state
       (rowsValue (insertions item items))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue, patternValue, patternsValue, encodePatterns, insertions]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue, patternValue, patternsValue, encodePatterns, insertions]
   | first :: rest => by
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [insertions_returns state item rest, cons_each_returns state first (insertions item rest)]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternValue, patternsValue, encodePatterns, insertions]
 
 /-- `gslt:complete:insert-all` inserts an item at every position of every order. -/
@@ -81,13 +81,13 @@ theorem insert_all_returns (state : State) (item : Pattern) : ∀ orders : List 
     PureReturns runtime [] state (apply "gslt:complete:insert-all" [patternValue item, rowsValue orders]) state
       (rowsValue (orders.flatMap (insertions item)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue]
   | order :: rest => by
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [insertions_returns state item order, insert_all_returns state item rest,
         complete_append_rows state (insertions item order) (rest.flatMap (insertions item))]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternValue, patternsValue, List.flatMap_cons]
 
 /-- `gslt:complete:perms` is `Inversion.perms`. -/
@@ -95,11 +95,11 @@ theorem insert_all_returns (state : State) (item : Pattern) : ∀ orders : List 
 theorem perms_returns (state : State) : ∀ items : List Pattern,
     PureReturns runtime [] state (apply "gslt:complete:perms" [patternsValue items]) state (rowsValue (perms items))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue, patternsValue, encodePatterns, perms]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue, patternsValue, encodePatterns, perms]
   | first :: rest => by
-    metta_call complete_checked
-    metta_eval [perms_returns state rest, insert_all_returns state first (perms rest)] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [perms_returns state rest, insert_all_returns state first (perms rest)] with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternValue, patternsValue, encodePatterns, perms]
 
 /-- `gslt:complete:perms-all` lists every order of every list. -/
@@ -108,13 +108,13 @@ theorem perms_all_returns (state : State) : ∀ rows : List (List Pattern),
     PureReturns runtime [] state (apply "gslt:complete:perms-all" [rowsValue rows]) state
       (rowsValue (rows.flatMap perms))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue]
   | row :: rest => by
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [perms_returns state row, perms_all_returns state rest,
         complete_append_rows state (perms row) (rest.flatMap perms)]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternsValue, List.flatMap_cons]
 
 /-- How `gslt:complete:wrap-each` builds a term from a list of arguments. -/
@@ -135,13 +135,13 @@ theorem wrap_each_returns (state : State) (shape : Shape) : ∀ rows : List (Lis
     PureReturns runtime [] state (apply "gslt:complete:wrap-each" [encoded shape.term, rowsValue rows]) state
       (patternsValue (rows.map shape.build))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue, patternsValue, encodePatterns]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue, patternsValue, encodePatterns]
   | row :: rest => by
     have tail := wrap_each_returns state shape rest
     cases shape <;>
-    · metta_call complete_checked
-      metta_eval [tail] with complete_checked
+    · metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [tail] with completeProof_checked in completeProof_agreement
         unfolding [rowsValue, patternsValue, encodePatterns, Shape.term, Shape.build, encodePattern, encodeRest]
 
 @[metta_head "gslt:complete:lambda-each"]
@@ -149,11 +149,11 @@ theorem lambda_each_returns (state : State) : ∀ bodies : List Pattern,
     PureReturns runtime [] state (apply "gslt:complete:lambda-each" [patternsValue bodies]) state
       (patternsValue (bodies.map (.lambda none)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns]
   | body :: rest => by
-    metta_call complete_checked
-    metta_eval [lambda_each_returns state rest] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [lambda_each_returns state rest] with completeProof_checked in completeProof_agreement
       unfolding [patternsValue, encodePatterns, encodePattern, encodeBinder]
 
 @[metta_head "gslt:complete:multi-lambda-each"]
@@ -161,11 +161,11 @@ theorem multi_lambda_each_returns (state : State) (arity : Nat) : ∀ bodies : L
     PureReturns runtime [] state (apply "gslt:complete:multi-lambda-each" [number arity, patternsValue bodies]) state
       (patternsValue (bodies.map (.multiLambda arity [])))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns]
   | body :: rest => by
-    metta_call complete_checked
-    metta_eval [multi_lambda_each_returns state arity rest] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [multi_lambda_each_returns state arity rest] with completeProof_checked in completeProof_agreement
       unfolding [patternsValue, encodePatterns, encodePattern, InferenceCettaWire.encodeList]
 
 /-- `gslt:complete:product` puts every head in front of every tail. -/
@@ -174,13 +174,26 @@ theorem product_returns (state : State) (tails : List (List Pattern)) : ∀ head
     PureReturns runtime [] state (apply "gslt:complete:product" [patternsValue heads, rowsValue tails]) state
       (rowsValue (heads.flatMap fun first => tails.map (first :: ·)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [rowsValue, patternsValue, encodePatterns]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rowsValue, patternsValue, encodePatterns]
   | head :: rest => by
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [cons_each_returns state head tails, product_returns state tails rest,
         complete_append_rows state (tails.map (head :: ·)) (rest.flatMap fun first => tails.map (first :: ·))]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [rowsValue, patternsValue, encodePatterns, List.flatMap_cons]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_append_rows
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_append_patterns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.cons_each_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.append_each_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.insertions_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.insert_all_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.perms_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.perms_all_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.wrap_each_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.lambda_each_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.multi_lambda_each_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.product_returns

@@ -5,8 +5,9 @@ import Mettapedia.Machines.ResumableRegion
 /-!
 # Native invocation operands and contextual occurrence returns
 
-A completed native invocation lends an expression, a completed value, an ordered
-frontier, a raised fault, or a conditional answer. Payload syntax never selects
+A native invocation or qualified choice lends an expression, a completed value,
+an ordered frontier, a raised fault, or a conditional answer. Every frontier
+retains its expression/completed element role. Payload syntax never selects
 its control role. The reference below constructs the observable occurrence list;
 the cursor instead indexes the original array and preserves its context.
 
@@ -15,7 +16,9 @@ The contexts are identities, not frozen substitutions: any interpretation under
 a later binding world still reads the same context. Invalid producer data and
 interruption have explicit terminal reasons, distinct from logical exhaustion.
 
-The native connection is `CettaCallReturnCursor` in `owned_execution.h`. Native
+This is the qualified occurrence-selection view of `CettaCallReturnCursor`. A
+native expression frontier awaiting completion is one computation before this
+view is admitted. Native
 pointer validity, array bounds, borrowed lifetimes and C correspondence remain
 separate obligations. This model assumes well-formed array elements; the C reader
 also refuses malformed elements when reached. The cursor does not execute the producer,
@@ -41,7 +44,7 @@ inductive Packet (Value : Type u) (Fault : Type v) (Delay : Type w) where
 
 inductive Source (Value : Type u) (Fault : Type v) (Delay : Type w) where
   | one (packet : Packet Value Fault Delay)
-  | frontier (values : Array Value)
+  | frontier (role : ValueRole) (values : Array Value)
   | failure
   | interrupted
   | invalid
@@ -95,8 +98,8 @@ def meaning (source : Source Value Fault Delay) (context : Context) :
     List (Returned Value Fault Delay Context) × Stop :=
   match source with
   | .one packet => ([⟨context, packet⟩], .complete)
-  | .frontier values =>
-      (values.toList.map fun value => ⟨context, .value .completed value⟩, .complete)
+  | .frontier role values =>
+      (values.toList.map fun value => ⟨context, .value role value⟩, .complete)
   | .failure => ([], .complete)
   | .interrupted => ([], .cancelled)
   | .invalid => ([], .hostFailure)
@@ -110,11 +113,11 @@ def read (cursor : Cursor Value Fault Delay Context) :
       if cursor.position = 0 then
         .returned ⟨cursor.context, packet⟩ { cursor with position := 1 }
       else .stopped .complete
-  | .frontier values =>
+  | .frontier role values =>
       match values[cursor.position]? with
       | none => .stopped .complete
       | some value =>
-          .returned ⟨cursor.context, .value .completed value⟩
+          .returned ⟨cursor.context, .value role value⟩
             { cursor with position := cursor.position + 1 }
   | .failure => .stopped .complete
   | .interrupted => .stopped .cancelled
@@ -143,7 +146,7 @@ theorem read_refines (cursor : Cursor Value Fault Delay Context) :
   cases source with
   | one packet =>
       cases position <;> simp [read, residual, meaning, referenceRead, Pull.mapState]
-  | frontier values =>
+  | frontier role values =>
       cases found : values[position]? with
       | none =>
           have empty : values.toList.drop position = [] := by
@@ -173,7 +176,7 @@ def advance : Nat → Cursor Value Fault Delay Context →
           let later := advance allowance next
           (item :: later.1, later.2)
 
-private theorem read_returned_residual
+theorem read_returned_residual
     {cursor next : Cursor Value Fault Delay Context}
     {item : Returned Value Fault Delay Context}
     (returned : read cursor = .returned item next) :
@@ -190,15 +193,18 @@ private theorem read_returned_residual
           rcases step with ⟨rfl, equal⟩
           rw [equal]
 
-private theorem read_stopped_residual
+theorem read_stopped_residual
     {cursor : Cursor Value Fault Delay Context} {reason : Stop}
-    (stopped : read cursor = .stopped reason) : (residual cursor).1 = [] := by
+    (stopped : read cursor = .stopped reason) : residual cursor = ([], reason) := by
   have step := read_refines cursor
   rw [stopped] at step
   cases reference : residual cursor with
   | mk items terminal =>
       cases items with
-      | nil => rfl
+      | nil =>
+          simp only [Pull.mapState, reference, referenceRead, Pull.stopped.injEq] at step
+          cases step
+          rfl
       | cons first rest => simp [Pull.mapState, reference, referenceRead] at step
 
 /-- The concrete cursor publishes exactly the demanded ordered prefix and
@@ -254,7 +260,7 @@ occurrences. It grants no evaluation or constraint-solving permission. -/
 def finalReturn (cursor : Cursor Value Fault Delay Context) : Bool :=
   match cursor.source with
   | .one _ => true
-  | .frontier values => cursor.position + 1 == values.size
+  | .frontier _ values => cursor.position + 1 == values.size
   | _ => false
 
 theorem final_return_exact {cursor next : Cursor Value Fault Delay Context}
@@ -268,7 +274,7 @@ theorem final_return_exact {cursor next : Cursor Value Fault Delay Context}
     · rcases Pull.returned.inj returned with ⟨rfl, rfl⟩
       simp [finalReturn, residual, meaning]
     · contradiction
-  case frontier values =>
+  case frontier role values =>
     split at returned
     · contradiction
     · rename_i value found
@@ -307,7 +313,7 @@ theorem returned_context {cursor next : Cursor Value Fault Delay Context}
     split at returned
     · exact (congrArg Prod.fst (Pull.returned.inj returned).1).symm
     · contradiction
-  case frontier values =>
+  case frontier role values =>
     split at returned
     · contradiction
     · exact (congrArg Prod.fst (Pull.returned.inj returned).1).symm
@@ -615,6 +621,93 @@ example :
 
 end Invocation
 
+namespace MinimalObservation
+
+/-- The source worker's meaning precedes any one-step syntax observation.
+Failure and refusal occupy different stages; neither is an ordinary value. -/
+inductive Command (Value : Type u) where
+  | returnValue (value : Value)
+  | evaluate (source : Value)
+  | failure
+  | interrupted
+  | refused
+  deriving DecidableEq, Repr
+
+/-- Observable syntax at the minimal interface. A returned payload may itself
+spell an instruction; its outer return delimiter preserves that distinction. -/
+inductive Instruction (Value : Type u) where
+  | returned (value : Value)
+  | source (code : Value)
+  deriving DecidableEq, Repr
+
+def reference (command : Command Value) (context : Context) :
+    Option (List (Context × Instruction Value) × Stop) :=
+  match command with
+  | .returnValue value => some ([(context, .returned value)], .complete)
+  | .evaluate code => some ([(context, .source code)], .complete)
+  | .failure => some ([], .complete)
+  | .interrupted => some ([], .cancelled)
+  | .refused => none
+
+/-- Lowering uses the existing native tags; it does not construct return
+syntax, inspect the payload or introduce a second runtime outcome type. -/
+def lower : Command Value → Option (Source Value Fault Delay)
+  | .returnValue value => some (.one (.value .completed value))
+  | .evaluate code => some (.one (.value .expression code))
+  | .failure => some .failure
+  | .interrupted => some .interrupted
+  | .refused => none
+
+/-- A qualified single-return observer reads the shared cursor. Conditional
+and raised packets require other consumers and are not images of this worker.
+Native pointer validity and the C fragment admission remain separate laws. -/
+def readback (result : Option (Source Value Fault Delay)) (context : Context) :
+    Option (List (Context × Instruction Value) × Stop) :=
+  match result with
+  | none => none
+  | some result =>
+      match read ⟨result, context, 0⟩ with
+      | .stopped reason => some ([], reason)
+      | .returned (scope, .value .completed value) _ =>
+          some ([(scope, .returned value)], .complete)
+      | .returned (scope, .value .expression source) _ =>
+          some ([(scope, .source source)], .complete)
+      | .returned _ _ => some ([], .hostFailure)
+
+/-- Typed worker completion followed by contextual instruction readback
+agrees with the independent source observer, including zero and refusal. -/
+theorem lowering_refines (command : Command Value) (context : Context) :
+    readback (lower (Fault := Fault) (Delay := Delay) command) context =
+      reference command context := by
+  cases command <;> rfl
+
+theorem payload_role_separates (value : Value) (context : Context) :
+    readback (lower (Fault := Fault) (Delay := Delay) (.returnValue value)) context ≠
+      readback (lower (Fault := Fault) (Delay := Delay) (.evaluate value)) context := by
+  simp [lowering_refines, reference]
+
+theorem failure_is_not_refusal (context : Context) :
+    readback (lower (Value := Value) (Fault := Fault) (Delay := Delay) .failure) context ≠
+      readback (lower (Value := Value) (Fault := Fault) (Delay := Delay) .refused) context := by
+  simp [lowering_refines, reference]
+
+theorem interruption_is_not_failure (context : Context) :
+    readback (lower (Value := Value) (Fault := Fault) (Delay := Delay) .interrupted) context ≠
+      readback (lower (Value := Value) (Fault := Fault) (Delay := Delay) .failure) context := by
+  simp [lowering_refines, reference]
+
+theorem malformed_is_not_failure (context : Context) :
+    readback (some (.invalid : Source Value Fault Delay)) context ≠
+      readback (some (.failure : Source Value Fault Delay)) context := by
+  simp [readback, read]
+
+example (context : Context) :
+    readback (lower (Fault := Unit) (Delay := Unit)
+      (.returnValue (Instruction.source 7))) context =
+      some ([(context, .returned (.source 7))], .complete) := rfl
+
+end MinimalObservation
+
 namespace InvocationSlice
 
 variable {Input Call World Datum Raised Obligation : Type}
@@ -717,7 +810,7 @@ def lower (source : Source Value Fault Delay) (context : Context) :
   | .one (.raised fault) => .ready (context, .raised fault)
   | .failure => .stopped .complete
   | .invalid => .stopped .hostFailure
-  | .one (.conditional _ _) | .frontier _ | .interrupted =>
+  | .one (.conditional _ _) | .frontier _ _ | .interrupted =>
       .pending ⟨source, context, 0⟩
 
 /-- A physical return step: an inline register, an exact stop, or the existing
@@ -753,7 +846,7 @@ theorem lower_image (source : Source Value Fault Delay) (context : Context) :
     image (lower source context) = meaning source context := by
   cases source with
   | one packet => cases packet <;> simp [lower, image, residual, meaning]
-  | frontier values => simp [lower, image, residual]
+  | frontier role values => simp [lower, image, residual]
   | failure => rfl
   | interrupted => simp [lower, image, residual]
   | invalid => rfl
@@ -787,7 +880,7 @@ theorem entered_refines {Input Call World : Type*}
 
 example :
     let frame : Invocation.Frame Unit Unit Nat Nat Unit Unit :=
-      ⟨7, .deliver (.frontier #[]), 1, 0⟩
+      ⟨7, .deliver (.frontier .completed #[]), 1, 0⟩
     entered frame () = some (7, .stopped .complete) := by rfl
 
 example :
@@ -813,8 +906,15 @@ example : meaning (.one (.value .completed .errorData) : TestSource) () ≠
 example : meaning (.one (.value .completed .emptyData) : TestSource) () ≠
     meaning (.failure : TestSource) () := by decide
 
-example : (advance 2 ⟨(.frontier #[.code, .code] : TestSource), (), 0⟩).1 =
+example : (advance 2 ⟨(.frontier .completed #[.code, .code] : TestSource), (), 0⟩).1 =
     [((), .value .completed .code), ((), .value .completed .code)] := by decide
+
+theorem frontier_roles_separate :
+    (advance 2 ⟨(.frontier .expression #[.code, .code] : TestSource), (), 0⟩).1 =
+      [((), .value .expression .code), ((), .value .expression .code)] ∧
+    (advance 2 ⟨(.frontier .expression #[.code, .code] : TestSource), (), 0⟩).1 ≠
+      (advance 2 ⟨(.frontier .completed #[.code, .code] : TestSource), (), 0⟩).1 := by
+  decide
 
 example : (read ⟨(.one (.conditional .code "later") : TestSource), (), 0⟩) =
     .returned ((), .conditional .code "later")
@@ -839,6 +939,7 @@ end Controls
 #print axioms publication_allowance_minimal
 #print axioms returned_context
 #print axioms later_world_observation
+#print axioms Controls.frontier_roles_separate
 #print axioms Arguments.prepare_exact
 #print axioms Arguments.borrow_iff_unchanged
 #print axioms Arguments.Input.arguments_length
@@ -853,6 +954,11 @@ end Controls
 #print axioms Invocation.refusal_preserves_world
 #print axioms Invocation.admission_not_recoverable
 #print axioms Invocation.literal_completion_role
+#print axioms MinimalObservation.lowering_refines
+#print axioms MinimalObservation.payload_role_separates
+#print axioms MinimalObservation.failure_is_not_refusal
+#print axioms MinimalObservation.interruption_is_not_failure
+#print axioms MinimalObservation.malformed_is_not_failure
 
 #print axioms NativeDelivery.read_refines
 #print axioms NativeDelivery.lower_image
@@ -866,3 +972,6 @@ end Controls
 #print axioms InvocationSlice.entered_resume
 
 end Mettapedia.Machines.NativeCallReturn
+
+#print axioms Mettapedia.Machines.NativeCallReturn.read_returned_residual
+#print axioms Mettapedia.Machines.NativeCallReturn.read_stopped_residual

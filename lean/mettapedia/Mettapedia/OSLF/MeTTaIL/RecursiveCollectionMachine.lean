@@ -142,4 +142,14 @@ theorem tick_publication_account (request : Request) (work : Work)
       ⟨tail, answers ++ [⟨work.assignment, work.trace⟩]⟩ := by
   simp only [tick, finished]
 
+/-- A recursive matching tick publishes at most one complete answer record. -/
+theorem tick_answers_length (request : Request) (state : State) :
+    (tick request state).answers.length ≤ state.answers.length + 1 := by
+  cases agenda : state.agenda with
+  | nil => simp only [tick, agenda]; omega
+  | cons work rest =>
+    cases tasks : work.tasks with
+    | nil => simp only [tick, agenda, tasks, List.length_append, List.length_singleton]; omega
+    | cons task tasks => simp only [tick, agenda, tasks]; omega
+
 end Mettapedia.OSLF.MeTTaIL.RecursiveCollectionMachine

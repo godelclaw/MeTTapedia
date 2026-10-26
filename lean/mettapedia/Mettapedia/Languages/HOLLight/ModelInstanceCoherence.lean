@@ -1071,4 +1071,13 @@ theorem polymorphic_alias_preserved_by_later_type (other : OperatorFamilies.{w})
 
 end Controls
 
+theorem SourceAgreement.restrictSignature {smaller larger : Signature}
+    {first second : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol}
+    (included : smaller.Includes larger) (agreement : SourceAgreement larger first second) :
+    SourceAgreement smaller first second where
+  carriers := fun type formed => agreement.carriers type (formed.mono included)
+  constants := fun constant annotation _ typed formed declared =>
+    agreement.constants constant annotation typed (formed.mono included) (declared.mono included)
+  variableValues := fun sourceVar _ typed formed => agreement.variableValues sourceVar typed (formed.mono included)
+
 end Mettapedia.Languages.HOLLight.ModelInstanceCoherence

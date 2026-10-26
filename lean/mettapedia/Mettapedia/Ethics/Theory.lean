@@ -17,17 +17,8 @@ theorem mem_map_of_mem {α : Type u} {β : Type v} {f : α → β} {T : Theory �
   ⟨a, h, rfl⟩
 
 theorem map_singleton {α : Type u} {β : Type v} (f : α → β) (a : α) :
-    map f ({a} : Theory α) = ({f a} : Theory β) := by
-  funext b
-  apply propext
-  constructor
-  · intro hb
-    rcases hb with ⟨a', ha', hEq⟩
-    cases ha'
-    exact hEq.symm
-  · intro hb
-    refine ⟨a, rfl, ?_⟩
-    exact hb.symm
+    map f ({a} : Theory α) = ({f a} : Theory β) :=
+  Set.image_singleton
 
 end Theory
 
@@ -41,54 +32,34 @@ def EntailsUnder {S : Type u} {M : Type v}
     (sem : Semantics S M) (T : Theory S) (C : M → Prop) (φ : S) : Prop :=
   ∀ m, C m → Models sem m T → sem.Sat m φ
 
-theorem models_map_iff {S₁ : Type u} {S₂ : Type v} {M : Type w}
-    (sem₁ : Semantics S₁ M) (sem₂ : Semantics S₂ M)
-    (f : S₁ → S₂)
-    (h_sat : ∀ m s, sem₁.Sat m s ↔ sem₂.Sat m (f s))
+section SentenceTranslation
+
+variable {S₁ : Type u} {S₂ : Type v} {M : Type w}
+  (sem₁ : Semantics S₁ M) (sem₂ : Semantics S₂ M) (f : S₁ → S₂)
+  (h_sat : ∀ m s, sem₁.Sat m s ↔ sem₂.Sat m (f s))
+
+include h_sat
+
+theorem models_map_iff
     (m : M) (T : Theory S₁) :
     Models sem₁ m T ↔ Models sem₂ m (Theory.map f T) := by
-  constructor
-  · intro hT s₂ hs₂
-    rcases hs₂ with ⟨s₁, hs₁, hEq⟩
-    have hSat₁ : sem₁.Sat m s₁ := hT s₁ hs₁
-    have hSat₂ : sem₂.Sat m (f s₁) := (h_sat m s₁).1 hSat₁
-    simpa [hEq] using hSat₂
-  · intro hTf s₁ hs₁
-    have hs₂ : f s₁ ∈ Theory.map f T := Theory.mem_map_of_mem (T := T) (f := f) hs₁
-    have hSat₂ : sem₂.Sat m (f s₁) := hTf (f s₁) hs₂
-    exact (h_sat m s₁).2 hSat₂
+  change (∀ s ∈ T, sem₁.Sat m s) ↔ ∀ s ∈ f '' T, sem₂.Sat m s
+  rw [Set.forall_mem_image]
+  exact forall_congr' fun s => imp_congr_right fun _ => h_sat m s
 
-theorem entails_map_iff {S₁ : Type u} {S₂ : Type v} {M : Type w}
-    (sem₁ : Semantics S₁ M) (sem₂ : Semantics S₂ M)
-    (f : S₁ → S₂)
-    (h_sat : ∀ m s, sem₁.Sat m s ↔ sem₂.Sat m (f s))
+theorem entails_map_iff
     (T : Theory S₁) (s : S₁) :
-    Entails sem₁ T s ↔ Entails sem₂ (Theory.map f T) (f s) := by
-  constructor
-  · intro hEnt m hm
-    have hm₁ : Models sem₁ m T := (models_map_iff sem₁ sem₂ f h_sat m T).2 hm
-    have hSat₁ : sem₁.Sat m s := hEnt m hm₁
-    exact (h_sat m s).1 hSat₁
-  · intro hEnt m hm
-    have hm₂ : Models sem₂ m (Theory.map f T) := (models_map_iff sem₁ sem₂ f h_sat m T).1 hm
-    have hSat₂ : sem₂.Sat m (f s) := hEnt m hm₂
-    exact (h_sat m s).2 hSat₂
+    Entails sem₁ T s ↔ Entails sem₂ (Theory.map f T) (f s) :=
+  forall_congr' fun m =>
+    imp_congr (models_map_iff sem₁ sem₂ f h_sat m T) (h_sat m s)
 
-theorem entails_map_iff_under {S₁ : Type u} {S₂ : Type v} {M : Type w}
-    (sem₁ : Semantics S₁ M) (sem₂ : Semantics S₂ M)
-    (f : S₁ → S₂)
-    (h_sat : ∀ m s, sem₁.Sat m s ↔ sem₂.Sat m (f s))
+theorem entails_map_iff_under
     (T : Theory S₁) (C : M → Prop) (s : S₁) :
-    EntailsUnder sem₁ T C s ↔ EntailsUnder sem₂ (Theory.map f T) C (f s) := by
-  constructor
-  · intro hEnt m hC hm
-    have hm₁ : Models sem₁ m T := (models_map_iff sem₁ sem₂ f h_sat m T).2 hm
-    have hSat₁ : sem₁.Sat m s := hEnt m hC hm₁
-    exact (h_sat m s).1 hSat₁
-  · intro hEnt m hC hm
-    have hm₂ : Models sem₂ m (Theory.map f T) := (models_map_iff sem₁ sem₂ f h_sat m T).1 hm
-    have hSat₂ : sem₂.Sat m (f s) := hEnt m hC hm₂
-    exact (h_sat m s).2 hSat₂
+    EntailsUnder sem₁ T C s ↔ EntailsUnder sem₂ (Theory.map f T) C (f s) :=
+  forall_congr' fun m => imp_congr_right fun _ =>
+    imp_congr (models_map_iff sem₁ sem₂ f h_sat m T) (h_sat m s)
+
+end SentenceTranslation
 
 /-- A theory is satisfiable if it has at least one model. -/
 def Satisfiable {S : Type u} {M : Type v} (sem : Semantics S M) (T : Theory S) : Prop :=

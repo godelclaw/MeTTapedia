@@ -336,45 +336,6 @@ theorem tupleEvents_ne_nil {initial : Bindings} {arguments tuple : List Pattern}
 
 /-! ## The state before a query -/
 
-private theorem bindings_lookup_of_mem :
-    ∀ {bindings : Bindings}, (bindings.map Prod.fst).Nodup →
-      ∀ {entry : String × Pattern}, entry ∈ bindings → bindings.lookup entry.1 = some entry.2
-  | [], _, _, member => nomatch member
-  | head :: rest, unique, entry, member => by
-    rw [List.map_cons, List.nodup_cons] at unique
-    rcases List.mem_cons.mp member with rfl | later
-    · simp [Bindings.lookup]
-    · have distinct : (head.1 == entry.1) = false := by
-        have outside : entry.1 ∈ rest.map Prod.fst := List.mem_map_of_mem later
-        simpa using fun same : head.1 = entry.1 => unique.1 (same ▸ outside)
-      have read := bindings_lookup_of_mem unique.2 later
-      simpa [Bindings.lookup, List.find?_cons, distinct] using read
-
-theorem mergeBindings_nodup :
-    ∀ {first second combined : Bindings}, mergeBindings first second = some combined →
-      (first.map Prod.fst).Nodup → (combined.map Prod.fst).Nodup
-  | first, [], combined, merged, unique => by
-    simp only [mergeBindings, List.foldlM_nil] at merged
-    cases Option.some.inj merged
-    exact unique
-  | first, (name, value) :: rest, combined, merged, unique => by
-    simp only [mergeBindings, List.foldlM_cons] at merged
-    cases found : first.find? (fun entry => entry.1 == name) with
-    | none =>
-      simp only [found] at merged
-      have fresh : name ∉ first.map Prod.fst := by
-        intro member
-        obtain ⟨entry, entryMember, same⟩ := List.mem_map.mp member
-        have tested := List.find?_eq_none.mp found entry entryMember
-        simp [same] at tested
-      exact mergeBindings_nodup (first := (name, value) :: first) merged
-        (List.nodup_cons.mpr ⟨fresh, unique⟩)
-    | some existing =>
-      simp only [found] at merged
-      split at merged
-      · exact mergeBindings_nodup (first := first) merged unique
-      · cases merged
-
 /-- The state before a premise: the general assignment agrees with the canonical
 bindings, which are typed, unique, and name only available names, all of which
 the general assignment binds. This is the invariant of the canonical-to-general

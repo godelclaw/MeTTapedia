@@ -13,6 +13,7 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SubjectEquiv
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SemanticSubstitution
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefAdequacy
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.KeepOnlyCommBoundary
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefGSLTBridge
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefRewriteSystem

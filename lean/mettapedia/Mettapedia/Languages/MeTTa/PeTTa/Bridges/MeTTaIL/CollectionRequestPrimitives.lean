@@ -11,6 +11,7 @@ collections, as supplied by canonical search commits.
 -/
 
 set_option autoImplicit false
+set_option maxRecDepth 100000
 set_option maxHeartbeats 4000000
 
 namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionRequestExecution
@@ -205,16 +206,17 @@ macro_rules
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
     `(tactic|
-      (metta_call checked
+      (metta_call_in loggedProof_checked using loggedProof_agreement
        try simp only [Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil,
          Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil.applySubstList_nil,
          Library.bind, List.zip, List.zipWith, List.reverse_cons, List.reverse_nil,
          List.nil_append, List.cons_append]
-       metta_eval [$facts,*] with checked
+       metta_eval [$facts,*] with loggedProof_checked in loggedProof_agreement
          unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
            Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
            Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
            select_rule_plan, select_rule_fields, select_collection_fields,
+           ScopedRuleJobReadoutExecution.originTerm,
            PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized.select_skip_constructor,
            PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized.symbol_constructor_mismatch,
            encodeList, encodeOption, $extra,*]))
@@ -237,8 +239,7 @@ theorem elaborated_types_returns (state : Effects.State)
   | inferredGrammar implicitTypes =>
       have appendedAtBase := ScopedCollectionExecution.append_returns
         InferenceCettaWire.AuthoredRule.typeBindingTerm state types implicitTypes
-      have appended := by
-        metta_lift checked ["left", "right"] appendedAtBase
+      have appended := appendedAtBase
       request_eval [appended]
         unfolding [ScopedRuleJobReadoutExecution.originTerm, elaboratedTypeContext]
 
@@ -271,10 +272,10 @@ theorem request_from_rule_returns (state : Effects.State)
       InferenceCettaWire.encodeCollectionType, InferenceCettaWire.encodeRest]
   rename_i kind schemas rest
   cases kind <;> cases actualKind <;>
-    metta_eval [elaborated] with checked
+    metta_eval [elaborated] with loggedProof_checked in loggedProof_agreement
       unfolding [requestFromRule, GeneralExecutionAdmission.RulePlan.rule,
         GeneralRuleBindingInference.BindingPlan.elaborate,
-        encodeOption, elaboratedTypeContext_eq, ScopedCollectionExecution.requestTerm,
+        encodeOption, elaboratedTypeContext_eq, ScopedRuleJobReadoutExecution.originTerm, ScopedCollectionExecution.requestTerm,
         ScopedCollectionMachine.Request.machine,
         InferenceCettaWire.AuthoredRule.optionalBindingTerm,
         RuleInstantiationExecution.GeneralExecution.matcherRequestTerm,
@@ -284,18 +285,22 @@ theorem request_from_rule_returns (state : Effects.State)
         InferenceCettaWire.encodeCollectionType, InferenceCettaWire.encodeRest]
 
   all_goals
-    apply data_returns
-    · decide +kernel
-    · simp only [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
-        Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
-        Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
-      cases origin <;> simp [elaboratedTypeContext,
-        GeneralRuleBindingInference.BindingPlan.implicitTypes,
-        encoded, CettaWireAtom.encode, InferenceCettaWire.AuthoredRule.siteTerm,
-        RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
-        MatchAutomataBindingExecution.payloadBindingsTerm,
-        InferenceCettaWire.encodePatterns_eq_encodeList,
-        encodeList, InferenceCettaWire.encodeList]
+    apply pure_let_returns _ _ _ _ _ _ _ _ (by rfl)
+    · metta_capture_agreed loggedProof_agreement from elaborated unfolding
+        [ScopedRuleJobReadoutExecution.originTerm, encodeList, InferenceCettaWire.encodeList]
+    · apply data_in_program_returns loggedProof_agreement
+      · decide +kernel
+      · decide +kernel
+      · simp only [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+          Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+          Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
+        cases origin <;> simp [elaboratedTypeContext,
+          GeneralRuleBindingInference.BindingPlan.implicitTypes,
+          encoded, CettaWireAtom.encode, InferenceCettaWire.AuthoredRule.siteTerm,
+          RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
+          MatchAutomataBindingExecution.payloadBindingsTerm,
+          InferenceCettaWire.encodePatterns_eq_encodeList,
+          encodeList, InferenceCettaWire.encodeList]
 
 @[metta_head "gslt:collection-search:requests-from-rules"]
 theorem requests_from_rules_returns (state : Effects.State)

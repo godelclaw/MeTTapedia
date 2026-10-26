@@ -30,12 +30,14 @@ variable (plan : GeneralExecutionAdmission.Plan)
 def classAdvancedTerm (advanced : Complete.Classes.Entry plan × List Complete.Classes.Event) : Term :=
   .application "ClassAdvanced" [classEntryTerm plan advanced.1, encodeList eventTerm advanced.2]
 
-syntax "advance_eval" " [" term,* "]" : tactic
+syntax "advance_eval" " [" term,* "]" (" unfolding" " [" term,* "]")? : tactic
 macro_rules
-  | `(tactic| advance_eval [$facts,*]) => `(tactic|
+  | `(tactic| advance_eval [$facts,*] $[unfolding [$extra,*]]?) => do
+    let extra := (extra.map (·.getElems)).getD #[]
+    `(tactic|
       complete_eval [$facts,*]
         unfolding [planValue, CompletePlanWire.planTerm, classEntryTerm, classAdvancedTerm, Complete.Classes.advance,
-          wireOf, rootWire, premisesWire, environmentValue])
+          wireOf, rootWire, premisesWire, environmentValue, $extra,*])
 
 @[metta_head "gslt:classes:advance"]
 theorem classes_advance_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
@@ -68,7 +70,7 @@ theorem classes_advance_returns (state : State) (table : List (String × TypeExp
         Complete.Deep.publication_covered (Complete.Footprint.job_footprinted scope ready.1 ready.2.1) next.2.2.2
           firing (List.mem_of_mem_drop member)⟩)
     subst tabled
-    advance_eval [family, before, count, ticked, after, fresh, events]
+    advance_eval [family, before, count, ticked, after, fresh, events] unfolding [freeSame]
   | forward rep lane =>
     have licensed : KeyLicensed plan bound expected (.forward rep lane) := ready.1
     have family := classes_family_returns plan state table bound expected _ licensed
@@ -88,7 +90,7 @@ theorem classes_advance_returns (state : State) (table : List (String × TypeExp
       (fun outcome member => Complete.Deep.publication_covered (Complete.Footprint.lane_footprinted scope ready.1)
         next.2.2 outcome (List.mem_of_mem_drop member))
     subst tabled
-    advance_eval [family, before, count, ticked, after, fresh, events]
+    advance_eval [family, before, count, ticked, after, fresh, events] unfolding [freeSame]
   | backward rep candidate lane =>
     have licensed : KeyLicensed plan bound expected (.backward rep candidate lane) := ready.1
     have family := classes_family_returns plan state table bound expected _ licensed
@@ -109,7 +111,7 @@ theorem classes_advance_returns (state : State) (table : List (String × TypeExp
       (fun outcome member => Complete.Deep.publication_covered (Complete.Footprint.lane_footprinted scope ready.1)
         next.2.2 outcome (List.mem_of_mem_drop member))
     subst tabled
-    advance_eval [family, before, count, ticked, after, fresh, events]
+    advance_eval [family, before, count, ticked, after, fresh, events] unfolding [freeSame]
 
 @[metta_head "gslt:classes:represented"]
 theorem represented_returns (state : State) (pattern : Pattern) : ∀ reps : List Complete.Classes.Rep,
@@ -117,27 +119,24 @@ theorem represented_returns (state : State) (pattern : Pattern) : ∀ reps : Lis
       (apply "gslt:classes:represented" [patternValue pattern, encoded (encodeList repTerm reps)])
       state (Effects.boolean (reps.any fun rep => rep.pattern == pattern))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | rep :: rest => by
     have later := represented_returns state pattern rest
     by_cases same : (rep.pattern == pattern) = true
     · have equal : InferenceCettaWire.encodePattern rep.pattern = InferenceCettaWire.encodePattern pattern :=
         congrArg InferenceCettaWire.encodePattern (beq_iff_eq.mp same)
-      metta_call complete_checked
-      metta_eval unfolding [encodeList, repTerm]
+      complete_eval unfolding [encodeList, repTerm]
       all_goals
         rw [if_pos equal]
         simp only [same, List.any_cons, Bool.true_or]
-        metta_eval
+        metta_eval with completeProof_checked in completeProof_agreement
     · have different : InferenceCettaWire.encodePattern rep.pattern ≠ InferenceCettaWire.encodePattern pattern :=
         fun equal => same (beq_iff_eq.mpr (InferenceCettaWire.encodePattern_injective equal))
-      metta_call complete_checked
-      metta_eval unfolding [encodeList, repTerm]
+      complete_eval unfolding [encodeList, repTerm]
       all_goals
         rw [if_neg different]
         simp only [Bool.eq_false_iff.mpr same, List.any_cons, Bool.false_or]
-        metta_eval [later] with complete_checked
+        metta_eval [later] with completeProof_checked in completeProof_agreement
           unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
             Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
             Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
@@ -150,8 +149,7 @@ theorem add_discoveries_returns (state : State) (born : Nat) : ∀ (events : Lis
         encoded (encodeList eventTerm events)])
       state (encoded (encodeList repTerm (Complete.Classes.addDiscoveries born reps events)))
   | [], reps => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, Complete.Classes.addDiscoveries]
+    complete_eval unfolding [encodeList, Complete.Classes.addDiscoveries]
   | .firing receipt :: rest, reps => by
     have later := add_discoveries_returns state born rest reps
     rw [Complete.Classes.addDiscoveries]
@@ -174,8 +172,7 @@ theorem classes_firings_returns (state : State) : ∀ events : List Complete.Cla
     PureReturns runtime [] state (apply "gslt:classes:firings" [encoded (encodeList eventTerm events)])
       state (encoded (encodeList classReceiptTerm (Complete.Classes.firings events)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, Complete.Classes.firings]
+    complete_eval unfolding [encodeList, Complete.Classes.firings]
   | .firing receipt :: rest => by
     have later := classes_firings_returns state rest
     complete_eval [later] unfolding [encodeList, eventTerm, Complete.Classes.firings]
@@ -199,8 +196,7 @@ theorem classes_advance_all_returns (state : State) (table : List (String × Typ
           ((entries.map (Complete.Classes.advance plan bound expected)).map Prod.fst,
             (entries.map (Complete.Classes.advance plan bound expected)).flatMap Prod.snd)))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, classAdvancedAllTerm]
+    complete_eval unfolding [encodeList, classAdvancedAllTerm]
   | entry :: rest, ready => by
     have head := classes_advance_returns plan state table bound expected footprint tabled scope entry
       (ready entry (by simp))
@@ -252,8 +248,7 @@ theorem classes_rounds_returns (state : State) (table : List (String × TypeExpr
           encoded (classStateTerm plan search)])
         state (encoded (classStateTerm plan (Complete.Classes.rounds plan bound expected work search)))
   | 0, search, _ => by
-    metta_call complete_checked
-    metta_eval unfolding [Complete.Classes.rounds]
+    complete_eval unfolding [Complete.Classes.rounds]
   | work + 1, search, ready => by
     have once := classes_round_returns plan state table bound expected footprint tabled scope search ready
     have later := classes_rounds_returns state table bound expected footprint tabled scope work
@@ -267,8 +262,7 @@ theorem classes_rounds_zero_returns (state : State) (table : List (String × Typ
       (apply "gslt:classes:rounds" [planValue plan table bound expected, number 0,
         encoded (classStateTerm plan search)]) state
       (encoded (classStateTerm plan search)) := by
-  metta_call complete_checked
-  metta_eval unfolding [Complete.Classes.rounds]
+  complete_eval unfolding [Complete.Classes.rounds]
 
 @[metta_head "gslt:classes:entries-complete"]
 theorem classes_entries_complete_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
@@ -279,8 +273,7 @@ theorem classes_entries_complete_returns (state : State) (table : List (String �
           encoded (encodeList (classEntryTerm plan) entries)])
         state (Effects.boolean (entries.all fun entry => entry.2.complete))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | ⟨key, deep⟩ :: rest, licensed => by
     have family := classes_family_returns plan state table bound expected key (licensed ⟨key, deep⟩ (by simp))
     have done := deep_complete_returns (wireOf plan key) state deep
@@ -295,8 +288,7 @@ theorem classes_patterns_returns (state : State) : ∀ reps : List Complete.Clas
     PureReturns runtime [] state (apply "gslt:classes:patterns" [encoded (encodeList repTerm reps)])
       state (patternsValue (reps.map (·.pattern)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, patternsValue, InferenceCettaWire.encodePatterns]
+    complete_eval unfolding [encodeList, patternsValue, InferenceCettaWire.encodePatterns]
   | rep :: rest => by
     have later := classes_patterns_returns state rest
     complete_eval [later] unfolding [encodeList, repTerm, patternsValue, InferenceCettaWire.encodePatterns, List.map_cons]

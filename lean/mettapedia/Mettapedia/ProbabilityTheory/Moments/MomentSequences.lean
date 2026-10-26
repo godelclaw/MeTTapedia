@@ -44,29 +44,9 @@ lemma fwdDiffIter_succ (m : ℕ → ℝ) (n k : ℕ) :
 for `j ≤ n`, we have `(-1)^n * (-1)^(n-j) = (-1)^j`. -/
 lemma neg_one_pow_mul_neg_one_pow_sub (n j : ℕ) (hj : j ≤ n) :
     ((-1 : ℝ) ^ n) * ((-1 : ℝ) ^ (n - j)) = (-1 : ℝ) ^ j := by
-  -- Rewrite `n` as `j + (n-j)`, then cancel the duplicated factor using `(-1)^2 = 1`.
   have hn : n = j + (n - j) := (Nat.add_sub_of_le hj).symm
-  calc
-    ((-1 : ℝ) ^ n) * ((-1 : ℝ) ^ (n - j))
-        = ((-1 : ℝ) ^ (j + (n - j))) * ((-1 : ℝ) ^ (n - j)) := by
-            -- Avoid `simp` here (it can loop trying to simplify nested `Nat.sub`).
-            have hpow : (-1 : ℝ) ^ n = (-1 : ℝ) ^ (j + (n - j)) :=
-              congrArg (fun t : ℕ => (-1 : ℝ) ^ t) hn
-            rw [hpow]
-    _ = (((-1 : ℝ) ^ j) * ((-1 : ℝ) ^ (n - j))) * ((-1 : ℝ) ^ (n - j)) := by
-          simp [pow_add]
-    _ = ((-1 : ℝ) ^ j) * (((-1 : ℝ) ^ (n - j)) * ((-1 : ℝ) ^ (n - j))) := by
-          simp [mul_assoc]
-    _ = ((-1 : ℝ) ^ j) * ((-1 : ℝ) ^ ((n - j) + (n - j))) := by
-          simp [pow_add]
-    _ = ((-1 : ℝ) ^ j) * ((-1 : ℝ) ^ (2 * (n - j))) := by
-          -- `a + a = 2*a`
-          simp [two_mul]
-    _ = ((-1 : ℝ) ^ j) * ((((-1 : ℝ) ^ 2) ^ (n - j))) := by
-          -- `(-1)^(2*(n-j)) = ((-1)^2)^(n-j)`
-          simp [pow_mul]
-    _ = (-1 : ℝ) ^ j := by
-          simp
+  conv_lhs => arg 1; rw [hn, pow_add]
+  simp [mul_assoc, ← mul_pow]
 
 /-- Closed form for iterated forward differences (binomial alternating sum). -/
 theorem fwdDiffIter_eq_sum_choose (m : ℕ → ℝ) :
@@ -84,5 +64,17 @@ theorem fwdDiffIter_eq_sum_choose (m : ℕ → ℝ) :
   intro j hj
   have hjle : j ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
   simp [neg_one_pow_mul_neg_one_pow_sub n j hjle]
+
+/-- Complete monotonicity includes nonnegative values and successive differences. -/
+theorem CompletelyMonotone.nonnegative {m : ℕ → ℝ} (h : CompletelyMonotone m) (k : ℕ) :
+    0 ≤ m k := by simpa [fwdDiffIter] using h 0 k
+
+theorem CompletelyMonotone.antitone {m : ℕ → ℝ} (h : CompletelyMonotone m) : Antitone m :=
+  antitone_nat_of_succ_le (fun k => by simpa [fwdDiffIter, _root_.fwdDiff] using h 1 k)
+
+/-- Normalization supplies the bounds needed by the probability representation. -/
+theorem CompletelyMonotone.mem_Icc {m : ℕ → ℝ} (h : CompletelyMonotone m)
+    (normalized : m 0 = 1) (k : ℕ) : m k ∈ Set.Icc (0 : ℝ) 1 :=
+  ⟨h.nonnegative k, (h.antitone (Nat.zero_le k)).trans_eq normalized⟩
 
 end Mettapedia.ProbabilityTheory.Moments.MomentSequences

@@ -165,8 +165,8 @@ def taskTree (environment : Environment) (request : Request) (task : Task enviro
     Scheduler.TaskTree (expand environment request) task :=
   .branch (Scheduler.forestOfTrees (expand environment request) (expand environment request task).tasks
     fun branch _member => taskTree environment request branch)
-termination_by task.rank environment request
-decreasing_by exact expand_decreases environment request task branch _member
+termination_by task.rank MatchingExecution.ordinaryCursorCost environment request
+decreasing_by exact expand_decreases MatchingExecution.ordinaryCursorCost environment request task branch _member
 
 /-- The answers a retained query task emits, in emission order: the scheduler's
 readout of its expansion tree. -/
@@ -196,20 +196,20 @@ and suspended input resolution, against the independent acceptance relation. -/
 theorem mem_eventual_iff (environment : Environment) (request : Request)
     (task : Task environment request) (wanted : Answer environment request)
     (wellFormed : TaskWellFormed environment request task) :
-    wanted ∈ eventual environment request task ↔ TaskAccepts environment request task wanted := by
-  apply Iff.trans ?_ (expand_accepts_iff environment request task wanted wellFormed)
+    wanted ∈ eventual environment request task ↔ TaskAccepts MatchingExecution.ordinaryCursorLaws environment request task wanted := by
+  apply Iff.trans ?_ (expand_accepts_iff MatchingExecution.ordinaryCursorLaws MatchingExecution.ordinary_answer_representation environment request task wanted wellFormed)
   rw [eventual_eq]
   simp only [List.mem_append, List.mem_flatMap, ExpansionAccepts]
   apply or_congr Iff.rfl
   constructor
   · rintro ⟨branch, member, accepted⟩
     exact ⟨branch, member, (mem_eventual_iff environment request branch wanted
-      (expand_wellFormed environment request task branch wellFormed member)).mp accepted⟩
+      (expand_wellFormed MatchingExecution.ordinaryCursorLaws environment request task branch wellFormed member)).mp accepted⟩
   · rintro ⟨branch, member, accepted⟩
     exact ⟨branch, member, (mem_eventual_iff environment request branch wanted
-      (expand_wellFormed environment request task branch wellFormed member)).mpr accepted⟩
-termination_by task.rank environment request
-decreasing_by all_goals exact expand_decreases environment request task branch member
+      (expand_wellFormed MatchingExecution.ordinaryCursorLaws environment request task branch wellFormed member)).mpr accepted⟩
+termination_by task.rank MatchingExecution.ordinaryCursorCost environment request
+decreasing_by all_goals exact expand_decreases MatchingExecution.ordinaryCursorCost environment request task branch member
 
 /-- **A drained query run has emitted exactly its agenda's answers, in agenda order.** -/
 theorem run_settled (environment : Environment) (request : Request) (fuel : Nat)
@@ -234,7 +234,8 @@ theorem settled_answers (environment : Environment) (request : Request) (fuel : 
 /-- Every certified answer is emitted by the start task's denotation. -/
 theorem mem_eventual_start (environment : Environment) (request : Request)
     (wanted : Answer environment request) : wanted ∈ eventual environment request .start := by
-  obtain ⟨fuel, settled, exhaustive⟩ := completedEventually environment request
+  obtain ⟨fuel, settled, exhaustive⟩ := completedEventually MatchingExecution.ordinaryCursorLaws
+    MatchingExecution.ordinaryCursorCost MatchingExecution.ordinary_answer_representation environment request
   rw [← settled_answers environment request fuel settled]
   exact exhaustive wanted
 
@@ -496,8 +497,8 @@ theorem eventual_rowIndex (environment : Environment) (request : Request)
   · exact direct answer here
   · obtain ⟨branch, branchMember, inBranch⟩ := List.mem_flatMap.mp later
     exact eventual_rowIndex environment request branch (branches branch branchMember) answer inBranch
-termination_by task.rank environment request
-decreasing_by exact expand_decreases environment request task branch branchMember
+termination_by task.rank MatchingExecution.ordinaryCursorCost environment request
+decreasing_by exact expand_decreases MatchingExecution.ordinaryCursorCost environment request task branch branchMember
 
 /-- Every answer of a row scan comes from its cursor's row or a later one, and
 lies in that row's own argument task. -/
@@ -543,7 +544,7 @@ theorem mem_rowArguments (environment : Environment) (request : Request) {signat
       ∃ checked : checkRow environment.language environment.free request.context.bound signature row = true,
         wanted ∈ eventual environment request
           (.arguments (rowArguments ⟨signature, found, wanted.rowIndex⟩ row rowFound checked)) := by
-  have accepted : TaskAccepts environment request (.rows ⟨signature, found, 0⟩) wanted :=
+  have accepted : TaskAccepts MatchingExecution.ordinaryCursorLaws environment request (.rows ⟨signature, found, 0⟩) wanted :=
     ⟨Nat.zero_le _, finite, wanted.valid⟩
   have member := (mem_eventual_iff environment request (.rows ⟨signature, found, 0⟩) wanted trivial).mpr accepted
   exact (eventual_rows_locate environment request ⟨signature, found, 0⟩ wanted member).2 _ rfl
@@ -659,8 +660,8 @@ theorem eventual_length_le (environment : Environment) (request : Request)
     (fun branch => (eventual environment request branch).length) Task.answerBound
     (fun branch member => eventual_length_le environment request branch (branches branch member))
   omega
-termination_by task.rank environment request
-decreasing_by exact expand_decreases environment request task branch member
+termination_by task.rank MatchingExecution.ordinaryCursorCost environment request
+decreasing_by exact expand_decreases MatchingExecution.ordinaryCursorCost environment request task branch member
 
 /-- **A row with first-order argument schemas contributes at most one answer.** -/
 theorem eventual_arguments_length_le_one (environment : Environment) (request : Request)

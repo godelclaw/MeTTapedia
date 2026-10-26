@@ -69,38 +69,22 @@ theorem replacement_iff_loop_invariant
 
 /-! ## Agreement with the independently defined indexed family -/
 
-private def codeFibre (code : Code) : Type :=
-  match code.1 with
-  | .packet => Fin code.2.length.succ
-  | .channel => PUnit
-
-private theorem canonical_cast {source target : IndexedType}
-    (path : ConversionPath source target) :
-    semanticFibreEquivOfPath path =
-      Equiv.cast (congrArg codeFibre (path_preserves_normalCode path)) := by
-  rcases source with ⟨sourceFamily, sourceIndex⟩
-  rcases target with ⟨targetFamily, targetIndex⟩
-  have families := congrArg Prod.fst (path_preserves_normalCode path)
-  change sourceFamily = targetFamily at families
-  subst targetFamily
-  cases sourceFamily <;> rfl
-
 private theorem canonical_refl (source : IndexedType) :
     semanticFibreEquivOfPath (reflexivePath source) = Equiv.refl (SemanticFibre source) := by
-  rw [canonical_cast]
+  rw [semanticFibreEquivOfPath_eq_cast]
   rfl
 
 private theorem canonical_symm {source target : IndexedType}
     (path : ConversionPath source target) :
     semanticFibreEquivOfPath (.symm path) = (semanticFibreEquivOfPath path).symm := by
-  rw [canonical_cast, canonical_cast]
+  rw [semanticFibreEquivOfPath_eq_cast, semanticFibreEquivOfPath_eq_cast]
   exact Equiv.cast_symm _
 
 private theorem canonical_trans {source middle target : IndexedType}
     (first : ConversionPath source middle) (second : ConversionPath middle target) :
     semanticFibreEquivOfPath (.trans first second) =
       (semanticFibreEquivOfPath first).trans (semanticFibreEquivOfPath second) := by
-  rw [canonical_cast, canonical_cast, canonical_cast]
+  rw [semanticFibreEquivOfPath_eq_cast, semanticFibreEquivOfPath_eq_cast, semanticFibreEquivOfPath_eq_cast]
   exact Equiv.cast_trans _ _
 
 /-- Only the primitive accepted certificate is interpreted directly by
@@ -116,22 +100,10 @@ private def canonicalExtension : Extension (transportAlgebra SemanticFibre certi
   onPath := fun {index} {_ _} path => by
     cases index
     exact semanticFibreEquivOfPath path
-  onStep := by
-    intro index source target certificate
-    cases index
-    rfl
-  onRefl := by
-    intro index source
-    cases index
-    exact canonical_refl source
-  onSymm := by
-    intro index source target path
-    cases index
-    exact canonical_symm path
-  onTrans := by
-    intro index source middle target first second
-    cases index
-    exact canonical_trans first second
+  onStep := by rintro ⟨⟩ _ _ _; rfl
+  onRefl := by rintro ⟨⟩ source; exact canonical_refl source
+  onSymm := by rintro ⟨⟩ _ _ path; exact canonical_symm path
+  onTrans := by rintro ⟨⟩ _ _ _ first second; exact canonical_trans first second
 
 /-- Constructorwise agreement, including reversal and composite evidence.
 The desired whole-path agreement is not a primitive premise. -/
@@ -141,7 +113,7 @@ theorem transport_agrees {source target : IndexedType} (path : ConversionPath so
 
 theorem transport_parallel {source target : IndexedType}
     (first second : ConversionPath source target) : transport first = transport second := by
-  rw [transport_agrees, transport_agrees, canonical_cast, canonical_cast]
+  rw [transport_agrees, transport_agrees, semanticFibreEquivOfPath_eq_cast, semanticFibreEquivOfPath_eq_cast]
 
 theorem transport_refl (source : IndexedType) (value : SemanticFibre source) :
     transport (reflexivePath source) value = value := by
@@ -187,11 +159,11 @@ theorem retained_observer_replacement_iff {source target : IndexedType}
 /-! ## Actual substitution of symbolic indices and packet cursors -/
 
 private def substituteCode (substitution : Nat → Term signature) (code : Code) : Code :=
-  (code.1, code.2.flatMap (fun index => flatten (substitution index)))
+  (code.1, code.2.flatMap (fun index => Term.variableWord (substitution index)))
 
 private theorem substitution_code (substitution : Nat → Term signature) (type : IndexedType) :
     normalCode (type.subst substitution) = substituteCode substitution (normalCode type) :=
-  Prod.ext rfl (flatten_subst substitution type.index)
+  Prod.ext rfl (Term.variableWord_subst substitution type.index)
 
 private def substituteCodeValue (substitution : Nat → Term signature) (code : Code) :
     codeFibre code → codeFibre (substituteCode substitution code) := by
@@ -199,14 +171,14 @@ private def substituteCodeValue (substitution : Nat → Term signature) (code : 
   cases family with
   | packet =>
       intro cursor
-      refine ⟨((word.take cursor.val).flatMap (fun index => flatten (substitution index))).length, ?_⟩
-      have split : (word.take cursor.val).flatMap (fun index => flatten (substitution index)) ++
-          (word.drop cursor.val).flatMap (fun index => flatten (substitution index)) =
-            word.flatMap (fun index => flatten (substitution index)) := by
+      refine ⟨((word.take cursor.val).flatMap (fun index => Term.variableWord (substitution index))).length, ?_⟩
+      have split : (word.take cursor.val).flatMap (fun index => Term.variableWord (substitution index)) ++
+          (word.drop cursor.val).flatMap (fun index => Term.variableWord (substitution index)) =
+            word.flatMap (fun index => Term.variableWord (substitution index)) := by
         rw [← List.flatMap_append, List.take_append_drop]
       have lengths := congrArg List.length split
       simp only [List.length_append] at lengths
-      change _ < (word.flatMap (fun index => flatten (substitution index))).length.succ
+      change _ < (word.flatMap (fun index => Term.variableWord (substitution index))).length.succ
       omega
   | channel => exact id
 
@@ -234,7 +206,7 @@ theorem substitute_transport (substitution : Nat → Term signature)
     (value : SemanticFibre source) :
     transport (substPath substitution path) (substituteValue substitution source value) =
       substituteValue substitution target (transport path value) := by
-  rw [transport_agrees, transport_agrees, canonical_cast, canonical_cast]
+  rw [transport_agrees, transport_agrees, semanticFibreEquivOfPath_eq_cast, semanticFibreEquivOfPath_eq_cast]
   change
     cast (congrArg codeFibre (path_preserves_normalCode (substPath substitution path)))
       (cast (congrArg codeFibre (substitution_code substitution source)).symm
@@ -358,16 +330,5 @@ theorem erasing_substitution_not_injective :
 
 end Controls
 
-#print axioms replacement_iff_loop_invariant
-#print axioms transport_agrees
-#print axioms transport_parallel
-#print axioms retained_observer_replacement_iff
-#print axioms substitute_transport
-#print axioms Controls.two_accepted_routes_one_application
-#print axioms Controls.route_inspection_rejects_replacement
-#print axioms Controls.application_coherence_without_routeUIP
-#print axioms Controls.wrong_index_still_rejected
-#print axioms Controls.substituted_application_value
-#print axioms Controls.erasing_substitution_not_injective
 
 end Mettapedia.TypeTheory.MonoidIndexedTransportCoherence

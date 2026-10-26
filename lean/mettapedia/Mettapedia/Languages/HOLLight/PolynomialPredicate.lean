@@ -1,6 +1,7 @@
 import Mettapedia.Logic.HOL.PolynomialPredicate
 import Mettapedia.Languages.HOLLight.RetainedCompilation
 import Mettapedia.Languages.HOLLight.InferenceOnlyReplay
+import Mettapedia.Languages.HOLLight.ExportReplay
 
 /-!
 # Empty-policy primitive proofs for polynomial predicate operators
@@ -93,3 +94,130 @@ theorem monotonicity_verdict : (ProofSystem.checker emptyAxiomPolicy).check
 #print axioms monotonicity_accepted_empty
 #print axioms fixedPoint_accepted_empty
 end Mettapedia.Languages.HOLLight.PolynomialPredicate
+
+/-! Closed higher-order lambda bodies define constructor and child relations.
+The native declaration checker registers the actual bodies and retains its
+exact equations without adding axiom dependencies. Operation arguments are
+explicit; these definitions do not supply a datatype representation. -/
+
+namespace Mettapedia.Languages.HOLLight.PolynomialPredicate.Relations
+open Mettapedia.Logic Mettapedia.Languages.OpenTheory
+open DefinitionAdapters SignatureFormation ReverseTranslation RetainedCompilation
+local infixr:60 " ⇒ " => HOL.Ty.arr
+local instance : DecidablePred emptyAxiomPolicy := fun _ => isFalse id
+
+def position : AtomicTy := ⟨.var (Name.global "PolynomialPosition"), rfl, rfl⟩
+
+def constructorBody : HOL.ClosedTerm Symbol
+    (((.base layer) ⇒ .prop) ⇒ ((.base layer) ⇒ .base source) ⇒ (.base layer) ⇒ .base source ⇒ .prop) :=
+  HOL.PolynomialPredicate.Relations.constructorDefinition (.base source) (.base layer)
+
+def childBody : HOL.ClosedTerm Symbol
+    (((.base layer) ⇒ (.base position) ⇒ .prop) ⇒ ((.base layer) ⇒ (.base position) ⇒ .base source) ⇒
+      (.base layer) ⇒ .base source ⇒ .prop) :=
+  HOL.PolynomialPredicate.Relations.childDefinition (.base source) (.base layer) (.base position)
+
+def constructorCanonical := reverseCanonical Naming.empty (HOL.ImpredicativeConnectives.expand constructorBody)
+def childCanonical := reverseCanonical Naming.empty (HOL.ImpredicativeConnectives.expand childBody)
+def constructorSource := (PrimitiveTransport.checkedSource constructorCanonical).source
+def childSource := (PrimitiveTransport.checkedSource childCanonical).source
+
+def constructorName := Name.global "indexedConstructorRelation"
+def childName := Name.global "indexedChildRelation"
+def coreInstances := ExportReplay.instanceCertificates ContextControls.coreContext.signature
+
+theorem constructor_admitted :
+    (admitConstantInTheory ContextControls.coreContext coreInstances constructorName constructorSource).isSome = true := by
+  decide +kernel
+
+def constructorResult : ContextConstantDefinitionResult :=
+  (admitConstantInTheory ContextControls.coreContext coreInstances constructorName constructorSource).get constructor_admitted
+
+def childInstances := ExportReplay.instanceCertificates constructorResult.context.signature
+
+theorem child_admitted :
+    (admitConstantInTheory constructorResult.context childInstances childName childSource).isSome = true := by
+  decide +kernel
+
+def childResult : ContextConstantDefinitionResult :=
+  (admitConstantInTheory constructorResult.context childInstances childName childSource).get child_admitted
+
+theorem constructor_axioms_empty : constructorResult.output.definitionTheorem.axioms = ∅ := by
+  decide +kernel
+
+theorem child_axioms_empty : childResult.output.definitionTheorem.axioms = ∅ := by
+  decide +kernel
+
+#print axioms constructor_admitted
+#print axioms child_admitted
+#print axioms constructor_axioms_empty
+#print axioms child_axioms_empty
+
+
+def constructorNames : Naming
+    [HOL.Ty.base source, HOL.Ty.base layer, (.base layer ⇒ .base source), (.base layer ⇒ .prop)] :=
+  Naming.cons (Name.global "point") (Naming.cons (Name.global "layer")
+    (Naming.cons (Name.global "build") (Naming.cons (Name.global "valid") Naming.empty)))
+
+def childNames : Naming
+    [HOL.Ty.base source, HOL.Ty.base layer, (.base layer ⇒ .base position ⇒ .base source),
+      (.base layer ⇒ .base position ⇒ .prop)] :=
+  Naming.cons (Name.global "point") (Naming.cons (Name.global "layer")
+    (Naming.cons (Name.global "childAt") (Naming.cons (Name.global "validPosition") Naming.empty)))
+
+def constructorBeta := compileWithoutFunctionExtensionality emptyAxiomPolicy
+  (HOL.PolynomialPredicate.Relations.constructor_beta (Δ := [])
+    (.var (.vs (.vs (.vs .vz)))) (.var (.vs (.vs .vz))) (.var (.vs .vz)) (.var .vz))
+  (HOL.PolynomialPredicate.Relations.constructor_beta_functionExtensionalityFree _ _ _ _)
+  constructorNames ("constructor-relation-beta", 0)
+
+def childBeta := compileWithoutFunctionExtensionality emptyAxiomPolicy
+  (HOL.PolynomialPredicate.Relations.child_beta (Δ := [])
+    (.var (.vs (.vs (.vs .vz)))) (.var (.vs (.vs .vz))) (.var (.vs .vz)) (.var .vz))
+  (HOL.PolynomialPredicate.Relations.child_beta_functionExtensionalityFree _ _ _ _)
+  childNames ("child-relation-beta", 0)
+
+theorem constructorBeta_accepted : (ProofSystem.checker emptyAxiomPolicy).check
+    constructorBeta.proof.result constructorBeta.proof.certificate = true := constructorBeta.proof.accepted
+
+theorem childBeta_accepted : (ProofSystem.checker emptyAxiomPolicy).check
+    childBeta.proof.result childBeta.proof.certificate = true := childBeta.proof.accepted
+
+#print axioms constructorBeta_accepted
+#print axioms childBeta_accepted
+
+
+
+def definitionCommands : List ProofExecution.Registered.Command :=
+  [.constant ("constructor-relation-definition", 0) constructorName constructorSource coreInstances,
+   .constant ("child-relation-definition", 1) childName childSource childInstances]
+
+def definitions : Option ProofExecution.Registered.State :=
+  ProofExecution.Registered.replayFrom emptyAxiomPolicy
+    (ProofExecution.Registered.empty ContextControls.coreContext) definitionCommands
+
+theorem definitions_admitted : definitions.isSome = true := by decide +kernel
+
+def definedState : ProofExecution.Registered.State := definitions.get definitions_admitted
+
+theorem defined_state_valid : ProofExecution.Registered.Valid emptyAxiomPolicy definedState :=
+  ProofExecution.Registered.replayFrom_preserves_derivations _ _ _ _
+    (ProofExecution.Registered.empty_valid _ _) (Option.some_get definitions_admitted).symm
+
+def verdicts : List (String × Bool) :=
+  [("constructor relation closed definition admitted", (admitConstantInTheory
+      ContextControls.coreContext coreInstances constructorName constructorSource).isSome),
+   ("child relation closed definition admitted", (admitConstantInTheory
+      constructorResult.context childInstances childName childSource).isSome),
+   ("relation definitions replay as registered commands", definitions.isSome),
+   ("constructor relation beta receipt checks", (ProofSystem.checker emptyAxiomPolicy).check
+      constructorBeta.proof.result constructorBeta.proof.certificate),
+   ("child relation beta receipt checks", (ProofSystem.checker emptyAxiomPolicy).check
+      childBeta.proof.result childBeta.proof.certificate),
+   ("redeclared constructor relation refused", (admitConstantInTheory
+      constructorResult.context childInstances constructorName constructorSource).isNone)]
+
+#print axioms definitions_admitted
+#print axioms defined_state_valid
+
+end Mettapedia.Languages.HOLLight.PolynomialPredicate.Relations

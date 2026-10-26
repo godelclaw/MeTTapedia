@@ -104,8 +104,8 @@ theorem argument_decompositions_returns (state : State) (label : String) (kind :
           patternsValue remaining, number index])
         state (decompositionsValue (argumentDecompositions label kind all remaining index))
   | [], index, _ => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns, decompositionsValue, argumentDecompositions]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns, decompositionsValue, argumentDecompositions]
   | argument :: rest, index, within => by
     have inner := each argument (within argument (by simp))
     have later := argument_decompositions_returns state label kind all each rest (index + 1)
@@ -119,8 +119,8 @@ theorem argument_decompositions_returns (state : State) (label : String) (kind :
         ((kind.frame label (all.take index) (all.drop (index + 1))).wrap decomposition.1, decomposition.2))
       (argumentDecompositions label kind all rest (index + 1))
     cases kind <;>
-    · metta_call complete_checked
-      metta_eval [inner, later, before, after, wrapped, joined] with complete_checked
+    · metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [inner, later, before, after, wrapped, joined] with completeProof_checked in completeProof_agreement
         unfolding [patternsValue, encodePatterns, argumentDecompositions, ArgumentKind.term, ArgumentKind.head,
           ArgumentKind.frame, frameTerm, Decomposes]
 
@@ -129,34 +129,34 @@ theorem argument_decompositions_returns (state : State) (label : String) (kind :
 theorem decompositions_returns (state : State) (pattern : Pattern) : Decomposes state pattern := by
   induction pattern using Pattern.inductionOn with
   | hbvar index =>
-    metta_call complete_checked
-    metta_eval unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
       Complete.Predecessors.decompositions, ContextObservation.contextTerm]
   | hfvar name =>
-    metta_call complete_checked
-    metta_eval unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
       Complete.Predecessors.decompositions, ContextObservation.contextTerm]
   | happly label arguments ih =>
     unfold Decomposes
     rw [decompositions_apply]
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [argument_decompositions_returns state label .app arguments ih arguments 0 (fun _ member => member)]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, patternValue, patternsValue, decompositionsValue, decompositionTerm,
         ContextObservation.contextTerm, ArgumentKind.term, ArgumentKind.head]
   | hlambda binder body ih =>
     unfold Decomposes
     rw [Complete.Predecessors.decompositions]
-    metta_call complete_checked
-    metta_eval [ih, wrap_returns state (.lambda binder) (Complete.Predecessors.decompositions body)] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [ih, wrap_returns state (.lambda binder) (Complete.Predecessors.decompositions body)] with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
         ContextObservation.contextTerm, frameTerm, Frame.wrap]
   | hmultiLambda arity binders body ih =>
     unfold Decomposes
     rw [Complete.Predecessors.decompositions]
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [ih, wrap_returns state (.multiLambda arity binders) (Complete.Predecessors.decompositions body)]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
         ContextObservation.contextTerm, frameTerm, Frame.wrap]
   | hsubst body replacement bodyIH replacementIH =>
@@ -169,18 +169,23 @@ theorem decompositions_returns (state : State) (pattern : Pattern) : Decomposes 
         ((Frame.substBody replacement).wrap decomposition.1, decomposition.2))
       ((Complete.Predecessors.decompositions replacement).map fun decomposition =>
         ((Frame.substReplacement body).wrap decomposition.1, decomposition.2))
-    metta_call complete_checked
-    metta_eval [bodyIH, replacementIH, left, right, joined] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [bodyIH, replacementIH, left, right, joined] with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, patternValue, decompositionsValue, decompositionTerm,
         ContextObservation.contextTerm, frameTerm, Frame.wrap]
   | hcollection kind elements rest ih =>
     unfold Decomposes
     rw [decompositions_collection]
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [argument_decompositions_returns state "" (.collection kind rest) elements ih elements 0
         (fun _ member => member)]
-      with complete_checked
+      with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, patternValue, patternsValue, decompositionsValue, decompositionTerm,
         ContextObservation.contextTerm, ArgumentKind.term, ArgumentKind.head]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decompositions_apply
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decompositions_collection
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.argument_decompositions_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decompositions_returns

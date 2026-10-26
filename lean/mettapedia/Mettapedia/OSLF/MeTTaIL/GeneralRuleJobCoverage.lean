@@ -188,7 +188,7 @@ theorem projection_job {request : Request}
   cases result with
   | root trace captured completed history target valid =>
       simp only [rootProjection] at projected
-      unfold finishRoot at projected
+      unfold finishRoot finishRootIn at projected
       split at projected
       · split at projected
         · cases Option.some.inj projected
@@ -412,12 +412,8 @@ theorem finish_root_some_iff_snapshot (request : GeneralRuleJobExecution.Request
         (request.source.freeFvarNames ++ providerFreeNames request.environment.provider)))
       request.bound request.expected (request.job.site.context.fill target) = true := by
   rw [request_run_global_checker_snapshot request licensed fuel trace captured completed history target valid member]
-  unfold GeneralRuleJobExecution.finishRoot
-  split
-  · split
-    · simp_all
-    · simp_all
-  · simp_all
+  exact GeneralRuleJobExecution.finishRootIn_some_iff GeneralPremise.ordinaryInterpretation
+    request licensed trace captured completed history target valid
 
 theorem finish_root_none_iff_snapshot (request : GeneralRuleJobExecution.Request)
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
@@ -434,12 +430,8 @@ theorem finish_root_none_iff_snapshot (request : GeneralRuleJobExecution.Request
         (request.source.freeFvarNames ++ providerFreeNames request.environment.provider)))
       request.bound request.expected (request.job.site.context.fill target) = false := by
   rw [request_run_global_checker_snapshot request licensed fuel trace captured completed history target valid member]
-  unfold GeneralRuleJobExecution.finishRoot
-  split
-  · split
-    · simp_all
-    · simp_all
-  · simp_all
+  exact GeneralRuleJobExecution.finishRootIn_none_iff GeneralPremise.ordinaryInterpretation
+    request licensed trace captured completed history target valid
 
 def jobTaskFreeWithin (footprint : List String) {request : GeneralRuleJobExecution.Request} :
     GeneralRuleJobExecution.Task request → Prop
@@ -469,7 +461,7 @@ theorem finish_root_free_within (footprint : List String) (request : GeneralRule
     (answer : GeneralRuleJobExecution.Answer request)
     (emitted : GeneralRuleJobExecution.finishRoot request licensed trace captured completed history target valid = some answer) :
     jobAnswerFreeWithin footprint answer := by
-  unfold GeneralRuleJobExecution.finishRoot at emitted
+  unfold GeneralRuleJobExecution.finishRoot GeneralRuleJobExecution.finishRootIn at emitted
   split at emitted
   · split at emitted
     · cases Option.some.inj emitted
@@ -604,10 +596,8 @@ theorem job_frame_finish_root_some_iff_snapshot (request : GeneralRuleJobExecuti
         (request.source.freeFvarNames ++ providerFreeNames request.environment.provider)))
       request.bound request.expected (request.job.site.context.fill target) = true := by
   rw [job_frame_global_checker_snapshot request licensed fuel frame present trace captured completed history target valid member]
-  unfold GeneralRuleJobExecution.finishRoot
-  split
-  · split <;> simp_all
-  · simp_all
+  exact GeneralRuleJobExecution.finishRootIn_some_iff GeneralPremise.ordinaryInterpretation
+    request frame.licensed trace captured completed history target valid
 
 theorem job_reachable_finite_free_within (request : GeneralRuleJobExecution.Request)
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)

@@ -154,12 +154,12 @@ theorem derivedInstance_weigh (weight : String → Nat)
   cases derived with
   | bagPerm _ _ permutation =>
       simp [Pattern.weigh, Pattern.weighList_perm weight permutation]
-  | setPerm declaration _ _ =>
-      have uses := usesCollection_eq_true_of_collectionCarrierRule declaration
+  | setPerm declaration typed _ =>
+      have uses := usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noSets] at uses
       cases uses
-  | setDedup declaration _ =>
-      have uses := usesCollection_eq_true_of_collectionCarrierRule declaration
+  | setDedup declaration typed =>
+      have uses := usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noSets] at uses
       cases uses
   | flatten _ _ _ => simp [Pattern.weigh, Pattern.weighList]

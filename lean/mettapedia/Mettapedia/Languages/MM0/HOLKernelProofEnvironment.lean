@@ -403,8 +403,73 @@ def fromInitial (signature : Signature sorts terms) (layout : Layout) (initial :
       (entails signature.symbol (HOLKernelAssumptions.antecedent signature.symbol formation nativeAssumptions)
         (holds signature.symbol (encodeWithAssignment signature.symbol encoding.base encoding.constant
           (Layout.names initial) assignment 0 (assumptions.get occurrence))))
-    rw [← same]
-    exact proof
+    exact ⟨proof.val, by
+      rw [← same]
+      exact proof.property⟩
+
+section VariableBounds
+variable (environment : Environment (definitions := definitions) (theorems := theorems) (hypotheses := hypotheses)
+  encoding gamma assumptions sourceDepth)
+
+theorem formation_varsBelow (lower : Nat) (later : sourceDepth ≤ lower) :
+    Preterm.VarsBelow (initial.length + lower) environment.scope.formation :=
+  environment.scope.formationSorted.varsBelow_of_tail_independent
+    (fun offset beyond => environment.formationIndependent offset (later.trans beyond))
+
+theorem logical_varsBelow (lower : Nat) (later : sourceDepth + layout.width ≤ lower) :
+    Preterm.VarsBelow (initial.length + lower) environment.scope.logical :=
+  environment.scope.logicalSorted.varsBelow_of_tail_independent
+    (fun offset beyond => environment.logicalIndependent offset (later.trans beyond))
+
+theorem encoded_varsBelow {type : Ty Base} (source : Term Const gamma type)
+    (fits : source.binderDepth ≤ layout.width) {frame : Nat} (active : frame < layout.frames)
+    (before : sourceDepth + layout.width ≤ layout.workDepth frame)
+    (lower : Nat) (later : sourceDepth + layout.width ≤ lower) :
+    Preterm.VarsBelow (initial.length + lower) (environment.encode source) :=
+  (environment.encoded_sorted source fits active before).varsBelow_of_tail_independent
+    (fun offset beyond => environment.encoded_independent source fits active before offset (later.trans beyond))
+
+/-- Logical assumption extension bounds the actual projection/weakening receipts,
+provided the previously retained receipts already satisfy the same bound. -/
+theorem assume_assumptions_varsBelow
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (formula : Formula Const gamma) (fits : formula.binderDepth < layout.width)
+    {frame : Nat} (active : frame < layout.frames)
+    (before : sourceDepth + layout.width ≤ layout.workDepth frame)
+    (lower : Nat) (later : sourceDepth + layout.width ≤ lower)
+    (oldBound : ∀ occurrence : Fin assumptions.length,
+      (environment.assumptionProof occurrence).val.VarsBelow (initial.length + lower)) :
+    ∀ occurrence : Fin (formula :: assumptions).length,
+      ((environment.assume structural formula fits active before).assumptionProof occurrence).val.VarsBelow
+        (initial.length + lower) := by
+  have logicalBound := environment.logical_varsBelow lower later
+  have formulaBound : Preterm.VarsBelow (initial.length + lower)
+      (holds signature.symbol (environment.encode formula)) :=
+    ⟨trivial, environment.encoded_varsBelow formula (Nat.le_of_lt fits) active before lower later⟩
+  have formulaSorted := holds_sorted signature (NativeContext signature layout initial)
+    (environment.encoded_sorted formula (Nat.le_of_lt fits) active before)
+  intro occurrence
+  rcases occurrence with ⟨index, smaller⟩
+  cases index with
+  | zero =>
+      exact HOLKernelStructuralRules.right_varsBelow signature structural (initial.length + lower)
+        _ _ environment.scope.logicalSorted formulaSorted logicalBound formulaBound
+  | succ index =>
+      let position : Fin assumptions.length := ⟨index, by simpa using smaller⟩
+      have oldFormulaBound : Preterm.VarsBelow (initial.length + lower)
+          (holds signature.symbol (environment.encode (assumptions.get position))) :=
+        ⟨trivial, environment.encoded_varsBelow (assumptions.get position)
+          (Nat.le_of_lt (environment.assumptionBounds _ (List.get_mem _ _))) active before lower later⟩
+      have oldSorted := holds_sorted signature (NativeContext signature layout initial)
+        (environment.encoded_sorted (assumptions.get position)
+          (Nat.le_of_lt (environment.assumptionBounds _ (List.get_mem _ _))) active before)
+      exact HOLKernelStructuralRules.weaken_varsBelow signature structural (initial.length + lower)
+        _ _ _ environment.scope.logicalSorted formulaSorted oldSorted (environment.assumptionProof position)
+        logicalBound formulaBound oldFormulaBound (oldBound position)
+
+#print axioms assume_assumptions_varsBelow
+
+end VariableBounds
 
 end Environment
 
@@ -416,4 +481,283 @@ end Environment
 #print axioms Environment.assume
 #print axioms Environment.bind
 #print axioms Environment.fromInitial
+section RetainedScope
+variable {signature : Signature sorts terms} {layout : Layout} {initial : Context}
+
+theorem Encoding.base_varsBelow (encoding : Encoding signature layout initial Base Const) (index : Base) :
+    Preterm.VarsBelow initial.length (encoding.base index) := by
+  have bounded := (encoding.baseSorted index).varsBelow_of_tail_independent (lower := 0)
+    (fun offset _ => encoding.baseIndependent offset index)
+  simpa only [Nat.add_zero] using bounded
+
+theorem Encoding.constant_varsBelow (encoding : Encoding signature layout initial Base Const)
+    {type : Ty Base} (symbol : Const type) : Preterm.VarsBelow initial.length (encoding.constant symbol) := by
+  have bounded := (encoding.constantSorted symbol).varsBelow_of_tail_independent (lower := 0)
+    (fun offset _ => encoding.constantIndependent offset symbol)
+  simpa only [Nat.add_zero] using bounded
+
+namespace Environment
+variable {encoding : Encoding signature layout initial Base Const} {gamma : Ctx Base}
+variable {assumptions : List (Formula Const gamma)} {sourceDepth : Nat}
+variable (environment : Environment (definitions := definitions) (theorems := theorems) (hypotheses := hypotheses)
+  encoding gamma assumptions sourceDepth)
+
+/-- Bounds all names stored in the retained projection, typing families and
+ordered hypothesis receipts of this compiler environment. -/
+structure ProofsVarsBelow (limit : Nat) : Prop where
+  projection : environment.scope.projection.val.VarsBelow limit
+  variableTyping : ∀ {type} (index : Var gamma type), (environment.variableTyping index).val.VarsBelow limit
+  constantTyping : ∀ {type} (symbol : Const type), (environment.constantTyping symbol).val.VarsBelow limit
+  assumptionProof : ∀ occurrence : Fin assumptions.length, (environment.assumptionProof occurrence).val.VarsBelow limit
+
+theorem ProofsVarsBelow.mono {small large : Nat} (bounded : environment.ProofsVarsBelow small)
+    (ordered : small ≤ large) : environment.ProofsVarsBelow large :=
+  ⟨bounded.projection.mono ordered, fun {_} index => (bounded.variableTyping index).mono ordered,
+    fun {_} symbol => (bounded.constantTyping symbol).mono ordered,
+    fun occurrence => (bounded.assumptionProof occurrence).mono ordered⟩
+
+theorem assignment_varsBelow (lower : Nat) (later : sourceDepth ≤ lower) {type : Ty Base} (index : Var gamma type) :
+    Preterm.VarsBelow (initial.length + lower) (environment.assignment index) :=
+  (environment.assignmentSorted index).varsBelow_of_tail_independent
+    (fun offset beyond => environment.assignmentIndependent offset (later.trans beyond) index)
+
+theorem scope_varsBelow (lower : Nat) (later : sourceDepth + layout.width ≤ lower)
+    (bounded : environment.ProofsVarsBelow (initial.length + lower)) : environment.scope.VarsBelow (initial.length + lower) :=
+  ⟨environment.formation_varsBelow lower (by omega), environment.logical_varsBelow lower later, bounded.projection⟩
+
+theorem typedInFormation_varsBelow
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (typing : HOLKernelTypingRules.Rules theorems signature.symbol signature.ids)
+    {type : Ty Base} (source : Term Const gamma type) (fits : source.binderDepth ≤ layout.width)
+    {frame : Nat} (active : frame < layout.frames) (before : sourceDepth + layout.width ≤ layout.workDepth frame)
+    (lower : Nat) (later : sourceDepth + layout.width ≤ lower)
+    (bounded : environment.ProofsVarsBelow (initial.length + lower)) :
+    (environment.typedInFormation structural typing source fits active before).val.VarsBelow (initial.length + lower) := by
+  apply HOLKernelTermTyping.compileWithAssignment_varsBelow
+  · intro index
+    exact (encoding.base_varsBelow index).mono (by omega)
+  · intro type symbol
+    exact (encoding.constant_varsBelow symbol).mono (by omega)
+  · intro type index
+    exact environment.assignment_varsBelow lower (by omega) index
+  · exact environment.formation_varsBelow lower (by omega)
+  · intro offset smaller
+    simp only [Layout.names]
+    omega
+  · exact bounded.variableTyping
+  · exact bounded.constantTyping
+
+theorem typed_varsBelow
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (typing : HOLKernelTypingRules.Rules theorems signature.symbol signature.ids)
+    {type : Ty Base} (source : Term Const gamma type) (fits : source.binderDepth ≤ layout.width)
+    {frame : Nat} (active : frame < layout.frames) (before : sourceDepth + layout.width ≤ layout.workDepth frame)
+    (lower : Nat) (later : sourceDepth + layout.width ≤ lower)
+    (bounded : environment.ProofsVarsBelow (initial.length + lower)) :
+    (environment.typed structural typing source fits active before).val.VarsBelow (initial.length + lower) := by
+  apply HOLKernelStructuralRules.ProofContext.promote_varsBelow signature structural (initial.length + lower)
+    environment.scope _
+    (hasType_sorted signature _ (environment.encoded_sorted source fits active before)
+      (encodeType_sorted signature _ encoding.base encoding.baseSorted type))
+    (environment.typedInFormation structural typing source fits active before)
+  · exact environment.scope_varsBelow lower later bounded
+  · exact ⟨⟨trivial, environment.encoded_varsBelow source fits active before lower later⟩,
+      encodeType_varsBelow signature.symbol encoding.base (initial.length + lower)
+        (fun index => (encoding.base_varsBelow index).mono (by omega)) type⟩
+  · exact environment.typedInFormation_varsBelow structural typing source fits active before lower later bounded
+
+theorem assume_proofsVarsBelow
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (formula : Formula Const gamma) (fits : formula.binderDepth < layout.width)
+    {frame : Nat} (active : frame < layout.frames) (before : sourceDepth + layout.width ≤ layout.workDepth frame)
+    (lower : Nat) (later : sourceDepth + layout.width ≤ lower)
+    (bounded : environment.ProofsVarsBelow (initial.length + lower)) :
+    (environment.assume structural formula fits active before).ProofsVarsBelow (initial.length + lower) := by
+  refine ⟨?_, bounded.variableTyping, bounded.constantTyping, ?_⟩
+  · exact (environment.scope.under_varsBelow signature structural (initial.length + lower) _
+      (holds_sorted signature _ (environment.encoded_sorted formula (Nat.le_of_lt fits) active before))
+      (environment.scope_varsBelow lower later bounded)
+      ⟨trivial, environment.encoded_varsBelow formula (Nat.le_of_lt fits) active before lower later⟩).2.2
+  · exact environment.assume_assumptions_varsBelow structural formula fits active before lower later bounded.assumptionProof
+
+#print axioms typed_varsBelow
+#print axioms assume_proofsVarsBelow
+/-- Initial native receipts are bounded by the initial parameters and the
+canonical source binder bank; their scope is derived from their construction. -/
+theorem fromInitial_proofsVarsBelow (signature : Signature sorts terms) (layout : Layout) (initial : Context)
+    (formed : Context.WellFormed sorts initial)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (base : Base → Preterm) (constant : ∀ {type}, Const type → Preterm)
+    (baseSorted : ∀ index, Preterm.HasType terms initial (base index) [] signature.ids.type)
+    (constantSorted : ∀ {type} (symbol : Const type), Preterm.HasType terms initial (constant symbol) [] signature.ids.object)
+    (gamma : Ctx Base) (assignment : Assignment gamma)
+    (assignmentSorted : ∀ {type} (index : Var gamma type), Preterm.HasType terms initial (assignment index) [] signature.ids.object)
+    (formation : Preterm) (formationSorted : Preterm.HasType terms initial formation [] signature.ids.wff)
+    (variableTyping : ∀ {type} (index : Var gamma type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := initial) (hypotheses := hypotheses)
+        (HOLKernelTypingRules.typed signature.symbol formation (assignment index) (encodeType signature.symbol base type)))
+    (constantTyping : ∀ {type} (symbol : Const type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := initial) (hypotheses := hypotheses)
+        (HOLKernelTypingRules.typed signature.symbol formation (constant symbol) (encodeType signature.symbol base type)))
+    (assumptions : List (Formula Const gamma)) (bounds : ∀ formula ∈ assumptions, formula.binderDepth < layout.width) :
+    (fromInitial (definitions := definitions) (theorems := theorems) (hypotheses := hypotheses) signature layout initial formed structural base constant baseSorted constantSorted gamma assignment assignmentSorted formation formationSorted variableTyping constantTyping assumptions bounds).ProofsVarsBelow
+      (initial.length + layout.width) := by
+  let encoding : Encoding signature layout initial Base Const :=
+    Encoding.fromInitial signature layout initial formed base constant baseSorted constantSorted
+  let extra : Context := List.replicate layout.limit (.bound signature.ids.object)
+  have fixedFormation := formationSorted.weakenContext extra
+  have fixedAssignment : ∀ {type} (index : Var gamma type),
+      Preterm.HasType terms (NativeContext signature layout initial) (assignment index) [] signature.ids.object :=
+    fun {_} index => (assignmentSorted index).weakenContext extra
+  let nativeAssumptions := assumptions.map (fun formula => holds signature.symbol
+    (encodeWithAssignment signature.symbol encoding.base encoding.constant (Layout.names initial) assignment 0 formula))
+  have sorted : ∀ value ∈ nativeAssumptions, Preterm.HasType terms (NativeContext signature layout initial) value [] signature.ids.wff := by
+    intro value member
+    have mapped : value ∈ assumptions.map (fun formula => holds signature.symbol
+      (encodeWithAssignment signature.symbol encoding.base encoding.constant (Layout.names initial) assignment 0 formula)) := member
+    obtain ⟨formula, sourceMember, rfl⟩ := List.mem_map.mp mapped
+    exact holds_sorted signature _ (encode_sorted signature _ encoding.base encoding.constant (Layout.names initial)
+      encoding.baseSorted encoding.constantSorted formula assignment 0 fixedAssignment
+      (by intro offset smaller; apply layout.slot; apply layout.source_slot_lt
+          simpa only [Nat.zero_add] using Nat.lt_trans smaller (bounds formula sourceMember)))
+  have baseBound (index : Base) : Preterm.VarsBelow (initial.length + layout.width) (base index) :=
+    (baseSorted index).varsBelow.mono (by omega)
+  have constantsBound : ∀ {type} (symbol : Const type), Preterm.VarsBelow (initial.length + layout.width) (constant symbol) :=
+    fun {_} symbol => (constantSorted symbol).varsBelow.mono (by omega)
+  have assignmentBound : ∀ {type} (index : Var gamma type), Preterm.VarsBelow (initial.length + layout.width) (assignment index) :=
+    fun {_} index => (assignmentSorted index).varsBelow.mono (by omega)
+  have formationBound : Preterm.VarsBelow (initial.length + layout.width) formation := formationSorted.varsBelow.mono (by omega)
+  have nativeBound : ∀ value ∈ nativeAssumptions, Preterm.VarsBelow (initial.length + layout.width) value := by
+    intro value member
+    obtain ⟨formula, present, rfl⟩ := List.mem_map.mp member
+    refine ⟨trivial, ?_⟩
+    apply encode_varsBelow signature.symbol base constant (Layout.names initial) (initial.length + layout.width)
+      baseBound constantsBound formula assignment 0 assignmentBound
+    intro offset smaller
+    have width := bounds formula present
+    simp only [Layout.names, Nat.zero_add]
+    omega
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact HOLKernelAssumptions.formationProjection_varsBelow signature structural (initial.length + layout.width)
+      formation fixedFormation formationBound nativeAssumptions sorted nativeBound
+  · intro type index
+    exact (variableTyping index).property.payload_varsBelow.mono (by omega)
+  · intro type symbol
+    exact (constantTyping symbol).property.payload_varsBelow.mono (by omega)
+  · intro occurrence
+    exact HOLKernelAssumptions.hypothesis_varsBelow signature structural (initial.length + layout.width)
+      formation fixedFormation formationBound nativeAssumptions sorted nativeBound
+      ⟨occurrence.val, by simp [nativeAssumptions]⟩
+
+#print axioms fromInitial_proofsVarsBelow
+
+theorem bind_proofsVarsBelow
+    (environment : Environment (definitions := definitions) (theorems := theorems) (hypotheses := hypotheses)
+      encoding gamma assumptions sourceDepth)
+    (abbreviation : HOLKernelBooleanEquality.Abbreviation terms definitions signature.symbol signature.ids)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (typing : HOLKernelTypingRules.Rules theorems signature.symbol signature.ids)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids abbreviation.reference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids abbreviation.reference)
+    (domain : Ty Base) {frame : Nat} (active : frame < layout.frames)
+    (before : sourceDepth + layout.width ≤ layout.workDepth frame)
+    (bounded : environment.ProofsVarsBelow (initial.length + layout.workDepth frame)) :
+    (environment.bind abbreviation profile structural typing rules binding domain active before).ProofsVarsBelow
+      (initial.length + layout.workDepth (frame + 1)) := by
+  let lower := layout.workDepth (frame + 1)
+  let limit := initial.length + lower
+  let root := Layout.names initial (layout.workDepth frame)
+  let extra := hasType signature.symbol (.var root) (encodeType signature.symbol encoding.base domain)
+  have advance : layout.workDepth frame ≤ lower := layout.workDepth_mono (by omega)
+  have later : sourceDepth + layout.width ≤ lower := before.trans advance
+  have oldScope : environment.ProofsVarsBelow limit := bounded.mono environment (by change initial.length + layout.workDepth frame ≤ initial.length + lower; omega)
+  have baseBound : ∀ index, Preterm.VarsBelow limit (encoding.base index) :=
+    fun index => (encoding.base_varsBelow index).mono (by dsimp [limit]; omega)
+  have constantBound : ∀ {type} (symbol : Const type), Preterm.VarsBelow limit (encoding.constant symbol) :=
+    fun {_} symbol => (encoding.constant_varsBelow symbol).mono (by dsimp [limit]; omega)
+  have assignmentBound : ∀ {type} (index : Var gamma type), Preterm.VarsBelow limit (environment.assignment index) :=
+    fun {_} index => environment.assignment_varsBelow lower (by omega) index
+  have contextBound := environment.scope_varsBelow lower later oldScope
+  have rootBound : root < limit := by
+    dsimp only [root, limit, lower, Layout.names]
+    rw [layout.next_workDepth]
+    simp only [Layout.temporaryDepth]
+    omega
+  have extraBound : Preterm.VarsBelow limit extra := ⟨⟨trivial, rootBound⟩, encodeType_varsBelow _ _ _ baseBound domain⟩
+  have rootDeclared : (NativeContext signature layout initial)[root]? = some (.bound signature.ids.object) := by
+    simpa only [Nat.add_zero] using layout.workSlots initial signature.ids.object active 0 (by omega)
+  have rootSorted : Preterm.HasType terms (NativeContext signature layout initial) (.var root) [] signature.ids.object := .var rootDeclared
+  have extraSorted := hasType_sorted signature _ rootSorted (encodeType_sorted signature _ encoding.base encoding.baseSorted domain)
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact (environment.scope.extend_varsBelow signature structural limit extra extraSorted contextBound extraBound).2.2
+  · intro type index
+    cases index with
+    | vz => exact HOLKernelStructuralRules.right_varsBelow signature structural limit _ _ environment.scope.formationSorted extraSorted contextBound.1 extraBound
+    | vs index =>
+        exact HOLKernelTermTyping.weakenVariables_varsBelow signature structural encoding.base environment.assignment _ _
+          environment.scope.formationSorted extraSorted encoding.baseSorted environment.assignmentSorted environment.variableTyping limit
+          baseBound assignmentBound contextBound.1 extraBound oldScope.variableTyping index
+  · exact HOLKernelTermTyping.weakenConstants_varsBelow signature structural encoding.base encoding.constant _ _
+      environment.scope.formationSorted extraSorted encoding.baseSorted encoding.constantSorted environment.constantTyping limit
+      baseBound constantBound contextBound.1 extraBound oldScope.constantTyping
+  · intro occurrence
+    let position : Fin assumptions.length := ⟨occurrence.val, by simpa [weakenHyps] using occurrence.isLt⟩
+    let windows := environment.windows active before
+    have sourceNames : ∀ offset < windows.width, Layout.names initial (windows.sourceDepth + offset) < limit := by
+      intro offset smaller
+      change offset < layout.width at smaller
+      change initial.length + (sourceDepth + offset) < initial.length + lower
+      omega
+    have workNames : ∀ offset < windows.width, Layout.names initial (windows.workDepth + offset) < limit := by
+      intro offset smaller
+      change offset < layout.width at smaller
+      change initial.length + (layout.workDepth frame + offset) < initial.length + lower
+      dsimp only [lower]
+      rw [layout.next_workDepth]
+      simp only [Layout.temporaryDepth]
+      omega
+    have temporaryNames : ∀ offset < windows.width, Layout.names initial (windows.temporaryDepth + offset) < limit := by
+      intro offset smaller
+      change offset < layout.width at smaller
+      change initial.length + (layout.temporaryDepth frame + offset) < initial.length + lower
+      dsimp only [lower]
+      rw [layout.next_workDepth]
+      omega
+    have fit : (assumptions.get position).binderDepth + 1 ≤ windows.width := by
+      have enough := environment.assumptionBounds (assumptions.get position) (List.get_mem assumptions position)
+      change (assumptions.get position).binderDepth + 1 ≤ layout.width
+      omega
+    let lifted := HOLKernelSourceBinding.weakenAssumption (domain := domain) signature abbreviation profile structural typing rules binding
+      encoding.base encoding.constant (Layout.names initial) (Layout.names initial) encoding.baseSorted encoding.constantSorted
+      (Layout.names_injective initial) (Layout.names_injective initial) encoding.baseIndependent encoding.baseIndependent
+      (assumptions.get position) environment.assignment environment.scope windows fit
+      environment.assignmentSorted environment.variableTyping environment.constantTyping (environment.assumptionProof position)
+    have carried := HOLKernelSourceBinding.weakenAssumption_varsBelow (domain := domain) signature abbreviation profile structural typing rules binding
+      encoding.base encoding.constant (Layout.names initial) (Layout.names initial) encoding.baseSorted encoding.constantSorted
+      (Layout.names_injective initial) (Layout.names_injective initial) encoding.baseIndependent encoding.baseIndependent
+      (assumptions.get position) environment.assignment environment.scope windows fit
+      environment.assignmentSorted environment.variableTyping environment.constantTyping (environment.assumptionProof position) limit
+      baseBound constantBound assignmentBound contextBound sourceNames workNames temporaryNames
+      oldScope.variableTyping oldScope.constantTyping (oldScope.assumptionProof position)
+    have same : (weakenHyps (σ := domain) assumptions).get occurrence = weaken (σ := domain) (assumptions.get position) := by
+      change (assumptions.map (weaken (σ := domain)))[occurrence.val] = _
+      simp only [List.getElem_map]
+      rfl
+    let claim := fun expression : Formula Const (domain :: gamma) =>
+      entails signature.symbol (conjunction signature.symbol environment.scope.logical extra)
+        (holds signature.symbol (encodeWithAssignment signature.symbol encoding.base encoding.constant (Layout.names initial)
+          (Assignment.extend (.var root) environment.assignment) (layout.workDepth frame + 1) expression))
+    change (Eq.mpr (congrArg (fun expression => CheckedProof (terms := terms) (definitions := definitions)
+      (theorems := theorems) (context := NativeContext signature layout initial) (hypotheses := hypotheses)
+      (claim expression)) same) lifted).val.VarsBelow (initial.length + layout.workDepth (frame + 1))
+    rw [HOLKernelStructuralRules.CheckedProof.val_mpr claim same lifted]
+    exact carried
+
+#print axioms bind_proofsVarsBelow
+
+end Environment
+
+end RetainedScope
+
 end Mettapedia.Languages.MM0.HOLKernelProofEnvironment

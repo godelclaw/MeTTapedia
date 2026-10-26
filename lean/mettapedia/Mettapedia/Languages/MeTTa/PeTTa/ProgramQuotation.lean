@@ -5,15 +5,15 @@ import Lean.Elab.Term
 /-!
 # Literal source packages for PeTTa program proofs
 
-A quotation reads an existing program file and retains its exact source text,
-digest and parsed program. The digest must match the supplied pin. Expansion
-contains only ordinary data constructors; it introduces no checking primitive
-and does not produce a MeTTa program.
+A quotation reads literal source text or an existing program file and retains
+its exact source text, digest and parsed program. The digest must match the
+supplied pin. Expansion contains only ordinary data constructors; it introduces
+no checking primitive and does not produce a MeTTa program.
 
 The text reader remains a named boundary. Kernel checking establishes the
 theorems about the retained constructor data, not byte-level parser adequacy.
-The quoting module must register its source files as Lake inputs so changed
-text cannot silently reuse an earlier quoted program.
+File quotations must register their source files as Lake inputs so changed text
+cannot silently reuse an earlier quoted program.
 -/
 
 set_option autoImplicit false
@@ -84,20 +84,26 @@ private def programExpr (program : Program) : TermElabM Expr := do
     (atomsExpr program.facts)
     (listExpr (mkConst ``SpaceSemantics.FormKind) (program.layout.map formKindExpr))
 
+private def quotedProgramExpr (text expectedDigest : String) (source pin : Syntax) : TermElabM Expr := do
+  let digest := MeTTailCore.Crypto.SHA256.sha256Hex text
+  unless digest = expectedDigest do
+    throwErrorAt pin "source digest differs from the pinned artifact"
+  let .ok program := SpaceSemantics.readProgram text
+    | throwErrorAt source "source program reading failed"
+  return mkApp3 (mkConst ``QuotedProgram.mk) (toExpr text) (toExpr digest) (← programExpr program)
+
+scoped syntax "petta_source% " str " sha256 " str : term
 scoped syntax "petta_source_file% " str " sha256 " str : term
 
 elab_rules : term
+  | `(petta_source% $text:str sha256 $pin:str) =>
+      quotedProgramExpr text.getString pin.getString text pin
   | `(petta_source_file% $path:str sha256 $pin:str) => do
       let context ← readThe Lean.Core.Context
       let some parent := (System.FilePath.mk context.fileName).parent
         | throwErrorAt path "cannot locate the quoting module"
       let text ← IO.FS.readFile (parent / path.getString)
-      let digest := MeTTailCore.Crypto.SHA256.sha256Hex text
-      unless digest = pin.getString do
-        throwErrorAt pin "source digest differs from the pinned artifact"
-      let .ok program := SpaceSemantics.readProgram text
-        | throwErrorAt path "source program reading failed"
-      return mkApp3 (mkConst ``QuotedProgram.mk) (toExpr text) (toExpr digest) (← programExpr program)
+      quotedProgramExpr text pin.getString path pin
 
 end
 

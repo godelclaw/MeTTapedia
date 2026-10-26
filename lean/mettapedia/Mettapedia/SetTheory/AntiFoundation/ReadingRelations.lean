@@ -25,15 +25,12 @@ def accessibleBisimilar (edge : Edge α) (a b : α) : Prop :=
 theorem relStep_gfp_eq_bisimilar (edge : Edge α) :
     (relStep edge).gfp = Bisimilar edge edge := by
   apply le_antisymm
-  · intro a b hab
-    have hbis : IsBisimulation edge edge (relStep edge).gfp := by
-      intro x y hxy
-      rw [← (relStep edge).map_gfp] at hxy
-      exact hxy
-    exact hbis.bisimilar hab
-  · apply OrderHom.le_gfp
-    intro a b hab
-    exact isBisimulation_bisimilar hab
+  · have bisimulation : IsBisimulation edge edge (relStep edge).gfp := by
+      intro a b related
+      rw [← (relStep edge).map_gfp] at related
+      exact related
+    exact fun _ _ related => bisimulation.bisimilar related
+  · exact (relStep edge).le_gfp isBisimulation_bisimilar
 
 theorem relStep_accessible_le (edge : Edge α) :
     relStep edge (accessibleBisimilar edge) ≤ accessibleBisimilar edge := by
@@ -47,24 +44,15 @@ theorem relStep_accessible_le (edge : Edge α) :
     exact hT.2.1
   · have hsc : SameChildren edge (Bisimilar edge edge) a b :=
       sameChildren_mono (fun _ _ h => h.2.2) hab
-    have hbis : IsBisimulation edge edge (relStep edge (Bisimilar edge edge)) := by
-      intro x y hxy
-      constructor
-      · intro x' hx
-        obtain ⟨y', hy, hb⟩ := hxy.1 x' hx
-        exact ⟨y', hy, isBisimulation_bisimilar hb⟩
-      · intro y' hy
-        obtain ⟨x', hx, hb⟩ := hxy.2 y' hy
-        exact ⟨x', hx, isBisimulation_bisimilar hb⟩
-    exact hbis.bisimilar hsc
+    have fixed : relStep edge (Bisimilar edge edge) = Bisimilar edge edge := by
+      rw [← relStep_gfp_eq_bisimilar, (relStep edge).map_gfp]
+    change relStep edge (Bisimilar edge edge) a b at hsc
+    rwa [fixed] at hsc
 
 /-- A reading, seen as a relation, is a fixed point of the relation step. -/
 theorem relStep_coe_of_fixed (edge : Edge α) {R : Setoid α} (hR : step edge R = R) :
     relStep edge (⇑R) = ⇑R := by
-  ext x y
-  simp only [relStep_apply]
-  exact (step_apply edge R x y).symm.trans (Iff.of_eq
-    (congrFun (congrFun (congrArg (fun S : Setoid α => (⇑S : α → α → Prop)) hR) x) y))
+  exact congrArg (fun S : Setoid α => (⇑S : α → α → Prop)) hR
 
 theorem accessibleBisimilar_le_of_preFixed (edge : Edge α) {S : α → α → Prop}
     (hS : relStep edge S ≤ S) {a b : α} (h : accessibleBisimilar edge a b) : S a b := by
@@ -95,38 +83,19 @@ theorem relStep_lfp_eq_accessibleBisimilar (edge : Edge α) :
 theorem reading_agrees_accessible (edge : Edge α) (R : Setoid α) (hR : step edge R = R)
     {a b : α} (ha : Acc (flip edge) a) (hb : Acc (flip edge) b) :
     R a b ↔ (relStep edge).lfp a b := by
-  have hrel : relStep edge (⇑R) = ⇑R := relStep_coe_of_fixed edge hR
-  constructor
-  · intro hab
-    rw [relStep_lfp_eq_accessibleBisimilar]
-    refine ⟨ha, hb, ?_⟩
-    have hhigh : ⇑R ≤ (relStep edge).gfp := (relStep edge).le_gfp hrel.symm.le
-    rw [relStep_gfp_eq_bisimilar] at hhigh
-    exact hhigh a b hab
-  · intro hab
-    exact ((relStep edge).lfp_le hrel.le) a b hab
+  rw [relStep_lfp_eq_accessibleBisimilar]
+  exact ⟨fun hab => ⟨ha, hb,
+    ((le_step_iff_isBisimulation edge R).mp hR.symm.le).bisimilar hab⟩,
+    accessibleBisimilar_le_of_preFixed edge (relStep_coe_of_fixed edge hR).le⟩
 
 theorem unique_reading_of_wellFounded (edge : Edge α) (hwf : WellFounded (flip edge)) :
     ∃! R : Setoid α, step edge R = R := by
-  refine ⟨bisimilarSetoid edge, ?_, ?_⟩
-  · rw [← gfp_eq_bisimilar]
-    exact (step edge).isFixedPt_gfp
-  · intro R hR
-    have hrel : relStep edge (⇑R) = ⇑R := relStep_coe_of_fixed edge hR
-    have hlow : (relStep edge).lfp ≤ ⇑R := (relStep edge).lfp_le hrel.le
-    have hhigh : ⇑R ≤ (relStep edge).gfp := (relStep edge).le_gfp hrel.symm.le
-    apply Setoid.ext
-    intro a b
-    constructor
-    · intro hab
-      have hbis : Bisimilar edge edge a b := by
-        rw [relStep_gfp_eq_bisimilar] at hhigh
-        exact hhigh a b hab
-      simpa [bisimilarSetoid_iff] using hbis
-    · intro hab
-      have hacc : accessibleBisimilar edge a b :=
-        ⟨WellFounded.apply hwf a, WellFounded.apply hwf b, (bisimilarSetoid_iff edge).mp hab⟩
-      rw [← relStep_lfp_eq_accessibleBisimilar] at hacc
-      exact hlow a b hacc
+  have greatest : step edge (bisimilarSetoid edge) = bisimilarSetoid edge := by
+    rw [← gfp_eq_bisimilar]; exact (step edge).isFixedPt_gfp
+  refine ⟨bisimilarSetoid edge, greatest, ?_⟩
+  intro R hR
+  ext a b
+  exact (reading_agrees_accessible edge R hR (hwf.apply a) (hwf.apply b)).trans
+    (reading_agrees_accessible edge _ greatest (hwf.apply a) (hwf.apply b)).symm
 
 end Mettapedia.SetTheory.AntiFoundation

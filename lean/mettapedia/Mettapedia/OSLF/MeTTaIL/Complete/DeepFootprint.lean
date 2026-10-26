@@ -58,7 +58,7 @@ theorem tick_covered (fits : Footprinted family footprint within) {state : State
   unfold tick
   split
   · exact levelStart_covered fits (state.depth + 1) (publication_covered fits covered)
-  · exact ⟨Scheduled.tick_free_within footprint family.environment (family.goal state.depth) fits.provider
+  · exact ⟨Scheduled.tick_free_within Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinary_preservesFreeNames footprint family.environment (family.goal state.depth) fits.provider
       fits.dynamic state.level covered.level, covered.published⟩
 
 theorem run_covered (fits : Footprinted family footprint within) :

@@ -41,7 +41,9 @@ def resolved_guard_query {allowed : List Token} {choice : Choice} {bound : List 
   · simp only [expand, expandQuery]
     split
     · rename_i answer found
-      have decrease := queryDebt_cursor (environment allowed) (query choice bound initial)
+      have decrease := queryDebt_cursor
+        _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
+        (environment allowed) (query choice bound initial)
         state cursor answer found
       exact .cons (continued _)
         (.cons (resolved_guard_query typed names outer state safe (cursor + 1) tail continued) (.nil _ _))
@@ -50,12 +52,15 @@ def resolved_guard_query {allowed : List Token} {choice : Choice} {bound : List 
       · exact .nil _ _
       · rename_i pending
         have unfinished : state.agenda ≠ [] := by intro same; simp [same] at pending
-        have decrease := queryDebt_tick (environment allowed) (query choice bound initial)
+        have decrease := queryDebt_tick
+          _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
+          (environment allowed) (query choice bound initial)
           state cursor found unfinished
         exact .cons (resolved_guard_query typed names outer
           (Query.tick (environment allowed) (query choice bound initial) state)
           (query_tick_safe typed names state safe) cursor tail continued) (.nil _ _)
-termination_by queryDebt (environment allowed) (query choice bound initial) state cursor
+termination_by queryDebt
+  _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost (environment allowed) (query choice bound initial) state cursor
 decreasing_by all_goals assumption
 
 theorem query_assignment_unchanged {allowed : List Token} {choice : Choice} {bound : List TypeExpr}

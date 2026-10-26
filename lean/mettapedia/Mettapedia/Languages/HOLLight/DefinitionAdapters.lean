@@ -558,6 +558,36 @@ theorem admitConstantInTheory_result {context : TheoryContext} {witnesses : Inst
       · cases accepted
     · cases accepted
 
+/-- The same resolved name and source body yield the same checked payload in
+any two contexts that admit them. The extended contexts may still differ. -/
+theorem admitConstantInTheory_payload_eq
+    {firstContext secondContext : TheoryContext} {firstInstances secondInstances : InstanceWitnesses}
+    {name : Name} {source : SourceTerm} {first second : ContextConstantDefinitionResult}
+    (firstAccepted : admitConstantInTheory firstContext firstInstances name source = some first)
+    (secondAccepted : admitConstantInTheory secondContext secondInstances name source = some second) :
+    first.definition = second.definition ∧ first.output = second.output := by
+  have firstResult := admitConstantInTheory_result firstAccepted
+  have secondResult := admitConstantInTheory_result secondAccepted
+  exact ⟨Option.some.inj (((checkSource_sound _ _ firstResult.1).1).symm.trans
+      (checkSource_sound _ _ secondResult.1).1),
+    Option.some.inj (firstResult.2.2.2.2.1.symm.trans secondResult.2.2.2.2.1)⟩
+
+/-- Successful instance-certificate providers yield the same admitted
+constant, declaration context and equation. They cannot change source checking. -/
+theorem admitConstantInTheory_unique {context : TheoryContext}
+    {firstWitnesses secondWitnesses : InstanceWitnesses} {name : Name} {body : SourceTerm}
+    {first second : ContextConstantDefinitionResult}
+    (firstAccepted : admitConstantInTheory context firstWitnesses name body = some first)
+    (secondAccepted : admitConstantInTheory context secondWitnesses name body = some second) :
+    first = second := by
+  have firstChecked := (admitConstantInTheory_result firstAccepted).1
+  have secondChecked := (admitConstantInTheory_result secondAccepted).1
+  have definitionSame := (admitConstantInTheory_payload_eq firstAccepted secondAccepted).1
+  have same : admitConstantInTheory context firstWitnesses name body =
+      admitConstantInTheory context secondWitnesses name body := by
+    simp only [admitConstantInTheory, firstChecked, secondChecked, definitionSame]
+  exact Option.some.inj (firstAccepted.symm.trans (same.trans secondAccepted))
+
 /-- An old typed term stays admitted after registration, using its original
 declaration identity rather than a printed-name approximation. -/
 theorem admitConstantInTheory_preserves_annotations
@@ -1006,6 +1036,49 @@ theorem admitSourceTypeInTheory_isSome_eq
           have checkedBool := (CanonicalTerm.isBoolB_eq_true_iff _).mpr bool
           simp [admitSourceTypeInTheory, admitTypeInTheory, view, admitted, checkedBool]
 
+/-- Successful source admissions construct the same registered definition
+regardless of which checked instance certificates are supplied. -/
+theorem admitTypeInTheoryFromApplication_unique (context : TheoryContext) (first second : InstanceWitnesses)
+    (request : TypeOperatorDefinitionRequest) (predicate witness : CanonicalTerm)
+    (application : CanonicalTerm.ApplicationSemantics predicate witness request.existence.sequent.concl)
+    (left right : ContextTypeDefinitionResult)
+    (one : admitTypeInTheoryFromApplication context first request predicate witness application = some left)
+    (two : admitTypeInTheoryFromApplication context second request predicate witness application = some right) :
+    left = right := by
+  unfold admitTypeInTheoryFromApplication at one two
+  cases admitted : admitType context.names request with
+  | none =>
+    simp only [admitted] at one two
+    split_ifs at one two
+  | some result =>
+    simp only [admitted] at one two
+    split_ifs at one two; simp_all
+
+theorem admitSourceTypeInTheory_unique (context : TheoryContext) (first second : InstanceWitnesses)
+    (request : TypeOperatorDefinitionRequest) (left right : SourceTypeDefinitionResult)
+    (one : admitSourceTypeInTheory context first request = some left)
+    (two : admitSourceTypeInTheory context second request = some right) :
+    left = right := by
+  unfold admitSourceTypeInTheory at one two
+  cases viewChecked : request.existence.sequent.concl.applicationView? with
+  | none => simp [viewChecked] at one
+  | some view =>
+    simp only [viewChecked] at one two
+    cases firstCore : admitTypeInTheoryFromApplication context first request
+        view.function view.argument view.semantics with
+    | none => simp [firstCore] at one
+    | some firstResult =>
+      cases secondCore : admitTypeInTheoryFromApplication context second request
+          view.function view.argument view.semantics with
+      | none => simp [secondCore] at two
+      | some secondResult =>
+        have equal := admitTypeInTheoryFromApplication_unique context first second request view.function view.argument
+          view.semantics firstResult secondResult firstCore secondCore
+        cases equal
+        simp only [firstCore] at one
+        simp only [secondCore] at two
+        exact Option.some.inj (one.symm.trans two)
+
 /-! ## Registered theory judgments
 
 Inference, declaration formation, and definition extension are separate
@@ -1168,6 +1241,20 @@ inductive TheoryDerives (policy : AxiomPolicy) : TheoryContext → Theorem → P
       (existence : TheoryDerives policy context request.existence)
       (formed : TheoremFormed result.context.signature result.output.representationAbstractionTheorem) :
       TheoryDerives policy result.context result.output.representationAbstractionTheorem
+
+/-- Enlarging the declared axiom policy preserves the original derivation,
+including its admitted definitions and their existence premises. -/
+theorem TheoryDerives.mono_policy {first second : AxiomPolicy}
+    (included : ∀ sequent, first sequent → second sequent)
+    {context : TheoryContext} {out : Theorem} (proof : TheoryDerives first context out) :
+    TheoryDerives second context out := by
+  induction proof with
+  | inference step formed _ output prior => exact .inference step formed prior output
+  | «axiom» empty authorized step formed => exact .axiom empty (included _ authorized) step formed
+  | weaken included _ prior => exact .weaken included prior
+  | constantDefinition accepted formed => exact .constantDefinition accepted formed
+  | typeAbstractionDefinition accepted _ formed prior => exact .typeAbstractionDefinition accepted prior formed
+  | typeRepresentationDefinition accepted _ formed prior => exact .typeRepresentationDefinition accepted prior formed
 
 theorem TheoryDerives.wellFormed {policy : AxiomPolicy} {context : TheoryContext} {out : Theorem}
     (proof : TheoryDerives policy context out) : TheoremFormed context.signature out := by

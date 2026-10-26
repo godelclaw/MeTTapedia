@@ -97,8 +97,7 @@ theorem complete_descent_tick_returns (state : State) (environment : Environment
       (apply "gslt:descent:tick" [environmentValue environment (environment.free.entriesOn footprint),
         descentStateValue search]) state
       (descentStateValue (StructuralDescent.Scheduled.tick environment goal search)) := by
-  metta_lift complete_checked ["environment", "state"]
-    (descent_tick_returns state environment finiteProvider footprint provider goal search covered)
+  exact descent_tick_returns state environment finiteProvider footprint provider goal search covered
 
 /-- What one unit of work for a lane returns: `(StepAdvanced entry receipts)`. -/
 def advancedTerm (plan : GeneralExecutionAdmission.Plan)
@@ -157,8 +156,7 @@ theorem step_advance_all_returns (state : State) (table : List (String × TypeEx
             entries.flatMap fun entry =>
               (Complete.Rounds.advance (Complete.Step.family plan) (Complete.Step.lift plan bound expected) entry).2)))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, advancedAllTerm]
+    complete_eval unfolding [encodeList, advancedAllTerm]
   | entry :: rest, ready => by
     have head := step_advance_returns state table tabled scope entry (ready entry (by simp))
     have tail := step_advance_all_returns state table tabled scope rest
@@ -214,8 +212,7 @@ theorem step_rounds_returns (state : State) (table : List (String × TypeExpr))
           encoded (stepStateTerm plan search)])
         state (encoded (stepStateTerm plan (Complete.Step.rounds plan bound expected work search)))
   | 0, search, _ => by
-    metta_call complete_checked
-    metta_eval unfolding [Complete.Step.rounds, Complete.Rounds.rounds]
+    complete_eval unfolding [Complete.Step.rounds, Complete.Rounds.rounds]
   | work + 1, search, ready => by
     have once := step_round_returns state table tabled scope search ready
     have later := step_rounds_returns state table tabled scope work
@@ -230,8 +227,7 @@ theorem step_entries_complete_returns (state : State) :
         (apply "gslt:step:entries-complete" [admittedValue plan, encoded (encodeList (entryTerm plan) entries)])
         state (Effects.boolean (entries.all fun entry => entry.2.complete))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | ⟨job, deep⟩ :: rest => by
     have family := step_family_returns plan state job
     have done := deep_complete_returns (rootWire (Complete.Step.request plan job)) state deep

@@ -5,6 +5,7 @@ import Mettapedia.OSLF.MeTTaIL.RecursiveCollectionHandoff
 
 set_option autoImplicit false
 set_option maxHeartbeats 4000000
+set_option maxRecDepth 100000
 
 namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RecursiveCollectionHandoffExecution
 
@@ -24,10 +25,61 @@ def source : ProgramQuotation.QuotedProgram :=
     sha256 "14b11b539d59f89ae41722a5175b97b61502f582fcb7b8cde847441e3dbccc6d"
 
 def library : BridgeKit.Library :=
-  ⟨CollectionPresentationExecution.library.runtime, source.program, ["gslt:collection-handoff:"]⟩
+  RetainedMatchingWire.interpretedLibrary
 
 set_option maxRecDepth 100000 in
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
+
+section ProofMetadata
+
+private local instance handoffEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧ left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+/-- Direct outward calls derived from the actual family bodies. -/
+def handoffProofInheritedHeads : List String := ["gslt:automata:append", "gslt:collection-presentation:at"]
+
+theorem handoffProofInheritedHeads_derived :
+    ((source.program.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+      (fun head => head.startsWith "gslt:" && !(source.program.equations.map (·.head)).contains head)).eraseDups =
+        handoffProofInheritedHeads := by decide +kernel
+
+private def handoffMetadataBase : SpaceSemantics.Program where
+  equations := [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[11]'(by decide +kernel)).program.equations[3]'(by decide +kernel)]
+  declarations := [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[11]'(by decide +kernel)).program.declarations[3]'(by decide +kernel)]
+
+/-- Bounded source metadata; all operational conclusions retain the shared runtime. -/
+def handoffProofLibrary : Library := ⟨handoffMetadataBase, source.program, ["gslt:collection-handoff:"]⟩
+
+def handoffProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || handoffProofLibrary.owns head || handoffProofInheritedHeads.contains head
+
+theorem handoffProof_checked : handoffProofLibrary.check = true := by decide +kernel
+
+theorem handoffProof_agreement :
+    ProgramAgreementOn handoffProofHeads handoffProofLibrary.runtime library.runtime := by
+  apply programAgreementOn_of_retained_rows
+  · decide +kernel
+  · decide +kernel
+
+#print axioms handoffProofInheritedHeads_derived
+#print axioms handoffProof_checked
+#print axioms handoffProof_agreement
+
+end ProofMetadata
 
 def preparedTerm (prepared : Prepared) : Term :=
   .application "PreparedCollectionMatch" [encodePattern prepared.source, matcherAnswerTerm prepared.ordinary,
@@ -38,7 +90,7 @@ macro_rules
   | `(tactic| handoff_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
+    `(tactic| (metta_call_in handoffProof_checked using handoffProof_agreement; metta_eval [$facts,*] with handoffProof_checked in handoffProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -52,7 +104,7 @@ theorem append_returns {α : Type} (element : α → Term) (state : Effects.Stat
     PureReturns library.runtime [] state
       (apply "gslt:automata:append" [encoded (encodeList element left), encoded (encodeList element right)])
       state (encoded (encodeList element (left ++ right))) := by
-  metta_lift checked ["left", "right"] (CollectionPresentationExecution.append_returns element state left right)
+  exact CollectionPresentationExecution.append_returns element state left right
 
 mutual
 @[metta_head "gslt:collection-handoff:trace"]
@@ -125,7 +177,7 @@ theorem prepare_returns (state : Effects.State) (table : List String) (ordered :
         encoded (encodeList Term.natural request.path), encoded (encodePattern request.schema),
         encoded (encodePattern request.target), encoded (encodeList eventTerm answer.trace)])
       state (encoded (encodeOption (presentationTerm encodePattern) (some (presented, [])))) := by
-    metta_lift checked ["names", "path", "schema", "target", "events"] present
+    exact present
   handoff_eval [lifted, trace_returns state request.path request.schema]
     unfolding [prepare, reconstructed, matcherRequestTerm, matcherAnswerTerm]
 
@@ -147,5 +199,11 @@ theorem published_prepare_returns (state : Effects.State) (table : List String)
   obtain ⟨prepared, computed, valid⟩ := prepare_published request fuel published
   rw [computed] at evaluated
   exact ⟨prepared, computed, valid, evaluated⟩
+
+#print axioms append_returns
+#print axioms trace_returns
+#print axioms trace_arguments_returns
+#print axioms prepare_returns
+#print axioms published_prepare_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RecursiveCollectionHandoffExecution

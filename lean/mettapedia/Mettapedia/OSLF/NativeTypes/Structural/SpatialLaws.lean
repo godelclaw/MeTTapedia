@@ -44,9 +44,7 @@ private theorem spatial_pair_commutative {base : BasePremiseEvaluator} {language
     EquationEquiv base language (.collection .hashBag [left, right] none)
       (.collection .hashBag [right, left] none) := by
   apply derivedInstance_equivalent
-  exact .bagPerm
-    ⟨List.mem_of_getElem? ((mem_structuralFormers_iff _ _).mp member),
-      shape.parameterName, .base former.declaration.category, (spatialShape?_sound checked).1⟩
+  exact .bagPerm_of_sorted
     ⟨free, bound, spatial_pair_typed member checked leftTyped rightTyped⟩
     (List.Perm.swap right left [])
 

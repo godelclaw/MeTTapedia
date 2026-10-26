@@ -104,13 +104,10 @@ theorem aggregate_emissionMultiset_eq_emissionRowEvidenceOfWord
       (emissionMultiset (latent := latent) (obs := obs) zs) q =
       emissionRowEvidenceOfWord (latent := latent) (obs := obs) zs q := by
   induction zs with
-  | nil =>
-      simp [emissionRowStatistic]
+  | nil => simp [emissionRowStatistic]
   | cons z zs ih =>
-      rw [emissionMultiset_cons, aggregate_add, aggregate_singleton]
-      simpa [emissionRowStatistic, emissionObservationEvidence,
-        emissionRowEvidenceOfWord_cons] using congrArg
-        (fun e => emissionObservationEvidence (latent := latent) (obs := obs) z q + e) ih
+      rw [emissionMultiset_cons, aggregate_add, aggregate_singleton, ih]
+      rfl
 
 noncomputable instance instAdditiveWorldModelEmissionWMState :
     AdditiveWorldModel (Multiset (EmissionObservation latent obs)) (Fin latent) (MultiEvidence obs) :=

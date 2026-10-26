@@ -33,8 +33,32 @@ def Request.environment (request : Request) : GeneralPremise.Environment :=
 def Request.goal (request : Request) : GeneralPremise.Execution.Goal :=
   .root request.job.site.focusBound request.job.site.focusType request.job.site.focus request.job.ordinal
 
+abbrev AnswerIn {Choice : Type} (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (request : Request) :=
+  {receipt : Receipt Choice // receipt.ValidInWith meaning GeneralPremise.DynamicProvider.empty
+    request.plan request.bound request.expected request.source}
+
 abbrev Answer (request : Request) :=
   {receipt : Receipt // receipt.Valid request.plan request.bound request.expected request.source}
+
+/-- Matching evidence and premise histories retain their declared choice type.
+The contextual representation and whole-target typing checks are shared. -/
+def finishRootIn {Choice : Type} (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (request : Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (trace : List Choice)
+    (captured completed : ScopedRuleMatching.Assignment) (history : List (GeneralPremise.Event Choice))
+    (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound
+      request.job.site.focusType request.job.site.focus request.job.ordinal trace captured completed history localTarget) :
+    Option (AnswerIn meaning request) :=
+  if represented : request.job.site.acceptsReplacementRepresentation request.environment.language localTarget then
+    if typed : checkOpenPatternWellSorted request.environment.language request.environment.free
+        request.bound request.expected (request.job.site.context.fill localTarget) then
+      some ⟨⟨request.job, trace, captured, completed, history, localTarget, request.job.site.context.fill localTarget⟩,
+        licensed, valid, represented, rfl, checkOpenPatternWellSorted_sound typed⟩
+    else none
+  else none
 
 def finishRoot (request : Request)
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
@@ -44,18 +68,24 @@ def finishRoot (request : Request)
     (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound
       request.job.site.focusType request.job.site.focus request.job.ordinal trace captured completed history localTarget) :
     Option (Answer request) :=
-  if represented : request.job.site.acceptsReplacementRepresentation request.environment.language localTarget then
-    if typed : checkOpenPatternWellSorted request.environment.language request.environment.free
-        request.bound request.expected (request.job.site.context.fill localTarget) then
-      some ⟨⟨request.job, trace, captured, completed, history, localTarget, request.job.site.context.fill localTarget⟩,
-        licensed, valid, represented, rfl, checkOpenPatternWellSorted_sound typed⟩
-    else none
-  else none
+  finishRootIn GeneralPremise.ordinaryInterpretation request licensed trace captured completed history localTarget valid
 
-theorem finishRoot_complete {request : Request} {receipt : Receipt}
-    (valid : receipt.Valid request.plan request.bound request.expected request.source)
+theorem finishRootIn_ordinary (request : Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (trace : List GeneralScopedMatchMachine.BagChoice)
+    (captured completed : ScopedRuleMatching.Assignment) (history : List GeneralPremise.Event)
+    (localTarget : Pattern)
+    (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound
+      request.job.site.focusType request.job.site.focus request.job.ordinal trace captured completed history localTarget) :
+    finishRootIn GeneralPremise.ordinaryInterpretation request licensed trace captured completed history localTarget valid =
+      finishRoot request licensed trace captured completed history localTarget valid := rfl
+
+theorem finishRootIn_complete {Choice : Type} {meaning : GeneralPremise.MatchingInterpretation Choice}
+    {request : Request} {receipt : Receipt Choice}
+    (valid : receipt.ValidInWith meaning GeneralPremise.DynamicProvider.empty
+      request.plan request.bound request.expected request.source)
     (job : receipt.job = request.job) :
-    ∃ answer, finishRoot request (job ▸ valid.1) receipt.matcherTrace receipt.captured receipt.completed
+    ∃ answer, finishRootIn meaning request (job ▸ valid.1) receipt.matcherTrace receipt.captured receipt.completed
       receipt.premiseHistory receipt.localTarget (job ▸ valid.2.1) = some answer ∧ answer.val = receipt := by
   have checked := checkOpenPatternWellSorted_complete valid.2.2.2.2
   have represented := valid.2.2.1
@@ -69,9 +99,104 @@ theorem finishRoot_complete {request : Request} {receipt : Receipt}
       represented
     have checked' : checkOpenPatternWellSorted request.environment.language request.environment.free
         request.bound request.expected (request.job.site.context.fill localTarget) = true := checked
-    unfold finishRoot
+    unfold finishRootIn
     rw [dif_pos represented', dif_pos checked']
     exact ⟨_, rfl, rfl⟩
+
+/-- A genuine interpreted local firing supplies all checks omitted by the
+already-completed root readout. The inert receipt constructor is unchanged. -/
+theorem finishRootIn_eq_finish {Choice : Type} (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (request : Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (trace : List Choice) (captured completed : ScopedRuleMatching.Assignment)
+    (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment
+      request.job.site.focusBound request.job.site.focusType request.job.site.focus request.job.ordinal
+      trace captured completed history localTarget) :
+    (finishRootIn meaning request licensed trace captured completed history localTarget valid).map Subtype.val =
+      GeneralRuleJobs.finish? request.plan request.bound request.expected request.job trace captured completed history := by
+  have selected := Job.selected_rule licensed
+  have specified := Job.selected_specification licensed
+  cases valid with
+  | @fire bound type source target index rule spec trace captured completed history
+      declared specification admitted sourceTyped matching capturedTyped premises reduced targetTyped =>
+    have ruleSame : rule = request.job.declaration.rule := Option.some.inj (declared.symm.trans selected)
+    have specSame : spec = request.job.declaration.binding.spec := Option.some.inj (specification.symm.trans specified)
+    cases ruleSame
+    cases specSame
+    have sourceChecked := checkOpenPatternWellSorted_complete sourceTyped
+    have captureChecked := GeneralPremise.checkTypedAssignment_complete capturedTyped
+    have targetChecked := checkOpenPatternWellSorted_complete targetTyped
+    simp only [Request.environment] at sourceChecked captureChecked reduced targetChecked
+    by_cases represented : request.job.site.acceptsReplacementRepresentation request.environment.language localTarget = true
+    · by_cases typed : checkOpenPatternWellSorted request.environment.language request.environment.free
+          request.bound request.expected (request.job.site.context.fill localTarget) = true
+      · simp_all [finishRootIn, GeneralRuleJobs.finish?, GeneralRuleJobs.finishWith?,
+          Request.environment, Job.context]
+      · simp_all [finishRootIn, GeneralRuleJobs.finish?, GeneralRuleJobs.finishWith?,
+          Request.environment, Job.context]
+    · simp_all [finishRootIn, GeneralRuleJobs.finish?, GeneralRuleJobs.finishWith?,
+        Request.environment, Job.context]
+
+theorem finishRootIn_some_iff {Choice : Type} (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (request : Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (trace : List Choice) (captured completed : ScopedRuleMatching.Assignment)
+    (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment
+      request.job.site.focusBound request.job.site.focusType request.job.site.focus request.job.ordinal
+      trace captured completed history localTarget) :
+    (∃ answer, finishRootIn meaning request licensed trace captured completed history localTarget valid = some answer ∧
+      answer.val = ⟨request.job, trace, captured, completed, history, localTarget,
+        request.job.site.context.fill localTarget⟩) ↔
+      request.job.site.acceptsReplacementRepresentation request.environment.language localTarget = true ∧
+      checkOpenPatternWellSorted request.environment.language request.environment.free request.bound request.expected
+        (request.job.site.context.fill localTarget) = true := by
+  constructor
+  · rintro ⟨answer, computed, _⟩
+    unfold finishRootIn at computed
+    split at computed
+    · rename_i represented
+      split at computed
+      · rename_i typed
+        exact ⟨represented, typed⟩
+      · cases computed
+    · cases computed
+  · rintro ⟨represented, typed⟩
+    unfold finishRootIn
+    rw [dif_pos represented, dif_pos typed]
+    exact ⟨_, rfl, rfl⟩
+
+theorem finishRootIn_none_iff {Choice : Type} (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (request : Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (trace : List Choice) (captured completed : ScopedRuleMatching.Assignment)
+    (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment
+      request.job.site.focusBound request.job.site.focusType request.job.site.focus request.job.ordinal
+      trace captured completed history localTarget) :
+    finishRootIn meaning request licensed trace captured completed history localTarget valid = none ↔
+      request.job.site.acceptsReplacementRepresentation request.environment.language localTarget = false ∨
+      checkOpenPatternWellSorted request.environment.language request.environment.free request.bound request.expected
+        (request.job.site.context.fill localTarget) = false := by
+  unfold finishRootIn
+  split
+  · split <;> simp_all
+  · simp_all
+
+#print axioms finishRootIn_some_iff
+#print axioms finishRootIn_none_iff
+
+theorem finishRoot_complete {request : Request} {receipt : Receipt}
+    (valid : receipt.Valid request.plan request.bound request.expected request.source)
+    (job : receipt.job = request.job) :
+    ∃ answer, finishRoot request (job ▸ valid.1) receipt.matcherTrace receipt.captured receipt.completed
+      receipt.premiseHistory receipt.localTarget (job ▸ valid.2.1) = some answer ∧ answer.val = receipt :=
+  finishRootIn_complete valid job
+
+#print axioms finishRootIn_ordinary
+#print axioms finishRootIn_complete
+#print axioms finishRootIn_eq_finish
 
 structure Frame (request : Request) where
   licensed : request.job.Valid request.plan request.bound request.expected request.source

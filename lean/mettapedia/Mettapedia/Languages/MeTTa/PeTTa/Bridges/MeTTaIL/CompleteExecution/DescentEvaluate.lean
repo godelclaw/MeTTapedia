@@ -41,7 +41,7 @@ macro_rules
   | `(tactic| descent_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call descent_checked; metta_eval [$facts,*] with descent_checked
+    `(tactic| (metta_call_in descentProof_checked using descentProof_agreement; metta_eval [$facts,*] with descentProof_checked in descentProof_agreement
         unfolding [environmentValue, PremiseOperationsExecution.GeneralExecution.environmentTerm,
           PremiseOperationsExecution.GeneralExecution.providerTerm, continuationTerm, resultTerm, answerTerm, goalTerm,
           expansionTerm, schedulerExpansionTerm, taskTerm, obligationTerm, encodeList, encodeOption,
@@ -58,39 +58,194 @@ macro_rules
       Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
       Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, $extra,*])
 
+namespace Interpreted
+
+theorem evaluate_premises_returns (host : Effects.State) (environment : Environment)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (free : List (String × TypeExpr)) (profile : Term) {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (context : Context) (premises : List Premise) (initial : Assignment)
+    (tail : StructuralDescent.Scheduled.Interpreted.Continuation matcher environment (.premises depth context premises initial) outer)
+    (view : PureReturns descentLibrary.runtime [] host (apply "gslt:premise:matching-environment" [encoded profile]) host
+      (encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free))) :
+    PureReturns descentLibrary.runtime [] host (apply "gslt:descent:evaluate" [encoded profile,
+      encoded (CompleteExecution.DescentCodec.goalTerm (.premises depth context premises initial)),
+      encoded (RetainedMatchingWire.Scheduled.continuationTerm codec tail)]) host
+      (encoded (encodeOption (RetainedMatchingWire.Scheduled.expansionTerm codec)
+        (some (StructuralDescent.Scheduled.evaluate environment outer (.premises depth context premises initial) tail)))) := by
+  have count := descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm host environment.language.rewrites
+  cases premises with
+  | nil =>
+    descent_interpreted_eval [view, count] unfolding [StructuralDescent.Scheduled.evaluate, RetainedMatchingWire.eventsTerm]
+  | cons premise premises =>
+    descent_interpreted_eval [view, count] unfolding [StructuralDescent.Scheduled.evaluate]
+
+theorem evaluate_query_returns (host : Effects.State) (environment : Environment)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (free : List (String × TypeExpr)) (profile : Term) {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (context : Context) (relation : String) (arguments : List Pattern) (initial : Assignment)
+    (tail : StructuralDescent.Scheduled.Interpreted.Continuation matcher environment
+      (.premise depth context (.relationQuery relation arguments) initial) outer)
+    (view : PureReturns descentLibrary.runtime [] host (apply "gslt:premise:matching-environment" [encoded profile]) host
+      (encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free))) :
+    PureReturns descentLibrary.runtime [] host (apply "gslt:descent:evaluate" [encoded profile,
+      encoded (CompleteExecution.DescentCodec.goalTerm (.premise depth context (.relationQuery relation arguments) initial)),
+      encoded (RetainedMatchingWire.Scheduled.continuationTerm codec tail)]) host
+      (encoded (encodeOption (RetainedMatchingWire.Scheduled.expansionTerm codec)
+        (some (StructuralDescent.Scheduled.evaluate environment outer
+          (.premise depth context (.relationQuery relation arguments) initial) tail)))) := by
+  have count := descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm host environment.language.rewrites
+  descent_interpreted_eval [view, count] unfolding [StructuralDescent.Scheduled.evaluate, StructuralDescent.Scheduled.evaluatePremise,
+    PremiseOperationsExecution.GeneralExecution.queryRequestTerm, RetainedMatchingWire.queryStateTerm,
+    RetainedMatchingWire.queryTaskTerm, Query.start, schedulerStateTerm]
+
+theorem evaluate_steps_returns (host : Effects.State) (environment : Environment)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (free : List (String × TypeExpr)) (profile : Term) {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern) (limit : Nat)
+    (tail : StructuralDescent.Scheduled.Interpreted.Continuation matcher environment (.steps depth bound type source limit) outer)
+    (view : PureReturns descentLibrary.runtime [] host (apply "gslt:premise:matching-environment" [encoded profile]) host
+      (encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free))) :
+    PureReturns descentLibrary.runtime [] host (apply "gslt:descent:evaluate" [encoded profile,
+      encoded (CompleteExecution.DescentCodec.goalTerm (.steps depth bound type source limit)),
+      encoded (RetainedMatchingWire.Scheduled.continuationTerm codec tail)]) host
+      (encoded (encodeOption (RetainedMatchingWire.Scheduled.expansionTerm codec)
+        (some (StructuralDescent.Scheduled.evaluate environment outer (.steps depth bound type source limit) tail)))) := by
+  have count := descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm host environment.language.rewrites
+  descent_interpreted_eval [view, count] unfolding [StructuralDescent.Scheduled.evaluate]
+
+theorem evaluate_forAll_returns (host : Effects.State) (environment : Environment)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (free : List (String × TypeExpr)) (profile : Term) {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (context : Context) (collection parameter : String) (body : Premise) (initial : Assignment)
+    (tail : StructuralDescent.Scheduled.Interpreted.Continuation matcher environment
+      (.premise depth context (.forAll collection parameter body) initial) outer)
+    (view : PureReturns descentLibrary.runtime [] host (apply "gslt:premise:matching-environment" [encoded profile]) host
+      (encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free))) :
+    PureReturns descentLibrary.runtime [] host (apply "gslt:descent:evaluate" [encoded profile,
+      encoded (CompleteExecution.DescentCodec.goalTerm (.premise depth context (.forAll collection parameter body) initial)),
+      encoded (RetainedMatchingWire.Scheduled.continuationTerm codec tail)]) host
+      (encoded (encodeOption (RetainedMatchingWire.Scheduled.expansionTerm codec)
+        (some (StructuralDescent.Scheduled.evaluate environment outer
+          (.premise depth context (.forAll collection parameter body) initial) tail)))) := by
+  have count := descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm host environment.language.rewrites
+  have bound := descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm host context.bound
+  have collected := descent_collection_returns host context.bound.length initial collection
+  simp only [StructuralDescent.Scheduled.evaluate, StructuralDescent.Scheduled.evaluatePremise]
+  split
+  · rename_i found
+    have read := collected
+    simp only [found] at read
+    descent_interpreted_eval [view, count, bound, read]
+      unfolding [PremiseOperationsExecution.QuantifiedLocal.finiteCollectionOptionTerm]
+  · rename_i kind elements found
+    have read := collected
+    simp only [found] at read
+    descent_interpreted_eval [view, count, bound, read]
+      unfolding [PremiseOperationsExecution.QuantifiedLocal.finiteCollectionOptionTerm]
+
+theorem evaluate_congruence_returns (host : Effects.State) (environment : Environment)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (free : List (String × TypeExpr)) (profile : Term) {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (context : Context) (source target : Pattern) (initial : Assignment)
+    (tail : StructuralDescent.Scheduled.Interpreted.Continuation matcher environment
+      (.premise depth context (.congruence source target) initial) outer)
+    (view : PureReturns descentLibrary.runtime [] host (apply "gslt:premise:matching-environment" [encoded profile]) host
+      (encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free))) :
+    PureReturns descentLibrary.runtime [] host (apply "gslt:descent:evaluate" [encoded profile,
+      encoded (CompleteExecution.DescentCodec.goalTerm (.premise depth context (.congruence source target) initial)),
+      encoded (RetainedMatchingWire.Scheduled.continuationTerm codec tail)]) host
+      (encoded (encodeOption (RetainedMatchingWire.Scheduled.expansionTerm codec)
+        (some (StructuralDescent.Scheduled.evaluate environment outer
+          (.premise depth context (.congruence source target) initial) tail)))) := by
+  have count := descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm host environment.language.rewrites
+  have typeRead := descent_source_type_returns host environment.language context.rule source
+  simp only [StructuralDescent.Scheduled.evaluate, StructuralDescent.Scheduled.evaluatePremise]
+  split
+  · rename_i found
+    have read := typeRead
+    simp only [found] at read
+    descent_interpreted_eval [view, count, read]
+  · rename_i type found
+    have read := typeRead
+    simp only [found] at read
+    have bound := descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm host context.bound
+    have instantiated := descent_instantiate_returns host context.rule context.spec context.bound.length (context.site 0) [] 0 initial source
+    split
+    · rename_i projected
+      have interpreted := instantiated
+      simp only [projected] at interpreted
+      descent_interpreted_eval [view, count, read, bound, interpreted]
+        unfolding [Context.site, InferenceCettaWire.AuthoredRule.siteTerm,
+          MatchAutomataBindingExecution.patternOptionTerm]
+    · rename_i actualSource projected
+      have interpreted := instantiated
+      simp only [projected] at interpreted
+      descent_interpreted_eval [view, count, read, bound, interpreted]
+        unfolding [Context.site, InferenceCettaWire.AuthoredRule.siteTerm,
+          MatchAutomataBindingExecution.patternOptionTerm, PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+
+theorem evaluate_scopedStep_returns (host : Effects.State) (environment : Environment)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (free : List (String × TypeExpr)) (profile : Term) {outer : StructuralDescent.Scheduled.Goal}
+    (depth : Nat) (context : Context) (step : ScopedStepPremise) (initial : Assignment)
+    (tail : StructuralDescent.Scheduled.Interpreted.Continuation matcher environment
+      (.premise depth context (.scopedStep step) initial) outer)
+    (view : PureReturns descentLibrary.runtime [] host (apply "gslt:premise:matching-environment" [encoded profile]) host
+      (encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free))) :
+    PureReturns descentLibrary.runtime [] host (apply "gslt:descent:evaluate" [encoded profile,
+      encoded (CompleteExecution.DescentCodec.goalTerm (.premise depth context (.scopedStep step) initial)),
+      encoded (RetainedMatchingWire.Scheduled.continuationTerm codec tail)]) host
+      (encoded (encodeOption (RetainedMatchingWire.Scheduled.expansionTerm codec)
+        (some (StructuralDescent.Scheduled.evaluate environment outer
+          (.premise depth context (.scopedStep step) initial) tail)))) := by
+  obtain ⟨binders, resultType, source, target⟩ := step
+  have count := descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm host environment.language.rewrites
+  have bound := descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm host context.bound
+  have localSize := descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm host binders
+  have joined := descent_append_returns InferenceCettaWire.AuthoredRule.typeTerm host binders context.bound
+  have instantiated := descent_instantiate_returns host context.rule context.spec context.bound.length (context.site 0) [] binders.length initial source
+  simp only [StructuralDescent.Scheduled.evaluate, StructuralDescent.Scheduled.evaluatePremise]
+  split
+  · rename_i projected
+    have interpreted := instantiated
+    simp only [projected] at interpreted
+    descent_interpreted_eval [view, count, bound, localSize, joined, interpreted]
+      unfolding [Context.site, InferenceCettaWire.AuthoredRule.siteTerm,
+          MatchAutomataBindingExecution.patternOptionTerm]
+  · rename_i actualSource projected
+    have interpreted := instantiated
+    simp only [projected] at interpreted
+    descent_interpreted_eval [view, count, bound, localSize, joined, interpreted]
+      unfolding [Context.site, InferenceCettaWire.AuthoredRule.siteTerm,
+          MatchAutomataBindingExecution.patternOptionTerm, PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+
+end Interpreted
+
 theorem descent_evaluate_premises_returns (state : State) (environment : Environment) (footprint : List String)
     {outer : Goal} (depth : Nat) (context : Context) (premises : List Premise) (initial : Assignment)
     (tail : Continuation environment (.premises depth context premises initial) outer) :
     Evaluates state environment footprint (.premises depth context premises initial) tail := by
   unfold Evaluates
-  cases premises with
-  | nil =>
-    metta_call descent_checked
-    metta_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites]
-      with descent_checked
-      unfolding [environmentValue, PremiseOperationsExecution.GeneralExecution.environmentTerm,
-        PremiseOperationsExecution.GeneralExecution.providerTerm, continuationTerm, resultTerm, answerTerm, goalTerm,
-        expansionTerm, schedulerExpansionTerm, taskTerm, encodeList, encodeOption, StructuralDescent.Scheduled.evaluate,
-        PremiseOperationsExecution.GeneralExecution.eventsTerm]
-  | cons premise premises =>
-    metta_call descent_checked
-    metta_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites]
-      with descent_checked
-      unfolding [environmentValue, PremiseOperationsExecution.GeneralExecution.environmentTerm,
-        PremiseOperationsExecution.GeneralExecution.providerTerm, continuationTerm, resultTerm, answerTerm, goalTerm,
-        expansionTerm, schedulerExpansionTerm, taskTerm, encodeList, encodeOption, StructuralDescent.Scheduled.evaluate]
+  simpa only [environmentValue, RetainedMatchingWire.Scheduled.ordinary_continuation,
+    Interpreted.ordinary_expansion_terms] using
+    Interpreted.evaluate_premises_returns state environment MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec (environment.free.entriesOn footprint)
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+        (environment.free.entriesOn footprint)) depth context premises initial tail
+      (Interpreted.ordinary_environment_returns state environment (environment.free.entriesOn footprint))
 
 theorem descent_evaluate_steps_returns (state : State) (environment : Environment) (footprint : List String)
     {outer : Goal} (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern) (limit : Nat)
     (tail : Continuation environment (.steps depth bound type source limit) outer) :
     Evaluates state environment footprint (.steps depth bound type source limit) tail := by
   unfold Evaluates
-  metta_call descent_checked
-  metta_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites]
-    with descent_checked
-    unfolding [environmentValue, PremiseOperationsExecution.GeneralExecution.environmentTerm,
-      PremiseOperationsExecution.GeneralExecution.providerTerm, continuationTerm, goalTerm,
-      expansionTerm, schedulerExpansionTerm, taskTerm, encodeList, encodeOption, StructuralDescent.Scheduled.evaluate]
+  simpa only [environmentValue, RetainedMatchingWire.Scheduled.ordinary_continuation,
+    Interpreted.ordinary_expansion_terms] using
+    Interpreted.evaluate_steps_returns state environment MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec (environment.free.entriesOn footprint)
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+        (environment.free.entriesOn footprint)) depth bound type source limit tail
+      (Interpreted.ordinary_environment_returns state environment (environment.free.entriesOn footprint))
 
 theorem descent_evaluate_query_returns (state : State) (environment : Environment) (footprint : List String)
     {outer : Goal} (depth : Nat) (context : Context) (relation : String) (arguments : List Pattern)
@@ -98,10 +253,13 @@ theorem descent_evaluate_query_returns (state : State) (environment : Environmen
     (tail : Continuation environment (.premise depth context (.relationQuery relation arguments) initial) outer) :
     Evaluates state environment footprint (.premise depth context (.relationQuery relation arguments) initial) tail := by
   unfold Evaluates
-  rw [StructuralDescent.Scheduled.evaluate_relationQuery]
-  descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites]
-    unfolding [Query.start, PremiseOperationsExecution.GeneralExecution.queryStateTerm,
-      PremiseOperationsExecution.GeneralExecution.queryTaskTerm, PremiseOperationsExecution.GeneralExecution.queryRequestTerm]
+  simpa only [environmentValue, RetainedMatchingWire.Scheduled.ordinary_continuation,
+    Interpreted.ordinary_expansion_terms] using
+    Interpreted.evaluate_query_returns state environment MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec (environment.free.entriesOn footprint)
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+        (environment.free.entriesOn footprint)) depth context relation arguments initial tail
+      (Interpreted.ordinary_environment_returns state environment (environment.free.entriesOn footprint))
 
 theorem descent_evaluate_forAll_returns (state : State) (environment : Environment) (footprint : List String)
     {outer : Goal} (depth : Nat) (context : Context) (collection parameter : String) (body : Premise)
@@ -109,92 +267,51 @@ theorem descent_evaluate_forAll_returns (state : State) (environment : Environme
     (tail : Continuation environment (.premise depth context (.forAll collection parameter body) initial) outer) :
     Evaluates state environment footprint (.premise depth context (.forAll collection parameter body) initial) tail := by
   unfold Evaluates
-  cases read : finiteCollection? context.bound.length initial collection with
-  | none =>
-    rw [StructuralDescent.Scheduled.evaluate_forAll_none collection parameter body tail read]
-    descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-        descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state context.bound,
-        descent_collection_returns state context.bound.length initial collection]
-      unfolding [read, PremiseOperationsExecution.QuantifiedLocal.finiteCollectionOptionTerm]
-  | some found =>
-    obtain ⟨kind, elements⟩ := found
-    rw [StructuralDescent.Scheduled.evaluate_forAll_some collection parameter body kind elements tail read]
-    descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-        descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state context.bound,
-        descent_collection_returns state context.bound.length initial collection]
-      unfolding [read, PremiseOperationsExecution.QuantifiedLocal.finiteCollectionOptionTerm]
+  simpa only [environmentValue, RetainedMatchingWire.Scheduled.ordinary_continuation,
+    Interpreted.ordinary_expansion_terms] using
+    Interpreted.evaluate_forAll_returns state environment MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec (environment.free.entriesOn footprint)
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+        (environment.free.entriesOn footprint)) depth context collection parameter body initial tail
+      (Interpreted.ordinary_environment_returns state environment (environment.free.entriesOn footprint))
 
 theorem descent_evaluate_congruence_returns (state : State) (environment : Environment) (footprint : List String)
     {outer : Goal} (depth : Nat) (context : Context) (source target : Pattern) (initial : Assignment)
     (tail : Continuation environment (.premise depth context (.congruence source target) initial) outer) :
     Evaluates state environment footprint (.premise depth context (.congruence source target) initial) tail := by
   unfold Evaluates
-  cases typed : sourceType? environment.language context.rule source with
-  | none =>
-    rw [StructuralDescent.Scheduled.evaluate_congruence_sort_none source target tail typed]
-    descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-        descent_source_type_returns state environment.language context.rule source]
-      unfolding [typed]
-  | some type =>
-    cases interpreted : instantiateAt? context.rule context.spec context.bound.length (context.site 0) [] 0 initial
-        source with
-    | none =>
-      rw [StructuralDescent.Scheduled.evaluate_congruence_projection_none source target type tail typed interpreted]
-      have sited : instantiateAt? context.rule context.spec context.bound.length
-          (.premise context.premiseIndex context.quantifierDepth 0) [] 0 initial source = none := interpreted
-      descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-          descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state context.bound,
-          descent_source_type_returns state environment.language context.rule source,
-          descent_instantiate_returns state context.rule context.spec context.bound.length (.premise context.premiseIndex context.quantifierDepth 0) [] 0
-            initial source]
-        unfolding [typed, sited, ScopedInstantiationExecution.instantiationValues, Context.site,
-          InferenceCettaWire.AuthoredRule.siteTerm, MatchAutomataBindingExecution.patternOptionTerm]
-    | some actualSource =>
-      rw [StructuralDescent.Scheduled.evaluate_congruence_some source target actualSource type tail typed interpreted]
-      have sited : instantiateAt? context.rule context.spec context.bound.length
-          (.premise context.premiseIndex context.quantifierDepth 0) [] 0 initial source = some actualSource := interpreted
-      descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-          descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state context.bound,
-          descent_source_type_returns state environment.language context.rule source,
-          descent_instantiate_returns state context.rule context.spec context.bound.length (.premise context.premiseIndex context.quantifierDepth 0) [] 0
-            initial source]
-        unfolding [typed, sited, ScopedInstantiationExecution.instantiationValues, Context.site,
-          InferenceCettaWire.AuthoredRule.siteTerm, MatchAutomataBindingExecution.patternOptionTerm,
-          PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+  simpa only [environmentValue, RetainedMatchingWire.Scheduled.ordinary_continuation,
+    Interpreted.ordinary_expansion_terms] using
+    Interpreted.evaluate_congruence_returns state environment MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec (environment.free.entriesOn footprint)
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+        (environment.free.entriesOn footprint)) depth context source target initial tail
+      (Interpreted.ordinary_environment_returns state environment (environment.free.entriesOn footprint))
 
 theorem descent_evaluate_scopedStep_returns (state : State) (environment : Environment) (footprint : List String)
     {outer : Goal} (depth : Nat) (context : Context) (step : ScopedStepPremise) (initial : Assignment)
     (tail : Continuation environment (.premise depth context (.scopedStep step) initial) outer) :
     Evaluates state environment footprint (.premise depth context (.scopedStep step) initial) tail := by
   unfold Evaluates
-  obtain ⟨binders, resultType, source, target⟩ := step
-  cases interpreted : instantiateAt? context.rule context.spec context.bound.length (context.site 0) []
-      binders.length initial source with
-  | none =>
-    rw [StructuralDescent.Scheduled.evaluate_scopedStep_none _ tail interpreted]
-    have sited : instantiateAt? context.rule context.spec context.bound.length
-        (.premise context.premiseIndex context.quantifierDepth 0) [] binders.length initial source = none := interpreted
-    descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-        descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state context.bound,
-        descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state binders,
-        descent_append_returns InferenceCettaWire.AuthoredRule.typeTerm state binders context.bound,
-        descent_instantiate_returns state context.rule context.spec context.bound.length (.premise context.premiseIndex context.quantifierDepth 0) []
-          binders.length initial source]
-      unfolding [sited, ScopedInstantiationExecution.instantiationValues, Context.site,
-        InferenceCettaWire.AuthoredRule.siteTerm, MatchAutomataBindingExecution.patternOptionTerm]
-  | some actualSource =>
-    rw [StructuralDescent.Scheduled.evaluate_scopedStep_some _ actualSource tail interpreted]
-    have sited : instantiateAt? context.rule context.spec context.bound.length
-        (.premise context.premiseIndex context.quantifierDepth 0) [] binders.length initial source =
-          some actualSource := interpreted
-    descent_eval [descent_length_returns InferenceCettaWire.AuthoredRule.rewriteTerm state environment.language.rewrites,
-        descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state context.bound,
-        descent_length_returns InferenceCettaWire.AuthoredRule.typeTerm state binders,
-        descent_append_returns InferenceCettaWire.AuthoredRule.typeTerm state binders context.bound,
-        descent_instantiate_returns state context.rule context.spec context.bound.length (.premise context.premiseIndex context.quantifierDepth 0) []
-          binders.length initial source]
-      unfolding [sited, ScopedInstantiationExecution.instantiationValues, Context.site,
-        InferenceCettaWire.AuthoredRule.siteTerm, MatchAutomataBindingExecution.patternOptionTerm,
-        PremiseOperationsExecution.GeneralExecution.Base.typesTerm]
+  simpa only [environmentValue, RetainedMatchingWire.Scheduled.ordinary_continuation,
+    Interpreted.ordinary_expansion_terms] using
+    Interpreted.evaluate_scopedStep_returns state environment MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec (environment.free.entriesOn footprint)
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+        (environment.free.entriesOn footprint)) depth context step initial tail
+      (Interpreted.ordinary_environment_returns state environment (environment.free.entriesOn footprint))
+
+#print axioms Interpreted.evaluate_premises_returns
+#print axioms descent_evaluate_premises_returns
+#print axioms Interpreted.evaluate_steps_returns
+#print axioms descent_evaluate_steps_returns
+#print axioms Interpreted.evaluate_query_returns
+#print axioms descent_evaluate_query_returns
+#print axioms Interpreted.evaluate_forAll_returns
+#print axioms descent_evaluate_forAll_returns
+#print axioms Interpreted.evaluate_congruence_returns
+#print axioms descent_evaluate_congruence_returns
+#print axioms Interpreted.evaluate_scopedStep_returns
+#print axioms descent_evaluate_scopedStep_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution

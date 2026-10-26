@@ -311,6 +311,18 @@ theorem isInstance_eq_true_iff (policy : AxiomPolicy) [DecidablePred policy]
   simp only [isInstance, Bool.and_eq_true, theoremListStructuralSame_eq_true_iff,
     outputSameB_eq_true_iff]
 
+def requestedAxiom : RuleRequest → Option Sequent
+  | .inference _ => none
+  | .axiom sequent => some sequent
+
+theorem check_policy_congr (first second : AxiomPolicy) [DecidablePred first] [DecidablePred second]
+    (request : RuleRequest)
+    (agree : ∀ sequent, request.requestedAxiom = some sequent → (first sequent ↔ second sequent)) :
+    request.check first = request.check second := by
+  cases request with
+  | inference request => rfl
+  | «axiom» sequent => simp only [check, agree sequent rfl]
+
 end RuleRequest
 
 /-- Exact checking and admission for all finite source-rule derivations,

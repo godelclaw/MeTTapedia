@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Steps
+import Mettapedia.OSLF.MeTTaIL.Complete.EquationJob
 
 /-!
 # How deep an equation's premises go
@@ -26,22 +27,19 @@ theorem equations_lookup_returns (state : State) (name : String) : ∀ assignmen
     PureReturns runtime [] state (apply "gslt:equations:lookup" [encoded (.string name), assignmentValue assignment])
       state (encoded (RuleInstantiationExecution.ScopedCapture.contextualValueOptionTerm (lookup assignment name)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [assignmentValue, RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
+    complete_eval unfolding [assignmentValue, RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
       MatchAutomataBindingExecution.payloadBindingsTerm, encodeList, lookup,
       RuleInstantiationExecution.ScopedCapture.contextualValueOptionTerm, MatchAutomataBindingExecution.payloadOptionTerm]
   | (other, value) :: rest => by
     have later := equations_lookup_returns state name rest
     by_cases same : other = name
     · subst same
-      metta_call complete_checked
-      metta_eval unfolding [assignmentValue, RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
+      complete_eval unfolding [assignmentValue, RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
         MatchAutomataBindingExecution.payloadBindingsTerm, MatchAutomataBindingExecution.payloadBindingTerm, encodeList,
         lookup, RuleInstantiationExecution.ScopedCapture.contextualValueOptionTerm,
         MatchAutomataBindingExecution.payloadOptionTerm]
     · rw [show lookup ((other, value) :: rest) name = lookup rest name by simp [lookup, same]]
-      metta_call complete_checked
-      metta_eval [later] with complete_checked
+      complete_eval [later]
         unfolding [assignmentValue, RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm,
           MatchAutomataBindingExecution.payloadBindingsTerm, MatchAutomataBindingExecution.payloadBindingTerm,
           encodeList, same]
@@ -75,23 +73,20 @@ theorem equations_weight_returns (state : State) (assignment : Assignment) : ∀
       (apply "gslt:equations:weight" [encoded (encodeList Term.string names), assignmentValue assignment])
       state (encoded (encodeOption Term.natural (weightOf assignment names)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, weightOf]
+    complete_eval unfolding [encodeList, weightOf]
   | name :: rest => by
     have found := equations_lookup_returns state name assignment
     have later := equations_weight_returns state assignment rest
     cases looked : lookup assignment name with
     | none =>
-      metta_call complete_checked
-      metta_eval [found] with complete_checked
+      complete_eval [found]
         unfolding [encodeList, weightOf, looked, RuleInstantiationExecution.ScopedCapture.contextualValueOptionTerm,
           MatchAutomataBindingExecution.payloadOptionTerm]
     | some value =>
       have size := nodes_returns state value.body
       cases weighed : weightOf assignment rest with
       | none =>
-        metta_call complete_checked
-        metta_eval [found, later] with complete_checked
+        complete_eval [found, later]
           unfolding [encodeList, weightOf, looked, weighed,
             RuleInstantiationExecution.ScopedCapture.contextualValueOptionTerm,
             MatchAutomataBindingExecution.payloadOptionTerm, InferenceCettaWire.AuthoredRule.contextualValueTerm]
@@ -99,8 +94,7 @@ theorem equations_weight_returns (state : State) (assignment : Assignment) : ∀
         rw [show weightOf assignment (name :: rest) = some (nodes value.body + sum) by simp [weightOf, looked, weighed],
           show encoded (encodeOption Term.natural (some (nodes value.body + sum))) =
             .expression [.symbol "Some", number (nodes value.body + sum)] from rfl]
-        metta_call complete_checked
-        metta_eval [found, later, size] with complete_checked
+        complete_eval [found, later, size]
           unfolding [encodeList, looked, weighed,
             RuleInstantiationExecution.ScopedCapture.contextualValueOptionTerm,
             MatchAutomataBindingExecution.payloadOptionTerm, InferenceCettaWire.AuthoredRule.contextualValueTerm,
@@ -126,16 +120,13 @@ theorem equations_declared_depth_returns (state : State) (plan : GeneralExecutio
           [number position, encoded (encodeList (CompletePlanWire.equationDeclarationTerm plan) pairs)])
         state (encoded (declaredDepthTerm plan position pairs))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, declaredDepthTerm]
+    complete_eval unfolding [encodeList, declaredDepthTerm]
   | (equation, other) :: rest => by
     have later := equations_declared_depth_returns state plan position rest
     by_cases same : other = position
     · subst same
-      metta_call complete_checked
-      metta_eval unfolding [encodeList, declaredDepthTerm, CompletePlanWire.equationDeclarationTerm]
-    · metta_call complete_checked
-      metta_eval [later] with complete_checked
+      complete_eval unfolding [encodeList, declaredDepthTerm, CompletePlanWire.equationDeclarationTerm]
+    · complete_eval [later]
         unfolding [encodeList, declaredDepthTerm, CompletePlanWire.equationDeclarationTerm, same]
 
 theorem declaredDepthTerm_zipIdx (plan : GeneralExecutionAdmission.Plan) :

@@ -254,6 +254,16 @@ theorem ordinary_task {environment : Environment} {outer : Goal} (task : Task en
     ordinary_result, ordinary_continuation, ordinary_query_state]
   all_goals first | rfl | (rw [ordinary_events]; rfl)
 
+theorem ordinary_expansion {environment : Environment} {outer : Goal}
+    (expansion : Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation) :
+    expansionTerm ordinaryCodec expansion = CompleteExecution.DescentCodec.expansionTerm expansion := by
+  have tasks : (taskTerm ordinaryCodec : Task environment outer → Term) =
+      CompleteExecution.DescentCodec.taskTerm := funext ordinary_task
+  have results : (resultTerm ordinaryCodec : Result environment outer → Term) =
+      CompleteExecution.DescentCodec.resultTerm := funext ordinary_result
+  unfold expansionTerm CompleteExecution.DescentCodec.expansionTerm
+  rw [tasks, results]
+
 theorem ordinary_state {environment : Environment} {outer : Goal} (state : State environment outer) :
     stateTerm ordinaryCodec state = CompleteExecution.DescentCodec.stateTerm state := by
   have tasks : (taskTerm ordinaryCodec : Task environment outer → Term) =

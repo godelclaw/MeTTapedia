@@ -224,13 +224,21 @@ theorem not_algebra (laws : AliasLaws language) {rule : GrammarRule} {kind : Col
   rw [params_nil laws declared.authored] at params
   cases params
 
+/-- Nullary declarations contain no collection-typed data occurrence. -/
+theorem not_typed_collection (laws : AliasLaws language) {rule : GrammarRule} {kind : CollType}
+    {elements : List Pattern} (member : rule ∈ language.terms) :
+    ¬ Mettapedia.GSLT.LanguageDef.WellSorted.CollectionTypedAt language rule kind elements := by
+  rintro ⟨_,inParams,_⟩
+  rw [params_nil laws member] at inParams
+  cases inParams
+
 /-- The language declares no collections, so it derives no laws. -/
 theorem no_derived (laws : AliasLaws language) {source target : Pattern} : ¬ DerivedInstance language source target := by
   intro derived
   cases derived with
-  | bagPerm carrier => exact not_carrier laws carrier
-  | setPerm carrier => exact not_carrier laws carrier
-  | setDedup carrier => exact not_carrier laws carrier
+  | bagPerm member kindTyped _ => exact not_typed_collection laws member kindTyped
+  | setPerm member kindTyped _ => exact not_typed_collection laws member kindTyped
+  | setDedup member kindTyped => exact not_typed_collection laws member kindTyped
   | flatten declared => exact not_algebra laws declared
   | singleton declared => exact not_algebra laws declared
   | unitElim declared => exact not_algebra laws declared
@@ -384,7 +392,7 @@ theorem fires_only_at_b {redex : Pattern} {witness : Witness} {contractum : Patt
     rw [matchPatternForRule, matchPatternForRule_eq_syntactic_of_no_presentations rfl] at matched
     exact matchRel_constant (matchPattern_sound matched)
 
-theorem alias_coherent (fuel : ℕ) : Coherent relEnv aliased fuel aliasCanon aliasDomain :=
+theorem alias_coherent (fuel : ℕ) : Coherent relEnv aliased fuel aliasCanon aliasDomain List.singleton :=
   coherent_of_canonical_redexes (alias_canonical aliased_laws relEnv) fun _ valid => by
     rw [fires_only_at_b valid, canon_of_object rfl, rename_b]
 
@@ -405,12 +413,14 @@ def isNotC : Formula 0 := .isNot (constant "C")
 def oneResult : Formula 0 := Formula.exactlyOne .forward .any
 
 theorem decided_true {formula : Formula 0} (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical RelationEnv.empty aliased 2 aliasCanon aliasDomain formula (constant "A") 2 = some true) :
+    (decided : decideCanonical RelationEnv.empty aliased 2 aliasCanon aliasDomain List.singleton formula
+      (constant "A") 2 = some true) :
     Aliased.sat Env.closed formula (constant "A") :=
   (decideCanonical_sound (alias_canonical aliased_laws _) (alias_coherent 2) behavioural decided).mp rfl
 
 theorem decided_false {formula : Formula 0} (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical RelationEnv.empty aliased 2 aliasCanon aliasDomain formula (constant "A") 2 =
+    (decided : decideCanonical RelationEnv.empty aliased 2 aliasCanon aliasDomain List.singleton formula
+      (constant "A") 2 =
       some false) :
     ¬ Aliased.sat Env.closed formula (constant "A") := fun holds =>
   Bool.false_ne_true
@@ -478,9 +488,10 @@ theorem front_door_open_as_written :
 def aliasClosure : List Pattern := [constant "B", constant "C"]
 
 theorem alias_closure :
-    CanonicalClosure RelationEnv.empty aliased 2 aliasCanon aliasDomain (constant "A") aliasClosure where
+    CanonicalClosure RelationEnv.empty aliased 2 aliasCanon aliasDomain List.singleton (constant "A") aliasClosure where
   admitted := by decide +kernel
   start := by decide +kernel
+  presented := by decide +kernel
   closed := by decide +kernel
   listed := by decide +kernel
 
@@ -496,13 +507,16 @@ theorem alias_decided {formula : Formula 0} (behavioural : formula.behaviouralFo
 /-! ## Resumed work -/
 
 theorem progress_open :
-    (Progress.at RelationEnv.empty aliased 2 aliasSignature steps (constant "A") aliasCanon 0).answer RelationEnv.empty 2
+    (Progress.at RelationEnv.empty aliased 2 aliasSignature steps (constant "A") aliasCanon List.singleton 0).answer
+      RelationEnv.empty 2
       (some aliasForms) none = .unknown 0 := by
   decide +kernel
 
 theorem progress_resumed :
-    ((Progress.at RelationEnv.empty aliased 2 aliasSignature steps (constant "A") aliasCanon 0).resume RelationEnv.empty 2
-      aliasCanon 1).answer RelationEnv.empty 2 (some aliasForms) none = .proved (.canonicalRegion 1) := by
+    ((Progress.at RelationEnv.empty aliased 2 aliasSignature steps (constant "A") aliasCanon List.singleton 0).resume
+      RelationEnv.empty 2
+      aliasCanon List.singleton 1).answer RelationEnv.empty 2 (some aliasForms) none = .proved (.canonicalRegion 1) :=
+        by
   decide +kernel
 
 /-- The resumed answer is the front door's with one round. -/
@@ -529,18 +543,19 @@ theorem a_fires : StepValid RelationEnv.empty aliasedWrong (constant "A") (.rule
     (PremisesValid.nil _)
 
 /-- **The canonical forms are not coherent for this rule**: `B` stands for `A`, and no step is listed at `B`. -/
-theorem wrong_not_coherent : ¬ Coherent RelationEnv.empty aliasedWrong 2 aliasCanon aliasDomain := by
+theorem wrong_not_coherent : ¬ Coherent RelationEnv.empty aliasedWrong 2 aliasCanon aliasDomain List.singleton := by
   intro coherent
   obtain ⟨entry, member, -⟩ := @coherent (constant "B") (constant "A") (.rule 0 [] []) (constant "C") ⟨rfl, rfl⟩
     rfl (by decide +kernel) (by decide +kernel)
     (Relation.EqvGen.symm _ _ (Relation.EqvGen.rel _ _ (alias_step aliasedWrong_laws))) ⟨rfl, rfl⟩ a_fires
   have empty : stepsAt RelationEnv.empty aliasedWrong 2 (constant "B") = [] := by decide +kernel
-  rw [empty] at member
+  rw [listedAt_singleton, empty] at member
   cases member
 
 /-- **Without coherence the canonical region misleads**: it says that `A` cannot step. -/
 theorem wrong_region_says_stuck :
-    decideCanonical RelationEnv.empty aliasedWrong 2 aliasCanon aliasDomain steps (constant "A") 2 = some false := by
+    decideCanonical RelationEnv.empty aliasedWrong 2 aliasCanon aliasDomain List.singleton steps (constant "A") 2 =
+      some false := by
   decide +kernel
 
 theorem a_steps_wrong_answer :

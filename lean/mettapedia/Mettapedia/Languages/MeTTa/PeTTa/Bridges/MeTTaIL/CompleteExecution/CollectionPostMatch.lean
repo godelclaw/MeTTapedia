@@ -19,50 +19,17 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Col
 open SpaceSemantics (Program)
 open Eval BridgeKit WireKit
 
-def retained (head : String) : Bool :=
-  !(["gslt:laws:", "gslt:canon:", "gslt:collection-search:",
-    "gslt:search:", "gslt:runner:", "gslt:explore:", "gslt:collection-root:"].any
-      fun prefixName => prefixName.isPrefixOf head)
-
-theorem closed : ProgramClosed retained CollectionMatcherBackendExecution.library.runtime := by
-  apply closed_of_all _ _ (by decide +kernel)
-  decide +kernel
-
-private theorem laws_equations :
-    lawsSource.program.equations.filter (fun row => retained row.head) = [] := by decide +kernel
-private theorem canonical_equations :
-    canonicalSource.program.equations.filter (fun row => retained row.head) = [] := by decide +kernel
-private theorem logged_equations :
-    CollectionLoggedSearchExecution.source.program.equations.filter (fun row => retained row.head) = [] := by
-  decide +kernel
-
-private theorem laws_declarations :
-    lawsSource.program.declarations.filter (retainedCallDeclaration retained) = [] := by decide +kernel
-private theorem canonical_declarations :
-    canonicalSource.program.declarations.filter (retainedCallDeclaration retained) = [] := by decide +kernel
-private theorem logged_declarations :
-    CollectionLoggedSearchExecution.source.program.declarations.filter
-      (retainedCallDeclaration retained) = [] := by decide +kernel
-
-theorem agreement : ProgramAgreementOn retained CollectionMatcherBackendExecution.library.runtime
-    collectionBaseLibrary.runtime := by
-  apply programAgreementOn_of_retained_rows
-  all_goals
-    simp only [CollectionMatcherBackendExecution.library,
-      CollectionMatcherBackendExecution.collectionBaseLibrary,
-      CollectionMatcherBackendExecution.collectionBaseSource,
-      collectionBaseLibrary, collectionSupportProgram,
-      canonicalLibrary, lawsLibrary, Library.runtime, SpaceSemantics.Program.append,
-      List.filter_append, laws_equations, canonical_equations, logged_equations,
-      laws_declarations, canonical_declarations, logged_declarations,
-      List.nil_append, List.append_assoc]
+private theorem backendRawAgreement :
+    ProgramAgreementOn CollectionMatcherBackendExecution.backendProofHeads
+      CollectionMatcherBackendExecution.backendProofLibrary.runtime
+      RuleExecutionProgram.interpretedPremiseProgram :=
+  CollectionMatcherBackendExecution.backendProof_agreement
 
 syntax "postmatch_lifted% " "[" str,* "] " term:max : term
 macro_rules
   | `(postmatch_lifted% [$names,*] $fact) =>
-      `(runner_from_base% [$names,*] (BridgeKit.transport_call closed agreement (by decide +kernel) (by decide)
-        (by decide +kernel) (by decide) [$names,*] (by decide) (by rfl)
-        (by decide +kernel) $fact))
+      `(runner_from_base% [$names,*] $fact using
+        backendRawAgreement)
 
 /-- Source authority and source free-name coverage suffice to start the
 native continuation from a raw receipt. Neither a provisional reduct nor

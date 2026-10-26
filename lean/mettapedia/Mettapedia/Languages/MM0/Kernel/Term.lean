@@ -59,12 +59,47 @@ theorem relocateTerms?_applyArgs (references : Nat → Option Nat)
       apply ih
       simp [relocateTerms?, head, first]
 
+/-- Every variable of the expression is below the bound. -/
+def VarsBelow (bound : Nat) : Preterm → Prop
+  | .var index => index < bound
+  | .term _ => True
+  | .app function argument => VarsBelow bound function ∧ VarsBelow bound argument
+
+theorem varsBelow_applyArgs (bound : Nat) (function : Preterm) (arguments : List Preterm) :
+    VarsBelow bound (applyArgs function arguments) ↔
+      VarsBelow bound function ∧ ∀ argument ∈ arguments, VarsBelow bound argument := by
+  induction arguments generalizing function with
+  | nil => simp
+  | cons argument arguments inductionHypothesis =>
+      rw [applyArgs, inductionHypothesis]
+      simp only [VarsBelow, List.mem_cons, forall_eq_or_imp, and_assoc]
+
+
 /-- Syntactic occurrence, including occurrences under binding term symbols.
 MM0 theorem instantiation needs this distinction from free-variable analysis. -/
 inductive Occurs (index : Nat) : Preterm → Prop where
   | var : Occurs index (.var index)
   | function {function argument} : Occurs index function → Occurs index (.app function argument)
   | argument {function argument} : Occurs index argument → Occurs index (.app function argument)
+
+theorem VarsBelow.occurs_lt {bound index : Nat} {expression : Preterm}
+    (bounded : VarsBelow bound expression) (occurs : Occurs index expression) : index < bound := by
+  induction occurs with
+  | var => exact bounded
+  | function _ ih => exact ih bounded.1
+  | argument _ ih => exact ih bounded.2
+
+theorem varsBelow_iff_occurs (bound : Nat) (expression : Preterm) :
+    VarsBelow bound expression ↔ ∀ index, Occurs index expression → index < bound := by
+  constructor
+  · exact fun bounded _ occurs => bounded.occurs_lt occurs
+  · intro bounded
+    induction expression with
+    | var index => exact bounded index .var
+    | term _ => trivial
+    | app function argument ihFunction ihArgument =>
+        exact ⟨ihFunction (fun index occurs => bounded index (.function occurs)),
+          ihArgument (fun index occurs => bounded index (.argument occurs))⟩
 
 end Preterm
 
@@ -291,5 +326,21 @@ theorem Substitutes.factor {second first : Substitution} {source result : Preter
       exact ⟨middle, substitute_sound h, substitute_sound (by simpa [h] using accepted)⟩
 
 end Preterm
+
+theorem Preterm.Substitutes.varsBelow {substitution : Substitution} {source result : Preterm}
+    (substituted : Preterm.Substitutes substitution source result) (bound : Nat)
+    (bounded : ∀ index value, substitution index = some value → Preterm.VarsBelow bound value) :
+    Preterm.VarsBelow bound result := by
+  induction substituted with
+  | var found => exact bounded _ _ found
+  | term => trivial
+  | app _ _ first second => exact ⟨first, second⟩
+
+
+theorem Preterm.VarsBelow.mono {small large : Nat} (ordered : small ≤ large) {expression : Preterm}
+    (bounded : VarsBelow small expression) : VarsBelow large expression :=
+  (varsBelow_iff_occurs large expression).mpr
+    (fun _ occurs => Nat.lt_of_lt_of_le (bounded.occurs_lt occurs) ordered)
+
 
 end Mettapedia.Languages.MM0.Kernel

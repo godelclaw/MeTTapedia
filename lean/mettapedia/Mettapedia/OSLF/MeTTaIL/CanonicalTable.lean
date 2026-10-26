@@ -1,3 +1,5 @@
+import Mettapedia.OSLF.MeTTaIL.GeneralRuleBindingInference
+import Mettapedia.OSLF.MeTTaIL.GeneralScopedMatch
 import Mettapedia.OSLF.MeTTaIL.CanonicalCompare
 import Mettapedia.GSLT.LanguageDef.WellSortedChecker
 
@@ -415,3 +417,692 @@ theorem covered_standardForm {table : List String} (laws : List Laws) (extrusion
 end StandardForm
 
 end Mettapedia.OSLF.MeTTaIL.CanonicalCompare
+
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet
+
+open Syntax Mettapedia.GSLT.LanguageDef WellSorted
+
+variable {language : LanguageDef} {free : FreeTypeContext} {table : List String}
+
+mutual
+theorem pattern_covered {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
+    (typed : HasType language free bound pattern type)
+    (metadata : pattern.hasCanonicalBinderMetadata = true)
+    (declarations : ∀ rule ∈ language.terms, rule.label ∈ table)
+    (freeNames : ∀ name ∈ pattern.freeFvarNames, name ∈ table) :
+    Covered table pattern := by
+  cases typed with
+  | bvar _ => simp [Covered, names]
+  | fvar _ => simpa only [Covered, names, Pattern.freeFvarNames] using freeNames
+  | constructor declared _ arguments =>
+      intro name occurs
+      rcases List.mem_cons.mp occurs with rfl | occurs
+      · exact declarations _ declared
+      · exact arguments_covered arguments metadata declarations
+          (by simpa only [Pattern.freeFvarNames] using freeNames) name occurs
+  | @lambda bound binder bodyPattern domain codomain body =>
+      cases binder with
+      | some name => simp [Pattern.hasCanonicalBinderMetadata] at metadata
+      | none =>
+          simpa only [Covered, names, Option.toList_none, List.nil_append] using
+            pattern_covered body
+              (by simpa only [Pattern.hasCanonicalBinderMetadata, Option.isNone_none,
+                Bool.true_and] using metadata)
+              declarations (by simpa only [Pattern.freeFvarNames] using freeNames)
+  | multiLambda body =>
+      simp only [Pattern.hasCanonicalBinderMetadata, Bool.and_eq_true, List.isEmpty_iff] at metadata
+      obtain ⟨rfl, metadata⟩ := metadata
+      simpa only [Covered, names, List.nil_append] using
+        pattern_covered body metadata declarations (by simpa only [Pattern.freeFvarNames] using freeNames)
+  | subst body replacement =>
+      simp only [Pattern.freeFvarNames] at freeNames
+      obtain ⟨bodyMetadata, replacementMetadata⟩ :=
+        (show _ ∧ _ from (by simpa only [Pattern.hasCanonicalBinderMetadata, Bool.and_eq_true] using metadata))
+      intro name occurs
+      rcases List.mem_append.mp occurs with inBody | inReplacement
+      · exact pattern_covered body bodyMetadata declarations
+          (fun name member => freeNames name (List.mem_append_left _ member)) name inBody
+      · exact pattern_covered replacement replacementMetadata declarations
+          (fun name member => freeNames name (List.mem_append_right _ member)) name inReplacement
+  | collection elements =>
+      simp only [Pattern.freeFvarNames] at freeNames
+      intro name occurs
+      rcases List.mem_append.mp occurs with inElements | inRest
+      · exact elements_covered elements metadata declarations
+          (fun name member => freeNames name (List.mem_append_left _ member)) name inElements
+      · exact freeNames name (List.mem_append_right _ inRest)
+  | collectionConstructor _ _ elements =>
+      simp only [Pattern.freeFvarNames] at freeNames
+      intro name occurs
+      rcases List.mem_append.mp occurs with inElements | inRest
+      · exact elements_covered elements metadata declarations
+          (fun name member => freeNames name (List.mem_append_left _ member)) name inElements
+      · exact freeNames name (List.mem_append_right _ inRest)
+termination_by sizeOf pattern
+
+theorem arguments_covered {bound : List TypeExpr} {patterns : List Pattern} {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes language free bound patterns parameters)
+    (metadata : Pattern.hasCanonicalBinderMetadataList patterns = true)
+    (declarations : ∀ rule ∈ language.terms, rule.label ∈ table)
+    (freeNames : ∀ name ∈ patterns.flatMap Pattern.freeFvarNames, name ∈ table) :
+    ∀ name ∈ namesList patterns, name ∈ table := by
+  cases typed with
+  | nil => simp [namesList]
+  | cons _ _ head tail =>
+      simp only [Pattern.hasCanonicalBinderMetadataList, Bool.and_eq_true] at metadata
+      obtain ⟨headMetadata, tailMetadata⟩ := metadata
+      intro name occurs
+      rcases List.mem_append.mp occurs with here | later
+      · exact pattern_covered head headMetadata declarations
+          (fun name member => freeNames name (List.mem_append_left _ member)) name here
+      · exact arguments_covered tail tailMetadata declarations
+          (fun name member => freeNames name (List.mem_append_right _ member)) name later
+termination_by sizeOf patterns
+
+theorem elements_covered {bound : List TypeExpr} {patterns : List Pattern} {elementType : TypeExpr}
+    (typed : ElementsHaveType language free bound patterns elementType)
+    (metadata : Pattern.hasCanonicalBinderMetadataList patterns = true)
+    (declarations : ∀ rule ∈ language.terms, rule.label ∈ table)
+    (freeNames : ∀ name ∈ patterns.flatMap Pattern.freeFvarNames, name ∈ table) :
+    ∀ name ∈ namesList patterns, name ∈ table := by
+  cases typed with
+  | nil => simp [namesList]
+  | cons head tail =>
+      simp only [Pattern.hasCanonicalBinderMetadataList, Bool.and_eq_true] at metadata
+      obtain ⟨headMetadata, tailMetadata⟩ := metadata
+      intro name occurs
+      rcases List.mem_append.mp occurs with here | later
+      · exact pattern_covered head headMetadata declarations
+          (fun name member => freeNames name (List.mem_append_left _ member)) name here
+      · exact elements_covered tail tailMetadata declarations
+          (fun name member => freeNames name (List.mem_append_right _ member)) name later
+termination_by sizeOf patterns
+end
+
+theorem wellSorted_covered {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
+    (typed : OpenPatternWellSorted language free bound type pattern)
+    (declarations : ∀ rule ∈ language.terms, rule.label ∈ table)
+    (freeNames : ∀ name ∈ pattern.freeFvarNames, name ∈ table) :
+    Covered table pattern :=
+  pattern_covered typed.1 typed.2.1 declarations freeNames
+
+theorem nameless_binder_covered :
+    Covered [] (.lambda none (.bvar 0)) := by
+  apply pattern_covered (language := LanguageDef.empty "Alphabet")
+    (free := fun _ => none) (bound := [])
+    (type := .arrow (.base "A") (.base "A"))
+    (.lambda (.bvar rfl)) (by rfl)
+  · intro rule declared
+    cases declared
+  · simp [Pattern.freeFvarNames]
+
+theorem named_display_has_type :
+    HasType (LanguageDef.empty "Alphabet") (fun _ => none) []
+      (.lambda (some "display") (.bvar 0)) (.arrow (.base "A") (.base "A")) :=
+  .lambda (.bvar rfl)
+
+theorem named_display_not_covered :
+    ¬ Covered [] (.lambda (some "display") (.bvar 0)) := by
+  simp [Covered, names]
+
+theorem named_display_not_canonical :
+    (.lambda (some "display") (.bvar 0) : Pattern).hasCanonicalBinderMetadata = false := rfl
+
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport
+
+open Syntax RuleBinding ScopedRuleMatching Substitution
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+variable {table : List String}
+
+def AssignmentCovered (table : List String) (assignment : Assignment) : Prop :=
+  ∀ entry ∈ assignment, Covered table entry.2.body
+
+def PatternsCovered (table : List String) (patterns : List Pattern) : Prop :=
+  ∀ pattern ∈ patterns, Covered table pattern
+
+private theorem covered_bvar (index : Nat) : Covered table (.bvar index) := by
+  simp [Covered, names]
+
+private theorem covered_apply {label : String} {arguments : List Pattern} :
+    Covered table (.apply label arguments) ↔ label ∈ table ∧ PatternsCovered table arguments := by
+  simp only [Covered, names, List.mem_cons, forall_eq_or_imp, mem_namesList]
+  constructor
+  · rintro ⟨label, rest⟩
+    exact ⟨label, fun argument member name occurs => rest name ⟨argument, member, occurs⟩⟩
+  · rintro ⟨label, rest⟩
+    exact ⟨label, fun name ⟨argument, member, occurs⟩ => rest argument member name occurs⟩
+
+private theorem covered_lambda {display : Option String} {body : Pattern} :
+    Covered table (.lambda display body) ↔
+      (∀ name ∈ display.toList, name ∈ table) ∧ Covered table body := by
+  simp only [Covered, names, List.mem_append]
+  constructor
+  · intro covered
+    exact ⟨fun name member => covered name (.inl member), fun name member => covered name (.inr member)⟩
+  · rintro ⟨left, right⟩ name (member | member)
+    · exact left name member
+    · exact right name member
+
+private theorem covered_multiLambda {arity : Nat} {display : List String} {body : Pattern} :
+    Covered table (.multiLambda arity display body) ↔
+      (∀ name ∈ display, name ∈ table) ∧ Covered table body := by
+  simp only [Covered, names, List.mem_append]
+  constructor
+  · intro covered
+    exact ⟨fun name member => covered name (.inl member), fun name member => covered name (.inr member)⟩
+  · rintro ⟨left, right⟩ name (member | member)
+    · exact left name member
+    · exact right name member
+
+private theorem covered_subst {body replacement : Pattern} :
+    Covered table (.subst body replacement) ↔ Covered table body ∧ Covered table replacement := by
+  simp only [Covered, names, List.mem_append]
+  constructor
+  · intro covered
+    exact ⟨fun name member => covered name (.inl member), fun name member => covered name (.inr member)⟩
+  · rintro ⟨left, right⟩ name (member | member)
+    · exact left name member
+    · exact right name member
+
+private theorem covered_collection {kind : CollType} {elements : List Pattern} {rest : Option String} :
+    Covered table (.collection kind elements rest) ↔
+      PatternsCovered table elements ∧ (∀ name ∈ rest.toList, name ∈ table) := by
+  constructor
+  · intro covered
+    exact ⟨covered_elements.mp (fun name occurs => covered name (List.mem_append_left _ occurs)),
+      fun name occurs => covered name (List.mem_append_right _ occurs)⟩
+  · rintro ⟨elements, rest⟩ name occurs
+    rcases List.mem_append.mp occurs with here | later
+    · exact covered_elements.mpr elements name here
+    · exact rest name later
+
+theorem liftBVars_covered {pattern : Pattern} (covered : Covered table pattern) (cutoff shift : Nat) :
+    Covered table (liftBVars cutoff shift pattern) := by
+  simpa only [Covered, names_liftBVars] using covered
+
+theorem contextSubstitute_covered {body : Pattern} {assignment : ContextSubstitution.Assignment}
+    (covered : Covered table body) (images : ∀ index, Covered table (assignment index)) :
+    Covered table (ContextSubstitution.substitute assignment body) := by
+  induction body using Pattern.inductionOn generalizing assignment with
+  | hbvar index => exact images index
+  | hfvar name => exact covered
+  | happly label arguments ih =>
+      obtain ⟨labelCovered, argumentsCovered⟩ := covered_apply.mp covered
+      apply covered_apply.mpr
+      refine ⟨labelCovered, ?_⟩
+      intro actual member
+      simp only [ContextSubstitution.substituteList_eq_map] at member
+      obtain ⟨argument, argumentMember, rfl⟩ := List.mem_map.mp member
+      exact ih argument argumentMember (argumentsCovered argument argumentMember) images
+  | hlambda display body ih =>
+      obtain ⟨displayCovered, bodyCovered⟩ := covered_lambda.mp covered
+      apply covered_lambda.mpr
+      refine ⟨displayCovered, ih bodyCovered ?_⟩
+      intro index
+      unfold ContextSubstitution.lift
+      split
+      · exact covered_bvar _
+      · exact liftBVars_covered (images _) _ _
+  | hmultiLambda arity display body ih =>
+      obtain ⟨displayCovered, bodyCovered⟩ := covered_multiLambda.mp covered
+      apply covered_multiLambda.mpr
+      refine ⟨displayCovered, ih bodyCovered ?_⟩
+      intro index
+      unfold ContextSubstitution.lift
+      split
+      · exact covered_bvar _
+      · exact liftBVars_covered (images _) _ _
+  | hsubst body replacement bodyIH replacementIH =>
+      obtain ⟨bodyCovered, replacementCovered⟩ := covered_subst.mp covered
+      apply covered_subst.mpr
+      refine ⟨bodyIH bodyCovered ?_, replacementIH replacementCovered images⟩
+      intro index
+      unfold ContextSubstitution.lift
+      split
+      · exact covered_bvar _
+      · exact liftBVars_covered (images _) _ _
+  | hcollection kind elements rest ih =>
+      obtain ⟨elementsCovered, restCovered⟩ := covered_collection.mp covered
+      apply covered_collection.mpr
+      refine ⟨?_, restCovered⟩
+      intro actual member
+      simp only [ContextSubstitution.substituteList_eq_map] at member
+      obtain ⟨element, elementMember, rfl⟩ := List.mem_map.mp member
+      exact ih element elementMember (elementsCovered element elementMember) images
+
+theorem recoverValue_covered {dependencies : List TypeExpr} {ambient depth : Nat}
+    {arguments : List Pattern} {target : Pattern} {value : ContextualValue}
+    (covered : Covered table target)
+    (recovered : recoverValue? dependencies ambient depth arguments target = some value) :
+    Covered table value.body := by
+  unfold recoverValue? at recovered
+  split at recovered <;> try contradiction
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at recovered
+  obtain ⟨indices, _, recovered⟩ := recovered
+  split at recovered <;> try contradiction
+  split at recovered <;> try contradiction
+  cases Option.some.inj recovered
+  apply contextSubstitute_covered covered
+  intro index
+  simp only [recoveryAssignment]
+  split
+  · split <;> exact covered_bvar _
+  · exact covered_bvar _
+
+theorem instantiateValue_covered {value : ContextualValue} {ambient depth : Nat}
+    {arguments : List Pattern} {actual : Pattern} (stored : Covered table value.body)
+    (parameters : PatternsCovered table arguments)
+    (instantiated : instantiateValue? value ambient depth arguments = some actual) :
+    Covered table actual := by
+  unfold instantiateValue? at instantiated
+  split at instantiated <;> try contradiction
+  split at instantiated <;> try contradiction
+  split at instantiated <;> try contradiction
+  split at instantiated <;> try contradiction
+  dsimp only at instantiated
+  split at instantiated <;> try contradiction
+  rw [← Option.some.inj instantiated]
+  apply contextSubstitute_covered stored
+  intro index
+  simp only [occurrenceAssignment]
+  split
+  · unfold List.getD
+    cases found : arguments[index]? with
+    | none => exact covered_bvar _
+    | some argument => exact parameters argument (List.mem_of_getElem? found)
+  · exact covered_bvar _
+
+theorem assigned_covered {initial final : Assignment} {name : String} {value : ContextualValue}
+    (before : AssignmentCovered table initial) (valueCovered : Covered table value.body)
+    (assigned : assign initial name value = some final) : AssignmentCovered table final := by
+  unfold assign at assigned
+  cases found : lookup initial name with
+  | none =>
+      simp only [found, Option.some.injEq] at assigned
+      subst final
+      intro entry member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact valueCovered
+      · exact before entry member
+  | some previous =>
+      simp only [found] at assigned
+      split at assigned
+      · cases assigned
+        exact before
+      · cases assigned
+
+theorem capture_covered {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth : Nat}
+    {site : RulePatternSite} {path : List Nat} {initial final : Assignment} {name : String} {target : Pattern}
+    (before : AssignmentCovered table initial) (targetCovered : Covered table target)
+    (captured : capture? rule spec ambient depth site path initial name target = some final) :
+    AssignmentCovered table final := by
+  unfold capture? at captured
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at captured
+  obtain ⟨dependencies, _, arguments, _, value, recovered, assigned⟩ := captured
+  exact assigned_covered before (recoverValue_covered targetCovered recovered) assigned
+
+mutual
+  theorem matched_covered {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth : Nat}
+      {site : RulePatternSite} {path : List Nat} {initial final : Assignment} {schema target : Pattern}
+      (before : AssignmentCovered table initial) (targetCovered : Covered table target)
+      (matched : GeneralScopedMatch.Matches rule spec ambient site path depth initial schema target final) :
+      AssignmentCovered table final := by
+    cases matched with
+    | capture captured => exact capture_covered before targetCovered captured
+    | bound => exact before
+    | constructor arguments => exact matchedArguments_covered before (covered_apply.mp targetCovered).2 arguments
+    | binder body => exact matched_covered before (covered_lambda.mp targetCovered).2 body
+    | binders body => exact matched_covered before (covered_multiLambda.mp targetCovered).2 body
+    | substitution body replacement =>
+        exact matched_covered (matched_covered before (covered_subst.mp targetCovered).1 body)
+          (covered_subst.mp targetCovered).2 replacement
+    | bag _ bag => exact matchedBag_covered before (covered_collection.mp targetCovered).1 bag
+    | vector arguments => exact matchedArguments_covered before (covered_collection.mp targetCovered).1 arguments
+    | vectorRest arguments captured =>
+        have elements := (covered_collection.mp targetCovered).1
+        have changed := matchedArguments_covered before
+          (fun target member => elements target (List.mem_of_mem_take member)) arguments
+        exact capture_covered changed
+          (covered_collection.mpr ⟨fun target member => elements target (List.mem_of_mem_drop member),
+            by intro name member; cases member⟩) captured
+
+  theorem matchedArguments_covered {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth index : Nat}
+      {site : RulePatternSite} {path : List Nat} {initial final : Assignment} {schemas targets : List Pattern}
+      (before : AssignmentCovered table initial) (targetsCovered : PatternsCovered table targets)
+      (matched : GeneralScopedMatch.Arguments rule spec ambient site path depth initial index schemas targets final) :
+      AssignmentCovered table final := by
+    cases matched with
+    | nil => exact before
+    | cons head tail =>
+        exact matchedArguments_covered
+          (matched_covered before (targetsCovered _ List.mem_cons_self) head)
+          (fun target member => targetsCovered target (List.mem_cons_of_mem _ member)) tail
+
+  theorem matchedBag_covered {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth index : Nat}
+      {site : RulePatternSite} {path : List Nat} {initial final : Assignment} {schemas targets : List Pattern}
+      {rest : Option String} {kind : CollType}
+      (before : AssignmentCovered table initial) (targetsCovered : PatternsCovered table targets)
+      (matched : GeneralScopedMatch.Bag rule spec ambient site path depth initial index schemas rest kind targets final) :
+      AssignmentCovered table final := by
+    cases matched with
+    | nil => exact before
+    | rest captured =>
+        exact capture_covered before
+          (covered_collection.mpr ⟨targetsCovered, by intro name member; cases member⟩) captured
+    | cons selected within head tail =>
+        exact matchedBag_covered
+          (matched_covered before (targetsCovered _ (List.getElem_mem within)) head)
+          (fun target member => targetsCovered target (List.mem_of_mem_eraseIdx member)) tail
+end
+
+theorem instantiateBVarAt_covered {body replacement : Pattern} (depth : Nat)
+    (bodyCovered : Covered table body) (replacementCovered : Covered table replacement) :
+    Covered table (instantiateBVarAt depth replacement body) := by
+  induction body using Pattern.inductionOn generalizing depth with
+  | hbvar index =>
+      simp only [instantiateBVarAt]
+      split
+      · exact covered_bvar _
+      · split
+        · exact liftBVars_covered replacementCovered _ _
+        · exact covered_bvar _
+  | hfvar name => simpa only [instantiateBVarAt] using bodyCovered
+  | happly constructor arguments ih =>
+      rw [instantiateBVarAt]
+      obtain ⟨labelCovered, argumentsCovered⟩ := covered_apply.mp bodyCovered
+      apply covered_apply.mpr
+      refine ⟨labelCovered, ?_⟩
+      intro actual member
+      obtain ⟨argument, argumentMember, rfl⟩ := List.mem_map.mp member
+      exact ih argument argumentMember depth (argumentsCovered argument argumentMember)
+  | hlambda display body ih =>
+      rw [instantiateBVarAt]
+      obtain ⟨displayCovered, bodyCovered⟩ := covered_lambda.mp bodyCovered
+      exact covered_lambda.mpr ⟨displayCovered, ih (depth + 1) bodyCovered⟩
+  | hmultiLambda arity display body ih =>
+      rw [instantiateBVarAt]
+      obtain ⟨displayCovered, bodyCovered⟩ := covered_multiLambda.mp bodyCovered
+      exact covered_multiLambda.mpr ⟨displayCovered, ih (depth + arity) bodyCovered⟩
+  | hsubst body replacement bodyIH replacementIH =>
+      rw [instantiateBVarAt]
+      obtain ⟨bodyCovered, nestedCovered⟩ := covered_subst.mp bodyCovered
+      exact covered_subst.mpr ⟨bodyIH (depth + 1) bodyCovered, replacementIH depth nestedCovered⟩
+  | hcollection kind elements rest ih =>
+      rw [instantiateBVarAt]
+      obtain ⟨elementsCovered, restCovered⟩ := covered_collection.mp bodyCovered
+      apply covered_collection.mpr
+      refine ⟨?_, restCovered⟩
+      intro actual member
+      obtain ⟨element, elementMember, rfl⟩ := List.mem_map.mp member
+      exact ih element elementMember depth (elementsCovered element elementMember)
+
+mutual
+  theorem instantiateWith_covered
+      {operation : Pattern → Pattern → Pattern} {rule : RewriteRule} {spec : RuleBindingSpec}
+      {ambient depth : Nat} {site : RulePatternSite} {path : List Nat}
+      {assignment : Assignment} {schema actual : Pattern}
+      (operationCovered : ∀ replacement body, Covered table replacement → Covered table body →
+        Covered table (operation replacement body))
+      (stored : AssignmentCovered table assignment)
+      (parameters : ∀ name site path arguments, arguments? rule spec name site path = some arguments →
+        PatternsCovered table arguments)
+      (schemaCovered : Covered table schema)
+      (read : instantiateWith? operation rule spec ambient site path depth assignment schema = some actual) :
+      Covered table actual := by
+    cases schema with
+    | bvar index =>
+        simp only [instantiateWith?, Option.some.injEq] at read
+        cases read
+        exact covered_bvar _
+    | fvar name =>
+        simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨value, found, arguments, argumentLookup, instantiated⟩ := read
+        exact instantiateValue_covered (stored _ (lookup_member assignment name value found))
+          (parameters name site path arguments argumentLookup) instantiated
+    | apply label arguments =>
+        obtain ⟨labelCovered, argumentsCovered⟩ := covered_apply.mp schemaCovered
+        simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨results, completed, read⟩ := read
+        cases Option.some.inj read
+        exact covered_apply.mpr ⟨labelCovered,
+          instantiateArgsWith_covered operationCovered stored parameters argumentsCovered completed⟩
+    | lambda display body =>
+        obtain ⟨displayCovered, bodyCovered⟩ := covered_lambda.mp schemaCovered
+        simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨result, completed, read⟩ := read
+        cases Option.some.inj read
+        exact covered_lambda.mpr ⟨displayCovered,
+          instantiateWith_covered operationCovered stored parameters bodyCovered completed⟩
+    | multiLambda arity display body =>
+        obtain ⟨displayCovered, bodyCovered⟩ := covered_multiLambda.mp schemaCovered
+        simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨result, completed, read⟩ := read
+        cases Option.some.inj read
+        exact covered_multiLambda.mpr ⟨displayCovered,
+          instantiateWith_covered operationCovered stored parameters bodyCovered completed⟩
+    | subst body replacement =>
+        obtain ⟨bodyCovered, replacementCovered⟩ := covered_subst.mp schemaCovered
+        simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨bodyResult, bodyRead, replacementResult, replacementRead, read⟩ := read
+        cases Option.some.inj read
+        exact operationCovered _ _
+          (instantiateWith_covered operationCovered stored parameters replacementCovered replacementRead)
+          (instantiateWith_covered operationCovered stored parameters bodyCovered bodyRead)
+    | collection kind elements rest =>
+        obtain ⟨elementsCovered, _⟩ := covered_collection.mp schemaCovered
+        simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨explicit, completed, read⟩ := read
+        have explicitCovered := instantiateArgsWith_covered operationCovered stored parameters elementsCovered completed
+        cases rest with
+        | none =>
+            cases Option.some.inj read
+            exact covered_collection.mpr ⟨explicitCovered, by intro name member; cases member⟩
+        | some name =>
+            simp only [Option.bind_eq_some_iff] at read
+            obtain ⟨value, found, arguments, argumentLookup, resolved, instantiated, read⟩ := read
+            have resolvedCovered := instantiateValue_covered (stored _ (lookup_member assignment name value found))
+              (parameters name site (path ++ [elements.length]) arguments argumentLookup) instantiated
+            split at read <;> try cases read
+            split at read <;> cases read
+            apply covered_collection.mpr
+            constructor
+            · intro element member
+              rcases List.mem_append.mp member with earlier | later
+              · exact explicitCovered element earlier
+              · exact (covered_collection.mp resolvedCovered).1 element later
+            · intro name member
+              cases member
+  termination_by sizeOf schema
+
+  theorem instantiateArgsWith_covered
+      {operation : Pattern → Pattern → Pattern} {rule : RewriteRule} {spec : RuleBindingSpec}
+      {ambient depth index : Nat} {site : RulePatternSite} {path : List Nat}
+      {assignment : Assignment} {schemas actuals : List Pattern}
+      (operationCovered : ∀ replacement body, Covered table replacement → Covered table body →
+        Covered table (operation replacement body))
+      (stored : AssignmentCovered table assignment)
+      (parameters : ∀ name site path arguments, arguments? rule spec name site path = some arguments →
+        PatternsCovered table arguments)
+      (schemasCovered : PatternsCovered table schemas)
+      (read : instantiateArgsWith? operation rule spec ambient site path depth assignment index schemas = some actuals) :
+      PatternsCovered table actuals := by
+    cases schemas with
+    | nil =>
+        simp only [instantiateArgsWith?, Option.some.injEq] at read
+        cases read
+        intro actual member
+        cases member
+    | cons schema schemas =>
+        simp only [instantiateArgsWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+        obtain ⟨actual, head, tail, tailRead, read⟩ := read
+        cases Option.some.inj read
+        intro value member
+        rcases List.mem_cons.mp member with rfl | later
+        · exact instantiateWith_covered operationCovered stored parameters
+            (schemasCovered schema List.mem_cons_self) head
+        · exact instantiateArgsWith_covered operationCovered stored parameters
+            (fun value member => schemasCovered value (List.mem_cons_of_mem _ member)) tailRead value later
+  termination_by sizeOf schemas
+end
+
+def SpecificationCovered (table : List String) (spec : RuleBindingSpec) : Prop :=
+  ∀ occurrence ∈ spec.occurrences, PatternsCovered table occurrence.arguments
+
+theorem arguments_covered {rule : RewriteRule} {spec : RuleBindingSpec}
+    (spines : SpecificationCovered table spec) {name : String} {site : RulePatternSite}
+    {path : List Nat} {arguments : List Pattern}
+    (read : arguments? rule spec name site path = some arguments) : PatternsCovered table arguments := by
+  unfold arguments? at read
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+  obtain ⟨dependencies, _, guard, _, read⟩ := read
+  split at read
+  · split at read <;> cases read
+    intro value member
+    cases member
+  · rename_i row rows
+    split at read <;> cases read
+    have selected : row ∈ spec.occurrences.filter
+        (fun candidate => candidate.name == name && candidate.site == site && candidate.path == path) := by
+      rw [rows]
+      exact List.mem_cons_self
+    exact spines row (List.mem_filter.mp selected).1
+  · cases read
+
+theorem instantiateAt_covered {rule : RewriteRule} {spec : RuleBindingSpec}
+    {ambient depth : Nat} {site : RulePatternSite} {path : List Nat}
+    {assignment : Assignment} {schema actual : Pattern}
+    (stored : AssignmentCovered table assignment) (spines : SpecificationCovered table spec)
+    (schemaCovered : Covered table schema)
+    (read : instantiateAt? rule spec ambient site path depth assignment schema = some actual) :
+    Covered table actual :=
+  instantiateWith_covered (fun _replacement _body replacementCovered bodyCovered =>
+    instantiateBVarAt_covered 0 bodyCovered replacementCovered) stored
+    (fun _ _ _ _ read => arguments_covered spines read) schemaCovered read
+
+theorem canon_names_membership (pattern : Pattern) :
+    ∀ name, name ∈ names (CanonicalBags.canon pattern) ↔ name ∈ names pattern := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => simp [CanonicalBags.canon, names]
+  | hfvar other => simp [CanonicalBags.canon]
+  | happly label arguments ih =>
+      intro name
+      simp only [CanonicalBags.canon, names, List.mem_cons, mem_namesList]
+      apply or_congr Iff.rfl
+      constructor
+      · rintro ⟨actual, member, occurs⟩
+        obtain ⟨argument, argumentMember, rfl⟩ := List.mem_map.mp member
+        exact ⟨argument, argumentMember, (ih argument argumentMember name).mp occurs⟩
+      · rintro ⟨argument, argumentMember, occurs⟩
+        exact ⟨CanonicalBags.canon argument, List.mem_map.mpr ⟨argument, argumentMember, rfl⟩,
+          (ih argument argumentMember name).mpr occurs⟩
+  | hlambda display body ih =>
+      intro name
+      simp only [CanonicalBags.canon, names, List.mem_append, ih]
+  | hmultiLambda arity display body ih =>
+      intro name
+      simp only [CanonicalBags.canon, names, List.mem_append, ih]
+  | hsubst body replacement bodyIH replacementIH =>
+      intro name
+      simp only [CanonicalBags.canon, names, List.mem_append, bodyIH, replacementIH]
+  | hcollection kind elements rest ih =>
+      intro name
+      simp only [CanonicalBags.canon, names, List.mem_append, mem_namesList]
+      apply or_congr _ Iff.rfl
+      constructor
+      · rintro ⟨actual, member, occurs⟩
+        obtain ⟨element, elementMember, rfl⟩ := List.mem_map.mp ((CanonicalBags.arrange_mem actual).mp member)
+        exact ⟨element, elementMember, (ih element elementMember name).mp occurs⟩
+      · rintro ⟨element, elementMember, occurs⟩
+        exact ⟨CanonicalBags.canon element,
+          (CanonicalBags.arrange_mem _).mpr (List.mem_map.mpr ⟨element, elementMember, rfl⟩),
+          (ih element elementMember name).mpr occurs⟩
+
+theorem canon_covered {pattern : Pattern} (covered : Covered table pattern) :
+    Covered table (CanonicalBags.canon pattern) :=
+  fun name member => covered name ((canon_names_membership pattern name).mp member)
+
+theorem same_covered {left right : Pattern} (same : CanonicalBags.Same left right)
+    (covered : Covered table left) : Covered table right := by
+  intro name member
+  have occurs := (canon_names_membership right name).mpr member
+  rw [← same] at occurs
+  exact covered name ((canon_names_membership left name).mp occurs)
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport
+
+open Syntax RuleBinding
+
+/-- Root-input inference publishes no explicit occurrence arguments. -/
+theorem inferred_specification_covered (table : List String) (rule : RewriteRule) :
+    SpecificationCovered table (GeneralRuleBindingInference.inferredSpec rule) := by
+  intro occurrence member
+  cases member
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport
+
+open Syntax RuleBinding
+
+theorem named_display_covered : Covered ["display"] (.lambda (some "display") (.bvar 0)) := by
+  simp [Covered, names]
+
+/-- Occurrence arguments can introduce constructor names even when the stored body has none. -/
+theorem instantiated_spine_adds_label :
+    instantiateValue? ⟨[.base "A"], 0, .bvar 0⟩ 0 0 [.apply "Injected" []] =
+      some (.apply "Injected" []) := by rfl
+
+theorem instantiated_label_has_no_free_names :
+    (.apply "Injected" [] : Pattern).freeFvarNames = [] := by simp [Pattern.freeFvarNames]
+
+theorem stored_body_alone_does_not_cover_instantiation :
+    ∃ value : ContextualValue, ∃ arguments : List Pattern, ∃ actual : Pattern,
+      Covered [] value.body ∧ instantiateValue? value 0 0 arguments = some actual ∧
+      actual.freeFvarNames = [] ∧ ¬ Covered [] actual := by
+  refine ⟨⟨[.base "A"], 0, .bvar 0⟩, [.apply "Injected" []], .apply "Injected" [],
+    by simp [Covered, names], instantiated_spine_adds_label, instantiated_label_has_no_free_names, ?_⟩
+  intro covered
+  exact List.not_mem_nil (covered "Injected" (by simp [names]))
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport
+
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.pattern_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.arguments_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.elements_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.wellSorted_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.nameless_binder_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.named_display_has_type
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.named_display_not_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.TypedObjectAlphabet.named_display_not_canonical
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.AssignmentCovered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.PatternsCovered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.liftBVars_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.contextSubstitute_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.recoverValue_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiateValue_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.assigned_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.capture_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.matched_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.matchedArguments_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.matchedBag_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiateBVarAt_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiateWith_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiateArgsWith_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.SpecificationCovered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.arguments_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiateAt_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.canon_names_membership
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.canon_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.same_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.inferred_specification_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.named_display_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiated_spine_adds_label
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.instantiated_label_has_no_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.CanonicalCompare.AllNameSupport.stored_body_alone_does_not_cover_instantiation

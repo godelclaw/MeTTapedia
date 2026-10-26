@@ -17,6 +17,9 @@ import Mettapedia.GSLT.LanguageDef.ModuleSource.IndexedPositiveVectorLowering
 import Mettapedia.GSLT.LanguageDef.ModuleSource.MutualWorkflowActionLowering
 import Mettapedia.GSLT.LanguageDef.PositiveInductiveWorkflowActionGuest
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLFacts
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLPredicate
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveRecursiveSpaceControls
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveConstructorDataControls
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveBooleanHOL
 import Mettapedia.Languages.HOLLight.BooleanFacts
 import Mettapedia.GSLT.Dynamics.NaturalBackendHOLFacts
@@ -39,6 +42,18 @@ import Mettapedia.Languages.HOLLight.InferenceOnlyReplayControls
 import Mettapedia.Languages.HOLLight.TypeDefinitionEqualityControls
 import Mettapedia.Languages.HOLLight.PredicateFixedPoint
 import Mettapedia.Languages.HOLLight.PolynomialPredicate
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveGuestMeaningControls
+import Mettapedia.Languages.HOLLight.PointedPredicate
+import Mettapedia.Languages.HOLLight.DefinitionReplayModels
+import Mettapedia.Languages.HOLLight.TypeInstantiationCertificates
+import Mettapedia.Languages.HOLLight.PointedPredicateInstantiation
+import Mettapedia.Languages.HOLLight.RegisteredSubstitution
+import Mettapedia.Languages.HOLLight.RegisteredPointedTypeDefinition
+import Mettapedia.Languages.HOLLight.RegisteredReplayModelsControls
+import Mettapedia.Languages.HOLLight.SourceProfileModelsControls
+import Mettapedia.Languages.HOLLight.ExactFormulaReadbackControls
+import Mettapedia.Languages.HOLLight.RetainedAssemblyControls
+import Mettapedia.Languages.HOLLight.IndexedConstructorDefinitionControls
 import Mettapedia.Logic.HOL.PredicateFixedPointControls
 import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls
 import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerUniverseControls
@@ -200,6 +215,40 @@ def intuitionisticChecks : List (String × Bool) :=
    ("intuitionistic hinted negative decision", !(IntuitionisticDecision.decideHinted em [.inr model])),
    ("intuitionistic invalid hint falls back", !(IntuitionisticDecision.decideHinted .falsum [.inl proof]))]
 
+def pointedInstantiationChecks : List (String × Bool) :=
+  let emptyProof := Mettapedia.Languages.HOLLight.PointedPredicateInstantiation.specializedProof
+    Mettapedia.Languages.HOLLight.PointedPredicateInstantiation.Controls.falseProperty
+  let functionProof := Mettapedia.Languages.HOLLight.PointedPredicateInstantiation.specializedProof
+    Mettapedia.Languages.HOLLight.PointedPredicateInstantiation.Controls.functionProperty
+  let checker := Mettapedia.Languages.HOLLight.ProofSystem.checker
+    Mettapedia.Languages.OpenTheory.emptyAxiomPolicy
+  [("pointed-instantiation/empty-predicate", checker.check emptyProof.result emptyProof.certificate),
+   ("pointed-instantiation/function-carrier", checker.check functionProof.result functionProof.certificate),
+   ("pointed-instantiation/changed-conclusion-refused", !(checker.check
+     Mettapedia.Languages.HOLLight.PointedPredicateInstantiation.Controls.changedClaim emptyProof.certificate))]
+
+open Mettapedia.Languages.HOLLight Mettapedia.Languages.OpenTheory in
+def holSourceFormationChecks : List (String × Bool) :=
+  let signature := DefinitionAdapters.ContextControls.coreContext.signature
+  let witnesses := ExportReplay.instanceCertificates signature
+  let loaded := SourceProfile.load? SourceProfile.primitiveBasis DefinitionReplayModels.Controls.referenceDocument
+  let repeated : ProofExecution.Registered.Command := .constant ("reference-definitions",0)
+    DefinitionReplayModels.Controls.identityName DefinitionReplayModels.Controls.identityBody
+    (ExportReplay.instanceCertificates SourceProfile.primitiveContext.signature)
+  [("registered HOL function-type instance",
+      SignatureFormation.constantInstanceB signature witnesses Const.equality
+        (Ty.equality TypeInstantiationCertificates.Controls.functionOperand)),
+   ("registered HOL identity type instance",
+      SignatureFormation.constantInstanceB signature witnesses Const.equality TypeInstantiationCertificates.Controls.schema),
+   ("inconsistent repeated HOL type parameter refused",
+      !(SignatureFormation.constantInstanceB signature witnesses Const.equality TypeInstantiationCertificates.Controls.inconsistent)),
+   ("received definition profile retains two outputs",
+      (loaded.map (fun profile => profile.reference.received.registered.cache.size == 2)).getD false),
+   ("received definition profile refuses changed output",
+      (SourceProfile.load? SourceProfile.primitiveBasis DefinitionReplayModels.Controls.forgedReferenceDocument).isNone),
+   ("received definition history refuses repeated name",
+      (ProofExecution.Registered.apply emptyAxiomPolicy DefinitionReplayModels.Controls.after repeated).isNone)]
+
 def checks : List (String × Bool) :=
   Mettapedia.Languages.HOLLight.NaturalFacts.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.verdicts ++
@@ -283,6 +332,19 @@ def checks : List (String × Bool) :=
     Mettapedia.TypeTheory.NbE.checkingVerdicts ++
     Mettapedia.Languages.HOLLight.PredicateFixedPoint.verdicts ++
     Mettapedia.Languages.HOLLight.PolynomialPredicate.verdicts ++
+    Mettapedia.Languages.HOLLight.PolynomialPredicate.Relations.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.MeaningControls.PositionCodec.verdicts ++
+    Mettapedia.GSLT.LanguageDef.IndexedInductive.HOLFacts.RawPredicateInterpretation.Controls.naturalSlotVerdicts ++
+    Mettapedia.Languages.HOLLight.PointedPredicate.Controls.verdicts ++
+    holSourceFormationChecks ++
+    pointedInstantiationChecks ++
+    Mettapedia.Languages.HOLLight.RegisteredSubstitution.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.RegisteredPointedTypeDefinition.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.RegisteredReplayModels.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.SourceProfileModels.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.ExactFormulaReadback.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.RetainedAssemblyControls.verdicts ++
+    Mettapedia.Languages.HOLLight.IndexedConstructorDefinitions.Controls.verdicts ++
     Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeGuest.ResultFold.verdicts ++
     [("ordered inductive traversal retains complete payloads",
       Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedContainerTraversal.Controls.modelChecks),

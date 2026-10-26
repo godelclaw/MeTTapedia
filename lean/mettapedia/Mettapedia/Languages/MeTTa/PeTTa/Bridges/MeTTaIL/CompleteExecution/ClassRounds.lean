@@ -77,8 +77,7 @@ theorem rule_keys_returns (state : State) (rep : Complete.Classes.Rep) : ∀ job
         encoded (encodeList ScopedRuleJobReadoutExecution.jobTerm jobs)])
       state (encoded (encodeList keyTerm (jobs.map (Complete.Classes.Key.rule rep))))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | job :: rest => by
     have later := rule_keys_returns state rep rest
     complete_eval [later] unfolding [encodeList, KeyKind.term, keyTerm, List.map_cons]
@@ -88,8 +87,7 @@ theorem forward_keys_returns (state : State) (rep : Complete.Classes.Rep) : ∀ 
       (apply "gslt:classes:keys" [encoded KeyKind.forward.term, encoded (repTerm rep), encoded (encodeList laneTerm lanes)])
       state (encoded (encodeList keyTerm (lanes.map (Complete.Classes.Key.forward rep))))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | lane :: rest => by
     have later := forward_keys_returns state rep rest
     complete_eval [later] unfolding [encodeList, KeyKind.term, keyTerm, List.map_cons]
@@ -101,8 +99,7 @@ theorem backward_keys_of_returns (state : State) (rep : Complete.Classes.Rep) (c
           encoded (encodeList laneTerm lanes)])
         state (encoded (encodeList keyTerm (lanes.map (Complete.Classes.Key.backward rep candidate))))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | lane :: rest => by
     have later := backward_keys_of_returns state rep candidate rest
     complete_eval [later] unfolding [encodeList, KeyKind.term, keyTerm, List.map_cons]
@@ -139,8 +136,7 @@ theorem backward_keys_returns (state : State) (table : List (String × TypeExpr)
         state (encoded (encodeList keyTerm (candidates.flatMap fun candidate =>
           (Complete.EquationJob.lanes plan bound expected candidate).map (Complete.Classes.Key.backward rep candidate))))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, InferenceCettaWire.encodePatterns, encodeList]
+    complete_eval unfolding [patternsValue, InferenceCettaWire.encodePatterns, encodeList]
   | candidate :: rest => by
     have lanes := lanes_declared_returns plan state table bound expected footprint tabled declared candidate
     have keys := backward_keys_of_returns state rep candidate (Complete.EquationJob.lanes plan bound expected candidate)
@@ -200,8 +196,7 @@ theorem start_entries_returns (state : State) (table : List (String × TypeExpr)
           (keys.map fun key => (⟨key, Complete.Deep.start (Complete.Classes.family plan key)⟩ :
             Complete.Classes.Entry plan))))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | key :: rest, licensed => by
     have family := classes_family_returns plan state table bound expected key (licensed key (by simp))
     have started := deep_start_returns (wireOf plan key) state
@@ -218,8 +213,7 @@ theorem reps_lanes_returns (state : State) (table : List (String × TypeExpr)) (
         (apply "gslt:classes:reps-lanes" [planValue plan table bound expected, encoded (encodeList repTerm reps)])
         state (encoded (encodeList keyTerm (reps.flatMap (Complete.Classes.lanesOf plan bound expected))))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | rep :: rest, inside => by
     have here := classes_lanes_returns plan state table bound expected footprint tabled declared rep
       (inside rep (by simp))

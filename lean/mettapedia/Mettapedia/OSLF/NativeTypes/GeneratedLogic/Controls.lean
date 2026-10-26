@@ -44,7 +44,7 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
   (checkOpenPatternWellSorted_sound checkOpenPatternWellSorted_complete FreeTypeContext UsesBareCollection
     isObjectPattern isObjectPatternList)
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
-  (DerivedInstance CollectionCarrierRule usesCollection_eq_true_of_collectionCarrierRule
+  (DerivedInstance CollectionCarrierRule usesCollection_eq_true_of_collectionTypedAt
     no_algebraRule_of_hasAlgebraDeclarations_eq_false)
 open Formula NativeStructure
 
@@ -506,7 +506,7 @@ theorem soup_splits : Soup.sat Env.closed (oneEach atomA atomB) (soup [atomA, at
 theorem soup_splits_commuted : Soup.sat Env.closed (oneEach atomB atomA) (soup [atomA, atomB]) := by
   have permuted : ObjectEquivalent RelationEnv.empty soupLanguage (soup [atomA, atomB]) (soup [atomB, atomA]) :=
     Relation.EqvGen.rel _ _ ⟨by decide, by decide, EquationStep.inContext .hole (Or.inr
-      (DerivedInstance.bagPerm (rule := soupRule) ⟨by simp [soupLanguage], "ps", proc, rfl⟩
+      (DerivedInstance.bagPerm_of_sorted (category := soupRule.category)
         ⟨FreeTypeContext.empty, [], (checkOpenPatternWellSorted_sound (by decide +kernel)).1⟩
         (List.Perm.swap atomB atomA [])))⟩
   exact ⟨soup [atomB], soup [atomA], ⟨by decide, [atomB], [atomA], permuted, rfl, rfl⟩,
@@ -569,10 +569,10 @@ theorem countA_equivalent {first second : Pattern}
         | reverse member _ _ => simp [soupLanguage] at member
       · cases derived with
         | bagPerm _ _ perm => exact countAList_perm perm
-        | setPerm declaration _ _ =>
-          exact absurd (usesCollection_eq_true_of_collectionCarrierRule declaration) (by decide)
-        | setDedup declaration _ =>
-          exact absurd (usesCollection_eq_true_of_collectionCarrierRule declaration) (by decide)
+        | setPerm declaration kindTyped _ =>
+          exact absurd (usesCollection_eq_true_of_collectionTypedAt declaration kindTyped) (by decide)
+        | setDedup declaration kindTyped =>
+          exact absurd (usesCollection_eq_true_of_collectionTypedAt declaration kindTyped) (by decide)
         | flatten algebraRule _ _ => exact (no_algebraRule_of_hasAlgebraDeclarations_eq_false (by decide) algebraRule).elim
         | singleton algebraRule _ _ => exact (no_algebraRule_of_hasAlgebraDeclarations_eq_false (by decide) algebraRule).elim
         | unitElim algebraRule _ _ => exact (no_algebraRule_of_hasAlgebraDeclarations_eq_false (by decide) algebraRule).elim

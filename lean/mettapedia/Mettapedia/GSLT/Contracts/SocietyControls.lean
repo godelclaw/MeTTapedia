@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Contracts.Quorums
 import Mettapedia.GSLT.Contracts.ContractDimensions
 import Mettapedia.GSLT.Contracts.ReifiedActions
 import Mathlib.Data.Fintype.Pi
@@ -1081,17 +1082,8 @@ theorem local_message_is_authentic (state : State size) (recipient : Fin size) (
 
 theorem honest_quorum_overlap (faulty first second : Finset (Fin 4))
     (faultBound : faulty.card ≤ 1) (firstSize : 3 ≤ first.card) (secondSize : 3 ≤ second.card) :
-    ∃ principal, principal ∈ first ∧ principal ∈ second ∧ principal ∉ faulty := by
-  have whole : (first ∪ second).card ≤ 4 := by simpa using Finset.card_le_univ (first ∪ second)
-  have count := Finset.card_union_add_card_inter first second
-  have overlap : 2 ≤ (first ∩ second).card := by omega
-  by_contra noHonest
-  have contained : first ∩ second ⊆ faulty := by
-    intro principal member
-    by_contra honest
-    exact noHonest ⟨principal, (Finset.mem_inter.mp member).1, (Finset.mem_inter.mp member).2, honest⟩
-  have bound := Finset.card_le_card contained
-  omega
+    ∃ principal, principal ∈ first ∧ principal ∈ second ∧ principal ∉ faulty :=
+  Quorums.four_one faulty first second faultBound firstSize secondSize
 
 theorem complement_supplies_quorum (faulty : Finset (Fin 4)) (faultBound : faulty.card ≤ 1) :
     3 ≤ (Finset.univ \ faulty).card ∧ Disjoint (Finset.univ \ faulty) faulty := by

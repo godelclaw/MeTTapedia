@@ -2,16 +2,11 @@ import Mettapedia.Algebra.WorkSpan
 import Mettapedia.GSLT.Core.Composition
 
 /-!
-# Sequential and parallel valuations from a concurrent cost algebra
+# Sequential and parallel event valuations
 
-A concurrent cost algebra has two total monoidal compositions on one carrier.
-This module exposes each composition as a `PartialMonoid`, the algebra used by
-generic proof-relevant event valuations.  The conversion is structure-level:
-it does not choose a scheduler, claim that two events are independent, or
-identify the sequential and parallel accounts.
-
-The WorkSpan instance supplies a negative control: both valuation algebras are
-total and lawful, but they disagree on two nonempty unit branches.
+A concurrent cost algebra supplies two total partial monoids. Their construction
+adds neither a scheduler nor independence evidence. WorkSpan's two unit jobs
+separate the resulting accounts even though both are total and lawful.
 -/
 
 set_option autoImplicit false
@@ -22,54 +17,39 @@ open Mettapedia.GSLT
 
 universe u
 
-/-- Sequential composition viewed as the total fragment of a partial event
-valuation algebra. -/
+/-- Any total associative operation with a two-sided unit gives a partial
+monoid that accepts every pair. No scheduling policy is added. -/
+def totalPartialMonoid {Cost : Type u} (unit : Cost) (op : Cost → Cost → Cost)
+    (leftUnit : ∀ value, op unit value = value)
+    (rightUnit : ∀ value, op value unit = value)
+    (assoc : ∀ first second third, op (op first second) third = op first (op second third)) :
+    PartialMonoid Cost where
+  unit := unit
+  op first second := some (op first second)
+  unit_op value := congrArg some (leftUnit value)
+  op_unit value := congrArg some (rightUnit value)
+  op_assoc first second third := congrArg some (assoc first second third)
+
+/-- The sequential operation as a total partial event valuation. -/
 def sequentialPartialMonoid {Cost : Type u} [Preorder Cost]
-    (algebra : ConcurrentCostAlgebra Cost) : PartialMonoid Cost where
-  unit := algebra.zero
-  op := fun first second => some (algebra.sequential first second)
-  unit_op := by
-    intro value
-    rw [algebra.sequential_zero_left]
-  op_unit := by
-    intro value
-    rw [algebra.sequential_zero_right]
-  op_assoc := by
-    intro first second third
-    simp only [Option.bind_some]
-    rw [algebra.sequential_assoc]
+    (algebra : ConcurrentCostAlgebra Cost) : PartialMonoid Cost :=
+  totalPartialMonoid algebra.zero algebra.sequential algebra.sequential_zero_left
+    algebra.sequential_zero_right algebra.sequential_assoc
 
-/-- Parallel composition viewed as the total fragment of a partial event
-valuation algebra.  Using it for an event family still requires independent
-evidence that the events may run in parallel. -/
+/-- The parallel operation as a total partial event valuation. Using this
+account still requires evidence that the events may run independently. -/
 def parallelPartialMonoid {Cost : Type u} [Preorder Cost]
-    (algebra : ConcurrentCostAlgebra Cost) : PartialMonoid Cost where
-  unit := algebra.zero
-  op := fun left right => some (algebra.parallel left right)
-  unit_op := by
-    intro value
-    rw [algebra.parallel_zero_left]
-  op_unit := by
-    intro value
-    rw [algebra.parallel_zero_right]
-  op_assoc := by
-    intro first second third
-    simp only [Option.bind_some]
-    rw [algebra.parallel_assoc]
+    (algebra : ConcurrentCostAlgebra Cost) : PartialMonoid Cost :=
+  totalPartialMonoid algebra.zero algebra.parallel algebra.parallel_zero_left
+    algebra.parallel_zero_right algebra.parallel_assoc
 
-/-- Every sequential grade pair is accepted; this construction adds no
-resource-rejection policy. -/
 theorem sequential_op_isSome {Cost : Type u} [Preorder Cost]
     (algebra : ConcurrentCostAlgebra Cost) (first second : Cost) :
-    ((sequentialPartialMonoid algebra).op first second).isSome :=
-  rfl
+    ((sequentialPartialMonoid algebra).op first second).isSome := rfl
 
-/-- Every parallel grade pair is accepted by the valuation algebra itself.
-Semantic or resource independence is a separate admission obligation. -/
 theorem parallel_op_isSome {Cost : Type u} [Preorder Cost]
     (algebra : ConcurrentCostAlgebra Cost) (left right : Cost) :
-    ((parallelPartialMonoid algebra).op left right).isSome :=
-  rfl
+    ((parallelPartialMonoid algebra).op left right).isSome := rfl
 
 /-- The concrete WorkSpan sequential valuation algebra. -/
 abbrev workSpanSequential : PartialMonoid WorkSpan :=
@@ -82,13 +62,11 @@ abbrev workSpanParallel : PartialMonoid WorkSpan :=
 /-- Positive control: two unit jobs accumulate exactly two units of work and
 two units of sequential span. -/
 theorem workSpanSequential_two_units :
-    workSpanSequential.op ⟨1, 1⟩ ⟨1, 1⟩ = some ⟨2, 2⟩ :=
-  rfl
+    workSpanSequential.op ⟨1, 1⟩ ⟨1, 1⟩ = some ⟨2, 2⟩ := rfl
 
 /-- Positive control: the same jobs have parallel span one. -/
 theorem workSpanParallel_two_units :
-    workSpanParallel.op ⟨1, 1⟩ ⟨1, 1⟩ = some ⟨2, 1⟩ :=
-  rfl
+    workSpanParallel.op ⟨1, 1⟩ ⟨1, 1⟩ = some ⟨2, 1⟩ := rfl
 
 /-- Negative control: lawfulness and totality do not collapse the two
 compositions. -/
@@ -96,9 +74,5 @@ theorem workSpan_valuation_compositions_distinct :
     workSpanSequential.op ⟨1, 1⟩ ⟨1, 1⟩ ≠
       workSpanParallel.op ⟨1, 1⟩ ⟨1, 1⟩ := by
   decide
-
-#print axioms sequentialPartialMonoid
-#print axioms parallelPartialMonoid
-#print axioms workSpan_valuation_compositions_distinct
 
 end Mettapedia.Algebra.ConcurrentCostValuation

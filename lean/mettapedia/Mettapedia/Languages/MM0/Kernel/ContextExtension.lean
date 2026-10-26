@@ -7,6 +7,11 @@ Appending declarations preserves typing, complete occurrence support,
 admissible substitution, definition conversion and the exact supplied proof
 witness. The conclusion and ordered hypotheses are unchanged.
 
+Restriction to a context prefix preserves the same receipt exactly when every
+native variable stored in its arguments and conversion evidence belongs to
+that prefix (`ProofWitness.proof_in_prefix_iff`). The bound includes definition
+dummy images and recursively retained child proofs, not just the conclusion.
+
 An admitted context can allocate new bound variables at its end. Their sorts
 must be declared and non-strict. Formation ensures that existing regular
 variables depend only on already declared bound names, so every appended
@@ -218,6 +223,30 @@ theorem Context.appendBounds_lookup (context : Context) (sort count offset : Nat
   rw [List.getElem?_append_right (Nat.le_add_right context.length offset)]
   simp [smaller]
 
+/-- Independence from a suffix of allocated bound names gives a syntactic
+variable bound for a typed expression. -/
+theorem Preterm.HasType.varsBelow_of_tail_independent
+    {signature : TermSignature} {initial remaining : Context} {expression : Preterm}
+    {object count result lower : Nat}
+    (typed : Preterm.HasType signature (initial.appendBounds object count) expression remaining result)
+    (independent : ∀ offset, lower ≤ offset →
+      ¬ Preterm.HasVar (initial.appendBounds object count) (initial.length + offset) expression) :
+    Preterm.VarsBelow (initial.length + lower) expression := by
+  apply (Preterm.varsBelow_iff_occurs _ _).mpr
+  intro index occurs
+  by_contra outside
+  have upper := typed.varsBelow.occurs_lt occurs
+  rw [Context.appendBounds_length] at upper
+  have initialBefore : initial.length ≤ index := by omega
+  have offsetBound : index - initial.length < count := by omega
+  have declared := initial.appendBounds_lookup object count (index - initial.length) offsetBound
+  have atIndex : (initial.appendBounds object count)[index]? = some (.bound object) := by
+    simpa only [Nat.add_sub_of_le initialBefore] using declared
+  have used := occurs.hasVar_of_bound atIndex
+  have excluded := independent (index - initial.length) (by omega)
+  rw [Nat.add_sub_of_le initialBefore] at excluded
+  exact excluded used
+
 private theorem bound_extension {sorts : SortSignature} {sort : Nat} {info : SortInfo}
     (known : sorts sort = some info) (notStrict : info.strict = false) (count : Nat) (initial : Context) :
     Context.Extension sorts initial (List.replicate count (.bound sort)) := by
@@ -292,4 +321,181 @@ end ContextExtensionControls
 #print axioms Context.appendBounds_wellFormed
 #print axioms Preterm.HasType.independent_appendedBound
 #print axioms ContextExtensionControls.append_alone_does_not_give_freshness
+private theorem lookup_prefix {context extra : Context} {index : Nat} {binder : Binder}
+    (known : (context ++ extra)[index]? = some binder) (before : index < context.length) :
+    context[index]? = some binder := by
+  rwa [List.getElem?_append_left before] at known
+
+
+theorem Preterm.Supports.restrictContext {context extra : Context} {expression : Preterm} {support : Finset Nat}
+    (supported : Supports (context ++ extra) expression support) (bounded : VarsBelow context.length expression) :
+    Supports context expression support := by
+  induction supported with
+  | bound known => exact .bound (lookup_prefix known bounded)
+  | regular known => exact .regular (lookup_prefix known bounded)
+  | term index => exact .term index
+  | app first second ihFirst ihSecond => exact .app (ihFirst bounded.1) (ihSecond bounded.2)
+
+
+theorem Preterm.HasType.restrictContext {signature : TermSignature} {context extra remaining : Context}
+    {expression : Preterm} {sort : Nat}
+    (typed : HasType signature (context ++ extra) expression remaining sort)
+    (bounded : VarsBelow context.length expression) : HasType signature context expression remaining sort := by
+  induction typed with
+  | var known => exact .var (lookup_prefix known bounded)
+  | term known => exact .term known
+  | bound first known ih => exact .bound (ih bounded.1) (lookup_prefix known bounded.2)
+  | regular first second ihFirst ihSecond => exact .regular (ihFirst bounded.1) (ihSecond bounded.2)
+
+
+theorem Preterm.FitsBinder.restrictContext {signature : TermSignature} {context extra : Context}
+    {expression : Preterm} {binder : Binder}
+    (fits : FitsBinder signature (context ++ extra) expression binder)
+    (bounded : VarsBelow context.length expression) : FitsBinder signature context expression binder := by
+  cases fits with
+  | bound known => exact .bound (lookup_prefix known bounded)
+  | regular typed => exact .regular (typed.restrictContext bounded)
+
+
+theorem Substitution.arguments_restrictContext {signature : TermSignature} {context extra formal : Context}
+    {expressions : List Preterm}
+    (fits : List.Forall₂ (Preterm.FitsBinder signature (context ++ extra)) expressions formal)
+    (bounded : ∀ expression ∈ expressions, Preterm.VarsBelow context.length expression) :
+    List.Forall₂ (Preterm.FitsBinder signature context) expressions formal := by
+  induction fits with
+  | nil => exact .nil
+  | cons first rest ih =>
+      exact .cons (first.restrictContext (bounded _ List.mem_cons_self))
+        (ih (fun expression member => bounded expression (List.mem_cons_of_mem _ member)))
+
+
+theorem Substitution.Admissible.restrictContext {signature : TermSignature} {formal context extra : Context}
+    {expressions : List Preterm}
+    (admitted : Admissible signature formal (context ++ extra) expressions)
+    (bounded : ∀ expression ∈ expressions, Preterm.VarsBelow context.length expression) :
+    Admissible signature formal context expressions := by
+  refine ⟨arguments_restrictContext admitted.typed bounded, ?_⟩
+  intro entry member sort image bound other otherMember independent occurrence
+  obtain ⟨support, restricted⟩ := typed_entry_support
+    (arguments_restrictContext admitted.typed bounded) other otherMember
+  exact admitted.independent entry member sort image bound other otherMember independent
+    ((restricted.hasVar_append_iff extra image).mpr occurrence)
+
+
+theorem Preterm.FreshFor.restrictContext {context extra : Context} {index : Nat} {expression : Preterm}
+    (fresh : FreshFor (context ++ extra) index expression) (bounded : VarsBelow context.length expression) :
+    FreshFor context index expression := by
+  obtain ⟨⟨support, supported⟩, independent⟩ := fresh
+  have restricted := supported.restrictContext bounded
+  exact ⟨⟨support, restricted⟩, fun occurrence => independent ((restricted.hasVar_append_iff extra index).mpr occurrence)⟩
+
+
+theorem Definition.FreshDummies.restrictContext {context extra : Context} {arguments : List Preterm}
+    {sorts images : List Nat} (fresh : FreshDummies (context ++ extra) arguments sorts images)
+    (argumentsBound : ∀ expression ∈ arguments, Preterm.VarsBelow context.length expression)
+    (imagesBound : ∀ image ∈ images, image < context.length) :
+    FreshDummies context arguments sorts images := by
+  induction fresh with
+  | nil arguments => exact .nil arguments
+  | @cons arguments sort image sorts images known independent tail ih =>
+      refine .cons (lookup_prefix known (imagesBound _ List.mem_cons_self))
+        (fun expression member => (independent expression member).restrictContext (argumentsBound expression member))
+        (ih ?_ (fun name member => imagesBound name (List.mem_cons_of_mem _ member)))
+      intro expression member
+      rcases List.mem_append.mp member with old | last
+      · exact argumentsBound expression old
+      · have same : expression = .var image := by simpa using last
+        subst expression
+        exact imagesBound _ List.mem_cons_self
+
+
+theorem Definition.Unfolds.restrictContext {signature : TermSignature} {definitions : Definition.Signature}
+    {context extra : Context} {symbol : Nat} {arguments : List Preterm} {images : List Nat} {result : Preterm}
+    (unfolded : Unfolds signature definitions (context ++ extra) symbol arguments images result)
+    (argumentsBound : ∀ argument ∈ arguments, Preterm.VarsBelow context.length argument)
+    (imagesBound : ∀ image ∈ images, image < context.length) :
+    Unfolds signature definitions context symbol arguments images result := by
+  cases unfolded with
+  | intro known body fits fresh substituted =>
+      exact .intro known body (Substitution.arguments_restrictContext fits argumentsBound)
+        (fresh.restrictContext argumentsBound imagesBound) substituted
+
+
+theorem ConvWitness.Checks.restrictContext {signature : TermSignature} {definitions : Definition.Signature}
+    {context extra : Context} {witness : ConvWitness} {left right : Preterm} {sort : Nat}
+    (checked : Checks signature definitions (context ++ extra) witness left right sort)
+    (bounded : witness.VarsBelow context.length) :
+    Checks signature definitions context witness left right sort := by
+  induction checked using Checks.rec
+      (motive_2 := fun children left right binders _ =>
+        (∀ child ∈ children, child.VarsBelow context.length) →
+          ChecksArgs signature definitions context children left right binders) with
+  | refl typed =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact .refl (typed.restrictContext bounded)
+  | symm child ih =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact .symm (ih bounded)
+  | trans first second ihFirst ihSecond =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact .trans (ihFirst bounded.1) (ihSecond bounded.2)
+  | congruence known children ih =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact .congruence known (ih bounded)
+  | unfold known unfolded typed =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact .unfold known (unfolded.restrictContext bounded.1 bounded.2)
+        (typed.restrictContext (unfolded.varsBelow _ bounded.1 bounded.2))
+  | nil => exact .nil
+  | cons leftFits rightFits child tail ihChild ihTail =>
+      rename_i allBound
+      have headBound := allBound _ List.mem_cons_self
+      have ends := child.endpoint_varsBelow _ headBound
+      exact .cons (leftFits.restrictContext ends.1) (rightFits.restrictContext ends.2)
+        (ihChild headBound) (ihTail (fun child member => allBound child (List.mem_cons_of_mem _ member)))
+
+
+theorem TheoremDecl.Instantiates.restrictContext {signature : TermSignature} {context extra : Context}
+    {declaration : TheoremDecl} {arguments : List Preterm} {instantiation : TheoremInstance}
+    (instantiated : Instantiates signature (context ++ extra) declaration arguments instantiation)
+    (bounded : ∀ argument ∈ arguments, Preterm.VarsBelow context.length argument) :
+    Instantiates signature context declaration arguments instantiation :=
+  ⟨instantiated.admissible.restrictContext bounded, instantiated.hypotheses, instantiated.conclusion⟩
+
+
+theorem ProofWitness.Checks.restrictContext {signature : TermSignature} {definitions : Definition.Signature}
+    {theorems : TheoremSignature} {context extra : Context} {hypotheses : List Preterm}
+    {witness : ProofWitness} {conclusion : Preterm}
+    (checked : Checks signature definitions theorems (context ++ extra) hypotheses witness conclusion)
+    (bounded : witness.VarsBelow context.length) :
+    Checks signature definitions theorems context hypotheses witness conclusion := by
+  induction checked using Checks.rec
+      (motive_2 := fun children conclusions _ =>
+        (∀ child ∈ children, child.VarsBelow context.length) →
+          ChecksList signature definitions theorems context hypotheses children conclusions) with
+  | hyp known => exact .hyp known
+  | theoremApp known instantiated children ih =>
+      simp only [ProofWitness.VarsBelow] at bounded
+      exact .theoremApp known (instantiated.restrictContext bounded.1) (ih bounded.2)
+  | conversion converted child ih =>
+      simp only [ProofWitness.VarsBelow] at bounded
+      exact .conversion (converted.restrictContext bounded.1) (ih bounded.2)
+  | nil => exact .nil
+  | cons head tail ihHead ihTail =>
+      rename_i allBound
+      exact .cons (ihHead (allBound _ List.mem_cons_self))
+        (ihTail (fun child member => allBound child (List.mem_cons_of_mem _ member)))
+
+
+theorem ProofWitness.proof_in_prefix_iff (signature : TermSignature) (definitions : Definition.Signature)
+    (theorems : TheoremSignature) (context extra : Context) (hypotheses : List Preterm)
+    (witness : ProofWitness) (conclusion : Preterm) :
+    witness.proof? signature definitions theorems context hypotheses = some conclusion ↔
+      witness.proof? signature definitions theorems (context ++ extra) hypotheses = some conclusion ∧
+      witness.VarsBelow context.length := by
+  rw [proof_eq_some_iff, proof_eq_some_iff]
+  exact ⟨fun checked => ⟨checked.weakenContext extra, checked.payload_varsBelow⟩,
+    fun ⟨checked, bounded⟩ => checked.restrictContext bounded⟩
+
+
 end Mettapedia.Languages.MM0.Kernel

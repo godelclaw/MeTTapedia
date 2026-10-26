@@ -1,3 +1,4 @@
+import Mettapedia.OSLF.MeTTaIL.ReferenceStepEquations
 import Mettapedia.OSLF.MeTTaIL.EquationalScopedMatchingPresentation
 import Mettapedia.OSLF.MeTTaIL.CanonicalMatching
 
@@ -161,5 +162,49 @@ theorem runAt_canonical_observation_iff {rule : RewriteRule} {spec : RuleBinding
     have found := runAt_covers_presentation increasing same matched
     rw [initialCanonical] at found
     exact List.mem_map.mpr ⟨canonAssignment captured, found, assignment_canon_idempotent captured⟩
+
+/-- A canonical allocation meaning reconstructs an ordinary scoped source
+match at a presentation related by the actual declared source equations.
+The source law certificate is independent of matching and contains no
+premise/firing correspondence assumption. -/
+theorem canonical_has_source_presentation {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {initial final : Assignment} {schema target : Pattern}
+    (eligible : ReferenceStep.SourceCollections language target)
+    (matched : Meaning literalBodyComparison rule spec ambient site path depth initial schema (canon target) final) :
+    ∃ presented,ReferenceStep.Equivalent relEnv language target presented ∧
+      GeneralScopedMatch.Matches rule spec ambient site path depth initial schema presented final := by
+  obtain ⟨presented,same,ordinary⟩ := meaning_has_ordinary_presentation matched
+  have sourceSame : Same target presented := by
+    simpa only [Same,canon_idempotent] using same
+  exact ⟨presented,ReferenceStep.equivalent_of_same eligible sourceSame,ordinary⟩
+
+/-- Exact answer support after canonical capture observation, with actual
+source equivalence as presentation authority. Captured metadata and the real
+ordinary matching witness are retained. This does not identify allocations,
+validation histories, or logical derivation multiplicities. -/
+theorem runAt_source_observation_iff {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (noEquations : language.equations = []) (noAlgebra : language.hasAlgebraDeclarations = false)
+    {rule : RewriteRule} {spec : RuleBindingSpec} (increasing : IncreasingSpines rule spec)
+    {ambient : Nat} {site : RulePatternSite} {path : List Nat} {depth : Nat}
+    {initial observed : Assignment} {schema target : Pattern}
+    (eligible : ReferenceStep.SourceCollections language target)
+    (initialCanonical : canonAssignment initial = initial) :
+    observed ∈ (runAt literalBodyComparison rule spec ambient site path depth initial schema (canon target)).map
+        canonAssignment ↔
+      ∃ presented captured,ReferenceStep.Equivalent relEnv language target presented ∧
+        GeneralScopedMatch.Matches rule spec ambient site path depth initial schema presented captured ∧
+        observed = canonAssignment captured := by
+  constructor
+  · intro found
+    obtain ⟨presented,captured,same,ordinary,observedEq⟩ :=
+      (runAt_canonical_observation_iff increasing initialCanonical).mp found
+    exact ⟨presented,captured,ReferenceStep.equivalent_of_same eligible same,ordinary,observedEq⟩
+  · rintro ⟨presented,captured,related,ordinary,observedEq⟩
+    exact (runAt_canonical_observation_iff increasing initialCanonical).mpr
+      ⟨presented,captured,ReferenceStep.equivalent_same noEquations noAlgebra related,ordinary,observedEq⟩
+
+#print axioms canonical_has_source_presentation
+#print axioms runAt_source_observation_iff
 
 end Mettapedia.OSLF.MeTTaIL.EquationalScopedMatching

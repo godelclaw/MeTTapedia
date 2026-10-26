@@ -217,7 +217,7 @@ theorem piPar_equivalent_comm {free : FreeTypeContext} {bound : List TypeExpr}
     (hQ : HasType piCalc free bound Q (.base "Proc")) :
     EquationEquiv (engineBasePremises RelationEnv.empty) piCalc (piPar P Q) (piPar Q P) := by
   have swapped := derivedInstance_equivalent (base := engineBasePremises RelationEnv.empty)
-    (DerivedInstance.bagPerm piBagTheory.bagCarrier
+    (DerivedInstance.bagPerm_of_sorted
       ⟨free, bound, bag_hasType (piBagTheory.asBare rfl) (.cons hP (.cons hQ (.nil _ _)))⟩
       (List.Perm.swap Q P []))
   exact .trans _ _ _ (.symm _ _ (piPar_equivalent_bag hP hQ))

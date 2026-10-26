@@ -30,6 +30,56 @@ macro_rules
          CettaWireAtom.applySubst_encode]
        metta_literal))
 
+/-- Unfold a body using a small source view, retaining the actual target program. -/
+syntax "metta_call_in " term " using " term : tactic
+macro_rules
+  | `(tactic| metta_call_in $checked using $agreement) => `(tactic|
+      (apply Library.call_in $checked $agreement (by decide +kernel) (by decide +kernel)
+         _ _ _ _ _ _ (by metta_literal; rfl) rfl
+       simp only [List.map_cons, List.map_nil, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+         CettaWireAtom.applySubst_encode]
+       metta_literal))
+
+/-- Capture a fact using source-view metadata instead of reducing the target source. -/
+syntax "metta_capture_in " term " using " term " from " term (" unfolding" " [" term,* "]")? : tactic
+macro_rules
+  | `(tactic| metta_capture_in $checked using $agreement from $fact $[unfolding [$extra,*]]?) => do
+    let extra := (extra.map (·.getElems)).getD #[]
+    let extra ← extra.mapM fun term => `(Lean.Parser.Tactic.simpLemma| $term:term)
+    `(tactic|
+      (apply Library.capture_in $checked $agreement (by decide +kernel) (by decide +kernel)
+         _ _ _ _ _ _ (by metta_literal; rfl) rfl
+       simp only [List.map_cons, List.map_nil, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, Library.bind, List.zip, List.zipWith,
+         List.reverse_cons, List.reverse_nil, List.nil_append, List.cons_append, List.find?,
+         CettaWireAtom.applySubst_encode]
+       first
+         | exact $fact
+         | simpa using $fact
+         | simpa [encoded, number, CettaWireAtom.encode, CettaWireAtom.encodeMany, $extra,*] using $fact))
+
+/-- Capture any supported raw source head, including metadata inherited from the view's base. -/
+syntax "metta_capture_agreed " term " from " term (" unfolding" " [" term,* "]")? : tactic
+macro_rules
+  | `(tactic| metta_capture_agreed $agreement from $fact $[unfolding [$extra,*]]?) => do
+    let extra := (extra.map (·.getElems)).getD #[]
+    let extra ← extra.mapM fun term => `(Lean.Parser.Tactic.simpLemma| $term:term)
+    `(tactic|
+      (refine PureData.raw_capture_returns _ [] _ _ _ _ _ _ _ ?_ ?_ ?_ ?_ $fact
+       · rw [← ($agreement).dispatch _ (by decide +kernel)]
+         decide +kernel
+       · intro index bounded
+         rw [← ($agreement).demand _ index (by decide +kernel)]
+         simp only [List.length_cons, List.length_nil, Nat.zero_add] at bounded
+         revert index
+         decide +kernel
+       · decide
+       · simp [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+           Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+           Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, Library.bind, List.map_cons, List.map_nil,
+           CettaWireAtom.applySubst_encode, encoded, number, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+           $extra,*]))
+
 /-- Close a call at evaluated arguments by a fact about the head at values. -/
 syntax "metta_capture " term " using " term (" unfolding" " [" term,* "]")? : tactic
 macro_rules
@@ -77,24 +127,33 @@ macro_rules
         [$names,*] (by decide) rfl (by decide +kernel) $fact)
 
 /-- One evaluator step, then the steps it opens, as far as each goes. -/
-syntax "metta_eval" (" [" term,* "]")? (" with " term)? (" unfolding" " [" term,* "]")? : tactic
+syntax "metta_eval" (" [" term,* "]")? (" with " term)? (" in " term)? (" unfolding" " [" term,* "]")? : tactic
 macro_rules
-  | `(tactic| metta_eval $[[$lemmas,*]]? $[with $checked]? $[unfolding [$unfold,*]]?) => do
+  | `(tactic| metta_eval $[[$lemmas,*]]? $[with $checked]? $[in $agreement]? $[unfolding [$unfold,*]]?) => do
     let lemmas := (lemmas.map (·.getElems)).getD #[]
     let unfold := (unfold.map (·.getElems)).getD #[]
     let unfoldLemmas ← unfold.mapM fun term => `(Lean.Parser.Tactic.simpLemma| $term:term)
-    let recurse ← `(tactic| metta_eval [$lemmas,*] $[with $checked]? unfolding [$unfold,*])
+    let recurse ← `(tactic| metta_eval [$lemmas,*] $[with $checked]? $[in $agreement]? unfolding [$unfold,*])
     let again ← `(tacticSeq| $recurse:tactic)
     let nothing ← `(tactic| fail "metta_eval: no supplied fact closes this call")
-    let captures ← match checked with
-      | some checked => lemmas.foldlM (init := nothing) fun rest fact =>
+    let captures ← match checked, agreement with
+      | some _, some agreement => lemmas.foldlM (init := nothing) fun rest fact =>
+          `(tactic| first
+            | metta_capture_agreed $agreement from $fact unfolding [$unfold,*]
+            | $(⟨rest.raw⟩):tacticSeq)
+      | none, some _ => Lean.Macro.throwError "metta_eval: source-view agreement requires a library check"
+      | some checked, none => lemmas.foldlM (init := nothing) fun rest fact =>
           `(tactic| first
             | metta_capture $checked using $fact unfolding [$unfold,*]
             | metta_capture_any $fact unfolding [$unfold,*]
             | $(⟨rest.raw⟩):tacticSeq)
-      | none => lemmas.foldlM (init := nothing) fun rest fact =>
+      | none, none => lemmas.foldlM (init := nothing) fun rest fact =>
           `(tactic| first | metta_capture_any $fact unfolding [$unfold,*] | $(⟨rest.raw⟩):tacticSeq)
     let capturing ← `(tacticSeq| $captures:tactic)
+    let data ← match agreement with
+      | none => `(tactic| apply data_returns _ _ _ _ _ (by decide +kernel))
+      | some agreement => `(tactic| apply data_in_program_returns $agreement _ _ _ _
+          (by decide +kernel) (by decide +kernel))
     `(tactic| first
       | exact bound_returns _ _ _ (by rfl)
       | exact literal_returns _ _ _ _
@@ -104,7 +163,7 @@ macro_rules
            simp [encoded, number, CettaWireAtom.encode, CettaWireAtom.encodeMany, $unfoldLemmas,*]
            done)
       | focus
-          (apply data_returns _ _ _ _ _ (by decide +kernel)
+          ($data:tactic
            first
              | (rfl; done)
              | skip

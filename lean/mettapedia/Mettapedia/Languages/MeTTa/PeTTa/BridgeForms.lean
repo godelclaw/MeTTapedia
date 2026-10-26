@@ -168,6 +168,16 @@ theorem data_returns (program : Program) (caller : Subst) (state : State) (code 
     PureReturns program caller state code state answer :=
   same ▸ PureData.template_return program caller state code (template_of_check program code checked)
 
+/-- Check a data template against a small source view and execute it in the agreeing target. -/
+theorem data_in_program_returns {allowed : String → Bool} {first second : Program}
+    (agreement : ProgramAgreementOn allowed first second)
+    (caller : Subst) (state : State) (code answer : Atom)
+    (checked : templateCheck first code = true) (supported : codeWithin allowed code = true)
+    (same : applySubst caller code = answer) :
+    PureReturns second caller state code state answer :=
+  same ▸ PureData.template_return second caller state code
+    (template_in_program agreement (template_of_check first code checked) supported)
+
 /-- Compute a case selection, in the goal or at a hypothesis: pattern matching against values,
 variable lookup in bindings, and the formals' bindings of a call. Extra lemmas unfold the encoders
 of the values involved. -/
@@ -182,3 +192,5 @@ macro_rules
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, $extra,*] $[$location]?)
 
 end Mettapedia.Languages.MeTTa.PeTTa.BridgeKit
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.BridgeKit.data_in_program_returns

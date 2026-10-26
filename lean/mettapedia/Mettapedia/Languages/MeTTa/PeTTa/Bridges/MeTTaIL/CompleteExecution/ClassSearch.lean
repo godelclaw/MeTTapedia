@@ -100,8 +100,7 @@ theorem firing_events_returns (state : State) (pattern : Pattern) (conversions :
           encoded (encodeList ScopedRuleJobReadoutExecution.receiptTerm receipts)])
         state (encoded (encodeList eventTerm (receipts.map fun firing => .firing ⟨pattern, conversions, firing⟩)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | receipt :: rest => by
     have later := firing_events_returns state pattern conversions rest
     complete_eval [later] unfolding [encodeList, eventTerm, classReceiptTerm, patternValue]
@@ -130,8 +129,7 @@ theorem forward_events_returns (state : State) (table : List (String × TypeExpr
           ((payloads.filterMap (Complete.EquationJob.lift plan bound expected lane)).map fun receipt =>
             .discovery receipt.target (conversions ++ [.forward receipt]))))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | payload :: rest, within => by
     have lifted := equations_lift_returns plan state table bound expected footprint tabled source lane payload
       (lift_scope_of_lane plan scope member (within payload (by simp)))
@@ -176,8 +174,7 @@ theorem backward_events_returns (state : State) (table : List (String × TypeExp
           (((payloads.filterMap (Complete.EquationJob.lift plan bound expected lane)).filter fun receipt =>
             receipt.target == pattern).map fun receipt => .discovery candidate (conversions ++ [.reverse receipt]))))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | payload :: rest, within => by
     have lifted := equations_lift_returns plan state table bound expected footprint tabled candidate lane payload
       (lift_scope_of_lane plan scope member (within payload (by simp)))
@@ -192,8 +189,7 @@ theorem backward_events_returns (state : State) (table : List (String × TypeExp
       by_cases same : (receipt.target == pattern) = true
       · rw [List.filter_cons_of_pos (p := fun receipt : GeneralEquationJobs.Receipt => receipt.target == pattern) same]
         have path := complete_append_returns conversionTerm state conversions [.reverse receipt]
-        metta_call complete_checked
-        metta_eval [lifted, later, path] with complete_checked
+        complete_eval [lifted, later, path]
           unfolding [encodeList, result, equationReceiptTerm, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
             Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
             Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
@@ -201,14 +197,13 @@ theorem backward_events_returns (state : State) (table : List (String × TypeExp
           congrArg InferenceCettaWire.encodePattern (beq_iff_eq.mp same)
         all_goals
           rw [if_pos equal]
-          metta_eval [path] with complete_checked
+          metta_eval [path] with completeProof_checked in completeProof_agreement
             unfolding [encodeList, eventTerm, conversionTerm, equationReceiptTerm, List.map_cons, patternValue,
               Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
               Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
               Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
       · rw [List.filter_cons_of_neg (p := fun receipt : GeneralEquationJobs.Receipt => receipt.target == pattern) same]
-        metta_call complete_checked
-        metta_eval [lifted, later] with complete_checked
+        complete_eval [lifted, later]
           unfolding [encodeList, result, equationReceiptTerm, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
             Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
             Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
@@ -216,7 +211,7 @@ theorem backward_events_returns (state : State) (table : List (String × TypeExp
           fun equal => same (beq_iff_eq.mpr (InferenceCettaWire.encodePattern_injective equal))
         all_goals
           rw [if_neg different]
-          metta_eval [later] with complete_checked
+          metta_eval [later] with completeProof_checked in completeProof_agreement
             unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
               Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
               Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]

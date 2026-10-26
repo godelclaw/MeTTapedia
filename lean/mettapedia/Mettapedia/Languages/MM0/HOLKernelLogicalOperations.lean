@@ -112,6 +112,32 @@ structure Profile (sorts : SortSignature) (terms : TermSignature) (definitions :
   defined : ∀ (operator : Operator), definitions (signature.symbol operator.constructor) =
     some (operator.body signature.symbol reference)
 
+section ReferenceNames
+variable {sorts : SortSignature} {terms : TermSignature} {definitions : Definition.Signature}
+variable {theorems : TheoremSignature} {signature : Signature sorts terms}
+
+theorem Operator.name_injective : Function.Injective Operator.name := by
+  intro first second same
+  cases first <;> cases second <;> simp_all [Operator.name]
+
+theorem Profile.reference_injective (profile : Profile sorts terms definitions theorems signature) :
+    Function.Injective profile.reference := by
+  intro first second same
+  apply Operator.name_injective
+  have equal := congrArg signature.names same
+  rw [profile.named, profile.named] at equal
+  exact Option.some.inj equal
+
+theorem Profile.reference_ne_symbol (profile : Profile sorts terms definitions theorems signature)
+    (operator : Operator) (constructor : Symbol) : profile.reference operator ≠ signature.symbol constructor := by
+  intro same
+  have equal := congrArg signature.names same
+  rw [profile.named, signature.named] at equal
+  have names := Option.some.inj equal
+  cases operator <;> cases constructor <;> simp [Operator.name, Symbol.name] at names
+
+end ReferenceNames
+
 def Profile.read? {sorts : SortSignature} {terms : TermSignature} {definitions : Definition.Signature}
     {theorems : TheoremSignature} (signature : Signature sorts terms)
     (references typings : Operator → Nat) :

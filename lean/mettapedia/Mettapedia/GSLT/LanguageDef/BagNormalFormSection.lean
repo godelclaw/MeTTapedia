@@ -191,7 +191,7 @@ theorem path_normalizeBag (laws : BareBagTheory language bag unit)
         Path base language (.collection .hashBag elements none)
           (.collection .hashBag (sortPatterns elements) none) := by
     intro elements good
-    exact path_of_derived (DerivedInstance.bagPerm laws.bagCarrier
+    exact path_of_derived (DerivedInstance.bagPerm_of_sorted
       (sortedAt_of_admissible laws good collectionless) (sortPatterns_perm elements).symm)
   cases unit with
   | none => exact sort admissible

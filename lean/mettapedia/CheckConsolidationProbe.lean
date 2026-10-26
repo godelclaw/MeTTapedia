@@ -7,35 +7,17 @@ namespace Mettapedia.Algebra
 
 open Mettapedia.Algebra.WorkSpan
 
-/-- PROBE 1. `workSpan_forgets_any_separating_attribute` uses no property of
-`WorkSpan`.  The identical statement holds with the valuation carrier replaced by
-an arbitrary inhabited type — indeed by `Unit`.  So the theorem is a fact about
-`Prod`, not about work and span. -/
-structure ValuedRun' (Payload Valuation : Type) where
-  payload : Payload
-  value : Valuation
+/-- Injective costs retain every observation of the supplied execution. -/
+example {Execution Attribute : Type} (cost : Execution → WorkSpan)
+    (injective : Function.Injective cost) (observe : Execution → Attribute) :
+    observe.FactorsThrough cost := fun {_ _} same => congrArg observe (injective same)
 
-example {Payload Attribute Valuation : Type} (v : Valuation)
-    (observe : Payload → Attribute) {first second : Payload}
-    (separates : observe first ≠ observe second) :
-    ∃ left right : ValuedRun' Payload Valuation,
-      left.value = right.value ∧ observe left.payload ≠ observe right.payload :=
-  ⟨⟨first, v⟩, ⟨second, v⟩, rfl, separates⟩
-
-/-- PROBE 1b. Even with the valuation carrier `Unit`. -/
-example {Payload Attribute : Type} (observe : Payload → Attribute)
-    {first second : Payload} (separates : observe first ≠ observe second) :
-    ∃ left right : ValuedRun' Payload Unit,
-      left.value = right.value ∧ observe left.payload ≠ observe right.payload :=
-  ⟨⟨first, ()⟩, ⟨second, ()⟩, rfl, separates⟩
-
-/-- PROBE 2. The five named corollaries are one theorem alpha-renamed:
-each is definitionally the general one. -/
-example : @WorkSpan.workSpan_forgets_colour = @WorkSpan.workSpan_forgets_any_separating_attribute := rfl
-example : @WorkSpan.workSpan_forgets_declaration = @WorkSpan.workSpan_forgets_any_separating_attribute := rfl
-example : @WorkSpan.workSpan_forgets_receipt = @WorkSpan.workSpan_forgets_any_separating_attribute := rfl
-example : @WorkSpan.workSpan_forgets_causalOrder = @WorkSpan.workSpan_forgets_any_separating_attribute := rfl
-example : @WorkSpan.workSpan_forgets_elaborationPath = @WorkSpan.workSpan_forgets_any_separating_attribute := rfl
+/-- Recovery on the realized image needs no default attribute for unused costs. -/
+example : Nonempty (Set.range (Empty.elim : Empty → WorkSpan) → Empty) ∧
+    ¬ Nonempty (WorkSpan → Empty) := by
+  refine ⟨⟨recoverOnImage _ (id : Empty → Empty)⟩, ?_⟩
+  rintro ⟨recover⟩
+  exact (recover 0).elim
 
 /-- PROBE 3. `ReceiptSchema.omitted_attribute_undetectable` is `And.intro` applied
 to its own two hypotheses: nothing is derived. -/

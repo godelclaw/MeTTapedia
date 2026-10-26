@@ -1,103 +1,54 @@
 import Mettapedia.Algebra.WorkSpan
+import Mettapedia.GSLT.Core.NonFactorization
+import Mathlib.Data.Set.Operations
 
 /-!
-# What a work/span readout cannot tell you
+# Recovering observations from supplied costs
 
-`WorkSpan` is a *valuation* of an execution, not the execution.  It is one
-observation among several a costed run admits — allocation, energy,
-communication, provenance — and like any observation it forgets.  The
-theorems here fix exactly what it forgets, so that no downstream consumer
-mistakes equal work and span for equal computation.
-
-The pattern is uniform and deliberately elementary: for each attribute a
-caller might hope to recover, exhibit two executions that differ in that
-attribute yet carry the same `WorkSpan`.  Each is a genuine negative,
-which is the only honest way to state an information-loss claim.
-
-The positive laws — associativity, monotonicity, the lax interchange, and
-`parallel_le_sequential` — live in `WorkSpan`.  Nothing here weakens them;
-this module bounds their interpretation.
+A cost function forgets an observation precisely when it identifies executions
+that the observation distinguishes. Recovery is unique on realized costs when
+the observation is constant on cost fibres. No value is chosen for unrealized
+costs; in particular, an empty execution type needs no inhabited attribute type.
+Concrete operational collisions belong in the execution adapter.
 -/
 
 namespace Mettapedia.Algebra
 
+open Mettapedia.GSLT.Core.NonFactorization
+
+/-- Observe a chosen representative of each realized cost. Fibre constancy is
+the condition under which this choice recovers the supplied observation. -/
+noncomputable def recoverOnImage {Execution Cost Attribute : Type*}
+    (cost : Execution → Cost) (observe : Execution → Attribute) : Set.range cost → Attribute :=
+  observe ∘ Function.surjInv (Set.rangeFactorization_surjective (f := cost))
+
+@[simp] theorem recoverOnImage_apply {Execution Cost Attribute : Type*}
+    (cost : Execution → Cost) (observe : Execution → Attribute)
+    (constant : observe.FactorsThrough cost) (execution : Execution) :
+    recoverOnImage cost observe (Set.rangeFactorization cost execution) = observe execution :=
+  constant (congrArg Subtype.val (Function.surjInv_eq Set.rangeFactorization_surjective _))
+
+/-- Correct recovery determines the entire function on the realized image. -/
+theorem recoverOnImage_unique {Execution Cost Attribute : Type*}
+    (cost : Execution → Cost) (observe : Execution → Attribute)
+    (constant : observe.FactorsThrough cost) (recover : Set.range cost → Attribute)
+    (correct : ∀ execution, recover (Set.rangeFactorization cost execution) = observe execution) :
+    recover = recoverOnImage cost observe := by
+  funext value
+  obtain ⟨execution, rfl⟩ := Set.rangeFactorization_surjective value
+  exact (correct execution).trans (recoverOnImage_apply cost observe constant execution).symm
+
+/-- The existing factorization criterion, without defaults outside the image. -/
+theorem recovery_on_image_iff {Execution Cost Attribute : Type*}
+    (cost : Execution → Cost) (observe : Execution → Attribute) :
+    Factors (Set.rangeFactorization cost) observe ↔ observe.FactorsThrough cost := by
+  rw [factors_iff_constantOnFibers Set.rangeFactorization_surjective]
+  exact ⟨fun constant _ _ same => constant _ _ (Subtype.ext same),
+    fun constant _ _ same => constant (congrArg Subtype.val same)⟩
+
 namespace WorkSpan
 
-/-- An abstract costed execution: some payload, valued by a work/span
-readout.  The payload stands for whatever the execution actually carries —
-colour, declaration identity, receipts, causal order, elaboration path. -/
-structure ValuedRun (Payload : Type) where
-  payload : Payload
-  value : WorkSpan
-
-/-- A readout forgets an attribute when two runs agree on the readout yet
-disagree on that attribute. -/
-def ForgetsObservation {Payload Attribute : Type}
-    (observe : Payload → Attribute) : Prop :=
-  ∃ left right : ValuedRun Payload,
-    left.value = right.value ∧ observe left.payload ≠ observe right.payload
-
-/-- **The general information-loss theorem.**  A work/span readout forgets
-*every* attribute that distinguishes two payloads at all.  Nothing about
-the payload survives the valuation beyond what the two coordinates
-record. -/
-theorem workSpan_forgets_any_separating_attribute
-    {Payload Attribute : Type} (observe : Payload → Attribute)
-    {first second : Payload}
-    (separates : observe first ≠ observe second) :
-    ForgetsObservation observe :=
-  ⟨⟨first, 0⟩, ⟨second, 0⟩, rfl, separates⟩
-
-/-! ## The named readouts, as corollaries
-
-Each names an attribute a consumer might try to recover from work and
-span.  The hypothesis in every case is only that the attribute is not
-constant — i.e. that it is worth recording at all. -/
-
-/-- Work and span do not determine execution **colour**. -/
-theorem workSpan_forgets_colour {Payload Colour : Type}
-    (colour : Payload → Colour) {first second : Payload}
-    (distinct : colour first ≠ colour second) :
-    ForgetsObservation colour :=
-  workSpan_forgets_any_separating_attribute colour distinct
-
-/-- Work and span do not determine **declaration identity**. -/
-theorem workSpan_forgets_declaration {Payload Decl : Type}
-    (declaration : Payload → Decl) {first second : Payload}
-    (distinct : declaration first ≠ declaration second) :
-    ForgetsObservation declaration :=
-  workSpan_forgets_any_separating_attribute declaration distinct
-
-/-- Work and span do not determine the **receipt**. -/
-theorem workSpan_forgets_receipt {Payload Receipt : Type}
-    (receipt : Payload → Receipt) {first second : Payload}
-    (distinct : receipt first ≠ receipt second) :
-    ForgetsObservation receipt :=
-  workSpan_forgets_any_separating_attribute receipt distinct
-
-/-- Work and span do not determine **causal order**. -/
-theorem workSpan_forgets_causalOrder {Payload Order : Type}
-    (causalOrder : Payload → Order) {first second : Payload}
-    (distinct : causalOrder first ≠ causalOrder second) :
-    ForgetsObservation causalOrder :=
-  workSpan_forgets_any_separating_attribute causalOrder distinct
-
-/-- Work and span do not determine the **elaboration path**.  This is the
-readout-level counterpart of the cost-layer iteration non-factorization results: compact
-observation cannot recover elaboration provenance. -/
-theorem workSpan_forgets_elaborationPath {Payload Path : Type}
-    (elaborationPath : Payload → Path) {first second : Payload}
-    (distinct : elaborationPath first ≠ elaborationPath second) :
-    ForgetsObservation elaborationPath :=
-  workSpan_forgets_any_separating_attribute elaborationPath distinct
-
-/-! ## Loss inside the readout itself
-
-Even the two coordinates do not determine each other, and neither
-determines the shape of the run that produced them. -/
-
-/-- Equal work does not determine span: one unit of work spent as a single
-phase and as one of two independent branches differ in span. -/
+/-- Two unit jobs have equal work but different sequential and parallel span. -/
 theorem work_does_not_determine_span :
     ∃ left right : WorkSpan,
       left.work = right.work ∧ left.span ≠ right.span :=
@@ -109,25 +60,19 @@ theorem span_does_not_determine_work :
       left.span = right.span ∧ left.work ≠ right.work :=
   ⟨⟨1, 1⟩, ⟨2, 1⟩, rfl, by decide⟩
 
-/-- **Sequential and parallel composition can coincide.**  When one branch
-is empty the two composites agree, so the readout does not record whether
-a run was scheduled sequentially or in parallel. -/
+/-- An empty branch makes the sequential and parallel cost combinators agree. -/
 theorem sequential_eq_parallel_of_zero_right (value : WorkSpan) :
-    sequential value 0 = parallel value 0 := by
-  ext <;> simp [sequential, parallel]
+    sequential value 0 = parallel value 0 := by simp
 
-/-- Consequently the readout forgets the **schedule shape**: two runs with
-the same value can have been composed differently. -/
+/-- Equality at some inputs does not identify the two cost combinators. -/
 theorem workSpan_forgets_schedule_shape :
     ∃ left right : WorkSpan,
       sequential left right = parallel left right ∧
         ¬ ∀ first second : WorkSpan,
           sequential first second = parallel first second := by
   refine ⟨⟨1, 1⟩, 0, sequential_eq_parallel_of_zero_right _, ?_⟩
-  intro allEqual
-  have collision := allEqual ⟨0, 1⟩ ⟨0, 1⟩
-  have spans : (2 : Nat) = 1 := congrArg WorkSpan.span collision
-  exact absurd spans (by decide)
+  exact fun allEqual => by
+    simpa [sequential, parallel] using congrArg span (allEqual ⟨0, 1⟩ ⟨0, 1⟩)
 
 end WorkSpan
 

@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution
-import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.ScopedSource
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
 import Mettapedia.OSLF.MeTTaIL.CollectionContextVariants
 
 /-!
@@ -12,6 +12,7 @@ its dependent focus, binder context and grammar-declaration frames.
 
 set_option autoImplicit false
 set_option maxHeartbeats 4000000
+set_option maxRecDepth 100000
 
 namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContextExecution
 
@@ -31,11 +32,68 @@ def source : ProgramQuotation.QuotedProgram :=
     sha256 "81fee57af76a29ea16a1419c43fbb063be3ec88a6fc58e90eedfe03ab860ac93"
 
 def library : BridgeKit.Library :=
-  ⟨CollectionSelectionExecution.scopedLibrary.runtime, source.program,
-    ["gslt:collection-context:"]⟩
+  RetainedMatchingWire.interpretedLibrary
 
 set_option maxRecDepth 100000 in
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
+
+section ProofMetadata
+
+private local instance contextEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧ left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+/-- Direct outward calls derived from the actual context-operation bodies. -/
+def contextProofInheritedHeads : List String :=
+  ["gslt:automata:append", "gslt:rule:scope-match-erase-at", "gslt:rule:scope-fill", "gslt:automata:length"]
+
+theorem contextProofInheritedHeads_derived :
+    ((source.program.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+      (fun head => head.startsWith "gslt:" && !(source.program.equations.map (·.head)).contains head)).eraseDups =
+        contextProofInheritedHeads := by decide +kernel
+
+private def contextMetadataBase : SpaceSemantics.Program where
+  equations := [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[1]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[118]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[120]'(by decide +kernel)]
+  declarations := [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[1]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[118]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[120]'(by decide +kernel)]
+
+/-- Bounded source metadata for context operations and their actual fill body. -/
+def contextProofLibrary : Library :=
+  ⟨{equations := [], declarations := []}, contextMetadataBase.append source.program,
+    ["gslt:collection-context:"] ++ contextProofInheritedHeads⟩
+
+def contextProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || head.startsWith "gslt:collection-context:" || contextProofInheritedHeads.contains head
+
+theorem contextProof_checked : contextProofLibrary.check = true := by decide +kernel
+
+theorem contextProof_agreement :
+    ProgramAgreementOn contextProofHeads contextProofLibrary.runtime library.runtime := by
+  apply programAgreementOn_of_retained_rows
+  · decide +kernel
+  · decide +kernel
+
+#print axioms contextProofInheritedHeads_derived
+#print axioms contextProof_checked
+#print axioms contextProof_agreement
+
+end ProofMetadata
 
 def variantTerm (variant : SiteVariant) : Term :=
   .application "CollectionSiteVariant" [siteTerm variant.original, siteTerm variant.site]
@@ -55,7 +113,7 @@ macro_rules
   | `(tactic| contexts_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
+    `(tactic| (metta_call_in contextProof_checked using contextProof_agreement; metta_eval [$facts,*] with contextProof_checked in contextProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -68,31 +126,38 @@ theorem append_returns {α : Type} (element : α → Term) (state : State)
     PureReturns library.runtime [] state
       (apply "gslt:automata:append" [encoded (encodeList element left), encoded (encodeList element right)])
       state (encoded (encodeList element (left ++ right))) := by
-  metta_lift checked ["left", "right"]
-    (CollectionSelectionExecution.scoped_append_returns element state left right)
+  exact CollectionSelectionExecution.scoped_append_returns element state left right
 
 @[metta_head "gslt:automata:length"]
 theorem length_returns {α : Type} (element : α → Term) (state : State) (items : List α) :
     PureReturns library.runtime [] state
       (apply "gslt:automata:length" [encoded (encodeList element items)]) state (number items.length) := by
-  metta_lift checked ["items"]
-    (CollectionSelectionExecution.scoped_length_returns element state items)
+  exact CollectionSelectionExecution.scoped_length_returns element state items
 
 @[metta_head "gslt:rule:scope-match-erase-at"]
 theorem erase_returns {α : Type} (element : α → Term) (state : State) (items : List α) (index : Nat) :
     PureReturns library.runtime [] state
       (apply "gslt:rule:scope-match-erase-at" [number index, encoded (encodeList element items)])
       state (encoded (encodeList element (items.eraseIdx index))) := by
-  metta_lift checked ["index", "targets"]
-    (CollectionSelectionExecution.scoped_erase_returns element state items index)
+  exact CollectionSelectionExecution.scoped_erase_returns element state items index
 
 @[metta_head "gslt:rule:scope-fill"]
 theorem fill_returns (state : State) (context : OneHoleContext) (pattern : Pattern) :
     PureReturns library.runtime [] state
       (apply "gslt:rule:scope-fill" [encoded (contextTerm context), encoded (encodePattern pattern)])
       state (encoded (encodePattern (context.fill pattern))) := by
-  metta_lift checked ["context", "pattern"]
-    (CompleteExecution.scoped_fill_returns state pattern context)
+  induction context with
+  | hole => contexts_eval unfolding [OneHoleContext.fill]
+  | apply label before inner after ih =>
+    contexts_eval [ih, append_returns encodePattern state before (inner.fill pattern :: after)]
+      unfolding [OneHoleContext.fill, encodePattern]
+  | lambda display inner ih | multiLambda arity display inner ih =>
+    contexts_eval [ih] unfolding [OneHoleContext.fill, encodePattern]
+  | substBody inner replacement ih | substReplacement body inner ih =>
+    contexts_eval [ih] unfolding [OneHoleContext.fill, encodePattern]
+  | collection kind before inner after rest ih =>
+    contexts_eval [ih, append_returns encodePattern state before (inner.fill pattern :: after)]
+      unfolding [OneHoleContext.fill, encodePattern]
 
 @[metta_head "gslt:collection-context:wrap"]
 private theorem wrap_returns (state : State) (frame inner : OneHoleContext) :
@@ -245,5 +310,19 @@ theorem site_variants_returns (state : State) (site : SiteData) :
       state (encoded (encodeList variantTerm (siteVariants site))) := by
   contexts_eval [variants_returns state site.focus site.context,
     sites_returns state site (contextVariants site.focus site.context)] unfolding [siteVariants]
+
+#print axioms append_returns
+#print axioms length_returns
+#print axioms erase_returns
+#print axioms fill_returns
+#print axioms wrap_returns
+#print axioms map_frame_returns
+#print axioms row_returns
+#print axioms cross_returns
+#print axioms residuals_returns
+#print axioms variants_returns
+#print axioms address_returns
+#print axioms sites_returns
+#print axioms site_variants_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContextExecution

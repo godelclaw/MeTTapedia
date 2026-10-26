@@ -23,6 +23,29 @@ open Mettapedia.GSLT.LanguageDef CettaWire InferenceCettaWire
 open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL
 open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteEmission
 open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire (planTerm)
+
+open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
+
+namespace CurrentAuthoredInputs
+#module_file "../module/CollectionPetri.module"
+example : CollectionPetri.module = _root_.CollectionPetri.module := by rfl
+#module_file "../module/CollectionReachability.module"
+example : CollectionReachability.module = _root_.CollectionReachability.module := by rfl
+#module_file "../module/CollectionNestedGuardedPetri.module"
+example : CollectionNestedGuardedPetri.module = _root_.CollectionNestedGuardedPetri.module := by rfl
+#module_file "../module/CollectionNestedInputPetri.module"
+example : CollectionNestedInputPetri.module = _root_.CollectionNestedInputPetri.module := by rfl
+#module_file "../module/CollectionNestedOutputPetri.module"
+example : CollectionNestedOutputPetri.module = _root_.CollectionNestedOutputPetri.module := by rfl
+#module_file "../module/CollectionQuantifiedWorkflow.module"
+example : CollectionQuantifiedWorkflow.module = _root_.CollectionQuantifiedWorkflow.module := by rfl
+#module_file "../module/CollectionNestedControl.module"
+example : CollectionNestedControl.module = _root_.CollectionNestedControl.module := by rfl
+#module_file "../module/NamedReplacementControl.module"
+example : NamedReplacementControl.module = _root_.NamedReplacementControl.module := by rfl
+#module_file "../module/BinaryCollectionJoin.module"
+example : BinaryCollectionJoin.module = _root_.BinaryCollectionJoin.module := by rfl
+end CurrentAuthoredInputs
 open Mettapedia.Machines.ResumableSearchRunner (Machine Phase)
 open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 

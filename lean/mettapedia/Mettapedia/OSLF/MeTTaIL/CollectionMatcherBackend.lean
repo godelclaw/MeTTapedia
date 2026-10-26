@@ -740,7 +740,8 @@ theorem startMatch_free_within
   have tasksWithin : ∀ answers : List {answer : GeneralScopedMatchMachine.Answer //
       answer.Valid ⟨request.rule, request.spec, 0, .left, [], 0, [], request.rule.left, presented⟩},
       (∀ answer ∈ answers, ScopedRuleMatching.assignmentFreeWithin footprint answer.val.assignment) →
-      ∀ task ∈ (StructuralDescent.Scheduled.continueRootAnswers environment goal depth [] type
+      ∀ task ∈ (StructuralDescent.Scheduled.continueRootAnswers
+        (matcher := GeneralPremise.MatchingExecution.ordinary) environment goal depth [] type
         presented ordinal request.rule request.spec authority.declared authority.specified
         authority.admitted (authority.source_typed typed) answers (.done goal) []).tasks,
         StructuralDescent.Scheduled.taskFreeWithin footprint task := by

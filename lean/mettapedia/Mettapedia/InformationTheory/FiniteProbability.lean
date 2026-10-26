@@ -78,51 +78,108 @@ theorem pushforward_of_injective (p : Ω → ℝ) (φ : Ω → α) (hφ : Functi
 
 theorem pushforward_pushforward [Fintype α] (p : Ω → ℝ) (φ : Ω → α) (ψ : α → β) (b : β) :
     pushforward (pushforward p φ) ψ b = pushforward p (ψ ∘ φ) b := by
-  rw [pushforward_eq_sum_ite (pushforward p φ) ψ b]
-  have : ∀ a, (if ψ a = b then pushforward p φ a else 0) =
-      pushforward p φ a * (if ψ a = b then 1 else 0) := by
-    intro a; split_ifs <;> simp
-  rw [Finset.sum_congr rfl fun a _ => this a,
-    sum_pushforward_mul p φ (fun a => if ψ a = b then 1 else 0)]
-  rw [pushforward_eq_sum_ite]
-  refine Finset.sum_congr rfl fun ω _ => ?_
-  simp only [Function.comp]
-  split_ifs <;> simp
+  calc
+    pushforward (pushforward p φ) ψ b =
+        ∑ a, pushforward p φ a * (if ψ a = b then 1 else 0) := by
+      simp [pushforward_eq_sum_ite, mul_ite]
+    _ = ∑ ω, p ω * (if ψ (φ ω) = b then 1 else 0) := sum_pushforward_mul p φ _
+    _ = pushforward p (ψ ∘ φ) b := by simp [pushforward_eq_sum_ite, mul_ite, Function.comp_def]
 
 /-- Finite pushforward cannot increase the ℓ¹ distance between arbitrary
 real-valued weightings. Normalization is not needed for this inequality. -/
 theorem l1_pushforward_le [Fintype α] (p q : Ω → ℝ) (φ : Ω → α) :
     (∑ a, |pushforward p φ a - pushforward q φ a|) ≤ ∑ ω, |p ω - q ω| := by
-  classical
-  have fiber (a : α) :
-      |pushforward p φ a - pushforward q φ a| ≤
-        ∑ ω, if φ ω = a then |p ω - q ω| else 0 := by
-    rw [pushforward_eq_sum_ite, pushforward_eq_sum_ite]
-    have difference :
-        (∑ ω, if φ ω = a then p ω else 0) - (∑ ω, if φ ω = a then q ω else 0) =
-          ∑ ω, if φ ω = a then p ω - q ω else 0 := by
-      rw [← Finset.sum_sub_distrib]
-      apply Finset.sum_congr rfl
-      intro ω _
-      by_cases same : φ ω = a <;> simp [same]
-    rw [difference]
-    calc
-      |∑ ω, if φ ω = a then p ω - q ω else 0| ≤
-          ∑ ω, |if φ ω = a then p ω - q ω else 0| :=
-        Finset.abs_sum_le_sum_abs _ _
-      _ = ∑ ω, if φ ω = a then |p ω - q ω| else 0 := by
-        apply Finset.sum_congr rfl
-        intro ω _
-        by_cases same : φ ω = a <;> simp [same]
-  calc
-    (∑ a, |pushforward p φ a - pushforward q φ a|) ≤
-        ∑ a, ∑ ω, if φ ω = a then |p ω - q ω| else 0 :=
-      Finset.sum_le_sum fun a _ => fiber a
-    _ = ∑ ω, |p ω - q ω| := by
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro ω _
-      simp
+  unfold pushforward
+  simp_rw [← Finset.sum_sub_distrib]
+  exact (Finset.sum_le_sum fun a _ => Finset.abs_sum_le_sum_abs _ _).trans_eq
+    (Finset.sum_fiberwise Finset.univ φ (fun ω => |p ω - q ω|))
+
+/-- A positive observed mass has a positive source witness in its fibre. -/
+theorem pushforward_pos_iff (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (φ : Ω → α) (a : α) :
+    0 < pushforward p φ a ↔ ∃ ω, φ ω = a ∧ 0 < p ω := by
+  simpa [pushforward] using
+    (Finset.sum_pos_iff_of_nonneg (fun ω (_ : ω ∈ Finset.univ.filter (fun ω => φ ω = a)) => hp ω))
+
+theorem pushforward_eq_zero_iff (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (φ : Ω → α) (a : α) :
+    pushforward p φ a = 0 ↔ ∀ ω, φ ω = a → p ω = 0 := by
+  simp [pushforward, Finset.sum_eq_zero_iff_of_nonneg (fun ω _ => hp ω)]
+
+omit [DecidableEq β] in
+/-- Marginalization is pushforward through the corresponding product projection. -/
+theorem pushforward_fst [Fintype α] [Fintype β] (w : α × β → ℝ) (a : α) :
+    pushforward w Prod.fst a = ∑ b, w (a, b) := by
+  simp only [pushforward_eq_sum_ite, Fintype.sum_prod_type]
+  rw [Finset.sum_comm]
+  simp
+
+omit [DecidableEq α] in
+theorem pushforward_snd [Fintype α] [Fintype β] (w : α × β → ℝ) (b : β) :
+    pushforward w Prod.snd b = ∑ a, w (a, b) := by
+  simp [pushforward_eq_sum_ite, Fintype.sum_prod_type]
+
+/-! ## Joint laws and marginalization -/
+
+variable {γ : Type*} [DecidableEq γ]
+
+/-- Joint law of `(f, g)`. -/
+noncomputable def law2 (p : Ω → ℝ) (f : Ω → α) (g : Ω → β) : α × β → ℝ :=
+  pushforward p (fun ω => (f ω, g ω))
+
+/-- Joint law of `(f, g, h)`. -/
+noncomputable def law3 (p : Ω → ℝ) (f : Ω → α) (g : Ω → β) (h : Ω → γ) : α × β × γ → ℝ :=
+  pushforward p (fun ω => (f ω, g ω, h ω))
+
+theorem sum_law2_right [Fintype β] (p : Ω → ℝ) (f : Ω → α) (g : Ω → β) (a : α) :
+    ∑ b, law2 p f g (a, b) = pushforward p f a := by
+  simp only [law2, pushforward_eq_sum_ite, Prod.mk.injEq]
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl fun ω _ => by by_cases hf : f ω = a <;> simp [hf]
+
+theorem sum_law2_left [Fintype α] (p : Ω → ℝ) (f : Ω → α) (g : Ω → β) (b : β) :
+    ∑ a, law2 p f g (a, b) = pushforward p g b := by
+  simp only [law2, pushforward_eq_sum_ite, Prod.mk.injEq]
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl fun ω _ => by by_cases hg : g ω = b <;> simp [hg]
+
+theorem sum_law3_right [Fintype γ] (p : Ω → ℝ) (f : Ω → α) (g : Ω → β) (h : Ω → γ)
+    (a : α) (b : β) :
+    ∑ c, law3 p f g h (a, b, c) = law2 p f g (a, b) := by
+  simp only [law3, law2, pushforward_eq_sum_ite, Prod.mk.injEq]
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl fun ω _ => by
+    by_cases hf : f ω = a <;> by_cases hg : g ω = b <;> simp [hf, hg]
+
+theorem sum_law3_left [Fintype α] (p : Ω → ℝ) (f : Ω → α) (g : Ω → β) (h : Ω → γ)
+    (b : β) (c : γ) :
+    ∑ a, law3 p f g h (a, b, c) = law2 p g h (b, c) := by
+  simp only [law3, law2, pushforward_eq_sum_ite, Prod.mk.injEq]
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl fun ω _ => by
+    by_cases hg : g ω = b <;> by_cases hh : h ω = c <;> simp [hg, hh]
+
+theorem law3_le_law2_fg [Fintype γ] (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α) (g : Ω → β)
+    (h : Ω → γ) (x : α × β × γ) : law3 p f g h x ≤ law2 p f g (x.1, x.2.1) := by
+  rw [← sum_law3_right p f g h x.1 x.2.1]
+  exact Finset.single_le_sum (f := fun c => law3 p f g h (x.1, x.2.1, c))
+    (fun c _ => pushforward_nonneg p hp _ _) (Finset.mem_univ x.2.2)
+
+theorem law3_le_law2_gh [Fintype α] (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α) (g : Ω → β)
+    (h : Ω → γ) (x : α × β × γ) : law3 p f g h x ≤ law2 p g h (x.2.1, x.2.2) := by
+  rw [← sum_law3_left p f g h x.2.1 x.2.2]
+  exact Finset.single_le_sum (f := fun a => law3 p f g h (a, x.2.1, x.2.2))
+    (fun a _ => pushforward_nonneg p hp _ _) (Finset.mem_univ x.1)
+
+theorem law2_le_pushforward_snd [Fintype α] (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α)
+    (g : Ω → β) (x : α × β) : law2 p f g x ≤ pushforward p g x.2 := by
+  rw [← sum_law2_left p f g x.2]
+  exact Finset.single_le_sum (f := fun a => law2 p f g (a, x.2))
+    (fun a _ => pushforward_nonneg p hp _ _) (Finset.mem_univ x.1)
+
+theorem law2_le_pushforward_fst [Fintype β] (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α)
+    (g : Ω → β) (x : α × β) : law2 p f g x ≤ pushforward p f x.1 := by
+  rw [← sum_law2_right p f g x.1]
+  exact Finset.single_le_sum (f := fun b => law2 p f g (x.1, b))
+    (fun b _ => pushforward_nonneg p hp _ _) (Finset.mem_univ x.2)
 
 end Mettapedia.InformationTheory.FiniteRV
 

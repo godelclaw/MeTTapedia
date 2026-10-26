@@ -1,4 +1,4 @@
-import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
+import Mettapedia.PLN.Comparisons.DeductionReadout
 import Mathlib.Topology.MetricSpace.Lipschitz
 import Mathlib.Topology.MetricSpace.Pseudo.Pi
 import Mathlib.Tactic
@@ -30,37 +30,29 @@ private theorem unit_difference {x y : ℝ} (xUnit : x ∈ Set.Icc (0 : ℝ) 1)
 theorem antecedent_difference (x x' y b c : ℝ) (notFull : b ≠ 1) :
     plnDeductionStrength x y b c - plnDeductionStrength x' y b c =
       (x-x')*(y-c)/(1-b) := by
-  have denominator : 1-b ≠ 0 := sub_ne_zero.mpr (Ne.symm notFull)
   unfold plnDeductionStrength
-  field_simp
+  field_simp [ sub_ne_zero.mpr (Ne.symm notFull)]
   ring
 
-/-- Exact change of the deduction value when this coordinate alone changes. -/
 theorem link_difference (x y y' b c : ℝ) (notFull : b ≠ 1) :
     plnDeductionStrength x y b c - plnDeductionStrength x y' b c =
       (y-y')*(x-b)/(1-b) := by
-  have denominator : 1-b ≠ 0 := sub_ne_zero.mpr (Ne.symm notFull)
   unfold plnDeductionStrength
-  field_simp
+  field_simp [ sub_ne_zero.mpr (Ne.symm notFull)]
   ring
 
-/-- Exact change of the deduction value when this coordinate alone changes. -/
 theorem target_difference (x y b c c' : ℝ) (notFull : b ≠ 1) :
     plnDeductionStrength x y b c - plnDeductionStrength x y b c' =
       (c-c')*(1-x)/(1-b) := by
-  have denominator : 1-b ≠ 0 := sub_ne_zero.mpr (Ne.symm notFull)
   unfold plnDeductionStrength
-  field_simp
+  field_simp [ sub_ne_zero.mpr (Ne.symm notFull)]
   ring
 
-/-- Exact change of the deduction value when this coordinate alone changes. -/
 theorem middle_difference (x y b b' c : ℝ) (notFull : b ≠ 1) (notFull' : b' ≠ 1) :
     plnDeductionStrength x y b c - plnDeductionStrength x y b' c =
       (b-b')*(1-x)*(c-y)/((1-b)*(1-b')) := by
-  have denominator : 1-b ≠ 0 := sub_ne_zero.mpr (Ne.symm notFull)
-  have denominator' : 1-b' ≠ 0 := sub_ne_zero.mpr (Ne.symm notFull')
   unfold plnDeductionStrength
-  field_simp
+  field_simp [ sub_ne_zero.mpr (Ne.symm notFull), sub_ne_zero.mpr (Ne.symm notFull')]
   ring
 
 private theorem quotient_bound {error coefficient denominator margin : ℝ}
@@ -69,21 +61,8 @@ private theorem quotient_bound {error coefficient denominator margin : ℝ}
     |error * coefficient / denominator| ≤ |error| / margin := by
   have denominatorPos := positive.trans_le separation
   rw [abs_div, abs_mul, abs_of_pos denominatorPos]
-  calc
-    _ ≤ |error| / denominator := div_le_div_of_nonneg_right
-      (by nlinarith [abs_nonneg error]) denominatorPos.le
-    _ ≤ _ := div_le_div_of_nonneg_left (abs_nonneg error) positive separation
-
-/-- Four probability readouts; compatibility with a joint law is an additional property. -/
-structure PremiseValues where
-  ab : Set.Icc (0 : ℝ) 1
-  bc : Set.Icc (0 : ℝ) 1
-  b : Set.Icc (0 : ℝ) 1
-  c : Set.Icc (0 : ℝ) 1
-
-/-- The existing nonlinear PLN deduction formula evaluated on the four readouts. -/
-noncomputable def estimate (input : PremiseValues) : ℝ :=
-  plnDeductionStrength input.ab input.bc input.b input.c
+  exact (div_le_div_of_nonneg_right (mul_le_of_le_one_right (abs_nonneg error) coefficientBound)
+    denominatorPos.le).trans (div_le_div_of_nonneg_left (abs_nonneg error) positive separation)
 
 /-- A coordinate-wise perturbation budget with the denominator margin retained. -/
 noncomputable def perturbationBudget (margin : ℝ) (first second : PremiseValues) : ℝ :=
@@ -106,47 +85,37 @@ theorem estimate_stable (first second : PremiseValues) (margin : ℝ) (positive 
     (firstSeparated : margin ≤ 1-(first.b : ℝ))
     (secondSeparated : margin ≤ 1-(second.b : ℝ)) :
     |estimate first - estimate second| ≤ perturbationBudget margin first second := by
-  have bPos := positive.trans_le firstSeparated
-  have bPos' := positive.trans_le secondSeparated
-  have notFull : (first.b : ℝ) ≠ 1 := by linarith
-  have notFull' : (second.b : ℝ) ≠ 1 := by linarith
-  have step₁ : |plnDeductionStrength first.ab first.bc first.b first.c -
-      plnDeductionStrength second.ab first.bc first.b first.c| ≤
-        |((first.ab : ℝ)-second.ab)| / margin := by
-    rw [antecedent_difference _ _ _ _ _ notFull]
-    exact quotient_bound (unit_difference first.bc.property first.c.property) positive firstSeparated
-  have step₂ : |plnDeductionStrength second.ab first.bc first.b first.c -
-      plnDeductionStrength second.ab second.bc first.b first.c| ≤
-        |((first.bc : ℝ)-second.bc)| / margin := by
-    rw [link_difference _ _ _ _ _ notFull]
-    exact quotient_bound (unit_difference second.ab.property first.b.property) positive firstSeparated
-  have step₃ : |plnDeductionStrength second.ab second.bc first.b first.c -
-      plnDeductionStrength second.ab second.bc first.b second.c| ≤
-        |((first.c : ℝ)-second.c)| / margin := by
-    rw [target_difference _ _ _ _ _ notFull]
-    have coefficient : |1-(second.ab : ℝ)| ≤ 1 := by
-      rw [abs_of_nonneg (sub_nonneg.mpr second.ab.property.2)]
-      linarith [second.ab.property.1]
-    exact quotient_bound coefficient positive firstSeparated
-  have step₄ : |plnDeductionStrength second.ab second.bc first.b second.c -
-      plnDeductionStrength second.ab second.bc second.b second.c| ≤
-        |((first.b : ℝ)-second.b)| / margin^2 := by
-    rw [middle_difference _ _ _ _ _ notFull notFull']
-    have coefficient : |(1-(second.ab : ℝ))*((second.c : ℝ)-second.bc)| ≤ 1 := by
-      rw [abs_mul, abs_of_nonneg (sub_nonneg.mpr second.ab.property.2)]
-      have difference := unit_difference second.c.property second.bc.property
-      nlinarith [abs_nonneg ((second.c : ℝ)-second.bc), second.ab.property.1, second.ab.property.2]
-    have separation : margin^2 ≤ (1-(first.b : ℝ))*(1-(second.b : ℝ)) := by
-      nlinarith [mul_le_mul firstSeparated secondSeparated positive.le bPos.le]
-    rw [mul_assoc]
-    exact quotient_bound coefficient (sq_pos_of_pos positive) separation
-  have triangle₁ := abs_sub_le (estimate first)
-    (plnDeductionStrength second.ab first.bc first.b first.c) (estimate second)
-  have triangle₂ := abs_sub_le (plnDeductionStrength second.ab first.bc first.b first.c)
-    (plnDeductionStrength second.ab second.bc first.b first.c) (estimate second)
-  have triangle₃ := abs_sub_le (plnDeductionStrength second.ab second.bc first.b first.c)
-    (plnDeductionStrength second.ab second.bc first.b second.c) (estimate second)
-  unfold estimate at *
+  let e₁ := ((first.ab : ℝ)-second.ab)*((first.bc : ℝ)-first.c)/(1-first.b)
+  let e₂ := ((first.bc : ℝ)-second.bc)*((second.ab : ℝ)-first.b)/(1-first.b)
+  let e₃ := ((first.c : ℝ)-second.c)*(1-(second.ab : ℝ))/(1-first.b)
+  let e₄ := ((first.b : ℝ)-second.b)*((1-(second.ab : ℝ))*((second.c : ℝ)-second.bc)) /
+    ((1-first.b)*(1-second.b))
+  have notFull : 1-(first.b : ℝ) ≠ 0 := ne_of_gt (positive.trans_le firstSeparated)
+  have notFull' : 1-(second.b : ℝ) ≠ 0 := ne_of_gt (positive.trans_le secondSeparated)
+  have difference : estimate first - estimate second = e₁ + e₂ + e₃ + e₄ := by
+    dsimp [estimate, plnDeductionStrength, e₁, e₂, e₃, e₄]
+    field_simp
+    ring
+  have unitOne : (1 : ℝ) ∈ Set.Icc (0 : ℝ) 1 := ⟨by norm_num, le_rfl⟩
+  have coefficient₃ := unit_difference unitOne second.ab.property
+  have coefficient₄ : |(1-(second.ab : ℝ))*((second.c : ℝ)-second.bc)| ≤ 1 := by
+    rw [abs_mul]
+    exact mul_le_one₀ coefficient₃ (abs_nonneg _)
+      (unit_difference second.c.property second.bc.property)
+  have separation : margin^2 ≤ (1-(first.b : ℝ))*(1-(second.b : ℝ)) := by
+    nlinarith [mul_le_mul firstSeparated secondSeparated positive.le (positive.trans_le firstSeparated).le]
+  have s₁ : |e₁| ≤ |((first.ab : ℝ)-second.ab)|/margin :=
+    quotient_bound (unit_difference first.bc.property first.c.property) positive firstSeparated
+  have s₂ : |e₂| ≤ |((first.bc : ℝ)-second.bc)|/margin :=
+    quotient_bound (unit_difference second.ab.property first.b.property) positive firstSeparated
+  have s₃ : |e₃| ≤ |((first.c : ℝ)-second.c)|/margin :=
+    quotient_bound coefficient₃ positive firstSeparated
+  have s₄ : |e₄| ≤ |((first.b : ℝ)-second.b)|/margin^2 :=
+    quotient_bound coefficient₄ (sq_pos_of_pos positive) separation
+  rw [difference]
+  have triangle := (abs_add_le (e₁+e₂+e₃) e₄).trans
+    (add_le_add ((abs_add_le (e₁+e₂) e₃).trans
+      (add_le_add (abs_add_le e₁ e₂) le_rfl)) le_rfl)
   unfold perturbationBudget
   rw [add_div, add_div]
   linarith
@@ -173,9 +142,6 @@ theorem estimate_lipschitz (margin : ℝ) (positive : 0 < margin) :
   intro first second
   have coordinate (index : Fin 4) : |first.val index - second.val index| ≤ dist first second := by
     exact dist_le_pi_dist first.val second.val index
-  have summed : |first.val 0 - second.val 0| + |first.val 1 - second.val 1| +
-      |first.val 3 - second.val 3| ≤ 3 * dist first second := by
-    linarith [coordinate 0, coordinate 1, coordinate 3]
   have firstBound := estimate_stable (profile first) (profile second) margin positive
     first.property.2 second.property.2
   change |estimate (profile first) - estimate (profile second)| ≤ _
@@ -184,7 +150,7 @@ theorem estimate_lipschitz (margin : ℝ) (positive : 0 < margin) :
     |first.val 3 - second.val 3|) / margin + |first.val 2 - second.val 2| / margin^2 ≤ _
   calc
     _ ≤ (3 * dist first second)/margin + dist first second / margin^2 :=
-      add_le_add (div_le_div_of_nonneg_right summed positive.le)
+      add_le_add (div_le_div_of_nonneg_right (by linarith [coordinate 0, coordinate 1, coordinate 3]) positive.le)
         (div_le_div_of_nonneg_right (coordinate 2) (sq_nonneg margin))
     _ = _ := by change _ = (3/margin + 1/margin^2)*dist first second; ring
 

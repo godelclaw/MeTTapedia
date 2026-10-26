@@ -323,6 +323,14 @@ serve as its existence premise. Each command keeps one ordered receipt,
 including the two outputs of a type definition.
 -/
 
+theorem replay_policy_congr (first second : AxiomPolicy) [DecidablePred first] [DecidablePred second]
+    (node : Receipt) (cache : Array Theorem)
+    (agree : ∀ sequent, node.witness.requestedAxiom = some sequent → (first sequent ↔ second sequent)) :
+    node.replay (ruleWitness first) cache = node.replay (ruleWitness second) cache := by
+  simp only [DerivationGraph.Node.replay,ruleWitness,RuleRequest.isInstance,RuleRequest.outputSameB,
+    RuleRequest.check_policy_congr first second node.witness agree]
+  rfl
+
 namespace Registered
 
 open DefinitionAdapters OpenTheory.SignatureFormation
@@ -961,6 +969,82 @@ theorem undeclared_constant_refused :
   · simp [formation]
 
 end Controls
+
+def Command.requestedAxiom : Command → Option Sequent
+  | .proof node _ => node.witness.requestedAxiom
+  | .constant _ _ _ _ | .typeDefinition _ _ _ _ => none
+
+theorem Command.check_policy_congr (first second : AxiomPolicy) [DecidablePred first] [DecidablePred second]
+    (command : Command) (context : DefinitionAdapters.TheoryContext) (cache : Array Theorem)
+    (agree : ∀ sequent, command.requestedAxiom = some sequent → (first sequent ↔ second sequent)) :
+    command.check first context cache = command.check second context cache := by
+  cases command with
+  | proof node witnesses =>
+    simp only [Command.check,ProofExecution.replay_policy_congr first second node cache agree]
+  | constant => rfl
+  | typeDefinition => rfl
+
+theorem apply_policy_congr (first second : AxiomPolicy) [DecidablePred first] [DecidablePred second]
+    (before : State) (command : Command)
+    (agree : ∀ sequent, command.requestedAxiom = some sequent → (first sequent ↔ second sequent)) :
+    apply first before command = apply second before command := by
+  simp only [apply,Command.check_policy_congr first second command before.context before.cache agree]
+
+theorem replayFrom_policy_congr (first second : AxiomPolicy) [DecidablePred first] [DecidablePred second]
+    (before : State) (commands : List Command)
+    (agree : ∀ command ∈ commands, ∀ sequent,
+      command.requestedAxiom = some sequent → (first sequent ↔ second sequent)) :
+    replayFrom first before commands = replayFrom second before commands := by
+  induction commands generalizing before with
+  | nil => rfl
+  | cons head tail ih =>
+    simp only [replayFrom,apply_policy_congr first second before head (agree head List.mem_cons_self)]
+    cases applied : apply second before head with
+    | none => rfl
+    | some middle =>
+      exact ih middle (fun command member => agree command (List.mem_cons_of_mem _ member))
+
+theorem requested_axiom_formed {selected : AxiomPolicy} [DecidablePred selected]
+    {context : TheoryContext} {cache : Array Theorem} {command : Command} {output : Output} {sequent : Sequent}
+    (requested : command.requestedAxiom = some sequent)
+    (accepted : command.check selected context cache = some output) :
+    selected sequent ∧ AnnotationsFormed context.signature sequent.concl.term := by
+  cases command with
+  | constant => cases requested
+  | typeDefinition => cases requested
+  | proof node witnesses =>
+    cases kind : node.witness with
+    | inference => simp [Command.requestedAxiom,RuleRequest.requestedAxiom,kind] at requested
+    | «axiom» actual =>
+      have same : actual = sequent := Option.some.inj (by simpa [Command.requestedAxiom,RuleRequest.requestedAxiom,kind] using requested)
+      subst sequent
+      simp only [Command.check] at accepted
+      cases replayed : node.replay (ruleWitness selected) cache with
+      | none => simp [replayed] at accepted
+      | some next =>
+        rw [replayed] at accepted
+        change (if requestFormedB context.signature witnesses node.witness = true ∧
+            theoremFormedB context.signature witnesses node.conclusion = true then
+          some (⟨context,[node.conclusion]⟩ : Output) else none) = some output at accepted
+        split at accepted
+        · rename_i formation
+          obtain ⟨premises,found,checked,_⟩ := (node.replay_eq_some_iff (ruleWitness selected) cache next).mp replayed
+          have sourceCheck : node.witness.isInstance selected premises node.conclusion = true := checked
+          have semantic := (RuleRequest.isInstance_eq_true_iff selected _ _ _).mp sourceCheck |>.2
+          rw [kind] at semantic
+          have formed := theoremFormedB_sound context.signature witnesses formation.2
+          refine ⟨semantic.2.1,(formed.2 actual ?_).1⟩
+          rw [semantic.2.2.2.1]
+          exact Finset.mem_singleton_self _
+        · contradiction
+
+theorem apply_check_exists {selected : AxiomPolicy} [DecidablePred selected]
+    {before after : State} {command : Command}
+    (accepted : apply selected before command = some after) :
+    ∃ output, command.check selected before.context before.cache = some output := by
+  cases checked : command.check selected before.context before.cache with
+  | none => simp [apply,checked] at accepted
+  | some output => exact ⟨output,rfl⟩
 
 end Registered
 

@@ -88,6 +88,20 @@ def infer (signature : TermSignature) (context : Context) : Preterm → Option E
           if infer signature context argument = some ([], sort) then some (remaining, result)
           else none
 
+/-- A typed expression mentions only variables of its context. -/
+theorem HasType.varsBelow {signature : TermSignature} {context remaining : Context}
+    {expression : Preterm} {sort : Nat}
+    (typed : HasType signature context expression remaining sort) :
+    VarsBelow context.length expression := by
+  induction typed with
+  | var known => exact (List.getElem?_eq_some_iff.mp known).1
+  | term _ => trivial
+  | bound _ known inductionHypothesis =>
+      exact ⟨inductionHypothesis, (List.getElem?_eq_some_iff.mp known).1⟩
+  | regular _ _ functionHypothesis argumentHypothesis =>
+      exact ⟨functionHypothesis, argumentHypothesis⟩
+
+
 theorem HasType.eval {signature : TermSignature} {context remaining : Context}
     {expression : Preterm} {sort : Nat} (typing : HasType signature context expression remaining sort) :
     infer signature context expression = some (remaining, sort) := by

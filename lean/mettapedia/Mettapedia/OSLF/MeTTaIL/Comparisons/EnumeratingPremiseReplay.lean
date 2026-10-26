@@ -129,7 +129,8 @@ theorem queryAnswers_complete {environment : Environment} {request : Query.Reque
       rowIndex final origins) :
     ∃ fuel, final ∈ queryAnswers fuel environment request rowIndex origins := by
   obtain ⟨fuel, _, answer, present, row, value, traced⟩ :=
-    Query.traced_query_eventually environment request held
+    Query.traced_query_eventually MatchingExecution.ordinaryCursorLaws
+      MatchingExecution.ordinaryCursorCost MatchingExecution.ordinary_answer_representation environment request held
   exact ⟨fuel, (mem_queryAnswers fuel environment request rowIndex origins final).mpr
     ⟨answer, present, row, traced, value⟩⟩
 
@@ -864,17 +865,17 @@ theorem matchFuel_complete {request : GeneralScopedMatchMachine.Request}
 /-- The original finite provider/query agenda includes matching and dynamic
 provider rows. Its measure supplies termination of a fixed query replay. -/
 def queryFuel (environment : Environment) (request : Query.Request) : Nat :=
-  Query.agendaCost environment request (Query.start environment request).agenda
+  Query.agendaCost MatchingExecution.ordinaryCursorCost environment request (Query.start environment request).agenda
 
 private theorem query_drains (environment : Environment) (request : Query.Request)
     (fuel : Nat) (state : Query.State environment request)
-    (enough : Query.agendaCost environment request state.agenda ≤ fuel) :
+    (enough : Query.agendaCost MatchingExecution.ordinaryCursorCost environment request state.agenda ≤ fuel) :
     (Query.run environment request fuel state).agenda = [] := by
   induction fuel generalizing state with
   | zero =>
       by_cases ready : state.agenda = []
       · exact ready
-      · have decreased := Query.tick_cost environment request state ready
+      · have decreased := Query.tick_cost MatchingExecution.ordinaryCursorCost environment request state ready
         omega
   | succ fuel ih =>
       by_cases ready : state.agenda = []
@@ -883,9 +884,9 @@ private theorem query_drains (environment : Environment) (request : Query.Reques
         change (Query.run environment request fuel (Query.tick environment request state)).agenda = []
         rw [same]
         exact ih state (by simp only [ready, Query.agendaCost_nil]; omega)
-      · have decreased := Query.tick_cost environment request state ready
+      · have decreased := Query.tick_cost MatchingExecution.ordinaryCursorCost environment request state ready
         exact ih _ (by
-          change Query.agendaCost environment request (Query.tick environment request state).agenda ≤ fuel
+          change Query.agendaCost MatchingExecution.ordinaryCursorCost environment request (Query.tick environment request state).agenda ≤ fuel
           omega)
 
 theorem queryFuel_complete {environment : Environment} {request : Query.Request}
@@ -895,7 +896,7 @@ theorem queryFuel_complete {environment : Environment} {request : Query.Request}
     final ∈ queryAnswers (queryFuel environment request) environment request rowIndex origins := by
   apply (mem_queryAnswers _ environment request rowIndex origins final).mpr
   refine ⟨⟨rowIndex, final, origins, held⟩, ?_, rfl, rfl, rfl⟩
-  exact Query.answers_complete environment request _ _
+  exact Query.answers_complete MatchingExecution.ordinaryCursorLaws MatchingExecution.ordinary_answer_representation environment request _ _
     (query_drains environment request _ _ (Nat.le_refl _))
 
 

@@ -164,4 +164,39 @@ theorem unfolding_refused_without_body (signature : Signature sorts terms)
 #print axioms contractProof
 #print axioms unfolding_refused_without_body
 
+theorem expandProof_varsBelow (signature : Signature sorts terms)
+    (abbreviation : Abbreviation terms definitions signature.symbol signature.ids)
+    (antecedent first second : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (source : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (code abbreviation first second))))
+    (limit : Nat)
+    (antecedentBound : Preterm.VarsBelow limit antecedent)
+    (firstBound : Preterm.VarsBelow limit first)
+    (secondBound : Preterm.VarsBelow limit second)
+    (sourceBound : source.val.VarsBelow limit) :
+    (expandProof signature abbreviation antecedent first second antecedentSorted firstSorted secondSorted source).val.VarsBelow limit := by
+  simp_all [expandProof, ProofWitness.VarsBelow, ConvWitness.VarsBelow, consequenceConversion, unfolding]
+
+theorem contractProof_varsBelow (signature : Signature sorts terms)
+    (abbreviation : Abbreviation terms definitions signature.symbol signature.ids)
+    (antecedent first second : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (source : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (expanded signature.symbol first second))))
+    (limit : Nat)
+    (antecedentBound : Preterm.VarsBelow limit antecedent)
+    (firstBound : Preterm.VarsBelow limit first)
+    (secondBound : Preterm.VarsBelow limit second)
+    (sourceBound : source.val.VarsBelow limit) :
+    (contractProof signature abbreviation antecedent first second antecedentSorted firstSorted secondSorted source).val.VarsBelow limit := by
+  simp_all [contractProof, ProofWitness.VarsBelow, ConvWitness.VarsBelow, consequenceConversion, unfolding]
+
+
 end Mettapedia.Languages.MM0.HOLKernelBooleanEquality

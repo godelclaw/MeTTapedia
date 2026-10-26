@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MM0.HOLKernelTermAssignments
 import Mettapedia.Languages.MM0.HOLKernelInferenceInterpretation
 import Mettapedia.Languages.MM0.HOLKernelBooleanEquality
 import Mettapedia.Logic.HOL.Syntax.DecidableEq
@@ -58,6 +59,67 @@ def expandEquivalence (references : HOLKernelSyntax.Symbol → Nat)
   | .var index => .var index
   | .term index => .term index
 termination_by native => sizeOf native
+
+section EncodedFixedPoints
+open HOLKernelTermAssignments
+universe v w
+variable {Base : Type v} {Family : Ty Base → Type w}
+
+theorem expandEquivalence_encodeType_of_fixed (references : HOLKernelSyntax.Symbol → Nat)
+    (equivalenceReference : Nat) (distinct : ∀ symbol, references symbol ≠ equivalenceReference)
+    (base : Base → Preterm) (baseFixed : ∀ name, expandEquivalence references equivalenceReference (base name) = base name)
+    (type : Ty Base) :
+    expandEquivalence references equivalenceReference (encodeType references base type) = encodeType references base type := by
+  induction type <;> simp_all [encodeType, applySymbol, Preterm.applyArgs, expandEquivalence]
+
+theorem expandEquivalence_encodeWithAssignment_of_fixed (references : HOLKernelSyntax.Symbol → Nat)
+    (equivalenceReference : Nat) (distinct : ∀ symbol, references symbol ≠ equivalenceReference)
+    (base : Base → Preterm) (constant : ∀ {type}, Family type → Preterm) (binders : Nat → Nat)
+    (baseFixed : ∀ name, expandEquivalence references equivalenceReference (base name) = base name)
+    (constantFixed : ∀ {type} (symbol : Family type), expandEquivalence references equivalenceReference (constant symbol) = constant symbol)
+    {gamma : Ctx Base} {type : Ty Base} (source : Term Family gamma type) :
+    ∀ (assignment : Assignment gamma) (depth : Nat),
+      (∀ {type} (index : Var gamma type), expandEquivalence references equivalenceReference (assignment index) = assignment index) →
+      expandEquivalence references equivalenceReference (encodeWithAssignment references base constant binders assignment depth source) =
+        encodeWithAssignment references base constant binders assignment depth source := by
+  induction source with
+  | @lam domain gamma result body ih | @all domain gamma body ih | @ex domain gamma body ih =>
+      intro assignment depth fixed
+      have extendedFixed : ∀ {type} (index : Var (domain :: gamma) type),
+          expandEquivalence references equivalenceReference
+            (Assignment.extend (.var (binders depth)) assignment index) =
+              Assignment.extend (.var (binders depth)) assignment index := by
+        intro type index
+        cases index with
+        | vz => simp [Assignment.extend, expandEquivalence]
+        | vs index => exact fixed index
+      simp [encodeWithAssignment, applySymbol, Preterm.applyArgs, expandEquivalence, distinct,
+        expandEquivalence_encodeType_of_fixed references equivalenceReference distinct base baseFixed,
+        ih _ _ extendedFixed]
+  | var index | const symbol | top | bot | app first second ihFirst ihSecond
+  | and first second ihFirst ihSecond | or first second ihFirst ihSecond | imp first second ihFirst ihSecond
+  | not body ih | eq first second ihFirst ihSecond =>
+      intros
+      simp_all [encodeWithAssignment, applySymbol, Preterm.applyArgs, expandEquivalence,
+        expandEquivalence_encodeType_of_fixed references equivalenceReference distinct base baseFixed]
+
+theorem expandEquivalence_encodeTerm_of_fixed (references : HOLKernelSyntax.Symbol → Nat)
+    (equivalenceReference : Nat) (distinct : ∀ symbol, references symbol ≠ equivalenceReference)
+    (base : Base → Preterm) (constant : ∀ {type}, Family type → Preterm) (binders : Nat → Nat)
+    (baseFixed : ∀ name, expandEquivalence references equivalenceReference (base name) = base name)
+    (constantFixed : ∀ {type} (symbol : Family type),
+      expandEquivalence references equivalenceReference (constant symbol) = constant symbol)
+    {gamma : Ctx Base} {type : Ty Base} (source : Term Family gamma type) :
+    ∀ (positions : Positions gamma) (depth : Nat),
+      expandEquivalence references equivalenceReference (encodeTerm references base constant binders positions depth source) =
+        encodeTerm references base constant binders positions depth source := by
+  intro positions depth
+  have fixed := expandEquivalence_encodeWithAssignment_of_fixed references equivalenceReference distinct base constant binders
+    baseFixed constantFixed source (fun index => .var (positions index)) depth
+    (fun _ => by simp [expandEquivalence])
+  simpa only [encode_positions] using fixed
+
+end EncodedFixedPoints
 
 variable {terms : TermSignature} {definitions : Definition.Signature}
 variable {references : HOLKernelSyntax.Symbol → Nat} {ids : SortIds}

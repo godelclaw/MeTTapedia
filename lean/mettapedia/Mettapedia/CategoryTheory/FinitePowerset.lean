@@ -45,25 +45,15 @@ theorem map_compose {X : Type u} {Y : Type v} {Z : Type w}
 def functor : Type u ⥤ Type u where
   obj := Finset
   map mapping := TypeCat.ofHom (map mapping.hom)
-  map_id _ := by
-    apply ConcreteCategory.hom_ext
-    exact map_identity
-  map_comp before after := by
-    apply ConcreteCategory.hom_ext
-    intro successors
-    exact (map_compose before.hom after.hom successors).symm
+  map_id _ := ConcreteCategory.hom_ext _ _ map_identity
+  map_comp before after := ConcreteCategory.hom_ext _ _
+    (fun successors => (map_compose before.hom after.hom successors).symm)
 
 @[simp] theorem map_empty {X : Type u} {Y : Type v} (mapping : X → Y) :
-    map mapping ∅ = ∅ := by
-  classical
-  change Finset.image mapping (∅ : Finset X) = ∅
-  exact Finset.image_empty mapping
+    map mapping ∅ = ∅ := rfl
 
 @[simp] theorem map_singleton {X : Type u} {Y : Type v} (mapping : X → Y) (value : X) :
-    map mapping {value} = {mapping value} := by
-  classical
-  change Finset.image mapping {value} = {mapping value}
-  exact Finset.image_singleton mapping value
+    map mapping {value} = {mapping value} := rfl
 
 theorem map_eq_empty_iff {X : Type u} {Y : Type v}
     (mapping : X → Y) (successors : Finset X) :
@@ -73,9 +63,7 @@ theorem map_eq_empty_iff {X : Type u} {Y : Type v}
 
 theorem map_option {X : Type u} {Y : Type v} (mapping : X → Y) (value : Option X) :
     map mapping value.toFinset = (value.map mapping).toFinset := by
-  cases value with
-  | none => exact map_empty mapping
-  | some value => exact map_singleton mapping value
+  cases value <;> simp [map]
 
 theorem option_injective {X : Type u} :
     Function.Injective (Option.toFinset : Option X → Finset X) := by
@@ -88,6 +76,16 @@ def Related {X : Type u} {Y : Type v} (relation : X → Y → Prop)
     (first : Finset X) (second : Finset Y) : Prop :=
   (∀ value ∈ first, ∃ other ∈ second, relation value other) ∧
     (∀ other ∈ second, ∃ value ∈ first, relation value other)
+
+/-- Enlarging the endpoint relation preserves both coverage directions. -/
+theorem Related.mono {X : Type u} {Y : Type v} {before after : X → Y → Prop}
+    {first : Finset X} {second : Finset Y} (held : Related before first second)
+    (implies : ∀ ⦃value other⦄, before value other → after value other) :
+    Related after first second :=
+  ⟨fun value member => let ⟨other, present, paired⟩ := held.1 value member
+    ⟨other, present, implies paired⟩,
+   fun other member => let ⟨value, present, paired⟩ := held.2 other member
+    ⟨value, present, implies paired⟩⟩
 
 theorem related_identity {X : Type u} (successors : Finset X) :
     Related Eq successors successors := by
@@ -113,25 +111,8 @@ theorem related_graph_iff {X : Type u} {Y : Type v} (mapping : X → Y)
     (first : Finset X) (second : Finset Y) :
     Related (fun value other => mapping value = other) first second ↔
       map mapping first = second := by
-  constructor
-  · intro held
-    apply Finset.ext
-    intro other
-    rw [mem_map]
-    constructor
-    · rintro ⟨value, inFirst, rfl⟩
-      obtain ⟨result, inSecond, same⟩ := held.1 value inFirst
-      simpa only [← same] using inSecond
-    · intro inSecond
-      exact held.2 other inSecond
-  · intro same
-    constructor
-    · intro value inFirst
-      refine ⟨mapping value, ?_, rfl⟩
-      rw [← same, mem_map]
-      exact ⟨value, inFirst, rfl⟩
-    · intro other inSecond
-      rw [← same, mem_map] at inSecond
-      exact inSecond
+  classical
+  simp only [Related, map, le_antisymm_iff, Finset.image_subset_iff]
+  simp only [Finset.subset_iff, Finset.mem_image, exists_eq_right']
 
 end Mettapedia.CategoryTheory.FinitePowerset

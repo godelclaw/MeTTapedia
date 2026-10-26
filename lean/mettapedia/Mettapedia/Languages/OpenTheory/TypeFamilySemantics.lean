@@ -174,6 +174,22 @@ def extend (operators : OperatorFamilies.{w}) (operator : TypeOp)
     extend operators operator family operator arguments = family arguments := by
   simp [extend]
 
+/-! Independent ambient operator installations commute. -/
+
+theorem extend_commute (original : OperatorFamilies.{w}) (first second : TypeOp)
+    (firstFamily secondFamily : List Domain.{w} → Domain.{w}) (different : first ≠ second) :
+    extend (extend original first firstFamily) second secondFamily =
+      extend (extend original second secondFamily) first firstFamily := by
+  funext candidate arguments
+  by_cases firstMatch : candidate = first
+  · subst candidate
+    simp [extend, different]
+  · by_cases secondMatch : candidate = second
+    · subst candidate
+      simp [extend, Ne.symm different]
+    · simp [extend, firstMatch, secondMatch]
+
+
 /-- A fresh extension preserves every old, formed carrier construction.
 Malformed or undeclared old types are not granted an interpretation licence. -/
 theorem evaluate_extend_formed (signature : SignatureFormation.Signature)

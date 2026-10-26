@@ -19,7 +19,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax CollectionMatcherBackend
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Eval BridgeKit WireKit
-open CollectionMatcherBackendExecution (library checked collectionBaseLibrary collectionBase_checked)
+open CollectionMatcherBackendExecution (library)
 
 variable {plan : GeneralExecutionAdmission.Plan}
     {certificate : CollectionExecutionAdmission.Certificate plan}
@@ -69,7 +69,7 @@ theorem run_ready (footprint : List String)
     (GeneralPremise.provider_covered_by_own_names (GeneralPlanEnvironment.environment plan).provider)
   have dynamic := GeneralPremise.Query.DynamicOutputsFreeWithin.of_unregistered footprint
     (GeneralPlanEnvironment.environment plan) finiteProvider
-  exact StructuralDescent.Scheduled.run_free_within footprint
+  exact StructuralDescent.Scheduled.run_free_within Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinary_preservesFreeNames footprint
     (GeneralPlanEnvironment.environment plan) _ rows dynamic work frame.state covered
 
 private theorem append_returns {α : Type} (encoder : α → Term)
@@ -78,37 +78,21 @@ private theorem append_returns {α : Type} (encoder : α → Term)
       (apply "gslt:automata:append"
         [encoded (encodeList encoder left), encoded (encodeList encoder right)])
       state (encoded (encodeList encoder (left ++ right))) := by
-  have atBase : PureReturns collectionBaseLibrary.runtime [] state
-      (apply "gslt:automata:append"
-        [encoded (encodeList encoder left), encoded (encodeList encoder right)])
-      state (encoded (encodeList encoder (left ++ right))) := by
-    metta_lift collectionBase_checked ["left", "right"]
-      (CompleteExecution.complete_append_returns encoder state left right)
-  metta_lift checked ["left", "right"] atBase
+  exact CompleteExecution.complete_append_returns encoder state left right
 
 private theorem length_returns {α : Type} (encoder : α → Term)
     (state : Effects.State) (items : List α) :
     PureReturns library.runtime [] state
       (apply "gslt:automata:length" [encoded (encodeList encoder items)])
       state (number items.length) := by
-  have atBase : PureReturns collectionBaseLibrary.runtime [] state
-      (apply "gslt:automata:length" [encoded (encodeList encoder items)])
-      state (number items.length) := by
-    metta_lift collectionBase_checked ["items"]
-      (CompleteExecution.complete_length_returns encoder state items)
-  metta_lift checked ["items"] atBase
+  exact CompleteExecution.complete_length_returns encoder state items
 
 private theorem drop_returns {α : Type} (encoder : α → Term)
     (state : Effects.State) (count : Nat) (items : List α) :
     PureReturns library.runtime [] state
       (apply "gslt:complete:drop" [number count, encoded (encodeList encoder items)])
       state (encoded (encodeList encoder (items.drop count))) := by
-  have atBase : PureReturns collectionBaseLibrary.runtime [] state
-      (apply "gslt:complete:drop" [number count, encoded (encodeList encoder items)])
-      state (encoded (encodeList encoder (items.drop count))) := by
-    metta_lift collectionBase_checked ["count", "items"]
-      (CompleteExecution.drop_list_returns encoder state count items)
-  metta_lift checked ["count", "items"] atBase
+  exact CompleteExecution.drop_list_returns encoder state count items
 
 @[metta_head "gslt:collection-backend:frame-begin"]
 theorem frame_begin_returns (state : Effects.State) (footprint : List String)
@@ -143,13 +127,8 @@ private theorem descent_returns (state : Effects.State) (footprint : List String
             ((GeneralPlanEnvironment.environment plan).free.entriesOn footprint),
           number work, encoded (CompleteExecution.DescentCodec.stateTerm frame.state)])
       state (encoded (CompleteExecution.DescentCodec.stateTerm (Retained.Frame.run work frame).state)) := by
-  have native := CompleteExecution.descent_run_returns state (GeneralPlanEnvironment.environment plan)
+  exact CompleteExecution.descent_run_returns state (GeneralPlanEnvironment.environment plan)
     finiteProvider footprint provider _ work frame.state covered
-  have atComplete := by
-    metta_lift CompleteExecution.complete_checked ["environment", "fuel", "state"] native
-  have atBase := by
-    metta_lift collectionBase_checked ["environment", "fuel", "state"] atComplete
-  metta_lift checked ["environment", "fuel", "state"] atBase
 
 @[metta_head "gslt:collection-backend:frame-run"]
 theorem frame_run_returns (state : Effects.State) (footprint : List String)
@@ -347,8 +326,8 @@ theorem frames_settled_returns (state : Effects.State) :
     have first := frame_settled_returns state frame
     have later := frames_settled_returns state frames
     cases finished : frame.state.agenda.isEmpty <;>
-      collection_backend_eval [first, later] unfolding [List.all_cons, finished,
-        CollectionSelectionExecution.booleanTerm]
+      simp only [List.all_cons, finished, Bool.true_and, Bool.false_and] <;>
+      collection_backend_eval [first, later] unfolding [finished, CollectionSelectionExecution.booleanTerm]
 
 @[metta_head "gslt:collection-backend:state-settled"]
 theorem state_settled_returns (state : Effects.State)
@@ -360,3 +339,18 @@ theorem state_settled_returns (state : Effects.State)
   collection_backend_eval [native] unfolding [stateTerm, Retained.State.complete]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.initial_ready
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.run_ready
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frame_begin_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frame_run_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frame_results_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frame_publication_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frame_settled_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frames_publication_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.advance_frames_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.state_begin_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.state_resume_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.state_run_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.frames_settled_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionContinuationExecution.state_settled_returns

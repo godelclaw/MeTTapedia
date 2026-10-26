@@ -1,12 +1,13 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.BridgeEval
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Source
 import Mettapedia.Languages.MeTTa.PeTTa.BridgeCoverage
-import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleExecutionProgram
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseMachineExecution.Core
 import Mettapedia.OSLF.MeTTaIL.CollectionSelectionTrace
 
 /-!
 # Collection allocation source and execution
 
-The source extends the shared scoped library. Its wire retains the selected
+The source operations execute in the shared interpreted library. Its wire retains the selected
 physical indices, explicit set retention, ordered selected values and residual.
 This module's execution statements are against the Lean PeTTa semantics.
 -/
@@ -28,18 +29,14 @@ def source : ProgramQuotation.QuotedProgram :=
     "../../../../../../../../metta/gslt/lib/gslt_collection_selection.metta"
     sha256 "2c505e3b3b6241668e0c3f95d50ac1983666560234f4d03161d39e88dd659593"
 
-/-- Only the scoped runtime source is needed below the collection allocator. -/
-def scopedLibrary : BridgeKit.Library :=
-  ⟨⟨[], [], [], [], []⟩, RuleExecutionProgram.scopedProgram, ["gslt:"]⟩
+/-- The shared interpreted runtime contains the scoped allocator prerequisites. -/
+def scopedLibrary : BridgeKit.Library := RetainedMatchingWire.interpretedLibrary
 
-set_option maxRecDepth 100000 in
-theorem scoped_checked : scopedLibrary.check = true := by decide +kernel
+theorem scoped_checked : scopedLibrary.check = true := RetainedMatchingWire.interpreted_checked
 
-def library : BridgeKit.Library :=
-  ⟨scopedLibrary.runtime, source.program, ["gslt:collection:"]⟩
+def library : BridgeKit.Library := RetainedMatchingWire.interpretedLibrary
 
-set_option maxRecDepth 100000 in
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
 
 def booleanTerm (value : Bool) : Term := .natural (if value then 1 else 0)
 
@@ -59,12 +56,194 @@ def allocationTerm {α : Type} (element : α → Term) (allocation : Allocation 
 def pairTerm {α : Type} (element : α → Term) (pair : List α × List α) : Term :=
   .application "CollectionPair" [encodeList element pair.1, encodeList element pair.2]
 
+
+section SelectionProofMetadata
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 4000000
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Program Equation)
+open Eval BridgeKit
+
+private def selectionProofSource : Program := (RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)).program
+
+theorem selectionProof_source_quote : selectionProofSource = source.program := by rfl
+
+private def selectionObservedInheritedHeads : List String :=
+  ((selectionProofSource.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+    (fun head => head.startsWith "gslt:" && !(selectionProofSource.equations.map (·.head)).contains head)).eraseDups
+
+/-- Direct outward calls derived from the actual family bodies. -/
+def selectionProofInheritedHeads : List String := ["gslt:rule:scope-match-erase-at", "gslt:automata:append", "gslt:rule:row-at"]
+
+theorem selectionProofInheritedHeads_derived :
+    selectionObservedInheritedHeads = selectionProofInheritedHeads := by decide +kernel
+
+theorem selectionProof_source_count : selectionProofSource.equations.length = 6 := by decide +kernel
+
+theorem selectionProof_inherited_count : selectionObservedInheritedHeads.length = 3 := by
+  rw [selectionProofInheritedHeads_derived]
+  decide +kernel
+
+private def selectionScopedMetadataEquations : List SpaceSemantics.Equation :=
+  [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[65]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[120]'(by decide +kernel)]
+
+private def selectionPriorMetadataEquations : List SpaceSemantics.Equation :=
+  []
+
+private def selectionScopedMetadataDeclarations : List Atom :=
+  [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[65]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[120]'(by decide +kernel)]
+
+private def selectionPriorMetadataDeclarations : List Atom :=
+  []
+
+private def selectionMetadataBase : Program where
+  equations := selectionScopedMetadataEquations ++ selectionPriorMetadataEquations
+  declarations := selectionScopedMetadataDeclarations ++ selectionPriorMetadataDeclarations
+
+/-- Bounded call and constructor metadata; execution remains in the shared Raw program. -/
+def selectionProofLibrary : Library := ⟨selectionMetadataBase, selectionProofSource, ["gslt:collection:"]⟩
+
+def selectionProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || selectionProofLibrary.owns head || selectionProofInheritedHeads.contains head
+
+theorem selectionProof_checked : selectionProofLibrary.check = true := by decide +kernel
+
+theorem selectionProof_equation_count : selectionProofLibrary.runtime.equations.length = 9 := by decide +kernel
+
+private def selectionPriorSources := RuleExecutionProgram.interpretedPremiseSupportSources.take 5
+private def selectionLaterSources := RuleExecutionProgram.interpretedPremiseSupportSources.drop 6
+
+private theorem selectionScoped_equations_indices :
+    (List.finRange RuleExecutionProgram.scopedProgram.equations.length).filter (fun index => (fun row => selectionProofHeads row.head) (RuleExecutionProgram.scopedProgram.equations.get index)) =
+      [⟨0, by decide +kernel⟩, ⟨65, by decide +kernel⟩, ⟨120, by decide +kernel⟩] := by decide +kernel
+
+private theorem selectionScoped_equations : RuleExecutionProgram.scopedProgram.equations.filter (fun row => selectionProofHeads row.head) = selectionScopedMetadataEquations := by
+  rw [CompleteExecution.source_filter_indices, selectionScoped_equations_indices]
+  rfl
+
+private theorem selectionPrior_equations_indices :
+    (List.finRange (selectionPriorSources.flatMap (fun source => source.program.equations)).length).filter (fun index => (fun row => selectionProofHeads row.head) ((selectionPriorSources.flatMap (fun source => source.program.equations)).get index)) =
+      [] := by decide +kernel
+
+private theorem selectionPrior_equations : (selectionPriorSources.flatMap (fun source => source.program.equations)).filter (fun row => selectionProofHeads row.head) = selectionPriorMetadataEquations := by
+  rw [CompleteExecution.source_filter_indices, selectionPrior_equations_indices]
+  rfl
+
+private theorem selectionOwned_equations : selectionProofSource.equations.filter (fun row => selectionProofHeads row.head) = selectionProofSource.equations := by
+  apply List.filter_eq_self.mpr
+  exact List.all_eq_true.mp (by decide +kernel)
+
+private theorem selectionLater_equations : (selectionLaterSources.flatMap (fun source => source.program.equations)).filter (fun row => selectionProofHeads row.head) = [] := by
+  have checked : (selectionLaterSources.flatMap (fun source => source.program.equations)).all (fun row => !((fun row => selectionProofHeads row.head) row)) = true := by decide +kernel
+  apply List.filter_eq_nil_iff.mpr
+  intro row member kept
+  have rejected := List.all_eq_true.mp checked row member
+  simp [kept] at rejected
+
+private theorem selectionSupport_equations :
+    RuleExecutionProgram.interpretedPremiseSupportSources.flatMap (fun source => source.program.equations) =
+      (selectionPriorSources.flatMap (fun source => source.program.equations)) ++ selectionProofSource.equations ++ (selectionLaterSources.flatMap (fun source => source.program.equations)) := by
+  have split : RuleExecutionProgram.interpretedPremiseSupportSources =
+      selectionPriorSources ++ (RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)) :: selectionLaterSources := rfl
+  rw [split, List.flatMap_append, List.flatMap_cons]
+  rfl
+
+private theorem selectionProof_physical_equations : selectionProofLibrary.runtime.equations =
+    (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram).equations.filter (fun row => selectionProofHeads row.head) := by
+  rw [CompleteExecution.PhysicalSourceAgreement.fold_equations, selectionSupport_equations]
+  simp only [List.filter_append, selectionScoped_equations, selectionPrior_equations,
+    selectionOwned_equations, selectionLater_equations, List.append_nil]
+  change (selectionScopedMetadataEquations ++ selectionPriorMetadataEquations) ++ selectionProofSource.equations = _
+  simp only [List.append_assoc]
+
+private theorem selectionScoped_declarations_indices :
+    (List.finRange RuleExecutionProgram.scopedProgram.declarations.length).filter (fun index => (retainedCallDeclaration selectionProofHeads) (RuleExecutionProgram.scopedProgram.declarations.get index)) =
+      [⟨0, by decide +kernel⟩, ⟨65, by decide +kernel⟩, ⟨120, by decide +kernel⟩] := by decide +kernel
+
+private theorem selectionScoped_declarations : RuleExecutionProgram.scopedProgram.declarations.filter (retainedCallDeclaration selectionProofHeads) = selectionScopedMetadataDeclarations := by
+  rw [CompleteExecution.source_filter_indices, selectionScoped_declarations_indices]
+  rfl
+
+private theorem selectionPrior_declarations_indices :
+    (List.finRange (selectionPriorSources.flatMap (fun source => source.program.declarations)).length).filter (fun index => (retainedCallDeclaration selectionProofHeads) ((selectionPriorSources.flatMap (fun source => source.program.declarations)).get index)) =
+      [] := by decide +kernel
+
+private theorem selectionPrior_declarations : (selectionPriorSources.flatMap (fun source => source.program.declarations)).filter (retainedCallDeclaration selectionProofHeads) = selectionPriorMetadataDeclarations := by
+  rw [CompleteExecution.source_filter_indices, selectionPrior_declarations_indices]
+  rfl
+
+private theorem selectionOwned_declarations : selectionProofSource.declarations.filter (retainedCallDeclaration selectionProofHeads) = selectionProofSource.declarations := by
+  apply List.filter_eq_self.mpr
+  exact List.all_eq_true.mp (by decide +kernel)
+
+private theorem selectionLater_declarations : (selectionLaterSources.flatMap (fun source => source.program.declarations)).filter (retainedCallDeclaration selectionProofHeads) = [] := by
+  have checked : (selectionLaterSources.flatMap (fun source => source.program.declarations)).all (fun row => !((retainedCallDeclaration selectionProofHeads) row)) = true := by decide +kernel
+  apply List.filter_eq_nil_iff.mpr
+  intro row member kept
+  have rejected := List.all_eq_true.mp checked row member
+  simp [kept] at rejected
+
+private theorem selectionSupport_declarations :
+    RuleExecutionProgram.interpretedPremiseSupportSources.flatMap (fun source => source.program.declarations) =
+      (selectionPriorSources.flatMap (fun source => source.program.declarations)) ++ selectionProofSource.declarations ++ (selectionLaterSources.flatMap (fun source => source.program.declarations)) := by
+  have split : RuleExecutionProgram.interpretedPremiseSupportSources =
+      selectionPriorSources ++ (RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)) :: selectionLaterSources := rfl
+  rw [split, List.flatMap_append, List.flatMap_cons]
+  rfl
+
+private theorem selectionProof_physical_declarations : selectionProofLibrary.runtime.declarations =
+    (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram).declarations.filter (retainedCallDeclaration selectionProofHeads) := by
+  rw [CompleteExecution.PhysicalSourceAgreement.fold_declarations, selectionSupport_declarations]
+  simp only [List.filter_append, selectionScoped_declarations, selectionPrior_declarations,
+    selectionOwned_declarations, selectionLater_declarations, List.append_nil]
+  change (selectionScopedMetadataDeclarations ++ selectionPriorMetadataDeclarations) ++ selectionProofSource.declarations = _
+  simp only [List.append_assoc]
+
+theorem selectionProof_agreement :
+    ProgramAgreementOn selectionProofHeads selectionProofLibrary.runtime RuleExecutionProgram.interpretedPremiseProgram := by
+  have physical : ProgramAgreementOn selectionProofHeads selectionProofLibrary.runtime
+      (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+        (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram) :=
+    fragment_agreement _ _ selectionProof_physical_equations selectionProof_physical_declarations
+      (fun _ supported => supported)
+  exact agreement_trans physical
+    (agreement_mono (fun _ _ => rfl) CompleteExecution.PhysicalSourceAgreement.physical_interpreted_agreement)
+
+/-- This family view does not describe unrelated runtime heads. -/
+theorem selectionProof_not_full_agreement :
+    ¬ ProgramAgreementOn (fun _ => true) selectionProofLibrary.runtime RuleExecutionProgram.interpretedPremiseProgram := by
+  intro agreed
+  have same := agreed.dispatch "gslt:descent:start" rfl
+  have absent : (selectionProofLibrary.runtime.equations.any (·.head == "gslt:descent:start")) = false := by decide +kernel
+  have present : (RuleExecutionProgram.interpretedPremiseProgram.equations.any (·.head == "gslt:descent:start")) = true := by decide +kernel
+  rw [absent, present] at same
+  cases same
+
+#print axioms selectionProof_source_quote
+#print axioms selectionProofInheritedHeads_derived
+#print axioms selectionProof_source_count
+#print axioms selectionProof_inherited_count
+#print axioms selectionProof_checked
+#print axioms selectionProof_equation_count
+#print axioms selectionProof_agreement
+#print axioms selectionProof_not_full_agreement
+
+end SelectionProofMetadata
+
 syntax "collection_eval" (" [" term,* "]")? (" unfolding" " [" term,* "]")? : tactic
 macro_rules
   | `(tactic| collection_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
+    `(tactic| (metta_call_in selectionProof_checked using selectionProof_agreement; metta_eval [$facts,*] with selectionProof_checked in selectionProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -101,7 +280,7 @@ theorem append_returns {α : Type} (element : α → Term) (state : State)
     PureReturns library.runtime [] state
       (apply "gslt:automata:append" [encoded (encodeList element left), encoded (encodeList element right)])
       state (encoded (encodeList element (left ++ right))) := by
-  metta_lift checked ["left", "right"] (scoped_append_returns element state left right)
+  exact scoped_append_returns element state left right
 
 /-- The existing physical eraser is reused; it never performs value-based
 deletion that could merge equal bag occurrences. -/
@@ -137,7 +316,7 @@ theorem erase_returns {α : Type} (element : α → Term) (state : State)
     PureReturns library.runtime [] state
       (apply "gslt:rule:scope-match-erase-at" [number index, encoded (encodeList element items)])
       state (encoded (encodeList element (items.eraseIdx index))) := by
-  metta_lift checked ["index", "targets"] (scoped_erase_returns element state items index)
+  exact scoped_erase_returns element state items index
 
 @[metta_head "gslt:collection:choices-from"]
 theorem choices_from_returns {α : Type} (element : α → Term) (state : State)
@@ -252,7 +431,7 @@ theorem row_returns {α : Type} (element : α → Term) (state : State)
     PureReturns library.runtime [] state
       (apply "gslt:rule:row-at" [number index, encoded (encodeList element items)])
       state (encoded (encodeOption element items[index]?)) := by
-  metta_lift checked ["index", "rewrites"] (scoped_row_returns element state items index)
+  exact scoped_row_returns element state items index
 
 @[metta_head "gslt:collection:replay"]
 theorem replay_returns {α : Type} (element : α → Term) (state : State)
@@ -303,3 +482,27 @@ theorem replay_returns {α : Type} (element : α → Term) (state : State)
                 collection_eval [row, retained] unfolding [replay, found, continued]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.scoped_checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_source_quote
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProofInheritedHeads_derived
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_source_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_inherited_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_equation_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_agreement
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.selectionProof_not_full_agreement
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.scoped_append_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.scoped_length_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.append_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.scoped_erase_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.erase_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.choices_from_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.choices_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.prepend_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.allocate_choices_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.allocate_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.scoped_row_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.row_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionSelectionExecution.replay_returns

@@ -2,16 +2,12 @@ import Mettapedia.UniversalAlgebra.ModelHom
 import Mettapedia.UniversalAlgebra.Ultrapower
 
 /-!
-# Principal ultrapowers collapse to the selected coordinate
+# Principal ultrapowers recover the selected model
 
-An ultrapower along the principal ultrafilter at `point` is canonically
-isomorphic to its base model.  Evaluation at `point` and the diagonal map are
-mutually inverse model homomorphisms.
-
-This is the negative control for nonstandard or ultrafilter-relative semantic
-constructions: a principal view selects one ordinary coordinate and creates no
-new carrier elements.  The free-ultrafilter counterexample in `Ultrapower`
-then supplies the paired non-collapse result.
+Evaluation at the principal coordinate and the diagonal are inverse model
+homomorphisms. This contrasts with the non-diagonal point in the free
+natural-number ultrapower; carrier equivalence alone would not establish
+operation preservation.
 -/
 
 set_option autoImplicit false
@@ -31,20 +27,12 @@ ultrapower carrier to the base carrier. -/
 def principalUltrapowerEquiv {Carrier : Type v} {Index : Type w}
     (point : Index) :
     UltrapowerCarrier Carrier (pure point : Ultrafilter Index) ≃ Carrier where
-  toFun := Quotient.lift (fun representative : Index → Carrier =>
-    representative point) (by
-      intro first second eventuallyEqual
-      exact Filter.eventually_pure.mp eventuallyEqual)
+  toFun := Quotient.lift (fun representative : Index → Carrier => representative point)
+    (fun _ _ equal => Filter.eventually_pure.mp equal)
   invFun := diagonal (pure point : Ultrafilter Index)
-  left_inv := by
-    intro value
-    refine Quotient.inductionOn' value ?_
-    intro representative
-    apply Quotient.sound
-    exact Filter.eventually_pure.mpr rfl
-  right_inv := by
-    intro value
-    rfl
+  left_inv value := Quotient.inductionOn' value
+    (fun _ => Quotient.sound (Filter.eventually_pure.mpr rfl))
+  right_inv _ := rfl
 
 @[simp] theorem principalUltrapowerEquiv_diagonal
     {Carrier : Type v} {Index : Type w} (point : Index) (value : Carrier) :
@@ -67,20 +55,11 @@ noncomputable def principalProjectionHom
     Hom (model.ultrapower (pure point)) model where
   toFun := principalUltrapowerEquiv point
   map_operation := by
-    classical
     intro operation arguments
-    let representatives : Fin (S.arity operation) → Index → Carrier :=
-      fun position => Quotient.out (arguments position)
-    have arguments_eq :
-        (fun position =>
-          (representatives position :
-            UltrapowerCarrier Carrier (pure point : Ultrafilter Index))) =
-          arguments := by
-      funext position
-      exact Quotient.out_eq (arguments position)
-    rw [← arguments_eq]
-    rw [ultrapower_interpret]
-    rfl
+    refine Quotient.induction_on_pi arguments ?_
+    intro representatives
+    exact congrArg (principalUltrapowerEquiv point)
+      (ultrapower_interpret model (pure point) operation representatives)
 
 /-- The diagonal map preserves every operation. -/
 def principalDiagonalHom
@@ -102,12 +81,8 @@ noncomputable def principalUltrapowerIso
     Iso (model.ultrapower (pure point)) model where
   hom := principalProjectionHom model point
   inv := principalDiagonalHom model point
-  hom_inv_id := by
-    intro value
-    exact (principalUltrapowerEquiv point).symm_apply_apply value
-  inv_hom_id := by
-    intro value
-    exact (principalUltrapowerEquiv point).apply_symm_apply value
+  hom_inv_id := (principalUltrapowerEquiv point).symm_apply_apply
+  inv_hom_id := (principalUltrapowerEquiv point).apply_symm_apply
 
 end Model
 
@@ -128,12 +103,5 @@ theorem principal_collapses_free_does_not :
   · intro point
     exact (Model.diagonal_bijective_principal point).2
   · exact UltrapowerBoundary.diagonal_not_surjective
-
-#print axioms Model.principalUltrapowerEquiv
-#print axioms Model.diagonal_bijective_principal
-#print axioms Model.principalProjectionHom
-#print axioms Model.principalDiagonalHom
-#print axioms Model.principalUltrapowerIso
-#print axioms principal_collapses_free_does_not
 
 end Mettapedia.UniversalAlgebra

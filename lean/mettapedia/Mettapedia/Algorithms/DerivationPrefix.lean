@@ -1,18 +1,12 @@
 import Mettapedia.Algorithms.LazyRankFamilies
-import Mathlib.Data.List.Perm.Basic
 
 /-!
-# Finite derivation prefixes and truncating child caches
+# Truncating child caches for Cartesian derivations
 
-A certified prefix is sound, distinct and ordered. If an independent source
-derivation is omitted, the cache has its full requested size and every cached
-derivation is no dearer. The source is a predicate, not an enumeration passed
-to the implementation.
-
-Two child caches of size at most k suffice for selecting k binary parent
-derivations with additive costs. An omitted child supplies k distinct cheap
-replacements. This dominance argument is the reason child caches may be
-truncated; it is not assumed as an algorithm's optimality condition.
+Generic prefix certificates and reconstruction live in `RankedPrefix`.
+Here independently valid child prefixes supply distinct cheap replacements
+for omitted parent derivations. This proves that bounded child caches suffice
+for lazy parent selection; optimality is not assumed as an algorithm premise.
 -/
 
 set_option autoImplicit false
@@ -20,91 +14,6 @@ set_option autoImplicit false
 namespace Mettapedia.Algorithms.DerivationPrefix
 
 variable {Value Left Right : Type*}
-
-structure Correct (requested : Nat) (cost : Value → Nat) (source : Value → Prop)
-    (cached : List Value) : Prop where
-  distinct : cached.Nodup
-  sound : ∀ value ∈ cached, source value
-  ordered : cached.Pairwise (fun first second => cost first ≤ cost second)
-  bounded : cached.length ≤ requested
-  omitted : ∀ value, source value → value ∉ cached →
-    cached.length = requested ∧ ∀ selected ∈ cached, cost selected ≤ cost value
-
-theorem graph_prefix_correct {Node : Type} [DecidableEq Node]
-    (graph : MonotoneRankEnumeration.Graph Node)
-    (increasing : MonotoneRankEnumeration.Monotone graph) (roots : List Node)
-    (allReachable : ∀ node, MonotoneRankEnumeration.Source graph roots node)
-    (requested : Nat) :
-    Correct requested graph.cost (fun _ => True)
-      ((MonotoneRankEnumeration.demandMachine graph requested).runSlice requested
-        (MonotoneRankEnumeration.initial roots)).1.published := by
-  classical
-  let result := (MonotoneRankEnumeration.demandMachine graph requested).runSlice requested
-    (MonotoneRankEnumeration.initial roots)
-  have projection := congrArg Prod.fst
-    (MonotoneRankEnumeration.demand_is_prefix graph requested requested
-      (MonotoneRankEnumeration.initial roots))
-  change result.1 = MonotoneRankEnumeration.run graph result.2
-    (MonotoneRankEnumeration.initial roots) at projection
-  have valid := MonotoneRankEnumeration.run_invariant graph roots result.2 _
-    (MonotoneRankEnumeration.initial_invariant graph roots)
-  have best := MonotoneRankEnumeration.run_best graph increasing roots result.2
-  have closedOrFull := MonotoneRankEnumeration.demand_allowance_suffices graph requested
-    requested (MonotoneRankEnumeration.initial roots)
-    (by simp [MonotoneRankEnumeration.initial])
-    (by simp [MonotoneRankEnumeration.initial])
-  change result.1.published.length = requested ∨ result.1.frontier = [] at closedOrFull
-  refine ⟨?_, fun _ _ => trivial, ?_, ?_, ?_⟩
-  · rw [projection]
-    exact (List.nodup_append.mp valid.distinct).1
-  · rw [projection]
-    exact best.1
-  · exact MonotoneRankEnumeration.demand_no_overshoot graph requested requested _
-      (by simp [MonotoneRankEnumeration.initial])
-  · intro node _ absent
-    refine ⟨?_, ?_⟩
-    · rcases closedOrFull with full | closed
-      · exact full
-      · have present := (MonotoneRankEnumeration.closed_complete graph increasing roots
-            _ valid (by rw [← projection]; exact closed) node).mpr (allReachable node)
-        rw [← projection] at present
-        exact False.elim (absent present)
-    · intro selected member
-      rw [projection] at member absent
-      exact best.2 selected member node (allReachable node) absent
-
-theorem zero_correct (cost : Value → Nat) (source : Value → Prop) :
-    Correct 0 cost source [] := by
-  refine ⟨List.nodup_nil, ?_, List.Pairwise.nil, le_rfl, ?_⟩
-  · simp
-  · intro _ _ _; exact ⟨rfl, by simp⟩
-
-theorem empty_correct (requested : Nat) (cost : Value → Nat) (source : Value → Prop)
-    (empty : ∀ value, ¬ source value) : Correct requested cost source [] := by
-  refine ⟨List.nodup_nil, ?_, List.Pairwise.nil, Nat.zero_le _, ?_⟩
-  · simp
-  · intro value allowed _; exact False.elim (empty value allowed)
-
-theorem member_or_full (requested : Nat) (cost : Value → Nat) (source : Value → Prop)
-    (cached : List Value) (valid : Correct requested cost source cached)
-    {value : Value} (allowed : source value) :
-    value ∈ cached ∨ cached.length = requested := by
-  classical
-  by_cases member : value ∈ cached
-  · exact Or.inl member
-  · exact Or.inr (valid.omitted value allowed member).1
-
-theorem cheap_member (requested : Nat) (positive : 0 < requested)
-    (cost : Value → Nat) (source : Value → Prop) (cached : List Value)
-    (valid : Correct requested cost source cached) {value : Value} (allowed : source value) :
-    ∃ selected ∈ cached, cost selected ≤ cost value := by
-  classical
-  by_cases member : value ∈ cached
-  · exact ⟨value, member, le_rfl⟩
-  · have full := valid.omitted value allowed member
-    cases cached with
-    | nil => simp only [List.length_nil] at full; omega
-    | cons first rest => exact ⟨first, List.mem_cons_self, full.2 first List.mem_cons_self⟩
 
 def product (left : List Left) (right : List Right) : List (Left × Right) :=
   left.flatMap fun first => right.map (first, ·)
@@ -135,29 +44,19 @@ theorem product_dominates (requested : Nat) (positive : 0 < requested)
   · have rightMissing : pair.2 ∉ right := fun rightPresent =>
       omitted ((mem_product left right pair).mpr ⟨leftPresent, rightPresent⟩)
     have full := rightValid.omitted pair.2 allowed.2 rightMissing
-    refine ⟨right.map (pair.1, ·), ?_, by simpa using full.1, ?_, ?_⟩
-    · exact rightValid.distinct.map (fun first second same => congrArg Prod.snd same)
-    · intro witness member
-      obtain ⟨other, present, same⟩ := List.mem_map.mp member
-      subst witness
-      exact (mem_product left right _).mpr ⟨leftPresent, present⟩
-    · intro witness member
-      obtain ⟨other, present, same⟩ := List.mem_map.mp member
-      subst witness
-      exact Nat.add_le_add_left (full.2 other present) _
+    exact mapped_witnesses requested (pairCost leftCost rightCost) (· ∈ product left right)
+      (pairCost leftCost rightCost pair) right rightValid.distinct full.1 (pair.1, ·)
+      (fun first second same => congrArg Prod.snd same)
+      (fun other present => (mem_product left right _).mpr ⟨leftPresent, present⟩)
+      (fun other present => Nat.add_le_add_left (full.2 other present) _)
   · have full := leftValid.omitted pair.1 allowed.1 leftPresent
     obtain ⟨other, rightPresent, cheaper⟩ :=
       cheap_member requested positive rightCost rightSource right rightValid allowed.2
-    refine ⟨left.map (·, other), ?_, by simpa using full.1, ?_, ?_⟩
-    · exact leftValid.distinct.map (fun first second same => congrArg Prod.fst same)
-    · intro witness member
-      obtain ⟨first, present, same⟩ := List.mem_map.mp member
-      subst witness
-      exact (mem_product left right _).mpr ⟨present, rightPresent⟩
-    · intro witness member
-      obtain ⟨first, present, same⟩ := List.mem_map.mp member
-      subst witness
-      exact Nat.add_le_add (full.2 first present) cheaper
+    exact mapped_witnesses requested (pairCost leftCost rightCost) (· ∈ product left right)
+      (pairCost leftCost rightCost pair) left leftValid.distinct full.1 (·, other)
+      (fun first second same => congrArg Prod.fst same)
+      (fun first present => (mem_product left right _).mpr ⟨present, rightPresent⟩)
+      (fun first present => Nat.add_le_add (full.2 first present) cheaper)
 
 /-- A minimum prefix of a retained finite family remains a minimum prefix of
 the independent larger source when omitted source members have k cheap
@@ -181,93 +80,23 @@ theorem extend_by_dominance (requested : Nat) (cost : Value → Nat)
   · obtain ⟨witnesses, distinct, count, witnessesRetained, witnessesCheap⟩ :=
       domination value allowed retainedValue
     by_cases allSeen : witnesses ⊆ cached
-    · have lower := distinct.length_le_of_subset allSeen
-      have upper := valid.bounded
-      have full : cached.length = requested := by omega
-      have same := (List.subperm_of_subset distinct allSeen).perm_of_length_le
-        (by omega)
-      refine ⟨full, ?_⟩
-      intro selected member
-      exact witnessesCheap selected (same.mem_iff.mpr member)
-    · have someMissing : ∃ witness ∈ witnesses, witness ∉ cached := by
+    · have same := (List.subperm_of_subset distinct allSeen).perm_of_length_le
+        (valid.bounded.trans_eq count.symm)
+      exact ⟨same.length_eq.symm.trans count,
+        fun selected member => witnessesCheap selected (same.mem_iff.mpr member)⟩
+    · obtain ⟨witness, present, notSeen⟩ : ∃ witness ∈ witnesses, witness ∉ cached := by
         simpa only [List.subset_def, not_forall, exists_prop] using allSeen
-      obtain ⟨witness, present, notSeen⟩ := someMissing
       have full := valid.omitted witness (witnessesRetained witness present) notSeen
-      refine ⟨full.1, ?_⟩
-      intro selected member
-      exact (full.2 selected member).trans (witnessesCheap witness present)
+      exact ⟨full.1, fun selected member =>
+        (full.2 selected member).trans (witnessesCheap witness present)⟩
 
 /-- The lazy family algorithm itself constructs a correct complete prefix
 over the independently specified rank combinations. -/
 theorem rank_prefix_correct (families : List LazyRankFamilies.Family) (requested : Nat) :
     Correct requested (LazyRankFamilies.cost families) (fun _ => True)
       (LazyRankFamilies.completePrefix families requested) := by
-  have best := LazyRankFamilies.extract_best families requested requested
-  refine ⟨best.1, fun _ _ => trivial, best.2.1,
-    LazyRankFamilies.completePrefix_bound families requested, ?_⟩
-  intro candidate _ omitted
-  exact LazyRankFamilies.omitted_completePrefix families requested candidate omitted
-
-/-- Injective reconstruction changes representation without identifying
-distinct derivations. The cost equality is checked separately. -/
-theorem map_correct {Other : Type*} (requested : Nat)
-    (cost : Value → Nat) (otherCost : Other → Nat) (source : Value → Prop)
-    (cached : List Value) (valid : Correct requested cost source cached)
-    (reconstruct : Value → Other) (faithful : Function.Injective reconstruct)
-    (sameCost : ∀ value, otherCost (reconstruct value) = cost value) :
-    Correct requested otherCost
-      (fun other => ∃ value, source value ∧ reconstruct value = other)
-      (cached.map reconstruct) := by
-  classical
-  refine ⟨valid.distinct.map faithful, ?_, ?_, by simpa using valid.bounded, ?_⟩
-  · intro other member
-    obtain ⟨value, present, same⟩ := List.mem_map.mp member
-    exact ⟨value, valid.sound value present, same⟩
-  · simpa only [List.pairwise_map, sameCost] using valid.ordered
-  · intro other allowed omitted
-    obtain ⟨value, permitted, same⟩ := allowed
-    subst other
-    have absent : value ∉ cached := fun member =>
-      omitted (List.mem_map.mpr ⟨value, member, rfl⟩)
-    have full := valid.omitted value permitted absent
-    refine ⟨by simpa using full.1, ?_⟩
-    intro selected member
-    obtain ⟨original, present, equal⟩ := List.mem_map.mp member
-    subst selected
-    simpa only [sameCost] using full.2 original present
-
-/-- Reconstruction needs injectivity on authorized source values. This
-permits merging physically disjoint family caches without imposing an
-irrelevant injectivity condition on malformed trees. -/
-theorem map_correct_on {Other : Type*} (requested : Nat)
-    (cost : Value → Nat) (otherCost : Other → Nat) (source : Value → Prop)
-    (cached : List Value) (valid : Correct requested cost source cached)
-    (reconstruct : Value → Other)
-    (faithful : ∀ first, source first → ∀ second, source second →
-      reconstruct first = reconstruct second → first = second)
-    (sameCost : ∀ value, otherCost (reconstruct value) = cost value) :
-    Correct requested otherCost
-      (fun other => ∃ value, source value ∧ reconstruct value = other)
-      (cached.map reconstruct) := by
-  classical
-  refine ⟨?_, ?_, ?_, by simpa using valid.bounded, ?_⟩
-  · exact valid.distinct.map_on fun first presentFirst second presentSecond same =>
-      faithful first (valid.sound first presentFirst) second (valid.sound second presentSecond) same
-  · intro other member
-    obtain ⟨value, present, same⟩ := List.mem_map.mp member
-    exact ⟨value, valid.sound value present, same⟩
-  · simpa only [List.pairwise_map, sameCost] using valid.ordered
-  · intro other allowed omitted
-    obtain ⟨value, permitted, same⟩ := allowed
-    subst other
-    have absent : value ∉ cached := fun member =>
-      omitted (List.mem_map.mpr ⟨value, member, rfl⟩)
-    have full := valid.omitted value permitted absent
-    refine ⟨by simpa using full.1, ?_⟩
-    intro selected member
-    obtain ⟨original, present, equal⟩ := List.mem_map.mp member
-    subst selected
-    simpa only [sameCost] using full.2 original present
+  exact graph_prefix_correct (LazyRankFamilies.graph families) (LazyRankFamilies.monotone families)
+    (LazyRankFamilies.roots families) (LazyRankFamilies.candidate_reachable families) requested
 
 namespace Controls
 

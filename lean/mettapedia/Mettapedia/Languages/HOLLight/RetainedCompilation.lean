@@ -56,6 +56,38 @@ def ofOption (result : Theorem) (candidate : Option ProofSystem.Certificate)
   rw [same]
   exact (ProofSystem.checker_check_iff policy _ _).mpr checked
 
+/-- Assemble blocks whose local checks are already proved. The executable
+path performs address relocation and root selection; the existing checked-plan
+theorem supplies validity without replaying every child graph at each join. -/
+def assemble (requests : List BlockRequest) (index : Nat) (result : Theorem)
+    (localChecks : LocallyChecked policy #[] requests)
+    (selected : (requests.map (·.conclusion))[index]? = some result) : CheckedProof policy :=
+  ofOption result
+    (do let (nodes,roots) ← expandFrom [] #[] requests
+        let root ← roots[index]?
+        pure (nodes,root)) (by
+      obtain ⟨block,computed,checked⟩ :=
+        finishPlan_checked (outputs := #[]) (roots := #[]) (start_checked policy []) rfl
+          localChecks (index := index) (conclusion := result) (by simpa using selected)
+      exact ⟨block,finishPlan_expanded (start_checked policy []) computed,checked⟩)
+
+/-- Certified structural assembly returns exactly the certificate returned
+by the replaying builder, including receipt order, origins and multiplicity. -/
+theorem assemble_matches_replayed_plan (requests : List BlockRequest) (index : Nat) (result : Theorem)
+    (localChecks : LocallyChecked policy #[] requests)
+    (selected : (requests.map (·.conclusion))[index]? = some result) :
+    finishPlan policy (start []) #[] requests index =
+      some (assemble requests index result localChecks selected).certificate := by
+  obtain ⟨block,computed,checked⟩ :=
+    finishPlan_checked (outputs := #[]) (roots := #[]) (start_checked policy []) rfl
+      localChecks (index := index) (conclusion := result) (by simpa using selected)
+  have expanded := finishPlan_expanded (start_checked policy []) computed
+  have same : (assemble requests index result localChecks selected).certificate = block := by
+    change (Option.get _ _) = block
+    exact Option.some.inj ((Option.some_get _).trans expanded)
+  rw [same]
+  exact computed
+
 /-- One child is shared as a root of the assembled primitive graph. -/
 def unary (input : CheckedProof policy) (result : Theorem)
     (block : ProofSystem.Certificate) (checked : BlockChecked policy [input.result] result block)
@@ -66,9 +98,7 @@ def unary (input : CheckedProof policy) (result : Theorem)
     apply LocallyChecked.cons (premises := []) rfl input.blockChecked
     apply LocallyChecked.cons (premises := [input.result]) rfl checked
     exact .nil _
-  exact ofOption result (finishPlan policy (start []) #[] requests 1)
-    (finishPlan_checked (outputs := #[]) (roots := #[]) (start_checked policy []) rfl
-      localChecks (index := 1) (conclusion := result) (by rfl))
+  exact assemble requests 1 result localChecks rfl
 
 /-- Two child graphs retain their separate occurrences and ordered uses. -/
 def binary (left right : CheckedProof policy) (result : Theorem)
@@ -82,9 +112,7 @@ def binary (left right : CheckedProof policy) (result : Theorem)
     apply LocallyChecked.cons (premises := []) rfl right.blockChecked
     apply LocallyChecked.cons (premises := [left.result, right.result]) rfl checked
     exact .nil _
-  exact ofOption result (finishPlan policy (start []) #[] requests 2)
-    (finishPlan_checked (outputs := #[]) (roots := #[]) (start_checked policy []) rfl
-      localChecks (index := 2) (conclusion := result) (by rfl))
+  exact assemble requests 2 result localChecks rfl
 
 /-- A local macro's computed certificate is selected before graph composition. -/
 def unaryOption (input : CheckedProof policy) (result : Theorem)
@@ -311,7 +339,7 @@ def modusPonens {premise conclusion : HOL.Formula Symbol Γ}
       (reverseCanonical_isBool names premise) (reverseCanonical_isBool names conclusion)
       shape argument.conclusion_exact origin) origin
   exact align names Δ conclusion compiled rfl
-    (by simp [compiled, CheckedProof.binaryOption, CheckedProof.binary, CheckedProof.ofOption,
+    (by simp [compiled, CheckedProof.binaryOption, CheckedProof.binary, CheckedProof.assemble, CheckedProof.ofOption,
       result, ImplicationExpansion.mpResult, Theorem.unionResult,
       function.hypotheses_exact, argument.hypotheses_exact]) origin
 

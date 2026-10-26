@@ -9,25 +9,16 @@ open Mettapedia.GSLT.Core.NonFactorization
 
 namespace Mettapedia.Algebra
 
-/-- PROBE D1. `WorkSpan.ForgetsObservation` is exactly
-`Nonempty (NonTrivialFiber ValuedRun.value (observe ∘ ValuedRun.payload))`
-from the PRE-EXISTING `Mettapedia/GSLT/Core/NonFactorization.lean:60`. -/
-example {Payload Attribute : Type} (observe : Payload → Attribute) :
-    WorkSpan.ForgetsObservation observe ↔
-      Nonempty (NonTrivialFiber
-        (fun run : WorkSpan.ValuedRun Payload => run.value)
-        (fun run : WorkSpan.ValuedRun Payload => observe run.payload)) :=
-  ⟨fun ⟨l, r, same, diff⟩ => ⟨⟨l, r, same, diff⟩⟩,
-   fun ⟨f⟩ => ⟨f.left, f.right, f.sameShadow, f.differentValue⟩⟩
+/-- The shared factorization criterion applies to realized costs. -/
+example {Execution Attribute : Type} (cost : Execution → WorkSpan)
+    (observe : Execution → Attribute) :
+    Factors (Set.rangeFactorization cost) observe ↔ observe.FactorsThrough cost :=
+  recovery_on_image_iff cost observe
 
-/-- PROBE D2. The pre-existing form is STRICTLY STRONGER: it concludes
-`¬ Factors`, the non-existence of ANY recovery function, where
-`ForgetsObservation` concludes only that one pair collides. -/
-example {Payload Attribute : Type} (observe : Payload → Attribute)
-    {first second : Payload} (separates : observe first ≠ observe second) :
-    ¬ Factors (fun run : WorkSpan.ValuedRun Payload => run.value)
-        (fun run : WorkSpan.ValuedRun Payload => observe run.payload) :=
-  NonTrivialFiber.not_factors ⟨⟨first, 0⟩, ⟨second, 0⟩, rfl, separates⟩
+/-- A collision concerns the supplied cost, not independently assigned labels. -/
+example {Execution Attribute : Type} (cost : Execution → WorkSpan)
+    (observe : Execution → Attribute) (collision : NonTrivialFiber cost observe) :
+    ¬ Factors cost observe := collision.not_factors
 
 /-- PROBE D3. Likewise for the receipt schema: the honest statement of
 "omission is undetectability" is a non-factorization, and it is available. -/

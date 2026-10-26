@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.WireKit
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralScopedMatchExecution.Primitives
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseSchedulerExecution
@@ -5,6 +6,7 @@ import Mettapedia.OSLF.MeTTaIL.GeneralPremiseExecution
 
 /-! Native execution of original general-premise codecs, checkers, and administrative operations. -/
 
+set_option Elab.async false
 set_option autoImplicit false
 set_option maxRecDepth 4096
 set_option maxHeartbeats 2000000
@@ -2872,6 +2874,451 @@ open PremiseOperationsExecution.GeneralExecution
 
 private abbrev assignmentTerm := RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm
 
+/-- The name table and bare premise environment carried by interpreted matching. -/
+def interpretedEnvironmentTerm (names : List String) (core : Term) : Term :=
+  .application "InterpretedPremiseEnvironment" [encodeList Term.string names, core]
+
+/-- The shared source program viewed by the interpreted matching proofs. -/
+def interpretedLibrary : BridgeKit.Library :=
+  ⟨{ equations := [], declarations := [] }, RuleExecutionProgram.interpretedPremiseProgram, ["gslt:"]⟩
+
+set_option maxRecDepth 100000 in
+theorem interpreted_checked : interpretedLibrary.check = true := by decide +kernel
+
+theorem interpreted_runtime : interpretedLibrary.runtime = RuleExecutionProgram.interpretedPremiseProgram := rfl
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 4000000
+
+open SpaceSemantics (Program)
+open Eval BridgeKit
+
+private local instance scopedPrimitiveEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧
+    left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+private def scopedPrimitiveExcluded : List String := ["gslt:premise:query-expand-in", "gslt:rule:site-replacement-represented", "gslt:rule:job-finish-root", "gslt:premise:machine-expand-in", "gslt:premise:machine-tick", "gslt:premise:machine-run"]
+
+def scopedPrimitiveHeads (head : String) : Bool :=
+  !scopedPrimitiveExcluded.contains head && !head.startsWith "gslt:premise:matching-" &&
+    !head.startsWith "native-probe:" &&
+    (!head.startsWith "gslt:" || head.startsWith "gslt:rule:" ||
+      head.startsWith "gslt:premise:" || head.startsWith "gslt:automata:")
+
+private def scopedPrimitiveCheckRow (row : SpaceSemantics.Equation) : Bool := !scopedPrimitiveHeads row.head || codeWithin scopedPrimitiveHeads row.body
+
+private theorem scopedPrimitive_all_split {α : Type} (xs : List α) (p : α → Bool) (n : Nat)
+    (first : (xs.take n).all p = true) (rest : (xs.drop n).all p = true) : xs.all p = true := by
+  have joined : (xs.take n ++ xs.drop n).all p = true := by rw [List.all_append, first, rest]; rfl
+  simpa only [List.take_append_drop] using joined
+
+private theorem scopedPrimitive_filter_split {α : Type} (p : α → Bool) (xs ys : List α) (n m : Nat)
+    (first : (xs.take n).filter p = (ys.take m).filter p)
+    (rest : (xs.drop n).filter p = (ys.drop m).filter p) : xs.filter p = ys.filter p := by
+  calc
+    xs.filter p = (xs.take n ++ xs.drop n).filter p := by rw [List.take_append_drop]
+    _ = (xs.take n).filter p ++ (xs.drop n).filter p := by rw [List.filter_append]
+    _ = (ys.take m).filter p ++ (ys.drop m).filter p := by rw [first, rest]
+    _ = (ys.take m ++ ys.drop m).filter p := by rw [List.filter_append]
+    _ = ys.filter p := by rw [List.take_append_drop]
+
+private theorem scopedPrimitive_closed_block_0 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 0).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_20 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 20).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_40 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 40).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_60 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 60).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_80 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 80).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_100 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 100).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_120 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 120).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_140 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 140).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_160 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 160).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_180 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 180).take 20).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_block_200 : ((RuleExecutionProgram.scopedMachineProgram.equations.drop 200).take 18).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_suffix_218 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 218).all scopedPrimitiveCheckRow = true := by decide +kernel
+
+private theorem scopedPrimitive_closed_suffix_200 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 200).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 200) scopedPrimitiveCheckRow 18
+  · simpa using scopedPrimitive_closed_block_200
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_218
+
+private theorem scopedPrimitive_closed_suffix_180 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 180).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 180) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_180
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_200
+
+private theorem scopedPrimitive_closed_suffix_160 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 160).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 160) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_160
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_180
+
+private theorem scopedPrimitive_closed_suffix_140 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 140).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 140) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_140
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_160
+
+private theorem scopedPrimitive_closed_suffix_120 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 120).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 120) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_120
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_140
+
+private theorem scopedPrimitive_closed_suffix_100 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 100).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 100) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_100
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_120
+
+private theorem scopedPrimitive_closed_suffix_80 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 80).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 80) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_80
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_100
+
+private theorem scopedPrimitive_closed_suffix_60 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 60).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 60) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_60
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_80
+
+private theorem scopedPrimitive_closed_suffix_40 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 40).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 40) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_40
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_60
+
+private theorem scopedPrimitive_closed_suffix_20 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 20).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 20) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_20
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_40
+
+private theorem scopedPrimitive_closed_suffix_0 : (RuleExecutionProgram.scopedMachineProgram.equations.drop 0).all scopedPrimitiveCheckRow = true := by
+  apply scopedPrimitive_all_split (RuleExecutionProgram.scopedMachineProgram.equations.drop 0) scopedPrimitiveCheckRow 20
+  · simpa using scopedPrimitive_closed_block_0
+  · simpa only [List.drop_drop] using scopedPrimitive_closed_suffix_20
+
+theorem scopedPrimitive_closed : ProgramClosed scopedPrimitiveHeads RuleExecutionProgram.scopedMachineProgram := by
+  refine ⟨by decide +kernel, ?_⟩
+  intro row member supported
+  have checked : RuleExecutionProgram.scopedMachineProgram.equations.all scopedPrimitiveCheckRow = true := by simpa only [List.drop_zero] using scopedPrimitive_closed_suffix_0
+  have good := List.all_eq_true.mp checked row member
+  change (!scopedPrimitiveHeads row.head || codeWithin scopedPrimitiveHeads row.body) = true at good
+  simpa only [supported, Bool.not_true, Bool.false_or] using good
+
+private theorem scopedPrimitive_equations_block_0 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 0).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 0).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_1 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 20).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 20).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_2 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 40).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 40).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_3 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 60).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 60).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_4 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 80).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 80).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_5 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 100).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 100).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_6 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 120).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 120).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_7 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 140).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 140).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_8 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 160).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 160).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_9 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 180).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 180).take 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_10 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 200).take 18).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 200).take 17).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_block_11 :
+    ((RuleExecutionProgram.scopedMachineProgram.equations.drop 218).take 0).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.equations.drop 217).take 343).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_suffix_12 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 218).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 560).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  decide +kernel
+
+private theorem scopedPrimitive_equations_suffix_11 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 218).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 217).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 218)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 217) 0 343 scopedPrimitive_equations_block_11
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_12
+
+private theorem scopedPrimitive_equations_suffix_10 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 200).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 200).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 200)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 200) 18 17 scopedPrimitive_equations_block_10
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_11
+
+private theorem scopedPrimitive_equations_suffix_9 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 180).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 180).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 180)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 180) 20 20 scopedPrimitive_equations_block_9
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_10
+
+private theorem scopedPrimitive_equations_suffix_8 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 160).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 160).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 160)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 160) 20 20 scopedPrimitive_equations_block_8
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_9
+
+private theorem scopedPrimitive_equations_suffix_7 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 140).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 140).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 140)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 140) 20 20 scopedPrimitive_equations_block_7
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_8
+
+private theorem scopedPrimitive_equations_suffix_6 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 120).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 120).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 120)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 120) 20 20 scopedPrimitive_equations_block_6
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_7
+
+private theorem scopedPrimitive_equations_suffix_5 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 100).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 100).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 100)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 100) 20 20 scopedPrimitive_equations_block_5
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_6
+
+private theorem scopedPrimitive_equations_suffix_4 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 80).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 80).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 80)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 80) 20 20 scopedPrimitive_equations_block_4
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_5
+
+private theorem scopedPrimitive_equations_suffix_3 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 60).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 60).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 60)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 60) 20 20 scopedPrimitive_equations_block_3
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_4
+
+private theorem scopedPrimitive_equations_suffix_2 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 40).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 40).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 40)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 40) 20 20 scopedPrimitive_equations_block_2
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_3
+
+private theorem scopedPrimitive_equations_suffix_1 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 20).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 20)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 20) 20 20 scopedPrimitive_equations_block_1
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_2
+
+private theorem scopedPrimitive_equations_suffix_0 :
+    (RuleExecutionProgram.scopedMachineProgram.equations.drop 0).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) =
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 0).filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  apply scopedPrimitive_filter_split (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) (RuleExecutionProgram.scopedMachineProgram.equations.drop 0)
+    (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 0) 20 20 scopedPrimitive_equations_block_0
+  simpa only [List.drop_drop] using scopedPrimitive_equations_suffix_1
+
+theorem scopedPrimitive_equations : RuleExecutionProgram.scopedMachineProgram.equations.filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) = RuleExecutionProgram.interpretedPremiseProgram.equations.filter (fun row : SpaceSemantics.Equation => scopedPrimitiveHeads row.head) := by
+  simpa only [List.drop_zero] using scopedPrimitive_equations_suffix_0
+
+private theorem scopedPrimitive_declarations_block_0 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 0).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 0).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_1 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 20).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 20).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_2 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 40).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 40).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_3 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 60).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 60).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_4 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 80).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 80).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_5 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 100).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 100).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_6 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 120).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 120).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_7 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 140).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 140).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_8 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 160).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 160).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_9 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 180).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 180).take 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_10 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 200).take 18).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 200).take 17).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_block_11 :
+    ((RuleExecutionProgram.scopedMachineProgram.declarations.drop 218).take 0).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    ((RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 217).take 343).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_suffix_12 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 218).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 560).filter (retainedCallDeclaration scopedPrimitiveHeads) := by decide +kernel
+
+private theorem scopedPrimitive_declarations_suffix_11 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 218).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 217).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 218)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 217) 0 343 scopedPrimitive_declarations_block_11
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_12
+
+private theorem scopedPrimitive_declarations_suffix_10 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 200).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 200).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 200)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 200) 18 17 scopedPrimitive_declarations_block_10
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_11
+
+private theorem scopedPrimitive_declarations_suffix_9 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 180).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 180).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 180)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 180) 20 20 scopedPrimitive_declarations_block_9
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_10
+
+private theorem scopedPrimitive_declarations_suffix_8 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 160).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 160).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 160)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 160) 20 20 scopedPrimitive_declarations_block_8
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_9
+
+private theorem scopedPrimitive_declarations_suffix_7 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 140).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 140).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 140)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 140) 20 20 scopedPrimitive_declarations_block_7
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_8
+
+private theorem scopedPrimitive_declarations_suffix_6 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 120).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 120).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 120)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 120) 20 20 scopedPrimitive_declarations_block_6
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_7
+
+private theorem scopedPrimitive_declarations_suffix_5 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 100).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 100).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 100)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 100) 20 20 scopedPrimitive_declarations_block_5
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_6
+
+private theorem scopedPrimitive_declarations_suffix_4 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 80).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 80).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 80)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 80) 20 20 scopedPrimitive_declarations_block_4
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_5
+
+private theorem scopedPrimitive_declarations_suffix_3 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 60).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 60).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 60)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 60) 20 20 scopedPrimitive_declarations_block_3
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_4
+
+private theorem scopedPrimitive_declarations_suffix_2 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 40).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 40).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 40)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 40) 20 20 scopedPrimitive_declarations_block_2
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_3
+
+private theorem scopedPrimitive_declarations_suffix_1 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 20).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 20).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 20)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 20) 20 20 scopedPrimitive_declarations_block_1
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_2
+
+private theorem scopedPrimitive_declarations_suffix_0 :
+    (RuleExecutionProgram.scopedMachineProgram.declarations.drop 0).filter (retainedCallDeclaration scopedPrimitiveHeads) =
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 0).filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  apply scopedPrimitive_filter_split (retainedCallDeclaration scopedPrimitiveHeads) (RuleExecutionProgram.scopedMachineProgram.declarations.drop 0)
+    (RuleExecutionProgram.interpretedPremiseProgram.declarations.drop 0) 20 20 scopedPrimitive_declarations_block_0
+  simpa only [List.drop_drop] using scopedPrimitive_declarations_suffix_1
+
+theorem scopedPrimitive_declarations : RuleExecutionProgram.scopedMachineProgram.declarations.filter (retainedCallDeclaration scopedPrimitiveHeads) = RuleExecutionProgram.interpretedPremiseProgram.declarations.filter (retainedCallDeclaration scopedPrimitiveHeads) := by
+  simpa only [List.drop_zero] using scopedPrimitive_declarations_suffix_0
+
+theorem scopedPrimitive_agreement : ProgramAgreementOn scopedPrimitiveHeads RuleExecutionProgram.scopedMachineProgram RuleExecutionProgram.interpretedPremiseProgram :=
+  programAgreementOn_of_retained_rows scopedPrimitiveHeads RuleExecutionProgram.scopedMachineProgram RuleExecutionProgram.interpretedPremiseProgram scopedPrimitive_equations scopedPrimitive_declarations
+
+
+set_option maxRecDepth 4096
+set_option maxHeartbeats 2000000
+
 structure MatchingCodec (matcher : MatchingExecution) where
   choiceTerm : matcher.Choice → Term
   stateTerm : matcher.State → Term
@@ -2885,6 +3332,31 @@ def matcherAnswerTerm {matcher : MatchingExecution} (codec : MatchingCodec match
     (answer : matcher.Answer) : Term :=
   .application "ScopedMatcherAnswer" [assignmentTerm (matcher.assignment answer),
     encodeList codec.choiceTerm (matcher.trace answer)]
+
+/-- Native start, one matcher tick, readout and input comparison for a selected matcher. -/
+structure MatchingOperations (program : SpaceSemantics.Program)
+    (matcher : MatchingExecution) (codec : MatchingCodec matcher)
+    (profile : Term) (requestReady : GeneralScopedMatchMachine.Request → Prop)
+    (stateReady : matcher.State → Prop) (valueReady : Pattern → Prop) : Prop where
+  start : ∀ host query, requestReady query →
+    Eval.PureReturns program [] host (WireKit.apply "gslt:premise:matching-start"
+      [WireKit.encoded profile, WireKit.encoded (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm query)])
+      host (WireKit.encoded (codec.stateTerm (matcher.start query)))
+  tick : ∀ host query machine, stateReady machine →
+    Eval.PureReturns program [] host (WireKit.apply "gslt:premise:matching-tick"
+      [WireKit.encoded profile, WireKit.encoded (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm query), WireKit.encoded (codec.stateTerm machine)])
+      host (WireKit.encoded (codec.stateTerm (matcher.tick query machine)))
+  complete : ∀ host machine,
+    Eval.PureReturns program [] host (WireKit.apply "gslt:premise:matching-complete" [WireKit.encoded profile, WireKit.encoded (codec.stateTerm machine)])
+      host (Effects.boolean (matcher.complete machine))
+  answer : ∀ host machine cursor,
+    Eval.PureReturns program [] host (WireKit.apply "gslt:premise:matching-answer-at"
+      [WireKit.encoded profile, WireKit.encoded (codec.stateTerm machine), WireKit.number cursor])
+      host (WireKit.encoded (encodeOption (matcherAnswerTerm codec) (matcher.answers machine)[cursor]?))
+  input : ∀ host query actual, requestReady query → valueReady actual →
+    Eval.PureReturns program [] host (WireKit.apply "gslt:premise:matching-input"
+      [WireKit.encoded profile, WireKit.encoded (InferenceCettaWire.encodePattern actual), WireKit.encoded (InferenceCettaWire.encodePattern query.target)])
+      host (Effects.boolean (matcher.acceptsInput query actual))
 
 theorem ordinary_matcherAnswer (answer : GeneralScopedMatchMachine.Answer) :
     matcherAnswerTerm ordinaryCodec answer =
@@ -3032,3 +3504,20 @@ theorem ordinary_query_state {environment : Environment} {request : Query.Reques
   rw [tasks, answers]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.MatchingOperations
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.MatchingOperations.start
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.MatchingOperations.tick
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.MatchingOperations.complete
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.MatchingOperations.answer
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.MatchingOperations.input
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.interpreted_checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.interpreted_runtime
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.interpretedEnvironmentTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.scopedPrimitive_closed
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.scopedPrimitive_equations
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.scopedPrimitive_declarations
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.scopedPrimitive_agreement

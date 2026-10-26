@@ -35,7 +35,7 @@ macro_rules
   | `(tactic| complete_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call complete_checked; metta_eval [$facts,*] with complete_checked
+    `(tactic| (metta_call_in completeProof_checked using completeProof_agreement; metta_eval [$facts,*] with completeProof_checked in completeProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, symbol_unmatched_pattern, $extra,*]))
@@ -76,6 +76,90 @@ macro_rules
        complete_eval [$erased]
          unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeBinder, encodeRest,
            InferenceCettaWire.encodeList]))
+
+/-- The collection constructor case uses the same recursive element facts. -/
+private theorem variants_collection_of (state : State) (kind : CollType)
+    (patterns : List Pattern) (rest : Option String)
+    (ih : ∀ pattern ∈ patterns, ∀ target, VariantsAt state pattern target) :
+    ∀ target, VariantsAt state (.collection kind patterns rest) target := by
+  intro target
+  have erased := erase_returns state target
+  cases rest with
+  | some name =>
+    cases target with
+    | collection actual targets other =>
+      cases other with
+      | some other => variant_other erased
+      | none =>
+        have count : PureReturns runtime [] state (apply "gslt:automata:length" [patternsValue patterns]) state
+            (number patterns.length) := by
+          simpa only [patternsValue, encodePatterns_eq_encodeList] using
+            complete_length_returns encodePattern state patterns
+        have front := take_patterns_returns state patterns.length targets
+        have remaining := drop_patterns_returns state patterns.length targets
+        have back := erase_list_of state (targets.drop patterns.length) (fun pattern _ => erase_returns state pattern)
+        have rows := variants_list_of state patterns ih (targets.take patterns.length)
+        have joined := append_each_returns state ((targets.drop patterns.length).map Pattern.eraseBinderMetadata)
+          (variantsList patterns (targets.take patterns.length))
+        have orders := perms_all_returns state ((variantsList patterns (targets.take patterns.length)).map
+          (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata))
+        have plain := wrap_each_returns state (.collection actual)
+          ((variantsList patterns (targets.take patterns.length)).map
+            (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata))
+        have ordered := wrap_each_returns state (.collection actual)
+          (((variantsList patterns (targets.take patterns.length)).map
+            (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).flatMap perms)
+        cases kind with
+        | vec =>
+          have shape : variants (.collection .vec patterns (some name)) (.collection actual targets none) =
+              ((variantsList patterns (targets.take patterns.length)).map
+                (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).map
+                  (Shape.build (.collection actual)) := by
+            simp only [variants, if_true, List.map_map]
+            rfl
+          rw [VariantsAt, shape]
+          complete_eval [count, front, remaining, back, rows, joined, plain]
+            unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
+              Shape.term, VariantsListAt]
+        | hashBag =>
+          have shape : variants (.collection .hashBag patterns (some name)) (.collection actual targets none) =
+              (((variantsList patterns (targets.take patterns.length)).map
+                (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).flatMap perms).map
+                  (Shape.build (.collection actual)) := by
+            simp only [variants, reduceCtorEq, if_false, List.flatMap_map]
+            rfl
+          rw [VariantsAt, shape]
+          complete_eval [count, front, remaining, back, rows, joined, orders, ordered]
+            unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
+              Shape.term, VariantsListAt]
+        | hashSet =>
+          have shape : variants (.collection .hashSet patterns (some name)) (.collection actual targets none) =
+              (((variantsList patterns (targets.take patterns.length)).map
+                (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).flatMap perms).map
+                  (Shape.build (.collection actual)) := by
+            simp only [variants, reduceCtorEq, if_false, List.flatMap_map]
+            rfl
+          rw [VariantsAt, shape]
+          complete_eval [count, front, remaining, back, rows, joined, orders, ordered]
+            unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
+              Shape.term, VariantsListAt]
+    | _ => variant_other erased
+  | none =>
+    cases target with
+    | collection actual targets other =>
+      cases other with
+      | some name => variant_other erased
+      | none =>
+        have rows := variants_list_of state patterns ih targets
+        have orders := perms_all_returns state (variantsList patterns targets)
+        have plain := wrap_each_returns state (.collection actual) (variantsList patterns targets)
+        have ordered := wrap_each_returns state (.collection actual) ((variantsList patterns targets).flatMap perms)
+        cases kind <;>
+        · simp only [VariantsAt, variants]
+          complete_eval [rows, orders, plain, ordered]
+            unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
+              Shape.term, Shape.build, VariantsListAt]
+    | _ => variant_other erased
 
 /-- **`gslt:complete:variants` is `Inversion.variants`.** -/
 @[metta_head "gslt:complete:variants"]
@@ -134,83 +218,10 @@ theorem variants_returns (state : State) (schema : Pattern) : ∀ target, Varian
     | collection actual targets other => cases other <;> variant_other erased
     | _ => variant_other erased
   | hcollection kind patterns rest ih =>
-    intro target
-    have erased := erase_returns state target
-    cases rest with
-    | some name =>
-      cases target with
-      | collection actual targets other =>
-        cases other with
-        | some other => variant_other erased
-        | none =>
-          have count : PureReturns runtime [] state (apply "gslt:automata:length" [patternsValue patterns]) state
-              (number patterns.length) := by
-            simpa only [patternsValue, encodePatterns_eq_encodeList] using
-              complete_length_returns encodePattern state patterns
-          have front := take_patterns_returns state patterns.length targets
-          have remaining := drop_patterns_returns state patterns.length targets
-          have back := erase_list_of state (targets.drop patterns.length) (fun pattern _ => erase_returns state pattern)
-          have rows := variants_list_of state patterns ih (targets.take patterns.length)
-          have joined := append_each_returns state ((targets.drop patterns.length).map Pattern.eraseBinderMetadata)
-            (variantsList patterns (targets.take patterns.length))
-          have orders := perms_all_returns state ((variantsList patterns (targets.take patterns.length)).map
-            (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata))
-          have plain := wrap_each_returns state (.collection actual)
-            ((variantsList patterns (targets.take patterns.length)).map
-              (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata))
-          have ordered := wrap_each_returns state (.collection actual)
-            (((variantsList patterns (targets.take patterns.length)).map
-              (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).flatMap perms)
-          cases kind with
-          | vec =>
-            have shape : variants (.collection .vec patterns (some name)) (.collection actual targets none) =
-                ((variantsList patterns (targets.take patterns.length)).map
-                  (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).map
-                    (Shape.build (.collection actual)) := by
-              simp only [variants, if_true, List.map_map]
-              rfl
-            rw [VariantsAt, shape]
-            complete_eval [count, front, remaining, back, rows, joined, plain]
-              unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
-                Shape.term, VariantsListAt]
-          | hashBag =>
-            have shape : variants (.collection .hashBag patterns (some name)) (.collection actual targets none) =
-                (((variantsList patterns (targets.take patterns.length)).map
-                  (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).flatMap perms).map
-                    (Shape.build (.collection actual)) := by
-              simp only [variants, reduceCtorEq, if_false, List.flatMap_map]
-              rfl
-            rw [VariantsAt, shape]
-            complete_eval [count, front, remaining, back, rows, joined, orders, ordered]
-              unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
-                Shape.term, VariantsListAt]
-          | hashSet =>
-            have shape : variants (.collection .hashSet patterns (some name)) (.collection actual targets none) =
-                (((variantsList patterns (targets.take patterns.length)).map
-                  (· ++ (targets.drop patterns.length).map Pattern.eraseBinderMetadata)).flatMap perms).map
-                    (Shape.build (.collection actual)) := by
-              simp only [variants, reduceCtorEq, if_false, List.flatMap_map]
-              rfl
-            rw [VariantsAt, shape]
-            complete_eval [count, front, remaining, back, rows, joined, orders, ordered]
-              unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
-                Shape.term, VariantsListAt]
-      | _ => variant_other erased
-    | none =>
-      cases target with
-      | collection actual targets other =>
-        cases other with
-        | some name => variant_other erased
-        | none =>
-          have rows := variants_list_of state patterns ih targets
-          have orders := perms_all_returns state (variantsList patterns targets)
-          have plain := wrap_each_returns state (.collection actual) (variantsList patterns targets)
-          have ordered := wrap_each_returns state (.collection actual) ((variantsList patterns targets).flatMap perms)
-          cases kind <;>
-          · simp only [VariantsAt, variants]
-            complete_eval [rows, orders, plain, ordered]
-              unfolding [patternValue, patternsValue, encodePattern, encodePatterns, encodeRest, encodeCollectionType,
-                Shape.term, Shape.build, VariantsListAt]
-      | _ => variant_other erased
+    exact variants_collection_of state kind patterns rest ih
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.symbol_unmatched_pattern
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.variants_list_of
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.variants_returns

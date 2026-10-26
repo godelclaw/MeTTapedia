@@ -70,6 +70,7 @@ Unified value system extending OpenPsi/MicroPsi to handle full scope of human va
 import Mettapedia.CogArch.MetaMo.Main
 import Mettapedia.CogArch.Consciousness
 import Mettapedia.CogArch.Agent
+import Mettapedia.CogArch.CollectiveAgency
 import Mettapedia.CogArch.Agent.Bridges.PLN
 import Mettapedia.CogArch.AttentionEconomy
 import Mettapedia.CogArch.AttentionEconomyResourceControl

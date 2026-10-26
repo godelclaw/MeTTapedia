@@ -99,6 +99,7 @@ def describe : Evidence → String
   | .exploration rounds => s!"an exploration of {rounds} rounds"
   | .closedRegion rounds => s!"a closed region grown in {rounds} rounds"
   | .canonicalRegion rounds => s!"a closed canonical region grown in {rounds} rounds"
+  | .decided => "a certified decider"
 
 /-- **An answer of `ask` as a verdict.** -/
 def ofAsk (relEnv : RelationEnv) (signature : Mettapedia.OSLF.Framework.FiniteModels.Signature)

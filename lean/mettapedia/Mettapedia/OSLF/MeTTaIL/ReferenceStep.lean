@@ -100,13 +100,38 @@ def stepEndpoints : Premise → Option (Pattern × Pattern)
   | .scopedStep premise => some (premise.source, premise.target)
   | _ => none
 
+/-! ## Internal boundary policies -/
+
+/-- The presentation policy keeps the literal internal premise boundaries. An equational policy
+licenses ordinary matching at an explicitly equivalent presentation; it does not authorize a
+normalizer, a typing transport, or a change to the outer rule matcher. -/
+inductive InternalBoundaryPolicy where
+  | presentation
+  | equational (theory : Setoid Pattern)
+
+/-- Ordinary target matching at a presentation related by the selected source theory. -/
+def PresentedMatch (theory : Setoid Pattern) (schema value : Pattern) (bindings : Bindings) : Prop :=
+  ∃ presented, theory.r value presented ∧ bindings ∈ matchPattern schema presented
+
+/-- A relation query takes an actual provider or builtin tuple, chooses an equivalent tuple
+presentation, and uses the ordinary argument matcher and binding merge. Provider dispatch still
+receives the original instantiated request. -/
+def PresentedQuery (theory : Setoid Pattern) (relEnv : RelationEnv) (language : LanguageDef)
+    (bindings : Bindings) (relation : String) (arguments : List Pattern) (result : Bindings) : Prop :=
+  ∃ tuple ∈ builtinRelationTuples language relation (arguments.map (applyBindings bindings)) ++
+      relEnv.tuples relation (arguments.map (applyBindings bindings)),
+    ∃ presented, List.Forall₂ theory.r tuple presented ∧
+      ∃ extension ∈ matchRelationArgs bindings arguments presented,
+        mergeBindings bindings extension = some result
+
 /-! ## Validity -/
 
 mutual
 /-- **A valid premise witness**: in a rule with binding sites `sites`, the premise holds from
 `bindings`, producing `result`. -/
 inductive PremiseValid (relEnv : RelationEnv) (language : LanguageDef) :
-    Pattern → Bindings → Premise → Witness → Bindings → Prop
+    Pattern → Bindings → Premise → Witness → Bindings →
+      optParam InternalBoundaryPolicy .presentation → Prop
   | base {sites : Pattern} {bindings result : Bindings} {premise : Premise} :
       isBase premise = true → result ∈ premiseStepWithEnv relEnv language bindings premise →
       PremiseValid relEnv language sites bindings premise (.base result) result
@@ -121,11 +146,39 @@ inductive PremiseValid (relEnv : RelationEnv) (language : LanguageDef) :
       bindings.lookup collection = some (.collection kind elements none) →
       ForAllValid relEnv language sites bindings parameter body elements bodies →
       PremiseValid relEnv language sites bindings (.forAll collection parameter body) (.forAll bodies) bindings
+  | equationalFreshness {theory : Setoid Pattern} {sites : Pattern} {bindings result : Bindings}
+      {condition : FreshnessCondition} :
+      result ∈ premiseStepWithEnv relEnv language bindings (.freshness condition) →
+      PremiseValid relEnv language sites bindings (.freshness condition) (.base result) result
+        (.equational theory)
+  | equationalQuery {theory : Setoid Pattern} {sites : Pattern} {bindings result : Bindings}
+      {relation : String} {arguments : List Pattern} :
+      PresentedQuery theory relEnv language bindings relation arguments result →
+      PremiseValid relEnv language sites bindings (.relationQuery relation arguments) (.base result) result
+        (.equational theory)
+  | equationalStep {theory : Setoid Pattern} {sites : Pattern} {bindings matched result : Bindings}
+      {premise : Premise} {source target redex contractum candidate : Pattern} {step : Witness} :
+      stepEndpoints premise = some (source, target) →
+      theory.r (applyBindingsScoped sites bindings (stepDepth sites premise) source) redex →
+      StepValid relEnv language redex step contractum (.equational theory) →
+      theory.r contractum candidate →
+      PresentedMatch theory target candidate matched →
+      mergeBindings bindings matched = some result →
+      PremiseValid relEnv language sites bindings premise (.premiseStep step candidate matched result) result
+        (.equational theory)
+  | equationalForAll {theory : Setoid Pattern} {sites : Pattern} {bindings : Bindings}
+      {collection parameter : String} {body : Premise} {kind : CollType} {elements : List Pattern}
+      {bodies : List Witness} :
+      bindings.lookup collection = some (.collection kind elements none) →
+      ForAllValid relEnv language sites bindings parameter body elements bodies (.equational theory) →
+      PremiseValid relEnv language sites bindings (.forAll collection parameter body) (.forAll bodies) bindings
+        (.equational theory)
 
 /-- **Valid evidence for a quantified body at each element**: the body holds once the parameter is
 bound to the element. What the body binds stays inside it. -/
 inductive ForAllValid (relEnv : RelationEnv) (language : LanguageDef) :
-    Pattern → Bindings → String → Premise → List Pattern → List Witness → Prop
+    Pattern → Bindings → String → Premise → List Pattern → List Witness →
+      optParam InternalBoundaryPolicy .presentation → Prop
   | nil {sites : Pattern} {bindings : Bindings} {parameter : String} {body : Premise} :
       ForAllValid relEnv language sites bindings parameter body [] []
   | cons {sites : Pattern} {bindings result : Bindings} {parameter : String} {body : Premise}
@@ -133,20 +186,41 @@ inductive ForAllValid (relEnv : RelationEnv) (language : LanguageDef) :
       PremiseValid relEnv language sites (bindParameter bindings parameter element) body witness result →
       ForAllValid relEnv language sites bindings parameter body elements witnesses →
       ForAllValid relEnv language sites bindings parameter body (element :: elements) (witness :: witnesses)
+  | equationalNil {theory : Setoid Pattern} {sites : Pattern} {bindings : Bindings} {parameter : String}
+      {body : Premise} :
+      ForAllValid relEnv language sites bindings parameter body [] [] (.equational theory)
+  | equationalCons {theory : Setoid Pattern} {sites : Pattern} {bindings result : Bindings}
+      {parameter : String} {body : Premise} {element : Pattern} {elements : List Pattern}
+      {witness : Witness} {witnesses : List Witness} :
+      PremiseValid relEnv language sites (bindParameter bindings parameter element) body witness result
+        (.equational theory) →
+      ForAllValid relEnv language sites bindings parameter body elements witnesses (.equational theory) →
+      ForAllValid relEnv language sites bindings parameter body (element :: elements) (witness :: witnesses)
+        (.equational theory)
 
 /-- **Valid witnesses for a list of premises**, threading the bindings. -/
 inductive PremisesValid (relEnv : RelationEnv) (language : LanguageDef) :
-    Pattern → Bindings → List Premise → List Witness → Bindings → Prop
+    Pattern → Bindings → List Premise → List Witness → Bindings →
+      optParam InternalBoundaryPolicy .presentation → Prop
   | nil {sites : Pattern} (bindings : Bindings) : PremisesValid relEnv language sites bindings [] [] bindings
   | cons {sites : Pattern} {initial middle final : Bindings} {premise : Premise} {premises : List Premise}
       {witness : Witness} {witnesses : List Witness} :
       PremiseValid relEnv language sites initial premise witness middle →
       PremisesValid relEnv language sites middle premises witnesses final →
       PremisesValid relEnv language sites initial (premise :: premises) (witness :: witnesses) final
+  | equationalNil {theory : Setoid Pattern} {sites : Pattern} (bindings : Bindings) :
+      PremisesValid relEnv language sites bindings [] [] bindings (.equational theory)
+  | equationalCons {theory : Setoid Pattern} {sites : Pattern} {initial middle final : Bindings}
+      {premise : Premise} {premises : List Premise} {witness : Witness} {witnesses : List Witness} :
+      PremiseValid relEnv language sites initial premise witness middle (.equational theory) →
+      PremisesValid relEnv language sites middle premises witnesses final (.equational theory) →
+      PremisesValid relEnv language sites initial (premise :: premises) (witness :: witnesses) final
+        (.equational theory)
 
 /-- **A valid step witness**: the rule at `index` matches the source, its premises hold, and the
 target is its right side under the final bindings, instantiated scope-correctly. -/
-inductive StepValid (relEnv : RelationEnv) (language : LanguageDef) : Pattern → Witness → Pattern → Prop
+inductive StepValid (relEnv : RelationEnv) (language : LanguageDef) :
+    Pattern → Witness → Pattern → optParam InternalBoundaryPolicy .presentation → Prop
   | rule {source : Pattern} {index : ℕ} {rule : RewriteRule} {initial final : Bindings}
       {witnesses : List Witness} :
       language.rewrites[index]? = some rule →
@@ -154,11 +228,27 @@ inductive StepValid (relEnv : RelationEnv) (language : LanguageDef) : Pattern �
       PremisesValid relEnv language (captureSites rule) initial rule.premises witnesses final →
       StepValid relEnv language source (.rule index initial witnesses)
         (applyBindingsScoped (captureSites rule) final 0 rule.right)
+  | equationalRule {theory : Setoid Pattern} {source : Pattern} {index : ℕ} {rule : RewriteRule}
+      {initial final : Bindings} {witnesses : List Witness} :
+      language.rewrites[index]? = some rule →
+      initial ∈ matchPatternForRule language rule source →
+      PremisesValid relEnv language (captureSites rule) initial rule.premises witnesses final
+        (.equational theory) →
+      StepValid relEnv language source (.rule index initial witnesses)
+        (applyBindingsScoped (captureSites rule) final 0 rule.right) (.equational theory)
 end
+
+/-- The same reference source family with an explicitly selected internal boundary policy. -/
+def StepWith (policy : InternalBoundaryPolicy) (relEnv : RelationEnv) (language : LanguageDef)
+    (source target : Pattern) : Prop :=
+  ∃ witness, StepValid relEnv language source witness target policy
 
 /-- **The reference step relation**: some witness is valid. -/
 def Step (relEnv : RelationEnv) (language : LanguageDef) (source target : Pattern) : Prop :=
   ∃ witness, StepValid relEnv language source witness target
+
+theorem stepWith_presentation (relEnv : RelationEnv) (language : LanguageDef) (source target : Pattern) :
+    StepWith .presentation relEnv language source target ↔ Step relEnv language source target := Iff.rfl
 
 /-! ## Checking a witness -/
 
@@ -397,5 +487,217 @@ theorem step_iff_exists_check {source target : Pattern} :
     Step relEnv language source target ↔ ∃ witness, checkStep relEnv language source witness = some target :=
   ⟨fun ⟨witness, valid⟩ => ⟨witness, (checkStep_eq_some_iff relEnv language witness).mpr valid⟩,
     fun ⟨witness, checked⟩ => ⟨witness, (checkStep_eq_some_iff relEnv language witness).mp checked⟩⟩
+
+/-! ## Literal specialization and explicit equation boundaries -/
+
+variable {relEnv language}
+
+private theorem tuple_presented_refl (theory : Setoid Pattern) (tuple : List Pattern) :
+    List.Forall₂ theory.r tuple tuple := by
+  induction tuple with
+  | nil => exact .nil
+  | cons value rest ih => exact .cons (theory.iseqv.refl value) ih
+
+private theorem tuple_eq_of_presented {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second)
+    {first second : List Pattern} (related : List.Forall₂ theory.r first second) : first = second := by
+  induction related with
+  | nil => rfl
+  | cons same rest ih => exact congrArg₂ List.cons ((literal _ _).mp same) ih
+
+theorem PresentedMatch.of_literal (theory : Setoid Pattern) {schema value : Pattern} {bindings : Bindings}
+    (matched : bindings ∈ matchPattern schema value) : PresentedMatch theory schema value bindings :=
+  ⟨value,theory.iseqv.refl value,matched⟩
+
+theorem PresentedMatch.iff_literal {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second)
+    {schema value : Pattern} {bindings : Bindings} :
+    PresentedMatch theory schema value bindings ↔ bindings ∈ matchPattern schema value := by
+  constructor
+  · rintro ⟨presented,same,matched⟩
+    cases (literal _ _).mp same
+    exact matched
+  · exact PresentedMatch.of_literal theory
+
+theorem PresentedQuery.of_literal (theory : Setoid Pattern) {bindings result : Bindings}
+    {relation : String} {arguments : List Pattern}
+    (member : result ∈ relationQueryStep relEnv language bindings relation arguments) :
+    PresentedQuery theory relEnv language bindings relation arguments result := by
+  simp only [relationQueryStep,List.mem_flatMap,List.mem_filterMap] at member
+  obtain ⟨tuple,provided,extension,matched,merged⟩ := member
+  exact ⟨tuple,provided,tuple,tuple_presented_refl theory tuple,extension,matched,merged⟩
+
+theorem PresentedQuery.iff_literal {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second)
+    {bindings result : Bindings} {relation : String} {arguments : List Pattern} :
+    PresentedQuery theory relEnv language bindings relation arguments result ↔
+      result ∈ relationQueryStep relEnv language bindings relation arguments := by
+  constructor
+  · rintro ⟨tuple,provided,presented,same,extension,matched,merged⟩
+    cases tuple_eq_of_presented literal same
+    simp only [relationQueryStep,List.mem_flatMap,List.mem_filterMap]
+    exact ⟨tuple,provided,extension,matched,merged⟩
+  · exact PresentedQuery.of_literal theory
+
+mutual
+/-- A literal witness remains valid for an explicit equational internal policy. The original
+provider dispatch, witnesses, final bindings and outer rule match are retained. -/
+theorem stepValid_equational_of_presentation (theory : Setoid Pattern) :
+    ∀ (witness : Witness) {source target : Pattern},
+    StepValid relEnv language source witness target →
+      StepValid relEnv language source witness target (.equational theory)
+  | .rule _ _ witnesses, _, _, valid => by
+      cases valid with
+      | rule found matched premises =>
+          exact .equationalRule found matched (premisesValid_equational_of_presentation theory witnesses premises)
+  | .base _, _, _, valid => by cases valid
+  | .premiseStep _ _ _ _, _, _, valid => by cases valid
+  | .forAll _, _, _, valid => by cases valid
+
+theorem premiseValid_equational_of_presentation (theory : Setoid Pattern) :
+    ∀ (witness : Witness) {sites : Pattern} {initial final : Bindings} {premise : Premise},
+    PremiseValid relEnv language sites initial premise witness final →
+      PremiseValid relEnv language sites initial premise witness final (.equational theory)
+  | .base _, _, _, _, premise, valid => by
+      cases valid with
+      | base baseCase member =>
+          cases premise with
+          | freshness condition => exact .equationalFreshness member
+          | relationQuery relation arguments =>
+              exact .equationalQuery (PresentedQuery.of_literal theory member)
+          | _ => cases baseCase
+  | .premiseStep step candidate _ _, _, _, _, _, valid => by
+      cases valid with
+      | step endpoints stepped matched merged =>
+          exact .equationalStep endpoints (theory.iseqv.refl _)
+            (stepValid_equational_of_presentation theory step stepped) (theory.iseqv.refl _)
+            (PresentedMatch.of_literal theory matched) merged
+  | .forAll bodies, _, _, _, _, valid => by
+      cases valid with
+      | forAll selected body =>
+          exact .equationalForAll selected (forAllValid_equational_of_presentation theory bodies body)
+  | .rule _ _ _, _, _, _, _, valid => by cases valid
+
+theorem premisesValid_equational_of_presentation (theory : Setoid Pattern) :
+    ∀ (witnesses : List Witness) {sites : Pattern} {initial final : Bindings} {premises : List Premise},
+    PremisesValid relEnv language sites initial premises witnesses final →
+      PremisesValid relEnv language sites initial premises witnesses final (.equational theory)
+  | [], _, _, _, _, valid => by
+      cases valid
+      exact .equationalNil _
+  | witness :: witnesses, _, _, _, _, valid => by
+      cases valid with
+      | cons first rest =>
+          exact .equationalCons (premiseValid_equational_of_presentation theory witness first)
+            (premisesValid_equational_of_presentation theory witnesses rest)
+
+theorem forAllValid_equational_of_presentation (theory : Setoid Pattern) :
+    ∀ (witnesses : List Witness) {sites : Pattern} {bindings : Bindings} {parameter : String}
+      {body : Premise} {elements : List Pattern},
+    ForAllValid relEnv language sites bindings parameter body elements witnesses →
+      ForAllValid relEnv language sites bindings parameter body elements witnesses (.equational theory)
+  | [], _, _, _, _, _, valid => by
+      cases valid
+      exact .equationalNil
+  | witness :: witnesses, _, _, _, _, _, valid => by
+      cases valid with
+      | cons first rest =>
+          exact .equationalCons (premiseValid_equational_of_presentation theory witness first)
+            (forAllValid_equational_of_presentation theory witnesses rest)
+end
+
+mutual
+/-- If the selected source theory is equality, the equational policy has exactly the literal
+witnesses. This includes recursive child steps and local quantifier rebinding. -/
+theorem stepValid_presentation_of_equational {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second) :
+    ∀ (witness : Witness) {source target : Pattern},
+    StepValid relEnv language source witness target (.equational theory) →
+      StepValid relEnv language source witness target
+  | .rule _ _ witnesses, _, _, valid => by
+      cases valid with
+      | equationalRule found matched premises =>
+          exact .rule found matched (premisesValid_presentation_of_equational literal witnesses premises)
+  | .base _, _, _, valid => by cases valid
+  | .premiseStep _ _ _ _, _, _, valid => by cases valid
+  | .forAll _, _, _, valid => by cases valid
+
+theorem premiseValid_presentation_of_equational {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second) :
+    ∀ (witness : Witness) {sites : Pattern} {initial final : Bindings} {premise : Premise},
+    PremiseValid relEnv language sites initial premise witness final (.equational theory) →
+      PremiseValid relEnv language sites initial premise witness final
+  | .base _, _, _, _, _, valid => by
+      cases valid with
+      | equationalFreshness member => exact .base rfl member
+      | equationalQuery query => exact .base rfl ((PresentedQuery.iff_literal literal).mp query)
+  | .premiseStep step candidate _ _, _, _, _, _, valid => by
+      cases valid with
+      | equationalStep endpoints before stepped after matched merged =>
+          have ordinaryStep := stepValid_presentation_of_equational literal step stepped
+          rw [← (literal _ _).mp before,(literal _ _).mp after] at ordinaryStep
+          exact .step endpoints ordinaryStep ((PresentedMatch.iff_literal literal).mp matched) merged
+  | .forAll bodies, _, _, _, _, valid => by
+      cases valid with
+      | equationalForAll selected body =>
+          exact .forAll selected (forAllValid_presentation_of_equational literal bodies body)
+  | .rule _ _ _, _, _, _, _, valid => by cases valid
+
+theorem premisesValid_presentation_of_equational {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second) :
+    ∀ (witnesses : List Witness) {sites : Pattern} {initial final : Bindings} {premises : List Premise},
+    PremisesValid relEnv language sites initial premises witnesses final (.equational theory) →
+      PremisesValid relEnv language sites initial premises witnesses final
+  | [], _, _, _, _, valid => by
+      cases valid
+      exact .nil _
+  | witness :: witnesses, _, _, _, _, valid => by
+      cases valid with
+      | equationalCons first rest =>
+          exact .cons (premiseValid_presentation_of_equational literal witness first)
+            (premisesValid_presentation_of_equational literal witnesses rest)
+
+theorem forAllValid_presentation_of_equational {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second) :
+    ∀ (witnesses : List Witness) {sites : Pattern} {bindings : Bindings} {parameter : String}
+      {body : Premise} {elements : List Pattern},
+    ForAllValid relEnv language sites bindings parameter body elements witnesses (.equational theory) →
+      ForAllValid relEnv language sites bindings parameter body elements witnesses
+  | [], _, _, _, _, _, valid => by
+      cases valid
+      exact .nil
+  | witness :: witnesses, _, _, _, _, _, valid => by
+      cases valid with
+      | equationalCons first rest =>
+          exact .cons (premiseValid_presentation_of_equational literal witness first)
+            (forAllValid_presentation_of_equational literal witnesses rest)
+end
+
+theorem stepWith_equational_of_presentation (theory : Setoid Pattern) {source target : Pattern}
+    (stepped : Step relEnv language source target) : StepWith (.equational theory) relEnv language source target := by
+  obtain ⟨witness,valid⟩ := stepped
+  exact ⟨witness,stepValid_equational_of_presentation theory witness valid⟩
+
+theorem stepWith_equational_iff_presentation {theory : Setoid Pattern}
+    (literal : ∀ first second, theory.r first second ↔ first = second) {source target : Pattern} :
+    StepWith (.equational theory) relEnv language source target ↔ Step relEnv language source target :=
+  ⟨fun ⟨witness,valid⟩ => ⟨witness,stepValid_presentation_of_equational literal witness valid⟩,
+    stepWith_equational_of_presentation theory⟩
+
+#print axioms stepWith_presentation
+#print axioms PresentedMatch.of_literal
+#print axioms PresentedMatch.iff_literal
+#print axioms PresentedQuery.of_literal
+#print axioms PresentedQuery.iff_literal
+#print axioms stepValid_equational_of_presentation
+#print axioms premiseValid_equational_of_presentation
+#print axioms premisesValid_equational_of_presentation
+#print axioms forAllValid_equational_of_presentation
+#print axioms stepValid_presentation_of_equational
+#print axioms premiseValid_presentation_of_equational
+#print axioms premisesValid_presentation_of_equational
+#print axioms forAllValid_presentation_of_equational
+#print axioms stepWith_equational_of_presentation
+#print axioms stepWith_equational_iff_presentation
 
 end Mettapedia.OSLF.MeTTaIL.ReferenceStep

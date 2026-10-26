@@ -728,4 +728,28 @@ def booleanEqualityElimination (signature : Signature sorts terms)
 #print axioms equalityImplicationRight
 #print axioms booleanEqualityElimination
 
+theorem booleanEqualityElimination_varsBelow (signature : Signature sorts terms)
+    (abbreviation : HOLKernelBooleanEquality.Abbreviation terms definitions signature.symbol signature.ids)
+    (rules : Rules theorems signature.symbol signature.ids abbreviation.reference)
+    (antecedent first second : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (equal : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent
+        (holds signature.symbol (equality signature.symbol (boolType signature.symbol) first second))))
+    (source : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol first)))
+    (limit : Nat)
+    (antecedentBound : Preterm.VarsBelow limit antecedent)
+    (firstBound : Preterm.VarsBelow limit first)
+    (secondBound : Preterm.VarsBelow limit second)
+    (equalBound : equal.val.VarsBelow limit)
+    (sourceBound : source.val.VarsBelow limit) :
+    (booleanEqualityElimination signature abbreviation rules antecedent first second antecedentSorted firstSorted secondSorted equal source).val.VarsBelow limit := by
+  simp_all [booleanEqualityElimination, ProofWitness.VarsBelow, ConvWitness.VarsBelow, Native.booleanEqualityElimination, HOLKernelBooleanEquality.contractProof, HOLKernelBooleanEquality.consequenceConversion, HOLKernelBooleanEquality.unfolding]
+
+
 end Mettapedia.Languages.MM0.HOLKernelInferenceProofs

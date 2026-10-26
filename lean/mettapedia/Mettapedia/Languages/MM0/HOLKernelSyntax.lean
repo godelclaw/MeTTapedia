@@ -319,4 +319,9 @@ theorem encodeTerm_sorted (signature : Signature sorts terms) (context : Context
 #print axioms encodeType_sorted
 #print axioms encodeTerm_sorted
 
+theorem encodeType_varsBelow (references : Symbol → Nat) (base : Base → Preterm) (bound : Nat)
+    (baseBound : ∀ index, Preterm.VarsBelow bound (base index)) (type : Ty Base) :
+    Preterm.VarsBelow bound (encodeType references base type) := by
+  induction type <;> simp_all [encodeType, applySymbol, Preterm.applyArgs, Preterm.VarsBelow]
+
 end Mettapedia.Languages.MM0.HOLKernelSyntax

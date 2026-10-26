@@ -35,48 +35,38 @@ set_option maxRecDepth 16384
 set_option maxHeartbeats 4000000
 namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution.GeneralExecution.AssembledLower
 open Eval
-private def excludedHeads : List String :=
-  ["gslt:premise:admission-context-covered", "gslt:premise:admission-keys", "gslt:premise:admission-nodup", "gslt:premise:admission-occurrence-keys", "gslt:premise:admission-occurrences", "gslt:premise:binding-admitted", "gslt:premise:machine-commit", "gslt:premise:machine-complete", "gslt:premise:machine-deliver-in", "gslt:premise:machine-evaluate-in", "gslt:premise:machine-expand-in", "gslt:premise:machine-run", "gslt:premise:machine-start", "gslt:premise:machine-tick", "gslt:premise:query-expand-in", "gslt:premise:query-matching-request", "gslt:premise:query-obligations", "gslt:premise:query-site", "gslt:premise:root-body-deliver-in", "gslt:premise:root-match-expand-in", "gslt:premise:stepped-deliver-in", "gslt:premise:target-match-expand-in", "gslt:rule:scope-binder-operation", "gslt:rule:scope-instantiate-args-at", "gslt:rule:scope-instantiate-at", "gslt:rule:scope-instantiate-slot", "gslt:rule:scope-match", "gslt:rule:scope-match-bag", "gslt:rule:scope-match-bag-choices", "gslt:rule:scope-match-bag-results", "gslt:rule:scope-match-erase-at", "gslt:rule:scope-matcher-advance", "gslt:rule:scope-matcher-advance-branches", "gslt:rule:scope-matcher-capture", "gslt:rule:scope-matcher-captured-work", "gslt:rule:scope-matcher-complete", "gslt:rule:scope-matcher-expand", "gslt:rule:scope-matcher-expand-tree", "gslt:rule:scope-matcher-run", "gslt:rule:scope-matcher-split-at", "gslt:rule:scope-matcher-start", "gslt:rule:scope-matcher-tick", "gslt:rule:scope-reduct", "gslt:rule:scope-reflective-binder-operation", "gslt:rule:scope-reflective-drop-finish", "gslt:rule:scope-reflective-instantiate-apply", "gslt:rule:scope-reflective-instantiate-at", "gslt:rule:scope-reflective-instantiate-list-at", "gslt:rule:scope-reflective-instantiate-unary", "gslt:rule:scope-reflective-name-mark", "gslt:rule:scope-reflective-normalize", "gslt:rule:scope-reflective-normalize-finish", "gslt:rule:scope-reflective-normalize-list", "gslt:rule:scope-reflective-normalized-mark", "gslt:rule:scope-reflective-replacement", "gslt:rule:scope-reflective-unmark"]
-
-private def unchangedHeads (head : String) : Bool := !(excludedHeads.contains head)
+private local instance equationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧
+    left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
 
 theorem premise_retained_equations :
-    premiseRuntimeProgram.equations.filter (fun equation => unchangedHeads equation.head) =
-      RuleExecutionProgram.scopedMachineProgram.equations.filter (fun equation => unchangedHeads equation.head) := by rfl
+    premiseRuntimeProgram.equations.filter (fun equation => premiseExecutionHeads equation.head) =
+      RuleExecutionProgram.scopedMachineProgram.equations.filter (fun equation => premiseExecutionHeads equation.head) := by
+  decide +kernel
 
 theorem premise_retained_declarations :
-    premiseRuntimeProgram.declarations.filter (retainedCallDeclaration unchangedHeads) =
-      RuleExecutionProgram.scopedMachineProgram.declarations.filter (retainedCallDeclaration unchangedHeads) := by rfl
+    premiseRuntimeProgram.declarations.filter (retainedCallDeclaration premiseExecutionHeads) =
+      RuleExecutionProgram.scopedMachineProgram.declarations.filter (retainedCallDeclaration premiseExecutionHeads) := by decide +kernel
 
-theorem unchanged_agreement : ProgramAgreementOn unchangedHeads premiseRuntimeProgram RuleExecutionProgram.scopedMachineProgram :=
+theorem premise_agreement : ProgramAgreementOn premiseExecutionHeads premiseRuntimeProgram RuleExecutionProgram.scopedMachineProgram :=
   Eval.programAgreementOn_of_retained_rows _ _ _ premise_retained_equations premise_retained_declarations
-
-
-
-
-private theorem premise_supported_unchanged (head : String)
-    (supported : premiseExecutionHeads head = true) : unchangedHeads head = true := by
-  have checked : excludedHeads.all (fun name => !premiseExecutionHeads name) = true := by rfl
-  have absent : excludedHeads.contains head = false := by
-    apply Bool.eq_false_iff.mpr
-    intro found
-    have rejected := List.all_eq_true.mp checked head (List.contains_iff_mem.mp found)
-    simp [supported] at rejected
-  simp only [unchangedHeads, absent, Bool.not_false]
-
-theorem premise_agreement : ProgramAgreementOn premiseExecutionHeads premiseRuntimeProgram RuleExecutionProgram.scopedMachineProgram := by
-  constructor
-  · intro head supported
-    exact unchanged_agreement.dispatch head (premise_supported_unchanged head supported)
-  · intro head index supported
-    exact unchanged_agreement.demand head index (premise_supported_unchanged head supported)
-  · intro head values supported
-    exact unchanged_agreement.bodies head values (premise_supported_unchanged head supported)
 
 #print axioms premise_retained_equations
 #print axioms premise_retained_declarations
-#print axioms unchanged_agreement
 #print axioms premise_agreement
+
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution.GeneralExecution.AssembledLower
 
 set_option maxRecDepth 4096

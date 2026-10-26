@@ -24,6 +24,13 @@ def sourceRevision : String := "924faf0c3471a04174ffdeb8576ce7cabcb92d64"
 
 def individualOperator : TypeOp := .mk (Name.global "ind") .undefined
 
+/-- The source's nullary individual type, with its full operator identity. -/
+def individualBase : AtomicTy :=
+  ⟨.op individualOperator [], by constructor <;> decide +kernel⟩
+
+theorem individual_toHOL : (Ty.op individualOperator []).toHOL = .base individualBase :=
+  Ty.toHOL_of_isAtomic individualBase.property
+
 def individualContext : TheoryContext :=
   ContextControls.coreContext.addTypeOperator individualOperator 0
     (by simp [ContextControls.coreContext, ContextControls.baseContext,

@@ -111,6 +111,21 @@ def expect {gamma : Ctx Unit} (type : Ty Unit) (decoded : Decoded Const gamma) :
   simp only [expect, NamedElaboration.expectType_same]
   rfl
 
+theorem expect_eq_some_iff {gamma : Ctx Unit} (type : Ty Unit) (decoded : Decoded Const gamma)
+    (term : Term Const gamma type) : expect type decoded = some term ↔ decoded = ⟨type, term⟩ := by
+  rcases decoded with ⟨actual, value⟩
+  by_cases same : actual = type
+  · subst actual
+    simp only [expect_same, Option.some.injEq]
+    constructor
+    · intro h; subst value; rfl
+    · intro h; cases h; rfl
+  · constructor
+    · intro found
+      simp [expect, NamedElaboration.expectType, same, Except.toOption] at found
+    · intro equal
+      exact False.elim (same (congrArg (fun value : Decoded Const gamma => value.type) equal))
+
 def readVariable (constants : Nat → Option (NamedElaboration.SomeConst Const)) {gamma : Ctx Unit} (names : Names gamma) (index : Nat) : Option (Decoded Const gamma) :=
   match names.lookup? index with
   | some resolved => some ⟨resolved.1, .var resolved.2⟩
@@ -176,6 +191,99 @@ termination_by _ _ term => sizeOf term
 
 
 
+
+/-! Constructor readback composes arbitrary successfully decoded operands.
+The native operands need not use the same binder-bank representation. -/
+section Constructors
+variable {gamma : Ctx Unit}
+variable (extras : {gamma : Ctx Unit} → Preterm → Option (Decoded Const gamma))
+variable (references : HOLKernelSyntax.Symbol → Nat) (faithful : Function.Injective references)
+variable (constants : Nat → Option (NamedElaboration.SomeConst Const)) (parameters : Nat) (names : Names gamma)
+include faithful
+
+theorem readTermWith_application {domain codomain : Ty Unit}
+    (function argument : Preterm) (f : Term Const gamma (domain ⇒ codomain)) (a : Term Const gamma domain)
+    (functionRead : readTermWith extras references constants parameters names function = some ⟨_, f⟩)
+    (argumentRead : readTermWith extras references constants parameters names argument = some ⟨_, a⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .app [function, argument]) =
+      some ⟨codomain, .app f a⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    functionRead, argumentRead, application, expect_same]
+
+theorem readTermWith_equality (typeCode first second : Preterm) (type : Ty Unit)
+    (left right : Term Const gamma type)
+    (typeRead : readType references typeCode = some type)
+    (leftRead : readTermWith extras references constants parameters names first = some ⟨type, left⟩)
+    (rightRead : readTermWith extras references constants parameters names second = some ⟨type, right⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .eqc [typeCode, first, second]) =
+      some ⟨.prop, .eq left right⟩ := by
+  simp only [applySymbol, Preterm.applyArgs]
+  unfold readTermWith
+  simp [readHead_reference references faithful,
+    typeRead, leftRead, rightRead, expect_same]
+
+theorem readTermWith_and (first second : Preterm) (left right : Formula Const gamma)
+    (leftRead : readTermWith extras references constants parameters names first = some ⟨.prop, left⟩)
+    (rightRead : readTermWith extras references constants parameters names second = some ⟨.prop, right⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .andc [first, second]) =
+      some ⟨.prop, .and left right⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    leftRead, rightRead, logicalBinary, expect_same]
+
+theorem readTermWith_or (first second : Preterm) (left right : Formula Const gamma)
+    (leftRead : readTermWith extras references constants parameters names first = some ⟨.prop, left⟩)
+    (rightRead : readTermWith extras references constants parameters names second = some ⟨.prop, right⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .orc [first, second]) =
+      some ⟨.prop, .or left right⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    leftRead, rightRead, logicalBinary, expect_same]
+
+theorem readTermWith_imp (first second : Preterm) (left right : Formula Const gamma)
+    (leftRead : readTermWith extras references constants parameters names first = some ⟨.prop, left⟩)
+    (rightRead : readTermWith extras references constants parameters names second = some ⟨.prop, right⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .impc [first, second]) =
+      some ⟨.prop, .imp left right⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    leftRead, rightRead, logicalBinary, expect_same]
+
+theorem readTermWith_not (native : Preterm) (body : Formula Const gamma)
+    (bodyRead : readTermWith extras references constants parameters names native = some ⟨.prop, body⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .notc [native]) =
+      some ⟨.prop, .not body⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    bodyRead, expect_same]
+
+theorem readTermWith_lambda (typeCode nativeBody : Preterm) (domain codomain : Ty Unit) (name : Nat)
+    (body : Term Const (domain :: gamma) codomain)
+    (beyond : parameters ≤ name) (typeRead : readType references typeCode = some domain)
+    (bodyRead : readTermWith extras references constants parameters (BinderNames.cons (type := domain) name names)
+      nativeBody = some ⟨codomain, body⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .lam [.var name, typeCode, nativeBody]) =
+      some ⟨domain ⇒ codomain, .lam body⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    Nat.not_lt.mpr beyond, typeRead, bodyRead]
+
+theorem readTermWith_universal (typeCode nativeBody : Preterm) (domain : Ty Unit) (name : Nat)
+    (body : Formula Const (domain :: gamma))
+    (beyond : parameters ≤ name) (typeRead : readType references typeCode = some domain)
+    (bodyRead : readTermWith extras references constants parameters (BinderNames.cons (type := domain) name names)
+      nativeBody = some ⟨.prop, body⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .allc [.var name, typeCode, nativeBody]) =
+      some ⟨.prop, .all body⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    Nat.not_lt.mpr beyond, typeRead, bodyRead, expect_same]
+
+theorem readTermWith_existential (typeCode nativeBody : Preterm) (domain : Ty Unit) (name : Nat)
+    (body : Formula Const (domain :: gamma))
+    (beyond : parameters ≤ name) (typeRead : readType references typeCode = some domain)
+    (bodyRead : readTermWith extras references constants parameters (BinderNames.cons (type := domain) name names)
+      nativeBody = some ⟨.prop, body⟩) :
+    readTermWith extras references constants parameters names (applySymbol references .exc [.var name, typeCode, nativeBody]) =
+      some ⟨.prop, .ex body⟩ := by
+  simp [applySymbol, Preterm.applyArgs, readTermWith, readHead_reference references faithful,
+    Nat.not_lt.mpr beyond, typeRead, bodyRead, expect_same]
+
+end Constructors
 
 abbrev TermReader (Const : Ty Unit → Type u) :=
   {gamma : Ctx Unit} → Names gamma → Preterm → Option (Decoded Const gamma)

@@ -39,7 +39,7 @@ def treeRootAnswer
         answer.trace answer.assignment
         (by simpa only [GeneralScopedMatchMachine.Answer.Valid,
           MatchingExecution.ordinary, ordinaryInterpretation] using valid) typed tail)) := by
-  apply treeEvaluate
+  apply treeEvaluate _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
   intro result
   cases result with
   | premises completed events held =>
@@ -86,7 +86,8 @@ theorem continueRootAnswers_covers :
           answer.val.assignment) (wanted : Result environment outer),
       EvaluatesTo (.rootBody depth bound type source index rule spec declared specified admitted
         sorted answer.val.trace answer.val.assignment answer.property typed tail) wanted →
-      ExpansionAccepts (continueRootAnswers environment outer depth bound type source index rule spec
+      ExpansionAccepts MatchingExecution.ordinaryCursorLaws
+        (continueRootAnswers environment outer depth bound type source index rule spec
         declared specified admitted sorted answers tail []) wanted
   | [], _, member, _, _, _ => False.elim (List.not_mem_nil member)
   | head :: rest, answer, member, typed, wanted, meaning => by
@@ -130,7 +131,8 @@ theorem continueRootAnswers_drained_contains
     (answers : List {answer : GeneralScopedMatchMachine.Answer //
       answer.Valid ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩})
     (fuel : Nat) (wanted : Result environment outer)
-    (accepts : ExpansionAccepts (continueRootAnswers environment outer depth bound type source index
+    (accepts : ExpansionAccepts MatchingExecution.ordinaryCursorLaws
+      (continueRootAnswers environment outer depth bound type source index
       rule spec declared specified admitted sorted answers tail []) wanted) :
     let expanded := continueRootAnswers environment outer depth bound type source index rule spec
       declared specified admitted sorted answers tail []
@@ -146,8 +148,9 @@ theorem continueRootAnswers_drained_contains
   let started : State environment outer :=
     { agenda := expanded.tasks, answers := expanded.answers,
       unresolved := expanded.unresolved, work := 0 }
-  have initial : StateAccepts started wanted := accepts
-  have retained := run_covers fuel initial
+  have initial : StateAccepts MatchingExecution.ordinaryCursorLaws started wanted := accepts
+  have retained := run_covers MatchingExecution.ordinaryCursorLaws
+    MatchingExecution.ordinary_answer_representation fuel initial
   rcases retained with published | ⟨task, present, _⟩
   · exact published
   · rw [drained] at present

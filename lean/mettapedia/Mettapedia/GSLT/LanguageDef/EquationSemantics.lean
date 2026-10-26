@@ -18,9 +18,11 @@ Two kinds of generator feed the theory.
   same independently relational premise semantics as the authored rewrite
   system.  A `congruence` premise therefore asks for an actual finite rewrite
   derivation; it does not turn an equation into a rewrite.
-* Presentation-derived laws.  A declared, sorted bag carrier is
-  permutation-invariant while retaining multiplicity; a declared, sorted set
-  carrier additionally makes sets idempotent; a vector carries no law.  A
+* Presentation-derived laws. A collection typed at a collection type found
+  in a declared constructor parameter receives its kind laws at every nesting
+  depth. Bags permit permutation with multiplicity retained; sets additionally
+  permit idempotence; vectors keep their order. Bare and wrapped representation
+  choices do not alter these type laws. A
   collection-algebra declaration on a bare collection constructor supplies
   flattening of nested occurrences, the singleton collapse, absorption of the
   declared unit, and identification of the empty collection with that unit,
@@ -74,13 +76,22 @@ def EquationInstance
 /-! ## Presentation-derived laws -/
 
 /-- A pattern is sorted at a category by the authored grammar under some free
-and bound typing contexts.  This is the sort premise of every declared
-collection law: it ties a bare collection to the rule that declares the law,
-so two bag sorts of one language never exchange laws. -/
+and bound typing contexts. This is the sort premise of the separately
+declared algebra laws; collection-kind laws use their collection-data type. -/
 def SortedAt (language : LanguageDef) (pattern : Pattern) (category : String) :
     Prop :=
   ∃ (free : WellSorted.FreeTypeContext) (bound : List TypeExpr),
     WellSorted.HasSort language free bound pattern category
+
+/-- Recover the actual bare typing declaration, including its index. The
+carrier named by a separate legacy premise may be a different declaration. -/
+theorem SortedAt.collection_type_origin {language : LanguageDef} {kind : CollType}
+    {elements : List Pattern} {category : String}
+    (sorted : SortedAt language (.collection kind elements none) category) :
+    ∃ (index : Nat) (rule : GrammarRule),language.terms[index]? = some rule ∧ rule.category = category ∧
+      WellSorted.CollectionTypedAt language rule kind elements := by
+  obtain ⟨free,bound,typed⟩ := sorted
+  exact typed.collection_type_origin
 
 /-- A grammar rule declares a bare collection carrier of the given kind.
 The element type is existential because the representation law concerns the
@@ -127,22 +138,20 @@ is a rule pattern, not a term, and receives no law. -/
 inductive DerivedInstance (language : LanguageDef) :
     Pattern → Pattern → Prop where
   | bagPerm {rule : GrammarRule} {elements elements' : List Pattern} :
-      CollectionCarrierRule language rule .hashBag →
-      SortedAt language (.collection .hashBag elements none) rule.category →
+      rule ∈ language.terms →
+      WellSorted.CollectionTypedAt language rule .hashBag elements →
       List.Perm elements elements' →
       DerivedInstance language
         (.collection .hashBag elements none) (.collection .hashBag elements' none)
   | setPerm {rule : GrammarRule} {elements elements' : List Pattern} :
-      CollectionCarrierRule language rule .hashSet →
-      SortedAt language (.collection .hashSet elements none) rule.category →
+      rule ∈ language.terms →
+      WellSorted.CollectionTypedAt language rule .hashSet elements →
       List.Perm elements elements' →
       DerivedInstance language
         (.collection .hashSet elements none) (.collection .hashSet elements' none)
   | setDedup {rule : GrammarRule} {element : Pattern} {elements : List Pattern} :
-      CollectionCarrierRule language rule .hashSet →
-      SortedAt language
-        (.collection .hashSet (element :: element :: elements) none)
-        rule.category →
+      rule ∈ language.terms →
+      WellSorted.CollectionTypedAt language rule .hashSet (element :: element :: elements) →
       DerivedInstance language
         (.collection .hashSet (element :: element :: elements) none)
         (.collection .hashSet (element :: elements) none)
@@ -177,6 +186,31 @@ inductive DerivedInstance (language : LanguageDef) :
       algebra.unit = some unit →
       SortedAt language (.collection kind [] none) rule.category →
       DerivedInstance language (.collection kind [] none) (.apply unit [])
+
+/-- Ordinary bare sorting is a specialization of type-based kind laws.
+The actual typing declaration is recovered, rather than guessed from another
+carrier which happens to share its result category. -/
+theorem DerivedInstance.bagPerm_of_sorted {language : LanguageDef} {elements elements' : List Pattern}
+    {category : String} (sorted : SortedAt language (.collection .hashBag elements none) category)
+    (permutation : elements.Perm elements') :
+    DerivedInstance language (.collection .hashBag elements none) (.collection .hashBag elements' none) := by
+  obtain ⟨index,rule,declared,_,typed⟩ := sorted.collection_type_origin
+  exact .bagPerm (List.mem_of_getElem? declared) typed permutation
+
+theorem DerivedInstance.setPerm_of_sorted {language : LanguageDef} {elements elements' : List Pattern}
+    {category : String} (sorted : SortedAt language (.collection .hashSet elements none) category)
+    (permutation : elements.Perm elements') :
+    DerivedInstance language (.collection .hashSet elements none) (.collection .hashSet elements' none) := by
+  obtain ⟨index,rule,declared,_,typed⟩ := sorted.collection_type_origin
+  exact .setPerm (List.mem_of_getElem? declared) typed permutation
+
+theorem DerivedInstance.setDedup_of_sorted {language : LanguageDef} {element : Pattern} {elements : List Pattern}
+    {category : String} (sorted : SortedAt language
+      (.collection .hashSet (element :: element :: elements) none) category) :
+    DerivedInstance language (.collection .hashSet (element :: element :: elements) none)
+      (.collection .hashSet (element :: elements) none) := by
+  obtain ⟨index,rule,declared,_,typed⟩ := sorted.collection_type_origin
+  exact .setDedup (List.mem_of_getElem? declared) typed
 
 /-- Open collection tails are schema variables rather than carrier values, so
 no presentation-derived equation can use one as its source. -/
@@ -355,7 +389,7 @@ multiplicity retained. -/
 theorem equationEquiv_bag_perm
     {base : BasePremiseEvaluator} {language : LanguageDef}
     {rule : GrammarRule}
-    (declaration : CollectionCarrierRule language rule .hashBag)
+    (_declaration : CollectionCarrierRule language rule .hashBag)
     {elements elements' : List Pattern}
     (sorted : SortedAt language
       (.collection .hashBag elements none) rule.category)
@@ -363,13 +397,13 @@ theorem equationEquiv_bag_perm
     EquationEquiv base language
       (.collection .hashBag elements none) (.collection .hashBag elements' none) :=
   derivedInstance_equivalent
-    (DerivedInstance.bagPerm declaration sorted permutation)
+    (DerivedInstance.bagPerm_of_sorted sorted permutation)
 
 /-- Values of a declared, sorted set carrier are idempotent. -/
 theorem equationEquiv_set_dedup
     {base : BasePremiseEvaluator} {language : LanguageDef}
     {rule : GrammarRule}
-    (declaration : CollectionCarrierRule language rule .hashSet)
+    (_declaration : CollectionCarrierRule language rule .hashSet)
     (element : Pattern) (elements : List Pattern) :
     SortedAt language
         (.collection .hashSet (element :: element :: elements) none)
@@ -379,7 +413,7 @@ theorem equationEquiv_set_dedup
       (.collection .hashSet (element :: elements) none) := by
   intro sorted
   exact derivedInstance_equivalent
-    (DerivedInstance.setDedup declaration sorted)
+    (DerivedInstance.setDedup_of_sorted sorted)
 
 /-- Contextual equation equivalence remains an equivalence after insertion
 into any structural one-hole context.  This is derived from composition of
@@ -544,6 +578,14 @@ theorem no_algebraRule_of_hasAlgebraDeclarations_eq_false
   rw [algebraRule.declared] at this
   simp at this
 
+/-- A typed collection occurrence uses the existing recursive declared-kind
+inventory, including wrapped slots and nested collection element types. -/
+theorem usesCollection_eq_true_of_collectionTypedAt {language : LanguageDef} {rule : GrammarRule}
+    {kind : CollType} {elements : List Pattern} (declared : rule ∈ language.terms)
+    (typed : WellSorted.CollectionTypedAt language rule kind elements) : language.usesCollection kind = true := by
+  obtain ⟨parameter,member,mentioned⟩ := typed.mentions
+  exact List.any_eq_true.mpr ⟨rule,declared,List.any_eq_true.mpr ⟨parameter,member,mentioned⟩⟩
+
 /-- No presentation-derived law fires when the presentation declares no bag,
 no set, and no collection algebra, whatever its authored equations. -/
 theorem no_derivedInstance_of_no_derived_laws
@@ -555,19 +597,19 @@ theorem no_derivedInstance_of_no_derived_laws
     ¬ DerivedInstance language source target := by
   intro derived
   cases derived with
-  | bagPerm declaration _ _ =>
+  | bagPerm declaration typed _ =>
       have usesBags :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noBags] at usesBags
       cases usesBags
-  | setPerm declaration _ _ =>
+  | setPerm declaration typed _ =>
       have usesSets :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noSets] at usesSets
       cases usesSets
-  | setDedup declaration _ =>
+  | setDedup declaration typed =>
       have usesSets :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noSets] at usesSets
       cases usesSets
   | flatten algebraRule _ _ =>
@@ -594,19 +636,19 @@ theorem no_derivedInstance_of_isEquationFree
   have noSets := usesCollection_hashSet_eq_false_of_isEquationFree free
   have noDeclarations := hasAlgebraDeclarations_eq_false_of_isEquationFree free
   cases derived with
-  | bagPerm declaration _ _ =>
+  | bagPerm declaration typed _ =>
       have usesBags :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noBags] at usesBags
       cases usesBags
-  | setPerm declaration _ _ =>
+  | setPerm declaration typed _ =>
       have usesSets :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noSets] at usesSets
       cases usesSets
-  | setDedup declaration _ =>
+  | setDedup declaration typed =>
       have usesSets :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       rw [noSets] at usesSets
       cases usesSets
   | flatten algebraRule _ _ =>
@@ -687,5 +729,11 @@ theorem gsltModuloEquations_equiv_iff_eq_of_no_generators
 #print axioms gsltModuloEquations
 #print axioms stepModuloEquations_iff_step_of_no_generators
 #print axioms gsltModuloEquations_equiv_iff_eq_of_no_generators
+
+#print axioms SortedAt.collection_type_origin
+#print axioms DerivedInstance.bagPerm_of_sorted
+#print axioms DerivedInstance.setPerm_of_sorted
+#print axioms DerivedInstance.setDedup_of_sorted
+#print axioms usesCollection_eq_true_of_collectionTypedAt
 
 end Mettapedia.GSLT.LanguageDef.EquationSemantics

@@ -1,5 +1,5 @@
 import Mettapedia.SetTheory.AntiFoundation.Graphs
-import Mettapedia.SetTheory.AntiFoundation.ReadingStep
+import Mettapedia.SetTheory.AntiFoundation.ReadingFinite
 import Mettapedia.TypeTheory.MaterialSets.Hypersets.UnfoldingIdentityComparison
 
 /-!
@@ -61,6 +61,20 @@ def scottGapShape : ScottGap → Nat
   | .rootB => 1
   | .leaf1 | .leaf2 | .leaf3 => 0
 
+private instance : Fintype ScottGap where
+  elems := {.rootA, .rootB, .leaf1, .leaf2, .leaf3}
+  complete x := by cases x <;> simp
+
+private instance : DecidableRel scottGapEdge := by
+  intro x y
+  cases x <;> cases y <;> simp only [scottGapEdge] <;> infer_instance
+
+/-- The shape counts child occurrences, which presentation isomorphisms retain. -/
+theorem scottGap_children_card (x : ScottGap) :
+    Nat.card {t // scottGapEdge x t} = scottGapShape x := by
+  rw [Nat.card_eq_fintype_card]
+  cases x <;> decide
+
 theorem scottGap_no_path {x y : ScottGap} (hx : ∀ z, ¬ scottGapEdge x z)
     (p : Path scottGapEdge x y) : y = x := by
   induction p with
@@ -102,27 +116,7 @@ def scottGapChildlessIso {x y : ScottGap} (hx : ∀ z, ¬ scottGapEdge x z)
 
 theorem scottGap_shape_zero {x : ScottGap} :
     scottGapShape x = 0 ↔ ∀ z, ¬ scottGapEdge x z := by
-  cases x <;> constructor
-  · intro h
-    cases h
-  · intro h
-    exact (h .leaf1 trivial).elim
-  · intro h
-    cases h
-  · intro h
-    exact (h .leaf3 trivial).elim
-  · intro _ z
-    cases z <;> simp [scottGapEdge]
-  · intro _
-    rfl
-  · intro _ z
-    cases z <;> simp [scottGapEdge]
-  · intro _
-    rfl
-  · intro _ z
-    cases z <;> simp [scottGapEdge]
-  · intro _
-    rfl
+  cases x <;> decide
 
 theorem scottGap_child_iff_rootA {t : ScottGap} :
     scottGapEdge .rootA t ↔ t = .leaf1 ∨ t = .leaf2 := by
@@ -141,56 +135,8 @@ def scottGapChildTransport {x y : ScottGap}
 theorem scottGap_shape_of_kernel {x y : ScottGap}
     (h : scottKernel scottGapEdge x y) : scottGapShape x = scottGapShape y := by
   obtain ⟨iso⟩ := h
-  let e := scottGapChildTransport iso
-  cases x with
-  | rootA =>
-    let i1 : {t // scottGapEdge .rootA t} := ⟨.leaf1, by simp [scottGapEdge]⟩
-    let i2 : {t // scottGapEdge .rootA t} := ⟨.leaf2, by simp [scottGapEdge]⟩
-    have distinct : (e i1).1 ≠ (e i2).1 := by
-      intro same
-      have : i1 = i2 := e.injective (Subtype.ext same)
-      cases congrArg Subtype.val this
-    cases y with
-    | rootA => rfl
-    | rootB =>
-      have h1 : (e i1).1 = .leaf3 := (scottGap_child_iff_rootB).mp (e i1).2
-      have h2 : (e i2).1 = .leaf3 := (scottGap_child_iff_rootB).mp (e i2).2
-      exact (distinct (h1.trans h2.symm)).elim
-    | leaf1 => exact ((scottGap_shape_zero).mp rfl (e i1).1 (e i1).2).elim
-    | leaf2 => exact ((scottGap_shape_zero).mp rfl (e i1).1 (e i1).2).elim
-    | leaf3 => exact ((scottGap_shape_zero).mp rfl (e i1).1 (e i1).2).elim
-  | rootB =>
-    let i : {t // scottGapEdge .rootB t} := ⟨.leaf3, by simp [scottGapEdge]⟩
-    cases y with
-    | rootB => rfl
-    | rootA =>
-      let j1 : {t // scottGapEdge .rootA t} := ⟨.leaf1, by simp [scottGapEdge]⟩
-      let j2 : {t // scottGapEdge .rootA t} := ⟨.leaf2, by simp [scottGapEdge]⟩
-      have : j1 = j2 := by
-        apply e.symm.injective
-        apply Subtype.ext
-        have h1 : (e.symm j1).1 = .leaf3 := (scottGap_child_iff_rootB).mp (e.symm j1).2
-        have h2 : (e.symm j2).1 = .leaf3 := (scottGap_child_iff_rootB).mp (e.symm j2).2
-        exact h1.trans h2.symm
-      cases congrArg Subtype.val this
-    | leaf1 => exact ((scottGap_shape_zero).mp rfl (e i).1 (e i).2).elim
-    | leaf2 => exact ((scottGap_shape_zero).mp rfl (e i).1 (e i).2).elim
-    | leaf3 => exact ((scottGap_shape_zero).mp rfl (e i).1 (e i).2).elim
-  | leaf1 =>
-    have hy : ∀ z, ¬ scottGapEdge y z := by
-      intro z hz
-      exact (scottGap_shape_zero).mp rfl (e.symm ⟨z, hz⟩).1 (e.symm ⟨z, hz⟩).2
-    exact ((scottGap_shape_zero).mpr hy).symm
-  | leaf2 =>
-    have hy : ∀ z, ¬ scottGapEdge y z := by
-      intro z hz
-      exact (scottGap_shape_zero).mp rfl (e.symm ⟨z, hz⟩).1 (e.symm ⟨z, hz⟩).2
-    exact ((scottGap_shape_zero).mpr hy).symm
-  | leaf3 =>
-    have hy : ∀ z, ¬ scottGapEdge y z := by
-      intro z hz
-      exact (scottGap_shape_zero).mp rfl (e.symm ⟨z, hz⟩).1 (e.symm ⟨z, hz⟩).2
-    exact ((scottGap_shape_zero).mpr hy).symm
+  exact (scottGap_children_card x).symm.trans
+    ((Nat.card_congr (scottGapChildTransport iso)).trans (scottGap_children_card y))
 
 theorem scottGap_kernel_of_shape {x y : ScottGap}
     (h : scottGapShape x = scottGapShape y) : scottKernel scottGapEdge x y := by
@@ -358,6 +304,20 @@ def orbitGapEdge : Edge OrbitGap
   | .b, .leaf => True
   | _, _ => False
 
+private instance : DecidableRel orbitGapEdge := by
+  intro x y
+  cases x <;> cases y <;> simp only [orbitGapEdge] <;> infer_instance
+
+private def orbitElems : List OrbitGap := [.marker, .a, .b, .leaf]
+private theorem orbit_complete (x : OrbitGap) : x ∈ orbitElems := by
+  cases x <;> simp [orbitElems]
+private def orbitEdgeB (x y : OrbitGap) : Bool := decide (orbitGapEdge x y)
+private theorem orbit_round (n : Nat) (x y : OrbitGap) :
+    (matrixStep orbitElems orbitEdgeB)^[n] (fun first second => decide (first = second)) x y = true ↔
+      (step orbitGapEdge)^[n] ⊥ x y :=
+  matrixIter_iff orbitElems orbit_complete orbitGapEdge orbitEdgeB
+    (by intros; simp [orbitEdgeB]) _ ⊥ decide_eq_iff_bot n x y
+
 theorem orbitGap_hasChild_iff {x y : OrbitGap}
     (e : PointedIso orbitGapEdge orbitGapEdge x y) :
     (∃ z, orbitGapEdge x z) ↔ (∃ z, orbitGapEdge y z) := by
@@ -480,106 +440,9 @@ theorem automorphismKernel_eq_bot : automorphismKernel orbitGapEdge = ⊥ := by
 
 theorem orbitGap_step_bot_iff {x y : OrbitGap} :
     step orbitGapEdge ⊥ x y ↔ x = y ∨ (x = .a ∧ y = .b) ∨ (x = .b ∧ y = .a) := by
-  rw [step_apply, Setoid.bot_def]
-  cases x <;> cases y
-  case marker.marker =>
-    exact ⟨fun _ => Or.inl rfl, fun _ =>
-      ⟨fun z hz => ⟨z, hz, rfl⟩, fun z hz => ⟨z, hz, rfl⟩⟩⟩
-  case a.a =>
-    exact ⟨fun _ => Or.inl rfl, fun _ =>
-      ⟨fun z hz => ⟨z, hz, rfl⟩, fun z hz => ⟨z, hz, rfl⟩⟩⟩
-  case b.b =>
-    exact ⟨fun _ => Or.inl rfl, fun _ =>
-      ⟨fun z hz => ⟨z, hz, rfl⟩, fun z hz => ⟨z, hz, rfl⟩⟩⟩
-  case leaf.leaf =>
-    exact ⟨fun _ => Or.inl rfl, fun _ =>
-      ⟨fun z hz => ⟨z, hz, rfl⟩, fun z hz => ⟨z, hz, rfl⟩⟩⟩
-  case a.b =>
-    refine ⟨fun _ => Or.inr (Or.inl ⟨rfl, rfl⟩), fun _ => ⟨?_, ?_⟩⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, rfl⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, rfl⟩
-  case b.a =>
-    refine ⟨fun _ => Or.inr (Or.inr ⟨rfl, rfl⟩), fun _ => ⟨?_, ?_⟩⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, rfl⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, rfl⟩
-  case marker.a =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, heq⟩ := h.1 .a trivial
-      cases w <;> simp [orbitGapEdge] at hw; cases heq
-    · intro hbad
-      exact absurd hbad (by decide)
-  case marker.b =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, heq⟩ := h.1 .a trivial
-      cases w <;> simp [orbitGapEdge] at hw; cases heq
-    · intro hbad
-      exact absurd hbad (by decide)
-  case marker.leaf =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.1 .a trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case a.marker =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, heq⟩ := h.1 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw; cases heq
-    · intro hbad
-      exact absurd hbad (by decide)
-  case a.leaf =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.1 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case b.marker =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, heq⟩ := h.1 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw; cases heq
-    · intro hbad
-      exact absurd hbad (by decide)
-  case b.leaf =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.1 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case leaf.marker =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.2 .a trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case leaf.a =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.2 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case leaf.b =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.2 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
+  change ((step orbitGapEdge)^[1] ⊥) x y ↔ _
+  rw [← orbit_round]
+  cases x <;> cases y <;> decide
 
 /-- The automorphism kernel is equality on this graph, and equality is not a reading. -/
 theorem automorphismKernel_not_reading_orbitGap :
@@ -596,136 +459,9 @@ theorem automorphismKernel_not_reading_orbitGap :
 theorem orbitGap_step_reading_iff {x y : OrbitGap} :
     step orbitGapEdge (step orbitGapEdge ⊥) x y ↔
       x = y ∨ (x = .a ∧ y = .b) ∨ (x = .b ∧ y = .a) := by
-  rw [step_apply]
-  cases x <;> cases y
-  case marker.marker =>
-    exact ⟨fun _ => Or.inl rfl, fun _ => ⟨fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩,
-      fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩⟩⟩
-  case a.a =>
-    exact ⟨fun _ => Or.inl rfl, fun _ => ⟨fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩,
-      fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩⟩⟩
-  case b.b =>
-    exact ⟨fun _ => Or.inl rfl, fun _ => ⟨fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩,
-      fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩⟩⟩
-  case leaf.leaf =>
-    exact ⟨fun _ => Or.inl rfl, fun _ => ⟨fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩,
-      fun z hz => ⟨z, hz, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩⟩⟩
-  case a.b =>
-    refine ⟨fun _ => Or.inr (Or.inl ⟨rfl, rfl⟩), fun _ => ⟨?_, ?_⟩⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩
-  case b.a =>
-    refine ⟨fun _ => Or.inr (Or.inr ⟨rfl, rfl⟩), fun _ => ⟨?_, ?_⟩⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩
-    · intro z hz
-      cases z <;> simp [orbitGapEdge] at hz
-      exact ⟨.leaf, trivial, (orbitGap_step_bot_iff).mpr (Or.inl rfl)⟩
-  case marker.a =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, hS⟩ := h.1 .a trivial
-      have hw' : w = .leaf := by
-        cases w <;> simp [orbitGapEdge] at hw
-        rfl
-      rw [hw'] at hS
-      have hbot := (orbitGap_step_bot_iff).mp hS
-      rcases hbot with hEq | ⟨_, hy⟩ | ⟨hx, _⟩
-      · cases hEq
-      · cases hy
-      · cases hx
-    · intro hbad
-      exact absurd hbad (by decide)
-  case marker.b =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, hS⟩ := h.1 .a trivial
-      have hw' : w = .leaf := by
-        cases w <;> simp [orbitGapEdge] at hw
-        rfl
-      rw [hw'] at hS
-      have hbot := (orbitGap_step_bot_iff).mp hS
-      rcases hbot with hEq | ⟨_, hy⟩ | ⟨hx, _⟩
-      · cases hEq
-      · cases hy
-      · cases hx
-    · intro hbad
-      exact absurd hbad (by decide)
-  case marker.leaf =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.1 .a trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case a.marker =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, hS⟩ := h.2 .a trivial
-      have hw' : w = .leaf := by
-        cases w <;> simp [orbitGapEdge] at hw
-        rfl
-      rw [hw'] at hS
-      rcases (orbitGap_step_bot_iff).mp hS with hEq | ⟨hx, _⟩ | ⟨hx, _⟩
-      · cases hEq
-      · cases hx
-      · cases hx
-    · intro hbad
-      exact absurd hbad (by decide)
-  case a.leaf =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.1 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case b.marker =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, hS⟩ := h.2 .a trivial
-      have hw' : w = .leaf := by
-        cases w <;> simp [orbitGapEdge] at hw
-        rfl
-      rw [hw'] at hS
-      rcases (orbitGap_step_bot_iff).mp hS with hEq | ⟨hx, _⟩ | ⟨hx, _⟩
-      · cases hEq
-      · cases hx
-      · cases hx
-    · intro hbad
-      exact absurd hbad (by decide)
-  case b.leaf =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.1 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case leaf.marker =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.2 .a trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case leaf.a =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.2 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
-  case leaf.b =>
-    refine ⟨?_, ?_⟩
-    · intro h
-      obtain ⟨w, hw, _⟩ := h.2 .leaf trivial
-      cases w <;> simp [orbitGapEdge] at hw
-    · intro hbad
-      exact absurd hbad (by decide)
+  change ((step orbitGapEdge)^[2] ⊥) x y ↔ _
+  rw [← orbit_round]
+  cases x <;> cases y <;> decide
 
 /-- One application of `step` to the automorphism kernel is a reading of the counterexample. -/
 theorem orbitGap_iterate_reading :

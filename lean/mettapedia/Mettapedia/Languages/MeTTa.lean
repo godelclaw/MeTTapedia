@@ -14,12 +14,17 @@ import Mettapedia.Languages.MeTTa.SpaceContainers
 import Mettapedia.Languages.MeTTa.TensorSpaces
 import Mettapedia.Languages.MeTTa.SpaceDeltas
 import Mettapedia.Languages.MeTTa.SpaceSinks
+import Mettapedia.Languages.MeTTa.StreamableSinks
+import Mettapedia.Languages.MeTTa.TransformQuantifiers
+import Mettapedia.Languages.MeTTa.TransformComposition
+import Mettapedia.Languages.MeTTa.TransformRemovalInstances
 import Mettapedia.Languages.MeTTa.CollectionPatternQuery
 import Mettapedia.Languages.MeTTa.CollectionValueBridges
 import Mettapedia.Languages.MeTTa.LayerEffects
 import Mettapedia.Languages.MeTTa.AnnotationCapabilities
 import Mettapedia.Languages.MeTTa.SpecRunObserver
 import Mettapedia.Languages.MeTTa.MeTTaZeroWorkClosure
+import Mettapedia.Languages.MeTTa.MeTTaZeroTransformEvaluation
 import Mettapedia.Languages.MeTTa.MeTTaZeroUV
 import Mettapedia.Languages.MeTTa.MeTTaInteraction
 import Mettapedia.Languages.MeTTa.MeTTaInteractionBind

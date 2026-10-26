@@ -1,4 +1,6 @@
 import Mettapedia.Languages.HOLLight.SourceProfile
+import Mettapedia.Languages.HOLLight.DefinitionHistoryModels
+import Mettapedia.Languages.HOLLight.DefinitionHistorySchemas
 
 /-!
 # Registered source Boolean definitions and their interpretation
@@ -6,8 +8,8 @@ import Mettapedia.Languages.HOLLight.SourceProfile
 The source bodies retain the names, type annotations and declaration identities
 of HOL Light revision `924faf0c3471a04174ffdeb8576ce7cabcb92d64`.
 Each body enters through the existing declaration checker. Model construction
-uses the admitted polymorphic extension rather than assigning Boolean meanings
-by theorem names.
+uses admitted polymorphic extensions. Independently, satisfaction of each
+admitted definition schema determines its Boolean meaning in any full-domain model.
 -/
 
 set_option autoImplicit false
@@ -328,6 +330,10 @@ def infinityAxiom : SourceTerm :=
   (.app (.const existentialConstant (Ty.function (Ty.function (Ty.function (.op SourceProfile.individualOperator []) (.op SourceProfile.individualOperator [])) Ty.bool) Ty.bool)) (.abs (Name.global "f") (Ty.function (.op SourceProfile.individualOperator []) (.op SourceProfile.individualOperator [])) (.app (.app (.const conjunctionConstant (Ty.function Ty.bool (Ty.function Ty.bool Ty.bool))) (.app (.const oneOneConstant (Ty.function (Ty.function (.op SourceProfile.individualOperator []) (.op SourceProfile.individualOperator [])) Ty.bool)) (.var (Name.global "f") (Ty.function (.op SourceProfile.individualOperator []) (.op SourceProfile.individualOperator []))))) (.app (.const negationConstant (Ty.function Ty.bool Ty.bool)) (.app (.const ontoConstant (Ty.function (Ty.function (.op SourceProfile.individualOperator []) (.op SourceProfile.individualOperator [])) Ty.bool)) (.var (Name.global "f") (Ty.function (.op SourceProfile.individualOperator []) (.op SourceProfile.individualOperator []))))))))
 
 end Source
+
+/-- The nine original admitted Boolean definitions, in their source order. -/
+def referenceHistory : DefinitionHistoryModels.ConstantHistory SourceProfile.primitiveContext Source.ontoResult.context :=
+  ((((((((((.nil : DefinitionHistoryModels.ConstantHistory SourceProfile.primitiveContext SourceProfile.primitiveContext).snoc (ExportReplay.instanceCertificates SourceProfile.primitiveContext.signature) (Name.global "T") Source.truthBody Source.truthResult Source.truthAdmitted).snoc (ExportReplay.instanceCertificates Source.truthContext.signature) (Name.global "/\\") Source.conjunctionBody Source.conjunctionResult (by simpa only [Source.truthContext] using Source.conjunctionAdmitted)).snoc (ExportReplay.instanceCertificates Source.conjunctionContext.signature) (Name.global "==>") Source.implicationBody Source.implicationResult (by simpa only [Source.conjunctionContext] using Source.implicationAdmitted)).snoc (ExportReplay.instanceCertificates Source.implicationContext.signature) (Name.global "!") Source.universalBody Source.universalResult (by simpa only [Source.implicationContext] using Source.universalAdmitted)).snoc (ExportReplay.instanceCertificates Source.universalContext.signature) (Name.global "?") Source.existentialBody Source.existentialResult (by simpa only [Source.universalContext] using Source.existentialAdmitted)).snoc (ExportReplay.instanceCertificates Source.existentialContext.signature) (Name.global "F") Source.falsityBody Source.falsityResult (by simpa only [Source.existentialContext] using Source.falsityAdmitted)).snoc (ExportReplay.instanceCertificates Source.falsityContext.signature) (Name.global "~") Source.negationBody Source.negationResult (by simpa only [Source.falsityContext] using Source.negationAdmitted)).snoc (ExportReplay.instanceCertificates Source.negationContext.signature) (Name.global "ONE_ONE") Source.oneOneBody Source.oneOneResult (by simpa only [Source.negationContext] using Source.oneOneAdmitted)).snoc (ExportReplay.instanceCertificates Source.oneOneContext.signature) (Name.global "ONTO") Source.ontoBody Source.ontoResult (by simpa only [Source.oneOneContext] using Source.ontoAdmitted))
 
 namespace Raw
 
@@ -999,6 +1005,187 @@ set_option backward.isDefEq.respectTransparency.types false
 @[simp] theorem truthModel_carrier
     (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
     (truthModel M).Carrier = M.Carrier := rfl
+
+/-! Admitted definition schemas determine Boolean meanings in any full-domain
+model. The model need not be built by the reference extension sequence. -/
+
+open DefinitionHistorySchemas
+
+theorem truth_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : SourceProfile.primitiveContext.signature.constants Const.equality =
+      some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.truthResult))) :
+    model.constDen Symbols.truth = ULift.up True := by
+  have expansion : model.constDen Symbols.truth = model.denote Raw.truth (fun v => nomatch v) := by
+    unfold Symbols.truth
+    rw [← Source.truthIdentity]
+    exact constant_meaning_of_source Source.truthAdmitted parameter equalityRegistered model full TypeSubst.empty
+      (definition TypeSubst.empty) Ty.bool (by simp) (by simp [Source.truthType, Source.truthSchema])
+      (Raw.truth_translated TypeSubst.empty)
+  exact expansion.trans (raw_truth_denote model _)
+
+theorem conjunction_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.truthContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.conjunctionResult)))
+    (truthMeaning : model.constDen Symbols.truth = ULift.up True)
+    (left right : HOL.Ty.denote.{0,w+1} model.Carrier .prop) :
+    model.constDen Symbols.conjunction left right = ULift.up (left.down ∧ right.down) := by
+  have expansion : model.constDen Symbols.conjunction = model.denote Raw.conjunction (fun v => nomatch v) := by
+    unfold Symbols.conjunction
+    rw [← Source.conjunctionIdentity]
+    exact constant_meaning_of_source Source.conjunctionAdmitted parameter equalityRegistered model full TypeSubst.empty
+      (definition TypeSubst.empty) Source.conjunctionSchema (by simp [Source.conjunctionSchema])
+      (by simp [Source.conjunctionType]) (Raw.conjunction_translated TypeSubst.empty)
+  exact (congrFun (congrFun expansion left) right).trans (raw_conjunction_denote model full truthMeaning _ left right)
+
+theorem implication_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.conjunctionContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.implicationResult)))
+    (conjunctionMeaning : ∀ left right, model.constDen Symbols.conjunction left right = ULift.up (left.down ∧ right.down))
+    (left right : HOL.Ty.denote.{0,w+1} model.Carrier .prop) :
+    model.constDen Symbols.implication left right = ULift.up (left.down → right.down) := by
+  have expansion : model.constDen Symbols.implication = model.denote Raw.implication (fun v => nomatch v) := by
+    unfold Symbols.implication
+    rw [← Source.implicationIdentity]
+    exact constant_meaning_of_source Source.implicationAdmitted parameter equalityRegistered model full TypeSubst.empty
+      (definition TypeSubst.empty) Source.implicationSchema (by simp [Source.implicationSchema])
+      (by simp [Source.implicationType]) (Raw.implication_translated TypeSubst.empty)
+  exact (congrFun (congrFun expansion left) right).trans (raw_implication_denote model conjunctionMeaning _ left right)
+
+theorem universal_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.implicationContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.universalResult)))
+    (truthMeaning : model.constDen Symbols.truth = ULift.up True)
+    (operand : HOL.Ty AtomicTy) (predicate : HOL.Ty.denote.{0,w+1} model.Carrier (operand.arr .prop)) :
+    model.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, model.adm operand value → (predicate value).down) := by
+  have translated := Raw.universal_translated (atA (Ty.fromHOL operand))
+  rw [atA_apply_A, Ty.toHOL_fromHOL] at translated
+  have expansion : model.constDen (Symbols.universal operand) = model.denote (Raw.universal operand) (fun v => nomatch v) := by
+    unfold Symbols.universal
+    rw [← Source.universalIdentity]
+    exact constant_meaning_of_source Source.universalAdmitted parameter equalityRegistered model full
+      (atA (Ty.fromHOL operand)) (definition _) _ (by simp)
+      (by rw [Source.universalType]; simp only [Source.universalSchema, TypeSubst.apply_function, TypeSubst.apply_bool]; rw [atA_apply_A]) translated
+  exact (congrFun expansion predicate).trans (raw_universal_denote model truthMeaning _ _ predicate)
+
+theorem existential_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.universalContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.existentialResult)))
+    (universalMeaning : ∀ operand predicate, model.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, model.adm operand value → (predicate value).down))
+    (implicationMeaning : ∀ left right, model.constDen Symbols.implication left right = ULift.up (left.down → right.down))
+    (operand : HOL.Ty AtomicTy) (predicate : HOL.Ty.denote.{0,w+1} model.Carrier (operand.arr .prop)) :
+    model.constDen (Symbols.existential operand) predicate =
+      ULift.up (∃ value, model.adm operand value ∧ (predicate value).down) := by
+  have translated := Raw.existential_translated (atA (Ty.fromHOL operand))
+  rw [atA_apply_A, Ty.toHOL_fromHOL] at translated
+  have expansion : model.constDen (Symbols.existential operand) = model.denote (Raw.existential operand) (fun v => nomatch v) := by
+    unfold Symbols.existential
+    rw [← Source.existentialIdentity]
+    exact constant_meaning_of_source Source.existentialAdmitted parameter equalityRegistered model full
+      (atA (Ty.fromHOL operand)) (definition _) _ (by simp)
+      (by rw [Source.existentialType]; simp only [Source.existentialSchema, TypeSubst.apply_function, TypeSubst.apply_bool]; rw [atA_apply_A]) translated
+  exact (congrFun expansion predicate).trans (raw_existential_denote model full universalMeaning implicationMeaning _ _ predicate)
+
+theorem falsity_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.existentialContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.falsityResult)))
+    (universalMeaning : ∀ operand predicate, model.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, model.adm operand value → (predicate value).down)) :
+    model.constDen Symbols.falsity = ULift.up False := by
+  have expansion : model.constDen Symbols.falsity = model.denote Raw.falsity (fun v => nomatch v) := by
+    unfold Symbols.falsity
+    rw [← Source.falsityIdentity]
+    exact constant_meaning_of_source Source.falsityAdmitted parameter equalityRegistered model full TypeSubst.empty
+      (definition TypeSubst.empty) Source.falsitySchema (by simp [Source.falsitySchema])
+      (by simp [Source.falsityType]) (Raw.falsity_translated TypeSubst.empty)
+  exact expansion.trans (raw_falsity_denote model universalMeaning _)
+
+theorem negation_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.falsityContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.negationResult)))
+    (implicationMeaning : ∀ left right, model.constDen Symbols.implication left right = ULift.up (left.down → right.down))
+    (falsityMeaning : model.constDen Symbols.falsity = ULift.up False)
+    (proposition : HOL.Ty.denote.{0,w+1} model.Carrier .prop) :
+    model.constDen Symbols.negation proposition = ULift.up (¬ proposition.down) := by
+  have expansion : model.constDen Symbols.negation = model.denote Raw.negation (fun v => nomatch v) := by
+    unfold Symbols.negation
+    rw [← Source.negationIdentity]
+    exact constant_meaning_of_source Source.negationAdmitted parameter equalityRegistered model full TypeSubst.empty
+      (definition TypeSubst.empty) Source.negationSchema (by simp [Source.negationSchema])
+      (by simp [Source.negationType]) (Raw.negation_translated TypeSubst.empty)
+  exact (congrFun expansion proposition).trans (raw_negation_denote model implicationMeaning falsityMeaning _ proposition)
+
+theorem oneOne_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.negationContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.oneOneResult)))
+    (universalMeaning : ∀ operand predicate, model.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, model.adm operand value → (predicate value).down))
+    (implicationMeaning : ∀ left right, model.constDen Symbols.implication left right = ULift.up (left.down → right.down))
+    (domain codomain : HOL.Ty AtomicTy) (function : HOL.Ty.denote.{0,w+1} model.Carrier (domain.arr codomain)) :
+    model.constDen (Symbols.oneOne domain codomain) function = ULift.up (Function.Injective function) := by
+  have translated := Raw.oneOne_translated (atAB (Ty.fromHOL domain) (Ty.fromHOL codomain))
+  rw [atAB_apply_A, atAB_apply_B, Ty.toHOL_fromHOL, Ty.toHOL_fromHOL] at translated
+  have expansion : model.constDen (Symbols.oneOne domain codomain) = model.denote (Raw.oneOne domain codomain) (fun v => nomatch v) := by
+    unfold Symbols.oneOne
+    rw [← Source.oneOneIdentity]
+    exact constant_meaning_of_source Source.oneOneAdmitted parameter equalityRegistered model full
+      (atAB (Ty.fromHOL domain) (Ty.fromHOL codomain)) (definition _) _ (by simp)
+      (by rw [Source.oneOneType]; simp only [Source.oneOneSchema, TypeSubst.apply_function, TypeSubst.apply_bool]; rw [atAB_apply_A, atAB_apply_B]) translated
+  refine (congrFun expansion function).trans ?_
+  have rawMeaning := raw_oneOne_denote model universalMeaning implicationMeaning domain codomain (fun v => nomatch v) function
+  have admitted : ∀ type value, model.adm type value ↔ True :=
+    fun type value => iff_true_intro (full type value)
+  simpa only [admitted, true_implies, model.eqv_iff_eq_of_fullDomains full, Function.Injective] using rawMeaning
+
+
+theorem onto_of_schema (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (parameter : Name)
+    (equalityRegistered : Source.oneOneContext.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (definition : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema Source.ontoResult)))
+    (universalMeaning : ∀ operand predicate, model.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, model.adm operand value → (predicate value).down))
+    (existentialMeaning : ∀ operand predicate, model.constDen (Symbols.existential operand) predicate =
+      ULift.up (∃ value, model.adm operand value ∧ (predicate value).down))
+    (domain codomain : HOL.Ty AtomicTy) (function : HOL.Ty.denote.{0,w+1} model.Carrier (domain.arr codomain)) :
+    model.constDen (Symbols.onto domain codomain) function = ULift.up (Function.Surjective function) := by
+  have translated := Raw.onto_translated (atAB (Ty.fromHOL domain) (Ty.fromHOL codomain))
+  rw [atAB_apply_A, atAB_apply_B, Ty.toHOL_fromHOL, Ty.toHOL_fromHOL] at translated
+  have expansion : model.constDen (Symbols.onto domain codomain) = model.denote (Raw.onto domain codomain) (fun v => nomatch v) := by
+    unfold Symbols.onto
+    rw [← Source.ontoIdentity]
+    exact constant_meaning_of_source Source.ontoAdmitted parameter equalityRegistered model full
+      (atAB (Ty.fromHOL domain) (Ty.fromHOL codomain)) (definition _) _ (by simp)
+      (by rw [Source.ontoType]; simp only [Source.ontoSchema, TypeSubst.apply_function, TypeSubst.apply_bool]; rw [atAB_apply_A, atAB_apply_B]) translated
+  refine (congrFun expansion function).trans ?_
+  refine (raw_onto_denote model universalMeaning existentialMeaning domain codomain (fun v => nomatch v) function).trans ?_
+  apply congrArg ULift.up
+  apply propext
+  constructor
+  · intro onto value
+    obtain ⟨preimage, _, equivalent⟩ := onto value (full codomain value)
+    exact ⟨preimage, ((model.eqv_iff_eq_of_fullDomains full _ _).mp equivalent).symm⟩
+  · intro onto value _
+    obtain ⟨preimage, equal⟩ := onto value
+    exact ⟨preimage, full domain preimage, (model.eqv_iff_eq_of_fullDomains full _ _).mpr equal.symm⟩
 
 theorem truthModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (_full : M.FullDomains) : (truthModel M).FullDomains :=
@@ -1940,6 +2127,210 @@ theorem ontoModel_onto (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
         (oneOneModel_fullDomains M full) _ _).mpr equal.symm⟩
 
 end Interpretation
+
+/-- The named Boolean interpretation is the actual chronological source
+extension, rather than an independent assignment to the final symbols. -/
+theorem referenceHistory_model (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains) : referenceHistory.extendModel M = Interpretation.ontoModel M := by
+  dsimp only [referenceHistory, id_eq, Source.ontoContext, Source.oneOneContext,
+    Source.negationContext, Source.falsityContext, Source.existentialContext,
+    Source.universalContext, Source.implicationContext, Source.conjunctionContext,
+    Source.truthContext, DefinitionHistoryModels.ConstantHistory.extendModel]
+  rw [← Interpretation.truthModel_eq_sourceExtension M full]
+  rw [← Interpretation.conjunctionModel_eq_sourceExtension M full]
+  rw [← Interpretation.implicationModel_eq_sourceExtension M full]
+  rw [← Interpretation.universalModel_eq_sourceExtension M full]
+  rw [← Interpretation.existentialModel_eq_sourceExtension M full]
+  rw [← Interpretation.falsityModel_eq_sourceExtension M full]
+  rw [← Interpretation.negationModel_eq_sourceExtension M full]
+  rw [← Interpretation.oneOneModel_eq_sourceExtension M full]
+  rw [← Interpretation.ontoModel_eq_sourceExtension M full]
+
+namespace Interpretation
+
+/-! Source commitments depend on the recovered meanings rather than the
+particular construction of the model. -/
+
+theorem models_eta_of_universal (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains)
+    (universalMeaning : ∀ operand predicate, M.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, M.adm operand value → (predicate value).down))
+    (domain codomain : HOL.Ty AtomicTy) :
+    M.models (Raw.etaAxiom domain codomain) := by
+  let predicate : HOL.Ty.denote.{0,w+1} M.Carrier ((domain.arr codomain).arr .prop) :=
+    fun value => ULift.up (M.Eqv (domain.arr codomain) (fun argument => value argument) value)
+  have holds : ∀ value, M.adm (domain.arr codomain) value → (predicate value).down := by
+    intro value _
+    exact (M.eqv_iff_eq_of_fullDomains full _ _).mpr rfl
+  have described := congrArg ULift.down (universalMeaning (domain.arr codomain) predicate)
+  exact described.mpr holds
+
+
+theorem models_infinity_of_meanings (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains)
+    (existentialMeaning : ∀ operand predicate, M.constDen (Symbols.existential operand) predicate =
+      ULift.up (∃ value, M.adm operand value ∧ (predicate value).down))
+    (conjunctionMeaning : ∀ left right, M.constDen Symbols.conjunction left right = ULift.up (left.down ∧ right.down))
+    (negationMeaning : ∀ proposition, M.constDen Symbols.negation proposition = ULift.up (¬ proposition.down))
+    (oneOneMeaning : ∀ domain codomain function, M.constDen (Symbols.oneOne domain codomain) function =
+      ULift.up (Function.Injective function))
+    (ontoMeaning : ∀ domain codomain function, M.constDen (Symbols.onto domain codomain) function =
+      ULift.up (Function.Surjective function))
+    (witness : M.DedekindInfinityWitness SourceProfile.individualBase) :
+    M.models Raw.infinityAxiom := by
+  let base : HOL.Ty AtomicTy := (Ty.op SourceProfile.individualOperator []).toHOL
+  have individual_toHOL : base = HOL.Ty.base SourceProfile.individualBase :=
+    SourceProfile.individual_toHOL
+  let coding : HOL.Ty.denote.{0,w+1} M.Carrier base ≃ M.Carrier SourceProfile.individualBase :=
+    Equiv.cast (congrArg (HOL.Ty.denote.{0,w+1} M.Carrier) individual_toHOL)
+  let successor : HOL.Ty.denote.{0,w+1} M.Carrier base → HOL.Ty.denote.{0,w+1} M.Carrier base :=
+    fun value => coding.symm (witness.successor (coding value))
+  have injective : Function.Injective successor :=
+    coding.symm.injective.comp (witness.successor_injective.comp coding.injective)
+  have omitted : ∀ value, successor value ≠ coding.symm witness.omitted := by
+    intro value equal
+    exact witness.omitted_not_image (coding value) (coding.symm.injective equal)
+  let predicate : HOL.Ty.denote.{0,w+1} M.Carrier ((base.arr base).arr .prop) := fun function =>
+    M.constDen Symbols.conjunction
+      (M.constDen (Symbols.oneOne base base) function)
+      (M.constDen Symbols.negation
+        (M.constDen (Symbols.onto base base) function))
+  have holds : ∃ value, M.adm (base.arr base) value ∧ (predicate value).down := by
+    refine ⟨successor, full _ _, ?_⟩
+    have one := congrArg ULift.down (oneOneMeaning base base successor)
+    have onto := congrArg ULift.down (ontoMeaning base base successor)
+    have neg := congrArg ULift.down (negationMeaning
+      (M.constDen (Symbols.onto base base) successor))
+    have conj := congrArg ULift.down (conjunctionMeaning
+      (M.constDen (Symbols.oneOne base base) successor)
+      (M.constDen Symbols.negation
+        (M.constDen (Symbols.onto base base) successor)))
+    apply conj.mpr
+    refine ⟨one.mpr injective, neg.mpr ?_⟩
+    intro surjective
+    obtain ⟨preimage, equal⟩ := onto.mp surjective (coding.symm witness.omitted)
+    exact omitted preimage equal
+  have described := congrArg ULift.down (existentialMeaning (base.arr base) predicate)
+  have proved := described.mpr holds
+  change M.models Raw.infinityAxiom
+  convert proved using 1
+  simp only [Raw.infinityAxiom, HOL.PreModel.models,
+      HOL.PreModel.denote, HOL.PreModel.extend,
+      predicate, base, Symbols.existential, Symbols.conjunction, Symbols.oneOne,
+      Symbols.negation, Symbols.onto, Ty.fromHOL, Ty.fromHOL_toHOL,
+      Source.conjunctionSchema, Source.negationSchema]
+
+theorem models_selection_of_meanings (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (universalMeaning : ∀ operand predicate, M.constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, M.adm operand value → (predicate value).down))
+    (implicationMeaning : ∀ left right, M.constDen Symbols.implication left right = ULift.up (left.down → right.down))
+    (operand : Ty)
+    (specified : M.models (selectionFormula operand)) :
+    M.models (Raw.selectionAxiom operand.toHOL) := by
+  let selector := M.constDen
+    (.constant selectionConstant (selectionType operand) (selectionType_toHOL operand))
+  let inner (predicate : HOL.Ty.denote.{0,w+1} M.Carrier (operand.toHOL.arr .prop)) :=
+    fun value => M.constDen Symbols.implication
+      (predicate value) (predicate (selector predicate))
+  let outer : HOL.Ty.denote.{0,w+1} M.Carrier ((operand.toHOL.arr .prop).arr .prop) :=
+    fun predicate => M.constDen (Symbols.universal operand.toHOL) (inner predicate)
+  have holds : ∀ predicate, M.adm (operand.toHOL.arr .prop) predicate → (outer predicate).down := by
+    intro predicate admissible
+    apply (congrArg ULift.down (universalMeaning operand.toHOL (inner predicate))).mpr
+    intro value present
+    apply (congrArg ULift.down (implicationMeaning
+      (predicate value) (predicate (selector predicate)))).mpr
+    intro trueValue
+    have actual := specified predicate admissible value present trueValue
+    exact actual
+  have proved := (congrArg ULift.down
+    (universalMeaning (operand.toHOL.arr .prop) outer)).mpr holds
+  convert proved using 1
+  simp only [Raw.selectionAxiom, HOL.PreModel.models,
+    HOL.PreModel.denote, HOL.PreModel.extend, outer, inner, selector,
+    Symbols.universal, Symbols.implication, selectionType, Ty.fromHOL,
+    Ty.fromHOL_toHOL, Source.implicationSchema]
+
+private theorem ontoModel_universal_self (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains) (operand : HOL.Ty AtomicTy)
+    (predicate : HOL.Ty.denote M.Carrier (operand.arr .prop)) :
+    (ontoModel M).constDen (Symbols.universal operand) predicate =
+      ULift.up (∀ value, (ontoModel M).adm operand value → (predicate value).down) := by
+  refine (ontoModel_universal M full operand predicate).trans ?_
+  apply congrArg ULift.up
+  apply propext
+  constructor
+  · intro holds value _
+    exact holds value (full _ _)
+  · intro holds value _
+    exact holds value (ontoModel_fullDomains M full _ _)
+
+private theorem ontoModel_existential_self (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains) (operand : HOL.Ty AtomicTy)
+    (predicate : HOL.Ty.denote M.Carrier (operand.arr .prop)) :
+    (ontoModel M).constDen (Symbols.existential operand) predicate =
+      ULift.up (∃ value, (ontoModel M).adm operand value ∧ (predicate value).down) := by
+  refine (ontoModel_existential M full operand predicate).trans ?_
+  apply congrArg ULift.up
+  apply propext
+  constructor
+  · rintro ⟨value, _, holds⟩
+    exact ⟨value, ontoModel_fullDomains M full _ _, holds⟩
+  · rintro ⟨value, _, holds⟩
+    exact ⟨value, full _ _, holds⟩
+
+/-- The actual quantified source η formula is true in the admitted
+Boolean extension of every full-domain model. -/
+theorem ontoModel_models_eta (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains) (domain codomain : HOL.Ty AtomicTy) :
+    (ontoModel M).models (Raw.etaAxiom domain codomain) :=
+  models_eta_of_universal _ (ontoModel_fullDomains M full)
+    (ontoModel_universal_self M full) domain codomain
+
+theorem ontoModel_models_infinity (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains)
+    (witness : M.DedekindInfinityWitness SourceProfile.individualBase) :
+    (ontoModel M).models Raw.infinityAxiom :=
+  models_infinity_of_meanings _ (ontoModel_fullDomains M full)
+    (ontoModel_existential_self M full)
+    (ontoModel_conjunction M full)
+    (ontoModel_negation M full) (ontoModel_oneOne M full) (ontoModel_onto M full)
+    { successor := witness.successor
+      successor_admissible := ontoModel_fullDomains M full _ _
+      successor_injective := witness.successor_injective
+      omitted := witness.omitted
+      omitted_not_image := witness.omitted_not_image }
+
+/-- The original source selector retains its meaning through all nine
+registered Boolean definitions, at each source type instance. -/
+theorem ontoModel_selection (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains) (operand : Ty) :
+    (ontoModel M).constDen
+      (.constant selectionConstant (selectionType operand) (selectionType_toHOL operand)) =
+      M.constDen (.constant selectionConstant (selectionType operand) (selectionType_toHOL operand)) := by
+  have retained := referenceHistory.constant_old M selectionConstant
+    (selectionType (.var DefinitionAdapters.ContextControls.equalityParameter))
+    (selectionType operand) SourceProfile.selector_registered (selectionType_toHOL operand)
+  rw [referenceHistory_model M full] at retained
+  exact eq_of_heq retained
+
+theorem ontoModel_models_selection (M : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : M.FullDomains) (operand : Ty)
+    (specified : M.models (selectionFormula operand)) :
+    (ontoModel M).models (Raw.selectionAxiom operand.toHOL) := by
+  apply models_selection_of_meanings _
+    (ontoModel_universal_self M full)
+    (ontoModel_implication M full) operand
+  intro predicate admissible value present trueValue
+  have actual := specified predicate (full _ _) value (full _ _) trueValue
+  have retained := congrFun (ontoModel_selection M full operand) predicate
+  exact (congrArg (fun selected => (predicate selected).down) retained).mpr actual
+
+
+end Interpretation
+
+
+
 
 
 

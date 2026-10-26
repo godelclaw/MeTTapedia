@@ -87,11 +87,11 @@ def decideIn (region : List Pattern) (formula : Formula 0) : Option Bool :=
   else none
 
 /-- The verdict of a closed canonical region at its first term. -/
-def decideCanonicalIn (canon : Pattern → Pattern) (domain : Pattern → Bool) (region : List Pattern)
-    (formula : Formula 0) : Option Bool :=
-  if canonicalRegion relEnv language fuel canon domain region then
+def decideCanonicalIn (canon : Pattern → Pattern) (domain : Pattern → Bool) (presentations : Pattern → List Pattern)
+    (region : List Pattern) (formula : Formula 0) : Option Bool :=
+  if canonicalRegion relEnv language fuel canon domain presentations region then
     if inside : 0 < region.length then
-      some ((canonicalExploration relEnv language fuel canon domain region).check formula ⟨0, inside⟩)
+      some ((canonicalExploration relEnv language fuel canon domain presentations region).check formula ⟨0, inside⟩)
     else none
   else none
 
@@ -109,13 +109,14 @@ theorem decideFrom_eq (formula : Formula 0) (term : Pattern) (rounds : ℕ) :
   unfold decideFrom decideIn
   rw [dif_pos (grow_length_pos relEnv language fuel term rounds)]
 
-theorem decideCanonical_eq (canon : Pattern → Pattern) (domain : Pattern → Bool) (formula : Formula 0) (term : Pattern)
-    (rounds : ℕ) :
-    decideCanonical relEnv language fuel canon domain formula term rounds =
-      decideCanonicalIn relEnv language fuel canon domain (growCanonical relEnv language fuel canon term rounds)
+theorem decideCanonical_eq (canon : Pattern → Pattern) (domain : Pattern → Bool)
+    (presentations : Pattern → List Pattern) (formula : Formula 0) (term : Pattern) (rounds : ℕ) :
+    decideCanonical relEnv language fuel canon domain presentations formula term rounds =
+      decideCanonicalIn relEnv language fuel canon domain presentations
+        (growCanonical relEnv language fuel canon presentations term rounds)
         formula := by
   unfold decideCanonical decideCanonicalIn
-  rw [dif_pos (growCanonical_length_pos relEnv language fuel canon term rounds)]
+  rw [dif_pos (growCanonical_length_pos relEnv language fuel canon presentations term rounds)]
 
 /-! ## Progress -/
 
@@ -131,12 +132,12 @@ structure Progress where
   proof : Option {candidate : CertificateCandidate // provesBy signature language formula term candidate = true}
   refutation : Option {candidate : CertificateCandidate // refutesBy signature language formula term candidate = true}
 
-variable (relEnv fuel) (canon : Pattern → Pattern)
+variable (relEnv fuel) (canon : Pattern → Pattern) (presentations : Pattern → List Pattern)
 
 /-- The progress of a question after some rounds. -/
 def Progress.at (rounds : ℕ) : Progress language signature formula term :=
   ⟨rounds, reachable relEnv language fuel term rounds, grow relEnv language fuel term rounds,
-    growCanonical relEnv language fuel canon term rounds,
+    growCanonical relEnv language fuel canon presentations term rounds,
     explain CertificateCandidate.decode CertificateCandidate.cost (provesBy signature language formula term) rounds,
     explain CertificateCandidate.decode CertificateCandidate.cost (refutesBy signature language formula term) rounds⟩
 
@@ -148,7 +149,7 @@ def Progress.resume (progress : Progress language signature formula term) (extra
   ⟨progress.rounds + extra,
     iterate (fun state => (stepsAt relEnv language fuel state).map (·.2)) progress.reached extra,
     iterate (nextTerms relEnv language fuel) progress.grown extra,
-    iterate (nextCanonical relEnv language fuel canon) progress.canonical extra,
+    iterate (nextCanonical relEnv language fuel canon presentations) progress.canonical extra,
     searchFrom (explanations CertificateCandidate.decode CertificateCandidate.cost
       (provesBy signature language formula term)) progress.proof progress.rounds extra,
     searchFrom (explanations CertificateCandidate.decode CertificateCandidate.cost
@@ -156,8 +157,9 @@ def Progress.resume (progress : Progress language signature formula term) (extra
 
 /-- **Resuming gives the progress of the longer question.** -/
 theorem resume_at (rounds extra : ℕ) :
-    (Progress.at relEnv language fuel signature formula term canon rounds).resume relEnv fuel canon extra =
-      Progress.at relEnv language fuel signature formula term canon (rounds + extra) := by
+    (Progress.at relEnv language fuel signature formula term canon presentations rounds).resume relEnv fuel canon
+        presentations extra =
+      Progress.at relEnv language fuel signature formula term canon presentations (rounds + extra) := by
   simp only [Progress.at, Progress.resume, reachable_eq_iterate, grow_eq_iterate, growCanonical_eq_iterate,
     iterate_add, explain, search_add]
 
@@ -172,8 +174,10 @@ def Progress.establishes (forms : Option (CanonicalForms relEnv language fuel))
       decideIn relEnv language fuel progress.grown formula == some true
   | .canonicalRegion _ => match forms with
     | some forms => formula.behaviouralIn forms.labels &&
-        decideCanonicalIn relEnv language fuel forms.canon forms.domain progress.canonical formula == some true
+        decideCanonicalIn relEnv language fuel forms.canon forms.domain forms.presentations progress.canonical formula
+          == some true
     | none => false
+  | .decided => false
 
 /-- Whether evidence refutes the formula, read from the progress. -/
 def Progress.refutes (forms : Option (CanonicalForms relEnv language fuel))
@@ -184,8 +188,10 @@ def Progress.refutes (forms : Option (CanonicalForms relEnv language fuel))
       decideIn relEnv language fuel progress.grown formula == some false
   | .canonicalRegion _ => match forms with
     | some forms => formula.behaviouralIn forms.labels &&
-        decideCanonicalIn relEnv language fuel forms.canon forms.domain progress.canonical formula == some false
+        decideCanonicalIn relEnv language fuel forms.canon forms.domain forms.presentations progress.canonical formula
+          == some false
     | none => false
+  | .decided => false
 
 /-- The evidence the progress holds. -/
 def Progress.gathered (hint : Option CertificateCandidate) (progress : Progress language signature formula term) :
@@ -218,13 +224,21 @@ def canonOf {relEnv : RelationEnv} {language : LanguageDef} {fuel : ℕ}
   | some forms => forms.canon
   | none => id
 
+/-- The canonical forms' presentations, or each term as itself. -/
+def presentationsOf {relEnv : RelationEnv} {language : LanguageDef} {fuel : ℕ}
+    (forms : Option (CanonicalForms relEnv language fuel)) : Pattern → List Pattern :=
+  match forms with
+  | some forms => forms.presentations
+  | none => List.singleton
+
 /-- **The progress after some rounds answers as the front door.** -/
 theorem answer_at (forms : Option (CanonicalForms relEnv language fuel)) (hint : Option CertificateCandidate)
     (rounds : ℕ) :
-    (Progress.at relEnv language fuel signature formula term (canonOf forms) rounds).answer relEnv fuel forms
-        hint =
+    (Progress.at relEnv language fuel signature formula term (canonOf forms) (presentationsOf forms)
+        rounds).answer relEnv fuel forms hint =
       ask relEnv signature language fuel formula term hint rounds forms := by
-  have sameGathered : (Progress.at relEnv language fuel signature formula term (canonOf forms) rounds).gathered hint =
+  have sameGathered : (Progress.at relEnv language fuel signature formula term (canonOf forms)
+    (presentationsOf forms) rounds).gathered hint =
       gathered signature language formula term hint rounds := rfl
   have members : ∀ evidence ∈ gathered signature language formula term hint rounds,
       evidence = .exploration rounds ∨ evidence = .closedRegion rounds ∨ evidence = .canonicalRegion rounds ∨
@@ -240,7 +254,8 @@ theorem answer_at (forms : Option (CanonicalForms relEnv language fuel)) (hint :
     · exact Or.inr (Or.inr (Or.inr ⟨found.1, rfl⟩))
     · exact Or.inr (Or.inr (Or.inr ⟨found.1, rfl⟩))
   have establishes : ∀ evidence ∈ gathered signature language formula term hint rounds,
-      (Progress.at relEnv language fuel signature formula term (canonOf forms) rounds).establishes relEnv fuel
+      (Progress.at relEnv language fuel signature formula term (canonOf forms)
+        (presentationsOf forms) rounds).establishes relEnv fuel
           forms evidence =
         evidence.establishes relEnv signature language fuel formula term forms := by
     intro evidence inside
@@ -249,10 +264,12 @@ theorem answer_at (forms : Option (CanonicalForms relEnv language fuel)) (hint :
     · simp only [Progress.establishes, Evidence.establishes, Progress.at, decideFrom_eq]
     · cases forms with
       | none => rfl
-      | some forms => simp only [Progress.establishes, Evidence.establishes, Progress.at, canonOf, decideCanonical_eq]
+      | some forms => simp only [Progress.establishes, Evidence.establishes, Progress.at, canonOf, presentationsOf,
+        decideCanonical_eq]
     · rfl
   have refutes : ∀ evidence ∈ gathered signature language formula term hint rounds,
-      (Progress.at relEnv language fuel signature formula term (canonOf forms) rounds).refutes relEnv fuel
+      (Progress.at relEnv language fuel signature formula term (canonOf forms)
+        (presentationsOf forms) rounds).refutes relEnv fuel
           forms evidence =
         evidence.refutes relEnv signature language fuel formula term forms := by
     intro evidence inside
@@ -261,7 +278,8 @@ theorem answer_at (forms : Option (CanonicalForms relEnv language fuel)) (hint :
     · simp only [Progress.refutes, Evidence.refutes, Progress.at, decideFrom_eq]
     · cases forms with
       | none => rfl
-      | some forms => simp only [Progress.refutes, Evidence.refutes, Progress.at, canonOf, decideCanonical_eq]
+      | some forms => simp only [Progress.refutes, Evidence.refutes, Progress.at, canonOf, presentationsOf,
+        decideCanonical_eq]
     · rfl
   unfold Progress.answer ask
   rw [sameGathered, find?_congr establishes, find?_congr refutes]
@@ -270,8 +288,8 @@ theorem answer_at (forms : Option (CanonicalForms relEnv language fuel)) (hint :
 /-- **A resumed question answers as asking afresh with all the rounds.** -/
 theorem resumed_answer (forms : Option (CanonicalForms relEnv language fuel)) (hint : Option CertificateCandidate)
     (rounds extra : ℕ) :
-    ((Progress.at relEnv language fuel signature formula term (canonOf forms) rounds).resume relEnv fuel
-        (canonOf forms) extra).answer relEnv fuel forms hint =
+    ((Progress.at relEnv language fuel signature formula term (canonOf forms) (presentationsOf forms)
+        rounds).resume relEnv fuel (canonOf forms) (presentationsOf forms) extra).answer relEnv fuel forms hint =
       ask relEnv signature language fuel formula term hint (rounds + extra) forms := by
   rw [resume_at, answer_at]
 

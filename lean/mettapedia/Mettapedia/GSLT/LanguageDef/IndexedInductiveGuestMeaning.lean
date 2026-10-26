@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveGuestInstantiation
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveElimination
+import Mathlib.Data.List.OfFn
 
 /-!
 # Dependent meaning of generated indexed eliminators
@@ -300,4 +301,42 @@ end Elimination
 #print axioms recursor_reduces
 #print axioms package_reduces
 
+end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Meaning
+
+namespace Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Meaning
+open Mettapedia.TypeTheory.IndexedPolynomial.Description
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+universe u
+variable {I : Interface.{u}} {Head : Type} {n : Nat}
+
+theorem results_positionVector {α : Type} {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index}
+    (shape : Shape code environment index) (values : Position code shape → α) :
+    results code shape values = List.ofFn (fun ordinal => values (positionOfFin code shape ordinal)) := by
+  induction code with
+  | result => rfl
+  | data sort body ih => exact ih shape.2 values
+  | recursive expression rest ih =>
+    simp only [results, recursiveCount, List.ofFn_succ, positionOfFin]
+    exact congrArg (List.cons (values none)) (ih shape (fun position => values (some position)))
+
+theorem recursiveArguments_fields_positionVector (indices : IndexSyntax I Head)
+    (quoteData : ∀ sort, I.Value sort → Tm Head n) (quoteIndex : I.Index → Tm Head n)
+    {context : List I.SortCode} (code : Code I context)
+    (quoted : QuotedCode indices quoteData quoteIndex code)
+    {environment : Env I.Value context} {index : I.Index}
+    (shape : Shape code environment index) (children : Position code shape → Tm Head n)
+    (call : Tm Head n → Tm Head n → Tm Head n) :
+    (recursiveArguments indices code (quoteEnv quoteData environment)
+      (fields quoteData code shape children)).map (fun pair => call pair.1 pair.2) =
+      List.ofFn (fun ordinal => call
+        (quoteIndex (recursiveIndexAt code shape ordinal))
+        (children (positionOfFin code shape ordinal))) := by
+  rw [recursiveArguments_fields indices quoteData quoteIndex code quoted shape children call,
+    results_positionVector]
+  simp only [next_positionOfFin]
+
+#print axioms results_positionVector
+#print axioms recursiveArguments_fields_positionVector
 end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Meaning

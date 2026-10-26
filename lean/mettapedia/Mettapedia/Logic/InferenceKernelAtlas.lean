@@ -6,8 +6,25 @@ import Mettapedia.Languages.HOLLight.InferenceOnlyReplayControls
 import Mettapedia.Languages.HOLLight.TypeDefinitionEqualityControls
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLRetraction
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLPredicate
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveRecursiveSpaceControls
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveConstructorDataControls
 import Mettapedia.Languages.HOLLight.PredicateFixedPoint
 import Mettapedia.Languages.HOLLight.PolynomialPredicate
+import Mettapedia.Languages.HOLLight.PointedPredicate
+import Mettapedia.Languages.HOLLight.DefinitionReplayModels
+import Mettapedia.Languages.HOLLight.TypeInstantiationCertificates
+import Mettapedia.Languages.HOLLight.PointedPredicateInstantiation
+import Mettapedia.Languages.HOLLight.RegisteredSubstitution
+import Mettapedia.Languages.HOLLight.RegisteredPointedPredicate
+import Mettapedia.Languages.HOLLight.RegisteredPointedTypeDefinition
+import Mettapedia.Languages.HOLLight.RegisteredPointedModels
+import Mettapedia.Languages.HOLLight.SourceProfileModels
+import Mettapedia.Languages.HOLLight.RecursiveSpaceModelComparison
+import Mettapedia.Languages.HOLLight.RecursiveSpaceSourceReadback
+import Mettapedia.Languages.HOLLight.IndexedRegisteredFamilyModels
+import Mettapedia.Languages.HOLLight.RecursiveSpacePredicate
+import Mettapedia.Logic.HOL.IndexedFamilyPredicate
+import Mettapedia.Languages.HOLLight.IndexedConstructorDefinitions
 import Mettapedia.GSLT.LanguageDef.InferenceBasisBoundary
 import Mettapedia.GSLT.LanguageDef.KernelCheckingClasses
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTClassifyingCategory
@@ -113,6 +130,7 @@ import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendChecking
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendSource
 import Mettapedia.GSLT.LanguageDef.PositiveInductiveSearchTreeElaboration
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.IndexedPolynomialGeneratedChecking
+import Mettapedia.TypeTheory.IndexedPolynomialGuardedRepresentation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveElaboration
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveRawBoundary
 import Mettapedia.Languages.Lean.Lean4LessCheckerBoundary
@@ -1411,9 +1429,200 @@ guarded membership characterization
 `HOLLight.PolynomialPredicate.fixedPoint_accepted_empty`,
 `IndexedInductive.HOLFacts.PolynomialPredicateInterpretation.denote_operator`,
 `IndexedInductive.HOLFacts.PolynomialPredicateInterpretation.member_iff_valid`).
-Constructor/child relation definitions, native carrier certificates and
-recursion remain datatype-specific obligations. The predicate reading observes
-child support and does not preserve occurrence counts.
+Constructor/child relation definitions and recursion remain datatype-specific
+obligations. The predicate reading observes child support and does not preserve
+occurrence counts.
+
+The pointed-predicate producer constructs an explicit witness application
+without assuming inhabitance of the original predicate. Its retained proofs
+separate absence from presence and reflect equality of present encodings.
+Native type admission checks closedness, fresh names and registered formation.
+The command producer replays the generated witness graph before the actual
+type-definition command; successful introduction retains registered source
+derivations and an execution path. Its availability theorem keeps formation
+of the primitive requests, outputs and definition laws explicit
+(`HOLLight.PointedPredicate.admit_available`,
+`HOLLight.PointedPredicate.introduce_available`,
+`HOLLight.PointedPredicate.introduce_sound`).
+
+A generic retained witness also specializes through the original native
+`INST_TYPE` and `INST` operations. Its computed conclusion is the exact
+pointed-predicate application, with empty hypotheses and no logical axiom
+dependencies (`HOLLight.PointedPredicateInstantiation.specialized_conclusion`,
+`specialized_hypotheses`, `specialized_axioms`). The registered substitution
+producer checks every stored maplet, including unused entries. Its constructed
+two-command execution preserves earlier proof addresses and source derivations,
+adds two theorem outputs and two retained receipts, and supplies a GSLT path
+(`HOLLight.RegisteredSubstitution.apply_available`, `preserves_lookup`,
+`preserves_derivations`, `execution_path`). A nontrivial type-and-term instance
+has the existing OSLF theorem-reachability readout; unused undeclared maplets
+are refused. This observation concerns support. General registered pointed
+type introduction and native implementation refinement retain their separate
+formation and semantic obligations.
+
+`HOLLight.PointedPredicateTemplate` independently checks one cached generic
+primitive proof, its exact pointed endpoint and every registered formation
+obligation. `HOLLight.RegisteredPointedPredicate.replay_available` receives it
+in any signature extending the primitive core and specializes it using formed
+carrier and predicate inputs. No per-node witness-formation or original
+predicate-inhabitance premise is required. Its returned address contains the
+original compiler theorem, and successful runs preserve source derivations.
+`HOLLight.RegisteredPointedTypeDefinition.introduce_available` composes this
+reception with the actual source type-definition command. Fresh names and
+predicate closedness remain explicit; equation formation is constructed from
+the registered primitive declarations and retained witness. The extended
+signature's instance finder checks both the old input and new maps, with
+successful source admission independent of the chosen successful certificates.
+The two returned addresses hold exactly the two pointwise laws, and source
+derivations survive (`introduce_roots`, `introduce_derived_laws`). The final
+command adds two theorem outputs and one receipt.
+The registered replay/model join now constructs semantic frames through all
+three command kinds. Each type existence licence comes from the earlier cached
+proof, and the existing model-family constructors install the actual new
+symbols. Declaration steps retain source formation, ordinary universal schemas,
+substitution closure and old-schema truth. The empty-policy replay theorem
+constructs a full-domain model of the actual cache, with each sequent's source
+hypotheses retained (`HOLLight.RegisteredReplayModels.replay_models`). The actual
+pointed producer has one such model validating both returned hypothesis-free
+laws (`HOLLight.RegisteredPointedModels.introduce_laws_models`). A relative
+transitivity control retains both assumptions and refuses dropping them;
+an independently translated falsity theorem cannot occur in the interpreted
+cache. The retained η/choice/infinity profile now has a constructed initialization
+at its nine-definition reference state (`HOLLight.SourceProfileModels.reference_replayed`).
+One coherent primitive family fixes the individual carrier to lifted naturals,
+interprets the original Boolean declarations, and validates the actual closed
+source commitments. Adjoining their formed schemas enlarges the selected policy
+while retaining the model. Accepted registered replay after that reference state
+has a constructed full-domain model (`HOLLight.SourceProfileModels.replay_models`).
+The original-order source-policy replay now constructs one full-domain model of
+the complete cache (`HOLLight.SourceProfileModels.source_replay_model`). Exact
+readings of six cached Peano/recursive-space facts suffice to construct the
+natural-carrier and recursive-space correspondences in that same model
+(`HOLLight.RecursiveSpaceModelComparison.replayCorrespondence`). This comparison
+preserves bottom, constructor tags, payloads and every child.
+`HOLLight.ExactFormulaReadback` proves the executable exact cache-reading check
+sound. `HOLLight.RecursiveSpaceSourceReadback.checked_correspondence` consumes
+its six successful readings; the retained trace passes them with declaration
+identities, type annotations and numeral wrapping intact. A constructor-only
+recursion equation still does not specify a bottom value. Full datatype proof production,
+source-reader adequacy and native implementation refinement remain open. `HOLLight.RegisteredProofGraph` owns the shared
+proof-graph reception construction and its converse; an undeclared constant
+separates primitive replay from registered reception.
+
+`HOLLight.IndexedFamilyModels` constructs the payload assignment and source
+recursive-space algebra for each indexed presentation with natural-slot codes.
+Its constructor law retains the original result index, shape and full padded
+child map. `HOLLight.IndexedRegisteredFamilyModels` applies the same construction
+to admitted ordered registered blocks, preserving both round trips and empty
+fibers. These are semantic representations in the constructed source model;
+native datatype certificate generation and executable decoding remain separate.
+
+`HOL.PositivePredicate` generates retained monotonicity proofs from typed positive
+formulas, including guarded implication and both quantifiers. Its fixed-point
+program supplies the generated proof to the existing least-predicate theorem.
+`HOLLight.RecursiveSpacePredicate` compiles these programs to primitive graphs
+under the empty axiom policy. The recursive-space instance retains explicit
+shape, active-position and edge predicates, plus canonical bottom padding.
+Datatype-specific source guard definitions and the complete constructor/recursor
+certificate package remain separate obligations.
+
+`IndexedPolynomialRecursiveSpacePredicate` constructs the nonrecursive shape,
+position and child-index guards from each natural-slot presentation. Its guarded
+operator has exactly the represented family as its least predicate, including
+canonical padding and a unique root index. `HOL.IndexedFamilyPredicate` assigns
+those actual guards to the typed HOL signature and proves that the HOL least
+predicate recognizes the same family. Admitted Natural, Vector and registered
+SearchTree instances retain their source values; malformed tags, missing
+payloads, hidden children and a wrong vector index are refused. This connects
+the semantic guard definitions to the compiled positive syntax without claiming
+that their source definitions have already been emitted for every declaration.
+
+`HOL.IndexedConstructorTerms` compiles first-order constructor telescopes into
+typed result-index and recursive-child-index functions, given a reading of the
+declared index expressions. Its denotation laws follow the original data
+evaluator. `IndexedInductiveHOLTerms` supplies the authored Nat/Vec arithmetic
+reading. `HOLLight.IndexedConstructorDefinitions` supplies executable Vector
+index bodies proved equal to that compiler's specialization, and passes their
+source syntax to the existing registered definition checker. The full retained
+source history admits both definitions at their original `num` and payload
+types. The bare-core projection declares, while an unbound successor refuses.
+The enclosing history retains its source-profile assumptions. Concrete payload
+representations and complete shape/position/edge definition generation remain
+separate from these index-function declarations.
+
+In the full-domain interpretation, the actual pointed syntax is equivalent to
+an optional original predicate witness. Applied at an admitted first-order
+family's least predicate, presence recovers precisely its actual tagged
+source values. The recursive-only empty family still has no present value;
+unrestricted quantification over the inhabited pointed carrier changes that
+meaning (`HOL.PointedPredicate.Semantics.denotationEquivalence`,
+`HOL.PointedPredicate.Semantics.erased_guard_false`,
+`IndexedInductive.HOLFacts.PolynomialPredicateInterpretation.Pointed.presence_iff_source`).
+These semantic inverses are not executable datatype decoders. Native
+constructor definitions, recursion/no-confusion production and registered
+nested-family joins remain separate obligations.
+
+Constructor and child relations also have closed higher-order definition
+bodies (`HOL.PolynomialPredicate.Relations.constructorDefinition`,
+`HOL.PolynomialPredicate.Relations.childDefinition`). They accept typed
+operations and layer/position guards as explicit arguments. Native constant
+admission retains the actual definition equations without axiom dependencies;
+two registered commands replay the definitions. The separate relation-body
+beta certificates retain their primitive steps. The admitted-family operation
+model interprets both definitions exactly, including indexed child positions,
+and recovers the existing polynomial step. A wrong-owner position and an
+absent layer are refused. These operation definitions do not supply the
+underlying datatype representation or its recursion laws.
+
+Finite first-order constructor descriptions have a source-order recursive
+position codec (`Description.positionEquivFin`). Both inverses are proved;
+independent telescope index evaluation agrees with the polynomial child index,
+including data binders. The resulting signature equivalence replaces recursive
+position types by finite ordinals and transports complete recursive families
+and folds through the existing polynomial comparison. These fixed-point
+transports are semantic, not executable storage adapters. The existing guest
+result traversal agrees with the same ordered vector. Mixed-index and repeated
+payload controls preserve separate child occurrences.
+
+An unindexed polynomial-tree representation retains each source index and
+constructor shape as labels. Its recursive validity predicate checks every
+child at the index required by its own position and rejects the explicit
+absent constructor. Encoding and proof-directed decoding are inverse
+(`IndexedPolynomial.GuardedRaw.representation`); the constructor equation
+assembles the existing algebra representation interface. Validity is exactly
+membership in the least constructor-closed family of raw trees. A malformed
+Vector child is rejected by both readings. A partial natural-slot code also
+checks canonical padding outside the recursive-position image; a hidden extra
+child is refused even when every required child is valid. The generic
+recursive-space presentation retains the original index, shape, constructor
+tag and complete child map, with both inverse laws and algebra coherence.
+The relational model follows HOL Light's numerical and relational injections,
+constructs its least generated subtype, and supplies full predicate induction,
+separation and injectivity. Natural, Vector and ordered registered SearchTree
+clients instantiate the comparison. Constructor-only recursion leaves the
+bottom value free; a supplied bottom gives unique recursion. These semantic
+constructions use the indexed eliminator and full function spaces. Typed
+semantic identification of retained native histories, complete native datatype
+proof production, executable storage and decidable validation remain separate
+obligations. The complete native recursive-space closure separately passes the
+typed registered source receiver under three explicit source axioms.
+First-order constructor-data products reconstruct their complete indexed shapes;
+result and child indices follow the original interpreter. The target payload
+type and recursive-space algebra are fixed across parameter environments.
+A changed parameter can require a different index for the same data tuple,
+so the context remains part of the validity contract. This semantic description
+uses host equality; it is not an erasure theorem for object proof syntax.
+
+Actual registered constant replay and source-profile reference definitions now
+construct their chronological model history. Every admitted definition equation
+holds at every type instance; carriers and full function domains are preserved.
+This validates definitions, rather than extra axiom commitments or
+carrier-changing type definitions. The source receiver's actual schema matcher
+also supplies complete instantiation certificates. Repeated parameters and
+identity-map normalization retain their original meaning. Concrete annotation,
+sequent, theorem and inference-parameter formation checks are exact without an
+assumed certificate-selection family. This is formation, rather than proof-search
+completeness or implementation refinement; inconsistent repetitions are refused.
 
 The registered-container semantic interface is no longer restricted to an
 unindexed `Unit` output. Each richer entry now owns an output-expression

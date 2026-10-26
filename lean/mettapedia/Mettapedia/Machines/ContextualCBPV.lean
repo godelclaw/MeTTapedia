@@ -1,5 +1,6 @@
 import Mettapedia.Machines.NativeCallReturn
 import Mettapedia.Machines.ResumableRegion
+import Mettapedia.Machines.ScopedCommit
 
 /-!
 # Contextual computations and retained continuations
@@ -40,6 +41,8 @@ inductive Computation where
   | thunk (reference : Suspension)
   | force (value : Value)
   | choice (first second : Computation)
+  | scope (body : Computation)
+  | commit (value : Value)
   | failure
   | raised (fault : Fault)
   | handle (producer : Computation) (handler : Fault → Computation)
@@ -65,6 +68,7 @@ inductive Frame where
   | handler (context : Context) (choiceFloor : Nat)
       (body : Fault → Code Value Call Effect Fault Delay Suspension)
   | restore (context : Context)
+  | scope (choiceFloor : Nat)
 
 inductive Control where
   | compute (context : Context) (code : Code Value Call Effect Fault Delay Suspension)
@@ -89,6 +93,22 @@ structure State where
 
 variable {Value Call Effect Fault Delay Suspension Context World Worker}
 
+/-- Delimiters belong to elaboration. Lexical restoration and exception
+handlers do not manufacture a cut scope. The root's saved suffix is empty. -/
+def choiceFloor : List (Frame Value Call Effect Fault Delay Suspension Context) → Nat
+  | [] => 0
+  | .scope floor :: _ => floor
+  | _ :: rest => choiceFloor rest
+
+/-- The stack is newest-first. Keep the saved outside suffix, without
+restarting it or changing the current logical branch or effect world. -/
+def retainOutside {Pending : Type*} (floor : Nat) (pending : List Pending) : List Pending :=
+  pending.drop (pending.length - floor)
+
+theorem retainOutside_suffix {Pending : Type*} (inside outside : List Pending) :
+    retainOutside outside.length (inside ++ outside) = outside := by
+  simp [retainOutside]
+
 abbrev KernelSemantics := Semantics Value Call Effect Fault Delay Suspension Context World Worker
 abbrev KernelState := State Value Call Effect Fault Delay Suspension Context World Worker
 
@@ -105,6 +125,14 @@ private def continueAlternatives
   match state.alternatives with
   | [] => {state with focus := ⟨.stopped .complete, []⟩}
   | next :: rest => {state with focus := next, alternatives := rest}
+
+@[simp] theorem exhausted_alternatives
+    (state : KernelState (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (empty : state.alternatives = []) :
+    continueAlternatives state = {state with focus := ⟨.stopped .complete, []⟩} := by
+  simp [continueAlternatives, empty]
 
 /-- Native work and lexical interpretation occur here. Publication is a
 separate transition; the retained cursor has already crossed native entry. -/
@@ -140,6 +168,13 @@ def advance (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Ef
           some {state with
             focus := ⟨.compute context first, frames⟩
             alternatives := ⟨.compute context second, frames⟩ :: state.alternatives}
+      | .scope body =>
+          some {state with focus := ⟨.compute context body,
+            .scope state.alternatives.length :: frames⟩}
+      | .commit value =>
+          some {state with
+            focus := ⟨.returned context (.value .completed value), frames⟩
+            alternatives := retainOutside (choiceFloor frames) state.alternatives}
       | .failure => some {state with focus := ⟨.failed, frames⟩}
       | .raised fault => some {state with focus := ⟨.returned context (.raised fault), frames⟩}
       | .handle producer handler =>
@@ -176,6 +211,8 @@ def advance (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Ef
           | _ => some {state with focus := ⟨.returned (sem.resume saved context) packet, rest⟩}
       | .restore saved :: rest =>
           some {state with focus := ⟨.returned (sem.resume saved context) packet, rest⟩}
+      | .scope _ :: rest =>
+          some {state with focus := ⟨.returned context packet, rest⟩}
       | [] =>
           match packet with
           | .raised fault => some {state with focus := ⟨.unhandled fault, []⟩}
@@ -430,6 +467,128 @@ theorem sequence_charge_commutes
     (step sem (initial world context (.sequence (.source occurrence cost producer) body))).bind (step sem) := by
   simp [step, advance, initial, debit, origin]
 
+section CompletedReturn
+
+variable (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Effect)
+    (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+    (Context := Context) (World := World) (Worker := Worker))
+    (state : KernelState (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+
+/-- Elaboration's return computation retains the actual waiting frames.
+Its payload can be code-shaped data; no syntax classification is involved. -/
+def returnComputation (context : Context) (value : Value) :=
+  {state with focus := ⟨.compute context (.returned value), state.focus.frames⟩}
+
+/-- A region that has finished the return transfers its tagged packet at
+the same continuation, without reconstructing executable source syntax. -/
+def returnPacket (context : Context) (value : Value) :=
+  {state with focus := ⟨.returned context (.value .completed value), state.focus.frames⟩}
+
+theorem return_packet_step (context : Context) (value : Value) :
+    step sem (returnComputation state context value) =
+      some (returnPacket state context value) := by
+  simp [step, advance, returnComputation, returnPacket, debit, origin]
+
+/-- Removing the completed administrative return preserves every future
+slice's exact endpoint, with one fewer physical transition. All branch,
+lexical-context and committed-world fields remain in that endpoint. -/
+theorem return_packet_resume (world : World) (context : Context)
+    (value : Value) (extra : Nat) :
+    (core sem world context).runSlice (extra + 1)
+        (returnComputation state context value) =
+      let later := (core sem world context).runSlice extra
+        (returnPacket state context value)
+      (later.1, later.2 + 1) := by
+  simp only [MachineCore.runSlice, core, return_packet_step]
+
+/-- Source accounting cannot disappear with the return instruction. This
+lowered packet carries the original occurrence and charge exactly once. -/
+theorem charged_return_packet (context : Context) (value : Value)
+    (occurrence cost : Nat) :
+    let source := {state with focus :=
+      ⟨.compute context (.source occurrence cost (.returned value)), state.focus.frames⟩}
+    (step sem source).bind (step sem) = some
+      (returnPacket {state with
+        spent := state.spent + cost
+        sourceTrace := state.sourceTrace ++ [occurrence]} context value) := by
+  simp [step, advance, returnPacket, debit, origin]
+
+/-- Direct packet delivery has not entered the next computation: it cannot
+repeat a native effect, publish early or discard a pending alternative. -/
+theorem return_packet_keeps_residual (context : Context) (value : Value) :
+    let target := returnPacket state context value
+    target.world = state.world ∧
+      target.nativeEntries = state.nativeEntries ∧
+      target.alternatives = state.alternatives ∧
+      target.published = state.published ∧
+      target.spent = state.spent ∧
+      target.sourceTrace = state.sourceTrace ∧
+      target.focus.frames = state.focus.frames := by
+  simp [returnPacket]
+
+end CompletedReturn
+
+section Commitment
+
+variable (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Effect)
+    (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+    (Context := Context) (World := World) (Worker := Worker))
+    (state : KernelState (Value := Value) (Call := Call) (Effect := Effect)
+    (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+    (Context := Context) (World := World) (Worker := Worker))
+
+/-- The dialect's delimiter snapshots the actual outside continuation. -/
+theorem scope_entry (context : Context)
+    (body : Code Value Call Effect Fault Delay Suspension) :
+    advance sem {state with focus := ⟨.compute context (.scope body), state.focus.frames⟩} =
+      some {state with focus := ⟨.compute context body,
+        .scope state.alternatives.length :: state.focus.frames⟩} := rfl
+
+/-- The representation invariant identifies a saved suffix. The transition
+retains that suffix and the entire current world, branch and continuation. -/
+theorem commit_keeps_outside (context : Context) (value : Value)
+    (frames : List (Frame Value Call Effect Fault Delay Suspension Context))
+    (inside outside : List (Work Value Call Effect Fault Delay Suspension Context Worker))
+    (currentScope : choiceFloor frames = outside.length) :
+    advance sem {state with
+      focus := ⟨.compute context (.commit value), frames⟩
+      alternatives := inside ++ outside} =
+      some {state with
+        focus := ⟨.returned context (.value .completed value), frames⟩
+        alternatives := outside} := by
+  simp [advance, currentScope, retainOutside_suffix]
+
+/-- Join the concrete newest-first continuation stack to the independent
+ScopedCommit CPS interpreter. Its saved failure continuation is exactly the
+suffix retained by the actual contextual transition; the world is not reset. -/
+theorem commit_refines_scoped_eval {Result : Type}
+    (context : Context) (value : Value)
+    (frames : List (Frame Value Call Effect Fault Delay Suspension Context))
+    (inside outside : List (Work Value Call Effect Fault Delay Suspension Context Worker))
+    (currentScope : choiceFloor frames = outside.length)
+    (after : KernelState (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (advanced : advance sem {state with
+      focus := ⟨.compute context (.commit value), frames⟩
+      alternatives := inside ++ outside} = some after)
+    (body : ScopedCommit.Body Context World)
+    (success : ScopedCommit.Success Context World Result)
+    (decode : List (Work Value Call Effect Fault Delay Suspension Context Worker) →
+      ScopedCommit.Failure World Result) :
+    ScopedCommit.eval (.commit body) context success
+        (decode (inside ++ outside)) (decode outside) state.world =
+      ScopedCommit.eval body context success (decode after.alternatives)
+        (decode after.alternatives) after.world := by
+  have exactState := commit_keeps_outside sem state context value frames inside outside currentScope
+  have actual := Option.some.inj (advanced.symm.trans exactState)
+  subst after
+  rfl
+
+end Commitment
+
 namespace Controls
 
 inductive Datum where
@@ -452,7 +611,7 @@ def semantics : Semantics Datum Unit Nat Nat Unit Nat Nat Nat
     (world + 1, ⟨(match effect with
       | 0 => .failure
       | 1 => .one (.value .completed (.number context))
-      | 2 => .frontier #[.number context, .number context]
+      | 2 => .frontier .completed #[.number context, .number context]
       | 3 => .one (.raised 7)
       | 5 => .one (.conditional (.number context) ())
       | _ => .interrupted), context, 0⟩)
@@ -536,6 +695,90 @@ theorem repeated_source_visits_are_not_a_set :
 
 end Controls
 
+namespace CommitmentControls
+
+open Controls
+
+def number (n : Nat) : TestCode := .returned (.number n)
+
+def callScope : TestCode :=
+  .choice (.scope (.choice (.commit (.number 1)) (number 2))) (number 9)
+
+theorem outside_choices_survive :
+    (run 4 callScope).published =
+      [(4, .value .completed (.number 1)), (4, .value .completed (.number 9))] := by
+  decide
+
+theorem erasing_delimiter_changes_answers :
+    (run 4 callScope).published ≠
+      (run 4 (.choice (.choice (.commit (.number 1)) (number 2)) (number 9))).published := by
+  decide
+
+theorem choices_after_commit_retain_duplicates :
+    (run 4 (.scope (.sequence (.commit (.number 0))
+      (fun _ => .choice (number 7) (number 7))))).published =
+      [(4, .value .completed (.number 7)), (4, .value .completed (.number 7))] := by
+  decide
+
+def afterInnerScope : TestCode :=
+  .choice (.scope (.choice
+    (.sequence (.scope (number 1)) (fun _ => .commit (.number 2))) (number 3))) (number 9)
+
+theorem caller_scope_restored :
+    (run 4 afterInnerScope).published =
+      [(4, .value .completed (.number 2)), (4, .value .completed (.number 9))] := by
+  decide
+
+theorem capturing_caller_continuation_changes_answers :
+    (run 4 afterInnerScope).published ≠
+      (run 4 (.choice (.scope (.choice
+        (.scope (.sequence (number 1) (fun _ => .commit (.number 2))))
+        (number 3))) (number 9))).published := by
+  decide
+
+theorem handler_does_not_create_cut_scope :
+    (run 4 (.scope (.choice
+      (.handle (.sequence (.commit (.number 1)) (fun _ => .raised 7))
+        (fun _ => number 5)) (number 9)))).published =
+      [(4, .value .completed (.number 5))] := by
+  decide
+
+def committedFailure : TestCode :=
+  .choice (.scope (.choice
+    (.sequence (.native 1) (fun _ =>
+      .sequence (.commit (.number 0)) (fun _ => .failure))) (.native 2))) (number 9)
+
+theorem failed_committed_branch_keeps_effect :
+    (run 4 committedFailure).world = 1 ∧
+      (run 4 committedFailure).nativeEntries = 1 ∧
+      (run 4 committedFailure).published = [(4, .value .completed (.number 9))] := by
+  decide
+
+def callSemantics : Semantics Datum Unit Nat Nat Unit Nat Nat Nat
+    (Cursor Datum Nat Unit Nat) :=
+  {semantics with enter := fun _ context _ =>
+    (context, .scope (.choice (.commit (.number 1)) (.native 2)))}
+
+theorem callee_declares_its_scope :
+    let code : TestCode := .choice (.invoke ()) (number 9)
+    let after := ((core callSemantics 0 4).runSlice 40 (initial 0 4 code)).1
+    after.published =
+      [(4, .value .completed (.number 1)), (4, .value .completed (.number 9))] ∧
+      after.world = 0 := by
+  decide
+
+def sourceLimited :=
+  let code : TestCode :=
+    .choice (.scope (.source 17 3 (.commit (.number 1)))) (number 9)
+  ((meteredCore semantics 0 4 2).runSlice 40 ⟨initial 0 4 code, 2⟩).1
+
+theorem insufficient_source_fuel_retains_pending_commit :
+    sourceLimited.state.published = [] ∧ sourceLimited.state.world = 0 ∧
+      sourceLimited.remaining = 2 ∧ debit sourceLimited.state.focus.control = 3 := by
+  decide
+
+end CommitmentControls
+
 namespace WorkerControls
 
 abbrev BranchContext := Nat × Nat
@@ -587,6 +830,20 @@ end WorkerControls
 
 end Mettapedia.Machines.ContextualCBPV
 
+#print axioms Mettapedia.Machines.ContextualCBPV.retainOutside_suffix
+#print axioms Mettapedia.Machines.ContextualCBPV.scope_entry
+#print axioms Mettapedia.Machines.ContextualCBPV.commit_keeps_outside
+#print axioms Mettapedia.Machines.ContextualCBPV.commit_refines_scoped_eval
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.outside_choices_survive
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.erasing_delimiter_changes_answers
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.choices_after_commit_retain_duplicates
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.caller_scope_restored
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.capturing_caller_continuation_changes_answers
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.handler_does_not_create_cut_scope
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.failed_committed_branch_keeps_effect
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.callee_declares_its_scope
+#print axioms Mettapedia.Machines.ContextualCBPV.CommitmentControls.insufficient_source_fuel_retains_pending_commit
+
 #print axioms Mettapedia.Machines.ContextualCBPV.step_charge
 #print axioms Mettapedia.Machines.ContextualCBPV.step_source_trace
 #print axioms Mettapedia.Machines.ContextualCBPV.refused_publication_retains_packet
@@ -618,3 +875,9 @@ end Mettapedia.Machines.ContextualCBPV
 #print axioms Mettapedia.Machines.ContextualCBPV.WorkerControls.replacing_branch_with_entrance_changes_answers
 #print axioms Mettapedia.Machines.ContextualCBPV.WorkerControls.pull_effects_do_not_reenter_native
 #print axioms Mettapedia.Machines.ContextualCBPV.WorkerControls.handler_restores_branch_but_keeps_effects
+
+#print axioms Mettapedia.Machines.ContextualCBPV.exhausted_alternatives
+#print axioms Mettapedia.Machines.ContextualCBPV.return_packet_step
+#print axioms Mettapedia.Machines.ContextualCBPV.return_packet_resume
+#print axioms Mettapedia.Machines.ContextualCBPV.charged_return_packet
+#print axioms Mettapedia.Machines.ContextualCBPV.return_packet_keeps_residual

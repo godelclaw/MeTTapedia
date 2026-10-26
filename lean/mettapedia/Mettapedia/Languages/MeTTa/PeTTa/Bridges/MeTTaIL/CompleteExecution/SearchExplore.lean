@@ -73,8 +73,8 @@ macro_rules
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
     `(tactic|
-      (metta_call runner_checked
-       metta_eval [$facts,*] with runner_checked
+      (metta_call_in runnerProof_checked using runnerProof_agreement
+       metta_eval [$facts,*] with runnerProof_checked in runnerProof_agreement
          unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil,
            Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
            Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
@@ -187,8 +187,9 @@ theorem seen_returns (state : Effects.State) (current : Pattern) : ∀ seen : Li
       · have later := seen_returns state current rest
         have different : InferenceCettaWire.encodePattern current ≠ InferenceCettaWire.encodePattern other :=
           fun equal => same (InferenceCettaWire.encodePattern_injective equal)
+        simp only [List.mem_cons, same, false_or]
         search_explore_eval [later]
-          unfolding [patternsValue, InferenceCettaWire.encodePatterns, List.mem_cons, same, different]
+          unfolding [patternsValue, InferenceCettaWire.encodePatterns, different]
 
 theorem fresh_returns (realization : Realization search) (state : Effects.State) :
     ∀ (children : List (Node Pattern Run Receipt)) (seen : List Pattern),
@@ -246,8 +247,9 @@ theorem settled_returns (realization : Realization search) (state : Effects.Stat
       | complete =>
           simp only [finished, SearchRunner.statusAtom] at status
           by_cases same : (search.publication run).length = consumed
-          · search_explore_eval [status, published, count, later]
-              unfolding [List.all_cons, Complete.Settled.nodeSettled, finished, same]
+          · simp only [List.all_cons, Complete.Settled.nodeSettled, finished, same,
+              beq_self_eq_true, Bool.true_and]
+            search_explore_eval [status, published, count, later] unfolding [same]
           · have different : (consumed == (search.publication run).length) = false :=
               beq_false_of_ne fun equal => same equal.symm
             search_explore_eval [status, published, count]
@@ -289,5 +291,44 @@ theorem states_returns (realization : Realization search) (state : Effects.State
   obtain ⟨round, nodes⟩ := explorer
   have listed := node_states_returns realization state nodes
   search_explore_eval [listed]
+
+theorem rounds_ready (realization : Realization search) (work : Nat)
+    (explorer : Explorer Pattern Run Receipt) (ready : Ready realization explorer) :
+    Ready realization (Complete.Settled.roundsUntilSettled search work explorer) := by
+  induction work generalizing explorer with
+  | zero => exact ready
+  | succ work ih =>
+      simp only [Complete.Settled.roundsUntilSettled]
+      split
+      · exact ready
+      · exact ih _ (step_ready realization explorer ready)
+
+theorem resumed_rounds_returns (realization : Realization search) (state : Effects.State)
+    (first extra : Nat) (explorer : Explorer Pattern Run Receipt) (ready : Ready realization explorer) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:explore:rounds"
+        [realization.backend, realization.plan, realization.standard, number extra,
+          encoded (explorerTerm realization (Complete.Settled.roundsUntilSettled search first explorer))])
+      state (encoded (explorerTerm realization
+        (Complete.Settled.roundsUntilSettled search (first + extra) explorer))) := by
+  simpa only [Complete.Settled.roundsUntilSettled_add] using
+    rounds_returns realization state extra (Complete.Settled.roundsUntilSettled search first explorer)
+      (rounds_ready realization first explorer ready)
+
+theorem settled_rounds_returns (realization : Realization search) (state : Effects.State)
+    (extra : Nat) (explorer : Explorer Pattern Run Receipt) (ready : Ready realization explorer)
+    (done : Complete.Settled.settled search explorer = true) :
+    PureReturns runnerLibrary.runtime [] state
+      (apply "gslt:explore:rounds"
+        [realization.backend, realization.plan, realization.standard, number extra,
+          encoded (explorerTerm realization explorer)])
+      state (encoded (explorerTerm realization explorer)) := by
+  simpa only [Complete.Settled.roundsUntilSettled_of_settled (S := search) explorer done] using
+    rounds_returns realization state extra explorer ready
+
+#print axioms rounds_ready
+#print axioms resumed_rounds_returns
+#print axioms settled_rounds_returns
+
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.SearchExplore

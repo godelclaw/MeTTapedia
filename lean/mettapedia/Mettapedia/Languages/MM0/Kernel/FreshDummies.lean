@@ -114,4 +114,15 @@ theorem FreshDummies.distinct {target : Context} {arguments : List Preterm}
 
 end Definition
 
+theorem Definition.FreshDummies.images_lt {context : Context} {arguments : List Preterm} {sorts images : List Nat}
+    (fresh : FreshDummies context arguments sorts images) : ∀ image ∈ images, image < context.length := by
+  induction fresh with
+  | nil => simp
+  | cons known independent tail ih =>
+      intro image member
+      rcases List.mem_cons.mp member with rfl | later
+      · exact (List.getElem?_eq_some_iff.mp known).1
+      · exact ih image later
+
+
 end Mettapedia.Languages.MM0.Kernel

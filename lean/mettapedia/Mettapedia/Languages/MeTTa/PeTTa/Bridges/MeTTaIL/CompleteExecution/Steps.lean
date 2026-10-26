@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RootFamily
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution.Traversal
 import Mettapedia.OSLF.MeTTaIL.Complete.DeepFootprint
+import Mettapedia.OSLF.MeTTaIL.Complete.Step
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Candidates
 
 /-!
 # Every rule job of a term, in fair rounds
@@ -26,8 +28,7 @@ open DescentCodec
 
 theorem typed_agreement : ProgramAgreementOn GeneralTypedSiteExecution.executionHeads GeneralTypedSiteExecution.program
     typedLibrary.runtime :=
-  agreement_trans GeneralTypedSiteExecution.scoped_program_agreement
-    (programAgreementOn_of_retained_rows _ _ _ rfl rfl)
+  GeneralTypedSiteExecution.raw_agreement
 
 /-- `gslt:sites:jobs` lists the plan's rule jobs at a term, in the complete machine's runtime. -/
 theorem complete_jobs_returns (state : State) (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
@@ -43,12 +44,10 @@ theorem complete_jobs_returns (state : State) (plan : GeneralExecutionAdmission.
          encoded (InferenceCettaWire.AuthoredRule.typeTerm expected), encoded (InferenceCettaWire.encodePattern source),
          encoded (encodeList ScopedRuleJobReadoutExecution.rulePlanTerm plan.rules)])
       state (encoded (encodeList ScopedRuleJobReadoutExecution.jobTerm (jobs plan bound expected source))) := by
-  metta_lift complete_checked ["declarations", "free", "permissions", "bound", "expected", "source", "rules"]
-    (by metta_lift descent_checked ["declarations", "free", "permissions", "bound", "expected", "source", "rules"]
-      (transport_call GeneralTypedSiteExecution.program_closed typed_agreement (by decide +kernel) (by decide)
-        (by decide +kernel) (by decide) ["declarations", "free", "permissions", "bound", "expected", "source", "rules"]
-        (by decide) rfl (by decide +kernel)
-        (GeneralTypedSiteExecution.jobs_plan_returns state plan bound expected source footprint covers)))
+  exact transport_call GeneralTypedSiteExecution.program_closed typed_agreement (by decide +kernel) (by decide)
+    (by decide +kernel) (by decide) ["declarations", "free", "permissions", "bound", "expected", "source", "rules"]
+    (by decide) rfl (by decide +kernel)
+    (GeneralTypedSiteExecution.jobs_plan_returns state plan bound expected source footprint covers)
 
 variable (plan : GeneralExecutionAdmission.Plan)
 
@@ -70,8 +69,7 @@ theorem step_family_returns (state : State) (job : Job) :
     PureReturns runtime [] state
       (apply "gslt:step:family" [admittedValue plan, encoded (ScopedRuleJobReadoutExecution.jobTerm job)]) state
       (encoded (rootFamilyTerm (Complete.Step.request plan job))) := by
-  metta_call complete_checked
-  metta_eval unfolding [admittedValue, ScopedRuleJobReadoutExecution.jobTerm, ScopedRuleJobReadoutExecution.siteTerm,
+  complete_eval unfolding [admittedValue, ScopedRuleJobReadoutExecution.jobTerm, ScopedRuleJobReadoutExecution.siteTerm,
     rootFamilyTerm, Complete.Step.request]
 
 @[metta_head "gslt:step:entries"]
@@ -82,14 +80,12 @@ theorem step_entries_returns (state : State) : ∀ jobs : List Job,
         (jobs.map fun job => (⟨job, Complete.Deep.start (Complete.Step.family plan job)⟩ :
           Complete.Rounds.Entry (Complete.Step.family plan)))))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | job :: rest => by
     have family := step_family_returns plan state job
     have started := deep_start_returns (rootWire (Complete.Step.request plan job)) state
     have later := step_entries_returns state rest
-    metta_call complete_checked
-    metta_eval [family, started, later] with complete_checked
+    complete_eval [family, started, later]
       unfolding [encodeList, entryTerm, rootWire]
 
 @[metta_head "gslt:step:begin"]
@@ -101,8 +97,7 @@ theorem step_begin_returns (state : State) (table : List (String × TypeExpr)) (
   subst tabled
   have listed := complete_jobs_returns state plan bound expected source footprint covers
   have entries := step_entries_returns plan state (jobs plan bound expected source)
-  metta_call complete_checked
-  metta_eval [listed, entries] with complete_checked
+  complete_eval [listed, entries]
     unfolding [planValue, CompletePlanWire.planTerm, PremiseOperationsExecution.GeneralExecution.environmentTerm,
       PremiseOperationsExecution.DeclarationTyping.declarationsTerm, PremiseOperationsExecution.DeclarationTyping.boundContextTerm,
       admittedValue, stepStateTerm, Complete.Step.begin, Complete.Rounds.begin, encodeList, patternValue,
@@ -118,7 +113,7 @@ theorem finish_root_lift (bound : List TypeExpr) (expected : TypeExpr) (source :
       (GeneralRuleJobExecution.finishRoot ⟨plan, bound, expected, source, job⟩ licensed firing.trace firing.captured
         firing.completed firing.history firing.target valid) =
       encodeOption ScopedRuleJobReadoutExecution.receiptTerm (Complete.Step.lift plan bound expected job firing) := by
-  unfold GeneralRuleJobExecution.finishRoot Complete.Step.lift
+  unfold GeneralRuleJobExecution.finishRoot GeneralRuleJobExecution.finishRootIn Complete.Step.lift
   dsimp only [GeneralRuleJobExecution.Request.environment]
   have freeSame : (GeneralPlanEnvironment.environment plan).free = plan.snapshot.free := rfl
   by_cases represented : job.site.acceptsReplacementRepresentation (GeneralPlanEnvironment.environment plan).language
@@ -126,9 +121,9 @@ theorem finish_root_lift (bound : List TypeExpr) (expected : TypeExpr) (source :
   · by_cases typed : Mettapedia.GSLT.LanguageDef.WellSorted.checkOpenPatternWellSorted
         (GeneralPlanEnvironment.environment plan).language plan.snapshot.free bound expected
         (job.site.context.fill firing.target) = true
-    · simp [represented, typed, freeSame]
-    · simp [represented, typed, freeSame]
-  · simp [represented]
+    · simp [represented, typed, freeSame, encodeOption]
+    · simp [represented, typed, freeSame, encodeOption]
+  · simp [represented, encodeOption]
 
 /-- `gslt:rule:job-finish-root`, in the complete machine's runtime, is `Step.lift`. -/
 theorem complete_finish_root_returns (state : State) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
@@ -168,8 +163,7 @@ theorem step_lift_returns (state : State) (table : List (String × TypeExpr)) (b
         state (encoded (encodeList ScopedRuleJobReadoutExecution.receiptTerm
           (firings.filterMap (Complete.Step.lift plan bound expected job))))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | firing :: rest, ready => by
     subst tabled
     have later := step_lift_returns state (plan.snapshot.free.entriesOn footprint) bound expected footprint rfl source

@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MM0.HOLKernelSetOperationSequentReadback
+import Mettapedia.Languages.MM0.HOLKernelTermAssignmentReadback
 
 /-!
 # Representation and inference boundaries of material HOL readback
@@ -20,6 +21,7 @@ open Mettapedia.Logic.HOL
 open HOLKernelTermReadback
 open Kernel HOLKernelSyntax HOLKernelSetOperationReadback
 open NamedElaboration (BinderNames)
+open HOLKernelTermAssignments
 open Embedding.ZFSetHenkinInterpretation (Symbol set mapping)
 
 /-- The actual indices used by the maintained HOL constructor table. -/
@@ -188,4 +190,112 @@ theorem contracted_assumptions_refused :
 #print axioms collapsed_names_lose_occurrence
 #print axioms changed_conclusion_refused
 #print axioms contracted_assumptions_refused
+theorem free_name_above_binder_window_reads :
+    let names : Names [.prop] := .cons 100 .nil
+    let source : Term Symbol [.prop] (.prop ⇒ .prop) := .lam (.var (.vs .vz))
+    readTerm references names (encode references names 0 source) = some ⟨_, source⟩ := by
+  simp [HOLKernelSetOperationReadback.readTerm, HOLKernelTermReadback.readTerm,
+    HOLKernelSetOperationReadback.encode, HOLKernelSetOperationInterpretation.binderName, HOLKernelSetOperationInterpretation.symbols, encodeType, encodeTerm, applySymbol, Preterm.applyArgs,
+    readTermWith, readHead_reference references references_injective, readType,
+    readVariable, BinderNames.nameOf, Positions.extend]
+
+theorem free_binder_collision_changes_reading :
+    let names : Names [.prop] := .cons 7 .nil
+    let source : Term Symbol [.prop] (.prop ⇒ .prop) := .lam (.var (.vs .vz))
+    let native := encode references names 0 source
+    readTerm references names native = some ⟨.prop ⇒ .prop, Term.lam (.var .vz)⟩ ∧
+      readTerm references names native ≠ some ⟨_, source⟩ := by
+  simp [HOLKernelSetOperationReadback.readTerm, HOLKernelTermReadback.readTerm,
+    HOLKernelSetOperationReadback.encode, HOLKernelSetOperationInterpretation.binderName, HOLKernelSetOperationInterpretation.symbols, encodeType, encodeTerm, applySymbol, Preterm.applyArgs,
+    readTermWith, readHead_reference references references_injective, readType,
+    readVariable, BinderNames.nameOf, Positions.extend]
+
+#print axioms free_binder_collision_changes_reading
+
+/-- A compound substitution image may reuse the name of an unused outer
+variable. Its original free variable still refers to the older frame. -/
+theorem substitution_image_shadows_unused_outer_name :
+    let sourceNames : Names [.prop] := .cons 9 .nil
+    let targetNames : Names [.prop, .prop] := .cons 7 sourceNames
+    let image : Term Symbol [.prop] (.prop ⇒ .prop) := .lam (.var (.vs .vz))
+    let native := HOLKernelTermAssignments.encodeSubstitution references (fun _ : Unit => .var 0)
+      (fun {_} symbol => .var (HOLKernelSetOperationInterpretation.symbolIndex symbol))
+      HOLKernelSetOperationInterpretation.binderName (fun index => .var (sourceNames.nameOf index)) 0
+      (Subst.single image) .vz
+    readTerm references targetNames native = some ⟨_, weaken (σ := .prop) image⟩ ∧
+      7 ∈ targetNames.toList := by
+  simp [HOLKernelSetOperationReadback.readTerm, HOLKernelTermReadback.readTerm,
+    HOLKernelTermAssignments.encodeSubstitution, HOLKernelTermAssignments.encodeWithAssignment,
+    HOLKernelTermAssignments.Assignment.extend, Subst.single, weaken, rename, Rename.weaken,
+    Rename.lift, HOLKernelSetOperationInterpretation.binderName,
+    HOLKernelSetOperationInterpretation.symbols, encodeType, applySymbol, Preterm.applyArgs,
+    readTermWith, readHead_reference references references_injective, readType,
+    readVariable, BinderNames.nameOf, BinderNames.toList]
+
+#print axioms substitution_image_shadows_unused_outer_name
+
+/-- Freshness for the source image is strictly weaker than freshness for the
+whole target frame: the unused target variable has name 7, while every source
+variable is represented at name 9. -/
+theorem shadowing_fresh_for_source_not_target :
+    let names : Names [.prop, .prop] := .cons 7 (.cons 9 .nil)
+    7 ∈ names.toList ∧
+      ∀ {type} (index : Var ([.prop] : Ctx Unit) type),
+        7 ≠ names.nameOf (Rename.weaken (σ := .prop) index) := by
+  constructor
+  · simp [BinderNames.toList]
+  · intro type index
+    cases index with
+    | vz => simp [Rename.weaken, BinderNames.nameOf]
+    | vs index => nomatch index
+
+#print axioms shadowing_fresh_for_source_not_target
+
+/-- Extending a frame preserves successful readings but need not preserve
+failure: an unresolved variable can acquire its first binding. -/
+theorem fresh_binding_can_resolve_unreadable_term :
+    readTerm references emptyNames (.var 7) = none ∧
+      readTerm references (.cons 7 .nil : Names [.prop]) (.var 7) =
+        some ⟨.prop, Term.var .vz⟩ := by
+  simp [HOLKernelSetOperationReadback.readTerm, HOLKernelTermReadback.readTerm,
+    readTermWith, readVariable, emptyNames, readConstant]
+
+/-- A name absent from the variable frame can still designate a constant.
+Using it for a new variable changes the reading, so dictionary freshness is
+an independent requirement. -/
+theorem fresh_variable_name_can_shadow_constant :
+    readTerm references emptyNames (.var 3) = some ⟨mapping, Term.const Symbol.union⟩ ∧
+      readTerm references (.cons 3 .nil : Names [.prop]) (.var 3) =
+        some ⟨.prop, Term.var .vz⟩ := by
+  simp [HOLKernelSetOperationReadback.readTerm, HOLKernelTermReadback.readTerm,
+    readTermWith, readVariable, emptyNames, readConstant]
+
+#print axioms fresh_binding_can_resolve_unreadable_term
+#print axioms fresh_variable_name_can_shadow_constant
+/-- Actual literal insertion and direct source instantiation differ in their inner binder names but preserve the same free variable and intrinsic term. -/
+theorem literal_and_source_substitution_have_same_reading :
+    let names : Names [.prop] := .cons 9 .nil
+    let image : Term Symbol [.prop] (.prop ⇒ .prop) := .lam (.var (.vs .vz))
+    let body : Term Symbol [.prop ⇒ .prop, .prop] (.prop ⇒ (.prop ⇒ .prop)) := .lam (.var (.vs .vz))
+    let literal := encodeWithAssignment references (fun _ : Unit => .var 0)
+      (fun {_} symbol => .var (HOLKernelSetOperationInterpretation.symbolIndex symbol))
+      HOLKernelSetOperationInterpretation.binderName
+      (encodeSubstitution references (fun _ : Unit => .var 0)
+        (fun {_} symbol => .var (HOLKernelSetOperationInterpretation.symbolIndex symbol))
+        HOLKernelSetOperationInterpretation.binderName (fun index => .var (names.nameOf index)) 0
+        (Subst.single image)) 0 body
+    let direct := encode references names 0 (instantiate image body)
+    literal ≠ direct ∧
+      readTerm references names literal = some ⟨_, instantiate image body⟩ ∧
+      readTerm references names direct = some ⟨_, instantiate image body⟩ := by
+  simp [HOLKernelSetOperationReadback.readTerm, HOLKernelTermReadback.readTerm,
+    HOLKernelSetOperationReadback.encode, HOLKernelSetOperationInterpretation.binderName,
+    HOLKernelSetOperationInterpretation.symbols, encodeWithAssignment, encodeSubstitution,
+    Assignment.extend, encodeTerm, encodeType, instantiate, subst, Subst.single, Subst.lift,
+    rename, Rename.weaken, Rename.lift, applySymbol, Preterm.applyArgs, readTermWith,
+    readHead_reference references references_injective, readType, readVariable, BinderNames.nameOf,
+    Positions.extend]
+
+#print axioms literal_and_source_substitution_have_same_reading
+
 end Mettapedia.Languages.MM0.HOLKernelSetOperationReadbackControls

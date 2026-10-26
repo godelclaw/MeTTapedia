@@ -435,4 +435,187 @@ def existentialElimination (signature : Signature sorts terms)
 #print axioms weakenAssumption
 #print axioms abstractionCongruence
 #print axioms existentialElimination
+/-! ## Scope of promoted rebinding and retained hypothesis receipts -/
+
+theorem rebindInContext_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (typing : HOLKernelTypingRules.Rules theorems signature.symbol signature.ids)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (base : Base → Preterm) (constant : ∀ {type}, Const type → Preterm) (binders temporary : Nat → Nat)
+    (baseSorted : ∀ index, Preterm.HasType terms context (base index) [] signature.ids.type)
+    (constantSorted : ∀ {type} (symbol : Const type), Preterm.HasType terms context (constant symbol) [] signature.ids.object)
+    (bindersInjective : Function.Injective binders) (temporaryInjective : Function.Injective temporary)
+    (baseIndependent : ∀ slot index, ¬ Preterm.HasVar context (binders slot) (base index))
+    (temporaryIndependent : ∀ slot index, ¬ Preterm.HasVar context (temporary slot) (base index))
+    {gamma : Ctx Base} {type : Ty Base} (source : Term Const gamma type) (assignment : Assignment gamma)
+    (scope : HOLKernelStructuralRules.ProofContext terms definitions theorems context hypotheses signature.symbol signature.ids.wff)
+    (windows : RebindingWindows context signature.ids.object scope.formation binders temporary)
+    (fits : source.binderDepth ≤ windows.width)
+    (assignmentSorted : ∀ {type} (index : Var gamma type), Preterm.HasType terms context (assignment index) [] signature.ids.object)
+    (variableTyping : ∀ {type} (index : Var gamma type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := context) (hypotheses := hypotheses)
+        (typed signature.symbol scope.formation (assignment index) (encodeType signature.symbol base type)))
+    (constantTyping : ∀ {type} (symbol : Const type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := context) (hypotheses := hypotheses)
+        (typed signature.symbol scope.formation (constant symbol) (encodeType signature.symbol base type)))
+    (limit : Nat)
+    (baseBound : ∀ index, Preterm.VarsBelow limit (base index))
+    (constantBound : ∀ {type} (symbol : Const type), Preterm.VarsBelow limit (constant symbol))
+    (assignmentBound : ∀ {type} (index : Var gamma type), Preterm.VarsBelow limit (assignment index))
+    (scopeBound : scope.VarsBelow limit)
+    (sourceNames : ∀ offset < windows.width, binders (windows.sourceDepth + offset) < limit)
+    (workNames : ∀ offset < windows.width, binders (windows.workDepth + offset) < limit)
+    (temporaryNames : ∀ offset < windows.width, temporary (windows.temporaryDepth + offset) < limit)
+    (variableBound : ∀ {type} (index : Var gamma type), (variableTyping index).val.VarsBelow limit)
+    (constantsBound : ∀ {type} (symbol : Const type), (constantTyping symbol).val.VarsBelow limit) :
+    (rebindInContext signature profile structural typing rules binding base constant binders temporary baseSorted constantSorted bindersInjective temporaryInjective baseIndependent temporaryIndependent source assignment scope windows fits assignmentSorted variableTyping constantTyping).val.VarsBelow limit := by
+  let equation := HOLKernelAlpha.rebind signature profile structural typing rules binding base constant binders temporary
+    baseSorted constantSorted bindersInjective temporaryInjective baseIndependent temporaryIndependent source assignment
+    windows.sourceDepth windows.workDepth windows.temporaryDepth scope.formation scope.formationSorted assignmentSorted
+    (fun offset smaller => windows.sourceSlots offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.workSlots offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.temporarySlots offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.sourceFresh offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.workFresh offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.temporaryFresh offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun first firstSmall second secondSmall => windows.sourceDisjoint first (Nat.lt_of_lt_of_le firstSmall fits)
+      second (Nat.lt_of_lt_of_le secondSmall fits))
+    (fun first firstSmall second secondSmall => Ne.symm (windows.workDisjoint second (Nat.lt_of_lt_of_le secondSmall fits)
+      first (Nat.lt_of_lt_of_le firstSmall fits))) variableTyping constantTyping
+  have sourceSorted := encode_sorted signature context base constant binders baseSorted constantSorted source assignment
+    windows.sourceDepth assignmentSorted (fun offset smaller => windows.sourceSlots offset (Nat.lt_of_lt_of_le smaller fits))
+  have workSorted := encode_sorted signature context base constant binders baseSorted constantSorted source assignment
+    windows.workDepth assignmentSorted (fun offset smaller => windows.workSlots offset (Nat.lt_of_lt_of_le smaller fits))
+  have equationScope := HOLKernelAlpha.rebind_varsBelow signature profile structural typing rules binding base constant binders temporary
+    baseSorted constantSorted bindersInjective temporaryInjective baseIndependent temporaryIndependent source assignment
+    windows.sourceDepth windows.workDepth windows.temporaryDepth scope.formation scope.formationSorted assignmentSorted
+    (fun offset smaller => windows.sourceSlots offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.workSlots offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.temporarySlots offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.sourceFresh offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.workFresh offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => windows.temporaryFresh offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun first firstSmall second secondSmall => windows.sourceDisjoint first (Nat.lt_of_lt_of_le firstSmall fits)
+      second (Nat.lt_of_lt_of_le secondSmall fits))
+    (fun first firstSmall second secondSmall => Ne.symm (windows.workDisjoint second (Nat.lt_of_lt_of_le secondSmall fits)
+      first (Nat.lt_of_lt_of_le firstSmall fits))) variableTyping constantTyping limit baseBound constantBound assignmentBound scopeBound.1
+    (fun offset smaller => sourceNames offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => workNames offset (Nat.lt_of_lt_of_le smaller fits))
+    (fun offset smaller => temporaryNames offset (Nat.lt_of_lt_of_le smaller fits)) variableBound constantsBound
+  have sourceScope := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound source assignment windows.sourceDepth
+    assignmentBound (fun offset smaller => sourceNames offset (Nat.lt_of_lt_of_le smaller fits))
+  have workScope := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound source assignment windows.workDepth
+    assignmentBound (fun offset smaller => workNames offset (Nat.lt_of_lt_of_le smaller fits))
+  have resultScope : Preterm.VarsBelow limit (holds signature.symbol
+      (equality signature.symbol (encodeType signature.symbol base type)
+        (encodeWithAssignment signature.symbol base constant binders assignment windows.sourceDepth source)
+        (encodeWithAssignment signature.symbol base constant binders assignment windows.workDepth source))) :=
+    ⟨trivial, ⟨⟨⟨trivial, encodeType_varsBelow _ _ _ baseBound type⟩, sourceScope⟩, workScope⟩⟩
+  exact HOLKernelStructuralRules.ProofContext.promote_varsBelow signature structural limit scope _ (holds_sorted signature context (signature.application context .eqc _
+    (.cons (.regular (encodeType_sorted signature context base baseSorted type))
+      (.cons (.regular sourceSorted) (.cons (.regular workSorted) .nil))))) equation scopeBound resultScope equationScope
+
+#print axioms rebindInContext_varsBelow
+theorem weakenAssumption_varsBelow (signature : Signature sorts terms)
+    (abbreviation : HOLKernelBooleanEquality.Abbreviation terms definitions signature.symbol signature.ids)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (typing : HOLKernelTypingRules.Rules theorems signature.symbol signature.ids)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids abbreviation.reference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids abbreviation.reference)
+    (base : Base → Preterm) (constant : ∀ {type}, Const type → Preterm) (binders temporary : Nat → Nat)
+    (baseSorted : ∀ index, Preterm.HasType terms context (base index) [] signature.ids.type)
+    (constantSorted : ∀ {type} (symbol : Const type), Preterm.HasType terms context (constant symbol) [] signature.ids.object)
+    (bindersInjective : Function.Injective binders) (temporaryInjective : Function.Injective temporary)
+    (baseIndependent : ∀ slot index, ¬ Preterm.HasVar context (binders slot) (base index))
+    (temporaryIndependent : ∀ slot index, ¬ Preterm.HasVar context (temporary slot) (base index))
+    {gamma : Ctx Base} {domain : Ty Base} (formula : Term Const gamma .prop) (assignment : Assignment gamma)
+    (scope : HOLKernelStructuralRules.ProofContext terms definitions theorems context hypotheses signature.symbol signature.ids.wff)
+    (windows : RebindingWindows context signature.ids.object scope.formation binders temporary)
+    (fits : formula.binderDepth + 1 ≤ windows.width)
+    (assignmentSorted : ∀ {type} (index : Var gamma type), Preterm.HasType terms context (assignment index) [] signature.ids.object)
+    (variableTyping : ∀ {type} (index : Var gamma type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := context) (hypotheses := hypotheses)
+        (typed signature.symbol scope.formation (assignment index) (encodeType signature.symbol base type)))
+    (constantTyping : ∀ {type} (symbol : Const type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := context) (hypotheses := hypotheses)
+        (typed signature.symbol scope.formation (constant symbol) (encodeType signature.symbol base type)))
+    (premise : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems) (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol scope.logical (holds signature.symbol
+        (encodeWithAssignment signature.symbol base constant binders assignment windows.sourceDepth formula))))
+    (limit : Nat)
+    (baseBound : ∀ index, Preterm.VarsBelow limit (base index))
+    (constantBound : ∀ {type} (symbol : Const type), Preterm.VarsBelow limit (constant symbol))
+    (assignmentBound : ∀ {type} (index : Var gamma type), Preterm.VarsBelow limit (assignment index))
+    (scopeBound : scope.VarsBelow limit)
+    (sourceNames : ∀ offset < windows.width, binders (windows.sourceDepth + offset) < limit)
+    (workNames : ∀ offset < windows.width, binders (windows.workDepth + offset) < limit)
+    (temporaryNames : ∀ offset < windows.width, temporary (windows.temporaryDepth + offset) < limit)
+    (variableBound : ∀ {type} (index : Var gamma type), (variableTyping index).val.VarsBelow limit)
+    (constantsBound : ∀ {type} (symbol : Const type), (constantTyping symbol).val.VarsBelow limit)
+    (premiseBound : premise.val.VarsBelow limit) :
+    (weakenAssumption (domain := domain) signature abbreviation profile structural typing rules binding base constant binders temporary baseSorted constantSorted bindersInjective temporaryInjective baseIndependent temporaryIndependent formula assignment scope windows fits assignmentSorted variableTyping constantTyping premise).val.VarsBelow limit := by
+  let inner := windows.bodyWindow formula.binderDepth fits
+  let equation := rebindInContext signature profile structural typing rules binding base constant binders temporary
+    baseSorted constantSorted bindersInjective temporaryInjective baseIndependent temporaryIndependent formula assignment
+    scope inner (Nat.le_refl _) assignmentSorted variableTyping constantTyping
+  have sourceSorted := encode_sorted signature context base constant binders baseSorted constantSorted formula assignment
+    inner.sourceDepth assignmentSorted inner.sourceSlots
+  have childSorted := encode_sorted signature context base constant binders baseSorted constantSorted formula assignment
+    inner.workDepth assignmentSorted inner.workSlots
+  let carried := HOLKernelInferenceProofs.booleanEqualityElimination signature abbreviation rules scope.logical _ _ scope.logicalSorted
+    sourceSorted childSorted equation premise
+  have head : context[binders windows.workDepth]? = some (.bound signature.ids.object) := by
+    simpa only [Nat.add_zero] using windows.workSlots 0 (by omega)
+  have headSorted : Preterm.HasType terms context (.var (binders windows.workDepth)) [] signature.ids.object :=
+    .var (binder := .bound signature.ids.object) head
+  have extraSorted := hasType_sorted signature context headSorted (encodeType_sorted signature context base baseSorted domain)
+  have innerSource : ∀ offset < inner.width, binders (inner.sourceDepth + offset) < limit :=
+    fun offset smaller => sourceNames offset (by change offset < formula.binderDepth at smaller; omega)
+  have innerWork : ∀ offset < inner.width, binders (inner.workDepth + offset) < limit := by
+    intro offset smaller
+    have atSlot := workNames (offset + 1) (by change offset < formula.binderDepth at smaller; omega)
+    simpa only [inner, RebindingWindows.bodyWindow, Nat.add_assoc, Nat.add_comm 1 offset] using atSlot
+  have innerTemporary : ∀ offset < inner.width, temporary (inner.temporaryDepth + offset) < limit :=
+    fun offset smaller => temporaryNames offset (by change offset < formula.binderDepth at smaller; omega)
+  have equationScope := rebindInContext_varsBelow signature profile structural typing rules binding base constant binders temporary
+    baseSorted constantSorted bindersInjective temporaryInjective baseIndependent temporaryIndependent formula assignment
+    scope inner (Nat.le_refl _) assignmentSorted variableTyping constantTyping limit baseBound constantBound assignmentBound
+    scopeBound innerSource innerWork innerTemporary variableBound constantsBound
+  have sourceScope := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound formula assignment
+    inner.sourceDepth assignmentBound innerSource
+  have childScope := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound formula assignment
+    inner.workDepth assignmentBound innerWork
+  have carriedScope : carried.val.VarsBelow limit :=
+    HOLKernelInferenceProofs.booleanEqualityElimination_varsBelow signature abbreviation rules _ _ _
+      scope.logicalSorted sourceSorted childSorted equation premise limit scopeBound.2.1 sourceScope childScope equationScope premiseBound
+  have rootBound : binders windows.workDepth < limit := by
+    simpa only [Nat.add_zero] using workNames 0 (by omega)
+  have extraScope : Preterm.VarsBelow limit
+      (hasType signature.symbol (.var (binders windows.workDepth)) (encodeType signature.symbol base domain)) :=
+    ⟨⟨trivial, rootBound⟩, encodeType_varsBelow _ _ _ baseBound domain⟩
+  let lifted := HOLKernelStructuralRules.weaken signature structural scope.logical _ _ scope.logicalSorted extraSorted
+    (holds_sorted signature context childSorted) carried
+  have liftedScope : lifted.val.VarsBelow limit :=
+    HOLKernelStructuralRules.weaken_varsBelow signature structural limit _ _ _ scope.logicalSorted extraSorted
+      (holds_sorted signature context childSorted) carried scopeBound.2.1 extraScope ⟨trivial, childScope⟩ carriedScope
+  have coherence := encode_rename (delta := domain :: gamma) signature.symbol base constant binders formula
+    (fun {_} index => Var.vs index) (Assignment.extend (.var (binders windows.workDepth)) assignment) (windows.workDepth + 1)
+  change encodeWithAssignment signature.symbol base constant binders
+      (Assignment.extend (.var (binders windows.workDepth)) assignment) (windows.workDepth + 1) (weaken (σ := domain) formula) =
+    encodeWithAssignment signature.symbol base constant binders assignment (windows.workDepth + 1) formula at coherence
+  let claim := fun expression => entails signature.symbol
+    (conjunction signature.symbol scope.logical
+      (hasType signature.symbol (.var (binders windows.workDepth)) (encodeType signature.symbol base domain)))
+    (holds signature.symbol expression)
+  change (Eq.mpr (congrArg (fun expression => CheckedProof (terms := terms) (definitions := definitions)
+    (theorems := theorems) (context := context) (hypotheses := hypotheses) (claim expression)) coherence) lifted).val.VarsBelow limit
+  rw [HOLKernelStructuralRules.CheckedProof.val_mpr claim coherence lifted]
+  exact liftedScope
+
+#print axioms weakenAssumption_varsBelow
+
+
 end Mettapedia.Languages.MM0.HOLKernelSourceBinding

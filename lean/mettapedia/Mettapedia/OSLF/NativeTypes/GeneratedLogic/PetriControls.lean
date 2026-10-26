@@ -93,14 +93,16 @@ variable {relEnv : RelationEnv} {language : LanguageDef} (noEquations : language
 include noEquations noAlgebra guarded
 
 theorem decided_true {formula : Formula 0} {term : Pattern} (rounds : ℕ) (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical relEnv language 2 BagForms.sortBags (BagForms.domain language) formula term rounds =
+    (decided : decideCanonical relEnv language 2 BagForms.sortBags
+      (BagForms.domain language) List.singleton formula term rounds =
       some true) :
     (referenceStructure relEnv language).sat Env.closed formula term :=
   (decideCanonical_sound (BagForms.canonical noEquations noAlgebra) (BagForms.coherent noEquations noAlgebra guarded 2)
     behavioural decided).mp rfl
 
 theorem decided_false {formula : Formula 0} {term : Pattern} (rounds : ℕ) (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical relEnv language 2 BagForms.sortBags (BagForms.domain language) formula term rounds =
+    (decided : decideCanonical relEnv language 2 BagForms.sortBags
+      (BagForms.domain language) List.singleton formula term rounds =
       some false) :
     ¬ (referenceStructure relEnv language).sat Env.closed formula term := fun holds =>
   Bool.false_ne_true ((decideCanonical_sound (BagForms.canonical noEquations noAlgebra)
@@ -118,7 +120,8 @@ include noEquations noAlgebra queried respects
 
 theorem decided_true_queries {formula : Formula 0} {term : Pattern} (rounds : ℕ)
     (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical relEnv language 2 BagForms.sortBags (BagForms.domain language) formula term rounds =
+    (decided : decideCanonical relEnv language 2 BagForms.sortBags
+      (BagForms.domain language) List.singleton formula term rounds =
       some true) :
     (referenceStructure relEnv language).sat Env.closed formula term :=
   (decideCanonical_sound (BagForms.canonical noEquations noAlgebra)
@@ -126,7 +129,8 @@ theorem decided_true_queries {formula : Formula 0} {term : Pattern} (rounds : �
 
 theorem decided_false_queries {formula : Formula 0} {term : Pattern} (rounds : ℕ)
     (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical relEnv language 2 BagForms.sortBags (BagForms.domain language) formula term rounds =
+    (decided : decideCanonical relEnv language 2 BagForms.sortBags
+      (BagForms.domain language) List.singleton formula term rounds =
       some false) :
     ¬ (referenceStructure relEnv language).sat Env.closed formula term := fun holds =>
   Bool.false_ne_true ((decideCanonical_sound (BagForms.canonical noEquations noAlgebra)

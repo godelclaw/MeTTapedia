@@ -63,8 +63,7 @@ theorem cross_sites_returns (state : State) (equation : GeneralExecutionAdmissio
           encoded (encodeList ScopedRuleJobReadoutExecution.siteTerm sites)])
         state (encoded (encodeList equationJobTerm (sites.map fun site => ⟨position, equation, site⟩)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | site :: rest => by
     have later := cross_sites_returns state equation position rest
     complete_eval [later] unfolding [encodeList, CompletePlanWire.equationDeclarationTerm, equationJobTerm]
@@ -78,8 +77,7 @@ theorem equations_jobs_returns (state : State) (sites : List SiteData) (unused :
         state (encoded (encodeList equationJobTerm
           (pairs.flatMap fun (equation, position) => sites.map fun site => ⟨position, equation, site⟩)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | (equation, position) :: rest => by
     have here := cross_sites_returns plan state equation position sites
     have later := equations_jobs_returns state sites unused rest
@@ -111,8 +109,7 @@ theorem complete_check_assignment_returns (state : State) (language : LanguageDe
          encoded (InferenceCettaWire.AuthoredRule.bindingSpecTerm spec), assignmentValue assignment])
       state (Effects.boolean (ConditionalEquationExecution.checkAssignment language
         (FreeTypeContext.ofList free) bound rule spec assignment)) := by
-  metta_lift complete_checked ["declarations", "free", "bound", "rule", "spec", "assignment"]
-    (descent_check_assignment_returns state language free bound rule spec assignment)
+  exact descent_check_assignment_returns state language free bound rule spec assignment
 
 @[metta_head "gslt:equations:typed-lanes"]
 theorem typed_lanes_returns (state : State) (table : List (String × TypeExpr)) (bound : List TypeExpr)
@@ -127,8 +124,7 @@ theorem typed_lanes_returns (state : State) (table : List (String × TypeExpr)) 
           ((answers.filter fun answer => checkTypedAssignment (GeneralPlanEnvironment.environment plan) (job.context plan)
               answer.assignment).map fun answer => ⟨job, answer⟩)))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | answer :: rest, covered => by
     subst tabled
     have later := typed_lanes_returns state (plan.snapshot.free.entriesOn footprint) bound expected footprint rfl job
@@ -210,8 +206,7 @@ theorem jobs_lanes_returns (state : State) (table : List (String × TypeExpr)) (
         (apply "gslt:equations:jobs-lanes" [planValue plan table bound expected, encoded (encodeList equationJobTerm jobs)])
         state (encoded (encodeList laneTerm (jobs.flatMap (jobLanes plan bound expected source))))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    complete_eval unfolding [encodeList]
   | job :: rest, focused => by
     have here := job_lanes_returns plan state table bound expected footprint tabled source job (focused job (by simp))
     have later := jobs_lanes_returns state table bound expected footprint tabled source rest
@@ -239,13 +234,11 @@ theorem complete_generate_returns (state : State) (bound : List TypeExpr) (expec
         (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free OperationalPermissions.all bound
           expected source))) := by
   rw [← generate_snapshot _ _ _ _ _ _ footprint covers]
-  metta_lift complete_checked ["declarations", "free", "permissions", "bound", "expected", "source"]
-    (by metta_lift descent_checked ["declarations", "free", "permissions", "bound", "expected", "source"]
-      (transport_call GeneralTypedSiteExecution.program_closed typed_agreement (by decide +kernel) (by decide)
-        (by decide +kernel) (by decide) ["declarations", "free", "permissions", "bound", "expected", "source"]
-        (by decide) rfl (by decide +kernel)
-        (GeneralTypedSiteExecution.generate_returns state (GeneralPlanEnvironment.environment plan).language
-          (plan.snapshot.free.entriesOn footprint) OperationalPermissions.all bound expected source)))
+  exact transport_call GeneralTypedSiteExecution.program_closed typed_agreement (by decide +kernel) (by decide)
+    (by decide +kernel) (by decide) ["declarations", "free", "permissions", "bound", "expected", "source"]
+    (by decide) rfl (by decide +kernel)
+    (GeneralTypedSiteExecution.generate_returns state (GeneralPlanEnvironment.environment plan).language
+      (plan.snapshot.free.entriesOn footprint) OperationalPermissions.all bound expected source)
 
 theorem complete_sorted_returns (state : State) (language : LanguageDef) (free : List (String × TypeExpr))
     (bound : List TypeExpr) (type : TypeExpr) (pattern : Pattern) :
@@ -256,8 +249,7 @@ theorem complete_sorted_returns (state : State) (language : LanguageDef) (free :
          encoded (encodeList InferenceCettaWire.AuthoredRule.typeTerm bound),
          encoded (InferenceCettaWire.AuthoredRule.typeTerm type), encoded (InferenceCettaWire.encodePattern pattern)])
       state (Effects.boolean (checkOpenPatternWellSorted language (FreeTypeContext.ofList free) bound type pattern)) := by
-  metta_lift complete_checked ["declarations", "free", "bound", "type", "pattern"]
-    (Lowered.sorted state language free bound type pattern)
+  exact Lowered.sorted state language free bound type pattern
 
 theorem job_focus_within {bound : List TypeExpr} {expected : TypeExpr} {source : Pattern} {footprint : List String}
     (covers : ∀ name ∈ source.freeFvarNames, name ∈ footprint) {job : GeneralEquationJobs.Job}

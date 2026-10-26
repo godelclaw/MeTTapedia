@@ -21,22 +21,38 @@ private abbrev a (head : String) (arguments : List Atom) : Atom :=
   .expression (.symbol head :: arguments)
 private abbrev v (name : String) : Atom := .var name
 
+private theorem scopedInstantiation_primitive {head : String}
+    (supported : ScopedInstantiationExecution.executionHeads head = true) :
+    RetainedMatchingWire.scopedPrimitiveHeads head = true := by
+  have checked : ScopedInstantiationExecution.executionHeadNames.all
+      RetainedMatchingWire.scopedPrimitiveHeads = true := by decide +kernel
+  exact List.all_eq_true.mp checked head (List.contains_iff_mem.mp supported)
+
 theorem scopedInstantiation_agreement :
     ProgramAgreementOn ScopedInstantiationExecution.executionHeads
       ScopedInstantiationExecution.runtime CollectionSelectionExecution.scopedLibrary.runtime := by
-  apply programAgreementOn_of_retained_rows
-  · rfl
-  · rfl
+  exact agreement_trans ScopedInstantiationExecution.scoped_machine_agreement
+    (agreement_mono (fun _ supported => scopedInstantiation_primitive supported)
+      RetainedMatchingWire.scopedPrimitive_agreement)
 
 private def operationArities : List (String × Nat) :=
   [("gslt:rule:scope-reduct", 5)]
 
+private theorem operation_supported (head : String) (arity : Nat)
+    (member : (head, arity) ∈ operationArities) :
+    ScopedInstantiationExecution.executionHeads head = true := by
+  have checked : operationArities.all
+      (fun operation => ScopedInstantiationExecution.executionHeads operation.1) = true := by
+    decide +kernel
+  exact List.all_eq_true.mp checked (head, arity) member
+
 private theorem raw_at (head : String) (arity index : Nat)
     (member : (head, arity) ∈ operationArities) (bound : index < arity) :
     argumentIsRaw CollectionSelectionExecution.scopedLibrary.runtime head index = true := by
+  rw [← scopedInstantiation_agreement.demand head index (operation_supported head arity member)]
   have checked : operationArities.all (fun operation =>
       (List.range operation.2).all
-        (argumentIsRaw CollectionSelectionExecution.scopedLibrary.runtime operation.1)) = true := by rfl
+        (argumentIsRaw ScopedInstantiationExecution.runtime operation.1)) = true := by decide +kernel
   exact List.all_eq_true.mp (List.all_eq_true.mp checked (head, arity) member)
     index (List.mem_range.mpr bound)
 
@@ -55,10 +71,11 @@ private theorem ordinary_dispatch (head : String) (arity : Nat)
     (member : (head, arity) ∈ operationArities) :
     (ioHead head || StdLib.known head ||
       CollectionSelectionExecution.scopedLibrary.runtime.equations.any (·.head == head)) = true := by
+  rw [← scopedInstantiation_agreement.dispatch head (operation_supported head arity member)]
   have checked : operationArities.all (fun operation =>
       ioHead operation.1 || StdLib.known operation.1 ||
-        CollectionSelectionExecution.scopedLibrary.runtime.equations.any
-          (·.head == operation.1)) = true := by rfl
+        ScopedInstantiationExecution.runtime.equations.any
+          (·.head == operation.1)) = true := by decide +kernel
   exact List.all_eq_true.mp checked (head, arity) member
 
 theorem scoped_reduct_returns (state : Effects.State) (rule : RewriteRule)
@@ -105,12 +122,7 @@ theorem firing_returns (state : Effects.State) (request : Request) (receipt : Re
       state (encoded (encodeOption firingTerm (firing? request receipt))) := by
   have reduced' := scoped_reduct_returns state request.rule request.spec request.ambient
     receipt.matching.assignment
-  have selected := by
-    metta_lift CollectionSelectionExecution.checked
-      ["operation", "rule", "spec", "ambient", "assignment"] reduced'
-  have available := by
-    metta_lift ScopedCollectionExecution.checked
-      ["operation", "rule", "spec", "ambient", "assignment"] selected
+  have available := reduced'
   cases made : ScopedRuleMatching.reduct? request.rule request.spec request.ambient
       receipt.matching.assignment <;>
     collection_machine_eval [available] unfolding [ScopedCollectionMachine.firing?, made,
@@ -137,3 +149,8 @@ theorem firings_returns (state : Effects.State) (request : Request) : ∀ receip
         collection_machine_eval [first, later] unfolding [List.filterMap_cons, made, encodeOption]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionFiringExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionFiringExecution.scopedInstantiation_agreement
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionFiringExecution.scoped_reduct_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionFiringExecution.firing_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionFiringExecution.firings_returns

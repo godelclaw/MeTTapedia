@@ -1,20 +1,16 @@
 import Mathlib.ModelTheory.Ultraproducts
 import Mathlib.Order.Filter.Ultrafilter.Basic
-import Mettapedia.UniversalAlgebra.EquationSystem
+import Mettapedia.UniversalAlgebra.ReducedPower
 import Mettapedia.UniversalAlgebra.Mathlib.FirstOrder
 
 /-!
-# Ultrapowers preserve equational truth
+# Ultrapowers as an independent specialization of reduced powers
 
-This file isolates a standard model-theoretic boundary for universal algebra.
-An ultrapower may contain genuinely new, non-diagonal elements, but it satisfies
-exactly the same universally quantified equations as its base algebra.
-
-The result is deliberately stated for arbitrary finitary one-sorted signatures.
-It is therefore about equational logic, not about any particular arithmetic,
-bootstrap calculus, or proposed foundational language.  Stronger first-order
-transfer is Łoś's theorem; the direct proof here exposes the smaller amount of
-model theory needed by the equational fragment.
+The model is still constructed through Mathlib's algebraic first-order
+ultraproduct. Agreement with the general filter construction is proved on
+representatives. Equational transfer needs only properness; stronger first-order
+transfer belongs to the ultrafilter interface. Non-diagonal elements remain
+observable even when every universal equation agrees with the base model.
 -/
 
 set_option autoImplicit false
@@ -25,7 +21,7 @@ open Filter FirstOrder
 
 universe u v w
 
-variable {S : Signature.{u}}
+variable {S : Signature.{u}} {Carrier : Type v} {Index : Type w}
 
 namespace Model
 
@@ -57,134 +53,56 @@ theorem ultrapower_interpret {Carrier : Type v} {Index : Type w}
     (operation : S.Operation)
     (arguments : Fin (S.arity operation) → Index → Carrier) :
     (model.ultrapower ultrafilter).interpret operation
-        (fun position =>
-          (arguments position : UltrapowerCarrier Carrier ultrafilter)) =
-      (fun index =>
-        model.interpret operation (fun position => arguments position index) :
-          Index → Carrier) := by
+        (fun position => (arguments position : UltrapowerCarrier Carrier ultrafilter)) =
+      (fun index => model.interpret operation (fun position => arguments position index) :
+        Index → Carrier) := by
   exact @FirstOrder.Language.Ultraproduct.funMap_cast
     Index (fun _ : Index => Carrier) ultrafilter S.toFirstOrderLanguage
     (fun _ : Index => model.toFirstOrderStructure) (S.arity operation)
     (⟨operation, rfl⟩ : S.toFirstOrderLanguage.Functions (S.arity operation))
     arguments
 
+/-- The two independently constructed models agree on the common quotient carrier. -/
+theorem ultrapower_eq_reducedPower {Carrier : Type v} {Index : Type w}
+    (model : Model S Carrier) (ultrafilter : Ultrafilter Index) :
+    model.ultrapower ultrafilter = model.reducedPower (ultrafilter : Filter Index) := by
+  apply congrArg Model.mk
+  funext operation arguments
+  refine Quotient.induction_on_pi arguments ?_
+  intro representatives
+  change (model.ultrapower ultrafilter).interpret operation
+      (fun i => (representatives i : UltrapowerCarrier Carrier ultrafilter)) =
+    (model.reducedPower (ultrafilter : Filter Index)).interpret operation
+      (fun i => (representatives i : ReducedPowerCarrier Carrier (ultrafilter : Filter Index)))
+  rw [ultrapower_interpret, reducedPower_interpret]
+
 end Model
-
-namespace Term
-
-variable {Carrier : Type v} {Index : Type w}
 
 /-- Evaluation in an ultrapower is pointwise evaluation of representatives.
 This is the term-level fragment of Łoś transfer. -/
-theorem evaluate_ultrapower (model : Model S Carrier)
+theorem Term.evaluate_ultrapower (model : Model S Carrier)
     (ultrafilter : Ultrafilter Index) (valuation : Nat → Index → Carrier) :
     ∀ term : Term S,
       term.evaluate (model.ultrapower ultrafilter)
-          (fun variableIndex =>
-            (valuation variableIndex :
-              Model.UltrapowerCarrier Carrier ultrafilter)) =
-        (fun index =>
-          term.evaluate model (fun variableIndex => valuation variableIndex index) :
-            Index → Carrier) := by
+          (fun i => (valuation i : Model.UltrapowerCarrier Carrier ultrafilter)) =
+        (fun index => term.evaluate model (fun i => valuation i index) : Index → Carrier) := by
   intro term
-  induction term with
-  | var variableIndex => rfl
-  | op operation arguments ih =>
-      simp only [Term.evaluate]
-      rw [show
-        (fun position =>
-            (arguments position).evaluate (model.ultrapower ultrafilter)
-              (fun variableIndex =>
-                (valuation variableIndex :
-                  Model.UltrapowerCarrier Carrier ultrafilter))) =
-          (fun position =>
-            ((fun index =>
-                (arguments position).evaluate model
-                  (fun variableIndex => valuation variableIndex index) :
-                Index → Carrier) :
-              Model.UltrapowerCarrier Carrier ultrafilter)) from funext ih]
-      exact Model.ultrapower_interpret model ultrafilter operation
-        (fun position index =>
-          (arguments position).evaluate model
-            (fun variableIndex => valuation variableIndex index))
-
-end Term
-
-namespace Equation
-
-variable {Carrier : Type v} {Index : Type w}
-
+  simpa only [Model.ultrapower_eq_reducedPower] using
+    Term.evaluate_reducedPower model (ultrafilter : Filter Index) valuation term
 /-- A universally quantified equation holds in a model exactly when it holds in
-any constant ultrapower of that model.  The reverse implication uses only a
-diagonal valuation; the forward implication chooses representatives for an
-arbitrary ultrapower valuation. -/
-theorem holds_ultrapower_iff (model : Model S Carrier)
+any constant ultrapower of that model, by the independently proved reduced-power comparison. -/
+theorem Equation.holds_ultrapower_iff (model : Model S Carrier)
     (ultrafilter : Ultrafilter Index) (equation : Equation S) :
     equation.Holds (model.ultrapower ultrafilter) ↔ equation.Holds model := by
-  classical
-  constructor
-  · intro equationHolds valuation
-    have diagonalHolds := equationHolds (fun variableIndex =>
-      Model.diagonal ultrafilter (valuation variableIndex))
-    change
-      equation.1.evaluate (model.ultrapower ultrafilter)
-          (fun variableIndex =>
-            ((fun _ : Index => valuation variableIndex) :
-              Model.UltrapowerCarrier Carrier ultrafilter)) =
-        equation.2.evaluate (model.ultrapower ultrafilter)
-          (fun variableIndex =>
-            ((fun _ : Index => valuation variableIndex) :
-              Model.UltrapowerCarrier Carrier ultrafilter))
-      at diagonalHolds
-    rw [Term.evaluate_ultrapower model ultrafilter
-          (fun variableIndex _ => valuation variableIndex) equation.1,
-      Term.evaluate_ultrapower model ultrafilter
-          (fun variableIndex _ => valuation variableIndex) equation.2]
-      at diagonalHolds
-    have eventuallyEqual :
-        Filter.EventuallyEq (ultrafilter : Filter Index)
-          (fun _ : Index => equation.1.evaluate model valuation)
-          (fun _ : Index => equation.2.evaluate model valuation) :=
-      Quotient.eq''.mp diagonalHolds
-    exact (Filter.nonempty_of_mem
-      (Filter.eventually_iff.mp eventuallyEqual)).choose_spec
-  · intro equationHolds valuation
-    let representatives : Nat → Index → Carrier :=
-      fun variableIndex => Quotient.out (valuation variableIndex)
-    have valuation_eq :
-        (fun variableIndex =>
-          (representatives variableIndex :
-            Model.UltrapowerCarrier Carrier ultrafilter)) = valuation := by
-      funext variableIndex
-      exact Quotient.out_eq (valuation variableIndex)
-    rw [← valuation_eq,
-      Term.evaluate_ultrapower model ultrafilter representatives equation.1,
-      Term.evaluate_ultrapower model ultrafilter representatives equation.2]
-    apply Quotient.eq''.mpr
-    exact Filter.Eventually.of_forall fun index =>
-      equationHolds (fun variableIndex => representatives variableIndex index)
-
-end Equation
-
-namespace Model
-
-variable {Carrier : Type v} {Index : Type w}
-
+  simpa only [Model.ultrapower_eq_reducedPower] using
+    Equation.holds_reducedPower_iff model (ultrafilter : Filter Index) equation
 /-- Satisfaction of a finite occurrence-bearing equation system is invariant
 under constant ultrapowers. -/
-theorem satisfies_ultrapower_iff (model : Model S Carrier)
+theorem Model.satisfies_ultrapower_iff (model : Model S Carrier)
     (ultrafilter : Ultrafilter Index) (system : EquationSystem S) :
     (model.ultrapower ultrafilter).Satisfies system ↔ model.Satisfies system := by
-  simp only [Model.Satisfies]
-  constructor
-  · intro ultrapowerSatisfies equation equationMem
-    exact (Equation.holds_ultrapower_iff model ultrafilter equation).mp
-      (ultrapowerSatisfies equation equationMem)
-  · intro modelSatisfies equation equationMem
-    exact (Equation.holds_ultrapower_iff model ultrafilter equation).mpr
-      (modelSatisfies equation equationMem)
-
-end Model
+  simpa only [Model.ultrapower_eq_reducedPower] using
+    Model.satisfies_reducedPower_iff model (ultrafilter : Filter Index) system
 
 namespace UltrapowerBoundary
 
@@ -200,21 +118,10 @@ ultrapower. -/
 theorem growingElement_ne_diagonal (value : Nat) :
     growingElement ≠ Model.diagonal (Filter.hyperfilter Nat) value := by
   intro equalClasses
-  change
-    ((fun index : Nat => index : Nat → Nat) :
-        Model.UltrapowerCarrier Nat (Filter.hyperfilter Nat)) =
-      ((fun _ : Nat => value : Nat → Nat) :
-        Model.UltrapowerCarrier Nat (Filter.hyperfilter Nat))
-    at equalClasses
-  have eventuallyConstant :
-      Filter.EventuallyEq (Filter.hyperfilter Nat : Filter Nat)
-        (fun index : Nat => index) (fun _ : Nat => value) :=
-    Quotient.eq''.mp equalClasses
   have singletonMem : {index : Nat | index = value} ∈ Filter.hyperfilter Nat :=
-    Filter.eventually_iff.mp eventuallyConstant
-  have singletonFinite : Set.Finite {index : Nat | index = value} := by
-    simpa only [Set.ofPred_eq_eq_singleton] using Set.finite_singleton value
-  exact singletonFinite.notMem_hyperfilter singletonMem
+    Quotient.eq''.mp equalClasses
+  exact (Set.finite_singleton value).notMem_hyperfilter
+    (by simpa only [Set.ofPred_eq_eq_singleton] using singletonMem)
 
 /-- Negative canary: the diagonal embedding into this ultrapower is not
 surjective. -/

@@ -30,12 +30,9 @@ def source : ProgramQuotation.QuotedProgram :=
     "../../../../../../../../metta/gslt/lib/gslt_collection_machine.metta"
     sha256 "34addb0bd7d4b78a6883cc7238a0c4741358085b9b22bdf490398a4cbd0e2b46"
 
-def library : BridgeKit.Library :=
-  ⟨CollectionSelectionExecution.library.runtime, source.program,
-    ["gslt:collection-machine:", "gslt:collection-plan:"]⟩
+def library : BridgeKit.Library := RetainedMatchingWire.interpretedLibrary
 
-set_option maxRecDepth 100000 in
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
 
 def requestTerm (request : ScopedCollectionMachine.Request) : Term :=
   .application "CollectionRequest" [matcherRequestTerm request.machine, .natural request.index]
@@ -54,12 +51,201 @@ def firingTerm (firing : ScopedCollectionMachine.FiringReceipt) : Term :=
   .application "CollectionFiring" [receiptTerm firing.source,
     InferenceCettaWire.encodePattern firing.target]
 
+
+section CollectionmachineProofMetadata
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 4000000
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Program Equation)
+open Eval BridgeKit
+
+private def collectionMachineProofSource : Program := (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program
+
+theorem collectionMachineProof_source_quote : collectionMachineProofSource = source.program := by rfl
+
+private def collectionMachineObservedInheritedHeads : List String :=
+  ((collectionMachineProofSource.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+    (fun head => head.startsWith "gslt:" && !(collectionMachineProofSource.equations.map (·.head)).contains head)).eraseDups
+
+/-- Direct outward calls derived from the actual family bodies. -/
+def collectionMachineProofInheritedHeads : List String := ["gslt:automata:length", "gslt:automata:append", "gslt:collection:allocate", "gslt:rule:scope-matcher-run", "gslt:rule:scope-matcher-complete", "gslt:rule:scope-reduct"]
+
+theorem collectionMachineProofInheritedHeads_derived :
+    collectionMachineObservedInheritedHeads = collectionMachineProofInheritedHeads := by decide +kernel
+
+theorem collectionMachineProof_source_count : collectionMachineProofSource.equations.length = 14 := by decide +kernel
+
+theorem collectionMachineProof_inherited_count : collectionMachineObservedInheritedHeads.length = 6 := by
+  rw [collectionMachineProofInheritedHeads_derived]
+  decide +kernel
+
+private def collectionMachineScopedMetadataEquations : List SpaceSemantics.Equation :=
+  [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[1]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[174]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[180]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[198]'(by decide +kernel)]
+
+private def collectionMachinePriorMetadataEquations : List SpaceSemantics.Equation :=
+  [(RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)).program.equations[4]'(by decide +kernel)]
+
+private def collectionMachineScopedMetadataDeclarations : List Atom :=
+  [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[1]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[174]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[180]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[198]'(by decide +kernel)]
+
+private def collectionMachinePriorMetadataDeclarations : List Atom :=
+  [(RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)).program.declarations[4]'(by decide +kernel)]
+
+private def collectionMachineMetadataBase : Program where
+  equations := collectionMachineScopedMetadataEquations ++ collectionMachinePriorMetadataEquations
+  declarations := collectionMachineScopedMetadataDeclarations ++ collectionMachinePriorMetadataDeclarations
+
+/-- Bounded call and constructor metadata; execution remains in the shared Raw program. -/
+def collectionMachineProofLibrary : Library := ⟨collectionMachineMetadataBase, collectionMachineProofSource, ["gslt:collection-machine:", "gslt:collection-plan:"]⟩
+
+def collectionMachineProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || collectionMachineProofLibrary.owns head || collectionMachineProofInheritedHeads.contains head
+
+theorem collectionMachineProof_checked : collectionMachineProofLibrary.check = true := by decide +kernel
+
+theorem collectionMachineProof_equation_count : collectionMachineProofLibrary.runtime.equations.length = 20 := by decide +kernel
+
+private def collectionMachinePriorSources := RuleExecutionProgram.interpretedPremiseSupportSources.take 6
+private def collectionMachineLaterSources := RuleExecutionProgram.interpretedPremiseSupportSources.drop 7
+
+private theorem collectionMachineScoped_equations_indices :
+    (List.finRange RuleExecutionProgram.scopedProgram.equations.length).filter (fun index => (fun row => collectionMachineProofHeads row.head) (RuleExecutionProgram.scopedProgram.equations.get index)) =
+      [⟨0, by decide +kernel⟩, ⟨1, by decide +kernel⟩, ⟨174, by decide +kernel⟩, ⟨180, by decide +kernel⟩, ⟨198, by decide +kernel⟩] := by decide +kernel
+
+private theorem collectionMachineScoped_equations : RuleExecutionProgram.scopedProgram.equations.filter (fun row => collectionMachineProofHeads row.head) = collectionMachineScopedMetadataEquations := by
+  rw [CompleteExecution.source_filter_indices, collectionMachineScoped_equations_indices]
+  rfl
+
+private theorem collectionMachinePrior_equations_indices :
+    (List.finRange (collectionMachinePriorSources.flatMap (fun source => source.program.equations)).length).filter (fun index => (fun row => collectionMachineProofHeads row.head) ((collectionMachinePriorSources.flatMap (fun source => source.program.equations)).get index)) =
+      [⟨164, by decide +kernel⟩] := by decide +kernel
+
+private theorem collectionMachinePrior_equations : (collectionMachinePriorSources.flatMap (fun source => source.program.equations)).filter (fun row => collectionMachineProofHeads row.head) = collectionMachinePriorMetadataEquations := by
+  rw [CompleteExecution.source_filter_indices, collectionMachinePrior_equations_indices]
+  rfl
+
+private theorem collectionMachineOwned_equations : collectionMachineProofSource.equations.filter (fun row => collectionMachineProofHeads row.head) = collectionMachineProofSource.equations := by
+  apply List.filter_eq_self.mpr
+  exact List.all_eq_true.mp (by decide +kernel)
+
+private theorem collectionMachineLater_equations : (collectionMachineLaterSources.flatMap (fun source => source.program.equations)).filter (fun row => collectionMachineProofHeads row.head) = [] := by
+  have checked : (collectionMachineLaterSources.flatMap (fun source => source.program.equations)).all (fun row => !((fun row => collectionMachineProofHeads row.head) row)) = true := by decide +kernel
+  apply List.filter_eq_nil_iff.mpr
+  intro row member kept
+  have rejected := List.all_eq_true.mp checked row member
+  simp [kept] at rejected
+
+private theorem collectionMachineSupport_equations :
+    RuleExecutionProgram.interpretedPremiseSupportSources.flatMap (fun source => source.program.equations) =
+      (collectionMachinePriorSources.flatMap (fun source => source.program.equations)) ++ collectionMachineProofSource.equations ++ (collectionMachineLaterSources.flatMap (fun source => source.program.equations)) := by
+  have split : RuleExecutionProgram.interpretedPremiseSupportSources =
+      collectionMachinePriorSources ++ (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)) :: collectionMachineLaterSources := rfl
+  rw [split, List.flatMap_append, List.flatMap_cons]
+  rfl
+
+private theorem collectionMachineProof_physical_equations : collectionMachineProofLibrary.runtime.equations =
+    (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram).equations.filter (fun row => collectionMachineProofHeads row.head) := by
+  rw [CompleteExecution.PhysicalSourceAgreement.fold_equations, collectionMachineSupport_equations]
+  simp only [List.filter_append, collectionMachineScoped_equations, collectionMachinePrior_equations,
+    collectionMachineOwned_equations, collectionMachineLater_equations, List.append_nil]
+  change (collectionMachineScopedMetadataEquations ++ collectionMachinePriorMetadataEquations) ++ collectionMachineProofSource.equations = _
+  simp only [List.append_assoc]
+
+private theorem collectionMachineScoped_declarations_indices :
+    (List.finRange RuleExecutionProgram.scopedProgram.declarations.length).filter (fun index => (retainedCallDeclaration collectionMachineProofHeads) (RuleExecutionProgram.scopedProgram.declarations.get index)) =
+      [⟨0, by decide +kernel⟩, ⟨1, by decide +kernel⟩, ⟨174, by decide +kernel⟩, ⟨180, by decide +kernel⟩, ⟨198, by decide +kernel⟩] := by decide +kernel
+
+private theorem collectionMachineScoped_declarations : RuleExecutionProgram.scopedProgram.declarations.filter (retainedCallDeclaration collectionMachineProofHeads) = collectionMachineScopedMetadataDeclarations := by
+  rw [CompleteExecution.source_filter_indices, collectionMachineScoped_declarations_indices]
+  rfl
+
+private theorem collectionMachinePrior_declarations_indices :
+    (List.finRange (collectionMachinePriorSources.flatMap (fun source => source.program.declarations)).length).filter (fun index => (retainedCallDeclaration collectionMachineProofHeads) ((collectionMachinePriorSources.flatMap (fun source => source.program.declarations)).get index)) =
+      [⟨164, by decide +kernel⟩] := by decide +kernel
+
+private theorem collectionMachinePrior_declarations : (collectionMachinePriorSources.flatMap (fun source => source.program.declarations)).filter (retainedCallDeclaration collectionMachineProofHeads) = collectionMachinePriorMetadataDeclarations := by
+  rw [CompleteExecution.source_filter_indices, collectionMachinePrior_declarations_indices]
+  rfl
+
+private theorem collectionMachineOwned_declarations : collectionMachineProofSource.declarations.filter (retainedCallDeclaration collectionMachineProofHeads) = collectionMachineProofSource.declarations := by
+  apply List.filter_eq_self.mpr
+  exact List.all_eq_true.mp (by decide +kernel)
+
+private theorem collectionMachineLater_declarations : (collectionMachineLaterSources.flatMap (fun source => source.program.declarations)).filter (retainedCallDeclaration collectionMachineProofHeads) = [] := by
+  have checked : (collectionMachineLaterSources.flatMap (fun source => source.program.declarations)).all (fun row => !((retainedCallDeclaration collectionMachineProofHeads) row)) = true := by decide +kernel
+  apply List.filter_eq_nil_iff.mpr
+  intro row member kept
+  have rejected := List.all_eq_true.mp checked row member
+  simp [kept] at rejected
+
+private theorem collectionMachineSupport_declarations :
+    RuleExecutionProgram.interpretedPremiseSupportSources.flatMap (fun source => source.program.declarations) =
+      (collectionMachinePriorSources.flatMap (fun source => source.program.declarations)) ++ collectionMachineProofSource.declarations ++ (collectionMachineLaterSources.flatMap (fun source => source.program.declarations)) := by
+  have split : RuleExecutionProgram.interpretedPremiseSupportSources =
+      collectionMachinePriorSources ++ (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)) :: collectionMachineLaterSources := rfl
+  rw [split, List.flatMap_append, List.flatMap_cons]
+  rfl
+
+private theorem collectionMachineProof_physical_declarations : collectionMachineProofLibrary.runtime.declarations =
+    (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram).declarations.filter (retainedCallDeclaration collectionMachineProofHeads) := by
+  rw [CompleteExecution.PhysicalSourceAgreement.fold_declarations, collectionMachineSupport_declarations]
+  simp only [List.filter_append, collectionMachineScoped_declarations, collectionMachinePrior_declarations,
+    collectionMachineOwned_declarations, collectionMachineLater_declarations, List.append_nil]
+  change (collectionMachineScopedMetadataDeclarations ++ collectionMachinePriorMetadataDeclarations) ++ collectionMachineProofSource.declarations = _
+  simp only [List.append_assoc]
+
+theorem collectionMachineProof_agreement :
+    ProgramAgreementOn collectionMachineProofHeads collectionMachineProofLibrary.runtime RuleExecutionProgram.interpretedPremiseProgram := by
+  have physical : ProgramAgreementOn collectionMachineProofHeads collectionMachineProofLibrary.runtime
+      (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+        (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram) :=
+    fragment_agreement _ _ collectionMachineProof_physical_equations collectionMachineProof_physical_declarations
+      (fun _ supported => supported)
+  exact agreement_trans physical
+    (agreement_mono (fun _ _ => rfl) CompleteExecution.PhysicalSourceAgreement.physical_interpreted_agreement)
+
+/-- The metadata does not assert closure of inherited primitive bodies. -/
+theorem collectionMachineProof_not_closed : ¬ ProgramClosed collectionMachineProofHeads collectionMachineProofLibrary.runtime := by
+  intro closed
+  let row := collectionMachineMetadataBase.equations[5]'(by decide +kernel)
+  have member : row ∈ collectionMachineProofLibrary.runtime.equations := by
+    apply List.mem_append_left
+    exact List.getElem_mem _
+  have supported : collectionMachineProofHeads row.head = true := by decide +kernel
+  have outside : codeWithin collectionMachineProofHeads row.body = false := by decide +kernel
+  have inside := closed.bodies row member supported
+  rw [outside] at inside
+  cases inside
+
+#print axioms collectionMachineProof_source_quote
+#print axioms collectionMachineProofInheritedHeads_derived
+#print axioms collectionMachineProof_source_count
+#print axioms collectionMachineProof_inherited_count
+#print axioms collectionMachineProof_checked
+#print axioms collectionMachineProof_equation_count
+#print axioms collectionMachineProof_agreement
+#print axioms collectionMachineProof_not_closed
+
+end CollectionmachineProofMetadata
+
 syntax "collection_machine_eval" (" [" term,* "]")? (" unfolding" " [" term,* "]")? : tactic
 macro_rules
   | `(tactic| collection_machine_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
+    `(tactic| (metta_call_in collectionMachineProof_checked using collectionMachineProof_agreement; metta_eval [$facts,*] with collectionMachineProof_checked in collectionMachineProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -73,17 +259,14 @@ theorem append_returns {α : Type} (element : α → Term) (state : State) (left
     PureReturns library.runtime [] state
       (apply "gslt:automata:append" [encoded (encodeList element left), encoded (encodeList element right)])
       state (encoded (encodeList element (left ++ right))) := by
-  metta_lift checked ["left", "right"]
-    (CollectionSelectionExecution.append_returns element state left right)
+  exact CollectionSelectionExecution.append_returns element state left right
 
 @[metta_head "gslt:automata:length"]
 theorem length_returns {α : Type} (element : α → Term) (state : State) (items : List α) :
     PureReturns library.runtime [] state
       (apply "gslt:automata:length" [encoded (encodeList element items)])
       state (number items.length) := by
-  metta_lift checked ["items"]
-    (by metta_lift CollectionSelectionExecution.checked ["items"]
-      (CollectionSelectionExecution.scoped_length_returns element state items))
+  exact CollectionSelectionExecution.scoped_length_returns element state items
 
 @[metta_head "gslt:collection:allocate"]
 theorem allocate_returns {α : Type} (element : α → Term) (state : State)
@@ -92,14 +275,21 @@ theorem allocate_returns {α : Type} (element : α → Term) (state : State)
       (apply "gslt:collection:allocate"
         [encoded (booleanTerm idempotent), number count, encoded (encodeList element items)])
       state (encoded (encodeList (allocationTerm element) (tracedAllocations idempotent count items))) := by
-  metta_lift checked ["idempotent", "count", "items"]
-    (CollectionSelectionExecution.allocate_returns element state idempotent count items)
+  exact CollectionSelectionExecution.allocate_returns element state idempotent count items
+
+private theorem machine_primitive {head : String}
+    (supported : MachineTransport.executionHeads head = true) :
+    RetainedMatchingWire.scopedPrimitiveHeads head = true := by
+  have checked : MachineTransport.executionHeadNames.all
+      RetainedMatchingWire.scopedPrimitiveHeads = true := by decide +kernel
+  exact List.all_eq_true.mp checked head (List.contains_iff_mem.mp supported)
 
 theorem machine_agreement :
     ProgramAgreementOn MachineTransport.executionHeads GeneralScopedMatchExecution.program
       CollectionSelectionExecution.scopedLibrary.runtime :=
-  agreement_trans Mechanical.matcher_completed_agreement
-    (programAgreementOn_of_retained_rows _ _ _ rfl rfl)
+  agreement_trans Mechanical.matcher_agreement
+    (agreement_mono (fun _ supported => machine_primitive supported)
+      RetainedMatchingWire.scopedPrimitive_agreement)
 
 @[metta_head "gslt:rule:scope-matcher-run"]
 theorem run_returns (state : State) (request : GeneralScopedMatchMachine.Request)
@@ -108,24 +298,20 @@ theorem run_returns (state : State) (request : GeneralScopedMatchMachine.Request
       (apply "gslt:rule:scope-matcher-run"
         [encoded (matcherRequestTerm request), number fuel, encoded (matcherStateTerm machine)])
       state (encoded (matcherStateTerm (GeneralScopedMatchMachine.run request fuel machine))) := by
-  metta_lift checked ["request", "fuel", "state"]
-    (by metta_lift CollectionSelectionExecution.checked ["request", "fuel", "state"]
-      (transport_call MachineTransport.program_closed machine_agreement
-        (by decide +kernel) (by decide) (by decide +kernel) (by decide)
-        ["request", "fuel", "state"] (by decide) rfl (by decide +kernel)
-        (matcher_run_returns state request fuel machine)))
+  exact transport_call MachineTransport.program_closed machine_agreement
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["request", "fuel", "state"] (by decide) rfl (by decide +kernel)
+    (matcher_run_returns state request fuel machine)
 
 @[metta_head "gslt:rule:scope-matcher-complete"]
 theorem machine_complete_returns (state : State) (machine : GeneralScopedMatchMachine.State) :
     PureReturns library.runtime [] state
       (apply "gslt:rule:scope-matcher-complete" [encoded (matcherStateTerm machine)])
       state (Effects.boolean (GeneralScopedMatchMachine.complete machine)) := by
-  metta_lift checked ["state"]
-    (by metta_lift CollectionSelectionExecution.checked ["state"]
-      (transport_call MachineTransport.program_closed machine_agreement
-        (by decide +kernel) (by decide) (by decide +kernel) (by decide)
-        ["state"] (by decide) rfl (by decide +kernel)
-        (matcher_complete_returns state machine)))
+  exact transport_call MachineTransport.program_closed machine_agreement
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["state"] (by decide) rfl (by decide +kernel)
+    (matcher_complete_returns state machine)
 
 @[metta_head "gslt:collection-machine:allocation-state"]
 theorem allocation_state_returns (state : State) (request : ScopedCollectionMachine.Request)
@@ -247,3 +433,27 @@ theorem publication_returns (state : State) : ∀ jobs : ScopedCollectionMachine
         ScopedCollectionMachine.publication, List.flatMap_cons]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_source_quote
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProofInheritedHeads_derived
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_source_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_inherited_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_equation_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_agreement
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.collectionMachineProof_not_closed
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.append_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.length_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.allocate_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.machine_agreement
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.run_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.machine_complete_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.allocation_state_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.jobs_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.raw_start_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.start_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.resume_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.complete_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.receipts_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionExecution.publication_returns

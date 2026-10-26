@@ -85,4 +85,91 @@ example : run (fun _ : Unit => true) (fun _ => some []) (fun _ => [5]) () =
 example : run (fun _ : Unit => false) (fun _ => some [0]) (fun _ => [5]) () ≠
     ([] : List Nat) := by decide
 
+namespace ClosedCalls
+
+/-! A closed worker may omit per-call ownership checks only after its finite
+call inventory passes admission. The source below dispatches each occurrence
+under its dialect; the worker uses the machine's implementation table directly.
+Admission is computed from ownership and availability, not assumed equality of
+their results. This pure call-sequence model does not establish C reachability,
+effect scheduling, declaration currency or native classifier correspondence. -/
+
+def admitted (allowed : Query → Bool) (native : Query → Option (List Answer))
+    (calls : List Query) : Bool :=
+  calls.all fun query => allowed query || (native query).isNone
+
+def source (allowed : Query → Bool) (native : Query → Option (List Answer))
+    (host : Query → List Answer) : List Query → List Answer
+  | [] => []
+  | query :: rest => run allowed native host query ++ source allowed native host rest
+
+def worker (native : Query → Option (List Answer))
+    (host : Query → List Answer) (calls : List Query) : List Answer :=
+  calls.flatMap fun query => (native query).getD (host query)
+
+theorem admitted_call_refines (allowed : Query → Bool)
+    (native : Query → Option (List Answer)) (host : Query → List Answer)
+    (query : Query) (permission : allowed query || (native query).isNone = true) :
+    (native query).getD (host query) = run allowed native host query := by
+  cases owns : allowed query with
+  | true => simp [run, owns]
+  | false =>
+      cases implementation : native query with
+      | none => simp [run, owns]
+      | some answers => simp [owns, implementation] at permission
+
+/-- Whole ordered observations are preserved, including duplicates and a
+handled empty result. An unowned available native excludes the worker. -/
+theorem admitted_worker_refines (allowed : Query → Bool)
+    (native : Query → Option (List Answer)) (host : Query → List Answer)
+    (calls : List Query) (permission : admitted allowed native calls = true) :
+    worker native host calls = source allowed native host calls := by
+  induction calls with
+  | nil => rfl
+  | cons query rest ih =>
+      have both : (allowed query || (native query).isNone = true) ∧
+          admitted allowed native rest = true := by
+        simpa [admitted, List.all_cons, Bool.and_eq_true] using permission
+      simp only [worker, List.flatMap_cons, source]
+      rw [admitted_call_refines allowed native host query both.1]
+      exact congrArg (run allowed native host query ++ ·) (ih both.2)
+
+theorem unowned_available_refuses (allowed : Query → Bool)
+    (native : Query → Option (List Answer)) (query : Query) (rest : List Query)
+    (unowned : allowed query = false) (available : (native query).isSome = true) :
+    admitted allowed native (query :: rest) = false := by
+  cases implementation : native query with
+  | none => simp [implementation] at available
+  | some answers => simp [admitted, unowned, implementation]
+
+namespace Controls
+
+def owns (query : Nat) : Bool := query == 0
+def implementations : Nat → Option (List Nat)
+  | 0 => some [1]
+  | 1 => some [2]
+  | _ => none
+def authored (_query : Nat) : List Nat := [88, 88]
+
+theorem shared_and_ordinary_occurrences :
+    admitted owns implementations [0, 0, 2, 2] = true ∧
+    worker implementations authored [0, 0, 2, 2] = [1, 1, 88, 88, 88, 88] ∧
+    source owns implementations authored [0, 0, 2, 2] = [1, 1, 88, 88, 88, 88] := by
+  decide
+
+theorem backend_name_cannot_replace_authored_answers :
+    admitted owns implementations [1] = false ∧
+    source owns implementations authored [1] = [88, 88] ∧
+    worker implementations authored [1] = [2] := by decide
+
+end Controls
+end ClosedCalls
 end Mettapedia.Machines.IntrinsicDispatch
+
+#print axioms Mettapedia.Machines.IntrinsicDispatch.run_eq_iff
+#print axioms Mettapedia.Machines.IntrinsicDispatch.mem_run_iff
+#print axioms Mettapedia.Machines.IntrinsicDispatch.ClosedCalls.admitted_call_refines
+#print axioms Mettapedia.Machines.IntrinsicDispatch.ClosedCalls.admitted_worker_refines
+#print axioms Mettapedia.Machines.IntrinsicDispatch.ClosedCalls.unowned_available_refuses
+#print axioms Mettapedia.Machines.IntrinsicDispatch.ClosedCalls.Controls.shared_and_ordinary_occurrences
+#print axioms Mettapedia.Machines.IntrinsicDispatch.ClosedCalls.Controls.backend_name_cannot_replace_authored_answers

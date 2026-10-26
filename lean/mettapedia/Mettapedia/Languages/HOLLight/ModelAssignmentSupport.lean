@@ -659,4 +659,27 @@ theorem arbitrary_meanings_need_not_be_local (other : OperatorFamilies.{w}) :
 
 end Controls
 
+theorem translation_symbols (signature : Signature)
+    (allowed : ∀ {type}, Symbol type → Prop)
+    (constants : ∀ constant annotation {type} (typed : annotation.toHOL = type),
+      ConstantInstance signature constant annotation → allowed (.constant constant annotation typed))
+    (free : ∀ sourceVar {type} (typed : sourceVar.ty.toHOL = type), allowed (.variable sourceVar typed))
+    {context : HOL.Ctx AtomicTy} {source : DBTerm} {type : HOL.Ty AtomicTy}
+    {target : HOL.Term Symbol context type}
+    (translated : TranslatesCompositionally context source type target)
+    (formed : AnnotationsFormed signature source) : target.SymbolsSatisfy allowed := by
+  induction translated with
+  | equality => trivial
+  | constant unrecognized typed =>
+    cases formed with
+    | constant _ declared => exact constants _ _ typed declared
+  | free typed => exact free _ typed
+  | bound => trivial
+  | app first second ihf ihs =>
+    cases formed with
+    | app firstFormed secondFormed => exact ⟨ihf firstFormed,ihs secondFormed⟩
+  | abs typed body ih =>
+    cases formed with
+    | abs _ bodyFormed => exact ih bodyFormed
+
 end Mettapedia.Languages.HOLLight.ModelAssignmentSupport

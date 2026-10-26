@@ -127,32 +127,10 @@ theorem rowEvidence_bump_eq_add_higherOrderObservation
       rowEvidence (k := k) (m := m) c q +
         higherOrderObservationEvidence (k := k) (m := m) (ctx, a) q := by
   ext b
-  by_cases hq : ctx = q
-  · subst hq
-    change
-      (rowEvidence (k := k) (m := m)
-        (GramCounts.bump (k := k) (m := m) c ctx a) ctx).counts b =
-      (MultiEvidence.hplus
-        (rowEvidence (k := k) (m := m) c ctx)
-        (higherOrderObservationEvidence (k := k) (m := m) (ctx, a) ctx)).counts b
-    by_cases hb : b = a
-    · subst hb
-      simp [rowEvidence, higherOrderObservationEvidence, categoricalObservation,
-        GramCounts.bump, MultiEvidence.hplus]
-    · simp [rowEvidence, higherOrderObservationEvidence, categoricalObservation,
-        GramCounts.bump, MultiEvidence.hplus, hb]
-  · have hpair : ¬(q = ctx ∧ b = a) := by
-      intro h
-      exact hq h.1.symm
-    change
-      (rowEvidence (k := k) (m := m)
-        (GramCounts.bump (k := k) (m := m) c ctx a) q).counts b =
-      (MultiEvidence.hplus
-        (rowEvidence (k := k) (m := m) c q)
-        (higherOrderObservationEvidence (k := k) (m := m) (ctx, a) q)).counts b
-    simp [rowEvidence, higherOrderObservationEvidence, GramCounts.bump,
-      MultiEvidence.hplus, hq, hpair]
-    rfl
+  change (GramCounts.bump c ctx a).counts q b = c.counts q b + (higherOrderObservationEvidence (ctx, a) q).counts b
+  by_cases hq : ctx = q <;> by_cases hb : a = b <;>
+    simp [higherOrderObservationEvidence, categoricalObservation,
+      GramCounts.bump, hq, hb, eq_comm] <;> rfl
 
 variable [Fact (0 < m)]
 
@@ -166,42 +144,11 @@ theorem aggregate_observationMultisetAux_eq_rowEvidence_summaryAux
           (observationMultisetAux (k := k) (m := m) ctx xs) q =
       rowEvidence (k := k) (m := m) (summaryAux (k := k) (m := m) ctx c xs).1 q := by
   induction xs generalizing ctx c with
-  | nil =>
-      simp [observationMultisetAux, summaryAux]
+  | nil => simp [observationMultisetAux, summaryAux]
   | cons a xs ih =>
-      calc
-        rowEvidence (k := k) (m := m) c q +
-            aggregate (higherOrderRowStatistic (k := k) (m := m))
-              (observationMultisetAux (k := k) (m := m) ctx (a :: xs)) q
-            =
-          rowEvidence (k := k) (m := m) c q +
-            (aggregate (higherOrderRowStatistic (k := k) (m := m))
-                ({(ctx, a)} : Multiset (HigherOrderObservation k m)) q +
-              aggregate (higherOrderRowStatistic (k := k) (m := m))
-                (observationMultisetAux (k := k) (m := m) (shift (k := k) (m := m) ctx a) xs)
-                q) := by
-              rw [observationMultisetAux_cons, aggregate_add]
-        _ =
-          (rowEvidence (k := k) (m := m) c q +
-              aggregate (higherOrderRowStatistic (k := k) (m := m))
-                ({(ctx, a)} : Multiset (HigherOrderObservation k m)) q) +
-            aggregate (higherOrderRowStatistic (k := k) (m := m))
-              (observationMultisetAux (k := k) (m := m) (shift (k := k) (m := m) ctx a) xs) q := by
-                abel_nf
-        _ =
-          rowEvidence (k := k) (m := m) (GramCounts.bump (k := k) (m := m) c ctx a) q +
-            aggregate (higherOrderRowStatistic (k := k) (m := m))
-              (observationMultisetAux (k := k) (m := m) (shift (k := k) (m := m) ctx a) xs) q := by
-                simp [higherOrderRowStatistic, rowEvidence_bump_eq_add_higherOrderObservation]
-        _ =
-          rowEvidence (k := k) (m := m)
-            (summaryAux (k := k) (m := m) (shift (k := k) (m := m) ctx a)
-              (GramCounts.bump (k := k) (m := m) c ctx a) xs).1 q := by
-                simpa using ih (shift (k := k) (m := m) ctx a)
-                  (GramCounts.bump (k := k) (m := m) c ctx a)
-        _ =
-          rowEvidence (k := k) (m := m) (summaryAux (k := k) (m := m) ctx c (a :: xs)).1 q := by
-                simp [summaryAux]
+      simpa only [observationMultisetAux_cons, summaryAux, aggregate_add, aggregate_singleton,
+        higherOrderRowStatistic, rowEvidence_bump_eq_add_higherOrderObservation,
+        add_assoc] using ih (shift ctx a) (GramCounts.bump c ctx a)
 
 omit [Fact (0 < m)] in
 /-- Aggregating the higher-order observation multiset of a word recovers the

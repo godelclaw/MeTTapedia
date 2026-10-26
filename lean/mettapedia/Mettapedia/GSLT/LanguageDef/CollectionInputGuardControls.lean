@@ -106,6 +106,25 @@ def controls : IO Unit := do
 
 #eval controls
 
+def observationControls : IO Unit := do
+  let source := CollectionNestedConsumerControls.source
+  let one := (search [a, b] 1).run source 200
+  let duplicate := (search [a, b] 2).run source 200
+  let oneLog := one.state.batch.log
+  let duplicateLog := duplicate.state.batch.log
+  unless (CollectionOccurrenceSearch.publicationWithPackets one).length == 2 &&
+      (CollectionOccurrenceSearch.publicationWithPackets duplicate).length == 4 do
+    throw (IO.userError "Collection-input committed validation account changed")
+  unless CollectionCommittedObservation.allocationKeys (plan [a, b] 1) [] (.base "Workspace") oneLog ==
+      CollectionCommittedObservation.allocationKeys (plan [a, b] 2) [] (.base "Workspace") duplicateLog do
+    throw (IO.userError "Duplicate collection-input validation changed allocation keys")
+  unless (CollectionCommittedObservation.successorStates (plan [a, b] 2) [] (.base "Workspace") duplicateLog).card == 1 &&
+      (CollectionCommittedObservation.allocationBag (plan [a, b] 2) [] (.base "Workspace") duplicateLog).card == 2 do
+    throw (IO.userError "Collection-input fact and allocation observations were conflated")
+  IO.println "CollectionInputObservationControls: 2/4 committed packets preserve 2 allocation keys and 1 conclusion"
+
+#eval observationControls
+
 end Mettapedia.GSLT.LanguageDef.CollectionInputGuardControls
 
 namespace Mettapedia.GSLT.LanguageDef.CollectionQueryControls
@@ -212,6 +231,24 @@ def controls : IO Unit := do
   IO.println "CollectionQueryControls: mixed modes, structured inputs/outputs, duplicate tokens, missing rows and pending-state resumption passed"
 
 #eval controls
+
+def observationControls : IO Unit := do
+  let one := (search 1).run source 800
+  let duplicate := (search 2).run source 800
+  let oneLog := one.state.batch.log
+  let duplicateLog := duplicate.state.batch.log
+  unless (CollectionOccurrenceSearch.publicationWithPackets one).length == 6 &&
+      (CollectionOccurrenceSearch.publicationWithPackets duplicate).length == 12 do
+    throw (IO.userError "Mixed-query committed occurrence account changed")
+  unless CollectionCommittedObservation.allocationKeys (plan 1) [] (.base "Workspace") oneLog ==
+      CollectionCommittedObservation.allocationKeys (plan 2) [] (.base "Workspace") duplicateLog do
+    throw (IO.userError "Duplicate mixed-query validation changed allocation keys")
+  unless (CollectionCommittedObservation.successorStates (plan 2) [] (.base "Workspace") duplicateLog).card == 2 &&
+      (CollectionCommittedObservation.allocationBag (plan 2) [] (.base "Workspace") duplicateLog).card == 6 do
+    throw (IO.userError "Mixed-query output allocation origins were identified")
+  IO.println "CollectionOutputObservationControls: 6/12 committed packets preserve 6 output-allocation keys and 2 conclusions"
+
+#eval observationControls
 
 end Mettapedia.GSLT.LanguageDef.CollectionQueryControls
 

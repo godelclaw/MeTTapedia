@@ -1,22 +1,14 @@
-import Mathlib.InformationTheory.KullbackLeibler.KLFun
 import Mettapedia.InformationTheory.ConditionalMutualInformation
 import Mettapedia.InformationTheory.MutualInformation
 import Mettapedia.InformationTheory.ShannonEntropy.Interface
 
 /-!
-# Bridges from the finite random-variable divergences to the existing KL and MI carriers
+# Finite divergence in existing information-theory carriers
 
-`Mettapedia.InformationTheory.ConditionalMutualInformation` works with raw weight functions and
-pushforwards so that conditional mutual information along chains can be stated without
-choosing a carrier.  This file identifies its objects with the carriers already in use:
-
-* `klSum_eq_klDivergenceVec`: on probability vectors the divergence sum is the project's
-  unified `klDivergenceVec` (and hence the Knuth–Skilling `klDivergence`).
-* `klSum_eq_sum_klFun`: with equal total masses the divergence sum is the `klFun`-weighted sum
-  used by Mathlib's Kullback–Leibler development; `klFun_nonneg` then gives a second proof of
-  Gibbs' inequality (`klSum_nonneg_of_klFun`).
-* `mutualInfo_eq_shannonMutualInformationNats`: the mutual information of two `Fin`-valued
-  random variables is `JointProb.shannonMutualInformationNats` of their joint law.
+The raw-weight constructions in `FiniteDivergence` agree with `klDivergenceVec`
+on probability vectors and with Mathlib's weighted `klFun` on equal masses.
+Joint-law mutual information agrees with Shannon information in nats.
+These are explicit interpretation agreements; support assumptions are retained.
 -/
 
 namespace Mettapedia.InformationTheory.FiniteRV
@@ -37,11 +29,6 @@ theorem klSum_eq_klDivergenceVec {n : ℕ} (P Q : ProbVec n)
 section KLFun
 
 variable {Ω : Type*} [Fintype Ω]
-
-theorem mul_klFun_div (a b : ℝ) (hb : 0 < b) :
-    b * _root_.InformationTheory.klFun (a / b) = a * Real.log (a / b) + b - a := by
-  unfold _root_.InformationTheory.klFun
-  field_simp
 
 /-- With equal total masses, the divergence sum is the `klFun`-weighted sum of Mathlib's
 Kullback–Leibler development. -/

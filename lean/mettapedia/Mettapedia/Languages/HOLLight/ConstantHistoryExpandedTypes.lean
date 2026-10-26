@@ -394,4 +394,20 @@ theorem malformed_alias_instance_refused :
 
 end Controls
 
+theorem history_declared_origin {initial final : TheoryContext} (history : DefinitionHistoryModels.ConstantHistory initial final)
+    (constant : Const) (schema : Ty) (declared : final.signature.constants constant = some schema) :
+    initial.signature.constants constant = some schema ∨
+      ∃ result ∈ history.records, constant = result.output.constant := by
+  classical
+  induction history with
+  | nil => exact Or.inl declared
+  | snoc prior instances name source added accepted ih =>
+    rw [admitted_constant_signature accepted] at declared
+    by_cases same : constant = added.output.constant
+    · exact Or.inr ⟨added,List.mem_append_right _ (List.mem_singleton_self _),same⟩
+    · have initialOrRecord := ih (by simpa [Signature.addConstant,Const.same_eq_true_iff,same] using declared)
+      rcases initialOrRecord with initial | ⟨result,member,equal⟩
+      · exact Or.inl initial
+      · exact Or.inr ⟨result,List.mem_append_left _ member,equal⟩
+
 end Mettapedia.Languages.HOLLight.ConstantHistoryExpandedTypes

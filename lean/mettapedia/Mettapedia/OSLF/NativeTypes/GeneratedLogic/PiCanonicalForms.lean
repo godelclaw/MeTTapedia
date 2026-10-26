@@ -564,7 +564,7 @@ theorem step_iff_raw {source target : Pattern} :
 
 /-- **Coherence for plain steps**: a step from any process equivalent to a canonical one is matched, up to
 canonical form, by a step listed at it, wherever the fuel lists its steps. -/
-theorem coherentPlain (fuel : ℕ) : CoherentPlain RelationEnv.empty piCalc fuel canon domain :=
+theorem coherentPlain (fuel : ℕ) : CoherentPlain RelationEnv.empty piCalc fuel canon domain List.singleton :=
   coherentPlain_of_simulation (canonical RelationEnv.empty) fun {redex witness contractum} _ admitted valid => by
     have redexAdmissible := AlgebraForms.domain_iff.mp admitted
     have raw := step_iff_raw.mp ⟨witness, valid⟩

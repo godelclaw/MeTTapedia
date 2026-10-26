@@ -234,22 +234,22 @@ theorem lawStep {source target : Pattern} (sourceObject : IsObject source) (targ
 
 theorem onlyA_twice : ObjectEquivalent RelationEnv.empty pool onlyA (set [token "A", token "A"]) :=
   Relation.EqvGen.symm _ _ (lawStep (by decide) (by decide)
-    (.setDedup poolCarrier (sorted_of_check (by decide +kernel))))
+    (.setDedup_of_sorted (sorted_of_check (by decide +kernel))))
 
 theorem bothAB_twice : ObjectEquivalent RelationEnv.empty pool bothAB (set [token "A", token "A", token "B"]) :=
   Relation.EqvGen.symm _ _ (lawStep (by decide) (by decide)
-    (.setDedup poolCarrier (sorted_of_check (by decide +kernel))))
+    (.setDedup_of_sorted (sorted_of_check (by decide +kernel))))
 
 theorem ba_bothAB : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "A"]) bothAB :=
-  lawStep (by decide) (by decide) (.setPerm poolCarrier (sorted_of_check (by decide +kernel)) (List.Perm.swap _ _ _))
+  lawStep (by decide) (by decide) (.setPerm_of_sorted (sorted_of_check (by decide +kernel)) (List.Perm.swap _ _ _))
 
 theorem bab_bothAB : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "A", token "B"]) bothAB := by
   have toBBA : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "A", token "B"])
       (set [token "B", token "B", token "A"]) :=
     lawStep (by decide) (by decide)
-      (.setPerm poolCarrier (sorted_of_check (by decide +kernel)) ((List.Perm.swap _ _ _).cons _))
+      (.setPerm_of_sorted (sorted_of_check (by decide +kernel)) ((List.Perm.swap _ _ _).cons _))
   have toBA : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "B", token "A"]) (set [token "B", token "A"]) :=
-    lawStep (by decide) (by decide) (.setDedup poolCarrier (sorted_of_check (by decide +kernel)))
+    lawStep (by decide) (by decide) (.setDedup_of_sorted (sorted_of_check (by decide +kernel)))
   exact toBBA.trans _ _ _ (toBA.trans _ _ _ ba_bothAB)
 
 /-- A listed step to a target is a step. -/

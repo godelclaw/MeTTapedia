@@ -322,4 +322,74 @@ end
 
 end BoundedMorphism
 
+/-! ## Generated substructures -/
+
+namespace NativeStructure
+
+variable {Carrier : Type u} (S : NativeStructure Carrier) (P : Carrier → Prop)
+
+/-- **A generated set of elements**: closed under steps, and under taking the parts, the members and the bodies
+of its elements and applying its bodies. -/
+structure Generated : Prop where
+  step : ∀ {source label target}, P source → S.step source label target → P target
+  built : ∀ {element constructor parts}, P element → S.built element constructor parts → ∀ part ∈ parts, P part
+  split : ∀ {element kind first second}, P element → S.split element kind first second → P first ∧ P second
+  single : ∀ {element kind member}, P element → S.single element kind member → P member
+  body : ∀ {element inner}, P element → S.body element inner → P inner
+  multiBody : ∀ {element arity inner}, P element → S.multiBody element arity inner → P inner
+  apply : ∀ {inner argument}, P inner → P argument → P (S.apply inner argument)
+
+variable {S P}
+
+/-- **The substructure on a generated set**: the relations among its elements. -/
+def restrict (generated : S.Generated P) : NativeStructure {element // P element} where
+  step source label target := S.step source.1 label target.1
+  built element constructor parts := S.built element.1 constructor (parts.map Subtype.val)
+  split element kind first second := S.split element.1 kind first.1 second.1
+  empty element kind := S.empty element.1 kind
+  single element kind member := S.single element.1 kind member.1
+  body element inner := S.body element.1 inner.1
+  multiBody element arity inner := S.multiBody element.1 arity inner.1
+  bound element index := S.bound element.1 index
+  typed element type := S.typed element.1 type
+  named element term := S.named element.1 term
+  same first second := S.same first.1 second.1
+  apply inner argument := ⟨S.apply inner.1 argument.1, generated.apply inner.2 argument.2⟩
+
+/-- **The inclusion of a generated substructure is a bounded morphism**: everything an element reaches forward
+stays in the set, so a forward formula holds in the substructure exactly where it holds in the whole. -/
+def Generated.inclusion (generated : S.Generated P) : BoundedMorphism (restrict generated) S where
+  map := Subtype.val
+  step holds := holds
+  built holds := holds
+  split holds := holds
+  empty holds := holds
+  single holds := holds
+  body holds := holds
+  multiBody holds := holds
+  bound holds := holds
+  typed holds := holds
+  named holds := holds
+  stepBack {source _ target} step := ⟨⟨target, generated.step source.2 step⟩, step, rfl⟩
+  builtBack {element _ parts} built := by
+    have same : (parts.attach.map fun part => (⟨part.1, generated.built element.2 built part.1 part.2⟩ :
+        {element // P element})).map Subtype.val = parts := by
+      simp [List.map_map, Function.comp_def]
+    refine ⟨parts.attach.map fun part => ⟨part.1, generated.built element.2 built part.1 part.2⟩, ?_, same⟩
+    show S.built element.1 _ _
+    rw [same]
+    exact built
+  splitBack {element _ first second} split :=
+    ⟨⟨first, (generated.split element.2 split).1⟩, ⟨second, (generated.split element.2 split).2⟩, split, rfl, rfl⟩
+  emptyBack holds := holds
+  singleBack {element _ member} single := ⟨⟨member, generated.single element.2 single⟩, single, rfl⟩
+  bodyBack {element inner} body := ⟨⟨inner, generated.body element.2 body⟩, body, rfl⟩
+  multiBodyBack {element _ inner} body := ⟨⟨inner, generated.multiBody element.2 body⟩, body, rfl⟩
+  boundBack holds := holds
+  typedBack holds := holds
+  namedBack holds := holds
+  sameIff _ _ := Iff.rfl
+
+end NativeStructure
+
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic

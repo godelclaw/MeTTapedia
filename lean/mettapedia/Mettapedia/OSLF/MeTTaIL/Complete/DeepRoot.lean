@@ -39,11 +39,11 @@ abbrev Request.goal (request : Request) (depth : Nat) : Goal :=
   .root depth request.bound request.type request.source request.index
 
 /-- What a firing records: matcher trace, both assignments, premise history and target. -/
-structure Firing where
-  trace : List GeneralScopedMatchMachine.BagChoice
+structure Firing (Choice : Type := GeneralScopedMatchMachine.BagChoice) where
+  trace : List Choice
   captured : ScopedRuleMatching.Assignment
   completed : ScopedRuleMatching.Assignment
-  history : List Event
+  history : List (Event Choice)
   target : Pattern
   deriving DecidableEq
 
@@ -53,7 +53,7 @@ def Firing.Valid (request : Request) (firing : Firing) : Prop :=
     firing.trace firing.captured firing.completed firing.history firing.target
 
 /-- The depth a firing's derivation needs. -/
-def Firing.requiredDepth (firing : Firing) : Nat := 1 + eventsDepth firing.history
+def Firing.requiredDepth {Choice : Type} (firing : Firing Choice) : Nat := 1 + eventsDepth firing.history
 
 /-- The record of a root result. -/
 def read {request : Request} {depth : Nat} : Result request.environment (request.goal depth) → Firing
@@ -127,5 +127,54 @@ theorem complete_mono (request : Request) {work : Nat}
 theorem eventually_complete (request : Request) (admitted : checkEnvironment request.environment = true) :
     ∃ work, (run request work (start request)).complete = true :=
   Deep.eventually_complete (family request) (limit := nodes request.source) (by simp [admitted])
+
+
+/-- The retained interpretation is explicit; this does not change the source reference relation. -/
+def Firing.ValidIn {Choice : Type} (meaning : MatchingInterpretation Choice)
+    (request : Request) (firing : Firing Choice) : Prop :=
+  GeneralPremise.Interpreted.RootFiring meaning request.environment request.bound request.type
+    request.source request.index firing.trace firing.captured firing.completed firing.history firing.target
+
+/-- Read a result without replacing its matching choices or nested premise histories. -/
+def readIn {request : Request} {depth : Nat} (matcher : MatchingExecution) :
+    StructuralDescent.Scheduled.Interpreted.Result matcher request.environment (request.goal depth) →
+      Firing matcher.Choice
+  | .root trace captured completed events target _ => ⟨trace, captured, completed, events, target⟩
+
+theorem readIn_valid {request : Request} {depth : Nat} (matcher : MatchingExecution)
+    (result : StructuralDescent.Scheduled.Interpreted.Result matcher request.environment (request.goal depth)) :
+    (readIn matcher result).ValidIn matcher.meaning request := by
+  cases result with
+  | root trace captured completed events target valid => exact valid
+
+theorem readIn_ordinary {request : Request} {depth : Nat}
+    (result : Result request.environment (request.goal depth)) :
+    readIn MatchingExecution.ordinary result = read result := by
+  cases result
+  rfl
+
+theorem Firing.validIn_ordinary_iff (request : Request) (firing : Firing) :
+    firing.ValidIn ordinaryInterpretation request ↔ firing.Valid request := Iff.rfl
+
+/-- Transport only the matcher evidence licensed by an interpretation map. -/
+def Firing.mapTraces {Left Right : Type} (trace : List Left → List Right)
+    (firing : Firing Left) : Firing Right :=
+  ⟨trace firing.trace, firing.captured, firing.completed,
+    Event.mapHistory trace firing.history, firing.target⟩
+
+theorem Firing.mapTraces_validIn {Left Right : Type}
+    {left : MatchingInterpretation Left} {right : MatchingInterpretation Right}
+    (hom : left.Hom right) {request : Request} {firing : Firing Left}
+    (valid : firing.ValidIn left request) :
+    (firing.mapTraces hom.trace).ValidIn right request :=
+  GeneralPremise.Interpreted.RootFiring.transport hom valid
+
+#print axioms read_valid
+#print axioms sound
+#print axioms complete_in_limit
+#print axioms readIn_valid
+#print axioms readIn_ordinary
+#print axioms Firing.validIn_ordinary_iff
+#print axioms Firing.mapTraces_validIn
 
 end Mettapedia.OSLF.MeTTaIL.Complete.DeepRoot

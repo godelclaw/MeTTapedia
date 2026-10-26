@@ -34,18 +34,18 @@ abbrev matcherValue (machine : GeneralScopedMatchMachine.State) : Atom := encode
 theorem complete_matcher_start_returns (state : State) (request : GeneralScopedMatchMachine.Request) :
     PureReturns runtime [] state (apply "gslt:rule:scope-matcher-start" [requestValue request]) state
       (matcherValue (GeneralScopedMatchMachine.start request)) := by
-  metta_lift complete_checked ["request"] (descent_matcher_start_returns state request)
+  exact descent_matcher_start_returns state request
 
 theorem complete_matcher_tick_returns (state : State) (request : GeneralScopedMatchMachine.Request)
     (machine : GeneralScopedMatchMachine.State) :
     PureReturns runtime [] state (apply "gslt:rule:scope-matcher-tick" [requestValue request, matcherValue machine])
       state (matcherValue (GeneralScopedMatchMachine.tick request machine)) := by
-  metta_lift complete_checked ["request", "matcher"] (descent_matcher_tick_returns state request machine)
+  exact descent_matcher_tick_returns state request machine
 
 theorem complete_matcher_complete_returns (state : State) (machine : GeneralScopedMatchMachine.State) :
     PureReturns runtime [] state (apply "gslt:rule:scope-matcher-complete" [matcherValue machine]) state
       (Effects.boolean (GeneralScopedMatchMachine.complete machine)) := by
-  metta_lift complete_checked ["matcher"] (descent_matcher_complete_returns state machine)
+  exact descent_matcher_complete_returns state machine
 
 /-- **`gslt:complete:matcher-finish` is `finishMatcher`.** -/
 @[metta_head "gslt:complete:matcher-finish"]
@@ -56,14 +56,14 @@ theorem matcher_finish_returns (state : State) (request : GeneralScopedMatchMach
   have checked := complete_matcher_complete_returns state machine
   by_cases finished : GeneralScopedMatchMachine.complete machine = true
   · rw [GeneralEquationJobExecution.finishMatcher_finished request machine finished]
-    metta_call complete_checked
-    metta_eval [checked] with complete_checked unfolding [finished]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [checked] with completeProof_checked in completeProof_agreement unfolding [finished]
   · have pending : GeneralScopedMatchMachine.complete machine = false := by simpa using finished
     rw [← GeneralEquationJobExecution.finishMatcher_tick request machine pending]
     have ticked := complete_matcher_tick_returns state request machine
     have later := matcher_finish_returns state request (GeneralScopedMatchMachine.tick request machine)
-    metta_call complete_checked
-    metta_eval [checked, ticked, later] with complete_checked unfolding [pending]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [checked, ticked, later] with completeProof_checked in completeProof_agreement unfolding [pending]
 termination_by GeneralScopedMatchMachine.agendaCost request machine.agenda
 decreasing_by exact GeneralScopedMatchMachine.tick_cost (Bool.eq_false_iff.mpr finished)
 
@@ -75,10 +75,10 @@ def finishedAnswers (request : GeneralScopedMatchMachine.Request) : List General
 theorem matcher_answers_returns (state : State) (request : GeneralScopedMatchMachine.Request) :
     PureReturns runtime [] state (apply "gslt:complete:matcher-answers" [requestValue request]) state
       (encoded (CettaWire.encodeList matcherAnswerTerm (finishedAnswers request))) := by
-  metta_call complete_checked
+  metta_call_in completeProof_checked using completeProof_agreement
   metta_eval [complete_matcher_start_returns state request,
       matcher_finish_returns state request (GeneralScopedMatchMachine.start request)]
-    with complete_checked unfolding [matcherValue, matcherStateTerm, finishedAnswers]
+    with completeProof_checked in completeProof_agreement unfolding [matcherValue, matcherStateTerm, finishedAnswers]
 
 /-- Every rebuilt left side's variants, filled into the context and erased. -/
 def candidatesFrom (rule : RewriteRule) (spec : RuleBindingSpec) (ambient : Nat) (context : OneHoleContext)
@@ -93,12 +93,12 @@ theorem fill_each_returns (state : State) (context : OneHoleContext) : ∀ sourc
     PureReturns runtime [] state (apply "gslt:complete:fill-each" [contextValue context, patternsValue sources]) state
       (patternsValue (sources.map fun source => (context.fill source).eraseBinderMetadata))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns]
   | source :: rest => by
-    metta_call complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
     metta_eval [complete_fill_returns state context source, erase_returns state (context.fill source),
-        fill_each_returns state context rest] with complete_checked
+        fill_each_returns state context rest] with completeProof_checked in completeProof_agreement
       unfolding [patternsValue, encodePatterns, patternValue]
 
 theorem complete_instantiate_returns (state : State) (rule : RewriteRule) (spec : RuleBindingSpec) (ambient : Nat)
@@ -111,8 +111,7 @@ theorem complete_instantiate_returns (state : State) (rule : RewriteRule) (spec 
          number depth, assignmentValue assignment, encoded (InferenceCettaWire.encodePattern pattern)])
       state (encoded (MatchAutomataBindingExecution.patternOptionTerm
         (instantiateAt? rule spec ambient site path depth assignment pattern))) := by
-  metta_lift complete_checked ["operation", "rule", "spec", "ambient", "site", "path", "depth", "assignment", "pattern"]
-    (descent_instantiate_returns state rule spec ambient site path depth assignment pattern)
+  exact descent_instantiate_returns state rule spec ambient site path depth assignment pattern
 
 theorem matcher_answer_term' (answer : GeneralScopedMatchMachine.Answer) :
     matcherAnswerTerm answer = .application "ScopedMatcherAnswer"
@@ -128,15 +127,15 @@ theorem candidates_from_returns (state : State) (rule : RewriteRule) (spec : Rul
         encoded (CettaWire.encodeList matcherAnswerTerm answers)])
       state (patternsValue (candidatesFrom rule spec ambient context (answers.map (·.assignment))))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns, candidatesFrom]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns, candidatesFrom]
   | answer :: rest => by
     have tail := candidates_from_returns state rule spec ambient context rest
     have rebuilt := complete_instantiate_returns state rule spec ambient .left [] 0 answer.assignment rule.left
     cases instantiated : instantiateAt? rule spec ambient .left [] 0 answer.assignment rule.left with
     | none =>
-      metta_call complete_checked
-      metta_eval [tail, rebuilt] with complete_checked
+      metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [tail, rebuilt] with completeProof_checked in completeProof_agreement
         unfolding [patternsValue, encodePatterns, candidatesFrom, instantiated, matcher_answer_term',
           InferenceCettaWire.AuthoredRule.rewriteTerm, InferenceCettaWire.AuthoredRule.siteTerm,
           MatchAutomataBindingExecution.patternOptionTerm, List.map_cons, List.flatMap_cons]
@@ -150,8 +149,8 @@ theorem candidates_from_returns (state : State) (rule : RewriteRule) (spec : Rul
           (variants rule.left built).map (fun source => (context.fill source).eraseBinderMetadata) ++
             candidatesFrom rule spec ambient context (rest.map (·.assignment)) by
         simp [candidatesFrom, instantiated]]
-      metta_call complete_checked
-      metta_eval [tail, rebuilt, sources, filled, joined] with complete_checked
+      metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [tail, rebuilt, sources, filled, joined] with completeProof_checked in completeProof_agreement
         unfolding [patternsValue, encodePatterns, instantiated, matcher_answer_term',
           InferenceCettaWire.AuthoredRule.rewriteTerm, InferenceCettaWire.AuthoredRule.siteTerm,
           MatchAutomataBindingExecution.patternOptionTerm, List.map_cons, List.flatMap_cons, VariantsAt]
@@ -184,8 +183,8 @@ theorem equation_candidates_returns (state : State) (plan : GeneralExecutionAdmi
         number ambient, contextValue context, patternValue focus])
       state (patternsValue (equationCandidates ambient context focus (pairs.map Prod.fst)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns, equationCandidates]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns, equationCandidates]
   | (equation, position) :: rest => by
     have tail := equation_candidates_returns state plan ambient context focus rest
     have answers := matcher_answers_returns state ⟨equation.rule, equation.binding.spec, ambient, .right, [], 0, [],
@@ -201,8 +200,8 @@ theorem equation_candidates_returns (state : State) (plan : GeneralExecutionAdmi
           (Complete.Predecessors.rightMatches equation ambient focus) ++
           equationCandidates ambient context focus (rest.map Prod.fst) by
       simp [equationCandidates]]
-    metta_call complete_checked
-    metta_eval [tail, answers, candidates, joined] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [tail, answers, candidates, joined] with completeProof_checked in completeProof_agreement
       unfolding [CompletePlanWire.equationDeclarationTerm, InferenceCettaWire.AuthoredRule.rewriteTerm,
         right_request_term, requestValue, Complete.Predecessors.rightMatches, finishedAnswers]
 
@@ -226,8 +225,8 @@ theorem predecessors_from_returns (state : State) (plan : GeneralExecutionAdmiss
         encoded (CettaWire.encodeList InferenceCettaWire.AuthoredRule.typeTerm bound), decompositionsValue decompositions])
       state (patternsValue (positionCandidates plan bound decompositions))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [patternsValue, encodePatterns, positionCandidates, decompositionsValue]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [patternsValue, encodePatterns, positionCandidates, decompositionsValue]
   | (context, focus) :: rest => by
     have tail := predecessors_from_returns state plan table planBound expected bound rest
     have outer := complete_length_returns InferenceCettaWire.AuthoredRule.typeTerm state bound
@@ -241,8 +240,8 @@ theorem predecessors_from_returns (state : State) (plan : GeneralExecutionAdmiss
     rw [show positionCandidates plan bound ((context, focus) :: rest) =
         equationCandidates (bound.length + Complete.Predecessors.binderDepth context) context focus plan.equations ++
           positionCandidates plan bound rest by simp [positionCandidates]]
-    metta_call complete_checked
-    metta_eval [tail, outer, inner, here, joined] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [tail, outer, inner, here, joined] with completeProof_checked in completeProof_agreement
       unfolding [planValue, CompletePlanWire.planTerm, decompositionsValue, decompositionTerm, contextValue,
         patternValue]
 
@@ -258,8 +257,23 @@ theorem predecessors_returns (state : State) (plan : GeneralExecutionAdmission.P
     (Complete.Predecessors.decompositions target)
   rw [show Complete.Predecessors.predecessors plan bound target =
       positionCandidates plan bound (Complete.Predecessors.decompositions target) from rfl]
-  metta_call complete_checked
-  metta_eval [positions, candidates] with complete_checked
+  metta_call_in completeProof_checked using completeProof_agreement
+  metta_eval [positions, candidates] with completeProof_checked in completeProof_agreement
     unfolding [planValue, CompletePlanWire.planTerm, Decomposes]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_matcher_start_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_matcher_tick_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_matcher_complete_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.matcher_finish_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.matcher_answers_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.fill_each_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_instantiate_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.matcher_answer_term'
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.candidates_from_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.right_request_term
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.equation_candidates_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.zipIdx_map_fst
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.predecessors_from_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.predecessors_returns

@@ -8,11 +8,9 @@ import Mettapedia.Cybernetics.HierarchicalComplexity.Basic
 /-!
 # The finite Commons--Pekker hierarchy as a specialization
 
-The ambient action tree and ordinal rank are defined in `Basic`.  Here finite
-branching is a property of that same object, not a second action foundation.
-Every finitely branching action has rank below `omega`, which yields its
-natural-number order.  The chain maximum and coordination successor laws then
-recover HC1--HC3 for Commons-admissible actions.
+Finite branching gives a natural-number projection of the ambient ordinal
+rank. Commons admissibility supplies the coordination homogeneity needed for
+the predecessor theorem and the exact exponential simple-leaf minimum.
 
 Reference:
 
@@ -24,186 +22,95 @@ set_option autoImplicit false
 
 namespace Mettapedia.Cybernetics.HierarchicalComplexity
 
-universe uOccurrence uOutcome
+universe u v
+
+variable {Outcome : Type v} {Occurrence : Type u}
 
 namespace Action
 
 /-- Every immediate occurrence family is finite, recursively. -/
-def FinitelyBranching {Outcome : Type uOutcome} :
-    Action.{uOccurrence, uOutcome} Outcome → Prop :=
+def FinitelyBranching : Action.{u, v} Outcome → Prop :=
   Action.rec True (fun Occurrence _ _ _ childFinite =>
     _root_.Finite Occurrence ∧ ∀ occurrence, childFinite occurrence)
 
-@[simp] theorem finitelyBranching_simple {Outcome : Type uOutcome} :
-    FinitelyBranching
-      (Action.simple : Action.{uOccurrence, uOutcome} Outcome) := trivial
+@[simp] theorem finitelyBranching_simple : FinitelyBranching
+      (Action.simple : Action.{u, v} Outcome) := trivial
 
-@[simp] theorem finitelyBranching_compound
-    {Outcome : Type uOutcome} {Occurrence : Type uOccurrence}
-    (hasAtLeastTwo : HasAtLeastTwo Occurrence)
-    (child : Occurrence → Action.{uOccurrence, uOutcome} Outcome)
+@[simp] theorem finitelyBranching_compound (hasAtLeastTwo : HasAtLeastTwo Occurrence)
+    (child : Occurrence → Action.{u, v} Outcome)
     (organization : Organization Occurrence Outcome) :
     FinitelyBranching
       (.compound Occurrence hasAtLeastTwo child organization) ↔
       _root_.Finite Occurrence ∧ ∀ occurrence, FinitelyBranching (child occurrence) :=
   Iff.rfl
 
+variable (action : Action.{u, v} Outcome)
+    (finite : FinitelyBranching action) (admissible : CommonsAdmissible action)
+include finite
+
 /-- Finite branching forces the ambient ordinal rank below `omega`. -/
-theorem rank_lt_omega0_of_finitelyBranching
-    {Outcome : Type uOutcome}
-    (action : Action.{uOccurrence, uOutcome} Outcome)
-    (finite : FinitelyBranching action) :
-    rank action < Ordinal.omega0 := by
+theorem rank_lt_omega0_of_finitelyBranching : rank action < Ordinal.omega0 := by
   induction action with
   | simple => exact Ordinal.natCast_lt_omega0 0
-  | compound Occurrence hasAtLeastTwo child organization inductionHypothesis =>
-      rw [finitelyBranching_compound] at finite
-      letI : _root_.Finite Occurrence := finite.1
-      letI : Nonempty Occurrence := hasAtLeastTwo.nonempty
-      have childFinite : ∀ occurrence, FinitelyBranching (child occurrence) := finite.2
-      have childBelow : ∀ occurrence,
-          rank (child occurrence) < Ordinal.omega0 :=
-        fun occurrence => inductionHypothesis occurrence (childFinite occurrence)
-      obtain ⟨greatest, greatestRank⟩ :=
-        exists_eq_ciSup_of_finite
-          (f := fun occurrence => rank (child occurrence))
-      cases organization with
-      | chain semantics invariant =>
-          rw [rank_chain, ← greatestRank]
-          exact childBelow greatest
-      | coordination semantics sensitive =>
-          rw [rank_coordination, ← greatestRank]
-          obtain ⟨n, rankEqual⟩ := Ordinal.lt_omega0.mp (childBelow greatest)
-          rw [rankEqual, Order.succ_eq_add_one, ← Nat.cast_add_one]
-          exact Ordinal.natCast_lt_omega0 (n + 1)
+  | compound I two child o ih =>
+      let : _root_.Finite I := finite.1
+      let : Nonempty I := two.nonempty
+      obtain ⟨i, hi⟩ := exists_eq_ciSup_of_finite (f := fun i => rank (child i))
+      have below := ih i (finite.2 i)
+      cases o with
+      | chain _ _ => simpa only [rank_chain, ← hi] using below
+      | coordination _ _ =>
+          simpa only [rank_coordination, ← hi] using Ordinal.isSuccLimit_omega0.succ_lt below
 
-/-- Finite branching makes the informative simple-leaf family finite. -/
-theorem finite_simpleLeaves
-    {Outcome : Type uOutcome}
-    (action : Action.{uOccurrence, uOutcome} Outcome)
-    (finite : FinitelyBranching action) :
-    _root_.Finite (SimpleLeaves action) := by
+theorem finite_simpleLeaves : _root_.Finite (SimpleLeaves action) := by
   induction action with
-  | simple =>
-      change _root_.Finite PUnit
-      infer_instance
-  | compound Occurrence hasAtLeastTwo child organization inductionHypothesis =>
-      rw [finitelyBranching_compound] at finite
-      letI : _root_.Finite Occurrence := finite.1
-      letI : ∀ occurrence, _root_.Finite (SimpleLeaves (child occurrence)) :=
-        fun occurrence => inductionHypothesis occurrence (finite.2 occurrence)
-      change _root_.Finite (Sigma (fun occurrence => SimpleLeaves (child occurrence)))
-      infer_instance
+  | simple => exact inferInstanceAs (_root_.Finite PUnit)
+  | compound I two child o ih =>
+      let : _root_.Finite I := finite.1
+      let : ∀ i, _root_.Finite (SimpleLeaves (child i)) := fun i => ih i (finite.2 i)
+      exact inferInstanceAs (_root_.Finite (Sigma fun i => SimpleLeaves (child i)))
 
-/-- Commons and Pekker's `phi n = 2^n` is the lower-bound theorem for finite,
-atomic, Commons-admissible action trees: every action of order `n` contains at
-least `2^n` simple leaves. -/
+include admissible
+
+/-- Finite Commons actions of rank `n` have at least `2^n` simple leaves. -/
 theorem pow_two_le_natCard_simpleLeaves_of_rank_eq
-    {Outcome : Type uOutcome}
-    (action : Action.{uOccurrence, uOutcome} Outcome)
-    (finite : FinitelyBranching action)
-    (admissible : CommonsAdmissible action)
     (n : Nat) (rankEqual : rank action = (n : Ordinal)) :
     2 ^ n ≤ Nat.card (SimpleLeaves action) := by
   classical
   induction action generalizing n with
   | simple =>
-      have nZero : n = 0 := by
-        apply Nat.cast_injective (R := Ordinal)
-        simpa only [rank_simple, Nat.cast_zero] using rankEqual.symm
-      subst nZero
-      simp [SimpleLeaves]
-  | compound Occurrence hasAtLeastTwo child organization inductionHypothesis =>
-      rw [finitelyBranching_compound] at finite
-      letI : _root_.Finite Occurrence := finite.1
-      letI : Nonempty Occurrence := hasAtLeastTwo.nonempty
-      letI : Fintype Occurrence := Fintype.ofFinite Occurrence
-      have childFinite : ∀ occurrence, FinitelyBranching (child occurrence) := finite.2
-      letI : ∀ occurrence, _root_.Finite (SimpleLeaves (child occurrence)) :=
-        fun occurrence => finite_simpleLeaves (child occurrence) (childFinite occurrence)
-      change 2 ^ n ≤ Nat.card (Sigma (fun occurrence => SimpleLeaves (child occurrence)))
+      have zero : n = 0 := Nat.cast_injective (by simpa only [rank_simple, Nat.cast_zero] using rankEqual.symm)
+      subst n; simp [SimpleLeaves]
+  | compound I two child o ih =>
+      let : _root_.Finite I := finite.1
+      let : Nonempty I := two.nonempty
+      let : Fintype I := Fintype.ofFinite I
+      let : ∀ i, _root_.Finite (SimpleLeaves (child i)) := fun i => finite_simpleLeaves _ (finite.2 i)
+      change 2 ^ n ≤ Nat.card (Sigma fun i => SimpleLeaves (child i))
       rw [Nat.card_sigma]
-      cases organization with
-      | chain semantics invariant =>
-          obtain ⟨greatest, greatestRank⟩ :=
-            exists_eq_ciSup_of_finite
-              (f := fun occurrence => rank (child occurrence))
-          have childRankEqual : rank (child greatest) = (n : Ordinal) := by
-            exact greatestRank.trans
-              ((rank_chain hasAtLeastTwo child semantics invariant).symm.trans rankEqual)
-          exact (inductionHypothesis greatest (childFinite greatest)
-            (admissible greatest) n childRankEqual).trans
-              (Finset.single_le_sum
-                (s := Finset.univ)
-                (f := fun occurrence =>
-                  Nat.card (SimpleLeaves (child occurrence)))
-                (fun _ _ => Nat.zero_le _) (Finset.mem_univ greatest))
-      | coordination semantics sensitive =>
-          rcases admissible with ⟨childAdmissible, equalRank⟩
-          have compoundHasAtLeastTwo := hasAtLeastTwo
-          obtain ⟨first, second, different⟩ := hasAtLeastTwo
-          obtain ⟨m, firstRank⟩ := Ordinal.lt_omega0.mp
-            (rank_lt_omega0_of_finitelyBranching
-              (child first) (childFinite first))
-          have childRank (occurrence : Occurrence) :
-              rank (child occurrence) = (m : Ordinal) :=
-            (equalRank occurrence first).trans firstRank
-          have childSupEqual :
-              (⨆ occurrence, rank (child occurrence)) = rank (child first) := by
-            apply le_antisymm
-            · exact Ordinal.iSup_le fun occurrence => (equalRank occurrence first).le
-            · exact Ordinal.le_iSup (fun occurrence => rank (child occurrence)) first
-          have rootRank : Order.succ (rank (child first)) = (n : Ordinal) := by
-            calc
-              Order.succ (rank (child first)) =
-                  Order.succ (⨆ occurrence, rank (child occurrence)) :=
-                congrArg Order.succ childSupEqual.symm
-              _ = rank (.compound Occurrence compoundHasAtLeastTwo child
-                    (.coordination semantics sensitive)) :=
-                (rank_coordination compoundHasAtLeastTwo child semantics sensitive).symm
-              _ = (n : Ordinal) := rankEqual
-          have nEqual : n = m + 1 := by
-            apply Nat.cast_injective (R := Ordinal)
-            calc
-              (n : Ordinal) = Order.succ (rank (child first)) := rootRank.symm
-              _ = Order.succ (m : Ordinal) := congrArg Order.succ firstRank
-              _ = (m : Ordinal) + 1 := Order.succ_eq_add_one _
-              _ = ((m + 1 : Nat) : Ordinal) := (Nat.cast_add_one m).symm
-          have firstBound :
-              2 ^ m ≤ Nat.card (SimpleLeaves (child first)) :=
-            inductionHypothesis first (childFinite first)
-              (childAdmissible first) m (childRank first)
-          have secondBound :
-              2 ^ m ≤ Nat.card (SimpleLeaves (child second)) :=
-            inductionHypothesis second (childFinite second)
-              (childAdmissible second) m (childRank second)
-          have pairBound :
-              2 ^ m + 2 ^ m ≤
-                ∑ occurrence, Nat.card (SimpleLeaves (child occurrence)) := by
-            calc
-              2 ^ m + 2 ^ m ≤
-                  Nat.card (SimpleLeaves (child first)) +
-                    Nat.card (SimpleLeaves (child second)) :=
-                Nat.add_le_add firstBound secondBound
-              _ = ∑ occurrence ∈ ({first, second} : Finset Occurrence),
-                    Nat.card (SimpleLeaves (child occurrence)) :=
-                (Finset.sum_pair
-                  (f := fun occurrence =>
-                    Nat.card (SimpleLeaves (child occurrence))) different).symm
-              _ ≤ ∑ occurrence, Nat.card (SimpleLeaves (child occurrence)) :=
-                Finset.sum_le_sum_of_subset (Finset.subset_univ _)
-          subst nEqual
-          simpa only [pow_succ, Nat.mul_two] using pairBound
+      cases o with
+      | chain f invariant =>
+          obtain ⟨i, hi⟩ := exists_eq_ciSup_of_finite (f := fun i => rank (child i))
+          exact (ih i (finite.2 i) (admissible i) n (hi.trans rankEqual)).trans
+            (Finset.single_le_sum (f := fun k => Nat.card (SimpleLeaves (child k)))
+              (fun _ _ => Nat.zero_le _) (Finset.mem_univ i))
+      | coordination f sensitive =>
+          have witnesses := two
+          obtain ⟨i, j, different⟩ := witnesses
+          obtain ⟨m, hm⟩ := Ordinal.lt_omega0.mp (rank_lt_omega0_of_finitelyBranching _ (finite.2 i))
+          rw [rank_coordination, childSup_eq_of_equalRank child i (fun k => admissible.2 k i),
+            hm, Order.succ_eq_add_one, ← Nat.cast_add_one] at rankEqual
+          have lower (k : I) := ih k (finite.2 k) (admissible.1 k) m ((admissible.2 k i).trans hm)
+          have pair : Nat.card (SimpleLeaves (child i)) + Nat.card (SimpleLeaves (child j)) ≤
+              ∑ k, Nat.card (SimpleLeaves (child k)) := by
+            rw [← Finset.sum_pair (f := fun k => Nat.card (SimpleLeaves (child k))) different]
+            exact Finset.sum_le_sum_of_subset (Finset.subset_univ _)
+          have bound := (Nat.add_le_add (lower i) (lower j)).trans pair
+          have same : n = m + 1 := (Nat.cast_injective rankEqual).symm
+          simpa only [same, pow_succ, Nat.mul_two] using bound
 
-/-- Every positive finite Commons order contains a subaction at its immediate
-predecessor order.  This is the structural content needed for C2; it uses
-finite attainment and HC2 homogeneity. -/
-theorem exists_subaction_rank_pred
-    {Outcome : Type uOutcome}
-    (action : Action.{uOccurrence, uOutcome} Outcome)
-    (finite : FinitelyBranching action)
-    (admissible : CommonsAdmissible action)
-    (n : Nat) (rankEqual : rank action = ((n + 1 : Nat) : Ordinal)) :
+/-- Finite attainment and HC2 expose a subaction at the predecessor order. -/
+theorem exists_subaction_rank_pred (n : Nat) (rankEqual : rank action = ((n + 1 : Nat) : Ordinal)) :
     ∃ subaction,
       IsSubaction subaction action ∧
       FinitelyBranching subaction ∧
@@ -211,60 +118,23 @@ theorem exists_subaction_rank_pred
       rank subaction = (n : Ordinal) := by
   induction action generalizing n with
   | simple =>
-      have castImpossible : (0 : Ordinal) = ((n + 1 : Nat) : Ordinal) := by
-        simpa only [rank_simple] using rankEqual
-      have natImpossible : 0 = n + 1 :=
-        Nat.cast_injective castImpossible
-      exact (Nat.zero_ne_add_one n natImpossible).elim
-  | compound Occurrence hasAtLeastTwo child organization inductionHypothesis =>
-      rw [finitelyBranching_compound] at finite
-      letI : _root_.Finite Occurrence := finite.1
-      letI : Nonempty Occurrence := hasAtLeastTwo.nonempty
-      have childFinite : ∀ occurrence, FinitelyBranching (child occurrence) := finite.2
-      cases organization with
-      | chain semantics invariant =>
-          obtain ⟨greatest, greatestRank⟩ :=
-            exists_eq_ciSup_of_finite
-              (f := fun occurrence => rank (child occurrence))
-          have childRankEqual :
-              rank (child greatest) = ((n + 1 : Nat) : Ordinal) :=
-            greatestRank.trans
-              ((rank_chain hasAtLeastTwo child semantics invariant).symm.trans rankEqual)
-          obtain ⟨subaction, contained, subFinite, subAdmissible, subRank⟩ :=
-            inductionHypothesis greatest (childFinite greatest)
-              (admissible greatest) n childRankEqual
-          exact ⟨subaction,
-            IsSubaction.trans contained
-              (IsSubaction.immediate hasAtLeastTwo child
-                (.chain semantics invariant) greatest),
-            subFinite, subAdmissible, subRank⟩
-      | coordination semantics sensitive =>
-          rcases admissible with ⟨childAdmissible, equalRank⟩
-          have compoundHasAtLeastTwo := hasAtLeastTwo
-          obtain ⟨first, _, _⟩ := hasAtLeastTwo
-          have childSupEqual :
-              (⨆ occurrence, rank (child occurrence)) = rank (child first) := by
-            apply le_antisymm
-            · exact Ordinal.iSup_le fun occurrence => (equalRank occurrence first).le
-            · exact Ordinal.le_iSup (fun occurrence => rank (child occurrence)) first
-          have successorEqual :
-              Order.succ (rank (child first)) =
-                Order.succ (n : Ordinal) := by
-            calc
-              Order.succ (rank (child first)) =
-                  Order.succ (⨆ occurrence, rank (child occurrence)) :=
-                congrArg Order.succ childSupEqual.symm
-              _ = rank (.compound Occurrence compoundHasAtLeastTwo child
-                    (.coordination semantics sensitive)) :=
-                (rank_coordination compoundHasAtLeastTwo child semantics sensitive).symm
-              _ = ((n + 1 : Nat) : Ordinal) := rankEqual
-              _ = (n : Ordinal) + 1 := Nat.cast_add_one n
-              _ = Order.succ (n : Ordinal) := (Order.succ_eq_add_one _).symm
-          exact ⟨child first,
-            IsSubaction.immediate compoundHasAtLeastTwo child
-              (.coordination semantics sensitive) first,
-            childFinite first, childAdmissible first,
-            Order.succ_injective successorEqual⟩
+      exact (Nat.zero_ne_add_one n (Nat.cast_injective (by simpa only [rank_simple, Nat.cast_zero] using rankEqual))).elim
+  | compound I two child o ih =>
+      let : _root_.Finite I := finite.1
+      let : Nonempty I := two.nonempty
+      cases o with
+      | chain f invariant =>
+          obtain ⟨i, hi⟩ := exists_eq_ciSup_of_finite (f := fun i => rank (child i))
+          obtain ⟨sub, contained, hf, ha, hr⟩ := ih i (finite.2 i) (admissible i) n (hi.trans rankEqual)
+          exact ⟨sub, .trans contained (.immediate two child (.chain f invariant) i), hf, ha, hr⟩
+      | coordination f sensitive =>
+          have witnesses := two
+          obtain ⟨i, _, _⟩ := witnesses
+          have same : Order.succ (rank (child i)) = Order.succ (n : Ordinal) := by
+            simpa only [rank_coordination, childSup_eq_of_equalRank child i (fun k => admissible.2 k i),
+              Nat.cast_add_one, Order.succ_eq_add_one] using rankEqual
+          exact ⟨child i, .immediate two child (.coordination f sensitive) i,
+            finite.2 i, admissible.1 i, Order.succ_injective same⟩
 
 end Action
 
@@ -272,53 +142,59 @@ end Action
 
 namespace Finite
 
-/-- A finite Commons action is one ambient action with finite branching and
-the recursive equal-order condition for coordinations. -/
-structure Action (Outcome : Type uOutcome) where
+/-- The ambient tree with finite branching and Commons admissibility. -/
+structure Action (Outcome : Type v) where
   toAmbient :
-    HierarchicalComplexity.Action.{uOccurrence, uOutcome} Outcome
+    HierarchicalComplexity.Action.{u, v} Outcome
   finitelyBranching : toAmbient.FinitelyBranching
   commonsAdmissible : toAmbient.CommonsAdmissible
 
 namespace Action
 
+variable (action : Finite.Action.{u, v} Outcome)
+
 /-- The natural-number order whose ordinal cast is the ambient rank. -/
-noncomputable def order {Outcome : Type uOutcome}
-    (action : Finite.Action.{uOccurrence, uOutcome} Outcome) : Nat :=
+noncomputable def order : Nat :=
   Classical.choose (Ordinal.lt_omega0.mp
     (HierarchicalComplexity.Action.rank_lt_omega0_of_finitelyBranching
       action.toAmbient action.finitelyBranching))
 
-/-- Finite order is not a second measure: its ordinal cast is exactly the
-ambient rank. -/
-theorem rank_eq_natCast_order {Outcome : Type uOutcome}
-    (action : Finite.Action.{uOccurrence, uOutcome} Outcome) :
-    action.toAmbient.rank = (action.order : Ordinal) :=
+/-- Natural order projects exactly the ambient rank. -/
+theorem rank_eq_natCast_order : action.toAmbient.rank = (action.order : Ordinal) :=
   Classical.choose_spec (Ordinal.lt_omega0.mp
     (HierarchicalComplexity.Action.rank_lt_omega0_of_finitelyBranching
       action.toAmbient action.finitelyBranching))
 
-/-- HC1: the simple action has order zero. -/
-def simple (Outcome : Type uOutcome) : Finite.Action.{uOccurrence, uOutcome} Outcome where
-  toAmbient := .simple
-  finitelyBranching := trivial
-  commonsAdmissible := trivial
+/-- Natural-order comparison is exactly comparison of the ambient ranks. -/
+theorem order_eq_iff (n : Nat) : action.order = n ↔ action.toAmbient.rank = (n : Ordinal) := by
+  rw [rank_eq_natCast_order]
+  exact (Nat.cast_injective (R := Ordinal)).eq_iff.symm
 
-@[simp] theorem order_simple (Outcome : Type uOutcome) :
-    (simple Outcome : Finite.Action.{uOccurrence, uOutcome} Outcome).order = 0 := by
+theorem order_le_iff_rank_le (other : Finite.Action.{u, v} Outcome) :
+    action.order ≤ other.order ↔ action.toAmbient.rank ≤ other.toAmbient.rank := by
+  rw [action.rank_eq_natCast_order, other.rank_eq_natCast_order]
+  exact Nat.cast_le.symm
+
+/-- HC1: the simple action has order zero. -/
+def simple (Outcome : Type v) : Finite.Action.{u, v} Outcome :=
+  ⟨.simple, trivial, trivial⟩
+
+@[simp] theorem order_simple (Outcome : Type v) :
+    (simple Outcome : Finite.Action.{u, v} Outcome).order = 0 := by
   apply Nat.cast_injective (R := Ordinal)
   rw [← rank_eq_natCast_order]
   rfl
 
-/-- Form a finite chain from finite Commons children. -/
-def chain
-    {Outcome : Type uOutcome} {Occurrence : Type uOccurrence}
-    [finiteOccurrence : _root_.Finite Occurrence]
+section Constructors
+variable [finiteOccurrence : _root_.Finite Occurrence]
     (hasAtLeastTwo : HasAtLeastTwo Occurrence)
-    (child : Occurrence → Finite.Action.{uOccurrence, uOutcome} Outcome)
+    (child : Occurrence → Finite.Action.{u, v} Outcome)
     (semantics : ScheduleSemantics Occurrence Outcome)
-    (invariant : IsChain semantics) :
-    Finite.Action.{uOccurrence, uOutcome} Outcome where
+    (invariant : IsChain semantics) (sensitive : IsCoordination semantics)
+    (equalOrder : ∀ first second, (child first).order = (child second).order)
+
+/-- Form a finite chain from finite Commons children. -/
+def chain : Finite.Action.{u, v} Outcome where
   toAmbient := .compound Occurrence hasAtLeastTwo
     (fun occurrence => (child occurrence).toAmbient)
     (.chain semantics invariant)
@@ -327,18 +203,8 @@ def chain
   commonsAdmissible :=
     fun occurrence => (child occurrence).commonsAdmissible
 
-/-- Form a finite coordination.  Equal child order is the explicit HC2
-premise rather than an automatically true constructor field. -/
-def coordination
-    {Outcome : Type uOutcome} {Occurrence : Type uOccurrence}
-    [finiteOccurrence : _root_.Finite Occurrence]
-    (hasAtLeastTwo : HasAtLeastTwo Occurrence)
-    (child : Occurrence → Finite.Action.{uOccurrence, uOutcome} Outcome)
-    (semantics : ScheduleSemantics Occurrence Outcome)
-    (sensitive : IsCoordination semantics)
-    (equalOrder : ∀ first second,
-      (child first).order = (child second).order) :
-    Finite.Action.{uOccurrence, uOutcome} Outcome where
+/-- Finite coordination requires explicit child-order homogeneity (HC2). -/
+def coordination : Finite.Action.{u, v} Outcome where
   toAmbient := .compound Occurrence hasAtLeastTwo
     (fun occurrence => (child occurrence).toAmbient)
     (.coordination semantics sensitive)
@@ -350,97 +216,52 @@ def coordination
     rw [(child first).rank_eq_natCast_order,
       (child second).rank_eq_natCast_order, equalOrder first second]
 
-/-- HC3 for chains: the resulting order is attained by a child and bounds
-every child order.  This is the `max` law without choosing a presentation of
-the finite occurrence family as `Fin n`. -/
-theorem chain_order_is_child_maximum
-    {Outcome : Type uOutcome} {Occurrence : Type uOccurrence}
-    [finiteOccurrence : _root_.Finite Occurrence]
-    (hasAtLeastTwo : HasAtLeastTwo Occurrence)
-    (child : Occurrence → Finite.Action.{uOccurrence, uOutcome} Outcome)
-    (semantics : ScheduleSemantics Occurrence Outcome)
-    (invariant : IsChain semantics) :
-    (∃ occurrence,
+/-- HC3: a finite chain attains the maximum child order. -/
+theorem chain_order_is_child_maximum : (∃ occurrence,
       (chain hasAtLeastTwo child semantics invariant).order =
         (child occurrence).order) ∧
     ∀ occurrence,
       (child occurrence).order ≤
         (chain hasAtLeastTwo child semantics invariant).order := by
-  letI : Nonempty Occurrence := hasAtLeastTwo.nonempty
-  obtain ⟨greatest, greatestRank⟩ :=
-    exists_eq_ciSup_of_finite
-      (f := fun occurrence => (child occurrence).toAmbient.rank)
-  constructor
-  · refine ⟨greatest, ?_⟩
-    apply Nat.cast_injective (R := Ordinal)
-    rw [← rank_eq_natCast_order, ← (child greatest).rank_eq_natCast_order]
-    exact (HierarchicalComplexity.Action.rank_chain hasAtLeastTwo
-      (fun occurrence => (child occurrence).toAmbient)
-      semantics invariant).trans greatestRank.symm
-  · intro occurrence
-    apply (Nat.cast_le (α := Ordinal)).mp
-    rw [← (child occurrence).rank_eq_natCast_order,
-      ← (chain hasAtLeastTwo child semantics invariant).rank_eq_natCast_order]
-    exact HierarchicalComplexity.Action.child_rank_le_chain
-      hasAtLeastTwo (fun index => (child index).toAmbient)
-      semantics invariant occurrence
+  let : Nonempty Occurrence := hasAtLeastTwo.nonempty
+  obtain ⟨i, hi⟩ := exists_eq_ciSup_of_finite (f := fun i => (child i).toAmbient.rank)
+  refine ⟨⟨i, ?_⟩, fun j => (order_le_iff_rank_le _ _).mpr ?_⟩
+  · apply (order_eq_iff _ _).mpr
+    exact hi.symm.trans (child i).rank_eq_natCast_order
+  · exact HierarchicalComplexity.Action.child_rank_le_chain hasAtLeastTwo _ semantics invariant j
 
-/-- HC3 for coordinations: homogeneous children of order `n` produce an
-action of order `n + 1`. -/
-theorem coordination_order_eq_child_add_one
-    {Outcome : Type uOutcome} {Occurrence : Type uOccurrence}
-    [finiteOccurrence : _root_.Finite Occurrence]
-    (hasAtLeastTwo : HasAtLeastTwo Occurrence)
-    (child : Occurrence → Finite.Action.{uOccurrence, uOutcome} Outcome)
-    (semantics : ScheduleSemantics Occurrence Outcome)
-    (sensitive : IsCoordination semantics)
-    (equalOrder : ∀ first second,
-      (child first).order = (child second).order)
-    (occurrence : Occurrence) :
+/-- HC3: homogeneous coordination adds one to the common child order. -/
+theorem coordination_order_eq_child_add_one (occurrence : Occurrence) :
     (coordination hasAtLeastTwo child semantics sensitive equalOrder).order =
       (child occurrence).order + 1 := by
-  letI : Nonempty Occurrence := hasAtLeastTwo.nonempty
-  apply Nat.cast_injective (R := Ordinal)
-  rw [← (coordination hasAtLeastTwo child semantics sensitive
-      equalOrder).rank_eq_natCast_order, Nat.cast_add_one,
-    ← (child occurrence).rank_eq_natCast_order]
-  change Order.succ (⨆ index, (child index).toAmbient.rank) =
-    (child occurrence).toAmbient.rank + 1
-  rw [Order.succ_eq_add_one]
-  congr 1
-  apply le_antisymm
-  · apply Ordinal.iSup_le
-    intro index
-    rw [(child index).rank_eq_natCast_order,
-      (child occurrence).rank_eq_natCast_order,
-      equalOrder index occurrence]
-  · exact Ordinal.le_iSup
-      (fun index => (child index).toAmbient.rank) occurrence
+  let : Nonempty Occurrence := hasAtLeastTwo.nonempty
+  apply (order_eq_iff _ _).mpr
+  change Order.succ (⨆ i, (child i).toAmbient.rank) = ((_ + 1 : Nat) : Ordinal)
+  rw [HierarchicalComplexity.Action.childSup_eq_of_equalRank
+    (fun i => (child i).toAmbient) occurrence (fun i => ?_),
+    (child occurrence).rank_eq_natCast_order, Nat.cast_add_one, Order.succ_eq_add_one]
+  rw [(child _).rank_eq_natCast_order, (child occurrence).rank_eq_natCast_order, equalOrder]
+
+end Constructors
 
 /-- Number of simple leaves in the finite projection. -/
-noncomputable def simpleLeafCount {Outcome : Type uOutcome}
-    (action : Finite.Action.{uOccurrence, uOutcome} Outcome) : Nat :=
+noncomputable def simpleLeafCount : Nat :=
   Nat.card (HierarchicalComplexity.Action.SimpleLeaves action.toAmbient)
 
-/-- Every finite Commons action meets the exponential simple-action lower
-bound at its own order. -/
-theorem pow_two_order_le_simpleLeafCount {Outcome : Type uOutcome}
-    (action : Finite.Action.{uOccurrence, uOutcome} Outcome) :
-    2 ^ action.order ≤ action.simpleLeafCount := by
+/-- The exponential lower bound at the action's own order. -/
+theorem pow_two_order_le_simpleLeafCount : 2 ^ action.order ≤ action.simpleLeafCount := by
   exact HierarchicalComplexity.Action.pow_two_le_natCard_simpleLeaves_of_rank_eq
     action.toAmbient action.finitelyBranching action.commonsAdmissible
       action.order action.rank_eq_natCast_order
 
 /-- C3: finite orders are trichotomous. -/
-theorem order_trichotomy {Outcome : Type uOutcome}
-    (first second : Finite.Action.{uOccurrence, uOutcome} Outcome) :
+theorem order_trichotomy (first second : Finite.Action.{u, v} Outcome) :
     first.order < second.order ∨ first.order = second.order ∨
       second.order < first.order :=
   lt_trichotomy first.order second.order
 
 /-- C4: strict comparison of finite orders is transitive. -/
-theorem order_lt_trans {Outcome : Type uOutcome}
-    {first second third : Finite.Action.{uOccurrence, uOutcome} Outcome}
+theorem order_lt_trans {first second third : Finite.Action.{u, v} Outcome}
     (firstSecond : first.order < second.order)
     (secondThird : second.order < third.order) :
     first.order < third.order :=
@@ -450,39 +271,27 @@ end Action
 
 /-! ## C2: no gaps in the realized finite spectrum -/
 
-/-- An order is realized when some finite Commons action has that order. -/
-def RealizesOrder (Outcome : Type uOutcome) (n : Nat) : Prop :=
-  ∃ action : Finite.Action.{uOccurrence, uOutcome} Outcome, action.order = n
+def RealizesOrder (Outcome : Type v) (n : Nat) : Prop :=
+  ∃ action : Finite.Action.{u, v} Outcome, action.order = n
 
-/-- Strong form of C2: realization of order `n+1` already exposes a realized
-subaction of order `n`; no separate lower-order premise is required. -/
-theorem realizesOrder_pred_of_succ
-    {Outcome : Type uOutcome} {n : Nat}
-    (higher : RealizesOrder.{uOccurrence, uOutcome} Outcome (n + 1)) :
-    RealizesOrder.{uOccurrence, uOutcome} Outcome n := by
+/-- C2 strengthened: realizing `n+1` exposes a realized predecessor. -/
+theorem realizesOrder_pred_of_succ {n : Nat} (higher : RealizesOrder.{u, v} Outcome (n + 1)) :
+    RealizesOrder.{u, v} Outcome n := by
   obtain ⟨action, actionOrder⟩ := higher
   have actionRank : action.toAmbient.rank = ((n + 1 : Nat) : Ordinal) := by
     rw [action.rank_eq_natCast_order, actionOrder]
   obtain ⟨subaction, _, subFinite, subAdmissible, subRank⟩ :=
     HierarchicalComplexity.Action.exists_subaction_rank_pred
       action.toAmbient action.finitelyBranching action.commonsAdmissible n actionRank
-  let finiteSubaction : Finite.Action.{uOccurrence, uOutcome} Outcome :=
+  let finiteSubaction : Finite.Action.{u, v} Outcome :=
     ⟨subaction, subFinite, subAdmissible⟩
   refine ⟨finiteSubaction, ?_⟩
-  apply Nat.cast_injective (R := Ordinal)
-  rw [← finiteSubaction.rank_eq_natCast_order]
-  exact subRank
+  exact (Finite.Action.order_eq_iff _ _).mpr subRank
 
 /-- Commons and Pekker's stated C2 form. -/
-theorem no_gaps
-    {Outcome : Type uOutcome} {n : Nat}
-    (_lower : RealizesOrder.{uOccurrence, uOutcome} Outcome n)
-    (higher : RealizesOrder.{uOccurrence, uOutcome} Outcome (n + 2)) :
-    RealizesOrder.{uOccurrence, uOutcome} Outcome (n + 1) := by
-  have reshaped : n + 2 = (n + 1) + 1 := by omega
-  rw [reshaped] at higher
-  exact realizesOrder_pred_of_succ higher
-
+theorem no_gaps {n : Nat} (_lower : RealizesOrder.{u, v} Outcome n)
+    (higher : RealizesOrder.{u, v} Outcome (n + 2)) :
+    RealizesOrder.{u, v} Outcome (n + 1) := realizesOrder_pred_of_succ higher
 
 /-! ## The exact `phi n = 2^n` minimum -/
 
@@ -498,37 +307,23 @@ open HierarchicalComplexity.LimitCanary
       exact ⟨inferInstance, fun _ => inductionHypothesis⟩
 
 /-- The binary witness, regarded through the finite Commons specialization. -/
-def binaryTower (n : Nat) : Finite.Action.{0, 0} (Fin 2) where
-  toAmbient := finiteTower n
-  finitelyBranching := finitelyBranching_finiteTower n
-  commonsAdmissible := commonsAdmissible_finiteTower n
+def binaryTower (n : Nat) : Finite.Action.{0, 0} (Fin 2) :=
+  ⟨finiteTower n, finitelyBranching_finiteTower n, commonsAdmissible_finiteTower n⟩
 
-@[simp] theorem order_binaryTower (n : Nat) :
-    (binaryTower n).order = n := by
-  apply Nat.cast_injective (R := Ordinal)
-  rw [← (binaryTower n).rank_eq_natCast_order]
-  exact rank_finiteTower n
+@[simp] theorem order_binaryTower (n : Nat) : (binaryTower n).order = n := by
+  exact (Finite.Action.order_eq_iff _ _).mpr (rank_finiteTower n)
 
 @[simp] theorem natCard_simpleLeaves_finiteTower (n : Nat) :
     Nat.card (HierarchicalComplexity.Action.SimpleLeaves (finiteTower n)) =
       2 ^ n := by
   induction n with
   | zero => simp [finiteTower, HierarchicalComplexity.Action.SimpleLeaves]
-  | succ n inductionHypothesis =>
-      letI : _root_.Finite
-          (HierarchicalComplexity.Action.SimpleLeaves (finiteTower n)) :=
-        HierarchicalComplexity.Action.finite_simpleLeaves
-          (finiteTower n) (finitelyBranching_finiteTower n)
-      rw [finiteTower]
-      change Nat.card
-        (Sigma (fun _ : Fin 2 =>
-          HierarchicalComplexity.Action.SimpleLeaves (finiteTower n))) =
-            2 ^ (n + 1)
-      rw [Nat.card_sigma]
-      simp [inductionHypothesis, pow_succ, Nat.mul_two, two_mul]
+  | succ n ih =>
+      change Nat.card (Sigma fun _ : Fin 2 => HierarchicalComplexity.Action.SimpleLeaves (finiteTower n)) = _
+      rw [Nat.card_congr (Equiv.sigmaEquivProd (Fin 2) _), Nat.card_prod, Nat.card_fin, ih, pow_succ]
+      exact Nat.mul_comm _ _
 
-@[simp] theorem simpleLeafCount_binaryTower (n : Nat) :
-    (binaryTower n).simpleLeafCount = 2 ^ n :=
+@[simp] theorem simpleLeafCount_binaryTower (n : Nat) : (binaryTower n).simpleLeafCount = 2 ^ n :=
   natCard_simpleLeaves_finiteTower n
 
 /-- `count` is a realized minimum simple-leaf count at order `n`. -/
@@ -538,26 +333,14 @@ def IsMinimumSimpleLeafCount (n count : Nat) : Prop :=
   ∀ action : Finite.Action.{0, 0} (Fin 2),
     action.order = n → count ≤ action.simpleLeafCount
 
-/-- Commons and Pekker's `phi_n = 2^n`: the exponential lower bound is
-attained by the binary coordination tower. -/
-theorem phi_eq_pow_two (n : Nat) :
-    IsMinimumSimpleLeafCount n (2 ^ n) := by
-  constructor
-  · exact ⟨binaryTower n, order_binaryTower n,
-      simpleLeafCount_binaryTower n⟩
-  · intro action orderEqual
-    simpa only [orderEqual] using action.pow_two_order_le_simpleLeafCount
+/-- The binary tower attains Commons--Pekker's minimum `phi_n = 2^n`. -/
+theorem phi_eq_pow_two (n : Nat) : IsMinimumSimpleLeafCount n (2 ^ n) := by
+  refine ⟨⟨binaryTower n, order_binaryTower n, simpleLeafCount_binaryTower n⟩, ?_⟩
+  intro action orderEqual
+  simpa only [orderEqual] using action.pow_two_order_le_simpleLeafCount
 
 end Phi
 
 end Finite
 
 end Mettapedia.Cybernetics.HierarchicalComplexity
-
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Action.rank_lt_omega0_of_finitelyBranching
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Action.pow_two_le_natCard_simpleLeaves_of_rank_eq
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Action.exists_subaction_rank_pred
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Finite.Action.chain_order_is_child_maximum
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Finite.Action.coordination_order_eq_child_add_one
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Finite.no_gaps
-#print axioms Mettapedia.Cybernetics.HierarchicalComplexity.Finite.Phi.phi_eq_pow_two

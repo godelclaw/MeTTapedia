@@ -1,5 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.ModuleSource.AlgebraExtraction
 import Mettapedia.GSLT.LanguageDef.ModuleSource.ReplacementTyping
+import Mettapedia.GSLT.LanguageDef.EquationSemantics
+import Mettapedia.OSLF.MeTTaIL.GeneralFirstOrderMatch
 
 /-!
 # Reading binary source equations in a collection-fold model
@@ -302,5 +304,174 @@ theorem replacement_collection_fold_model {operations : String → List A → A}
   have sameRule : actualRule = old := Decl.term.inj (actualBody.symm.trans body)
   subst actualRule
   exact admitted_collection_fold_model source target faithful holds
+
+
+/-! ## The actual source-equation quotient as a separating model -/
+
+namespace SourceQuotient
+open Mettapedia.OSLF.MeTTaIL.ContextualStep Mettapedia.OSLF.MeTTaIL.Match
+open Mettapedia.OSLF.MeTTaIL.MatchSpec Mettapedia.OSLF.MeTTaIL.GeneralFirstOrderProjection
+open Mettapedia.GSLT.LanguageDef.EquationSemantics
+
+abbrev Carrier (base : BasePremiseEvaluator) (language : LanguageDef) :=
+  Quotient (equationSetoid base language)
+
+def classOf (base : BasePremiseEvaluator) (language : LanguageDef) (pattern : Pattern) :
+    Carrier base language := Quotient.mk _ pattern
+
+/-- Constructor congruence makes representative selection independent of the
+chosen representatives. The carrier is the actual source equation quotient. -/
+noncomputable def operations (base : BasePremiseEvaluator) (language : LanguageDef)
+    (label : String) (arguments : List (Carrier base language)) : Carrier base language :=
+  classOf base language (.apply label (arguments.map Quotient.out))
+
+theorem operations_classOf (base : BasePremiseEvaluator) (language : LanguageDef)
+    (label : String) (arguments : List Pattern) :
+    operations base language label (arguments.map (classOf base language)) =
+      classOf base language (.apply label arguments) := by
+  apply Quotient.sound
+  apply equationEquiv_apply_of_forall₂
+  simp only [List.map_map, Function.comp_def]
+  change List.Forall₂ (EquationEquiv base language)
+    (arguments.map fun pattern => Quotient.out (classOf base language pattern)) arguments
+  induction arguments with
+  | nil => exact .nil
+  | cons pattern arguments ih =>
+      exact .cons (Quotient.exact (Quotient.out_eq (classOf base language pattern))) ih
+
+private theorem lookup_table (names : List String) (values : String → Pattern)
+    (key : String) (member : key ∈ names) :
+    Bindings.lookup (names.map fun identifier => (identifier, values identifier)) key =
+      some (values key) := by
+  induction names with
+  | nil => cases member
+  | cons first rest ih =>
+      by_cases same : first = key
+      · subst first
+        simp [Bindings.lookup]
+      · have later : key ∈ rest := (List.mem_cons.mp member).resolve_left (Ne.symm same)
+        have test : (first == key) = false := by simp [same]
+        simpa only [List.map_cons, Bindings.lookup, List.find?_cons, test] using ih later
+
+mutual
+  /-- Reading a first-order schema in the quotient returns its actual
+  substitution instance, for any finite environment covering its variables. -/
+  theorem read_instance (base : BasePremiseEvaluator) (language : LanguageDef)
+      (assignment : String → Carrier base language) (environment : Bindings)
+      {schema : Pattern} (shape : FirstOrder schema)
+      (consistent : ∀ identifier ∈ schema.freeFvarNames,
+        classOf base language (applyBindings environment (.fvar identifier)) = assignment identifier) :
+      read? (operations base language) assignment schema =
+        some (classOf base language (applyBindings environment schema)) := by
+    cases shape with
+    | metavariable identifier =>
+        simpa only [read?] using
+          congrArg some (consistent identifier (by simp [Pattern.freeFvarNames])).symm
+    | constructor label arguments children =>
+        have mapped := read_arguments base language assignment environment children
+          (by simpa only [Pattern.freeFvarNames] using consistent)
+        simpa only [read?, mapped, Option.map_some, applyBindings, List.map_map, Function.comp_def] using
+          congrArg some (operations_classOf base language label
+            (arguments.map (applyBindings environment)))
+  termination_by sizeOf schema
+
+  theorem read_arguments (base : BasePremiseEvaluator) (language : LanguageDef)
+      (assignment : String → Carrier base language) (environment : Bindings)
+      {schemas : List Pattern} (shapes : ∀ schema ∈ schemas, FirstOrder schema)
+      (consistent : ∀ identifier ∈ schemas.flatMap Pattern.freeFvarNames,
+        classOf base language (applyBindings environment (.fvar identifier)) = assignment identifier) :
+      schemas.mapM (read? (operations base language) assignment) =
+        some (schemas.map fun schema => classOf base language (applyBindings environment schema)) := by
+    cases schemas with
+    | nil => rfl
+    | cons schema schemas =>
+        have first := read_instance base language assignment environment (shapes schema (by simp))
+          (fun identifier member => consistent identifier (by simp [member]))
+        have rest := read_arguments base language assignment environment
+          (fun child member => shapes child (List.mem_cons_of_mem _ member))
+          (fun identifier member => consistent identifier (by simp [member]))
+        simp only [List.mapM_cons, first, rest, List.map_cons]
+        rfl
+  termination_by sizeOf schemas
+end
+
+private theorem empty_instance {schema : Pattern} (shape : FirstOrder schema) :
+    applyBindings [] schema = schema := by
+  induction schema using Pattern.inductionOn with
+  | hfvar => simp only [applyBindings, List.find?_nil]
+  | happly label arguments ih =>
+      cases shape with
+      | constructor _ _ children =>
+          simp only [applyBindings]
+          apply congrArg (Pattern.apply label)
+          exact (List.map_congr_left (fun child member => ih child member (children child member))).trans
+            (List.map_id arguments)
+  | hbvar | hlambda | hmultiLambda | hsubst | hcollection => cases shape
+
+theorem read_classOf (base : BasePremiseEvaluator) (language : LanguageDef)
+    {schema : Pattern} (shape : FirstOrder schema) :
+    read? (operations base language) (fun identifier => classOf base language (.fvar identifier)) schema =
+      some (classOf base language schema) := by
+  simpa only [empty_instance shape] using
+    read_instance base language (fun identifier => classOf base language (.fvar identifier)) [] shape
+      (by intro identifier _; simp only [applyBindings, List.find?_nil])
+
+/-- An actual premise-free first-order equation holds in its own quotient.
+The right-side variable condition is essential for ordinary matching to
+read the same finite substitution on both sides. -/
+theorem equation_holds (base : BasePremiseEvaluator) {language : LanguageDef} {row : Equation}
+    (member : row ∈ language.equations) (unconditional : row.premises = [])
+    (leftShape : FirstOrder row.left) (rightShape : FirstOrder row.right)
+    (closed : ∀ identifier ∈ row.right.freeFvarNames, identifier ∈ row.left.freeFvarNames) :
+    EquationHolds (operations base language) row.left row.right := by
+  intro assignment
+  let environment : Bindings := row.left.freeFvarNames.map fun identifier =>
+    (identifier, Quotient.out (assignment identifier))
+  have defined : Defined environment row.left.freeFvarNames := by
+    intro identifier member
+    exact ⟨_, lookup_table row.left.freeFvarNames (fun identifier => Quotient.out (assignment identifier)) identifier member⟩
+  obtain ⟨bindings, matched, compatible, _, names⟩ := match_instance environment leftShape defined
+  have rightRead := compatible_readout rightShape compatible
+    (fun identifier occurs => (names identifier).mpr (closed identifier occurs))
+  have step : EquationInstance base language
+      (applyBindings environment row.left) (applyBindings environment row.right) := by
+    refine ⟨0, .forward member (matchRel_complete matched) ?_ rightRead⟩
+    simpa only [unconditional] using (PremisesAt.nil bindings : PremisesAt base language 0 bindings [] bindings)
+  have equivalent : EquationEquiv base language
+      (applyBindings environment row.left) (applyBindings environment row.right) :=
+    .rel _ _ (.inContext .hole (.inl step))
+  have consistent : ∀ identifier ∈ row.left.freeFvarNames,
+      classOf base language (applyBindings environment (.fvar identifier)) = assignment identifier := by
+    intro identifier occurs
+    rw [apply_variable,
+      show Bindings.lookup environment identifier = some (Quotient.out (assignment identifier)) from
+        lookup_table _ (fun identifier => Quotient.out (assignment identifier)) identifier occurs,
+      Option.getD_some]
+    exact Quotient.out_eq _
+  refine ⟨classOf base language (applyBindings environment row.left),
+    read_instance base language assignment environment leftShape consistent, ?_⟩
+  rw [read_instance base language assignment environment rightShape
+    (fun identifier occurs => consistent identifier (closed identifier occurs))]
+  exact congrArg some (Quotient.sound equivalent).symm
+
+/-- Flattened source rows, not a supplied semantic oracle, license the
+quotient model used by binary collection replacement. -/
+theorem sourceEquationsHold (base : BasePremiseEvaluator) (sourceName : String) (value : Value)
+    (rows : ∀ row ∈ (flattenRaw sourceName value).equations, row.premises = [] →
+      FirstOrder row.left ∧ FirstOrder row.right ∧
+        ∀ identifier ∈ row.right.freeFvarNames, identifier ∈ row.left.freeFvarNames) :
+    SourceEquationsHold (operations base (flattenRaw sourceName value)) value := by
+  intro item member row body unconditional
+  have declared : row ∈ (flattenRaw sourceName value).equations :=
+    List.mem_filterMap.mpr ⟨item, member, by simp [body]⟩
+  obtain ⟨leftShape, rightShape, closed⟩ := rows row declared unconditional
+  exact equation_holds base declared unconditional leftShape rightShape closed
+
+#print axioms operations_classOf
+#print axioms read_instance
+#print axioms read_classOf
+#print axioms equation_holds
+#print axioms sourceEquationsHold
+end SourceQuotient
 
 end Mettapedia.GSLT.LanguageDef.ModuleSource.AlgebraInterpretation

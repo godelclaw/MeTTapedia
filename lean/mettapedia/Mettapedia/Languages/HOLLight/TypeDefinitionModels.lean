@@ -1015,4 +1015,137 @@ theorem type_equation_instances (primitives : Primitives initial) (substitution 
       (fun changedAssignment => model_models_representationAbstraction prior accepted proof other changedAssignment primitives
         TypeSubst.empty originalCarrier) substitution secondTranslation
 
+theorem selection_preserved
+    {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol}
+    (prior : Family.{w} initial context theory)
+    {instances : InstanceWitnesses} {request : TypeOperatorDefinitionRequest} {result : SourceTypeDefinitionResult}
+    (accepted : admitSourceTypeInTheory context instances request = some result)
+    (proof : HOL.ClosedTheorySet.Provable theory (TypeAdmission.admittedImage accepted).formula)
+    (parameter : Name)
+    (registered : context.signature.constants selectionConstant = some (selectionType (.var parameter)))
+    (specified : ∀ other assignment operand, (prior.model other assignment).models (selectionFormula operand))
+    (other : OperatorFamilies.{w}) (assignment : Assignment.{w}) (operand : Ty) :
+    (model prior accepted proof other assignment).models (selectionFormula operand) := by
+  let substitution : TypeSubst := ⟨[(parameter, operand)]⟩
+  have declared : ConstantInstance context.signature selectionConstant (selectionType operand) := by
+    refine ⟨selectionType (.var parameter), substitution, registered, ?_⟩
+    simp [selectionType, substitution, TypeSubst.lookup]
+  have apart := UniformTypeDefinitionModels.licensed_old_constant accepted declared
+  intro predicate _ value _ trueValue
+  have old := specified
+    (extend other (SourceTypeDefinitionTransport.operator request) (family prior accepted proof other))
+    assignment operand predicate (prior.fullDomains _ _ _ _) value (prior.fullDomains _ _ _ _) trueValue
+  have retained := meanings_other prior accepted proof other assignment (selectionType_toHOL operand) apart.1 apart.2
+  exact (congrArg (fun selected => (predicate selected).down) (congrFun retained predicate)).mpr old
+
+theorem old_base_carrier_preserved
+    {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol}
+    (prior : Family.{w} initial context theory)
+    {instances : InstanceWitnesses} {request : TypeOperatorDefinitionRequest} {result : SourceTypeDefinitionResult}
+    (accepted : admitSourceTypeInTheory context instances request = some result)
+    (proof : HOL.ClosedTheorySet.Provable theory (TypeAdmission.admittedImage accepted).formula)
+    (other : OperatorFamilies.{w}) (assignment : Assignment.{w}) (base : AtomicTy)
+    (formed : TypeFormed context.signature base.val) :
+    (model prior accepted proof other assignment).Carrier base = (prior.model other assignment).Carrier base := by
+  have agreement := model_old_agreement prior accepted proof other assignment
+  exact agreement.carriers (.base base) (by simpa only [Ty.fromHOL] using formed)
+
+def infinity_preserved
+    {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol}
+    (prior : Family.{w} initial context theory)
+    {instances : InstanceWitnesses} {request : TypeOperatorDefinitionRequest} {result : SourceTypeDefinitionResult}
+    (accepted : admitSourceTypeInTheory context instances request = some result)
+    (proof : HOL.ClosedTheorySet.Provable theory (TypeAdmission.admittedImage accepted).formula)
+    (other : OperatorFamilies.{w}) (assignment : Assignment.{w}) (base : AtomicTy)
+    (formed : TypeFormed context.signature base.val)
+    (witness : (prior.model other assignment).DedekindInfinityWitness base) :
+    (model prior accepted proof other assignment).DedekindInfinityWitness base := by
+  let coding := Equiv.cast (old_base_carrier_preserved prior accepted proof other assignment base formed)
+  exact {
+    successor := fun value => coding.symm (witness.successor (coding value))
+    successor_admissible := model_fullDomains prior accepted proof other assignment _ _
+    successor_injective := coding.symm.injective.comp (witness.successor_injective.comp coding.injective)
+    omitted := coding.symm witness.omitted
+    omitted_not_image := fun value equal => witness.omitted_not_image (coding value) (coding.symm.injective equal) }
+
+/-- Symbols whose meanings are not installed by this type definition. -/
+def AvoidsTypeDefinitionMaps (result : SourceTypeDefinitionResult) :
+    ∀ {type}, Symbol type → Prop
+  | _, .constant constant _ _ =>
+      constant ≠ result.output.abstractionConstant ∧ constant ≠ result.output.representationConstant
+  | _, .variable _ _ => True
+
+theorem avoids_type_maps_typeImage (result : SourceTypeDefinitionResult) (substitution : TypeSubst)
+    {context : HOL.Ctx AtomicTy} {type : HOL.Ty AtomicTy} (term : HOL.Term Symbol context type)
+    (supported : term.SymbolsSatisfy (AvoidsTypeDefinitionMaps result)) :
+    (HOL.mapTypes substitution.baseInstance substitution.symbolInstance term).SymbolsSatisfy
+      (AvoidsTypeDefinitionMaps result) := by
+  apply HOL.Term.SymbolsSatisfy.mapTypes substitution.baseInstance substitution.symbolInstance
+    (AvoidsTypeDefinitionMaps result) (AvoidsTypeDefinitionMaps result) _ term supported
+  intro type symbol allowed
+  cases symbol with
+  | constant => exact allowed
+  | «variable» => trivial
+
+theorem denote_without_new_maps
+    {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol}
+    (prior : Family.{w} initial context theory)
+    {instances : InstanceWitnesses} {request : TypeOperatorDefinitionRequest} {result : SourceTypeDefinitionResult}
+    (accepted : admitSourceTypeInTheory context instances request = some result)
+    (proof : HOL.ClosedTheorySet.Provable theory (TypeAdmission.admittedImage accepted).formula)
+    (other : OperatorFamilies.{w}) (assignment : Assignment.{w})
+    {scope : HOL.Ctx AtomicTy} {type : HOL.Ty AtomicTy} (term : HOL.Term Symbol scope type)
+    (supported : term.SymbolsSatisfy (AvoidsTypeDefinitionMaps result))
+    (valuation : (carrierModel prior accepted proof other assignment).Valuation scope) :
+    (model prior accepted proof other assignment).denote term valuation =
+      (carrierModel prior accepted proof other assignment).denote term valuation := by
+  have agree : ∀ {type} (symbol : Symbol type), AvoidsTypeDefinitionMaps result symbol →
+      (model prior accepted proof other assignment).constDen symbol =
+        (carrierModel prior accepted proof other assignment).constDen symbol := by
+    intro type symbol allowed
+    cases symbol with
+    | constant constant annotation typed =>
+      exact meanings_other prior accepted proof other assignment typed allowed.1 allowed.2
+    | «variable» sourceVar typed => exact meanings_variable prior accepted proof other assignment sourceVar typed
+  have same := HOL.HenkinModel.standard_denote_eq_of_symbols
+    (carrierModel prior accepted proof other assignment).Carrier
+    (model prior accepted proof other assignment).constDen
+    (carrierModel prior accepted proof other assignment).constDen
+    (AvoidsTypeDefinitionMaps result) agree term supported valuation
+  change (model prior accepted proof other assignment).denote term valuation =
+    (HOL.HenkinModel.standard (carrierModel prior accepted proof other assignment).Carrier
+      (carrierModel prior accepted proof other assignment).constDen).denote term valuation at same
+  have standardized :
+      HOL.HenkinModel.standard (carrierModel prior accepted proof other assignment).Carrier
+        (carrierModel prior accepted proof other assignment).constDen =
+          carrierModel prior accepted proof other assignment :=
+    HOL.HenkinModel.standard_eq_of_fullDomains _ (carrierModel_fullDomains prior accepted proof other assignment)
+  have evaluations : HEq
+      @(HOL.HenkinModel.standard (carrierModel prior accepted proof other assignment).Carrier
+        (carrierModel prior accepted proof other assignment).constDen).denote
+      @(carrierModel prior accepted proof other assignment).denote := by rw [standardized]
+  exact same.trans (congrFun (congrFun (congrFun (congrFun (eq_of_heq evaluations) scope) type) term) valuation)
+
+private theorem models_iff_at (candidate : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (formula : HOL.ClosedFormula Symbol) (valuation : candidate.Valuation []) :
+    candidate.models formula ↔ (candidate.denote formula valuation).down :=
+  (congrArg ULift.down (candidate.denote_closed_valuation_eq formula _ valuation)).to_iff
+
+theorem models_without_new_maps
+    {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol}
+    (prior : Family.{w} initial context theory)
+    {instances : InstanceWitnesses} {request : TypeOperatorDefinitionRequest} {result : SourceTypeDefinitionResult}
+    (accepted : admitSourceTypeInTheory context instances request = some result)
+    (proof : HOL.ClosedTheorySet.Provable theory (TypeAdmission.admittedImage accepted).formula)
+    (other : OperatorFamilies.{w}) (assignment : Assignment.{w})
+    (formula : HOL.ClosedFormula Symbol)
+    (supported : formula.SymbolsSatisfy (AvoidsTypeDefinitionMaps result)) :
+    (model prior accepted proof other assignment).models formula ↔
+      (carrierModel prior accepted proof other assignment).models formula := by
+  let valuation : (carrierModel prior accepted proof other assignment).Valuation [] := fun index => nomatch index
+  exact (models_iff_at (model prior accepted proof other assignment) formula valuation).trans
+    ((congrArg ULift.down (denote_without_new_maps prior accepted proof other assignment formula supported valuation)).to_iff.trans
+      (models_iff_at (carrierModel prior accepted proof other assignment) formula valuation).symm)
+
+
 end Mettapedia.Languages.HOLLight.TypeDefinitionModels

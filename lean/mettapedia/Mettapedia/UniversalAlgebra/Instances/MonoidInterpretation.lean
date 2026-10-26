@@ -1,3 +1,6 @@
+import Mettapedia.UniversalAlgebra.Instances.MonoidWord
+import Mettapedia.UniversalAlgebra.Instances.FreeMonoidNormalization
+import Mettapedia.UniversalAlgebra.GSLT.ContextualRewriting
 import Mettapedia.UniversalAlgebra.EquationSystemInterpretation
 import Mettapedia.UniversalAlgebra.InterpretabilityOrder
 import Mettapedia.UniversalAlgebra.Instances.MonoidConsequenceInvariance
@@ -17,86 +20,9 @@ set_option autoImplicit false
 namespace Mettapedia.UniversalAlgebra.Monoid
 
 open Mettapedia.UniversalAlgebra
+open FreeNormalization
 
 namespace Term
-
-/-- The ordered variable-occurrence word of a monoid term. -/
-def variableWord : Term signature → List Nat
-  | .var index => [index]
-  | .op .mul arguments =>
-      variableWord (arguments ⟨0, by decide⟩) ++
-        variableWord (arguments ⟨1, by decide⟩)
-  | .op .one _arguments => []
-
-/-- Evaluating a monoid term in a free monoid replaces each variable
-occurrence in its ordered word by the valuation word. -/
-theorem toList_evaluate_freeMonoid {Generator : Type}
-    (valuation : Nat → FreeMonoid Generator) : ∀ term : Term signature,
-    FreeMonoid.toList
-        (term.evaluate (mathlibModel (FreeMonoid Generator)) valuation) =
-      (variableWord term).flatMap (fun index =>
-        FreeMonoid.toList (valuation index))
-  | .var _index => by
-      simp only [Term.evaluate, variableWord, List.flatMap_singleton]
-  | .op .mul arguments => by
-      simp only [Term.evaluate, mathlibModel, FreeMonoid.toList_mul,
-        variableWord, List.flatMap_append]
-      congr 1
-      · exact toList_evaluate_freeMonoid valuation (arguments ⟨0, by decide⟩)
-      · exact toList_evaluate_freeMonoid valuation (arguments ⟨1, by decide⟩)
-  | .op .one _arguments => rfl
-
-/-- Every entry of the occurrence word is a variable occurrence of the term
-and therefore obeys any declared finite variable bound. -/
-theorem variableWord_mem_lt {bound : Nat} {term : Term signature}
-    (bounded : term.VariablesBelow bound) {index : Nat}
-    (member : index ∈ variableWord term) : index < bound := by
-  induction term with
-  | var variableIndex =>
-      simp only [variableWord, List.mem_singleton] at member
-      subst index
-      change variableIndex < bound at bounded
-      exact bounded
-  | op operation arguments ih =>
-      cases operation with
-      | mul =>
-          simp only [variableWord, List.mem_append] at member
-          rcases member with member | member
-          · exact ih ⟨0, by decide⟩ (bounded ⟨0, by decide⟩) member
-          · exact ih ⟨1, by decide⟩ (bounded ⟨1, by decide⟩) member
-      | one =>
-          simp only [variableWord, List.not_mem_nil] at member
-
-/-- A term with no available variables has an empty occurrence word. -/
-theorem variableWord_eq_nil_of_variablesBelow_zero {term : Term signature}
-    (bounded : term.VariablesBelow 0) : variableWord term = [] := by
-  apply List.eq_nil_iff_forall_not_mem.mpr
-  intro index member
-  exact Nat.not_lt_zero index (variableWord_mem_lt bounded member)
-
-/-- Direct bounded evaluation in a free monoid is the occurrence word with
-the supplied finite argument words substituted. -/
-theorem toList_evaluateBelow_freeMonoid {Generator : Type} {bound : Nat}
-    (arguments : Fin bound → FreeMonoid Generator)
-    (term : Term signature) (bounded : term.VariablesBelow bound) :
-    FreeMonoid.toList
-        (term.evaluateBelow (mathlibModel (FreeMonoid Generator)) arguments
-          bounded) =
-      (variableWord term).flatMap (fun index =>
-        if below : index < bound
-        then FreeMonoid.toList (arguments ⟨index, below⟩)
-        else []) := by
-  rw [Term.evaluateBelow_eq_evaluate
-    (mathlibModel (FreeMonoid Generator)) arguments
-    (fun index => if below : index < bound then arguments ⟨index, below⟩
-      else 1)
-    (by intro index below; simp only [below, dite_true])]
-  rw [toList_evaluate_freeMonoid]
-  apply List.flatMap_congr
-  intro index _member
-  by_cases below : index < bound
-  · simp only [below, dite_true]
-  · simp only [below, dite_false, FreeMonoid.toList_one]
 
 theorem swappedSingletons_ne {word : List Nat} (nonempty : word ≠ [])
     (belowTwo : ∀ index ∈ word, index < 2) :
@@ -113,10 +39,11 @@ end Term
 
 namespace Signature.Interpretation
 
+variable (interpretation : Signature.Interpretation signature signature)
+
 /-- The binary operation induced by a monoid-signature interpretation in the
 free Boolean monoid. -/
 def freeBoolMul
-    (interpretation : Signature.Interpretation signature signature)
     (left right : FreeMonoid Bool) : FreeMonoid Bool :=
   (interpretation.operation .mul).1.evaluateBelow
     (mathlibModel (FreeMonoid Bool))
@@ -133,7 +60,6 @@ def freeBoolOne
     (interpretation.operation .one).2
 
 @[simp] theorem evaluate_mul_reduct
-    (interpretation : Signature.Interpretation signature signature)
     (valuation : Nat → FreeMonoid Bool) (left right : Term signature) :
     (mul left right).evaluate
         ((mathlibModel (FreeMonoid Bool)).reduct interpretation) valuation =
@@ -150,7 +76,6 @@ def freeBoolOne
     by_cases first : position.val = 0 <;> simp [first]
 
 @[simp] theorem evaluate_one_reduct
-    (interpretation : Signature.Interpretation signature signature)
     (valuation : Nat → FreeMonoid Bool) :
     one.evaluate
         ((mathlibModel (FreeMonoid Bool)).reduct interpretation) valuation =
@@ -164,7 +89,6 @@ def freeBoolOne
 /-- The interpreted multiplication's free word is obtained by replacing
 formal variables zero and one in its operation template. -/
 theorem toList_freeBoolMul
-    (interpretation : Signature.Interpretation signature signature)
     (left right : FreeMonoid Bool) :
     FreeMonoid.toList (freeBoolMul interpretation left right) =
       (Term.variableWord (interpretation.operation .mul).1).flatMap
@@ -177,6 +101,18 @@ theorem toList_freeBoolMul
     (fun position => if position.val = 0 then left else right)
     (interpretation.operation .mul).1
     (interpretation.operation .mul).2
+
+/-- The template's variable bound removes the unused out-of-range branch. -/
+theorem toList_freeBoolMul_words
+    (left right : FreeMonoid Bool) :
+    FreeMonoid.toList (freeBoolMul interpretation left right) =
+      (Term.variableWord (interpretation.operation .mul).1).flatMap
+        (fun index => if index = 0 then left.toList else right.toList) := by
+  rw [toList_freeBoolMul]
+  apply List.flatMap_congr
+  intro index member
+  have below : index < 2 := Term.variableWord_mem_lt (interpretation.operation .mul).2 member
+  by_cases zero : index = 0 <;> simp [below, zero]
 
 /-- A nullary interpreted monoid term has no variable occurrences and hence
 evaluates to the native free-monoid unit. -/
@@ -227,23 +163,6 @@ theorem commutativity_not_consequence :
   have listResult := congrArg FreeMonoid.toList result
   simp [x, y] at listResult
 
-/-- Negative control: no interpretation with the canonical identity symbol
-map sends the commutative equations back into the monoid equations. -/
-theorem no_identitySymbol_interpretation_of_commutative_in_monoid :
-    ¬ ∃ interpretation : EquationSystem.Interpretation
-        commutativeEquationSystem equationSystem,
-      interpretation.symbols = Signature.Interpretation.id signature := by
-  rintro ⟨interpretation, symbolsIdentity⟩
-  have commutativityMember : (mul x y, mul y x) ∈
-      commutativeEquationSystem := by
-    change (mul x y, mul y x) ∈
-      equationSystem.equations ++ [(mul x y, mul y x)]
-    exact List.mem_append_right _ (by simp)
-  have translated := interpretation.axiom_consequence _ commutativityMember
-  rw [symbolsIdentity] at translated
-  apply commutativity_not_consequence
-  simpa only [Equation.translate_id] using translated
-
 /-- Strong negative control: the commutative-monoid equations have no
 algebraic interpretation at all in the ordinary monoid equations.  Any binary
 monoid term is an ordered word in its arguments; a nonempty word cannot equal
@@ -283,16 +202,9 @@ theorem commutative_not_interpretableIn_monoid :
   have multiplicationWordNonempty :
       Term.variableWord multiplicationTemplate ≠ [] := by
     intro wordEmpty
+    dsimp only [multiplicationTemplate] at wordEmpty
     have listLaw := congrArg FreeMonoid.toList unitLaw
-    have multiplicationListEmpty :
-        FreeMonoid.toList
-            (Signature.Interpretation.freeBoolMul interpretation.symbols
-              (Signature.Interpretation.freeBoolOne interpretation.symbols)
-              generator) = [] := by
-      rw [Signature.Interpretation.toList_freeBoolMul, wordEmpty]
-      rfl
-    rw [multiplicationListEmpty] at listLaw
-    simp [generator] at listLaw
+    simp [Signature.Interpretation.toList_freeBoolMul_words, wordEmpty, generator] at listLaw
 
   have commutativityMember : (mul x y, mul y x) ∈
       commutativeEquationSystem := by
@@ -313,35 +225,18 @@ theorem commutative_not_interpretableIn_monoid :
       x, y, Term.evaluate, targetModel, commutativityValuation, if_pos, if_neg,
       Nat.one_ne_zero, if_false] using commutativityEquality
 
-  have leftWord :
-      FreeMonoid.toList
-          (Signature.Interpretation.freeBoolMul interpretation.symbols
-            (FreeMonoid.of false) (FreeMonoid.of true)) =
-        (Term.variableWord multiplicationTemplate).flatMap
-          (fun index => if index = 0 then [false] else [true]) := by
-    rw [Signature.Interpretation.toList_freeBoolMul]
-    apply List.flatMap_congr
-    intro index member
-    have below := Term.variableWord_mem_lt multiplicationBounded member
-    simp only [below, dite_true]
-    by_cases zero : index = 0 <;> simp [zero]
-  have rightWord :
-      FreeMonoid.toList
-          (Signature.Interpretation.freeBoolMul interpretation.symbols
-            (FreeMonoid.of true) (FreeMonoid.of false)) =
-        (Term.variableWord multiplicationTemplate).flatMap
-          (fun index => if index = 0 then [true] else [false]) := by
-    rw [Signature.Interpretation.toList_freeBoolMul]
-    apply List.flatMap_congr
-    intro index member
-    have below := Term.variableWord_mem_lt multiplicationBounded member
-    simp only [below, dite_true]
-    by_cases zero : index = 0 <;> simp [zero]
+  have wordLaw := congrArg FreeMonoid.toList commutativityLaw
+  simp only [Signature.Interpretation.toList_freeBoolMul_words, FreeMonoid.toList_of] at wordLaw
+  exact Term.swappedSingletons_ne multiplicationWordNonempty
+    (fun index member => Term.variableWord_mem_lt multiplicationBounded member) wordLaw
 
-  apply Term.swappedSingletons_ne multiplicationWordNonempty
-    (fun index member => Term.variableWord_mem_lt multiplicationBounded member)
-  exact leftWord.symm.trans
-    ((congrArg FreeMonoid.toList commutativityLaw).trans rightWord)
+/-- Negative control: no interpretation with the canonical identity symbol
+map sends the commutative equations back into the monoid equations. -/
+theorem no_identitySymbol_interpretation_of_commutative_in_monoid :
+    ¬ ∃ interpretation : EquationSystem.Interpretation
+        commutativeEquationSystem equationSystem,
+      interpretation.symbols = Signature.Interpretation.id signature :=
+  fun ⟨interpretation, _⟩ => commutative_not_interpretableIn_monoid ⟨interpretation⟩
 
 /-- The commutative extension is strictly above the monoid equations in the
 algebraic-interpretability preorder. -/
@@ -359,5 +254,28 @@ theorem commutativeTheory_semanticallySimulates_monoidTheory :
       (SemanticService.theoryObject commutativeEquationSystem)
       (SemanticService.theoryObject equationSystem) :=
   SemanticService.semanticallySimulates interpretationInCommutative
+
+/-! ## Word observations of contextual execution -/
+
+/-- Orientation changes directed dynamics, but its conversion closure has exactly the word kernel. -/
+theorem variableWord_eq_iff_convertibility (orientation : Orientation equationSystem)
+    (left right : Term signature) :
+    Term.variableWord left = Term.variableWord right ↔
+      Relation.EqvGen (ContextualStep orientation) left right :=
+  consequence_iff_variableWord_eq.symm.trans
+    (consequence_iff_convertibility equationSystem orientation left right)
+
+theorem contextualStep_preserves_variableWord {orientation : Orientation equationSystem}
+    {left right : Term signature} (step : ContextualStep orientation left right) :
+    Term.variableWord left = Term.variableWord right :=
+  (variableWord_eq_iff_convertibility orientation left right).mpr (Relation.EqvGen.rel _ _ step)
+
+theorem contextualRun_preserves_variableWord {orientation : Orientation equationSystem}
+    {left right : Term signature}
+    (execution : Relation.ReflTransGen (ContextualStep orientation) left right) :
+    Term.variableWord left = Term.variableWord right := by
+  induction execution with
+  | refl => rfl
+  | tail _ step agrees => exact agrees.trans (contextualStep_preserves_variableWord step)
 
 end Mettapedia.UniversalAlgebra.Monoid

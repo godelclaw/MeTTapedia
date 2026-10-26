@@ -102,11 +102,14 @@ theorem decideFrom_persists {formula : Formula 0} {term : Pattern} {rounds more 
   exact decided
 
 /-- **A closed canonical region adds nothing in the next round.** -/
-theorem growCanonical_still_of_closed {canon : Pattern → Pattern} {domain : Pattern → Bool} {term : Pattern}
+theorem growCanonical_still_of_closed {canon : Pattern → Pattern} {domain : Pattern → Bool}
+    {presentations : Pattern → List Pattern} {term : Pattern}
     {rounds : ℕ}
-    (closed : canonicalRegion relEnv language fuel canon domain (growCanonical relEnv language fuel canon term rounds) =
+    (closed : canonicalRegion relEnv language fuel canon domain presentations
+      (growCanonical relEnv language fuel canon presentations term rounds) =
       true) :
-    growCanonical relEnv language fuel canon term (rounds + 1) = growCanonical relEnv language fuel canon term rounds := by
+    growCanonical relEnv language fuel canon presentations term (rounds + 1) =
+      growCanonical relEnv language fuel canon presentations term rounds := by
   obtain ⟨-, all⟩ := canonicalRegion_parts closed
   rw [growCanonical_eq_iterate, growCanonical_eq_iterate, iterate_succ]
   rw [growCanonical_eq_iterate] at all
@@ -117,17 +120,19 @@ theorem growCanonical_still_of_closed {canon : Pattern → Pattern} {domain : Pa
   by_cases isState : isStateBool state = true
   · rw [nextCanonical, if_pos isState] at listed
     obtain ⟨entry, entryMember, rfl⟩ := List.mem_map.mp listed
-    exact (listing isState).2 entry entryMember
+    exact (listing isState).2.2 entry entryMember
   · rw [nextCanonical, if_neg isState] at listed
     cases listed
 
 /-- **The verdict of a closed canonical region stays.** -/
-theorem decideCanonical_persists {canon : Pattern → Pattern} {domain : Pattern → Bool} {formula : Formula 0}
+theorem decideCanonical_persists {canon : Pattern → Pattern} {domain : Pattern → Bool}
+    {presentations : Pattern → List Pattern} {formula : Formula 0}
     {term : Pattern} {rounds more : ℕ} {verdict : Bool}
-    (decided : decideCanonical relEnv language fuel canon domain formula term rounds = some verdict)
-    (le : rounds ≤ more) : decideCanonical relEnv language fuel canon domain formula term more = some verdict := by
-  have closed : canonicalRegion relEnv language fuel canon domain
-      (growCanonical relEnv language fuel canon term rounds) = true := by
+    (decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds = some verdict)
+    (le : rounds ≤ more) : decideCanonical relEnv language fuel canon domain presentations formula term more =
+      some verdict := by
+  have closed : canonicalRegion relEnv language fuel canon domain presentations
+      (growCanonical relEnv language fuel canon presentations term rounds) = true := by
     unfold decideCanonical at decided
     split at decided
     · assumption
@@ -389,7 +394,8 @@ theorem ask_settled_of_closed {forms : Option (CanonicalForms relEnv language fu
 behavioural formula from then on. -/
 theorem ask_settled_of_canonical (forms : CanonicalForms relEnv language fuel) {hint : Option CertificateCandidate}
     {rounds : ℕ} {verdict : Bool} (behavioural : formula.behaviouralIn forms.labels = true)
-    (decided : decideCanonical relEnv language fuel forms.canon forms.domain formula term rounds = some verdict)
+    (decided : decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds =
+      some verdict)
     {more : ℕ} (le : rounds ≤ more) :
     ∃ answer, ask relEnv signature language fuel formula term hint more (some forms) = .proved answer ∨
       ask relEnv signature language fuel formula term hint more (some forms) = .refuted answer := by

@@ -5,8 +5,8 @@ import Mettapedia.MachineLearning.NeuralNetworks.EquivariantLinearKernel
 
 A permutation of a product type is induced by one permutation of the rows and
 one permutation of the columns exactly when it preserves and reflects both
-same-row and same-column incidence.  The proof is constructive once one row
-and one column are supplied: read the two component maps at those anchors,
+same-row and same-column incidence.  Given one row and one column, read
+the two component maps at those anchors,
 then recover bijectivity from the original grid permutation.
 
 This is the finite-coordinate combinatorial core needed to distinguish neuron
@@ -66,69 +66,18 @@ theorem preservesGridRelations_implies_isProductPermutation
     (preservesColumns :
       EquivPreservesRelation permutation SameSecond) :
     IsProductPermutation permutation := by
-  let rowMap : Row → Row :=
-    fun row => (permutation (row, columnAnchor)).1
-  let columnMap : Column → Column :=
-    fun column => (permutation (rowAnchor, column)).2
-  have firstComponent (row : Row) (column : Column) :
-      (permutation (row, column)).1 = rowMap row := by
-    exact
-      (preservesRows (row, column) (row, columnAnchor)).2 rfl
-  have secondComponent (row : Row) (column : Column) :
-      (permutation (row, column)).2 = columnMap column := by
-    exact
-      (preservesColumns (row, column) (rowAnchor, column)).2 rfl
-  have rowInjective : Function.Injective rowMap := by
-    intro left right firstEqual
-    have secondEqual :
-        (permutation (left, columnAnchor)).2 =
-          (permutation (right, columnAnchor)).2 :=
-      (preservesColumns
-        (left, columnAnchor) (right, columnAnchor)).2 rfl
-    have imageEqual :
-        permutation (left, columnAnchor) =
-          permutation (right, columnAnchor) :=
-      Prod.ext firstEqual secondEqual
-    exact congrArg Prod.fst (permutation.injective imageEqual)
-  have rowSurjective : Function.Surjective rowMap := by
-    intro target
-    let preimage := permutation.symm (target, columnAnchor)
-    refine ⟨preimage.1, ?_⟩
-    calc
-      rowMap preimage.1 =
-          (permutation (preimage.1, preimage.2)).1 :=
-        (firstComponent preimage.1 preimage.2).symm
-      _ = target := by simp [preimage]
-  have columnInjective : Function.Injective columnMap := by
-    intro left right secondEqual
-    have firstEqual :
-        (permutation (rowAnchor, left)).1 =
-          (permutation (rowAnchor, right)).1 :=
-      (preservesRows (rowAnchor, left) (rowAnchor, right)).2 rfl
-    have imageEqual :
-        permutation (rowAnchor, left) =
-          permutation (rowAnchor, right) :=
-      Prod.ext firstEqual secondEqual
-    exact congrArg Prod.snd (permutation.injective imageEqual)
-  have columnSurjective : Function.Surjective columnMap := by
-    intro target
-    let preimage := permutation.symm (rowAnchor, target)
-    refine ⟨preimage.2, ?_⟩
-    calc
-      columnMap preimage.2 =
-          (permutation (preimage.1, preimage.2)).2 :=
-        (secondComponent preimage.1 preimage.2).symm
-      _ = target := by simp [preimage]
-  let rowPermutation : Equiv.Perm Row :=
-    Equiv.ofBijective rowMap ⟨rowInjective, rowSurjective⟩
-  let columnPermutation : Equiv.Perm Column :=
-    Equiv.ofBijective columnMap
-      ⟨columnInjective, columnSurjective⟩
-  refine ⟨rowPermutation, columnPermutation, ?_⟩
-  intro row column
-  apply Prod.ext
-  · exact firstComponent row column
-  · exact secondComponent row column
+  let : Nonempty Row := ⟨rowAnchor⟩
+  let : Nonempty Column := ⟨columnAnchor⟩
+  let rowMap := fun row => (permutation (row, columnAnchor)).1
+  let columnMap := fun column => (permutation (rowAnchor, column)).2
+  have factor : (permutation : Row × Column → Row × Column) = Prod.map rowMap columnMap := by
+    funext pair
+    exact Prod.ext ((preservesRows pair (pair.1, columnAnchor)).2 rfl)
+      ((preservesColumns pair (rowAnchor, pair.2)).2 rfl)
+  have both : Function.Bijective rowMap ∧ Function.Bijective columnMap :=
+    Prod.map_bijective.mp (factor ▸ permutation.bijective)
+  exact ⟨Equiv.ofBijective rowMap both.1, Equiv.ofBijective columnMap both.2,
+    fun row column => congrFun factor (row, column)⟩
 
 /-- Independent row and column permutations preserve both grid relations. -/
 theorem isProductPermutation_implies_preservesGridRelations

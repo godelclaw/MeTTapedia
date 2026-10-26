@@ -94,6 +94,40 @@ theorem eq_bag_of_collectionParameter (laws : BagTheory language bag unit)
     and_true] at shape
   exact ⟨rfl, shape.2.1.symm, shape.2.2.symm⟩
 
+/-- A collection occurrence in a type cannot be collection-free. -/
+private theorem collectionTypeOccurs_not_collectionFree
+    {kind : CollType} {elementType type : TypeExpr}
+    (occurs : WellSorted.CollectionTypeOccurs kind elementType type) :
+    collectionFree type = false := by
+  induction occurs with
+  | here => rfl
+  | domain occurs ih => simp [collectionFree,ih]
+  | codomain occurs ih => simp [collectionFree,ih]
+  | binder occurs ih => exact ih
+  | element occurs ih => rfl
+
+/-- The profile's actual parameter inventory admits only its own bag kind.
+This uses declared type occurrences, independently of bare representation. -/
+theorem collectionTyped (laws : BagTheory language bag unit) {rule : GrammarRule}
+    {kind : CollType} {elements : List Pattern} (authored : rule ∈ language.terms)
+    (typed : WellSorted.CollectionTypedAt language rule kind elements) :
+    rule = bag ∧ kind = .hashBag := by
+  obtain ⟨parameter,member,elementType,occurs,-⟩ := typed
+  have same : rule = bag := by
+    by_contra different
+    have free := laws.otherParameters rule authored different parameter member
+    rw [collectionTypeOccurs_not_collectionFree occurs] at free
+    cases free
+  subst rule
+  obtain ⟨bagName,shape⟩ := laws.bagShape
+  rw [shape] at member
+  obtain rfl := List.mem_singleton.mp member
+  change WellSorted.CollectionTypeOccurs kind elementType
+    (.collection .hashBag (.base bag.category)) at occurs
+  cases occurs with
+  | here => exact ⟨rfl,rfl⟩
+  | element inner => cases inner
+
 /-- Every collection carrier of the presentation is the bag. -/
 theorem carrier (laws : BagTheory language bag unit) {rule : GrammarRule}
     {kind : CollType} (declared : CollectionCarrierRule language rule kind) :
@@ -480,10 +514,10 @@ theorem normalForm_derived {language : LanguageDef} {bag : GrammarRule}
   | bagPerm _ _ permutation =>
       rw [normalForm_bag, normalForm_bag]
       exact normalizeBag_perm unit (permutation.map _)
-  | setPerm declaration _ _ =>
-      exact absurd (laws.carrier declaration).2 (by decide)
-  | setDedup declaration _ =>
-      exact absurd (laws.carrier declaration).2 (by decide)
+  | setPerm declaration typed _ =>
+      exact absurd (laws.collectionTyped declaration typed).2 (by decide)
+  | setDedup declaration typed =>
+      exact absurd (laws.collectionTyped declaration typed).2 (by decide)
   | @flatten rule kind algebra before inner after algebraRule _ _ =>
       obtain ⟨-, rfl, name, rfl, -⟩ := laws.algebraRule algebraRule
       rw [normalForm_bag, normalForm_bag]
@@ -561,3 +595,5 @@ theorem normalForm_eq_of_equationEquiv {language : LanguageDef} {bag : GrammarRu
   · exact normalForm_derived laws derived
 
 end Mettapedia.GSLT.LanguageDef.BagNormalForm
+
+#print axioms Mettapedia.GSLT.LanguageDef.BagNormalForm.BagTheory.collectionTyped

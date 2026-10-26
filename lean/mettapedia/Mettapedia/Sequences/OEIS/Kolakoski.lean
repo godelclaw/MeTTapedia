@@ -1,30 +1,29 @@
 import Mathlib.Tactic
 import Mettapedia.Sequences.OEIS.Basic
+import Mettapedia.Coalgebra.GrowingPrefixTower
 
 /-!
 # The Kolakoski sequence
 
-This module constructs the sequence whose alternating runs have lengths equal
-to the sequence itself.  The sequence was discussed by Rufus Oldenburger in
-1939 and is named after William George Kolakoski; the OEIS entry A000002 was
-contributed by N. J. A. Sloane.
+The binary run-length law has one solution. Its independently defined finite
+generator realizes every prefix; retained cursors justify the packed program.
+Discussed by Rufus Oldenburger (1939), named after William George Kolakoski;
+OEIS A000002 was contributed by N. J. A. Sloane.
 -/
 
 namespace Mettapedia.Sequences.OEIS.Kolakoski
 
+open Mettapedia.Coalgebra.CoherentPrefixTower
+
 /-- The symbol in the zero-based run numbered `run`: one, two, one, two, ... -/
 def runSymbol (run : Nat) : Nat := if run % 2 = 0 then 1 else 2
 
-@[simp] theorem runSymbol_zero : runSymbol 0 = 1 := by
-  simp [runSymbol]
-
-@[simp] theorem runSymbol_one : runSymbol 1 = 2 := by
-  simp [runSymbol]
+@[simp] theorem runSymbol_zero : runSymbol 0 = 1 := by decide
+@[simp] theorem runSymbol_one : runSymbol 1 = 2 := by decide
 
 theorem runSymbol_binary (run : Nat) :
     runSymbol run = 1 ∨ runSymbol run = 2 := by
-  unfold runSymbol
-  split <;> simp_all
+  unfold runSymbol; split <;> simp_all
 
 /-- A finite expansion into alternating runs with lengths supplied by `a`. -/
 def runPrefix (a : Nat → Nat) (runs : Nat) : List Nat :=
@@ -48,33 +47,25 @@ structure BuildState (readIndex : Nat) where
 /-- Append the run described at the current readable position. -/
 def BuildState.advance {readIndex : Nat}
     (state : BuildState readIndex) : BuildState (readIndex + 1) := by
-  let count := state.word.get ⟨readIndex, state.readable⟩
-  let nextWord := state.word ++ List.replicate count (runSymbol readIndex)
-  have countBinary : count = 1 ∨ count = 2 :=
-    state.binary count (List.get_mem state.word ⟨readIndex, state.readable⟩)
-  have countPositive : 1 ≤ count := by omega
-  refine
-    { word := nextWord
-      readable := ?_
-      binary := ?_ }
-  · simp only [nextWord, List.length_append, List.length_replicate]
-    have readable := state.readable
+  let count := state.word[readIndex]'state.readable
+  have binary := state.binary count (List.getElem_mem state.readable)
+  refine ⟨state.word ++ List.replicate count (runSymbol readIndex), ?_, ?_⟩
+  · simp only [List.length_append, List.length_replicate]
+    have bound := state.readable
     omega
-  · intro value membership
-    simp only [nextWord, List.mem_append, List.mem_replicate] at membership
-    rcases membership with oldMembership | ⟨_, rfl⟩
-    · exact state.binary value oldMembership
-    · exact runSymbol_binary readIndex
+  · intro v member
+    rcases List.mem_append.mp member with old | added
+    · exact state.binary v old
+    · exact (List.eq_of_mem_replicate added) ▸ runSymbol_binary readIndex
 
 /-- Successive finite prefixes, beginning with the first two complete runs. -/
 def build : (steps : Nat) → BuildState (steps + 2)
-  | 0 =>
-      { word := [1, 2, 2]
-        readable := by decide
-        binary := by simp }
+  | 0 => ⟨[1, 2, 2], by decide, by simp⟩
   | steps + 1 => (build steps).advance
 
 def word (steps : Nat) : List Nat := (build steps).word
+
+theorem word_readable (steps : Nat) : steps + 2 < (word steps).length := (build steps).readable
 
 /-- The canonical sequence read at the stage where its position becomes active. -/
 def value : Nat → Nat
@@ -88,50 +79,29 @@ def value : Nat → Nat
 
 theorem word_succ (steps : Nat) :
     word (steps + 1) = word steps ++
-      List.replicate (value (steps + 2)) (runSymbol (steps + 2)) := by
-  rfl
+      List.replicate (value (steps + 2)) (runSymbol (steps + 2)) := rfl
 
-theorem word_prefix_succ (steps : Nat) : word steps <+: word (steps + 1) := by
-  rw [word_succ]
-  exact List.prefix_append _ _
+theorem word_prefix_succ (steps : Nat) : word steps <+: word (steps + 1) :=
+  List.prefix_append _ _
 
 theorem word_prefix_of_le {first last : Nat} (order : first ≤ last) :
-    word first <+: word last := by
-  induction last with
-  | zero =>
-      have : first = 0 := by omega
-      subst first
-      simp
-  | succ last inductionHypothesis =>
-      by_cases atEnd : first = last + 1
-      · subst first
-        simp
-      · exact (inductionHypothesis (by omega)).trans (word_prefix_succ last)
+    word first <+: word last := prefix_of_le word word_prefix_succ order
 
 theorem word_get_eq_value (steps index : Nat)
     (inBounds : index < (word steps).length) :
     (word steps)[index] = value index := by
-  cases index with
-  | zero =>
-      have prefixProof := word_prefix_of_le (Nat.zero_le steps)
-      have firstValue := prefixProof.getElem (by decide : 0 < (word 0).length)
-      simpa [word, build, value] using firstValue.symm
-  | succ index =>
-      cases index with
-      | zero =>
-          have prefixProof := word_prefix_of_le (Nat.zero_le steps)
-          have secondValue := prefixProof.getElem (by decide : 1 < (word 0).length)
-          simpa [word, build, value] using secondValue.symm
-      | succ index =>
-          let sourceStep := index
-          by_cases sourceBefore : sourceStep ≤ steps
-          · have prefixProof := word_prefix_of_le sourceBefore
-            have equality := prefixProof.getElem (build sourceStep).readable
-            simpa [sourceStep, word, value] using equality.symm
-          · have stepsBefore : steps < sourceStep := by omega
-            have prefixProof := word_prefix_of_le (Nat.le_of_lt stepsBefore)
-            have equality := prefixProof.getElem inBounds
-            simpa [sourceStep, word, value] using equality
+  rcases index with _ | (_ | index)
+  · exact lookup_eq word word_prefix_succ inBounds (by decide : 0 < (word 0).length)
+  · exact lookup_eq word word_prefix_succ inBounds (by decide : 1 < (word 0).length)
+  · exact lookup_eq word word_prefix_succ inBounds (build index).readable
+
+/-- Finite observations are read directly from the supplied generator words. -/
+def generatedTower : Tower Nat :=
+  Tower.ofGrowingLists word word_prefix_succ (fun n => by have h := word_readable n; omega)
+
+theorem generatedTower_toStream : generatedTower.toStream = value := by
+  funext n
+  exact word_get_eq_value (n + 1) n (by have h := word_readable (n + 1); omega)
 
 theorem runPrefix_succ (a : Nat → Nat) (runs : Nat) :
     runPrefix a (runs + 1) = runPrefix a runs ++
@@ -147,43 +117,63 @@ theorem runPrefix_value_eq_word (steps : Nat) :
       rw [runPrefix_succ, inductionHypothesis, word_succ]
 
 theorem value_binary (index : Nat) : value index = 1 ∨ value index = 2 := by
-  cases index with
-  | zero => simp
-  | succ index =>
-      cases index with
-      | zero => simp
-      | succ index =>
-          exact (build index).binary _
-            (List.get_mem (build index).word ⟨index + 2, (build index).readable⟩)
+  rcases index with _ | (_ | index)
+  · simp
+  · simp
+  · exact (build index).binary _ (List.getElem_mem (build index).readable)
 
 /-- The constructed sequence is extensionally its own alternating run-length encoding. -/
 theorem value_isRunLengthFixedPoint : IsRunLengthFixedPoint value := by
-  constructor
-  · exact value_binary
-  · intro runs index inBounds
-    by_cases small : runs < 2
-    · rcases (show runs = 0 ∨ runs = 1 by omega) with rfl | rfl
-      · simp [runPrefix] at inBounds
-      · have indexZero : index = 0 := by
-          simp [runPrefix, value, runSymbol] at inBounds
-          omega
-        subst index
-        rfl
-    · let steps := runs - 2
-      have runsShape : runs = steps + 2 := by
-        dsimp [steps]
-        omega
-      have wordBounds : index < (word steps).length := by
-        rw [← runPrefix_value_eq_word]
-        simpa [runsShape] using inBounds
-      have wordValue := word_get_eq_value steps index wordBounds
-      simpa only [runsShape, runPrefix_value_eq_word] using wordValue
+  refine ⟨value_binary, ?_⟩
+  intro runs index bound
+  rcases runs with _ | (_ | runs)
+  · simp [runPrefix] at bound
+  · have zero : index = 0 := by simpa [runPrefix, value, runSymbol] using bound
+    subst index; rfl
+  · simpa only [runPrefix_value_eq_word] using
+      word_get_eq_value runs index (by simpa only [runPrefix_value_eq_word] using bound)
+
+/-- The independent fixed-point laws force the two seed run lengths. -/
+theorem fixedPoint_initial {a : Nat → Nat} (h : IsRunLengthFixedPoint a) :
+    a 0 = 1 ∧ a 1 = 2 := by
+  have positive (n : Nat) : 0 < a n := by rcases h.1 n with one | two <;> omega
+  have first : a 0 = 1 := by
+    simpa [runPrefix, runSymbol] using (h.2 1 0 (by simpa [runPrefix] using positive 0)).symm
+  refine ⟨first, ?_⟩
+  have read := h.2 2 1 (by simpa [runPrefix, List.range_succ, first] using positive 1)
+  simpa [runPrefix, List.range_succ, first, runSymbol] using read.symm
+
+/-- Every fixed point forces each finite word of the independently defined generator. -/
+theorem fixedPoint_runPrefix {a : Nat → Nat} (h : IsRunLengthFixedPoint a) (steps : Nat) :
+    runPrefix a (steps + 2) = word steps := by
+  induction steps with
+  | zero =>
+      simp [runPrefix, List.range_succ, word, build, (fixedPoint_initial h).1,
+        (fixedPoint_initial h).2, runSymbol]
+  | succ steps ih =>
+      have next := h.2 (steps + 2) (steps + 2) (by simpa only [ih] using word_readable steps)
+      simp only [ih] at next
+      have value_eq := next.symm.trans (word_get_eq_value steps (steps + 2) (build steps).readable)
+      rw [show steps + 1 + 2 = (steps + 2) + 1 by omega, runPrefix_succ, ih, value_eq, word_succ]
+
+/-- The run-length specification has exactly the constructed sequence as its solution. -/
+theorem fixedPoint_iff_eq_value (a : Nat → Nat) : IsRunLengthFixedPoint a ↔ a = value := by
+  refine ⟨fun h => ?_, fun same => same ▸ value_isRunLengthFixedPoint⟩
+  funext n
+  have bound : n < (word n).length := by have readable := word_readable n; omega
+  have read := h.2 (n + 2) n (by simpa only [fixedPoint_runPrefix h n] using bound)
+  simpa only [fixedPoint_runPrefix h n, word_get_eq_value] using read.symm
+
+/-- Every generator word agrees with the unique solution on its entire prefix. -/
+theorem fixedPoint_word {a : Nat → Nat} (h : IsRunLengthFixedPoint a) (steps : Nat) :
+    List.ofFn (fun i : Fin (word steps).length => a i.val) = word steps := by
+  rw [(fixedPoint_iff_eq_value a).mp h, ← generatedTower_toStream]
+  exact Tower.ofGrowingLists_word _ _ _ steps
 
 /-- Number of symbols preceding the zero-based run `run`. -/
 def runStart (run : Nat) : Nat := (runPrefix value run).length
 
-@[simp] theorem runStart_zero : runStart 0 = 0 := by
-  simp [runStart, runPrefix]
+@[simp] theorem runStart_zero : runStart 0 = 0 := rfl
 
 theorem runStart_succ (run : Nat) :
     runStart (run + 1) = runStart run + value run := by
@@ -192,36 +182,18 @@ theorem runStart_succ (run : Nat) :
 theorem runStart_lower_bound (run : Nat) : run ≤ runStart run := by
   induction run with
   | zero => simp
-  | succ run inductionHypothesis =>
-      rw [show run + 1 = run + 1 by rfl, runStart_succ]
-      have positive : 1 ≤ value run := by
-        rcases value_binary run with result | result <;> omega
-      omega
+  | succ run ih =>
+      rw [runStart_succ]
+      rcases value_binary run with one | two <;> omega
 
 /-- Every position inside a declared run has that run's alternating symbol. -/
 theorem value_on_run (run offset : Nat) (inside : offset < value run) :
     value (runStart run + offset) = runSymbol run := by
-  have inPrefix : runStart run + offset < (runPrefix value (run + 1)).length := by
-    rw [runPrefix_succ]
-    simp only [List.length_append, List.length_replicate]
-    simp only [runStart]
-    omega
-  have fixedPoint := value_isRunLengthFixedPoint.2 (run + 1)
-    (runStart run + offset) inPrefix
-  have segmentValue :
-      (runPrefix value (run + 1))[runStart run + offset] = runSymbol run := by
-    let earlier := runPrefix value run
-    let block := List.replicate (value run) (runSymbol run)
-    have expansion : runPrefix value (run + 1) = earlier ++ block := by
-      simpa [earlier, block] using runPrefix_succ value run
-    have appendBound : earlier.length + offset < (earlier ++ block).length := by
-      simp only [List.length_append, block, List.length_replicate]
-      omega
-    have appendValue :
-        (earlier ++ block)[earlier.length + offset]'appendBound = runSymbol run := by
-      simp [block]
-    simpa only [expansion, runStart, earlier] using appendValue
-  exact fixedPoint.symm.trans segmentValue
+  have bound : runStart run + offset < (runPrefix value (run + 1)).length := by
+    simpa only [runPrefix_succ, List.length_append, List.length_replicate, runStart] using
+      Nat.add_lt_add_left inside (runStart run)
+  have fixed := value_isRunLengthFixedPoint.2 (run + 1) (runStart run + offset) bound
+  simpa [runPrefix_succ, runStart] using fixed.symm
 
 /-- The run and within-run offset of a positive sequence position. -/
 structure RunCursor (position : Nat) where
@@ -234,36 +206,26 @@ structure RunCursor (position : Nat) where
 /-- Advance one sequence position, either within a run or to the next run. -/
 def RunCursor.advance {position : Nat}
     (cursor : RunCursor position) : RunCursor (position + 1) := by
-  have positionEquation := cursor.positionEquation
+  have position_eq := cursor.positionEquation
+  have bound := cursor.offsetBound
   if continues : cursor.offset + 1 < value cursor.run then
-    exact
-      { run := cursor.run
-        offset := cursor.offset + 1
-        runPositive := cursor.runPositive
-        offsetBound := continues
-        positionEquation := by omega }
+    exact ⟨cursor.run, cursor.offset + 1, cursor.runPositive, continues, by omega⟩
   else
-    have offsetBound := cursor.offsetBound
-    have filled : cursor.offset + 1 = value cursor.run := by
-      omega
-    exact
-      { run := cursor.run + 1
-        offset := 0
-        runPositive := by omega
-        offsetBound := by
-          rcases value_binary (cursor.run + 1) with result | result <;> omega
-        positionEquation := by
-          rw [runStart_succ]
-          omega }
+    refine ⟨cursor.run + 1, 0, by omega, ?_, ?_⟩
+    · rcases value_binary (cursor.run + 1) with one | two <;> omega
+    · rw [runStart_succ]; omega
+
+@[simp] theorem RunCursor.advance_run {position : Nat} (c : RunCursor position) :
+    c.advance.run = if c.offset + 1 < value c.run then c.run else c.run + 1 := by
+  unfold advance; split <;> rfl
+
+@[simp] theorem RunCursor.advance_offset {position : Nat} (c : RunCursor position) :
+    c.advance.offset = if c.offset + 1 < value c.run then c.offset + 1 else 0 := by
+  unfold advance; split <;> rfl
 
 /-- Cursor for the next symbol after zero-based output position `step`. -/
 def cursor : (step : Nat) → RunCursor (step + 1)
-  | 0 =>
-      { run := 1
-        offset := 0
-        runPositive := by omega
-        offsetBound := by simp [value_one]
-        positionEquation := by simp [runStart, runPrefix, value, runSymbol] }
+  | 0 => ⟨1, 0, by decide, by decide, by decide⟩
   | step + 1 => (cursor step).advance
 
 theorem cursor_run_le_position (step : Nat) :
@@ -274,25 +236,19 @@ theorem cursor_run_le_position (step : Nat) :
 
 theorem advance_run_le_succ {position : Nat} (current : RunCursor position) :
     current.advance.run ≤ current.run + 1 := by
-  unfold RunCursor.advance
-  split <;> simp
+  rw [RunCursor.advance_run]
+  split <;> omega
 
 theorem cursor_run_le_current {step : Nat} (positive : 1 ≤ step) :
     (cursor step).run ≤ step := by
-  induction step with
-  | zero => omega
-  | succ step inductionHypothesis =>
-      by_cases stepZero : step = 0
-      · subst step
-        norm_num [cursor, RunCursor.advance, value_one]
-      · have previous := inductionHypothesis (by omega)
-        have advance := advance_run_le_succ (cursor step)
-        simpa [cursor] using le_trans advance (by omega : (cursor step).run + 1 ≤ step + 1)
+  rcases step with _ | step
+  · omega
+  · induction step with
+    | zero => decide
+    | succ step ih => exact (advance_run_le_succ (cursor (step + 1))).trans (by omega)
 
-theorem value_at_cursor (step : Nat) :
-    value (step + 1) = runSymbol (cursor step).run := by
-  have positionValue := congrArg value (cursor step).positionEquation
-  exact positionValue.trans (value_on_run _ _ (cursor step).offsetBound)
+theorem value_at_cursor (step : Nat) : value (step + 1) = runSymbol (cursor step).run :=
+  (congrArg value (cursor step).positionEquation).trans (value_on_run _ _ (cursor step).offsetBound)
 
 /-- Zero-based bit representation of the binary sequence. -/
 def bit (index : Nat) : Nat := value index - 1
@@ -309,8 +265,7 @@ def boundaryBit (step : Nat) : Nat :=
 
 theorem boundaryBit_binary (step : Nat) :
     boundaryBit step = 0 ∨ boundaryBit step = 1 := by
-  unfold boundaryBit
-  split <;> simp
+  unfold boundaryBit; split <;> simp
 
 /-- Packed cursor used by the reported list-state program. -/
 def packedCursor (step : Nat) : Nat :=
@@ -323,19 +278,16 @@ theorem packedCursor_div_two (step : Nat) :
 
 theorem runSymbol_eq_mod_add_one (run : Nat) :
     runSymbol run = run % 2 + 1 := by
-  have remainderBound := Nat.mod_lt run (by omega : 0 < 2)
   unfold runSymbol
   split <;> omega
 
 theorem bit_on_run (run offset : Nat) (inside : offset < value run) :
     bit (runStart run + offset) = run % 2 := by
-  rw [bit, value_on_run run offset inside, runSymbol_eq_mod_add_one]
-  omega
+  simp [bit, value_on_run run offset inside, runSymbol_eq_mod_add_one]
 
 theorem bit_at_cursor (step : Nat) :
     bit (step + 1) = (cursor step).run % 2 := by
-  rw [bit, value_at_cursor, runSymbol_eq_mod_add_one]
-  omega
+  simp [bit, value_at_cursor, runSymbol_eq_mod_add_one]
 
 /-- The packed parity bit advances the alternating run symbol exactly. -/
 theorem bit_succ (step : Nat) :
@@ -343,44 +295,11 @@ theorem bit_succ (step : Nat) :
   cases step with
   | zero => norm_num [boundaryBit, cursor, bit, value]
   | succ step =>
-      let current := cursor (step + 1)
-      have runPositive := current.runPositive
-      have positionEquation := current.positionEquation
-      have nextBit : bit (step + 1 + 1) = current.run % 2 := by
-        simpa [current, add_assoc] using bit_at_cursor (step + 1)
-      by_cases atBoundary : current.offset = 0
-      · have predecessorShape : current.run - 1 + 1 = current.run :=
-          Nat.sub_add_cancel runPositive
-        have predecessorPositive : 1 ≤ value (current.run - 1) := by
-          rcases value_binary (current.run - 1) with result | result <;> omega
-        have currentIndex : step + 1 =
-            runStart (current.run - 1) + (value (current.run - 1) - 1) := by
-          rw [← predecessorShape, runStart_succ] at positionEquation
-          omega
-        have withinPredecessor :
-            value (current.run - 1) - 1 < value (current.run - 1) := by
-          omega
-        have currentBit : bit (step + 1) = (current.run - 1) % 2 := by
-          have indexEquality := congrArg bit currentIndex
-          exact indexEquality.trans
-            (bit_on_run _ _ withinPredecessor)
-        have predecessorRemainder := Nat.mod_lt (current.run - 1) (by omega : 0 < 2)
-        have currentRemainder := Nat.mod_lt current.run (by omega : 0 < 2)
-        have parityStep : (1 + (current.run - 1) % 2) % 2 = current.run % 2 := by
-          omega
-        simpa [boundaryBit, current, atBoundary, currentBit, nextBit,
-          add_assoc] using parityStep
-      · have offsetPositive : 1 ≤ current.offset := by omega
-        have offsetBound := current.offsetBound
-        have currentIndex : step + 1 =
-            runStart current.run + (current.offset - 1) := by
-          omega
-        have withinCurrent : current.offset - 1 < value current.run := by
-          omega
-        have currentBit : bit (step + 1) = current.run % 2 := by
-          have indexEquality := congrArg bit currentIndex
-          exact indexEquality.trans (bit_on_run _ _ withinCurrent)
-        simp [boundaryBit, current, atBoundary, currentBit, nextBit, add_assoc]
+      rw [bit_at_cursor step, bit_at_cursor (step + 1)]
+      change ((if (cursor step).advance.offset = 0 then 1 else 0) +
+        (cursor step).run % 2) % 2 = (cursor step).advance.run % 2
+      rw [RunCursor.advance_run, RunCursor.advance_offset]
+      split_ifs <;> first | contradiction | omega
 
 /--
 The value selected from the packed history at one machine step.  The initial
@@ -392,64 +311,50 @@ def cursorIncrement (step : Nat) : Nat :=
 
 theorem cursorIncrement_binary (step : Nat) :
     cursorIncrement step = 0 ∨ cursorIncrement step = 1 := by
-  by_cases stepZero : step = 0
-  · simp [cursorIncrement, stepZero]
-  · simp only [cursorIncrement, stepZero, if_false]
-    exact bit_binary (cursor step).run
+  unfold cursorIncrement; split_ifs <;> simp_all [bit_binary]
 
 /-- The packed cursor update is exactly the value selected from its history. -/
 theorem packedCursor_succ (step : Nat) :
-    packedCursor (step + 1) =
-      packedCursor step + cursorIncrement step := by
-  by_cases stepZero : step = 0
-  · subst step
-    decide
-  simp only [cursorIncrement, stepZero, if_false]
+    packedCursor (step + 1) = packedCursor step + cursorIncrement step := by
+  by_cases initial : step = 0
+  · subst step; decide
+  simp only [cursorIncrement, initial, if_false]
   let current := cursor step
-  have runBound : current.run ≤ step := by
-    simpa [current] using cursor_run_le_current (step := step) (by omega)
+  have runBound : current.run ≤ step := cursor_run_le_current (by omega)
   have offsetBound := current.offsetBound
-  have valueBinary := value_binary current.run
-  change
-    2 * ((step + 1) + 1 - current.advance.run) +
-        (if current.advance.offset = 0 then 1 else 0) =
-      2 * (step + 1 - current.run) +
-        (if current.offset = 0 then 1 else 0) +
-        (value current.run - 1)
-  by_cases continues : current.offset + 1 < value current.run
-  · have advanceRun : current.advance.run = current.run := by
-      simp [RunCursor.advance, continues]
-    have advanceOffset : current.advance.offset = current.offset + 1 := by
-      simp [RunCursor.advance, continues]
-    rw [advanceRun, advanceOffset]
-    rcases valueBinary with valueOne | valueTwo
-    · omega
-    · have offsetZero : current.offset = 0 := by omega
-      simp [offsetZero, valueTwo]
-      omega
-  · have advanceRun : current.advance.run = current.run + 1 := by
-      simp [RunCursor.advance, continues]
-    have advanceOffset : current.advance.offset = 0 := by
-      simp [RunCursor.advance, continues]
-    rw [advanceRun, advanceOffset]
-    have filled : current.offset + 1 = value current.run := by omega
-    rcases valueBinary with valueOne | valueTwo
-    · have offsetZero : current.offset = 0 := by omega
-      simp [offsetZero, valueOne]
-    · have offsetOne : current.offset = 1 := by omega
-      simp [offsetOne, valueTwo]
+  have binary := value_binary current.run
+  change 2 * (step + 1 + 1 - current.advance.run) +
+      (if current.advance.offset = 0 then 1 else 0) =
+    2 * (step + 1 - current.run) + (if current.offset = 0 then 1 else 0) + (value current.run - 1)
+  rw [RunCursor.advance_run, RunCursor.advance_offset]
+  split_ifs <;> first | contradiction | omega
 
 /-- The low bit of the packed state is the next sequence bit. -/
 theorem packedCursor_add_bit_mod_two (step : Nat) :
     (packedCursor step + bit step) % 2 = bit (step + 1) := by
-  have transition := bit_succ step
-  rcases boundaryBit_binary step with boundary | boundary <;>
-    simp only [packedCursor, boundary] at transition ⊢ <;> omega
+  simpa [packedCursor, Nat.add_mod, Nat.mul_mod] using bit_succ step
 
-#print axioms value_on_run
-#print axioms value_at_cursor
-#print axioms bit_succ
-#print axioms packedCursor_succ
+theorem first_words : word 0 = [1, 2, 2] ∧ word 1 = [1, 2, 2, 1, 1] ∧
+    word 2 = [1, 2, 2, 1, 1, 2] := by decide
+
+theorem constants_not_fixed :
+    ¬ IsRunLengthFixedPoint (fun _ => 1) ∧ ¬ IsRunLengthFixedPoint (fun _ => 2) := by
+  constructor <;> intro h <;> have forced := fixedPoint_initial h <;> norm_num at forced
+
+/-- Every finite prefix admits a binary continuation violating the global law. -/
+theorem finite_prefix_not_sufficient (depth : Nat) :
+    ∃ a, (∀ n, a n = 1 ∨ a n = 2) ∧ (∀ n, n < depth → a n = value n) ∧
+      ¬ IsRunLengthFixedPoint a := by
+  let a := Function.update value depth (3 - value depth)
+  refine ⟨a, ?_, ?_, ?_⟩
+  · intro n
+    by_cases same : n = depth
+    · subst n; rcases value_binary depth with h | h <;> simp [a, h]
+    · simpa [a, same] using value_binary n
+  · intro n hn; simp [a, ne_of_lt hn]
+  · intro h
+    have at_depth := congrFun ((fixedPoint_iff_eq_value a).mp h) depth
+    rcases value_binary depth with h | h <;> simp [a, h] at at_depth
 
 /-- Source coordinates for OEIS A000002 in the pinned snapshot. -/
 def sourceA000002 : EntrySource where
@@ -464,11 +369,6 @@ def specA000002 : SequenceSpec where
   Domain := fun index => 1 ≤ index
   value := fun index => Int.ofNat (value (index.toNat - 1))
 
-def formalizationA000002 : Formalization where
-  source := sourceA000002
-  spec := specA000002
-  offsetMatches := rfl
-
-#print axioms value_isRunLengthFixedPoint
+def formalizationA000002 : Formalization := ⟨sourceA000002, specA000002, rfl⟩
 
 end Mettapedia.Sequences.OEIS.Kolakoski

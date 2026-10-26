@@ -1,10 +1,10 @@
 import Mathlib
 
 /-!
-# Equivariant finite linear kernels
+# Equivariant finite kernel operators
 
 Neural functionals process weights, gradients, masks, or other arrays whose
-coordinates carry a group action.  A finite linear layer is equivariant
+coordinates carry a group action.  A finite kernel layer is equivariant
 exactly when its kernel coefficients are constant on simultaneous input-output
 orbits.  This file proves both directions over arbitrary finite input types,
 arbitrary output types, arbitrary group actions, and arbitrary semirings.
@@ -56,35 +56,34 @@ def KernelInvariant (G : Type*) [Group G]
 
 variable [Fintype Input] [Semiring R]
 
-/-- The finite linear map represented by a kernel. -/
+/-- The finite kernel operator; coefficients multiply inputs on the left.
+No commutativity of the coefficient semiring is required. -/
 def kernelApply (K : Output → Input → R) (x : Input → R)
     (out : Output) : R :=
   ∑ input, K out input * x input
 
-/-- Evaluation form of equivariance for a finite linear kernel map. -/
+/-- Bijections of input coordinates and arbitrary output-index maps commute with evaluation. -/
+theorem kernelApply_reindex {Input' Output' : Type*} [Fintype Input']
+    (inputEquiv : Input' ≃ Input) (outputMap : Output' → Output)
+    (K : Output → Input → R) (x : Input → R) (out : Output') :
+    kernelApply (fun o i => K (outputMap o) (inputEquiv i)) (x ∘ inputEquiv) out =
+      kernelApply K x (outputMap out) :=
+  Equiv.sum_comp inputEquiv (fun i => K (outputMap out) i * x i)
+
+/-- Evaluation form of equivariance for a finite kernel operator. -/
 def KernelEquivariant (G : Type*) [Group G]
     [MulAction G Input] [MulAction G Output]
     (K : Output → Input → R) : Prop :=
   ∀ (g : G) (x : Input → R) (out : Output),
     kernelApply K (actVector g x) (g • out) = kernelApply K x out
 
-/-- Orbit-shared coefficients make the induced linear map equivariant. -/
+/-- Orbit-shared coefficients make the induced kernel operator equivariant. -/
 theorem kernelInvariant_implies_kernelEquivariant
     {K : Output → Input → R} (hK : KernelInvariant G K) :
     KernelEquivariant G K := by
   intro g x out
-  unfold kernelApply actVector
-  calc
-    (∑ input, K (g • out) input * x (g⁻¹ • input)) =
-        ∑ input, K (g • out) (g • input) * x input := by
-      simpa [MulAction.toPerm_apply] using
-        (Equiv.sum_comp (MulAction.toPerm g)
-          (fun input =>
-            K (g • out) input * x (g⁻¹ • input))).symm
-    _ = ∑ input, K out input * x input := by
-      apply Finset.sum_congr rfl
-      intro input _
-      rw [hK]
+  have reindexed := kernelApply_reindex (MulAction.toPerm g) id K (actVector g x) (g • out)
+  simpa [kernelApply, hK g out, actVector] using reindexed.symm
 
 end Kernels
 
@@ -121,7 +120,7 @@ theorem kernelEquivariant_implies_kernelInvariant
   have h := hK g (basisVector input) out
   simpa using h
 
-/-- The orbit-parameter-sharing characterization of finite linear
+/-- The orbit-parameter-sharing characterization of finite kernel
 equivariance. -/
 theorem kernelInvariant_iff_kernelEquivariant
     (K : Output → Input → R) :

@@ -97,6 +97,21 @@ theorem no_premise_axiom_accepts :
     check signature definitions theorems context hypotheses (.theoremApp 1 [] []) (.term 2) = true :=
   by decide +kernel
 
+/-- A closed conclusion does not make the submitted proof independent of its
+native argument slots. Restricting a witness needs the witness's own check. -/
+theorem closed_conclusion_does_not_license_context_restriction :
+    Preterm.VarsBelow 0 (.term 2) ∧
+      proof? signature definitions theorems [.bound 0, .bound 0] []
+        (.theoremApp 3 [.var 0, .var 1] []) = some (.term 2) ∧
+      proof? signature definitions theorems [] []
+        (.theoremApp 3 [.var 0, .var 1] []) = none := by
+  exact ⟨trivial, by decide +kernel⟩
+
+theorem closed_conclusion_receipt_uses_two_slots :
+    ProofWitness.VarsBelow 2 (.theoremApp 3 [.var 0, .var 1] []) ∧
+      ¬ ProofWitness.VarsBelow 0 (.theoremApp 3 [.var 0, .var 1] []) := by
+  simp [ProofWitness.VarsBelow, Preterm.VarsBelow]
+
 theorem duplicate_required_premise_keeps_two_children :
     check signature definitions theorems context hypotheses
       (.theoremApp 4 [.var 0] [.hyp 0, .hyp 0]) (.var 0) = true := by decide +kernel
@@ -185,4 +200,5 @@ theorem raw_hypothesis_assumptions_require_separate_admission :
     check signature definitions theorems [] [.var 99] (.hyp 0) (.var 99) = true ∧
       infer signature [] (.var 99) = none := by decide +kernel
 
+#print axioms closed_conclusion_does_not_license_context_restriction
 end Mettapedia.Languages.MM0.Kernel.ProofControls

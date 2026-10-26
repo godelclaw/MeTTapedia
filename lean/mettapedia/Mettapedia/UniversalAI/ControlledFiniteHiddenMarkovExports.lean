@@ -11,7 +11,7 @@ HMM seam connecting:
 - action-conditioned latent-state models,
 - observed-only inference,
 - credal WM / PLN-ITV packaging,
-- BayesianAgents environment and planning examples.
+- trace-mass subprobability environments and finite-horizon examples.
 
 Positive example:
 * downstream users can import one file and access the controlled-HMM
@@ -19,8 +19,8 @@ Positive example:
   verified planning example.
 
 Negative example:
-* this export interface does not yet provide a full recursive credal planning
-  theory or HMM Xi consumer semantics.
+* this export interface does not yet provide a normalized conditional HMM planning theory. The recursive
+  envelopes re-select model-specific trace-mass rows at later histories.
 -/
 
 set_option autoImplicit false
@@ -72,8 +72,8 @@ for fixed-action-stream universal prediction bounds. -/
 noncomputable abbrev controlledSolomonoffM₂ {Action : Type uA} {obs : ℕ} :=
   @Mettapedia.UniversalAI.UniversalPrediction.FiniteAlphabet.ControlledSolomonoffBridge.M₂ Action (Fin obs)
 
-/-- Recommended export: next-percept law after a completed trace and pending
-action is exactly the controlled-HMM observation mass. -/
+/-- Recommended export: next-percept trace-mass row after a completed trace and
+pending action, whose total is the past trace probability. -/
 theorem controlledHMM_environmentProb_historyOfCycles_append_act
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
@@ -129,7 +129,7 @@ theorem controlledHMM_qValue_historyOfCycles_one_mem_PLNITV_interval
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (a : Action) (i : ι) :
-    let itv := oneStepQValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
+    let itv := oneStepTraceMassQValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       κ hκ Θ zs a
     itv.lower ≤ qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ∧
       qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ≤ itv.upper := by
@@ -147,7 +147,7 @@ theorem controlledHMM_optimalValue_historyOfCycles_two_mem_PLNITV_interval
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (i : ι) :
-    let itv := oneStepOptimalValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
+    let itv := oneStepTraceMassOptimalValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       κ hκ Θ zs
     itv.lower ≤ optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ∧
       optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ≤ itv.upper := by
@@ -157,25 +157,25 @@ theorem controlledHMM_optimalValue_historyOfCycles_two_mem_PLNITV_interval
       κ hκ Θ γ zs i
 
 /-- Recommended export: a family member's finite-horizon optimal value from a
-completed history lies inside the recursive credal decision envelope. -/
-theorem controlledHMM_optimalValue_historyOfCycles_mem_recursiveEnvelope
+completed history lies inside the recursive row-reselecting trace-mass decision envelope. -/
+theorem controlledHMM_optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
     [Fintype ι] [Nonempty ι] [Fintype Action] [PerceptReward (Fin obs)]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (n : ℕ) (i : ι) :
-    lowerRecursiveOptimalValueEnvelope Θ γ zs n ≤
+    lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n ≤
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n ∧
       optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n ≤
-        upperRecursiveOptimalValueEnvelope Θ γ zs n := by
+        upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n := by
   simpa using
-    optimalValue_historyOfCycles_mem_recursiveEnvelope
+    optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
       (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       (Θ := Θ) (γ := γ) n zs i
 
 /- Recommended export: narrowing a controlled-HMM family via reindexing shrinks
 the recursive credal decision interval. -/
-theorem controlledHMM_recursiveOptimalValueEnvelope_mono_reindex
+theorem controlledHMM_recursiveTraceMassOptimalValueEnvelope_mono_reindex
     [Fintype ι] [Nonempty ι] [Fintype Action] [PerceptReward (Fin obs)]
     {κ : Type*} [Fintype κ] [Nonempty κ]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
@@ -183,19 +183,19 @@ theorem controlledHMM_recursiveOptimalValueEnvelope_mono_reindex
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (n : ℕ) :
-    lowerRecursiveOptimalValueEnvelope Θ γ zs n ≤
-        lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ∧
-      upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ≤
-        upperRecursiveOptimalValueEnvelope Θ γ zs n := by
+    lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n ≤
+        lowerRecursiveTraceMassOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ∧
+      upperRecursiveTraceMassOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ≤
+        upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n := by
   simpa using
-    recursiveOptimalValueEnvelope_mono_reindex
+    recursiveTraceMassOptimalValueEnvelope_mono_reindex
       (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       (Θ := Θ) (f := f) (γ := γ) (zs := zs) (n := n)
 
 /- Recommended export: singleton controlled-HMM families have no credal slack;
 the recursive optimal-value envelope collapses to the model's actual
 `optimalValue`. -/
-theorem controlledHMM_recursiveOptimalValueEnvelope_eq_model_of_subsingleton
+theorem controlledHMM_recursiveTraceMassOptimalValueEnvelope_eq_model_of_subsingleton
     [Fintype ι] [Nonempty ι] [Subsingleton ι]
     [Fintype Action] [PerceptReward (Fin obs)]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
@@ -203,12 +203,12 @@ theorem controlledHMM_recursiveOptimalValueEnvelope_eq_model_of_subsingleton
     (zs : List (CycleObservation Action obs))
     (n : ℕ)
     (i : ι) :
-    lowerRecursiveOptimalValueEnvelope Θ γ zs n =
+    lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n =
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n ∧
-      upperRecursiveOptimalValueEnvelope Θ γ zs n =
+      upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n =
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n := by
   simpa using
-    recursiveOptimalValueEnvelope_eq_model_of_subsingleton
+    recursiveTraceMassOptimalValueEnvelope_eq_model_of_subsingleton
       (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       (Θ := Θ) (γ := γ) (n := n) (zs := zs) (i := i)
 
@@ -302,12 +302,12 @@ nontrivial recursive decision interval and no unique observation-history-based
 optimal action at the empty history. -/
 theorem controlledHMM_example_ambiguous_optimalValue_mem_interval_and_no_uniqueAction :
     (∀ i : Fin 2,
-        lowerRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ≤
+        lowerRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ≤
             optimalValue (toEnvironment (ambiguousControlledFamily i)) gammaOne [] 4 ∧
           optimalValue (toEnvironment (ambiguousControlledFamily i)) gammaOne [] 4 ≤
-            upperRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4) ∧
-      lowerRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 <
-        upperRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ∧
+            upperRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4) ∧
+      lowerRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 <
+        upperRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ∧
       ¬ ∃ a : Fin 2, ∀ i : Fin 2,
         optimalAction (toEnvironment (ambiguousControlledFamily i)) gammaOne [] 3 = a :=
   ambiguousControlledFamily_optimalValue_mem_interval_and_no_uniqueAction

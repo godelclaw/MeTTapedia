@@ -3980,7 +3980,9 @@ private theorem languageRoot_clause (language : LanguageDef) (types terms : Term
         (rawEquation .languageRoot).body] := by
   rw [clauses_use_only_the_named_equations]
   change (equations "gslt:normalized:language-root-reducts").filterMap _ = _
-  rw [show equations "gslt:normalized:language-root-reducts" = [rawEquation .languageRoot] from rfl]
+  have unique := raw_unique .languageRoot
+  simp only [RawHelper.head] at unique
+  rw [unique]
   have formals : (rawEquation .languageRoot).arguments = [v "language", v "rows", v "subject"] := by
     decide +kernel
   simp [formals, languageRootEnvironment, SpaceSemantics.matchValue,

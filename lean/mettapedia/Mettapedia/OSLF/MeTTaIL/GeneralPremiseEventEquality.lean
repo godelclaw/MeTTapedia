@@ -143,4 +143,61 @@ end
 
 instance {Choice : Type} [DecidableEq Choice] : DecidableEq (Event Choice) := eventDecEq
 
+/-! Query identity is an optional observation policy. Exact event equality
+and the existing validation-citation readout remain unchanged. -/
+
+inductive QueryIdentity where
+  | evidence
+  | allocationValidation
+  | factValidation
+  deriving DecidableEq
+
+mutual
+  def validationEventReadout {Choice : Type} (event : Event Choice)
+      (queryIdentity : QueryIdentity := .allocationValidation) : List (Event Choice) :=
+    match event with
+    | .query p q row origins =>
+        match queryIdentity with
+        | .evidence => [.query p q row origins]
+        | .allocationValidation => [.query p q 0 origins]
+        | .factValidation => []
+    | .freshness .. => []
+    | .quantified p q kind elements =>
+        [.quantified p q kind (validationElementsReadout elements queryIdentity)]
+    | .child p q index bound source target trace targetTrace captured completed history =>
+        [.child p q index bound source target trace targetTrace captured completed
+          (validationHistoryReadout history queryIdentity)]
+
+  def validationHistoryReadout {Choice : Type} (history : List (Event Choice))
+      (queryIdentity : QueryIdentity := .allocationValidation) : List (Event Choice) :=
+    match history with
+    | [] => []
+    | event :: rest => validationEventReadout event queryIdentity ++ validationHistoryReadout rest queryIdentity
+
+  def validationElementsReadout {Choice : Type}
+      (elements : List (Nat × Syntax.Pattern × List (Event Choice)))
+      (queryIdentity : QueryIdentity := .allocationValidation) :
+      List (Nat × Syntax.Pattern × List (Event Choice)) :=
+    match elements with
+    | [] => []
+    | (index, element, history) :: rest =>
+        (index, element, validationHistoryReadout history queryIdentity) :: validationElementsReadout rest queryIdentity
+end
+
+theorem validationHistoryReadout_append {Choice : Type}
+    (first second : List (Event Choice)) :
+    validationHistoryReadout (first ++ second) =
+      validationHistoryReadout first ++ validationHistoryReadout second := by
+  induction first with
+  | nil => rfl
+  | cons event rest ih => simp only [List.cons_append, validationHistoryReadout, ih, List.append_assoc]
+
+theorem query_validation_row_erases {Choice : Type} (p q first second : Nat)
+    (origins : List (Nat × List Choice)) :
+    validationEventReadout (.query p q first origins) =
+      validationEventReadout (.query p q second origins) := rfl
+
+theorem freshness_validation_erases {Choice : Type} (p q : Nat) (atom : String) (subject : Syntax.Pattern) :
+    validationEventReadout (Choice := Choice) (.freshness p q atom subject) = [] := rfl
+
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise

@@ -427,4 +427,455 @@ def existentialCongruence (signature : Signature sorts terms)
 #print axioms universalCongruence
 #print axioms existentialCongruence
 
+/-! ## Native variable bounds of the constructed equality receipts -/
+
+theorem convertEquality_varsBelow (signature : Signature sorts terms)
+    (antecedent type first first' second second' : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (typeSorted : Preterm.HasType terms context type [] signature.ids.type)
+    (firstConversion : { witness : ConvWitness // ConvWitness.Checks terms definitions context
+      witness first first' signature.ids.object })
+    (secondConversion : { witness : ConvWitness // ConvWitness.Checks terms definitions context
+      witness second second' signature.ids.object })
+    (source : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol
+        (equality signature.symbol type first second))))
+    (limit : Nat)
+    (antecedentBound : Preterm.VarsBelow limit antecedent)
+    (typeBound : Preterm.VarsBelow limit type)
+    (firstConversionBound : firstConversion.val.VarsBelow limit)
+    (secondConversionBound : secondConversion.val.VarsBelow limit)
+    (sourceBound : source.val.VarsBelow limit) :
+    (convertEquality signature antecedent type first first' second second' antecedentSorted typeSorted firstConversion secondConversion source).val.VarsBelow limit := by
+  simp_all [
+    convertEquality,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    equality,
+    holds,
+    entails]
+
+theorem application_varsBelow (signature : Signature sorts terms)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent domain result firstFunction secondFunction firstArgument secondArgument : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (domainSorted : Preterm.HasType terms context domain [] signature.ids.type)
+    (resultSorted : Preterm.HasType terms context result [] signature.ids.type)
+    (firstFunctionSorted : Preterm.HasType terms context firstFunction [] signature.ids.object)
+    (secondFunctionSorted : Preterm.HasType terms context secondFunction [] signature.ids.object)
+    (firstArgumentSorted : Preterm.HasType terms context firstArgument [] signature.ids.object)
+    (secondArgumentSorted : Preterm.HasType terms context secondArgument [] signature.ids.object)
+    (functions : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol
+        (equality signature.symbol (functionType signature.symbol domain result)
+          firstFunction secondFunction))))
+    (arguments : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol
+        (equality signature.symbol domain firstArgument secondArgument))))
+    (limit : Nat)
+    (antecedentBound : Preterm.VarsBelow limit antecedent)
+    (domainBound : Preterm.VarsBelow limit domain)
+    (resultBound : Preterm.VarsBelow limit result)
+    (firstFunctionBound : Preterm.VarsBelow limit firstFunction)
+    (secondFunctionBound : Preterm.VarsBelow limit secondFunction)
+    (firstArgumentBound : Preterm.VarsBelow limit firstArgument)
+    (secondArgumentBound : Preterm.VarsBelow limit secondArgument)
+    (functionsBound : functions.val.VarsBelow limit)
+    (argumentsBound : arguments.val.VarsBelow limit) :
+    (application signature rules binding antecedent domain result firstFunction secondFunction firstArgument secondArgument antecedentSorted domainSorted resultSorted firstFunctionSorted secondFunctionSorted firstArgumentSorted secondArgumentSorted functions arguments).val.VarsBelow limit := by
+  simp_all [
+    application,
+    HOLKernelInferenceProofs.Native.transitivity,
+    HOLKernelInferenceProofs.Native.applicationFunction,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelBindingProofs.Native.equalityLeftTyping,
+    HOLKernelBindingProofs.Native.equalityRightTyping,
+    ProofWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem binaryApplication_varsBelow (signature : Signature sorts terms)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent firstDomain secondDomain result function first first' second second' : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstDomainSorted : Preterm.HasType terms context firstDomain [] signature.ids.type)
+    (secondDomainSorted : Preterm.HasType terms context secondDomain [] signature.ids.type)
+    (resultSorted : Preterm.HasType terms context result [] signature.ids.type)
+    (functionSorted : Preterm.HasType terms context function [] signature.ids.object)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (firstSorted' : Preterm.HasType terms context first' [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (secondSorted' : Preterm.HasType terms context second' [] signature.ids.object)
+    (functionTyping : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (typed signature.symbol antecedent function (functionType signature.symbol firstDomain
+        (functionType signature.symbol secondDomain result))))
+    (firstEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol
+        (equality signature.symbol firstDomain first first'))))
+    (secondEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol
+        (equality signature.symbol secondDomain second second'))))
+    (limit : Nat)
+    (antecedentBound : Preterm.VarsBelow limit antecedent)
+    (firstDomainBound : Preterm.VarsBelow limit firstDomain)
+    (secondDomainBound : Preterm.VarsBelow limit secondDomain)
+    (resultBound : Preterm.VarsBelow limit result)
+    (functionBound : Preterm.VarsBelow limit function)
+    (firstBound : Preterm.VarsBelow limit first)
+    (first'Bound : Preterm.VarsBelow limit first')
+    (secondBound : Preterm.VarsBelow limit second)
+    (second'Bound : Preterm.VarsBelow limit second')
+    (functionTypingBound : functionTyping.val.VarsBelow limit)
+    (firstEqualityBound : firstEquality.val.VarsBelow limit)
+    (secondEqualityBound : secondEquality.val.VarsBelow limit) :
+    (binaryApplication signature rules binding antecedent firstDomain secondDomain result function first first' second second' antecedentSorted firstDomainSorted secondDomainSorted resultSorted functionSorted firstSorted firstSorted' secondSorted secondSorted' functionTyping firstEquality secondEquality).val.VarsBelow limit := by
+  simp_all [
+    binaryApplication,
+    application,
+    HOLKernelInferenceProofs.Native.transitivity,
+    HOLKernelInferenceProofs.Native.applicationFunction,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelBindingProofs.Native.equalityLeftTyping,
+    HOLKernelBindingProofs.Native.equalityRightTyping,
+    ProofWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem conjunctionCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent first first' second second' : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (firstSorted' : Preterm.HasType terms context first' [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (secondSorted' : Preterm.HasType terms context second' [] signature.ids.object)
+    (firstEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) first first'))))
+    (secondEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) second second'))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (firstScope : Preterm.VarsBelow limit first)
+    (first'Scope : Preterm.VarsBelow limit first')
+    (secondScope : Preterm.VarsBelow limit second)
+    (second'Scope : Preterm.VarsBelow limit second')
+    (firstEqualityScope : firstEquality.val.VarsBelow limit)
+    (secondEqualityScope : secondEquality.val.VarsBelow limit) :
+    (conjunctionCongruence signature profile rules binding antecedent first first' second second' antecedentSorted firstSorted firstSorted' secondSorted secondSorted' firstEquality secondEquality).val.VarsBelow limit := by
+  simp_all [
+    conjunctionCongruence,
+    convertEquality,
+    application,
+    binaryApplication,
+    HOLKernelInferenceProofs.Native.transitivity,
+    HOLKernelInferenceProofs.Native.applicationFunction,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelBindingProofs.Native.equalityLeftTyping,
+    HOLKernelBindingProofs.Native.equalityRightTyping,
+    HOLKernelLogicalOperationProofs.conjunctionTyping,
+    HOLKernelLogicalOperationProofs.conjunctionUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem disjunctionCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent first first' second second' : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (firstSorted' : Preterm.HasType terms context first' [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (secondSorted' : Preterm.HasType terms context second' [] signature.ids.object)
+    (firstEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) first first'))))
+    (secondEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) second second'))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (firstScope : Preterm.VarsBelow limit first)
+    (first'Scope : Preterm.VarsBelow limit first')
+    (secondScope : Preterm.VarsBelow limit second)
+    (second'Scope : Preterm.VarsBelow limit second')
+    (firstEqualityScope : firstEquality.val.VarsBelow limit)
+    (secondEqualityScope : secondEquality.val.VarsBelow limit) :
+    (disjunctionCongruence signature profile rules binding antecedent first first' second second' antecedentSorted firstSorted firstSorted' secondSorted secondSorted' firstEquality secondEquality).val.VarsBelow limit := by
+  simp_all [
+    disjunctionCongruence,
+    convertEquality,
+    application,
+    binaryApplication,
+    HOLKernelInferenceProofs.Native.transitivity,
+    HOLKernelInferenceProofs.Native.applicationFunction,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelBindingProofs.Native.equalityLeftTyping,
+    HOLKernelBindingProofs.Native.equalityRightTyping,
+    HOLKernelLogicalOperationProofs.disjunctionTyping,
+    HOLKernelLogicalOperationProofs.disjunctionUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem implicationCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent first first' second second' : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (firstSorted' : Preterm.HasType terms context first' [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (secondSorted' : Preterm.HasType terms context second' [] signature.ids.object)
+    (firstEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) first first'))))
+    (secondEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) second second'))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (firstScope : Preterm.VarsBelow limit first)
+    (first'Scope : Preterm.VarsBelow limit first')
+    (secondScope : Preterm.VarsBelow limit second)
+    (second'Scope : Preterm.VarsBelow limit second')
+    (firstEqualityScope : firstEquality.val.VarsBelow limit)
+    (secondEqualityScope : secondEquality.val.VarsBelow limit) :
+    (implicationCongruence signature profile rules binding antecedent first first' second second' antecedentSorted firstSorted firstSorted' secondSorted secondSorted' firstEquality secondEquality).val.VarsBelow limit := by
+  simp_all [
+    implicationCongruence,
+    convertEquality,
+    application,
+    binaryApplication,
+    HOLKernelInferenceProofs.Native.transitivity,
+    HOLKernelInferenceProofs.Native.applicationFunction,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelBindingProofs.Native.equalityLeftTyping,
+    HOLKernelBindingProofs.Native.equalityRightTyping,
+    HOLKernelLogicalOperationProofs.implicationTyping,
+    HOLKernelLogicalOperationProofs.implicationUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem equalityCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (binding : HOLKernelBindingRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent domain first first' second second' : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (domainSorted : Preterm.HasType terms context domain [] signature.ids.type)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (firstSorted' : Preterm.HasType terms context first' [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (secondSorted' : Preterm.HasType terms context second' [] signature.ids.object)
+    (firstEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol domain first first'))))
+    (secondEquality : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol domain second second'))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (domainScope : Preterm.VarsBelow limit domain)
+    (firstScope : Preterm.VarsBelow limit first)
+    (first'Scope : Preterm.VarsBelow limit first')
+    (secondScope : Preterm.VarsBelow limit second)
+    (second'Scope : Preterm.VarsBelow limit second')
+    (firstEqualityScope : firstEquality.val.VarsBelow limit)
+    (secondEqualityScope : secondEquality.val.VarsBelow limit) :
+    (equalityCongruence signature profile rules binding antecedent domain first first' second second' antecedentSorted domainSorted firstSorted firstSorted' secondSorted secondSorted' firstEquality secondEquality).val.VarsBelow limit := by
+  simp_all [
+    equalityCongruence,
+    convertEquality,
+    application,
+    binaryApplication,
+    HOLKernelInferenceProofs.Native.transitivity,
+    HOLKernelInferenceProofs.Native.applicationFunction,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelBindingProofs.Native.equalityLeftTyping,
+    HOLKernelBindingProofs.Native.equalityRightTyping,
+    HOLKernelLogicalOperationProofs.equalityTyping,
+    HOLKernelLogicalOperationProofs.equalityUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem negationCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent first second : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (equal : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (boolType signature.symbol) first second))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (firstScope : Preterm.VarsBelow limit first)
+    (secondScope : Preterm.VarsBelow limit second)
+    (equalScope : equal.val.VarsBelow limit) :
+    (negationCongruence signature profile rules antecedent first second antecedentSorted firstSorted secondSorted equal).val.VarsBelow limit := by
+  simp_all [
+    negationCongruence,
+    convertEquality,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelLogicalOperationProofs.negationTyping,
+    HOLKernelLogicalOperationProofs.negationUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem universalCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent domain first second : Preterm) (firstBound secondBound : Nat)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (domainSorted : Preterm.HasType terms context domain [] signature.ids.type)
+    (firstBoundDeclared : context[firstBound]? = some (.bound signature.ids.object))
+    (secondBoundDeclared : context[secondBound]? = some (.bound signature.ids.object))
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (abstractionsEqual : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (functionType signature.symbol domain (boolType signature.symbol)) (applySymbol signature.symbol .lam [.var firstBound, domain, first]) (applySymbol signature.symbol .lam [.var secondBound, domain, second])))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (domainScope : Preterm.VarsBelow limit domain)
+    (firstScope : Preterm.VarsBelow limit first)
+    (secondScope : Preterm.VarsBelow limit second)
+    (firstBoundScope : firstBound < limit)
+    (secondBoundScope : secondBound < limit)
+    (abstractionsEqualScope : abstractionsEqual.val.VarsBelow limit) :
+    (universalCongruence signature profile rules antecedent domain first second firstBound secondBound antecedentSorted domainSorted firstBoundDeclared secondBoundDeclared firstSorted secondSorted abstractionsEqual).val.VarsBelow limit := by
+  simp_all [
+    universalCongruence,
+    convertEquality,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelLogicalOperationProofs.universalTyping,
+    HOLKernelLogicalOperationProofs.universalUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+theorem existentialCongruence_varsBelow (signature : Signature sorts terms)
+    (profile : HOLKernelLogicalOperations.Profile sorts terms definitions theorems signature)
+    (rules : HOLKernelInferenceRules.Rules theorems signature.symbol signature.ids equivalenceReference)
+    (antecedent domain first second : Preterm) (firstBound secondBound : Nat)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (domainSorted : Preterm.HasType terms context domain [] signature.ids.type)
+    (firstBoundDeclared : context[firstBound]? = some (.bound signature.ids.object))
+    (secondBoundDeclared : context[secondBound]? = some (.bound signature.ids.object))
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.object)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.object)
+    (abstractionsEqual : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses)
+      (entails signature.symbol antecedent (holds signature.symbol (equality signature.symbol (functionType signature.symbol domain (boolType signature.symbol)) (applySymbol signature.symbol .lam [.var firstBound, domain, first]) (applySymbol signature.symbol .lam [.var secondBound, domain, second])))))
+    (limit : Nat)
+    (antecedentScope : Preterm.VarsBelow limit antecedent)
+    (domainScope : Preterm.VarsBelow limit domain)
+    (firstScope : Preterm.VarsBelow limit first)
+    (secondScope : Preterm.VarsBelow limit second)
+    (firstBoundScope : firstBound < limit)
+    (secondBoundScope : secondBound < limit)
+    (abstractionsEqualScope : abstractionsEqual.val.VarsBelow limit) :
+    (existentialCongruence signature profile rules antecedent domain first second firstBound secondBound antecedentSorted domainSorted firstBoundDeclared secondBoundDeclared firstSorted secondSorted abstractionsEqual).val.VarsBelow limit := by
+  simp_all [
+    existentialCongruence,
+    convertEquality,
+    HOLKernelInferenceProofs.Native.applicationArgument,
+    HOLKernelLogicalOperationProofs.existentialTyping,
+    HOLKernelLogicalOperationProofs.existentialUnfolding,
+    ProofWitness.VarsBelow,
+    ConvWitness.VarsBelow,
+    Preterm.VarsBelow,
+    applySymbol,
+    Preterm.applyArgs,
+    typed,
+    boolType,
+    functionType,
+    equality,
+    holds,
+    entails]
+
+
+#print axioms universalCongruence_varsBelow
+#print axioms application_varsBelow
 end Mettapedia.Languages.MM0.HOLKernelCongruence

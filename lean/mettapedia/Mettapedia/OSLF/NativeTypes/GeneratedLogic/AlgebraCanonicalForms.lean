@@ -249,8 +249,8 @@ theorem derived_hasType_back (laws : BareBagTheory language bag unit) (sorted : 
     obtain ⟨-, rfl, elementsTyped⟩ := bag_typing laws typed collectionless
     exact ⟨bag_hasType laws (elementsHaveType_iff.mpr fun element member =>
       elementsHaveType_iff.mp elementsTyped element (permutation.mem_iff.mp member)), represents_collection _ _ _ _⟩
-  | setPerm carrier _ _ => exact absurd (laws.toBagTheory.carrier carrier).2 (by decide)
-  | setDedup carrier _ => exact absurd (laws.toBagTheory.carrier carrier).2 (by decide)
+  | setPerm member kindTyped _ => exact absurd (laws.toBagTheory.collectionTyped member kindTyped).2 (by decide)
+  | setDedup member kindTyped => exact absurd (laws.toBagTheory.collectionTyped member kindTyped).2 (by decide)
   | flatten algebraRule _ _ =>
     obtain ⟨-, rfl, -⟩ := laws.toBagTheory.algebraRule algebraRule
     obtain ⟨-, rfl, elementsTyped⟩ := bag_typing laws typed collectionless

@@ -27,12 +27,202 @@ def source : ProgramQuotation.QuotedProgram :=
     "../../../../../../../../metta/gslt/lib/gslt_collection_logged_search.metta"
     sha256 "5a7619553f9217e7a984cf38845db3aa270bdc8674539235c7501b2201a97362"
 
-def library : BridgeKit.Library :=
-  ⟨ScopedCollectionExecution.library.runtime, source.program,
-    ["gslt:collection-search:"]⟩
+/-- Logged operations use the same interpreted runtime as their matcher primitives. -/
+def library : BridgeKit.Library := RetainedMatchingWire.interpretedLibrary
 
-set_option maxRecDepth 100000 in
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
+
+section LoggedProofMetadata
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 4000000
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Program Equation)
+open Eval BridgeKit
+
+private def loggedProofSource : Program := (RuleExecutionProgram.interpretedPremiseSupportSources[7]'(by decide +kernel)).program
+
+theorem loggedProof_source_quote : loggedProofSource = source.program := by rfl
+
+private def loggedObservedInheritedHeads : List String :=
+  ((loggedProofSource.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+    (fun head => head.startsWith "gslt:" && !(loggedProofSource.equations.map (·.head)).contains head)).eraseDups
+
+/-- Direct outward calls derived from the actual family bodies. -/
+def loggedProofInheritedHeads : List String := ["gslt:automata:append", "gslt:collection-machine:start", "gslt:collection-machine:resume", "gslt:collection-machine:publication", "gslt:collection-machine:firings", "gslt:collection-plan:tag", "gslt:automata:length", "gslt:collection-machine:complete"]
+
+theorem loggedProofInheritedHeads_derived :
+    loggedObservedInheritedHeads = loggedProofInheritedHeads := by decide +kernel
+
+theorem loggedProof_source_count : loggedProofSource.equations.length = 23 := by decide +kernel
+
+theorem loggedProof_inherited_count : loggedObservedInheritedHeads.length = 8 := by
+  rw [loggedProofInheritedHeads_derived]
+  decide +kernel
+
+private def loggedScopedMetadataEquations : List SpaceSemantics.Equation :=
+  [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[1]'(by decide +kernel)]
+
+private def loggedPriorMetadataEquations : List SpaceSemantics.Equation :=
+  [(RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.equations[2]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.equations[3]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.equations[4]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.equations[6]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.equations[8]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.equations[13]'(by decide +kernel)]
+
+private def loggedScopedMetadataDeclarations : List Atom :=
+  [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[1]'(by decide +kernel)]
+
+private def loggedPriorMetadataDeclarations : List Atom :=
+  [(RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.declarations[2]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.declarations[3]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.declarations[4]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.declarations[6]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.declarations[8]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[6]'(by decide +kernel)).program.declarations[13]'(by decide +kernel)]
+
+private def loggedMetadataBase : Program where
+  equations := loggedScopedMetadataEquations ++ loggedPriorMetadataEquations
+  declarations := loggedScopedMetadataDeclarations ++ loggedPriorMetadataDeclarations
+
+/-- Bounded call and constructor metadata; execution remains in the shared Raw program. -/
+def loggedProofLibrary : Library := ⟨loggedMetadataBase, loggedProofSource, ["gslt:collection-search:"]⟩
+
+def loggedProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || loggedProofLibrary.owns head || loggedProofInheritedHeads.contains head
+
+theorem loggedProof_checked : loggedProofLibrary.check = true := by decide +kernel
+
+theorem loggedProof_equation_count : loggedProofLibrary.runtime.equations.length = 31 := by decide +kernel
+
+private def loggedPriorSources := RuleExecutionProgram.interpretedPremiseSupportSources.take 7
+private def loggedLaterSources := RuleExecutionProgram.interpretedPremiseSupportSources.drop 8
+
+private theorem loggedScoped_equations_indices :
+    (List.finRange RuleExecutionProgram.scopedProgram.equations.length).filter (fun index => (fun row => loggedProofHeads row.head) (RuleExecutionProgram.scopedProgram.equations.get index)) =
+      [⟨0, by decide +kernel⟩, ⟨1, by decide +kernel⟩] := by decide +kernel
+
+private theorem loggedScoped_equations : RuleExecutionProgram.scopedProgram.equations.filter (fun row => loggedProofHeads row.head) = loggedScopedMetadataEquations := by
+  rw [CompleteExecution.source_filter_indices, loggedScoped_equations_indices]
+  rfl
+
+private theorem loggedPrior_equations_indices :
+    (List.finRange (loggedPriorSources.flatMap (fun source => source.program.equations)).length).filter (fun index => (fun row => loggedProofHeads row.head) ((loggedPriorSources.flatMap (fun source => source.program.equations)).get index)) =
+      [⟨168, by decide +kernel⟩, ⟨169, by decide +kernel⟩, ⟨170, by decide +kernel⟩, ⟨172, by decide +kernel⟩, ⟨174, by decide +kernel⟩, ⟨179, by decide +kernel⟩] := by decide +kernel
+
+private theorem loggedPrior_equations : (loggedPriorSources.flatMap (fun source => source.program.equations)).filter (fun row => loggedProofHeads row.head) = loggedPriorMetadataEquations := by
+  rw [CompleteExecution.source_filter_indices, loggedPrior_equations_indices]
+  rfl
+
+private theorem loggedOwned_equations : loggedProofSource.equations.filter (fun row => loggedProofHeads row.head) = loggedProofSource.equations := by
+  apply List.filter_eq_self.mpr
+  exact List.all_eq_true.mp (by decide +kernel)
+
+private theorem loggedLater_equations : (loggedLaterSources.flatMap (fun source => source.program.equations)).filter (fun row => loggedProofHeads row.head) = [] := by
+  have checked : (loggedLaterSources.flatMap (fun source => source.program.equations)).all (fun row => !((fun row => loggedProofHeads row.head) row)) = true := by decide +kernel
+  apply List.filter_eq_nil_iff.mpr
+  intro row member kept
+  have rejected := List.all_eq_true.mp checked row member
+  simp [kept] at rejected
+
+private theorem loggedSupport_equations :
+    RuleExecutionProgram.interpretedPremiseSupportSources.flatMap (fun source => source.program.equations) =
+      (loggedPriorSources.flatMap (fun source => source.program.equations)) ++ loggedProofSource.equations ++ (loggedLaterSources.flatMap (fun source => source.program.equations)) := by
+  have split : RuleExecutionProgram.interpretedPremiseSupportSources =
+      loggedPriorSources ++ (RuleExecutionProgram.interpretedPremiseSupportSources[7]'(by decide +kernel)) :: loggedLaterSources := rfl
+  rw [split, List.flatMap_append, List.flatMap_cons]
+  rfl
+
+private theorem loggedProof_physical_equations : loggedProofLibrary.runtime.equations =
+    (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram).equations.filter (fun row => loggedProofHeads row.head) := by
+  rw [CompleteExecution.PhysicalSourceAgreement.fold_equations, loggedSupport_equations]
+  simp only [List.filter_append, loggedScoped_equations, loggedPrior_equations,
+    loggedOwned_equations, loggedLater_equations, List.append_nil]
+  change (loggedScopedMetadataEquations ++ loggedPriorMetadataEquations) ++ loggedProofSource.equations = _
+  simp only [List.append_assoc]
+
+private theorem loggedScoped_declarations_indices :
+    (List.finRange RuleExecutionProgram.scopedProgram.declarations.length).filter (fun index => (retainedCallDeclaration loggedProofHeads) (RuleExecutionProgram.scopedProgram.declarations.get index)) =
+      [⟨0, by decide +kernel⟩, ⟨1, by decide +kernel⟩] := by decide +kernel
+
+private theorem loggedScoped_declarations : RuleExecutionProgram.scopedProgram.declarations.filter (retainedCallDeclaration loggedProofHeads) = loggedScopedMetadataDeclarations := by
+  rw [CompleteExecution.source_filter_indices, loggedScoped_declarations_indices]
+  rfl
+
+private theorem loggedPrior_declarations_indices :
+    (List.finRange (loggedPriorSources.flatMap (fun source => source.program.declarations)).length).filter (fun index => (retainedCallDeclaration loggedProofHeads) ((loggedPriorSources.flatMap (fun source => source.program.declarations)).get index)) =
+      [⟨168, by decide +kernel⟩, ⟨169, by decide +kernel⟩, ⟨170, by decide +kernel⟩, ⟨172, by decide +kernel⟩, ⟨174, by decide +kernel⟩, ⟨179, by decide +kernel⟩] := by decide +kernel
+
+private theorem loggedPrior_declarations : (loggedPriorSources.flatMap (fun source => source.program.declarations)).filter (retainedCallDeclaration loggedProofHeads) = loggedPriorMetadataDeclarations := by
+  rw [CompleteExecution.source_filter_indices, loggedPrior_declarations_indices]
+  rfl
+
+private theorem loggedOwned_declarations : loggedProofSource.declarations.filter (retainedCallDeclaration loggedProofHeads) = loggedProofSource.declarations := by
+  apply List.filter_eq_self.mpr
+  exact List.all_eq_true.mp (by decide +kernel)
+
+private theorem loggedLater_declarations : (loggedLaterSources.flatMap (fun source => source.program.declarations)).filter (retainedCallDeclaration loggedProofHeads) = [] := by
+  have checked : (loggedLaterSources.flatMap (fun source => source.program.declarations)).all (fun row => !((retainedCallDeclaration loggedProofHeads) row)) = true := by decide +kernel
+  apply List.filter_eq_nil_iff.mpr
+  intro row member kept
+  have rejected := List.all_eq_true.mp checked row member
+  simp [kept] at rejected
+
+private theorem loggedSupport_declarations :
+    RuleExecutionProgram.interpretedPremiseSupportSources.flatMap (fun source => source.program.declarations) =
+      (loggedPriorSources.flatMap (fun source => source.program.declarations)) ++ loggedProofSource.declarations ++ (loggedLaterSources.flatMap (fun source => source.program.declarations)) := by
+  have split : RuleExecutionProgram.interpretedPremiseSupportSources =
+      loggedPriorSources ++ (RuleExecutionProgram.interpretedPremiseSupportSources[7]'(by decide +kernel)) :: loggedLaterSources := rfl
+  rw [split, List.flatMap_append, List.flatMap_cons]
+  rfl
+
+private theorem loggedProof_physical_declarations : loggedProofLibrary.runtime.declarations =
+    (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram).declarations.filter (retainedCallDeclaration loggedProofHeads) := by
+  rw [CompleteExecution.PhysicalSourceAgreement.fold_declarations, loggedSupport_declarations]
+  simp only [List.filter_append, loggedScoped_declarations, loggedPrior_declarations,
+    loggedOwned_declarations, loggedLater_declarations, List.append_nil]
+  change (loggedScopedMetadataDeclarations ++ loggedPriorMetadataDeclarations) ++ loggedProofSource.declarations = _
+  simp only [List.append_assoc]
+
+theorem loggedProof_agreement :
+    ProgramAgreementOn loggedProofHeads loggedProofLibrary.runtime RuleExecutionProgram.interpretedPremiseProgram := by
+  have physical : ProgramAgreementOn loggedProofHeads loggedProofLibrary.runtime
+      (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+        (fun loaded source => loaded.append source.program) RuleExecutionProgram.scopedProgram) :=
+    fragment_agreement _ _ loggedProof_physical_equations loggedProof_physical_declarations
+      (fun _ supported => supported)
+  exact agreement_trans physical
+    (agreement_mono (fun _ _ => rfl) CompleteExecution.PhysicalSourceAgreement.physical_interpreted_agreement)
+
+/-- The metadata does not assert closure of inherited primitive bodies. -/
+theorem loggedProof_not_closed : ¬ ProgramClosed loggedProofHeads loggedProofLibrary.runtime := by
+  intro closed
+  let row := loggedMetadataBase.equations[3]'(by decide +kernel)
+  have member : row ∈ loggedProofLibrary.runtime.equations := by
+    apply List.mem_append_left
+    exact List.getElem_mem _
+  have supported : loggedProofHeads row.head = true := by decide +kernel
+  have outside : codeWithin loggedProofHeads row.body = false := by decide +kernel
+  have inside := closed.bodies row member supported
+  rw [outside] at inside
+  cases inside
+
+#print axioms loggedProof_source_quote
+#print axioms loggedProofInheritedHeads_derived
+#print axioms loggedProof_source_count
+#print axioms loggedProof_inherited_count
+#print axioms loggedProof_checked
+#print axioms loggedProof_equation_count
+#print axioms loggedProof_agreement
+#print axioms loggedProof_not_closed
+
+end LoggedProofMetadata
 
 def loggedLaneTerm (lane : Lane) : Term :=
   .application "CollectionLoggedLane"
@@ -100,19 +290,18 @@ theorem select_logged_advanced_resume
     Mettapedia.Languages.ProcessCalculi.MORK.matchAtom,
     Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup]
 
-syntax "collection_search_eval" (" [" term,* "]")?
+syntax "collection_search_eval_body" (" [" term,* "]")?
     (" unfolding" " [" term,* "]")? : tactic
 macro_rules
-  | `(tactic| collection_search_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
+  | `(tactic| collection_search_eval_body $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
     `(tactic|
-      (metta_call checked
-       try simp only [Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil,
+      (try simp only [Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil,
          Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil.applySubstList_nil,
          Library.bind, List.zip, List.zipWith, List.reverse_cons, List.reverse_nil,
          List.nil_append, List.cons_append]
-       metta_eval [$facts,*] with checked
+       metta_eval [$facts,*] with loggedProof_checked in loggedProof_agreement
          unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
            Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
            Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -123,6 +312,15 @@ macro_rules
            select_logged_advanced_resume,
            loggedLaneTerm, loggedStateTerm, loggedRunTerm, advancedLaneTerm,
            advancedLanesTerm, encodeList, $extra,*]))
+
+
+syntax "collection_search_eval" (" [" term,* "]")?
+    (" unfolding" " [" term,* "]")? : tactic
+macro_rules
+  | `(tactic| collection_search_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
+    let facts := (facts.map (·.getElems)).getD #[]
+    let extra := (extra.map (·.getElems)).getD #[]
+    `(tactic| (metta_call_in loggedProof_checked using loggedProof_agreement; collection_search_eval_body [$facts,*] unfolding [$extra,*]))
 
 @[metta_head "gslt:collection-search:drop"]
 theorem drop_returns {α : Type} (element : α → Term) (state : Effects.State) :
@@ -147,9 +345,7 @@ theorem lane_begin_returns (state : Effects.State)
       (apply "gslt:collection-search:lane-begin"
         [encoded (CollectionPlanExecution.requestEntryTerm entry)])
       state (encoded (loggedLaneTerm (Lane.begin entry))) := by
-  have startedAtBase := ScopedCollectionExecution.start_returns state entry.2 fixed
-  have started := by
-    metta_lift checked ["request"] startedAtBase
+  have started := ScopedCollectionExecution.start_returns state entry.2 fixed
   collection_search_eval [started]
     unfolding [Lane.begin, CollectionPlanExecution.requestEntryTerm]
 
@@ -208,7 +404,7 @@ theorem split_cursor_returns {α : Type} (element : α → Term) (state : Effect
       collection_search_eval [later] unfolding [cursorTerm]
       all_goals
         try simp only [← Nat.cast_min (α := Int)]
-        metta_eval [later] with checked unfolding [cursorTerm, encodeList]
+        metta_eval [later] with loggedProof_checked in loggedProof_agreement unfolding [cursorTerm, encodeList]
 
 @[metta_head "gslt:collection-search:advance-jobs"]
 theorem advance_jobs_returns (state : Effects.State)
@@ -225,28 +421,24 @@ theorem advance_jobs_returns (state : Effects.State)
       let next := { job with state := GeneralScopedMatchMachine.run request.machine 1 job.state }
       let previous := ScopedCollectionMachine.firings request [job]
       let published := ScopedCollectionMachine.firings request [next]
-      have resumedBase := ScopedCollectionExecution.resume_returns state request 1 [job]
-      have resumed := by metta_lift checked ["request", "fuel", "jobs"] resumedBase
-      have oldBase := ScopedCollectionExecution.publication_returns state [job]
-      have old := by metta_lift checked ["jobs"] oldBase
-      have previousBase := ScopedCollectionFiringExecution.firings_returns state request
+      have resumed := ScopedCollectionExecution.resume_returns state request 1 [job]
+      have old := ScopedCollectionExecution.publication_returns state [job]
+      have before := ScopedCollectionFiringExecution.firings_returns state request
         (ScopedCollectionMachine.publication [job])
-      have before := by metta_lift checked ["request", "receipts"] previousBase
       have split := split_cursor_returns ScopedCollectionExecution.firingTerm state consumed previous
-      have newBase := ScopedCollectionExecution.publication_returns state [next]
-      have new := by metta_lift checked ["jobs"] newBase
-      have publishedBase := ScopedCollectionFiringExecution.firings_returns state request
+      have new := ScopedCollectionExecution.publication_returns state [next]
+      have after := ScopedCollectionFiringExecution.firings_returns state request
         (ScopedCollectionMachine.publication [next])
-      have after := by metta_lift checked ["request", "receipts"] publishedBase
       have fresh := drop_returns ScopedCollectionExecution.firingTerm state
         (min consumed previous.length) published
       simp only [number, encoded, CettaWireAtom.encode, Nat.cast_min] at fresh
+      dsimp only [previous, published, ScopedCollectionMachine.firings] at split fresh
       have later := advance_jobs_returns state request (consumed - previous.length) jobs
       simp only [advancedJobsTerm, encoded, CettaWireAtom.encode, CettaWireAtom.encodeMany] at later
-      have appendBase := ScopedCollectionExecution.append_returns ScopedCollectionExecution.firingTerm
+      have joined := ScopedCollectionExecution.append_returns ScopedCollectionExecution.firingTerm
         state (published.drop (min consumed previous.length))
           (advanceJobs request (consumed - previous.length) jobs).2
-      have joined := by metta_lift checked ["left", "right"] appendBase
+      dsimp only [previous, published, ScopedCollectionMachine.firings] at joined later
       collection_search_eval [resumed, old, before, split, new, after, fresh, later, joined]
         unfolding [advanceJobs, advancedJobsTerm, cursorTerm, next, previous, published,
           ScopedCollectionExecution.stateTerm, ScopedCollectionMachine.resume]
@@ -262,16 +454,12 @@ theorem advance_lane_returns (state : Effects.State) (lane : Lane) :
   let firings := ScopedCollectionMachine.firings lane.request nextState
   have advancedReturns := advance_jobs_returns state lane.request lane.consumed lane.state
   simp only [advancedJobsTerm, encoded, CettaWireAtom.encode, CettaWireAtom.encodeMany] at advancedReturns
-  have receiptsAtBase := ScopedCollectionExecution.publication_returns state nextState
-  have receipts := by metta_lift checked ["jobs"] receiptsAtBase
-  have firingsAtBase := ScopedCollectionFiringExecution.firings_returns state
+  have receipts := ScopedCollectionExecution.publication_returns state nextState
+  have fired := ScopedCollectionFiringExecution.firings_returns state
     lane.request (ScopedCollectionMachine.publication nextState)
-  have fired := by metta_lift checked ["request", "receipts"] firingsAtBase
-  have taggedAtBase := CollectionPlanExecution.tag_returns state lane.ordinal lane.request advanced.2
-  have tagged := by metta_lift checked ["ordinal", "request", "firings"] taggedAtBase
-  have countAtBase := ScopedCollectionExecution.length_returns
+  have tagged := CollectionPlanExecution.tag_returns state lane.ordinal lane.request advanced.2
+  have count := ScopedCollectionExecution.length_returns
     ScopedCollectionExecution.firingTerm state firings
-  have count := by metta_lift checked ["items"] countAtBase
   dsimp [firings, ScopedCollectionMachine.firings] at count
   collection_search_eval [advancedReturns, receipts, fired, tagged, count]
     unfolding [advanceLane, advancedJobsTerm, advanced, nextState, firings, tag]
@@ -293,11 +481,9 @@ theorem advance_lanes_returns (state : Effects.State) : ∀ lanes : List Lane,
   | lane :: lanes => by
       have first := advance_lane_returns state lane
       have later := advance_lanes_returns state lanes
-      have joinedAtBase := ScopedCollectionExecution.append_returns
+      have joined := ScopedCollectionExecution.append_returns
         CollectionPlanExecution.planFiringTerm state
         (advanceLane lane).2 (advanceLanes lanes).2
-      have joined := by
-        metta_lift checked ["left", "right"] joinedAtBase
       collection_search_eval [first, later, joined]
         unfolding [advanceLanes, List.map_cons, List.flatMap_cons]
 
@@ -312,26 +498,26 @@ theorem round_returns (state : Effects.State)
   have advanced := advance_lanes_returns state lanes
   simp only [advancedLanesTerm, encoded, CettaWireAtom.encode,
     CettaWireAtom.encodeMany] at advanced
-  have joinedAtBase := ScopedCollectionExecution.append_returns
+  have joined := ScopedCollectionExecution.append_returns
     CollectionPlanExecution.planFiringTerm state log
     (advanceLanes lanes).2
-  have joined := by
-    metta_lift checked ["left", "right"] joinedAtBase
   simp only [encoded] at joined
-  collection_search_eval [advanced, joined]
-    unfolding [round, advanceLanes]
-  all_goals first
-    | (simp [select_logged_advanced_round]; done)
-    | (intro selected body selection
-       metta_select [advancedLanesTerm, encoded, CettaWireAtom.encode,
-         CettaWireAtom.encodeMany, select_logged_advanced_round] at selection
-       obtain ⟨bindings, branch⟩ := selection
-       subst bindings
-       subst branch
-       apply pure_let_returns _ _ _ _ _ _ _ _ (by simp [Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup])
-       · metta_capture_any joined
-       · metta_eval with checked
-           unfolding [round, advanceLanes, loggedStateTerm, advancedLanesTerm])
+  metta_call_in loggedProof_checked using loggedProof_agreement
+  apply pure_let_returns _ _ _ _ _ _ _ _ (by rfl)
+  · metta_capture_agreed loggedProof_agreement from advanced
+  · collection_search_eval_body [joined] unfolding [round, advanceLanes]
+    all_goals first
+      | (simp [select_logged_advanced_round]; done)
+      | (intro selected body selection
+         metta_select [advancedLanesTerm, encoded, CettaWireAtom.encode,
+           CettaWireAtom.encodeMany, select_logged_advanced_round] at selection
+         obtain ⟨bindings, branch⟩ := selection
+         subst bindings
+         subst branch
+         apply pure_let_returns _ _ _ _ _ _ _ _ (by simp [Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup])
+         · metta_capture_agreed loggedProof_agreement from joined
+         · metta_eval with loggedProof_checked in loggedProof_agreement
+             unfolding [round, advanceLanes, loggedStateTerm, advancedLanesTerm])
 
 @[metta_head "gslt:collection-search:resume"]
 theorem resume_returns (state : Effects.State) :
@@ -348,29 +534,34 @@ theorem resume_returns (state : Effects.State) :
       have advanced := advance_lanes_returns state lanes
       simp only [advancedLanesTerm, encoded, CettaWireAtom.encode,
         CettaWireAtom.encodeMany] at advanced
-      have joinedAtBase := ScopedCollectionExecution.append_returns
+      have joined := ScopedCollectionExecution.append_returns
         CollectionPlanExecution.planFiringTerm state log (advanceLanes lanes).2
-      have joined := by
-        metta_lift checked ["left", "right"] joinedAtBase
       simp only [encoded] at joined
       have later := resume_returns state fuel (round ⟨lanes, log⟩)
+      dsimp only [CollectionLoggedSearch.round, CollectionLoggedSearchExecution.advanceLanes] at later
       collection_search_eval [advanced, joined, later]
         unfolding [resume, round, advanceLanes]
-      all_goals first
-        | (simp [select_logged_advanced_resume]; done)
-        | (intro selected body selection
-           metta_select [advancedLanesTerm, encoded, CettaWireAtom.encode,
-             CettaWireAtom.encodeMany, select_logged_advanced_resume] at selection
-           obtain ⟨bindings, branch⟩ := selection
-           subst bindings
-           subst branch
-           apply pure_let_star_returns _ _ _ _ _ _ _ rfl
-           apply pure_let_returns _ _ _ _ _ _ _ _
-             (by simp [Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup])
-           · metta_capture_any joined
-           · metta_eval [later] with checked
-               unfolding [resume, round, advanceLanes, loggedStateTerm,
-                 advancedLanesTerm])
+      all_goals
+        simp only [Nat.add_one_ne_zero, decide_false, Bool.false_eq_true, ↓reduceIte]
+        apply pure_let_returns _ _ _ _ _ _ _ _ (by rfl)
+        · metta_capture_agreed loggedProof_agreement from advanced
+        · collection_search_eval_body [joined, later] unfolding [resume, round, advanceLanes]
+          all_goals first
+            | (simp [select_logged_advanced_resume]; done)
+            | (intro selected body selection
+               metta_select [advancedLanesTerm, encoded, CettaWireAtom.encode,
+                 CettaWireAtom.encodeMany, select_logged_advanced_resume] at selection
+               obtain ⟨bindings, branch⟩ := selection
+               subst bindings
+               subst branch
+               apply pure_let_star_returns _ _ _ _ _ _ _ rfl
+               apply pure_let_returns _ _ _ _ _ _ _ _
+                 (by simp [Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup])
+               · metta_capture_agreed loggedProof_agreement from joined
+               · simp only [CollectionLoggedSearch.resume]
+                 metta_eval [later] with loggedProof_checked in loggedProof_agreement
+                   unfolding [CollectionLoggedSearch.round, CollectionLoggedSearchExecution.advanceLanes,
+                     loggedStateTerm, advancedLanesTerm])
 
 def statusAtom : Mettapedia.Machines.ResumableSearchRunner.Status → Atom
   | .complete => .symbol "SearchComplete"
@@ -387,9 +578,7 @@ theorem lanes_complete_returns (state : Effects.State) : ∀ lanes : List Lane,
   | [] => by
       collection_search_eval
   | lane :: lanes => by
-      have firstAtBase := ScopedCollectionExecution.complete_returns state lane.state
-      have first := by
-        metta_lift checked ["jobs"] firstAtBase
+      have first := ScopedCollectionExecution.complete_returns state lane.state
       have later := lanes_complete_returns state lanes
       cases finished : ScopedCollectionMachine.complete lane.state with
       | false =>
@@ -399,18 +588,12 @@ theorem lanes_complete_returns (state : Effects.State) : ∀ lanes : List Lane,
               CollectionSelectionExecution.booleanTerm]
       | true =>
           rw [finished] at first
-          have receiptsAtBase := ScopedCollectionExecution.publication_returns state lane.state
-          have receipts := by
-            metta_lift checked ["jobs"] receiptsAtBase
-          have firingsAtBase := ScopedCollectionFiringExecution.firings_returns state
+          have receipts := ScopedCollectionExecution.publication_returns state lane.state
+          have fired := ScopedCollectionFiringExecution.firings_returns state
             lane.request (ScopedCollectionMachine.publication lane.state)
-          have fired := by
-            metta_lift checked ["request", "receipts"] firingsAtBase
-          have countAtBase := ScopedCollectionExecution.length_returns
+          have count := ScopedCollectionExecution.length_returns
             ScopedCollectionExecution.firingTerm state
             (ScopedCollectionMachine.firings lane.request lane.state)
-          have count := by
-            metta_lift checked ["items"] countAtBase
           dsimp [ScopedCollectionMachine.firings] at count
           by_cases drained : lane.consumed =
               (ScopedCollectionMachine.firings lane.request lane.state).length
@@ -418,6 +601,9 @@ theorem lanes_complete_returns (state : Effects.State) : ∀ lanes : List Lane,
             collection_search_eval [first, receipts, fired, count, later]
               unfolding [List.all_cons, Lane.complete, finished, drained,
                 ScopedCollectionMachine.firings, CollectionSelectionExecution.booleanTerm]
+            all_goals
+              simp only [beq_self_eq_true, Bool.true_and]
+              metta_capture_agreed loggedProof_agreement from later
           · dsimp [ScopedCollectionMachine.firings] at drained
             collection_search_eval [first, receipts, fired, count]
               unfolding [List.all_cons, Lane.complete, finished, drained,
@@ -504,5 +690,29 @@ theorem resume_run_returns (state : Effects.State) (run : Run) (extra : Nat) :
   have resumed := resume_returns state extra ⟨lanes, log⟩
   collection_search_eval [resumed]
     unfolding [loggedRunTerm, loggedStateTerm]
+
+
+#print axioms checked
+#print axioms select_logged_state
+#print axioms select_logged_advanced_round
+#print axioms select_logged_advanced_resume
+#print axioms drop_returns
+#print axioms lane_begin_returns
+#print axioms lanes_begin_returns
+#print axioms begin_returns
+#print axioms split_cursor_returns
+#print axioms advance_jobs_returns
+#print axioms advance_lane_returns
+#print axioms advance_lanes_returns
+#print axioms round_returns
+#print axioms resume_returns
+#print axioms lanes_complete_returns
+#print axioms publication_log_returns
+#print axioms complete_returns
+#print axioms status_lanes_returns
+#print axioms publication_returns
+#print axioms status_returns
+#print axioms run_returns
+#print axioms resume_run_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionLoggedSearchExecution

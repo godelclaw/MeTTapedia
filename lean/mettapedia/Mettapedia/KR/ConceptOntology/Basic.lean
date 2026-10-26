@@ -74,27 +74,21 @@ def observeAt (S : ObservationEncoder Obs Obj Con Ev) (o : Obs) (x : Obj) (c : C
 
 section Additive
 
-variable [AddCommMonoid Ev]
+variable [AddCommMonoid Ev] (S : ObservationEncoder Obs Obj Con Ev)
 
 /-- Aggregate observation evidence into object/concept membership evidence. -/
-noncomputable def aggregate
-    (S : ObservationEncoder Obs Obj Con Ev)
-    (σ : Multiset Obs) (x : Obj) (c : Con) : Ev :=
+noncomputable def aggregate (σ : Multiset Obs) (x : Obj) (c : Con) : Ev :=
   SufficientStatisticEncoder.aggregate S σ (x, c)
 
-@[simp] theorem aggregate_zero
-    (S : ObservationEncoder Obs Obj Con Ev) (x : Obj) (c : Con) :
+@[simp] theorem aggregate_zero (x : Obj) (c : Con) :
     aggregate S 0 x c = 0 := by
   simp [aggregate]
 
-@[simp] theorem aggregate_singleton
-    (S : ObservationEncoder Obs Obj Con Ev) (o : Obs) (x : Obj) (c : Con) :
+@[simp] theorem aggregate_singleton (o : Obs) (x : Obj) (c : Con) :
     aggregate S ({o} : Multiset Obs) x c = observeAt S o x c := by
   simp [aggregate, observeAt]
 
-theorem aggregate_add
-    (S : ObservationEncoder Obs Obj Con Ev)
-    (σ₁ σ₂ : Multiset Obs) (x : Obj) (c : Con) :
+theorem aggregate_add (σ₁ σ₂ : Multiset Obs) (x : Obj) (c : Con) :
     aggregate S (σ₁ + σ₂) x c = aggregate S σ₁ x c + aggregate S σ₂ x c := by
   simpa [aggregate] using SufficientStatisticEncoder.aggregate_add S σ₁ σ₂ (x, c)
 
@@ -106,38 +100,26 @@ def IsMembershipAdditiveExtension
     (fun o : Obs => fun q : Obj × Con => observe o q.1 q.2)
     (fun σ q => E σ q.1 q.2)
 
-theorem aggregate_isMembershipAdditiveExtension
-    (S : ObservationEncoder Obs Obj Con Ev) :
-    IsMembershipAdditiveExtension (observeAt S) (aggregate S) := by
-  exact S.aggregate_isAdditiveExtension
+theorem aggregate_isMembershipAdditiveExtension :
+    IsMembershipAdditiveExtension (observeAt S) (aggregate S) :=
+  S.aggregate_isAdditiveExtension
 
 theorem aggregate_eq_of_isMembershipAdditiveExtension
-    (S : ObservationEncoder Obs Obj Con Ev)
     {E : Multiset Obs → Obj → Con → Ev}
     (hE : IsMembershipAdditiveExtension (observeAt S) E) :
     E = aggregate S := by
-  have hEq :
-      (fun (σ : Multiset Obs) (q : Obj × Con) => E σ q.1 q.2) =
-        fun (σ : Multiset Obs) (q : Obj × Con) =>
-          SufficientStatisticEncoder.aggregate S σ q := by
-    exact SufficientStatisticEncoder.aggregate_eq_of_isAdditiveExtension S hE
   funext σ x c
-  exact congrFun (congrFun hEq σ) (x, c)
+  exact congrFun (congrFun (S.aggregate_eq_of_isAdditiveExtension hE) σ) (x, c)
 
 /-- The canonical multiset-based evidence membership context induced by an
 observation interface. -/
-noncomputable def inducedContext
-    (S : ObservationEncoder Obs Obj Con Ev) :
-    EvidenceMembershipContext (Multiset Obs) Obj Con Ev := by
-  exact
-    { memberEvidence := aggregate S
-      memberEvidence_add := aggregate_add S }
+noncomputable def inducedContext : EvidenceMembershipContext (Multiset Obs) Obj Con Ev where
+  memberEvidence := aggregate S
+  memberEvidence_add := aggregate_add S
 
 @[simp] theorem inducedContext_memberEvidence_eq_aggregate
-    (S : ObservationEncoder Obs Obj Con Ev)
     (σ : Multiset Obs) (x : Obj) (c : Con) :
-    (S.inducedContext).memberEvidence σ x c = aggregate S σ x c := by
-  rfl
+    (S.inducedContext).memberEvidence σ x c = aggregate S σ x c := rfl
 
 end Additive
 
@@ -166,33 +148,9 @@ noncomputable def lowerAdjoint
 theorem le_upperAdjoint_iff_le_lowerAdjoint
     (M : Obj → Con → Q) (extent : Predicate Obj Q) (intent : Predicate Con Q) :
     intent ≤ upperAdjoint M extent ↔ extent ≤ lowerAdjoint M intent := by
-  constructor
-  · intro h x
-    apply le_iInf
-    intro c
-    have hUpper : intent c ≤ upperAdjoint M extent c := h c
-    have h₁ : intent c ≤ quantaleImplies (extent x) (M x c) := by
-      exact le_trans hUpper (by
-        simpa [upperAdjoint] using
-          (iInf_le (fun y => quantaleImplies (extent y) (M y c)) x))
-    have h₂ : intent c * extent x ≤ M x c :=
-      (quantaleImplies_adjunction (x := extent x) (y := M x c) (z := intent c)).2 h₁
-    have h₃ : extent x * intent c ≤ M x c := by
-      simpa [mul_comm] using h₂
-    exact (quantaleImplies_adjunction (x := intent c) (y := M x c) (z := extent x)).1 h₃
-  · intro h c
-    apply le_iInf
-    intro x
-    have hLower : extent x ≤ lowerAdjoint M intent x := h x
-    have h₁ : extent x ≤ quantaleImplies (intent c) (M x c) := by
-      exact le_trans hLower (by
-        simpa [lowerAdjoint] using
-          (iInf_le (fun d => quantaleImplies (intent d) (M x d)) c))
-    have h₂ : extent x * intent c ≤ M x c :=
-      (quantaleImplies_adjunction (x := intent c) (y := M x c) (z := extent x)).2 h₁
-    have h₃ : intent c * extent x ≤ M x c := by
-      simpa [mul_comm] using h₂
-    exact (quantaleImplies_adjunction (x := extent x) (y := M x c) (z := intent c)).1 h₃
+  simp only [Pi.le_def, upperAdjoint, lowerAdjoint, le_iInf_iff,
+    ← quantaleImplies_adjunction]
+  exact forall_comm.trans (by simp only [mul_comm])
 
 theorem gc_upperAdjoint_lowerAdjoint
     (M : Obj → Con → Q) :

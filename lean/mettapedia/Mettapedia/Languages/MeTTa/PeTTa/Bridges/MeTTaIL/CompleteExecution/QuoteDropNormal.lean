@@ -44,7 +44,10 @@ set_option maxRecDepth 100000 in
 theorem normalize_agreement :
     ProgramAgreementOn normalizeHeads ScopedReflectiveBinderOperationExecution.runtime scopedLibrary.runtime :=
   agreement_trans (programAgreementOn_of_retained_rows _ _ _ (by rfl) (by rfl))
-    (scoped_runtime_agreement _)
+    (scoped_runtime_agreement _ (by
+      intro head supported
+      simp only [normalizeHeads, decide_eq_true_eq, List.mem_cons, List.not_mem_nil, or_false] at supported
+      rcases supported with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> decide +kernel))
 
 set_option maxRecDepth 100000 in
 /-- `gslt:rule:scope-reflective-normalize` computes the quote-drop normal form, in the scoped library. -/

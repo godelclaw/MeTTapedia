@@ -52,62 +52,33 @@ def graph (leftCost : Left → Nat) (rightCost : Right → Nat)
 theorem monotone (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost) :
     MonotoneRankEnumeration.Monotone (graph leftCost rightCost left right) := by
-  intro parent child present
-  cases parent with
-  | inl index =>
-      change child ∈ (if within : index.val + 1 < left.values.length then
-        [Sum.inl ⟨index.val + 1, within⟩] else []) at present
-      split at present
-      next within =>
-        have same := List.mem_singleton.mp present
-        subst child
-        exact left.ordered.rel_get_of_lt (by change index.val < index.val + 1; omega)
-      next outside => simp at present
-  | inr index =>
-      change child ∈ (if within : index.val + 1 < right.values.length then
-        [Sum.inr ⟨index.val + 1, within⟩] else []) at present
-      split at present
-      next within =>
-        have same := List.mem_singleton.mp present
-        subst child
-        exact right.ordered.rel_get_of_lt (by change index.val < index.val + 1; omega)
-      next outside => simp at present
+  rintro (index | index) child present <;>
+    change child ∈ (if within : _ then [_] else []) at present <;> split at present
+  all_goals try { simp at present }
+  all_goals
+    have same := List.mem_singleton.mp present
+    subst child
+    first
+    | exact left.ordered.rel_get_of_lt (by change index.val < index.val + 1; omega)
+    | exact right.ordered.rel_get_of_lt (by change index.val < index.val + 1; omega)
 
 theorem left_reachable (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost)
     (index : Nat) (within : index < left.values.length) :
     Source (graph leftCost rightCost left right) (roots left.values right.values)
       (.inl ⟨index, within⟩) := by
-  induction index with
-  | zero =>
-      apply Generated.root
-      apply List.mem_append.mpr
-      left
-      simp [within]
-  | succ index ih =>
-      apply Generated.successor (ih (by omega))
-      change Sum.inl (⟨index + 1, within⟩ : Fin left.values.length) ∈
-        (if valid : index + 1 < left.values.length then
-          [Sum.inl ⟨index + 1, valid⟩] else [])
-      simp [within]
+  exact source_of_fin_chain (graph leftCost rightCost left right) (roots left.values right.values)
+    Sum.inl (fun within => by simp [roots, within])
+    (fun index within => by simp [graph, neighbors, within]) ⟨index, within⟩
 
 theorem right_reachable (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost)
     (index : Nat) (within : index < right.values.length) :
     Source (graph leftCost rightCost left right) (roots left.values right.values)
       (.inr ⟨index, within⟩) := by
-  induction index with
-  | zero =>
-      apply Generated.root
-      apply List.mem_append.mpr
-      right
-      simp [within]
-  | succ index ih =>
-      apply Generated.successor (ih (by omega))
-      change Sum.inr (⟨index + 1, within⟩ : Fin right.values.length) ∈
-        (if valid : index + 1 < right.values.length then
-          [Sum.inr ⟨index + 1, valid⟩] else [])
-      simp [within]
+  exact source_of_fin_chain (graph leftCost rightCost left right) (roots left.values right.values)
+    Sum.inr (fun within => by simp [roots, within])
+    (fun index within => by simp [graph, neighbors, within]) ⟨index, within⟩
 
 theorem all_reachable (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost)
@@ -121,38 +92,13 @@ theorem decode_injective (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost) :
     Function.Injective (decode left.values right.values) := by
   intro first second same
-  cases first with
-  | inl first =>
-      cases second with
-      | inl second => exact congrArg Sum.inl (left.distinct.injective_get (Sum.inl.inj same))
-      | inr second => cases same
-  | inr first =>
-      cases second with
-      | inl second => cases same
-      | inr second => exact congrArg Sum.inr (right.distinct.injective_get (Sum.inr.inj same))
+  apply (Sum.map_injective.mpr ⟨left.distinct.injective_get, right.distinct.injective_get⟩)
+  cases first <;> cases second <;> simp_all [decode]
 
 theorem decode_image (left : List Left) (right : List Right) (value : Left ⊕ Right) :
     (∃ index, decode left right index = value) ↔
       sumSource (· ∈ left) (· ∈ right) value := by
-  cases value with
-  | inl value =>
-      constructor
-      · rintro ⟨index, same⟩
-        cases index with
-        | inl index => exact Sum.inl.inj same ▸ List.get_mem _ _
-        | inr index => cases same
-      · intro member
-        obtain ⟨index, same⟩ := List.mem_iff_get.mp member
-        exact ⟨.inl index, congrArg Sum.inl same⟩
-  | inr value =>
-      constructor
-      · rintro ⟨index, same⟩
-        cases index with
-        | inl index => cases same
-        | inr index => exact Sum.inr.inj same ▸ List.get_mem _ _
-      · intro member
-        obtain ⟨index, same⟩ := List.mem_iff_get.mp member
-        exact ⟨.inr index, congrArg Sum.inr same⟩
+  cases value <;> simp [Sum.exists, decode, sumSource, List.mem_iff_get]
 
 def selected (requested : Nat) (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost) : List (Left ⊕ Right) :=
@@ -173,13 +119,7 @@ theorem selected_retained_correct (requested : Nat)
     (sumCost leftCost rightCost) (fun _ => True) _ rankCorrect
     (decode left.values right.values) (decode_injective leftCost rightCost left right)
     (fun _ => rfl)
-  have sourceEq : (fun value => ∃ index, True ∧ decode left.values right.values index = value) =
-      sumSource (· ∈ left.values) (· ∈ right.values) := by
-    funext value
-    apply propext
-    simpa using decode_image left.values right.values value
-  rw [sourceEq] at mapped
-  exact mapped
+  exact mapped.congr_source fun value => by simpa using decode_image left.values right.values value
 
 theorem selected_source_correct (requested : Nat)
     (leftCost : Left → Nat) (rightCost : Right → Nat)
@@ -200,29 +140,17 @@ theorem selected_source_correct (requested : Nat)
   · intro value allowed missing
     cases value with
     | inl value =>
-        have full := leftCorrect.omitted value allowed missing
-        refine ⟨left.values.map Sum.inl, left.distinct.map Sum.inl_injective,
-          by simpa using full.1, ?_, ?_⟩
-        · intro witness member
-          obtain ⟨original, present, same⟩ := List.mem_map.mp member
-          subst witness
-          exact present
-        · intro witness member
-          obtain ⟨original, present, same⟩ := List.mem_map.mp member
-          subst witness
-          exact full.2 original present
+        exact mapped_witnesses requested (sumCost leftCost rightCost)
+          (sumSource (· ∈ left.values) (· ∈ right.values)) (leftCost value)
+          left.values left.distinct (leftCorrect.omitted value allowed missing).1 Sum.inl
+          Sum.inl_injective (fun _ present => present)
+          (fun original present => (leftCorrect.omitted value allowed missing).2 original present)
     | inr value =>
-        have full := rightCorrect.omitted value allowed missing
-        refine ⟨right.values.map Sum.inr, right.distinct.map Sum.inr_injective,
-          by simpa using full.1, ?_, ?_⟩
-        · intro witness member
-          obtain ⟨original, present, same⟩ := List.mem_map.mp member
-          subst witness
-          exact present
-        · intro witness member
-          obtain ⟨original, present, same⟩ := List.mem_map.mp member
-          subst witness
-          exact full.2 original present
+        exact mapped_witnesses requested (sumCost leftCost rightCost)
+          (sumSource (· ∈ left.values) (· ∈ right.values)) (rightCost value)
+          right.values right.distinct (rightCorrect.omitted value allowed missing).1 Sum.inr
+          Sum.inr_injective (fun _ present => present)
+          (fun original present => (rightCorrect.omitted value allowed missing).2 original present)
 
 def combined (requested : Nat) (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost) :
