@@ -2262,7 +2262,7 @@ theorem root_receipt_readouts (request : GeneralRuleJobExecution.Request)
       (GeneralRuleJobExecution.finishRoot
         ⟨plan, bound, expected, source, ⟨ordinal, declaration, .here bound expected source⟩⟩ licensed
         trace captured completed history target valid) = some (rootReadout (.root trace captured completed history target valid))
-    unfold GeneralRuleJobExecution.finishRoot
+    unfold GeneralRuleJobExecution.finishRoot GeneralRuleJobExecution.finishRootIn
     simp only [GeneralRuleJobExecution.Request.environment, represented, filled, ↓reduceDIte,
       Option.map_some]
     rfl
