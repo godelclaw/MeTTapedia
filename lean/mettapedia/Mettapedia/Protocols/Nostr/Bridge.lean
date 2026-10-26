@@ -8,9 +8,10 @@ A gateway brings Nostr mail into claw-mail. Each event the relay delivers for a
 local agent's key goes through the mailbox client's checks (`accept`) and is
 sent, as the archived message, on that agent's claw-mail channel. Its
 occurrence identity is the event identifier. Its sender is the gateway's own
-account, which the claw-mail service authenticates, with the registry name of
-the key that signed the event. No tag and no part of the content takes part in
-naming the sender.
+account, which the claw-mail service authenticates, with the agent name
+`nostr.<registry name>` of the key that signed the event. No tag and no part of
+the content takes part in naming the sender, and the `nostr.` namespace keeps a
+member from taking the name of a local agent of the same account.
 
 The theorems:
 - `bridge_exactly_once`: whatever the relay delivers, in any order and with any
@@ -22,6 +23,8 @@ The theorems:
   refused as a conflict on a re-signed copy of the same event.
 - `bridge_no_impersonation`: mail recorded as from a member whose key is
   uncompromised was signed by that member's key and composed by its owner.
+- `delivery_sender_namespaced`: no bridged sender has a name outside the
+  `nostr.` namespace, so none poses as a local agent.
 - `bridgeAll_frame`: bridging leaves every other channel's inbox as it was.
 -/
 
@@ -29,8 +32,14 @@ namespace Mettapedia.Protocols.Nostr
 
 open Mettapedia.Protocols
 
-/-- The claw-mail agent name of a key: its registry name. -/
-def agentName (reg : Registry) (k : PubKey) : String := (nameOf reg k).getD k
+/-- The namespace of bridged senders. -/
+def bridgedPrefix : String := "nostr."
+
+/-- The claw-mail agent name of a key: its registry name, in the bridged namespace. -/
+def agentName (reg : Registry) (k : PubKey) : String := bridgedPrefix ++ (nameOf reg k).getD k
+
+theorem bridgedPrefix_cancel {a b : String} (h : bridgedPrefix ++ a = bridgedPrefix ++ b) : a = b :=
+  String.toList_injective (by simpa [String.toList_append] using congrArg String.toList h)
 
 /-- The delivery a kept mail becomes. -/
 def toDelivery (gateway : ClawMail.Account) (reg : Registry) (owner : ClawMail.Channel)
@@ -268,12 +277,17 @@ theorem bridgeAll_frame {g : Gateway} {o : ClawMail.Channel} (ho : g.owner ≠ o
 member's key and composed by its owner. -/
 theorem bridge_no_impersonation {g : Gateway} (A : Authorship g.P) (cf : g.P.CollisionFree)
     (hu : (g.reg.map Prod.fst).Nodup) {e : Event} {l : Letter} (hk : g.keep e = some l) {n : String}
-    {k : PubKey} (hn : (g.delivery e l).sender.agent = n) (hreg : (n, k) ∈ g.reg)
+    {k : PubKey} (hn : (g.delivery e l).sender.agent = bridgedPrefix ++ n) (hreg : (n, k) ∈ g.reg)
     (hc : ¬ A.compromised k) : e.pubkey = k ∧ A.authored e.toUnsigned := by
   obtain ⟨-, -, -, n', hn'⟩ := accept_some hk
   apply no_impersonation A cf hu hk (n := n) _ hreg hc
   simp only [delivery, toDelivery, agentName, hn', Option.getD_some] at hn
-  simp [render, hn', hn]
+  simp [render, hn', bridgedPrefix_cancel hn]
+
+/-- No bridged sender has a name outside the `nostr.` namespace. -/
+theorem delivery_sender_namespaced (g : Gateway) (e : Event) (l : Letter) {local_ : String}
+    (h : ∀ n, local_ ≠ bridgedPrefix ++ n) : (g.delivery e l).sender.agent ≠ local_ :=
+  fun heq => h _ heq.symm
 
 end Gateway
 
