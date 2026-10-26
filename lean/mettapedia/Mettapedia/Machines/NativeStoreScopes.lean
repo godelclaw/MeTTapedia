@@ -129,6 +129,34 @@ theorem observation_is_one_use (available : Bool) (live later : Store)
     (useObservation (useObservation available live proposal reads).1 later another more).2 = none := by
   cases available <;> rfl
 
+/-- Submission does not itself transfer ownership: until registration the
+original leased observation still exists. These are server-side ownership
+states, not a claim about when a client knows that registration occurred. -/
+inductive WaitOwner | observation | connection | released
+deriving DecidableEq, Repr
+
+def cancelConnection : WaitOwner → WaitOwner
+  | .connection => .released
+  | other => other
+
+def closeObservation : WaitOwner → WaitOwner
+  | .observation => .released
+  | other => other
+
+theorem cancelling_only_the_transport_can_leave_an_observation :
+    cancelConnection .observation = .observation := rfl
+
+/-- The cleanup protocol covers either ownership state. Runtime conformance
+must also check disconnect processing and a cancellation before registration. -/
+theorem cancelling_both_owners_releases_the_view (owner : WaitOwner) :
+    closeObservation (cancelConnection owner) = .released := by
+  cases owner <;> rfl
+
+theorem terminal_cleanup_is_idempotent (owner : WaitOwner) :
+    closeObservation (cancelConnection (closeObservation (cancelConnection owner))) =
+      closeObservation (cancelConnection owner) := by
+  cases owner <;> rfl
+
 structure ResolvedBatch where
   identity : Nat
   revision : Nat
