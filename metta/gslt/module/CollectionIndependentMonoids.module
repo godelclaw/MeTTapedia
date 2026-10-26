@@ -1,0 +1,29 @@
+Module CollectionIndependentMonoids {
+  Theory Operations() {
+    Types { Number; }
+    Terms {
+      Zero . |- "zero" : Number;
+      One . |- "one" : Number;
+      Add . x:Number, y:Number |- "(" x "+" y ")" : Number;
+      Mul . x:Number, y:Number |- "(" x "*" y ")" : Number;
+    }
+    Equations {
+      (Add (Add x y) z) == (Add x (Add y z));
+      (Add x y) == (Add y x);
+      (Add x (Zero)) == x;
+      (Add (Zero) x) == x;
+      (Mul (Mul x y) z) == (Mul x (Mul y z));
+      (Mul x y) == (Mul y x);
+      (Mul x (One)) == x;
+      (Mul (One) x) == x;
+    }
+    Rewrites { Compute : (Add (Zero) (One)) ~> (Mul (Zero) (One)); }
+  }
+  Theory Collections(o: Operations) {
+    o Replacements {
+      Add => Sum . xs:HashBag(Number) |- "sum" xs : Number;
+      Mul => Product . xs:HashBag(Number) |- "product" xs : Number;
+    }
+  }
+  theory Collections(Operations())
+}

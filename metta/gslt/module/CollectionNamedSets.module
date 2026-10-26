@@ -1,0 +1,15 @@
+Module CollectionNamedSets {
+  Theory Graphs() {
+    Types { Node; Graph; }
+    Terms {
+      A . |- "a" : Node;
+      B . |- "b" : Node;
+      Reach . nodes:HashSet(Node) |- "reach" nodes : Graph;
+      Seen . nodes:HashSet(Node) |- "seen" nodes : Graph;
+    }
+    Rewrites {
+      Observe : (Reach {(A), (B)}) ~> (Seen {(A), (B)});
+    }
+  }
+  theory Graphs()
+}

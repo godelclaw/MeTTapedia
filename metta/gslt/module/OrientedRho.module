@@ -1,0 +1,150 @@
+{- ---------------------------------------------------------------------------
+   OrientedRho.module
+
+   Oriented processes (L. G. Meredith, "Oriented Processes: group-valued data,
+   a chaos constant, and an equivariant COMM for the reflective higher-order
+   calculus", F1R3FLY.io, October 2026), as a member of the rho family.
+
+   Rho is a type constructor here: the data carried by names and messages is a
+   parameter, and this module instantiates it with a group. A name pairs a code
+   with a datum, `@<P, d>`. A receive binds both the code and the datum of what
+   it receives (the canonical pattern), and the continuation uses the received
+   code as a process variable. Communication is gated on equal codes: a receive
+   on `@<C, a>` and a send on `@<C, b>` meet, and the continuation is delivered
+   twice, acted on by the relative orientation `a * inv(b)` and by its inverse
+   `b * inv(a)`. When the orientations agree both coefficients are the unit, and
+   idempotent summation folds the two copies into one: the ordinary rho
+   communication.
+
+   `PAct g P` is the action of the group element `g` on the process `P`: it
+   multiplies every datum of `P` on the left, at every depth of quotation.
+   Variables bound inside `P` keep their frame: a bound datum variable `d`
+   stands for `inv(g) * d` in its scope, and a bound process variable decorated
+   by `w` is decorated by `g * w * inv(g)`. A free process variable carries the
+   action as a decoration until it is substituted: `X` becomes `g . X`, and
+   substituting `Q` for `X` in `w . X` gives `w . Q`. No equation of this module
+   defines it, because an equation over patterns cannot tell a bound variable
+   from a literal; it is interpreted by the orientation profile of the
+   language, which computes the action on the term.
+--------------------------------------------------------------------------- -}
+
+import "UnivAlg.module" as u
+
+Module OrientedRho {
+
+  -- Parallel composition is commutative-monoid multiplication over a bag.
+  Theory ParMonoid(cm: u.CommutativeMonoid) {
+    cm
+      Exports {
+        Elem => Proc;
+      }
+      Replacements {
+        Zero => PZero . |- "0" : Proc;
+        Plus => PPar  . ps:HashBag(Proc) |- "{" ps.*sep("|") "}" : Proc;
+      }
+  }
+
+  -- The data: a group, its carrier named `Data`.
+  Theory GroupData(g: u.Group) {
+    g
+      Exports {
+        Elem => Data;
+      }
+  }
+
+  -- Chaos and idempotent summation. Summation is a semilattice over a set:
+  -- commutative and idempotent by the set, associative by flattening, and a
+  -- one-element sum is its element. Chaos absorbs both operators, and
+  -- composition distributes over summation. `PZero` is not a unit for
+  -- summation: it is the inert configuration, one alternative among others.
+  Theory ChaosSum(pm: ParMonoid) {
+    pm
+      Terms {
+        PChaos . |- "chaos" : Proc;
+        PSum   . ps:HashSet(Proc) |- "[" ps.*sep("+") "]" : Proc;
+      }
+      Equations {
+        (PSum {(PSum {P, Q}), R}) == (PSum {P, Q, R});
+        (PSum {P}) == P;
+        (PPar {(PChaos), P}) == (PChaos);
+        (PSum {(PChaos), P}) == (PChaos);
+        (PPar {P, (PSum {Q, R})}) == (PSum {(PPar {P, Q}), (PPar {P, R})});
+      }
+      Rewrites {
+        RPar : if S ~> T then (PPar {S, ...rest}) ~> (PPar {T, ...rest});
+        RSum : if S ~> T then (PSum {S, ...rest}) ~> (PSum {T, ...rest});
+        RDiv : (PChaos) ~> (PChaos);
+      }
+  }
+
+  -- Names with data, messages with data, the canonical receive, the action, and
+  -- the oriented communication rule.
+  Theory OrientedRho(cs: ChaosSum, gd: GroupData) {
+    (cs \/ gd)
+      Types {
+        Name;
+      }
+      Exports {
+        Name;
+      }
+      Terms {
+        NQuote  . p:Proc, d:Data |- "@" "<" p "," d ">" : Name;
+        POutput . x:Name, q:Proc, d:Data |- x "!" "(" q ")" "^" d : Proc;
+        PInput  . x:Name, ^X.p:[Proc -> Data -> Proc] |- "for" "(" X "<-" x ")" "{" p "}" : Proc;
+        PAct    . g:Data, p:Proc |- g "." p : Proc;
+      }
+      Rewrites {
+        RComm : (PPar {(PInput (NQuote C A) ^X.^d.P), (POutput (NQuote C B) Q D), ...rest})
+                  ~> (PPar {(PSum {(PAct (Mult A (Inv B)) (subst (subst ^X.^d.P Q) D)),
+                                   (PAct (Mult B (Inv A)) (subst (subst ^X.^d.P Q) D))}),
+                            ...rest});
+      }
+  }
+
+  -- Orientation by the cyclic group of order 3: the orientations of a ring of
+  -- three agents.
+  Theory Cyclic3(g: u.Group) {
+    g
+      Terms {
+        Turn . |- "r" : Elem;
+      }
+      Equations {
+        (Mult (Turn) (Mult (Turn) (Turn))) == (One);
+      }
+  }
+
+  -- The calculus over the free group on no generators, the trivial group: every
+  -- communication is between equal orientations, and the calculus reduces as
+  -- the pattern-matching rho calculus extended by chaos and summation.
+  Theory TrivialOrientedRho() {
+    let ps = u.EmptySet() in (
+    let pmo = u.Monoid(ps) in (
+    let pcm = u.CommutativeMonoid(pmo) in (
+    let pm = ParMonoid(pcm) in (
+    let cs = ChaosSum(pm) in (
+    let ds = u.EmptySet() in (
+    let dm = u.Monoid(ds) in (
+    let dg = u.Group(dm) in (
+    let gd = GroupData(dg) in (
+    OrientedRho(cs, gd)
+    )))))))))
+  }
+
+  -- The calculus oriented by the cyclic group of order 3.
+  Theory RingOrientedRho() {
+    let ps = u.EmptySet() in (
+    let pmo = u.Monoid(ps) in (
+    let pcm = u.CommutativeMonoid(pmo) in (
+    let pm = ParMonoid(pcm) in (
+    let cs = ChaosSum(pm) in (
+    let ds = u.EmptySet() in (
+    let dm = u.Monoid(ds) in (
+    let dg = u.Group(dm) in (
+    let c3 = Cyclic3(dg) in (
+    let gd = GroupData(c3) in (
+    OrientedRho(cs, gd)
+    ))))))))))
+  }
+
+  theory RingOrientedRho()
+}

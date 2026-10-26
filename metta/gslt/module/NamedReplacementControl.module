@@ -1,0 +1,19 @@
+Module NamedReplacementControl {
+  Theory Source() {
+    Types { A; B; }
+    Terms {
+      A0 . |- "a" : A;
+      B0 . |- "b" : B;
+      K . x:A, y:B |- "k" x y : A;
+    }
+    Rewrites {
+      Project : (K x y) ~> x;
+    }
+  }
+  Theory Target(s: Source) {
+    s Replacements {
+      K => L . y:B, x:A |- "l" y x : A;
+    }
+  }
+  theory Target(Source())
+}

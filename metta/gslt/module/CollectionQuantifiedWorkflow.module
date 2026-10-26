@@ -1,0 +1,21 @@
+Module CollectionQuantifiedWorkflow {
+  Theory Workflow() {
+    Types { Term; Sequence; }
+    Terms {
+      Zero . |- "zero" : Term;
+      Successor . value:Term |- "successor" value : Term;
+      Witness . value:Term |- "witness" value : Term;
+      Vector . values:Vec(Term) |- "[" values.*sep(",") "]" : Sequence;
+      Wrap . outer:Term, values:Sequence |- "wrap" outer values : Term;
+      NestedWrap . outer:Term, values:Sequence |- "nested" outer values : Term;
+      Accept . answer:Term, outer:Term |- "accept" answer outer : Term;
+    }
+    Rewrites {
+      Independent : if forAll(L, element, share((Witness Y), (Witness element))) then
+        (Wrap outer (Vector {...L})) ~> (Accept (Zero) outer);
+      Nested : if forAll(L, element, forAll(L, item, share((Witness Y), (Witness item)))) then
+        (NestedWrap outer (Vector {...L})) ~> (Accept (Zero) outer);
+    }
+  }
+  theory Workflow()
+}

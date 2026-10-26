@@ -1,0 +1,15 @@
+Module IndexedNatVec {
+  Theory Data() {
+    Inductives {
+      Nat parameters () indices () : Type {
+        Zero () : Nat;
+        Succ (previous : Nat) : Nat;
+      }
+      Vec parameters (A : Type) indices (length : Nat) : Type {
+        Nil () : Vec A Zero;
+        Cons (n : Nat, a : A, xs : Vec A n) : Vec A (Succ n);
+      }
+    }
+  }
+  theory Data()
+}

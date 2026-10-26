@@ -1,0 +1,14 @@
+Module CollectionNestedControl {
+  Theory Processes() {
+    Types { Proc; }
+    Terms {
+      A . |- "A" : Proc;
+      B . |- "B" : Proc;
+      Wrap . p:Proc |- "wrap" p : Proc;
+      Bag . ps:HashBag(Proc) |- "{" ps.*sep(",") "}" : Proc;
+      Choice . ps:HashSet(Proc) |- "[" ps.*sep(",") "]" : Proc;
+    }
+    Rewrites { Change : (A) ~> (B); }
+  }
+  theory Processes()
+}

@@ -1,0 +1,19 @@
+Module CollectionNestedOutputPetri {
+  Theory Workflow() {
+    Types { Place; Marking; Workflow; Workspace; }
+    Terms {
+      A . |- "A" : Place;
+      B . |- "B" : Place;
+      Tokens . items:HashBag(Place) |- "{" items.*sep(",") "}" : Marking;
+      View . items:HashBag(Place), witness:Place |- "view" items "at" witness : Marking;
+      Flow . marking:Marking |- "workflow" marking : Workflow;
+      Box . workflow:Workflow |- "box" workflow : Workspace;
+    }
+    Rewrites {
+      ChooseA : if choose((View rest (B)), (View {picked, ...remaining} (B))) then
+        (Flow (Tokens {(A), ...rest}))
+        ~> (Flow (Tokens {picked}));
+    }
+  }
+  theory Workflow()
+}

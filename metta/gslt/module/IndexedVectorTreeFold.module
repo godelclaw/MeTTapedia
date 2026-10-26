@@ -1,0 +1,17 @@
+Module AgentVectorSearch {
+  Theory Data() {
+    Inductives {
+      VectorTree parameters () indices () : Type {
+        solved (answer : Answer) : VectorTree;
+        branch (arity : Nat, children : Vector arity VectorTree) : VectorTree;
+      }
+    }
+    Rewrites {
+      FoldSolved : (Fold P S B (solved answer))
+        ~> (Apply S answer);
+      FoldBranch : (Fold P S B (branch arity children))
+        ~> (Apply3 B arity children (AllFold P S B arity children));
+    }
+  }
+  theory Data()
+}
