@@ -25,6 +25,7 @@ import Mettapedia.CogArch.Agent.AddressedEffects
 import Mettapedia.CogArch.Agent.RelationalAtlas
 import Mettapedia.CogArch.Agent.ConversationContinuation
 import Mettapedia.CogArch.Agent.WellbeingAssessment
+import Mettapedia.CogArch.Agent.CodingAgent
 
 /-!
 # General agent-architecture interfaces
