@@ -100,36 +100,14 @@ theorem markov_binaryEvidenceOfRowEvidence_add {k : ℕ}
       markov_binaryEvidenceOfRowEvidence e₁ target +
         markov_binaryEvidenceOfRowEvidence e₂ target := by
   ext
-  · change ((((e₁ + e₂).counts target : ℕ) : ℝ≥0∞) =
-      (e₁.counts target : ℝ≥0∞) + (e₂.counts target : ℝ≥0∞))
-    rw [show (e₁ + e₂).counts target = e₁.counts target + e₂.counts target by rfl, Nat.cast_add]
-  · change
-      (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else ((((e₁ + e₂).counts a : ℕ) : ℝ≥0∞))) =
-        (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e₁.counts a : ℝ≥0∞)) +
-        (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e₂.counts a : ℝ≥0∞))
-    have hsplit :
-        ∀ a : Fin k,
-          (if a = target then (0 : ℝ≥0∞) else
-              ((((e₁ + e₂).counts a : ℕ) : ℝ≥0∞))) =
-            (if a = target then (0 : ℝ≥0∞) else (e₁.counts a : ℝ≥0∞)) +
-            (if a = target then (0 : ℝ≥0∞) else (e₂.counts a : ℝ≥0∞)) := by
-      intro a
-      by_cases h : a = target
-      · simp [h]
-      · rw [if_neg h, if_neg h, if_neg h]
-        rw [show (e₁ + e₂).counts a = e₁.counts a + e₂.counts a by rfl, Nat.cast_add]
-    calc
-      (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else ((((e₁ + e₂).counts a : ℕ) : ℝ≥0∞))) =
-          ∑ a : Fin k,
-            ((if a = target then (0 : ℝ≥0∞) else (e₁.counts a : ℝ≥0∞)) +
-              (if a = target then (0 : ℝ≥0∞) else (e₂.counts a : ℝ≥0∞))) := by
-            refine Finset.sum_congr rfl ?_
-            intro a ha
-            exact hsplit a
-      _ =
-          (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e₁.counts a : ℝ≥0∞)) +
-          (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e₂.counts a : ℝ≥0∞)) := by
-            rw [Finset.sum_add_distrib]
+  · change ((e₁.counts target + e₂.counts target : ℕ) : ℝ≥0∞) = _
+    exact Nat.cast_add _ _
+  · change (∑ a : Fin k, if a = target then 0 else
+      ((e₁.counts a + e₂.counts a : ℕ) : ℝ≥0∞)) =
+        (∑ a : Fin k, if a = target then 0 else (e₁.counts a : ℝ≥0∞)) +
+        (∑ a : Fin k, if a = target then 0 else (e₂.counts a : ℝ≥0∞))
+    simp only [Nat.cast_add, ← Finset.sum_add_distrib]
+    congr 1; funext a; split_ifs <;> simp
 
 noncomputable instance instAdditiveWorldModelMarkovTransitionWMState {k : ℕ} :
     AdditiveWorldModel (MarkovTransitionWMState k) (Fin k) (MultiEvidence k) :=

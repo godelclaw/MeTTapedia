@@ -1,12 +1,11 @@
-import Mettapedia.CategoryTheory.FinitePowerset
+import Mettapedia.CategoryTheory.FinitePowersetRelation
 
 /-!
 # Complete finite matching relations for weak pullbacks
 
-Equal finite direct images construct the entire finite relation of matching
-pairs. Both projected images are the supplied successor sets. Thus the
-canonical comparison onto the pullback of finite direct images is surjective.
-Different relations can have the same projections; no inverse is inferred.
+Equality-kernel matching specializes the complete relation construction.
+Its projections give a section of the canonical comparison. Different
+correlations can share those projections, so injectivity is not inferred.
 -/
 
 set_option autoImplicit false
@@ -31,63 +30,44 @@ def second (left : X → Z) (right : Y → Z) : Pair left right → Y :=
   fun pair => pair.val.2
 
 theorem square (left : X → Z) (right : Y → Z) :
-    left ∘ first left right = right ∘ second left right := by
-  funext pair
-  exact pair.property
+    left ∘ first left right = right ∘ second left right := funext (fun pair => pair.property)
 
 def matching (left : X → Z) (right : Y → Z)
-    (leftSuccessors : Finset X) (rightSuccessors : Finset Y) : Finset (Pair left right) := by
-  classical
-  exact (leftSuccessors.product rightSuccessors).subtype
-    (fun coordinates => left coordinates.1 = right coordinates.2)
+    (leftSuccessors : Finset X) (rightSuccessors : Finset Y) : Finset (Pair left right) :=
+  FinitePowersetRelation.matching (fun value other => left value = right other)
+    leftSuccessors rightSuccessors
 
 @[simp] theorem mem_matching (left : X → Z) (right : Y → Z)
     (leftSuccessors : Finset X) (rightSuccessors : Finset Y) (pair : Pair left right) :
     pair ∈ matching left right leftSuccessors rightSuccessors ↔
-      pair.val.1 ∈ leftSuccessors ∧ pair.val.2 ∈ rightSuccessors := by
+      pair.val.1 ∈ leftSuccessors ∧ pair.val.2 ∈ rightSuccessors :=
+  FinitePowersetRelation.mem_matching (fun value other => left value = right other)
+    leftSuccessors rightSuccessors pair
+
+/-- Two-sided equality-kernel coverage is exactly equality of direct images. -/
+theorem related_iff_matching (left : X → Z) (right : Y → Z)
+    (leftSuccessors : Finset X) (rightSuccessors : Finset Y) :
+    Related (fun value other => left value = right other) leftSuccessors rightSuccessors ↔
+      map left leftSuccessors = map right rightSuccessors := by
   classical
-  simp only [matching, Finset.mem_subtype]
-  exact Finset.mem_product
+  simp only [le_antisymm_iff, map, Finset.image_subset_iff, Finset.mem_image, Related]
+  simp only [eq_comm]
 
 theorem matching_first (left : X → Z) (right : Y → Z)
     (leftSuccessors : Finset X) (rightSuccessors : Finset Y)
     (sameImage : map left leftSuccessors = map right rightSuccessors) :
     map (first left right) (matching left right leftSuccessors rightSuccessors) =
-      leftSuccessors := by
-  apply Finset.ext
-  intro value
-  rw [mem_map]
-  constructor
-  · rintro ⟨pair, member, rfl⟩
-    exact (mem_matching left right leftSuccessors rightSuccessors pair).mp member |>.1
-  · intro member
-    have common : left value ∈ map right rightSuccessors := by
-      rw [← sameImage, mem_map]
-      exact ⟨value, member, rfl⟩
-    obtain ⟨other, otherMember, same⟩ := (mem_map right rightSuccessors _).mp common
-    refine ⟨⟨(value, other), same.symm⟩, ?_, rfl⟩
-    exact (mem_matching left right leftSuccessors rightSuccessors _).mpr
-      ⟨member, otherMember⟩
+      leftSuccessors :=
+  FinitePowersetRelation.matching_first _ _ _
+    ((related_iff_matching left right _ _).mpr sameImage)
 
 theorem matching_second (left : X → Z) (right : Y → Z)
     (leftSuccessors : Finset X) (rightSuccessors : Finset Y)
     (sameImage : map left leftSuccessors = map right rightSuccessors) :
     map (second left right) (matching left right leftSuccessors rightSuccessors) =
-      rightSuccessors := by
-  apply Finset.ext
-  intro other
-  rw [mem_map]
-  constructor
-  · rintro ⟨pair, member, rfl⟩
-    exact (mem_matching left right leftSuccessors rightSuccessors pair).mp member |>.2
-  · intro member
-    have common : right other ∈ map left leftSuccessors := by
-      rw [sameImage, mem_map]
-      exact ⟨other, member, rfl⟩
-    obtain ⟨value, valueMember, same⟩ := (mem_map left leftSuccessors _).mp common
-    refine ⟨⟨(value, other), same⟩, ?_, rfl⟩
-    exact (mem_matching left right leftSuccessors rightSuccessors _).mpr
-      ⟨valueMember, member⟩
+      rightSuccessors :=
+  FinitePowersetRelation.matching_second _ _ _
+    ((related_iff_matching left right _ _).mpr sameImage)
 
 def comparison (left : X → Z) (right : Y → Z) :
     Finset (Pair left right) → Pair (map left) (map right) :=
@@ -100,44 +80,12 @@ def matchingSection (left : X → Z) (right : Y → Z) :
 
 theorem comparison_matching (left : X → Z) (right : Y → Z)
     (pair : Pair (map left) (map right)) :
-    comparison left right (matchingSection left right pair) = pair := by
-  apply Subtype.ext
-  exact Prod.ext (matching_first left right pair.val.1 pair.val.2 pair.property)
-    (matching_second left right pair.val.1 pair.val.2 pair.property)
+    comparison left right (matchingSection left right pair) = pair :=
+  Subtype.ext (Prod.ext (matching_first left right pair.val.1 pair.val.2 pair.property)
+    (matching_second left right pair.val.1 pair.val.2 pair.property))
 
 theorem comparison_surjective (left : X → Z) (right : Y → Z) :
     Function.Surjective (comparison left right) :=
   fun pair => ⟨matchingSection left right pair, comparison_matching left right pair⟩
-
-/-- The entire relation realizes two-sided matching coverage. -/
-theorem related_iff_matching (left : X → Z) (right : Y → Z)
-    (leftSuccessors : Finset X) (rightSuccessors : Finset Y) :
-    Related (fun value other => left value = right other) leftSuccessors rightSuccessors ↔
-      map left leftSuccessors = map right rightSuccessors := by
-  constructor
-  · intro held
-    apply Finset.ext
-    intro common
-    rw [mem_map, mem_map]
-    constructor
-    · rintro ⟨value, member, rfl⟩
-      obtain ⟨other, otherMember, same⟩ := held.1 value member
-      exact ⟨other, otherMember, same.symm⟩
-    · rintro ⟨other, member, rfl⟩
-      obtain ⟨value, valueMember, same⟩ := held.2 other member
-      exact ⟨value, valueMember, same⟩
-  · intro same
-    constructor
-    · intro value member
-      have common : left value ∈ map right rightSuccessors := by
-        rw [← same, mem_map]
-        exact ⟨value, member, rfl⟩
-      obtain ⟨other, otherMember, equal⟩ := (mem_map right rightSuccessors _).mp common
-      exact ⟨other, otherMember, equal.symm⟩
-    · intro other member
-      have common : right other ∈ map left leftSuccessors := by
-        rw [same, mem_map]
-        exact ⟨other, member, rfl⟩
-      exact (mem_map left leftSuccessors _).mp common
 
 end Mettapedia.CategoryTheory.FinitePowersetWeakPullback

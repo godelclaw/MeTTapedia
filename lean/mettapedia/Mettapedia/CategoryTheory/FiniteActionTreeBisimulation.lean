@@ -1,4 +1,5 @@
 import Mettapedia.CategoryTheory.FiniteActionTree
+import Mettapedia.CategoryTheory.FinitePowersetWeakPullback
 
 /-!
 # The coloured two-sided bisimulation quotient
@@ -35,14 +36,8 @@ theorem bisimilar_admitted : @Admitted Actions Colours Bisimilar := by
   intro first second related
   obtain ⟨relation, admitted, held⟩ := related
   obtain ⟨colours, successors⟩ := admitted first second held
-  refine ⟨colours, fun action => ?_⟩
-  constructor
-  · intro value member
-    obtain ⟨other, otherMember, paired⟩ := (successors action).1 value member
-    exact ⟨other, otherMember, relation, admitted, paired⟩
-  · intro other member
-    obtain ⟨value, valueMember, paired⟩ := (successors action).2 other member
-    exact ⟨value, valueMember, relation, admitted, paired⟩
+  exact ⟨colours, fun action => (successors action).mono
+    (fun _ _ paired => ⟨relation, admitted, paired⟩)⟩
 
 theorem bisimilar_root {first second : Raw Actions Colours} (held : Bisimilar first second) :
     root first = root second := (bisimilar_admitted first second held).1
@@ -108,17 +103,9 @@ def root (tree : Tree Actions Colours) : Colours :=
 theorem step_respects {first second : Raw Actions Colours}
     (held : Bisimilar first second) (action : Actions) :
     FinitePowerset.map project (FiniteActionTree.step first action) =
-      FinitePowerset.map project (FiniteActionTree.step second action) := by
-  apply Finset.ext
-  intro value
-  rw [FinitePowerset.mem_map, FinitePowerset.mem_map]
-  constructor
-  · rintro ⟨next, member, rfl⟩
-    obtain ⟨other, otherMember, paired⟩ := (bisimilar_step held action).1 next member
-    exact ⟨other, otherMember, (project_eq_of_bisimilar paired).symm⟩
-  · rintro ⟨other, member, rfl⟩
-    obtain ⟨next, nextMember, paired⟩ := (bisimilar_step held action).2 other member
-    exact ⟨next, nextMember, project_eq_of_bisimilar paired⟩
+      FinitePowerset.map project (FiniteActionTree.step second action) :=
+  (FinitePowersetWeakPullback.related_iff_matching project project _ _).mp
+    ((bisimilar_step held action).mono (fun _ _ paired => project_eq_of_bisimilar paired))
 
 def step (tree : Tree Actions Colours) (action : Actions) : Finset (Tree Actions Colours) :=
   Quotient.lift (fun raw => FinitePowerset.map project (FiniteActionTree.step raw action))
@@ -132,13 +119,9 @@ theorem mem_step_project (tree : Raw Actions Colours) (action : Actions)
     (next : Tree Actions Colours) :
     next ∈ step (project tree) action ↔
       ∃ slot, project (child tree action slot) = next := by
-  rw [step_project, FinitePowerset.mem_map]
-  constructor
-  · rintro ⟨raw, member, same⟩
-    obtain ⟨slot, rfl⟩ := (mem_step tree action raw).1 member
-    exact ⟨slot, same⟩
-  · rintro ⟨slot, same⟩
-    exact ⟨child tree action slot, child_mem_step tree action slot, same⟩
+  simp only [step_project, FinitePowerset.mem_map, mem_step]
+  exact ⟨fun ⟨_, ⟨slot, rfl⟩, same⟩ => ⟨slot, same⟩,
+    fun ⟨slot, same⟩ => ⟨_, ⟨slot, rfl⟩, same⟩⟩
 
 end Tree
 

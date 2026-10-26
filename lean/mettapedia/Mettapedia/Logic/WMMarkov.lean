@@ -120,28 +120,10 @@ theorem rowEvidence_bump_eq_add_transitionObservation
     rowEvidence (TransCounts.bump c prev next) q =
       rowEvidence c q + transitionObservation (k := k) (prev, next) q := by
   ext a
-  by_cases hq : prev = q
-  · subst hq
-    change (rowEvidence (TransCounts.bump c prev next) prev).counts a =
-      (MultiEvidence.hplus (rowEvidence c prev)
-        (transitionObservation (k := k) (prev, next) prev)).counts a
-    by_cases ha : a = next
-    · subst ha
-      simp [rowEvidence, transitionObservation, categoricalObservation, TransCounts.bump,
-        MultiEvidence.hplus]
-    · simp [rowEvidence, transitionObservation, categoricalObservation, TransCounts.bump,
-        MultiEvidence.hplus, ha]
-  · have hpair : ¬(prev = q ∧ a = next) := by
-      intro h
-      exact hq h.1
-    change (rowEvidence (TransCounts.bump c prev next) q).counts a =
-      (MultiEvidence.hplus (rowEvidence c q)
-        (transitionObservation (k := k) (prev, next) q)).counts a
-    have hpair' : ¬(q = prev ∧ a = next) := by
-      intro h
-      exact hq h.1.symm
-    simp [rowEvidence, transitionObservation, TransCounts.bump, MultiEvidence.hplus, hq, hpair']
-    rfl
+  change (TransCounts.bump c prev next).counts q a = c.counts q a + (transitionObservation (prev, next) q).counts a
+  by_cases hq : prev = q <;> by_cases ha : next = a <;>
+    simp [transitionObservation, categoricalObservation, TransCounts.bump,
+      hq, ha, eq_comm] <;> rfl
 
 /-- Aggregating transition observations recovers exactly the row-evidence view
 of the transition counts accumulated by `summaryAux`. -/
@@ -151,37 +133,12 @@ theorem aggregate_transitionMultisetAux_eq_rowEvidence_summaryAux
         aggregate (markovRowStatistic (k := k)) (transitionMultisetAux (k := k) prev xs) q =
       rowEvidence (TransCounts.summaryAux prev c xs).1 q := by
   induction xs generalizing prev c with
-  | nil =>
-      simp [transitionMultisetAux, TransCounts.summaryAux]
+  | nil => simp [transitionMultisetAux, TransCounts.summaryAux]
   | cons b xs ih =>
-      calc
-        rowEvidence c q +
-            aggregate (markovRowStatistic (k := k))
-              (transitionMultisetAux (k := k) prev (b :: xs)) q
-            =
-          rowEvidence c q +
-            (aggregate (markovRowStatistic (k := k))
-                ({(prev, b)} : Multiset (TransitionObservation k)) q +
-              aggregate (markovRowStatistic (k := k))
-                (transitionMultisetAux (k := k) b xs) q) := by
-              rw [transitionMultisetAux_cons, aggregate_add]
-        _ =
-          (rowEvidence c q +
-              aggregate (markovRowStatistic (k := k))
-                ({(prev, b)} : Multiset (TransitionObservation k)) q) +
-            aggregate (markovRowStatistic (k := k))
-              (transitionMultisetAux (k := k) b xs) q := by
-              ac_rfl
-        _ =
-          rowEvidence (TransCounts.bump c prev b) q +
-            aggregate (markovRowStatistic (k := k))
-              (transitionMultisetAux (k := k) b xs) q := by
-              rw [aggregate_singleton]
-              simp [markovRowStatistic, rowEvidence_bump_eq_add_transitionObservation]
-        _ = rowEvidence (TransCounts.summaryAux b (TransCounts.bump c prev b) xs).1 q := by
-              simpa [add_comm] using ih b (TransCounts.bump c prev b)
-        _ = rowEvidence (TransCounts.summaryAux prev c (b :: xs)).1 q := by
-              simp [TransCounts.summaryAux]
+      simpa only [transitionMultisetAux_cons, TransCounts.summaryAux, aggregate_add, aggregate_singleton,
+         markovRowStatistic,
+        rowEvidence_bump_eq_add_transitionObservation, add_assoc] using
+        ih b (TransCounts.bump c prev b)
 
 /-- The induced WM extraction on the multiset of transitions in a word recovers
 the corresponding row of the Markov transition-count matrix. -/
@@ -215,7 +172,7 @@ theorem inducedWorldModel_extract_transitionMultiset_eq_rowEvidence_of_summary
     {xs : List (Fin k)} {c : TransCounts k} {last : Fin k}
     (hsum : TransCounts.summary (k := k) xs = some (c, last))
     (q : Fin k) :
-    letI : PLNWorldModelGeneric.AdditiveWorldModel
+    let : PLNWorldModelGeneric.AdditiveWorldModel
       (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
       (markovRowStatistic (k := k)).inducedWorldModel
     PLNWorldModelGeneric.AdditiveWorldModel.extract
@@ -224,7 +181,7 @@ theorem inducedWorldModel_extract_transitionMultiset_eq_rowEvidence_of_summary
         (Ev := MultiEvidence k)
         (transitionMultiset (k := k) xs) q =
       rowEvidence c q := by
-  letI : PLNWorldModelGeneric.AdditiveWorldModel
+  let : PLNWorldModelGeneric.AdditiveWorldModel
     (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
     (markovRowStatistic (k := k)).inducedWorldModel
   simpa [SufficientStatisticEncoder.inducedWorldModel_evidence_eq_aggregate] using
@@ -236,7 +193,7 @@ theorem inducedWorldModel_queryObservationCount_transitionMultiset_eq_rowTotal_o
     {xs : List (Fin k)} {c : TransCounts k} {last : Fin k}
     (hsum : TransCounts.summary (k := k) xs = some (c, last))
     (q : Fin k) :
-    letI : PLNWorldModelGeneric.AdditiveWorldModel
+    let : PLNWorldModelGeneric.AdditiveWorldModel
       (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
       (markovRowStatistic (k := k)).inducedWorldModel
     PLNWorldModelGeneric.AdditiveWorldModel.queryObservationCount
@@ -245,9 +202,10 @@ theorem inducedWorldModel_queryObservationCount_transitionMultiset_eq_rowTotal_o
         (Ev := MultiEvidence k)
         (transitionMultiset (k := k) xs) q =
       c.rowTotal q := by
-  letI : PLNWorldModelGeneric.AdditiveWorldModel
+  let : PLNWorldModelGeneric.AdditiveWorldModel
     (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
     (markovRowStatistic (k := k)).inducedWorldModel
+  dsimp only
   rw [SufficientStatisticEncoder.queryObservationCount_inducedWorldModel_eq_aggregate_observationCount
     (S := markovRowStatistic (k := k))]
   rw [aggregate_transitionMultiset_eq_rowEvidence_of_summary (k := k) hsum q]

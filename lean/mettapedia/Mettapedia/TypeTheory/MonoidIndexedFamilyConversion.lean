@@ -52,7 +52,7 @@ deriving DecidableEq
 /-- The complete endpoint invariant: retain the family symbol and normalize
 its symbolic index. -/
 def normalCode (type : IndexedType) : Family × List Nat :=
-  (type.family, flatten type.index)
+  (type.family, Term.variableWord type.index)
 
 /-- One primitive conversion step carries an accepted replay certificate for
 the index equation and cannot change the family symbol. -/
@@ -84,7 +84,7 @@ def completeInvariant : CompleteInvariant
     | certified family certificate =>
         apply Prod.ext
         · rfl
-        · exact flatten_eq_of_consequence
+        · exact variableWord_eq_of_consequence
             (consequenceOfAccepted certificate)
   complete := by
     intro index source target codesEqual
@@ -92,11 +92,11 @@ def completeInvariant : CompleteInvariant
     rcases target with ⟨targetFamily, targetIndex⟩
     have familiesEqual : sourceFamily = targetFamily :=
       congrArg Prod.fst codesEqual
-    have wordsEqual : flatten sourceIndex = flatten targetIndex :=
+    have wordsEqual : Term.variableWord sourceIndex = Term.variableWord targetIndex :=
       congrArg Prod.snd codesEqual
     subst targetFamily
     obtain ⟨certificate⟩ := nonemptyAcceptedOfConsequence
-      (consequence_of_flatten_eq wordsEqual)
+      (consequence_of_variableWord_eq wordsEqual)
     exact ⟨.step (.certified sourceFamily certificate)⟩
 
 /-- Execute the direct canonical-word conversion decision. -/
@@ -250,11 +250,7 @@ theorem packetVariables_have_no_conversion :
   exact packetVariables_have_distinct_codes (path_preserves_normalCode path)
 
 theorem distinct_packet_indices_are_rejected :
-    decideConversion packetX packetY = false := by
-  apply Bool.eq_false_iff.mpr
-  intro accepted
-  exact packetVariables_have_no_conversion
-    (decideConversion_eq_true_iff.mp accepted)
+    decideConversion packetX packetY = false := rfl
 
 def packetValueXUnit : Value := .token .packet (mul x one)
 
@@ -263,12 +259,7 @@ theorem packetValue_checks_at_normalized_index :
   decideConversion_iff_nonemptyTypingReceipt.mp rightUnit_is_accepted
 
 theorem packetValue_wrong_index_rejected :
-    decideConversion (inferredType packetValueXUnit) packetY = false := by
-  apply Bool.eq_false_iff.mpr
-  intro accepted
-  obtain ⟨path⟩ := decideConversion_eq_true_iff.mp accepted
-  have codeEquality := path_preserves_normalCode path
-  simp [normalCode, inferredType, packetValueXUnit, packetY, x, y] at codeEquality
+    decideConversion (inferredType packetValueXUnit) packetY = false := rfl
 
 theorem packetValue_has_no_wrong_index_receipt :
     ¬ Nonempty (TypingReceipt packetValueXUnit packetY) := by
@@ -289,17 +280,14 @@ theorem crossFamily_has_no_conversion :
 /-! ## Unsafe erasure of the family tag -/
 
 /-- This tempting readout keeps only the normalized symbolic index. -/
-def dropFamily (type : IndexedType) : List Nat := flatten type.index
+def dropFamily (type : IndexedType) : List Nat := Term.variableWord type.index
 
 /-- Dropping the family tag preserves every valid primitive conversion. -/
 def dropFamilyMap : ConversionMap
     State (fun {_index : Unit} => ConversionStep)
     (List Nat) (EqualityStep (List Nat)) where
   erase := dropFamily
-  onStep := by
-    intro index source target evidence
-    exact ⟨congrArg Prod.snd
-      (completeInvariant.generatorInvariant evidence)⟩
+  onStep := fun evidence => ⟨congrArg Prod.snd (completeInvariant.generatorInvariant evidence)⟩
 
 theorem dropFamily_identifies_distinct_families :
     dropFamily packetX = dropFamily channelX := rfl
@@ -308,20 +296,8 @@ theorem dropFamily_identifies_distinct_families :
 tags cannot be reflected to typed conversion. -/
 theorem dropFamily_does_not_reflect : ¬ dropFamilyMap.Reflects := by
   intro reflects
-  have rawPath : Nonempty
-      (RawPath (List Nat) (EqualityStep (List Nat))
-        (dropFamilyMap.erase (index := ()) packetX)
-        (dropFamilyMap.erase (index := ()) channelX)) := by
-    change Nonempty
-      (RawPath (List Nat) (EqualityStep (List Nat))
-        (dropFamily packetX) (dropFamily channelX))
-    rw [dropFamily_identifies_distinct_families]
-    exact ⟨ConversionEvidence.refl
-      (computation := computation (fun _index : Unit => List Nat)
-        (fun {_index : Unit} source target =>
-          EqualityStep (List Nat) source target)) _⟩
   exact crossFamily_has_no_conversion
-    (reflects (index := ()) (source := packetX) (target := channelX) rawPath)
+    (reflects (index := ()) (source := packetX) (target := channelX) ⟨.refl _⟩)
 
 /-! ## Simple observation does not recover dependency -/
 
@@ -339,31 +315,34 @@ theorem simpleReadout_does_not_reflect_conversion :
   exact packetVariables_have_no_conversion
     (reflects packetX packetY simpleReadout_identifies_distinct_indices)
 
+/-- The dependent interpretation of a complete canonical code. -/
+def codeFibre (code : Code) : Type :=
+  match code.1 with
+  | .packet => Fin code.2.length.succ
+  | .channel => PUnit
+
 /-- An independent denotation whose result type genuinely varies with the
 normalized packet index. -/
 def SemanticFibre (type : IndexedType) : Type :=
   match type.family with
-  | .packet => Fin (flatten type.index).length.succ
+  | .packet => Fin (Term.variableWord type.index).length.succ
   | .channel => PUnit
 
 /-- Every certificate-bearing conversion transports the independently
 defined semantic result fibre. -/
 def semanticFibreEquivOfPath {source target : IndexedType}
     (path : ConversionPath source target) :
-    SemanticFibre source ≃ SemanticFibre target := by
-  have codesEqual := path_preserves_normalCode path
-  rcases source with ⟨sourceFamily, sourceIndex⟩
-  rcases target with ⟨targetFamily, targetIndex⟩
-  have familiesEqual : sourceFamily = targetFamily :=
-    congrArg Prod.fst codesEqual
-  have wordsEqual : flatten sourceIndex = flatten targetIndex :=
-    congrArg Prod.snd codesEqual
-  subst targetFamily
-  cases sourceFamily with
-  | packet =>
-      exact Equiv.cast
-        (congrArg (fun word : List Nat => Fin word.length.succ) wordsEqual)
-  | channel => exact Equiv.refl PUnit
+    SemanticFibre source ≃ SemanticFibre target :=
+  Equiv.cast (congrArg codeFibre (path_preserves_normalCode path))
+
+/-- The independent semantic family is the pullback of the canonical-code family. -/
+theorem semanticFibre_eq_codeFibre (type : IndexedType) :
+    SemanticFibre type = codeFibre (normalCode type) := rfl
+
+theorem semanticFibreEquivOfPath_eq_cast {source target : IndexedType}
+    (path : ConversionPath source target) :
+    semanticFibreEquivOfPath path =
+      Equiv.cast (congrArg codeFibre (path_preserves_normalCode path)) := rfl
 
 def packetXY : IndexedType :=
   { family := .packet, index := mul x y }
@@ -443,21 +422,5 @@ theorem decision_cannot_recover_supplied_history (type : IndexedType) :
   no_path_history_retraction
     (reflexivePath type) (doubledReflexivePath type)
     (reflexivePath_ne_doubled type)
-
-/-! ## Axiom audit -/
-
-#print axioms decideConversion_iff_nonemptyTypingReceipt
-#print axioms canonicalErasedDecision_eq_true_iff
-#print axioms directDecision_eq_canonicalErasedDecision
-#print axioms rightUnit_is_accepted
-#print axioms rightUnitPath_certificate_nodeCount
-#print axioms distinct_packet_indices_are_rejected
-#print axioms packetValue_checks_at_normalized_index
-#print axioms packetValue_has_no_wrong_index_receipt
-#print axioms dropFamily_does_not_reflect
-#print axioms semanticFibreEquivOfPath
-#print axioms packet_fibres_are_genuinely_indexed
-#print axioms substitution_does_not_reflect_decision
-#print axioms decision_cannot_recover_supplied_history
 
 end Mettapedia.TypeTheory.MonoidIndexedFamilyConversion

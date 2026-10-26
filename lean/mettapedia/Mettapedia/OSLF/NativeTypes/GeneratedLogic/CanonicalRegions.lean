@@ -18,9 +18,14 @@ forward, singletons, fixed points and the connectives (`Formula.behaviouralForwa
 - **The canonical structure** (`canonicalStructure`): canonical terms with the language's steps to them.
   Taking canonical forms is a step morphism from the language's structure onto it (`canonMorphism`).
 - **A closed canonical region** (`canonicalRegion`): canonical terms without repetition, each state
-  completely listed, with the canonical forms of its listed successors in the region. Its inclusion is a
+  completely listed at its presentations, with the canonical forms of its listed successors in the
+  region. Its inclusion is a
   step morphism into the canonical structure (`regionMorphism`), so the finite evaluator's verdict on it is
   exact (`canonical_check_iff`), and `decideCanonical` grows such a region from a term.
+- **Presentations**: a region lists each state's steps at its presentations (`listedAt`), terms with the state as
+  canonical form, and checks that they are. Presenting each state as itself (`List.singleton`) suffices when rules
+  fire at canonical forms or their steps are simulated there. A set read modulo idempotence needs presentations
+  with members written more than once, since a rule may consume one copy and leave another.
 - **Sufficient conditions for coherence**: canonical forms that simulate steps
   (`coherent_of_simulation`), in particular rules that fire only on canonical terms
   (`coherent_of_canonical_redexes`).
@@ -296,7 +301,7 @@ end StepMorphism
 /-! ## Canonical forms and coherence -/
 
 variable (relEnv : RelationEnv) (language : LanguageDef) (fuel : ℕ) (canon : Pattern → Pattern)
-  (domain : Pattern → Bool)
+  (domain : Pattern → Bool) (presentations : Pattern → List Pattern)
 
 /-- **Canonical forms on a domain of admitted terms**: admitted terms are object terms, admission is read
 off canonical forms, each admitted term is equivalent to its canonical form, an admitted term and anything
@@ -309,14 +314,24 @@ structure Canonical : Prop where
     canon first = canon second
   closed : ∀ {term}, domain term = true → (canon term).isWellScopedAt 0 = term.isWellScopedAt 0
 
+/-- **The steps listed at a state**: those listed at each of its presentations, terms with the state as canonical
+form at which the language's rules may fire. -/
+def listedAt (state : Pattern) : List (Witness × Pattern) :=
+  (presentations state).flatMap (stepsAt relEnv language fuel)
+
+/-- Whether the fuel lists the steps at every presentation of a state completely. -/
+def enoughAt (state : Pattern) : Bool :=
+  (presentations state).all (enough relEnv language fuel)
+
 /-- **Coherence**: a step from any state equivalent to an admitted canonical state is matched, up to
 canonical form and with the same labels, by a step listed at that state, wherever the fuel lists it
 completely. -/
 def Coherent : Prop :=
   ∀ {state redex : Pattern} {witness : Witness} {contractum : Pattern}, IsState state → domain state = true →
-    canon state = state → enough relEnv language fuel state = true → ObjectEquivalent relEnv language state redex →
-      IsState redex → StepValid relEnv language redex witness contractum →
-        ∃ entry ∈ stepsAt relEnv language fuel state,
+    canon state = state → enoughAt relEnv language fuel presentations state = true →
+      ObjectEquivalent relEnv language state redex → IsState redex → StepValid relEnv language redex witness contractum
+        →
+        ∃ entry ∈ listedAt relEnv language fuel presentations state,
           (∀ label : StepLabel, label.admits witness = label.admits entry.1) ∧ canon entry.2 = canon contractum
 
 /-- The plain step label: `◇` and `□` without a rule or a site. -/
@@ -329,51 +344,72 @@ matched, up to canonical form, by a step listed at that state, wherever the fuel
 labels of the two steps are not compared. -/
 def CoherentPlain : Prop :=
   ∀ {state redex : Pattern} {witness : Witness} {contractum : Pattern}, IsState state → domain state = true →
-    canon state = state → enough relEnv language fuel state = true → ObjectEquivalent relEnv language state redex →
-      IsState redex → StepValid relEnv language redex witness contractum →
-        ∃ entry ∈ stepsAt relEnv language fuel state, canon entry.2 = canon contractum
+    canon state = state → enoughAt relEnv language fuel presentations state = true →
+      ObjectEquivalent relEnv language state redex → IsState redex → StepValid relEnv language redex witness contractum
+        →
+        ∃ entry ∈ listedAt relEnv language fuel presentations state, canon entry.2 = canon contractum
 
-variable {relEnv language fuel canon domain}
+variable {relEnv language fuel canon domain presentations}
+
+theorem mem_listedAt {state : Pattern} {entry : Witness × Pattern} :
+    entry ∈ listedAt relEnv language fuel presentations state ↔
+      ∃ shown ∈ presentations state, entry ∈ stepsAt relEnv language fuel shown := by
+  simp only [listedAt, List.mem_flatMap]
+
+theorem enoughAt_iff {state : Pattern} :
+    enoughAt relEnv language fuel presentations state = true ↔
+      ∀ shown ∈ presentations state, enough relEnv language fuel shown = true := by
+  simp only [enoughAt, List.all_eq_true]
+
+theorem listedAt_singleton (state : Pattern) :
+    listedAt relEnv language fuel List.singleton state = stepsAt relEnv language fuel state := by
+  simp [listedAt, List.singleton]
+
+theorem enoughAt_singleton (state : Pattern) :
+    enoughAt relEnv language fuel List.singleton state = enough relEnv language fuel state := by
+  simp [enoughAt, List.singleton]
 
 /-- Coherence is coherence for plain steps. -/
-theorem Coherent.plain (coherent : Coherent relEnv language fuel canon domain) :
-    CoherentPlain relEnv language fuel canon domain := by
-  intro state redex witness contractum stateIs admitted canonState enoughAt before redexState valid
-  obtain ⟨entry, member, -, same⟩ := coherent stateIs admitted canonState enoughAt before redexState valid
+theorem Coherent.plain (coherent : Coherent relEnv language fuel canon domain presentations) :
+    CoherentPlain relEnv language fuel canon domain presentations := by
+  intro state redex witness contractum stateIs admitted canonState complete before redexState valid
+  obtain ⟨entry, member, -, same⟩ := coherent stateIs admitted canonState complete before redexState valid
   exact ⟨entry, member, same⟩
 
-variable (relEnv language fuel canon domain) in
+variable (relEnv language fuel canon domain presentations) in
 /-- **Coherence on admitted labels**: a step from any state equivalent to an admitted canonical state is
 matched, up to canonical form and alike on the admitted labels, by a step listed at that state, wherever the
 fuel lists it completely. -/
 def CoherentOn (admissible : StepLabel → Bool) : Prop :=
   ∀ {state redex : Pattern} {witness : Witness} {contractum : Pattern}, IsState state → domain state = true →
-    canon state = state → enough relEnv language fuel state = true → ObjectEquivalent relEnv language state redex →
-      IsState redex → StepValid relEnv language redex witness contractum →
-        ∃ entry ∈ stepsAt relEnv language fuel state,
+    canon state = state → enoughAt relEnv language fuel presentations state = true →
+      ObjectEquivalent relEnv language state redex → IsState redex → StepValid relEnv language redex witness contractum
+        →
+        ∃ entry ∈ listedAt relEnv language fuel presentations state,
           (∀ label : StepLabel, admissible label = true → label.admits witness = label.admits entry.1) ∧
             canon entry.2 = canon contractum
 
 /-- Coherence is coherence on any admitted labels. -/
-theorem Coherent.on (coherent : Coherent relEnv language fuel canon domain) (admissible : StepLabel → Bool) :
-    CoherentOn relEnv language fuel canon domain admissible := by
-  intro state redex witness contractum stateIs admitted canonState enoughAt before redexState valid
-  obtain ⟨entry, member, labels, same⟩ := coherent stateIs admitted canonState enoughAt before redexState valid
+theorem Coherent.on (coherent : Coherent relEnv language fuel canon domain presentations) (admissible : StepLabel →
+  Bool) :
+    CoherentOn relEnv language fuel canon domain presentations admissible := by
+  intro state redex witness contractum stateIs admitted canonState complete before redexState valid
+  obtain ⟨entry, member, labels, same⟩ := coherent stateIs admitted canonState complete before redexState valid
   exact ⟨entry, member, fun label _ => labels label, same⟩
 
 /-- Coherence on admitted labels is coherence for plain steps. -/
 theorem CoherentOn.plain {admissible : StepLabel → Bool}
-    (coherent : CoherentOn relEnv language fuel canon domain admissible) :
-    CoherentPlain relEnv language fuel canon domain := by
-  intro state redex witness contractum stateIs admitted canonState enoughAt before redexState valid
-  obtain ⟨entry, member, -, same⟩ := coherent stateIs admitted canonState enoughAt before redexState valid
+    (coherent : CoherentOn relEnv language fuel canon domain presentations admissible) :
+    CoherentPlain relEnv language fuel canon domain presentations := by
+  intro state redex witness contractum stateIs admitted canonState complete before redexState valid
+  obtain ⟨entry, member, -, same⟩ := coherent stateIs admitted canonState complete before redexState valid
   exact ⟨entry, member, same⟩
 
 /-- Coherence for plain steps is coherence on the plain label. -/
-theorem CoherentPlain.on (coherent : CoherentPlain relEnv language fuel canon domain) :
-    CoherentOn relEnv language fuel canon domain plainLabel := by
-  intro state redex witness contractum stateIs admitted canonState enoughAt before redexState valid
-  obtain ⟨entry, member, same⟩ := coherent stateIs admitted canonState enoughAt before redexState valid
+theorem CoherentPlain.on (coherent : CoherentPlain relEnv language fuel canon domain presentations) :
+    CoherentOn relEnv language fuel canon domain presentations plainLabel := by
+  intro state redex witness contractum stateIs admitted canonState complete before redexState valid
+  obtain ⟨entry, member, same⟩ := coherent stateIs admitted canonState complete before redexState valid
   refine ⟨entry, member, fun label plain => ?_, same⟩
   cases label with
   | any => rfl
@@ -514,15 +550,17 @@ def canonMorphism (canonical : Canonical relEnv language canon domain) {start : 
 
 /-! ## Closed canonical regions -/
 
-variable (relEnv language fuel canon domain) (region : List Pattern)
+variable (relEnv language fuel canon domain presentations) (region : List Pattern)
 
 /-- **A closed canonical region**: admitted canonical terms without repetition; each state completely listed
-at the fuel, with the canonical forms of its listed successors in the region. -/
+at the fuel at its presentations, which have it as canonical form, with the canonical forms of its listed
+successors in the region. -/
 def canonicalRegion : Bool :=
   decide region.Nodup && region.all fun term => domain term && canon term == term &&
     (!isStateBool term ||
-      (enough relEnv language fuel term &&
-        (stepsAt relEnv language fuel term).all fun entry => canon entry.2 ∈ region))
+      ((presentations term).all (fun shown => domain shown && canon shown == term) &&
+        enoughAt relEnv language fuel presentations term &&
+        (listedAt relEnv language fuel presentations term).all fun entry => canon entry.2 ∈ region))
 
 /-- **The canonical region as a finite structure**: its steps lead to the canonical forms of listed
 successors, and each admitted term names its canonical form. -/
@@ -530,7 +568,7 @@ def canonicalExploration : FiniteStructure (Fin region.length) where
   elements := List.finRange region.length
   complete := List.mem_finRange
   step source label target := isStateBool region[source] && isStateBool region[target] &&
-    (stepsAt relEnv language fuel region[source]).any fun entry =>
+    (listedAt relEnv language fuel presentations region[source]).any fun entry =>
       canon entry.2 == region[target] && label.admits entry.1
   built _ _ _ := false
   split _ _ _ _ := false
@@ -544,25 +582,26 @@ def canonicalExploration : FiniteStructure (Fin region.length) where
   same first second := decide (first = second)
   apply inner _ := inner
 
-variable {relEnv language fuel canon domain region}
+variable {relEnv language fuel canon domain presentations region}
 
-theorem canonicalRegion_parts (closed : canonicalRegion relEnv language fuel canon domain region = true) :
+theorem canonicalRegion_parts (closed : canonicalRegion relEnv language fuel canon domain presentations region = true) :
     region.Nodup ∧ ∀ term ∈ region, domain term = true ∧ canon term = term ∧
-      (isStateBool term = true → enough relEnv language fuel term = true ∧
-        ∀ entry ∈ stepsAt relEnv language fuel term, canon entry.2 ∈ region) := by
+      (isStateBool term = true → (∀ shown ∈ presentations term, domain shown = true ∧ canon shown = term) ∧
+        enoughAt relEnv language fuel presentations term = true ∧
+        ∀ entry ∈ listedAt relEnv language fuel presentations term, canon entry.2 ∈ region) := by
   simp only [canonicalRegion, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, beq_iff_eq, Bool.or_eq_true,
     Bool.not_eq_true'] at closed
   refine ⟨closed.1, fun term member => ⟨(closed.2 term member).1.1, (closed.2 term member).1.2, fun state => ?_⟩⟩
   rcases (closed.2 term member).2 with notState | listed
   · rw [notState] at state
     cases state
-  · exact listed
+  · exact ⟨listed.1.1, listed.1.2, listed.2⟩
 
 /-- **A closed canonical region's inclusion is a step morphism**, given canonical forms and coherence. -/
 def regionMorphism (canonical : Canonical relEnv language canon domain)
-    (coherent : Coherent relEnv language fuel canon domain)
-    (closed : canonicalRegion relEnv language fuel canon domain region = true) :
-    StepMorphism (canonicalExploration relEnv language fuel canon domain region).native
+    (coherent : Coherent relEnv language fuel canon domain presentations)
+    (closed : canonicalRegion relEnv language fuel canon domain presentations region = true) :
+    StepMorphism (canonicalExploration relEnv language fuel canon domain presentations region).native
       (canonicalStructure relEnv language canon domain) where
   map index := region[index]
   step := by
@@ -570,15 +609,21 @@ def regionMorphism (canonical : Canonical relEnv language canon domain)
     change (_ && _ && _) = true at checked
     simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq] at checked
     obtain ⟨⟨sourceState, targetState⟩, entry, member, same, admits⟩ := checked
+    obtain ⟨sourceAdmitted, sourceCanon, sourceListing⟩ :=
+      (canonicalRegion_parts closed).2 _ (List.getElem_mem source.2)
     obtain ⟨targetAdmitted, targetCanon, -⟩ := (canonicalRegion_parts closed).2 _ (List.getElem_mem target.2)
+    obtain ⟨shown, shownMember, listed⟩ := mem_listedAt.mp member
+    obtain ⟨shownAdmitted, shownCanon⟩ := (sourceListing sourceState).1 shown shownMember
     have sourceIsState : IsState region[source] := by simpa [isStateBool] using sourceState
     have targetIsState : IsState region[target] := by simpa [isStateBool] using targetState
     have contractumAdmitted : domain entry.2 = true := by
       rw [← canonical.determined, same]
       exact targetAdmitted
     have contractumState : IsState entry.2 := canonical.state_of_canon contractumAdmitted (same ▸ targetIsState)
-    refine ⟨⟨sourceIsState, targetIsState, region[source], entry.2, entry.1, Relation.EqvGen.refl _, sourceIsState,
-      stepValid_of_mem_stepsAt relEnv language member, contractumState,
+    refine ⟨⟨sourceIsState, targetIsState, shown, entry.2, entry.1,
+      (canonical.equivalent_iff sourceAdmitted shownAdmitted).mpr (sourceCanon.trans shownCanon.symm),
+      canonical.state_of_canon shownAdmitted (shownCanon ▸ sourceIsState),
+      stepValid_of_mem_stepsAt relEnv language listed, contractumState,
       (canonical.equivalent_iff contractumAdmitted targetAdmitted).mpr (same.trans targetCanon.symm), admits⟩,
       targetAdmitted, targetCanon⟩
   stepBack := by
@@ -587,9 +632,9 @@ def regionMorphism (canonical : Canonical relEnv language canon domain)
       admits⟩, targetAdmitted, canonTarget⟩ := step
     obtain ⟨-, members⟩ := canonicalRegion_parts closed
     obtain ⟨sourceAdmitted, canonSource, listing⟩ := members _ (List.getElem_mem source.2)
-    obtain ⟨enoughAt, successors⟩ := listing (isStateBool_of_isState sourceState)
+    obtain ⟨-, complete, successors⟩ := listing (isStateBool_of_isState sourceState)
     obtain ⟨entry, member, sameLabels, sameCanon⟩ :=
-      coherent sourceState sourceAdmitted canonSource enoughAt before redexState valid
+      coherent sourceState sourceAdmitted canonSource complete before redexState valid
     have reached : canon entry.2 = target' :=
       sameCanon.trans ((canonical.same targetAdmitted (ObjectEquivalent.equivalence.symm after)).symm.trans canonTarget)
     obtain ⟨target, isTarget⟩ := exists_index (successors entry member)
@@ -616,8 +661,8 @@ def regionMorphism (canonical : Canonical relEnv language canon domain)
 lists the term's: each step is matched at a listed canonical state, whose successors' canonical forms the
 region lists. -/
 theorem reaches_admitted (canonical : Canonical relEnv language canon domain)
-    (coherent : CoherentPlain relEnv language fuel canon domain)
-    (closed : canonicalRegion relEnv language fuel canon domain region = true) {start : Pattern}
+    (coherent : CoherentPlain relEnv language fuel canon domain presentations)
+    (closed : canonicalRegion relEnv language fuel canon domain presentations region = true) {start : Pattern}
     (admitted : domain start = true) (listed : canon start ∈ region) :
     ∀ {term}, Reached relEnv language start term → domain term = true ∧ canon term ∈ region := by
   intro term reached
@@ -630,9 +675,9 @@ theorem reaches_admitted (canonical : Canonical relEnv language canon domain)
     obtain ⟨-, members⟩ := canonicalRegion_parts closed
     obtain ⟨-, canonSource, listing⟩ := members _ sourceListed
     have canonState := canonical.state sourceAdmitted sourceState
-    obtain ⟨enoughAt, successors⟩ := listing (isStateBool_of_isState canonState)
+    obtain ⟨-, complete, successors⟩ := listing (isStateBool_of_isState canonState)
     obtain ⟨entry, member, sameCanon⟩ :=
-      coherent canonState (canonical.admitted_canon sourceAdmitted) canonSource enoughAt
+      coherent canonState (canonical.admitted_canon sourceAdmitted) canonSource complete
         (ObjectEquivalent.equivalence.trans (ObjectEquivalent.equivalence.symm (canonical.equivalent sourceAdmitted))
           before) redexState valid
     have entryListed := successors entry member
@@ -646,11 +691,11 @@ theorem reaches_admitted (canonical : Canonical relEnv language canon domain)
 /-- **A closed canonical region decides every behavioural formula** at the admitted terms whose canonical
 forms it lists, both ways. -/
 theorem canonical_check_iff (canonical : Canonical relEnv language canon domain)
-    (coherent : Coherent relEnv language fuel canon domain)
-    (closed : canonicalRegion relEnv language fuel canon domain region = true) {formula : Formula 0}
+    (coherent : Coherent relEnv language fuel canon domain presentations)
+    (closed : canonicalRegion relEnv language fuel canon domain presentations region = true) {formula : Formula 0}
     (behavioural : formula.behaviouralForward = true) {index : Fin region.length} {term : Pattern}
     (admitted : domain term = true) (listed : canon term = region[index]) :
-    (canonicalExploration relEnv language fuel canon domain region).check formula index = true ↔
+    (canonicalExploration relEnv language fuel canon domain presentations region).check formula index = true ↔
       (referenceStructure relEnv language).sat Env.closed formula term := by
   have allAdmitted : ∀ other, Reached relEnv language term other → domain other = true := fun _ reached =>
     (reaches_admitted canonical coherent.plain closed admitted (listed ▸ List.getElem_mem index.2) reached).1
@@ -669,12 +714,12 @@ theorem canonical_check_iff (canonical : Canonical relEnv language canon domain)
 
 /-! ## Growing a canonical region -/
 
-variable (relEnv language fuel canon)
+variable (relEnv language fuel canon presentations)
 
 /-- What a term adds to a canonical region: the canonical forms of its listed successors when it is a
 state. -/
 abbrev nextCanonical (state : Pattern) : List Pattern :=
-  if isStateBool state then (stepsAt relEnv language fuel state).map (canon ·.2) else []
+  if isStateBool state then (listedAt relEnv language fuel presentations state).map (canon ·.2) else []
 
 /-- Grow a canonical region from a term: add the canonical forms of the listed successors of states,
 without repetition, the term's canonical form first. -/
@@ -682,22 +727,23 @@ def growCanonical (term : Pattern) : ℕ → List Pattern
   | 0 => [canon term]
   | rounds + 1 =>
     let earlier := growCanonical term rounds
-    addNew earlier (earlier.flatMap (nextCanonical relEnv language fuel canon))
+    addNew earlier (earlier.flatMap (nextCanonical relEnv language fuel canon presentations))
 
 theorem growCanonical_first (term : Pattern) :
-    ∀ rounds, ∃ rest, growCanonical relEnv language fuel canon term rounds = canon term :: rest
+    ∀ rounds, ∃ rest, growCanonical relEnv language fuel canon presentations term rounds = canon term :: rest
   | 0 => ⟨[], rfl⟩
   | rounds + 1 => by
     obtain ⟨rest, same⟩ := growCanonical_first term rounds
-    obtain ⟨extra, extended⟩ := addNew_extends (growCanonical relEnv language fuel canon term rounds)
-      ((growCanonical relEnv language fuel canon term rounds).flatMap (nextCanonical relEnv language fuel canon))
+    obtain ⟨extra, extended⟩ := addNew_extends (growCanonical relEnv language fuel canon presentations term rounds)
+      ((growCanonical relEnv language fuel canon presentations term rounds).flatMap
+        (nextCanonical relEnv language fuel canon presentations))
     refine ⟨rest ++ extra, ?_⟩
     simp only [growCanonical]
     rw [extended, same, List.cons_append]
 
 theorem growCanonical_length_pos (term : Pattern) (rounds : ℕ) :
-    0 < (growCanonical relEnv language fuel canon term rounds).length := by
-  obtain ⟨rest, same⟩ := growCanonical_first relEnv language fuel canon term rounds
+    0 < (growCanonical relEnv language fuel canon presentations term rounds).length := by
+  obtain ⟨rest, same⟩ := growCanonical_first relEnv language fuel canon presentations term rounds
   rw [same]
   exact Nat.succ_pos _
 
@@ -706,33 +752,37 @@ variable (domain)
 /-- **Decide a behavioural formula at a term modulo the equations**: the exact verdict when the grown
 canonical region closes, nothing otherwise. -/
 def decideCanonical (formula : Formula 0) (term : Pattern) (rounds : ℕ) : Option Bool :=
-  if canonicalRegion relEnv language fuel canon domain (growCanonical relEnv language fuel canon term rounds) then
-    some ((canonicalExploration relEnv language fuel canon domain
-      (growCanonical relEnv language fuel canon term rounds)).check
-      formula ⟨0, growCanonical_length_pos relEnv language fuel canon term rounds⟩)
+  if canonicalRegion relEnv language fuel canon domain presentations
+    (growCanonical relEnv language fuel canon presentations term rounds) then
+    some ((canonicalExploration relEnv language fuel canon domain presentations
+      (growCanonical relEnv language fuel canon presentations term rounds)).check
+      formula ⟨0, growCanonical_length_pos relEnv language fuel canon presentations term rounds⟩)
   else none
 
-variable {relEnv language fuel canon domain}
+variable {relEnv language fuel canon domain presentations}
 
 theorem growCanonical_zero (term : Pattern) (rounds : ℕ) :
-    (growCanonical relEnv language fuel canon term rounds)[(⟨0, growCanonical_length_pos relEnv language fuel canon term
-      rounds⟩ : Fin (growCanonical relEnv language fuel canon term rounds).length)] = canon term := by
-  obtain ⟨rest, same⟩ := growCanonical_first relEnv language fuel canon term rounds
+    (growCanonical relEnv language fuel canon presentations term rounds)[(⟨0,
+      growCanonical_length_pos relEnv language fuel canon presentations term rounds⟩ :
+        Fin (growCanonical relEnv language fuel canon presentations term rounds).length)] = canon term := by
+  obtain ⟨rest, same⟩ := growCanonical_first relEnv language fuel canon presentations term rounds
   simp only [Fin.getElem_fin]
   simp [same]
 
 /-- **A verdict from a closed canonical region is exact.** The region lists the term's canonical form, so
 the term is admitted. -/
 theorem decideCanonical_sound (canonical : Canonical relEnv language canon domain)
-    (coherent : Coherent relEnv language fuel canon domain)
+    (coherent : Coherent relEnv language fuel canon domain presentations)
     {formula : Formula 0} (behavioural : formula.behaviouralForward = true) {term : Pattern} {rounds : ℕ}
-    {verdict : Bool} (decided : decideCanonical relEnv language fuel canon domain formula term rounds = some verdict) :
+    {verdict : Bool} (decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds =
+      some verdict) :
     (verdict = true ↔ (referenceStructure relEnv language).sat Env.closed formula term) := by
   unfold decideCanonical at decided
   split at decided
   · rename_i closed
     cases decided
-    have listed := growCanonical_zero (relEnv := relEnv) (language := language) (fuel := fuel) (canon := canon) term rounds
+    have listed := growCanonical_zero (relEnv := relEnv) (language := language) (fuel := fuel) (canon := canon)
+      (presentations := presentations) term rounds
     have admitted : domain term = true := by
       rw [← canonical.determined, ← listed]
       exact ((canonicalRegion_parts closed).2 _ (List.getElem_mem _)).1
@@ -744,9 +794,9 @@ theorem decideCanonical_sound (canonical : Canonical relEnv language canon domai
 /-- **A closed canonical region's inclusion is a step morphism on admitted labels**, given canonical forms and
 coherence on those labels. -/
 def regionMorphismOn {admissible : StepLabel → Bool} (canonical : Canonical relEnv language canon domain)
-    (coherent : CoherentOn relEnv language fuel canon domain admissible)
-    (closed : canonicalRegion relEnv language fuel canon domain region = true) :
-    LabelMorphism (canonicalExploration relEnv language fuel canon domain region).native
+    (coherent : CoherentOn relEnv language fuel canon domain presentations admissible)
+    (closed : canonicalRegion relEnv language fuel canon domain presentations region = true) :
+    LabelMorphism (canonicalExploration relEnv language fuel canon domain presentations region).native
       (canonicalStructure relEnv language canon domain) admissible where
   map index := region[index]
   step := by
@@ -754,15 +804,21 @@ def regionMorphismOn {admissible : StepLabel → Bool} (canonical : Canonical re
     change (_ && _ && _) = true at checked
     simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq] at checked
     obtain ⟨⟨sourceState, targetState⟩, entry, member, same, admits⟩ := checked
+    obtain ⟨sourceAdmitted, sourceCanon, sourceListing⟩ :=
+      (canonicalRegion_parts closed).2 _ (List.getElem_mem source.2)
     obtain ⟨targetAdmitted, targetCanon, -⟩ := (canonicalRegion_parts closed).2 _ (List.getElem_mem target.2)
+    obtain ⟨shown, shownMember, listed⟩ := mem_listedAt.mp member
+    obtain ⟨shownAdmitted, shownCanon⟩ := (sourceListing sourceState).1 shown shownMember
     have sourceIsState : IsState region[source] := by simpa [isStateBool] using sourceState
     have targetIsState : IsState region[target] := by simpa [isStateBool] using targetState
     have contractumAdmitted : domain entry.2 = true := by
       rw [← canonical.determined, same]
       exact targetAdmitted
     have contractumState : IsState entry.2 := canonical.state_of_canon contractumAdmitted (same ▸ targetIsState)
-    refine ⟨⟨sourceIsState, targetIsState, region[source], entry.2, entry.1, Relation.EqvGen.refl _, sourceIsState,
-      stepValid_of_mem_stepsAt relEnv language member, contractumState,
+    refine ⟨⟨sourceIsState, targetIsState, shown, entry.2, entry.1,
+      (canonical.equivalent_iff sourceAdmitted shownAdmitted).mpr (sourceCanon.trans shownCanon.symm),
+      canonical.state_of_canon shownAdmitted (shownCanon ▸ sourceIsState),
+      stepValid_of_mem_stepsAt relEnv language listed, contractumState,
       (canonical.equivalent_iff contractumAdmitted targetAdmitted).mpr (same.trans targetCanon.symm), admits⟩,
       targetAdmitted, targetCanon⟩
   stepBack := by
@@ -771,9 +827,9 @@ def regionMorphismOn {admissible : StepLabel → Bool} (canonical : Canonical re
       admits⟩, targetAdmitted, canonTarget⟩ := step
     obtain ⟨-, members⟩ := canonicalRegion_parts closed
     obtain ⟨sourceAdmitted, canonSource, listing⟩ := members _ (List.getElem_mem source.2)
-    obtain ⟨enoughAt, successors⟩ := listing (isStateBool_of_isState sourceState)
+    obtain ⟨-, complete, successors⟩ := listing (isStateBool_of_isState sourceState)
     obtain ⟨entry, member, sameLabels, sameCanon⟩ :=
-      coherent sourceState sourceAdmitted canonSource enoughAt before redexState valid
+      coherent sourceState sourceAdmitted canonSource complete before redexState valid
     have reached : canon entry.2 = target' :=
       sameCanon.trans ((canonical.same targetAdmitted (ObjectEquivalent.equivalence.symm after)).symm.trans canonTarget)
     obtain ⟨target, isTarget⟩ := exists_index (successors entry member)
@@ -799,11 +855,11 @@ def regionMorphismOn {admissible : StepLabel → Bool} (canonical : Canonical re
 /-- **A closed canonical region decides every behavioural formula over admitted labels** at the admitted
 terms whose canonical forms it lists, given coherence on those labels. -/
 theorem canonical_check_iff_on {admissible : StepLabel → Bool} (canonical : Canonical relEnv language canon domain)
-    (coherent : CoherentOn relEnv language fuel canon domain admissible)
-    (closed : canonicalRegion relEnv language fuel canon domain region = true) {formula : Formula 0}
+    (coherent : CoherentOn relEnv language fuel canon domain presentations admissible)
+    (closed : canonicalRegion relEnv language fuel canon domain presentations region = true) {formula : Formula 0}
     (behavioural : formula.behaviouralIn admissible = true) {index : Fin region.length} {term : Pattern}
     (admitted : domain term = true) (listed : canon term = region[index]) :
-    (canonicalExploration relEnv language fuel canon domain region).check formula index = true ↔
+    (canonicalExploration relEnv language fuel canon domain presentations region).check formula index = true ↔
       (referenceStructure relEnv language).sat Env.closed formula term := by
   have allAdmitted : ∀ other, Reached relEnv language term other → domain other = true := fun _ reached =>
     (reaches_admitted canonical coherent.plain closed admitted (listed ▸ List.getElem_mem index.2) reached).1
@@ -822,15 +878,17 @@ theorem canonical_check_iff_on {admissible : StepLabel → Bool} (canonical : Ca
 /-- **The canonical decision is sound for behavioural formulas over admitted labels**, given coherence on those
 labels. -/
 theorem decideCanonical_sound_on {admissible : StepLabel → Bool} (canonical : Canonical relEnv language canon domain)
-    (coherent : CoherentOn relEnv language fuel canon domain admissible)
+    (coherent : CoherentOn relEnv language fuel canon domain presentations admissible)
     {formula : Formula 0} (behavioural : formula.behaviouralIn admissible = true) {term : Pattern} {rounds : ℕ}
-    {verdict : Bool} (decided : decideCanonical relEnv language fuel canon domain formula term rounds = some verdict) :
+    {verdict : Bool} (decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds =
+      some verdict) :
     (verdict = true ↔ (referenceStructure relEnv language).sat Env.closed formula term) := by
   unfold decideCanonical at decided
   split at decided
   · rename_i closed
     cases decided
-    have listed := growCanonical_zero (relEnv := relEnv) (language := language) (fuel := fuel) (canon := canon) term rounds
+    have listed := growCanonical_zero (relEnv := relEnv) (language := language) (fuel := fuel) (canon := canon)
+      (presentations := presentations) term rounds
     have admitted : domain term = true := by
       rw [← canonical.determined, ← listed]
       exact ((canonicalRegion_parts closed).2 _ (List.getElem_mem _)).1
@@ -847,13 +905,15 @@ theorem coherent_of_simulation (canonical : Canonical relEnv language canon doma
       StepValid relEnv language redex witness contractum →
       ∃ witness' contractum', StepValid relEnv language (canon redex) witness' contractum' ∧
         (∀ label : StepLabel, label.admits witness = label.admits witness') ∧ canon contractum' = canon contractum) :
-    Coherent relEnv language fuel canon domain := by
-  intro state redex witness contractum _ stateAdmitted canonState enoughAt before redexState valid
+    Coherent relEnv language fuel canon domain List.singleton := by
+  intro state redex witness contractum _ stateAdmitted canonState complete before redexState valid
   obtain ⟨witness', contractum', simulated, sameLabels, sameCanon⟩ :=
     simulates redexState (canonical.invariant stateAdmitted before) valid
   have same : canon redex = state := ((canonical.same stateAdmitted before).symm).trans canonState
   rw [same] at simulated
-  exact ⟨(witness', contractum'), mem_stepsAt_of_enough enoughAt simulated, sameLabels, sameCanon⟩
+  rw [enoughAt_singleton] at complete
+  exact ⟨(witness', contractum'), by rw [listedAt_singleton]; exact mem_stepsAt_of_enough complete simulated,
+    sameLabels, sameCanon⟩
 
 /-- **Coherence for plain steps when canonical forms simulate steps**: a step from an admitted state is matched,
 up to canonical form and with any labels, by a step from its canonical form. -/
@@ -862,20 +922,22 @@ theorem coherentPlain_of_simulation (canonical : Canonical relEnv language canon
       StepValid relEnv language redex witness contractum →
       ∃ witness' contractum', StepValid relEnv language (canon redex) witness' contractum' ∧
         canon contractum' = canon contractum) :
-    CoherentPlain relEnv language fuel canon domain := by
-  intro state redex witness contractum _ stateAdmitted canonState enoughAt before redexState valid
+    CoherentPlain relEnv language fuel canon domain List.singleton := by
+  intro state redex witness contractum _ stateAdmitted canonState complete before redexState valid
   obtain ⟨witness', contractum', simulated, sameCanon⟩ :=
     simulates redexState (canonical.invariant stateAdmitted before) valid
   have same : canon redex = state := ((canonical.same stateAdmitted before).symm).trans canonState
   rw [same] at simulated
-  exact ⟨(witness', contractum'), mem_stepsAt_of_enough enoughAt simulated, sameCanon⟩
+  rw [enoughAt_singleton] at complete
+  exact ⟨(witness', contractum'), by rw [listedAt_singleton]; exact mem_stepsAt_of_enough complete simulated,
+    sameCanon⟩
 
 /-- **Coherence when rules fire only on canonical terms**: a step from an equivalent of a canonical state is
 then a step from the state itself. -/
 theorem coherent_of_canonical_redexes (canonical : Canonical relEnv language canon domain)
     (redexes : ∀ {redex witness contractum}, domain redex = true → StepValid relEnv language redex witness contractum →
       canon redex = redex) :
-    Coherent relEnv language fuel canon domain :=
+    Coherent relEnv language fuel canon domain List.singleton :=
   coherent_of_simulation canonical fun {_ witness contractum} _ admitted valid =>
     ⟨witness, contractum, (redexes admitted valid).symm ▸ valid, fun _ => rfl, rfl⟩
 
@@ -943,10 +1005,12 @@ theorem identity_canonical (free : language.isEquationFree = true) :
 
 /-- **And its listing is coherent**: an equivalent state is the state itself. -/
 theorem identity_coherent (free : language.isEquationFree = true) :
-    Coherent relEnv language fuel id (fun term => isObjectPattern term) := by
-  intro state redex witness contractum _ _ _ enoughAt before _ valid
+    Coherent relEnv language fuel id (fun term => isObjectPattern term) List.singleton := by
+  intro state redex witness contractum _ _ _ complete before _ valid
   rw [← (objectEquivalent_iff_eq_of_isEquationFree free).mp before] at valid
-  exact ⟨(witness, contractum), mem_stepsAt_of_enough enoughAt valid, fun _ => rfl, rfl⟩
+  rw [enoughAt_singleton] at complete
+  exact ⟨(witness, contractum), by rw [listedAt_singleton]; exact mem_stepsAt_of_enough complete valid,
+    fun _ => rfl, rfl⟩
 
 /-! ## Canonical forms as a parameter -/
 
@@ -956,21 +1020,23 @@ structure CanonicalForms (relEnv : RelationEnv) (language : LanguageDef) (fuel :
   canon : Pattern → Pattern
   domain : Pattern → Bool
   canonical : Canonical relEnv language canon domain
+  /-- The presentations at which a state's steps are listed: by default the state itself. -/
+  presentations : Pattern → List Pattern := List.singleton
   /-- The step labels the canonical forms keep. -/
   labels : StepLabel → Bool
-  coherent : CoherentOn relEnv language fuel canon domain labels
+  coherent : CoherentOn relEnv language fuel canon domain presentations labels
 
 /-- Canonical forms that keep every label. -/
 def CanonicalForms.ofCoherent {canon : Pattern → Pattern} {domain : Pattern → Bool}
-    (canonical : Canonical relEnv language canon domain) (coherent : Coherent relEnv language fuel canon domain) :
-    CanonicalForms relEnv language fuel :=
-  ⟨canon, domain, canonical, fun _ => true, coherent.on _⟩
+    {presentations : Pattern → List Pattern} (canonical : Canonical relEnv language canon domain)
+    (coherent : Coherent relEnv language fuel canon domain presentations) : CanonicalForms relEnv language fuel :=
+  ⟨canon, domain, canonical, presentations, fun _ => true, coherent.on _⟩
 
 /-- Canonical forms that keep plain steps. -/
 def CanonicalForms.ofPlain {canon : Pattern → Pattern} {domain : Pattern → Bool}
-    (canonical : Canonical relEnv language canon domain) (coherent : CoherentPlain relEnv language fuel canon domain) :
-    CanonicalForms relEnv language fuel :=
-  ⟨canon, domain, canonical, plainLabel, coherent.on⟩
+    {presentations : Pattern → List Pattern} (canonical : Canonical relEnv language canon domain)
+    (coherent : CoherentPlain relEnv language fuel canon domain presentations) : CanonicalForms relEnv language fuel :=
+  ⟨canon, domain, canonical, presentations, plainLabel, coherent.on⟩
 
 /-- The identity, for an equation-free language. -/
 def CanonicalForms.identity (free : language.isEquationFree = true) : CanonicalForms relEnv language fuel :=

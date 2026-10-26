@@ -426,10 +426,10 @@ theorem derived_hasType (laws : BareBagTheory language bag unit)
       apply elementsHaveType_iff.mpr
       intro element membership
       exact elementsHaveType_iff.mp elementsTyped element (permutation.mem_iff.mpr membership)
-  | setPerm declaration _ _ =>
-      exact absurd (laws.carrier declaration).2 (by decide)
-  | setDedup declaration _ =>
-      exact absurd (laws.carrier declaration).2 (by decide)
+  | setPerm declaration kindTyped _ =>
+      exact absurd (laws.collectionTyped declaration kindTyped).2 (by decide)
+  | setDedup declaration kindTyped =>
+      exact absurd (laws.collectionTyped declaration kindTyped).2 (by decide)
   | @flatten rule kind algebra before inner after algebraRule _ _ =>
       obtain ⟨rfl, rfl, elementsTyped⟩ := bag_typing laws typed collectionless
       obtain ⟨beforeTyped, nestedTyped, afterTyped⟩ :=

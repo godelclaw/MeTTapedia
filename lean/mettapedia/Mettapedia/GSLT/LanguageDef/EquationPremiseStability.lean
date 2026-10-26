@@ -208,10 +208,10 @@ theorem derivedInstance_forward_of_same_grammar (source target : ValidatedLangua
     (terms : source.language.terms = target.language.terms)
     {left right : Pattern} (evidence : DerivedInstance source.language left right) :
     DerivedInstance target.language left right := by
-  have carrier : ∀ {rule kind}, CollectionCarrierRule source.language rule kind →
-      CollectionCarrierRule target.language rule kind := by
-    intro rule kind declaration
-    exact ⟨terms ▸ declaration.authored, declaration.selfSorted⟩
+  have collectionTyped : ∀ {rule kind elements}, WellSorted.CollectionTypedAt source.language rule kind elements →
+      WellSorted.CollectionTypedAt target.language rule kind elements := by
+    intro rule kind elements typed
+    exact typed.of_terms_subset (by intro rule member; exact terms ▸ member)
   have algebra : ∀ {rule kind laws}, AlgebraRule source.language rule kind laws →
       AlgebraRule target.language rule kind laws := by
     intro rule kind laws declaration
@@ -221,9 +221,9 @@ theorem derivedInstance_forward_of_same_grammar (source target : ValidatedLangua
       SortedAt target.language pattern sort :=
     sortedAt_forward_of_same_grammar source target types terms
   cases evidence with
-  | bagPerm declaration typed permutation => exact .bagPerm (carrier declaration) (sorted typed) permutation
-  | setPerm declaration typed permutation => exact .setPerm (carrier declaration) (sorted typed) permutation
-  | setDedup declaration typed => exact .setDedup (carrier declaration) (sorted typed)
+  | bagPerm declaration typed permutation => exact .bagPerm (terms ▸ declaration) (collectionTyped typed) permutation
+  | setPerm declaration typed permutation => exact .setPerm (terms ▸ declaration) (collectionTyped typed) permutation
+  | setDedup declaration typed => exact .setDedup (terms ▸ declaration) (collectionTyped typed)
   | flatten declaration flat typed => exact .flatten (algebra declaration) flat (sorted typed)
   | singleton declaration flat typed => exact .singleton (algebra declaration) flat (sorted typed)
   | unitElim declaration unit typed => exact .unitElim (algebra declaration) unit (sorted typed)

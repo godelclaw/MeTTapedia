@@ -31,10 +31,62 @@ def source : ProgramQuotation.QuotedProgram :=
     sha256 "e03684e60d567dd54beecd15074f74a4c9a8eb25ac36038112f6f1ff638e077c"
 
 def library : BridgeKit.Library :=
-  ⟨RecursiveCollectionExecution.library.runtime, source.program,
-    ["gslt:occurrence-matcher:"]⟩
+  RetainedMatchingWire.interpretedLibrary
 
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
+
+section ProofMetadata
+
+private local instance matcherEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧ left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+def matcherProofInheritedHeads : List String := ["gslt:recursive-collection:start",
+  "gslt:recursive-collection:run", "gslt:automata:length", "gslt:complete:drop"]
+
+theorem matcherProofInheritedHeads_derived :
+    ((source.program.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+      (fun head => head.startsWith "gslt:" && !(source.program.equations.map (·.head)).contains head)).eraseDups =
+      matcherProofInheritedHeads := by decide +kernel
+
+private def matcherMetadataBase : SpaceSemantics.Program :=
+  ((RuleExecutionProgram.callFragment ["gslt:automata:length"] RuleExecutionProgram.scopedProgram).append
+    (RuleExecutionProgram.callFragment ["gslt:complete:drop"]
+      (RuleExecutionProgram.interpretedPremiseSupportSources[2]'(by decide +kernel)).program)).append
+    (RuleExecutionProgram.callFragment ["gslt:recursive-collection:start", "gslt:recursive-collection:run"]
+      (RuleExecutionProgram.interpretedPremiseSupportSources[10]'(by decide +kernel)).program)
+
+def matcherProofLibrary : Library := ⟨matcherMetadataBase, source.program, ["gslt:occurrence-matcher:"]⟩
+
+def matcherProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || matcherProofLibrary.owns head || matcherProofInheritedHeads.contains head
+
+theorem matcherProof_checked : matcherProofLibrary.check = true := by decide +kernel
+
+theorem matcherProof_equation_count : matcherProofLibrary.runtime.equations.length = 7 := by decide +kernel
+
+theorem matcherProof_agreement : ProgramAgreementOn matcherProofHeads matcherProofLibrary.runtime library.runtime := by
+  apply programAgreementOn_of_retained_rows
+  · decide +kernel
+  · decide +kernel
+
+#print axioms matcherProofInheritedHeads_derived
+#print axioms matcherProof_checked
+#print axioms matcherProof_equation_count
+#print axioms matcherProof_agreement
+
+end ProofMetadata
 
 def originTerm (job : CollectionOccurrenceHandoff.Job) : Term :=
   .application "RecursiveOccurrenceJob"
@@ -56,7 +108,7 @@ macro_rules
   | `(tactic| occurrence_matcher_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
+    `(tactic| (metta_call_in matcherProof_checked using matcherProof_agreement; metta_eval [$facts,*] with matcherProof_checked in matcherProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -70,7 +122,7 @@ theorem begin_returns (host : Effects.State) (job : CollectionOccurrenceHandoff.
         [encoded (originTerm job), encoded (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm job.request)])
       host (encoded (laneTerm (Lane.begin job licensed))) := by
   have native := RecursiveCollectionExecution.start_returns host job.request
-  have begun := by metta_lift checked ["request"] native
+  have begun := native
   occurrence_matcher_eval [begun] unfolding [Lane.begin]
 
 @[metta_head "gslt:occurrence-matcher:resume"]
@@ -83,7 +135,7 @@ theorem resume_returns (host : Effects.State) (names : List String)
         [encoded (encodeList Term.string names), number work, encoded (laneTerm lane)])
       host (encoded (laneTerm (lane.resume work))) := by
   have native := RecursiveCollectionExecution.run_returns host names ordered lane.job.request work lane.state covered
-  have resumed := by metta_lift checked ["names", "request", "fuel", "state"] native
+  have resumed := native
   occurrence_matcher_eval [resumed] unfolding [Lane.resume]
 
 private theorem drop_returns {α : Type} (encoder : α → Term) (host : Effects.State)
@@ -91,13 +143,10 @@ private theorem drop_returns {α : Type} (encoder : α → Term) (host : Effects
     PureReturns library.runtime [] host
       (apply "gslt:complete:drop" [number count, encoded (encodeList encoder items)])
       host (encoded (encodeList encoder (items.drop count))) := by
-  have atLaws := by
-    metta_lift CompleteExecution.laws_checked ["count", "items"]
-      (CompleteExecution.drop_list_returns encoder host count items)
-  have atCanonical := by metta_lift CompleteExecution.canonical_checked ["count", "items"] atLaws
-  have atCollection := by metta_lift CompleteExecution.collection_base_checked ["count", "items"] atCanonical
-  have atRecursive := by metta_lift RecursiveCollectionExecution.checked ["count", "items"] atCollection
-  metta_lift checked ["count", "items"] atRecursive
+  have mapped (values : List α) : encoded (encodeList encoder values) = CompleteExecution.terms (values.map encoder) := by
+    simp only [CompleteExecution.terms, CettaWire.encodeList_map, Function.id_comp]
+  rw [mapped, mapped, List.map_drop]
+  exact CompleteExecution.drop_returns host count (items.map encoder)
 
 @[metta_head "gslt:occurrence-matcher:advance"]
 theorem advance_returns (host : Effects.State) (names : List String)
@@ -107,12 +156,16 @@ theorem advance_returns (host : Effects.State) (names : List String)
       (apply "gslt:occurrence-matcher:advance"
         [encoded (encodeList Term.string names), encoded (laneTerm lane)])
       host (encoded (advancedTerm lane)) := by
-  have count := by metta_lift checked ["items"]
-    (RecursiveCollectionExecution.length_returns RecursiveCollectionExecution.answerTerm host lane.state.answers)
+  have count := RecursiveCollectionExecution.length_returns RecursiveCollectionExecution.answerTerm host lane.state.answers
   have resumed := resume_returns host names ordered 1 lane covered
   have fresh := drop_returns RecursiveCollectionExecution.answerTerm host lane.state.answers.length
     (lane.resume 1).state.answers
   occurrence_matcher_eval [count, resumed, fresh] unfolding
     [Lane.resume, Lane.fresh, RecursiveCollectionExecution.stateTerm]
+
+#print axioms begin_returns
+#print axioms resume_returns
+#print axioms drop_returns
+#print axioms advance_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionOccurrenceMatcherExecution

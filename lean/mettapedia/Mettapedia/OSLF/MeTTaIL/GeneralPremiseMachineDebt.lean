@@ -38,8 +38,10 @@ theorem matcherDebt_tick (request : GeneralScopedMatchMachine.Request)
   simp only [matcherDebt]
   omega
 
+variable {matcher : MatchingExecution}
+
 theorem query_expand_answers_length (environment : Environment) (request : Query.Request)
-    (task : Query.Task environment request) :
+    (task : Query.Task environment request matcher) :
     (Query.expand environment request task).answers.length ≤ 1 := by
   cases task with
   | start =>
@@ -84,7 +86,7 @@ theorem query_expand_answers_length (environment : Environment) (request : Query
       · split <;> simp
 
 theorem query_tick_answers_length (environment : Environment) (request : Query.Request)
-    (state : Query.State environment request) :
+    (state : Query.State environment request matcher) :
     (Query.tick environment request state).answers.length ≤ state.answers.length + 1 := by
   cases agenda : state.agenda with
   | nil => simp only [Query.tick, Scheduler.tick, agenda]; omega
@@ -93,29 +95,35 @@ theorem query_tick_answers_length (environment : Environment) (request : Query.R
       simp only [Query.tick, Scheduler.tick, agenda, List.length_append]
       omega
 
-def queryDebt (environment : Environment) (request : Query.Request)
-    (state : Query.State environment request) (cursor : Nat) : Nat :=
-  2 * Query.agendaCost environment request state.agenda +
+def queryDebt (cost : matcher.CursorCost) (environment : Environment) (request : Query.Request)
+    (state : Query.State environment request matcher) (cursor : Nat) : Nat :=
+  2 * Query.agendaCost cost environment request state.agenda +
     (state.answers.length - cursor) + 1
 
-theorem queryDebt_cursor (environment : Environment) (request : Query.Request)
-    (state : Query.State environment request) (cursor : Nat)
-    (answer : Query.Answer environment request)
+theorem queryDebt_cursor (cost : matcher.CursorCost) (environment : Environment) (request : Query.Request)
+    (state : Query.State environment request matcher) (cursor : Nat)
+    (answer : Query.Answer environment request matcher)
     (found : state.answers[cursor]? = some answer) :
-    queryDebt environment request state (cursor + 1) < queryDebt environment request state cursor := by
+    queryDebt cost environment request state (cursor + 1) < queryDebt cost environment request state cursor := by
   have within := (List.getElem?_eq_some_iff.mp found).1
   simp only [queryDebt]
   omega
 
-theorem queryDebt_tick (environment : Environment) (request : Query.Request)
-    (state : Query.State environment request) (cursor : Nat)
+theorem queryDebt_tick (cost : matcher.CursorCost) (environment : Environment) (request : Query.Request)
+    (state : Query.State environment request matcher) (cursor : Nat)
     (consumed : state.answers[cursor]? = none) (pending : state.agenda ≠ []) :
-    queryDebt environment request (Query.tick environment request state) cursor <
-      queryDebt environment request state cursor := by
+    queryDebt cost environment request (Query.tick environment request state) cursor <
+      queryDebt cost environment request state cursor := by
   have within := List.getElem?_eq_none_iff.mp consumed
-  have decreases := Query.tick_cost environment request state pending
+  have decreases := Query.tick_cost cost environment request state pending
   have emitted := query_tick_answers_length environment request state
   simp only [queryDebt]
   omega
+
+#print axioms query_expand_answers_length
+#print axioms query_tick_answers_length
+#print axioms queryDebt
+#print axioms queryDebt_cursor
+#print axioms queryDebt_tick
 
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise

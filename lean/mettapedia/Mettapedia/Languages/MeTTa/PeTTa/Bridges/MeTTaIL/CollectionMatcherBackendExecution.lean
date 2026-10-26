@@ -35,16 +35,83 @@ private abbrev v (name : String) : Atom := .var name
 def collectionBaseSource : SpaceSemantics.Program :=
   CollectionSelectionExecution.source.program.append ScopedCollectionExecution.source.program
 
-def collectionBaseLibrary : BridgeKit.Library :=
-  ⟨CompleteExecution.completeLibrary.runtime, collectionBaseSource,
-    ["gslt:collection:", "gslt:collection-machine:", "gslt:collection-plan:"]⟩
+def collectionBaseLibrary : BridgeKit.Library := RetainedMatchingWire.interpretedLibrary
 
-theorem collectionBase_checked : collectionBaseLibrary.check = true := by decide +kernel
+theorem collectionBase_checked : collectionBaseLibrary.check = true := RetainedMatchingWire.interpreted_checked
 
-def library : BridgeKit.Library :=
-  ⟨collectionBaseLibrary.runtime, source.program, ["gslt:collection-backend:"]⟩
+def library : BridgeKit.Library := RetainedMatchingWire.interpretedLibrary
 
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
+
+private def backendObservedInheritedHeads : List String :=
+  ((source.program.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+    (fun head => head.startsWith "gslt:" && !(source.program.equations.map (·.head)).contains head)).eraseDups
+
+/-- The outward calls of all twenty physical backend bodies. -/
+def backendProofInheritedHeads : List String :=
+  ["gslt:automata:append", "gslt:complete:matcher-answers", "gslt:descent:continue-root-answer",
+    "gslt:complete:take", "gslt:descent:run", "gslt:automata:length", "gslt:complete:drop"]
+
+theorem backendProofInheritedHeads_derived :
+    backendObservedInheritedHeads = backendProofInheritedHeads := by decide +kernel
+
+private def backendMetadataBase : SpaceSemantics.Program where
+  equations :=
+    [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+     RuleExecutionProgram.scopedProgram.equations[1]'(by decide +kernel),
+     CompleteExecution.descentSource.program.equations[4]'(by decide +kernel),
+     CompleteExecution.descentSource.program.equations[11]'(by decide +kernel),
+     CompleteExecution.completeSource.program.equations[12]'(by decide +kernel),
+     CompleteExecution.completeSource.program.equations[26]'(by decide +kernel),
+     CompleteExecution.completeSource.program.equations[32]'(by decide +kernel)]
+  declarations :=
+    [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+     RuleExecutionProgram.scopedProgram.declarations[1]'(by decide +kernel),
+     CompleteExecution.descentSource.program.declarations[4]'(by decide +kernel),
+     CompleteExecution.descentSource.program.declarations[11]'(by decide +kernel),
+     CompleteExecution.completeSource.program.declarations[12]'(by decide +kernel),
+     CompleteExecution.completeSource.program.declarations[26]'(by decide +kernel),
+     CompleteExecution.completeSource.program.declarations[32]'(by decide +kernel)]
+
+/-- A source-derived body and metadata view; operation proofs execute in the shared runtime. -/
+def backendProofLibrary : Library :=
+  ⟨backendMetadataBase, source.program, ["gslt:collection-backend:"]⟩
+
+def backendProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || (backendProofLibrary.runtime.equations.map (·.head)).contains head
+
+theorem backendProof_source_count : source.program.equations.length = 20 := by decide +kernel
+
+theorem backendProof_row_count : backendProofLibrary.runtime.equations.length = 27 := by decide +kernel
+
+theorem backendProof_checked : backendProofLibrary.check = true := by decide +kernel
+
+private local instance backendEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧ left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+theorem backendProof_agreement :
+    ProgramAgreementOn backendProofHeads backendProofLibrary.runtime library.runtime := by
+  apply programAgreementOn_of_retained_rows
+  · decide +kernel
+  · decide +kernel
+
+@[local simp] private theorem backend_match_variable
+    (bindings : Mettapedia.Languages.ProcessCalculi.MORK.Subst) (name : String) (value : Atom) :
+    SpaceSemantics.matchValue bindings (.var name) value =
+      Mettapedia.Languages.ProcessCalculi.MORK.matchAtom bindings (.var name) value := by
+  cases value <;> simp [SpaceSemantics.matchValue]
 
 private abbrev patternValue (pattern : Pattern) : Atom :=
   encoded (InferenceCettaWire.encodePattern pattern)
@@ -68,11 +135,13 @@ macro_rules
   | `(tactic| collection_backend_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
-      unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
-        Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
-        Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
-        $extra,*]))
+    `(tactic|
+      (metta_call_in backendProof_checked using backendProof_agreement
+       metta_eval [$facts,*] with backendProof_checked in backendProof_agreement
+        unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+          Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+          Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
+          backend_match_variable, $extra,*]))
 
 theorem backend_append_returns (state : State) : ∀ (left right : List Pattern),
     PureReturns library.runtime [] state
@@ -80,19 +149,12 @@ theorem backend_append_returns (state : State) : ∀ (left right : List Pattern)
         [encoded (encodeList InferenceCettaWire.encodePattern left),
           encoded (encodeList InferenceCettaWire.encodePattern right)])
       state (encoded (encodeList InferenceCettaWire.encodePattern (left ++ right)))
-  | left, right => by
-      have atCollectionBase : PureReturns collectionBaseLibrary.runtime [] state
-          (apply "gslt:automata:append"
-            [encoded (encodeList InferenceCettaWire.encodePattern left),
-              encoded (encodeList InferenceCettaWire.encodePattern right)])
-          state (encoded (encodeList InferenceCettaWire.encodePattern (left ++ right))) := by
-        metta_lift collectionBase_checked ["left", "right"]
-          (CompleteExecution.complete_append_returns InferenceCettaWire.encodePattern state left right)
-      metta_lift checked ["left", "right"] atCollectionBase
+  | left, right => CompleteExecution.complete_append_returns InferenceCettaWire.encodePattern state left right
 
 private theorem pcollection_template :
     PureData.Template library.runtime
       (a "PCollection" [v "kind", v "presented", .symbol "RNone"]) := by
+  apply template_in_program backendProof_agreement ?_ (by decide +kernel)
   apply PureData.Template.constructor "PCollection" _ (by decide +kernel) (by decide)
   intro argument member
   simp only [List.mem_cons, List.not_mem_nil, or_false] at member
@@ -134,7 +196,7 @@ theorem ordinary_target_returns (state : State)
         InferenceCettaWire.encodePattern, InferenceCettaWire.encodeCollectionType,
         InferenceCettaWire.encodeRest,
         InferenceCettaWire.encodePatterns_eq_encodeList, encodeList] using returned
-    metta_call checked
+    metta_call_in backendProof_checked using backendProof_agreement
     apply pure_let_returns _ _ _ _ _ _ _ _ (by rfl)
     · metta_capture_any joined unfolding [InferenceCettaWire.encodePattern,
         InferenceCettaWire.encodeCollectionType, kind, encodeList]
@@ -196,12 +258,12 @@ theorem filter_assignment_returns (state : State)
   | answer :: rest => by
       have later := filter_assignment_returns state assignment rest
       by_cases same : answer.assignment = assignment
-      · metta_call checked
+      · metta_call_in backendProof_checked using backendProof_agreement
         all_goals simp [filterAnswers, same,
           RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm,
           RuleInstantiationExecution.GeneralExecution.traceTerm,
           CettaWireAtom.encode, CettaWireAtom.encodeMany, encodeList, Library.bind]
-        metta_eval [later] with checked unfolding [filterAnswers, same,
+        metta_eval [later] with backendProof_checked in backendProof_agreement unfolding [filterAnswers, same,
           RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm,
           RuleInstantiationExecution.GeneralExecution.traceTerm,
           RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm_injective.eq_iff,
@@ -211,12 +273,12 @@ theorem filter_assignment_returns (state : State)
               RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm assignment :=
           fun equal => same
             (RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm_injective equal)
-        metta_call checked
+        metta_call_in backendProof_checked using backendProof_agreement
         all_goals simp [filterAnswers, same,
           RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm,
           RuleInstantiationExecution.GeneralExecution.traceTerm,
           CettaWireAtom.encode, CettaWireAtom.encodeMany, encodeList, Library.bind]
-        metta_eval [later] with checked unfolding [filterAnswers, same, wire_ne,
+        metta_eval [later] with backendProof_checked in backendProof_agreement unfolding [filterAnswers, same, wire_ne,
           RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm,
           RuleInstantiationExecution.GeneralExecution.traceTerm,
           RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm_injective.eq_iff,
@@ -294,25 +356,11 @@ theorem answers_returns (state : State)
             receipt.matching.assignment)])
       state (encoded (encodeList RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm
         (backendAnswers request receipt))) := by
-  have answeredAtBase : PureReturns collectionBaseLibrary.runtime [] state
-      (apply "gslt:complete:matcher-answers"
-        [encoded (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm
-          (rawOrdinaryRequest request receipt))])
-      state (encoded (encodeList RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm
-        (CompleteExecution.finishedAnswers (rawOrdinaryRequest request receipt)))) := by
-    metta_lift collectionBase_checked ["request"]
-      (CompleteExecution.matcher_answers_returns state (rawOrdinaryRequest request receipt))
-  have answered : PureReturns library.runtime [] state
-      (apply "gslt:complete:matcher-answers"
-        [encoded (RuleInstantiationExecution.GeneralExecution.matcherRequestTerm
-          (rawOrdinaryRequest request receipt))])
-      state (encoded (encodeList RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm
-        (CompleteExecution.finishedAnswers (rawOrdinaryRequest request receipt)))) := by
-    metta_lift checked ["request"] answeredAtBase
+  have answered := CompleteExecution.matcher_answers_returns state (rawOrdinaryRequest request receipt)
   have filtered := filter_assignment_returns state receipt.matching.assignment
     (CompleteExecution.finishedAnswers (rawOrdinaryRequest request receipt))
-  metta_call checked
-  metta_eval [answered, filtered] with checked unfolding [backendAnswers]
+  metta_call_in backendProof_checked using backendProof_agreement
+  metta_eval [answered, filtered] with backendProof_checked in backendProof_agreement unfolding [backendAnswers]
 
 private def certifiedValues {request : GeneralScopedMatchMachine.Request}
     (answers : List {answer : GeneralScopedMatchMachine.Answer // answer.Valid request}) :
@@ -361,23 +409,11 @@ theorem continue_answers_returns (state : State)
       have later := continue_answers_returns state environment footprint depth bound type source
         index rule spec declared specified admitted sorted tail next rest
         (fun item member => covered item (List.mem_cons_of_mem answer member))
-      have continuedAtDescent := CompleteExecution.descent_continue_root_answer_returns state
+      have continued := CompleteExecution.descent_continue_root_answer_returns state
         environment footprint depth bound type source index rule spec declared specified admitted
         sorted answer.val answer.property (covered answer List.mem_cons_self) tail
         (StructuralDescent.Scheduled.continueRootAnswers environment outer depth bound type source
           index rule spec declared specified admitted sorted rest tail next).tasks
-      have continuedAtComplete := by
-        metta_lift CompleteExecution.complete_checked
-          ["environment", "depth", "bound", "type", "source", "index", "rule", "spec",
-            "answer", "tail", "next"] continuedAtDescent
-      have continuedAtCollection := by
-        metta_lift collectionBase_checked
-          ["environment", "depth", "bound", "type", "source", "index", "rule", "spec",
-            "answer", "tail", "next"] continuedAtComplete
-      have continued := by
-        metta_lift checked
-          ["environment", "depth", "bound", "type", "source", "index", "rule", "spec",
-            "answer", "tail", "next"] continuedAtCollection
       have laterAnswers :
           (StructuralDescent.Scheduled.continueRootAnswers environment outer depth bound
             type source index rule spec declared specified admitted sorted rest tail next).answers = [] :=
@@ -461,10 +497,7 @@ theorem begin_match_returns (state : State)
     RuleInstantiationExecution.GeneralExecution.matcherAnswerTerm state 1
     ((CollectionMatcherBackend.rawRootAnswers query receipt ready).map Subtype.val)
   rw [← List.map_take] at takenAtComplete
-  have takenAtBase := by
-    metta_lift collectionBase_checked ["count", "items"] takenAtComplete
-  have taken := by
-    metta_lift checked ["count", "items"] takenAtBase
+  have taken := takenAtComplete
   have continued := continue_answers_returns state environment footprint depth [] type presented
     ordinal query.rule query.spec declared specified admitted sorted
     (.done goal) [] (((CollectionMatcherBackend.rawRootAnswers query receipt ready).take 1))
@@ -473,6 +506,13 @@ theorem begin_match_returns (state : State)
     (StructuralDescent.Scheduled.continueRootAnswers environment goal depth [] type presented
       ordinal query.rule query.spec declared specified admitted sorted
       (((CollectionMatcherBackend.rawRootAnswers query receipt ready).take 1)) (.done goal) [])
+  have initialization : expansionState
+      (StructuralDescent.Scheduled.continueRootAnswers environment goal depth [] type presented
+        ordinal query.rule query.spec declared specified admitted sorted
+        ((CollectionMatcherBackend.rawRootAnswers query receipt ready).take 1) (.done goal) []) =
+      CollectionMatcherBackend.startRequest environment depth type ordinal query receipt ready
+        declared specified admitted sorted := rfl
+  rw [initialization] at expanded
   collection_backend_eval [ordinary, requested, answers, taken, continued, expanded]
     unfolding [CollectionPlanExecution.planFiringTerm, ScopedCollectionExecution.requestTerm,
       ScopedCollectionExecution.firingTerm, ScopedCollectionExecution.receiptTerm,
@@ -488,6 +528,21 @@ theorem begin_match_returns (state : State)
       InferenceCettaWire.encodePattern, InferenceCettaWire.encodePatterns_eq_encodeList,
       InferenceCettaWire.encodeCollectionType, InferenceCettaWire.encodeRest,
       InferenceCettaWire.AuthoredRule.siteTerm, encodeList]
+  all_goals
+    refine PureData.raw_capture_returns library.runtime [] _ state state
+      "gslt:collection-backend:expansion-state" _ _ _ ?_ ?_ ?_ ?_ expanded
+    · rw [← backendProof_agreement.dispatch _ (by decide +kernel)]
+      decide +kernel
+    · intro index bounded
+      have zero : index = 0 := by simpa using bounded
+      subst index
+      rw [← backendProof_agreement.demand _ 0 (by decide +kernel)]
+      decide +kernel
+    · decide
+    · simp [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+        Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup,
+        List.map_cons, List.map_nil, CettaWireAtom.applySubst_encode, encoded]; rfl
+
 
 
 /-- A retained root firing starts the existing scheduled continuation through
@@ -524,3 +579,18 @@ theorem begin_returns (state : State)
       CollectionMatcherBackend.startFiring]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.backendProofInheritedHeads_derived
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.backendProof_source_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.backendProof_row_count
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.backendProof_checked
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.backendProof_agreement
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.backend_append_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.ordinary_target_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.ordinary_request_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.filter_assignment_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.answers_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.continue_answers_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.expansion_state_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.begin_match_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionMatcherBackendExecution.begin_returns

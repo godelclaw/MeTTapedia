@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentLower
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseQueryExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseExecution
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFrames
 
@@ -126,13 +127,12 @@ theorem descent_query_expand_returns (state : State) (environment : Environment)
       state (encoded (encodeOption PremiseOperationsExecution.GeneralExecution.QueryExecution.queryExpansionTerm
         (some (Query.expand environment request task)))) := by
   metta_bound ["environment", "request", "task"]
-  exact lower_returns (by decide +kernel)
-    (PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized.query_expand_captured_returns
-      RuleExecutionProgram.scopedMachineProgram
-      PremiseOperationsExecution.GeneralExecution.ControlAssembly.query_agreement
-      PremiseOperationsExecution.GeneralExecution.QueryLower.operations _ state environment request task
-      (by simp [finiteProvider]) footprint provider captures (.var "environment") (.var "request") (.var "task")
-      (by metta_reads))
+  exact PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized.query_expand_captured_returns
+    RuleExecutionProgram.interpretedPremiseProgram
+    PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized.interpreted_agreement
+    PremiseOperationsExecution.GeneralExecution.QueryLower.interpreted_operations _ state environment request task
+    (by simp [finiteProvider]) footprint provider captures (.var "environment") (.var "request") (.var "task")
+    (by metta_reads)
 
 theorem descent_query_obligations_returns (state : State) (reasons : List Query.Obligation) :
     PureReturns descentLibrary.runtime [] state
@@ -217,7 +217,7 @@ theorem descent_fresh_returns (state : State) (name : String) (pattern : Pattern
     (PremiseOperationsExecution.GeneralExecution.EnvironmentExecution.PremiseTransitions.Lower.fresh_returns _
       state name pattern (.var "name") (.var "pattern") (by metta_reads))
 
-/-- A fact of the premise source moves up to the descent machine's runtime, one closed layer at a time. -/
+/-- Move a proved premise primitive through its checked source fragments. -/
 syntax "metta_from_premise_source " term:max : tactic
 macro_rules
   | `(tactic| metta_from_premise_source $fact) => `(tactic|
@@ -257,5 +257,66 @@ theorem descent_context_quantified_returns (state : State) (context : Context) :
       (PremiseOperationsExecution.GeneralExecution.premise_previous_returns (by decide +kernel)
         (PremiseOperationsExecution.GeneralExecution.context_quantified_captured_returns _ state context
           (.var "context") (by metta_reads))))
+
+namespace Interpreted
+
+/-- Walk a captured evaluator body with the selected matching codecs. -/
+syntax "descent_interpreted_body" (" [" term,* "]")? (" unfolding" " [" term,* "]")? : tactic
+macro_rules
+  | `(tactic| descent_interpreted_body $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
+    let facts := (facts.map (·.getElems)).getD #[]
+    let extra := (extra.map (·.getElems)).getD #[]
+    `(tactic| (metta_eval [$facts,*] with descentProof_checked in descentProof_agreement
+      unfolding [Library.bind, encodeList, encodeOption,
+        Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+        Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+        Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
+        InferenceCettaWire.AuthoredRule.premiseTerm, InferenceCettaWire.encodeList,
+        PremiseOperationsExecution.GeneralExecution.environmentTerm,
+        PremiseOperationsExecution.GeneralExecution.providerTerm,
+        RetainedMatchingWire.Scheduled.continuationTerm, RetainedMatchingWire.Scheduled.resultTerm,
+        RetainedMatchingWire.Scheduled.answerTerm, RetainedMatchingWire.Scheduled.expansionTerm,
+        CompleteExecution.DescentCodec.goalTerm, CompleteExecution.DescentCodec.obligationTerm,
+        RetainedMatchingWire.Scheduled.taskTerm, RetainedMatchingWire.stepCallTerm,
+        PremiseOperationsExecution.GeneralExecution.contextTerm, PremiseSchedulerExecution.schedulerExpansionTerm, $extra,*]))
+
+/-- Enter the shared evaluator and walk its body with the selected codecs. -/
+syntax "descent_interpreted_eval" (" [" term,* "]")? (" unfolding" " [" term,* "]")? : tactic
+macro_rules
+  | `(tactic| descent_interpreted_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
+    let facts := (facts.map (·.getElems)).getD #[]
+    let extra := (extra.map (·.getElems)).getD #[]
+    `(tactic| (metta_call_in descentProof_checked using descentProof_agreement; descent_interpreted_body [$facts,*] unfolding [$extra,*]))
+
+/-- The ordinary matcher specializes the shared native matching contract. -/
+theorem ordinary_matching_operations (environment : Environment) (free : List (String × TypeExpr)) :
+    RetainedMatchingWire.MatchingOperations descentLibrary.runtime MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec
+      (PremiseOperationsExecution.GeneralExecution.environmentTerm environment free)
+      (fun _ => True) (fun _ => True) (fun _ => True) :=
+  PremiseOperationsExecution.GeneralExecution.QueryExecution.Interpreted.ordinary_operations
+    RuleExecutionProgram.interpretedPremiseProgram
+    PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized.interpreted_agreement
+    PremiseOperationsExecution.GeneralExecution.QueryLower.interpreted_operations environment free
+
+/-- Function equality also rewrites an encoder retained under list and option maps. -/
+theorem ordinary_expansion_terms {environment : Environment} {outer : StructuralDescent.Scheduled.Goal} :
+    (RetainedMatchingWire.Scheduled.expansionTerm RetainedMatchingWire.ordinaryCodec :
+      Scheduler.Expansion (StructuralDescent.Scheduled.Task environment outer)
+        (StructuralDescent.Scheduled.Result environment outer) StructuralDescent.Scheduled.Obligation → Term) =
+      CompleteExecution.DescentCodec.expansionTerm :=
+  funext RetainedMatchingWire.Scheduled.ordinary_expansion
+
+theorem ordinary_task_terms {environment : Environment} {outer : StructuralDescent.Scheduled.Goal} :
+    (RetainedMatchingWire.Scheduled.taskTerm RetainedMatchingWire.ordinaryCodec :
+      StructuralDescent.Scheduled.Task environment outer → Term) = CompleteExecution.DescentCodec.taskTerm :=
+  funext RetainedMatchingWire.Scheduled.ordinary_task
+
+end Interpreted
+
+#print axioms descent_query_expand_returns
+#print axioms Interpreted.ordinary_matching_operations
+#print axioms Interpreted.ordinary_expansion_terms
+#print axioms Interpreted.ordinary_task_terms
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution

@@ -329,11 +329,11 @@ theorem derived_eval_eq (contextual : certificate.contextualValid language = tru
   | setPerm declaration _ perm =>
     rw [eval_collection, eval_collection]
     exact foldr_perm (fun first second rest => commutes .hashSet (by decide) first second rest) (perm.map _) _
-  | setDedup declaration _ =>
+  | setDedup declaration kindTyped =>
     rw [eval_collection, eval_collection]
     simp only [List.map_cons, List.foldr_cons]
-    exact setIdempotent_spec (sets (Mettapedia.GSLT.LanguageDef.EquationSemantics.usesCollection_eq_true_of_collectionCarrierRule
-      declaration)) _ _
+    exact setIdempotent_spec (sets (Mettapedia.GSLT.LanguageDef.EquationSemantics.usesCollection_eq_true_of_collectionTypedAt
+      declaration kindTyped)) _ _
   | flatten algebraRule flattens _ =>
     obtain ⟨name, params⟩ := algebraRule.selfSorted
     obtain ⟨-, identity, associative⟩ :=

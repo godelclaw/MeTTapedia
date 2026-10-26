@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.BindingSignatureSubstitution
+import Mettapedia.GSLT.LanguageDef.BindingSignatureWire
 
 /-!
 # Controls for declaration-derived scoped syntax
@@ -148,3 +149,115 @@ theorem undeclared_constructor_not_available :
       GrammarRule) ∈ rhoCalc.terms := by decide
 
 end Mettapedia.GSLT.LanguageDef.BindingSyntax.Controls
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.Controls.SourceReceipt
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.Binding.WireCodec
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.GSLT.LanguageDef.NamedFreeContext
+set_option autoImplicit false
+
+/-- The real rho input retains its declared Name-binding slot. -/
+theorem input_readback : SourceReadback.check input (erase input) = true := SourceReadback.check_erase input
+
+theorem named_binding_slot_refused : SourceReadback.check input
+    (.apply "PInput" [.bvar 0,.lambda (some "display")
+      (.collection .hashBag [.apply "PDrop" [.bvar 0],.apply "PDrop" [.bvar 1],.bvar 2] none)]) = false := by
+  decide +kernel
+
+theorem wrong_constructor_refused : SourceReadback.check input
+    (.apply "Invented" [.bvar 0,.lambda none
+      (.collection .hashBag [.apply "PDrop" [.bvar 0],.apply "PDrop" [.bvar 1],.bvar 2] none)]) = false := by
+  decide +kernel
+
+def displayedLambda : Term (signatureOf rhoCalc) [] (.arrow TypeExpr.proc TypeExpr.proc) :=
+  .op (.lambda TypeExpr.proc TypeExpr.proc) (.cons (.var .zero) .nil)
+
+theorem ordinary_lambda_display_retained : SourceReadback.check displayedLambda
+    (.lambda (some "visible") (.bvar 0)) = true := rfl
+
+theorem ordinary_lambda_display_typed : HasType rhoCalc FreeTypeContext.empty []
+    (.lambda (some "visible") (.bvar 0)) (.arrow TypeExpr.proc TypeExpr.proc) :=
+  SourceReadback.typed displayedLambda _ ordinary_lambda_display_retained
+
+def restData : Term (signatureOf rhoCalc) [TypeExpr.proc] (.collection .hashSet TypeExpr.proc) :=
+  .op (.collection .hashSet TypeExpr.proc 1) (.cons (.var .zero) .nil)
+
+theorem collection_tail_retained : (SourceReceiptData.ofTerm restData).accepts
+    (.collection .hashSet [.bvar 0] (some "unassignedRest")) = true := by decide +kernel
+
+theorem collection_tail_typed_without_lookup : HasType rhoCalc FreeTypeContext.empty [TypeExpr.proc]
+    (.collection .hashSet [.bvar 0] (some "unassignedRest")) (.collection .hashSet TypeExpr.proc) :=
+  (SourceReceiptData.ofTerm restData).sound _ collection_tail_retained
+
+theorem wrong_collection_kind_refused : (SourceReceiptData.ofTerm restData).accepts
+    (.collection .hashBag [.bvar 0] (some "unassignedRest")) = false := by decide +kernel
+
+def rawSubstitution : Term (signatureOf rhoCalc) [TypeExpr.proc] TypeExpr.proc :=
+  .op (.subst TypeExpr.proc TypeExpr.proc) (.cons (.var .zero) (.cons (.var .zero) .nil))
+
+theorem raw_substitution_readback : (SourceReceiptData.ofTerm rawSubstitution).accepts
+    (.subst (.bvar 0) (.bvar 0)) = true := by decide +kernel
+
+theorem raw_substitution_typed : HasType rhoCalc FreeTypeContext.empty [TypeExpr.proc]
+    (.subst (.bvar 0) (.bvar 0)) TypeExpr.proc :=
+  (SourceReceiptData.ofTerm rawSubstitution).sound _ raw_substitution_readback
+
+def freeData : SourceReceiptData rhoCalc [] (.arrow TypeExpr.proc (.collection .hashSet TypeExpr.proc)) where
+  entries := [("outside",TypeExpr.proc)]
+  term := .op (.lambda TypeExpr.proc (.collection .hashSet TypeExpr.proc))
+    (.cons (.op (.collection .hashSet TypeExpr.proc 1) (.cons (.var (.succ .zero)) .nil)) .nil)
+
+def freeSource : Pattern := .lambda (some "visible")
+  (.collection .hashSet [.fvar "outside"] (some "unassignedRest"))
+
+theorem free_names_binders_and_tail_retained : freeData.accepts freeSource = true := by decide +kernel
+
+theorem free_source_typed : HasType rhoCalc (FreeTypeContext.ofList freeData.entries) [] freeSource
+    (.arrow TypeExpr.proc (.collection .hashSet TypeExpr.proc)) :=
+  freeData.sound _ free_names_binders_and_tail_retained
+
+def leakedIndex : SourceReceiptData rhoCalc [] TypeExpr.proc where
+  entries := [("outside",TypeExpr.proc)]
+  term := .var .zero
+
+/-- Reading the closed term alone would see index zero. Exact source
+restoration prevents treating that dangling index as a named free slot. -/
+theorem bound_index_cannot_use_free_suffix : leakedIndex.accepts (.bvar 0) = false := by decide +kernel
+
+def conflictingHeader : SourceReceiptData rhoCalc [] TypeExpr.proc where
+  entries := [("outside",TypeExpr.proc),("outside",TypeExpr.name)]
+  term := .var .zero
+
+theorem conflicting_header_refused : conflictingHeader.accepts (.fvar "outside") = false := by decide +kernel
+
+def freeReceipt : Wire.SourceReceipt rhoCalc []
+    (.arrow TypeExpr.proc (.collection .hashSet TypeExpr.proc)) freeSource :=
+  ⟨freeData,free_names_binders_and_tail_retained⟩
+
+theorem checked_source_packet_roundtrip :
+    (Wire.sourceReceiptCodec rhoCalc [] (.arrow TypeExpr.proc (.collection .hashSet TypeExpr.proc)) freeSource).get
+      ((Wire.sourceReceiptCodec rhoCalc [] (.arrow TypeExpr.proc (.collection .hashSet TypeExpr.proc)) freeSource).put freeReceipt) =
+        some freeReceipt := Codec.get_put _ _
+
+theorem malformed_packet_refused :
+    (Wire.sourceReceiptCodec rhoCalc [] TypeExpr.proc (.bvar 0)).get (.pair (.atom 0) (.atom 0)) = none := rfl
+
+#print axioms input_readback
+#print axioms named_binding_slot_refused
+#print axioms wrong_constructor_refused
+#print axioms ordinary_lambda_display_retained
+#print axioms ordinary_lambda_display_typed
+#print axioms collection_tail_retained
+#print axioms collection_tail_typed_without_lookup
+#print axioms wrong_collection_kind_refused
+#print axioms raw_substitution_readback
+#print axioms raw_substitution_typed
+#print axioms free_names_binders_and_tail_retained
+#print axioms free_source_typed
+#print axioms bound_index_cannot_use_free_suffix
+#print axioms conflicting_header_refused
+#print axioms checked_source_packet_roundtrip
+#print axioms malformed_packet_refused
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.Controls.SourceReceipt

@@ -69,14 +69,14 @@ open GeneralPremise GeneralPremise.Query
 
 theorem settled_at_cost (environment : Environment) (request : Request)
     (state : State environment request) (fuel : Nat)
-    (enough : agendaCost environment request state.agenda ≤ fuel) :
+    (enough : agendaCost MatchingExecution.ordinaryCursorCost environment request state.agenda ≤ fuel) :
     (run environment request fuel state).agenda = [] := by
   induction fuel generalizing state with
   | zero =>
       cases agenda : state.agenda with
       | nil => simpa only [run, Scheduler.run] using agenda
       | cons task rest =>
-          have positive : 0 < agendaCost environment request state.agenda := by
+          have positive : 0 < agendaCost MatchingExecution.ordinaryCursorCost environment request state.agenda := by
             rw [agenda, agendaCost_cons, taskCost_eq]
             omega
           omega
@@ -88,13 +88,13 @@ theorem settled_at_cost (environment : Environment) (request : Request)
         change (run environment request fuel (tick environment request state)).agenda = []
         rw [stationary]
         exact ih state (by simp [empty, agendaCost_nil])
-      · have decrease := tick_cost environment request state empty
-        change agendaCost environment request (tick environment request state).agenda + 1 =
-          agendaCost environment request state.agenda at decrease
+      · have decrease := tick_cost MatchingExecution.ordinaryCursorCost environment request state empty
+        change agendaCost MatchingExecution.ordinaryCursorCost environment request (tick environment request state).agenda + 1 =
+          agendaCost MatchingExecution.ordinaryCursorCost environment request state.agenda at decrease
         exact ih _ (by omega)
 
 def state (environment : Environment) (request : Request) : State environment request :=
-  run environment request (agendaCost environment request (start environment request).agenda)
+  run environment request (agendaCost MatchingExecution.ordinaryCursorCost environment request (start environment request).agenda)
     (start environment request)
 
 theorem state_settled (environment : Environment) (request : Request) :
@@ -106,7 +106,7 @@ def answers (environment : Environment) (request : Request) : List (Answer envir
 
 theorem answers_complete (environment : Environment) (request : Request)
     (wanted : Answer environment request) : wanted ∈ answers environment request :=
-  GeneralPremise.Query.answers_complete environment request _ wanted
+  GeneralPremise.Query.answers_complete MatchingExecution.ordinaryCursorLaws MatchingExecution.ordinary_answer_representation environment request _ wanted
     (state_settled environment request)
 
 end Provider

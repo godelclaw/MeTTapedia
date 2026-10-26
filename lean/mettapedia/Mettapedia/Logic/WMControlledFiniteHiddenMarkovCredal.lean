@@ -1,3 +1,4 @@
+import Mathlib.Probability.ProbabilityMassFunction.Constructions
 import Mettapedia.ProbabilityTheory.HiddenMarkovModels.ControlledFiniteHiddenMarkovObservedInference
 import Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 import Mettapedia.PLN.TruthValues.PLNIndefiniteTruthBridge
@@ -6,16 +7,24 @@ import Mettapedia.UniversalAI.ControlledFiniteHiddenMarkovBridge
 import Mettapedia.UniversalAI.BayesianAgents.Core
 
 /-!
-# Credal WM Layer for Observed-Only Controlled Finite HMMs
+# Controlled-HMM posterior intervals and trace-mass value envelopes
 
-This file packages the first honest observed-only WM response to controlled-HMM
-non-identifiability: a credal interval over filtering posterior strengths.
+A finite family gives normalized filtering-posterior intervals on supported
+histories. Its value computations use a different observation: the unnormalized
+mass of the completed trace extended by the next cycle. These rows sum to the
+past trace probability, so they are subprobabilities rather than conditional
+next-observation distributions.
 
-Positive example:
-* a finite family of controlled HMMs induces lower/upper posterior strengths.
+Static policy values retain one model throughout. Recursive envelopes re-select
+a model's row at each history after the action is given, using that model's own
+filter. They contain every fixed-model value and can be strictly wider. The
+finite-horizon convention has separate value/action stages: `V 1 = 0`, and
+`V 2` includes one reward. Posterior intervals and trace-mass decision intervals
+have separate meanings; the latter do not establish normalized HMM planning.
 
-Negative example:
-* this is not yet a full arbitrary-family credal calculus or a planning layer.
+Model persistence and order of play also matter for robust POMDP semantics:
+https://www.ijcai.org/proceedings/2024/740
+The normalized conditional planning interface is a separate extension.
 -/
 
 set_option autoImplicit false
@@ -28,7 +37,7 @@ open Mettapedia.ProbabilityTheory.HiddenMarkovModels.ControlledFiniteHiddenMarko
 open Mettapedia.ProbabilityTheory.HiddenMarkovModels.ControlledFiniteHiddenMarkovObservedInference
 open Mettapedia.UniversalAI.ControlledFiniteHiddenMarkovBridge
 open Mettapedia.UniversalAI.BayesianAgents.Core
-open scoped ENNReal BigOperators
+open scoped ENNReal NNReal BigOperators
 
 universe uA uI
 
@@ -68,10 +77,7 @@ theorem lowerFilteringPosteriorStrength_nonneg
     (zs : List (CycleObservation Action obs))
     (q : Fin latent) :
     0 ≤ lowerFilteringPosteriorStrength Θ zs q := by
-  unfold lowerFilteringPosteriorStrength
-  apply Finset.le_inf'
-  intro i _
-  exact ENNReal.toReal_nonneg
+  exact Finset.le_inf' _ _ fun _ _ => ENNReal.toReal_nonneg
 
 theorem upperFilteringPosteriorStrength_le_one
     [Fintype ι] [Nonempty ι]
@@ -80,14 +86,9 @@ theorem upperFilteringPosteriorStrength_le_one
     (q : Fin latent)
     (hobs : ∀ i, observedCycleProb (Θ i) zs ≠ 0) :
     upperFilteringPosteriorStrength Θ zs q ≤ 1 := by
-  unfold upperFilteringPosteriorStrength
-  apply Finset.sup'_le
-  intro i hi
-  have hle : filteringPosteriorMass (Θ i) zs q ≤ 1 :=
-    filteringPosteriorMass_le_one (Θ i) zs q (hobs i)
-  have htop : filteringPosteriorMass (Θ i) zs q ≠ ⊤ :=
-    ne_top_of_le_ne_top ENNReal.one_ne_top hle
-  exact (ENNReal.toReal_le_toReal htop ENNReal.one_ne_top).2 hle
+  exact Finset.sup'_le _ _ fun i _ => by
+    simpa using ENNReal.toReal_mono ENNReal.one_ne_top
+      (filteringPosteriorMass_le_one (Θ i) zs q (hobs i))
 
 theorem lowerFilteringPosteriorStrength_le
     [Fintype ι] [Nonempty ι]
@@ -178,13 +179,106 @@ noncomputable def filteringCredalPLNITV
     (cycleCountCredibility (Action := Action) (obs := obs) κ zs)
     (cycleCountCredibility_mem_unit (Action := Action) (obs := obs) κ hκ zs)
 
-section OneStepValue
+/-- The mass of the completed trace extended by the chosen action and observation. -/
+def traceMassRow (θ : ControlledFiniteHMMParam Action latent obs)
+    (zs : List (CycleObservation Action obs)) (a : Action) (y : Fin obs) : ℝ≥0∞ :=
+  observationMassGivenAction θ (filteringMass θ zs) a y
+
+/-- A row sums to the probability of the past trace, not generally to one. -/
+@[simp] theorem traceMassRow_sum (θ : ControlledFiniteHMMParam Action latent obs)
+    (zs : List (CycleObservation Action obs)) (a : Action) :
+    ∑ y : Fin obs, traceMassRow θ zs a y = observedCycleProb θ zs :=
+  observationMassGivenAction_sum_eq θ (filteringMass θ zs) a
+
+/-- The mass of an extended trace is its selected observation entry. -/
+theorem observedCycleProb_append_eq_traceMassRow
+    (θ : ControlledFiniteHMMParam Action latent obs)
+    (zs : List (CycleObservation Action obs)) (a : Action) (y : Fin obs) :
+    observedCycleProb θ (zs ++ [(a, y)]) = traceMassRow θ zs a y := by
+  rw [observedCycleProb, filteringMass_append_singleton]; rfl
+
+/-- Every trace-mass row is a subprobability row. -/
+theorem traceMassRow_sum_le_one (θ : ControlledFiniteHMMParam Action latent obs)
+    (zs : List (CycleObservation Action obs)) (a : Action) :
+    ∑ y : Fin obs, traceMassRow θ zs a y ≤ 1 := by
+  rw [traceMassRow_sum]; exact observedCycleProb_le_one θ zs
+
+/-- An impossible past trace gives an entirely zero row. -/
+theorem traceMassRow_eq_zero (θ : ControlledFiniteHMMParam Action latent obs)
+    (zs : List (CycleObservation Action obs)) (a : Action) (y : Fin obs)
+    (h : observedCycleProb θ zs = 0) : traceMassRow θ zs a y = 0 := by
+  apply le_antisymm
+  rotate_left
+  · exact zero_le
+  calc
+    traceMassRow θ zs a y ≤ ∑ z : Fin obs, traceMassRow θ zs a z :=
+      Finset.single_le_sum (fun _ _ => bot_le) (Finset.mem_univ y)
+    _ = 0 := (traceMassRow_sum θ zs a).trans h
+
+/-- Positive emissions keep every finite trace possible, even with deterministic latent steps. -/
+theorem observedCycleProb_ne_zero_of_emissions
+    (θ : ControlledFiniteHMMParam Action latent obs)
+    (he : ∀ x y, emissionProb θ x y ≠ 0) (zs : List (CycleObservation Action obs)) :
+    observedCycleProb θ zs ≠ 0 := by
+  induction zs using List.reverseRecOn with
+  | nil => simp
+  | append_singleton zs z ih =>
+      rcases z with ⟨a, y⟩
+      intro h
+      rw [observedCycleProb, filteringMass_append_singleton] at h
+      have hp (x : Fin latent) : predictiveLatentMass θ (filteringMass θ zs) a x = 0 := by
+        have hx := (Finset.sum_eq_zero_iff.mp h) x (Finset.mem_univ x)
+        exact (mul_eq_zero.mp hx).resolve_right (by simpa only [ENNReal.coe_eq_zero] using he x y)
+      apply ih
+      change (∑ x : Fin latent, filteringMass θ zs x) = 0
+      rw [← predictiveLatentMass_sum_eq θ (filteringMass θ zs) a]
+      exact Finset.sum_eq_zero fun x _ => hp x
+
+/-- At positive trace mass, raw weights are trace probability times posterior prediction. -/
+theorem traceMassRow_eq_trace_mul_posterior (θ : ControlledFiniteHMMParam Action latent obs)
+    (zs : List (CycleObservation Action obs)) (a : Action) (y : Fin obs)
+    (h : observedCycleProb θ zs ≠ 0) :
+    traceMassRow θ zs a y = observedCycleProb θ zs *
+      observationMassGivenAction θ (filteringPosteriorMass θ zs) a y := by
+  simp only [traceMassRow, observationMassGivenAction, filteringStepMass,
+    predictiveLatentMass, filteringPosteriorMass, Finset.sum_mul, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro x _
+  apply Finset.sum_congr rfl
+  intro x' _
+  rw [← mul_assoc, ← mul_assoc, ENNReal.mul_div_cancel h (observedCycleProb_ne_top θ zs)]
+
+/-- Reward plus continuation, weighted by the unnormalized mass of the extended trace. -/
+noncomputable def traceMassContinuation [PerceptReward (Fin obs)]
+    (θ : ControlledFiniteHMMParam Action latent obs) (γ : DiscountFactor)
+    (zs : List (CycleObservation Action obs)) (a : Action)
+    (v : List (CycleObservation Action obs) → ℝ) : ℝ :=
+  ∑ y : Fin obs, (traceMassRow θ zs a y).toReal *
+    (PerceptReward.reward y + γ.val * v (zs ++ [(a, y)]))
+
+/-- Nonnegative trace weights and discount preserve continuation inequalities. -/
+theorem traceMassContinuation_mono [PerceptReward (Fin obs)]
+    (θ : ControlledFiniteHMMParam Action latent obs) (γ : DiscountFactor)
+    (zs : List (CycleObservation Action obs)) (a : Action)
+    {v w : List (CycleObservation Action obs) → ℝ} (h : ∀ ws, v ws ≤ w ws) :
+    traceMassContinuation θ γ zs a v ≤ traceMassContinuation θ γ zs a w := by
+  exact Finset.sum_le_sum fun y _ => mul_le_mul_of_nonneg_left
+    (add_le_add le_rfl (mul_le_mul_of_nonneg_left (h _) γ.nonneg)) ENNReal.toReal_nonneg
+
+private theorem foldMax_mono {α : Type*} [Fintype α] {f g : α → ℝ}
+    (h : ∀ a, f a ≤ g a) :
+    Finset.univ.fold max 0 f ≤ Finset.univ.fold max 0 g := by
+  rw [Finset.fold_max_le]
+  exact ⟨(Finset.le_fold_max _).2 (Or.inl le_rfl), fun a ha =>
+    (h a).trans ((Finset.le_fold_max _).2 (Or.inr ⟨a, ha, le_rfl⟩))⟩
+
+section OneStepTraceMassValue
 
 variable [PerceptReward (Fin obs)]
 
-/-- Immediate expected reward from a completed trace and a chosen action, under
-the controlled-HMM environment bridge. -/
-noncomputable def oneStepQValue
+/-- Trace-mass-weighted immediate reward from a completed trace and a chosen
+action, under the subprobability environment bridge. -/
+noncomputable def oneStepTraceMassQValue
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) : ℝ :=
@@ -233,73 +327,52 @@ omit [PerceptReward (Fin obs)] in
       | mk a' y' =>
           simp [historyOfCycles, ih]
 
-theorem oneStepQValue_nonneg
+private theorem qValue_succ_eq_traceMassContinuation
+    [Fintype Action]
+    (θ : ControlledFiniteHMMParam Action latent obs) (π : Agent Action (Fin obs))
+    (γ : DiscountFactor) (zs : List (CycleObservation Action obs)) (a : Action) (n : ℕ) :
+    qValue (toEnvironment θ) π γ (historyOfCycles zs) a (n + 1) =
+      traceMassContinuation θ γ zs a (fun ws => value (toEnvironment θ) π γ (historyOfCycles ws) n) := by
+  rw [qValue_succ]
+  simp [traceMassContinuation, traceMassRow, historyOfCycles_append_act_wellFormed,
+    toEnvironment, environmentProb_historyOfCycles_append_act, historyOfCycles_append_singleton]
+
+private theorem optimalQValue_succ_eq_traceMassContinuation
+    [Fintype Action]
+    (θ : ControlledFiniteHMMParam Action latent obs) (γ : DiscountFactor)
+    (zs : List (CycleObservation Action obs)) (a : Action) (n : ℕ) :
+    optimalQValue (toEnvironment θ) γ (historyOfCycles zs) a (n + 1) =
+      traceMassContinuation θ γ zs a (fun ws => optimalValue (toEnvironment θ) γ (historyOfCycles ws) n) := by
+  rw [optimalQValue_succ]
+  simp [traceMassContinuation, traceMassRow, historyOfCycles_append_act_wellFormed,
+    toEnvironment, environmentProb_historyOfCycles_append_act, historyOfCycles_append_singleton]
+
+theorem oneStepTraceMassQValue_nonneg
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
-    0 ≤ oneStepQValue θ zs a := by
-  unfold oneStepQValue
-  refine Finset.sum_nonneg ?_
-  intro y _hy
-  exact mul_nonneg ENNReal.toReal_nonneg (PerceptReward.nonneg y)
+    0 ≤ oneStepTraceMassQValue θ zs a := by
+  exact Finset.sum_nonneg fun y _ =>
+    mul_nonneg ENNReal.toReal_nonneg (PerceptReward.nonneg y)
 
-theorem oneStepQValue_le_one
+theorem oneStepTraceMassQValue_le_one
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
-    oneStepQValue θ zs a ≤ 1 := by
-  have hprob_le_one :
-      ∑ y : Fin obs,
-          observationMassGivenAction θ (filteringMass θ zs) a y ≤ 1 := by
-    calc
-      ∑ y : Fin obs, observationMassGivenAction θ (filteringMass θ zs) a y
-          = ∑ x : Fin latent, filteringMass θ zs x := by
-              exact observationMassGivenAction_sum_eq θ (filteringMass θ zs) a
-      _ ≤ 1 := filteringMass_sum_le_one θ zs
-  have hprob_ne_top :
-      ∀ y : Fin obs,
-        observationMassGivenAction θ (filteringMass θ zs) a y ≠ (⊤ : ENNReal) := by
-    intro y
-    have hy_le_sum :
-        observationMassGivenAction θ (filteringMass θ zs) a y ≤
-          ∑ y' : Fin obs, observationMassGivenAction θ (filteringMass θ zs) a y' := by
-      exact Finset.single_le_sum (fun _ _ => bot_le) (Finset.mem_univ y)
-    have hy_le_one :
-        observationMassGivenAction θ (filteringMass θ zs) a y ≤ 1 :=
-      hy_le_sum.trans hprob_le_one
-    exact ne_top_of_le_ne_top ENNReal.one_ne_top hy_le_one
-  have htoReal_sum :
-      (∑ y : Fin obs, observationMassGivenAction θ (filteringMass θ zs) a y).toReal =
-        ∑ y : Fin obs, (observationMassGivenAction θ (filteringMass θ zs) a y).toReal := by
-    exact ENNReal.toReal_sum (s := Finset.univ)
-      (f := fun y : Fin obs => observationMassGivenAction θ (filteringMass θ zs) a y)
-      (by
-        intro y _hy
-        exact hprob_ne_top y)
-  have hsum_toReal_le :
-      ∑ y : Fin obs, (observationMassGivenAction θ (filteringMass θ zs) a y).toReal ≤ 1 := by
-    have hle :
-        (∑ y : Fin obs, observationMassGivenAction θ (filteringMass θ zs) a y).toReal ≤
-          (1 : ENNReal).toReal :=
-      (ENNReal.toReal_le_toReal
-        (ne_top_of_le_ne_top ENNReal.one_ne_top hprob_le_one)
-        ENNReal.one_ne_top).2 hprob_le_one
-    simpa [htoReal_sum] using hle
-  have hsum_le :
-      ∑ y : Fin obs,
-          (observationMassGivenAction θ (filteringMass θ zs) a y).toReal *
-            PerceptReward.reward y
-        ≤ ∑ y : Fin obs, (observationMassGivenAction θ (filteringMass θ zs) a y).toReal := by
-    refine Finset.sum_le_sum ?_
-    intro y _hy
-    have hprob_nonneg :
-        0 ≤ (observationMassGivenAction θ (filteringMass θ zs) a y).toReal :=
-      ENNReal.toReal_nonneg
-    have hrew_le_one : PerceptReward.reward y ≤ 1 := PerceptReward.le_one y
-    nlinarith
-  exact hsum_le.trans hsum_toReal_le
+    oneStepTraceMassQValue θ zs a ≤ 1 := by
+  have finite (y : Fin obs) : traceMassRow θ zs a y ≠ ⊤ :=
+    ne_top_of_le_ne_top ENNReal.one_ne_top
+      ((Finset.single_le_sum (fun _ _ => bot_le) (Finset.mem_univ y)).trans
+        (traceMassRow_sum_le_one θ zs a))
+  calc
+    oneStepTraceMassQValue θ zs a ≤ ∑ y : Fin obs, (traceMassRow θ zs a y).toReal :=
+      Finset.sum_le_sum fun y _ => mul_le_of_le_one_right ENNReal.toReal_nonneg (PerceptReward.le_one y)
+    _ = (∑ y : Fin obs, traceMassRow θ zs a y).toReal :=
+      (ENNReal.toReal_sum (fun y _ => finite y)).symm
+    _ ≤ 1 := by
+      simpa using ENNReal.toReal_mono ENNReal.one_ne_top (traceMassRow_sum_le_one θ zs a)
 
-theorem qValue_historyOfCycles_one_eq_oneStepQValue
+theorem qValue_historyOfCycles_one_eq_oneStepTraceMassQValue
     [Fintype Action]
     (θ : ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
@@ -307,181 +380,133 @@ theorem qValue_historyOfCycles_one_eq_oneStepQValue
     (zs : List (CycleObservation Action obs))
     (a : Action) :
     qValue (toEnvironment θ) π γ (historyOfCycles zs) a 1 =
-      oneStepQValue θ zs a := by
-  rw [qValue_succ]
-  have hwf :
-      History.wellFormed (Action := Action) (Percept := Fin obs)
-        (historyOfCycles zs ++ [HistElem.act a]) = true :=
-    historyOfCycles_append_act_wellFormed (Action := Action) (obs := obs) zs a
-  have hprob :
-      (fun y : Fin obs =>
-        (toEnvironment θ).prob (historyOfCycles zs ++ [HistElem.act a]) y) =
-      (fun y : Fin obs =>
-        observationMassGivenAction θ (filteringMass θ zs) a y) := by
-    funext y
-    simpa [toEnvironment] using
-      environmentProb_historyOfCycles_append_act (θ := θ) (zs := zs) (a := a) (y := y)
-  simp [hwf, value_zero]
-  simp [oneStepQValue, hprob]
+      oneStepTraceMassQValue θ zs a := by
+  rw [qValue_succ_eq_traceMassContinuation]
+  simp [traceMassContinuation, traceMassRow, oneStepTraceMassQValue, value_zero]
 
-theorem optimalQValue_historyOfCycles_one_eq_oneStepQValue
+theorem optimalQValue_historyOfCycles_one_eq_oneStepTraceMassQValue
     [Fintype Action]
     (θ : ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
     optimalQValue (toEnvironment θ) γ (historyOfCycles zs) a 1 =
-      oneStepQValue θ zs a := by
-  rw [optimalQValue_succ]
-  have hwf :
-      History.wellFormed (Action := Action) (Percept := Fin obs)
-        (historyOfCycles zs ++ [HistElem.act a]) = true :=
-    historyOfCycles_append_act_wellFormed (Action := Action) (obs := obs) zs a
-  have hprob :
-      (fun y : Fin obs =>
-        (toEnvironment θ).prob (historyOfCycles zs ++ [HistElem.act a]) y) =
-      (fun y : Fin obs =>
-        observationMassGivenAction θ (filteringMass θ zs) a y) := by
-    funext y
-    simpa [toEnvironment] using
-      environmentProb_historyOfCycles_append_act (θ := θ) (zs := zs) (a := a) (y := y)
-  simp [hwf, optimalValue_zero]
-  simp [oneStepQValue, hprob]
+      oneStepTraceMassQValue θ zs a := by
+  rw [optimalQValue_succ_eq_traceMassContinuation]
+  simp [traceMassContinuation, traceMassRow, oneStepTraceMassQValue, optimalValue_zero]
 
 /-- The one-step optimal decision value from a completed trace: maximum over the
 available one-step `qValue`s. In the BayesianAgents horizon convention, this
 matches `optimalValue ... 2`. -/
-noncomputable def oneStepOptimalValue
+noncomputable def oneStepTraceMassOptimalValue
     [Fintype Action]
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) : ℝ :=
-  (Finset.univ : Finset Action).fold max 0 (fun a => oneStepQValue θ zs a)
+  (Finset.univ : Finset Action).fold max 0 (fun a => oneStepTraceMassQValue θ zs a)
 
-theorem oneStepOptimalValue_nonneg
+theorem oneStepTraceMassOptimalValue_nonneg
     [Fintype Action]
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) :
-    0 ≤ oneStepOptimalValue θ zs := by
-  unfold oneStepOptimalValue
-  rw [Finset.le_fold_max]
-  exact Or.inl le_rfl
+    0 ≤ oneStepTraceMassOptimalValue θ zs := by
+  exact (Finset.le_fold_max _).2 (Or.inl le_rfl)
 
-theorem oneStepOptimalValue_le_one
+theorem oneStepTraceMassOptimalValue_le_one
     [Fintype Action]
     (θ : ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) :
-    oneStepOptimalValue θ zs ≤ 1 := by
-  unfold oneStepOptimalValue
-  rw [Finset.fold_max_le]
-  constructor
-  · norm_num
-  · intro a _ha
-    exact oneStepQValue_le_one θ zs a
+    oneStepTraceMassOptimalValue θ zs ≤ 1 := by
+  exact (Finset.fold_max_le _).2 ⟨by norm_num, fun a _ => oneStepTraceMassQValue_le_one θ zs a⟩
 
-theorem optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+theorem optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
     [Fintype Action]
     (θ : ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs)) :
     optimalValue (toEnvironment θ) γ (historyOfCycles zs) 2 =
-      oneStepOptimalValue θ zs := by
+      oneStepTraceMassOptimalValue θ zs := by
   rw [optimalValue_succ]
-  have hwf :
-      History.wellFormed (Action := Action) (Percept := Fin obs)
-        (historyOfCycles zs) = true :=
-    historyOfCycles_wellFormed (Action := Action) (obs := obs) zs
-  simp [hwf, oneStepOptimalValue, optimalQValue_historyOfCycles_one_eq_oneStepQValue]
+  simp [historyOfCycles_wellFormed, oneStepTraceMassOptimalValue,
+    optimalQValue_historyOfCycles_one_eq_oneStepTraceMassQValue]
 
 /-- Lower one-step `qValue` envelope across a finite family of controlled HMMs. -/
-noncomputable def lowerOneStepQValue
+noncomputable def lowerOneStepTraceMassQValue
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) : ℝ :=
-  Finset.univ.inf' Finset.univ_nonempty (fun i => oneStepQValue (Θ i) zs a)
+  Finset.univ.inf' Finset.univ_nonempty (fun i => oneStepTraceMassQValue (Θ i) zs a)
 
 /-- Upper one-step `qValue` envelope across a finite family of controlled HMMs. -/
-noncomputable def upperOneStepQValue
+noncomputable def upperOneStepTraceMassQValue
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) : ℝ :=
-  Finset.univ.sup' Finset.univ_nonempty (fun i => oneStepQValue (Θ i) zs a)
+  Finset.univ.sup' Finset.univ_nonempty (fun i => oneStepTraceMassQValue (Θ i) zs a)
 
-theorem lowerOneStepQValue_le
+theorem lowerOneStepTraceMassQValue_le
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) (i : ι) :
-    lowerOneStepQValue Θ zs a ≤ oneStepQValue (Θ i) zs a := by
-  unfold lowerOneStepQValue
+    lowerOneStepTraceMassQValue Θ zs a ≤ oneStepTraceMassQValue (Θ i) zs a := by
+  unfold lowerOneStepTraceMassQValue
   exact Finset.inf'_le _ (Finset.mem_univ i)
 
-theorem le_upperOneStepQValue
+theorem le_upperOneStepTraceMassQValue
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) (i : ι) :
-    oneStepQValue (Θ i) zs a ≤ upperOneStepQValue Θ zs a := by
-  unfold upperOneStepQValue
+    oneStepTraceMassQValue (Θ i) zs a ≤ upperOneStepTraceMassQValue Θ zs a := by
+  unfold upperOneStepTraceMassQValue
   exact Finset.le_sup' (s := Finset.univ)
-    (f := fun j : ι => oneStepQValue (Θ j) zs a)
+    (f := fun j : ι => oneStepTraceMassQValue (Θ j) zs a)
     (Finset.mem_univ i)
 
-theorem lowerOneStepQValue_le_upper
+theorem lowerOneStepTraceMassQValue_le_upper
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
-    lowerOneStepQValue Θ zs a ≤ upperOneStepQValue Θ zs a := by
+    lowerOneStepTraceMassQValue Θ zs a ≤ upperOneStepTraceMassQValue Θ zs a := by
   obtain ⟨i0⟩ := (inferInstance : Nonempty ι)
-  exact (lowerOneStepQValue_le Θ zs a i0).trans
-    (le_upperOneStepQValue Θ zs a i0)
+  exact (lowerOneStepTraceMassQValue_le Θ zs a i0).trans
+    (le_upperOneStepTraceMassQValue Θ zs a i0)
 
-theorem lowerOneStepQValue_nonneg
+theorem lowerOneStepTraceMassQValue_nonneg
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
-    0 ≤ lowerOneStepQValue Θ zs a := by
-  unfold lowerOneStepQValue
-  exact Finset.le_inf' (s := Finset.univ)
-    (H := Finset.univ_nonempty)
-    (f := fun i : ι => oneStepQValue (Θ i) zs a)
-    (by
-      intro i _hi
-      exact oneStepQValue_nonneg (Θ i) zs a)
+    0 ≤ lowerOneStepTraceMassQValue Θ zs a := by
+  exact Finset.le_inf' _ _ fun i _ => oneStepTraceMassQValue_nonneg (Θ i) zs a
 
-theorem upperOneStepQValue_le_one
+theorem upperOneStepTraceMassQValue_le_one
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
-    upperOneStepQValue Θ zs a ≤ 1 := by
-  unfold upperOneStepQValue
-  exact Finset.sup'_le (s := Finset.univ)
-    (H := Finset.univ_nonempty)
-    (f := fun i : ι => oneStepQValue (Θ i) zs a)
-    (by
-      intro i _hi
-      exact oneStepQValue_le_one (Θ i) zs a)
+    upperOneStepTraceMassQValue Θ zs a ≤ 1 := by
+  exact Finset.sup'_le _ _ fun i _ => oneStepTraceMassQValue_le_one (Θ i) zs a
 
 /-- Credal one-step value envelope across a finite family of controlled HMMs. -/
-noncomputable def oneStepQValueCredalTruthValue
+noncomputable def oneStepTraceMassQValueCredalTruthValue
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs))
     (a : Action) :
     IndefiniteTruthValue where
-  lower := lowerOneStepQValue Θ zs a
-  upper := upperOneStepQValue Θ zs a
-  valid := lowerOneStepQValue_le_upper Θ zs a
-  lower_nonneg := lowerOneStepQValue_nonneg Θ zs a
-  upper_le_one := upperOneStepQValue_le_one Θ zs a
+  lower := lowerOneStepTraceMassQValue Θ zs a
+  upper := upperOneStepTraceMassQValue Θ zs a
+  valid := lowerOneStepTraceMassQValue_le_upper Θ zs a
+  lower_nonneg := lowerOneStepTraceMassQValue_nonneg Θ zs a
+  upper_le_one := upperOneStepTraceMassQValue_le_one Θ zs a
 
 /-- One-step `qValue` envelope rendered as the live PLN indefinite truth-value
 interface. -/
-noncomputable abbrev oneStepQValuePLNITV
+noncomputable abbrev oneStepTraceMassQValuePLNITV
     [Fintype ι] [Nonempty ι]
     (κ : ℝ)
     (hκ : 0 < κ)
@@ -490,7 +515,7 @@ noncomputable abbrev oneStepQValuePLNITV
     (a : Action) :
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV :=
   IndefiniteTruthValue.toPLNITV
-    (oneStepQValueCredalTruthValue Θ zs a)
+    (oneStepTraceMassQValueCredalTruthValue Θ zs a)
     (cycleCountCredibility (Action := Action) (obs := obs) κ zs)
     (cycleCountCredibility_mem_unit (Action := Action) (obs := obs) κ hκ zs)
 
@@ -503,16 +528,16 @@ theorem qValue_historyOfCycles_one_mem_envelope
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (a : Action) (i : ι) :
-    lowerOneStepQValue Θ zs a ≤
+    lowerOneStepTraceMassQValue Θ zs a ≤
         qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ∧
       qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ≤
-        upperOneStepQValue Θ zs a := by
+        upperOneStepTraceMassQValue Θ zs a := by
   have hq :=
-    qValue_historyOfCycles_one_eq_oneStepQValue
+    qValue_historyOfCycles_one_eq_oneStepTraceMassQValue
       (θ := Θ i) (π := π) (γ := γ) (zs := zs) (a := a)
   constructor
-  · simpa [hq] using lowerOneStepQValue_le Θ zs a i
-  · simpa [hq] using le_upperOneStepQValue Θ zs a i
+  · simpa [hq] using lowerOneStepTraceMassQValue_le Θ zs a i
+  · simpa [hq] using le_upperOneStepTraceMassQValue Θ zs a i
 
 theorem qValue_historyOfCycles_one_mem_PLNITV_interval
     [Fintype ι] [Nonempty ι]
@@ -524,100 +549,88 @@ theorem qValue_historyOfCycles_one_mem_PLNITV_interval
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (a : Action) (i : ι) :
-    let itv := oneStepQValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
+    let itv := oneStepTraceMassQValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       κ hκ Θ zs a
     itv.lower ≤ qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ∧
       qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ≤ itv.upper := by
-  simpa [oneStepQValuePLNITV, IndefiniteTruthValue.toPLNITV,
+  simpa [oneStepTraceMassQValuePLNITV, IndefiniteTruthValue.toPLNITV,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruthBridge.ofBoundsAndCredibility,
-    oneStepQValueCredalTruthValue]
+    oneStepTraceMassQValueCredalTruthValue]
     using qValue_historyOfCycles_one_mem_envelope Θ π γ zs a i
 
 /-- Lower one-step optimal decision value across a finite family of controlled
 HMMs. This corresponds to the BayesianAgents quantity `optimalValue ... 2`. -/
-noncomputable def lowerOneStepOptimalValue
+noncomputable def lowerOneStepTraceMassOptimalValue
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) : ℝ :=
-  Finset.univ.inf' Finset.univ_nonempty (fun i => oneStepOptimalValue (Θ i) zs)
+  Finset.univ.inf' Finset.univ_nonempty (fun i => oneStepTraceMassOptimalValue (Θ i) zs)
 
 /-- Upper one-step optimal decision value across a finite family of controlled
 HMMs. -/
-noncomputable def upperOneStepOptimalValue
+noncomputable def upperOneStepTraceMassOptimalValue
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) : ℝ :=
-  Finset.univ.sup' Finset.univ_nonempty (fun i => oneStepOptimalValue (Θ i) zs)
+  Finset.univ.sup' Finset.univ_nonempty (fun i => oneStepTraceMassOptimalValue (Θ i) zs)
 
-theorem lowerOneStepOptimalValue_le
+theorem lowerOneStepTraceMassOptimalValue_le
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) (i : ι) :
-    lowerOneStepOptimalValue Θ zs ≤ oneStepOptimalValue (Θ i) zs := by
-  unfold lowerOneStepOptimalValue
+    lowerOneStepTraceMassOptimalValue Θ zs ≤ oneStepTraceMassOptimalValue (Θ i) zs := by
+  unfold lowerOneStepTraceMassOptimalValue
   exact Finset.inf'_le _ (Finset.mem_univ i)
 
-theorem le_upperOneStepOptimalValue
+theorem le_upperOneStepTraceMassOptimalValue
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) (i : ι) :
-    oneStepOptimalValue (Θ i) zs ≤ upperOneStepOptimalValue Θ zs := by
-  unfold upperOneStepOptimalValue
+    oneStepTraceMassOptimalValue (Θ i) zs ≤ upperOneStepTraceMassOptimalValue Θ zs := by
+  unfold upperOneStepTraceMassOptimalValue
   exact Finset.le_sup' (s := Finset.univ)
-    (f := fun j : ι => oneStepOptimalValue (Θ j) zs)
+    (f := fun j : ι => oneStepTraceMassOptimalValue (Θ j) zs)
     (Finset.mem_univ i)
 
-theorem lowerOneStepOptimalValue_le_upper
+theorem lowerOneStepTraceMassOptimalValue_le_upper
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) :
-    lowerOneStepOptimalValue Θ zs ≤ upperOneStepOptimalValue Θ zs := by
+    lowerOneStepTraceMassOptimalValue Θ zs ≤ upperOneStepTraceMassOptimalValue Θ zs := by
   obtain ⟨i0⟩ := (inferInstance : Nonempty ι)
-  exact (lowerOneStepOptimalValue_le Θ zs i0).trans
-    (le_upperOneStepOptimalValue Θ zs i0)
+  exact (lowerOneStepTraceMassOptimalValue_le Θ zs i0).trans
+    (le_upperOneStepTraceMassOptimalValue Θ zs i0)
 
-theorem lowerOneStepOptimalValue_nonneg
+theorem lowerOneStepTraceMassOptimalValue_nonneg
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) :
-    0 ≤ lowerOneStepOptimalValue Θ zs := by
-  unfold lowerOneStepOptimalValue
-  exact Finset.le_inf' (s := Finset.univ)
-    (H := Finset.univ_nonempty)
-    (f := fun i : ι => oneStepOptimalValue (Θ i) zs)
-    (by
-      intro i _hi
-      exact oneStepOptimalValue_nonneg (Θ i) zs)
+    0 ≤ lowerOneStepTraceMassOptimalValue Θ zs := by
+  exact Finset.le_inf' _ _ fun i _ => oneStepTraceMassOptimalValue_nonneg (Θ i) zs
 
-theorem upperOneStepOptimalValue_le_one
+theorem upperOneStepTraceMassOptimalValue_le_one
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) :
-    upperOneStepOptimalValue Θ zs ≤ 1 := by
-  unfold upperOneStepOptimalValue
-  exact Finset.sup'_le (s := Finset.univ)
-    (H := Finset.univ_nonempty)
-    (f := fun i : ι => oneStepOptimalValue (Θ i) zs)
-    (by
-      intro i _hi
-      exact oneStepOptimalValue_le_one (Θ i) zs)
+    upperOneStepTraceMassOptimalValue Θ zs ≤ 1 := by
+  exact Finset.sup'_le _ _ fun i _ => oneStepTraceMassOptimalValue_le_one (Θ i) zs
 
 /-- Credal one-step optimal decision value envelope rendered as the local
 bounded interval type. -/
-noncomputable def oneStepOptimalValueCredalTruthValue
+noncomputable def oneStepTraceMassOptimalValueCredalTruthValue
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (zs : List (CycleObservation Action obs)) :
     IndefiniteTruthValue where
-  lower := lowerOneStepOptimalValue Θ zs
-  upper := upperOneStepOptimalValue Θ zs
-  valid := lowerOneStepOptimalValue_le_upper Θ zs
-  lower_nonneg := lowerOneStepOptimalValue_nonneg Θ zs
-  upper_le_one := upperOneStepOptimalValue_le_one Θ zs
+  lower := lowerOneStepTraceMassOptimalValue Θ zs
+  upper := upperOneStepTraceMassOptimalValue Θ zs
+  valid := lowerOneStepTraceMassOptimalValue_le_upper Θ zs
+  lower_nonneg := lowerOneStepTraceMassOptimalValue_nonneg Θ zs
+  upper_le_one := upperOneStepTraceMassOptimalValue_le_one Θ zs
 
 /-- One-step optimal decision envelope as the live PLN indefinite truth-value
 interface. -/
-noncomputable abbrev oneStepOptimalValuePLNITV
+noncomputable abbrev oneStepTraceMassOptimalValuePLNITV
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (κ : ℝ)
     (hκ : 0 < κ)
@@ -625,7 +638,7 @@ noncomputable abbrev oneStepOptimalValuePLNITV
     (zs : List (CycleObservation Action obs)) :
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV :=
   IndefiniteTruthValue.toPLNITV
-    (oneStepOptimalValueCredalTruthValue Θ zs)
+    (oneStepTraceMassOptimalValueCredalTruthValue Θ zs)
     (cycleCountCredibility (Action := Action) (obs := obs) κ zs)
     (cycleCountCredibility_mem_unit (Action := Action) (obs := obs) κ hκ zs)
 
@@ -634,16 +647,16 @@ theorem optimalValue_historyOfCycles_two_mem_envelope
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs)) (i : ι) :
-    lowerOneStepOptimalValue Θ zs ≤
+    lowerOneStepTraceMassOptimalValue Θ zs ≤
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ∧
       optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ≤
-        upperOneStepOptimalValue Θ zs := by
+        upperOneStepTraceMassOptimalValue Θ zs := by
   have hopt :=
-    optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := Θ i) (γ := γ) (zs := zs)
   constructor
-  · simpa [hopt] using lowerOneStepOptimalValue_le Θ zs i
-  · simpa [hopt] using le_upperOneStepOptimalValue Θ zs i
+  · simpa [hopt] using lowerOneStepTraceMassOptimalValue_le Θ zs i
+  · simpa [hopt] using le_upperOneStepTraceMassOptimalValue Θ zs i
 
 theorem optimalValue_historyOfCycles_two_mem_PLNITV_interval
     [Fintype ι] [Nonempty ι] [Fintype Action]
@@ -652,26 +665,26 @@ theorem optimalValue_historyOfCycles_two_mem_PLNITV_interval
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs)) (i : ι) :
-    let itv := oneStepOptimalValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
+    let itv := oneStepTraceMassOptimalValuePLNITV (Action := Action) (ι := ι) (latent := latent) (obs := obs)
       κ hκ Θ zs
     itv.lower ≤ optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ∧
       optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ≤ itv.upper := by
-  simpa [oneStepOptimalValuePLNITV, IndefiniteTruthValue.toPLNITV,
+  simpa [oneStepTraceMassOptimalValuePLNITV, IndefiniteTruthValue.toPLNITV,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruthBridge.ofBoundsAndCredibility,
-    oneStepOptimalValueCredalTruthValue]
+    oneStepTraceMassOptimalValueCredalTruthValue]
     using optimalValue_historyOfCycles_two_mem_envelope Θ γ zs i
 
-end OneStepValue
+end OneStepTraceMassValue
 
-section RecursiveValueEnvelope
+section RecursiveTraceMassEnvelope
 
 variable [PerceptReward (Fin obs)] [Fintype Action]
 
 mutual
 
-/-- Lower recursive fixed-policy value envelope across a finite family of
+/-- Lower row-reselecting trace-mass fixed-policy value envelope across a finite family of
 controlled HMMs. -/
-noncomputable def lowerRecursiveValueEnvelope
+noncomputable def lowerRecursiveTraceMassValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
@@ -681,11 +694,11 @@ noncomputable def lowerRecursiveValueEnvelope
   | n + 1 =>
       ∑ a : Action,
         (π.policy (historyOfCycles zs) a).toReal *
-          lowerRecursiveQValueEnvelope Θ π γ zs a n
+          lowerRecursiveTraceMassQValueEnvelope Θ π γ zs a n
 
-/-- Lower recursive fixed-policy Q-value envelope across a finite family of
+/-- Lower row-reselecting trace-mass fixed-policy Q-value envelope across a finite family of
 controlled HMMs. -/
-noncomputable def lowerRecursiveQValueEnvelope
+noncomputable def lowerRecursiveTraceMassQValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
@@ -695,19 +708,16 @@ noncomputable def lowerRecursiveQValueEnvelope
   | 0 => 0
   | n + 1 =>
       Finset.univ.inf' Finset.univ_nonempty
-        (fun i =>
-          ∑ y : Fin obs,
-            (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val * lowerRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n))
+        (fun i => traceMassContinuation (Θ i) γ zs a
+          (fun ws => lowerRecursiveTraceMassValueEnvelope Θ π γ ws n))
 
 end
 
 mutual
 
-/-- Upper recursive fixed-policy value envelope across a finite family of
+/-- Upper row-reselecting trace-mass fixed-policy value envelope across a finite family of
 controlled HMMs. -/
-noncomputable def upperRecursiveValueEnvelope
+noncomputable def upperRecursiveTraceMassValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
@@ -717,11 +727,11 @@ noncomputable def upperRecursiveValueEnvelope
   | n + 1 =>
       ∑ a : Action,
         (π.policy (historyOfCycles zs) a).toReal *
-          upperRecursiveQValueEnvelope Θ π γ zs a n
+          upperRecursiveTraceMassQValueEnvelope Θ π γ zs a n
 
-/-- Upper recursive fixed-policy Q-value envelope across a finite family of
+/-- Upper row-reselecting trace-mass fixed-policy Q-value envelope across a finite family of
 controlled HMMs. -/
-noncomputable def upperRecursiveQValueEnvelope
+noncomputable def upperRecursiveTraceMassQValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
@@ -731,19 +741,16 @@ noncomputable def upperRecursiveQValueEnvelope
   | 0 => 0
   | n + 1 =>
       Finset.univ.sup' Finset.univ_nonempty
-        (fun i =>
-          ∑ y : Fin obs,
-            (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val * upperRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n))
+        (fun i => traceMassContinuation (Θ i) γ zs a
+          (fun ws => upperRecursiveTraceMassValueEnvelope Θ π γ ws n))
 
 end
 
 mutual
 
-/-- Lower recursive optimal value envelope across a finite family of controlled
+/-- Lower row-reselecting trace-mass optimal value envelope across a finite family of controlled
 HMMs. -/
-noncomputable def lowerRecursiveOptimalValueEnvelope
+noncomputable def lowerRecursiveTraceMassOptimalValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
@@ -751,11 +758,11 @@ noncomputable def lowerRecursiveOptimalValueEnvelope
   | 0 => 0
   | n + 1 =>
       (Finset.univ : Finset Action).fold max 0
-        (fun a => lowerRecursiveOptimalQValueEnvelope Θ γ zs a n)
+        (fun a => lowerRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n)
 
-/-- Lower recursive optimal Q-value envelope across a finite family of
+/-- Lower row-reselecting trace-mass optimal Q-value envelope across a finite family of
 controlled HMMs. -/
-noncomputable def lowerRecursiveOptimalQValueEnvelope
+noncomputable def lowerRecursiveTraceMassOptimalQValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
@@ -764,19 +771,16 @@ noncomputable def lowerRecursiveOptimalQValueEnvelope
   | 0 => 0
   | n + 1 =>
       Finset.univ.inf' Finset.univ_nonempty
-        (fun i =>
-          ∑ y : Fin obs,
-            (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
+        (fun i => traceMassContinuation (Θ i) γ zs a
+          (fun ws => lowerRecursiveTraceMassOptimalValueEnvelope Θ γ ws n))
 
 end
 
 mutual
 
-/-- Upper recursive optimal value envelope across a finite family of controlled
+/-- Upper row-reselecting trace-mass optimal value envelope across a finite family of controlled
 HMMs. -/
-noncomputable def upperRecursiveOptimalValueEnvelope
+noncomputable def upperRecursiveTraceMassOptimalValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
@@ -784,11 +788,11 @@ noncomputable def upperRecursiveOptimalValueEnvelope
   | 0 => 0
   | n + 1 =>
       (Finset.univ : Finset Action).fold max 0
-        (fun a => upperRecursiveOptimalQValueEnvelope Θ γ zs a n)
+        (fun a => upperRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n)
 
-/-- Upper recursive optimal Q-value envelope across a finite family of
+/-- Upper row-reselecting trace-mass optimal Q-value envelope across a finite family of
 controlled HMMs. -/
-noncomputable def upperRecursiveOptimalQValueEnvelope
+noncomputable def upperRecursiveTraceMassOptimalQValueEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
@@ -797,409 +801,139 @@ noncomputable def upperRecursiveOptimalQValueEnvelope
   | 0 => 0
   | n + 1 =>
       Finset.univ.sup' Finset.univ_nonempty
-        (fun i =>
-          ∑ y : Fin obs,
-            (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
+        (fun i => traceMassContinuation (Θ i) γ zs a
+          (fun ws => upperRecursiveTraceMassOptimalValueEnvelope Θ γ ws n))
 
 end
 
 mutual
 
-theorem qValue_historyOfCycles_mem_recursiveEnvelope
+theorem qValue_historyOfCycles_mem_recursiveTraceMassEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (a : Action) (i : ι),
-      lowerRecursiveQValueEnvelope Θ π γ zs a n ≤
+      lowerRecursiveTraceMassQValueEnvelope Θ π γ zs a n ≤
           qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a n ∧
         qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a n ≤
-          upperRecursiveQValueEnvelope Θ π γ zs a n
+          upperRecursiveTraceMassQValueEnvelope Θ π γ zs a n
   | 0, zs, a, i => by
-      simp [lowerRecursiveQValueEnvelope, upperRecursiveQValueEnvelope, qValue_zero]
+      simp [lowerRecursiveTraceMassQValueEnvelope, upperRecursiveTraceMassQValueEnvelope, qValue_zero]
   | n + 1, zs, a, i => by
-      have hwf :
-          History.wellFormed (Action := Action) (Percept := Fin obs)
-            (historyOfCycles zs ++ [HistElem.act a]) = true :=
-        historyOfCycles_append_act_wellFormed (Action := Action) (obs := obs) zs a
-      have hprob :
-          (fun y : Fin obs =>
-            (toEnvironment (Θ i)).prob (historyOfCycles zs ++ [HistElem.act a]) y) =
-            (fun y : Fin obs =>
-              observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y) := by
-        funext y
-        simpa [toEnvironment] using
-          environmentProb_historyOfCycles_append_act
-            (θ := Θ i) (zs := zs) (a := a) (y := y)
-      have hq :
-          qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a (n + 1) =
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val *
-                    value (toEnvironment (Θ i)) π γ
-                      (historyOfCycles (zs ++ [(a, y)])) n) := by
-        rw [qValue_succ]
-        simp [hwf, hprob, historyOfCycles_append_singleton]
+      rw [qValue_succ_eq_traceMassContinuation]
       constructor
-      · calc
-          lowerRecursiveQValueEnvelope Θ π γ zs a (n + 1)
-              = Finset.univ.inf' Finset.univ_nonempty
-                  (fun j =>
-                    ∑ y : Fin obs,
-                      (observationMassGivenAction (Θ j) (filteringMass (Θ j) zs) a y).toReal *
-                        (PerceptReward.reward y +
-                          γ.val * lowerRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n)) := rfl
-          _ ≤ ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val * lowerRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n) := by
-                exact Finset.inf'_le
-                  (fun j =>
-                    ∑ y : Fin obs,
-                      (observationMassGivenAction (Θ j) (filteringMass (Θ j) zs) a y).toReal *
-                        (PerceptReward.reward y +
-                          γ.val * lowerRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n))
-                  (Finset.mem_univ i)
-          _ ≤ ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val *
-                      value (toEnvironment (Θ i)) π γ
-                        (historyOfCycles (zs ++ [(a, y)])) n) := by
-                refine Finset.sum_le_sum ?_
-                intro y _hy
-                have hy :=
-                  (value_historyOfCycles_mem_recursiveEnvelope
-                    (Θ := Θ) (π := π) (γ := γ) n (zs ++ [(a, y)]) i).1
-                have hγhy :
-                    γ.val * lowerRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n ≤
-                      γ.val *
-                        value (toEnvironment (Θ i)) π γ
-                          (historyOfCycles (zs ++ [(a, y)])) n :=
-                  mul_le_mul_of_nonneg_left hy γ.nonneg
-                have hterm :
-                    PerceptReward.reward y +
-                        γ.val * lowerRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n ≤
-                      PerceptReward.reward y +
-                        γ.val *
-                          value (toEnvironment (Θ i)) π γ
-                            (historyOfCycles (zs ++ [(a, y)])) n :=
-                  by
-                    have htmp := add_le_add_right hγhy (PerceptReward.reward y)
-                    simpa [add_comm, add_left_comm, add_assoc] using htmp
-                exact mul_le_mul_of_nonneg_left hterm ENNReal.toReal_nonneg
-          _ = qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a (n + 1) := by
-                exact hq.symm
-      · calc
-          qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a (n + 1)
-              = ∑ y : Fin obs,
-                  (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                    (PerceptReward.reward y +
-                      γ.val *
-                        value (toEnvironment (Θ i)) π γ
-                          (historyOfCycles (zs ++ [(a, y)])) n) := hq
-          _ ≤ ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val *
-                      upperRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n) := by
-                refine Finset.sum_le_sum ?_
-                intro y _hy
-                have hy :=
-                  (value_historyOfCycles_mem_recursiveEnvelope
-                    (Θ := Θ) (π := π) (γ := γ) n (zs ++ [(a, y)]) i).2
-                have hγhy :
-                    γ.val *
-                        value (toEnvironment (Θ i)) π γ
-                          (historyOfCycles (zs ++ [(a, y)])) n ≤
-                      γ.val * upperRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n :=
-                  mul_le_mul_of_nonneg_left hy γ.nonneg
-                have hterm :
-                    PerceptReward.reward y +
-                        γ.val *
-                          value (toEnvironment (Θ i)) π γ
-                            (historyOfCycles (zs ++ [(a, y)])) n ≤
-                      PerceptReward.reward y +
-                        γ.val * upperRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n :=
-                  by
-                    have htmp := add_le_add_right hγhy (PerceptReward.reward y)
-                    simpa [add_comm, add_left_comm, add_assoc] using htmp
-                exact mul_le_mul_of_nonneg_left hterm ENNReal.toReal_nonneg
-          _ ≤ upperRecursiveQValueEnvelope Θ π γ zs a (n + 1) := by
-                exact Finset.le_sup'
-                  (s := Finset.univ)
-                  (f := fun j =>
-                    ∑ y : Fin obs,
-                      (observationMassGivenAction (Θ j) (filteringMass (Θ j) zs) a y).toReal *
-                        (PerceptReward.reward y +
-                          γ.val * upperRecursiveValueEnvelope Θ π γ (zs ++ [(a, y)]) n))
-                  (Finset.mem_univ i)
+      · apply le_trans (Finset.inf'_le _ (Finset.mem_univ i))
+        exact traceMassContinuation_mono _ _ _ _ fun ws =>
+          (value_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (π := π) (γ := γ) n ws i).1
+      · exact (traceMassContinuation_mono _ _ _ _ fun ws =>
+          (value_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (π := π) (γ := γ) n ws i).2).trans
+            (Finset.le_sup' (fun j => traceMassContinuation (Θ j) γ zs a
+              (fun ws => upperRecursiveTraceMassValueEnvelope Θ π γ ws n))
+              (Finset.mem_univ i))
 
-theorem value_historyOfCycles_mem_recursiveEnvelope
+theorem value_historyOfCycles_mem_recursiveTraceMassEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (π : Agent Action (Fin obs))
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (i : ι),
-      lowerRecursiveValueEnvelope Θ π γ zs n ≤
+      lowerRecursiveTraceMassValueEnvelope Θ π γ zs n ≤
           value (toEnvironment (Θ i)) π γ (historyOfCycles zs) n ∧
         value (toEnvironment (Θ i)) π γ (historyOfCycles zs) n ≤
-          upperRecursiveValueEnvelope Θ π γ zs n
+          upperRecursiveTraceMassValueEnvelope Θ π γ zs n
   | 0, zs, i => by
-      simp [lowerRecursiveValueEnvelope, upperRecursiveValueEnvelope, value_zero]
+      simp [lowerRecursiveTraceMassValueEnvelope, upperRecursiveTraceMassValueEnvelope, value_zero]
   | n + 1, zs, i => by
-      have hwf :
-          History.wellFormed (Action := Action) (Percept := Fin obs)
-            (historyOfCycles zs) = true :=
-        historyOfCycles_wellFormed (Action := Action) (obs := obs) zs
-      have hv :
-          value (toEnvironment (Θ i)) π γ (historyOfCycles zs) (n + 1) =
-            ∑ a : Action,
-              (π.policy (historyOfCycles zs) a).toReal *
-                qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a n := by
-        rw [value_succ]
-        simp [hwf]
+      rw [value_succ]
+      simp only [historyOfCycles_wellFormed]
       constructor
-      · calc
-          lowerRecursiveValueEnvelope Θ π γ zs (n + 1)
-              = ∑ a : Action,
-                  (π.policy (historyOfCycles zs) a).toReal *
-                    lowerRecursiveQValueEnvelope Θ π γ zs a n := rfl
-          _ ≤ ∑ a : Action,
-                (π.policy (historyOfCycles zs) a).toReal *
-                  qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a n := by
-                refine Finset.sum_le_sum ?_
-                intro a _ha
-                have ha :=
-                  (qValue_historyOfCycles_mem_recursiveEnvelope
-                    (Θ := Θ) (π := π) (γ := γ) n zs a i).1
-                exact mul_le_mul_of_nonneg_left ha ENNReal.toReal_nonneg
-          _ = value (toEnvironment (Θ i)) π γ (historyOfCycles zs) (n + 1) := by
-                exact hv.symm
-      · calc
-          value (toEnvironment (Θ i)) π γ (historyOfCycles zs) (n + 1)
-              = ∑ a : Action,
-                  (π.policy (historyOfCycles zs) a).toReal *
-                    qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a n := hv
-          _ ≤ ∑ a : Action,
-                (π.policy (historyOfCycles zs) a).toReal *
-                  upperRecursiveQValueEnvelope Θ π γ zs a n := by
-                refine Finset.sum_le_sum ?_
-                intro a _ha
-                have ha :=
-                  (qValue_historyOfCycles_mem_recursiveEnvelope
-                    (Θ := Θ) (π := π) (γ := γ) n zs a i).2
-                exact mul_le_mul_of_nonneg_left ha ENNReal.toReal_nonneg
-          _ = upperRecursiveValueEnvelope Θ π γ zs (n + 1) := by
-                rfl
+      · exact Finset.sum_le_sum fun a _ => mul_le_mul_of_nonneg_left
+          (qValue_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (π := π) (γ := γ) n zs a i).1 ENNReal.toReal_nonneg
+      · exact Finset.sum_le_sum fun a _ => mul_le_mul_of_nonneg_left
+          (qValue_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (π := π) (γ := γ) n zs a i).2 ENNReal.toReal_nonneg
 
 end
 
 mutual
 
-theorem optimalQValue_historyOfCycles_mem_recursiveEnvelope
+theorem optimalQValue_historyOfCycles_mem_recursiveTraceMassEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (a : Action) (i : ι),
-      lowerRecursiveOptimalQValueEnvelope Θ γ zs a n ≤
+      lowerRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n ≤
           optimalQValue (toEnvironment (Θ i)) γ (historyOfCycles zs) a n ∧
         optimalQValue (toEnvironment (Θ i)) γ (historyOfCycles zs) a n ≤
-          upperRecursiveOptimalQValueEnvelope Θ γ zs a n
+          upperRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n
   | 0, zs, a, i => by
-      simp [lowerRecursiveOptimalQValueEnvelope, upperRecursiveOptimalQValueEnvelope,
-        optimalQValue_zero]
+      simp [lowerRecursiveTraceMassOptimalQValueEnvelope, upperRecursiveTraceMassOptimalQValueEnvelope, optimalQValue_zero]
   | n + 1, zs, a, i => by
-      have hwf :
-          History.wellFormed (Action := Action) (Percept := Fin obs)
-            (historyOfCycles zs ++ [HistElem.act a]) = true :=
-        historyOfCycles_append_act_wellFormed (Action := Action) (obs := obs) zs a
-      have hprob :
-          (fun y : Fin obs =>
-            (toEnvironment (Θ i)).prob (historyOfCycles zs ++ [HistElem.act a]) y) =
-            (fun y : Fin obs =>
-              observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y) := by
-        funext y
-        simpa [toEnvironment] using
-          environmentProb_historyOfCycles_append_act
-            (θ := Θ i) (zs := zs) (a := a) (y := y)
-      have hq :
-          optimalQValue (toEnvironment (Θ i)) γ (historyOfCycles zs) a (n + 1) =
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val *
-                    optimalValue (toEnvironment (Θ i)) γ
-                      (historyOfCycles (zs ++ [(a, y)])) n) := by
-        rw [optimalQValue_succ]
-        simp [hwf, hprob, historyOfCycles_append_singleton]
+      rw [optimalQValue_succ_eq_traceMassContinuation]
       constructor
-      · calc
-          lowerRecursiveOptimalQValueEnvelope Θ γ zs a (n + 1)
-              = Finset.univ.inf' Finset.univ_nonempty
-                  (fun j =>
-                    ∑ y : Fin obs,
-                      (observationMassGivenAction (Θ j) (filteringMass (Θ j) zs) a y).toReal *
-                        (PerceptReward.reward y +
-                          γ.val *
-                            lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n)) := rfl
-          _ ≤ ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val *
-                      lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n) := by
-                exact Finset.inf'_le
-                  (fun j =>
-                    ∑ y : Fin obs,
-                      (observationMassGivenAction (Θ j) (filteringMass (Θ j) zs) a y).toReal *
-                        (PerceptReward.reward y +
-                          γ.val *
-                            lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-                  (Finset.mem_univ i)
-          _ ≤ ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val *
-                      optimalValue (toEnvironment (Θ i)) γ
-                        (historyOfCycles (zs ++ [(a, y)])) n) := by
-                refine Finset.sum_le_sum ?_
-                intro y _hy
-                have hy :=
-                  (optimalValue_historyOfCycles_mem_recursiveEnvelope
-                    (Θ := Θ) (γ := γ) n (zs ++ [(a, y)]) i).1
-                have hγhy :
-                    γ.val *
-                        lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n ≤
-                      γ.val *
-                        optimalValue (toEnvironment (Θ i)) γ
-                          (historyOfCycles (zs ++ [(a, y)])) n :=
-                  mul_le_mul_of_nonneg_left hy γ.nonneg
-                have hterm :
-                    PerceptReward.reward y +
-                        γ.val *
-                          lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n ≤
-                      PerceptReward.reward y +
-                        γ.val *
-                          optimalValue (toEnvironment (Θ i)) γ
-                            (historyOfCycles (zs ++ [(a, y)])) n :=
-                  by
-                    have htmp := add_le_add_right hγhy (PerceptReward.reward y)
-                    simpa [add_comm, add_left_comm, add_assoc] using htmp
-                exact mul_le_mul_of_nonneg_left hterm ENNReal.toReal_nonneg
-          _ = optimalQValue (toEnvironment (Θ i)) γ (historyOfCycles zs) a (n + 1) := by
-                exact hq.symm
-      · calc
-          optimalQValue (toEnvironment (Θ i)) γ (historyOfCycles zs) a (n + 1)
-              = ∑ y : Fin obs,
-                  (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                    (PerceptReward.reward y +
-                      γ.val *
-                        optimalValue (toEnvironment (Θ i)) γ
-                          (historyOfCycles (zs ++ [(a, y)])) n) := hq
-          _ ≤ ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val *
-                      upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n) := by
-                refine Finset.sum_le_sum ?_
-                intro y _hy
-                have hy :=
-                  (optimalValue_historyOfCycles_mem_recursiveEnvelope
-                    (Θ := Θ) (γ := γ) n (zs ++ [(a, y)]) i).2
-                have hγhy :
-                    γ.val *
-                        optimalValue (toEnvironment (Θ i)) γ
-                          (historyOfCycles (zs ++ [(a, y)])) n ≤
-                      γ.val *
-                        upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n :=
-                  mul_le_mul_of_nonneg_left hy γ.nonneg
-                have hterm :
-                    PerceptReward.reward y +
-                        γ.val *
-                          optimalValue (toEnvironment (Θ i)) γ
-                            (historyOfCycles (zs ++ [(a, y)])) n ≤
-                      PerceptReward.reward y +
-                        γ.val *
-                          upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n :=
-                  by
-                    have htmp := add_le_add_right hγhy (PerceptReward.reward y)
-                    simpa [add_comm, add_left_comm, add_assoc] using htmp
-                exact mul_le_mul_of_nonneg_left hterm ENNReal.toReal_nonneg
-          _ ≤ upperRecursiveOptimalQValueEnvelope Θ γ zs a (n + 1) := by
-                exact Finset.le_sup'
-                  (s := Finset.univ)
-                  (f := fun j =>
-                    ∑ y : Fin obs,
-                      (observationMassGivenAction (Θ j) (filteringMass (Θ j) zs) a y).toReal *
-                        (PerceptReward.reward y +
-                          γ.val *
-                            upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-                  (Finset.mem_univ i)
+      · apply le_trans (Finset.inf'_le _ (Finset.mem_univ i))
+        exact traceMassContinuation_mono _ _ _ _ fun ws =>
+          (optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (γ := γ) n ws i).1
+      · exact (traceMassContinuation_mono _ _ _ _ fun ws =>
+          (optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (γ := γ) n ws i).2).trans
+            (Finset.le_sup' (fun j => traceMassContinuation (Θ j) γ zs a
+              (fun ws => upperRecursiveTraceMassOptimalValueEnvelope Θ γ ws n))
+              (Finset.mem_univ i))
 
-theorem optimalValue_historyOfCycles_mem_recursiveEnvelope
+theorem optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
     [Fintype ι] [Nonempty ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (i : ι),
-      lowerRecursiveOptimalValueEnvelope Θ γ zs n ≤
+      lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n ≤
           optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n ∧
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n ≤
-          upperRecursiveOptimalValueEnvelope Θ γ zs n
+          upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n
   | 0, zs, i => by
-      simp [lowerRecursiveOptimalValueEnvelope, upperRecursiveOptimalValueEnvelope,
-        optimalValue_zero]
+      simp [lowerRecursiveTraceMassOptimalValueEnvelope, upperRecursiveTraceMassOptimalValueEnvelope, optimalValue_zero]
   | n + 1, zs, i => by
-      have hwf :
-          History.wellFormed (Action := Action) (Percept := Fin obs)
-            (historyOfCycles zs) = true :=
-        historyOfCycles_wellFormed (Action := Action) (obs := obs) zs
       rw [optimalValue_succ]
-      simp [hwf]
-      constructor
-      · have hlower :
-            (Finset.univ : Finset Action).fold max 0
-                (fun a => lowerRecursiveOptimalQValueEnvelope Θ γ zs a n) ≤
-              (Finset.univ : Finset Action).fold max 0
-                (fun a => optimalQValue (toEnvironment (Θ i)) γ (historyOfCycles zs) a n) := by
-            rw [Finset.fold_max_le]
-            constructor
-            · rw [Finset.le_fold_max]
-              exact Or.inl le_rfl
-            · intro a _ha
-              have ha :=
-                (optimalQValue_historyOfCycles_mem_recursiveEnvelope
-                  (Θ := Θ) (γ := γ) n zs a i).1
-              exact ha.trans (by
-                rw [Finset.le_fold_max]
-                exact Or.inr ⟨a, Finset.mem_univ a, le_rfl⟩)
-        simpa [lowerRecursiveOptimalValueEnvelope] using hlower
-      · have hupper_nonneg :
-            0 ≤ upperRecursiveOptimalValueEnvelope Θ γ zs (n + 1) := by
-              rw [show upperRecursiveOptimalValueEnvelope Θ γ zs (n + 1) =
-                  (Finset.univ : Finset Action).fold max 0
-                    (fun a => upperRecursiveOptimalQValueEnvelope Θ γ zs a n) by rfl]
-              rw [Finset.le_fold_max]
-              exact Or.inl le_rfl
-        rw [show upperRecursiveOptimalValueEnvelope Θ γ zs (n + 1) =
-            (Finset.univ : Finset Action).fold max 0
-              (fun a => upperRecursiveOptimalQValueEnvelope Θ γ zs a n) by rfl]
-        rw [Finset.fold_max_le]
-        constructor
-        · exact hupper_nonneg
-        · intro a _ha
-          have ha :=
-            (optimalQValue_historyOfCycles_mem_recursiveEnvelope
-              (Θ := Θ) (γ := γ) n zs a i).2
-          exact ha.trans (by
-            rw [Finset.le_fold_max]
-            exact Or.inr ⟨a, Finset.mem_univ a, le_rfl⟩)
+      simp only [historyOfCycles_wellFormed]
+      exact ⟨foldMax_mono fun a => (optimalQValue_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (γ := γ) n zs a i).1,
+        foldMax_mono fun a => (optimalQValue_historyOfCycles_mem_recursiveTraceMassEnvelope (Θ := Θ) (γ := γ) n zs a i).2⟩
 
 end
 
-end RecursiveValueEnvelope
+end RecursiveTraceMassEnvelope
+
+section StaticTraceMass
+
+variable [PerceptReward (Fin obs)] [Fintype Action] [Fintype ι] [Nonempty ι]
+
+/-- Worst fixed-model policy value: one model is retained for the whole computation. -/
+noncomputable def lowerStaticTraceMassValue
+    (Θ : ι → ControlledFiniteHMMParam Action latent obs) (π : Agent Action (Fin obs))
+    (γ : DiscountFactor) (zs : List (CycleObservation Action obs)) (n : ℕ) : ℝ :=
+  Finset.univ.inf' Finset.univ_nonempty
+    (fun i => value (toEnvironment (Θ i)) π γ (historyOfCycles zs) n)
+
+/-- Best fixed-model policy value, using the same policy for every model. -/
+noncomputable def upperStaticTraceMassValue
+    (Θ : ι → ControlledFiniteHMMParam Action latent obs) (π : Agent Action (Fin obs))
+    (γ : DiscountFactor) (zs : List (CycleObservation Action obs)) (n : ℕ) : ℝ :=
+  Finset.univ.sup' Finset.univ_nonempty
+    (fun i => value (toEnvironment (Θ i)) π γ (historyOfCycles zs) n)
+
+/-- Re-selecting rows at later histories can widen the fixed-policy value range. -/
+theorem staticTraceMassValue_mem_reselectingEnvelope
+    (Θ : ι → ControlledFiniteHMMParam Action latent obs) (π : Agent Action (Fin obs))
+    (γ : DiscountFactor) (zs : List (CycleObservation Action obs)) (n : ℕ) :
+    lowerRecursiveTraceMassValueEnvelope Θ π γ zs n ≤ lowerStaticTraceMassValue Θ π γ zs n ∧
+      lowerStaticTraceMassValue Θ π γ zs n ≤ upperStaticTraceMassValue Θ π γ zs n ∧
+      upperStaticTraceMassValue Θ π γ zs n ≤ upperRecursiveTraceMassValueEnvelope Θ π γ zs n := by
+  let v i := value (toEnvironment (Θ i)) π γ (historyOfCycles zs) n
+  have h i := value_historyOfCycles_mem_recursiveTraceMassEnvelope Θ π γ n zs i
+  exact ⟨Finset.le_inf' _ _ (fun i _ => (h i).1),
+    (Finset.inf'_le v (Finset.mem_univ (Classical.choice inferInstance))).trans
+      (Finset.le_sup' v (Finset.mem_univ (Classical.choice inferInstance))),
+    Finset.sup'_le _ _ (fun i _ => (h i).2)⟩
+
+end StaticTraceMass
 
 section RecursiveEnvelopeRestriction
 
@@ -1211,227 +945,84 @@ mutual
 /-- Restricting to a reindexed subfamily can only raise the lower recursive
 optimal `Q` envelope. This is the credal monotonicity theorem corresponding to
 learning by narrowing the admissible model family. -/
-theorem lowerRecursiveOptimalQValueEnvelope_le_reindex
+theorem lowerRecursiveTraceMassOptimalQValueEnvelope_le_reindex
     [Fintype ι] [Nonempty ι]
     [Fintype κ] [Nonempty κ]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (f : κ → ι)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (a : Action),
-      lowerRecursiveOptimalQValueEnvelope Θ γ zs a n ≤
-        lowerRecursiveOptimalQValueEnvelope (fun k => Θ (f k)) γ zs a n
-  | 0, zs, a => by
-      simp [lowerRecursiveOptimalQValueEnvelope]
+      lowerRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n ≤
+        lowerRecursiveTraceMassOptimalQValueEnvelope (fun k => Θ (f k)) γ zs a n
+  | 0, zs, a => by simp [lowerRecursiveTraceMassOptimalQValueEnvelope]
   | n + 1, zs, a => by
-      unfold lowerRecursiveOptimalQValueEnvelope
-      refine Finset.le_inf' (s := Finset.univ)
-        (H := Finset.univ_nonempty)
-        (f := fun k : κ =>
-          ∑ y : Fin obs,
-            (observationMassGivenAction (Θ (f k)) (filteringMass (Θ (f k)) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val *
-                  lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                    (zs ++ [(a, y)]) n)) ?_
-      intro k _hk
-      calc
-        Finset.univ.inf' Finset.univ_nonempty
-            (fun i =>
-              ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-          ≤
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ (f k)) (filteringMass (Θ (f k)) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n) := by
-              exact Finset.inf'_le
-                (fun i =>
-                  ∑ y : Fin obs,
-                    (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                      (PerceptReward.reward y +
-                        γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-                (Finset.mem_univ (f k))
-        _ ≤
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ (f k)) (filteringMass (Θ (f k)) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val *
-                    lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                      (zs ++ [(a, y)]) n) := by
-              refine Finset.sum_le_sum ?_
-              intro y _hy
-              have hy :=
-                lowerRecursiveOptimalValueEnvelope_le_reindex
-                  (Θ := Θ) (f := f) (γ := γ) n (zs ++ [(a, y)])
-              have hγhy :
-                  γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n ≤
-                    γ.val *
-                      lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                        (zs ++ [(a, y)]) n :=
-                mul_le_mul_of_nonneg_left hy γ.nonneg
-              have hterm :
-                  PerceptReward.reward y +
-                      γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n ≤
-                    PerceptReward.reward y +
-                      γ.val *
-                        lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                          (zs ++ [(a, y)]) n := by
-                  have htmp := add_le_add_right hγhy (PerceptReward.reward y)
-                  simpa [add_comm, add_left_comm, add_assoc] using htmp
-              exact mul_le_mul_of_nonneg_left hterm ENNReal.toReal_nonneg
+      unfold lowerRecursiveTraceMassOptimalQValueEnvelope
+      refine Finset.le_inf' _ _ fun k _ => ?_
+      apply le_trans (Finset.inf'_le _ (Finset.mem_univ (f k)))
+      exact traceMassContinuation_mono _ _ _ _ fun ws =>
+        lowerRecursiveTraceMassOptimalValueEnvelope_le_reindex (Θ := Θ) (f := f) (γ := γ) n ws
 
 /-- Restricting to a reindexed subfamily can only lower the upper recursive
 optimal `Q` envelope. -/
-theorem upperRecursiveOptimalQValueEnvelope_reindex_le
+theorem upperRecursiveTraceMassOptimalQValueEnvelope_reindex_le
     [Fintype ι] [Nonempty ι]
     [Fintype κ] [Nonempty κ]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (f : κ → ι)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (a : Action),
-      upperRecursiveOptimalQValueEnvelope (fun k => Θ (f k)) γ zs a n ≤
-        upperRecursiveOptimalQValueEnvelope Θ γ zs a n
-  | 0, zs, a => by
-      simp [upperRecursiveOptimalQValueEnvelope]
+      upperRecursiveTraceMassOptimalQValueEnvelope (fun k => Θ (f k)) γ zs a n ≤
+        upperRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n
+  | 0, zs, a => by simp [upperRecursiveTraceMassOptimalQValueEnvelope]
   | n + 1, zs, a => by
-      unfold upperRecursiveOptimalQValueEnvelope
-      refine Finset.sup'_le (s := Finset.univ)
-        (H := Finset.univ_nonempty)
-        (f := fun k : κ =>
-          ∑ y : Fin obs,
-            (observationMassGivenAction (Θ (f k)) (filteringMass (Θ (f k)) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val *
-                  upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                    (zs ++ [(a, y)]) n)) ?_
-      intro k _hk
-      calc
-        ∑ y : Fin obs,
-            (observationMassGivenAction (Θ (f k)) (filteringMass (Θ (f k)) zs) a y).toReal *
-              (PerceptReward.reward y +
-                γ.val *
-                  upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                    (zs ++ [(a, y)]) n)
-          ≤
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ (f k)) (filteringMass (Θ (f k)) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n) := by
-              refine Finset.sum_le_sum ?_
-              intro y _hy
-              have hy :=
-                upperRecursiveOptimalValueEnvelope_reindex_le
-                  (Θ := Θ) (f := f) (γ := γ) n (zs ++ [(a, y)])
-              have hγhy :
-                  γ.val *
-                      upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                        (zs ++ [(a, y)]) n ≤
-                    γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n :=
-                mul_le_mul_of_nonneg_left hy γ.nonneg
-              have hterm :
-                  PerceptReward.reward y +
-                      γ.val *
-                        upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ
-                          (zs ++ [(a, y)]) n ≤
-                    PerceptReward.reward y +
-                      γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n := by
-                  have htmp := add_le_add_right hγhy (PerceptReward.reward y)
-                  simpa [add_comm, add_left_comm, add_assoc] using htmp
-              exact mul_le_mul_of_nonneg_left hterm ENNReal.toReal_nonneg
-        _ ≤
-            Finset.univ.sup' Finset.univ_nonempty
-              (fun i =>
-                ∑ y : Fin obs,
-                  (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                    (PerceptReward.reward y +
-                      γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n)) := by
-              exact Finset.le_sup'
-                (s := Finset.univ)
-                (f := fun i =>
-                  ∑ y : Fin obs,
-                    (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                      (PerceptReward.reward y +
-                        γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-                (Finset.mem_univ (f k))
+      unfold upperRecursiveTraceMassOptimalQValueEnvelope
+      refine Finset.sup'_le _ _ fun k _ => ?_
+      exact (traceMassContinuation_mono _ _ _ _ fun ws =>
+        upperRecursiveTraceMassOptimalValueEnvelope_reindex_le (Θ := Θ) (f := f) (γ := γ) n ws).trans
+          (Finset.le_sup' (fun j => traceMassContinuation (Θ j) γ zs a
+            (fun ws => upperRecursiveTraceMassOptimalValueEnvelope Θ γ ws n))
+            (Finset.mem_univ (f k)))
 
 /-- Restricting to a reindexed subfamily can only raise the lower recursive
 optimal value envelope. -/
-theorem lowerRecursiveOptimalValueEnvelope_le_reindex
+theorem lowerRecursiveTraceMassOptimalValueEnvelope_le_reindex
     [Fintype ι] [Nonempty ι]
     [Fintype κ] [Nonempty κ]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (f : κ → ι)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)),
-      lowerRecursiveOptimalValueEnvelope Θ γ zs n ≤
-        lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs n
-  | 0, zs => by
-      simp [lowerRecursiveOptimalValueEnvelope]
-  | n + 1, zs => by
-      have hfold :
-          (Finset.univ : Finset Action).fold max 0
-              (fun a => lowerRecursiveOptimalQValueEnvelope Θ γ zs a n)
-            ≤
-          (Finset.univ : Finset Action).fold max 0
-              (fun a => lowerRecursiveOptimalQValueEnvelope (fun k => Θ (f k)) γ zs a n) := by
-        rw [Finset.fold_max_le]
-        constructor
-        · rw [Finset.le_fold_max]
-          exact Or.inl le_rfl
-        · intro a _ha
-          exact (lowerRecursiveOptimalQValueEnvelope_le_reindex
-            (Θ := Θ) (f := f) (γ := γ) n zs a).trans
-            (by
-              rw [Finset.le_fold_max]
-              exact Or.inr ⟨a, Finset.mem_univ a, le_rfl⟩)
-      simpa [lowerRecursiveOptimalValueEnvelope] using hfold
+      lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n ≤
+        lowerRecursiveTraceMassOptimalValueEnvelope (fun k => Θ (f k)) γ zs n
+  | 0, zs => by simp [lowerRecursiveTraceMassOptimalValueEnvelope]
+  | n + 1, zs =>
+      foldMax_mono fun a =>
+        lowerRecursiveTraceMassOptimalQValueEnvelope_le_reindex
+          (Θ := Θ) (f := f) (γ := γ) n zs a
 
 /-- Restricting to a reindexed subfamily can only lower the upper recursive
 optimal value envelope. -/
-theorem upperRecursiveOptimalValueEnvelope_reindex_le
+theorem upperRecursiveTraceMassOptimalValueEnvelope_reindex_le
     [Fintype ι] [Nonempty ι]
     [Fintype κ] [Nonempty κ]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (f : κ → ι)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)),
-      upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ≤
-        upperRecursiveOptimalValueEnvelope Θ γ zs n
-  | 0, zs => by
-      simp [upperRecursiveOptimalValueEnvelope]
-  | n + 1, zs => by
-      have hupper_nonneg :
-          0 ≤ upperRecursiveOptimalValueEnvelope Θ γ zs (n + 1) := by
-        rw [show upperRecursiveOptimalValueEnvelope Θ γ zs (n + 1) =
-            (Finset.univ : Finset Action).fold max 0
-              (fun a => upperRecursiveOptimalQValueEnvelope Θ γ zs a n) by rfl]
-        rw [Finset.le_fold_max]
-        exact Or.inl le_rfl
-      rw [show upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs (n + 1) =
-          (Finset.univ : Finset Action).fold max 0
-            (fun a => upperRecursiveOptimalQValueEnvelope (fun k => Θ (f k)) γ zs a n) by rfl]
-      rw [show upperRecursiveOptimalValueEnvelope Θ γ zs (n + 1) =
-          (Finset.univ : Finset Action).fold max 0
-            (fun a => upperRecursiveOptimalQValueEnvelope Θ γ zs a n) by rfl]
-      rw [Finset.fold_max_le]
-      constructor
-      · exact hupper_nonneg
-      · intro a _ha
-        exact (upperRecursiveOptimalQValueEnvelope_reindex_le
-          (Θ := Θ) (f := f) (γ := γ) n zs a).trans
-          (by
-            rw [Finset.le_fold_max]
-            exact Or.inr ⟨a, Finset.mem_univ a, le_rfl⟩)
+      upperRecursiveTraceMassOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ≤
+        upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n
+  | 0, zs => by simp [upperRecursiveTraceMassOptimalValueEnvelope]
+  | n + 1, zs =>
+      foldMax_mono fun a =>
+        upperRecursiveTraceMassOptimalQValueEnvelope_reindex_le
+          (Θ := Θ) (f := f) (γ := γ) n zs a
 
 end
 
 /- Credal learning monotonicity: narrowing the controlled-HMM family via a
 reindexing map shrinks the recursive optimal decision interval. -/
 set_option linter.unusedSectionVars false
-theorem recursiveOptimalValueEnvelope_mono_reindex
-    [PerceptReward (Fin obs)] [Fintype Action]
+theorem recursiveTraceMassOptimalValueEnvelope_mono_reindex
     [Fintype ι] [Nonempty ι]
     {κ : Type*} [Fintype κ] [Nonempty κ]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
@@ -1439,13 +1030,13 @@ theorem recursiveOptimalValueEnvelope_mono_reindex
     (γ : DiscountFactor)
     (zs : List (CycleObservation Action obs))
     (n : ℕ) :
-    lowerRecursiveOptimalValueEnvelope Θ γ zs n ≤
-        lowerRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ∧
-      upperRecursiveOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ≤
-        upperRecursiveOptimalValueEnvelope Θ γ zs n := by
+    lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n ≤
+        lowerRecursiveTraceMassOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ∧
+      upperRecursiveTraceMassOptimalValueEnvelope (fun k => Θ (f k)) γ zs n ≤
+        upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n := by
   exact ⟨
-    lowerRecursiveOptimalValueEnvelope_le_reindex (Θ := Θ) (f := f) (γ := γ) n zs,
-    upperRecursiveOptimalValueEnvelope_reindex_le (Θ := Θ) (f := f) (γ := γ) n zs
+    lowerRecursiveTraceMassOptimalValueEnvelope_le_reindex (Θ := Θ) (f := f) (γ := γ) n zs,
+    upperRecursiveTraceMassOptimalValueEnvelope_reindex_le (Θ := Θ) (f := f) (γ := γ) n zs
   ⟩
 set_option linter.unusedSectionVars true
 
@@ -1459,139 +1050,62 @@ mutual
 
 /-- In a singleton controlled-HMM family, the lower and upper recursive optimal
 `Q` envelopes coincide. -/
-theorem recursiveOptimalQValueEnvelope_eq_of_subsingleton
+theorem recursiveTraceMassOptimalQValueEnvelope_eq_of_subsingleton
     [Fintype ι] [Nonempty ι] [Subsingleton ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)) (a : Action),
-      lowerRecursiveOptimalQValueEnvelope Θ γ zs a n =
-        upperRecursiveOptimalQValueEnvelope Θ γ zs a n
+      lowerRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n =
+        upperRecursiveTraceMassOptimalQValueEnvelope Θ γ zs a n
   | 0, zs, a => by
-      simp [lowerRecursiveOptimalQValueEnvelope, upperRecursiveOptimalQValueEnvelope]
+      simp [lowerRecursiveTraceMassOptimalQValueEnvelope, upperRecursiveTraceMassOptimalQValueEnvelope]
   | n + 1, zs, a => by
-      obtain ⟨i0⟩ := (inferInstance : Nonempty ι)
-      have hlower :
-          lowerRecursiveOptimalQValueEnvelope Θ γ zs a (n + 1) =
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ i0) (filteringMass (Θ i0) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n) := by
-        unfold lowerRecursiveOptimalQValueEnvelope
-        apply le_antisymm
-        · exact Finset.inf'_le
-            (fun i =>
-              ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-            (Finset.mem_univ i0)
-        · refine Finset.le_inf' (s := Finset.univ)
-            (H := Finset.univ_nonempty)
-            (f := fun i : ι =>
-              ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val * lowerRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n)) ?_
-          intro i _hi
-          have hi : i = i0 := Subsingleton.elim i i0
-          subst hi
-          exact le_rfl
-      have hupper :
-          upperRecursiveOptimalQValueEnvelope Θ γ zs a (n + 1) =
-            ∑ y : Fin obs,
-              (observationMassGivenAction (Θ i0) (filteringMass (Θ i0) zs) a y).toReal *
-                (PerceptReward.reward y +
-                  γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n) := by
-        unfold upperRecursiveOptimalQValueEnvelope
-        apply le_antisymm
-        · refine Finset.sup'_le (s := Finset.univ)
-            (H := Finset.univ_nonempty)
-            (f := fun i : ι =>
-              ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n)) ?_
-          intro i _hi
-          have hi : i = i0 := Subsingleton.elim i i0
-          subst hi
-          exact le_rfl
-        · exact Finset.le_sup'
-            (s := Finset.univ)
-            (f := fun i =>
-              ∑ y : Fin obs,
-                (observationMassGivenAction (Θ i) (filteringMass (Θ i) zs) a y).toReal *
-                  (PerceptReward.reward y +
-                    γ.val * upperRecursiveOptimalValueEnvelope Θ γ (zs ++ [(a, y)]) n))
-            (Finset.mem_univ i0)
-      rw [hlower, hupper]
-      refine Finset.sum_congr rfl ?_
-      intro y _hy
-      have hy :=
-        recursiveOptimalValueEnvelope_eq_of_subsingleton
-          (Θ := Θ) (γ := γ) n (zs ++ [(a, y)])
-      simp [hy]
+      let i₀ : ι := Classical.choice inferInstance
+      have hi (i : ι) : i = i₀ := Subsingleton.elim _ _
+      simp only [lowerRecursiveTraceMassOptimalQValueEnvelope, upperRecursiveTraceMassOptimalQValueEnvelope, hi,
+        Finset.inf'_const, Finset.sup'_const]
+      congr 1
+      funext ws
+      exact recursiveTraceMassOptimalValueEnvelope_eq_of_subsingleton (Θ := Θ) (γ := γ) n ws
 
 /-- In a singleton controlled-HMM family, the lower and upper recursive optimal
 value envelopes coincide. -/
-theorem recursiveOptimalValueEnvelope_eq_of_subsingleton
+theorem recursiveTraceMassOptimalValueEnvelope_eq_of_subsingleton
     [Fintype ι] [Nonempty ι] [Subsingleton ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor) :
     ∀ (n : ℕ) (zs : List (CycleObservation Action obs)),
-      lowerRecursiveOptimalValueEnvelope Θ γ zs n =
-        upperRecursiveOptimalValueEnvelope Θ γ zs n
+      lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n =
+        upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n
   | 0, zs => by
-      simp [lowerRecursiveOptimalValueEnvelope, upperRecursiveOptimalValueEnvelope]
+      simp [lowerRecursiveTraceMassOptimalValueEnvelope, upperRecursiveTraceMassOptimalValueEnvelope]
   | n + 1, zs => by
-      unfold lowerRecursiveOptimalValueEnvelope upperRecursiveOptimalValueEnvelope
-      have hlower_nonneg :
-          0 ≤ (Finset.univ : Finset Action).fold max 0
-            (fun a => lowerRecursiveOptimalQValueEnvelope Θ γ zs a n) := by
-        rw [Finset.le_fold_max]
-        exact Or.inl le_rfl
-      apply le_antisymm
-      · rw [Finset.fold_max_le]
-        constructor
-        · rw [Finset.le_fold_max]
-          exact Or.inl le_rfl
-        · intro a _ha
-          rw [recursiveOptimalQValueEnvelope_eq_of_subsingleton
-            (Θ := Θ) (γ := γ) n zs a]
-          rw [Finset.le_fold_max]
-          exact Or.inr ⟨a, Finset.mem_univ a, le_rfl⟩
-      · rw [Finset.fold_max_le]
-        constructor
-        · exact hlower_nonneg
-        · intro a _ha
-          rw [show upperRecursiveOptimalQValueEnvelope Θ γ zs a n =
-              lowerRecursiveOptimalQValueEnvelope Θ γ zs a n by
-                exact (recursiveOptimalQValueEnvelope_eq_of_subsingleton
-                  (Θ := Θ) (γ := γ) n zs a).symm]
-          rw [Finset.le_fold_max]
-          exact Or.inr ⟨a, Finset.mem_univ a, le_rfl⟩
+      unfold lowerRecursiveTraceMassOptimalValueEnvelope upperRecursiveTraceMassOptimalValueEnvelope
+      congr 1
+      funext a
+      exact recursiveTraceMassOptimalQValueEnvelope_eq_of_subsingleton (Θ := Θ) (γ := γ) n zs a
 
 end
 
 /- In a singleton controlled-HMM family, the recursive credal optimal-value
 envelope collapses exactly to the model's optimal value. -/
 set_option linter.unusedSectionVars false
-theorem recursiveOptimalValueEnvelope_eq_model_of_subsingleton
-    [PerceptReward (Fin obs)] [Fintype Action]
+theorem recursiveTraceMassOptimalValueEnvelope_eq_model_of_subsingleton
     [Fintype ι] [Nonempty ι] [Subsingleton ι]
     (Θ : ι → ControlledFiniteHMMParam Action latent obs)
     (γ : DiscountFactor)
     (n : ℕ)
     (zs : List (CycleObservation Action obs))
     (i : ι) :
-    lowerRecursiveOptimalValueEnvelope Θ γ zs n =
+    lowerRecursiveTraceMassOptimalValueEnvelope Θ γ zs n =
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n ∧
-      upperRecursiveOptimalValueEnvelope Θ γ zs n =
+      upperRecursiveTraceMassOptimalValueEnvelope Θ γ zs n =
         optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) n := by
   have hmem :=
-    optimalValue_historyOfCycles_mem_recursiveEnvelope
+    optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
       (Θ := Θ) (γ := γ) n zs i
   have hcollapse :=
-    recursiveOptimalValueEnvelope_eq_of_subsingleton
+    recursiveTraceMassOptimalValueEnvelope_eq_of_subsingleton
       (Θ := Θ) (γ := γ) n zs
   constructor
   · apply le_antisymm
@@ -1754,5 +1268,133 @@ example :
   exact hiddenLabelSwapFamily_upper_eq_one
 
 end LabelSwapWitness
+
+section ReselectionControl
+
+private def quarterWeight (high : Bool) (y : Fin 2) : ℝ≥0 :=
+  if y = 1 then (if high then 3 / 4 else 1 / 4)
+  else (if high then 1 / 4 else 3 / 4)
+
+private def quarterCoin (high : Bool) : MeasureTheory.ProbabilityMeasure (Fin 2) := by
+  let p : PMF (Fin 2) := PMF.ofFintype (fun y => (quarterWeight high y : ℝ≥0∞))
+    (by
+      rw [Fin.sum_univ_two, ← ENNReal.coe_add, ← ENNReal.coe_one, ENNReal.coe_inj]
+      cases high <;> norm_num [quarterWeight])
+  exact ⟨p.toMeasure, by infer_instance⟩
+
+@[simp] private theorem quarterCoin_singleton (high : Bool) (y : Fin 2) :
+    (quarterCoin high).toMeasure (Set.singleton y) = (quarterWeight high y : ℝ≥0∞) := by
+  change (PMF.ofFintype (fun y => (quarterWeight high y : ℝ≥0∞)) _).toMeasure (Set.singleton y) = _
+  exact PMF.toMeasure_apply_singleton _ y (measurableSet_singleton y)
+
+@[simp] private theorem quarterCoin_nnreal (high : Bool) (y : Fin 2) :
+    quarterCoin high (Set.singleton y) = quarterWeight high y := by
+  apply ENNReal.coe_injective
+  rw [MeasureTheory.ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure, quarterCoin_singleton]
+
+/-- A clock with success probabilities `(1/4,3/4)` or `(3/4,1/4)` in its first two cycles. -/
+noncomputable def alternatingRewardHMM (i : Fin 2) : ControlledFiniteHMMParam Unit 3 2 where
+  init := diracPM 0
+  trans := fun _ x => diracPM (if x = 0 then 1 else 2)
+  emission := fun x => quarterCoin (if x = 1 then decide (i = 1) else decide (i = 0))
+
+private theorem alternatingReward_initial (i : Fin 2) (y : Fin 2) :
+    traceMassRow (alternatingRewardHMM i) [] () y = (quarterWeight (decide (i = 1)) y : ℝ≥0∞) := by
+  have h02 : (0 : Fin 3) ≠ 2 := by decide
+  have h12 : (1 : Fin 3) ≠ 2 := by decide
+  have h20 := Ne.symm h02
+  have h21 := Ne.symm h12
+  fin_cases i <;> fin_cases y <;>
+    norm_num [*, traceMassRow, observationMassGivenAction, filteringMass, filteringMassAux,
+      initialLatentMass, filteringStepMass, predictiveLatentMass, alternatingRewardHMM,
+      stepProb, emissionProb, initProb, diracPM, Fin.sum_univ_three, quarterWeight, quarterCoin_nnreal, quarterCoin_singleton]
+
+private theorem alternatingReward_after_one (i : Fin 2) (b y : Fin 2) :
+    traceMassRow (alternatingRewardHMM i) [((), b)] () y =
+      (quarterWeight (decide (i = 1)) b : ℝ≥0∞) * (quarterWeight (decide (i = 0)) y : ℝ≥0∞) := by
+  have h02 : (0 : Fin 3) ≠ 2 := by decide
+  have h12 : (1 : Fin 3) ≠ 2 := by decide
+  have h20 := Ne.symm h02
+  have h21 := Ne.symm h12
+  fin_cases i <;> fin_cases b <;> fin_cases y <;>
+    norm_num [*, traceMassRow, observationMassGivenAction, filteringMass, filteringMassAux,
+      initialLatentMass, filteringStepMass, predictiveLatentMass, alternatingRewardHMM,
+      stepProb, emissionProb, initProb, diracPM, Fin.sum_univ_three, quarterWeight, quarterCoin_nnreal, quarterCoin_singleton]
+
+/-- Every finite trace in the separating family has positive mass. -/
+theorem alternatingReward_all_traces_possible (i : Fin 2) (zs : List (CycleObservation Unit 2)) :
+    observedCycleProb (alternatingRewardHMM i) zs ≠ 0 := by
+  apply observedCycleProb_ne_zero_of_emissions
+  intro x y
+  change (quarterCoin _ (Set.singleton y)) ≠ 0
+  intro h
+  have hh := congrArg (fun r : ℝ≥0 => (r : ℝ≥0∞)) h
+  simp only [MeasureTheory.ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure,
+    quarterCoin_singleton, ENNReal.coe_zero, ENNReal.coe_eq_zero] at hh
+  unfold quarterWeight at hh
+  split_ifs at hh <;> norm_num at hh
+
+private def unitPolicy : Agent Unit (Fin 2) where
+  policy := fun _ _ => 1
+  policy_sum_one := by intros; simp
+
+local instance : PerceptReward (Fin 2) where
+  reward y := if y = 1 then 1 else 0
+  reward_nonneg y := by split_ifs <;> norm_num
+  reward_le_one y := by split_ifs <;> norm_num
+
+private def undiscounted : DiscountFactor := ⟨1, by norm_num, by norm_num⟩
+
+private theorem inf_fin_two (f : Fin 2 → ℝ) :
+    Finset.univ.inf' Finset.univ_nonempty f = min (f 0) (f 1) := by
+  apply le_antisymm
+  · exact le_min (Finset.inf'_le _ (Finset.mem_univ 0)) (Finset.inf'_le _ (Finset.mem_univ 1))
+  · exact Finset.le_inf' _ _ fun i _ => by fin_cases i <;> simp
+
+private theorem unitValue_succ (θ : ControlledFiniteHMMParam Unit 3 2)
+    (zs : List (CycleObservation Unit 2)) (n : ℕ) :
+    value (toEnvironment θ) unitPolicy undiscounted (historyOfCycles zs) (n + 1) =
+      qValue (toEnvironment θ) unitPolicy undiscounted (historyOfCycles zs) () n := by
+  rw [value_succ]
+  simp [unitPolicy, historyOfCycles_wellFormed]
+
+/-- Both fixed models have positive trace mass; row re-selection is still strictly more pessimistic. -/
+theorem alternatingReward_static_lower :
+    lowerStaticTraceMassValue alternatingRewardHMM unitPolicy undiscounted [] 4 = 23 / 32 := by
+  simp only [lowerStaticTraceMassValue, inf_fin_two, unitValue_succ,
+    qValue_succ_eq_traceMassContinuation, value_zero]
+  norm_num [traceMassContinuation, alternatingReward_initial, alternatingReward_after_one,
+    undiscounted, PerceptReward.reward, quarterWeight, Fin.sum_univ_two]
+
+/-- The same family, policy and horizon give a smaller value when rows may be re-selected. -/
+theorem alternatingReward_reselecting_lower :
+    lowerRecursiveTraceMassValueEnvelope alternatingRewardHMM unitPolicy undiscounted [] 4 = 11 / 32 := by
+  simp only [lowerRecursiveTraceMassValueEnvelope, lowerRecursiveTraceMassQValueEnvelope,
+    inf_fin_two]
+  norm_num [traceMassContinuation, unitPolicy, undiscounted, PerceptReward.reward,
+    alternatingReward_initial, alternatingReward_after_one, quarterWeight, Fin.sum_univ_two]
+
+/-- A supported history still has subunit next-row mass. -/
+theorem alternatingReward_row_mass :
+    ∑ y : Fin 2, traceMassRow (alternatingRewardHMM 0) [((), 0)] () y = 3 / 4 := by
+  rw [traceMassRow_sum]
+  change observedCycleProb (alternatingRewardHMM 0) ([] ++ [((), 0)]) = _
+  rw [observedCycleProb_append_eq_traceMassRow, alternatingReward_initial]
+  norm_num [quarterWeight]
+
+example : (∑ y : Fin 2, traceMassRow (alternatingRewardHMM 0) [((), 0)] () y) ≠ 1 := by
+  rw [alternatingReward_row_mass]
+  intro h
+  have hh := congrArg ENNReal.toReal h
+  norm_num at hh
+
+/-- Static and history-dependent row choices need not give the same fixed-policy value. -/
+theorem alternatingReward_reselection_strict :
+    lowerRecursiveTraceMassValueEnvelope alternatingRewardHMM unitPolicy undiscounted [] 4 <
+      lowerStaticTraceMassValue alternatingRewardHMM unitPolicy undiscounted [] 4 := by
+  rw [alternatingReward_reselecting_lower, alternatingReward_static_lower]
+  norm_num
+
+end ReselectionControl
 
 end Mettapedia.Logic.WMControlledFiniteHiddenMarkovCredal

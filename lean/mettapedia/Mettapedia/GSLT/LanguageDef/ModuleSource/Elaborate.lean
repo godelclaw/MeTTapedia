@@ -821,29 +821,53 @@ def flattenRaw (name : String) (value : Value) : LanguageDef where
   rewrites := value.entries.filterMap fun item => match item.body with
     | .rewrite row => some row | _ => none
 
-/-- Sharing a collection carrier does not identify two declared operations.
-Retain their labels whenever bare erasure would merge distinct constructors.
-The equations remain available to the ordinary equation machinery. -/
-def retainSharedCollectionLabels (language : LanguageDef) : LanguageDef :=
+/-- New representation protection applies to pending extraction from an
+actual binary source origin. Existing algebra metadata retains its current
+representation until a representation-aware law certificate is supplied. -/
+def collectionAlgebraCandidate (rule : GrammarRule) (binaryLabels : List String) : Bool :=
+  binaryLabels.contains rule.label && rule.algebra?.isNone
+
+/-- A collection kind used in another constructor parameter also has a data
+role. The recursive type traversal includes nested collections and binder
+and arrow slots, independently of the other constructor's arity. -/
+def otherCollectionParameter (language : LanguageDef) (rule : GrammarRule)
+    (kind : CollType) : Bool :=
+  language.terms.any fun other =>
+    other.label != rule.label &&
+      other.params.any (fun parameter => parameter.typeExpr.mentionsCollection kind)
+
+/-- Sharing a carrier does not identify declared operations or turn data
+collections into algebra occurrences. Retain a pending binary algebra's label when another constructor exposes that
+carrier as data. Existing declared profiles retain the prior shared-operation
+protection. The equations of pending extraction remain
+available to the ordinary equation machinery. This finite guard does not
+certify reflection for arbitrary root values or free-variable types. -/
+def retainSharedCollectionLabels (language : LanguageDef) (binaryLabels : List String := []) : LanguageDef :=
   { language with terms := language.terms.map fun rule =>
       match collectionParameterKind rule with
       | none => rule
       | some kind =>
           if language.terms.any (fun other =>
-              other.label != rule.label && collectionParameterKind other == some kind) then
+              other.label != rule.label && collectionParameterKind other == some kind) ||
+              (collectionAlgebraCandidate rule binaryLabels &&
+                otherCollectionParameter language rule kind) then
             { rule with collectionRepresentation := .wrapped }
           else rule }
 
-/-- A value as a `LanguageDef`, its declarations in order, with the collection algebras its
-equations state declared. -/
-def flatten (name : String) (value : Value) : LanguageDef :=
-  let binaryLabels := value.entries.filterMap fun item =>
+/-- The replaced binary origins represented by collection declarations. -/
+def binaryCollectionLabels (value : Value) : List String :=
+  value.entries.filterMap fun item =>
     if value.binaryCollections.contains item.origin then
       match item.body with
       | .term rule => some rule.label
       | _ => none
     else none
-  declareAlgebras (retainSharedCollectionLabels (flattenRaw name value)) binaryLabels
+
+/-- A value as a `LanguageDef`, its declarations in order, with collection
+algebras declared only after carrier representations have been protected. -/
+def flatten (name : String) (value : Value) : LanguageDef :=
+  let binaryLabels := binaryCollectionLabels value
+  declareAlgebras (retainSharedCollectionLabels (flattenRaw name value) binaryLabels) binaryLabels
 
 /-- The value of applying a theory to arguments, within a module. -/
 def applyTheory (library : List (String × Module)) (module : Module) (path : Path) (args : List Expr) :

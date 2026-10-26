@@ -96,7 +96,7 @@ def Accepts {environment : Environment} {outer : Goal}
   | .query _ request state cursor tail =>
       Query.StateWellFormed environment request state ∧ cursor ≤ state.answers.length ∧
       ∃ answer : Query.Answer environment request,
-        Query.UnreadAccepts environment request state cursor answer ∧
+        Query.UnreadAccepts MatchingExecution.ordinaryCursorLaws environment request state cursor answer ∧
         Reaches tail (.premise answer.assignment
           (.query request.context.premiseIndex request.context.quantifierDepth
             answer.rowIndex answer.origins) (.query answer.valid)) wanted
@@ -259,7 +259,7 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
               simp only [Core, evaluate.eq_1, evaluatePremise.eq_1, List.not_mem_nil,
                 false_or, List.mem_singleton, exists_eq_left, Accepts]
               exact ⟨Query.start_wellFormed _ _, by simp [Query.start],
-                ⟨rowIndex, final, origins, query⟩, Query.unread_start_of_valid _ _ _, concludes⟩
+                ⟨rowIndex, final, origins, query⟩, Query.unread_start_of_valid MatchingExecution.ordinaryCursorLaws _ _ _, concludes⟩
           | @freshness context condition initial atom subject read fresh =>
               have checked := (syntactic_freshness_iff atom subject).mpr fresh
               rw [evaluate.eq_1]
@@ -407,7 +407,7 @@ theorem query_covers {environment : Environment} {outer : Goal} {depth : Nat}
   unfold expandQuery
   split
   · rename_i seen found
-    obtain same | remaining := (Query.unread_get environment request state cursor answer).mp unread
+    obtain same | remaining := (Query.unread_get MatchingExecution.ordinaryCursorLaws environment request state cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
       subst seen
       right
@@ -422,12 +422,12 @@ theorem query_covers {environment : Environment} {outer : Goal} {depth : Nat}
     split
     · rename_i settled
       have empty : state.agenda = [] := List.isEmpty_iff.mp settled
-      exact False.elim (Query.unread_empty_of_settled environment request state cursor answer
+      exact False.elim (Query.unread_empty_of_settled MatchingExecution.ordinaryCursorLaws environment request state cursor answer
         empty unavailable unread)
     · right
-      refine ⟨_, List.mem_cons_self, Query.tick_wellFormed _ _ wellFormed, ?_, answer, ?_, concludes⟩
+      refine ⟨_, List.mem_cons_self, Query.tick_wellFormed MatchingExecution.ordinaryCursorLaws _ _ wellFormed, ?_, answer, ?_, concludes⟩
       · exact bounded.trans (query_answers_grow environment request state)
-      · exact (Query.unread_tick_of_no_answer environment request state cursor answer
+      · exact (Query.unread_tick_of_no_answer MatchingExecution.ordinaryCursorLaws MatchingExecution.ordinary_answer_representation environment request state cursor answer
           wellFormed bounded unavailable).mpr unread
 
 theorem rootMatch_covers {environment : Environment} {outer : Goal}
@@ -563,10 +563,10 @@ theorem finish_covers (environment : Environment) (goal : Goal) (wanted : Result
     wanted ∈ (finish environment goal).answers ∨ Exhausted (finish environment goal).unresolved := by
   have initial : StateCovers (start environment goal) wanted :=
     Or.inl (Or.inr ⟨_, List.mem_cons_self, wanted, rfl⟩)
-  have final := run_covers (treeStart environment goal).cost initial
+  have final := run_covers (treeStart _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost environment goal).cost initial
   rcases final with (emitted | ⟨task, member, _⟩) | exhausted
   · exact Or.inl emitted
-  · have empty : (run environment goal (treeStart environment goal).cost (start environment goal)).agenda = [] :=
+  · have empty : (run environment goal (treeStart _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost environment goal).cost (start environment goal)).agenda = [] :=
       finish_settled environment goal
     rw [empty] at member
     exact False.elim (List.not_mem_nil member)

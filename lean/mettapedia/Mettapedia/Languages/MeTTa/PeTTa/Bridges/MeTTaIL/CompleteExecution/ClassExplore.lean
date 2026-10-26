@@ -254,7 +254,8 @@ theorem explore_seen_returns (state : State) (current : Pattern) : ∀ seen : Li
     · have later := explore_seen_returns state current rest
       have different : InferenceCettaWire.encodePattern current ≠ InferenceCettaWire.encodePattern other :=
         fun equal => same (InferenceCettaWire.encodePattern_injective equal)
-      runner_eval [later] unfolding [patternsValue, InferenceCettaWire.encodePatterns, List.mem_cons, same, different]
+      simp only [List.mem_cons, same, false_or]
+      runner_eval [later] unfolding [patternsValue, InferenceCettaWire.encodePatterns, different]
 
 /-- **The children with new states** (`Complete.Explore.fresh`). -/
 @[metta_head "gslt:explore:fresh"]
@@ -321,6 +322,9 @@ theorem explore_settled_returns (state : State) (mode : Complete.Normalized.Comm
     · by_cases same : log.length = consumed
       · simp [Complete.Classes.search, Complete.Classes.status, Complete.Classes.complete,
           searchStatusAtom, finished] at status
+        simp only [List.all_cons, Complete.Settled.nodeSettled, Complete.Normalized.search,
+          Complete.Classes.search, Complete.Classes.status, Complete.Classes.complete, finished, same,
+          beq_self_eq_true]
         runner_eval [status, published, count, later]
           unfolding [classSearchBackend, encodeList, nodeTerm, classStateTerm, List.all_cons,
           Complete.Settled.nodeSettled, Complete.Normalized.search, Complete.Classes.search, Complete.Classes.status,

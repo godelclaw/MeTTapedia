@@ -1,5 +1,6 @@
 import Mettapedia.PLN.Evidence.EvidenceClass
 import Mettapedia.PLN.Evidence.EvidenceCounts
+import Mettapedia.PLN.Evidence.RevisionMemory
 import Mettapedia.PLN.Evidence.EvidenceKind
 import Mettapedia.PLN.Evidence.BinEvNat
 import Mettapedia.PLN.Evidence.BinaryEvidence

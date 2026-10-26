@@ -205,7 +205,7 @@ theorem drained_eq_finish (environment : Environment) (goal : Goal) (work : Nat)
     StructuralDescent.Scheduled.run environment goal work (StructuralDescent.Scheduled.start environment goal) =
       StructuralDescent.Scheduled.finish environment goal := by
   have finished : (StructuralDescent.Scheduled.run environment goal
-      (StructuralDescent.Scheduled.treeStart environment goal).cost
+      (StructuralDescent.Scheduled.treeStart _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost environment goal).cost
       (StructuralDescent.Scheduled.start environment goal)).agenda = [] :=
     StructuralDescent.Scheduled.finish_settled environment goal
   have idle : ∀ (extra : Nat) (state : StructuralDescent.Scheduled.State environment goal), state.agenda = [] →
@@ -218,8 +218,8 @@ theorem drained_eq_finish (environment : Environment) (goal : Goal) (work : Nat)
       change GeneralPremise.Scheduler.run _ extra (GeneralPremise.Scheduler.tick _ state) = state
       rw [GeneralPremise.Scheduler.tick_idle _ state empty]
       exact ih state empty
-  unfold StructuralDescent.Scheduled.finish
-  by_cases order : work ≤ (StructuralDescent.Scheduled.treeStart environment goal).cost
+  unfold StructuralDescent.Scheduled.finish StructuralDescent.Scheduled.finishWith
+  by_cases order : work ≤ (StructuralDescent.Scheduled.treeStart _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost environment goal).cost
   · obtain ⟨extra, total⟩ := Nat.exists_eq_add_of_le order
     rw [total, StructuralDescent.Scheduled.run_add, idle extra _ drained]
   · obtain ⟨extra, total⟩ := Nat.exists_eq_add_of_le (Nat.le_of_not_le order)
@@ -262,7 +262,7 @@ theorem level_drains (depth : Nat) (published : List family.Payload) :
   let isDrained := fun work => (StructuralDescent.Scheduled.run family.environment (family.goal depth) work
     (StructuralDescent.Scheduled.start family.environment (family.goal depth))).agenda.isEmpty = true
   have settled : (StructuralDescent.Scheduled.run family.environment (family.goal depth)
-      (StructuralDescent.Scheduled.treeStart family.environment (family.goal depth)).cost
+      (StructuralDescent.Scheduled.treeStart _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost family.environment (family.goal depth)).cost
       (StructuralDescent.Scheduled.start family.environment (family.goal depth))).agenda = [] :=
     StructuralDescent.Scheduled.finish_settled family.environment (family.goal depth)
   have exists_drained : ∃ work, isDrained work := ⟨_, by simpa [isDrained, List.isEmpty_iff] using settled⟩

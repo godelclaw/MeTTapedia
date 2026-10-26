@@ -23,14 +23,15 @@ open Syntax RuleBinding ScopedRuleMatching GeneralPremise
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
 structure RootAnswer (environment : Environment) (bound : List TypeExpr)
-    (type : TypeExpr) (source : Pattern) where
+    (type : TypeExpr) (source : Pattern)
+    (matcher : MatchingExecution := MatchingExecution.ordinary) where
   index : Nat
-  trace : List GeneralScopedMatchMachine.BagChoice
+  trace : List matcher.Choice
   captured : Assignment
   completed : Assignment
-  history : List Event
+  history : List (Event matcher.Choice)
   target : Pattern
-  valid : RootFiring environment bound type source index trace captured completed history target
+  valid : Interpreted.RootFiring matcher.meaning environment bound type source index trace captured completed history target
 
 abbrev Oracle (environment : Environment) :=
   ∀ bound type source, List (RootAnswer environment bound type source)

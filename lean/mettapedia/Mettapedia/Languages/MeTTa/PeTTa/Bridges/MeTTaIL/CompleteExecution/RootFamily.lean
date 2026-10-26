@@ -1,4 +1,6 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Deepening
+import Mettapedia.OSLF.MeTTaIL.Complete.DeepRoot
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Sizes
 
 /-!
 # The deepening family of a rule job
@@ -46,6 +48,54 @@ theorem firingTerm_injective : Function.Injective firingTerm := by
   have decoded := congrArg decodeFiring? same
   simpa only [decodeFiring?_firingTerm, Option.some.injEq] using decoded
 
+/-- Preserve the selected choice representation in a complete firing payload. -/
+def firingTermWith {Choice : Type} (choiceTerm : Choice → Term)
+    (firing : Complete.DeepRoot.Firing Choice) : Term :=
+  .application "RootAnswer" [encodeList choiceTerm firing.trace,
+    assignmentTerm firing.captured, assignmentTerm firing.completed,
+    RetainedMatchingWire.eventsTerm choiceTerm firing.history, patternTerm firing.target]
+
+def decodeFiringWith? {Choice : Type} (decodeChoice : Term → Option Choice) :
+    Term → Option (Complete.DeepRoot.Firing Choice)
+  | .application "RootAnswer" [trace, captured, completed, history, target] => do
+      pure ⟨← decodeList decodeChoice trace, ← ScopedRuleJobReadoutExecution.decodeAssignment? captured,
+        ← ScopedRuleJobReadoutExecution.decodeAssignment? completed,
+        ← ScopedRuleJobReadoutExecution.decodeEventsWith? decodeChoice history,
+        ← InferenceCettaWire.decodePattern target⟩
+  | _ => none
+
+theorem decodeFiringWith?_firingTermWith {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (firing : Complete.DeepRoot.Firing Choice) :
+    decodeFiringWith? decodeChoice (firingTermWith choiceTerm firing) = some firing := by
+  rcases firing with ⟨trace, captured, completed, history, target⟩
+  simp [firingTermWith, decodeFiringWith?, assignmentTerm, patternTerm,
+    ScopedRuleJobReadoutExecution.decodeAssignment?_assignmentTerm,
+    ScopedRuleJobReadoutExecution.decodeEventsWith?_eventsTerm choiceTerm decodeChoice inverse,
+    decodeList_encodeList decodeChoice choiceTerm inverse]
+
+theorem firingTermWith_injective {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice) :
+    Function.Injective (firingTermWith choiceTerm) := by
+  intro first second same
+  have decoded := congrArg (decodeFiringWith? decodeChoice) same
+  simpa only [decodeFiringWith?_firingTermWith choiceTerm decodeChoice inverse, Option.some.injEq] using decoded
+
+theorem firingTermWith_ordinary (firing : Complete.DeepRoot.Firing) :
+    firingTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm firing = firingTerm firing := by
+  unfold firingTermWith firingTerm
+  rw [RetainedMatchingWire.ordinary_events]
+  rfl
+
+theorem decodeFiringWith?_wrong_constructor {Choice : Type} (decodeChoice : Term → Option Choice) :
+    decodeFiringWith? decodeChoice (.application "RuleJobReceipt" []) = none := rfl
+
+#print axioms decodeFiringWith?_firingTermWith
+#print axioms firingTermWith_injective
+#print axioms firingTermWith_ordinary
+#print axioms decodeFiringWith?_wrong_constructor
+
+
 /-- The data of a rule's deepening at a focus. -/
 def rootFamilyTerm (request : Complete.DeepRoot.Request) : Term :=
   .application "RootFamily" [encodeList InferenceCettaWire.AuthoredRule.typeTerm request.bound,
@@ -65,8 +115,8 @@ theorem symbol_equal_returns (program : SpaceSemantics.Program) (caller : Mettap
 theorem root_goal_returns (request : Complete.DeepRoot.Request) (state : State) (depth : Nat) :
     PureReturns runtime [] state (apply "gslt:deep:goal" [encoded (rootFamilyTerm request), number depth]) state
       (encoded (goalTerm ((Complete.DeepRoot.family request).goal depth))) := by
-  metta_call complete_checked
-  metta_eval unfolding [rootFamilyTerm, goalTerm, Complete.DeepRoot.Request.goal, typesTerm, typeTerm, patternTerm,
+  metta_call_in completeProof_checked using completeProof_agreement
+  metta_eval with completeProof_checked in completeProof_agreement unfolding [rootFamilyTerm, goalTerm, Complete.DeepRoot.Request.goal, typesTerm, typeTerm, patternTerm,
     CompletePlanWire.admittedTerm]
 
 @[metta_head "gslt:deep:bounded"]
@@ -80,21 +130,21 @@ theorem root_bounded_returns (request : Complete.DeepRoot.Request) (state : Stat
   · have unbounded : (Complete.DeepRoot.family request).bound = none := by
       simp [admitted]
     rw [unbounded]
-    metta_call complete_checked
-    metta_eval unfolding [rootFamilyTerm, CompletePlanWire.admittedTerm, admitted]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rootFamilyTerm, CompletePlanWire.admittedTerm, admitted]
     apply pure_if_returns
     · exact symbol_equal_returns _ _ _ _ "Unadmitted" "Admitted" (bound_returns _ _ _ (by rfl))
     · simp only [show decide ("Unadmitted" = "Admitted") = false by decide, Bool.false_eq_true, ↓reduceIte]
-      metta_eval
+      metta_eval with completeProof_checked in completeProof_agreement
   · have bounded : (Complete.DeepRoot.family request).bound = some (PatternTreeSize.nodes request.source) := by
       simp [admitted]
     rw [bounded]
-    metta_call complete_checked
-    metta_eval unfolding [rootFamilyTerm, CompletePlanWire.admittedTerm, admitted]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [rootFamilyTerm, CompletePlanWire.admittedTerm, admitted]
     apply pure_if_returns
     · exact symbol_equal_returns _ _ _ _ "Admitted" "Admitted" (bound_returns _ _ _ (by rfl))
     · simp only
-      metta_eval [size] with complete_checked unfolding [patternValue]
+      metta_eval [size] with completeProof_checked in completeProof_agreement unfolding [patternValue]
 
 /-- A rule's deepening at a focus, as MeTTa data. -/
 def rootWire (request : Complete.DeepRoot.Request) : FamilyWire (Complete.DeepRoot.family request) where
@@ -106,3 +156,33 @@ def rootWire (request : Complete.DeepRoot.Request) : FamilyWire (Complete.DeepRo
   bounded := root_bounded_returns request
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.firingTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decodeFiring?
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decodeFiring?_firingTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.firingTerm_injective
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.firingTermWith
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decodeFiringWith?
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decodeFiringWith?_firingTermWith
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.firingTermWith_injective
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.firingTermWith_ordinary
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.decodeFiringWith?_wrong_constructor
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.rootFamilyTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.symbol_equal_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.root_goal_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.root_bounded_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.rootWire

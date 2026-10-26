@@ -87,18 +87,10 @@ theorem extract_best (families : List Family) (requested allowance : Nat) :
       ∀ other : Candidate families,
         other ∉ (extract families requested allowance).1.published →
           cost families first ≤ cost families other := by
-  have projection := congrArg Prod.fst
-    (demand_is_prefix (graph families) requested allowance (initial (roots families)))
-  let used := (extract families requested allowance).2
-  change (extract families requested allowance).1 =
-    run (graph families) used (initial (roots families)) at projection
-  rw [projection]
-  have valid := run_invariant (graph families) (roots families) used _
-    (initial_invariant _ _)
-  have best := run_best (graph families) (monotone families) (roots families) used
-  refine ⟨(List.nodup_append.mp valid.distinct).1, best.1, ?_⟩
-  intro first member other remaining
-  exact best.2 first member other (candidate_reachable families other) remaining
+  have valid := DerivationPrefix.demand_prefix_correct (graph families) (monotone families)
+    (roots families) requested allowance
+  exact ⟨valid.distinct, valid.ordered, fun first member other remaining =>
+    (valid.omitted other (candidate_reachable families other) remaining).2 first member⟩
 
 theorem completePrefix_bound (families : List Family) (requested : Nat) :
     (completePrefix families requested).length ≤ requested :=
@@ -108,30 +100,10 @@ theorem completePrefix_bound (families : List Family) (requested : Nat) :
 theorem completePrefix_exhausted_or_full (families : List Family) (requested : Nat) :
     (completePrefix families requested).length = requested ∨
       ∀ candidate : Candidate families, candidate ∈ completePrefix families requested := by
-  have stopped := demand_allowance_suffices (graph families) requested requested
-    (MonotoneRankEnumeration.initial (roots families))
-    (by simp [MonotoneRankEnumeration.initial])
-    (by simp [MonotoneRankEnumeration.initial])
-  change (completePrefix families requested).length = requested ∨
-      (extract families requested requested).1.frontier = []
-    at stopped
-  rcases stopped with full | closed
-  · exact Or.inl full
-  · right
-    have projection := congrArg Prod.fst
-      (demand_is_prefix (graph families) requested
-        requested (initial (roots families)))
-    let used := (extract families requested requested).2
-    change (extract families requested requested).1 =
-      run (graph families) used (initial (roots families)) at projection
-    intro candidate
-    change candidate ∈ (extract families requested requested).1.published
-    rw [projection]
-    have valid := run_invariant (graph families) (roots families) used _
-      (initial_invariant _ _)
-    exact (closed_complete (graph families) (monotone families) (roots families) _ valid
-      (by rw [← projection]; exact closed) candidate).mpr
-      (candidate_reachable families candidate)
+  rcases (DerivationPrefix.demand_prefix_correct (graph families) (monotone families)
+    (roots families) requested requested).full_or_exhaustive with full | all
+  · exact Or.inl (by simpa only [Nat.min_self, completePrefix, extract, graph] using full)
+  · exact Or.inr fun candidate => all candidate (candidate_reachable families candidate)
 
 /-- Omission certifies a full requested prefix, rather than an incomplete
 allowance. Every selected candidate is no dearer than the omitted one. -/
@@ -140,12 +112,10 @@ theorem omitted_completePrefix (families : List Family) (requested : Nat)
     (completePrefix families requested).length = requested ∧
       ∀ selected ∈ completePrefix families requested,
         cost families selected ≤ cost families candidate := by
-  refine ⟨?_, ?_⟩
-  · rcases completePrefix_exhausted_or_full families requested with full | all
-    · exact full
-    · exact False.elim (omitted (all candidate))
-  · intro selected member
-    exact (extract_best families requested requested).2.2 selected member candidate omitted
+  simpa only [Nat.min_self, completePrefix, extract, graph] using
+    (DerivationPrefix.demand_prefix_correct (graph families) (monotone families)
+      (roots families) requested requested).omitted candidate (candidate_reachable families candidate)
+      omitted
 
 namespace Controls
 

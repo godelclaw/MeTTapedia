@@ -4,10 +4,11 @@ import Mettapedia.Cybernetics.HierarchicalComplexity.Examples
 import Mettapedia.Cybernetics.HierarchicalComplexity.Composition
 import Mettapedia.Cybernetics.HierarchicalComplexity.Infinite
 import Mettapedia.Cybernetics.HierarchicalComplexity.Atomlessness
+import Mettapedia.Cybernetics.HierarchicalComplexity.ObserverTransport
 
 /-!
 # Hierarchical complexity
 
 The schedule-sensitive ordinal core, Commons--Pekker finite specialization,
-source examples, and explicit infinite and atomless boundary controls.
+observer transport, source examples, and infinite and atomless boundary controls.
 -/

@@ -1,4 +1,5 @@
 import Mettapedia.NARS.Bridges.PLN.LedgerCountInterpretation
+import Mettapedia.NARS.Bridges.PLN.RevisionMemory
 import Mettapedia.NARS.Bridges.PLN.RevisionWorldModel
 import Mettapedia.NARS.Bridges.PLN.ScopedWorldModel
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation

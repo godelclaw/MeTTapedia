@@ -113,6 +113,27 @@ theorem carrier (history : ConstantHistory initial final)
   | nil => rfl
   | snoc prior instances name source result accepted ih => exact ih
 
+/-- Every previously registered constant retains its value at all source
+annotations. Registration proves that no later fresh declaration has the
+same provenance-bearing identity. -/
+theorem constant_old (history : ConstantHistory initial final)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (constant : Const) (schema annotation : Ty)
+    (registered : initial.signature.constants constant = some schema)
+    {type : HOL.Ty AtomicTy} (typed : annotation.toHOL = type) :
+    HEq ((history.extendModel model).constDen (.constant constant annotation typed))
+      (model.constDen (.constant constant annotation typed)) := by
+  induction history with
+  | nil => rfl
+  | snoc prior instances name source result accepted ih =>
+      have different : constant ≠ result.output.constant := by
+        intro same
+        have known := prior.includes.2 _ _ registered
+        rw [same, ConstantAdmission.admitted_identity_fresh accepted] at known
+        cases known
+      exact (heq_of_eq (ConstantAdmission.sourceExtension_constant_other result
+        (prior.extendModel model) constant annotation typed different)).trans ih
+
 theorem fullDomains (history : ConstantHistory initial final)
     (model : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : model.FullDomains) :
     (history.extendModel model).FullDomains := by
@@ -261,6 +282,17 @@ theorem model_append {middle : TheoryContext} (first : ConstantHistory initial m
   | nil => rfl
   | snoc prior instances name source result accepted ih =>
       simp only [append, extendModel, ih]
+
+theorem record_admitted {initial final : TheoryContext} (history : ConstantHistory initial final)
+    {result : ContextConstantDefinitionResult} (member : result ∈ history.records) :
+    ∃ before instances name source, admitConstantInTheory before instances name source = some result := by
+  induction history with
+  | nil => simp [records] at member
+  | snoc prior instances name source added accepted ih =>
+    rw [records,List.mem_append,List.mem_singleton] at member
+    rcases member with earlier | rfl
+    · exact ih earlier
+    · exact ⟨_,instances,name,source,accepted⟩
 
 end ConstantHistory
 

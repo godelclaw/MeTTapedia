@@ -27,7 +27,7 @@ def TaskAccepts {environment : Environment} {outer : Goal}
   | .query request state cursor tail =>
       Query.StateWellFormed environment request state ∧ cursor ≤ state.answers.length ∧
       ∃ answer : Query.Answer environment request,
-        Query.UnreadAccepts environment request state cursor answer ∧
+        Query.UnreadAccepts MatchingExecution.ordinaryCursorLaws environment request state cursor answer ∧
         Concludes tail (.premise answer.assignment
           (.query request.context.premiseIndex request.context.quantifierDepth
             answer.rowIndex answer.origins) (.query answer.valid)) wanted
@@ -190,7 +190,7 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
               simp only [ExpansionAccepts, evaluate.eq_1, evaluatePremise.eq_1, List.not_mem_nil,
                 false_or, List.mem_singleton, exists_eq_left, TaskAccepts]
               exact ⟨Query.start_wellFormed _ _, by simp [Query.start],
-                ⟨rowIndex, final, origins, query⟩, Query.unread_start_of_valid _ _ _, concludes⟩
+                ⟨rowIndex, final, origins, query⟩, Query.unread_start_of_valid MatchingExecution.ordinaryCursorLaws _ _ _, concludes⟩
           | @freshness context condition initial atom subject read fresh =>
               have checked := (syntactic_freshness_iff atom subject).mpr fresh
               rw [evaluate.eq_1]
@@ -332,7 +332,7 @@ theorem query_covers {environment : Environment} {outer : Goal}
   unfold expandQuery
   split
   · rename_i seen found
-    obtain same | remaining := (Query.unread_get environment request state cursor answer).mp unread
+    obtain same | remaining := (Query.unread_get MatchingExecution.ordinaryCursorLaws environment request state cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
       subst seen
       right
@@ -347,12 +347,12 @@ theorem query_covers {environment : Environment} {outer : Goal}
     split
     · rename_i settled
       have empty : state.agenda = [] := List.isEmpty_iff.mp settled
-      exact False.elim (Query.unread_empty_of_settled environment request state cursor answer
+      exact False.elim (Query.unread_empty_of_settled MatchingExecution.ordinaryCursorLaws environment request state cursor answer
         empty unavailable unread)
     · right
-      refine ⟨_, List.mem_cons_self, Query.tick_wellFormed _ _ wellFormed, ?_, answer, ?_, concludes⟩
+      refine ⟨_, List.mem_cons_self, Query.tick_wellFormed MatchingExecution.ordinaryCursorLaws _ _ wellFormed, ?_, answer, ?_, concludes⟩
       · exact bounded.trans (query_answers_grow environment request state)
-      · exact (Query.unread_tick_of_no_answer environment request state cursor answer
+      · exact (Query.unread_tick_of_no_answer MatchingExecution.ordinaryCursorLaws MatchingExecution.ordinary_answer_representation environment request state cursor answer
           wellFormed bounded unavailable).mpr unread
 
 theorem rootMatch_covers {environment : Environment} {outer : Goal}
@@ -576,8 +576,8 @@ def resultFreeWithin (footprint : List String) {environment : Environment} {goal
       assignmentFreeWithin footprint completed ∧
       (∀ name ∈ target.freeFvarNames, name ∈ footprint)
 
-def stepCallFreeWithin (footprint : List String) {environment : Environment}
-    (call : Execution.StepCall environment) : Prop :=
+def stepCallFreeWithin {matcher : MatchingExecution} (footprint : List String) {environment : Environment}
+    (call : Execution.StepCall environment matcher) : Prop :=
   admittedFor call.context.rule call.context.spec = true ∧
   assignmentFreeWithin footprint call.initial ∧
   (∀ name ∈ call.source.freeFvarNames, name ∈ footprint)
@@ -957,7 +957,7 @@ theorem query_outer_expansion_free_within (footprint : List String) (environment
     · constructor
       · intro task member
         rcases List.mem_singleton.mp member with rfl
-        exact ⟨initial, Query.tick_free_within footprint environment request provider dynamic state query, continued⟩
+        exact ⟨initial, Query.tick_free_within MatchingExecution.ordinary_preservesFreeNames footprint environment request provider dynamic state query, continued⟩
       · intro answer member; cases member
 
 theorem expansion_free_within (footprint : List String) (environment : Environment)

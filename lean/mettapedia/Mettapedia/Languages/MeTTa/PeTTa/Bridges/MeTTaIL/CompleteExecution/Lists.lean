@@ -27,10 +27,12 @@ theorem drop_returns (state : State) : ∀ (count : Nat) (items : List Term),
       (terms (items.drop count)) := by
   intro count
   induction count with
-  | zero => intro items; metta_call complete_checked; metta_eval
+  | zero => intro items; metta_call_in completeProof_checked using completeProof_agreement; metta_eval with completeProof_checked in completeProof_agreement
   | succ count ih =>
     intro items
-    metta_call complete_checked
-    cases items <;> metta_eval [ih _] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    cases items <;> metta_eval [ih _] with completeProof_checked in completeProof_agreement
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.drop_returns

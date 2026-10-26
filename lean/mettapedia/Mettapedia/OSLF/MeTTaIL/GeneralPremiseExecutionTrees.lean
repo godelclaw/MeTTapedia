@@ -76,7 +76,9 @@ def treeQuery (environment : Environment) (outer : Goal) (request : Query.Reques
   simp only [expand, expandQuery]
   split
   · rename_i answer found
-    have decrease := queryDebt_cursor environment request state cursor answer found
+    have decrease := queryDebt_cursor
+      _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
+      environment request state cursor answer found
     exact .cons (continued _)
       (.cons (treeQuery environment outer request state (cursor + 1) tail continued) .nil)
   · rename_i found
@@ -84,10 +86,13 @@ def treeQuery (environment : Environment) (outer : Goal) (request : Query.Reques
     · exact .nil
     · rename_i pending
       have unfinished : state.agenda ≠ [] := by intro same; simp [same] at pending
-      have decrease := queryDebt_tick environment request state cursor found unfinished
+      have decrease := queryDebt_tick
+        _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
+        environment request state cursor found unfinished
       exact .cons
         (treeQuery environment outer request (Query.tick environment request state) cursor tail continued) .nil
-termination_by queryDebt environment request state cursor
+termination_by queryDebt
+  _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost environment request state cursor
 decreasing_by
   all_goals assumption
 

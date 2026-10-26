@@ -66,7 +66,8 @@ theorem run_matchers (depth work : Nat) (state : State plan bound expected sourc
     change state.matchers = state.matchers.map (Lane.resume 0)
     rw [idle, List.map_id]
   | succ work ih =>
-    simp only [run, ih, round, List.map_map]
+    change (run depth work (round depth state)).matchers = _
+    simp only [ih, round, roundWith, List.map_map]
     apply List.map_congr_left
     intro lane _
     exact (Lane.resume_add 1 work lane).symm.trans (by rw [Nat.add_comm 1 work])

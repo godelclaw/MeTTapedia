@@ -32,7 +32,7 @@ macro_rules
   | `(tactic| occurrence_runner_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call runner_checked; metta_eval [$facts,*] with runner_checked
+    `(tactic| (metta_call_in runnerProof_checked using runnerProof_agreement; metta_eval [$facts,*] with runnerProof_checked in runnerProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, backendTerm, $extra,*]))
@@ -58,8 +58,7 @@ theorem run_returns (host : Effects.State) (names : List String) (named : Standa
   have native := CollectionOccurrenceSearchExecution.run_returns host names named.ordered
     footprint scope.declared scope.finite scope.provider depth work input (named.covered checked)
     (Complete.Footprint.sorted_within scope.declared (WellSorted.checkOpenPatternWellSorted_complete typed)) begun
-  have executed := by metta_lift runner_checked ["names", "depth", "plan", "source", "work"] native
-  occurrence_runner_eval [executed]
+  occurrence_runner_eval [native]
 
 @[metta_head "gslt:search:resume"]
 theorem resume_returns (host : Effects.State) (names : List String) (named : StandardWire.TableFor plan names)
@@ -75,8 +74,7 @@ theorem resume_returns (host : Effects.State) (names : List String) (named : Sta
         ((CollectionOccurrenceSearch.search plan bound expected depth).resume run work))) := by
   have native := CollectionOccurrenceSearchExecution.resume_returns host names named.ordered
     footprint scope.declared scope.finite scope.provider depth work run ready
-  have resumed := by metta_lift runner_checked ["names", "depth", "run", "work"] native
-  occurrence_runner_eval [resumed]
+  occurrence_runner_eval [native]
 
 @[metta_head "gslt:search:publication"]
 theorem publication_returns (host : Effects.State) (names : List String) (depth : Nat)
@@ -87,8 +85,7 @@ theorem publication_returns (host : Effects.State) (names : List String) (depth 
       host (encoded (encodeList ScopedRuleJobReadoutExecution.receiptTerm
         ((CollectionOccurrenceSearch.search plan bound expected depth).publication run))) := by
   have native := CollectionOccurrenceSearchExecution.publication_returns host table run depth
-  have published := by metta_lift runner_checked ["run"] native
-  occurrence_runner_eval [published]
+  occurrence_runner_eval [native]
 
 @[metta_head "gslt:search:status"]
 theorem status_returns (host : Effects.State) (names : List String) (depth : Nat) (planData : Atom)
@@ -98,8 +95,7 @@ theorem status_returns (host : Effects.State) (names : List String) (depth : Nat
         [encoded (backendTerm names depth), planData, encoded (CollectionOccurrenceSearchExecution.runTerm table run)])
       host (SearchRunner.statusAtom (CollectionOccurrenceSearch.status run)) := by
   have native := CollectionOccurrenceSearchExecution.status_returns host table run
-  have status := by metta_lift runner_checked ["run"] native
-  occurrence_runner_eval [status] unfolding
+  occurrence_runner_eval [native] unfolding
     [SearchRunner.statusAtom, CollectionOccurrenceSearchExecution.statusAtom]
 
 @[metta_head "gslt:search:target"]
@@ -112,8 +108,7 @@ theorem target_returns (host : Effects.State) (names : List String) (named : Sta
       host (patternValue (CanonicalBags.canon receipt.target)) := by
   have native := CollectionOccurrenceSearchExecution.target_returns host names named.ordered
     receipt (named.covered checked)
-  have target := by metta_lift runner_checked ["names", "receipt"] native
-  occurrence_runner_eval [target]
+  occurrence_runner_eval [native]
 
 def realization (names : List String) (named : StandardWire.TableFor plan names)
     (footprint : List String) (scope : Complete.Footprint.Scope plan footprint)
@@ -146,3 +141,10 @@ def realization (names : List String) (named : StandardWire.TableFor plan names)
   target_returns host receipt checked := target_returns host names named depth _ receipt checked
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence.run_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence.resume_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence.publication_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence.status_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence.target_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence.realization

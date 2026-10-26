@@ -204,6 +204,7 @@ import Mettapedia.Logic.LawsOfForm
 import Mettapedia.Logic.TheoryModel
 import Mettapedia.Logic.GrothendieckInstitution
 import Mettapedia.Logic.InstitutionBorrowing
+import Mettapedia.Logic.TheoroidalComorphism
 import Mettapedia.Logic.HOL.PropositionalSliceRoutes
 import Mettapedia.GSLT.LanguageDef.TheoryGraphProofTransport
 import Mettapedia.Logic.Diagonal

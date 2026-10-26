@@ -42,19 +42,18 @@ def mapAlphabet (f : α → β) (p : Regex α) : Regex β :=
 /-- Nullability is independent of literal alphabet labels. -/
 @[simp] theorem mapAlphabet_nullable (f : α → β) (p : Regex α) :
     (mapAlphabet f p).matchEpsilon = p.matchEpsilon := by
-  induction p with
-  | zero => rfl
-  | epsilon => rfl
-  | char atom => rfl
-  | plus p q hp hq =>
-    change ((mapAlphabet f p).matchEpsilon || (mapAlphabet f q).matchEpsilon) = _
-    rw [hp, hq]
-    rfl
-  | comp p q hp hq =>
-    change ((mapAlphabet f p).matchEpsilon && (mapAlphabet f q).matchEpsilon) = _
-    rw [hp, hq]
-    rfl
-  | star p hp => rfl
+  induction p <;> simp_all [mapAlphabet, RegularExpression.map, RegularExpression.matchEpsilon]
+
+/-- Relabeling is functorial on syntax, without injectivity premises. -/
+@[simp] theorem mapAlphabet_id (p : Regex α) : mapAlphabet id p = p := by
+  have atoms : Atom.mapAlphabet (id : α → α) = id := by funext a; cases a <;> rfl
+  simp [mapAlphabet, atoms, RegularExpression.map_id]
+
+theorem mapAlphabet_comp {γ : Type*} (g : β → γ) (f : α → β) (p : Regex α) :
+    mapAlphabet g (mapAlphabet f p) = mapAlphabet (g ∘ f) p := by
+  have atoms : Atom.mapAlphabet g ∘ Atom.mapAlphabet f = Atom.mapAlphabet (g ∘ f) := by
+    funext a; cases a <;> rfl
+  simp only [mapAlphabet, RegularExpression.map_map, atoms]
 
 section Executable
 variable [DecidableEq α] [DecidableEq β]
@@ -70,38 +69,17 @@ theorem atom_accepts_mapAlphabet (f : α → β) (injective : Function.Injective
 theorem derivative_mapAlphabet (f : α → β) (injective : Function.Injective f)
     (a : α) (p : Regex α) :
     derivative (f a) (mapAlphabet f p) = mapAlphabet f (derivative a p) := by
-  induction p with
-  | zero => rfl
-  | epsilon => rfl
-  | char atom =>
-    change (if (atom.mapAlphabet f).accepts (f a) then 1 else 0) =
-      mapAlphabet f (if atom.accepts a then 1 else 0)
-    rw [atom_accepts_mapAlphabet f injective]
-    cases atom.accepts a <;> rfl
-  | plus p q hp hq =>
-    change derivative (f a) (mapAlphabet f p) + derivative (f a) (mapAlphabet f q) = _
-    rw [hp, hq]
-    rfl
-  | comp p q hp hq =>
-    change derivative (f a) (.comp (mapAlphabet f p) (mapAlphabet f q)) = _
-    by_cases nullable : p.matchEpsilon = true
-    · simp only [derivative, mapAlphabet_nullable, if_pos nullable, mapAlphabet_add,
-        mapAlphabet_mul, hp, hq]
-    · simp only [derivative, mapAlphabet_nullable, if_neg nullable, mapAlphabet_mul, hp]
-  | star p hp =>
-    change derivative (f a) (mapAlphabet f p) * (mapAlphabet f p).star = _
-    rw [hp]
-    rfl
+  have nullable (q : Regex α) : (q.map (Atom.mapAlphabet f)).matchEpsilon = q.matchEpsilon :=
+    mapAlphabet_nullable f q
+  induction p <;> simp_all [mapAlphabet, RegularExpression.map, derivative,
+    atom_accepts_mapAlphabet f injective, apply_ite]
 
 /-- Matching is unchanged on mapped words under an injective relabeling. -/
 theorem fullMatch_mapAlphabet (f : α → β) (injective : Function.Injective f)
     (p : Regex α) (word : List α) :
     fullMatch (mapAlphabet f p) (word.map f) = fullMatch p word := by
-  induction word generalizing p with
-  | nil => exact mapAlphabet_nullable f p
-  | cons a rest ih =>
-    simp only [List.map_cons, fullMatch, derivative_mapAlphabet f injective]
-    exact ih (derivative a p)
+  induction word generalizing p <;> simp_all only [List.map_nil, List.map_cons, fullMatch,
+    mapAlphabet_nullable, derivative_mapAlphabet f injective]
 
 /-- This is a pullback comparison on mapped words, not an unrestricted image claim. -/
 theorem mapped_word_mem_language (f : α → β) (injective : Function.Injective f)
@@ -138,6 +116,15 @@ theorem multiScalar_not_singleton : "ab" ∉ Set.range String.singleton := by
   rintro ⟨character, same⟩
   have lengths := congrArg (fun s : String => s.toList.length) same
   simp at lengths
+
+namespace AlphabetTransportControls
+
+/-- Collapsing different letters can create a match. -/
+theorem noninjective_map_changes_recognition :
+    fullMatch (mapAlphabet (fun _ : Bool => ()) (literal true)) [()] = true ∧
+      fullMatch (literal true) [false] = false := by decide
+
+end AlphabetTransportControls
 
 namespace AlphabetMapControls
 
@@ -178,17 +165,11 @@ theorem unrestricted_string_wildcard :
 theorem scalar_wildcard_language_ne_image :
     language (scalarRegex (any : Regex Char)) ≠
       Language.map String.singleton (language (any : Regex Char)) := by
-  intro languagesEqual
-  have accepted : ["ab"] ∈ language (scalarRegex (any : Regex Char)) :=
-    (fullMatch_correct _ _).mp unrestricted_string_wildcard
-  have inImage : ["ab"] ∈ Language.map String.singleton (language (any : Regex Char)) :=
-    languagesEqual ▸ accepted
-  change ["ab"] ∈ Set.image (List.map String.singleton) (language (any : Regex Char)) at inImage
-  obtain ⟨word, acceptedWord, mappedWord⟩ := inImage
-  change ∃ character : Char, word = [character] at acceptedWord
-  obtain ⟨character, rfl⟩ := acceptedWord
-  have same : String.singleton character = "ab" := List.singleton_inj.mp mappedWord
-  exact multiScalar_not_singleton ⟨character, same⟩
+  intro same
+  have accepted := (fullMatch_correct _ _).mp unrestricted_string_wildcard
+  obtain ⟨word, ⟨character, rfl⟩, mapped⟩ :
+      ["ab"] ∈ Language.map String.singleton (language (any : Regex Char)) := same ▸ accepted
+  exact multiScalar_not_singleton ⟨character, List.singleton_inj.mp mapped⟩
 
 end AlphabetMapControls
 

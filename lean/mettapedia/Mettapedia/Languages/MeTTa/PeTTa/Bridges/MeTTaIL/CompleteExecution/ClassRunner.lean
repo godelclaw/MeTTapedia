@@ -48,16 +48,12 @@ macro_rules
 /-- A fact of the laws library at values, in the runner's runtime. -/
 syntax "laws_lifted% " "[" str,* "] " term:max : term
 macro_rules
-  | `(laws_lifted% [$names,*] $fact) => `(canonical_lifted% [$names,*]
-      (Library.lift_call canonical_checked (by decide +kernel) (by decide) (by decide +kernel) (by decide) [$names,*]
-        (by decide) (by rfl) (by decide +kernel) $fact))
+  | `(laws_lifted% [$names,*] $fact) => `(laws_runner_lifted% [$names,*] $fact)
 
 /-- A fact of the complete machine at values, in the runner's runtime. -/
 syntax "runner_lifted% " "[" str,* "] " term:max : term
 macro_rules
-  | `(runner_lifted% [$names,*] $fact) => `(laws_lifted% [$names,*]
-      (Library.lift_call laws_checked (by decide +kernel) (by decide) (by decide +kernel) (by decide) [$names,*]
-        (by decide) (by rfl) (by decide +kernel) $fact))
+  | `(runner_lifted% [$names,*] $fact) => `(complete_runner_lifted% [$names,*] $fact)
 
 /-- Walk a body of the runner library. -/
 syntax "runner_eval" (" [" term,* "]")? (" unfolding" " [" term,* "]")? : tactic
@@ -65,7 +61,7 @@ macro_rules
   | `(tactic| runner_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call runner_checked; metta_eval [$facts,*] with runner_checked
+    `(tactic| (metta_call_in runnerProof_checked using runnerProof_agreement; metta_eval [$facts,*] with runnerProof_checked in runnerProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, pattern_symbol_unmatched, $extra,*]))

@@ -96,6 +96,54 @@ theorem sorted_node {language : LanguageDef} (rule : GrammarRule)
   rw [← erase_node rule member parameter kind shape values]
   exact erase_typed _
 
+/-- The actual bare node supplies its own declared data type. This retains
+its chosen row rather than recovering another carrier with the same category. -/
+theorem collection_typed_node {language : LanguageDef} (rule : GrammarRule)
+    (_member : rule ∈ language.terms) (parameter : String) (kind : CollType)
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    {Γ : List TypeExpr} (values : List (Term (signatureOf language) Γ (.base rule.category))) :
+    CollectionTypedAt language rule kind (values.map erase) := by
+  refine ⟨.simple parameter (.collection kind (.base rule.category)),?_,.base rule.category,
+    .here,FreeTypeContext.empty,Γ,.collection ?_⟩
+  · rw [((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2]
+    exact List.mem_cons_self
+  · induction values with
+    | nil => exact .nil _ _
+    | cons head tail ih => exact .cons (erase_typed head) ih
+
+
+/-- A direct data collection uses the existing intrinsic collection operator,
+independently of whether a base-sort carrier is bare or wrapped. -/
+def dataNode {language : LanguageDef} {Γ : List TypeExpr} {sort : TypeExpr}
+    (kind : CollType) (values : List (Term (signatureOf language) Γ sort)) :
+    Term (signatureOf language) Γ (.collection kind sort) :=
+  .op (.collection kind sort values.length) (homogeneousArguments values)
+
+theorem erase_dataNode {language : LanguageDef} {Γ : List TypeExpr} {sort : TypeExpr}
+    (kind : CollType) (values : List (Term (signatureOf language) Γ sort)) :
+    erase (dataNode kind values) = .collection kind (values.map erase) none :=
+  congrArg (fun elements => Pattern.collection kind elements none) (erase_homogeneousArguments values)
+
+/-- The existing typed inputs produce their declared data receipt directly.
+No source typing proposition is converted into a runtime choice. -/
+def collection_receipt_node {language : LanguageDef} (rule : GrammarRule)
+    (parameter : String) (kind : CollType)
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    {Γ : List TypeExpr} (values : List (Term (signatureOf language) Γ (.base rule.category))) :
+    CollectionTypedReceipt language rule kind (values.map erase) := by
+  have fullShape := ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
+  let slot : Fin rule.params.length := ⟨0,by rw [fullShape]; exact Nat.zero_lt_succ 0⟩
+  have parameterSame : rule.params.get slot = .simple parameter (.collection kind (.base rule.category)) := by
+    change rule.params[0]'slot.isLt = _
+    simp only [fullShape,List.getElem_cons_zero]
+  have selected : collectionTypeAt? kind [] (rule.params.get slot).typeExpr = some (.base rule.category) := by
+    simp only [parameterSame,TermParam.typeExpr,collectionTypeAt?,beq_self_eq_true,ite_true]
+  refine ⟨slot,[],.base rule.category,selected,Γ,NamedFreeContext.SourceReceiptData.ofTerm (dataNode kind values),?_⟩
+  simpa only [erase_dataNode] using NamedFreeContext.SourceReceiptData.ofTerm_accepts (dataNode kind values)
+
+#print axioms erase_dataNode
+#print axioms collection_receipt_node
+
 def bagPermutation {language : LanguageDef} (rule : GrammarRule)
     (member : rule ∈ language.terms) (parameter : String)
     (shape : rule.bareParams = [.simple parameter (.collection .hashBag (.base rule.category))])
@@ -109,8 +157,8 @@ def bagPermutation {language : LanguageDef} (rule : GrammarRule)
   target := .collection .hashBag (second.map erase) none
   leftErases := erase_node _ _ _ _ _ _
   rightErases := erase_node _ _ _ _ _ _
-  witness := .bagPerm rule _ _ ⟨member, ⟨parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩⟩
-    (sorted_node rule member parameter .hashBag shape first) (permutation.map erase)
+  witness := .bagPerm rule _ _ member
+    (collection_receipt_node rule parameter .hashBag shape first) (permutation.map erase)
   sameCategory := rfl
 
 def setPermutation {language : LanguageDef} (rule : GrammarRule)
@@ -126,8 +174,8 @@ def setPermutation {language : LanguageDef} (rule : GrammarRule)
   target := .collection .hashSet (second.map erase) none
   leftErases := erase_node _ _ _ _ _ _
   rightErases := erase_node _ _ _ _ _ _
-  witness := .setPerm rule _ _ ⟨member, ⟨parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩⟩
-    (sorted_node rule member parameter .hashSet shape first) (permutation.map erase)
+  witness := .setPerm rule _ _ member
+    (collection_receipt_node rule parameter .hashSet shape first) (permutation.map erase)
   sameCategory := rfl
 
 def setDeduplication {language : LanguageDef} (rule : GrammarRule)
@@ -143,9 +191,9 @@ def setDeduplication {language : LanguageDef} (rule : GrammarRule)
   target := .collection .hashSet (erase value :: rest.map erase) none
   leftErases := by rw [erase_node]; rfl
   rightErases := by rw [erase_node]; rfl
-  witness := .setDedup rule _ _ ⟨member, ⟨parameter, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩⟩
+  witness := .setDedup rule _ _ member
     (by simpa only [List.map_cons] using
-      sorted_node rule member parameter .hashSet shape (value :: value :: rest))
+      collection_receipt_node rule parameter .hashSet shape (value :: value :: rest))
   sameCategory := rfl
 
 def flattening {language : LanguageDef} (rule : GrammarRule) (kind : CollType)
@@ -587,3 +635,5 @@ theorem full_contextual_satisfaction (language : LanguageDef) :
 
 
 end Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily
+
+#print axioms Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily.collection_typed_node

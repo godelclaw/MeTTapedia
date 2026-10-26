@@ -1771,3 +1771,113 @@ theorem rho_set_zero_not_hasSort (bound : List TypeExpr) :
       TypeExpr.baseType]
 
 end Mettapedia.GSLT.LanguageDef.WellSorted
+
+namespace Mettapedia.GSLT.LanguageDef.WellSorted
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+
+/-- One collection type at an actual position in a declared parameter type.
+The position may descend through function and binder types or through another
+collection's element type. It is independent of term representation. -/
+inductive CollectionTypeOccurs (kind : CollType) (elementType : TypeExpr) : TypeExpr → Prop where
+  | here : CollectionTypeOccurs kind elementType (.collection kind elementType)
+  | domain {domain codomain : TypeExpr} : CollectionTypeOccurs kind elementType domain →
+      CollectionTypeOccurs kind elementType (.arrow domain codomain)
+  | codomain {domain codomain : TypeExpr} : CollectionTypeOccurs kind elementType codomain →
+      CollectionTypeOccurs kind elementType (.arrow domain codomain)
+  | binder {body : TypeExpr} : CollectionTypeOccurs kind elementType body →
+      CollectionTypeOccurs kind elementType (.multiBinder body)
+  | element {outerKind : CollType} {body : TypeExpr} : CollectionTypeOccurs kind elementType body →
+      CollectionTypeOccurs kind elementType (.collection outerKind body)
+
+theorem CollectionTypeOccurs.mentions {kind : CollType} {elementType type : TypeExpr}
+    (occurs : CollectionTypeOccurs kind elementType type) : type.mentionsCollection kind = true := by
+  induction occurs <;> simp_all [TypeExpr.mentionsCollection]
+
+/-- A kind law is used at the collection-data type actually found in a
+parameter of this rule. Grammar membership is retained separately by the
+source generator, so this evidence does not invent an authored declaration. -/
+def CollectionTypedAt (language : LanguageDef) (rule : GrammarRule) (kind : CollType)
+    (elements : List Pattern) : Prop :=
+  ∃ parameter ∈ rule.params, ∃ elementType,
+    CollectionTypeOccurs kind elementType parameter.typeExpr ∧
+      ∃ free bound,HasType language free bound (.collection kind elements none) (.collection kind elementType)
+
+theorem CollectionTypedAt.mentions {language : LanguageDef} {rule : GrammarRule} {kind : CollType}
+    {elements : List Pattern} (typed : CollectionTypedAt language rule kind elements) :
+    ∃ parameter ∈ rule.params,parameter.typeExpr.mentionsCollection kind = true := by
+  obtain ⟨parameter,member,_,occurs,_⟩ := typed
+  exact ⟨parameter,member,occurs.mentions⟩
+
+/-- Read the declaration actually used by a bare collection typing. A legacy
+carrier supplied elsewhere need not be this rule, even if its category agrees. -/
+theorem HasType.collection_type_origin {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {kind : CollType} {elements : List Pattern} {category : String}
+    (typed : HasType language free bound (.collection kind elements none) (.base category)) :
+    ∃ (index : Nat) (rule : GrammarRule),language.terms[index]? = some rule ∧ rule.category = category ∧
+      CollectionTypedAt language rule kind elements := by
+  cases typed with
+  | @collectionConstructor _ actualRule parameterName _ _ _ elementType declared shape elementsTyped =>
+    obtain ⟨index,atIndex⟩ := List.mem_iff_getElem?.mp declared
+    have fullShape := (GrammarRule.bareParams_cons_iff actualRule _ []).mp shape |>.2
+    exact ⟨index,actualRule,atIndex,rfl,.simple parameterName (.collection kind elementType),
+      by simp [fullShape],elementType,.here,free,bound,.collection elementsTyped⟩
+
+mutual
+/-- Literal grammar inclusion transports the same typed pattern spine. It
+changes neither role, constructor, scope nor contextual free assignment. -/
+theorem HasType.of_terms_subset {source target : LanguageDef} (included : source.terms ⊆ target.terms)
+    {free : FreeTypeContext} {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
+    (typed : HasType source free bound pattern type) : HasType target free bound pattern type := by
+  cases typed with
+  | bvar found => exact .bvar found
+  | fvar found => exact .fvar found
+  | constructor declared representation arguments =>
+    exact .constructor (included declared) representation (ArgumentsHaveTypes.of_terms_subset included arguments)
+  | lambda body => exact .lambda (HasType.of_terms_subset included body)
+  | multiLambda body => exact .multiLambda (HasType.of_terms_subset included body)
+  | subst body replacement =>
+    exact .subst (HasType.of_terms_subset included body) (HasType.of_terms_subset included replacement)
+  | collection elements => exact .collection (ElementsHaveType.of_terms_subset included elements)
+  | collectionConstructor declared shape elements =>
+    exact .collectionConstructor (included declared) shape (ElementsHaveType.of_terms_subset included elements)
+termination_by sizeOf pattern
+
+theorem ArgumentsHaveTypes.of_terms_subset {source target : LanguageDef}
+    (included : source.terms ⊆ target.terms) {free : FreeTypeContext} {bound : List TypeExpr}
+    {patterns : List Pattern} {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes source free bound patterns parameters) :
+    ArgumentsHaveTypes target free bound patterns parameters := by
+  cases typed with
+  | nil => exact .nil
+  | cons representation expected head tail =>
+    exact .cons representation expected (HasType.of_terms_subset included head)
+      (ArgumentsHaveTypes.of_terms_subset included tail)
+termination_by sizeOf patterns
+
+theorem ElementsHaveType.of_terms_subset {source target : LanguageDef}
+    (included : source.terms ⊆ target.terms) {free : FreeTypeContext} {bound : List TypeExpr}
+    {patterns : List Pattern} {type : TypeExpr}
+    (typed : ElementsHaveType source free bound patterns type) :
+    ElementsHaveType target free bound patterns type := by
+  cases typed with
+  | nil => exact .nil _ _
+  | cons head tail => exact .cons (HasType.of_terms_subset included head) (ElementsHaveType.of_terms_subset included tail)
+termination_by sizeOf patterns
+end
+
+theorem CollectionTypedAt.of_terms_subset {source target : LanguageDef} {rule : GrammarRule}
+    {kind : CollType} {elements : List Pattern} (included : source.terms ⊆ target.terms)
+    (typed : CollectionTypedAt source rule kind elements) : CollectionTypedAt target rule kind elements := by
+  obtain ⟨parameter,member,elementType,occurs,free,bound,body⟩ := typed
+  exact ⟨parameter,member,elementType,occurs,free,bound,body.of_terms_subset included⟩
+
+#print axioms CollectionTypeOccurs.mentions
+#print axioms CollectionTypedAt.mentions
+#print axioms HasType.collection_type_origin
+#print axioms HasType.of_terms_subset
+#print axioms ArgumentsHaveTypes.of_terms_subset
+#print axioms ElementsHaveType.of_terms_subset
+#print axioms CollectionTypedAt.of_terms_subset
+
+end Mettapedia.GSLT.LanguageDef.WellSorted

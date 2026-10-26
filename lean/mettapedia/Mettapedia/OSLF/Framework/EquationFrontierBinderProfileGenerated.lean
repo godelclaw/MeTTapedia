@@ -249,12 +249,20 @@ theorem no_collection_algebra {rule : GrammarRule} {kind : CollType} {algebra : 
   rcases authored with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
   all_goals simp [tokenRule, guardRule, cellRule, pairRule, nuRule, doneRule] at declared
 
+theorem no_collection_type {rule : GrammarRule} {kind : CollType} {elements : List Pattern}
+    (member : rule ∈ language.terms)
+    (typed : Mettapedia.GSLT.LanguageDef.WellSorted.CollectionTypedAt language rule kind elements) : False := by
+  have declared := usesCollection_eq_true_of_collectionTypedAt member typed
+  have absent : language.usesCollection kind = false := by cases kind <;> rfl
+  rw [absent] at declared
+  cases declared
+
 theorem no_derived {source target : Pattern} (derived : DerivedInstance language source target) :
     False := by
   cases derived with
-  | bagPerm declaration _ _ => exact no_collection_carrier declaration
-  | setPerm declaration _ _ => exact no_collection_carrier declaration
-  | setDedup declaration _ => exact no_collection_carrier declaration
+  | bagPerm member kindTyped _ => exact no_collection_type member kindTyped
+  | setPerm member kindTyped _ => exact no_collection_type member kindTyped
+  | setDedup member kindTyped => exact no_collection_type member kindTyped
   | flatten declaration _ _ => exact no_collection_algebra declaration
   | singleton declaration _ _ => exact no_collection_algebra declaration
   | unitElim declaration _ _ => exact no_collection_algebra declaration

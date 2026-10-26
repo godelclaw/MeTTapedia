@@ -29,6 +29,11 @@ theorem nameOf_mem {context : Ctx Base} (names : BinderNames Base Name context)
   | vz => cases names; simp [nameOf, toList]
   | vs index ih => cases names; exact List.mem_cons_of_mem _ (ih _)
 
+/-- A name absent from a context differs from the name of each of its variables. -/
+theorem ne_nameOf_of_not_mem {context : Ctx Base} (names : BinderNames Base Name context)
+    {name : Name} (absent : name ∉ toList names) {type : Ty Base} (index : Var context type) :
+    name ≠ nameOf names index := fun same => absent (same ▸ nameOf_mem names index)
+
 variable [DecidableEq Name]
 
 theorem lookup?_nameOf {context : Ctx Base} (names : BinderNames Base Name context)
@@ -73,6 +78,22 @@ theorem lookup?_none_of_not_mem {context : Ctx Base} (names : BinderNames Base N
       obtain ⟨type, index⟩ := resolved
       exact False.elim (absent ((lookup?_sound names found) ▸ nameOf_mem names index))
 
+/-- Every listed name is resolved, including in contexts with shadowing. -/
+theorem not_mem_of_lookup?_eq_none {context : Ctx Base} (names : BinderNames Base Name context) (name : Name)
+    (absent : names.lookup? name = none) : name ∉ names.toList := by
+  induction names with
+  | nil => simp [BinderNames.toList]
+  | cons head tail ih =>
+      by_cases same : head = name
+      · subst name
+        simp at absent
+      · have oldAbsent : tail.lookup? name = none := by
+          cases found : tail.lookup? name with
+          | none => rfl
+          | some value => simp [BinderNames.lookup?_cons_of_ne same, found] at absent
+        simp only [BinderNames.toList, List.mem_cons, not_or]
+        exact ⟨Ne.symm same, ih oldAbsent⟩
+
 theorem nameOf_injective {context : Ctx Base} (names : BinderNames Base Name context)
     (distinct : (toList names).Nodup) {leftType rightType : Ty Base}
     {left : Var context leftType} {right : Var context rightType}
@@ -81,6 +102,7 @@ theorem nameOf_injective {context : Ctx Base} (names : BinderNames Base Name con
     ((congrArg names.lookup? same).trans (lookup?_nameOf names distinct right))
   exact (Sigma.mk.inj (Option.some.inj equal)).2
 
+#print axioms ne_nameOf_of_not_mem
 #print axioms lookup?_nameOf
 #print axioms lookup?_sound
 #print axioms nameOf_injective

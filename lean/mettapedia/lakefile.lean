@@ -180,10 +180,98 @@ input_file gsltScopedExecutionSource where
   path := "../../metta/gslt/lib/gslt_scoped_execution.metta"
   text := false
 
+input_file gsltCollectionSelectionSource where
+  path := "../../metta/gslt/lib/gslt_collection_selection.metta"
+  text := false
+
+input_file gsltCollectionMachineSource where
+  path := "../../metta/gslt/lib/gslt_collection_machine.metta"
+  text := false
+
+input_file gsltCollectionLoggedSearchSource where
+  path := "../../metta/gslt/lib/gslt_collection_logged_search.metta"
+  text := false
+
+input_file gsltCollectionBackendSource where
+  path := "../../metta/gslt/lib/gslt_collection_backend.metta"
+  text := false
+
+input_file gsltCollectionContextsSource where
+  path := "../../metta/gslt/lib/gslt_collection_contexts.metta"
+  text := false
+
+input_file gsltRecursiveCollectionSource where
+  path := "../../metta/gslt/lib/gslt_recursive_collection.metta"
+  text := false
+
+input_file gsltCollectionPresentationSource where
+  path := "../../metta/gslt/lib/gslt_collection_presentation.metta"
+  text := false
+
+input_file gsltCollectionHandoffSource where
+  path := "../../metta/gslt/lib/gslt_collection_handoff.metta"
+  text := false
+
+input_file gsltCollectionContinuationSource where
+  path := "../../metta/gslt/lib/gslt_collection_continuation.metta"
+  text := false
+
+input_file gsltCollectionOccurrencesSource where
+  path := "../../metta/gslt/lib/gslt_collection_occurrences.metta"
+  text := false
+
+input_file gsltCollectionInstallSource where
+  path := "../../metta/gslt/lib/gslt_collection_install.metta"
+  text := false
+
+input_file gsltCollectionMatchLanesSource where
+  path := "../../metta/gslt/lib/gslt_collection_match_lanes.metta"
+  text := false
+
+input_file gsltCollectionCollectorSource where
+  path := "../../metta/gslt/lib/gslt_collection_collector.metta"
+  text := false
+
+input_file gsltCollectionOccurrenceMachineSource where
+  path := "../../metta/gslt/lib/gslt_collection_occurrence_machine.metta"
+  text := false
+
+input_file gsltCollectionOccurrenceDiscoverySource where
+  path := "../../metta/gslt/lib/gslt_collection_occurrence_discovery.metta"
+  text := false
+
+input_file gsltCollectionOccurrenceSearchSource where
+  path := "../../metta/gslt/lib/gslt_collection_occurrence_search.metta"
+  text := false
+
 lean_lib GSLTRuleExecutionQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleExecutionProgram]
-  needs := #[`@/gsltRuleExecutionSource, `@/gsltPremiseOperationsSource,
-    `@/gsltScopedExecutionSource]
+  needs := #[
+    `@/gsltRuleExecutionSource,
+    `@/gsltPremiseOperationsSource,
+    `@/gsltScopedExecutionSource,
+    `@/gsltTypedSitesSource,
+    `@/gsltDescentExecutionSource,
+    `@/gsltCompleteSource,
+    `@/gsltCollectionLawsSource,
+    `@/gsltCanonicalSource,
+    `@/gsltCollectionSelectionSource,
+    `@/gsltCollectionMachineSource,
+    `@/gsltCollectionLoggedSearchSource,
+    `@/gsltCollectionBackendSource,
+    `@/gsltCollectionContextsSource,
+    `@/gsltRecursiveCollectionSource,
+    `@/gsltCollectionPresentationSource,
+    `@/gsltCollectionHandoffSource,
+    `@/gsltCollectionContinuationSource,
+    `@/gsltCollectionOccurrencesSource,
+    `@/gsltCollectionInstallSource,
+    `@/gsltCollectionMatchLanesSource,
+    `@/gsltCollectionCollectorSource,
+    `@/gsltCollectionOccurrenceMachineSource,
+    `@/gsltCollectionOccurrenceDiscoverySource,
+    `@/gsltCollectionOccurrenceSearchSource,
+    `@/gsltRunnerSource]
 
 input_file gsltMatchNormalizedSource where
   path := "../../metta/gslt/lib/gslt_match_normalized.metta"
@@ -317,6 +405,14 @@ lean_lib GSLTInductiveAppendQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppend,
     `Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppendControls]
   needs := #[`@/gsltInductiveAppendSource]
+
+input_file stableTopKSource where
+  path := "../../metta/math/stable_top_k.metta"
+  text := false
+
+lean_lib StableTopKQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.StableTopK]
+  needs := #[`@/stableTopKSource]
 
 input_file gsltRunnerSource where
   path := "../../metta/gslt/lib/gslt_runner.metta"

@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.EquationLanes
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedCollectionFiringExecution
 
 /-!
 # The premises of an equation lane, and their receipts
@@ -59,8 +60,8 @@ def premisesFamilyTerm (lane : Complete.EquationJob.Lane) : Term :=
 theorem premises_goal_returns (lane : Complete.EquationJob.Lane) (state : State) (depth : Nat) :
     PureReturns runtime [] state (apply "gslt:deep:goal" [encoded (premisesFamilyTerm plan lane), number depth]) state
       (encoded (goalTerm ((Complete.EquationJob.family plan lane).goal depth))) := by
-  metta_call complete_checked
-  metta_eval unfolding [premisesFamilyTerm, goalTerm]
+  metta_call_in completeProof_checked using completeProof_agreement
+  metta_eval with completeProof_checked in completeProof_agreement unfolding [premisesFamilyTerm, goalTerm]
 
 theorem premises_bounded_returns (lane : Complete.EquationJob.Lane) (state : State) (depth : Nat) :
     PureReturns runtime [] state (apply "gslt:deep:bounded" [encoded (premisesFamilyTerm plan lane), number depth]) state
@@ -70,10 +71,10 @@ theorem premises_bounded_returns (lane : Complete.EquationJob.Lane) (state : Sta
   rw [show (Complete.EquationJob.family plan lane).bound =
       Complete.EquationJob.premisesBound plan lane.job lane.answer.assignment from rfl]
   cases bounded : Complete.EquationJob.premisesBound plan lane.job lane.answer.assignment
-  · metta_call complete_checked
-    metta_eval unfolding [premisesFamilyTerm, bounded]
-  · metta_call complete_checked
-    metta_eval unfolding [premisesFamilyTerm, bounded]
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [premisesFamilyTerm, bounded]
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [premisesFamilyTerm, bounded]
 
 /-- A lane's premise deepening, as MeTTa data. -/
 def premisesWire (lane : Complete.EquationJob.Lane) : FamilyWire (Complete.EquationJob.family plan lane) where
@@ -106,24 +107,7 @@ theorem scoped_reduct_returns (state : State) (rule : RewriteRule) (spec : RuleB
       (apply "gslt:rule:scope-reduct" [.symbol "None", encoded (InferenceCettaWire.AuthoredRule.rewriteTerm rule),
         encoded (InferenceCettaWire.AuthoredRule.bindingSpecTerm spec), number ambient, assignmentValue assignment])
       state (encoded (MatchAutomataBindingExecution.patternOptionTerm (reduct? rule spec ambient assignment))) := by
-  have instantiated : PureReturns scopedLibrary.runtime [] state
-      (apply "gslt:rule:scope-instantiate-at"
-        [.symbol "None", encoded (InferenceCettaWire.AuthoredRule.rewriteTerm rule),
-         encoded (InferenceCettaWire.AuthoredRule.bindingSpecTerm spec), number ambient,
-         encoded (InferenceCettaWire.AuthoredRule.siteTerm .right), encoded (encodeList Term.natural []), number 0,
-         assignmentValue assignment, encoded (InferenceCettaWire.encodePattern rule.right)])
-      state (encoded (MatchAutomataBindingExecution.patternOptionTerm
-        (instantiateAt? rule spec ambient .right [] 0 assignment rule.right))) := by
-    metta_bound ["operation", "rule", "spec", "ambient", "site", "path", "depth", "assignment", "pattern"]
-    exact transport scopedMachine_closed scopedMachine_agreement (by decide +kernel)
-      (PremiseOperationsExecution.GeneralExecution.EnvironmentExecution.PremiseTransitions.Lower.instantiate_returns _
-        state rule spec ambient .right [] 0 assignment rule.right
-        [.var "operation", .var "rule", .var "spec", .var "ambient", .var "site", .var "path", .var "depth",
-          .var "assignment", .var "pattern"]
-        (by metta_reads))
-  metta_call scoped_checked
-  metta_eval [instantiated] with scoped_checked
-    unfolding [InferenceCettaWire.AuthoredRule.rewriteTerm, InferenceCettaWire.AuthoredRule.siteTerm, reduct?]
+  exact ScopedCollectionFiringExecution.scoped_reduct_returns state rule spec ambient assignment
 
 theorem complete_reduct_returns (state : State) (rule : RewriteRule) (spec : RuleBindingSpec) (ambient : Nat)
     (assignment : Assignment) :
@@ -298,8 +282,8 @@ theorem lane_limits_returns (state : State) (table : List (String × TypeExpr)) 
         state (encoded (encodeList (encodeOption Term.natural)
           (lanes.map fun lane => Complete.EquationJob.premisesBound plan lane.job lane.answer.assignment)))
   | [], _ => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodeList]
   | lane :: rest, declared => by
     have limit := equations_limit_returns state plan table bound expected lane.job.equation lane.job.planPosition
       (declared lane (by simp)) lane.answer.assignment

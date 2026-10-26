@@ -113,6 +113,164 @@ theorem constantSchema_licensed (functionArity : context.signature.typeOperators
 
 end Constant
 
+/-- The admitted equation at an actual source type instance. -/
+noncomputable def constantInstanceSchema (result : ContextConstantDefinitionResult)
+    (substitution : TypeSubst) : HOL.ClosedFormula Symbol :=
+  .app (.app (equalityLambda (substitution.apply result.definition.ty).toHOL)
+    (.const (.constant result.output.constant (substitution.apply result.definition.ty) rfl)))
+    (ConstantAdmission.instanceBody result substitution)
+
+theorem constantInstanceSchema_translated {context : TheoryContext} {instances : InstanceWitnesses}
+    {name : Name} {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory context instances name source = some result)
+    (substitution : TypeSubst) : TranslatesCompositionally []
+      ((TypeCorrectTermSubstitution.ofTypes substitution).raw.applyDB
+        result.output.definitionTheorem.sequent.concl.term) .prop (constantInstanceSchema result substitution) := by
+  have different : result.output.constant ≠ Const.equality := by
+    rw [(ConstantAdmission.source_equation accepted).1]
+    intro same
+    cases (Const.mk.inj same).2
+  rw [(ConstantAdmission.source_equation accepted).2.2]
+  simp only [CanonicalTerm.equalityDB, CanonicalTerm.constant,
+    TermSubst.applyDB_app, TermSubst.applyDB_const, TypeSubst.apply_equality]
+  unfold constantInstanceSchema
+  apply TranslatesCompositionally.equalityDB rfl
+  · exact TranslatesCompositionally.constant (constant := result.output.constant)
+      (annotation := substitution.apply result.definition.ty)
+      (by simp [equalityOperand?, Const.same_eq_true_iff, different]) rfl
+  · exact ConstantAdmission.instanceBody_translated result substitution
+
+theorem constantSchema_type_image {context : TheoryContext} {instances : InstanceWitnesses}
+    {name : Name} {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory context instances name source = some result)
+    (parameter : Name)
+    (equalityRegistered : context.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (substitution : TypeSubst) :
+    HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema result) =
+      constantInstanceSchema result substitution := by
+  have mapped := (constantSchema_translated accepted).applyDB (TypeCorrectTermSubstitution.ofTypes substitution)
+  rw [targetMap_eq_typeMap (constantSchema_ordinary accepted parameter equalityRegistered)] at mapped
+  exact TranslatesCompositionally.unique_eq mapped (constantInstanceSchema_translated accepted substitution)
+
+theorem constantInstanceSchema_models_iff (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (full : model.FullDomains) (result : ContextConstantDefinitionResult) (substitution : TypeSubst) :
+    model.models (constantInstanceSchema result substitution) ↔
+      model.constDen (.constant result.output.constant (substitution.apply result.definition.ty) rfl) =
+        model.denote (ConstantAdmission.instanceBody result substitution) (fun v => nomatch v) := by
+  constructor
+  · intro holds
+    change model.Eqv (substitution.apply result.definition.ty).toHOL _ _ at holds
+    have same := (model.eqv_iff_eq_of_fullDomains full _ _).mp holds
+    exact same.trans (model.denote_closed_valuation_eq _ _ _)
+  · intro same
+    change model.Eqv (substitution.apply result.definition.ty).toHOL _ _
+    apply (model.eqv_iff_eq_of_fullDomains full _ _).mpr
+    exact same.trans (model.denote_closed_valuation_eq _ _ _)
+
+theorem constant_value_of_schema {context : TheoryContext} {instances : InstanceWitnesses}
+    {name : Name} {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory context instances name source = some result)
+    (parameter : Name)
+    (equalityRegistered : context.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains)
+    (substitution : TypeSubst)
+    (holds : model.models (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema result))) :
+    model.constDen (.constant result.output.constant (substitution.apply result.definition.ty) rfl) =
+      model.denote (ConstantAdmission.instanceBody result substitution) (fun v => nomatch v) := by
+  rw [constantSchema_type_image accepted parameter equalityRegistered substitution] at holds
+  exact (constantInstanceSchema_models_iff model full result substitution).mp holds
+
+theorem constant_value_of_source {context : TheoryContext} {instances : InstanceWitnesses}
+    {name : Name} {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory context instances name source = some result)
+    (parameter : Name)
+    (equalityRegistered : context.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains)
+    (substitution : TypeSubst)
+    (holds : model.models (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema result)))
+    {type : HOL.Ty AtomicTy} {target : HOL.ClosedTerm Symbol type}
+    (translated : Translates []
+      ((TypeCorrectTermSubstitution.ofTypes substitution).raw.applyDB (source.toDB [])) type target) :
+    HEq (model.constDen (.constant result.output.constant (substitution.apply result.definition.ty) rfl))
+      (model.denote target (fun v => nomatch v)) := by
+  have sourceChecked := (checkSource_sound _ _ (admitConstantInTheory_result accepted).1).1
+  have sameBody := (SourceTerm.check_eq_some_iff _ _).mp sourceChecked
+  rw [sameBody] at translated
+  change Translates [] (ConstantAdmission.instanceTerm result substitution).term type target at translated
+  have value := constant_value_of_schema accepted parameter equalityRegistered model full substitution holds
+  refine (heq_of_eq value).trans ?_
+  exact HEq.symm (translated.denote_heq_compositional
+    (ConstantAdmission.instanceBody_translated result substitution) model full (fun v => nomatch v))
+
+theorem constant_meaning_of_source {context : TheoryContext} {instances : InstanceWitnesses}
+    {name : Name} {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory context instances name source = some result)
+    (parameter : Name)
+    (equalityRegistered : context.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains)
+    (substitution : TypeSubst)
+    (holds : model.models (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema result)))
+    (annotation : Ty) {type : HOL.Ty AtomicTy} (typed : annotation.toHOL = type)
+    (publicInstance : annotation = substitution.apply result.definition.ty)
+    {target : HOL.ClosedTerm Symbol type}
+    (translated : Translates []
+      ((TypeCorrectTermSubstitution.ofTypes substitution).raw.applyDB (source.toDB [])) type target) :
+    model.constDen (.constant result.output.constant annotation typed) =
+      model.denote target (fun v => nomatch v) := by
+  subst annotation
+  cases typed
+  exact eq_of_heq (constant_value_of_source accepted parameter equalityRegistered model full substitution holds translated)
+
+namespace ConstantHistory
+
+/-- Original constant rows retain the same compositional schema translation. -/
+theorem record_translated {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final)
+    {result : ContextConstantDefinitionResult} (member : result ∈ history.records) :
+    TranslatesCompositionally [] result.output.definitionTheorem.sequent.concl.term .prop
+      (constantSchema result) := by
+  induction history with
+  | nil => simp [DefinitionHistoryModels.ConstantHistory.records] at member
+  | snoc prior instances name source added accepted ih =>
+      simp only [DefinitionHistoryModels.ConstantHistory.records, List.mem_append,
+        List.mem_singleton] at member
+      rcases member with earlier | rfl
+      · exact ih earlier
+      · exact constantSchema_translated accepted
+
+theorem record_licensed {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final) (primitives : Primitives initial)
+    {result : ContextConstantDefinitionResult} (member : result ∈ history.records) :
+    LicensedSchema final.signature (constantSchema result) := by
+  refine ⟨[], _, _, record_translated history member, ?_, ContextFormed.nil _, rfl⟩
+  have derived := MixedDefinitionHistory.constant_record_derives history primitives emptyAxiomPolicy
+    (List.mem_map.mpr ⟨result, member, rfl⟩)
+  exact derived.wellFormed.1.1
+
+theorem record_ordinary {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final) (primitives : Primitives initial)
+    {result : ContextConstantDefinitionResult} (member : result ∈ history.records) :
+    OrdinarySymbols (constantSchema result) := by
+  induction history with
+  | nil => simp [DefinitionHistoryModels.ConstantHistory.records] at member
+  | snoc prior instances name source added accepted ih =>
+      simp only [DefinitionHistoryModels.ConstantHistory.records, List.mem_append,
+        List.mem_singleton] at member
+      rcases member with earlier | rfl
+      · exact ih earlier
+      · exact constantSchema_ordinary accepted primitives.equalityParameter
+          (prior.includes.2 _ _ primitives.equalityRegistered)
+
+theorem record_models {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    {result : ContextConstantDefinitionResult} (member : result ∈ history.records) :
+    (history.extendModel model).models (constantSchema result) :=
+  history.models_record_equation model member TypeSubst.empty
+    ((record_translated history member).of_term_eq (TermSubst.typeInstance_identity _).symm)
+
+end ConstantHistory
+
 section TypeSchemas
 
 variable {context : TheoryContext} {instances : InstanceWitnesses} {request : TypeOperatorDefinitionRequest}
@@ -469,5 +627,257 @@ theorem whole_mixed_refuses_falsity (other : OperatorFamilies.{w}) (assignment :
   History.background_consistent afterTwoTypesHistory primitives other assignment
 
 end Controls
+
+/-! Constant-only semantic extension laws retain their exact instance and
+independence premises. They do not authorize repeating declaration commands. -/
+
+theorem constant_extension_eq_of_instances
+    {before : TheoryContext} {instances : InstanceWitnesses} {name : Name}
+    {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory before instances name source = some result)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (meaning : ∀ substitution : TypeSubst,
+      model.constDen (.constant result.output.constant (substitution.apply result.definition.ty) rfl) =
+        model.denote (ConstantAdmission.instanceBody result substitution) (fun v => nomatch v)) :
+    ConstantAdmission.sourceExtension result model = model := by
+  rw [ConstantAdmission.sourceExtension_eq_reduct]
+  apply HOL.HenkinModel.ext_data (M := model.constantSubstitutionReduct (ConstantAdmission.sourceExpansion result))
+    (N := model) rfl
+  · rfl
+  · apply heq_of_eq
+    funext type symbol
+    dsimp only [HOL.HenkinModel.constantSubstitutionReduct, HOL.HenkinModel.constantSubstitutionPreModel]
+    change model.denote (ConstantAdmission.sourceExpansion result symbol) _ = model.constDen symbol
+    cases symbol with
+    | «variable» sourceVar typed =>
+      rw [ConstantAdmission.sourceExpansion_variable]
+      rfl
+    | constant constant annotation typed =>
+      by_cases same : constant = result.output.constant
+      · subst constant
+        by_cases instanceExists : ∃ substitution : TypeSubst, substitution.apply result.definition.ty = annotation
+        · obtain ⟨substitution, rfl⟩ := instanceExists
+          cases typed
+          rw [ConstantAdmission.sourceExpansion_instance result (ConstantAdmission.admitted_parameters_bounded accepted)]
+          exact (model.denote_closed_valuation_eq _ _ _).trans (meaning substitution).symm
+        · rw [ConstantAdmission.sourceExpansion_noninstance result annotation typed instanceExists]
+          rfl
+      · rw [ConstantAdmission.sourceExpansion_other result constant annotation typed same]
+        rfl
+
+theorem constant_extension_eq_of_schema
+    {before : TheoryContext} {instances : InstanceWitnesses} {name : Name}
+    {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory before instances name source = some result)
+    (parameter : Name)
+    (registered : before.signature.constants Const.equality = some (Ty.equality (.var parameter)))
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains)
+    (holds : ∀ substitution : TypeSubst, model.models
+      (HOL.mapTypes substitution.baseInstance substitution.symbolInstance (constantSchema result))) :
+    ConstantAdmission.sourceExtension result model = model :=
+  constant_extension_eq_of_instances accepted model
+    (fun substitution => constant_value_of_schema accepted parameter registered model full substitution (holds substitution))
+
+theorem sourceExpansion_idempotent
+    {before : TheoryContext} {instances : InstanceWitnesses} {name : Name}
+    {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory before instances name source = some result)
+    {type : HOL.Ty AtomicTy} (symbol : Symbol type) :
+    HOL.substConst (ConstantAdmission.sourceExpansion result)
+        (ConstantAdmission.sourceExpansion result symbol) = ConstantAdmission.sourceExpansion result symbol := by
+  cases symbol with
+  | «variable» sourceVar typed =>
+    simp only [ConstantAdmission.sourceExpansion_variable, HOL.substConst, HOL.weakenCtx_nil]
+  | constant constant annotation typed =>
+    by_cases same : constant = result.output.constant
+    · subst constant
+      by_cases instanceExists : ∃ substitution : TypeSubst, substitution.apply result.definition.ty = annotation
+      · obtain ⟨substitution, rfl⟩ := instanceExists
+        cases typed
+        rw [ConstantAdmission.sourceExpansion_instance result (ConstantAdmission.admitted_parameters_bounded accepted)]
+        exact ConstantAdmission.sourceExpansion_preserves_translation result
+          (ConstantAdmission.instanceBody_translated result substitution)
+          ((ConstantAdmission.admitted_body_omits_identity accepted).typeInstance substitution)
+      · simp only [ConstantAdmission.sourceExpansion_noninstance result annotation typed instanceExists,
+          HOL.substConst, HOL.weakenCtx_nil]
+    · simp only [ConstantAdmission.sourceExpansion_other result constant annotation typed same,
+        HOL.substConst, HOL.weakenCtx_nil]
+
+theorem constant_extension_idempotent
+    {before : TheoryContext} {instances : InstanceWitnesses} {name : Name}
+    {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory before instances name source = some result)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) :
+    ConstantAdmission.sourceExtension result (ConstantAdmission.sourceExtension result model) =
+      ConstantAdmission.sourceExtension result model := by
+  simp only [ConstantAdmission.sourceExtension_eq_reduct, HOL.HenkinModel.constantSubstitutionReduct_comp]
+  congr 1
+  funext type symbol
+  exact sourceExpansion_idempotent accepted symbol
+
+
+theorem constant_history_eq_of_instances {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol)
+    (meaning : ∀ result ∈ history.records, ∀ substitution : TypeSubst,
+      model.constDen (.constant result.output.constant (substitution.apply result.definition.ty) rfl) =
+        model.denote (ConstantAdmission.instanceBody result substitution) (fun v => nomatch v)) :
+    history.extendModel model = model := by
+  induction history with
+  | nil => rfl
+  | snoc prior instances name source result accepted ih =>
+    change ConstantAdmission.sourceExtension result (prior.extendModel model) = model
+    rw [ih (fun old member => meaning old (List.mem_append_left _ member))]
+    exact constant_extension_eq_of_instances accepted model
+      (meaning result (List.mem_append_right _ (by simp)))
+
+theorem ConstantHistory.record_instance_translated {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final)
+    {result : ContextConstantDefinitionResult} (member : result ∈ history.records)
+    (substitution : TypeSubst) : TranslatesCompositionally []
+      ((TermSubst.mk substitution []).applyDB result.output.definitionTheorem.sequent.concl.term)
+      .prop (constantInstanceSchema result substitution) := by
+  induction history with
+  | nil => simp [DefinitionHistoryModels.ConstantHistory.records] at member
+  | snoc prior instances name source added accepted ih =>
+    simp only [DefinitionHistoryModels.ConstantHistory.records, List.mem_append, List.mem_singleton] at member
+    rcases member with earlier | rfl
+    · exact ih earlier
+    · exact constantInstanceSchema_translated accepted substitution
+
+theorem constant_history_idempotent {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains) :
+    history.extendModel (history.extendModel model) = history.extendModel model := by
+  apply constant_history_eq_of_instances
+  intro result member substitution
+  exact (constantInstanceSchema_models_iff _ (history.fullDomains model full) result substitution).mp
+    (history.models_record_equation model member substitution
+      (ConstantHistory.record_instance_translated history member substitution))
+
+theorem constant_history_absorbs
+    {firstInitial firstFinal secondInitial secondFinal : TheoryContext}
+    (first : DefinitionHistoryModels.ConstantHistory firstInitial firstFinal)
+    (second : DefinitionHistoryModels.ConstantHistory secondInitial secondFinal)
+    (included : first.records ⊆ second.records)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains) :
+    first.extendModel (second.extendModel model) = second.extendModel model := by
+  apply constant_history_eq_of_instances
+  intro result member substitution
+  exact (constantInstanceSchema_models_iff _ (second.fullDomains model full) result substitution).mp
+    (second.models_record_equation model (included member) substitution
+      (ConstantHistory.record_instance_translated second (included member) substitution))
+
+theorem constant_history_absorbs_prefix {initial middle final : TheoryContext}
+    (first : DefinitionHistoryModels.ConstantHistory initial middle)
+    (second : DefinitionHistoryModels.ConstantHistory middle final)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (full : model.FullDomains) :
+    first.extendModel ((first.append second).extendModel model) =
+      (first.append second).extendModel model := by
+  apply constant_history_absorbs first (first.append second) _ model full
+  intro result member
+  rw [DefinitionHistoryModels.ConstantHistory.records_append]
+  exact List.mem_append_left _ member
+
+theorem sourceExpansions_commute (first second : ContextConstantDefinitionResult)
+    (firstBounded : first.definition.term.typeVariables ⊆ first.definition.ty.typeVariables)
+    (secondBounded : second.definition.term.typeVariables ⊆ second.definition.ty.typeVariables)
+    (different : first.output.constant ≠ second.output.constant)
+    (firstIndependent : first.definition.term.OmitsConstant second.output.constant)
+    (secondIndependent : second.definition.term.OmitsConstant first.output.constant)
+    {type : HOL.Ty AtomicTy} (symbol : Symbol type) :
+    HOL.substConst (ConstantAdmission.sourceExpansion second) (ConstantAdmission.sourceExpansion first symbol) =
+      HOL.substConst (ConstantAdmission.sourceExpansion first) (ConstantAdmission.sourceExpansion second symbol) := by
+  cases symbol with
+  | «variable» sourceVar typed =>
+    simp only [ConstantAdmission.sourceExpansion_variable, HOL.substConst, HOL.weakenCtx_nil]
+  | constant constant annotation typed =>
+    by_cases isFirst : constant = first.output.constant
+    · subst constant
+      rw [ConstantAdmission.sourceExpansion_other second _ annotation typed different]
+      simp only [HOL.substConst, HOL.weakenCtx_nil]
+      by_cases instanceExists : ∃ substitution : TypeSubst, substitution.apply first.definition.ty = annotation
+      · obtain ⟨substitution, rfl⟩ := instanceExists
+        cases typed
+        rw [ConstantAdmission.sourceExpansion_instance first firstBounded]
+        exact ConstantAdmission.sourceExpansion_preserves_translation second
+          (ConstantAdmission.instanceBody_translated first substitution) (firstIndependent.typeInstance substitution)
+      · rw [ConstantAdmission.sourceExpansion_noninstance first annotation typed instanceExists]
+        simp only [HOL.substConst, ConstantAdmission.sourceExpansion_other second _ annotation typed different,
+          HOL.weakenCtx_nil]
+    · by_cases isSecond : constant = second.output.constant
+      · subst constant
+        rw [ConstantAdmission.sourceExpansion_other first _ annotation typed (Ne.symm different)]
+        simp only [HOL.substConst, HOL.weakenCtx_nil]
+        by_cases instanceExists : ∃ substitution : TypeSubst, substitution.apply second.definition.ty = annotation
+        · obtain ⟨substitution, rfl⟩ := instanceExists
+          cases typed
+          rw [ConstantAdmission.sourceExpansion_instance second secondBounded]
+          exact (ConstantAdmission.sourceExpansion_preserves_translation first
+            (ConstantAdmission.instanceBody_translated second substitution) (secondIndependent.typeInstance substitution)).symm
+        · rw [ConstantAdmission.sourceExpansion_noninstance second annotation typed instanceExists]
+          simp only [HOL.substConst, ConstantAdmission.sourceExpansion_other first _ annotation typed (Ne.symm different),
+            HOL.weakenCtx_nil]
+      · simp only [ConstantAdmission.sourceExpansion_other first _ annotation typed isFirst,
+          ConstantAdmission.sourceExpansion_other second _ annotation typed isSecond,
+          HOL.substConst, HOL.weakenCtx_nil]
+
+theorem independent_constant_extensions_commute
+    {firstContext secondContext : TheoryContext} {firstInstances secondInstances : InstanceWitnesses}
+    {firstName secondName : Name} {firstSource secondSource : SourceTerm}
+    {first second : ContextConstantDefinitionResult}
+    (firstAccepted : admitConstantInTheory firstContext firstInstances firstName firstSource = some first)
+    (secondAccepted : admitConstantInTheory secondContext secondInstances secondName secondSource = some second)
+    (different : first.output.constant ≠ second.output.constant)
+    (firstIndependent : first.definition.term.OmitsConstant second.output.constant)
+    (secondIndependent : second.definition.term.OmitsConstant first.output.constant)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) :
+    ConstantAdmission.sourceExtension first (ConstantAdmission.sourceExtension second model) =
+      ConstantAdmission.sourceExtension second (ConstantAdmission.sourceExtension first model) := by
+  simp only [ConstantAdmission.sourceExtension_eq_reduct, HOL.HenkinModel.constantSubstitutionReduct_comp]
+  congr 1
+  funext type symbol
+  exact sourceExpansions_commute first second
+    (ConstantAdmission.admitted_parameters_bounded firstAccepted)
+    (ConstantAdmission.admitted_parameters_bounded secondAccepted)
+    different firstIndependent secondIndependent symbol
+
+theorem constantSchema_payload_eq {first second : ContextConstantDefinitionResult}
+    (definition : first.definition = second.definition) (output : first.output = second.output) :
+    constantSchema first = constantSchema second := by
+  cases first
+  cases second
+  dsimp only at definition output
+  cases definition
+  cases output
+  rfl
+
+theorem constantExtension_payload_eq {first second : ContextConstantDefinitionResult}
+    (definition : first.definition = second.definition) (output : first.output = second.output)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) :
+    ConstantAdmission.sourceExtension first model = ConstantAdmission.sourceExtension second model := by
+  cases first
+  cases second
+  dsimp only at definition output
+  cases definition
+  cases output
+  simp only [ConstantAdmission.sourceExtension_eq_reduct]
+  congr 1
+
+theorem admitted_same_identity_payload
+    {firstContext secondContext : TheoryContext} {firstInstances secondInstances : InstanceWitnesses}
+    {firstName secondName : Name} {firstSource secondSource : SourceTerm}
+    {first second : ContextConstantDefinitionResult}
+    (firstAccepted : admitConstantInTheory firstContext firstInstances firstName firstSource = some first)
+    (secondAccepted : admitConstantInTheory secondContext secondInstances secondName secondSource = some second)
+    (same : first.output.constant = second.output.constant) :
+    first.definition = second.definition ∧ first.output = second.output := by
+  rw [(ConstantAdmission.source_equation firstAccepted).1,
+    (ConstantAdmission.source_equation secondAccepted).1] at same
+  obtain ⟨names,origins⟩ := Const.mk.inj same
+  injection origins with sources
+  cases names
+  cases sources
+  exact admitConstantInTheory_payload_eq firstAccepted secondAccepted
 
 end Mettapedia.Languages.HOLLight.DefinitionHistorySchemas

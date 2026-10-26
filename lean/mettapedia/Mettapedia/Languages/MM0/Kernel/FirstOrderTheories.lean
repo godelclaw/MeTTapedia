@@ -30,34 +30,6 @@ namespace Mettapedia.Languages.MM0.Kernel
 
 namespace Preterm
 
-/-- Every variable of the expression is below the bound. -/
-def VarsBelow (bound : Nat) : Preterm → Prop
-  | .var index => index < bound
-  | .term _ => True
-  | .app function argument => VarsBelow bound function ∧ VarsBelow bound argument
-
-theorem varsBelow_applyArgs (bound : Nat) (function : Preterm) (arguments : List Preterm) :
-    VarsBelow bound (applyArgs function arguments) ↔
-      VarsBelow bound function ∧ ∀ argument ∈ arguments, VarsBelow bound argument := by
-  induction arguments generalizing function with
-  | nil => simp
-  | cons argument arguments inductionHypothesis =>
-      rw [applyArgs, inductionHypothesis]
-      simp only [VarsBelow, List.mem_cons, forall_eq_or_imp, and_assoc]
-
-/-- A typed expression mentions only variables of its context. -/
-theorem HasType.varsBelow {signature : TermSignature} {context remaining : Context}
-    {expression : Preterm} {sort : Nat}
-    (typed : HasType signature context expression remaining sort) :
-    VarsBelow context.length expression := by
-  induction typed with
-  | var known => exact (List.getElem?_eq_some_iff.mp known).1
-  | term _ => trivial
-  | bound _ known inductionHypothesis =>
-      exact ⟨inductionHypothesis, (List.getElem?_eq_some_iff.mp known).1⟩
-  | regular _ _ functionHypothesis argumentHypothesis =>
-      exact ⟨functionHypothesis, argumentHypothesis⟩
-
 /-- A typed expression mentions only declared term symbols. -/
 theorem HasType.symbolsDeclared {signature : TermSignature} {context remaining : Context}
     {expression : Preterm} {sort : Nat}

@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.MeTTaIL.LawNormalInstantiation
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSchemaTyping
 
 /-!
 # Law-normal forms keep typing
@@ -12,6 +13,14 @@ type of its parent. Removing a declared unit drops an element.
 - `normalize_hasType`: the law-normal form of a typed object term has the same type;
 - `normalize_openPatternWellSorted`: law-normal forms of well-sorted open patterns are
   well-sorted.
+
+`RoleAware.reduceAt` is a separate expected-type traversal. Direct collection-valued
+slots retain their outer data boundary, while checked base-result algebra occurrences
+may splice nested carriers and remove declared units. Its typing theorem needs only
+the finite bare-homogeneity check; data slots, free types, and bound types may contain
+nested collections. Constructor and substitution domains come from the existing
+schema checker. This typing result does not establish source-equational reflection
+or canonicality for the unrestricted kind-only law relation.
 -/
 
 set_option autoImplicit false
@@ -714,3 +723,377 @@ theorem LawSame.openPatternWellSorted (admission : LawsTypedStrict laws language
     · exact (backward.openPatternWellSorted_iff admission boundOk typeOk).mpr ih
 
 end Mettapedia.OSLF.MeTTaIL.CanonicalBags
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware
+
+set_option maxHeartbeats 1800000
+
+open Syntax CollectionLaws
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open GeneralPremise.SchemaTyping
+
+def checkBareHomogeneous (laws : List Laws) (language : LanguageDef) : Bool :=
+  language.terms.all fun rule =>
+    match rule.bareParams with
+    | [.simple _ (.collection kind element)] =>
+        (lawFor laws kind).isNone || element == .base rule.category
+    | _ => true
+
+theorem homogeneous_bare_of_checked {laws : List Laws} {language : LanguageDef}
+    (checked : checkBareHomogeneous laws language = true)
+    {law : Laws} {kind : CollType} (found : lawFor laws kind = some law)
+    {rule : GrammarRule} (member : rule ∈ language.terms)
+    {parameter : String} {element : TypeExpr}
+    (shape : rule.bareParams = [.simple parameter (.collection kind element)]) :
+    element = .base rule.category := by
+  have selected := List.all_eq_true.mp checked rule member
+  simpa only [shape,found,Option.isNone_some,Bool.false_or,beq_iff_eq] using selected
+
+theorem checkBareHomogeneous_of_lawsTyped {laws : List Laws} {language : LanguageDef}
+    {free : FreeTypeContext} (admission : LawsTyped laws language free) :
+    checkBareHomogeneous laws language = true := by
+  apply List.all_eq_true.mpr
+  intro rule member
+  split
+  next parameter kind element shape =>
+    cases found : lawFor laws kind with
+    | none => simp
+    | some law =>
+        have same := admission.homogeneous_bare law kind found rule member parameter element shape
+        simp [same]
+  next => rfl
+
+theorem splice_base_typed {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    (checked : checkBareHomogeneous laws language = true)
+    {law : Laws} {kind : CollType} (found : lawFor laws kind = some law)
+    {bound : List TypeExpr} {category : String} {piece : Pattern}
+    (typed : HasType language free bound piece (.base category)) :
+    ∀ item ∈ splice law piece, HasType language free bound item (.base category) := by
+  have sameKind := lawFor_kind found
+  intro item member
+  cases piece with
+  | collection actual elements rest =>
+    cases rest with
+    | none =>
+      simp only [splice] at member
+      split at member
+      · rename_i same
+        subst sameKind
+        rw [same] at typed
+        rcases hasType_collection_inv typed with ⟨element,impossible,_⟩ |
+          ⟨rule,parameter,element,declared,parameters,categoryEq,items⟩
+        · cases impossible
+        · have homogeneous := homogeneous_bare_of_checked checked found declared parameters
+          rw [homogeneous] at items
+          rw [categoryEq]
+          exact elementsHaveType_iff.mp items item member
+      · simp only [List.mem_singleton] at member
+        subst item
+        exact typed
+    | some _ =>
+      simp only [splice,List.mem_singleton] at member
+      subst item
+      exact typed
+  | apply label arguments =>
+    cases arguments with
+    | nil =>
+      simp only [splice] at member
+      split at member
+      · simp at member
+      · simp only [List.mem_singleton] at member
+        subst item
+        exact typed
+    | cons =>
+      simp only [splice,List.mem_singleton] at member
+      subst item
+      exact typed
+  | _ =>
+    simp only [splice,List.mem_singleton] at member
+    subst item
+    exact typed
+
+def applicationRule? (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (label : String) (arguments : List Pattern) :
+    Option GrammarRule :=
+  language.terms.find? fun rule => rule.label == label && expected == .base rule.category &&
+    !usesBareCollection? rule && checkSchemaArguments domains language free bound arguments rule.params
+
+def collectionRule? (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (kind : CollType) (elements : List Pattern)
+    (rest : Option String) : Option GrammarRule :=
+  language.terms.find? fun rule =>
+    match bareCollectionElementType? rule kind expected with
+    | some element => checkSchemaElements domains language free bound elements element &&
+        checkSchemaRest free kind element rest
+    | none => false
+
+def substitutionDomain? (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (body replacement : Pattern) : Option TypeExpr :=
+  domains.find? fun domain =>
+    checkSchemaType domains language free (domain :: bound) body expected &&
+      checkSchemaType domains language free bound replacement domain
+
+theorem applicationRule_isSome (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (label : String) (arguments : List Pattern) :
+    (applicationRule? domains language free bound expected label arguments).isSome =
+      checkSchemaType domains language free bound (.apply label arguments) expected := by
+  simp only [applicationRule?,List.isSome_find?,checkSchemaType]
+
+theorem collectionRule_base_isSome (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (category : String) (kind : CollType) (elements : List Pattern) (rest : Option String) :
+    (collectionRule? domains language free bound (.base category) kind elements rest).isSome =
+      checkSchemaType domains language free bound (.collection kind elements rest) (.base category) := by
+  simp only [collectionRule?,List.isSome_find?,checkSchemaType,Bool.false_or]
+  rfl
+
+theorem substitutionDomain_isSome (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (body replacement : Pattern) :
+    (substitutionDomain? domains language free bound expected body replacement).isSome =
+      checkSchemaType domains language free bound (.subst body replacement) expected := by
+  simp only [substitutionDomain?,List.isSome_find?,checkSchemaType]
+
+def finishAlgebra (laws : List Laws) (kind : CollType) (elements : List Pattern) : List Pattern :=
+  match lawFor laws kind with
+  | some law => elements.flatMap (splice law)
+  | none => elements
+
+mutual
+  def reduceAt (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+      (free : FreeTypeContext) (bound : List TypeExpr) (pattern : Pattern) (expected : TypeExpr) : Pattern :=
+    match pattern with
+    | .bvar index => .bvar index
+    | .fvar name => .fvar name
+    | .apply label arguments =>
+        match applicationRule? domains language free bound expected label arguments with
+        | some rule => .apply label (reduceArguments laws domains language free bound arguments rule.params)
+        | none => pattern
+    | .lambda binder body =>
+        match expected with
+        | .arrow domain codomain => .lambda binder (reduceAt laws domains language free (domain :: bound) body codomain)
+        | _ => pattern
+    | .multiLambda arity binders body =>
+        match expected with
+        | .arrow (.multiBinder domain) codomain =>
+            .multiLambda arity binders
+              (reduceAt laws domains language free (List.replicate arity domain ++ bound) body codomain)
+        | _ => pattern
+    | .subst body replacement =>
+        match substitutionDomain? domains language free bound expected body replacement with
+        | some domain => .subst (reduceAt laws domains language free (domain :: bound) body expected)
+            (reduceAt laws domains language free bound replacement domain)
+        | none => pattern
+    | .collection kind elements rest =>
+        match expected with
+        | .collection actual element =>
+            if actual = kind then .collection kind (reduceElements laws domains language free bound elements element) rest
+            else pattern
+        | _ =>
+            match collectionRule? domains language free bound expected kind elements rest with
+            | none => pattern
+            | some rule =>
+                match bareCollectionElementType? rule kind expected with
+                | none => pattern
+                | some element => .collection kind
+                    (finishAlgebra laws kind (reduceElements laws domains language free bound elements element)) rest
+  termination_by sizeOf pattern
+
+  def reduceArguments (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+      (free : FreeTypeContext) (bound : List TypeExpr) : List Pattern → List TermParam → List Pattern
+    | [], _ => []
+    | argument :: arguments, parameter :: parameters =>
+        match parameterType? parameter with
+        | some expected => reduceAt laws domains language free bound argument expected ::
+            reduceArguments laws domains language free bound arguments parameters
+        | none => argument :: reduceArguments laws domains language free bound arguments parameters
+    | arguments, [] => arguments
+  termination_by arguments _ => sizeOf arguments
+
+  def reduceElements (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+      (free : FreeTypeContext) (bound : List TypeExpr) : List Pattern → TypeExpr → List Pattern
+    | [], _ => []
+    | element :: elements, expected => reduceAt laws domains language free bound element expected ::
+        reduceElements laws domains language free bound elements expected
+  termination_by elements _ => sizeOf elements
+end
+
+theorem reduceAt_parameter_representation (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (expected : TypeExpr) {parameter : TermParam} {pattern : Pattern}
+    (represented : MatchesParameterRepresentation parameter pattern) :
+    MatchesParameterRepresentation parameter (reduceAt laws domains language free bound pattern expected) := by
+  cases parameter with
+  | simple => trivial
+  | abstractionNamed binder name type =>
+      obtain ⟨body,rfl⟩ := (matchesParameterRepresentation_abstractionNamed_iff _ _ _ _).mp represented
+      cases expected <;> simp [reduceAt,MatchesParameterRepresentation]
+  | multiAbstractionNamed binders name type =>
+      obtain ⟨arity,body,rfl⟩ := (matchesParameterRepresentation_multiAbstractionNamed_iff _ _ _ _).mp represented
+      cases expected <;> simp [reduceAt,MatchesParameterRepresentation]
+      case arrow domain codomain => cases domain <;> simp [reduceAt]
+
+theorem reduceArguments_hasTypes_of (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    {arguments : List Pattern} {parameters : List TermParam}
+    (each : ∀ argument ∈ arguments, ∀ expected,
+      HasType language free bound argument expected →
+        HasType language free bound (reduceAt laws domains language free bound argument expected) expected)
+    (typed : ArgumentsHaveTypes language free bound arguments parameters) :
+    ArgumentsHaveTypes language free bound (reduceArguments laws domains language free bound arguments parameters) parameters := by
+  induction arguments generalizing parameters with
+  | nil => cases typed; simpa only [reduceArguments] using (ArgumentsHaveTypes.nil (language := language) (free := free) (bound := bound))
+  | cons argument arguments ih =>
+      cases typed with
+      | cons representation parameterType head tail =>
+        simp only [reduceArguments,parameterType]
+        exact .cons (reduceAt_parameter_representation laws domains language free bound _ representation)
+          parameterType (each argument List.mem_cons_self _ head)
+          (ih (fun other member => each other (List.mem_cons_of_mem _ member)) tail)
+
+theorem reduceElements_hasType_of (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    {elements : List Pattern} {expected : TypeExpr}
+    (each : ∀ element ∈ elements,
+      HasType language free bound element expected →
+        HasType language free bound (reduceAt laws domains language free bound element expected) expected)
+    (typed : ElementsHaveType language free bound elements expected) :
+    ElementsHaveType language free bound (reduceElements laws domains language free bound elements expected) expected := by
+  induction elements with
+  | nil => simpa only [reduceElements] using (ElementsHaveType.nil (language := language) (free := free) bound expected)
+  | cons element elements ih =>
+      cases typed with
+      | cons head tail =>
+        simpa only [reduceElements] using ElementsHaveType.cons (each element List.mem_cons_self head)
+          (ih (fun other member => each other (List.mem_cons_of_mem _ member)) tail)
+
+theorem applicationRule_readout {domains : List TypeExpr} {language : LanguageDef}
+    {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {label : String} {arguments : List Pattern} {rule : GrammarRule}
+    (selected : applicationRule? domains language free bound expected label arguments = some rule) :
+    rule ∈ language.terms ∧ rule.label = label ∧ expected = .base rule.category ∧
+      ¬ UsesBareCollection rule ∧ ArgumentsHaveTypes language free bound arguments rule.params := by
+  have member := List.mem_of_find?_eq_some selected
+  have checked := List.find?_some selected
+  simp only [Bool.and_eq_true,beq_iff_eq,Bool.not_eq_true'] at checked
+  obtain ⟨⟨⟨head,type⟩,notBare⟩,argumentsChecked⟩ := checked
+  refine ⟨member,head,type,?_,?_⟩
+  · intro bare
+    have bareChecked := (usesBareCollection?_eq_true_iff rule).mpr bare
+    rw [bareChecked] at notBare
+    contradiction
+  · exact checkSchemaArguments_sound_of (fun _ _ _ input => checkSchemaType_sound input) argumentsChecked
+
+theorem collectionRule_readout {domains : List TypeExpr} {language : LanguageDef}
+    {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {kind : CollType} {elements : List Pattern} {rest : Option String} {rule : GrammarRule}
+    (selected : collectionRule? domains language free bound expected kind elements rest = some rule) :
+    ∃ element, rule ∈ language.terms ∧ bareCollectionElementType? rule kind expected = some element ∧
+      ElementsHaveType language free bound elements element := by
+  have member := List.mem_of_find?_eq_some selected
+  have checked := List.find?_some selected
+  cases shape : bareCollectionElementType? rule kind expected with
+  | none => simp only [shape,Bool.false_eq_true] at checked
+  | some element =>
+      simp only [shape,Bool.and_eq_true] at checked
+      exact ⟨element,member,rfl,checkSchemaElements_sound checked.1⟩
+
+theorem substitutionDomain_readout {domains : List TypeExpr} {language : LanguageDef}
+    {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {body replacement : Pattern} {domain : TypeExpr}
+    (selected : substitutionDomain? domains language free bound expected body replacement = some domain) :
+    domain ∈ domains ∧ HasType language free (domain :: bound) body expected ∧
+      HasType language free bound replacement domain := by
+  have member := List.mem_of_find?_eq_some selected
+  have checked := List.find?_some selected
+  simp only [Bool.and_eq_true] at checked
+  exact ⟨member,checkSchemaType_sound checked.1,checkSchemaType_sound checked.2⟩
+
+theorem finishAlgebra_base_typed {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    (checked : checkBareHomogeneous laws language = true)
+    {bound : List TypeExpr} {category : String} {kind : CollType} {elements : List Pattern}
+    (typed : ElementsHaveType language free bound elements (.base category)) :
+    ElementsHaveType language free bound (finishAlgebra laws kind elements) (.base category) := by
+  unfold finishAlgebra
+  cases found : lawFor laws kind with
+  | none => exact typed
+  | some law =>
+      apply elementsHaveType_iff.mpr
+      intro item member
+      obtain ⟨piece,present,inSplice⟩ := List.mem_flatMap.mp member
+      exact splice_base_typed checked found (elementsHaveType_iff.mp typed piece present) item inSplice
+
+theorem reduceAt_hasType {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    (checked : checkBareHomogeneous laws language = true) (domains : List TypeExpr)
+    {bound : List TypeExpr} {expected : TypeExpr} (pattern : Pattern)
+    (typed : HasType language free bound pattern expected) :
+    HasType language free bound (reduceAt laws domains language free bound pattern expected) expected := by
+  induction pattern using Pattern.inductionOn generalizing bound expected with
+  | hbvar index => simpa only [reduceAt] using typed
+  | hfvar name => simpa only [reduceAt] using typed
+  | happly label arguments ih =>
+      rw [reduceAt]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => exact typed
+      | some rule =>
+        obtain ⟨member,head,type,notBare,argumentsTyped⟩ := applicationRule_readout selected
+        rw [← head,type]
+        exact .constructor member notBare
+          (reduceArguments_hasTypes_of laws domains language free bound
+            (fun argument present _ input => ih argument present input) argumentsTyped)
+  | hlambda binder body ih =>
+      cases typed with
+      | lambda bodyTyped =>
+          simpa only [reduceAt] using HasType.lambda (binder := binder) (ih bodyTyped)
+  | hmultiLambda arity binders body ih =>
+      cases typed with
+      | multiLambda bodyTyped =>
+          simpa only [reduceAt] using HasType.multiLambda (binders := binders) (ih bodyTyped)
+  | hsubst body replacement bodyIH replacementIH =>
+      rw [reduceAt]
+      cases selected : substitutionDomain? domains language free bound expected body replacement with
+      | none => exact typed
+      | some domain =>
+          obtain ⟨_,bodyTyped,replacementTyped⟩ := substitutionDomain_readout selected
+          exact .subst (bodyIH bodyTyped) (replacementIH replacementTyped)
+  | hcollection kind elements rest ih =>
+      rcases hasType_collection_inv typed with ⟨element,rfl,items⟩ |
+        ⟨sourceRule,parameter,sourceElement,sourceDeclared,sourceParameters,rfl,sourceItems⟩
+      · simp only [reduceAt,↓reduceIte]
+        exact .collection (reduceElements_hasType_of laws domains language free bound
+          (fun element member input => ih element member input) items)
+      · simp only [reduceAt]
+        cases selected : collectionRule? domains language free bound (.base sourceRule.category) kind elements rest with
+        | none => exact typed
+        | some rule =>
+          obtain ⟨element,member,shape,items⟩ := collectionRule_readout selected
+          simp only [shape]
+          obtain ⟨expectedEq,parameter,parameters⟩ :=
+            (bareCollectionElementType?_eq_some_iff _ _ _ _).mp shape
+          have normalizedItems := reduceElements_hasType_of laws domains language free bound
+            (fun element present input => ih element present input) items
+          have resultItems : ElementsHaveType language free bound
+              (finishAlgebra laws kind (reduceElements laws domains language free bound elements element)) element := by
+            cases found : lawFor laws kind with
+            | none => simpa only [finishAlgebra,found] using normalizedItems
+            | some law =>
+                have homogeneous := homogeneous_bare_of_checked checked found member parameters
+                rw [homogeneous] at normalizedItems ⊢
+                exact finishAlgebra_base_typed checked normalizedItems
+          rw [expectedEq]
+          exact .collectionConstructor member parameters resultItems
+
+#print axioms homogeneous_bare_of_checked
+#print axioms checkBareHomogeneous_of_lawsTyped
+#print axioms splice_base_typed
+#print axioms reduceAt_parameter_representation
+#print axioms reduceArguments_hasTypes_of
+#print axioms reduceElements_hasType_of
+#print axioms applicationRule_readout
+#print axioms collectionRule_readout
+#print axioms substitutionDomain_readout
+#print axioms finishAlgebra_base_typed
+#print axioms reduceAt_hasType
+#print axioms applicationRule_isSome
+#print axioms collectionRule_base_isSome
+#print axioms substitutionDomain_isSome
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware

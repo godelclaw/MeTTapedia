@@ -3,10 +3,13 @@ import Mettapedia.UniversalAI.ControlledFiniteHiddenMarkovBridge
 import Mettapedia.UniversalAI.TimeBoundedAIXI.Core
 
 /-!
-# Controlled Finite HMM Planning Examples
+# Controlled Finite HMM Trace-Mass Planning Examples
 
 This file gives small finite-horizon `value`/`qValue` examples for the
-controlled-HMM environment bridge.
+controlled-HMM subprobability environment bridge. Its next-observation weights
+sum to the completed trace probability. Values here use those raw weights,
+with history-dependent model-row re-selection in recursive credal envelopes.
+Normalized conditional HMM planning is a separate extension.
 
 Positive example:
 * a chosen action can deterministically steer the next observation and thus the
@@ -236,9 +239,9 @@ theorem controlledSwitch_optimalAction_one :
   rw [← hoa, hzero, controlledSwitch_optimalQValue_act1, controlledSwitch_optimalQValue_act0] at hmax
   linarith
 
-@[simp] theorem controlledSwitch_oneStepQValue_after11_act0 :
-    oneStepQValue controlledSwitchHMM [(1, 1)] 0 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem controlledSwitch_oneStepTraceMassQValue_after11_act0 :
+    oneStepTraceMassQValue controlledSwitchHMM [(1, 1)] 0 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
   have h00 : (0 : Fin 2) ∈ Set.singleton (0 : Fin 2) := Set.mem_singleton (0 : Fin 2)
@@ -254,9 +257,9 @@ theorem controlledSwitch_optimalAction_one :
   simp [controlledSwitchHMM, stepProb, emissionProb, initProb, diracPM, filteringMassAux,
     Set.indicator, PerceptReward.reward, h00, h01, h10, h11]
 
-@[simp] theorem controlledSwitch_oneStepQValue_after11_act1 :
-    oneStepQValue controlledSwitchHMM [(1, 1)] 1 = 1 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem controlledSwitch_oneStepTraceMassQValue_after11_act1 :
+    oneStepTraceMassQValue controlledSwitchHMM [(1, 1)] 1 = 1 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
   have h00 : (0 : Fin 2) ∈ Set.singleton (0 : Fin 2) := Set.mem_singleton (0 : Fin 2)
@@ -272,9 +275,9 @@ theorem controlledSwitch_optimalAction_one :
   simp [controlledSwitchHMM, stepProb, emissionProb, initProb, diracPM, filteringMassAux,
     Set.indicator, PerceptReward.reward, h00, h01, h10, h11]
 
-@[simp] theorem controlledSwitch_oneStepQValue_after00_act0 :
-    oneStepQValue controlledSwitchHMM [(0, 0)] 0 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem controlledSwitch_oneStepTraceMassQValue_after00_act0 :
+    oneStepTraceMassQValue controlledSwitchHMM [(0, 0)] 0 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
   have h00 : (0 : Fin 2) ∈ Set.singleton (0 : Fin 2) := Set.mem_singleton (0 : Fin 2)
@@ -290,9 +293,9 @@ theorem controlledSwitch_optimalAction_one :
   simp [controlledSwitchHMM, stepProb, emissionProb, initProb, diracPM, filteringMassAux,
     Set.indicator, PerceptReward.reward, h00, h01, h10, h11]
 
-@[simp] theorem controlledSwitch_oneStepQValue_after00_act1 :
-    oneStepQValue controlledSwitchHMM [(0, 0)] 1 = 1 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem controlledSwitch_oneStepTraceMassQValue_after00_act1 :
+    oneStepTraceMassQValue controlledSwitchHMM [(0, 0)] 1 = 1 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
   have h00 : (0 : Fin 2) ∈ Set.singleton (0 : Fin 2) := Set.mem_singleton (0 : Fin 2)
@@ -308,30 +311,30 @@ theorem controlledSwitch_optimalAction_one :
   simp [controlledSwitchHMM, stepProb, emissionProb, initProb, diracPM, filteringMassAux,
     Set.indicator, PerceptReward.reward, h00, h01, h10, h11]
 
-@[simp] theorem controlledSwitch_oneStepOptimalValue_after11 :
-    oneStepOptimalValue controlledSwitchHMM [(1, 1)] = 1 := by
-  unfold oneStepOptimalValue
+@[simp] theorem controlledSwitch_oneStepTraceMassOptimalValue_after11 :
+    oneStepTraceMassOptimalValue controlledSwitchHMM [(1, 1)] = 1 := by
+  unfold oneStepTraceMassOptimalValue
   have huniv : (Finset.univ : Finset (Fin 2)) = ({0, 1} : Finset (Fin 2)) := by
     ext a
     fin_cases a <;> simp
   rw [huniv, Finset.fold_insert, Finset.fold_singleton]
-  · simp [controlledSwitch_oneStepQValue_after11_act0, controlledSwitch_oneStepQValue_after11_act1]
+  · simp [controlledSwitch_oneStepTraceMassQValue_after11_act0, controlledSwitch_oneStepTraceMassQValue_after11_act1]
   · simp
 
-@[simp] theorem controlledSwitch_oneStepOptimalValue_after00 :
-    oneStepOptimalValue controlledSwitchHMM [(0, 0)] = 1 := by
-  unfold oneStepOptimalValue
+@[simp] theorem controlledSwitch_oneStepTraceMassOptimalValue_after00 :
+    oneStepTraceMassOptimalValue controlledSwitchHMM [(0, 0)] = 1 := by
+  unfold oneStepTraceMassOptimalValue
   have huniv : (Finset.univ : Finset (Fin 2)) = ({0, 1} : Finset (Fin 2)) := by
     ext a
     fin_cases a <;> simp
   rw [huniv, Finset.fold_insert, Finset.fold_singleton]
-  · simp [controlledSwitch_oneStepQValue_after00_act0, controlledSwitch_oneStepQValue_after00_act1]
+  · simp [controlledSwitch_oneStepTraceMassQValue_after00_act0, controlledSwitch_oneStepTraceMassQValue_after00_act1]
   · simp
 
 theorem controlledSwitch_qValue_after11_act1 :
     qValue controlledSwitchEnv chooseOneAgent gammaOne (historyOfCycles [(1, 1)]) 1 1 = 1 := by
   simpa [controlledSwitchEnv] using
-    (qValue_historyOfCycles_one_eq_oneStepQValue
+    (qValue_historyOfCycles_one_eq_oneStepTraceMassQValue
       (θ := controlledSwitchHMM) (π := chooseOneAgent) (γ := gammaOne) (zs := [(1, 1)]) (a := 1))
 
 theorem controlledSwitch_value_after11_two :
@@ -352,13 +355,13 @@ theorem controlledSwitch_value_after11_two :
 theorem controlledSwitch_optimalValue_after11_two :
     optimalValue controlledSwitchEnv gammaOne (historyOfCycles [(1, 1)]) 2 = 1 := by
   simpa [controlledSwitchEnv] using
-    (optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    (optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := controlledSwitchHMM) (γ := gammaOne) (zs := [(1, 1)]))
 
 theorem controlledSwitch_optimalValue_after00_two :
     optimalValue controlledSwitchEnv gammaOne (historyOfCycles [(0, 0)]) 2 = 1 := by
   simpa [controlledSwitchEnv] using
-    (optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    (optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := controlledSwitchHMM) (γ := gammaOne) (zs := [(0, 0)]))
 
 /-- A richer horizon example: with horizon `3` from the Q-node, action `1`
@@ -576,16 +579,16 @@ noncomputable def ambiguousControlledFamily : Fin 2 → ControlledFiniteHMMParam
           repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
           simp [ambiguousLowHMM, stepProb, emissionProb, initProb, diracPM]
 
-@[simp] theorem ambiguousHigh_oneStepQValue_after11_act0 :
-    oneStepQValue ambiguousHighHMM [(1, 1)] 0 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousHigh_oneStepTraceMassQValue_after11_act0 :
+    oneStepTraceMassQValue ambiguousHighHMM [(1, 1)] 0 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [ambiguousHighHMM, stepProb, emissionProb, initProb, diracPM, PerceptReward.reward]
 
-@[simp] theorem ambiguousHigh_oneStepQValue_after11_act1 :
-    oneStepQValue ambiguousHighHMM [(1, 1)] 1 = 1 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousHigh_oneStepTraceMassQValue_after11_act1 :
+    oneStepTraceMassQValue ambiguousHighHMM [(1, 1)] 1 = 1 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [filteringMassAux, ambiguousHighHMM, stepProb, emissionProb, initProb, diracPM,
@@ -593,16 +596,16 @@ noncomputable def ambiguousControlledFamily : Fin 2 → ControlledFiniteHMMParam
   rw [Fin.sum_univ_three]
   simp
 
-@[simp] theorem ambiguousHigh_oneStepQValue_after00_act0 :
-    oneStepQValue ambiguousHighHMM [(0, 0)] 0 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousHigh_oneStepTraceMassQValue_after00_act0 :
+    oneStepTraceMassQValue ambiguousHighHMM [(0, 0)] 0 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [ambiguousHighHMM, stepProb, emissionProb, initProb, diracPM, PerceptReward.reward]
 
-@[simp] theorem ambiguousHigh_oneStepQValue_after00_act1 :
-    oneStepQValue ambiguousHighHMM [(0, 0)] 1 = 1 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousHigh_oneStepTraceMassQValue_after00_act1 :
+    oneStepTraceMassQValue ambiguousHighHMM [(0, 0)] 1 = 1 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [filteringMassAux, ambiguousHighHMM, stepProb, emissionProb, initProb, diracPM,
@@ -610,36 +613,36 @@ noncomputable def ambiguousControlledFamily : Fin 2 → ControlledFiniteHMMParam
   rw [Fin.sum_univ_three]
   simp
 
-@[simp] theorem ambiguousHigh_oneStepOptimalValue_after11 :
-    oneStepOptimalValue ambiguousHighHMM [(1, 1)] = 1 := by
-  unfold oneStepOptimalValue
+@[simp] theorem ambiguousHigh_oneStepTraceMassOptimalValue_after11 :
+    oneStepTraceMassOptimalValue ambiguousHighHMM [(1, 1)] = 1 := by
+  unfold oneStepTraceMassOptimalValue
   have huniv : (Finset.univ : Finset (Fin 2)) = ({0, 1} : Finset (Fin 2)) := by
     ext a
     fin_cases a <;> simp
   rw [huniv, Finset.fold_insert, Finset.fold_singleton]
-  · simp [ambiguousHigh_oneStepQValue_after11_act0, ambiguousHigh_oneStepQValue_after11_act1]
+  · simp [ambiguousHigh_oneStepTraceMassQValue_after11_act0, ambiguousHigh_oneStepTraceMassQValue_after11_act1]
   · simp
 
-@[simp] theorem ambiguousHigh_oneStepOptimalValue_after00 :
-    oneStepOptimalValue ambiguousHighHMM [(0, 0)] = 1 := by
-  unfold oneStepOptimalValue
+@[simp] theorem ambiguousHigh_oneStepTraceMassOptimalValue_after00 :
+    oneStepTraceMassOptimalValue ambiguousHighHMM [(0, 0)] = 1 := by
+  unfold oneStepTraceMassOptimalValue
   have huniv : (Finset.univ : Finset (Fin 2)) = ({0, 1} : Finset (Fin 2)) := by
     ext a
     fin_cases a <;> simp
   rw [huniv, Finset.fold_insert, Finset.fold_singleton]
-  · simp [ambiguousHigh_oneStepQValue_after00_act0, ambiguousHigh_oneStepQValue_after00_act1]
+  · simp [ambiguousHigh_oneStepTraceMassQValue_after00_act0, ambiguousHigh_oneStepTraceMassQValue_after00_act1]
   · simp
 
 theorem ambiguousHigh_optimalValue_after11_two :
     optimalValue ambiguousHighEnv gammaOne (historyOfCycles [(1, 1)]) 2 = 1 := by
   simpa [ambiguousHighEnv] using
-    (optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    (optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := ambiguousHighHMM) (γ := gammaOne) (zs := [(1, 1)]))
 
 theorem ambiguousHigh_optimalValue_after00_two :
     optimalValue ambiguousHighEnv gammaOne (historyOfCycles [(0, 0)]) 2 = 1 := by
   simpa [ambiguousHighEnv] using
-    (optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    (optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := ambiguousHighHMM) (γ := gammaOne) (zs := [(0, 0)]))
 
 theorem ambiguousHigh_optimalQValue_act1_three :
@@ -697,24 +700,24 @@ theorem ambiguousHigh_optimalAction_three :
     ambiguousHigh_optimalQValue_act0_three] at hmax
   linarith
 
-@[simp] theorem ambiguousLow_oneStepQValue_after01_act0 :
-    oneStepQValue ambiguousLowHMM [(0, 1)] 0 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousLow_oneStepTraceMassQValue_after01_act0 :
+    oneStepTraceMassQValue ambiguousLowHMM [(0, 1)] 0 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [filteringMassAux, ambiguousLowHMM, stepProb, emissionProb, initProb, diracPM,
     PerceptReward.reward]
 
-@[simp] theorem ambiguousLow_oneStepQValue_after01_act1 :
-    oneStepQValue ambiguousLowHMM [(0, 1)] 1 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousLow_oneStepTraceMassQValue_after01_act1 :
+    oneStepTraceMassQValue ambiguousLowHMM [(0, 1)] 1 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [ambiguousLowHMM, stepProb, emissionProb, initProb, diracPM, PerceptReward.reward]
 
-@[simp] theorem ambiguousLow_oneStepQValue_after10_act0 :
-    oneStepQValue ambiguousLowHMM [(1, 0)] 0 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousLow_oneStepTraceMassQValue_after10_act0 :
+    oneStepTraceMassQValue ambiguousLowHMM [(1, 0)] 0 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [filteringMassAux, ambiguousLowHMM, stepProb, emissionProb, initProb, diracPM,
@@ -732,43 +735,43 @@ theorem ambiguousHigh_optimalAction_three :
   rw [Fin.sum_univ_three]
   simp [hind]
 
-@[simp] theorem ambiguousLow_oneStepQValue_after10_act1 :
-    oneStepQValue ambiguousLowHMM [(1, 0)] 1 = 0 := by
-  unfold oneStepQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
+@[simp] theorem ambiguousLow_oneStepTraceMassQValue_after10_act1 :
+    oneStepTraceMassQValue ambiguousLowHMM [(1, 0)] 1 = 0 := by
+  unfold oneStepTraceMassQValue observationMassGivenAction filteringMass filteringMassAux initialLatentMass
     filteringStepMass predictiveLatentMass
   repeat' (first | rw [Fin.sum_univ_two] | rw [Fin.sum_univ_three])
   simp [ambiguousLowHMM, stepProb, emissionProb, initProb, diracPM, PerceptReward.reward]
 
-@[simp] theorem ambiguousLow_oneStepOptimalValue_after01 :
-    oneStepOptimalValue ambiguousLowHMM [(0, 1)] = 0 := by
-  unfold oneStepOptimalValue
+@[simp] theorem ambiguousLow_oneStepTraceMassOptimalValue_after01 :
+    oneStepTraceMassOptimalValue ambiguousLowHMM [(0, 1)] = 0 := by
+  unfold oneStepTraceMassOptimalValue
   have huniv : (Finset.univ : Finset (Fin 2)) = ({0, 1} : Finset (Fin 2)) := by
     ext a
     fin_cases a <;> simp
   rw [huniv, Finset.fold_insert, Finset.fold_singleton]
-  · simp [ambiguousLow_oneStepQValue_after01_act0, ambiguousLow_oneStepQValue_after01_act1]
+  · simp [ambiguousLow_oneStepTraceMassQValue_after01_act0, ambiguousLow_oneStepTraceMassQValue_after01_act1]
   · simp
 
-@[simp] theorem ambiguousLow_oneStepOptimalValue_after10 :
-    oneStepOptimalValue ambiguousLowHMM [(1, 0)] = 0 := by
-  unfold oneStepOptimalValue
+@[simp] theorem ambiguousLow_oneStepTraceMassOptimalValue_after10 :
+    oneStepTraceMassOptimalValue ambiguousLowHMM [(1, 0)] = 0 := by
+  unfold oneStepTraceMassOptimalValue
   have huniv : (Finset.univ : Finset (Fin 2)) = ({0, 1} : Finset (Fin 2)) := by
     ext a
     fin_cases a <;> simp
   rw [huniv, Finset.fold_insert, Finset.fold_singleton]
-  · simp [ambiguousLow_oneStepQValue_after10_act0, ambiguousLow_oneStepQValue_after10_act1]
+  · simp [ambiguousLow_oneStepTraceMassQValue_after10_act0, ambiguousLow_oneStepTraceMassQValue_after10_act1]
   · simp
 
 theorem ambiguousLow_optimalValue_after01_two :
     optimalValue ambiguousLowEnv gammaOne (historyOfCycles [(0, 1)]) 2 = 0 := by
   simpa [ambiguousLowEnv] using
-    (optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    (optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := ambiguousLowHMM) (γ := gammaOne) (zs := [(0, 1)]))
 
 theorem ambiguousLow_optimalValue_after10_two :
     optimalValue ambiguousLowEnv gammaOne (historyOfCycles [(1, 0)]) 2 = 0 := by
   simpa [ambiguousLowEnv] using
-    (optimalValue_historyOfCycles_two_eq_oneStepOptimalValue
+    (optimalValue_historyOfCycles_two_eq_oneStepTraceMassOptimalValue
       (θ := ambiguousLowHMM) (γ := gammaOne) (zs := [(1, 0)]))
 
 theorem ambiguousLow_optimalQValue_act0_three :
@@ -826,19 +829,19 @@ theorem ambiguousLow_optimalAction_three :
     ambiguousLow_optimalQValue_act1_three] at hmax
   linarith
 
-theorem ambiguousControlledFamily_recursiveOptimalInterval_nontrivial :
-    lowerRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 <
-      upperRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 := by
+theorem ambiguousControlledFamily_recursiveTraceMassOptimalInterval_nontrivial :
+    lowerRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 <
+      upperRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 := by
   have hhigh :=
-    optimalValue_historyOfCycles_mem_recursiveEnvelope
+    optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
       (Θ := ambiguousControlledFamily) (γ := gammaOne)
       4 ([] : List (CycleObservation (Fin 2) 2)) (0 : Fin 2)
   have hlow :=
-    optimalValue_historyOfCycles_mem_recursiveEnvelope
+    optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
       (Θ := ambiguousControlledFamily) (γ := gammaOne)
       4 ([] : List (CycleObservation (Fin 2) 2)) (1 : Fin 2)
   have hupper :
-      2 ≤ upperRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 := by
+      2 ≤ upperRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 := by
     have hhigh_eq :
         optimalValue (toEnvironment (ambiguousControlledFamily 0)) gammaOne
             (historyOfCycles ([] : List (CycleObservation (Fin 2) 2))) 4 = 2 := by
@@ -848,7 +851,7 @@ theorem ambiguousControlledFamily_recursiveOptimalInterval_nontrivial :
     rw [hhigh_eq] at hupper'
     exact hupper'
   have hlower :
-      lowerRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ≤ 1 := by
+      lowerRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ≤ 1 := by
     have hlow_eq :
         optimalValue (toEnvironment (ambiguousControlledFamily 1)) gammaOne
             (historyOfCycles ([] : List (CycleObservation (Fin 2) 2))) 4 = 1 := by
@@ -875,22 +878,22 @@ theorem ambiguousControlledFamily_no_unique_optimalAction_three :
 
 theorem ambiguousControlledFamily_optimalValue_mem_interval_and_no_uniqueAction :
     (∀ i : Fin 2,
-        lowerRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ≤
+        lowerRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ≤
             optimalValue (toEnvironment (ambiguousControlledFamily i)) gammaOne [] 4 ∧
           optimalValue (toEnvironment (ambiguousControlledFamily i)) gammaOne [] 4 ≤
-            upperRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4) ∧
-      lowerRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 <
-        upperRecursiveOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ∧
+            upperRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4) ∧
+      lowerRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 <
+        upperRecursiveTraceMassOptimalValueEnvelope ambiguousControlledFamily gammaOne [] 4 ∧
       ¬ ∃ a : Fin 2, ∀ i : Fin 2,
         optimalAction (toEnvironment (ambiguousControlledFamily i)) gammaOne [] 3 = a := by
   constructor
   · intro i
     simpa [historyOfCycles] using
-      (optimalValue_historyOfCycles_mem_recursiveEnvelope
+      (optimalValue_historyOfCycles_mem_recursiveTraceMassEnvelope
         (Θ := ambiguousControlledFamily) (γ := gammaOne)
         4 ([] : List (CycleObservation (Fin 2) 2)) i)
   · constructor
-    · exact ambiguousControlledFamily_recursiveOptimalInterval_nontrivial
+    · exact ambiguousControlledFamily_recursiveTraceMassOptimalInterval_nontrivial
     · exact ambiguousControlledFamily_no_unique_optimalAction_three
 
 /-- The deterministic policy choosing action `1` therefore has two-step value

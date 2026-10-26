@@ -337,4 +337,207 @@ def substitutionTyping (signature : Signature sorts terms)
 #print axioms compileWithAssignment
 #print axioms compile
 
+/-- Bounds every variable stored in the generated typing receipt, including
+its binder cases and weakened variable/constant proof inputs. -/
+theorem compileWithAssignment_varsBelow (signature : Signature sorts terms)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (typing : Rules theorems signature.symbol signature.ids)
+    (base : Base → Preterm) (constant : ∀ {type}, Const type → Preterm) (binders : Nat → Nat)
+    (baseSorted : ∀ index, Preterm.HasType terms context (base index) [] signature.ids.type)
+    (constantSorted : ∀ {type} (symbol : Const type), Preterm.HasType terms context (constant symbol) [] signature.ids.object)
+    (bindersInjective : Function.Injective binders)
+    (baseIndependent : ∀ slot index, ¬ Preterm.HasVar context (binders slot) (base index))
+    {gamma : Ctx Base} {type : Ty Base} (source : Term Const gamma type) :
+    ∀ (assignment : Assignment gamma) (depth : Nat) (antecedent : Preterm)
+      (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+      (assignmentSorted : ∀ {type} (index : Var gamma type), Preterm.HasType terms context (assignment index) [] signature.ids.object)
+      (boundSlots : ∀ offset < source.binderDepth, context[binders (depth + offset)]? = some (.bound signature.ids.object))
+      (independent : ∀ offset < source.binderDepth, ¬ Preterm.HasVar context (binders (depth + offset)) antecedent)
+      (variableProof : ∀ {type} (index : Var gamma type),
+        CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+          (context := context) (hypotheses := hypotheses)
+          (typed signature.symbol antecedent (assignment index) (encodeType signature.symbol base type)))
+      (constantProof : ∀ {type} (symbol : Const type),
+        CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+          (context := context) (hypotheses := hypotheses)
+          (typed signature.symbol antecedent (constant symbol) (encodeType signature.symbol base type)))
+      (limit : Nat)
+      (_ : ∀ index, Preterm.VarsBelow limit (base index))
+      (_ : ∀ {type} (symbol : Const type), Preterm.VarsBelow limit (constant symbol))
+      (_ : ∀ {type} (index : Var gamma type), Preterm.VarsBelow limit (assignment index))
+      (_ : Preterm.VarsBelow limit antecedent)
+      (_ : ∀ offset < source.binderDepth, binders (depth + offset) < limit)
+      (_ : ∀ {type} (index : Var gamma type), (variableProof index).val.VarsBelow limit)
+      (_ : ∀ {type} (symbol : Const type), (constantProof symbol).val.VarsBelow limit),
+      (compileWithAssignment signature structural typing base constant binders baseSorted constantSorted
+        bindersInjective baseIndependent source assignment depth antecedent antecedentSorted assignmentSorted
+        boundSlots independent variableProof constantProof).val.VarsBelow limit := by
+  induction source with
+  | var index =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      exact variableProofBound index
+  | const symbol =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      exact constantProofBound symbol
+  | top =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      change ProofWitness.VarsBelow _ (.theoremApp _ [_] [])
+      simpa only [ProofWitness.VarsBelow, List.mem_singleton, forall_eq, List.not_mem_nil, IsEmpty.forall_iff, implies_true, and_true]
+        using antecedentBound
+  | bot =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      change ProofWitness.VarsBelow _ (.theoremApp _ [_] [])
+      simpa only [ProofWitness.VarsBelow, List.mem_singleton, forall_eq, List.not_mem_nil, IsEmpty.forall_iff, implies_true, and_true]
+        using antecedentBound
+  | app first second ihFirst ihSecond | and first second ihFirst ihSecond | or first second ihFirst ihSecond | imp first second ihFirst ihSecond | eq first second ihFirst ihSecond =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      have firstBound (offset : Nat) (smaller : offset < first.binderDepth) : binders (depth + offset) < limit :=
+        bindersBound offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_left _ _))
+      have secondBound (offset : Nat) (smaller : offset < second.binderDepth) : binders (depth + offset) < limit :=
+        bindersBound offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_right _ _))
+      have firstTerm := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound first assignment depth assignmentBound firstBound
+      have secondTerm := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound second assignment depth assignmentBound secondBound
+      have firstProof := ihFirst assignment depth antecedent antecedentSorted assignmentSorted
+        (fun offset smaller => boundSlots offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_left _ _)))
+        (fun offset smaller => independent offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_left _ _)))
+        variableProof constantProof limit baseBound constantBound assignmentBound antecedentBound firstBound variableProofBound constantProofBound
+      have secondProof := ihSecond assignment depth antecedent antecedentSorted assignmentSorted
+        (fun offset smaller => boundSlots offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_right _ _)))
+        (fun offset smaller => independent offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_right _ _)))
+        variableProof constantProof limit baseBound constantBound assignmentBound antecedentBound secondBound variableProofBound constantProofBound
+      change ProofWitness.VarsBelow limit (.theoremApp _ _ _)
+      simp only [ProofWitness.VarsBelow, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
+      first
+      | exact ⟨⟨antecedentBound, encodeType_varsBelow _ _ _ baseBound _, encodeType_varsBelow _ _ _ baseBound _, firstTerm, secondTerm⟩, firstProof, secondProof⟩
+      | exact ⟨⟨antecedentBound, firstTerm, secondTerm⟩, firstProof, secondProof⟩
+      | exact ⟨⟨encodeType_varsBelow _ _ _ baseBound _, antecedentBound, firstTerm, secondTerm⟩, firstProof, secondProof⟩
+  | not body ih =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      have bodyTerm := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound body assignment depth assignmentBound bindersBound
+      have bodyProof := ih assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent
+        variableProof constantProof limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      change ProofWitness.VarsBelow limit (.theoremApp _ _ _)
+      simpa only [ProofWitness.VarsBelow, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] using
+        And.intro ⟨antecedentBound, bodyTerm⟩ bodyProof
+  | @lam domain gamma result body ih | @all domain gamma body ih | @ex domain gamma body ih =>
+      intro assignment depth antecedent antecedentSorted assignmentSorted boundSlots independent variableProof constantProof
+        limit baseBound constantBound assignmentBound antecedentBound bindersBound variableProofBound constantProofBound
+      have rootBound : binders depth < limit := by
+        simpa only [Nat.add_zero] using bindersBound 0 (Nat.zero_lt_succ _)
+      have rootLookup : context[binders depth]? = some (.bound signature.ids.object) := by
+        simpa only [Nat.add_zero] using boundSlots 0 (Nat.zero_lt_succ _)
+      have rootSorted : Preterm.HasType terms context (.var (binders depth)) [] signature.ids.object := .var rootLookup
+      let extra := hasType signature.symbol (.var (binders depth)) (encodeType signature.symbol base domain)
+      have extraBound : Preterm.VarsBelow limit extra :=
+        ⟨⟨trivial, rootBound⟩, encodeType_varsBelow _ _ _ baseBound domain⟩
+      have extraSorted := hasType_sorted signature context rootSorted (encodeType_sorted signature context base baseSorted domain)
+      have extensionBound : Preterm.VarsBelow limit (conjunction signature.symbol antecedent extra) :=
+        ⟨⟨trivial, antecedentBound⟩, extraBound⟩
+      have assignmentExtended : ∀ {type} (index : Var (domain :: gamma) type),
+          Preterm.VarsBelow limit (Assignment.extend (.var (binders depth)) assignment index) :=
+        Assignment.extend_varsBelow (domain := domain) limit
+          (.var (binders depth)) assignment rootBound assignmentBound
+      have bodyNames : ∀ offset < body.binderDepth, binders (depth + 1 + offset) < limit := by
+        intro offset smaller
+        have moved := bindersBound (offset + 1) (Nat.add_lt_add_right smaller 1)
+        simpa only [Nat.add_assoc, Nat.add_comm 1 offset] using moved
+      have bodyTerm := encode_varsBelow signature.symbol base constant binders limit baseBound constantBound body
+        (Assignment.extend (.var (binders depth)) assignment) (depth + 1) assignmentExtended bodyNames
+      change ProofWitness.VarsBelow limit (.theoremApp _ _ _)
+      simp only [ProofWitness.VarsBelow, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
+      constructor
+      · first
+        | exact ⟨antecedentBound, encodeType_varsBelow _ _ _ baseBound _, encodeType_varsBelow _ _ _ baseBound _, rootBound, bodyTerm⟩
+        | exact ⟨encodeType_varsBelow _ _ _ baseBound domain, antecedentBound, rootBound, bodyTerm⟩
+      · apply ih
+        · exact baseBound
+        · exact constantBound
+        · exact assignmentExtended
+        · exact extensionBound
+        · exact bodyNames
+        · intro type index
+          cases index with
+          | vz =>
+              change ProofWitness.VarsBelow limit (.theoremApp _ _ [])
+              simpa only [ProofWitness.VarsBelow, List.mem_cons, List.not_mem_nil, or_false,
+                forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, and_true] using
+                And.intro antecedentBound extraBound
+          | vs index =>
+              exact HOLKernelStructuralRules.weaken_varsBelow signature structural limit antecedent extra _
+                antecedentSorted extraSorted
+                (hasType_sorted signature context (assignmentSorted index)
+                  (encodeType_sorted signature context base baseSorted type)) (variableProof index)
+                antecedentBound extraBound
+                ⟨⟨trivial, assignmentBound index⟩, encodeType_varsBelow _ _ _ baseBound type⟩ (variableProofBound index)
+        · intro type symbol
+          exact HOLKernelStructuralRules.weaken_varsBelow signature structural limit antecedent extra _
+            antecedentSorted extraSorted
+            (hasType_sorted signature context (constantSorted symbol)
+              (encodeType_sorted signature context base baseSorted type)) (constantProof symbol)
+            antecedentBound extraBound
+            ⟨⟨trivial, constantBound symbol⟩, encodeType_varsBelow _ _ _ baseBound type⟩ (constantProofBound symbol)
+
+#print axioms compileWithAssignment_varsBelow
+
+theorem weakenVariables_varsBelow (signature : Signature sorts terms)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (base : Base → Preterm) {gamma : Ctx Base} (assignment : Assignment gamma)
+    (antecedent extra : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (extraSorted : Preterm.HasType terms context extra [] signature.ids.wff)
+    (baseSorted : ∀ index, Preterm.HasType terms context (base index) [] signature.ids.type)
+    (assignmentSorted : ∀ {type} (index : Var gamma type),
+      Preterm.HasType terms context (assignment index) [] signature.ids.object)
+    (proofs : ∀ {type} (index : Var gamma type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+        (context := context) (hypotheses := hypotheses)
+        (typed signature.symbol antecedent (assignment index) (encodeType signature.symbol base type)))
+    (limit : Nat)
+    (baseBound : ∀ index, Preterm.VarsBelow limit (base index))
+    (valuesBound : ∀ {type} (index : Var gamma type), Preterm.VarsBelow limit (assignment index))
+    (antecedentBound : Preterm.VarsBelow limit antecedent) (extraBound : Preterm.VarsBelow limit extra)
+    (proofsBound : ∀ {type} (index : Var gamma type), (proofs index).val.VarsBelow limit) :
+    ∀ {type} (index : Var gamma type),
+      (weakenVariables signature structural base assignment antecedent extra antecedentSorted extraSorted baseSorted assignmentSorted proofs index).val.VarsBelow limit := by
+  intro type index
+  exact HOLKernelStructuralRules.weaken_varsBelow signature structural limit antecedent extra _
+    antecedentSorted extraSorted
+    (hasType_sorted signature context (assignmentSorted index) (encodeType_sorted signature context base baseSorted type))
+    (proofs index) antecedentBound extraBound
+    ⟨⟨trivial, valuesBound index⟩, encodeType_varsBelow _ _ _ baseBound type⟩ (proofsBound index)
+
+theorem weakenConstants_varsBelow (signature : Signature sorts terms)
+    (structural : HOLKernelStructuralRules.Rules theorems signature.symbol signature.ids.wff)
+    (base : Base → Preterm) (constant : ∀ {type}, Const type → Preterm)
+    (antecedent extra : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (extraSorted : Preterm.HasType terms context extra [] signature.ids.wff)
+    (baseSorted : ∀ index, Preterm.HasType terms context (base index) [] signature.ids.type)
+    (constantSorted : ∀ {type} (symbol : Const type),
+      Preterm.HasType terms context (constant symbol) [] signature.ids.object)
+    (proofs : ∀ {type} (symbol : Const type),
+      CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+        (context := context) (hypotheses := hypotheses)
+        (typed signature.symbol antecedent (constant symbol) (encodeType signature.symbol base type)))
+    (limit : Nat)
+    (baseBound : ∀ index, Preterm.VarsBelow limit (base index))
+    (valuesBound : ∀ {type} (symbol : Const type), Preterm.VarsBelow limit (constant symbol))
+    (antecedentBound : Preterm.VarsBelow limit antecedent) (extraBound : Preterm.VarsBelow limit extra)
+    (proofsBound : ∀ {type} (symbol : Const type), (proofs symbol).val.VarsBelow limit) :
+    ∀ {type} (symbol : Const type),
+      (weakenConstants signature structural base constant antecedent extra antecedentSorted extraSorted baseSorted constantSorted proofs symbol).val.VarsBelow limit := by
+  intro type symbol
+  exact HOLKernelStructuralRules.weaken_varsBelow signature structural limit antecedent extra _
+    antecedentSorted extraSorted
+    (hasType_sorted signature context (constantSorted symbol) (encodeType_sorted signature context base baseSorted type))
+    (proofs symbol) antecedentBound extraBound
+    ⟨⟨trivial, valuesBound symbol⟩, encodeType_varsBelow _ _ _ baseBound type⟩ (proofsBound symbol)
+
+
 end Mettapedia.Languages.MM0.HOLKernelTermTyping

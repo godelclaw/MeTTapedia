@@ -46,9 +46,8 @@ theorem rootProjection_factor (request : Request)
       reconstruct request result (target? request (localTarget result)) := by
   cases result with
   | root trace captured completed history target valid =>
-      unfold rootProjection finishRoot reconstruct target? localTarget
-      split
-      · split <;> simp_all
+      simp only [rootProjection, finishRoot, finishRootIn, reconstruct, target?, localTarget]
+      split_ifs <;> rfl
 
 /-- Extracting only the target from a checked receipt forgets no part of the
 replacement decision. The remaining fields are reconstructed separately. -/

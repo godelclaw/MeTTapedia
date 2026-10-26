@@ -10,6 +10,8 @@ import Mettapedia.Cybernetics.ApproximateAdequacy.Weighting
 import Mettapedia.Cybernetics.ApproximateAdequacy.DefectLaws
 import Mettapedia.Cybernetics.ApproximateAdequacy.Hosting
 import Mettapedia.Cybernetics.ApproximateAdequacy.Combined
+import Mettapedia.Cybernetics.ApproximateAdequacy.RecoveryDecision
+import Mettapedia.Cybernetics.ApproximateAdequacy.MemoryRecovery
 import Mettapedia.Cybernetics.ApproximateAdequacy.DeliveryExample
 import Mettapedia.Cybernetics.ApproximateAdequacy.RoadMapExample
 import Mettapedia.Cybernetics.ApproximateAdequacy.DelayedFailureExample
@@ -59,6 +61,9 @@ certificates relate and compose.
   over a slippery bridge and on the road map under revision.
 * `DelayedFailureExample`: discounting forgives a delayed failure that no
   approximate bisimulation below `1` tolerates.
+* `RecoveryDecision`: reference-conditioned recovery of finite deterministic
+  observations. Discarded KL bounds reconstructed expectations and decision
+  regret; retained Bayesian likelihoods commute with recovery.
 * `FiniteApproximateLumpability`: rowwise finite-distribution errors form
   approximate observation squares, mix through priors, compose by coupling
   costs, and inherit additive or geometric iteration bounds.

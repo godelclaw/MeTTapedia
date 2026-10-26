@@ -196,7 +196,8 @@ theorem query_completed {allowed : List Token} {choice : Choice} {bound : List T
     ∃ fuel, GeneralPremise.Scheduler.complete
       (GeneralPremise.Query.run (environment allowed) (query choice bound initial) fuel
         (GeneralPremise.Query.start (environment allowed) (query choice bound initial))) = true := by
-  obtain ⟨fuel, idle⟩ := GeneralPremise.Query.finiteDrain (environment allowed) (query choice bound initial)
+  obtain ⟨fuel, idle⟩ := GeneralPremise.Query.finiteDrain GeneralPremise.MatchingExecution.ordinaryCursorCost
+    (environment allowed) (query choice bound initial)
     (GeneralPremise.Query.start (environment allowed) (query choice bound initial))
   exact ⟨fuel, (GeneralPremise.Scheduler.complete_iff _).mpr ⟨idle, query_run_unresolved typed names fuel⟩⟩
 

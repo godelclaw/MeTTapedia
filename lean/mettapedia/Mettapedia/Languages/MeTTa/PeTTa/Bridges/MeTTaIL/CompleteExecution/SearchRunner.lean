@@ -104,8 +104,8 @@ macro_rules
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
     `(tactic|
-      (metta_call runner_checked
-       metta_eval [$facts,*] with runner_checked
+      (metta_call_in runnerProof_checked using runnerProof_agreement
+       metta_eval [$facts,*] with runnerProof_checked in runnerProof_agreement
          unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil,
            Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
            Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,

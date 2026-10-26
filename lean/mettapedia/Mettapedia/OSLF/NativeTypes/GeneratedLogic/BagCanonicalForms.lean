@@ -306,7 +306,7 @@ theorem equivalent_canon : ∀ term : Pattern, isObjectPattern term = true → s
       | hashBag =>
         rw [arrange_bag] at sorted ⊢
         simp only [bagsSorted, Bool.and_eq_true] at sorted
-        obtain ⟨rule, carrier, sortedAt⟩ := sortedBag_sound sorted.1
+        obtain ⟨_, _, sortedAt⟩ := sortedBag_sound sorted.1
         have mappedObject : ∀ pattern ∈ elements.map canon, IsObject pattern := by
           intro pattern member
           obtain ⟨element, inside, rfl⟩ := List.mem_map.mp member
@@ -315,7 +315,7 @@ theorem equivalent_canon : ∀ term : Pattern, isObjectPattern term = true → s
             (.collection .hashBag (elements.map canon) none) :=
           ⟨collectionObject _ fun pattern member => mappedObject pattern ((sortLex_perm _).subset member),
             collectionObject _ mappedObject,
-            .inContext .hole (Or.inr (.bagPerm carrier sortedAt (sortLex_perm _)))⟩
+            .inContext .hole (Or.inr (.bagPerm_of_sorted sortedAt (sortLex_perm _)))⟩
         exact Relation.EqvGen.trans _ _ _ mapped (Relation.EqvGen.symm _ _ (Relation.EqvGen.rel _ _ step))
 termination_by term => sizeOf term
 
@@ -808,7 +808,7 @@ theorem simulates (guarded : language.rewrites.all (fun rule => rule.premises.al
 /-- **Guarded rules are coherent with sorted bags.** -/
 theorem coherent (noEquations : language.equations = []) (noAlgebra : language.hasAlgebraDeclarations = false)
     (guarded : language.rewrites.all (fun rule => rule.premises.all guard) = true) (fuel : ℕ) :
-    Coherent relEnv language fuel sortBags (domain language) :=
+    Coherent relEnv language fuel sortBags (domain language) List.singleton :=
   coherent_of_simulation (canonical noEquations noAlgebra) fun {redex _ _} _ admitted valid => by
     simp only [domain, sortBags_eq_canon, Bool.and_eq_true] at admitted
     rw [sortBags_eq_canon]
@@ -1006,7 +1006,7 @@ theorem simulatesQueries (respects : RespectsCanon relEnv)
 environment that respects canonical forms. -/
 theorem coherentQueries (noEquations : language.equations = []) (noAlgebra : language.hasAlgebraDeclarations = false)
     (queried : language.rewrites.all (fun rule => rule.premises.all query) = true) (respects : RespectsCanon relEnv)
-    (fuel : ℕ) : Coherent relEnv language fuel sortBags (domain language) :=
+    (fuel : ℕ) : Coherent relEnv language fuel sortBags (domain language) List.singleton :=
   coherent_of_simulation (canonical noEquations noAlgebra) fun {redex _ _} _ admitted valid => by
     simp only [domain, sortBags_eq_canon, Bool.and_eq_true] at admitted
     rw [sortBags_eq_canon]

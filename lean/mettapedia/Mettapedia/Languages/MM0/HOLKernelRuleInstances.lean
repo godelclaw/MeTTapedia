@@ -12,7 +12,7 @@ proof of the resulting rule instance and from native theorem licensing.
 
 set_option autoImplicit false
 namespace Mettapedia.Languages.MM0.HOLKernelRuleInstances
-open Mettapedia.Logic.HOL
+open Mettapedia.Logic Mettapedia.Logic.HOL
 open Kernel HOLKernelSyntax HOLKernelTermReadback HOLKernelJudgmentReadback
 universe u
 variable {Const : Ty Unit → Type u} {gamma : Ctx Unit}
@@ -266,5 +266,61 @@ def readStructuralArguments (reader : TermReader Const) (references : HOLKernelS
       pure (.anr p q)
   | _, _ => none
 
+
+/-- Renaming source operands preserves the selected native schema. -/
+def InferenceArguments.rename {delta : Ctx Unit} {rule : HOLKernelInferenceRules.Rule}
+    (rho : Rename Unit gamma delta) :
+    InferenceArguments Const gamma rule → InferenceArguments Const delta rule
+  | .truth g => .truth (HOL.rename rho g)
+  | .contradiction g p => .contradiction (HOL.rename rho g) (HOL.rename rho p)
+  | .conjunctionIntroduction g p q => .conjunctionIntroduction (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .conjunctionLeft g p q => .conjunctionLeft (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .conjunctionRight g p q => .conjunctionRight (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .disjunctionLeft g p q => .disjunctionLeft (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .disjunctionRight g p q => .disjunctionRight (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .disjunctionElimination g p q r => .disjunctionElimination (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q) (HOL.rename rho r)
+  | .implicationIntroduction g p q => .implicationIntroduction (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .implicationElimination g p q => .implicationElimination (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .negationIntroduction g p => .negationIntroduction (HOL.rename rho g) (HOL.rename rho p)
+  | .negationElimination g p => .negationElimination (HOL.rename rho g) (HOL.rename rho p)
+  | .reflexivity g t => .reflexivity (HOL.rename rho g) (HOL.rename rho t)
+  | .symmetry g t s => .symmetry (HOL.rename rho g) (HOL.rename rho t) (HOL.rename rho s)
+  | .transitivity g t s v => .transitivity (HOL.rename rho g) (HOL.rename rho t) (HOL.rename rho s) (HOL.rename rho v)
+  | .propositionalExtensionality g p q => .propositionalExtensionality (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .equalityImplicationLeft g p q => .equalityImplicationLeft (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .equalityImplicationRight g p q => .equalityImplicationRight (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .applicationFunction g t f h => .applicationFunction (HOL.rename rho g) (HOL.rename rho t) (HOL.rename rho f) (HOL.rename rho h)
+  | .applicationArgument g t s f => .applicationArgument (HOL.rename rho g) (HOL.rename rho t) (HOL.rename rho s) (HOL.rename rho f)
+  | .booleanEqualityElimination g p q => .booleanEqualityElimination (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+
+theorem InferenceArguments.rename_premises {delta : Ctx Unit} {rule : HOLKernelInferenceRules.Rule}
+    (rho : Rename Unit gamma delta) (arguments : InferenceArguments Const gamma rule) :
+    (arguments.rename rho).premises = arguments.premises.map (HOL.rename rho) := by
+  cases arguments <;> rfl
+
+theorem InferenceArguments.rename_conclusion {delta : Ctx Unit} {rule : HOLKernelInferenceRules.Rule}
+    (rho : Rename Unit gamma delta) (arguments : InferenceArguments Const gamma rule) :
+    (arguments.rename rho).conclusion = HOL.rename rho arguments.conclusion := by
+  cases arguments <;> rfl
+
+/-- The structural rule and ordered premise positions are unchanged by renaming. -/
+def StructuralArguments.rename {delta : Ctx Unit} {rule : HOLKernelStructuralRules.Rule}
+    (rho : Rename Unit gamma delta) :
+    StructuralArguments Const gamma rule → StructuralArguments Const delta rule
+  | .id p => .id (HOL.rename rho p)
+  | .syl p q r => .syl (HOL.rename rho p) (HOL.rename rho q) (HOL.rename rho r)
+  | .ian g p q => .ian (HOL.rename rho g) (HOL.rename rho p) (HOL.rename rho q)
+  | .anl p q => .anl (HOL.rename rho p) (HOL.rename rho q)
+  | .anr p q => .anr (HOL.rename rho p) (HOL.rename rho q)
+
+theorem StructuralArguments.rename_premises {delta : Ctx Unit} {rule : HOLKernelStructuralRules.Rule}
+    (rho : Rename Unit gamma delta) (arguments : StructuralArguments Const gamma rule) :
+    (arguments.rename rho).premises = arguments.premises.map (HOL.rename rho) := by
+  cases arguments <;> rfl
+
+theorem StructuralArguments.rename_conclusion {delta : Ctx Unit} {rule : HOLKernelStructuralRules.Rule}
+    (rho : Rename Unit gamma delta) (arguments : StructuralArguments Const gamma rule) :
+    (arguments.rename rho).conclusion = HOL.rename rho arguments.conclusion := by
+  cases arguments <;> rfl
 
 end Mettapedia.Languages.MM0.HOLKernelRuleInstances

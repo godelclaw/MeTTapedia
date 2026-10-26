@@ -241,4 +241,35 @@ theorem checkedSource?_retains {source : SourceTerm} {out : CheckedSourceTerm}
   · cases Option.some.inj accepted
     rfl
 
+theorem replayFrom_registered (policy : AxiomPolicy) [DecidablePred policy]
+    (before : State) (events : List Event) (after : State)
+    (accepted : replayFrom policy before events = some after) :
+    Registered.replayFrom policy before.registered (events.map Event.command) = some after.registered := by
+  induction events generalizing before with
+  | nil =>
+    have same := Option.some.inj accepted
+    cases same
+    rfl
+  | cons head tail ih =>
+    cases applied : apply policy before head with
+    | none => simp [replayFrom,applied] at accepted
+    | some middle =>
+      have rest : replayFrom policy middle tail = some after := by simpa [replayFrom,applied] using accepted
+      simpa only [List.map,Registered.replayFrom,(apply_checked policy applied).1,bind,Option.bind] using ih middle rest
+
+theorem root_mem_cache {state : State} {id : Nat} {claim : Sequent} {out : Theorem}
+    (found : root? state id claim = some out) : out ∈ state.registered.cache := by
+  cases address : state.addresses[id]? with
+  | none => simp [root?,address] at found
+  | some index =>
+    cases cached : state.registered.cache[index]? with
+    | none => simp [root?,address,cached] at found
+    | some actual =>
+      simp only [root?,address,cached] at found
+      split at found
+      · cases Option.some.inj found
+        exact Array.mem_of_getElem? cached
+      · contradiction
+
+
 end Mettapedia.Languages.HOLLight.ExportReplay

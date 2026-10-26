@@ -2134,7 +2134,7 @@ theorem expanded_guarded_source_observation
             | some value =>
                 have same : answer = value := by simpa [computed] using emitted
                 simp only [← same]
-          unfold GeneralRuleJobExecution.finishRoot at finished
+          unfold GeneralRuleJobExecution.finishRoot GeneralRuleJobExecution.finishRootIn at finished
           split at finished
           next represented =>
             split at finished

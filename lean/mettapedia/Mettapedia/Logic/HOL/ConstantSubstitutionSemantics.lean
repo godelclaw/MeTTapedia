@@ -401,4 +401,144 @@ end ConstantSubstitutionExample
 #print axioms ConstantSubstitutionExample.once_refutes_doubleNegation
 #print axioms ConstantSubstitutionExample.twiceReduct_not_fullDomains
 
+namespace Term
+
+/-- Every constant occurrence meets the stated predicate, including under binders. -/
+def SymbolsSatisfy (allowed : ∀ {type}, Const type → Prop) :
+    {context : Ctx Base} → {type : Ty Base} → Term Const context type → Prop
+  | _, _, .var _ | _, _, .top | _, _, .bot => True
+  | _, _, .const symbol => allowed symbol
+  | _, _, .app first second | _, _, .and first second | _, _, .or first second |
+      _, _, .imp first second | _, _, .eq first second =>
+      SymbolsSatisfy allowed first ∧ SymbolsSatisfy allowed second
+  | _, _, .lam body | _, _, .not body | _, _, .all body | _, _, .ex body =>
+      SymbolsSatisfy allowed body
+end Term
+
+namespace HenkinModel
+
+private theorem standard_eqv
+    (carrier : Base → Type (max (u+1) w))
+    (first second : ∀ {type}, Const type → Ty.denote carrier type) :
+    ∀ type (left right : Ty.denote carrier type),
+      (standard carrier first).Eqv type left right ↔ (standard carrier second).Eqv type left right := by
+  intro type
+  induction type with
+  | prop => intro _ _; rfl
+  | base => intro _ _; rfl
+  | arr domain codomain _ ih =>
+    intro left right
+    constructor
+    · intro related value present
+      exact (ih _ _).mp (related value present)
+    · intro related value present
+      exact (ih _ _).mpr (related value present)
+
+/-- At fixed carriers, agreement on the constants used by an open term
+preserves its complete denotation under every valuation. -/
+theorem standard_denote_eq_of_symbols
+    (carrier : Base → Type (max (u+1) w))
+    (first second : ∀ {type}, Const type → Ty.denote carrier type)
+    (allowed : ∀ {type}, Const type → Prop)
+    (agree : ∀ {type} (symbol : Const type), allowed symbol → first symbol = second symbol)
+    {context : Ctx Base} {type : Ty Base} (term : Term Const context type)
+    (supported : term.SymbolsSatisfy allowed)
+    (valuation : (standard carrier first).Valuation context) :
+    (standard carrier first).denote term valuation = (standard carrier second).denote term valuation := by
+  induction term with
+  | var index => rfl
+  | const symbol => exact agree symbol supported
+  | app function argument ihf iha =>
+    exact congrArg₂ (fun f x => f x) (ihf supported.1 valuation) (iha supported.2 valuation)
+  | lam body ih =>
+    funext value
+    exact ih supported ((standard carrier first).extend valuation value)
+  | top => rfl
+  | bot => rfl
+  | and left right ihl ihr =>
+    exact congrArg₂ (fun (p q : ULift Prop) => ULift.up (p.down ∧ q.down))
+      (ihl supported.1 valuation) (ihr supported.2 valuation)
+  | or left right ihl ihr =>
+    exact congrArg₂ (fun (p q : ULift Prop) => ULift.up (p.down ∨ q.down))
+      (ihl supported.1 valuation) (ihr supported.2 valuation)
+  | imp left right ihl ihr =>
+    exact congrArg₂ (fun (p q : ULift Prop) => ULift.up (p.down → q.down))
+      (ihl supported.1 valuation) (ihr supported.2 valuation)
+  | not body ih =>
+    exact congrArg (fun (p : ULift Prop) => ULift.up (¬ p.down)) (ih supported valuation)
+  | @eq context operand left right ihl ihr =>
+    apply (congrArg₂ (fun (x y : Ty.denote carrier operand) =>
+      ULift.up ((standard carrier first).Eqv operand x y))
+      (ihl supported.1 valuation) (ihr supported.2 valuation)).trans
+    exact congrArg ULift.up (propext (standard_eqv carrier first second operand _ _))
+  | all body ih =>
+    apply congrArg ULift.up
+    apply propext
+    constructor
+    · intro holds value present
+      exact (congrArg ULift.down (ih supported ((standard carrier first).extend valuation value))).mp
+        (holds value present)
+    · intro holds value present
+      exact (congrArg ULift.down (ih supported ((standard carrier first).extend valuation value))).mpr
+        (holds value present)
+  | ex body ih =>
+    apply congrArg ULift.up
+    apply propext
+    constructor
+    · rintro ⟨value,present,holds⟩
+      exact ⟨value,present,(congrArg ULift.down
+        (ih supported ((standard carrier first).extend valuation value))).mp holds⟩
+    · rintro ⟨value,present,holds⟩
+      exact ⟨value,present,(congrArg ULift.down
+        (ih supported ((standard carrier first).extend valuation value))).mpr holds⟩
+
+end HenkinModel
+namespace Term
+universe u'
+
+theorem SymbolsSatisfy.mapTypes {Base' : Type u'} {Const' : Ty Base' → Type v'}
+    (substitution : Base → Ty Base')
+    (constants : ∀ {type}, Const type → Const' (Ty.substitute substitution type))
+    (allowed : ∀ {type}, Const type → Prop) (targetAllowed : ∀ {type}, Const' type → Prop)
+    (preserves : ∀ {type} (symbol : Const type), allowed symbol → targetAllowed (constants symbol))
+    {context : Ctx Base} {type : Ty Base} (term : Term Const context type)
+    (supported : term.SymbolsSatisfy allowed) :
+    (HOL.mapTypes substitution constants term).SymbolsSatisfy targetAllowed := by
+  induction term with
+  | var => trivial
+  | const symbol => exact preserves symbol supported
+  | app first second ihf ihs => exact ⟨ihf supported.1,ihs supported.2⟩
+  | and first second ihf ihs => exact ⟨ihf supported.1,ihs supported.2⟩
+  | or first second ihf ihs => exact ⟨ihf supported.1,ihs supported.2⟩
+  | imp first second ihf ihs => exact ⟨ihf supported.1,ihs supported.2⟩
+  | eq first second ihf ihs => exact ⟨ihf supported.1,ihs supported.2⟩
+  | lam body ih | not body ih | all body ih | ex body ih => exact ih supported
+  | top => trivial
+  | bot => trivial
+end Term
+
+namespace Term
+
+theorem SymbolsSatisfy.substConst_eq (replacement : ∀ {type}, Const type → ClosedTerm Const type)
+    (allowed : ∀ {type}, Const type → Prop)
+    (fixed : ∀ {type} (constant : Const type), allowed constant → replacement constant = .const constant)
+    {context : Ctx Base} {type : Ty Base} (term : Term Const context type)
+    (supported : term.SymbolsSatisfy allowed) : HOL.substConst replacement term = term := by
+  induction term with
+  | var => rfl
+  | const constant => simp only [HOL.substConst,fixed constant supported,HOL.weakenCtx_const]
+  | app first second ihf ihs => exact congrArg₂ Term.app (ihf supported.1) (ihs supported.2)
+  | lam body ih => exact congrArg Term.lam (ih supported)
+  | top => rfl
+  | bot => rfl
+  | and first second ihf ihs => exact congrArg₂ Term.and (ihf supported.1) (ihs supported.2)
+  | or first second ihf ihs => exact congrArg₂ Term.or (ihf supported.1) (ihs supported.2)
+  | imp first second ihf ihs => exact congrArg₂ Term.imp (ihf supported.1) (ihs supported.2)
+  | not body ih => exact congrArg Term.not (ih supported)
+  | eq first second ihf ihs => exact congrArg₂ Term.eq (ihf supported.1) (ihs supported.2)
+  | all body ih => exact congrArg Term.all (ih supported)
+  | ex body ih => exact congrArg Term.ex (ih supported)
+
+end Term
+
 end Mettapedia.Logic.HOL

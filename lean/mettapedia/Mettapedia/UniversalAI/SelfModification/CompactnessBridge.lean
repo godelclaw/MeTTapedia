@@ -194,7 +194,7 @@ theorem exists_optimal_worldAction_policy (data : RealisticValueData)
         vValue_worldAction data fixedName π h horizon ≤
         vValue_worldAction data fixedName π_opt h horizon := by
   -- The policy space is compact
-  haveI : CompactSpace WorldActionPolicy := worldActionPolicy_compactSpace
+  have : CompactSpace WorldActionPolicy := worldActionPolicy_compactSpace
   -- The value function is continuous
   have h_cont := vValue_worldAction_continuous data fixedName h horizon
   -- The space is nonempty

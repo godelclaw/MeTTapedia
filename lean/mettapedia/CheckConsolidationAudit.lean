@@ -60,14 +60,10 @@ open Mettapedia.Algebra
 #check @CostStaticAtomKeyCospan.CommonRestorationApex.of_canonicalRootAligned_languageQuoteHead
 
 -- ===== Algebra negatives =====
-#check @Mettapedia.Algebra.WorkSpan.ValuedRun
-#check @Mettapedia.Algebra.WorkSpan.ForgetsObservation
-#check @Mettapedia.Algebra.WorkSpan.workSpan_forgets_any_separating_attribute
-#check @Mettapedia.Algebra.WorkSpan.workSpan_forgets_colour
-#check @Mettapedia.Algebra.WorkSpan.workSpan_forgets_declaration
-#check @Mettapedia.Algebra.WorkSpan.workSpan_forgets_receipt
-#check @Mettapedia.Algebra.WorkSpan.workSpan_forgets_causalOrder
-#check @Mettapedia.Algebra.WorkSpan.workSpan_forgets_elaborationPath
+#check @Mettapedia.Algebra.recoverOnImage
+#check @Mettapedia.Algebra.recoverOnImage_apply
+#check @Mettapedia.Algebra.recoverOnImage_unique
+#check @Mettapedia.Algebra.recovery_on_image_iff
 #check @Mettapedia.Algebra.WorkSpan.work_does_not_determine_span
 #check @Mettapedia.Algebra.WorkSpan.span_does_not_determine_work
 #check @Mettapedia.Algebra.WorkSpan.sequential_eq_parallel_of_zero_right

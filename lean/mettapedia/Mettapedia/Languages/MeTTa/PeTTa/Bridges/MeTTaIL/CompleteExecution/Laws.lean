@@ -1,7 +1,7 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.LawsSource
-import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Positions
-import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Lower
-import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Sizes
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Scoped
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralScopedMatchExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.StandardWire
 
 /-!
@@ -45,7 +45,7 @@ macro_rules
   | `(tactic| laws_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call laws_checked; metta_eval [$facts,*] with laws_checked
+    `(tactic| (metta_call_in lawsProof_checked using lawsProof_agreement; metta_eval [$facts,*] with lawsProof_checked in lawsProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, pattern_symbol_unmatched,
@@ -58,7 +58,7 @@ theorem laws_append_returns {α : Type} (element : α → Term) (state : State) 
       (apply "gslt:automata:append"
         [encoded (CettaWire.encodeList element left), encoded (CettaWire.encodeList element right)])
       state (encoded (CettaWire.encodeList element (left ++ right))) := by
-  metta_lift laws_checked ["left", "right"] (complete_append_returns element state left right)
+  exact automata_append_returns element state left right
 
 theorem laws_append_patterns_returns (state : State) (left right : List Pattern) :
     PureReturns lawsLibrary.runtime [] state (apply "gslt:automata:append" [patternsValue left, patternsValue right])
@@ -68,9 +68,9 @@ theorem laws_append_patterns_returns (state : State) (left right : List Pattern)
 theorem laws_length_returns (state : State) (items : List Pattern) :
     PureReturns lawsLibrary.runtime [] state (apply "gslt:automata:length" [patternsValue items]) state
       (number items.length) := by
-  have below := complete_length_returns encodePattern state items
+  have below := automata_length_returns encodePattern state items
   rw [← encodePatterns_eq_encodeList] at below
-  metta_lift laws_checked ["items"] below
+  exact below
 
 theorem listNodes_sum : ∀ patterns : List Pattern, listNodes patterns = (patterns.map nodes).sum
   | [] => rfl
@@ -81,31 +81,31 @@ theorem laws_nodes_list_returns (state : State) (patterns : List Pattern) :
       (number (patterns.map nodes).sum) := by
   have below := nodes_list_of state patterns (fun pattern _ => nodes_returns state pattern)
   rw [listNodes_sum] at below
-  metta_lift laws_checked ["patterns"] below
+  exact below
 
-open PremiseOperationsExecution.GeneralExecution.EnvironmentExecution.PremiseTransitions.Lower in
 theorem laws_lift_bvars_list_returns (state : State) (cutoff shift : Nat) (patterns : List Pattern) :
     PureReturns lawsLibrary.runtime [] state
       (apply "gslt:rule:lift-bvars-list" [number cutoff, number shift, patternsValue patterns]) state
       (patternsValue (Substitution.liftBVarsList cutoff shift patterns)) := by
+  have inMatcher : PureReturns GeneralScopedMatchExecution.program [] state
+      (apply "gslt:rule:lift-bvars-list" [number cutoff, number shift, patternsValue patterns]) state
+      (patternsValue (Substitution.liftBVarsList cutoff shift patterns)) :=
+    transport_call GeneralScopedMatchExecution.base_program_closed
+      GeneralScopedMatchExecution.base_program_agreement
+      (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+      ["cutoff", "shift", "patterns"] (by decide) rfl (by decide +kernel)
+      (RuleInstantiationExecution.lift_bvars_list_returns state cutoff shift patterns)
   have inScoped : PureReturns RuleExecutionProgram.scopedMachineProgram [] state
       (apply "gslt:rule:lift-bvars-list" [number cutoff, number shift, patternsValue patterns]) state
       (patternsValue (Substitution.liftBVarsList cutoff shift patterns)) :=
-    transport_call rule_closed rule_agreement (by decide +kernel) (by decide) (by decide +kernel)
-      (by decide) ["cutoff", "shift", "patterns"] (by decide) rfl (by decide +kernel)
-      (RuleInstantiationExecution.lift_bvars_list_returns state cutoff shift patterns)
-  have descent : PureReturns descentLibrary.runtime [] state
-      (apply "gslt:rule:lift-bvars-list" [number cutoff, number shift, patternsValue patterns]) state
-      (patternsValue (Substitution.liftBVarsList cutoff shift patterns)) := by
-    metta_lift descent_checked ["cutoff", "shift", "patterns"]
-      (by metta_lift typed_checked ["cutoff", "shift", "patterns"]
-        (transport_call scopedMachine_closed scopedMachine_agreement (by decide +kernel) (by decide)
-          (by decide +kernel) (by decide) ["cutoff", "shift", "patterns"] (by decide) rfl (by decide +kernel) inScoped))
-  have complete : PureReturns runtime [] state
-      (apply "gslt:rule:lift-bvars-list" [number cutoff, number shift, patternsValue patterns]) state
-      (patternsValue (Substitution.liftBVarsList cutoff shift patterns)) := by
-    metta_lift complete_checked ["cutoff", "shift", "patterns"] descent
-  metta_lift laws_checked ["cutoff", "shift", "patterns"] complete
+    transport_call RuleInstantiationExecution.GeneralExecution.MachineTransport.program_closed
+      RuleInstantiationExecution.GeneralExecution.Mechanical.matcher_agreement
+      (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+      ["cutoff", "shift", "patterns"] (by decide) rfl (by decide +kernel) inMatcher
+  exact transport_call RetainedMatchingWire.scopedPrimitive_closed
+    RetainedMatchingWire.scopedPrimitive_agreement
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["cutoff", "shift", "patterns"] (by decide) rfl (by decide +kernel) inScoped
 
 /-! ## Collection laws -/
 
@@ -272,53 +272,227 @@ abbrev HoistAt (state : State) (extrusion : Extrusion) (fuel : Nat) (done todo :
     (apply "gslt:laws:hoist" [encoded (extrusionTerm extrusion), number fuel, patternsValue done, patternsValue todo])
     state (patternValue (hoist extrusion fuel done todo))
 
-/-- An element that is not hoisted: it joins the done list and hoisting goes on. -/
-syntax "hoist_kept" " [" term,* "]" : tactic
+/-- The five operation heads reachable from binder extrusion. -/
+private def hoistHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || ["gslt:laws:hoist", "gslt:laws:body-items",
+    "gslt:automata:append", "gslt:rule:lift-bvars", "gslt:rule:lift-bvars-list"].contains head
+
+/-- Source-derived rows for the finite extrusion proof. The equality below
+checks this slice once against the selected source. -/
+private def hoistProofSource : SpaceSemantics.Program where
+  equations :=
+    [MatchAutomataProgram.source.program.equations[0]'(by decide +kernel),
+     RuleExecutionProgram.source.program.equations[35]'(by decide +kernel),
+     RuleExecutionProgram.source.program.equations[36]'(by decide +kernel),
+     lawsSource.program.equations[6]'(by decide +kernel),
+     lawsSource.program.equations[7]'(by decide +kernel)]
+  declarations :=
+    [MatchAutomataProgram.source.program.declarations[0]'(by decide +kernel),
+     RuleExecutionProgram.source.program.declarations[35]'(by decide +kernel),
+     RuleExecutionProgram.source.program.declarations[36]'(by decide +kernel),
+     lawsSource.program.declarations[6]'(by decide +kernel),
+     lawsSource.program.declarations[7]'(by decide +kernel)]
+  layout := List.replicate 5 .equation ++ List.replicate 5 .declaration
+
+private def hoistLibrary : BridgeKit.Library :=
+  ⟨{ equations := [], declarations := [] }, hoistProofSource, ["gslt:"]⟩
+
+private local instance hoistEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧
+    left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+set_option maxRecDepth 100000 in
+private theorem hoist_fragment_equations : hoistLibrary.runtime.equations =
+    RuleExecutionProgram.interpretedPremiseProgram.equations.filter (fun row => hoistHeads row.head) := by
+  decide +kernel
+
+set_option maxRecDepth 100000 in
+private theorem hoist_fragment_declarations : hoistLibrary.runtime.declarations =
+    RuleExecutionProgram.interpretedPremiseProgram.declarations.filter (retainedCallDeclaration hoistHeads) := by
+  decide +kernel
+
+set_option maxRecDepth 100000 in
+private theorem hoist_checked : hoistLibrary.check = true := by decide +kernel
+
+set_option maxRecDepth 100000 in
+private theorem hoist_closed : ProgramClosed hoistHeads hoistLibrary.runtime := by
+  apply closed_of_all _ _ (by decide +kernel)
+  decide +kernel
+
+private theorem hoist_agreement : ProgramAgreementOn hoistHeads
+    hoistLibrary.runtime RuleExecutionProgram.interpretedPremiseProgram :=
+  fragment_agreement _ _ hoist_fragment_equations hoist_fragment_declarations (fun _ kept => kept)
+
+private theorem hoist_raw_closed : ProgramClosed hoistHeads RuleExecutionProgram.interpretedPremiseProgram where
+  binding := hoist_closed.binding
+  bodies := by
+    intro equation member kept
+    have selected : equation ∈ hoistLibrary.runtime.equations := by
+      rw [hoist_fragment_equations]
+      exact List.mem_filter.mpr ⟨member, kept⟩
+    exact hoist_closed.bodies equation selected kept
+
+private theorem hoist_reverse : ProgramAgreementOn hoistHeads
+    RuleExecutionProgram.interpretedPremiseProgram hoistLibrary.runtime where
+  dispatch head kept := (hoist_agreement.dispatch head kept).symm
+  demand head index kept := (hoist_agreement.demand head index kept).symm
+  bodies head values kept := (hoist_agreement.bodies head values kept).symm
+
+private theorem hoist_append_returns (state : State) (left right : List Pattern) :
+    PureReturns hoistLibrary.runtime [] state
+      (apply "gslt:automata:append" [patternsValue left, patternsValue right])
+      state (patternsValue (left ++ right)) := by
+  exact transport_call hoist_raw_closed hoist_reverse
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["left", "right"] (by decide) rfl (by decide +kernel)
+    (laws_append_patterns_returns state left right)
+
+private theorem hoist_lift_returns (state : State) (cutoff shift : Nat) (patterns : List Pattern) :
+    PureReturns hoistLibrary.runtime [] state
+      (apply "gslt:rule:lift-bvars-list" [number cutoff, number shift, patternsValue patterns]) state
+      (patternsValue (Substitution.liftBVarsList cutoff shift patterns)) := by
+  exact transport_call hoist_raw_closed hoist_reverse
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["cutoff", "shift", "patterns"] (by decide) rfl (by decide +kernel)
+    (laws_lift_bvars_list_returns state cutoff shift patterns)
+
+private theorem hoist_body_returns (state : State) (kind : CollType) (body : Pattern) :
+    PureReturns hoistLibrary.runtime [] state
+      (apply "gslt:laws:body-items" [encoded (encodeCollectionType kind), patternValue body]) state
+      (patternsValue (bodyItems kind body)) := by
+  exact transport_call hoist_raw_closed hoist_reverse
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["kind", "body"] (by decide) rfl (by decide +kernel)
+    (body_items_returns state kind body)
+
+private abbrev HoistFragmentAt (state : State) (extrusion : Extrusion) (fuel : Nat)
+    (done todo : List Pattern) : Prop :=
+  PureReturns hoistLibrary.runtime [] state
+    (apply "gslt:laws:hoist" [encoded (extrusionTerm extrusion), number fuel,
+      patternsValue done, patternsValue todo]) state (patternValue (hoist extrusion fuel done todo))
+
+syntax "hoist_fragment_eval" (" [" term,* "]")? (" unfolding" " [" term,* "]")? : tactic
 macro_rules
-  | `(tactic| hoist_kept [$facts,*]) => `(tactic|
-      laws_eval [$facts,*] unfolding [HoistAt, hoist, extrusionTerm, patternValue, patternsValue, encodePattern,
+  | `(tactic| hoist_fragment_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
+    let facts := (facts.map (·.getElems)).getD #[]
+    let extra := (extra.map (·.getElems)).getD #[]
+    `(tactic| (metta_call hoist_checked; metta_eval [$facts,*]
+      unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+        Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+        Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, pattern_symbol_unmatched,
+        lawsValue, extrusionsValue, $extra,*]))
+
+/-- An element that is not hoisted: it joins the done list and hoisting goes on. -/
+syntax "hoist_fragment_kept" " [" term,* "]" : tactic
+macro_rules
+  | `(tactic| hoist_fragment_kept [$facts,*]) => `(tactic|
+      hoist_fragment_eval [$facts,*] unfolding [HoistFragmentAt, hoist, extrusionTerm, patternValue, patternsValue, encodePattern,
         encodePatterns, encodeBinder, encodeRest, InferenceCettaWire.encodeList])
 
-@[metta_head "gslt:laws:hoist"]
-theorem hoist_returns (state : State) (extrusion : Extrusion) :
-    ∀ (fuel : Nat) (done todo : List Pattern), HoistAt state extrusion fuel done todo
+private def hoistBinderShape : Pattern → Bool
+  | .apply _ [.lambda _ _] => true
+  | _ => false
+
+private theorem hoist_binder_step (state : State) (kind : CollType) (label : String)
+    (display : Option String) (body : Pattern) (fuel : Nat) (done todo : List Pattern)
+    (continued : HoistFragmentAt state ⟨kind, label⟩ fuel (done.map (Substitution.liftBVars 0 1))
+      (bodyItems kind body ++ todo.map (Substitution.liftBVars 0 1))) :
+    HoistFragmentAt state ⟨kind, label⟩ (fuel + 1) done (.apply label [.lambda display body] :: todo) := by
+  have inner := hoist_body_returns state kind body
+  have liftedDone := hoist_lift_returns state 0 1 done
+  have liftedRest := hoist_lift_returns state 0 1 todo
+  rw [Substitution.liftBVarsList_eq_map] at liftedDone liftedRest
+  have remaining := hoist_append_returns state (bodyItems kind body)
+    (todo.map (Substitution.liftBVars 0 1))
+  hoist_fragment_kept [inner, liftedDone, liftedRest, remaining, continued]
+
+private theorem hoist_distinct_binder_step (state : State) (kind : CollType) (binder label : String)
+    (display : Option String) (body : Pattern) (fuel : Nat) (done todo : List Pattern)
+    (differentBinder : label ≠ binder)
+    (continued : HoistFragmentAt state ⟨kind, binder⟩ fuel
+      (done ++ [.apply label [.lambda display body]]) todo) :
+    HoistFragmentAt state ⟨kind, binder⟩ (fuel + 1) done
+      (.apply label [.lambda display body] :: todo) := by
+  have kept := hoist_append_returns state done [.apply label [.lambda display body]]
+  have different : Term.string label ≠ Term.string binder :=
+    fun equal => differentBinder (by cases equal; rfl)
+  hoist_fragment_eval [kept, continued] unfolding [HoistFragmentAt, hoist, differentBinder,
+    different, extrusionTerm, patternValue, patternsValue, encodePattern, encodePatterns,
+    encodeBinder, encodeRest, InferenceCettaWire.encodeList]
+
+private theorem hoist_other_step (state : State) (extrusion : Extrusion)
+    (fuel : Nat) (done : List Pattern) (item : Pattern) (todo : List Pattern)
+    (ordinary : hoistBinderShape item = false)
+    (continued : HoistFragmentAt state extrusion fuel (done ++ [item]) todo) :
+    HoistFragmentAt state extrusion (fuel + 1) done (item :: todo) := by
+  have kept := hoist_append_returns state done [item]
+  obtain ⟨kind, binder⟩ := extrusion
+  cases item with
+  | apply label arguments =>
+    cases arguments with
+    | nil => hoist_fragment_kept [kept, continued]
+    | cons first others =>
+      cases others with
+      | cons second more => hoist_fragment_kept [kept, continued]
+      | nil =>
+        cases first with
+        | lambda display body => simp [hoistBinderShape] at ordinary
+        | _ => hoist_fragment_kept [kept, continued]
+  | _ => hoist_fragment_kept [kept, continued]
+
+private theorem hoist_fragment_returns (state : State) (extrusion : Extrusion) :
+    ∀ (fuel : Nat) (done todo : List Pattern), HoistFragmentAt state extrusion fuel done todo
   | 0, done, todo => by
-    have all := laws_append_patterns_returns state done todo
-    laws_eval [all] unfolding [HoistAt, hoist, extrusionTerm, patternValue, patternsValue, encodePattern,
-      encodeRest]
+    have all := hoist_append_returns state done todo
+    hoist_fragment_eval [all] unfolding [HoistFragmentAt, hoist, extrusionTerm, patternValue, patternsValue,
+      encodePattern, encodeRest]
   | fuel + 1, done, [] => by
-    laws_eval unfolding [HoistAt, hoist, extrusionTerm, patternValue, patternsValue, encodePattern, encodePatterns,
-      encodeRest]
+    hoist_fragment_eval unfolding [HoistFragmentAt, hoist, extrusionTerm, patternValue, patternsValue,
+      encodePattern, encodePatterns, encodeRest]
   | fuel + 1, done, item :: todo => by
-    have kept := laws_append_patterns_returns state done [item]
-    have later := hoist_returns state extrusion fuel (done ++ [item]) todo
+    have later := hoist_fragment_returns state extrusion fuel (done ++ [item]) todo
     obtain ⟨kind, binder⟩ := extrusion
     cases item with
     | apply label arguments =>
       cases arguments with
+      | nil => exact hoist_other_step state ⟨kind, binder⟩ fuel done _ todo rfl later
       | cons first others =>
         cases others with
+        | cons second more =>
+          exact hoist_other_step state ⟨kind, binder⟩ fuel done _ todo (by cases first <;> rfl) later
         | nil =>
           cases first with
           | lambda display body =>
             by_cases same : label = binder
             · subst same
-              have inner := body_items_returns state kind body
-              have liftedDone := laws_lift_bvars_list_returns state 0 1 done
-              have liftedRest := laws_lift_bvars_list_returns state 0 1 todo
-              rw [Substitution.liftBVarsList_eq_map] at liftedDone liftedRest
-              have remaining := laws_append_patterns_returns state (bodyItems kind body)
-                (todo.map (Substitution.liftBVars 0 1))
-              have hoisted := hoist_returns state ⟨kind, label⟩ fuel (done.map (Substitution.liftBVars 0 1))
-                (bodyItems kind body ++ todo.map (Substitution.liftBVars 0 1))
-              hoist_kept [inner, liftedDone, liftedRest, remaining, hoisted]
-            · have different : Term.string label ≠ Term.string binder := fun equal => same (by cases equal; rfl)
-              laws_eval [kept, later] unfolding [HoistAt, hoist, same, different, extrusionTerm, patternValue,
-                patternsValue, encodePattern, encodePatterns, encodeBinder, encodeRest, InferenceCettaWire.encodeList]
-          | _ => hoist_kept [kept, later]
-        | cons second more => hoist_kept [kept, later]
-      | nil => hoist_kept [kept, later]
-    | _ => hoist_kept [kept, later]
+              exact hoist_binder_step state kind label display body fuel done todo
+                (hoist_fragment_returns state ⟨kind, label⟩ fuel (done.map (Substitution.liftBVars 0 1))
+                  (bodyItems kind body ++ todo.map (Substitution.liftBVars 0 1)))
+            · exact hoist_distinct_binder_step state kind binder label display body fuel done todo same later
+          | _ => exact hoist_other_step state ⟨kind, binder⟩ fuel done _ todo rfl later
+    | _ => exact hoist_other_step state ⟨kind, binder⟩ fuel done _ todo rfl later
+
+/-- Binder extrusion executes in the selected shared runtime. -/
+@[metta_head "gslt:laws:hoist"]
+theorem hoist_returns (state : State) (extrusion : Extrusion) :
+    ∀ (fuel : Nat) (done todo : List Pattern), HoistAt state extrusion fuel done todo := by
+  intro fuel done todo
+  exact transport_call hoist_closed hoist_agreement
+    (by decide +kernel) (by decide) (by decide +kernel) (by decide)
+    ["extrusion", "fuel", "done", "todo"] (by decide) rfl (by decide +kernel)
+    (hoist_fragment_returns state extrusion fuel done todo)
 
 /-- What `gslt:laws:extrude` returns. -/
 abbrev ExtrudeAt (state : State) (extrusions : List Extrusion) (pattern : Pattern) : Prop :=
@@ -379,8 +553,10 @@ theorem extrude_returns (state : State) (extrusions : List Extrusion) (pattern :
               [] (elements.map (extrude extrusions)) := by
           rw [extrude]; simp only [extrusionFor] at chosen; simp only [chosen]; congr 1; omega
         rw [chosen] at found
+        unfold ExtrudeAt
+        rw [shape]
         laws_eval [inner, found, size, count, hoisted]
-          unfolding [ExtrudeAt, HoistAt, shape, patternValue, patternsValue, encodePattern, encodePatterns, encodeRest]
+          unfolding [HoistAt, patternValue, patternsValue, encodePattern, encodePatterns, encodeRest]
 
 /-- **`gslt:laws:standard` is `CollectionLaws.standardForm`.** -/
 @[metta_head "gslt:laws:standard"]
@@ -393,3 +569,22 @@ theorem standard_returns (state : State) (laws : List Laws) (extrusions : List E
   laws_eval [normal, extruded] unfolding [standardForm, NormalizeAt, ExtrudeAt]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.pattern_symbol_unmatched
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.laws_append_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.laws_append_patterns_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.laws_length_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.listNodes_sum
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.laws_nodes_list_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.laws_lift_bvars_list_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.law_for_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.splice_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.splice_all_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.normalize_list_of
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.normalize_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.extrusion_for_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.body_items_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.hoist_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.extrude_list_of
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.extrude_returns
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.standard_returns

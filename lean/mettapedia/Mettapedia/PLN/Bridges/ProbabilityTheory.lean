@@ -1,3 +1,4 @@
+import Mettapedia.PLN.Bridges.ProbabilityTheory.QueryDecision
 import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointInputStability
 import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointBalancedInformation
 import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointInformation

@@ -15,20 +15,20 @@ namespace Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled
 open Syntax RuleBinding ScopedRuleMatching GeneralPremise
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
-variable {environment : Environment} {outer : Goal}
+variable {matcher : MatchingExecution} {environment : Environment} {outer : Goal}
 
 section Premise
 
 variable {depth : Nat} {context : Context} {initial : Assignment}
 
 theorem evaluate_relationQuery (relation : String) (arguments : List Pattern)
-    (tail : Continuation environment (.premise depth context (.relationQuery relation arguments) initial) outer) :
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.relationQuery relation arguments) initial) outer) :
     evaluate environment outer (.premise depth context (.relationQuery relation arguments) initial) tail =
       { tasks := [.query depth ⟨context, relation, arguments, initial⟩
-          (Query.start environment ⟨context, relation, arguments, initial⟩) 0 tail] } := rfl
+          (Query.start environment ⟨context, relation, arguments, initial⟩ matcher) 0 tail] } := rfl
 
 theorem evaluate_freshness_none (condition : FreshnessCondition)
-    (tail : Continuation environment (.premise depth context (.freshness condition) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.freshness condition) initial) outer)
     (read : freshnessSubject? context.rule context.spec context.bound context.premiseIndex
       context.quantifierDepth initial condition = none) :
     evaluate environment outer (.premise depth context (.freshness condition) initial) tail =
@@ -41,7 +41,7 @@ theorem evaluate_freshness_none (condition : FreshnessCondition)
     simp [read] at found
 
 theorem evaluate_freshness_some (condition : FreshnessCondition) (atom : String) (subject : Pattern)
-    (tail : Continuation environment (.premise depth context (.freshness condition) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.freshness condition) initial) outer)
     (read : freshnessSubject? context.rule context.spec context.bound context.premiseIndex
       context.quantifierDepth initial condition = some (atom, subject)) :
     evaluate environment outer (.premise depth context (.freshness condition) initial) tail =
@@ -63,7 +63,7 @@ theorem evaluate_freshness_some (condition : FreshnessCondition) (atom : String)
     rfl
 
 theorem evaluate_forAll_none (collection parameter : String) (body : Premise)
-    (tail : Continuation environment (.premise depth context (.forAll collection parameter body) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.forAll collection parameter body) initial) outer)
     (read : finiteCollection? context.bound.length initial collection = none) :
     evaluate environment outer (.premise depth context (.forAll collection parameter body) initial) tail =
       { unresolved := [.collectionProjection context.premiseIndex context.quantifierDepth collection] } := by
@@ -76,7 +76,7 @@ theorem evaluate_forAll_none (collection parameter : String) (body : Premise)
 
 theorem evaluate_forAll_some (collection parameter : String) (body : Premise) (kind : CollType)
     (elements : List Pattern)
-    (tail : Continuation environment (.premise depth context (.forAll collection parameter body) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.forAll collection parameter body) initial) outer)
     (read : finiteCollection? context.bound.length initial collection = some (kind, elements)) :
     evaluate environment outer (.premise depth context (.forAll collection parameter body) initial) tail =
       { tasks := [.evaluate (.quantified depth context parameter body 0 elements initial)
@@ -95,7 +95,7 @@ theorem evaluate_forAll_some (collection parameter : String) (body : Premise) (k
     rfl
 
 theorem evaluate_congruence_sort_none (source target : Pattern)
-    (tail : Continuation environment (.premise depth context (.congruence source target) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.congruence source target) initial) outer)
     (typed : sourceType? environment.language context.rule source = none) :
     evaluate environment outer (.premise depth context (.congruence source target) initial) tail =
       { unresolved := [.stepSort context.premiseIndex context.quantifierDepth] } := by
@@ -107,7 +107,7 @@ theorem evaluate_congruence_sort_none (source target : Pattern)
     simp [typed] at found
 
 theorem evaluate_congruence_projection_none (source target : Pattern) (type : TypeExpr)
-    (tail : Continuation environment (.premise depth context (.congruence source target) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.congruence source target) initial) outer)
     (typed : sourceType? environment.language context.rule source = some type)
     (interpreted : instantiateAt? context.rule context.spec context.bound.length (context.site 0) [] 0 initial
       source = none) :
@@ -127,7 +127,7 @@ theorem evaluate_congruence_projection_none (source target : Pattern) (type : Ty
       simp [interpreted] at found
 
 theorem evaluate_congruence_some (source target actualSource : Pattern) (type : TypeExpr)
-    (tail : Continuation environment (.premise depth context (.congruence source target) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.congruence source target) initial) outer)
     (typed : sourceType? environment.language context.rule source = some type)
     (interpreted : instantiateAt? context.rule context.spec context.bound.length (context.site 0) [] 0 initial
       source = some actualSource) :
@@ -155,7 +155,7 @@ theorem evaluate_congruence_some (source target actualSource : Pattern) (type : 
       rfl
 
 theorem evaluate_scopedStep_none (step : ScopedStepPremise)
-    (tail : Continuation environment (.premise depth context (.scopedStep step) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.scopedStep step) initial) outer)
     (interpreted : instantiateAt? context.rule context.spec context.bound.length (context.site 0) []
       step.binders.length initial step.source = none) :
     evaluate environment outer (.premise depth context (.scopedStep step) initial) tail =
@@ -168,7 +168,7 @@ theorem evaluate_scopedStep_none (step : ScopedStepPremise)
     simp [interpreted] at found
 
 theorem evaluate_scopedStep_some (step : ScopedStepPremise) (actualSource : Pattern)
-    (tail : Continuation environment (.premise depth context (.scopedStep step) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.premise depth context (.scopedStep step) initial) outer)
     (interpreted : instantiateAt? context.rule context.spec context.bound.length (context.site 0) []
       step.binders.length initial step.source = some actualSource) :
     evaluate environment outer (.premise depth context (.scopedStep step) initial) tail =
@@ -197,7 +197,7 @@ variable {depth : Nat} {context : Context} {parameter : String} {body : Premise}
   {element : Pattern} {elements : List Pattern} {initial : Assignment}
 
 theorem evaluate_quantified_checked
-    (tail : Continuation environment (.quantified depth context parameter body index (element :: elements) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.quantified depth context parameter body index (element :: elements) initial) outer)
     (checked : checkTypedAssignment environment context.quantified
       (bindParameter parameter (localValue context.bound element) initial) = true) :
     evaluate environment outer (.quantified depth context parameter body index (element :: elements) initial) tail =
@@ -208,7 +208,7 @@ theorem evaluate_quantified_checked
   simp only [evaluate, checked, ↓reduceDIte]
 
 theorem evaluate_quantified_unchecked
-    (tail : Continuation environment (.quantified depth context parameter body index (element :: elements) initial) outer)
+    (tail : Interpreted.Continuation matcher environment (.quantified depth context parameter body index (element :: elements) initial) outer)
     (unchecked : checkTypedAssignment environment context.quantified
       (bindParameter parameter (localValue context.bound element) initial) = false) :
     evaluate environment outer (.quantified depth context parameter body index (element :: elements) initial) tail =
@@ -221,12 +221,12 @@ section Root
 
 variable {depth : Nat} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern} {index : Nat}
 
-theorem evaluate_root_zero (tail : Continuation environment (.root 0 bound type source index) outer) :
+theorem evaluate_root_zero (tail : Interpreted.Continuation matcher environment (.root 0 bound type source index) outer) :
     evaluate environment outer (.root 0 bound type source index) tail =
       { unresolved := [.depthExhausted index] } := rfl
 
 theorem evaluate_root_unavailable
-    (tail : Continuation environment (.root (depth + 1) bound type source index) outer)
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
     (missing : environment.language.rewrites[index]? = none) :
     evaluate environment outer (.root (depth + 1) bound type source index) tail =
       { unresolved := [.ruleUnavailable index] } := by
@@ -238,7 +238,7 @@ theorem evaluate_root_unavailable
     simp [missing] at found
 
 theorem evaluate_root_unspecified {rule : RewriteRule}
-    (tail : Continuation environment (.root (depth + 1) bound type source index) outer)
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
     (declared : environment.language.rewrites[index]? = some rule)
     (missing : specification? environment index = none) :
     evaluate environment outer (.root (depth + 1) bound type source index) tail =
@@ -254,7 +254,7 @@ theorem evaluate_root_unspecified {rule : RewriteRule}
       simp [missing] at found
 
 theorem evaluate_root_specified {rule : RewriteRule} {spec : RuleBindingSpec}
-    (tail : Continuation environment (.root (depth + 1) bound type source index) outer)
+    (tail : Interpreted.Continuation matcher environment (.root (depth + 1) bound type source index) outer)
     (declared : environment.language.rewrites[index]? = some rule)
     (specified : specification? environment index = some spec) :
     evaluate environment outer (.root (depth + 1) bound type source index) tail =
@@ -272,8 +272,8 @@ theorem evaluate_root_specified {rule : RewriteRule} {spec : RuleBindingSpec}
               specified := specified
               admitted := admitted
               sorted := checkOpenPatternWellSorted_sound checked
-              state := GeneralScopedMatchMachine.start ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
-              reachable := .start
+              state := matcher.start ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
+              reachable := matcher.start_reachable _
               cursor := 0
               tail := tail }] }
         else { unresolved := [.sourceRejected index] }
@@ -298,9 +298,9 @@ end Root
 
 section Matching
 
-theorem expandQuery_found {depth : Nat} {request : Query.Request} {state : Query.State environment request}
-    {cursor : Nat} {answer : Query.Answer environment request}
-    (tail : Continuation environment
+theorem expandQuery_found {depth : Nat} {request : Query.Request} {state : Query.State environment request matcher}
+    {cursor : Nat} {answer : Query.Answer environment request matcher}
+    (tail : Interpreted.Continuation matcher environment
       (.premise depth request.context (.relationQuery request.relation request.arguments) request.initial) outer)
     (found : state.answers[cursor]? = some answer) :
     expandQuery environment outer depth request state cursor tail =
@@ -319,9 +319,9 @@ theorem expandQuery_found {depth : Nat} {request : Query.Request} {state : Query
     rw [found] at absent
     cases absent
 
-theorem expandQuery_missing {depth : Nat} {request : Query.Request} {state : Query.State environment request}
+theorem expandQuery_missing {depth : Nat} {request : Query.Request} {state : Query.State environment request matcher}
     {cursor : Nat}
-    (tail : Continuation environment
+    (tail : Interpreted.Continuation matcher environment
       (.premise depth request.context (.relationQuery request.relation request.arguments) request.initial) outer)
     (missing : state.answers[cursor]? = none) :
     expandQuery environment outer depth request state cursor tail =
@@ -334,19 +334,17 @@ theorem expandQuery_missing {depth : Nat} {request : Query.Request} {state : Que
     cases present
   · rfl
 
-theorem expandRootMatch_found (frame : RootMatchFrame environment outer)
-    {answer : GeneralScopedMatchMachine.Answer} (found : frame.state.answers[frame.cursor]? = some answer) :
+theorem expandRootMatch_found (frame : RootMatchFrame environment outer matcher)
+    {answer : matcher.Answer} (found : (matcher.answers frame.state)[frame.cursor]? = some answer) :
     expandRootMatch environment outer frame =
       if checked : checkTypedAssignment environment ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩
-          answer.assignment then
+          (matcher.assignment answer) then
         { tasks := [
             .evaluate (.premises frame.depth ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩
-                frame.rule.premises answer.assignment)
+                frame.rule.premises (matcher.assignment answer))
               (.rootBody frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
-                frame.declared frame.specified frame.admitted frame.sorted answer.trace answer.assignment
-                (by simpa only [GeneralScopedMatchMachine.Answer.Valid,
-                    MatchingExecution.ordinary, ordinaryInterpretation] using
-                  GeneralScopedMatchMachine.answers_sound frame.reachable (List.mem_of_getElem? found))
+                frame.declared frame.specified frame.admitted frame.sorted (matcher.trace answer) (matcher.assignment answer)
+                (matcher.answers_sound frame.reachable (List.mem_of_getElem? found))
                 (checkTypedAssignment_sound checked) frame.tail),
             .rootMatch { frame with cursor := frame.cursor + 1 }] }
       else { tasks := [.rootMatch { frame with cursor := frame.cursor + 1 }] } := by
@@ -360,15 +358,15 @@ theorem expandRootMatch_found (frame : RootMatchFrame environment outer)
     rw [found] at absent
     cases absent
 
-theorem expandRootMatch_missing (frame : RootMatchFrame environment outer)
-    (missing : frame.state.answers[frame.cursor]? = none) :
+theorem expandRootMatch_missing (frame : RootMatchFrame environment outer matcher)
+    (missing : (matcher.answers frame.state)[frame.cursor]? = none) :
     expandRootMatch environment outer frame =
-      if GeneralScopedMatchMachine.complete frame.state then {}
+      if matcher.complete frame.state then {}
       else
         { tasks := [.rootMatch { frame with
-            state := GeneralScopedMatchMachine.tick
+            state := matcher.tick
               ⟨frame.rule, frame.spec, frame.bound.length, .left, [], 0, [], frame.rule.left, frame.source⟩ frame.state
-            reachable := GeneralScopedMatchMachine.reachable_tick frame.reachable }] } := by
+            reachable := matcher.tick_reachable frame.reachable }] } := by
   unfold expandRootMatch
   split
   · rename_i other present
@@ -376,17 +374,17 @@ theorem expandRootMatch_missing (frame : RootMatchFrame environment outer)
     cases present
   · rfl
 
-theorem expandTargetMatch_found (frame : TargetMatchFrame environment outer)
-    {answer : GeneralScopedMatchMachine.Answer} (found : frame.state.answers[frame.cursor]? = some answer) :
+theorem expandTargetMatch_found (frame : TargetMatchFrame environment outer matcher)
+    {answer : matcher.Answer} (found : (matcher.answers frame.state)[frame.cursor]? = some answer) :
     expandTargetMatch environment outer frame =
-      if checked : checkTypedAssignment environment frame.call.context answer.assignment then
+      if checked : checkTypedAssignment environment frame.call.context (matcher.assignment answer) then
         { tasks := [
-            .deliver (.premise answer.assignment
+            .deliver (.premise (matcher.assignment answer)
               (.child frame.call.context.premiseIndex frame.call.context.quantifierDepth frame.index
                 (frame.call.binders ++ frame.call.context.bound) frame.call.source frame.target
-                frame.trace answer.trace frame.captured frame.completed frame.history)
+                frame.trace (matcher.trace answer) frame.captured frame.completed frame.history)
               (frame.call.conclude _ _ _ _ _ _ _ _ frame.valid
-                (GeneralScopedMatchMachine.answers_sound frame.reachable (List.mem_of_getElem? found))
+                (matcher.answers_sound frame.reachable (List.mem_of_getElem? found))
                 (checkTypedAssignment_sound checked))) frame.tail,
             .targetMatch { frame with cursor := frame.cursor + 1 }] }
       else { tasks := [.targetMatch { frame with cursor := frame.cursor + 1 }] } := by
@@ -400,17 +398,17 @@ theorem expandTargetMatch_found (frame : TargetMatchFrame environment outer)
     rw [found] at absent
     cases absent
 
-theorem expandTargetMatch_missing (frame : TargetMatchFrame environment outer)
-    (missing : frame.state.answers[frame.cursor]? = none) :
+theorem expandTargetMatch_missing (frame : TargetMatchFrame environment outer matcher)
+    (missing : (matcher.answers frame.state)[frame.cursor]? = none) :
     expandTargetMatch environment outer frame =
-      if GeneralScopedMatchMachine.complete frame.state then {}
+      if matcher.complete frame.state then {}
       else
         { tasks := [.targetMatch { frame with
-            state := GeneralScopedMatchMachine.tick
+            state := matcher.tick
               ⟨frame.call.context.rule, frame.call.context.spec, frame.call.context.bound.length,
                 frame.call.context.site 1, [], frame.call.binders.length, frame.call.initial,
                 frame.call.targetSchema, frame.target⟩ frame.state
-            reachable := GeneralScopedMatchMachine.reachable_tick frame.reachable }] } := by
+            reachable := matcher.tick_reachable frame.reachable }] } := by
   unfold expandTargetMatch
   split
   · rename_i other present
@@ -419,5 +417,28 @@ theorem expandTargetMatch_missing (frame : TargetMatchFrame environment outer)
   · rfl
 
 end Matching
+
+#print axioms evaluate_relationQuery
+#print axioms evaluate_freshness_none
+#print axioms evaluate_freshness_some
+#print axioms evaluate_forAll_none
+#print axioms evaluate_forAll_some
+#print axioms evaluate_congruence_sort_none
+#print axioms evaluate_congruence_projection_none
+#print axioms evaluate_congruence_some
+#print axioms evaluate_scopedStep_none
+#print axioms evaluate_scopedStep_some
+#print axioms evaluate_quantified_checked
+#print axioms evaluate_quantified_unchecked
+#print axioms evaluate_root_zero
+#print axioms evaluate_root_unavailable
+#print axioms evaluate_root_unspecified
+#print axioms evaluate_root_specified
+#print axioms expandQuery_found
+#print axioms expandQuery_missing
+#print axioms expandRootMatch_found
+#print axioms expandRootMatch_missing
+#print axioms expandTargetMatch_found
+#print axioms expandTargetMatch_missing
 
 end Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled

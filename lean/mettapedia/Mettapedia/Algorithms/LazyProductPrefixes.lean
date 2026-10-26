@@ -54,14 +54,9 @@ theorem decode_injective (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost)
     (leftPositive : 0 < left.values.length) (rightPositive : 0 < right.values.length) :
     Function.Injective (decode leftCost rightCost left right leftPositive rightPositive) := by
-  intro first second same
-  rcases first with ⟨firstL, firstR, ⟨⟩⟩
-  rcases second with ⟨secondL, secondR, ⟨⟩⟩
-  have sameL := left.distinct.injective_get (congrArg Prod.fst same)
-  have sameR := right.distinct.injective_get (congrArg Prod.snd same)
-  change firstL = secondL at sameL
-  change firstR = secondR at sameR
-  subst secondL; subst secondR; rfl
+  rintro ⟨a, b, ⟨⟩⟩ ⟨c, d, ⟨⟩⟩ same
+  exact Prod.ext (left.distinct.injective_get (congrArg Prod.fst same))
+    (Prod.ext (right.distinct.injective_get (congrArg Prod.snd same)) rfl)
 
 theorem decode_cost (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost)
@@ -81,15 +76,12 @@ theorem decode_image (leftCost : Left → Nat) (rightCost : Right → Nat)
     (pair : Left × Right) :
     (∃ point, decode leftCost rightCost left right leftPositive rightPositive point = pair) ↔
       pair ∈ product left.values right.values := by
-  constructor
-  · rintro ⟨point, same⟩
-    subst pair
-    exact (mem_product _ _ _).mpr ⟨List.get_mem _ _, List.get_mem _ _⟩
-  · intro present
-    have members := (mem_product _ _ _).mp present
-    obtain ⟨first, firstEq⟩ := List.mem_iff_get.mp members.1
-    obtain ⟨second, secondEq⟩ := List.mem_iff_get.mp members.2
-    exact ⟨(first, second, ()), Prod.ext firstEq secondEq⟩
+  rw [mem_product]
+  change (∃ point : Fin left.values.length × Fin right.values.length × Unit,
+    (left.values.get point.1, right.values.get point.2.1) = pair) ↔ _
+  cases pair
+  simp only [List.mem_iff_get, Prod.exists, Prod.mk.injEq]
+  aesop
 
 def selected (requested : Nat) (leftCost : Left → Nat) (rightCost : Right → Nat)
     (left : Cache Left leftCost) (right : Cache Right rightCost) : List (Left × Right) :=
@@ -122,26 +114,16 @@ theorem selected_retained_correct (requested : Nat)
         (decode leftCost rightCost left right leftPositive rightPositive)
         (decode_injective leftCost rightCost left right leftPositive rightPositive)
         (decode_cost leftCost rightCost left right leftPositive rightPositive)
-      have sourceEq : (fun pair => ∃ point, True ∧
-          decode leftCost rightCost left right leftPositive rightPositive point = pair) =
-          (fun pair => pair ∈ product left.values right.values) := by
-        funext pair
-        apply propext
+      exact mapped.congr_source fun pair => by
         simpa using decode_image leftCost rightCost left right leftPositive rightPositive pair
-      rw [sourceEq] at mapped
-      exact mapped
     next rightEmpty =>
       apply empty_correct
-      intro pair present
-      have member := (mem_product _ _ _).mp present
       have empty : right.values = [] := List.eq_nil_of_length_eq_zero (by omega)
-      simpa [empty] using member.2
+      simp [empty]
   next leftEmpty =>
     apply empty_correct
-    intro pair present
-    have member := (mem_product _ _ _).mp present
     have empty : left.values = [] := List.eq_nil_of_length_eq_zero (by omega)
-    simpa [empty] using member.1
+    simp [empty]
 
 /-- A lazy product of child k-prefixes is a globally correct parent
 k-prefix. It retains tied derivation identities and never computes the
@@ -165,10 +147,8 @@ theorem selected_source_correct (requested : Nat)
     exact ⟨leftCorrect.sound _ members.1, rightCorrect.sound _ members.2⟩
   · intro pair allowed absent
     by_cases positive : 0 < requested
-    · obtain ⟨witnesses, distinct, full, included, cheap⟩ :=
-        product_dominates requested positive leftCost rightCost leftSource rightSource
-          left.values right.values leftCorrect rightCorrect pair allowed absent
-      exact ⟨witnesses, distinct, full, included, cheap⟩
+    · exact product_dominates requested positive leftCost rightCost leftSource rightSource
+        left.values right.values leftCorrect rightCorrect pair allowed absent
     · have zero : requested = 0 := by omega
       exact ⟨[], List.nodup_nil, by simp [zero], by simp, by simp⟩
 

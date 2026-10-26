@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Source
 
 /-!
 # Typed occurrence and selected rule enumeration through PeTTa execution
@@ -236,4 +237,83 @@ theorem scoped_program_agreement :
   · rfl
   · rfl
 
+
+open SpaceSemantics Eval BridgeKit
+
+private def rawSupportTail : Program :=
+  (RuleExecutionProgram.interpretedPremiseSupportSources.drop 1).foldl
+    (fun loaded part => loaded.append part.program) {equations := [], declarations := []}
+
+private theorem append_empty (p : Program) : p.append {equations := [], declarations := []} = p := by
+  cases p
+  simp [Program.append]
+private theorem empty_append (p : Program) : ({equations := [], declarations := []} : Program).append p = p := by
+  cases p
+  rfl
+private theorem append_assoc (a b c : Program) : (a.append b).append c = a.append (b.append c) := by
+  cases a
+  cases b
+  cases c
+  simp [Program.append, List.append_assoc]
+
+private theorem fold_from (parts : List ProgramQuotation.QuotedProgram) (base : Program) :
+    parts.foldl (fun loaded part => loaded.append part.program) base =
+      base.append (parts.foldl (fun loaded part => loaded.append part.program) {equations := [], declarations := []}) := by
+  induction parts generalizing base with
+  | nil => exact (append_empty base).symm
+  | cons first rest ih =>
+    change rest.foldl (fun loaded part => loaded.append part.program) (base.append first.program) =
+      base.append (rest.foldl (fun loaded part => loaded.append part.program)
+        (({equations := [], declarations := []} : Program).append first.program))
+    rw [empty_append, ih (base.append first.program), ih first.program]
+    exact append_assoc base first.program _
+
+private theorem raw_physical_shape :
+    RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+      (fun loaded part => loaded.append part.program) RuleExecutionProgram.scopedProgram =
+    (RuleExecutionProgram.scopedProgram.append source.program).append rawSupportTail := by
+  have shape : RuleExecutionProgram.interpretedPremiseSupportSources =
+      (RuleExecutionProgram.interpretedPremiseSupportSources[0]'(by decide +kernel)) ::
+        RuleExecutionProgram.interpretedPremiseSupportSources.drop 1 := by rfl
+  conv_lhs => rw [shape, List.foldl_cons]
+  have first : (RuleExecutionProgram.interpretedPremiseSupportSources[0]'(by decide +kernel)).program =
+      source.program := by rfl
+  rw [first]
+  exact fold_from _ _
+
+private theorem raw_suffix_equations :
+    ∀ equation ∈ rawSupportTail.equations, executionHeads equation.head = false := by
+  have checked : rawSupportTail.equations.all (fun equation => !executionHeads equation.head) = true := by decide +kernel
+  intro equation member
+  have row := List.all_eq_true.mp checked equation member
+  cases selected : executionHeads equation.head with
+  | false => rfl
+  | true => simp [selected] at row
+
+private theorem raw_suffix_declarations :
+    ∀ name types, (.expression [.symbol ":", .symbol name, .expression (.symbol "->" :: types)]) ∈ rawSupportTail.declarations →
+      executionHeads name = false := by
+  have checked : rawSupportTail.declarations.all (fun declaration => match declaration with
+      | .expression [.symbol ":", .symbol name, .expression (.symbol "->" :: _)] => !executionHeads name
+      | _ => true) = true := by decide +kernel
+  intro name types member
+  have row := List.all_eq_true.mp checked (.expression [.symbol ":", .symbol name, .expression (.symbol "->" :: types)]) member
+  cases selected : executionHeads name with
+  | false => rfl
+  | true => simp [selected] at row
+
+/-- Actual appended artifacts introduce no head in the independently closed typed traversal. -/
+theorem raw_agreement : ProgramAgreementOn executionHeads program RuleExecutionProgram.interpretedPremiseProgram := by
+  have suffix : ProgramAgreementOn executionHeads (RuleExecutionProgram.scopedProgram.append source.program)
+      (RuleExecutionProgram.interpretedPremiseSupportSources.foldl
+        (fun loaded part => loaded.append part.program) RuleExecutionProgram.scopedProgram) := by
+    rw [raw_physical_shape]
+    exact appended_program_agreement executionHeads _ _ raw_suffix_equations raw_suffix_declarations
+  exact agreement_trans (agreement_trans scoped_program_agreement suffix)
+    (agreement_mono (fun _ _ => rfl) CompleteExecution.PhysicalSourceAgreement.physical_interpreted_agreement)
+
+#print axioms raw_physical_shape
+#print axioms raw_suffix_equations
+#print axioms raw_suffix_declarations
+#print axioms raw_agreement
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution

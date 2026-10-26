@@ -1,451 +1,281 @@
-/-
-# Noncrossing Partitions
-
-Comprehensive formalization of noncrossing partitions NC(n), which form the
-combinatorial foundation of free probability theory.
-
-## Key Results
-
-- Enumeration of NC(n) for small n (used for computing free cumulants)
-- The lattice structure of NC(n) under refinement
-- Catalan number counting: |NC(n)| = Cₙ
-- Block structure for moment-cumulant formulas
-
-## References
-
-- Simion, "Noncrossing partitions" (2000)
-- Speicher, "Combinatorics of Free Probability" (1997)
-- Stanley, "Enumerative Combinatorics" Vol. 2
--/
-
-import Mathlib.Data.Finset.Basic
-import Mathlib.Data.Fintype.Basic
-import Mathlib.Data.List.Basic
-import Mathlib.Data.Nat.Basic
+import Mathlib.Order.Partition.Finpartition
+import Mathlib.Data.Fintype.Pi
+import Mathlib.Data.Finset.Sort
+import Mathlib.Combinatorics.Enumerative.Catalan.Basic
 import Mathlib.Tactic
 
+/-!
+# Canonical noncrossing partitions of ordered positions
+
+Blocks form a finite set, so their presentation order and repetitions carry no data.
+Positions inside a block retain the order inherited from `Fin n`. The computable
+catalogue below uses canonical labelings, so each partition appears once. Its completeness
+is proved, rather than inferred from a small list's length.
+
+The refinement order is Mathlib's partition order. Only the small Catalan counts below
+are established here; no general counting theorem or noncrossing lattice is asserted.
+See Nica and Speicher, *Lectures on the Combinatorics of Free Probability*, Chapter 9:
+https://rolandspeicher.com/wp-content/uploads/2020/06/nica-speicher-book.pdf
+-/
+
 namespace Mettapedia.ProbabilityTheory.FreeProbability
+open Finset
 
-/-!
-## §1: Basic Definitions
+/-- Partitions with disjoint, nonempty blocks covering every argument position. -/
+abbrev Partition (n : ℕ) := Finpartition (univ : Finset (Fin n))
 
-A partition of [n] = {1,...,n} is a collection of disjoint nonempty subsets
-(blocks) whose union is [n].
+/-- Interlaced pairs in blocks must belong to the same block. -/
+def Partition.isNoncrossing {n : ℕ} (P : Partition n) : Prop :=
+  ∀ a b c d : Fin n, a < b → b < c → c < d →
+    P.part a = P.part c → P.part b = P.part d → P.part a = P.part b
 
-A partition is NONCROSSING if there do not exist a < b < c < d such that
-a, c are in one block and b, d are in another.
--/
+instance {n : ℕ} (P : Partition n) : Decidable P.isNoncrossing :=
+  inferInstanceAs (Decidable (∀ a b c d : Fin n, a < b → b < c → c < d →
+    P.part a = P.part c → P.part b = P.part d → P.part a = P.part b))
 
-/-- A block is a nonempty subset of Fin n. -/
-abbrev Block (n : ℕ) := { s : Finset (Fin n) // s.Nonempty }
+/-- Noncrossing partitions; argument positions, rather than variable values, are partitioned. -/
+abbrev NC (n : ℕ) := {P : Partition n // P.isNoncrossing}
 
-/-- A partition of [n] represented explicitly as a list of disjoint blocks. -/
-structure SetPartition (n : ℕ) where
-  blocks : List (Finset (Fin n))
-  blocks_nonempty : ∀ B ∈ blocks, B.Nonempty
-  blocks_disjoint : blocks.Pairwise Disjoint
-  blocks_cover : (blocks.foldl (· ∪ ·) ∅) = Finset.univ
+@[ext] theorem Partition.ext_part {n : ℕ} {P Q : Partition n}
+    (h : ∀ i, P.part i = Q.part i) : P = Q := by
+  apply Finpartition.ext
+  ext B
+  constructor <;> intro hB
+  · obtain ⟨i, hi⟩ := P.nonempty_of_mem_parts hB
+    rw [← P.part_eq_of_mem hB hi, h i]
+    exact Q.part_mem.mpr (mem_univ i)
+  · obtain ⟨i, hi⟩ := Q.nonempty_of_mem_parts hB
+    rw [← Q.part_eq_of_mem hB hi, ← h i]
+    exact P.part_mem.mpr (mem_univ i)
 
-/-- The number of blocks in a partition. -/
-def SetPartition.numBlocks {n : ℕ} (π : SetPartition n) : ℕ := π.blocks.length
+instance {n : ℕ} (f : Fin n → Fin n) : DecidableRel (Setoid.ker f).r :=
+  fun i j => inferInstanceAs (Decidable (f i = f j))
 
-/-- Check if a, c are in one block and b, d in another with a < b < c < d.
-    This is the "crossing" condition. -/
-def hasCrossing {n : ℕ} (π : SetPartition n) : Prop :=
-  ∃ B₁ ∈ π.blocks, ∃ B₂ ∈ π.blocks, B₁ ≠ B₂ ∧
-  ∃ a c : Fin n, a ∈ B₁ ∧ c ∈ B₁ ∧
-  ∃ b d : Fin n, b ∈ B₂ ∧ d ∈ B₂ ∧
-  a < b ∧ b < c ∧ c < d
+/-- The labeling presentation identifies exactly positions with equal labels. -/
+def partitionOfLabels {n : ℕ} (f : Fin n → Fin n) : Partition n :=
+  Finpartition.ofSetoid (Setoid.ker f)
 
-/-- A partition is noncrossing if it has no crossing. -/
-def SetPartition.isNoncrossing {n : ℕ} (π : SetPartition n) : Prop :=
-  ¬hasCrossing π
+@[simp] theorem mem_part_labels {n : ℕ} (f : Fin n → Fin n) (i j : Fin n) :
+    j ∈ (partitionOfLabels f).part i ↔ f i = f j :=
+  Finpartition.mem_part_ofSetoid_iff_rel
 
-/-- The type of noncrossing partitions of [n]. -/
-def NC (n : ℕ) := { π : SetPartition n // π.isNoncrossing }
+/-- A canonical label: the least position of the containing block. -/
+def Partition.label {n : ℕ} (P : Partition n) (i : Fin n) : Fin n :=
+  (P.part i).min' (P.part_nonempty.mpr (mem_univ i))
 
-/-!
-## §2: Explicit NC(n) for Small n
-
-For computing free cumulants, we need to enumerate NC(n) for small n.
--/
-
-/-- The trivial partition of Fin 0 (empty). -/
-def nc0_trivial : SetPartition 0 where
-  blocks := []
-  blocks_nonempty := fun _ h => nomatch h
-  blocks_disjoint := List.Pairwise.nil
-  blocks_cover := by simp [Finset.univ_eq_empty]
-
-/-- NC(0) contains only the trivial partition. -/
-def NC0 : List (NC 0) := [⟨nc0_trivial, fun ⟨_, _, h, _⟩ => nomatch h⟩]
-
-/-- The singleton partition of Fin 1: {{0}}. -/
-def nc1_singleton : SetPartition 1 where
-  blocks := [{0}]
-  blocks_nonempty := by simp
-  blocks_disjoint := List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    simp only [Finset.mem_singleton, Finset.mem_univ, iff_true]
-    exact Fin.fin_one_eq_zero x
-
-/-- NC(1) = {{{0}}}. -/
-def NC1 : List (NC 1) := [⟨nc1_singleton, by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, a, c, ha, hc, b, d, hb, hd, hab, hbc, hcd⟩
-  -- Only one block exists, so B₁ = B₂
-  simp only [nc1_singleton] at hB₁ hB₂
-  simp only [List.mem_singleton] at hB₁ hB₂
-  rw [hB₁, hB₂] at hne
-  exact hne rfl⟩]
-
-/-- The two noncrossing partitions of [2]:
-    1. {{0}, {1}} (discrete)
-    2. {{0, 1}} (single block) -/
-def nc2_discrete : SetPartition 2 where
-  blocks := [{0}, {1}]
-  blocks_nonempty := by simp
-  blocks_disjoint := by
-    constructor
-    · intro s hs
-      simp only [List.mem_singleton] at hs
-      rw [hs]
-      simp only [Finset.disjoint_singleton]
-      exact Fin.zero_ne_one
-    · exact List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
-def nc2_single : SetPartition 2 where
-  blocks := [{0, 1}]
-  blocks_nonempty := by simp
-  blocks_disjoint := List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
-theorem nc2_discrete_noncrossing : nc2_discrete.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, a, c, ha, hc, b, d, hb, hd, hab, hbc, hcd⟩
-  simp only [nc2_discrete, List.mem_cons, List.not_mem_nil, or_false] at hB₁ hB₂
-  -- In nc2_discrete, each block is a singleton, so a = c and b = d
-  rcases hB₁ with rfl | rfl <;> rcases hB₂ with rfl | rfl
-  all_goals simp only [Finset.mem_singleton] at ha hc hb hd
-  · exact hne rfl
-  · -- B₁ = {0}, B₂ = {1}: a = c = 0 and b = d = 1
-    -- Need a < b < c < d, i.e., 0 < 1 < 0 < 1, but b < c = 1 < 0 is false
-    rw [hb, hc] at hbc
-    exact Nat.not_lt_of_le (Nat.zero_le _) hbc
-  · -- B₁ = {1}, B₂ = {0}: a = c = 1 and b = d = 0
-    -- Need a < b, i.e., 1 < 0, false
-    rw [ha, hb] at hab
-    exact Nat.not_lt_of_le (Nat.zero_le _) hab
-  · exact hne rfl
-
-theorem nc2_single_noncrossing : nc2_single.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, _, _, _, _, _, _, _, _, _, _, _⟩
-  simp only [nc2_single] at hB₁ hB₂
-  simp only [List.mem_singleton] at hB₁ hB₂
-  rw [hB₁, hB₂] at hne
-  exact hne rfl
-
-/-- NC(2) = {{{0},{1}}, {{0,1}}}. -/
-def NC2 : List (NC 2) := [
-  ⟨nc2_discrete, nc2_discrete_noncrossing⟩,
-  ⟨nc2_single, nc2_single_noncrossing⟩
-]
-
-theorem NC2_card : NC2.length = 2 := rfl
-
-/-!
-## §3: NC(3) - The First Non-trivial Case
-
-NC(3) has 5 elements (Catalan number C₃ = 5):
-1. {{0}, {1}, {2}} - discrete
-2. {{0, 1}, {2}}
-3. {{0}, {1, 2}}
-4. {{0, 2}, {1}}
-5. {{0, 1, 2}} - single block
--/
-
-def nc3_discrete : SetPartition 3 where
-  blocks := [{0}, {1}, {2}]
-  blocks_nonempty := by simp
-  blocks_disjoint := by
-    constructor
-    · intro s hs
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hs
-      rcases hs with rfl | rfl
-      · simp only [Finset.disjoint_singleton]; exact Fin.zero_ne_one
-      · simp only [Finset.disjoint_singleton]; decide
-    · constructor
-      · intro s hs
-        simp only [List.mem_singleton] at hs
-        rw [hs]
-        simp only [Finset.disjoint_singleton]; decide
-      · exact List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
-def nc3_01_2 : SetPartition 3 where
-  blocks := [{0, 1}, {2}]
-  blocks_nonempty := by simp
-  blocks_disjoint := by
-    constructor
-    · intro s hs
-      simp only [List.mem_singleton] at hs
-      rw [hs]
-      simp only [Finset.disjoint_iff_ne]
-      intro a ha b hb
-      simp only [Finset.mem_insert, Finset.mem_singleton] at ha hb
-      subst hb
-      rcases ha with rfl | rfl <;> decide
-    · exact List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
-def nc3_0_12 : SetPartition 3 where
-  blocks := [{0}, {1, 2}]
-  blocks_nonempty := by simp
-  blocks_disjoint := by
-    constructor
-    · intro s hs
-      simp only [List.mem_singleton] at hs
-      rw [hs]
-      simp only [Finset.disjoint_iff_ne]
-      intro a ha b hb
-      simp only [Finset.mem_singleton] at ha
-      simp only [Finset.mem_insert, Finset.mem_singleton] at hb
-      subst ha
-      rcases hb with rfl | rfl <;> decide
-    · exact List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
-def nc3_02_1 : SetPartition 3 where
-  blocks := [{0, 2}, {1}]
-  blocks_nonempty := by simp
-  blocks_disjoint := by
-    constructor
-    · intro s hs
-      simp only [List.mem_singleton] at hs
-      rw [hs]
-      simp only [Finset.disjoint_iff_ne]
-      intro a ha b hb
-      simp only [Finset.mem_insert, Finset.mem_singleton] at ha hb
-      subst hb
-      rcases ha with rfl | rfl <;> decide
-    · exact List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
-def nc3_012 : SetPartition 3 where
-  blocks := [{0, 1, 2}]
-  blocks_nonempty := by simp
-  blocks_disjoint := List.pairwise_singleton _ _
-  blocks_cover := by
-    simp only [List.foldl_cons, List.foldl_nil, Finset.empty_union]
-    ext x
-    fin_cases x <;> simp
-
--- Proofs that these are noncrossing
-theorem nc3_discrete_noncrossing : nc3_discrete.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, a, c, ha, hc, b, d, hb, hd, hab, hbc, hcd⟩
-  simp only [nc3_discrete, List.mem_cons, List.not_mem_nil, or_false] at hB₁ hB₂
-  -- All blocks are singletons, so a = c which contradicts a < b < c
-  -- hbc is b < c, hab is a < b. With singleton blocks, a = c, so a < b < a is impossible.
-  rcases hB₁ with rfl | rfl | rfl <;>
-  simp only [Finset.mem_singleton] at ha hc
-  all_goals { rw [ha] at hab; rw [hc] at hbc; exact Nat.lt_irrefl _ (Nat.lt_trans hab hbc) }
-
-theorem nc3_01_2_noncrossing : nc3_01_2.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, a, c, ha, hc, b, d, hb, hd, hab, hbc, hcd⟩
-  simp only [nc3_01_2, List.mem_cons, List.not_mem_nil, or_false] at hB₁ hB₂
-  rcases hB₁ with rfl | rfl <;> rcases hB₂ with rfl | rfl
-  · exact hne rfl
-  · -- B₁ = {0,1}, B₂ = {2}: b = d = 2, hbc: b < c, hcd: c < d -> 2 < c < 2 impossible
-    simp only [Finset.mem_singleton] at hb hd
-    rw [hb] at hbc; rw [hd] at hcd
-    exact Nat.lt_irrefl _ (Nat.lt_trans hbc hcd)
-  · -- B₁ = {2}, B₂ = {0,1}: a = c = 2, hab: a < b, hbc: b < c -> 2 < b < 2 impossible
-    simp only [Finset.mem_singleton] at ha hc
-    rw [ha] at hab; rw [hc] at hbc
-    exact Nat.lt_irrefl _ (Nat.lt_trans hab hbc)
-  · exact hne rfl
-
-theorem nc3_0_12_noncrossing : nc3_0_12.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, a, c, ha, hc, b, d, hb, hd, hab, hbc, hcd⟩
-  simp only [nc3_0_12, List.mem_cons, List.not_mem_nil, or_false] at hB₁ hB₂
-  rcases hB₁ with rfl | rfl <;> rcases hB₂ with rfl | rfl
-  · exact hne rfl
-  · -- B₁ = {0}, B₂ = {1,2}: a = c = 0, hab: a < b, hbc: b < c -> 0 < b < 0 impossible
-    simp only [Finset.mem_singleton] at ha hc
-    rw [ha] at hab; rw [hc] at hbc
-    exact Nat.lt_irrefl _ (Nat.lt_trans hab hbc)
-  · -- B₁ = {1,2}, B₂ = {0}: b = d = 0, hbc: b < c, hcd: c < d -> 0 < c < 0 impossible
-    simp only [Finset.mem_singleton] at hb hd
-    rw [hb] at hbc; rw [hd] at hcd
-    exact Nat.lt_irrefl _ (Nat.lt_trans hbc hcd)
-  · exact hne rfl
-
-theorem nc3_02_1_noncrossing : nc3_02_1.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, a, c, ha, hc, b, d, hb, hd, hab, hbc, hcd⟩
-  simp only [nc3_02_1, List.mem_cons, List.not_mem_nil, or_false] at hB₁ hB₂
-  rcases hB₁ with rfl | rfl <;> rcases hB₂ with rfl | rfl
-  · exact hne rfl
-  · -- B₁ = {0,2}, B₂ = {1}: b = d = 1, hbc: b < c, hcd: c < d -> 1 < c < 1 impossible
-    simp only [Finset.mem_singleton] at hb hd
-    rw [hb] at hbc; rw [hd] at hcd
-    exact Nat.lt_irrefl _ (Nat.lt_trans hbc hcd)
-  · -- B₁ = {1}, B₂ = {0,2}: a = c = 1, hab: a < b, hbc: b < c -> 1 < b < 1 impossible
-    simp only [Finset.mem_singleton] at ha hc
-    rw [ha] at hab; rw [hc] at hbc
-    exact Nat.lt_irrefl _ (Nat.lt_trans hab hbc)
-  · exact hne rfl
-
-theorem nc3_012_noncrossing : nc3_012.isNoncrossing := by
-  intro ⟨B₁, hB₁, B₂, hB₂, hne, _, _, _, _, _, _, _, _, _, _, _⟩
-  simp only [nc3_012, List.mem_singleton] at hB₁ hB₂
-  subst hB₁ hB₂
-  exact hne rfl
-
-/-- NC(3) has exactly 5 elements (C₃ = 5). -/
-def NC3 : List (NC 3) := [
-  ⟨nc3_discrete, nc3_discrete_noncrossing⟩,
-  ⟨nc3_01_2, nc3_01_2_noncrossing⟩,
-  ⟨nc3_0_12, nc3_0_12_noncrossing⟩,
-  ⟨nc3_02_1, nc3_02_1_noncrossing⟩,
-  ⟨nc3_012, nc3_012_noncrossing⟩
-]
-
-theorem NC3_card : NC3.length = 5 := rfl
-
-/-!
-## §4: Block Sizes for Moment-Cumulant Formula
-
-The moment-cumulant formula is:
-  mₙ = Σ_{π ∈ NC(n)} Π_{B ∈ π} k_{|B|}
-
-So we need to extract block sizes from partitions.
--/
-
-/-- The multiset of block sizes in a partition. -/
-def SetPartition.blockSizes {n : ℕ} (π : SetPartition n) : List ℕ :=
-  π.blocks.map Finset.card
-
-/-- For a partition π, the product of values f(|B|) over all blocks B. -/
-noncomputable def SetPartition.blockProduct {n : ℕ} (π : SetPartition n) (f : ℕ → ℝ) : ℝ :=
-  (π.blocks.map (fun B => f B.card)).prod
-
-/-!
-## §5: Catalan Numbers and Counting
-
-|NC(n)| = Cₙ where Cₙ is the n-th Catalan number.
--/
-
-/-- Catalan number: Cₙ = (2n)! / ((n+1)! n!) -/
-def catalanNumber : ℕ → ℕ
-  | 0 => 1
-  | n + 1 => (2 * (2 * n + 1) * catalanNumber n) / (n + 2)
-
-theorem catalan_zero : catalanNumber 0 = 1 := rfl
-theorem catalan_one : catalanNumber 1 = 1 := by decide
-theorem catalan_two : catalanNumber 2 = 2 := by decide
-theorem catalan_three : catalanNumber 3 = 5 := by decide
-theorem catalan_four : catalanNumber 4 = 14 := by decide
-theorem catalan_five : catalanNumber 5 = 42 := by decide
-
-/-- The cardinality of NC(n) equals the n-th Catalan number.
-    Verified for small n by explicit enumeration. -/
-theorem NC_card_eq_catalan_small :
-    NC1.length = catalanNumber 1 ∧
-    NC2.length = catalanNumber 2 ∧
-    NC3.length = catalanNumber 3 := by
+theorem Partition.label_eq_iff {n : ℕ} (P : Partition n) (i j : Fin n) :
+    P.label i = P.label j ↔ P.part i = P.part j := by
   constructor
-  · decide
+  · intro h
+    have hi : P.label i ∈ P.part i := min'_mem _ _
+    have hj : P.label j ∈ P.part j := min'_mem _ _
+    exact P.eq_of_mem_parts (P.part_mem.mpr (mem_univ i))
+      (P.part_mem.mpr (mem_univ j)) (h ▸ hi) hj
+  · intro h
+    simp only [Partition.label, h]
+
+@[simp] theorem partitionOfLabels_label {n : ℕ} (P : Partition n) :
+    partitionOfLabels P.label = P := by
+  apply Partition.ext_part
+  intro i
+  ext j
+  rw [mem_part_labels, P.label_eq_iff,
+    P.mem_part_iff_part_eq_part (mem_univ j) (mem_univ i), eq_comm]
+
+/-- Least-block labels decrease positions and are idempotent. -/
+theorem Partition.label_laws {n : ℕ} (P : Partition n) (i : Fin n) :
+    P.label i ≤ i ∧ P.label (P.label i) = P.label i := by
+  refine ⟨min'_le _ _ (P.mem_part (mem_univ i)), ?_⟩
+  apply (P.label_eq_iff _ _).mpr
+  exact P.part_eq_of_mem (P.part_mem.mpr (mem_univ i)) (min'_mem _ _)
+
+/-- Canonical labels are chosen from initial intervals: only `n!` candidates. -/
+def canonicalLabels (n : ℕ) : Finset (Fin n → Fin n) :=
+  (Fintype.piFinset (fun i : Fin n => Iic i)).filter (fun f => ∀ i, f (f i) = f i)
+
+@[simp] theorem Partition.label_mem {n : ℕ} (P : Partition n) :
+    P.label ∈ canonicalLabels n :=
+  mem_filter.mpr ⟨Fintype.mem_piFinset.mpr (fun i => mem_Iic.mpr (P.label_laws i).1),
+    fun i => (P.label_laws i).2⟩
+
+theorem label_partitionOfLabels {n : ℕ} {f : Fin n → Fin n}
+    (hf : f ∈ canonicalLabels n) (i : Fin n) : (partitionOfLabels f).label i = f i := by
+  obtain ⟨hf, hid⟩ := mem_filter.mp hf
+  have hle := fun j => mem_Iic.mp (Fintype.mem_piFinset.mp hf j)
+  apply le_antisymm
+  · exact min'_le _ _ ((mem_part_labels f i (f i)).mpr (hid i).symm)
+  · apply le_trans ?_ (hle _)
+    exact le_of_eq ((mem_part_labels f i _).mp (min'_mem _ _))
+
+/-- Canonical labelings are injective, allowing enumeration without duplicate comparisons. -/
+def labelEmbedding {n : ℕ} (s : Finset (Fin n → Fin n)) (hs : s ⊆ canonicalLabels n) :
+    s ↪ Partition n where
+  toFun f := partitionOfLabels f.val
+  inj' f g h := by
+    apply Subtype.ext
+    funext i
+    simpa only [label_partitionOfLabels (hs f.property),
+      label_partitionOfLabels (hs g.property)] using congrArg (fun P : Partition n => P.label i) h
+
+/-- Complete partition catalogue, with block presentation order removed. -/
+def allPartitions (n : ℕ) : Finset (Partition n) :=
+  (canonicalLabels n).attach.map (labelEmbedding _ Subset.rfl)
+
+@[simp] theorem mem_allPartitions {n : ℕ} (P : Partition n) : P ∈ allPartitions n :=
+  mem_map.mpr ⟨⟨P.label, P.label_mem⟩, mem_attach _ _, partitionOfLabels_label P⟩
+
+/-- Noncrossing is checked on labels before constructing blocks. -/
+def labelsNoncrossing {n : ℕ} (f : Fin n → Fin n) : Prop :=
+  ∀ a b c d : Fin n, a < b → b < c → c < d →
+    f a = f c → f b = f d → f a = f b
+
+instance {n : ℕ} (f : Fin n → Fin n) : Decidable (labelsNoncrossing f) :=
+  inferInstanceAs (Decidable (∀ a b c d : Fin n, a < b → b < c → c < d →
+    f a = f c → f b = f d → f a = f b))
+
+@[simp] theorem part_labels_eq {n : ℕ} (f : Fin n → Fin n) (i j : Fin n) :
+    (partitionOfLabels f).part i = (partitionOfLabels f).part j ↔ f i = f j := by
+  rw [← (partitionOfLabels f).mem_part_iff_part_eq_part (mem_univ i) (mem_univ j),
+    mem_part_labels, eq_comm]
+
+@[simp] theorem labelsNoncrossing_iff {n : ℕ} (f : Fin n → Fin n) :
+    (partitionOfLabels f).isNoncrossing ↔ labelsNoncrossing f := by
+  simp only [Partition.isNoncrossing, labelsNoncrossing, part_labels_eq]
+
+/-- Complete, duplicate-free noncrossing catalogue. -/
+def noncrossingPartitions (n : ℕ) : Finset (Partition n) :=
+  ((canonicalLabels n).filter labelsNoncrossing).attach.map
+    (labelEmbedding _ (filter_subset _ _))
+
+@[simp] theorem mem_noncrossingPartitions {n : ℕ} (P : Partition n) :
+    P ∈ noncrossingPartitions n ↔ P.isNoncrossing := by
   constructor
-  · decide
-  · decide
+  · intro h
+    obtain ⟨f, _, rfl⟩ := mem_map.mp h
+    exact (labelsNoncrossing_iff f.val).mpr (mem_filter.mp f.property).2
+  · intro h
+    have hf : P.label ∈ (canonicalLabels n).filter labelsNoncrossing := by
+      refine mem_filter.mpr ⟨P.label_mem, ?_⟩
+      simpa only [← labelsNoncrossing_iff, partitionOfLabels_label] using h
+    exact mem_map.mpr ⟨⟨P.label, hf⟩, mem_attach _ _, partitionOfLabels_label P⟩
 
-/-!
-## §6: Refinement Order
+instance (n : ℕ) : Fintype (NC n) :=
+  Fintype.subtype (noncrossingPartitions n) mem_noncrossingPartitions
 
-NC(n) forms a lattice under refinement:
-  π ≤ σ iff every block of π is contained in a block of σ.
+theorem top_noncrossing (n : ℕ) : (⊤ : Partition n).isNoncrossing := by
+  intro a b _ _ _ _ _ _ _
+  exact (Finpartition.parts_top_subsingleton _)
+    ((⊤ : Partition n).part_mem.mpr (mem_univ a))
+    ((⊤ : Partition n).part_mem.mpr (mem_univ b))
 
-The minimum is the discrete partition (n singletons).
-The maximum is the single-block partition.
--/
+@[simp] theorem top_parts {n : ℕ} (hn : 0 < n) :
+    (⊤ : Partition n).parts = {univ} := by
+  apply subset_antisymm (Finpartition.parts_top_subset _)
+  intro B hB
+  obtain rfl := mem_singleton.mp hB
+  obtain ⟨C, hC, _⟩ := (⊤ : Partition n).exists_mem (mem_univ (⟨0, hn⟩ : Fin n))
+  simpa [mem_singleton.mp (Finpartition.parts_top_subset _ hC)] using hC
 
-/-- π refines σ if every block of π is contained in some block of σ. -/
-def SetPartition.refines {n : ℕ} (π σ : SetPartition n) : Prop :=
-  ∀ B ∈ π.blocks, ∃ C ∈ σ.blocks, B ⊆ C
+/-- Diagrams other than the one-block partition. -/
+def properNoncrossingPartitions (n : ℕ) : Finset (Partition n) :=
+  (noncrossingPartitions n).erase ⊤
 
-/-- The discrete partition (all singletons) is the minimum.
-    Note: This requires Finset.toList which is noncomputable. -/
-noncomputable def discretePartition (n : ℕ) : SetPartition n where
-  blocks := (Finset.univ : Finset (Fin n)).toList.map (fun x => {x})
-  blocks_nonempty := by
-    intro B hB
-    simp only [List.mem_map, Finset.mem_toList, Finset.mem_univ, true_and] at hB
-    obtain ⟨x, rfl⟩ := hB
-    exact Finset.singleton_nonempty x
-  blocks_disjoint := by
-    apply List.Pairwise.map
-    · intro x y hxy
-      simp only [Finset.disjoint_singleton]
-      exact hxy
-    · exact Finset.nodup_toList _
-  blocks_cover := by
-    ext x
-    simp only [Finset.mem_univ, iff_true]
-    -- Key lemma: foldl (· ∪ ·) init L contains elements from init and all sets in L
-    have h_fold_mono : ∀ (L : List (Finset (Fin n))) (init : Finset (Fin n)) (y : Fin n),
-        y ∈ init → y ∈ L.foldl (· ∪ ·) init := by
-      intro L
-      induction L with
-      | nil => intro _ _ h; exact h
-      | cons hd tl ih =>
-        intro init y hy
-        simp only [List.foldl_cons]
-        exact ih (init ∪ hd) y (Finset.mem_union_left hd hy)
-    have h_fold_mem : ∀ (L : List (Finset (Fin n))) (init : Finset (Fin n)) (s : Finset (Fin n)) (y : Fin n),
-        s ∈ L → y ∈ s → y ∈ L.foldl (· ∪ ·) init := by
-      intro L
-      induction L with
-      | nil => intro _ _ _ h; exact nomatch h
-      | cons hd tl ih =>
-        intro init s y hs hy
-        simp only [List.foldl_cons]
-        cases hs with
-        | head => exact h_fold_mono tl (init ∪ hd) y (Finset.mem_union_right init hy)
-        | tail _ hs' => exact ih (init ∪ hd) s y hs' hy
-    apply h_fold_mem
-    · simp only [List.mem_map, Finset.mem_toList, Finset.mem_univ, true_and]
-      exact ⟨x, rfl⟩
-    · exact Finset.mem_singleton_self x
+/-- All proper partitions use strictly smaller arities in every block. -/
+theorem Partition.card_lt {n : ℕ} (P : Partition n) (hP : P ≠ ⊤)
+    {B : Finset (Fin n)} (hB : B ∈ P.parts) : B.card < n := by
+  have hle : B ⊆ univ := subset_univ _
+  have hne : B ≠ univ := by
+    intro h
+    apply hP
+    apply le_antisymm le_top
+    intro C hC
+    have hC' : C = univ := mem_singleton.mp (Finpartition.parts_top_subset _ hC)
+    exact ⟨B, hB, hC' ▸ h ▸ Subset.rfl⟩
+  simpa using card_lt_card (Finset.ssubset_iff_subset_ne.mpr ⟨hle, hne⟩)
 
-/-- The single-block partition is the maximum. -/
-def singleBlockPartition (n : ℕ) (hn : 0 < n) : SetPartition n where
-  blocks := [Finset.univ]
-  blocks_nonempty := by
-    intro B hB
-    simp only [List.mem_singleton] at hB
-    rw [hB]
-    rw [Finset.univ_nonempty_iff]
-    exact Fin.pos_iff_nonempty.mp hn
-  blocks_disjoint := List.pairwise_singleton _ _
-  blocks_cover := by simp
+/-- Structural enumeration of block positions, without invoking a sorting algorithm. -/
+def blockList {n : ℕ} (B : Finset (Fin n)) : List (Fin n) :=
+  (List.finRange n).filter (fun i => i ∈ B)
+
+theorem blockList_length {n : ℕ} (B : Finset (Fin n)) : (blockList B).length = B.card := by
+  have h : (blockList B).toFinset = B := by ext i; simp [blockList]
+  calc
+    _ = (blockList B).toFinset.card :=
+      (List.toFinset_card_of_nodup ((List.nodup_finRange n).filter _)).symm
+    _ = _ := congrArg Finset.card h
+
+/-- Increasing enumeration of one block; its implementation scans the ambient order. -/
+def blockPosition {n : ℕ} (B : Finset (Fin n)) : Fin B.card ↪o Fin n :=
+  OrderEmbedding.ofStrictMono
+    (fun i => (blockList B).get (Fin.cast (blockList_length B).symm i))
+    ((((List.pairwise_lt_finRange n).filter _).sortedLT.strictMono_get).comp
+      (Fin.cast_strictMono _))
+
+@[simp] theorem blockPosition_mem {n : ℕ} (B : Finset (Fin n)) (i : Fin B.card) :
+    blockPosition B i ∈ B := by
+  change (blockList B).get (Fin.cast (blockList_length B).symm i) ∈ B
+  have h := List.get_mem (blockList B) (Fin.cast (blockList_length B).symm i)
+  simpa only [blockList, List.mem_filter, List.mem_finRange, true_and, decide_eq_true_eq]
+    using h
+
+/-- The structural enumeration agrees with Mathlib's independently defined order embedding. -/
+theorem blockPosition_eq_orderEmb {n : ℕ} (B : Finset (Fin n)) :
+    blockPosition B = B.orderEmbOfFin rfl :=
+  Finset.orderEmbOfFin_unique' rfl (fun i => blockPosition_mem B i)
+
+@[simp] theorem blockPosition_univ {n : ℕ} (i : Fin (univ : Finset (Fin n)).card) :
+    blockPosition univ i = Fin.cast (by simp) i := by
+  rw [blockPosition_eq_orderEmb]
+  have h := Finset.orderEmbOfFin_unique (s := (univ : Finset (Fin n))) (by simp)
+    (f := fun j : Fin n => j) (fun _ => mem_univ _) (fun _ _ h => h)
+  have hi := (Finset.orderEmbOfFin_eq_orderEmbOfFin_iff
+    (s := (univ : Finset (Fin n))) (h := rfl) (h' := by simp)
+    (i := i) (j := Fin.cast (by simp) i)).mpr rfl
+  exact hi.trans (congrFun h (Fin.cast (by simp) i)).symm
+
+/-- Every original position occurs in exactly one block, at its ordered local index. -/
+def Partition.coordinates {n : ℕ} (P : Partition n) :
+    (Σ B : P.parts, Fin B.val.card) ≃ Fin n :=
+  (Equiv.sigmaCongrRight (fun B : P.parts => (B.val.orderIsoOfFin rfl).toEquiv)).trans
+    (P.equivSigmaParts.symm.trans (Equiv.subtypeUnivEquiv (fun _ => mem_univ _)))
+
+@[simp] theorem Partition.coordinates_apply {n : ℕ} (P : Partition n)
+    (B : P.parts) (i : Fin B.val.card) :
+    P.coordinates ⟨B, i⟩ = blockPosition B.val i := by
+  rw [blockPosition_eq_orderEmb]
+  rfl
+
+/-- Block sizes retain multiplicity; a shape forgets positions and is for diagonal queries only. -/
+def properShapes (n : ℕ) : Multiset (Multiset ℕ) :=
+  (properNoncrossingPartitions n).val.map (fun P => P.parts.val.map Finset.card)
+
+/-- Complete shape histograms, not a list of selected example diagrams. -/
+theorem properShapes_small :
+    properShapes 1 = 0 ∧
+    properShapes 2 = {{1, 1}} ∧
+    properShapes 3 = {{1, 1, 1}} + Multiset.replicate 3 {2, 1} ∧
+    properShapes 4 = {{1, 1, 1, 1}} + Multiset.replicate 6 {2, 1, 1} +
+      Multiset.replicate 2 {2, 2} + Multiset.replicate 4 {3, 1} ∧
+    properShapes 5 = {{1, 1, 1, 1, 1}} + Multiset.replicate 10 {2, 1, 1, 1} +
+      Multiset.replicate 10 {2, 2, 1} + Multiset.replicate 10 {3, 1, 1} +
+      Multiset.replicate 5 {3, 2} + Multiset.replicate 5 {4, 1} ∧
+    properShapes 6 = {{1, 1, 1, 1, 1, 1}} + Multiset.replicate 15 {2, 1, 1, 1, 1} +
+      Multiset.replicate 30 {2, 2, 1, 1} + Multiset.replicate 5 {2, 2, 2} +
+      Multiset.replicate 20 {3, 1, 1, 1} + Multiset.replicate 30 {3, 2, 1} +
+      Multiset.replicate 3 {3, 3} + Multiset.replicate 15 {4, 1, 1} +
+      Multiset.replicate 6 {4, 2} + Multiset.replicate 6 {5, 1} := by
+  decide +kernel
+
+/-- Catalan numbers reuse Mathlib's recurrence. -/
+abbrev catalanNumber := catalan
+
+/-- These count a proved complete catalogue, including the empty partition. -/
+theorem noncrossing_card_small :
+    (noncrossingPartitions 0).card = 1 ∧
+    (noncrossingPartitions 1).card = 1 ∧
+    (noncrossingPartitions 2).card = 2 ∧
+    (noncrossingPartitions 3).card = 5 ∧
+    (noncrossingPartitions 4).card = 14 := by
+  decide +kernel
 
 end Mettapedia.ProbabilityTheory.FreeProbability

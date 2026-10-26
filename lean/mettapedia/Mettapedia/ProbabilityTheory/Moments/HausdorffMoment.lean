@@ -15,12 +15,13 @@ import Mathlib.Order.Interval.Set.Infinite
 /-!
 # Hausdorff Moment Problem
 
-This file proves the Hausdorff moment theorem for completely monotone sequences bounded in [0,1].
+Complete monotonicity and normalization determine a unique probability law
+on the compact interval. Finite moment prefixes and Bernstein weight rows carry
+the same information; their weighted queries converge to continuous observations
+of that law with an explicit uniform-error bound.
 
-## Main Results
-
-* `hausdorff_moment_exists`: A completely monotone sequence bounded in [0,1] with m₀ = 1
-  is the moment sequence of a probability measure on [0,1].
+The existence proof uses a cluster point of bounded positive functionals and
+Riesz–Markov representation, followed by a real-line pushforward when requested.
 
 ## References
 
@@ -65,13 +66,7 @@ lemma polynomial_eq_of_toContinuousMapOn_eq {p q : ℝ[X]}
 lemma eval_fin_sum {n : ℕ} (x : ℝ) (f : Fin n → ℝ[X]) :
     Polynomial.eval x (Finset.sum (Finset.univ : Finset (Fin n)) f) =
       Finset.sum (Finset.univ : Finset (Fin n)) (fun i => Polynomial.eval x (f i)) := by
-  classical
-  -- Push evaluation through a finite sum by induction on the finset.
-  refine Finset.induction_on (s := (Finset.univ : Finset (Fin n))) ?h0 ?hstep
-  · simp
-  · intro a s ha hs
-    -- `eval` is additive.
-    simp [Finset.sum_insert, ha, hs, Polynomial.eval_add]
+  exact map_sum (Polynomial.evalRingHom x) f Finset.univ
 
 /-! ## Moment Functional on Polynomials
 
@@ -85,50 +80,22 @@ variable (m : ℕ → ℝ)
 
 /-- The moment functional on polynomials: Λ(p) = Σᵢ (coeff p i) * m(i).
     This maps the polynomial Xⁿ to m(n). -/
-noncomputable def momentFunctional : Polynomial ℝ →ₗ[ℝ] ℝ where
-  toFun p := ∑ i ∈ p.support, p.coeff i * m i
-  map_add' p q := by
-    have hsup : (p + q).support ⊆ p.support ∪ q.support := Polynomial.support_add
-    have h1 : ∑ i ∈ (p + q).support, (p + q).coeff i * m i =
-        ∑ i ∈ p.support ∪ q.support, (p + q).coeff i * m i := by
-      apply Finset.sum_subset hsup
-      intro i _ hi
-      rw [Polynomial.notMem_support_iff.mp hi, zero_mul]
-    have h2 : ∑ i ∈ p.support, p.coeff i * m i =
-        ∑ i ∈ p.support ∪ q.support, p.coeff i * m i := by
-      apply Finset.sum_subset Finset.subset_union_left
-      intro i _ hi
-      rw [Polynomial.notMem_support_iff.mp hi, zero_mul]
-    have h3 : ∑ i ∈ q.support, q.coeff i * m i =
-        ∑ i ∈ p.support ∪ q.support, q.coeff i * m i := by
-      apply Finset.sum_subset Finset.subset_union_right
-      intro i _ hi
-      rw [Polynomial.notMem_support_iff.mp hi, zero_mul]
-    rw [h1, h2, h3, ← Finset.sum_add_distrib]
-    apply Finset.sum_congr rfl
-    intro i _
-    simp only [Polynomial.coeff_add, add_mul]
-  map_smul' r p := by
-    simp only [RingHom.id_apply, smul_eq_mul]
-    have hsup : (r • p).support ⊆ p.support := Polynomial.support_smul r p
-    have h1 : ∑ i ∈ (r • p).support, (r • p).coeff i * m i =
-        ∑ i ∈ p.support, (r • p).coeff i * m i := by
-      apply Finset.sum_subset hsup
-      intro i _ hi
-      rw [Polynomial.notMem_support_iff.mp hi, zero_mul]
-    rw [h1]
-    simp only [Polynomial.coeff_smul, smul_eq_mul, mul_assoc]
-    rw [← Finset.mul_sum]
+noncomputable def momentFunctional : Polynomial ℝ →ₗ[ℝ] ℝ :=
+  Polynomial.lsum (fun n => LinearMap.mulRight ℝ (m n))
+
+/-- The coefficient interpretation retains the original support-sum formula. -/
+theorem momentFunctional_apply (p : ℝ[X]) :
+    momentFunctional m p = ∑ i ∈ p.support, p.coeff i * m i := rfl
 
 @[simp]
 theorem momentFunctional_X_pow (n : ℕ) : momentFunctional m (X ^ n) = m n := by
-  simp only [momentFunctional, LinearMap.coe_mk, AddHom.coe_mk]
+  rw [momentFunctional_apply]
   rw [Polynomial.support_X_pow n, Finset.sum_singleton]
   simp only [Polynomial.coeff_X_pow_self, one_mul]
 
 @[simp]
 theorem momentFunctional_C (c : ℝ) : momentFunctional m (C c) = c * m 0 := by
-  simp only [momentFunctional, LinearMap.coe_mk, AddHom.coe_mk]
+  rw [momentFunctional_apply]
   by_cases hc : c = 0
   · simp [hc]
   · rw [Polynomial.support_C hc, Finset.sum_singleton, Polynomial.coeff_C_zero]
@@ -141,14 +108,14 @@ theorem momentFunctional_one : momentFunctional m 1 = m 0 := by
 
 theorem momentFunctional_monomial (n : ℕ) (c : ℝ) :
     momentFunctional m (monomial n c) = c * m n := by
-  simp only [momentFunctional, LinearMap.coe_mk, AddHom.coe_mk]
+  rw [momentFunctional_apply]
   by_cases hc : c = 0
   · simp [hc]
   · rw [Polynomial.support_monomial n hc, Finset.sum_singleton, Polynomial.coeff_monomial_same]
 
 theorem momentFunctional_eq_sum_range (p : Polynomial ℝ) :
     momentFunctional m p = ∑ i ∈ Finset.range (p.natDegree + 1), p.coeff i * m i := by
-  simp only [momentFunctional, LinearMap.coe_mk, AddHom.coe_mk]
+  rw [momentFunctional_apply]
   apply Finset.sum_subset
   · intro i hi
     have := Polynomial.le_natDegree_of_mem_supp _ hi
@@ -245,7 +212,8 @@ end Positivity
 
 /-! ## Properties of Bernstein Weights
 
-The Bernstein weights wₙₖ = C(n,k) * Δⁿ⁻ᵏm(k) are non-negative and sum to 1.
+The weights wₙₖ = C(n,k) * Δⁿ⁻ᵏm(k) sum to m(0). Complete monotonicity
+makes them nonnegative; normalization makes their total mass one.
 -/
 
 section BernsteinWeights
@@ -357,6 +325,17 @@ theorem bernsteinFunctional_bound (m : ℕ → ℝ) (hcm : CompletelyMonotone m)
     _ = ‖f‖ := by
           simp [hsum]
 
+/-- A finite weighted query is the coefficient functional of its sampled polynomial. -/
+theorem bernsteinFunctional_eq_momentFunctional (m : ℕ → ℝ) (n : ℕ) (f : C(I, ℝ)) :
+    bernsteinFunctional m n f = momentFunctional m
+      (∑ j : Fin (n + 1), f (bernstein.z (n := n) j) • bernsteinPolynomial ℝ n j) := by
+  unfold bernsteinFunctional
+  simp only [map_sum, map_smul, smul_eq_mul]
+  apply Finset.sum_congr rfl
+  intro j _
+  rw [momentFunctional_bernsteinPolynomial]
+  simp [bernsteinWeight, Nat.le_of_lt_succ j.isLt, mul_comm]
+
 /-- The discrete functional agrees with `bernsteinMoment` on monomials. -/
 noncomputable def monomialFun (k : ℕ) : C(I, ℝ) :=
   ⟨fun x : I => (x : ℝ) ^ k, by fun_prop⟩
@@ -369,9 +348,6 @@ theorem bernsteinFunctional_monomial (m : ℕ → ℝ) (n k : ℕ) :
   -- The `pow` is pointwise, so `f (bernstein.z j) = (j/n)^k`.
   simp [monomialFun]
 
--- NOTE: A more explicit monomial function, if needed:
--- def monomialFun (k : ℕ) : C(I, ℝ) := (ContinuousMap.restrict I (ContinuousMap.id ℝ)) ^ k
-
 -- A polynomial whose momentFunctional matches `bernsteinMoment`.
 -- This rewrites the weighted sum into `momentFunctional` of a Bernstein-basis polynomial.
 theorem bernsteinMoment_eq_momentFunctional (m : ℕ → ℝ) (n k : ℕ) :
@@ -379,73 +355,15 @@ theorem bernsteinMoment_eq_momentFunctional (m : ℕ → ℝ) (n k : ℕ) :
       momentFunctional m
         (∑ j : Fin (n + 1),
           bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k)) := by
-  classical
   unfold bernsteinMoment
-  -- Push `momentFunctional` through the sum and the scalar multiplication.
-  have hsum :
-      momentFunctional m
-          (∑ j : Fin (n + 1),
-            bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k))
-        = ∑ j : Fin (n + 1),
-            momentFunctional m
-              (bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k)) := by
-    -- `momentFunctional` is linear, so it maps sums to sums.
-    simp
-  -- Rewrite each summand using Bernstein weights.
-  have hterm :
-      ∀ j : Fin (n + 1),
-        momentFunctional m (bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k))
-          = bernsteinWeight m n j * (((bernstein.z (n := n) j : I) : ℝ) ^ k) := by
-    intro j
-    have hj' : (j : ℕ) ≤ n := Nat.lt_succ_iff.mp j.isLt
-    -- Pull out the scalar `((j / n)^k)` using linearity.
-    have hsmul :
-        momentFunctional m (bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k)) =
-          (((bernstein.z (n := n) j : I) : ℝ) ^ k) * momentFunctional m (bernsteinPolynomial ℝ n j) := by
-      -- rewrite multiplication by a constant as scalar multiplication, then use linearity
-      set c : ℝ := ((bernstein.z (n := n) j : I) : ℝ) ^ k
-      -- keep `c` abstract to avoid `simp` turning product equalities into disjunctions
-      have : momentFunctional m (bernsteinPolynomial ℝ n j * Polynomial.C c) =
-          c * momentFunctional m (bernsteinPolynomial ℝ n j) := by
-        calc
-          momentFunctional m (bernsteinPolynomial ℝ n j * Polynomial.C c)
-              = momentFunctional m (Polynomial.C c * bernsteinPolynomial ℝ n j) := by
-                  simp [mul_comm]
-          _ = momentFunctional m (c • bernsteinPolynomial ℝ n j) := by
-                  simp [Polynomial.smul_eq_C_mul]
-          _ = c * momentFunctional m (bernsteinPolynomial ℝ n j) := by
-                  simp
-      simpa [c] using this
-    -- Now expand the Bernstein weight.
-    calc
-      momentFunctional m (bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k))
-          = (((bernstein.z (n := n) j : I) : ℝ) ^ k) * momentFunctional m (bernsteinPolynomial ℝ n j) := hsmul
-      _ = (((bernstein.z (n := n) j : I) : ℝ) ^ k) * ((Nat.choose n (j : ℕ) : ℝ) * fwdDiffIter (n - (j : ℕ)) m (j : ℕ)) := by
-            rw [momentFunctional_bernsteinPolynomial m n (j : ℕ)]
-      _ = bernsteinWeight m n (j : ℕ) * (((bernstein.z (n := n) j : I) : ℝ) ^ k) := by
-            -- unfold the weight and rearrange
-            simp [bernsteinWeight, hj', mul_comm, mul_left_comm]
-  -- Combine.
-  have hcalc :
-      momentFunctional m
-          (∑ j : Fin (n + 1),
-            bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k))
-        = ∑ j : Fin (n + 1),
-            bernsteinWeight m n j * (((bernstein.z (n := n) j : I) : ℝ) ^ k) := by
-    calc
-      momentFunctional m
-          (∑ j : Fin (n + 1),
-            bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k))
-          = ∑ j : Fin (n + 1),
-              momentFunctional m (bernsteinPolynomial ℝ n j * Polynomial.C (((bernstein.z (n := n) j : I) : ℝ) ^ k)) := by
-                exact hsum
-      _ = ∑ j : Fin (n + 1),
-              bernsteinWeight m n j * (((bernstein.z (n := n) j : I) : ℝ) ^ k) := by
-                apply Finset.sum_congr rfl
-                intro j _
-                exact hterm j
-  -- Finish by symmetry.
-  exact hcalc.symm
+  rw [map_sum]
+  apply Finset.sum_congr rfl
+  intro j _
+  have hj : (j : ℕ) ≤ n := Nat.le_of_lt_succ j.isLt
+  conv_rhs => rw [mul_comm, ← Polynomial.smul_eq_C_mul]
+  rw [map_smul, smul_eq_mul, momentFunctional_bernsteinPolynomial]
+  simp only [bernsteinWeight, hj, dite_true]
+  ring
 
 /-- The 0-th Bernstein moment is 1 (for m(0) = 1). -/
 theorem bernsteinMoment_zero (m : ℕ → ℝ) (hzero : m 0 = 1) (n : ℕ) :
@@ -852,113 +770,59 @@ lemma sum_choose_smul_bernsteinPolynomial (n r : ℕ) :
 lemma bernsteinWeight_choose_moment (m : ℕ → ℝ) (n r : ℕ) :
     (∑ j : Fin (n + 1), (Nat.choose (j : ℕ) r : ℝ) * bernsteinWeight m n j) =
       (Nat.choose n r : ℝ) * m r := by
-  classical
-  -- Apply `momentFunctional` to the polynomial identity from `sum_choose_smul_bernsteinPolynomial`.
-  have hid := congrArg (momentFunctional m) (sum_choose_smul_bernsteinPolynomial (n := n) (r := r))
-  -- Expand both sides using linearity and the `momentFunctional` evaluation on Bernstein polynomials.
-  -- On the left, `momentFunctional m (bernsteinPolynomial ℝ n j) = bernsteinWeight m n j`.
-  -- On the right, `momentFunctional m (X^r) = m r`.
-  -- First rewrite the LHS as a Finset sum.
-  have hL :
-      momentFunctional m (∑ j : Fin (n + 1), (Nat.choose (j : ℕ) r : ℝ) • bernsteinPolynomial ℝ n (j : ℕ))
-        = ∑ j : Fin (n + 1), (Nat.choose (j : ℕ) r : ℝ) * momentFunctional m (bernsteinPolynomial ℝ n (j : ℕ)) := by
-    -- Turn scalar multiplication into multiplication by a scalar.
-    simp [map_sum, smul_eq_mul]
-  -- And similarly for the RHS.
-  have hR : momentFunctional m ((Nat.choose n r : ℝ) • (X ^ r : ℝ[X])) =
-      (Nat.choose n r : ℝ) * momentFunctional m (X ^ r : ℝ[X]) := by
-    simp [smul_eq_mul]
-  -- Now combine.
-  -- `momentFunctional m (bernsteinPolynomial ℝ n j) = bernsteinWeight m n j` since `j ≤ n`.
-  have hbern : ∀ j : Fin (n + 1), momentFunctional m (bernsteinPolynomial ℝ n (j : ℕ)) = bernsteinWeight m n (j : ℕ) := by
-    intro j
-    have hj : (j : ℕ) ≤ n := Nat.lt_succ_iff.mp j.isLt
-    simp [bernsteinWeight, hj, momentFunctional_bernsteinPolynomial m n (j : ℕ)]
-  -- Finish by rewriting `hid` with these expansions.
-  -- Note: `momentFunctional_X_pow` gives the moment of `X^r`.
-  have : ∑ j : Fin (n + 1), (Nat.choose (j : ℕ) r : ℝ) * bernsteinWeight m n (j : ℕ) =
-        (Nat.choose n r : ℝ) * m r := by
-    -- Rewrite `hid` using `hL`, `hR`, and `hbern`.
-    simpa [hL, hR, hbern, momentFunctional_X_pow] using hid
-  exact this
+  have hbern (j : Fin (n + 1)) :
+      momentFunctional m (bernsteinPolynomial ℝ n j) = bernsteinWeight m n j := by
+    simp [bernsteinWeight, Nat.le_of_lt_succ j.isLt, momentFunctional_bernsteinPolynomial]
+  have identity := congrArg (momentFunctional m) (sum_choose_smul_bernsteinPolynomial n r)
+  simpa only [map_sum, map_smul, smul_eq_mul, momentFunctional_X_pow, hbern] using identity
 
 lemma bernsteinWeight_descFactorial_moment (m : ℕ → ℝ) (n r : ℕ) :
     (∑ j : Fin (n + 1), ((j : ℕ).descFactorial r : ℝ) * bernsteinWeight m n (j : ℕ)) =
       (n.descFactorial r : ℝ) * m r := by
-  classical
-  -- Reduce to the `choose`-moment identity using `descFactorial = r! * choose`.
-  have hchoose := bernsteinWeight_choose_moment (m := m) (n := n) (r := r)
-  have hdf (a : ℕ) : (a.descFactorial r : ℝ) = (r.factorial : ℝ) * (a.choose r : ℝ) := by
-    -- Cast the Nat identity `a.descFactorial r = r! * a.choose r`.
-    have h : a.descFactorial r = r.factorial * a.choose r :=
-      Nat.descFactorial_eq_factorial_mul_choose a r
-    exact_mod_cast h
-  -- Multiply the `choose` identity by `r!` and rewrite both sides via `hdf`.
-  have hmul :
-      (r.factorial : ℝ) *
-          (∑ j : Fin (n + 1), (Nat.choose (j : ℕ) r : ℝ) * bernsteinWeight m n (j : ℕ)) =
-        (r.factorial : ℝ) * ((Nat.choose n r : ℝ) * m r) := by
-    exact congrArg (fun t => (r.factorial : ℝ) * t) hchoose
-  -- Simplify the multiplied identity into the desired descending-factorial moment statement.
-  -- Left: pull `r!` inside and rewrite as `descFactorial`.
-  -- Right: rewrite `r! * choose n r` as `descFactorial`.
-  -- We keep the arithmetic commutativity explicit for readability.
-  -- LHS
-  have hL :
-      (r.factorial : ℝ) *
-          (∑ j : Fin (n + 1), (Nat.choose (j : ℕ) r : ℝ) * bernsteinWeight m n (j : ℕ)) =
-        ∑ j : Fin (n + 1), ((j : ℕ).descFactorial r : ℝ) * bernsteinWeight m n (j : ℕ) := by
-    -- Distribute and use `hdf`.
-    -- `r! * (choose j r * w_j) = (descFactorial j r) * w_j`.
-    have : ∀ j : Fin (n + 1),
-        (r.factorial : ℝ) * ((Nat.choose (j : ℕ) r : ℝ) * bernsteinWeight m n (j : ℕ)) =
-          ((j : ℕ).descFactorial r : ℝ) * bernsteinWeight m n (j : ℕ) := by
-      intro j
-      simp [hdf (j : ℕ), mul_assoc, mul_left_comm, mul_comm]
-    -- Use `Finset.mul_sum` and rewrite each term.
-    simp [Finset.mul_sum, this]
-  -- RHS
-  have hR :
-      (r.factorial : ℝ) * ((Nat.choose n r : ℝ) * m r) = (n.descFactorial r : ℝ) * m r := by
-    -- `n.descFactorial r = r! * n.choose r`.
-      simp [hdf n, mul_assoc, mul_comm]
-  -- Conclude.
-  -- Rewrite `hmul` using `hL` and `hR`.
-  have h := hmul
-  rw [hL, hR] at h
-  exact h
+  have identity := congrArg ((r.factorial : ℝ) * ·) (bernsteinWeight_choose_moment m n r)
+  simpa only [Finset.mul_sum, Nat.descFactorial_eq_factorial_mul_choose, Nat.cast_mul,
+    mul_assoc] using identity
+
+/-- No coefficient beyond degree `n` is consulted by the degree-`n` weight row. -/
+theorem bernsteinWeight_congr {m m' : ℕ → ℝ} {n : ℕ}
+    (same : ∀ k ≤ n, m k = m' k) (j : ℕ) :
+    bernsteinWeight m n j = bernsteinWeight m' n j := by
+  by_cases inside : j ≤ n
+  · simp only [bernsteinWeight, inside, dite_true, fwdDiffIter_eq_sum_choose]
+    congr 1
+    apply Finset.sum_congr rfl
+    intro k hk
+    rw [same (j + k) (by have := Finset.mem_range.mp hk; omega)]
+  · simp [bernsteinWeight, inside]
+
+/-- The whole row determines every supplied moment through the same degree. -/
+theorem bernsteinWeight_eq_iff_prefix_eq (m m' : ℕ → ℝ) (n : ℕ) :
+    (∀ j ≤ n, bernsteinWeight m n j = bernsteinWeight m' n j) ↔
+      ∀ k ≤ n, m k = m' k := by
+  constructor
+  · intro weights k hk
+    have same : (∑ j : Fin (n + 1), (Nat.choose j k : ℝ) * bernsteinWeight m n j) =
+        ∑ j : Fin (n + 1), (Nat.choose j k : ℝ) * bernsteinWeight m' n j :=
+      Finset.sum_congr rfl (fun j _ => congrArg ((Nat.choose j k : ℝ) * ·)
+        (weights j (Nat.le_of_lt_succ j.isLt)))
+    rw [bernsteinWeight_choose_moment, bernsteinWeight_choose_moment] at same
+    exact mul_left_cancel₀ (Nat.cast_ne_zero.mpr (Nat.ne_of_gt (Nat.choose_pos hk))) same
+  · intro moments j _
+    exact bernsteinWeight_congr moments j
 
 /-! ## Asymptotics for descending factorials -/
 
 private lemma tendsto_sub_div (i : ℕ) :
     Filter.Tendsto (fun n : ℕ => ((n : ℝ) - (i : ℝ)) / (n : ℝ))
       Filter.atTop (nhds (1 : ℝ)) := by
-  have hinv : Filter.Tendsto (fun n : ℕ => (n : ℝ)⁻¹) Filter.atTop (nhds (0 : ℝ)) := by
-    exact (tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop)
-  have hdiv : Filter.Tendsto (fun n : ℕ => (i : ℝ) / (n : ℝ)) Filter.atTop (nhds (0 : ℝ)) := by
-    have hconst : Filter.Tendsto (fun _ : ℕ => (i : ℝ)) Filter.atTop (nhds (i : ℝ)) := by
-      exact (tendsto_const_nhds :
-        Filter.Tendsto (fun _ : ℕ => (i : ℝ)) Filter.atTop (nhds (i : ℝ)))
-    have hdiv' := hconst.mul hinv
-    simpa [div_eq_mul_inv] using hdiv'
-  have hEq :
-      (fun n : ℕ => ((n : ℝ) - (i : ℝ)) / (n : ℝ)) =ᶠ[Filter.atTop]
-        fun n : ℕ => (1 : ℝ) - (i : ℝ) / (n : ℝ) := by
-    have hne : (∀ᶠ n : ℕ in Filter.atTop, (n : ℝ) ≠ 0) := by
-      refine (Filter.eventually_atTop.2 ?_)
-      refine ⟨1, ?_⟩
-      intro n hn
-      exact_mod_cast (Nat.succ_le_iff.1 hn).ne'
-    filter_upwards [hne] with n hn
-    field_simp [hn]
-  have hsub :
-      Filter.Tendsto (fun n : ℕ => (1 : ℝ) - (i : ℝ) / (n : ℝ))
-        Filter.atTop (nhds (1 : ℝ)) := by
-    have h := ((tendsto_const_nhds : Filter.Tendsto (fun _ : ℕ => (1 : ℝ)) Filter.atTop
-      (nhds (1 : ℝ))).sub hdiv)
-    simp at h
-    exact h
-  exact hsub.congr' hEq.symm
+  have hinv : Tendsto (fun n : ℕ => (n : ℝ)⁻¹) atTop (nhds (0 : ℝ)) :=
+    tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop
+  have limit : Tendsto (fun n : ℕ => 1 - (i : ℝ) * (n : ℝ)⁻¹) atTop (nhds (1 : ℝ)) := by
+    simpa using (tendsto_const_nhds.sub (tendsto_const_nhds.mul hinv))
+  apply limit.congr'
+  filter_upwards [Filter.eventually_gt_atTop 0] with n hn
+  have nonzero : (n : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hn)
+  field_simp
 
 private lemma cast_descFactorial_eq_prod_sub (n r : ℕ) (hn : r ≤ n) :
     (n.descFactorial r : ℝ) = ∏ i ∈ Finset.range r, ((n : ℝ) - (i : ℝ)) := by
@@ -984,77 +848,27 @@ private lemma prod_div_by_const (r : ℕ) (n : ℕ) :
 private lemma tendsto_descFactorial_div_pow (r : ℕ) :
     Filter.Tendsto (fun n : ℕ => (n.descFactorial r : ℝ) / (n : ℝ) ^ r)
       Filter.atTop (nhds (1 : ℝ)) := by
-  classical
-  by_cases hr : r = 0
-  · subst hr
-    simp
-  have hEq :
-      (fun n : ℕ => (n.descFactorial r : ℝ) / (n : ℝ) ^ r) =ᶠ[Filter.atTop]
-        fun n : ℕ => ∏ i ∈ Finset.range r, ((n : ℝ) - (i : ℝ)) / (n : ℝ) := by
-    refine (Filter.eventually_atTop.2 ?_)
-    refine ⟨r, ?_⟩
-    intro n hn
-    have hprod := cast_descFactorial_eq_prod_sub n r hn
-    calc
-      (n.descFactorial r : ℝ) / (n : ℝ) ^ r
-          = (∏ i ∈ Finset.range r, ((n : ℝ) - (i : ℝ))) / (n : ℝ) ^ r := by
-              simp [hprod]
-      _ = ∏ i ∈ Finset.range r, ((n : ℝ) - (i : ℝ)) / (n : ℝ) := by
-            symm
-            exact prod_div_by_const r n
-  have hprod :
-      Filter.Tendsto (fun n : ℕ =>
-        ∏ i ∈ Finset.range r, ((n : ℝ) - (i : ℝ)) / (n : ℝ))
-        Filter.atTop (nhds (∏ i ∈ Finset.range r, (1 : ℝ))) := by
-    refine tendsto_finsetProd (s := Finset.range r) ?_
-    intro i hi
-    exact tendsto_sub_div i
-  have hprod' : (∏ i ∈ Finset.range r, (1 : ℝ)) = (1 : ℝ) := by
-    simp
-  have hprod'' :
-      Filter.Tendsto (fun n : ℕ =>
-        ∏ i ∈ Finset.range r, ((n : ℝ) - (i : ℝ)) / (n : ℝ))
-        Filter.atTop (nhds (1 : ℝ)) := by
-    simpa [hprod'] using hprod
-  exact hprod''.congr' hEq.symm
+  have agree : (fun n : ℕ => (n.descFactorial r : ℝ) / (n : ℝ) ^ r) =ᶠ[atTop]
+      (fun n => ∏ i ∈ Finset.range r, ((n : ℝ) - i) / (n : ℝ)) := by
+    filter_upwards [Filter.eventually_ge_atTop r] with n hn
+    rw [cast_descFactorial_eq_prod_sub n r hn, ← prod_div_by_const]
+  have limit := tendsto_finsetProd (Finset.range r) (fun i _ => tendsto_sub_div i)
+  simpa using limit.congr' agree.symm
 
 private lemma tendsto_descFactorial_div_pow_lt (k r : ℕ) (hrk : r < k) :
     Filter.Tendsto (fun n : ℕ => (n.descFactorial r : ℝ) / (n : ℝ) ^ k)
       Filter.atTop (nhds (0 : ℝ)) := by
-  have hratio := tendsto_descFactorial_div_pow r
-  have hp : 0 < k - r := Nat.sub_pos_of_lt hrk
-  have hinv : Filter.Tendsto (fun n : ℕ => (n : ℝ)⁻¹) Filter.atTop (nhds (0 : ℝ)) := by
-    exact (tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop)
-  have hinv_pow :
-      Filter.Tendsto (fun n : ℕ => ((n : ℝ) ^ (k - r))⁻¹) Filter.atTop (nhds (0 : ℝ)) := by
-    have hpow := hinv.pow (k - r)
-    -- rewrite `(n⁻¹)^(k-r)` as `(n^(k-r))⁻¹` and simplify the limit
-    simpa [inv_pow, zero_pow (Nat.ne_of_gt hp)] using hpow
-  have hEq :
-      (fun n : ℕ => (n.descFactorial r : ℝ) / (n : ℝ) ^ k) =ᶠ[Filter.atTop]
-        fun n : ℕ =>
-          (n.descFactorial r : ℝ) / (n : ℝ) ^ r * ((n : ℝ) ^ (k - r))⁻¹ := by
-    refine Filter.Eventually.of_forall ?_
-    intro n
-    have hk : k = r + (k - r) := (Nat.add_sub_of_le (Nat.le_of_lt hrk)).symm
-    -- Rewrite using `pow_add` and `div_mul_eq_div_div`.
-    have hpow : (n : ℝ) ^ k = (n : ℝ) ^ r * (n : ℝ) ^ (k - r) := by
-      calc
-        (n : ℝ) ^ k = (n : ℝ) ^ (r + (k - r)) := by
-          exact congrArg (fun t : ℕ => (n : ℝ) ^ t) hk
-        _ = (n : ℝ) ^ r * (n : ℝ) ^ (k - r) := by
-          exact (pow_add (n : ℝ) r (k - r))
-    calc
-      (n.descFactorial r : ℝ) / (n : ℝ) ^ k
-          = (n.descFactorial r : ℝ) / ((n : ℝ) ^ r * (n : ℝ) ^ (k - r)) := by
-              simp [hpow]
-      _ = (n.descFactorial r : ℝ) / (n : ℝ) ^ r / (n : ℝ) ^ (k - r) := by
-              simp [div_mul_eq_div_div]
-      _ = (n.descFactorial r : ℝ) / (n : ℝ) ^ r * ((n : ℝ) ^ (k - r))⁻¹ := by
-              simp [div_eq_mul_inv, mul_assoc]
-  have hmul := (hratio.mul hinv_pow).congr' hEq.symm
-  simp at hmul
-  exact hmul
+  have hp : k - r ≠ 0 := Nat.ne_of_gt (Nat.sub_pos_of_lt hrk)
+  have hinv : Tendsto (fun n : ℕ => (n : ℝ)⁻¹) atTop (nhds (0 : ℝ)) :=
+    tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop
+  have agree : (fun n : ℕ => (n.descFactorial r : ℝ) / (n : ℝ) ^ k) =ᶠ[atTop]
+      (fun n => (n.descFactorial r : ℝ) / (n : ℝ) ^ r * ((n : ℝ)⁻¹) ^ (k - r)) := by
+    filter_upwards [] with n
+    have powers : (n : ℝ) ^ k = (n : ℝ) ^ r * (n : ℝ) ^ (k - r) := by
+      simpa [Nat.add_sub_of_le hrk.le] using pow_add (n : ℝ) r (k - r)
+    rw [powers, div_mul_eq_div_div]
+    simp [div_eq_mul_inv, inv_pow]
+  simpa [hp] using ((tendsto_descFactorial_div_pow r).mul (hinv.pow (k - r))).congr' agree.symm
 
 private lemma stirling_term_tendsto (m : ℕ → ℝ) (k r : ℕ) (hrle : r ≤ k) :
     Filter.Tendsto
@@ -1063,43 +877,12 @@ private lemma stirling_term_tendsto (m : ℕ → ℝ) (k r : ℕ) (hrle : r ≤ 
           ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r)
       Filter.atTop
       (nhds (if r = k then m k else 0)) := by
-  by_cases hkr : r = k
+  by_cases same : r = k
   · subst r
-    have hratio := tendsto_descFactorial_div_pow k
-    have hcoef : (Nat.stirlingSecond k k : ℝ) = 1 := by
-      simp [Nat.stirlingSecond_self]
-    have hconst : Filter.Tendsto (fun _ : ℕ => (m k : ℝ)) Filter.atTop (nhds (m k)) := by
-      exact (tendsto_const_nhds :
-        Filter.Tendsto (fun _ : ℕ => (m k : ℝ)) Filter.atTop (nhds (m k)))
-    have hmul : Filter.Tendsto
-        (fun n : ℕ => ((n.descFactorial k : ℝ) / (n : ℝ) ^ k) * m k)
-        Filter.atTop (nhds (1 * m k)) := by
-      exact (hratio.mul hconst)
-    have hmul2 : Filter.Tendsto
-        (fun n : ℕ => (Nat.stirlingSecond k k : ℝ) *
-          (((n.descFactorial k : ℝ) / (n : ℝ) ^ k) * m k))
-        Filter.atTop (nhds ((Nat.stirlingSecond k k : ℝ) * (1 * m k))) := by
-      exact (tendsto_const_nhds.mul hmul)
-    simpa [hcoef] using hmul2
-  · have hlt : r < k := by
-      exact lt_of_le_of_ne hrle hkr
-    have hratio := tendsto_descFactorial_div_pow_lt k r hlt
-    have hconst : Filter.Tendsto (fun _ : ℕ => (m r : ℝ)) Filter.atTop (nhds (m r)) := by
-      exact (tendsto_const_nhds :
-        Filter.Tendsto (fun _ : ℕ => (m r : ℝ)) Filter.atTop (nhds (m r)))
-    have hmul : Filter.Tendsto
-        (fun n : ℕ =>
-          ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r)
-        Filter.atTop (nhds (0 : ℝ)) := by
-      simpa [zero_mul] using (hratio.mul hconst)
-    have hmul2 :
-        Filter.Tendsto
-          (fun n : ℕ =>
-            (Nat.stirlingSecond k r : ℝ) *
-              (((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r))
-          Filter.atTop (nhds (0 : ℝ)) := by
-      simpa [mul_assoc] using (tendsto_const_nhds.mul hmul)
-    simpa [mul_assoc, hkr] using hmul2
+    simpa [Nat.stirlingSecond_self] using (tendsto_descFactorial_div_pow k).mul_const (m k)
+  · have below : r < k := lt_of_le_of_ne hrle same
+    simpa [same] using (tendsto_const_nhds.mul
+      (tendsto_descFactorial_div_pow_lt k r below)).mul_const (m r)
 
 /-- Key convergence lemma: For bounded completely monotone m with m(0) = 1,
     the k-th Bernstein moment converges to m(k) as n → ∞.
@@ -1112,320 +895,35 @@ theorem bernsteinMoment_tendsto (m : ℕ → ℝ)
     (_hzero : m 0 = 1) (k : ℕ) :
     Filter.Tendsto (fun n => bernsteinMoment m n k) Filter.atTop (nhds (m k)) := by
   classical
-  -- Auxiliary: a power is a linear combination of descending factorials (over ℝ).
-  have hpow_real (j : ℕ) :
-      (j : ℝ) ^ k =
-        ∑ r ∈ Finset.range (k + 1), (Nat.stirlingSecond k r : ℝ) * (j.descFactorial r : ℝ) := by
-    exact_mod_cast (pow_eq_sum_stirlingSecond_descFactorial j k)
-
-  -- Bernstein moment as a Stirling-weighted sum of factorial moments.
-  have hsum :
-      ∀ n : ℕ,
-        bernsteinMoment m n k =
-          ∑ r ∈ Finset.range (k + 1),
-            (Nat.stirlingSecond k r : ℝ) *
-              ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r := by
-    intro n
-    -- Expand definition and substitute the Stirling expansion of `(j : ℝ)^k`.
-    -- First, rewrite `bernsteinMoment` as `∑ w_j * (j^k / n^k)`.
-    have hdef :
-        bernsteinMoment m n k =
-          ∑ j : Fin (n + 1),
-            bernsteinWeight m n j * (((j : ℝ) ^ k) / (n : ℝ) ^ k) := by
-      -- `bernstein.z j = j/n`
-      simp [bernsteinMoment, bernstein.z, div_pow]
-    -- Substitute the Stirling expansion and swap finite sums.
-    -- We keep the algebra explicit to avoid simp loops.
+  have powers (j : ℕ) : (j : ℝ) ^ k = ∑ r ∈ Finset.range (k + 1),
+      (Nat.stirlingSecond k r : ℝ) * (j.descFactorial r : ℝ) := by
+    exact_mod_cast pow_eq_sum_stirlingSecond_descFactorial j k
+  have formula (n : ℕ) : bernsteinMoment m n k = ∑ r ∈ Finset.range (k + 1),
+      (Nat.stirlingSecond k r : ℝ) * ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r := by
+    simp only [bernsteinMoment, bernstein.z, div_pow]
+    conv_lhs => arg 2; ext j; rw [powers]
+    simp only [Finset.sum_div, Finset.mul_sum]
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro r _
     calc
-      bernsteinMoment m n k
-          = ∑ j : Fin (n + 1),
-              bernsteinWeight m n j * (((j : ℝ) ^ k) / (n : ℝ) ^ k) := hdef
-      _ = ∑ j : Fin (n + 1),
-            bernsteinWeight m n j *
-              ((∑ r ∈ Finset.range (k + 1),
-                  (Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ)) / (n : ℝ) ^ k) := by
-            refine Finset.sum_congr rfl ?_
-            intro j hj
-            simp [hpow_real (j : ℕ)]
-      _ = ∑ r ∈ Finset.range (k + 1),
-            (Nat.stirlingSecond k r : ℝ) *
-              ((∑ j : Fin (n + 1),
-                  bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ)) / (n : ℝ) ^ k) := by
-            -- Swap sums and factor constants without heavy `simp`.
-            -- Write `/ n^k` as multiplication by a constant and move it outside sums.
-            -- Then use `sum_comm` to swap the finite sums.
-            have hstep :
-                ∑ j : Fin (n + 1),
-                  bernsteinWeight m n j *
-                    ((∑ r ∈ Finset.range (k + 1),
-                        (Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ)) /
-                      (n : ℝ) ^ k)
-                  =
-                ∑ j : Fin (n + 1),
-                  (∑ r ∈ Finset.range (k + 1),
-                      bernsteinWeight m n j *
-                        ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                    (n : ℝ) ^ k := by
-              -- pull `bernsteinWeight` inside the sum over `r`
-              refine Finset.sum_congr rfl ?_
-              intro j hj
-              -- `w * (∑ r A r) = ∑ r w * A r`
-              -- then divide by `n^k`
-              simp [div_eq_mul_inv, Finset.mul_sum, mul_assoc, mul_comm]
-            -- swap sums
-            have hswap :
-                ∑ j : Fin (n + 1),
-                  (∑ r ∈ Finset.range (k + 1),
-                      bernsteinWeight m n j *
-                        ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                    (n : ℝ) ^ k
-                  =
-                ∑ r ∈ Finset.range (k + 1),
-                  (∑ j : Fin (n + 1),
-                      bernsteinWeight m n j *
-                        ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                    (n : ℝ) ^ k := by
-              -- pull out the constant factor `(n^k)⁻¹` and swap the double sum
-              calc
-                ∑ j : Fin (n + 1),
-                    (∑ r ∈ Finset.range (k + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                      (n : ℝ) ^ k
-                    =
-                    ∑ j : Fin (n + 1),
-                      (∑ r ∈ Finset.range (k + 1),
-                          bernsteinWeight m n j *
-                            ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) *
-                        ((n : ℝ) ^ k)⁻¹ := by
-                      simp [div_eq_mul_inv]
-                _ = (∑ j : Fin (n + 1),
-                      ∑ r ∈ Finset.range (k + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) *
-                    ((n : ℝ) ^ k)⁻¹ := by
-                      simp [Finset.sum_mul, mul_assoc]
-                _ = (∑ r ∈ Finset.range (k + 1),
-                      ∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) *
-                    ((n : ℝ) ^ k)⁻¹ := by
-                      -- swap the double sum explicitly
-                      have hcomm :
-                          (∑ j : Fin (n + 1),
-                              ∑ r ∈ Finset.range (k + 1),
-                                bernsteinWeight m n j *
-                                  ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ)))
-                            =
-                          ∑ r ∈ Finset.range (k + 1),
-                            ∑ j : Fin (n + 1),
-                              bernsteinWeight m n j *
-                                ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ)) := by
-                            simpa using (Finset.sum_comm : _)
-                      -- rewrite with the commuted sum
-                      rw [hcomm]
-                _ = ∑ r ∈ Finset.range (k + 1),
-                      (∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) *
-                      ((n : ℝ) ^ k)⁻¹ := by
-                      simp [Finset.sum_mul, mul_assoc]
-                _ = ∑ r ∈ Finset.range (k + 1),
-                      (∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                      (n : ℝ) ^ k := by
-                      simp [div_eq_mul_inv]
-            -- factor out the Stirling coefficient
-            calc
-              ∑ j : Fin (n + 1),
-                  bernsteinWeight m n j *
-                    ((∑ r ∈ Finset.range (k + 1),
-                        (Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ)) /
-                      (n : ℝ) ^ k)
-                  = ∑ j : Fin (n + 1),
-                      (∑ r ∈ Finset.range (k + 1),
-                          bernsteinWeight m n j *
-                            ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                        (n : ℝ) ^ k := hstep
-              _ = ∑ r ∈ Finset.range (k + 1),
-                    (∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                      (n : ℝ) ^ k := hswap
-              _ = ∑ r ∈ Finset.range (k + 1),
-                    (Nat.stirlingSecond k r : ℝ) *
-                      ((∑ j : Fin (n + 1),
-                          bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ)) /
-                        (n : ℝ) ^ k) := by
-                  -- pull out the constant coefficient
-                  refine Finset.sum_congr rfl ?_
-                  intro r hr
-                  have hfactor :
-                      ∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))
-                        =
-                      (Nat.stirlingSecond k r : ℝ) *
-                        ∑ j : Fin (n + 1),
-                          bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ) := by
-                    calc
-                      ∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))
-                          =
-                        ∑ j : Fin (n + 1),
-                          (Nat.stirlingSecond k r : ℝ) *
-                            (bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ)) := by
-                          refine Finset.sum_congr rfl ?_
-                          intro j hj
-                          simp [mul_assoc, mul_left_comm, mul_comm]
-                      _ =
-                        (Nat.stirlingSecond k r : ℝ) *
-                          ∑ j : Fin (n + 1),
-                            bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ) := by
-                          simp [Finset.mul_sum]
-                  -- use `mul_div_assoc` to pull out the coefficient
-                  calc
-                    (∑ j : Fin (n + 1),
-                        bernsteinWeight m n j *
-                          ((Nat.stirlingSecond k r : ℝ) * ((j : ℕ).descFactorial r : ℝ))) /
-                      (n : ℝ) ^ k
-                        = ((Nat.stirlingSecond k r : ℝ) *
-                            ∑ j : Fin (n + 1),
-                              bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ)) /
-                          (n : ℝ) ^ k := by
-                          rw [hfactor]
-                    _ = (Nat.stirlingSecond k r : ℝ) *
-                          ((∑ j : Fin (n + 1),
-                              bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ)) /
-                            (n : ℝ) ^ k) := by
-                          exact
-                            (mul_div_assoc (Nat.stirlingSecond k r : ℝ)
-                              (∑ j : Fin (n + 1),
-                                bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ))
-                              ((n : ℝ) ^ k))
-      _ = ∑ r ∈ Finset.range (k + 1),
-            (Nat.stirlingSecond k r : ℝ) *
-              (((n.descFactorial r : ℝ) * m r) / (n : ℝ) ^ k) := by
-            -- Use the factorial-moment identity.
-            refine Finset.sum_congr rfl ?_
-            intro r hr
-            -- rewrite inner sum
-            have hdf := bernsteinWeight_descFactorial_moment (m := m) (n := n) (r := r)
-            have hdf' :
-                (∑ j : Fin (n + 1),
-                    bernsteinWeight m n j * ((j : ℕ).descFactorial r : ℝ)) =
-                  (n.descFactorial r : ℝ) * m r := by
-              simpa [mul_comm] using hdf
-            -- rewrite inner sum using `hdf'`
-            simp [hdf']
-      _ = ∑ r ∈ Finset.range (k + 1),
-            (Nat.stirlingSecond k r : ℝ) *
-              ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r := by
-            -- move `m r` to the right
-            refine Finset.sum_congr rfl ?_
-            intro r hr
-            -- simple rearrangement without heavy `simp`
-            calc
-              (Nat.stirlingSecond k r : ℝ) *
-                  (((n.descFactorial r : ℝ) * m r) / (n : ℝ) ^ k)
-                  =
-                (Nat.stirlingSecond k r : ℝ) *
-                  (m r * ((n.descFactorial r : ℝ) / (n : ℝ) ^ k)) := by
-                    -- commute inside the numerator, then use `mul_div_assoc`
-                    have :
-                        ((n.descFactorial r : ℝ) * m r) / (n : ℝ) ^ k
-                          = m r * ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) := by
-                        calc
-                          ((n.descFactorial r : ℝ) * m r) / (n : ℝ) ^ k
-                              = (m r * (n.descFactorial r : ℝ)) / (n : ℝ) ^ k := by
-                                  simp [mul_comm]
-                          _ = m r * ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) := by
-                                  exact (mul_div_assoc (m r) (n.descFactorial r : ℝ) ((n : ℝ) ^ k))
-                    simp [this]
-              _ = (Nat.stirlingSecond k r : ℝ) *
-                    ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r := by
-                    simp [mul_comm, mul_assoc]
+      _ = (Nat.stirlingSecond k r : ℝ) *
+          (∑ j : Fin (n + 1), (j.val.descFactorial r : ℝ) * bernsteinWeight m n j) /
+            (n : ℝ) ^ k := by
+        simp only [Finset.mul_sum, Finset.sum_div]
+        apply Finset.sum_congr rfl
+        intro j _
+        ring
+      _ = _ := by rw [bernsteinWeight_descFactorial_moment]; ring
+  have limit := tendsto_finsetSum (Finset.range (k + 1))
+    (fun r hr => stirling_term_tendsto m k r (Nat.lt_succ_iff.mp (Finset.mem_range.mp hr)))
+  simpa only [← formula, Finset.sum_ite_eq', Finset.mem_range, Nat.lt_succ_self, if_true]
+    using limit
 
-  -- Now take the finite sum of termwise limits.
-  have hterm :
-      ∀ r ∈ Finset.range (k + 1),
-        Filter.Tendsto
-          (fun n : ℕ =>
-            (Nat.stirlingSecond k r : ℝ) *
-              ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r)
-          Filter.atTop
-          (nhds (if r = k then m k else 0)) := by
-    intro r hr
-    have hrle : r ≤ k := Nat.lt_succ_iff.mp (Finset.mem_range.mp hr)
-    simpa using (stirling_term_tendsto m k r hrle)
-
-  -- Sum the termwise limits.
-  have hsum_tendsto :
-      Filter.Tendsto
-        (fun n : ℕ =>
-          ∑ r ∈ Finset.range (k + 1),
-            (Nat.stirlingSecond k r : ℝ) * ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r)
-        Filter.atTop
-        (nhds (∑ r ∈ Finset.range (k + 1), if r = k then m k else 0)) := by
-    refine
-      tendsto_finsetSum (s := Finset.range (k + 1))
-        (f := fun r (n : ℕ) =>
-          (Nat.stirlingSecond k r : ℝ) * ((n.descFactorial r : ℝ) / (n : ℝ) ^ k) * m r)
-        (a := fun r => if r = k then m k else 0) ?_
-    exact hterm
-  -- Evaluate the finite sum of limits.
-  have hsum_lim :
-      ∑ r ∈ Finset.range (k + 1), (if r = k then m k else 0) = m k := by
-    classical
-    -- only the `r = k` term survives
-    have hsum' :
-        (∑ r ∈ Finset.range (k + 1), (if r = k then m k else 0)) =
-          (if k = k then m k else 0) := by
-      refine
-        (Finset.sum_eq_single (s := Finset.range (k + 1))
-          (f := fun r => if r = k then m k else 0) k ?hz ?_)
-      · intro r hr hne
-        simp [hne]
-      · intro hknot
-        -- impossible: k is in range (k+1)
-        exact (hknot (Finset.mem_range.mpr (Nat.lt_succ_self k))).elim
-    simp [hsum']
-  -- Rewrite the sum using `hsum`, then evaluate the limit.
-  have hsum_tendsto' :
-      Filter.Tendsto (fun n => bernsteinMoment m n k)
-        Filter.atTop (nhds (∑ r ∈ Finset.range (k + 1), if r = k then m k else 0)) := by
-    refine hsum_tendsto.congr' ?_
-    exact Filter.Eventually.of_forall (fun n => (hsum n).symm)
-  have hsum_tendsto'' :
-      Filter.Tendsto (fun n => bernsteinMoment m n k)
-        Filter.atTop (nhds (m k)) := by
-    simpa [hsum_lim] using hsum_tendsto'
-  exact hsum_tendsto''
-
-/-- **Hausdorff Moment Theorem (specialized)**:
-    A sequence that is bounded in `[0,1]`, is completely monotone, and starts at `1`
-    is the moment sequence of some probability measure on `[0,1]`.
-
-    This is the key result needed for de Finetti's theorem.
-
-    **Proof structure**:
-    1. Bernstein weights wₙₖ = C(n,k) Δⁿ⁻ᵏm(k) are non-negative (by complete monotonicity)
-    2. Bernstein weights sum to 1 (since m(0) = 1)
-    3. Define discrete measures μₙ = Σₖ wₙₖ δ_{k/n}
-    4. The space of probability measures on [0,1] is weak-* compact (Prokhorov)
-    5. Extract weak-* convergent subsequence μₙᵢ → μ
-    6. The limit μ has the required moments: ∫ θ^k dμ = lim ∫ θ^k dμₙᵢ = m(k)
-
-    **Status**: The algebraic infrastructure (steps 1-2) is complete.
-    Steps 3-6 require Prokhorov's theorem (not in Mathlib in needed form). -/
-theorem hausdorff_moment_exists (m : ℕ → ℝ)
-    (hbnd : ∀ k, m k ∈ Set.Icc 0 1)
-    (hcm : CompletelyMonotone m)
-    (hzero : m 0 = 1) :
-    ∃ (μ : Measure ℝ), IsProbabilityMeasure μ ∧ μ (Set.Icc 0 1)ᶜ = 0 ∧
-      ∀ k, ∫ θ in Set.Icc 0 1, θ ^ k ∂μ = m k := by
+/-- Compact-domain construction from Bernstein functionals and Riesz–Markov representation. -/
+private theorem exists_probability_on_unitInterval (m : ℕ → ℝ)
+    (hbnd : ∀ k, m k ∈ Set.Icc 0 1) (hcm : CompletelyMonotone m) (hzero : m 0 = 1) :
+    ∃ μ : Measure I, IsProbabilityMeasure μ ∧ ∀ k, ∫ x : I, (x : ℝ) ^ k ∂μ = m k := by
   classical
   -- Step 1: define the Bernstein linear functional and its continuous extension.
   let Φlin : ℕ → C(I, ℝ) →ₗ[ℝ] ℝ := fun n =>
@@ -1506,21 +1004,10 @@ theorem hausdorff_moment_exists (m : ℕ → ℝ)
       ∀ {g : ℕ → ℝ} {x l : ℝ},
         Filter.Tendsto g Filter.atTop (nhds l) →
         MapClusterPt x Filter.atTop g → x = l := by
-    intro g x l hg hx
-    have hcl : ClusterPt x (Filter.map g Filter.atTop) := by
-      simpa [MapClusterPt] using hx
-    have hle : Filter.map g Filter.atTop ≤ nhds l := hg
-    by_contra hne
-    have hdisj : Disjoint (nhds x) (nhds l) := (disjoint_nhds_nhds.2 hne)
-    have hbot : nhds x ⊓ nhds l = ⊥ := hdisj.eq_bot
-    have hle' : nhds x ⊓ Filter.map g Filter.atTop ≤ nhds x ⊓ nhds l :=
-      inf_le_inf_left _ hle
-    have hbot' : nhds x ⊓ Filter.map g Filter.atTop = ⊥ := by
-      apply le_bot_iff.mp
-      simpa [hbot] using hle'
-    have hcl' : nhds x ⊓ Filter.map g Filter.atTop ≠ ⊥ := by
-      exact (ClusterPt.neBot hcl).ne
-    exact (hcl' hbot').elim
+    intro g x l converges cluster
+    let : NeBot (nhds x ⊓ Filter.map g Filter.atTop) := cluster
+    exact tendsto_nhds_unique (tendsto_id'.2 inf_le_left)
+      (tendsto_id'.2 (inf_le_right.trans converges))
 
   -- Positivity of the limit functional.
   have hposΦ : ∀ f : C(I, ℝ), (∀ x, 0 ≤ f x) → 0 ≤ Φinf f := by
@@ -1634,12 +1121,23 @@ theorem hausdorff_moment_exists (m : ℕ → ℝ)
       μI Set.univ = ENNReal.ofReal (μI.real Set.univ) := (ENNReal.ofReal_toReal hfinite).symm
       _ = 1 := by simp [hreal]
 
+  exact ⟨μI, ⟨hμI_univ⟩, hmomentI⟩
+
+/-- The compact probability representation pushed forward to the ambient real line. -/
+theorem hausdorff_moment_exists (m : ℕ → ℝ)
+    (hbnd : ∀ k, m k ∈ Set.Icc 0 1)
+    (hcm : CompletelyMonotone m)
+    (hzero : m 0 = 1) :
+    ∃ (μ : Measure ℝ), IsProbabilityMeasure μ ∧ μ (Set.Icc 0 1)ᶜ = 0 ∧
+      ∀ k, ∫ θ in Set.Icc 0 1, θ ^ k ∂μ = m k := by
+  obtain ⟨μI, probability, hmomentI⟩ := exists_probability_on_unitInterval m hbnd hcm hzero
+  have hμI_univ : μI Set.univ = 1 := probability.measure_univ
   -- Push the measure to ℝ.
   let μ : Measure ℝ := Measure.map (fun x : I => (x : ℝ)) μI
   have hμprob : IsProbabilityMeasure μ := by
     refine ⟨?_⟩
     have hmeas : AEMeasurable (fun x : I => (x : ℝ)) μI := by fun_prop
-    simpa [μ, Measure.map_apply, hmeas] using hμI_univ
+    simp [μ, hmeas, hμI_univ]
 
   have hsupport : μ (Set.Icc (0 : ℝ) 1)ᶜ = 0 := by
     -- The image of `I` is contained in `[0,1]`.
@@ -1688,56 +1186,29 @@ lemma integrable_eval_poly_on_unitInterval
   have hcont : Continuous (fun x : I => p.eval (x : ℝ)) := by fun_prop
   exact hcont.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
 
+/-- Supplied moments determine the integral of every polynomial test function. -/
+theorem momentFunctional_eq_integral (m : ℕ → ℝ) (μ : Measure I) [IsFiniteMeasure μ]
+    (moments : ∀ k, ∫ x : I, (x : ℝ) ^ k ∂μ = m k) (p : ℝ[X]) :
+    momentFunctional m p = ∫ x : I, p.eval (x : ℝ) ∂μ := by
+  classical
+  induction p using Polynomial.induction_on' with
+  | add p q hp hq =>
+      rw [map_add, hp, hq]
+      simpa only [Polynomial.eval_add] using
+        (integral_add (integrable_eval_poly_on_unitInterval μ p)
+          (integrable_eval_poly_on_unitInterval μ q)).symm
+  | monomial n a =>
+      simp only [momentFunctional_monomial, Polynomial.eval_monomial, integral_const_mul, moments]
+
 /-- If two probability measures on `I` have equal moments, then they agree on polynomial integrals. -/
 lemma integral_eval_poly_eq_of_moments_eq_on_unitInterval
     (μ ν : Measure I) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
     (hmom : ∀ k : ℕ, ∫ x : I, (x : ℝ) ^ k ∂μ = ∫ x : I, (x : ℝ) ^ k ∂ν)
     (p : ℝ[X]) :
     ∫ x : I, p.eval (x : ℝ) ∂μ = ∫ x : I, p.eval (x : ℝ) ∂ν := by
-  classical
-  refine Polynomial.induction_on' p ?hadd ?hmono
-  · intro p q hp hq
-    have hpμ : Integrable (fun x : I => p.eval (x : ℝ)) μ :=
-      integrable_eval_poly_on_unitInterval μ p
-    have hqμ : Integrable (fun x : I => q.eval (x : ℝ)) μ :=
-      integrable_eval_poly_on_unitInterval μ q
-    have hpν : Integrable (fun x : I => p.eval (x : ℝ)) ν :=
-      integrable_eval_poly_on_unitInterval ν p
-    have hqν : Integrable (fun x : I => q.eval (x : ℝ)) ν :=
-      integrable_eval_poly_on_unitInterval ν q
-    calc
-      ∫ x : I, (p + q).eval (x : ℝ) ∂μ
-          = ∫ x : I, (p.eval (x : ℝ) + q.eval (x : ℝ)) ∂μ := by
-              refine integral_congr_ae (Filter.Eventually.of_forall ?_)
-              intro x
-              simp [Polynomial.eval_add]
-      _ = ∫ x : I, p.eval (x : ℝ) ∂μ + ∫ x : I, q.eval (x : ℝ) ∂μ := by
-              simpa using (integral_add hpμ hqμ)
-      _ = ∫ x : I, p.eval (x : ℝ) ∂ν + ∫ x : I, q.eval (x : ℝ) ∂ν := by rw [hp, hq]
-      _ = ∫ x : I, (p.eval (x : ℝ) + q.eval (x : ℝ)) ∂ν := by
-              simpa using (integral_add hpν hqν).symm
-      _ = ∫ x : I, (p + q).eval (x : ℝ) ∂ν := by
-              refine integral_congr_ae (Filter.Eventually.of_forall ?_)
-              intro x
-              simp [Polynomial.eval_add]
-  · intro n a
-    calc
-      ∫ x : I, (Polynomial.monomial n a).eval (x : ℝ) ∂μ
-          = ∫ x : I, a * (x : ℝ) ^ n ∂μ := by
-              refine integral_congr_ae (Filter.Eventually.of_forall ?_)
-              intro x
-              simp [Polynomial.eval_monomial]
-      _ = a * ∫ x : I, (x : ℝ) ^ n ∂μ := by
-            simpa [smul_eq_mul] using
-              (integral_const_mul (μ := μ) (r := a) (f := fun x : I => (x : ℝ) ^ n))
-      _ = a * ∫ x : I, (x : ℝ) ^ n ∂ν := by rw [hmom n]
-      _ = ∫ x : I, a * (x : ℝ) ^ n ∂ν := by
-            simpa [smul_eq_mul] using
-              (integral_const_mul (μ := ν) (r := a) (f := fun x : I => (x : ℝ) ^ n)).symm
-      _ = ∫ x : I, (Polynomial.monomial n a).eval (x : ℝ) ∂ν := by
-              refine integral_congr_ae (Filter.Eventually.of_forall ?_)
-              intro x
-              simp [Polynomial.eval_monomial]
+  let moments (k : ℕ) := ∫ x : I, (x : ℝ) ^ k ∂μ
+  exact (momentFunctional_eq_integral moments μ (fun _ => rfl) p).symm.trans
+    (momentFunctional_eq_integral moments ν (fun k => (hmom k).symm) p)
 
 /-- Uniform absolute pointwise bounds control integrals under probability measures on `I`. -/
 lemma abs_integral_le_const_of_forall_abs_le_on_unitInterval
@@ -1832,6 +1303,56 @@ theorem probMeasure_unitInterval_eq_of_moments_eq
     linarith
 
   exact hcontra hD_le
+
+/-- Complete normalized moment data has a unique probability interpretation on its natural carrier. -/
+theorem hausdorff_probability_existsUnique (m : ℕ → ℝ)
+    (hcm : CompletelyMonotone m) (normalized : m 0 = 1) :
+    ∃! μ : Measure I, IsProbabilityMeasure μ ∧ ∀ k, ∫ x : I, (x : ℝ) ^ k ∂μ = m k := by
+  obtain ⟨μ, hμ, moments⟩ := exists_probability_on_unitInterval m (hcm.mem_Icc normalized) hcm normalized
+  refine ⟨μ, ⟨hμ, moments⟩, ?_⟩
+  rintro ν ⟨hν, otherMoments⟩
+  let : IsProbabilityMeasure μ := hμ
+  let : IsProbabilityMeasure ν := hν
+  exact probMeasure_unitInterval_eq_of_moments_eq ν μ
+    (fun k => (otherMoments k).trans (moments k).symm)
+
+/-- The finite functional observes the actual Bernstein approximation of a continuous query. -/
+theorem bernsteinFunctional_eq_integral_approximation (m : ℕ → ℝ)
+    (μ : Measure I) [IsProbabilityMeasure μ]
+    (moments : ∀ k, ∫ x : I, (x : ℝ) ^ k ∂μ = m k) (n : ℕ) (f : C(I, ℝ)) :
+    bernsteinFunctional m n f = ∫ x, bernsteinApproximation n f x ∂μ := by
+  rw [bernsteinFunctional_eq_momentFunctional, momentFunctional_eq_integral m μ moments]
+  apply integral_congr_ae (Filter.Eventually.of_forall ?_)
+  intro x
+  rw [eval_fin_sum, bernsteinApproximation.apply]
+  apply Finset.sum_congr rfl
+  intro j _
+  simp [Polynomial.eval_smul, bernstein_apply, bernsteinPolynomial]
+  ring
+
+/-- Any uniform approximation certificate bounds the finite query's observation error. -/
+theorem bernsteinFunctional_error_le (m : ℕ → ℝ) (μ : Measure I) [IsProbabilityMeasure μ]
+    (moments : ∀ k, ∫ x : I, (x : ℝ) ^ k ∂μ = m k) (n : ℕ) (f : C(I, ℝ)) :
+    |bernsteinFunctional m n f - ∫ x, f x ∂μ| ≤ ‖bernsteinApproximation n f - f‖ := by
+  rw [bernsteinFunctional_eq_integral_approximation m μ moments,
+    ← integral_sub ((bernsteinApproximation n f).continuous.integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _))
+      (f.continuous.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))]
+  apply abs_integral_le_const_of_forall_abs_le_on_unitInterval
+  intro x
+  simpa only [ContinuousMap.sub_apply, Real.norm_eq_abs] using
+    ContinuousMap.norm_coe_le_norm (bernsteinApproximation n f - f) x
+
+theorem bernsteinFunctional_tendsto (m : ℕ → ℝ) (μ : Measure I) [IsProbabilityMeasure μ]
+    (moments : ∀ k, ∫ x : I, (x : ℝ) ^ k ∂μ = m k) (f : C(I, ℝ)) :
+    Tendsto (fun n => bernsteinFunctional m n f) atTop (nhds (∫ x, f x ∂μ)) := by
+  rw [Metric.tendsto_atTop]
+  intro ε positive
+  obtain ⟨N, after⟩ := (Metric.tendsto_atTop.mp (bernsteinApproximation_uniform f)) ε positive
+  refine ⟨N, fun n hn => ?_⟩
+  rw [Real.dist_eq]
+  exact (bernsteinFunctional_error_le m μ moments n f).trans_lt
+    (by simpa only [dist_eq_norm] using after n hn)
 
 end HausdorffTheorem
 

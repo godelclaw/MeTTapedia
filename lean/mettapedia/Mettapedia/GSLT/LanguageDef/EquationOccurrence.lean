@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.EquationSemantics
+import Mettapedia.GSLT.LanguageDef.NamedFreeContext
 
 /-!
 # Proof-relevant occurrences above authored equation support
@@ -207,28 +208,127 @@ theorem TargetApplicationTemplate.selects {base : BasePremiseEvaluator}
 
 end DeclaredEquationInstanceWitness
 
-/-- A proof-relevant presentation-derived law.  Each constructor retains the
-declaring rule and the exact collection data of the corresponding
-`DerivedInstance`, so two derived steps with the same endpoints but different
-declaring rules or different permutations remain distinct occurrences. -/
+/-- A finite route to the declared collection type inside one parameter. -/
+inductive CollectionTypeEdge where
+  | domain
+  | codomain
+  | binder
+  | element
+deriving DecidableEq,Repr
+
+/-- Read one actual declared type occurrence. The empty route selects a
+collection of the requested kind; every other step follows the type spine. -/
+def collectionTypeAt? (kind : CollType) : List CollectionTypeEdge → TypeExpr → Option TypeExpr
+  | [],.collection actual element => if kind == actual then some element else none
+  | .domain::rest,.arrow domain _ => collectionTypeAt? kind rest domain
+  | .codomain::rest,.arrow _ codomain => collectionTypeAt? kind rest codomain
+  | .binder::rest,.multiBinder body => collectionTypeAt? kind rest body
+  | .element::rest,.collection _ element => collectionTypeAt? kind rest element
+  | _,_ => none
+
+/-- A selected route proves exactly the original declared-type occurrence. -/
+theorem collectionTypeAt?_sound {kind : CollType} {path : List CollectionTypeEdge}
+    {type elementType : TypeExpr} (selected : collectionTypeAt? kind path type = some elementType) :
+    WellSorted.CollectionTypeOccurs kind elementType type := by
+  induction path generalizing type with
+  | nil =>
+      cases type <;> simp only [collectionTypeAt?,reduceCtorEq] at selected
+      case collection actual element =>
+        split at selected
+        next same =>
+          have kindSame : kind = actual := beq_iff_eq.mp same
+          cases kindSame
+          cases Option.some.inj selected
+          exact .here
+        next => cases selected
+  | cons step rest ih =>
+      cases step <;> cases type <;> simp only [collectionTypeAt?,reduceCtorEq] at selected
+      case domain.arrow domain codomain => exact .domain (ih selected)
+      case codomain.arrow domain codomain => exact .codomain (ih selected)
+      case binder.multiBinder body => exact .binder (ih selected)
+      case element.collection actual element => exact .element (ih selected)
+
+/-- Every declared-type occurrence has a finite route, without extracting a
+computational choice from the proposition at runtime. -/
+theorem collectionTypeAt?_complete {kind : CollType} {type elementType : TypeExpr}
+    (occurs : WellSorted.CollectionTypeOccurs kind elementType type) :
+    ∃ path,collectionTypeAt? kind path type = some elementType := by
+  induction occurs with
+  | here => exact ⟨[],by simp only [collectionTypeAt?,beq_self_eq_true,ite_true]⟩
+  | domain _ ih => obtain ⟨path,selected⟩ := ih; exact ⟨.domain::path,selected⟩
+  | codomain _ ih => obtain ⟨path,selected⟩ := ih; exact ⟨.codomain::path,selected⟩
+  | binder _ ih => obtain ⟨path,selected⟩ := ih; exact ⟨.binder::path,selected⟩
+  | element _ ih => obtain ⟨path,selected⟩ := ih; exact ⟨.element::path,selected⟩
+
+/-- Executable evidence for a source kind law retains the exact declaring
+parameter, its type route, the bound context and checked raw data typing.
+Alternative typing receipts are validation data, not derivation identities. -/
+structure CollectionTypedReceipt (language : LanguageDef) (rule : GrammarRule)
+    (kind : CollType) (elements : List Pattern) where
+  parameterIndex : Fin rule.params.length
+  path : List CollectionTypeEdge
+  elementType : TypeExpr
+  selected : collectionTypeAt? kind path (rule.params.get parameterIndex).typeExpr = some elementType
+  bound : List TypeExpr
+  data : NamedFreeContext.SourceReceiptData language bound (.collection kind elementType)
+  accepted : data.accepts (.collection kind elements none) = true
+
+namespace CollectionTypedReceipt
+
+/-- Checked data reconstructs the existing independent source judgment. -/
+theorem erase {language : LanguageDef} {rule : GrammarRule} {kind : CollType} {elements : List Pattern}
+    (receipt : CollectionTypedReceipt language rule kind elements) :
+    WellSorted.CollectionTypedAt language rule kind elements :=
+  ⟨rule.params.get receipt.parameterIndex,List.get_mem _ _,receipt.elementType,
+    collectionTypeAt?_sound receipt.selected,
+    WellSorted.FreeTypeContext.ofList receipt.data.entries,receipt.bound,
+    receipt.data.sound _ receipt.accepted⟩
+
+/-- Every original source typing witness has honest finite receipt data.
+This is an existence theorem, not a computational encoder from a Prop proof. -/
+theorem exists_of_typed {language : LanguageDef} {rule : GrammarRule} {kind : CollType} {elements : List Pattern}
+    (typed : WellSorted.CollectionTypedAt language rule kind elements) :
+    ∃ receipt : CollectionTypedReceipt language rule kind elements,receipt.erase = typed := by
+  obtain ⟨parameter,member,elementType,occurs,free,bound,sourceTyped⟩ := typed
+  obtain ⟨index,atIndex⟩ := List.mem_iff_getElem?.mp member
+  obtain ⟨inBounds,entrySame⟩ := List.getElem?_eq_some_iff.mp atIndex
+  let slot : Fin rule.params.length := ⟨index,inBounds⟩
+  have parameterSame : rule.params.get slot = parameter := entrySame
+  obtain ⟨path,selected⟩ := collectionTypeAt?_complete occurs
+  obtain ⟨data,accepted,_⟩ := NamedFreeContext.SourceReceiptData.exists_of_typed sourceTyped
+  have actualSelection : collectionTypeAt? kind path (rule.params.get slot).typeExpr = some elementType := by
+    simpa only [parameterSame] using selected
+  exact ⟨⟨slot,path,elementType,actualSelection,bound,data,accepted⟩,Subsingleton.elim _ _⟩
+
+end CollectionTypedReceipt
+
+#print axioms collectionTypeAt?_sound
+#print axioms collectionTypeAt?_complete
+#print axioms CollectionTypedReceipt.erase
+#print axioms CollectionTypedReceipt.exists_of_typed
+
+/-- A presentation-derived law retains its declaring rule, raw decomposition
+and checked collection-typing receipt. These typing/path/header choices are
+administrative validation evidence. A Prop-valued permutation proof does not
+retain physical token identities or distinguish equal-endpoint permutations;
+logical derivation identity is selected separately from this packet data. -/
 inductive DerivedGeneratorWitness (language : LanguageDef) :
     Pattern → Pattern → Type where
   | bagPerm (rule : GrammarRule) (elements elements' : List Pattern) :
-      CollectionCarrierRule language rule .hashBag →
-      SortedAt language (.collection .hashBag elements none) rule.category →
+      rule ∈ language.terms →
+      CollectionTypedReceipt language rule .hashBag elements →
       List.Perm elements elements' →
       DerivedGeneratorWitness language
         (.collection .hashBag elements none) (.collection .hashBag elements' none)
   | setPerm (rule : GrammarRule) (elements elements' : List Pattern) :
-      CollectionCarrierRule language rule .hashSet →
-      SortedAt language (.collection .hashSet elements none) rule.category →
+      rule ∈ language.terms →
+      CollectionTypedReceipt language rule .hashSet elements →
       List.Perm elements elements' →
       DerivedGeneratorWitness language
         (.collection .hashSet elements none) (.collection .hashSet elements' none)
   | setDedup (rule : GrammarRule) (element : Pattern) (elements : List Pattern) :
-      CollectionCarrierRule language rule .hashSet →
-      SortedAt language
-        (.collection .hashSet (element :: element :: elements) none) rule.category →
+      rule ∈ language.terms →
+      CollectionTypedReceipt language rule .hashSet (element :: element :: elements) →
       DerivedGeneratorWitness language
         (.collection .hashSet (element :: element :: elements) none)
         (.collection .hashSet (element :: elements) none)
@@ -269,9 +369,9 @@ namespace DerivedGeneratorWitness
 /-- Forget the occurrence data and recover the derived law. -/
 theorem erase {language : LanguageDef} {left right : Pattern} :
     DerivedGeneratorWitness language left right → DerivedInstance language left right
-  | .bagPerm _ _ _ carrier sorted perm => .bagPerm carrier sorted perm
-  | .setPerm _ _ _ carrier sorted perm => .setPerm carrier sorted perm
-  | .setDedup _ _ _ carrier sorted => .setDedup carrier sorted
+  | .bagPerm _ _ _ member receipt perm => .bagPerm member receipt.erase perm
+  | .setPerm _ _ _ member receipt perm => .setPerm member receipt.erase perm
+  | .setDedup _ _ _ member receipt => .setDedup member receipt.erase
   | .flatten _ _ _ _ _ _ algebra flattens sorted => .flatten algebra flattens sorted
   | .singleton _ _ _ _ algebra flattens sorted => .singleton algebra flattens sorted
   | .unitElim _ _ _ _ _ _ algebra unit sorted => .unitElim algebra unit sorted
@@ -282,9 +382,15 @@ theorem exists_erasing_to {language : LanguageDef} {left right : Pattern}
     (derived : DerivedInstance language left right) :
     ∃ occurrence : DerivedGeneratorWitness language left right, occurrence.erase = derived := by
   cases derived with
-  | bagPerm carrier sorted perm => exact ⟨.bagPerm _ _ _ carrier sorted perm, rfl⟩
-  | setPerm carrier sorted perm => exact ⟨.setPerm _ _ _ carrier sorted perm, rfl⟩
-  | setDedup carrier sorted => exact ⟨.setDedup _ _ _ carrier sorted, rfl⟩
+  | bagPerm member typed perm =>
+      obtain ⟨receipt,_⟩ := CollectionTypedReceipt.exists_of_typed typed
+      exact ⟨.bagPerm _ _ _ member receipt perm,Subsingleton.elim _ _⟩
+  | setPerm member typed perm =>
+      obtain ⟨receipt,_⟩ := CollectionTypedReceipt.exists_of_typed typed
+      exact ⟨.setPerm _ _ _ member receipt perm,Subsingleton.elim _ _⟩
+  | setDedup member typed =>
+      obtain ⟨receipt,_⟩ := CollectionTypedReceipt.exists_of_typed typed
+      exact ⟨.setDedup _ _ _ member receipt,Subsingleton.elim _ _⟩
   | flatten algebra flattens sorted => exact ⟨.flatten _ _ _ _ _ _ algebra flattens sorted, rfl⟩
   | singleton algebra flattens sorted => exact ⟨.singleton _ _ _ _ algebra flattens sorted, rfl⟩
   | unitElim algebra unit sorted => exact ⟨.unitElim _ _ _ _ _ _ algebra unit sorted, rfl⟩
@@ -406,3 +512,8 @@ def isDerived {base : BasePremiseEvaluator} {language : LanguageDef}
 end AuthoredGeneratorWitness
 
 end Mettapedia.GSLT.LanguageDef.EquationSemantics
+
+#print axioms Mettapedia.GSLT.LanguageDef.EquationSemantics.DerivedGeneratorWitness.erase
+#print axioms Mettapedia.GSLT.LanguageDef.EquationSemantics.DerivedGeneratorWitness.exists_erasing_to
+#print axioms Mettapedia.GSLT.LanguageDef.EquationSemantics.AuthoredGeneratorWitness.erase
+#print axioms Mettapedia.GSLT.LanguageDef.EquationSemantics.AuthoredGeneratorWitness.exists_erasing_to

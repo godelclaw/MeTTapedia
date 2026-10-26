@@ -67,6 +67,42 @@ and input comparison realize this matching service. These primitive bridges
 do not wire the whole interpreted premise machine into emission or establish
 agreement with the existing presented GSLT's ordinary primitive receipts.
 
+`ReferenceStep` now indexes its existing source family by an explicit internal
+boundary policy. The presentation policy preserves the original witnesses,
+checker and literal provider-output and child-target matching. The declared
+equational policy uses the language's actual `ReferenceStep.Equivalent` and
+ordinary matches at related presentations. Its child boundary closes both
+step endpoints and the target match. The initial declared-policy selector
+requires unconditional authored equations. Equation-free languages have the same
+full recursive witnesses under both policies, including quantified bodies.
+The declared policy is not admitted by this inventory. Provider-input
+compatibility, typed roles and capture transport remain separate obligations;
+freshness retains its existing literal interpretation.
+
+The retained source-measure certificate bounds recursive premise depth from
+actual child sources, including quantified histories. The actual canonical
+parallel and sum rules discharge it by a strict decrease in canonical source
+size. Their receipt-support theorem does not establish multiplicity or
+settlement. It also does not cover firing origins introduced by additional
+authored equations: the actual sum singleton equation supplies a separating
+example that intrinsic collection canonicalization cannot recover.
+
+The retained query and scheduled coverage proofs now use primitive cursor
+laws and represented matching witnesses for both concrete backends. Their
+work proofs use the backend's actual unread-answer and transition costs.
+`Query.completedEventually` drains each finite query; `Scheduled.finiteDrain`
+drains the full premise AST at a fixed child depth. Fixed-depth drainage does
+not establish that the chosen depth covers every source firing. Primitive
+free-name support lifts through captures, queries and scheduled continuations.
+Constructor and binder-display names remain additional native table obligations.
+
+Input equality is part of the matching interpretation. The two-input control
+in `GeneralPremise.SharedOutputControls.RetainedCollections.InputBoundary`
+distinguishes literal provider equality from collection equality using the
+same retained capture. Generic machine coverage does not authorize replacing
+one interpretation by the other. Source agreement still needs primitive
+provider, matching and child-step transport certificates.
+
 Replacement typing and first-order fold interpretation are component
 theorems. They do not by themselves establish equation extraction, firing
 coherence or a logical derivation observation. `BinaryCollectionLowering`

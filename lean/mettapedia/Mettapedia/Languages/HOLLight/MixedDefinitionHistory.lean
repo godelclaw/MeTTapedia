@@ -99,6 +99,33 @@ theorem constant_equation_formed {context : TheoryContext} {instances : Instance
     (included.1 _ _ functionArity) ((boolean_formed context parameter equalityRegistered).mono included)
     operandFormed (included.2 _ _ equalityRegistered) _ _ constantFormed bodyFormed
 
+/-- Constant-only source rows have registered derivations under any axiom
+policy. Their formation and empty dependency metadata come from admission;
+earlier rows are weakened through the actual later declarations. -/
+theorem constant_record_derives {initial final : TheoryContext}
+    (history : DefinitionHistoryModels.ConstantHistory initial final)
+    (primitives : DefinitionModelFamily.Primitives initial) (policy : AxiomPolicy)
+    {recorded : Theorem}
+    (member : recorded ∈ history.records.map (fun result => result.output.definitionTheorem)) :
+    TheoryDerives policy final recorded := by
+  induction history with
+  | nil => simp [DefinitionHistoryModels.ConstantHistory.records] at member
+  | snoc prior instances name source result accepted ih =>
+      simp only [DefinitionHistoryModels.ConstantHistory.records, List.map_append,
+        List.map_cons, List.map_nil, List.mem_append, List.mem_singleton] at member
+      rcases member with earlier | rfl
+      · exact .weaken (admitConstantInTheory_result accepted).2.2.1 (ih earlier)
+      · apply TheoryDerives.constantDefinition accepted
+        refine ⟨⟨constant_equation_formed accepted
+          (prior.includes.1 _ _ primitives.functionArity) primitives.equalityParameter
+          (prior.includes.2 _ _ primitives.equalityRegistered), ?_⟩, ?_⟩
+        · intro hypothesis member
+          rw [(admitConstantInTheory_result accepted).2.2.2.2.2.2.2] at member
+          exact absurd member (Finset.notMem_empty _)
+        · intro commitment member
+          rw [(admitConstantInTheory_result accepted).2.2.2.2.2.2.1] at member
+          exact absurd member (Finset.notMem_empty _)
+
 /-- Both pointwise source equations retain the actual licensed symbols,
 function/Boolean carriers and all annotations of the admitted predicate. -/
 theorem type_equations_formed {context : TheoryContext} {instances : InstanceWitnesses}

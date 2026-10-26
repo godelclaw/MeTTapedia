@@ -32,12 +32,44 @@ open StandardWire
 
 /-! ## The quote-drop test at a constructor -/
 
+private def scopedFinishProofLibrary : Library :=
+  ⟨{equations := [], declarations := []},
+    {equations := [RuleExecutionProgram.scopedProgram.equations[183]'(by decide +kernel)],
+     declarations := [RuleExecutionProgram.scopedProgram.declarations[183]'(by decide +kernel)]},
+    ["gslt:rule:scope-reflective-normalize-finish"]⟩
+
+private def scopedFinishProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || head == "gslt:rule:scope-reflective-normalize-finish"
+
+private theorem scopedFinishProof_checked : scopedFinishProofLibrary.check = true := by decide +kernel
+
+private local instance finishEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧ left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+private theorem scopedFinishProof_agreement : ProgramAgreementOn scopedFinishProofHeads
+    scopedFinishProofLibrary.runtime scopedLibrary.runtime := by
+  apply programAgreementOn_of_retained_rows
+  · decide +kernel
+  · decide +kernel
+
 /-- Walk a body of the scoped library. -/
 syntax "scoped_eval" (" unfolding" " [" term,* "]")? : tactic
 macro_rules
   | `(tactic| scoped_eval $[unfolding [$extra,*]]?) => do
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call scoped_checked; metta_eval with scoped_checked
+    `(tactic| (metta_call_in scopedFinishProof_checked using scopedFinishProof_agreement; metta_eval with scopedFinishProof_checked in scopedFinishProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?, pattern_symbol_unmatched,
@@ -123,7 +155,7 @@ theorem laws_finish_returns (state : State) (declaration : ReflectivePresentatio
         encoded (.string declaration.dropConstructor), encoded (.string label), patternsValue arguments]) state
       (patternValue (finishNormalizeReflectiveApply declaration label arguments)) := by
     metta_raise ["quote", "drop", "head", "children"] (scoped_finish_returns state declaration label arguments)
-  metta_lift laws_checked ["quote", "drop", "head", "children"] complete
+  exact complete
 
 /-! ## Raised into the canonical library -/
 
@@ -134,18 +166,18 @@ theorem canonical_finish_returns (state : State) (declaration : ReflectivePresen
       (apply "gslt:rule:scope-reflective-normalize-finish" [encoded (.string declaration.quoteConstructor),
         encoded (.string declaration.dropConstructor), encoded (.string label), patternsValue arguments]) state
       (patternValue (finishNormalizeReflectiveApply declaration label arguments)) := by
-  metta_lift canonical_checked ["quote", "drop", "head", "children"] (laws_finish_returns state declaration label arguments)
+  exact laws_finish_returns state declaration label arguments
 
 theorem canonical_append_patterns_returns (state : State) (left right : List Pattern) :
     PureReturns canonicalLibrary.runtime [] state
       (apply "gslt:automata:append" [patternsValue left, patternsValue right]) state (patternsValue (left ++ right)) := by
-  metta_lift canonical_checked ["left", "right"] (laws_append_patterns_returns state left right)
+  exact laws_append_patterns_returns state left right
 
 theorem canonical_law_for_returns (state : State) (kind : CollType) (laws : List Laws) :
     PureReturns canonicalLibrary.runtime [] state
       (apply "gslt:laws:law-for" [lawsValue laws, encoded (encodeCollectionType kind)]) state
       (encoded (encodeOption lawTerm (lawFor laws kind))) := by
-  metta_lift canonical_checked ["laws", "kind"] (law_for_returns state kind laws)
+  exact law_for_returns state kind laws
 
 /-! ## Name tables -/
 
@@ -503,7 +535,8 @@ theorem member_returns (state : State) (item : Pattern) : ∀ items : List Patte
       canonical_eval unfolding [patternsValue, encodePatterns, List.mem_cons, true_or, decide_true]
     · have different : encodePattern item ≠ encodePattern first :=
         fun equal => same (InferenceCettaWire.encodePattern_injective equal)
-      canonical_eval [later] unfolding [same, different, patternsValue, encodePatterns, List.mem_cons]
+      simp only [List.mem_cons, same, false_or]
+      canonical_eval [later] unfolding [different, patternsValue, encodePatterns]
 
 /-- **`gslt:canon:dedup` is `List.dedup`**: an element met again later is dropped. -/
 @[metta_head "gslt:canon:dedup"]
@@ -666,5 +699,8 @@ theorem model_normal_returns (state : State) {table : List String} (ordered : Na
       rw [shape]
       canonical_eval [inner, found, spliced, formed, finished]
         unfolding [lawsValue, patternValue, patternsValue, encodePattern]
+
+#print axioms scopedFinishProof_checked
+#print axioms scopedFinishProof_agreement
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution

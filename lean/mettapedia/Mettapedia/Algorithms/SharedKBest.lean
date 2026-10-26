@@ -73,10 +73,7 @@ def Certified.relabel {Value : Type} {requested : Nat} {price : Value → Nat}
     (equivalent : ∀ value, first value ↔ second value) :
     Certified requested Value price second where
   cache := cache.cache
-  correct := by
-    have same : first = second := funext fun value => propext (equivalent value)
-    rw [← same]
-    exact cache.correct
+  correct := cache.correct.congr_source equivalent
 
 def Certified.map {Value Other : Type} {requested : Nat}
     {price : Value → Nat} {source : Value → Prop}
@@ -101,14 +98,8 @@ def emptyChildren (requested : Nat) :
   · subst requested
     exact ⟨⟨[], List.nodup_nil, List.Pairwise.nil⟩, zero_correct childCost _⟩
   · refine ⟨⟨[[]], by simp, by simp⟩, ?_⟩
-    constructor
-    · simp
-    · intro children member; simpa using member
-    · simp
-    · simp; omega
-    · intro children allowed absent
-      subst children
-      exact False.elim (absent (List.mem_singleton.mpr rfl))
+    constructor <;> simp_all
+    exact Nat.one_le_iff_ne_zero.mpr zero
 
 def prepend (requested : Nat) (headSource : Derivation → Prop)
     (tailSource : List Derivation → Prop)
@@ -137,9 +128,7 @@ def childrenCache {previous : Nat} (requested : Nat)
       (prepend requested (childSource first) _ (store first)
         (childrenCache requested childSource store rest)).relabel (by
           intro values
-          cases values with
-          | nil => simp
-          | cons head tail => simp [List.forall₂_cons])
+          cases values <;> simp [List.forall₂_cons])
 
 def familyCache {previous : Nat} (requested : Nat)
     (childSource : Fin previous → Derivation → Prop)
@@ -150,21 +139,16 @@ def familyCache {previous : Nat} (requested : Nat)
   let shifted : Certified requested (List Derivation)
       (fun children => family.charge + childCost children)
       (fun values => List.Forall₂ childSource family.children values) := by
-    refine ⟨⟨children.cache.values, children.cache.distinct, ?_⟩, ?_⟩
-    · exact children.cache.ordered.imp (fun order => Nat.add_le_add_left order _)
-    · refine ⟨children.correct.distinct, children.correct.sound,
-        children.cache.ordered.imp (fun order => Nat.add_le_add_left order _),
-        children.correct.bounded, ?_⟩
-      intro value allowed omitted
-      have full := children.correct.omitted value allowed omitted
-      exact ⟨full.1, fun selected member => Nat.add_le_add_left (full.2 selected member) _⟩
+    have ordered := children.cache.ordered.imp (fun order => Nat.add_le_add_left order family.charge)
+    refine ⟨⟨children.cache.values, children.cache.distinct, ordered⟩,
+      { children.correct with ordered := ordered, omitted := ?_ }⟩
+    intro value allowed omitted
+    have full := children.correct.omitted value allowed omitted
+    exact ⟨full.1, fun selected member => Nat.add_le_add_left (full.2 selected member) _⟩
   exact (shifted.map cost (Derivation.node owner row family.charge)
     (fun first _ second _ same => by cases same; rfl) (fun _ => rfl)).relabel (by
       intro derivation
-      simp only [FamilyAllows]
-      constructor
-      · rintro ⟨values, allowed, same⟩; exact ⟨values, allowed, same.symm⟩
-      · rintro ⟨values, allowed, same⟩; exact ⟨values, allowed, same.symm⟩)
+      simp only [FamilyAllows, eq_comm])
 
 theorem family_row {previous : Nat} (childSource : Fin previous → Derivation → Prop)
     (owner row : Nat) (family : Family previous) (derivation : Derivation)
@@ -204,43 +188,17 @@ def alternativesCache {previous : Nat} (requested : Nat)
         ⟨LazyUnionPrefixes.combined requested cost cost head.cache tail.cache, correct⟩
       let reconstruct : Derivation ⊕ Derivation → Derivation := Sum.elim id id
       refine (union.map cost reconstruct ?_ ?_).relabel ?_
-      · intro first allowedFirst second allowedSecond same
-        cases first with
-        | inl first =>
-            cases second with
-            | inl second => exact congrArg Sum.inl same
-            | inr second =>
-                obtain ⟨charge, children, firstEq⟩ :=
-                  family_row childSource owner row family first allowedFirst
-                obtain ⟨actual, otherCharge, otherChildren, lower, secondEq⟩ :=
-                  alternative_row childSource owner (row + 1) rest second allowedSecond
-                change first = second at same
-                rw [firstEq, secondEq] at same
-                have indexEq := (Derivation.node.inj same).2.1
-                omega
-        | inr first =>
-            cases second with
-            | inr second => exact congrArg Sum.inr same
-            | inl second =>
-                obtain ⟨actual, charge, children, lower, firstEq⟩ :=
-                  alternative_row childSource owner (row + 1) rest first allowedFirst
-                obtain ⟨otherCharge, otherChildren, secondEq⟩ :=
-                  family_row childSource owner row family second allowedSecond
-                change first = second at same
-                rw [firstEq, secondEq] at same
-                have indexEq := (Derivation.node.inj same).2.1
-                omega
+      · apply sum_merge_injective_on
+        intro derivation headAllowed tailAllowed
+        obtain ⟨charge, children, firstEq⟩ :=
+          family_row childSource owner row family derivation headAllowed
+        obtain ⟨actual, otherCharge, otherChildren, lower, secondEq⟩ :=
+          alternative_row childSource owner (row + 1) rest derivation tailAllowed
+        rw [firstEq] at secondEq
+        have indexEq := (Derivation.node.inj secondEq).2.1
+        omega
       · intro value; cases value <;> rfl
-      · intro derivation
-        constructor
-        · rintro ⟨value, allowed, same⟩
-          cases value with
-          | inl value => exact Or.inl (same ▸ allowed)
-          | inr value => exact Or.inr (same ▸ allowed)
-        · intro allowed
-          rcases allowed with headAllowed | tailAllowed
-          · exact ⟨.inl derivation, headAllowed, rfl⟩
-          · exact ⟨.inr derivation, tailAllowed, rfl⟩
+      · intro derivation; simp [LazyUnionPrefixes.sumSource, reconstruct, AlternativesAllow]
 
 /-- Materialized node caches. A child reference reads this store; it does not
 recursively recompute the child solver. -/

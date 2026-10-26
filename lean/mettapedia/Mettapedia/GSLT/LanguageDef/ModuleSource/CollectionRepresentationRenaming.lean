@@ -31,10 +31,63 @@ theorem collectionParameterKind_map (symbols : LanguageDefSymbolMap) (rule : Gra
         | abstractionNamed => rfl
         | multiAbstractionNamed => rfl
 
+theorem mentionsCollection_mapTypeExpr (symbols : LanguageDefSymbolMap) (kind : CollType)
+    (type : TypeExpr) :
+    (mapTypeExpr symbols type).mentionsCollection kind = type.mentionsCollection kind := by
+  induction type <;> simp_all [mapTypeExpr, TypeExpr.mentionsCollection]
+
+theorem mentionsCollection_mapTermParam (symbols : LanguageDefSymbolMap) (kind : CollType)
+    (parameter : TermParam) :
+    (mapTermParam symbols parameter).typeExpr.mentionsCollection kind =
+      parameter.typeExpr.mentionsCollection kind := by
+  cases parameter <;> simp [mapTermParam, TermParam.typeExpr, mentionsCollection_mapTypeExpr]
+
+theorem collectionAlgebraCandidate_map (symbols : LanguageDefSymbolMap)
+    (injective : Function.Injective symbols.constructor) (rule : GrammarRule)
+    (binaryLabels : List String) :
+    collectionAlgebraCandidate (mapGrammarRule symbols rule) (binaryLabels.map symbols.constructor) =
+      collectionAlgebraCandidate rule binaryLabels := by
+  have contains : (binaryLabels.map symbols.constructor).contains (symbols.constructor rule.label) =
+      binaryLabels.contains rule.label := by
+    apply Bool.eq_iff_iff.mpr
+    simp [List.mem_map, injective.eq_iff]
+  unfold collectionAlgebraCandidate
+  change ((binaryLabels.map symbols.constructor).contains (symbols.constructor rule.label) &&
+      (rule.algebra?.map (StructuralMorphism.mapCollectionAlgebra symbols.constructor)).isNone) = _
+  rw [contains]
+  congr 1
+  cases rule.algebra? <;> rfl
+
+theorem otherCollectionParameter_map (symbols : LanguageDefSymbolMap)
+    (injective : Function.Injective symbols.constructor) (language : LanguageDef)
+    (rule : GrammarRule) (kind : CollType) :
+    otherCollectionParameter {language with terms := language.terms.map (mapGrammarRule symbols)}
+        (mapGrammarRule symbols rule) kind = otherCollectionParameter language rule kind := by
+  unfold otherCollectionParameter
+  rw [List.any_map]
+  congr 1
+  funext other
+  change ((symbols.constructor other.label != symbols.constructor rule.label) &&
+      (other.params.map (mapTermParam symbols)).any
+        (fun field => field.typeExpr.mentionsCollection kind)) = _
+  have different : (symbols.constructor other.label != symbols.constructor rule.label) =
+      (other.label != rule.label) := by
+    apply Bool.eq_iff_iff.mpr
+    simp [injective.eq_iff]
+  rw [different, List.any_map]
+  congr 1
+  congr 1
+  funext parameter
+  exact mentionsCollection_mapTermParam symbols kind parameter
+
+
 theorem retained_collection_representation_rename (symbols : LanguageDefSymbolMap)
-    (injective : Function.Injective symbols.constructor) (language : LanguageDef) :
-    (retainSharedCollectionLabels { language with terms := language.terms.map (mapGrammarRule symbols) }).terms =
-      (retainSharedCollectionLabels language).terms.map (mapGrammarRule symbols) := by
+    (injective : Function.Injective symbols.constructor) (language : LanguageDef)
+    (binaryLabels : List String := []) :
+    (retainSharedCollectionLabels
+      {language with terms := language.terms.map (mapGrammarRule symbols)}
+      (binaryLabels.map symbols.constructor)).terms =
+      (retainSharedCollectionLabels language binaryLabels).terms.map (mapGrammarRule symbols) := by
   simp only [retainSharedCollectionLabels, List.map_map]
   apply List.map_congr_left
   intro rule _
@@ -54,8 +107,10 @@ theorem retained_collection_representation_rename (symbols : LanguageDefSymbolMa
       congr 1
       apply Bool.eq_iff_iff.mpr
       simp [injective.eq_iff]
+    have candidate := collectionAlgebraCandidate_map symbols injective rule binaryLabels
+    have data := otherCollectionParameter_map symbols injective language rule kind
     dsimp only
-    rw [shared]
+    rw [shared, candidate, data]
     split <;> rfl
 
 theorem bareKind_renameUnitReferences (old new : String) (rule : GrammarRule) :
@@ -113,4 +168,13 @@ theorem identifying_names_does_not_commute :
       (retainSharedCollectionLabels language).terms.map (mapGrammarRule identify) := by decide
 
 end RenamingControls
+#print axioms collectionParameterKind_map
+#print axioms mentionsCollection_mapTypeExpr
+#print axioms mentionsCollection_mapTermParam
+#print axioms collectionAlgebraCandidate_map
+#print axioms otherCollectionParameter_map
+#print axioms retained_collection_representation_rename
+#print axioms bareKind_renameUnitReferences
+#print axioms declared_algebras_unit_rename
+#print axioms RenamingControls.identifying_names_does_not_commute
 end Mettapedia.GSLT.LanguageDef.ModuleSource

@@ -65,34 +65,16 @@ termination_by h.length
 /-- playerView of historyToMultiAgent returns the original single-agent history. -/
 theorem playerView_historyToMultiAgent {n : ℕ} (i : Fin n) (h : History) :
     (historyToMultiAgent i h).playerView i = h := by
-  induction h with
-  | nil => rfl
-  | cons elem rest ih =>
-    -- Goal: (historyToMultiAgent i (elem :: rest)).playerView i = elem :: rest
-    -- First, unfold the outer layer
-    unfold historyToMultiAgent at *
-    unfold MultiAgentHistory.playerView at *
-    simp only [List.map_cons] at *
-    cases elem with
-    | act a =>
-      unfold JointHistElem.playerView
-      simp only [if_true]
-      exact congrArg (List.cons (HistElem.act a)) ih
-    | per p =>
-      unfold JointHistElem.playerView
-      simp only [if_true]
-      exact congrArg (List.cons (HistElem.per p)) ih
+  simp only [historyToMultiAgent, MultiAgentHistory.playerView, List.map_map]
+  have element (e : HistElem) :
+      (match e with
+       | .act a => JointHistElem.act (fun j : Fin n => if j = i then a else default)
+       | .per e => .per (fun j => if j = i then e else default)).playerView i = e := by
+    cases e <;> simp [JointHistElem.playerView]
+  simp only [Function.comp_def, element]
+  exact List.map_id' h
 
-/-- Best response policy for player i: choose action maximizing bestResponseQValue.
-
-    This is the correct game-theoretic definition: at each step, player i chooses
-    the action that maximizes their value assuming optimal play in all future steps.
-
-    Note: We use bestResponseQValue (not playerQValue) because:
-    - bestResponseQValue uses bestResponseValue in recursion (optimal future play)
-    - playerQValue uses playerValue in recursion (following π_i in future)
-    - The optimal action for best response should assume optimal future, not π_i future
--/
+/-- Select a maximizer of optimal-continuation Q-values at the supplied lookahead. -/
 noncomputable def bestResponsePolicy
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -140,13 +122,7 @@ noncomputable def bestResponseAgent {n : ℕ}
 
 /-! ## Best Response Properties -/
 
-/-- When player i plays deterministically (probability 1 on action a*),
-    the player value equals the Q-value for that action.
-
-    This follows from playerValue_eq_weighted_qValue:
-    playerValue = Σ_a π_i(a) * playerQValue(a)
-    When π_i(a*) = 1 and π_i(a) = 0 for a ≠ a*, this simplifies to playerQValue(a*).
--/
+/-- A Dirac policy observes exactly the chosen forced-action value. -/
 theorem playerValue_deterministic {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -166,11 +142,7 @@ theorem playerValue_deterministic {n : ℕ}
   rw [Finset.sum_ite_eq']
   simp only [Finset.mem_univ, ↓reduceIte]
 
-/-- The best response action achieves the supremum of bestResponseQValues.
-    Note: bestResponsePolicy operates on single-agent histories, converting via historyToMultiAgent.
-
-    This is the KEY theorem: a_star achieves bestResponseValue = ⨆_a bestResponseQValue(a).
--/
+/-- The selected maximizer realizes the finite supremum at the representative history. -/
 theorem bestResponseAction_achieves_bestResponseValue {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -183,21 +155,11 @@ theorem bestResponseAction_achieves_bestResponseValue {n : ℕ}
     bestResponseQValue μ π γ i h a_star horizon = bestResponseValue μ π γ i h horizon := by
   intro h a_star
   simp only [bestResponseValue]
-  -- a_star achieves the maximum by construction (Classical.choose from exists_best_action)
-  have h_best := Classical.choose_spec (bestResponsePolicy.exists_best_action μ π γ i h_single horizon)
-  -- h_best: ∀ a', bestResponseQValue(..., a_star, ...) ≥ bestResponseQValue(..., a', ...)
-  -- For finite Action type, ciSup = Finset.sup'
-  apply le_antisymm
-  · -- a_star ≤ sup
-    have hbdd : BddAbove (Set.range fun a => bestResponseQValue μ π γ i h a horizon) :=
-      Set.Finite.bddAbove (Set.finite_range _)
-    exact le_ciSup hbdd a_star
-  · -- sup ≤ a_star (since a_star is max)
-    have hbdd : BddAbove (Set.range fun a => bestResponseQValue μ π γ i h a horizon) :=
-      Set.Finite.bddAbove (Set.finite_range _)
-    apply ciSup_le
-    intro a
-    exact h_best a
+  exact le_antisymm
+    (le_ciSup (f := fun a => bestResponseQValue μ π γ i h a horizon)
+      (Set.Finite.bddAbove (Set.finite_range _)) a_star)
+    (ciSup_le (Classical.choose_spec
+      (bestResponsePolicy.exists_best_action μ π γ i h_single horizon)))
 
 /-- Predicate: π_i is a best response to π_{-i}. -/
 def isBestResponse
@@ -213,17 +175,8 @@ def isBestResponse
 
 /-! ## Full Information Assumption -/
 
-/-- Player i's Q-values only depend on their own view of the history.
-
-    This assumption holds when:
-    1. The environment is fully observable (all players see the same things)
-    2. Other players' policies are known and deterministic
-    3. The multi-agent history is "consistent" with player i's view
-
-    This is a sufficient condition for best response to work correctly.
-    Without this, player i might choose actions optimal for their partial view
-    that aren't optimal for the true multi-agent history.
--/
+/-- Full-history optimal Q-values factor through the player's own observation.
+This information-sufficiency premise is stronger than knowing the other policies. -/
 def playerIQValueDependsOnlyOnOwnView
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -235,12 +188,7 @@ def playerIQValueDependsOnlyOnOwnView
     bestResponseQValue μ π γ i h₁ action horizon =
     bestResponseQValue μ π γ i h₂ action horizon
 
-/-- When player i's Q-values only depend on their own view, the best action
-    at historyToMultiAgent is also optimal at the true history.
-
-    The proof uses the full information assumption to relate Q-values at
-    different multi-agent histories that have the same player i view.
--/
+/-- Information sufficiency identifies Q-values at a history and its padded local view. -/
 theorem bestResponseQValue_eq_of_playerView_eq {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -254,17 +202,9 @@ theorem bestResponseQValue_eq_of_playerView_eq {n : ℕ}
     (hfull : playerIQValueDependsOnlyOnOwnView μ π γ i) :
     bestResponseQValue μ π γ i h action horizon =
     bestResponseQValue μ π γ i (historyToMultiAgent i (h.playerView i)) action horizon := by
-  -- Apply the full information assumption with:
-  -- h₁ = h, h₂ = historyToMultiAgent i (h.playerView i)
-  apply hfull
-  · exact hw
-  · -- historyToMultiAgent preserves wellFormed
-    -- Need: (h.playerView i).wellFormed = true
-    -- Then use historyToMultiAgent_wellFormed
-    exact historyToMultiAgent_wellFormed i (h.playerView i)
-      (MultiAgentHistory.playerView_wellFormed i h hw)
-  · -- playerView i (historyToMultiAgent i (h.playerView i)) = h.playerView i
-    exact (playerView_historyToMultiAgent i (h.playerView i)).symm
+  exact hfull h _ action horizon hw
+    (historyToMultiAgent_wellFormed i _ (MultiAgentHistory.playerView_wellFormed i h hw))
+    (playerView_historyToMultiAgent i _).symm
 
 /-! ## Q-Value Policy Independence -/
 
@@ -277,12 +217,16 @@ theorem othersProb_updateAgent_eq {n : ℕ}
     (h : MultiAgentHistory n)
     (ja : JointAction n) :
     othersProb (π.updateAgent i agent) h ja i = othersProb π h ja i := by
-  simp only [othersProb, MultiAgentPolicy.updateAgent]
   apply Finset.prod_congr rfl
-  intro j hj
-  -- j ∈ Finset.univ.erase i means j ≠ i
-  have hj_ne : j ≠ i := Finset.mem_erase.mp hj |>.1
-  simp only [hj_ne, ↓reduceIte]
+  intro j member
+  simp only [MultiAgentPolicy.updateAgent, if_neg (Finset.mem_erase.mp member).1]
+
+theorem actionValueStep_updateAgent_eq (μ : MultiAgentEnvironment n) (π : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (a : Action) (agent : Agent)
+    (v : MultiAgentHistory n → ℝ) :
+    actionValueStep μ (π.updateAgent i agent) γ i h a v = actionValueStep μ π γ i h a v :=
+  actionValueStep_congr μ _ π γ i h a v v
+    (fun j different => by simp [MultiAgentPolicy.updateAgent, different]) (fun _ _ => rfl)
 
 /-- playerView is the same for player i regardless of player i's policy.
     This is because playerView only depends on the history structure, not the policy. -/
@@ -338,28 +282,10 @@ theorem playerQValue_one_eq_updateAgent {n : ℕ}
     (agent : Agent) :
     playerQValue μ (π.updateAgent i agent) γ i h action 1 =
     playerQValue μ π γ i h action 1 := by
-  simp only [playerQValue, playerValue]
-  -- At horizon 1, the recursive playerValue is at horizon 0, which is 0
-  simp only [mul_zero, add_zero]
-  -- Now only othersProb matters, and that's the same by othersProb_updateAgent_eq
-  congr 1
-  ext ja
-  by_cases hja : ja i = action
-  · simp only [hja, ↓reduceIte]
-    congr 1
-    ext jp
-    -- Need to show the products are equal
-    -- Use the fact that for j ≠ i, (π.updateAgent i agent).agents j = π.agents j
-    have hprod : (∏ j ∈ Finset.univ.erase i, ((π.updateAgent i agent).agents j).policy
-                    (MultiAgentHistory.playerView j h) (ja j)) =
-                 (∏ j ∈ Finset.univ.erase i, (π.agents j).policy
-                    (MultiAgentHistory.playerView j h) (ja j)) := by
-      apply Finset.prod_congr rfl
-      intro j hj
-      have hj_ne : j ≠ i := Finset.mem_erase.mp hj |>.1
-      simp only [MultiAgentPolicy.updateAgent, hj_ne, ↓reduceIte]
-    rw [hprod]
-  · simp only [hja, ↓reduceIte]
+  rw [playerQValue_succ, playerQValue_succ]
+  apply actionValueStep_congr
+  · intro j different; simp [MultiAgentPolicy.updateAgent, different]
+  · intro ja jp; simp only [playerValue]
 
 /-- At horizon 1, bestResponseQValue only depends on othersProb (not on recursive bestResponseValue).
     This is similar to playerQValue_one_eq_updateAgent. -/
@@ -373,26 +299,10 @@ theorem bestResponseQValue_one_eq_updateAgent {n : ℕ}
     (agent : Agent) :
     bestResponseQValue μ (π.updateAgent i agent) γ i h action 1 =
     bestResponseQValue μ π γ i h action 1 := by
-  simp only [bestResponseQValue]
-  -- At horizon 1, the recursive bestResponseValue is at horizon 0, which is 0
-  simp only [bestResponseValue_zero, mul_zero, add_zero]
-  -- Now only othersProb matters, and that's the same by othersProb_updateAgent_eq
-  congr 1
-  ext ja
-  by_cases hja : ja i = action
-  · simp only [hja, ↓reduceIte]
-    congr 1
-    ext jp
-    have hprod : (∏ j ∈ Finset.univ.erase i, ((π.updateAgent i agent).agents j).policy
-                    (MultiAgentHistory.playerView j h) (ja j)) =
-                 (∏ j ∈ Finset.univ.erase i, (π.agents j).policy
-                    (MultiAgentHistory.playerView j h) (ja j)) := by
-      apply Finset.prod_congr rfl
-      intro j hj
-      have hj_ne : j ≠ i := Finset.mem_erase.mp hj |>.1
-      simp only [MultiAgentPolicy.updateAgent, hj_ne, ↓reduceIte]
-    rw [hprod]
-  · simp only [hja, ↓reduceIte]
+  rw [bestResponseQValue_succ, bestResponseQValue_succ]
+  apply actionValueStep_congr
+  · intro j different; simp [MultiAgentPolicy.updateAgent, different]
+  · intro ja jp; simp only [bestResponseValue_zero]
 
 /-- At horizon 1, bestResponseValue doesn't depend on player i's policy. -/
 theorem bestResponseValue_one_eq_updateAgent {n : ℕ}
@@ -423,42 +333,16 @@ theorem bestResponseQValue_updateAgent_eq {n : ℕ}
     bestResponseQValue μ (π.updateAgent i agent) γ i h action horizon =
     bestResponseQValue μ π γ i h action horizon := by
   induction horizon generalizing h action with
-  | zero =>
-    simp only [bestResponseQValue_zero]
+  | zero => simp only [bestResponseQValue_zero]
   | succ k ih =>
-    simp only [bestResponseQValue]
-    congr 1
-    ext ja
-    split_ifs with hja
-    · congr 1
-      ext jp
-      -- The othersProb part is equal (uses policies for j ≠ i only)
-      have hprod : (∏ j ∈ Finset.univ.erase i, ((π.updateAgent i agent).agents j).policy
-                      (MultiAgentHistory.playerView j h) (ja j)) =
-                   (∏ j ∈ Finset.univ.erase i, (π.agents j).policy
-                      (MultiAgentHistory.playerView j h) (ja j)) := by
-        apply Finset.prod_congr rfl
-        intro j hj'
-        have hj_ne : j ≠ i := Finset.mem_erase.mp hj' |>.1
-        simp only [MultiAgentPolicy.updateAgent, hj_ne, ↓reduceIte]
-      rw [hprod]
-      -- The environment prob is the same (doesn't depend on π)
-      -- The reward is the same
-      -- The recursive bestResponseValue is the same
-      congr 1
-      congr 1
-      -- Need to show: bestResponseValue with updated policy = bestResponseValue with original
-      -- Use that bestResponseValue = ⨆ a, bestResponseQValue a, and apply IH
-      simp only [bestResponseValue]
-      -- Show that the functions under ciSup are equal, hence ciSups are equal
-      have hfun_eq : (fun action => bestResponseQValue μ (π.updateAgent i agent) γ i
-            (h ++ [JointHistElem.act ja, JointHistElem.per jp]) action k) =
-          (fun action => bestResponseQValue μ π γ i
-            (h ++ [JointHistElem.act ja, JointHistElem.per jp]) action k) := by
+      rw [bestResponseQValue_succ, bestResponseQValue_succ]
+      apply actionValueStep_congr
+      · intro j different; simp [MultiAgentPolicy.updateAgent, different]
+      · intro ja jp
+        unfold bestResponseValue
+        congr 1
         funext a
-        exact ih (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a
-      simp only [hfun_eq]
-    · rfl
+        exact ih _ a
 
 /-- bestResponseValue doesn't depend on player i's policy.
     This is because bestResponseQValue only uses othersProb (policies for j ≠ i). -/
@@ -472,10 +356,7 @@ theorem bestResponseValue_updateAgent_eq {n : ℕ}
     (horizon : ℕ) :
     bestResponseValue μ (π.updateAgent i agent) γ i h horizon =
     bestResponseValue μ π γ i h horizon := by
-  simp only [bestResponseValue]
-  congr 1
-  ext action
-  exact bestResponseQValue_updateAgent_eq μ π γ i h agent action horizon
+  simp only [bestResponseValue, bestResponseQValue_updateAgent_eq]
 
 /-- Best response is bounded by the optimal value.
     This follows from playerValue_le_bestResponseValue (proven in Value.lean)
@@ -500,15 +381,7 @@ theorem bestResponse_le_bestResponseValue
     _ = bestResponseValue μ π γ i h horizon :=
         bestResponseValue_updateAgent_eq μ π γ i h _ horizon
 
-/-- playerQValue under π' equals bestResponseQValue under π when playerValue = bestResponseValue
-    for all extended histories h ++ [act, per].
-
-    This is the key lemma: if we already know playerValue μ π' = bestResponseValue μ π at
-    smaller horizons for extended histories, then the Q-values are equal at the current horizon.
-
-    Note: We only require the equality for extended histories (h ++ [act, per]), not for all h'.
-    This is precisely what the Q-value recursion needs.
--/
+/-- Equal opponent policies and successor values give equal forced-action values. -/
 theorem playerQValue_eq_bestResponseQValue_of_value_eq {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -524,37 +397,11 @@ theorem playerQValue_eq_bestResponseQValue_of_value_eq {n : ℕ}
         bestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k) :
     playerQValue μ π' γ i h action (k + 1) =
     bestResponseQValue μ π γ i h action (k + 1) := by
-  simp only [playerQValue, bestResponseQValue]
-  congr 1
-  ext ja
-  split_ifs with hja
-  · -- ja i = action case
-    congr 1
-    ext jp
-    -- The othersProb part: π' and π have the same policies for j ≠ i
-    have hothers : (∏ j ∈ Finset.univ.erase i, (π'.agents j).policy (h.playerView j) (ja j)) =
-                   (∏ j ∈ Finset.univ.erase i, (π.agents j).policy (h.playerView j) (ja j)) := by
-      apply Finset.prod_congr rfl
-      intro j hj
-      have hj_ne : j ≠ i := Finset.mem_erase.mp hj |>.1
-      rw [hπ' j hj_ne]
-    rw [hothers]
-    -- The recursive value: by assumption hvalue_eq
-    congr 1
-    rw [hvalue_eq ja jp]
-  · -- ja i ≠ action case: both 0
-    rfl
+  rw [playerQValue_succ, bestResponseQValue_succ]
+  exact actionValueStep_congr μ π' π γ i h action _ _ hπ' hvalue_eq
 
-/-- Horizon-consistent optimality: the action optimal for horizon k+1 is also optimal for horizon k.
-
-    This property holds when:
-    1. The environment's reward structure is monotonic in horizon
-    2. The discount factor γ < 1 ensures future rewards become less significant
-    3. The optimal path for k+1 steps is also optimal for k steps
-
-    This is a reasonable assumption for many RL environments where longer-horizon
-    planning doesn't fundamentally change what's locally optimal.
--/
+/-- The selected constant-lookahead action is also optimal at every smaller horizon.
+This is an additional assumption; a discount below one does not imply it. -/
 def horizonConsistentOptimality
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -600,37 +447,67 @@ theorem bestResponsePolicy_isSupAchieving
     (horizon : ℕ) :
     isSupAchievingAt μ π γ i (historyToMultiAgent i h)
       (bestResponsePolicy μ π γ i horizon h) horizon := by
-  unfold isSupAchievingAt bestResponsePolicy
-  -- bestResponsePolicy chooses argmax, which achieves the sup
-  let a_star := Classical.choose (bestResponsePolicy.exists_best_action μ π γ i h horizon)
-  have h_best := Classical.choose_spec (bestResponsePolicy.exists_best_action μ π γ i h horizon)
-  -- h_best: ∀ a', Q(a_star) ≥ Q(a')
-  -- Need to show: Q(a_star) = ⨆ a, Q(a)
-  apply le_antisymm
-  · -- a_star ≤ sup
-    have hbdd : BddAbove (Set.range fun a =>
-        bestResponseQValue μ π γ i (historyToMultiAgent i h) a horizon) :=
-      Set.Finite.bddAbove (Set.finite_range _)
-    exact le_ciSup hbdd a_star
-  · -- sup ≤ a_star (since a_star is max)
-    apply ciSup_le
-    intro a
-    exact h_best a
+  simpa only [isSupAchievingAt, bestResponseValue] using
+    bestResponseAction_achieves_bestResponseValue μ π γ i h horizon
 
-/-- Key lemma: If a policy π' for player i plays sup-achieving actions at horizon k,
-    and its other agents match π, then playerValue μ π' = bestResponseValue μ π at horizon k.
+/-- Backward induction on a successor-closed family of decision histories and
+remaining horizons. Optimality is required only at the current remaining horizon. -/
+theorem playerValue_eq_bestResponseValue_on
+    (μ : MultiAgentEnvironment n) (π π' : MultiAgentPolicy n) (γ : DiscountFactor)
+    (i : Fin n) (others : ∀ j, j ≠ i → π'.agents j = π.agents j)
+    (P : MultiAgentHistory n → ℕ → Prop)
+    (closed : ∀ h k ja jp, P h (k+1) → P (h ++ [.act ja, .per jp]) k)
+    (greedy : ∀ h k, h.wellFormed = true → h.endsWithPercept = true → P h (k+1) →
+      ∃ chosen : Action,
+        (∀ a, ((π'.agents i).policy (h.playerView i) a).toReal = if a = chosen then 1 else 0) ∧
+        isSupAchievingAt μ π γ i h chosen (k+1))
+    (horizon : ℕ) (h : MultiAgentHistory n) (hw : h.wellFormed = true)
+    (hep : h.endsWithPercept = true) (state : P h horizon) :
+    playerValue μ π' γ i h horizon = bestResponseValue μ π γ i h horizon := by
+  induction horizon generalizing h with
+  | zero => simp only [playerValue, bestResponseValue_zero]
+  | succ k ih =>
+      obtain ⟨chosen, deterministic, optimal⟩ := greedy h k hw hep state
+      calc
+        _ = playerQValue μ π' γ i h chosen (k+1) :=
+          playerValue_deterministic μ π' γ i h hw chosen deterministic
+        _ = bestResponseQValue μ π γ i h chosen (k+1) :=
+          playerQValue_eq_bestResponseQValue_of_value_eq μ π π' γ i h chosen k others
+            fun ja jp => by
+              have valid := MultiAgentHistory.wellFormed_append_act_per h ja jp hw hep
+              exact ih _ valid.1 valid.2 (closed h k ja jp state)
+        _ = bestResponseValue μ π γ i h (k+1) := by
+          simpa only [isSupAchievingAt, bestResponseValue] using optimal
 
-    **PROOF STRATEGY**:
-    By induction on horizon:
-    - At k=0: both are 0 (trivial)
-    - At k+1: Use playerQValue_eq_bestResponseQValue_of_value_eq with IH
-      1. playerValue = playerQValue(a_chosen) since π'_i is deterministic
-      2. playerQValue(a_chosen) = bestResponseQValue(a_chosen) by IH on recursive values
-      3. bestResponseQValue(a_chosen) = bestResponseValue since a_chosen is sup-achieving
+/-- The canonical placeholder for one's own policy changes no opponent. -/
+theorem multiAgentPolicyFromOthers_eq_update (π : MultiAgentPolicy n) (i : Fin n) :
+    multiAgentPolicyFromOthers i (fun j _ => π.agents j) = π.updateAgent i uniformAgent := by
+  ext j
+  by_cases same : j = i <;> simp [multiAgentPolicyFromOthers, MultiAgentPolicy.updateAgent, same]
 
-    The hypothesis requires that at EVERY horizon k ≤ H, the action is sup-achieving.
-    This is ensured by requiring allHorizonsConsistent and using the same action at each step.
--/
+/-- The response is a Dirac policy at the supplied maximizer. -/
+theorem bestResponseAgent_policy_toReal (μ : MultiAgentEnvironment n) (i : Fin n)
+    (others : (j : Fin n) → j ≠ i → Agent) (γ : DiscountFactor) (H : ℕ)
+    (h : History) (a : Action) :
+    ((bestResponseAgent μ i others γ H).policy h a).toReal =
+      if a = bestResponsePolicy μ (multiAgentPolicyFromOthers i others) γ i H h then 1 else 0 := by
+  simp only [bestResponseAgent]
+  by_cases equal : a = bestResponsePolicy μ (multiAgentPolicyFromOthers i others) γ i H h
+  · simp [equal]
+  · simp [equal, Ne.symm equal]
+
+/-- Q-value sufficiency transfers optimality from the chosen representative history. -/
+theorem isSupAchievingAt_of_playerView (μ : MultiAgentEnvironment n) (π : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n)
+    (hw : h.wellFormed = true) (hep : h.endsWithPercept = true)
+    (full : playerIQValueDependsOnlyOnOwnView μ π γ i) (a : Action) (k : ℕ)
+    (optimal : isSupAchievingAt μ π γ i (historyToMultiAgent i (h.playerView i)) a k) :
+    isSupAchievingAt μ π γ i h a k := by
+  unfold isSupAchievingAt at *
+  simp_rw [bestResponseQValue_eq_of_playerView_eq μ π γ i h hw hep _ k full]
+  exact optimal
+
+/-- A fixed policy optimal at every smaller horizon attains the Bellman value. -/
 theorem playerValue_eq_bestResponseValue_of_supAchieving
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -648,86 +525,16 @@ theorem playerValue_eq_bestResponseValue_of_supAchieving
     ∀ (h : MultiAgentHistory n), h.wellFormed = true → h.endsWithPercept = true →
       playerValue μ (π.updateAgent i π'_i) γ i h horizon =
       bestResponseValue μ π γ i h horizon := by
-  induction horizon with
-  | zero =>
-    intro h hw hep
-    simp only [playerValue, bestResponseValue_zero]
-  | succ k IH =>
-    intro h hw hep
-    -- Get the action that π'_i plays at h
-    obtain ⟨a_chosen, hdet_prob, hsup_kp1⟩ := hdet h hw hep (k + 1) (Nat.le_refl _)
-    -- Step 1: playerValue = playerQValue(a_chosen) since π'_i is deterministic
-    have hval_eq_qval : playerValue μ (π.updateAgent i π'_i) γ i h (k + 1) =
-        playerQValue μ (π.updateAgent i π'_i) γ i h a_chosen (k + 1) := by
-      rw [playerValue_eq_weighted_qValue]
-      -- The sum simplifies to just the a_chosen term since π'_i is deterministic
-      have hpolicy_eq : ∀ a : Action,
-          ((π.updateAgent i π'_i).agents i).policy (h.playerView i) a =
-          π'_i.policy (h.playerView i) a := by
-        intro a
-        show (if i = i then π'_i else π.agents i).policy (h.playerView i) a = _
-        simp only [↓reduceIte]
-      simp_rw [hpolicy_eq, hdet_prob]
-      simp only [ite_mul, one_mul, zero_mul]
-      rw [Finset.sum_ite_eq']
-      simp only [Finset.mem_univ, ↓reduceIte]
-    -- Step 2: playerQValue = bestResponseQValue (using IH for recursive values)
-    have hqval_eq : playerQValue μ (π.updateAgent i π'_i) γ i h a_chosen (k + 1) =
-        bestResponseQValue μ π γ i h a_chosen (k + 1) := by
-      apply playerQValue_eq_bestResponseQValue_of_value_eq
-      · -- Other agents match
-        exact hπ'_others
-      · -- Recursive values match (from IH) for extended histories h ++ [act, per]
-        intro ja jp
-        -- The extended history is wellFormed by wellFormed_append_act_per
-        have hext := MultiAgentHistory.wellFormed_append_act_per h ja jp hw hep
-        apply IH
-        · -- hdet at horizon k for the IH
-          intro h'' hw'' hep'' k' hk'
-          have hk'_le : k' ≤ k + 1 := Nat.le_succ_of_le hk'
-          exact hdet h'' hw'' hep'' k' hk'_le
-        · -- Extended history is wellFormed
-          exact hext.1
-        · -- Extended history ends with percept
-          exact hext.2
-    -- Step 3: bestResponseQValue(a_chosen) = bestResponseValue (sup-achieving)
-    have hsup_eq : bestResponseQValue μ π γ i h a_chosen (k + 1) =
-        bestResponseValue μ π γ i h (k + 1) := by
-      unfold isSupAchievingAt at hsup_kp1
-      unfold bestResponseValue
-      exact hsup_kp1
-    -- Chain the equalities
-    calc playerValue μ (π.updateAgent i π'_i) γ i h (k + 1)
-        = playerQValue μ (π.updateAgent i π'_i) γ i h a_chosen (k + 1) := hval_eq_qval
-      _ = bestResponseQValue μ π γ i h a_chosen (k + 1) := hqval_eq
-      _ = bestResponseValue μ π γ i h (k + 1) := hsup_eq
+  intro h hw hep
+  apply playerValue_eq_bestResponseValue_on μ π (π.updateAgent i π'_i) γ i hπ'_others
+    (fun _ k => k ≤ horizon) (fun _ _ _ _ bound => Nat.le_of_succ_le bound)
+    (fun h k hw hep bound => by
+      obtain ⟨a, deterministic, optimal⟩ := hdet h hw hep (k+1) bound
+      exact ⟨a, by simpa [MultiAgentPolicy.updateAgent] using deterministic, optimal⟩)
+    horizon h hw hep (le_refl _)
 
-/-- Auxiliary: Best response at any history achieves best response value.
-
-    This is the key lemma generalized over all histories for induction to work.
-    We prove: for all h and horizon, playerValue μ π' γ i h horizon ≥ bestResponseValue μ π γ i h horizon
-    where π' uses bestResponseAgent at the same horizon.
-
-    **HORIZON DEPENDENCY ISSUE**:
-    This proof has a subtle difficulty. The induction gives us:
-    - IH: "For policy π_k' using bestResponseAgent at horizon k, playerValue ≥ bestResponseValue"
-    - Goal: "For policy π_{k+1}' using bestResponseAgent at horizon k+1, playerValue ≥ bestResponseValue"
-
-    These are DIFFERENT policies (they choose different actions), so the IH doesn't directly apply.
-    The key insight is that by `allHorizonsConsistent`, the (k+1)-optimal action is also k-optimal,
-    so both policies achieve the same supremum of Q-values at horizon k.
-
-    **PROOF STRATEGY** (for completion):
-    1. Show that if two deterministic policies both play sup-achieving actions at every step,
-       they have the same playerValue at any horizon.
-    2. π_{k+1}' plays actions that are (k+1)-optimal, which are also k-optimal by assumption.
-    3. π_k' plays actions that are k-optimal.
-    4. Both play k-optimal actions, so their k-horizon playerValues are equal.
-    5. Apply IH to conclude.
-
-    **STATUS**: Blocked on proving the "equal actions → equal values" lemma, which requires
-    additional infrastructure about deterministic policies and sup-achieving actions.
--/
+/-- Constant-lookahead optimality under observation sufficiency and consistency
+of its canonical opponent profile at every smaller horizon. -/
 theorem bestResponse_achieves_value_aux
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -746,232 +553,36 @@ theorem bestResponse_achieves_value_aux
         (fun j _ => π.agents j) γ horizon)
       playerValue μ π' γ i h horizon ≥ bestResponseValue μ π γ i h horizon := by
   intro h hw hep
-  let π'_i := bestResponseAgent μ i (fun j _ => π.agents j) γ horizon
-  -- We use playerValue_eq_bestResponseValue_of_supAchieving to get equality (hence ≥)
-  -- Key: bestResponseAgent plays deterministically and achieves sup at all k ≤ horizon
-  -- First, show the multiAgentPolicyFromOthers matches π for j ≠ i
-  have hπ_eq_others : ∀ j : Fin n, j ≠ i →
-      (multiAgentPolicyFromOthers i (fun j _ => π.agents j)).agents j = π.agents j := by
-    intro j hj_ne
-    simp only [multiAgentPolicyFromOthers, hj_ne, ↓reduceDIte]
-  -- Show π'_i is deterministic and plays sup-achieving actions at all k ≤ horizon
-  -- (for wellFormed histories that end with percept)
-  have hdet : ∀ h' : MultiAgentHistory n, h'.wellFormed = true → h'.endsWithPercept = true →
-      ∀ k : ℕ, k ≤ horizon → ∃ a_chosen : Action,
-      (∀ a, (π'_i.policy (h'.playerView i) a).toReal = if a = a_chosen then 1 else 0) ∧
-      isSupAchievingAt μ π γ i h' a_chosen k := by
-    intro h' hw' hep' k hk
-    -- The action chosen by bestResponseAgent
-    let π_others_ma := multiAgentPolicyFromOthers i (fun j _ => π.agents j)
-    let a_star := bestResponsePolicy μ π_others_ma γ i horizon (h'.playerView i)
-    use a_star
-    constructor
-    · -- bestResponseAgent is deterministic at a_star
-      intro a
-      show ((if bestResponsePolicy μ π_others_ma γ i horizon (h'.playerView i) = a
-             then (1 : ENNReal) else 0) : ENNReal).toReal = _
-      by_cases ha : a_star = a
-      · -- a_star = a, so condition is true
-        rw [if_pos ha, ENNReal.toReal_one]
-        -- RHS: if a = a_star then 1 else 0, with a = a_star
-        simp only [ha.symm, ↓reduceIte]
-      · -- a_star ≠ a, so condition is false
-        have hne : bestResponsePolicy μ π_others_ma γ i horizon (h'.playerView i) ≠ a := ha
-        rw [if_neg hne, ENNReal.toReal_zero]
-        -- RHS: if a = a_star then 1 else 0, with a_star ≠ a, so a ≠ a_star
-        have ha' : a ≠ a_star := fun h => ha h.symm
-        simp only [ha', ↓reduceIte]
-    · -- a_star is sup-achieving at k ≤ horizon
-      -- First, a_star is sup-achieving at horizon (by bestResponsePolicy_isSupAchieving)
-      -- Then by hcons (allHorizonsConsistent), it's also sup-achieving at all k < horizon
-      -- We need to relate bestResponseQValue for π_others_ma to bestResponseQValue for π
-      unfold isSupAchievingAt
-      -- The key is that bestResponseQValue doesn't depend on player i's policy
-      -- So bestResponseQValue μ π_others_ma = bestResponseQValue μ π
-      have hqval_eq : ∀ (action : Action),
-          bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) action k =
-          bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) action k := by
-        intro action
-        -- multiAgentPolicyFromOthers differs from π only at position i
-        -- So we can relate via bestResponseQValue_updateAgent_eq
-        have heq : π_others_ma = π.updateAgent i uniformAgent := by
-          ext j
-          by_cases hj : j = i
-          · -- j = i case: both sides equal uniformAgent
-            simp only [MultiAgentPolicy.updateAgent, if_pos hj]
-            simp only [π_others_ma, multiAgentPolicyFromOthers, dif_pos hj]
-          · simp only [MultiAgentPolicy.updateAgent, if_neg hj]
-            simp only [π_others_ma, multiAgentPolicyFromOthers, dif_neg hj]
-        rw [heq]
-        exact bestResponseQValue_updateAgent_eq μ π γ i
-          (historyToMultiAgent i (h'.playerView i)) uniformAgent action k
-      -- Now show a_star achieves sup at k
-      -- Case analysis: k = horizon or k < horizon
-      by_cases hk_eq : k = horizon
-      · -- k = horizon: a_star achieves sup by bestResponsePolicy_isSupAchieving
-        rw [hk_eq]
-        -- First, relate h' to historyToMultiAgent i (h'.playerView i) using hfull
-        have hview_eq : (h'.playerView i) =
-            (historyToMultiAgent i (h'.playerView i)).playerView i :=
-          (playerView_historyToMultiAgent i (h'.playerView i)).symm
-        have hq_rel : bestResponseQValue μ π γ i h' a_star horizon =
-            bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a_star horizon := by
-          apply hfull h' (historyToMultiAgent i (h'.playerView i)) a_star horizon hw'
-            (historyToMultiAgent_wellFormed i (h'.playerView i)
-              (MultiAgentHistory.playerView_wellFormed i h' hw'))
-          exact hview_eq
-        have hsup_rel : (⨆ a, bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a horizon) =
-            (⨆ a, bestResponseQValue μ π γ i h' a horizon) := by
-          congr 1; ext a
-          symm
-          apply hfull h' (historyToMultiAgent i (h'.playerView i)) a horizon hw'
-            (historyToMultiAgent_wellFormed i (h'.playerView i)
-              (MultiAgentHistory.playerView_wellFormed i h' hw'))
-          exact hview_eq
-        rw [hq_rel, ← hsup_rel]
-        -- Now goal is about historyToMultiAgent
-        -- bestResponsePolicy_isSupAchieving gives us the result for historyToMultiAgent
-        have hsup := bestResponsePolicy_isSupAchieving μ π_others_ma γ i (h'.playerView i) horizon
-        unfold isSupAchievingAt at hsup
-        -- hqval_eq is for k, we need it for horizon
-        have hqval_eq' : ∀ (action : Action),
-            bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) action horizon =
-            bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) action horizon := by
-          intro action
-          rw [← hk_eq]
-          exact hqval_eq action
-        -- Convert from π_others_ma to π using hqval_eq'
-        calc bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a_star horizon
-            = bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) a_star horizon :=
-              (hqval_eq' a_star).symm
-          _ = ⨆ a, bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) a horizon := hsup
-          _ = ⨆ a, bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a horizon := by
-              congr 1; ext a; exact hqval_eq' a
-      · -- k < horizon: use allHorizonsConsistent
-        have hk_lt : k < horizon := Nat.lt_of_le_of_ne hk hk_eq
-        -- allHorizonsConsistent μ π γ i says: for all H, horizonConsistentOptimality μ π γ i H
-        -- horizonConsistentOptimality μ π γ i horizon says:
-        --   ∀ h k, k < horizon → bestResponseQValue(bestResponsePolicy(..., horizon, h), k) = sup
-        have hcons_app := hcons horizon (h'.playerView i) k hk_lt
-        -- hcons_app is about bestResponsePolicy μ π, but a_star = bestResponsePolicy μ π_others_ma
-        -- Since Q-values for π and π_others_ma are equal (by bestResponseQValue_updateAgent_eq),
-        -- and both policies choose argmax of the same function, the values achieved are equal.
+  let canon := multiAgentPolicyFromOthers i (fun j _ => π.agents j)
+  have canon_eq : canon = π.updateAgent i uniformAgent := multiAgentPolicyFromOthers_eq_update π i
+  have canon_consistent : allHorizonsConsistent μ canon γ i := by
+    rw [canon_eq]
+    exact hcons_any uniformAgent
+  have hdet (h' : MultiAgentHistory n) (hw' : h'.wellFormed = true)
+      (hep' : h'.endsWithPercept = true) (k : ℕ) (hk : k ≤ horizon) :
+      ∃ chosen : Action,
+        (∀ a, ((bestResponseAgent μ i (fun j _ => π.agents j) γ horizon).policy
+          (h'.playerView i) a).toReal = if a = chosen then 1 else 0) ∧
+        isSupAchievingAt μ π γ i h' chosen k := by
+    refine ⟨bestResponsePolicy μ canon γ i horizon (h'.playerView i),
+      bestResponseAgent_policy_toReal μ i _ γ horizon _ , ?_⟩
+    apply isSupAchievingAt_of_playerView μ π γ i h' hw' hep' hfull
+    have optimal : isSupAchievingAt μ canon γ i (historyToMultiAgent i (h'.playerView i))
+        (bestResponsePolicy μ canon γ i horizon (h'.playerView i)) k := by
+      rcases hk.eq_or_lt with same | less
+      · subst k
+        exact bestResponsePolicy_isSupAchieving μ canon γ i _ horizon
+      · exact canon_consistent horizon (h'.playerView i) k less
+    simpa only [isSupAchievingAt, canon_eq, bestResponseQValue_updateAgent_eq] using optimal
+  have equality := playerValue_eq_bestResponseValue_of_supAchieving μ π γ i
+    (bestResponseAgent μ i (fun j _ => π.agents j) γ horizon)
+    (fun j different => by simp [MultiAgentPolicy.updateAgent, different]) horizon hdet h hw hep
+  -- The historical signature also supplies consistency for the unmodified policy.
+  have _ := hcons
+  exact equality.symm.le
 
-        -- First, relate h' to historyToMultiAgent i (h'.playerView i) using hfull
-        have hview_eq : (h'.playerView i) =
-            (historyToMultiAgent i (h'.playerView i)).playerView i :=
-          (playerView_historyToMultiAgent i (h'.playerView i)).symm
-
-        -- Show Q-values at horizon are equal for π and π_others_ma
-        have hqval_eq_horizon : ∀ (action : Action),
-            bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) action horizon =
-            bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) action horizon := by
-          intro action
-          have heq : π_others_ma = π.updateAgent i uniformAgent := by
-            ext j
-            by_cases hj : j = i
-            · simp only [MultiAgentPolicy.updateAgent, if_pos hj]
-              simp only [π_others_ma, multiAgentPolicyFromOthers, dif_pos hj]
-            · simp only [MultiAgentPolicy.updateAgent, if_neg hj]
-              simp only [π_others_ma, multiAgentPolicyFromOthers, dif_neg hj]
-          rw [heq]
-          exact bestResponseQValue_updateAgent_eq μ π γ i
-            (historyToMultiAgent i (h'.playerView i)) uniformAgent action horizon
-
-        -- a_star achieves sup at horizon for π_others_ma (by bestResponsePolicy_isSupAchieving)
-        have hsup_horizon := bestResponsePolicy_isSupAchieving μ π_others_ma γ i (h'.playerView i) horizon
-        unfold isSupAchievingAt at hsup_horizon
-        -- hsup_horizon : Q(π_others_ma, a_star, horizon) = ⨆ a, Q(π_others_ma, a, horizon)
-
-        -- Convert to π using hqval_eq_horizon
-        have hsup_horizon_pi : bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a_star horizon =
-            ⨆ a, bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a horizon := by
-          calc bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a_star horizon
-              = bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) a_star horizon :=
-                (hqval_eq_horizon a_star).symm
-            _ = ⨆ a, bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) a horizon := hsup_horizon
-            _ = ⨆ a, bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a horizon := by
-                congr 1; ext a; exact hqval_eq_horizon a
-
-        -- Now we need to show a_star achieves sup at k < horizon
-        -- hcons_app tells us that bestResponsePolicy μ π achieves sup at k
-        -- The key insight: a_star and bestResponsePolicy μ π both achieve the same sup VALUE at horizon
-        -- By hcons, actions achieving the sup at horizon also achieve sup at smaller k
-
-        -- **TODO**: This step requires that ANY action achieving the sup at horizon
-        -- also achieves the sup at k < horizon. The current assumption `allHorizonsConsistent`
-        -- only guarantees this for the specific action `bestResponsePolicy μ π`, not for
-        -- `bestResponsePolicy μ π_others_ma`. Since Q-values are equal, both actions achieve
-        -- the same VALUE at horizon, but hcons doesn't guarantee they have the same VALUE at k.
-        --
-        -- Options to fix:
-        -- 1. Strengthen allHorizonsConsistent to cover ALL actions achieving the sup at horizon
-        -- 2. Prove bestResponsePolicy μ π = bestResponsePolicy μ π_others_ma (hard with Classical.choose)
-        -- 3. Add assumption that π_others_ma satisfies allHorizonsConsistent
-
-        -- For now, we use that Q-values are equal and both achieve the horizon-sup
-        calc bestResponseQValue μ π γ i h' a_star k
-            = bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a_star k := by
-              apply hfull h' (historyToMultiAgent i (h'.playerView i)) _ k hw'
-                (historyToMultiAgent_wellFormed i (h'.playerView i)
-                  (MultiAgentHistory.playerView_wellFormed i h' hw'))
-              exact hview_eq
-          _ = ⨆ a, bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a k := by
-              -- Use hcons_any to get horizonConsistentOptimality for π_others_ma
-              -- π_others_ma = π.updateAgent i uniformAgent
-              have heq_ma : π_others_ma = π.updateAgent i uniformAgent := by
-                ext j
-                by_cases hj : j = i
-                · simp only [MultiAgentPolicy.updateAgent, if_pos hj]
-                  simp only [π_others_ma, multiAgentPolicyFromOthers, dif_pos hj]
-                · simp only [MultiAgentPolicy.updateAgent, if_neg hj]
-                  simp only [π_others_ma, multiAgentPolicyFromOthers, dif_neg hj]
-              -- hcons_any uniformAgent gives allHorizonsConsistent for π.updateAgent i uniformAgent
-              have hcons_ma := hcons_any uniformAgent
-              rw [← heq_ma] at hcons_ma
-              -- Apply horizonConsistentOptimality for π_others_ma at horizon
-              have hcons_ma_app := hcons_ma horizon (h'.playerView i) k hk_lt
-              -- hcons_ma_app : Q(π_others_ma, bestResponsePolicy μ π_others_ma, k) = sup Q(π_others_ma, ·, k)
-              -- Since a_star = bestResponsePolicy μ π_others_ma, this is exactly what we need
-              -- after converting Q-values from π_others_ma to π
-              calc bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a_star k
-                  = bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) a_star k := by
-                    rw [heq_ma]
-                    exact (bestResponseQValue_updateAgent_eq μ π γ i
-                      (historyToMultiAgent i (h'.playerView i)) uniformAgent a_star k).symm
-                _ = ⨆ a, bestResponseQValue μ π_others_ma γ i (historyToMultiAgent i (h'.playerView i)) a k :=
-                    hcons_ma_app
-                _ = ⨆ a, bestResponseQValue μ π γ i (historyToMultiAgent i (h'.playerView i)) a k := by
-                    congr 1; ext a
-                    rw [heq_ma]
-                    exact bestResponseQValue_updateAgent_eq μ π γ i
-                      (historyToMultiAgent i (h'.playerView i)) uniformAgent a k
-          _ = ⨆ a, bestResponseQValue μ π γ i h' a k := by
-              congr 1; ext a
-              symm
-              apply hfull h' (historyToMultiAgent i (h'.playerView i)) a k hw'
-                (historyToMultiAgent_wellFormed i (h'.playerView i)
-                  (MultiAgentHistory.playerView_wellFormed i h' hw'))
-              exact hview_eq
-  -- Show hπ'_others: other agents in π.updateAgent i π'_i match π
-  have hπ'_others : ∀ j, j ≠ i → (π.updateAgent i π'_i).agents j = π.agents j := by
-    intro j hj_ne
-    simp only [MultiAgentPolicy.updateAgent, hj_ne, ↓reduceIte]
-  -- Apply playerValue_eq_bestResponseValue_of_supAchieving
-  have heq := playerValue_eq_bestResponseValue_of_supAchieving μ π γ i π'_i hπ'_others horizon hdet h hw hep
-  exact le_of_eq heq.symm
-
-/-- Best response maximizes player value.
-
-    When player i switches to best response policy, their value equals the
-    best response value. This requires:
-    1. playerIQValueDependsOnlyOnOwnView: Q-values depend only on player i's view
-    2. allHorizonsConsistent: for ALL horizons H, the action optimal at H is optimal at smaller
-
-    The key insight is that we prove this by showing:
-    - playerValue ≤ bestResponseValue (always true by playerValue_le_bestResponseValue)
-    - playerValue ≥ bestResponseValue (because best response chooses optimal actions)
--/
+/-- The constant-lookahead response attains the optimum under the stated
+information and cross-horizon consistency assumptions. -/
 theorem bestResponse_maximizes_value
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -989,24 +600,10 @@ theorem bestResponse_maximizes_value
     playerValue μ π' γ i h horizon =
     bestResponseValue μ π γ i h horizon := by
   intro π'
-  apply le_antisymm
-  · -- playerValue ≤ bestResponseValue
-    calc playerValue μ π' γ i h horizon
-        ≤ bestResponseValue μ π' γ i h horizon :=
-          playerValue_le_bestResponseValue μ π' γ i h hw hep horizon
-      _ = bestResponseValue μ π γ i h horizon :=
-          bestResponseValue_updateAgent_eq μ π γ i h _ horizon
-  · -- playerValue ≥ bestResponseValue (from aux lemma)
-    exact bestResponse_achieves_value_aux μ π γ i hfull hcons hcons_any horizon h hw hep
+  exact le_antisymm (bestResponse_le_bestResponseValue μ π γ i h hw hep horizon)
+    (bestResponse_achieves_value_aux μ π γ i hfull hcons hcons_any horizon h hw hep)
 
-/-- Best response improves over the original policy (with full information assumption).
-    Switching to best response can only help player i.
-
-    This follows from:
-    - playerValue μ π ≤ bestResponseValue μ π (proven in Value.lean)
-    - playerValue μ π' = bestResponseValue μ π (from bestResponse_maximizes_value)
-    - Therefore: playerValue μ π' = bestResponseValue μ π ≥ playerValue μ π
--/
+/-- Under the stated premises, the constant-lookahead response improves value. -/
 theorem bestResponse_improves_value
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -1024,10 +621,7 @@ theorem bestResponse_improves_value
     playerValue μ π' γ i h horizon ≥
     playerValue μ π γ i h horizon := by
   intro π'
-  calc playerValue μ π' γ i h horizon
-      = bestResponseValue μ π γ i h horizon :=
-        bestResponse_maximizes_value μ π γ i h hw hep horizon hfull hcons hcons_any
-    _ ≥ playerValue μ π γ i h horizon :=
-        playerValue_le_bestResponseValue μ π γ i h hw hep horizon
+  rw [bestResponse_maximizes_value μ π γ i h hw hep horizon hfull hcons hcons_any]
+  exact playerValue_le_bestResponseValue μ π γ i h hw hep horizon
 
 end Mettapedia.UniversalAI.MultiAgent

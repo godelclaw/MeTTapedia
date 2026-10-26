@@ -350,4 +350,60 @@ end SubstitutionControl
 #print axioms encode_rename
 #print axioms encode_sorted
 #print axioms SubstitutionControl.literal_assignment_differs_from_source_instantiation
+theorem Assignment.extend_varsBelow {gamma : Ctx Base} {domain : Ty Base} (bound : Nat)
+    (head : Preterm) (assignment : Assignment gamma)
+    (headBound : Preterm.VarsBelow bound head)
+    (assignmentBound : ∀ {type} (index : Var gamma type), Preterm.VarsBelow bound (assignment index)) :
+    ∀ {type} (index : Var (domain :: gamma) type),
+      Preterm.VarsBelow bound (Assignment.extend head assignment index) := by
+  intro type index
+  cases index with
+  | vz => exact headBound
+  | vs index => exact assignmentBound index
+
+theorem encode_varsBelow (references : Symbol → Nat) (base : Base → Preterm)
+    (constant : ∀ {type}, Const type → Preterm) (binders : Nat → Nat) (bound : Nat)
+    (baseBound : ∀ index, Preterm.VarsBelow bound (base index))
+    (constantBound : ∀ {type} (symbol : Const type), Preterm.VarsBelow bound (constant symbol))
+    {gamma : Ctx Base} {type : Ty Base} (source : Term Const gamma type) :
+    ∀ (assignment : Assignment gamma) (depth : Nat),
+      (∀ {type} (index : Var gamma type), Preterm.VarsBelow bound (assignment index)) →
+      (∀ offset < source.binderDepth, binders (depth + offset) < bound) →
+      Preterm.VarsBelow bound (encodeWithAssignment references base constant binders assignment depth source) := by
+  induction source with
+  | var index => intro assignment depth assignmentBound _; exact assignmentBound index
+  | const symbol => intro _ _ _ _; exact constantBound symbol
+  | top => intros; simp [encodeWithAssignment, applySymbol, Preterm.applyArgs, Preterm.VarsBelow]
+  | bot => intros; simp [encodeWithAssignment, applySymbol, Preterm.applyArgs, Preterm.VarsBelow]
+  | app first second ihFirst ihSecond | and first second ihFirst ihSecond | or first second ihFirst ihSecond | imp first second ihFirst ihSecond =>
+      intro assignment depth assignmentBound bindersBound
+      have left := ihFirst assignment depth assignmentBound
+        (fun offset smaller => bindersBound offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_left _ _)))
+      have right := ihSecond assignment depth assignmentBound
+        (fun offset smaller => bindersBound offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_right _ _)))
+      exact ⟨⟨trivial, left⟩, right⟩
+  | not body ih =>
+      intro assignment depth assignmentBound bindersBound
+      exact ⟨trivial, ih assignment depth assignmentBound bindersBound⟩
+  | eq first second ihFirst ihSecond =>
+      intro assignment depth assignmentBound bindersBound
+      have left := ihFirst assignment depth assignmentBound
+        (fun offset smaller => bindersBound offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_left _ _)))
+      have right := ihSecond assignment depth assignmentBound
+        (fun offset smaller => bindersBound offset (Nat.lt_of_lt_of_le smaller (Nat.le_max_right _ _)))
+      exact ⟨⟨⟨trivial, encodeType_varsBelow references base bound baseBound _⟩, left⟩, right⟩
+  | @lam domain gamma codomain body ih | @all domain gamma body ih | @ex domain gamma body ih =>
+      intro assignment depth assignmentBound bindersBound
+      have headBound : binders depth < bound := by
+        simpa only [Nat.add_zero] using bindersBound 0 (Nat.zero_lt_succ _)
+      have tailBound : ∀ offset < body.binderDepth, binders (depth + 1 + offset) < bound := by
+        intro offset smaller
+        have found := bindersBound (offset + 1) (Nat.add_lt_add_right smaller 1)
+        simpa only [Nat.add_assoc, Nat.add_comm 1 offset] using found
+      have bodyBound := ih (Assignment.extend (.var (binders depth)) assignment) (depth + 1)
+        (Assignment.extend_varsBelow bound (.var (binders depth)) assignment headBound assignmentBound) tailBound
+      exact ⟨⟨⟨trivial, headBound⟩, encodeType_varsBelow references base bound baseBound domain⟩, bodyBound⟩
+
+#print axioms encode_varsBelow
+
 end Mettapedia.Languages.MM0.HOLKernelTermAssignments

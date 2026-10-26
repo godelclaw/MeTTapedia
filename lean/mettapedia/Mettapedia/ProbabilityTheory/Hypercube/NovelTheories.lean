@@ -390,6 +390,7 @@ theorem belief_mono (qm : QuantumMassFunction L) {a b : L} (h : a ≤ b) :
     qm.belief a ≤ qm.belief b :=
   sumBelow.mono_of_nonneg qm.m qm.m_nonneg h
 
+omit [DecidableEq L] in
 /-- Belief at ⊥ equals m(⊥) = 0. -/
 @[simp]
 theorem belief_bot (qm : QuantumMassFunction L) : qm.belief ⊥ = 0 := by
@@ -687,7 +688,7 @@ theorem belief_eq_totalMass_of_support_below
     simp only [finsetBelow.mem_iff] at hxa
     -- Show qm.m x = 0
     by_contra hmx
-    push_neg at hmx
+    push Not at hmx
     have hpos : 0 < qm.m x := lt_of_le_of_ne (qm.m_nonneg x) (Ne.symm hmx)
     have hsupp : x ∈ massSupport qm := by simp [massSupport, hpos]
     exact hxa (h x hsupp)

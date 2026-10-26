@@ -36,17 +36,14 @@ theorem weighted_sum_le_bound {α : Type*} [Fintype α] (w : α → ℝ) (v : α
     (hw_nonneg : ∀ a, 0 ≤ w a) (hw_sum : ∑ a, w a ≤ 1)
     (hv_le : ∀ a, v a ≤ B) (hB_nonneg : 0 ≤ B) :
     ∑ a, w a * v a ≤ B := by
-  calc ∑ a, w a * v a
-      ≤ ∑ a, w a * B := by
-        apply Finset.sum_le_sum
-        intro a _
-        exact mul_le_mul_of_nonneg_left (hv_le a) (hw_nonneg a)
-    _ = B * ∑ a, w a := by rw [← Finset.sum_mul]; ring
-    _ ≤ B * 1 := by
-        apply mul_le_mul_of_nonneg_left hw_sum hB_nonneg
-    _ = B := by ring
+  calc
+    _ ≤ ∑ a, w a * B := Finset.sum_le_sum fun a _ =>
+      mul_le_mul_of_nonneg_left (hv_le a) (hw_nonneg a)
+    _ = (∑ a, w a) * B := (Finset.sum_mul ..).symm
+    _ ≤ 1 * B := mul_le_mul_of_nonneg_right hw_sum hB_nonneg
+    _ = B := one_mul B
 
-/-- Weighted sum equals bound when weights sum to exactly 1. -/
+/-- The same upper bound holds for normalized nonnegative weights. -/
 theorem weighted_sum_le_bound_eq_one {α : Type*} [Fintype α] (w : α → ℝ) (v : α → ℝ) (B : ℝ)
     (hw_nonneg : ∀ a, 0 ≤ w a) (hw_sum : ∑ a, w a = 1)
     (hv_le : ∀ a, v a ≤ B) (hB_nonneg : 0 ≤ B) :
@@ -64,31 +61,22 @@ theorem ennreal_sum_toReal_eq {α : Type*} [Fintype α] (f : α → ENNReal)
 /-- Terms of a bounded sum are finite. -/
 theorem ennreal_term_ne_top_of_sum_le {α : Type*} [Fintype α] (f : α → ENNReal)
     (hsum_le : ∑ a, f a ≤ 1) (a : α) : f a ≠ ⊤ := by
-  have hsum_ne_top : (∑ a, f a) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.one_ne_top hsum_le
-  have ha_le_sum : f a ≤ ∑ b, f b := Finset.single_le_sum (fun _ _ => zero_le) (Finset.mem_univ a)
-  exact ne_top_of_le_ne_top hsum_ne_top ha_le_sum
+  exact ne_top_of_le_ne_top (ne_top_of_le_ne_top ENNReal.one_ne_top hsum_le)
+    (Finset.single_le_sum (fun _ _ => zero_le) (Finset.mem_univ a))
 
 /-- When ENNReal sum ≤ 1, the Real sum also ≤ 1. -/
 theorem ennreal_sum_toReal_le_one {α : Type*} [Fintype α] (f : α → ENNReal)
     (hsum_le : ∑ a, f a ≤ 1) :
     ∑ a, (f a).toReal ≤ 1 := by
-  have hf_ne_top : ∀ a, f a ≠ ⊤ := ennreal_term_ne_top_of_sum_le f hsum_le
-  have hsum_ne_top : (∑ a, f a) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.one_ne_top hsum_le
-  calc ∑ a, (f a).toReal
-      = (∑ a, f a).toReal := (ennreal_sum_toReal_eq f hf_ne_top).symm
-    _ ≤ (1 : ENNReal).toReal := by
-        apply ENNReal.toReal_le_toReal hsum_ne_top ENNReal.one_ne_top |>.mpr hsum_le
-    _ = 1 := ENNReal.toReal_one
+  rw [← ennreal_sum_toReal_eq f (ennreal_term_ne_top_of_sum_le f hsum_le)]
+  exact ENNReal.toReal_le_of_le_ofReal (by norm_num) (by simpa using hsum_le)
 
 /-- When ENNReal sum = 1, the Real sum also = 1. -/
 theorem ennreal_sum_toReal_eq_one {α : Type*} [Fintype α] (f : α → ENNReal)
     (hsum_eq : ∑ a, f a = 1) :
     ∑ a, (f a).toReal = 1 := by
-  have hf_ne_top : ∀ a, f a ≠ ⊤ := ennreal_term_ne_top_of_sum_le f (le_of_eq hsum_eq)
-  calc ∑ a, (f a).toReal
-      = (∑ a, f a).toReal := (ennreal_sum_toReal_eq f hf_ne_top).symm
-    _ = (1 : ENNReal).toReal := by rw [hsum_eq]
-    _ = 1 := ENNReal.toReal_one
+  rw [← ennreal_sum_toReal_eq f (ennreal_term_ne_top_of_sum_le f hsum_eq.le),
+    hsum_eq, ENNReal.toReal_one]
 
 /-! ## Helper: Joint action probability -/
 
@@ -109,25 +97,11 @@ theorem jointActionProb_sum_eq_one {n : ℕ} (π : MultiAgentPolicy n)
     (h : MultiAgentHistory n) (hw : h.wellFormed = true) :
     (∑ ja : JointAction n, jointActionProb π h ja) = 1 := by
   simp only [jointActionProb, JointAction]
-  -- Rewrite using sum_prod_piFinset
-  -- Use Fintype.piFinset_univ: piFinset (fun _ => univ) = univ
-  conv_lhs => rw [← Fintype.piFinset_univ]
-  -- Apply sum_prod_piFinset: ∑ f ∈ piFinset (fun _ => univ), ∏ i, g i (f i) = ∏ i, ∑ j ∈ univ, g i j
-  rw [Finset.sum_prod_piFinset]
-  -- Now we have: ∏ j, ∑ a ∈ univ, π_j(a) = 1
-  -- Each inner sum equals 1 by policy_sum_one
-  have h_each_one : ∀ j : Fin n, (∑ a ∈ Finset.univ, (π.agents j).policy (h.playerView j) a) = 1 := by
-    intro j
-    -- Use the proven playerView_wellFormed lemma
-    have hw_view : (h.playerView j).wellFormed = true :=
-      MultiAgentHistory.playerView_wellFormed j h hw
-    -- Convert Finset.sum to tsum using tsum_fintype (in reverse)
-    have htsum : (∑' a : Action, (π.agents j).policy (h.playerView j) a) = 1 :=
-      (π.agents j).policy_sum_one (h.playerView j) hw_view
-    -- tsum_fintype: ∑' a, f a = ∑ a, f a for Fintype
-    simp only [tsum_fintype] at htsum
-    exact htsum
-  simp only [h_each_one, Finset.prod_const_one]
+  rw [← Fintype.piFinset_univ, Finset.sum_prod_piFinset]
+  have each (j : Fin n) : (∑ a, (π.agents j).policy (h.playerView j) a) = 1 := by
+    simpa only [tsum_fintype] using (π.agents j).policy_sum_one _
+      (MultiAgentHistory.playerView_wellFormed j h hw)
+  simp only [each, Finset.prod_const_one]
 
 /-! ## Player Value Function -/
 
@@ -156,25 +130,11 @@ theorem playerValue_nonneg {n : ℕ} (μ : MultiAgentEnvironment n)
     (i : Fin n) (h : MultiAgentHistory n) (horizon : ℕ) :
     0 ≤ playerValue μ π γ i h horizon := by
   induction horizon generalizing h with
-  | zero => simp [playerValue]
+  | zero => rfl
   | succ k ih =>
-    simp only [playerValue]
-    apply tsum_nonneg
-    intro ja
-    apply tsum_nonneg
-    intro jp
-    -- Probability term is non-negative
-    have hprob : 0 ≤ (jointActionProb π h ja * μ.prob (h ++ [JointHistElem.act ja]) jp).toReal :=
-      ENNReal.toReal_nonneg
-    -- Reward is non-negative
-    have hrew : 0 ≤ (jp i).reward := Percept.reward_nonneg (jp i)
-    -- Discount factor is non-negative
-    have hγ : 0 ≤ γ.val := γ.nonneg
-    -- Future value is non-negative by induction hypothesis
-    have hfuture : 0 ≤ playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k :=
-      ih (h ++ [JointHistElem.act ja, JointHistElem.per jp])
-    -- Combine: prob * (reward + γ * future) ≥ 0
-    exact mul_nonneg hprob (add_nonneg hrew (mul_nonneg hγ hfuture))
+      exact tsum_nonneg fun ja => tsum_nonneg fun jp =>
+        mul_nonneg ENNReal.toReal_nonneg
+          (add_nonneg (Percept.reward_nonneg _) (mul_nonneg γ.nonneg (ih _)))
 
 /-- Helper: The inner value term is bounded by (k+1). -/
 private theorem playerValue_inner_bound {n : ℕ} (μ : MultiAgentEnvironment n)
@@ -182,19 +142,10 @@ private theorem playerValue_inner_bound {n : ℕ} (μ : MultiAgentEnvironment n)
     (h : MultiAgentHistory n) (ja : JointAction n) (jp : JointPercept n)
     (ih : ∀ h', playerValue μ π γ i h' k ≤ k) :
     (jp i).reward + γ.val * playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k ≤ k + 1 := by
-  have hrew : (jp i).reward ≤ 1 := Percept.reward_le_one (jp i)
-  have hγ : γ.val ≤ 1 := γ.le_one
-  have hfuture : playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k ≤ k :=
-    ih (h ++ [JointHistElem.act ja, JointHistElem.per jp])
-  have hk_nonneg : (0 : ℝ) ≤ k := Nat.cast_nonneg k
-  calc (jp i).reward + γ.val * playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k
-      ≤ 1 + γ.val * k := by
-        apply add_le_add hrew
-        apply mul_le_mul_of_nonneg_left hfuture γ.nonneg
-    _ ≤ 1 + 1 * k := by
-        apply add_le_add_right
-        exact mul_le_mul_of_nonneg_right hγ hk_nonneg
-    _ = k + 1 := by ring
+  calc
+    _ ≤ 1 + γ.val * (k : ℝ) := add_le_add (Percept.reward_le_one _)
+      (mul_le_mul_of_nonneg_left (ih _) γ.nonneg)
+    _ ≤ k + 1 := by nlinarith [γ.le_one, Nat.cast_nonneg (α := ℝ) k]
 
 /-- Player value is bounded by horizon.
 
@@ -211,124 +162,80 @@ theorem playerValue_le_horizon {n : ℕ} (μ : MultiAgentEnvironment n)
     (i : Fin n) (h : MultiAgentHistory n)
     (hw : h.wellFormed = true) (hep : h.endsWithPercept = true) (horizon : ℕ) :
     playerValue μ π γ i h horizon ≤ horizon := by
-  induction horizon generalizing h hw hep with
+  induction horizon generalizing h with
   | zero => simp [playerValue]
   | succ k ih =>
-    simp only [playerValue]
-    -- Convert tsums to finite sums (both types are Fintype)
-    rw [tsum_fintype]
-    simp only [tsum_fintype]
-    -- Now we have: ∑ ja, ∑ jp, prob * (reward + γ * future)
-    -- Bound: each term is ≤ prob * (k + 1)
-    -- Sum over jp: ∑ jp, prob_ja * prob_jp * bound ≤ prob_ja * bound (since ∑ prob_jp ≤ 1)
-    -- Sum over ja: ∑ ja, prob_ja * bound ≤ bound (since ∑ prob_ja = 1)
-    calc ∑ ja, ∑ jp, (jointActionProb π h ja * μ.prob (h ++ [JointHistElem.act ja]) jp).toReal *
-             ((jp i).reward + γ.val * playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k)
-        ≤ ∑ ja : JointAction n, (jointActionProb π h ja).toReal * ((k : ℝ) + 1) := by
+      simp only [playerValue, tsum_fintype, ENNReal.toReal_mul, mul_assoc]
+      calc
+        _ = ∑ ja, (jointActionProb π h ja).toReal *
+            ∑ jp, (μ.prob (h ++ [JointHistElem.act ja]) jp).toReal *
+              ((jp i).reward + γ.val *
+                playerValue μ π γ i (h ++ [.act ja, .per jp]) k) := by
+                  simp only [Finset.mul_sum]
+        _ ≤ ∑ ja, (jointActionProb π h ja).toReal * ((k : ℝ) + 1) := by
           apply Finset.sum_le_sum
           intro ja _
-          -- The extended history is well-formed for μ.prob_le_one
-          -- (multi-agent: action extends well-formed history that ends with percept)
-          have hw_ha : (h ++ [JointHistElem.act ja]).wellFormed = true :=
-            MultiAgentHistory.wellFormed_append_act h ja hw hep
-          -- Environment probabilities sum to ≤ 1 (using tsum_fintype to convert)
-          have henv_sum_le_tsum : ∑' jp : JointPercept n, μ.prob (h ++ [JointHistElem.act ja]) jp ≤ 1 :=
-            μ.prob_le_one (h ++ [JointHistElem.act ja]) hw_ha
-          have henv_sum_le : ∑ jp : JointPercept n, μ.prob (h ++ [JointHistElem.act ja]) jp ≤ 1 := by
-            simp only [tsum_fintype] at henv_sum_le_tsum
-            exact henv_sum_le_tsum
-          -- Each environment probability is finite
-          have henv_ne_top : ∀ jp, μ.prob (h ++ [JointHistElem.act ja]) jp ≠ ⊤ :=
-            ennreal_term_ne_top_of_sum_le _ henv_sum_le
-          -- Joint action probability is finite (≤ 1)
-          -- Derive from policy_sum_one: each policy probability is ≤ sum = 1
-          have hja_le_one : jointActionProb π h ja ≤ 1 := by
-            simp only [jointActionProb]
-            apply Finset.prod_le_one
-            · intro j _; exact zero_le
-            · intro j _
-              -- Agent policy probability ≤ 1 (since policies sum to 1)
-              have hpview := MultiAgentHistory.playerView_wellFormed j h hw
-              have hsum : (∑ a : Action, (π.agents j).policy (h.playerView j) a) = 1 := by
-                simpa [tsum_fintype] using (π.agents j).policy_sum_one (h.playerView j) hpview
-              have hle : (π.agents j).policy (h.playerView j) (ja j) ≤
-                         ∑ a : Action, (π.agents j).policy (h.playerView j) a := by
-                apply Finset.single_le_sum (fun _ _ => zero_le) (Finset.mem_univ _)
-              simpa [hsum] using hle
-          have hja_ne_top : jointActionProb π h ja ≠ ⊤ :=
-            ne_top_of_le_ne_top ENNReal.one_ne_top hja_le_one
-          -- Inner term is bounded by (k + 1)
-          have hinner_bound : ∀ jp,
-              (jp i).reward + γ.val * playerValue μ π γ i
-                (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k ≤ k + 1 := by
-            intro jp
-            have hrew : (jp i).reward ≤ 1 := Percept.reward_le_one (jp i)
-            have hγ : γ.val ≤ 1 := γ.le_one
-            -- The extended history [h, act, per] is well-formed and ends with percept
-            have hext := MultiAgentHistory.wellFormed_append_act_per h ja jp hw hep
-            have hw_ext : (h ++ [JointHistElem.act ja, JointHistElem.per jp]).wellFormed = true :=
-              hext.1
-            have hep_ext : (h ++ [JointHistElem.act ja, JointHistElem.per jp]).endsWithPercept = true :=
-              hext.2
-            have hfuture : playerValue μ π γ i
-                (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k ≤ k :=
-              ih (h ++ [JointHistElem.act ja, JointHistElem.per jp]) hw_ext hep_ext
-            have hk_nonneg : (0 : ℝ) ≤ k := Nat.cast_nonneg k
-            calc (jp i).reward + γ.val * playerValue μ π γ i
-                    (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k
-                ≤ 1 + γ.val * k := by
-                  apply add_le_add hrew
-                  apply mul_le_mul_of_nonneg_left hfuture γ.nonneg
-              _ ≤ 1 + 1 * k := by
-                  apply add_le_add_right
-                  exact mul_le_mul_of_nonneg_right hγ hk_nonneg
-              _ = k + 1 := by ring
-          -- Weights sum to ≤ 1 after converting to Real
-          have henv_sum_toReal_le : ∑ jp, (μ.prob (h ++ [JointHistElem.act ja]) jp).toReal ≤ 1 :=
-            ennreal_sum_toReal_le_one _ henv_sum_le
-          -- Factor the sum: ∑ (p * q) * v = p * ∑ q * v
-          have hfactored : ∑ jp, (jointActionProb π h ja * μ.prob (h ++ [JointHistElem.act ja]) jp).toReal *
-                ((jp i).reward + γ.val * playerValue μ π γ i
-                  (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k) =
-              (jointActionProb π h ja).toReal * ∑ jp, (μ.prob (h ++ [JointHistElem.act ja]) jp).toReal *
-                ((jp i).reward + γ.val * playerValue μ π γ i
-                  (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k) := by
-            -- Step 1: Rewrite toReal of product
-            conv_lhs =>
-              arg 2
-              ext jp
-              rw [ENNReal.toReal_mul]
-            -- Step 2: Factor out the constant (jointActionProb π h ja).toReal
-            conv_lhs =>
-              arg 2
-              ext jp
-              rw [mul_assoc]
-            rw [← Finset.mul_sum]
-          rw [hfactored]
-          -- Apply weighted average bound to the inner sum
           apply mul_le_mul_of_nonneg_left _ ENNReal.toReal_nonneg
-          apply weighted_sum_le_bound _ _ ((k : ℝ) + 1)
-          · intro jp; exact ENNReal.toReal_nonneg
-          · exact henv_sum_toReal_le
-          · exact hinner_bound
-          · have hk : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg k
-            linarith
-      _ ≤ (k : ℝ) + 1 := by
-          -- Joint action probabilities sum to 1
-          have hja_sum_eq : ∑ ja : JointAction n, jointActionProb π h ja = 1 :=
-            jointActionProb_sum_eq_one π h hw
-          -- Convert to Real sum = 1
-          have hja_toReal_sum_eq : ∑ ja, (jointActionProb π h ja).toReal = 1 :=
-            ennreal_sum_toReal_eq_one _ hja_sum_eq
-          -- Sum of w_a * c = c * ∑ w_a = c when ∑ w_a = 1
-          calc ∑ ja, (jointActionProb π h ja).toReal * ((k : ℝ) + 1)
-              = ∑ ja, ((k : ℝ) + 1) * (jointActionProb π h ja).toReal := by
-                congr 1; ext ja; ring
-            _ = ((k : ℝ) + 1) * ∑ ja, (jointActionProb π h ja).toReal := by
-                rw [← Finset.mul_sum]
-            _ = ((k : ℝ) + 1) * 1 := by rw [hja_toReal_sum_eq]
-            _ ≤ (k : ℝ) + 1 := by ring_nf; rfl
-      _ = ((k + 1 : ℕ) : ℝ) := by norm_cast
+          apply weighted_sum_le_bound
+          · exact fun _ => ENNReal.toReal_nonneg
+          · apply ennreal_sum_toReal_le_one
+            simpa only [tsum_fintype] using μ.prob_le_one _
+              (MultiAgentHistory.wellFormed_append_act h ja hw hep)
+          · intro jp
+            have valid := MultiAgentHistory.wellFormed_append_act_per h ja jp hw hep
+            calc
+              _ ≤ 1 + γ.val * (k : ℝ) := add_le_add (Percept.reward_le_one _)
+                (mul_le_mul_of_nonneg_left (ih _ valid.1 valid.2) γ.nonneg)
+              _ ≤ k + 1 := by nlinarith [γ.le_one, Nat.cast_nonneg (α := ℝ) k]
+          · positivity
+        _ = ((k + 1 : ℕ) : ℝ) := by
+          rw [← Finset.sum_mul, ennreal_sum_toReal_eq_one _ (jointActionProb_sum_eq_one π h hw)]
+          simp
+
+/-- Probability of other players' actions (excluding player i). -/
+noncomputable def othersProb {n : ℕ}
+    (π : MultiAgentPolicy n)
+    (h : MultiAgentHistory n)
+    (ja : JointAction n)
+    (i : Fin n) : ENNReal :=
+  Finset.prod (Finset.univ.erase i) fun j =>
+    (π.agents j).policy (h.playerView j) (ja j)
+
+/-- One forced action, with the supplied values of the actual successor histories.
+The own-action guard retains each opponent configuration exactly once. -/
+noncomputable def actionValueStep (μ : MultiAgentEnvironment n) (π : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (action : Action)
+    (continuation : MultiAgentHistory n → ℝ) : ℝ :=
+  ∑' ja : JointAction n, if ja i = action then
+    ∑' jp : JointPercept n, (othersProb π h ja i * μ.prob (h ++ [.act ja]) jp).toReal *
+      ((jp i).reward + γ.val * continuation (h ++ [.act ja, .per jp]))
+  else 0
+
+/-- Only the other agents and the supplied successor observations matter. -/
+theorem actionValueStep_congr (μ : MultiAgentEnvironment n) (π π' : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (action : Action)
+    (v v' : MultiAgentHistory n → ℝ)
+    (others : ∀ j, j ≠ i → π.agents j = π'.agents j)
+    (values : ∀ ja jp, v (h ++ [.act ja, .per jp]) = v' (h ++ [.act ja, .per jp])) :
+    actionValueStep μ π γ i h action v = actionValueStep μ π' γ i h action v' := by
+  have weights (ja : JointAction n) : othersProb π h ja i = othersProb π' h ja i :=
+    Finset.prod_congr rfl fun j member => by rw [others j (Finset.mem_erase.mp member).1]
+  simp only [actionValueStep, weights, values]
+
+/-- Nonnegative transition weights make the continuation interpretation monotone. -/
+theorem actionValueStep_mono (μ : MultiAgentEnvironment n) (π : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (action : Action)
+    (v v' : MultiAgentHistory n → ℝ)
+    (values : ∀ ja jp, v (h ++ [.act ja, .per jp]) ≤ v' (h ++ [.act ja, .per jp])) :
+    actionValueStep μ π γ i h action v ≤ actionValueStep μ π γ i h action v' := by
+  simp only [actionValueStep, tsum_fintype]
+  apply Finset.sum_le_sum
+  intro ja _
+  split_ifs
+  · exact Finset.sum_le_sum fun jp _ => mul_le_mul_of_nonneg_left
+      (add_le_add_right (mul_le_mul_of_nonneg_left (values ja jp) γ.nonneg) _)
+      ENNReal.toReal_nonneg
+  · rfl
 
 /-! ## Q-Value Function -/
 
@@ -360,16 +267,12 @@ noncomputable def playerQValue
       else
         0
 
-/-! ## Best Response Value (True Optimal Play)
+/-! ## Full-history optimal continuation
 
-The best response value represents what player i can achieve by playing **optimally at every step**,
-while other players follow their policies π_j. This is the standard game-theoretic definition.
-
-Key difference from `playerQValue`:
-- `playerQValue μ π` uses `playerValue μ π` in recursion (player i follows π_i in future)
-- `bestResponseQValue μ π` uses `bestResponseValue μ π` in recursion (player i optimizes in future)
-
-These are mutually recursive definitions.
+These Bellman values optimize using the full joint history. They upper-bound
+local-view policy values; attaining them needs an information-sufficiency proof.
+`playerQValue` follows the fixed policy after its forced action, whereas
+`bestResponseQValue` optimizes every remaining action.
 -/
 
 mutual
@@ -399,13 +302,8 @@ noncomputable def bestResponseQValue
       else
         0
 
-/-- Maximum value player i can achieve by choosing actions optimally at EVERY step.
-    Other players follow their policies π_j for j ≠ i.
-
-    This is the standard game-theoretic "best response value":
-    V*(h) = max_a Q*(h, a) where Q* uses V* recursively.
-
-    Contrast with playerValue which assumes player i follows π_i. -/
+/-- The full-joint-history Bellman envelope with other agents fixed.
+A local-view agent attains it only under a separate realization theorem. -/
 noncomputable def bestResponseValue
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -415,6 +313,24 @@ noncomputable def bestResponseValue
     (horizon : ℕ) : ℝ :=
   ⨆ (action : Action), bestResponseQValue μ π γ i h action horizon
 end
+
+theorem playerQValue_succ (μ : MultiAgentEnvironment n) (π : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (a : Action) (k : ℕ) :
+    playerQValue μ π γ i h a (k+1) =
+      actionValueStep μ π γ i h a (fun next => playerValue μ π γ i next k) := rfl
+
+theorem bestResponseQValue_succ (μ : MultiAgentEnvironment n) (π : MultiAgentPolicy n)
+    (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (a : Action) (k : ℕ) :
+    bestResponseQValue μ π γ i h a (k+1) =
+      actionValueStep μ π γ i h a (fun next => bestResponseValue μ π γ i next k) := by
+  simp only [bestResponseQValue, actionValueStep, othersProb]
+
+/-- At one step, there is no future policy choice to distinguish the two Q-values. -/
+theorem playerQValue_one_eq_bestResponseQValue (μ : MultiAgentEnvironment n)
+    (π : MultiAgentPolicy n) (γ : DiscountFactor) (i : Fin n) (h : MultiAgentHistory n) (a : Action) :
+    playerQValue μ π γ i h a 1 = bestResponseQValue μ π γ i h a 1 := by
+  simp only [playerQValue_succ, bestResponseQValue_succ, playerValue, bestResponseValue]
+  simp only [bestResponseQValue, ciSup_const]
 
 /-! ## One-Step Best Response Value (for comparison)
 
@@ -438,16 +354,11 @@ theorem weighted_avg_le_ciSup {α : Type*} [Fintype α] [Nonempty α]
     (hw_nonneg : ∀ a, 0 ≤ w a)
     (hw_sum : ∑ a, w a = 1) :
     ∑ a, w a * x a ≤ ⨆ a, x a := by
-  have hbdd : BddAbove (Set.range x) := Set.Finite.bddAbove (Set.finite_range x)
-  calc ∑ a, w a * x a
-      ≤ ∑ a, w a * (⨆ a, x a) := by
-        apply Finset.sum_le_sum
-        intro a _
-        apply mul_le_mul_of_nonneg_left _ (hw_nonneg a)
-        exact le_ciSup hbdd a
-    _ = (⨆ a, x a) * ∑ a, w a := by rw [← Finset.sum_mul]; ring
-    _ = (⨆ a, x a) * 1 := by rw [hw_sum]
-    _ = ⨆ a, x a := by ring
+  have bounded := Set.Finite.bddAbove (Set.finite_range x)
+  calc
+    _ ≤ ∑ a, w a * (⨆ a, x a) := Finset.sum_le_sum fun a _ =>
+      mul_le_mul_of_nonneg_left (le_ciSup bounded a) (hw_nonneg a)
+    _ = (⨆ a, x a) := by rw [← Finset.sum_mul, hw_sum, one_mul]
 
 /-- Split jointActionProb into player i's probability and others' probability. -/
 theorem jointActionProb_split {n : ℕ} (π : MultiAgentPolicy n)
@@ -459,15 +370,6 @@ theorem jointActionProb_split {n : ℕ} (π : MultiAgentPolicy n)
   simp only [jointActionProb]
   -- Split the product at i: ∏ j, f j = f i * ∏ j ≠ i, f j
   conv_lhs => rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ i)]
-
-/-- Probability of other players' actions (excluding player i). -/
-noncomputable def othersProb {n : ℕ}
-    (π : MultiAgentPolicy n)
-    (h : MultiAgentHistory n)
-    (ja : JointAction n)
-    (i : Fin n) : ENNReal :=
-  Finset.prod (Finset.univ.erase i) fun j =>
-    (π.agents j).policy (h.playerView j) (ja j)
 
 /-- othersProb is bounded by 1. -/
 theorem othersProb_le_one {n : ℕ} (π : MultiAgentPolicy n)
@@ -489,33 +391,16 @@ theorem othersProb_le_one {n : ℕ} (π : MultiAgentPolicy n)
 theorem sum_ite_eq_val {α β : Type*} [Fintype α] [AddCommMonoid β] [DecidableEq α]
     (f : α → β) (target : α) :
     ∑ x : α, (if x = target then f x else 0) = f target := by
-  have h := Finset.sum_ite_eq' (s := Finset.univ) (a := target) (b := f)
-  simp only [Finset.mem_univ, ↓reduceIte] at h
-  exact h
+  simp only [Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
 
 /-- Fiber-wise decomposition: ∑_x f(x) = ∑_a ∑_x (if g(x) = a then f(x) else 0) -/
 theorem sum_fiberwise {α β γ : Type*} [Fintype α] [Fintype β] [AddCommMonoid γ] [DecidableEq β]
     (f : α → γ) (g : α → β) :
     ∑ x : α, f x = ∑ b : β, ∑ x : α, (if g x = b then f x else 0) := by
   rw [Finset.sum_comm]
-  congr 1
-  ext x
-  -- Goal: f x = ∑ b, if g x = b then f x else 0
-  -- We need: ∑ b, (if g x = b then f x else 0) = f x
-  -- Use sum_ite_eq: ∑ x ∈ s, if a = x then b x else 0 = if a ∈ s then b a else 0
-  have h := Finset.sum_ite_eq (s := Finset.univ) (a := g x) (b := fun _ => f x)
-  simp only [Finset.mem_univ, ↓reduceIte] at h
-  exact h.symm
+  simp only [Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
 
-/-- The main decomposition: playerValue = ∑_a π_i(a) * playerQValue(a)
-
-    This is the key lemma connecting playerValue to playerQValue.
-    The proof requires careful manipulation of the sum structure:
-    1. Factor jointActionProb = π_i(ja i) * othersProb(ja)
-    2. Reindex the sum by grouping on (ja i)
-    3. Factor out π_i(a) from each fiber
-    4. Recognize the remaining sum as playerQValue(a)
--/
+/-- Policy evaluation is the policy-weighted average of its forced-action values. -/
 theorem playerValue_eq_weighted_qValue {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -526,66 +411,25 @@ theorem playerValue_eq_weighted_qValue {n : ℕ}
     playerValue μ π γ i h horizon =
     ∑ a : Action, ((π.agents i).policy (h.playerView i) a).toReal *
                   playerQValue μ π γ i h a horizon := by
-  match horizon with
-  | 0 =>
-    simp only [playerValue, playerQValue, mul_zero, Finset.sum_const_zero]
-  | k + 1 =>
-    simp only [playerValue, playerQValue]
-    rw [tsum_fintype]
-    simp only [tsum_fintype]
-    -- Define the inner function for clarity
-    let f : JointAction n → JointPercept n → ℝ := fun ja jp =>
-      (jp i).reward + γ.val * playerValue μ π γ i
-        (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k
-    -- LHS = ∑_{ja} ∑_{jp} jointActionProb(ja) * envProb(jp) * f(ja,jp)
-    -- We'll show this equals
-    -- RHS = ∑_a π_i(a) * ∑_{ja} (if ja i = a then ∑_{jp} othersProb(ja) * envProb(jp) * f(ja,jp) else 0)
-    -- Step 1: Factor jointActionProb = π_i(ja i) * othersProb
-    have hfactor : ∀ ja : JointAction n,
-        jointActionProb π h ja = (π.agents i).policy (h.playerView i) (ja i) * othersProb π h ja i := by
-      intro ja
-      rw [jointActionProb_split π h ja i]
-      rfl
-    -- Transform LHS using the factorization
-    conv_lhs =>
-      arg 2; ext ja; arg 2; ext jp
-      rw [hfactor ja, mul_assoc, ENNReal.toReal_mul, mul_assoc]
-    -- Pull out the π_i factor from the inner sum
-    conv_lhs =>
-      arg 2; ext ja
-      rw [← Finset.mul_sum]
-    -- Step 2: Use fiber-wise decomposition
-    rw [sum_fiberwise _ (fun ja => ja i)]
-    -- Step 3: Factor out π_i(a) from each fiber
-    congr 1
-    ext a
-    -- Each summand: if ja i = a then π_i(ja i) * (∑_jp ...) else 0
-    --             = π_i(a) * (if ja i = a then ∑_jp ... else 0)
-    have hpull : ∀ ja : JointAction n,
-        (if ja i = a then
-          ((π.agents i).policy (h.playerView i) (ja i)).toReal *
-          ∑ jp, (othersProb π h ja i * μ.prob (h ++ [JointHistElem.act ja]) jp).toReal * f ja jp
-        else 0) =
-        ((π.agents i).policy (h.playerView i) a).toReal *
-        (if ja i = a then
-          ∑ jp, (othersProb π h ja i * μ.prob (h ++ [JointHistElem.act ja]) jp).toReal * f ja jp
-        else 0) := by
-      intro ja
-      split_ifs with hja
-      · rw [hja]
-      · ring
-    conv_lhs => arg 2; ext ja; rw [hpull ja]
-    rw [← Finset.mul_sum]
-    -- Step 4: The inner sums match after unfolding definitions
-    simp only [othersProb, f]
+  cases horizon with
+  | zero => simp only [playerValue, playerQValue, mul_zero, Finset.sum_const_zero]
+  | succ k =>
+      simp only [playerValue, playerQValue, tsum_fintype]
+      have factor (ja : JointAction n) : jointActionProb π h ja =
+          (π.agents i).policy (h.playerView i) (ja i) * othersProb π h ja i :=
+        jointActionProb_split π h ja i
+      simp_rw [factor, mul_assoc, ENNReal.toReal_mul, mul_assoc, ← Finset.mul_sum]
+      rw [sum_fiberwise _ (fun ja => ja i)]
+      congr 1
+      ext a
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro ja _
+      by_cases chosen : ja i = a
+      · simp only [chosen, ↓reduceIte, othersProb]
+      · simp only [chosen, ↓reduceIte, mul_zero]
 
-/-- playerValue ≤ oneStepBestResponseValue (weighted average ≤ supremum).
-
-    **Proof Strategy**:
-    1. Use playerValue_eq_weighted_qValue: playerValue = Σ_a π_i(a) * playerQValue(a)
-    2. Use that Σ_a π_i(a) = 1 (policy sums to 1)
-    3. Apply weighted_avg_le_ciSup: weighted average ≤ supremum
--/
+/-- Averaging current actions cannot exceed their best Q-value. -/
 theorem playerValue_le_oneStepBestResponseValue {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -596,38 +440,13 @@ theorem playerValue_le_oneStepBestResponseValue {n : ℕ}
     (horizon : ℕ) :
     playerValue μ π γ i h horizon ≤
     oneStepBestResponseValue μ π γ i h horizon := by
-  -- Use the decomposition lemma
-  rw [playerValue_eq_weighted_qValue μ π γ i h horizon]
-  simp only [oneStepBestResponseValue]
-  -- Now we have: ∑_a π_i(a) * playerQValue(a) ≤ ⨆_a playerQValue(a)
-  -- The weights π_i(a) are non-negative and sum to 1
-  have hw_view : (h.playerView i).wellFormed = true :=
-    MultiAgentHistory.playerView_wellFormed i h hw
-  have hπ_tsum : (∑' a : Action, (π.agents i).policy (h.playerView i) a) = 1 :=
-    (π.agents i).policy_sum_one (h.playerView i) hw_view
-  -- Convert tsum to Finset.sum (Action is Fintype)
-  have hπ_sum : (∑ a : Action, (π.agents i).policy (h.playerView i) a) = 1 := by
-    have h := hπ_tsum
-    simp only [tsum_fintype] at h
-    exact h
-  have hπ_sum_real : ∑ a : Action, ((π.agents i).policy (h.playerView i) a).toReal = 1 :=
-    ennreal_sum_toReal_eq_one _ hπ_sum
-  -- Apply weighted average ≤ supremum
-  apply weighted_avg_le_ciSup
-  · intro a; exact ENNReal.toReal_nonneg
-  · exact hπ_sum_real
+  rw [playerValue_eq_weighted_qValue]
+  apply weighted_avg_le_ciSup _ _ (fun _ => ENNReal.toReal_nonneg)
+  apply ennreal_sum_toReal_eq_one
+  simpa only [tsum_fintype] using (π.agents i).policy_sum_one _
+    (MultiAgentHistory.playerView_wellFormed i h hw)
 
-/-- playerQValue ≤ bestResponseQValue by induction on horizon.
-
-    The key insight: at horizon k+1, both Q-values have the same structure,
-    but playerQValue uses `playerValue ... k` in recursion while
-    bestResponseQValue uses `bestResponseValue ... k`.
-
-    By IH at horizon k, we have playerQValue ≤ bestResponseQValue for all actions,
-    which gives oneStepBestResponseValue ≤ bestResponseValue,
-    which combined with playerValue_le_oneStepBestResponseValue gives
-    playerValue ≤ bestResponseValue at horizon k.
--/
+/-- Following the fixed policy is bounded by optimizing each remaining decision. -/
 theorem playerQValue_le_bestResponseQValue {n : ℕ}
     (μ : MultiAgentEnvironment n)
     (π : MultiAgentPolicy n)
@@ -640,62 +459,17 @@ theorem playerQValue_le_bestResponseQValue {n : ℕ}
     (horizon : ℕ) :
     playerQValue μ π γ i h action horizon ≤
     bestResponseQValue μ π γ i h action horizon := by
-  -- Generalize over action to get stronger IH
-  induction horizon generalizing h hw hep action with
-  | zero =>
-    simp only [playerQValue, bestResponseQValue, le_refl]
+  induction horizon generalizing h action with
+  | zero => simp [playerQValue, bestResponseQValue]
   | succ k ih =>
-    simp only [playerQValue, bestResponseQValue]
-    rw [tsum_fintype, tsum_fintype]
-    apply Finset.sum_le_sum
-    intro ja _
-    split_ifs with hja
-    · -- ja i = action case
-      simp only [tsum_fintype]
-      apply Finset.sum_le_sum
-      intro jp _
-      -- Extended history is well-formed and ends with percept
-      have hext := MultiAgentHistory.wellFormed_append_act_per h ja jp hw hep
-      have hw' : (h ++ [JointHistElem.act ja, JointHistElem.per jp]).wellFormed = true := hext.1
-      have hep' : (h ++ [JointHistElem.act ja, JointHistElem.per jp]).endsWithPercept = true := hext.2
-      -- Only difference is the recursive term
-      -- playerQValue uses γ * playerValue ... k
-      -- bestResponseQValue uses γ * bestResponseValue ... k
-      apply mul_le_mul_of_nonneg_left _ ENNReal.toReal_nonneg
-      apply add_le_add_right
-      apply mul_le_mul_of_nonneg_left _ γ.nonneg
-      -- Need: playerValue μ π γ i h' k ≤ bestResponseValue μ π γ i h' k
-      -- where h' = h ++ [act ja, per jp]
-      -- From IH, we get: ∀ a, playerQValue ... k ≤ bestResponseQValue ... k
-      -- This gives: oneStepBestResponseValue ... k ≤ bestResponseValue ... k
-      -- Combined with playerValue_le_oneStepBestResponseValue, we get the result
-      have ih_qvalue : ∀ a, playerQValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a k ≤
-                           bestResponseQValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a k :=
-        fun a => ih (h ++ [JointHistElem.act ja, JointHistElem.per jp]) hw' hep' a
-      -- oneStepBestResponseValue ≤ bestResponseValue via IH
-      have h_onestep_le : oneStepBestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k ≤
-                          bestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k := by
-        simp only [oneStepBestResponseValue, bestResponseValue]
-        have hbdd : BddAbove (Set.range fun a => bestResponseQValue μ π γ i
-            (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a k) :=
-          Set.Finite.bddAbove (Set.finite_range _)
-        apply ciSup_le
-        intro a
-        calc playerQValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a k
-            ≤ bestResponseQValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a k :=
-              ih_qvalue a
-          _ ≤ ⨆ a', bestResponseQValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) a' k :=
-              le_ciSup hbdd a
-      -- playerValue ≤ oneStepBestResponseValue (already proven)
-      have h_pv_le_one : playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k ≤
-                         oneStepBestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k :=
-        playerValue_le_oneStepBestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) hw' k
-      -- Combine: playerValue ≤ bestResponseValue
-      calc playerValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k
-          ≤ oneStepBestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k := h_pv_le_one
-        _ ≤ bestResponseValue μ π γ i (h ++ [JointHistElem.act ja, JointHistElem.per jp]) k := h_onestep_le
-    · -- ja i ≠ action case: both sides are 0
-      rfl
+      rw [playerQValue_succ, bestResponseQValue_succ]
+      apply actionValueStep_mono
+      intro ja jp
+      have valid := MultiAgentHistory.wellFormed_append_act_per h ja jp hw hep
+      refine (playerValue_le_oneStepBestResponseValue μ π γ i _ valid.1 k).trans ?_
+      simp only [oneStepBestResponseValue, bestResponseValue]
+      apply ciSup_mono (Set.Finite.bddAbove (Set.finite_range _))
+      exact fun a => ih _ valid.1 valid.2 a
 
 /-- oneStepBestResponseValue ≤ bestResponseValue.
 
@@ -713,15 +487,7 @@ theorem oneStepBestResponseValue_le_bestResponseValue {n : ℕ}
     oneStepBestResponseValue μ π γ i h horizon ≤
     bestResponseValue μ π γ i h horizon := by
   simp only [oneStepBestResponseValue, bestResponseValue]
-  have hbdd : BddAbove (Set.range fun a => bestResponseQValue μ π γ i h a horizon) :=
-    Set.Finite.bddAbove (Set.finite_range _)
-  apply ciSup_le
-  intro a
-  calc playerQValue μ π γ i h a horizon
-      ≤ bestResponseQValue μ π γ i h a horizon :=
-        playerQValue_le_bestResponseQValue μ π γ i h hw hep a horizon
-    _ ≤ ⨆ a', bestResponseQValue μ π γ i h a' horizon :=
-        le_ciSup hbdd a
+  exact ciSup_mono (Set.Finite.bddAbove (Set.finite_range _)) fun a => playerQValue_le_bestResponseQValue μ π γ i h hw hep a horizon
 
 /-- Best response value is at least as good as following the policy.
 

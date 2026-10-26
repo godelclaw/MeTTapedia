@@ -1,11 +1,12 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Scoped
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentReadout
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Lower
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseMatchingExecution
 
 /-!
 # Scoped operations in the descent machine's runtime
 
-The scoped library's proved operations, lifted through the typed sites and the descent library.
+The scoped operations and descent operations share the selected interpreted runtime.
 -/
 
 set_option autoImplicit false
@@ -23,27 +24,24 @@ theorem descent_context_next_returns (state : State) (context : Context) :
     PureReturns descentLibrary.runtime [] state
       (apply "gslt:premise:context-next" [encoded (PremiseOperationsExecution.GeneralExecution.contextTerm context)]) state
       (encoded (PremiseOperationsExecution.GeneralExecution.contextTerm context.next)) := by
-  metta_lift descent_checked ["context"] (by metta_lift typed_checked ["context"] (context_next_returns state context))
+  exact context_next_returns state context
 
 theorem descent_scope_restore_returns (state : State) (parameter : String) (initial final : Assignment) :
     PureReturns descentLibrary.runtime [] state
       (apply "gslt:premise:scope-restore" [encoded (.string parameter), assignmentValue initial, assignmentValue final])
       state (assignmentValue (restoreParameter parameter initial final)) := by
-  metta_lift descent_checked ["parameter", "initial", "final"]
-    (by metta_lift typed_checked ["parameter", "initial", "final"]
-      (scope_restore_returns state parameter initial final))
+  exact scope_restore_returns state parameter initial final
 
 theorem descent_append_returns {α : Type} (element : α → Term) (state : State) (left right : List α) :
     PureReturns descentLibrary.runtime [] state
       (apply "gslt:automata:append" [encoded (encodeList element left), encoded (encodeList element right)]) state
       (encoded (encodeList element (left ++ right))) := by
-  metta_lift descent_checked ["left", "right"]
-    (by metta_lift typed_checked ["left", "right"] (automata_append_returns element state left right))
+  exact automata_append_returns element state left right
 
 theorem descent_length_returns {α : Type} (element : α → Term) (state : State) (items : List α) :
     PureReturns descentLibrary.runtime [] state (apply "gslt:automata:length" [encoded (encodeList element items)])
       state (number items.length) := by
-  metta_lift descent_checked ["items"] (by metta_lift typed_checked ["items"] (automata_length_returns element state items))
+  exact automata_length_returns element state items
 
 theorem descent_matcher_start_returns (state : State) (request : GeneralScopedMatchMachine.Request) :
     PureReturns descentLibrary.runtime [] state

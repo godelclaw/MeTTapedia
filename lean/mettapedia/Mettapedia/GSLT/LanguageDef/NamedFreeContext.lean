@@ -602,3 +602,112 @@ theorem openNames_named (depth : Nat) (names : List String) (position : Fin name
     openingAssignment_named depth names position]
 
 end Mettapedia.GSLT.LanguageDef.NamedFreeContext
+
+namespace Mettapedia.GSLT.LanguageDef.NamedFreeContext
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.GSLT.LanguageDef.BindingSyntax
+set_option autoImplicit false
+
+/-- Every recorded row agrees with the header's actual first-match lookup.
+Repeated names with the same type are permitted. -/
+def compatibleHeader (entries : List (String × TypeExpr)) : Bool :=
+  entries.all fun entry => FreeTypeContext.ofList entries entry.1 == some entry.2
+
+theorem compatibleHeader_sound (entries : List (String × TypeExpr))
+    (accepted : compatibleHeader entries = true) :
+    ∀ entry ∈ entries,FreeTypeContext.ofList entries entry.1 = some entry.2 := by
+  intro entry member
+  exact beq_iff_eq.mp ((List.all_eq_true.mp accepted) entry member)
+
+theorem entriesOn_compatible (free : FreeTypeContext) (used : List String) :
+    compatibleHeader (free.entriesOn used) = true := by
+  apply List.all_eq_true.mpr
+  intro entry member
+  obtain ⟨present,lookup⟩ := (FreeTypeContext.entriesOn_mem_iff free used entry.1 entry.2).mp member
+  exact beq_iff_eq.mpr (by rw [FreeTypeContext.ofList_entriesOn,if_pos present,lookup])
+
+/-- Receipt data reuses the original sorted binding Term. Its finite header
+names exactly the additional bound suffix; the source stays independently
+submitted to the readback checker. -/
+structure SourceReceiptData (language : LanguageDef) (bound : List TypeExpr) (sort : TypeExpr) where
+  entries : List (String × TypeExpr)
+  term : Term (signatureOf language) (bound ++ contextSorts entries) sort
+
+/-- Check the finite context, the actual source spine, and exact restoration
+of the submitted source. All proofs are reconstructed from these checks. -/
+def SourceReceiptData.accepts {language : LanguageDef} {bound : List TypeExpr} {sort : TypeExpr}
+    (receipt : SourceReceiptData language bound sort) (source : Pattern) : Bool :=
+  compatibleHeader receipt.entries &&
+    SourceReadback.check receipt.term (closeContext bound.length receipt.entries source) &&
+      (openContext bound.length receipt.entries (closeContext bound.length receipt.entries source) == source)
+
+/-- Readback restores the original raw source judgment, including its
+substitution and binder/collection metadata domain. -/
+theorem SourceReceiptData.sound {language : LanguageDef} {bound : List TypeExpr} {sort : TypeExpr}
+    (receipt : SourceReceiptData language bound sort) (source : Pattern)
+    (accepted : receipt.accepts source = true) :
+    HasType language (FreeTypeContext.ofList receipt.entries) bound source sort := by
+  obtain ⟨initialChecks,reopened⟩ := Bool.and_eq_true_iff.mp accepted
+  obtain ⟨header,readback⟩ := Bool.and_eq_true_iff.mp initialChecks
+  have closed := SourceReadback.typed receipt.term _ readback
+  have lookup := compatibleHeader_sound receipt.entries header
+  have closedInHeader := closed.recontextualizeFree (target := FreeTypeContext.ofList receipt.entries)
+    (by intro name nameType member impossible; cases impossible)
+  have opened := openContext_typed receipt.entries lookup closedInHeader
+  have exactSource : openContext bound.length receipt.entries
+      (closeContext bound.length receipt.entries source) = source := beq_iff_eq.mp reopened
+  rwa [exactSource] at opened
+
+/-- Every independently typed source has finite, checkable receipt data.
+The header preserves all free lookups used by that source. -/
+theorem SourceReceiptData.exists_of_typed {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (typed : HasType language free bound source sort) :
+    ∃ receipt : SourceReceiptData language bound sort,
+      receipt.accepts source = true ∧
+      ∀ name ∈ source.freeFvarNames,FreeTypeContext.ofList receipt.entries name = free name := by
+  let entries := free.entriesOn source.freeFvarNames
+  have finiteTyped : HasType language (FreeTypeContext.ofList entries) bound source sort :=
+    (HasType.finiteFree_iff language free bound source sort).mpr typed
+  have closed := closeContext_typed entries finiteTyped
+  obtain ⟨term,readback⟩ := SourceReadback.typed_exists closed
+  refine ⟨⟨entries,term⟩,?_,?_⟩
+  · have reopened := openContext_closeContext entries finiteTyped
+    have header : compatibleHeader entries = true := entriesOn_compatible free _
+    simp only [SourceReceiptData.accepts,header,readback,reopened,
+      beq_self_eq_true,Bool.and_self]
+  · intro name member
+    exact (FreeTypeContext.ofList_entriesOn free source.freeFvarNames name).trans (if_pos member)
+
+#print axioms compatibleHeader_sound
+#print axioms entriesOn_compatible
+#print axioms SourceReceiptData.sound
+#print axioms SourceReceiptData.exists_of_typed
+end Mettapedia.GSLT.LanguageDef.NamedFreeContext
+
+namespace Mettapedia.GSLT.LanguageDef.NamedFreeContext
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.GSLT.LanguageDef.BindingSyntax
+set_option autoImplicit false
+
+/-- An existing intrinsic term supplies receipt data without proof search. -/
+def SourceReceiptData.ofTerm {language : LanguageDef} {bound : List TypeExpr} {sort : TypeExpr}
+    (term : Term (signatureOf language) bound sort) : SourceReceiptData language bound sort where
+  entries := []
+  term := (List.append_nil bound).symm ▸ term
+
+theorem SourceReceiptData.ofTerm_accepts {language : LanguageDef} {bound : List TypeExpr} {sort : TypeExpr}
+    (term : Term (signatureOf language) bound sort) :
+    (SourceReceiptData.ofTerm term).accepts (erase term) = true := by
+  have compare : SourceReadback.check (SourceReceiptData.ofTerm term).term (erase term) =
+      SourceReadback.check term (erase term) :=
+    SourceReadback.check_transport (List.append_nil bound).symm term (erase term)
+  simpa only [SourceReceiptData.accepts,SourceReceiptData.ofTerm,compatibleHeader,
+    List.all_nil,closeContext,List.map_nil,closeNames,openContext,openNames,
+    beq_self_eq_true,Bool.true_and,Bool.and_true] using compare.trans (SourceReadback.check_erase term)
+
+#print axioms SourceReceiptData.ofTerm_accepts
+end Mettapedia.GSLT.LanguageDef.NamedFreeContext

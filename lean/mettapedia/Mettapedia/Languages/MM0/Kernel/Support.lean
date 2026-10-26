@@ -71,6 +71,16 @@ inductive HasVar (context : Context) (index : Nat) : Preterm → Prop where
   | argument {function argument : Preterm} :
       HasVar context index argument → HasVar context index (.app function argument)
 
+/-- A syntactic occurrence of a declared bound name contributes to support,
+including when it is supplied to a binding argument slot. -/
+theorem Occurs.hasVar_of_bound {context : Context} {index sort : Nat} {expression : Preterm}
+    (occurs : Occurs index expression) (declared : context[index]? = some (.bound sort)) :
+    HasVar context index expression := by
+  induction occurs with
+  | var => exact .bound declared
+  | function _ ih => exact .function ih
+  | argument _ ih => exact .argument ih
+
 theorem hasVar_var_iff (context : Context) (index sourceIndex : Nat) :
     HasVar context index (.var sourceIndex) ↔
       (∃ sort, context[sourceIndex]? = some (.bound sort) ∧ index = sourceIndex) ∨

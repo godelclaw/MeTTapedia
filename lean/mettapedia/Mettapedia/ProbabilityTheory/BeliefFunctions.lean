@@ -1,4 +1,5 @@
 import Mettapedia.ProbabilityTheory.BeliefFunctions.Basic
+import Mettapedia.ProbabilityTheory.BeliefFunctions.IncidenceExecution
 
 /-!
 # Dempster-Shafer Belief Functions
@@ -8,7 +9,8 @@ of imprecise probability.
 
 ## Files
 
-- `Basic.lean`: Core definitions (mass functions, belief, plausibility, Dempster's rule)
+- `IncidenceExecution.lean`: Ordered row semantics and separating capacities
+- `Basic.lean`: Mass, belief, plausibility, unique reconstruction and complete monotonicity
 
 ## Connection to Other Modules
 
@@ -18,6 +20,6 @@ of imprecise probability.
 
 ## References
 
-- Shafer, G. "A Mathematical Theory of BinaryEvidence" (1976)
+- Shafer, G. "A Mathematical Theory of Evidence" (1976)
 - Dempster, A.P. "Upper and Lower Probabilities" (1967)
 -/

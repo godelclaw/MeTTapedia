@@ -21,7 +21,7 @@ import Mettapedia.ProbabilityTheory.Common.MobiusFunction
 import Mettapedia.ProbabilityTheory.CommonFoundations
 import Mettapedia.ProbabilityTheory.Exchangeability
 import Mettapedia.ProbabilityTheory.Foundations.Distributions.ProbDist
-import Mettapedia.ProbabilityTheory.FreeProbability.NoncrossingPartitions
+import Mettapedia.ProbabilityTheory.FreeProbability.Basic
 import Mettapedia.ProbabilityTheory.HiddenMarkovModels
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.CategoricalConnection
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.GiryMonad

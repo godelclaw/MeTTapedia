@@ -19,20 +19,16 @@ This file proves two facts about that situation.
   and `3/5` respectively.
 
 * **Recoverability.**  The pair (strength, evidence total) determines the
-  counts exactly (on inhabited states): `n⁺ = s·e` and `n⁻ = (1−s)·e`.  So a
-  formulation that keeps a scalar strength and parametrizes its update
-  geometry by the evidence total has not eliminated the second dimension — it
-  stores the counts inside the geometry.  The state space of any faithful
-  evidence learner is two-dimensional; what varies between formulations is
-  only which role the second coordinate plays (a value coordinate, or the
-  parameter of the update metric).
+  counts exactly (on inhabited states): `n⁺ = s·e` and `n⁻ = (1−s)·e`. A
+  formulation that stores the evidence total in its update geometry retains
+  that information as well as the strength. This is a statement about retained
+  information, not the number of storage fields: an arbitrary code can encode
+  both natural counts in one value.
 
-Consequence for graded-value designs: a metric-governed scalar update is
-lossless exactly when the metric's evidence parameter is stored and updated
-alongside the strength; drop it and revision is unimplementable.  This is the
-operational content of the two-dimensionality of evidence, complementing the
-interval/second-coordinate requirements studied in the quantale evidence
-programme.
+Consequence for graded-value designs: strength alone cannot implement the
+specified revision, while strength and total suffice. Full future-readout
+minimality and its distinction from source-aware revision are proved in
+`Mettapedia.PLN.Evidence.RevisionMemory`.
 -/
 
 namespace Mettapedia.Logic.EvidenceStateInsufficiency

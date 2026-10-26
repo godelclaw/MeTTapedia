@@ -65,10 +65,9 @@ instance : PartialOrder WorkSpan where
   le_refl value := ⟨le_rfl, le_rfl⟩
   le_trans _ _ _ first second :=
     ⟨first.1.trans second.1, first.2.trans second.2⟩
-  le_antisymm first second firstSecond secondFirst := by
-    ext
-    · exact Nat.le_antisymm firstSecond.1 secondFirst.1
-    · exact Nat.le_antisymm firstSecond.2 secondFirst.2
+  le_antisymm _ _ firstSecond secondFirst :=
+    WorkSpan.ext (Nat.le_antisymm firstSecond.1 secondFirst.1)
+      (Nat.le_antisymm firstSecond.2 secondFirst.2)
 
 /-- No work and no span. -/
 def zero : WorkSpan := ⟨0, 0⟩
@@ -91,8 +90,7 @@ def parallel (left right : WorkSpan) : WorkSpan :=
   ext <;> simp [sequential]
 
 @[simp] theorem sequential_zero_right (value : WorkSpan) :
-    sequential value 0 = value := by
-  ext <;> simp [sequential]
+    sequential value 0 = value := rfl
 
 theorem sequential_assoc (first second third : WorkSpan) :
     sequential (sequential first second) third =
@@ -115,6 +113,10 @@ theorem parallel_assoc (first second third : WorkSpan) :
 theorem parallel_comm (left right : WorkSpan) :
     parallel left right = parallel right left := by
   ext <;> simp [parallel, Nat.add_comm, Nat.max_comm]
+
+instance : Std.Associative sequential := ⟨sequential_assoc⟩
+instance : Std.Associative parallel := ⟨parallel_assoc⟩
+instance : Std.Commutative parallel := ⟨parallel_comm⟩
 
 theorem sequential_mono {first first' second second' : WorkSpan}
     (firstLe : first ≤ first') (secondLe : second ≤ second') :
@@ -181,26 +183,19 @@ def sequentialAll (stages : List WorkSpan) : WorkSpan :=
 theorem sequentialAll_append (first second : List WorkSpan) :
     sequentialAll (first ++ second) =
       sequential (sequentialAll first) (sequentialAll second) := by
-  induction first with
-  | nil => simp
-  | cons head tail ih =>
-      simp only [List.cons_append, sequentialAll_cons, ih, sequential_assoc]
+  simpa only [sequentialAll, List.foldr_append, sequential_zero_left] using
+    (List.foldr_assoc (op := sequential) (l := first) (a₁ := 0)
+      (a₂ := sequentialAll second))
 
 @[simp] theorem sequentialAll_work (stages : List WorkSpan) :
-    (sequentialAll stages).work = (stages.map WorkSpan.work).sum := by
-  induction stages with
-  | nil => rfl
-  | cons head tail ih =>
-      change head.work + (sequentialAll tail).work = head.work + (tail.map WorkSpan.work).sum
-      rw [ih]
+    (sequentialAll stages).work = (stages.map WorkSpan.work).sum :=
+  (List.foldr_map_hom (g := work) (f := sequential) (l := stages) (a := 0)
+    (fun _ _ => rfl)).symm
 
 @[simp] theorem sequentialAll_span (stages : List WorkSpan) :
-    (sequentialAll stages).span = (stages.map WorkSpan.span).sum := by
-  induction stages with
-  | nil => rfl
-  | cons head tail ih =>
-      change head.span + (sequentialAll tail).span = head.span + (tail.map WorkSpan.span).sum
-      rw [ih]
+    (sequentialAll stages).span = (stages.map WorkSpan.span).sum :=
+  (List.foldr_map_hom (g := span) (f := sequential) (l := stages) (a := 0)
+    (fun _ _ => rfl)).symm
 
 @[simp] theorem parallelAll_nil : parallelAll [] = 0 := rfl
 
@@ -209,39 +204,25 @@ theorem sequentialAll_append (first second : List WorkSpan) :
 
 theorem parallelAll_append (first second : List WorkSpan) :
     parallelAll (first ++ second) = parallel (parallelAll first) (parallelAll second) := by
-  induction first with
-  | nil => simp
-  | cons head tail ih =>
-      simp only [List.cons_append, parallelAll_cons, ih, parallel_assoc]
+  simpa only [parallelAll, List.foldr_append, parallel_zero_left] using
+    (List.foldr_assoc (op := parallel) (l := first) (a₁ := 0)
+      (a₂ := parallelAll second))
 
 @[simp] theorem parallelAll_work (branches : List WorkSpan) :
-    (parallelAll branches).work = (branches.map WorkSpan.work).sum := by
-  induction branches with
-  | nil => rfl
-  | cons head tail ih =>
-      change head.work + (parallelAll tail).work = head.work + (tail.map WorkSpan.work).sum
-      rw [ih]
+    (parallelAll branches).work = (branches.map WorkSpan.work).sum :=
+  (List.foldr_map_hom (g := work) (f := parallel) (l := branches) (a := 0)
+    (fun _ _ => rfl)).symm
 
 @[simp] theorem parallelAll_span (branches : List WorkSpan) :
-    (parallelAll branches).span = (branches.map WorkSpan.span).foldr max 0 := by
-  induction branches with
-  | nil => rfl
-  | cons head tail ih =>
-      change max head.span (parallelAll tail).span =
-        max head.span ((tail.map WorkSpan.span).foldr max 0)
-      rw [ih]
+    (parallelAll branches).span = (branches.map WorkSpan.span).foldr max 0 :=
+  (List.foldr_map_hom (g := span) (f := parallel) (l := branches) (a := 0)
+    (fun _ _ => rfl)).symm
 
 /-- Publication order cannot change this declared cost readout. Semantic
 coefficients and result order may have different, noncommutative laws. -/
 theorem parallelAll_perm {first second : List WorkSpan} (order : first.Perm second) :
-    parallelAll first = parallelAll second := by
-  induction order with
-  | nil => rfl
-  | cons head order ih => simp only [parallelAll_cons, ih]
-  | swap first second tail =>
-      simp only [parallelAll_cons]
-      rw [← parallel_assoc, parallel_comm second first, parallel_assoc]
-  | trans first second ihFirst ihSecond => exact ihFirst.trans ihSecond
+    parallelAll first = parallelAll second :=
+  order.foldr_op_eq
 
 /-- A fork retains its shared prefix once, followed by the independent
 children and the join suffix. This is a causal cost construction, not an
@@ -278,10 +259,7 @@ example : parallel ⟨1, 1⟩ ⟨1, 1⟩ = ⟨2, 1⟩ := rfl
 
 /-- Negative example: parallel and sequential composition are genuinely
 different, so collapsing the two operations would lose span information. -/
-example : parallel ⟨1, 1⟩ ⟨1, 1⟩ ≠ sequential ⟨1, 1⟩ ⟨1, 1⟩ := by
-  intro equal
-  have spans := congrArg WorkSpan.span equal
-  norm_num [parallel, sequential] at spans
+example : parallel ⟨1, 1⟩ ⟨1, 1⟩ ≠ sequential ⟨1, 1⟩ ⟨1, 1⟩ := by decide
 
 end WorkSpan
 

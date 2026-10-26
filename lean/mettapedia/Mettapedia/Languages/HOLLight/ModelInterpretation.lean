@@ -886,6 +886,34 @@ theorem sourceExtension_models_source_equation
     HOL.HenkinModel.denote, HOL.PreModel.denote, HOL.HenkinModel.extend, HOL.PreModel.extend]
     using valid
 
+theorem selection_preserved
+    {context : TheoryContext} {instances : InstanceWitnesses} {name : Name}
+    {source : SourceTerm} {result : ContextConstantDefinitionResult}
+    (accepted : admitConstantInTheory context instances name source = some result)
+    {schema : Ty} (registered : context.signature.constants selectionConstant = some schema)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (operand : Ty)
+    (specified : model.models (selectionFormula operand)) :
+    (sourceExtension result model).models (selectionFormula operand) := by
+  have apart : selectionConstant ≠ result.output.constant := by
+    intro same
+    rw [same, admitted_identity_fresh accepted] at registered
+    cases registered
+  intro predicate admissible value present trueValue
+  have old := specified predicate admissible value present trueValue
+  have retained := sourceExtension_constant_other result model selectionConstant (selectionType operand)
+    (selectionType_toHOL operand) apart
+  exact (congrArg (fun selected => (predicate selected).down) (congrFun retained predicate)).mpr old
+
+def infinity_preserved (result : ContextConstantDefinitionResult)
+    (model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol) (base : AtomicTy)
+    (witness : model.DedekindInfinityWitness base) :
+    (sourceExtension result model).DedekindInfinityWitness base where
+  successor := witness.successor
+  successor_admissible := witness.successor_admissible
+  successor_injective := witness.successor_injective
+  omitted := witness.omitted
+  omitted_not_image := witness.omitted_not_image
+
 end ConstantAdmission
 
 namespace Controls

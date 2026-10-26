@@ -293,4 +293,124 @@ def ProofContext.promoteUnder (signature : Signature sorts terms)
 #print axioms right
 #print axioms weaken
 
+section VariableBounds
+variable (signature : Signature sorts terms) (rules : Rules theorems signature.symbol signature.ids.wff)
+variable (bound : Nat)
+
+theorem identity_varsBelow (proposition : Preterm)
+    (sorted : Preterm.HasType terms context proposition [] signature.ids.wff)
+    (bounded : Preterm.VarsBelow bound proposition) :
+    (identity (definitions := definitions) (hypotheses := hypotheses) signature rules proposition sorted).val.VarsBelow bound := by
+  simpa [identity, ProofWitness.VarsBelow] using bounded
+
+theorem compose_varsBelow (first middle last : Preterm)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.wff)
+    (middleSorted : Preterm.HasType terms context middle [] signature.ids.wff)
+    (lastSorted : Preterm.HasType terms context last [] signature.ids.wff)
+    (one : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (entails signature.symbol first middle))
+    (two : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (entails signature.symbol middle last))
+    (firstBound : Preterm.VarsBelow bound first) (middleBound : Preterm.VarsBelow bound middle)
+    (lastBound : Preterm.VarsBelow bound last)
+    (oneBound : one.val.VarsBelow bound) (twoBound : two.val.VarsBelow bound) :
+    (compose signature rules first middle last firstSorted middleSorted lastSorted one two).val.VarsBelow bound := by
+  simpa [compose, ProofWitness.VarsBelow] using And.intro ⟨firstBound, middleBound, lastBound⟩ ⟨oneBound, twoBound⟩
+
+theorem pair_varsBelow (antecedent first second : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.wff)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.wff)
+    (one : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (entails signature.symbol antecedent first))
+    (two : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (entails signature.symbol antecedent second))
+    (antecedentBound : Preterm.VarsBelow bound antecedent) (firstBound : Preterm.VarsBelow bound first)
+    (secondBound : Preterm.VarsBelow bound second)
+    (oneBound : one.val.VarsBelow bound) (twoBound : two.val.VarsBelow bound) :
+    (pair signature rules antecedent first second antecedentSorted firstSorted secondSorted one two).val.VarsBelow bound := by
+  simpa [pair, ProofWitness.VarsBelow] using And.intro ⟨antecedentBound, firstBound, secondBound⟩ ⟨oneBound, twoBound⟩
+
+theorem left_varsBelow (first second : Preterm)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.wff)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.wff)
+    (firstBound : Preterm.VarsBelow bound first) (secondBound : Preterm.VarsBelow bound second) :
+    (left (definitions := definitions) (hypotheses := hypotheses) signature rules first second firstSorted secondSorted).val.VarsBelow bound := by
+  simpa [left, ProofWitness.VarsBelow] using And.intro firstBound secondBound
+
+theorem right_varsBelow (first second : Preterm)
+    (firstSorted : Preterm.HasType terms context first [] signature.ids.wff)
+    (secondSorted : Preterm.HasType terms context second [] signature.ids.wff)
+    (firstBound : Preterm.VarsBelow bound first) (secondBound : Preterm.VarsBelow bound second) :
+    (right (definitions := definitions) (hypotheses := hypotheses) signature rules first second firstSorted secondSorted).val.VarsBelow bound := by
+  simpa [right, ProofWitness.VarsBelow] using And.intro firstBound secondBound
+
+theorem weaken_varsBelow (antecedent extra conclusion : Preterm)
+    (antecedentSorted : Preterm.HasType terms context antecedent [] signature.ids.wff)
+    (extraSorted : Preterm.HasType terms context extra [] signature.ids.wff)
+    (conclusionSorted : Preterm.HasType terms context conclusion [] signature.ids.wff)
+    (source : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (entails signature.symbol antecedent conclusion))
+    (antecedentBound : Preterm.VarsBelow bound antecedent) (extraBound : Preterm.VarsBelow bound extra)
+    (conclusionBound : Preterm.VarsBelow bound conclusion) (sourceBound : source.val.VarsBelow bound) :
+    (weaken signature rules antecedent extra conclusion antecedentSorted extraSorted conclusionSorted source).val.VarsBelow bound := by
+  apply compose_varsBelow
+  · exact ⟨⟨trivial, antecedentBound⟩, extraBound⟩
+  · exact antecedentBound
+  · exact conclusionBound
+  · exact left_varsBelow signature rules bound _ _ _ _ antecedentBound extraBound
+  · exact sourceBound
+
+def ProofContext.VarsBelow {references : Symbol → Nat} {wff : Nat} (bound : Nat)
+    (scope : ProofContext terms definitions theorems context hypotheses references wff) : Prop :=
+  Preterm.VarsBelow bound scope.formation ∧ Preterm.VarsBelow bound scope.logical ∧ scope.projection.val.VarsBelow bound
+
+theorem ProofContext.under_varsBelow
+    (scope : ProofContext terms definitions theorems context hypotheses signature.symbol signature.ids.wff)
+    (assumption : Preterm) (sorted : Preterm.HasType terms context assumption [] signature.ids.wff)
+    (bounded : scope.VarsBelow bound) (assumptionBound : Preterm.VarsBelow bound assumption) :
+    (scope.under signature rules assumption sorted).VarsBelow bound := by
+  exact ⟨bounded.1, ⟨⟨trivial, bounded.2.1⟩, assumptionBound⟩,
+    weaken_varsBelow signature rules bound _ _ _ scope.logicalSorted sorted scope.formationSorted scope.projection
+      bounded.2.1 assumptionBound bounded.1 bounded.2.2⟩
+
+theorem ProofContext.extend_varsBelow
+    (scope : ProofContext terms definitions theorems context hypotheses signature.symbol signature.ids.wff)
+    (assumption : Preterm) (sorted : Preterm.HasType terms context assumption [] signature.ids.wff)
+    (bounded : scope.VarsBelow bound) (assumptionBound : Preterm.VarsBelow bound assumption) :
+    (scope.extend signature rules assumption sorted).VarsBelow bound := by
+  refine ⟨⟨⟨trivial, bounded.1⟩, assumptionBound⟩, ⟨⟨trivial, bounded.2.1⟩, assumptionBound⟩, ?_⟩
+  apply pair_varsBelow signature rules bound _ _ _
+    (conjunction_sorted signature context scope.logicalSorted sorted) scope.formationSorted sorted
+  · exact ⟨⟨trivial, bounded.2.1⟩, assumptionBound⟩
+  · exact bounded.1
+  · exact assumptionBound
+  · exact weaken_varsBelow signature rules bound _ _ _ scope.logicalSorted sorted scope.formationSorted scope.projection
+      bounded.2.1 assumptionBound bounded.1 bounded.2.2
+  · exact right_varsBelow signature rules bound _ _ scope.logicalSorted sorted bounded.2.1 assumptionBound
+
+theorem ProofContext.promote_varsBelow
+    (scope : ProofContext terms definitions theorems context hypotheses signature.symbol signature.ids.wff)
+    (conclusion : Preterm) (sorted : Preterm.HasType terms context conclusion [] signature.ids.wff)
+    (proof : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (entails signature.symbol scope.formation conclusion))
+    (bounded : scope.VarsBelow bound) (conclusionBound : Preterm.VarsBelow bound conclusion)
+    (proofBound : proof.val.VarsBelow bound) :
+    (scope.promote signature rules conclusion sorted proof).val.VarsBelow bound :=
+  compose_varsBelow signature rules bound _ _ _ _ _ _ _ _ bounded.2.1 bounded.1 conclusionBound bounded.2.2 proofBound
+
+#print axioms ProofContext.extend_varsBelow
+end VariableBounds
+
+universe w
+
+theorem CheckedProof.val_mpr {Index : Sort w} (claim : Index → Preterm)
+    {first second : Index} (same : first = second)
+    (proof : CheckedProof (terms := terms) (definitions := definitions) (theorems := theorems)
+      (context := context) (hypotheses := hypotheses) (claim second)) :
+    (Eq.mpr (congrArg (fun index => CheckedProof (terms := terms) (definitions := definitions)
+      (theorems := theorems) (context := context) (hypotheses := hypotheses) (claim index)) same) proof).val = proof.val := by
+  cases same
+  rfl
+
 end Mettapedia.Languages.MM0.HOLKernelStructuralRules

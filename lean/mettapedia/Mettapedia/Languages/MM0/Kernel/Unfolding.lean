@@ -136,4 +136,21 @@ theorem unfold_typed_total {signature : TermSignature} {definitions : Signature}
     bodyTyped.substitute typedValues substituted⟩
 
 end Definition
+theorem Definition.Unfolds.varsBelow {signature : TermSignature} {definitions : Definition.Signature}
+    {context : Context} {symbol : Nat} {arguments : List Preterm} {images : List Nat} {result : Preterm}
+    (unfolded : Unfolds signature definitions context symbol arguments images result)
+    (bound : Nat) (argumentsBound : ∀ argument ∈ arguments, Preterm.VarsBelow bound argument)
+    (imagesBound : ∀ image ∈ images, image < bound) : Preterm.VarsBelow bound result := by
+  cases unfolded with
+  | intro known body fits fresh substituted =>
+      apply substituted.varsBelow bound
+      intro index expression found
+      have member := List.mem_of_getElem? found
+      change expression ∈ arguments ++ images.map Preterm.var at member
+      rcases List.mem_append.mp member with old | dummy
+      · exact argumentsBound expression old
+      · obtain ⟨image, present, rfl⟩ := List.mem_map.mp dummy
+        exact imagesBound image present
+
+
 end Mettapedia.Languages.MM0.Kernel

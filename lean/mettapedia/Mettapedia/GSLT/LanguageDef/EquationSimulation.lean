@@ -145,6 +145,33 @@ theorem collectionCarrierRule_map_of_structuralMorphism
     exact ⟨parameterName, mapTypeExpr morphism.symbols elementType, by
       simp [mapGrammarRule, parameters, mapTermParam, mapTypeExpr]⟩
 
+private theorem collectionTypeOccurs_map (symbols : LanguageDefSymbolMap)
+    {kind : CollType} {elementType type : TypeExpr}
+    (occurs : CollectionTypeOccurs kind elementType type) :
+    CollectionTypeOccurs kind (mapTypeExpr symbols elementType) (mapTypeExpr symbols type) := by
+  induction occurs with
+  | here => exact .here
+  | domain _ ih => exact .domain ih
+  | codomain _ ih => exact .codomain ih
+  | binder _ ih => exact .binder ih
+  | element _ ih => exact .element ih
+
+/-- A structural morphism preserves the selected parameter/type position and
+its actual typed collection data, independently of bare representation. -/
+theorem collectionTypedAt_map_of_structuralMorphism
+    {source target : ValidatedLanguageDef} (morphism : StructuralMorphism source target)
+    {rule : GrammarRule} {kind : CollType} {elements : List Pattern}
+    (typed : CollectionTypedAt source.language rule kind elements) :
+    CollectionTypedAt target.language (mapGrammarRule morphism.symbols rule) kind
+      (elements.map (mapPattern morphism.symbols)) := by
+  obtain ⟨parameter,member,elementType,occurs,free,bound,body⟩ := typed
+  refine ⟨mapTermParam morphism.symbols parameter,List.mem_map.mpr ⟨parameter,member,rfl⟩,
+    mapTypeExpr morphism.symbols elementType,?_,free.map morphism.symbols,
+    bound.map (mapTypeExpr morphism.symbols),?_⟩
+  · have mapped := collectionTypeOccurs_map morphism.symbols occurs
+    cases parameter <;> simpa only [mapTermParam,TermParam.typeExpr] using mapped
+  · simpa only [mapPattern,mapPatternList_eq_map,mapTypeExpr] using body.map morphism
+
 /-- The constructor map fixes every unit that a collection algebra of the
 language declares. -/
 def FixesDeclaredUnits (symbols : LanguageDefSymbolMap) (language : LanguageDef) : Prop :=
@@ -241,19 +268,19 @@ theorem derivedInstance_transport_of_structuralMorphism
   cases derived with
   | bagPerm carrier sorted permuted =>
       simp only [mapPattern, mapPatternList_eq_map]
-      exact .bagPerm (collectionCarrierRule_map_of_structuralMorphism morphism carrier)
+      exact .bagPerm (morphism.mapsTerms _ carrier)
         (by simpa [mapPattern, mapGrammarRule] using
-          sortedAt_map_of_structuralMorphism morphism sorted) (permuted.map _)
+          collectionTypedAt_map_of_structuralMorphism morphism sorted) (permuted.map _)
   | setPerm carrier sorted permuted =>
       simp only [mapPattern, mapPatternList_eq_map]
-      exact .setPerm (collectionCarrierRule_map_of_structuralMorphism morphism carrier)
+      exact .setPerm (morphism.mapsTerms _ carrier)
         (by simpa [mapPattern, mapGrammarRule] using
-          sortedAt_map_of_structuralMorphism morphism sorted) (permuted.map _)
+          collectionTypedAt_map_of_structuralMorphism morphism sorted) (permuted.map _)
   | setDedup carrier sorted =>
       simp only [mapPattern, mapPatternList_eq_map, List.map_cons]
-      exact .setDedup (collectionCarrierRule_map_of_structuralMorphism morphism carrier)
+      exact .setDedup (morphism.mapsTerms _ carrier)
         (by simpa [mapPattern, mapGrammarRule] using
-          sortedAt_map_of_structuralMorphism morphism sorted)
+          collectionTypedAt_map_of_structuralMorphism morphism sorted)
   | flatten declaration flattens sorted =>
       simp only [mapPattern, mapPatternList_eq_map, List.map_append, List.map_cons]
       exact .flatten (algebraRule_transport_of_structuralMorphism morphism declaration)
@@ -288,21 +315,21 @@ theorem derivedInstance_map_of_structuralMorphism
   cases derived with
   | bagPerm carrier sorted permuted =>
       simp only [mapPattern, mapPatternList_eq_map]
-      exact .bagPerm (collectionCarrierRule_map_of_structuralMorphism morphism carrier)
+      exact .bagPerm (morphism.mapsTerms _ carrier)
         (by simpa [mapPattern, mapGrammarRule] using
-          sortedAt_map_of_structuralMorphism morphism sorted)
+          collectionTypedAt_map_of_structuralMorphism morphism sorted)
         (permuted.map _)
   | setPerm carrier sorted permuted =>
       simp only [mapPattern, mapPatternList_eq_map]
-      exact .setPerm (collectionCarrierRule_map_of_structuralMorphism morphism carrier)
+      exact .setPerm (morphism.mapsTerms _ carrier)
         (by simpa [mapPattern, mapGrammarRule] using
-          sortedAt_map_of_structuralMorphism morphism sorted)
+          collectionTypedAt_map_of_structuralMorphism morphism sorted)
         (permuted.map _)
   | setDedup carrier sorted =>
       simp only [mapPattern, mapPatternList_eq_map, List.map_cons]
-      exact .setDedup (collectionCarrierRule_map_of_structuralMorphism morphism carrier)
+      exact .setDedup (morphism.mapsTerms _ carrier)
         (by simpa [mapPattern, mapGrammarRule] using
-          sortedAt_map_of_structuralMorphism morphism sorted)
+          collectionTypedAt_map_of_structuralMorphism morphism sorted)
   | flatten declaration flattens sorted =>
       simp only [mapPattern, mapPatternList_eq_map, List.map_append, List.map_cons]
       exact .flatten (algebraRule_map_of_structuralMorphism morphism units declaration)
@@ -580,3 +607,5 @@ theorem stepModuloEquations_transport_default {source target : ValidatedLanguage
     (engineBasePremises_empty_mono _ _) step
 
 end Mettapedia.GSLT.LanguageDef.EquationSimulation
+
+#print axioms Mettapedia.GSLT.LanguageDef.EquationSimulation.collectionTypedAt_map_of_structuralMorphism

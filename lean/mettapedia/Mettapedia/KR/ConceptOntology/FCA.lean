@@ -27,9 +27,7 @@ variable {Q : Type u} [Preorder Q]
 /-- The canonical upper-set gate at threshold `τ`. -/
 def threshold (τ : Q) : EvidenceGate Q where
   accept q := τ ≤ q
-  mono := by
-    intro a b hab hτ
-    exact le_trans hτ hab
+  mono := fun _ _ hab hτ => le_trans hτ hab
 
 theorem accept_mono (G : EvidenceGate Q) {a b : Q} (hab : a ≤ b) :
     G.accept a → G.accept b :=
@@ -50,9 +48,7 @@ def positiveSupport : EvidenceGate BinaryEvidence where
 /-- Canonical thresholded membership gate on the positive-evidence coordinate. -/
 def positiveThreshold (τ : ℝ≥0∞) : EvidenceGate BinaryEvidence where
   accept e := τ ≤ e.pos
-  mono := by
-    intro a b hab hτ
-    exact le_trans hτ hab.1
+  mono := fun _ _ hab hτ => le_trans hτ hab.1
 
 @[simp] theorem positiveSupport_accept_iff (e : BinaryEvidence) :
     positiveSupport.accept e ↔ 0 < e.pos := Iff.rfl
@@ -73,46 +69,34 @@ end EvidenceGate
 section Crisp
 
 variable {Obj : Type u} {Con : Type v} {Q : Type w} [Preorder Q]
+variable (G : EvidenceGate Q) (M : Obj → Con → Q)
 
 /-- The crisp incidence relation induced by an evidence gate. -/
-def crispRelation (G : EvidenceGate Q) (M : Obj → Con → Q) : Obj → Con → Prop :=
+def crispRelation : Obj → Con → Prop :=
   fun x c => G.accept (M x c)
 
 /-- The crisp extent of a base concept, derived from the gated membership
 relation. -/
-def crispExtent (G : EvidenceGate Q) (M : Obj → Con → Q) (c : Con) : Set Obj :=
+def crispExtent (c : Con) : Set Obj :=
   _root_.lowerPolar (crispRelation G M) ({c} : Set Con)
 
 /-- The crisp intent of an object, derived from the gated membership relation. -/
-def crispIntent (G : EvidenceGate Q) (M : Obj → Con → Q) (x : Obj) : Set Con :=
+def crispIntent (x : Obj) : Set Con :=
   _root_.upperPolar (crispRelation G M) ({x} : Set Obj)
 
-@[simp] theorem mem_crispExtent_iff
-    (G : EvidenceGate Q) (M : Obj → Con → Q) (x : Obj) (c : Con) :
+@[simp] theorem mem_crispExtent_iff (x : Obj) (c : Con) :
     x ∈ crispExtent G M c ↔ G.accept (M x c) := by
-  constructor
-  · intro hx
-    exact hx (by simp)
-  · intro hx d hd
-    rcases Set.mem_singleton_iff.mp hd with rfl
-    exact hx
+  simp [crispExtent, lowerPolar, crispRelation]
 
-@[simp] theorem mem_crispIntent_iff
-    (G : EvidenceGate Q) (M : Obj → Con → Q) (x : Obj) (c : Con) :
+@[simp] theorem mem_crispIntent_iff (x : Obj) (c : Con) :
     c ∈ crispIntent G M x ↔ G.accept (M x c) := by
-  constructor
-  · intro hx
-    exact hx (by simp)
-  · intro hx y hy
-    rcases Set.mem_singleton_iff.mp hy with rfl
-    exact hx
+  simp [crispIntent, upperPolar, crispRelation]
 
 /-- Mathlib's formal concepts over the gated evidence relation. -/
-abbrev CrispConcept (G : EvidenceGate Q) (M : Obj → Con → Q) :=
+abbrev CrispConcept :=
   _root_.Concept Obj Con (crispRelation G M)
 
-theorem gc_crispUpper_lower
-    (G : EvidenceGate Q) (M : Obj → Con → Q) :
+theorem gc_crispUpper_lower :
     GaloisConnection
       (OrderDual.toDual ∘ _root_.upperPolar (crispRelation G M))
       (_root_.lowerPolar (crispRelation G M) ∘ OrderDual.ofDual) :=
@@ -120,24 +104,12 @@ theorem gc_crispUpper_lower
 
 /-- Extensional inheritance between base concepts is inclusion of their gated
 extents. -/
-def crispExtensionalInherits
-    (G : EvidenceGate Q) (M : Obj → Con → Q) (c d : Con) : Prop :=
+def crispExtensionalInherits (c d : Con) : Prop :=
   crispExtent G M c ⊆ crispExtent G M d
 
-theorem crispExtensionalInherits_iff
-    (G : EvidenceGate Q) (M : Obj → Con → Q) (c d : Con) :
+theorem crispExtensionalInherits_iff (c d : Con) :
     crispExtensionalInherits G M c d ↔ ∀ x, G.accept (M x c) → G.accept (M x d) := by
-  constructor
-  · intro h x hx
-    have hx' : x ∈ crispExtent G M c := by
-      simpa using hx
-    have hx'' : x ∈ crispExtent G M d := h hx'
-    simpa using hx''
-  · intro h x hx
-    have hx' : G.accept (M x c) := by
-      simpa using hx
-    have hx'' : G.accept (M x d) := h x hx'
-    simpa using hx''
+  simp [crispExtensionalInherits, Set.subset_def]
 
 end Crisp
 

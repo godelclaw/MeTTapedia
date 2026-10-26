@@ -1,15 +1,14 @@
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledSemantics
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledTermination
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseQueryCorrectness
-import Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachineCursor
 
 /-!
-# Semantic coverage of actual suspended premise execution
+# Semantic coverage of retained premise execution
 
-The denotation of a suspended task retains unread alternatives and the
-independent meaning of its continuation. Every actual transition preserves
-each denoted answer. Finite drainage therefore yields semantic completeness
-for structurally bounded premise derivations.
+Unread alternatives and continuation meaning are independent of scheduling.
+Coverage is proved for the selected matching interpretation over every premise
+constructor. Actual drainage implies complete depth-bounded publication; the
+ordinary finite-work execution is a specialization.
 -/
 
 set_option autoImplicit false
@@ -19,58 +18,64 @@ namespace Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled
 open Syntax RuleBinding ScopedRuleMatching GeneralPremise
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
-def TaskAccepts {environment : Environment} {outer : Goal}
-    (task : Task environment outer) (wanted : Result environment outer) : Prop :=
+variable {matcher : MatchingExecution}
+
+abbrev Represents (matcher : MatchingExecution) :=
+  ∀ query trace final, matcher.meaning.Matches query trace final →
+    ∃ answer : matcher.Answer, matcher.trace answer = trace ∧ matcher.assignment answer = final
+
+def TaskAccepts (laws : matcher.CursorLaws) {environment : Environment} {outer : Goal}
+    (task : Interpreted.Task matcher environment outer) (wanted : Interpreted.Result matcher environment outer) : Prop :=
   match task with
   | .evaluate _ tail => EvaluatesTo tail wanted
   | .deliver result tail => Concludes tail result wanted
   | .query _ request state cursor tail =>
       Query.StateWellFormed environment request state ∧ cursor ≤ state.answers.length ∧
-      ∃ answer : Query.Answer environment request,
-        Query.UnreadAccepts environment request state cursor answer ∧
+      ∃ answer : Query.Answer environment request matcher,
+        Query.UnreadAccepts laws environment request state cursor answer ∧
         Concludes tail (.premise answer.assignment
           (.query request.context.premiseIndex request.context.quantifierDepth
             answer.rowIndex answer.origins) (.query answer.valid)) wanted
   | .rootMatch frame =>
-      frame.cursor ≤ frame.state.answers.length ∧
-      ∃ answer : GeneralScopedMatchMachine.Answer,
-        GeneralScopedMatchMachine.MatcherUnread (rootRequest frame)
+      frame.cursor ≤ (matcher.answers frame.state).length ∧
+      ∃ answer : matcher.Answer,
+        laws.Unread (rootRequest frame)
           frame.state frame.cursor answer ∧
-        ∃ (matched : answer.Valid (rootRequest frame))
+        ∃ (matched : matcher.meaning.Matches (rootRequest frame) (matcher.trace answer) (matcher.assignment answer))
             (typed : TypedAssignment environment
-              ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩ answer.assignment),
+              ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩ (matcher.assignment answer)),
           EvaluatesTo (.rootBody frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
-            frame.declared frame.specified frame.admitted frame.sorted answer.trace answer.assignment
+            frame.declared frame.specified frame.admitted frame.sorted (matcher.trace answer) (matcher.assignment answer)
             matched typed frame.tail) wanted
   | .targetMatch frame =>
-      frame.cursor ≤ frame.state.answers.length ∧
-      ∃ answer : GeneralScopedMatchMachine.Answer,
-        GeneralScopedMatchMachine.MatcherUnread (targetRequest frame)
+      frame.cursor ≤ (matcher.answers frame.state).length ∧
+      ∃ answer : matcher.Answer,
+        laws.Unread (targetRequest frame)
           frame.state frame.cursor answer ∧
-        ∃ (matched : answer.Valid (targetRequest frame))
-            (typed : TypedAssignment environment frame.call.context answer.assignment),
-          Concludes frame.tail (.premise answer.assignment
+        ∃ (matched : matcher.meaning.Matches (targetRequest frame) (matcher.trace answer) (matcher.assignment answer))
+            (typed : TypedAssignment environment frame.call.context (matcher.assignment answer)),
+          Concludes frame.tail (.premise (matcher.assignment answer)
             (.child frame.call.context.premiseIndex frame.call.context.quantifierDepth frame.index
               (frame.call.binders ++ frame.call.context.bound) frame.call.source frame.target
-              frame.trace answer.trace frame.captured frame.completed frame.history)
+              frame.trace (matcher.trace answer) frame.captured frame.completed frame.history)
             (frame.call.conclude _ _ _ _ _ _ _ _ frame.valid matched typed)) wanted
   | .scanChildren depth bound type source limit cursor tail =>
       ∃ (index : Nat) (earlier : index < limit), cursor ≤ index ∧
         EvaluatesTo (.searchedRoot depth bound type source index limit earlier tail) wanted
 
-def StateAccepts {environment : Environment} {goal : Goal}
-    (state : State environment goal) (wanted : Result environment goal) : Prop :=
-  wanted ∈ state.answers ∨ ∃ task ∈ state.agenda, TaskAccepts task wanted
+def StateAccepts (laws : matcher.CursorLaws) {environment : Environment} {goal : Goal}
+    (state : State environment goal matcher) (wanted : Interpreted.Result matcher environment goal) : Prop :=
+  wanted ∈ state.answers ∨ ∃ task ∈ state.agenda, TaskAccepts laws task wanted
 
-def ExpansionAccepts {environment : Environment} {goal : Goal}
-    (expansion : Scheduler.Expansion (Task environment goal) (Result environment goal) Obligation)
-    (wanted : Result environment goal) : Prop :=
-  wanted ∈ expansion.answers ∨ ∃ task ∈ expansion.tasks, TaskAccepts task wanted
+def ExpansionAccepts (laws : matcher.CursorLaws) {environment : Environment} {goal : Goal}
+    (expansion : Scheduler.Expansion (Interpreted.Task matcher environment goal) (Interpreted.Result matcher environment goal) Obligation)
+    (wanted : Interpreted.Result matcher environment goal) : Prop :=
+  wanted ∈ expansion.answers ∨ ∃ task ∈ expansion.tasks, TaskAccepts laws task wanted
 
-theorem delivered_covers {environment : Environment} {goal outer : Goal}
-    {result : Result environment goal} {tail : Continuation environment goal outer}
-    {wanted : Result environment outer} (meaning : Concludes tail result wanted) :
-    ExpansionAccepts (delivered environment outer result tail) wanted := by
+theorem delivered_covers (laws : matcher.CursorLaws) (represented : Represents matcher) {environment : Environment} {goal outer : Goal}
+    {result : Interpreted.Result matcher environment goal} {tail : Interpreted.Continuation matcher environment goal outer}
+    {wanted : Interpreted.Result matcher environment outer} (meaning : Concludes tail result wanted) :
+    ExpansionAccepts laws (delivered environment outer result tail) wanted := by
   cases tail with
   | done =>
       simpa [ExpansionAccepts, delivered, Concludes] using meaning.symm
@@ -84,7 +89,7 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
   | prepend depth context premise premises initial middle event head tail =>
       cases result with
       | premises final events rest =>
-          change ExpansionAccepts
+          change ExpansionAccepts laws
             {tasks := [.deliver (.premises final (event :: events) (.cons head rest)) tail]} wanted
           simp only [ExpansionAccepts, List.not_mem_nil, false_or,
             List.mem_singleton, exists_eq_left, TaskAccepts]
@@ -98,7 +103,7 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
       cases result with
       | premise middle event head =>
           obtain ⟨final, events, rest, ordered, concludes⟩ := meaning
-          change ExpansionAccepts
+          change ExpansionAccepts laws
             { tasks := [.evaluate
                 (.quantified depth context parameter body (index + 1) elements
                   initial)
@@ -110,7 +115,7 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
   | prependElement depth context parameter body index element elements initial middle event localTyped head tail =>
       cases result with
       | quantified final events rest =>
-          change ExpansionAccepts
+          change ExpansionAccepts laws
             {tasks := [.deliver (.quantified final ((index, element, [event]) :: events)
               (.cons localTyped head rest)) tail]} wanted
           simp only [ExpansionAccepts, List.not_mem_nil, false_or,
@@ -142,14 +147,16 @@ theorem delivered_covers {environment : Environment} {goal outer : Goal}
           obtain ⟨final, targetTrace, matched, typed, concludes⟩ := meaning
           simp only [ExpansionAccepts, delivered, List.not_mem_nil, false_or,
             List.mem_singleton, exists_eq_left, TaskAccepts]
-          exact ⟨Nat.zero_le _, ⟨final, targetTrace⟩,
-            (GeneralScopedMatchMachine.start_unread_iff _ _).mpr matched,
+          obtain ⟨answer, traceEq, assignmentEq⟩ := represented _ targetTrace final matched
+          cases assignmentEq
+          cases traceEq
+          exact ⟨Nat.zero_le _, answer, (laws.start _ _).mpr matched,
             matched, typed, concludes⟩
 
-theorem evaluate_covers {environment : Environment} {goal outer : Goal}
-    {tail : Continuation environment goal outer} {wanted : Result environment outer}
+theorem evaluate_covers (laws : matcher.CursorLaws) (represented : Represents matcher) {environment : Environment} {goal outer : Goal}
+    {tail : Interpreted.Continuation matcher environment goal outer} {wanted : Interpreted.Result matcher environment outer}
     (meaning : EvaluatesTo tail wanted) :
-    ExpansionAccepts (evaluate environment outer goal tail) wanted := by
+    ExpansionAccepts laws (evaluate environment outer goal tail) wanted := by
   obtain ⟨result, ordered, concludes⟩ := meaning
   cases goal with
   | premises depth context premises initial =>
@@ -190,7 +197,7 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
               simp only [ExpansionAccepts, evaluate.eq_1, evaluatePremise.eq_1, List.not_mem_nil,
                 false_or, List.mem_singleton, exists_eq_left, TaskAccepts]
               exact ⟨Query.start_wellFormed _ _, by simp [Query.start],
-                ⟨rowIndex, final, origins, query⟩, Query.unread_start_of_valid _ _ _, concludes⟩
+                ⟨rowIndex, final, origins, query⟩, Query.unread_start_of_valid laws _ _ _, concludes⟩
           | @freshness context condition initial atom subject read fresh =>
               have checked := (syntactic_freshness_iff atom subject).mpr fresh
               rw [evaluate.eq_1]
@@ -290,8 +297,10 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
                       subst actualSpec
                       simp only [admitted, checked, dite_true, ExpansionAccepts, List.not_mem_nil,
                         false_or, List.mem_singleton, exists_eq_left, TaskAccepts]
-                      refine ⟨Nat.zero_le _, ⟨captured, trace⟩,
-                        (GeneralScopedMatchMachine.start_unread_iff _ _).mpr matched,
+                      obtain ⟨answer, traceEq, assignmentEq⟩ := represented _ trace captured matched
+                      cases assignmentEq
+                      cases traceEq
+                      refine ⟨Nat.zero_le _, answer, (laws.start _ _).mpr matched,
                         matched, capturedTyped, ?_⟩
                       have bounded : eventsDepth history ≤ depth := by
                         have h : 1 + eventsDepth history ≤ depth + 1 := by
@@ -309,29 +318,24 @@ theorem evaluate_covers {environment : Environment} {goal outer : Goal}
           exact ⟨.root trace captured completed history target held, ordered, concludes⟩
 
 
-private theorem matcher_answers_grow (request : GeneralScopedMatchMachine.Request)
-    (state : GeneralScopedMatchMachine.State) :
-    state.answers.length ≤ (GeneralScopedMatchMachine.tick request state).answers.length := by
-  cases state with
-  | mk agenda answers =>
-      cases agenda with
-      | nil => simp [GeneralScopedMatchMachine.tick]
-      | cons work agenda =>
-          cases work with
-          | mk assignment tasks trace =>
-              cases tasks <;> simp [GeneralScopedMatchMachine.tick]
+private theorem matcher_answers_grow (laws : matcher.CursorLaws)
+    (request : GeneralScopedMatchMachine.Request) (state : matcher.State) :
+    (matcher.answers state).length ≤ (matcher.answers (matcher.tick request state)).length :=
+  (laws.answers_prefix request state).length_le
 
-private theorem matcher_unread_settled {request : GeneralScopedMatchMachine.Request}
-    {state : GeneralScopedMatchMachine.State} {cursor : Nat}
-    {answer : GeneralScopedMatchMachine.Answer}
-    (settled : state.agenda = []) (unavailable : state.answers[cursor]? = none) :
-    ¬ GeneralScopedMatchMachine.MatcherUnread request state cursor answer := by
-  have consumed : state.answers.drop cursor = [] :=
+private theorem matcher_unread_settled (laws : matcher.CursorLaws)
+    {request : GeneralScopedMatchMachine.Request} {state : matcher.State} {cursor : Nat}
+    {answer : matcher.Answer} (reached : matcher.Reachable request state)
+    (settled : matcher.complete state = true)
+    (unavailable : (matcher.answers state)[cursor]? = none) :
+    ¬ laws.Unread request state cursor answer := by
+  rw [laws.complete reached settled]
+  have consumed : (matcher.answers state).drop cursor = [] :=
     List.drop_eq_nil_iff.mpr (List.getElem?_eq_none_iff.mp unavailable)
-  simp [GeneralScopedMatchMachine.MatcherUnread, consumed, settled]
+  simp only [consumed, List.not_mem_nil, not_false_eq_true]
 
 private theorem query_answers_grow (environment : Environment) (request : Query.Request)
-    (state : Query.State environment request) :
+    (state : Query.State environment request matcher) :
     state.answers.length ≤ (Query.tick environment request state).answers.length := by
   obtain ⟨suffix, same⟩ := Scheduler.tick_answers_prefix (Query.expand environment request) state
   change state.answers.length ≤
@@ -339,18 +343,18 @@ private theorem query_answers_grow (environment : Environment) (request : Query.
   rw [same]
   simp
 
-theorem query_covers {environment : Environment} {outer : Goal} {depth : Nat}
-    {request : Query.Request} {state : Query.State environment request} {cursor : Nat}
-    {tail : Continuation environment
+theorem query_covers (laws : matcher.CursorLaws) (represented : Represents matcher) {environment : Environment} {outer : Goal} {depth : Nat}
+    {request : Query.Request} {state : Query.State environment request matcher} {cursor : Nat}
+    {tail : Interpreted.Continuation matcher environment
       (.premise depth request.context (.relationQuery request.relation request.arguments) request.initial) outer}
-    {wanted : Result environment outer}
-    (meaning : TaskAccepts (.query depth request state cursor tail) wanted) :
-    ExpansionAccepts (expandQuery environment outer depth request state cursor tail) wanted := by
+    {wanted : Interpreted.Result matcher environment outer}
+    (meaning : TaskAccepts laws (.query depth request state cursor tail) wanted) :
+    ExpansionAccepts laws (expandQuery environment outer depth request state cursor tail) wanted := by
   obtain ⟨wellFormed, bounded, answer, unread, concludes⟩ := meaning
   unfold expandQuery
   split
   · rename_i seen found
-    obtain same | remaining := (Query.unread_get environment request state cursor answer).mp unread
+    obtain same | remaining := (Query.unread_get laws environment request state cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
       subst seen
       right
@@ -365,33 +369,33 @@ theorem query_covers {environment : Environment} {outer : Goal} {depth : Nat}
     split
     · rename_i settled
       have empty : state.agenda = [] := List.isEmpty_iff.mp settled
-      exact False.elim (Query.unread_empty_of_settled environment request state cursor answer
+      exact False.elim (Query.unread_empty_of_settled laws environment request state cursor answer
         empty unavailable unread)
     · right
-      refine ⟨_, List.mem_cons_self, Query.tick_wellFormed _ _ wellFormed, ?_, answer, ?_, concludes⟩
+      refine ⟨_, List.mem_cons_self, Query.tick_wellFormed laws _ _ wellFormed, ?_, answer, ?_, concludes⟩
       · exact bounded.trans (query_answers_grow environment request state)
-      · exact (Query.unread_tick_of_no_answer environment request state cursor answer
+      · exact (Query.unread_tick_of_no_answer laws represented environment request state cursor answer
           wellFormed bounded unavailable).mpr unread
 
-theorem rootMatch_covers {environment : Environment} {outer : Goal}
-    {frame : RootMatchFrame environment outer} {wanted : Result environment outer}
-    (meaning : TaskAccepts (.rootMatch frame) wanted) :
-    ExpansionAccepts (expandRootMatch environment outer frame) wanted := by
+theorem rootMatch_covers (laws : matcher.CursorLaws) {environment : Environment} {outer : Goal}
+    {frame : RootMatchFrame environment outer matcher} {wanted : Interpreted.Result matcher environment outer}
+    (meaning : TaskAccepts laws (.rootMatch frame) wanted) :
+    ExpansionAccepts laws (expandRootMatch environment outer frame) wanted := by
   obtain ⟨bounded, answer, unread, matched, typed, continued⟩ := meaning
   unfold expandRootMatch
   split
   · rename_i seen found
-    change frame.state.answers[frame.cursor]? = some seen at found
+    change (matcher.answers frame.state)[frame.cursor]? = some seen at found
     unfold continueRootAnswer
     obtain same | remaining :=
-      (GeneralScopedMatchMachine.unread_cursor_split (rootRequest frame) frame.state frame.cursor answer).mp unread
+      (laws.split (rootRequest frame) frame.state frame.cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
       subst seen
       have checked := checkTypedAssignment_complete typed
       simp only [checked, dite_true]
       right
       exact ⟨_, List.mem_cons_self, continued⟩
-    · have newBound : frame.cursor + 1 ≤ frame.state.answers.length := by
+    · have newBound : frame.cursor + 1 ≤ (matcher.answers frame.state).length := by
         obtain ⟨before, _⟩ := List.getElem?_eq_some_iff.mp found
         omega
       dsimp only
@@ -404,32 +408,30 @@ theorem rootMatch_covers {environment : Environment} {outer : Goal}
   · rename_i unavailable
     split
     · rename_i completed
-      have empty := (GeneralScopedMatchMachine.complete_eq_true_iff _).mp completed
-      exact False.elim (matcher_unread_settled empty unavailable unread)
+      exact False.elim (matcher_unread_settled laws frame.reachable completed unavailable unread)
     · right
       refine ⟨_, List.mem_cons_self, ?_, answer, ?_, matched, typed, continued⟩
-      · exact bounded.trans (matcher_answers_grow (rootRequest frame) frame.state)
-      · exact (GeneralScopedMatchMachine.unread_tick_of_no_answer (rootRequest frame)
-          frame.state frame.cursor answer bounded unavailable).mpr unread
+      · exact bounded.trans (matcher_answers_grow laws (rootRequest frame) frame.state)
+      · exact (laws.tick frame.reachable bounded unavailable).mpr unread
 
-theorem targetMatch_covers {environment : Environment} {outer : Goal}
-    {frame : TargetMatchFrame environment outer} {wanted : Result environment outer}
-    (meaning : TaskAccepts (.targetMatch frame) wanted) :
-    ExpansionAccepts (expandTargetMatch environment outer frame) wanted := by
+theorem targetMatch_covers (laws : matcher.CursorLaws) {environment : Environment} {outer : Goal}
+    {frame : TargetMatchFrame environment outer matcher} {wanted : Interpreted.Result matcher environment outer}
+    (meaning : TaskAccepts laws (.targetMatch frame) wanted) :
+    ExpansionAccepts laws (expandTargetMatch environment outer frame) wanted := by
   obtain ⟨bounded, answer, unread, matched, typed, continued⟩ := meaning
   unfold expandTargetMatch
   split
   · rename_i seen found
-    change frame.state.answers[frame.cursor]? = some seen at found
+    change (matcher.answers frame.state)[frame.cursor]? = some seen at found
     obtain same | remaining :=
-      (GeneralScopedMatchMachine.unread_cursor_split (targetRequest frame) frame.state frame.cursor answer).mp unread
+      (laws.split (targetRequest frame) frame.state frame.cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)
       subst seen
       have checked := checkTypedAssignment_complete typed
       simp only [checked, dite_true]
       right
       exact ⟨_, List.mem_cons_self, continued⟩
-    · have newBound : frame.cursor + 1 ≤ frame.state.answers.length := by
+    · have newBound : frame.cursor + 1 ≤ (matcher.answers frame.state).length := by
         obtain ⟨before, _⟩ := List.getElem?_eq_some_iff.mp found
         omega
       dsimp only
@@ -442,24 +444,22 @@ theorem targetMatch_covers {environment : Environment} {outer : Goal}
   · rename_i unavailable
     split
     · rename_i completed
-      have empty := (GeneralScopedMatchMachine.complete_eq_true_iff _).mp completed
-      exact False.elim (matcher_unread_settled empty unavailable unread)
+      exact False.elim (matcher_unread_settled laws frame.reachable completed unavailable unread)
     · right
       refine ⟨_, List.mem_cons_self, ?_, answer, ?_, matched, typed, continued⟩
-      · exact bounded.trans (matcher_answers_grow (targetRequest frame) frame.state)
-      · exact (GeneralScopedMatchMachine.unread_tick_of_no_answer (targetRequest frame)
-          frame.state frame.cursor answer bounded unavailable).mpr unread
+      · exact bounded.trans (matcher_answers_grow laws (targetRequest frame) frame.state)
+      · exact (laws.tick frame.reachable bounded unavailable).mpr unread
 
-theorem expand_covers {environment : Environment} {goal : Goal}
-    {task : Task environment goal} {wanted : Result environment goal}
-    (meaning : TaskAccepts task wanted) :
-    ExpansionAccepts (expand environment goal task) wanted := by
+theorem expand_covers (laws : matcher.CursorLaws) (represented : Represents matcher) {environment : Environment} {goal : Goal}
+    {task : Interpreted.Task matcher environment goal} {wanted : Interpreted.Result matcher environment goal}
+    (meaning : TaskAccepts laws task wanted) :
+    ExpansionAccepts laws (expand environment goal task) wanted := by
   cases task with
-  | evaluate current tail => exact evaluate_covers meaning
-  | deliver result tail => exact delivered_covers meaning
-  | query depth request state cursor tail => exact query_covers meaning
-  | rootMatch frame => exact rootMatch_covers meaning
-  | targetMatch frame => exact targetMatch_covers meaning
+  | evaluate current tail => exact evaluate_covers laws represented meaning
+  | deliver result tail => exact delivered_covers laws represented meaning
+  | query depth request state cursor tail => exact query_covers laws represented meaning
+  | rootMatch frame => exact rootMatch_covers laws meaning
+  | targetMatch frame => exact targetMatch_covers laws meaning
   | scanChildren depth bound type source limit cursor tail =>
       obtain ⟨index, earlier, following, continued⟩ := meaning
       have before : cursor < limit := lt_of_le_of_lt following earlier
@@ -472,10 +472,10 @@ theorem expand_covers {environment : Environment} {goal : Goal}
         exact ⟨_, List.mem_cons_of_mem _ List.mem_cons_self,
           index, earlier, by omega, continued⟩
 
-theorem tick_covers {environment : Environment} {goal : Goal}
-    {state : State environment goal} {wanted : Result environment goal}
-    (meaning : StateAccepts state wanted) :
-    StateAccepts (tick environment goal state) wanted := by
+theorem tick_covers (laws : matcher.CursorLaws) (represented : Represents matcher) {environment : Environment} {goal : Goal}
+    {state : State environment goal matcher} {wanted : Interpreted.Result matcher environment goal}
+    (meaning : StateAccepts laws state wanted) :
+    StateAccepts laws (tick environment goal state) wanted := by
   cases agenda : state.agenda with
   | nil => simpa only [tick, Scheduler.tick, agenda] using meaning
   | cons head rest =>
@@ -485,33 +485,58 @@ theorem tick_covers {environment : Environment} {goal : Goal}
       · exact Or.inl (List.mem_append_left _ emitted)
       · rcases List.mem_cons.mp (agenda ▸ member) with same | later
         · subst task
-          rcases expand_covers pending with emitted | ⟨child, childMember, childMeaning⟩
+          rcases expand_covers laws represented pending with emitted | ⟨child, childMember, childMeaning⟩
           · exact Or.inl (List.mem_append_right _ emitted)
           · exact Or.inr ⟨child, List.mem_append_left _ childMember, childMeaning⟩
         · exact Or.inr ⟨task, List.mem_append_right _ later, pending⟩
 
-theorem run_covers {environment : Environment} {goal : Goal}
-    (fuel : Nat) {state : State environment goal} {wanted : Result environment goal}
-    (meaning : StateAccepts state wanted) :
-    StateAccepts (run environment goal fuel state) wanted := by
+theorem run_covers (laws : matcher.CursorLaws) (represented : Represents matcher) {environment : Environment} {goal : Goal}
+    (fuel : Nat) {state : State environment goal matcher} {wanted : Interpreted.Result matcher environment goal}
+    (meaning : StateAccepts laws state wanted) :
+    StateAccepts laws (run environment goal fuel state) wanted := by
   induction fuel generalizing state with
   | zero => exact meaning
-  | succ fuel ih => exact ih (tick_covers meaning)
+  | succ fuel ih => exact ih (tick_covers laws represented meaning)
 
-/-- Every depth-bounded independent semantic answer occurs in the actual finite
-completed execution, retaining its assignment and full history. -/
+
+theorem answers_complete_of_drained (laws : matcher.CursorLaws) (represented : Represents matcher)
+    (environment : Environment) (goal : Goal) (fuel : Nat)
+    (wanted : Interpreted.Result matcher environment goal) (ordered : wanted.ordered = true)
+    (drained : (run environment goal fuel (start environment goal matcher)).agenda = []) :
+    wanted ∈ (run environment goal fuel (start environment goal matcher)).answers := by
+  have initial : StateAccepts laws (start environment goal matcher) wanted :=
+    .inr ⟨_, List.mem_cons_self, wanted, ordered, rfl⟩
+  rcases run_covers laws represented fuel initial with emitted | ⟨task, member, _⟩
+  · exact emitted
+  · rw [drained] at member
+    exact False.elim (List.not_mem_nil member)
+
+#print axioms delivered_covers
+#print axioms evaluate_covers
+#print axioms query_covers
+#print axioms rootMatch_covers
+#print axioms targetMatch_covers
+#print axioms expand_covers
+#print axioms tick_covers
+#print axioms run_covers
+#print axioms answers_complete_of_drained
+
+theorem finishWith_contains (cost : matcher.CursorCost) (laws : matcher.CursorLaws)
+    (represented : Represents matcher) (environment : Environment) (goal : Goal)
+    (wanted : Interpreted.Result matcher environment goal) (ordered : wanted.ordered = true) :
+    wanted ∈ (finishWith cost environment goal).answers :=
+  answers_complete_of_drained laws represented environment goal (treeStart cost environment goal).cost
+    wanted ordered (finishWith_settled cost environment goal)
+
+#print axioms finishWith_contains
+
+/-- The established finite ordinary execution contains every bounded source answer. -/
 theorem finish_contains (environment : Environment) (goal : Goal)
     (wanted : Result environment goal) (ordered : Interpreted.Result.ordered wanted = true) :
-    wanted ∈ (finish environment goal).answers := by
-  have initial : StateAccepts (start environment goal) wanted := by
-    right
-    exact ⟨_, List.mem_cons_self, wanted, ordered, rfl⟩
-  have final := run_covers (treeStart environment goal).cost initial
-  rcases final with emitted | ⟨task, member, _⟩
-  · exact emitted
-  · have empty := finish_settled environment goal
-    rw [show (run environment goal (treeStart environment goal).cost
-      (start environment goal)).agenda = [] from empty] at member
-    exact False.elim (List.not_mem_nil member)
+    wanted ∈ (finish environment goal).answers :=
+  finishWith_contains MatchingExecution.ordinaryCursorCost MatchingExecution.ordinaryCursorLaws
+    MatchingExecution.ordinary_answer_representation environment goal wanted ordered
+
+#print axioms finish_contains
 
 end Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled

@@ -1,4 +1,6 @@
 import Mettapedia.InformationTheory.Basic
+import Mettapedia.InformationTheory.FiniteRecovery
+import Mettapedia.InformationTheory.MarkovRecovery
 import Mettapedia.InformationTheory.MutualInformation
 import Mettapedia.InformationTheory.ConditionalMutualInformation
 import Mettapedia.InformationTheory.ConditionalMutualInformationBridges

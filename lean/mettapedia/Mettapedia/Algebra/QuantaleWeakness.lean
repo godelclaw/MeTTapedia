@@ -167,31 +167,12 @@ end WeightFunction
 theorem QuantaleHom.map_weakness (f : QuantaleHom Q Q') (wf : WeightFunction U Q)
     (H : Finset (U × U)) :
     f (weakness wf H) = weakness (WeightFunction.map (U := U) (Q := Q) (Q' := Q') f wf) H := by
-  classical
-  -- Expand the definition and use `map_sSup'` on the underlying `sSupHom`.
   unfold weakness
-  -- Rewrite the image of the generator-set pointwise using `map_mul'`.
-  have hImage :
-      (f '' { wf.μ p.1 * wf.μ p.2 | p ∈ H }) =
-        { (WeightFunction.map (U := U) (Q := Q) (Q' := Q') f wf).μ p.1 *
-            (WeightFunction.map (U := U) (Q := Q) (Q' := Q') f wf).μ p.2 | p ∈ H } := by
-    ext t
-    constructor
-    · rintro ⟨s, hs, rfl⟩
-      rcases hs with ⟨p, hpH, rfl⟩
-      refine ⟨p, hpH, ?_⟩
-      simp [WeightFunction.map, f.map_mul']
-    · rintro ⟨p, hpH, rfl⟩
-      refine ⟨wf.μ p.1 * wf.μ p.2, ?_, ?_⟩
-      · exact ⟨p, hpH, rfl⟩
-      · simp [WeightFunction.map, f.map_mul']
-  -- Now use `map_sSup'` and the set rewrite (without `simp` rewriting the lemma into `True`).
-  have hsSup :
-      f (sSup { wf.μ p.1 * wf.μ p.2 | p ∈ H }) =
-        sSup (f '' { wf.μ p.1 * wf.μ p.2 | p ∈ H }) :=
-    f.map_sSup' { wf.μ p.1 * wf.μ p.2 | p ∈ H }
-  refine hsSup.trans ?_
-  simpa using congrArg sSup hImage
+  rw [f.map_sSup']
+  congr 1
+  ext value
+  have preserves : ∀ a b, f.tosSupHom (a * b) = f.tosSupHom a * f.tosSupHom b := f.map_mul'
+  simp [WeightFunction.map, preserves]
 
 namespace QuantaleHom
 
@@ -220,17 +201,8 @@ protected def id (Q : Type*) [Monoid Q] [CompleteLattice Q] : QuantaleHom Q Q wh
 /-- Composition of quantale morphisms. -/
 protected def comp (g : QuantaleHom Q₂ Q₃) (f : QuantaleHom Q₁ Q₂) : QuantaleHom Q₁ Q₃ where
   toFun := fun x => g (f x)
-  map_sSup' S := by
-    -- Push `sSup` through `f`, then through `g`.
-    calc
-      g (f (sSup S)) = g (sSup (f '' S)) := by simp [f.map_sSup' S]
-      _ = sSup (g '' (f '' S)) := g.map_sSup' (f '' S)
-      _ = sSup ((fun x => g (f x)) '' S) := by
-        simp [Set.image_image]
-  map_mul' x y := by
-    calc
-      g (f (x * y)) = g (f x * f y) := by simp [f.map_mul' x y]
-      _ = g (f x) * g (f y) := g.map_mul' _ _
+  map_sSup' S := by rw [f.map_sSup', g.map_sSup', Set.image_image]
+  map_mul' x y := by rw [f.map_mul', g.map_mul']
 
 @[simp] lemma comp_apply (g : QuantaleHom Q₂ Q₃) (f : QuantaleHom Q₁ Q₂) (x : Q₁) :
     QuantaleHom.comp g f x = g (f x) := rfl
@@ -726,18 +698,44 @@ theorem residuate_comm' {Q : Type*} [CommSemigroup Q] [CompleteLattice Q] [IsQua
 
 /-- Galois connection for residuation. -/
 theorem residuate_galois (x y z : Q) :
-    z * x ≤ y ↔ z ≤ leftResiduate x y := by
-  constructor
-  · intro h
-    exact le_sSup h
-  · intro h
-    calc z * x ≤ (leftResiduate x y) * x := mul_le_mul_left h x
-         _ = sSup {z | z * x ≤ y} * x := rfl
-         _ = ⨆ w ∈ {z | z * x ≤ y}, w * x := IsQuantale.sSup_mul_distrib _ _
-         _ ≤ y := by
-           apply iSup₂_le
-           intro w hw
-           exact hw
+    z * x ≤ y ↔ z ≤ leftResiduate x y := Quantale.leftMulResiduation_le_iff_mul_le.symm
+
+/-- The other multiplication orientation has its own right adjoint. -/
+theorem rightResiduate_galois (x y z : Q) :
+    x * z ≤ y ↔ z ≤ rightResiduate x y :=
+  Quantale.rightMulResiduation_le_iff_mul_le.symm
+
+/-- Currying keeps the multiplied hypotheses in order; commutativity is unnecessary. -/
+theorem leftResiduate_curry (a b c : Q) :
+    leftResiduate (a * b) c = leftResiduate a (leftResiduate b c) := by
+  apply eq_of_forall_le_iff
+  intro z
+  simp only [← residuate_galois, mul_assoc]
+
+/-- Composition acts on the previous implication from the left. -/
+theorem leftResiduate_comp (a b c : Q) :
+    leftResiduate b c * leftResiduate a b ≤ leftResiduate a c := by
+  rw [← residuate_galois, mul_assoc]
+  exact (mul_le_mul_right ((residuate_galois a b _).mpr le_rfl) _).trans
+    ((residuate_galois b c _).mpr le_rfl)
+
+variable {R : Type*} [Semigroup R] [CompleteLattice R] [IsQuantale R]
+
+/-- Multiplicative order isomorphisms transport the actual left residual. -/
+theorem map_leftResiduate (e : Q ≃o R) (multiplicative : ∀ a b, e (a * b) = e a * e b)
+    (a b : Q) : e (leftResiduate a b) = leftResiduate (e a) (e b) := by
+  apply eq_of_forall_le_iff
+  intro z
+  rw [← e.symm_apply_le, ← residuate_galois, ← e.le_iff_le, multiplicative,
+    e.apply_symm_apply, residuate_galois]
+
+/-- The transport law retains the right multiplication orientation. -/
+theorem map_rightResiduate (e : Q ≃o R) (multiplicative : ∀ a b, e (a * b) = e a * e b)
+    (a b : Q) : e (rightResiduate a b) = rightResiduate (e a) (e b) := by
+  apply eq_of_forall_le_iff
+  intro z
+  rw [← e.symm_apply_le, ← rightResiduate_galois, ← e.le_iff_le, multiplicative,
+    e.apply_symm_apply, rightResiduate_galois]
 
 end Residuation
 
@@ -746,7 +744,7 @@ end Residuation
 Probabilistic Logic Networks (PLN) use truth values with "strength" to perform
 uncertain inference. The quantale residuation provides the mathematical foundation:
 
-- The residuate `x → y` (leftResiduate y x) represents implication strength
+- The residuate `x → y` (`leftResiduate x y`) is an algebraic implication
 - Modus ponens: from w(A) and w(A → B), derive bounds on w(B)
 - Deduction/Transitivity: (A → B) ⊗ (B → C) ≤ (A → C)
 
@@ -772,20 +770,12 @@ noncomputable def quantaleImplies (x y : Q) : Q := leftResiduate x y
 (A →_L B) * A ≤ B
 
 This is the correct form for left residuation. -/
-theorem modusPonens_left (A B : Q) : (leftResiduate A B) * A ≤ B := by
-  unfold leftResiduate
-  calc sSup {z | z * A ≤ B} * A
-      = ⨆ w ∈ {z | z * A ≤ B}, w * A := IsQuantale.sSup_mul_distrib _ _
-    _ ≤ B := iSup₂_le (fun w hw => hw)
+theorem modusPonens_left (A B : Q) : (leftResiduate A B) * A ≤ B := (residuate_galois A B _).mpr le_rfl
 
 /-- **Modus Ponens for Right Residuation**
 
 A * (A →_R B) ≤ B -/
-theorem modusPonens_right (A B : Q) : A * (rightResiduate A B) ≤ B := by
-  unfold rightResiduate
-  calc A * sSup {z | A * z ≤ B}
-      = ⨆ w ∈ {z | A * z ≤ B}, A * w := IsQuantale.mul_sSup_distrib _ _
-    _ ≤ B := iSup₂_le (fun w hw => hw)
+theorem modusPonens_right (A B : Q) : A * (rightResiduate A B) ≤ B := (rightResiduate_galois A B _).mpr le_rfl
 
 /-- **Modus Ponens (Commutative Quantales)**
 
@@ -845,12 +835,7 @@ theorem quantaleImplies_mono_right (A : Q) {B C : Q} (h : B ≤ C) :
 If A ≤ B, then (B → C) ≤ (A → C).
 Weaker premises give stronger implications. -/
 theorem quantaleImplies_antimono_left {A B : Q} (C : Q) (h : A ≤ B) :
-    quantaleImplies B C ≤ quantaleImplies A C := by
-  unfold quantaleImplies leftResiduate
-  apply sSup_le_sSup
-  intro z hz
-  calc z * A ≤ z * B := mul_le_mul_right h z
-       _ ≤ C := hz
+    quantaleImplies B C ≤ quantaleImplies A C := leftResiduate_antitone_left C h
 
 /-- **Lower Bound Inference (Commutative Quantales)**
 
@@ -875,37 +860,7 @@ theorem quantaleImplies_adjunction (x y z : Q) :
 (A ⊗ B → C) = (A → (B → C))
 The quantale version of logical currying. -/
 theorem quantaleImplies_curry {Q : Type*} [CommSemigroup Q] [CompleteLattice Q] [IsQuantale Q]
-    (A B C : Q) : quantaleImplies (A * B) C = quantaleImplies A (quantaleImplies B C) := by
-  apply le_antisymm
-  · -- ≤ direction: use adjunction twice
-    -- Need: quantaleImplies (A * B) C ≤ quantaleImplies A (quantaleImplies B C)
-    -- Equiv to: quantaleImplies (A * B) C * A ≤ quantaleImplies B C (by adjunction)
-    -- Equiv to: quantaleImplies (A * B) C * A * B ≤ C (by adjunction)
-    rw [← quantaleImplies_adjunction]
-    rw [← quantaleImplies_adjunction]
-    -- Need: ((A*B) → C) * A * B ≤ C
-    -- By associativity and commutativity: = ((A*B) → C) * (A * B) ≤ C
-    calc quantaleImplies (A * B) C * A * B
-        = quantaleImplies (A * B) C * (A * B) := by rw [mul_assoc]
-      _ ≤ C := modusPonens' (A * B) C
-  · -- ≥ direction: use adjunction twice in reverse
-    -- Need: quantaleImplies A (quantaleImplies B C) ≤ quantaleImplies (A * B) C
-    -- Equiv to: quantaleImplies A (quantaleImplies B C) * (A * B) ≤ C
-    rw [← quantaleImplies_adjunction]
-    -- (A → (B → C)) * (A * B) ≤ C
-    -- Rewrite: x * (A * B) = A * (x * B) by comm/assoc
-    have heq : quantaleImplies A (quantaleImplies B C) * (A * B) =
-        A * (quantaleImplies A (quantaleImplies B C) * B) := by
-      rw [mul_comm (quantaleImplies A (quantaleImplies B C)) (A * B)]
-      rw [mul_assoc A B, mul_comm B, ← mul_assoc]
-    rw [heq]
-    -- A * (x * B) = (A * x) * B ≤ (B→C) * B
-    calc A * (quantaleImplies A (quantaleImplies B C) * B)
-        = (A * quantaleImplies A (quantaleImplies B C)) * B := by rw [mul_assoc]
-      _ ≤ quantaleImplies B C * B := by
-          apply mul_le_mul_left
-          exact modusPonens A (quantaleImplies B C)
-      _ ≤ C := modusPonens' B C
+    (A B C : Q) : quantaleImplies (A * B) C = quantaleImplies A (quantaleImplies B C) := leftResiduate_curry A B C
 
 /-- **Transitivity/Deduction Rule (Syllogism) - Commutative Quantales**
 
@@ -917,19 +872,7 @@ then "A implies C" with strength at least α ⊗ β.
 This is the PLN deduction rule (quantale version of categorical composition). -/
 theorem quantaleImplies_trans {Q : Type*} [CommSemigroup Q] [CompleteLattice Q] [IsQuantale Q]
     (A B C : Q) : (quantaleImplies A B) * (quantaleImplies B C) ≤ quantaleImplies A C := by
-  -- By adjunction: need to show (A → B) * (B → C) * A ≤ C
-  rw [← quantaleImplies_adjunction]
-  -- Rewrite: (A → B) * (B → C) * A = (B → C) * ((A → B) * A) by comm/assoc
-  have heq : quantaleImplies A B * quantaleImplies B C * A =
-      quantaleImplies B C * (quantaleImplies A B * A) := by
-    rw [mul_comm (quantaleImplies A B) (quantaleImplies B C)]
-    rw [mul_assoc]
-  rw [heq]
-  calc quantaleImplies B C * (quantaleImplies A B * A)
-      ≤ quantaleImplies B C * B := by
-        apply mul_le_mul_right
-        exact modusPonens_left A B
-    _ ≤ C := modusPonens' B C
+  simpa only [quantaleImplies, mul_comm] using leftResiduate_comp A B C
 
 end PLNInference
 
@@ -943,13 +886,7 @@ variable {U : Type*} [Fintype U]
     Corresponds to: "impossible event has zero weakness" -/
 theorem weakness_empty {Q : Type*} [Monoid Q] [CompleteLattice Q]
     (wf : WeightFunction U Q) :
-    weakness wf ∅ = ⊥ := by
-  unfold weakness
-  have hempty : {x | ∃ p ∈ (∅ : Finset (U × U)), wf.μ p.1 * wf.μ p.2 = x} = (∅ : Set Q) := by
-    ext q
-    simp only [Set.mem_ofPred_eq, Finset.notMem_empty, false_and, exists_false,
-      Set.mem_empty_iff_false]
-  rw [hempty, sSup_empty]
+    weakness wf ∅ = ⊥ := by simp [weakness]
 
 /-- Monotonicity: H₁ ⊆ H₂ implies w(H₁) ≤ w(H₂) -/
 theorem weakness_mono {Q : Type*} [Monoid Q] [CompleteLattice Q]

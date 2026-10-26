@@ -259,4 +259,40 @@ theorem Derives.statement {sorts : SortSignature} {signature : TermSignature}
       · exact ihHead
       · exact ihTail _ member
 
+theorem TheoremDecl.Instantiates.arguments_varsBelow {signature : TermSignature} {context : Context}
+    {declaration : TheoremDecl} {arguments : List Preterm} {instantiation : TheoremInstance}
+    (instantiated : Instantiates signature context declaration arguments instantiation) :
+    ∀ argument ∈ arguments, Preterm.VarsBelow context.length argument := by
+  have typed := instantiated.admissible.typed
+  clear instantiated
+  generalize declaration.arguments = formals at typed
+  induction typed with
+  | nil => simp
+  | cons first rest ih =>
+      intro argument member
+      rcases List.mem_cons.mp member with rfl | tail
+      · exact first.hasType.varsBelow
+      · exact ih argument tail
+
+theorem TheoremDecl.Instantiates.varsBelow {signature : TermSignature} {context : Context}
+    {declaration : TheoremDecl} {arguments : List Preterm} {instantiation : TheoremInstance}
+    (instantiated : Instantiates signature context declaration arguments instantiation) :
+    (∀ premise ∈ instantiation.hypotheses, Preterm.VarsBelow context.length premise) ∧
+      Preterm.VarsBelow context.length instantiation.conclusion := by
+  have images (index : Nat) (value : Preterm) (found : Substitution.ofList arguments index = some value) :
+      Preterm.VarsBelow context.length value :=
+    instantiated.arguments_varsBelow value (List.mem_of_getElem? found)
+  refine ⟨?_, instantiated.conclusion.varsBelow _ images⟩
+  have premises := instantiated.hypotheses
+  generalize declaration.hypotheses = sources at premises
+  generalize instantiation.hypotheses = results at premises ⊢
+  induction premises with
+  | nil => simp
+  | cons first rest ih =>
+      intro expression member
+      rcases List.mem_cons.mp member with rfl | tail
+      · exact first.varsBelow _ images
+      · exact ih expression tail
+
+
 end Mettapedia.Languages.MM0.Kernel

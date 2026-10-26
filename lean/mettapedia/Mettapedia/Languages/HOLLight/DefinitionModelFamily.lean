@@ -121,6 +121,40 @@ noncomputable def nil (primitives : Primitives initial) : Family.{w} initial ini
       later types primitives.functionArity primitives.equalityParameter primitives.equalityRegistered
       primitives.selectionParameter primitives.selectionDeclaration other assignment substitution
 
+/-- Fix one already registered ambient family while preserving source-instance
+coherence and the interpretation of future fresh operators. This specializes
+the input family table; it does not identify arbitrary interpreted carriers. -/
+noncomputable def fixAmbientOperator {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol}
+    (prior : Family.{w} initial context theory) (fixed : TypeOp) (arity : Nat)
+    (registered : initial.signature.typeOperators fixed = some arity)
+    (family : List Domain.{w} → Domain.{w}) : Family.{w} initial context theory where
+  includes := prior.includes
+  operators := fun other => prior.operators (extend other fixed family)
+  model := fun other => prior.model (extend other fixed family)
+  carrier := fun other => prior.carrier (extend other fixed family)
+  fullDomains := fun other => prior.fullDomains (extend other fixed family)
+  localSymbols := fun other => prior.localSymbols (extend other fixed family)
+  equations := fun other => prior.equations (extend other fixed family)
+  freshOperators := by
+    intro other operator replacement notBool notFunction fresh
+    have different : operator ≠ fixed := by
+      intro same
+      subst operator
+      rw [prior.includes.1 _ _ registered] at fresh
+      cases fresh
+    rw [extend_commute other operator fixed replacement family different]
+    exact prior.freshOperators (extend other fixed family) operator replacement notBool notFunction fresh
+  freshModels := by
+    intro other operator replacement notBool notFunction fresh assignment
+    have different : operator ≠ fixed := by
+      intro same
+      subst operator
+      rw [prior.includes.1 _ _ registered] at fresh
+      cases fresh
+    rw [extend_commute other operator fixed replacement family different]
+    exact prior.freshModels (extend other fixed family) operator replacement notBool notFunction fresh assignment
+  instances := fun other => prior.instances (extend other fixed family)
+
 private theorem constant_value_typed (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (constant : Const) (annotation : Ty) {left right : HOL.Ty AtomicTy}
     (leftTyped : annotation.toHOL = left) (rightTyped : annotation.toHOL = right) :
@@ -480,5 +514,45 @@ theorem predicate_iff_representation_abstraction (assignment : Assignment.{w})
   HOL.WitnessedTypeDefinition.predicate_iff_representation_abstraction _ _ _ value
 
 end Witnessed
+
+namespace Family
+
+/-- Restrict constant-declaration scope while retaining the interpreted
+operator table, values and theory. The type-operator table must agree. -/
+noncomputable def restrictConstants {initial smaller larger : TheoryContext}
+    {theory : HOL.ClosedTheorySet Symbol} (prior : Family.{w} initial larger theory)
+    (initialIncluded : initial.signature.Includes smaller.signature)
+    (included : smaller.signature.Includes larger.signature)
+    (types : smaller.signature.typeOperators = larger.signature.typeOperators) :
+    Family.{w} initial smaller theory where
+  includes := initialIncluded
+  operators := prior.operators
+  model := prior.model
+  carrier := prior.carrier
+  fullDomains := prior.fullDomains
+  localSymbols := prior.localSymbols
+  equations := prior.equations
+  freshOperators := by
+    intro other operator family notBool notFunction fresh
+    apply prior.freshOperators other operator family notBool notFunction
+    rw [← types]
+    exact fresh
+  freshModels := by
+    intro other operator family notBool notFunction fresh assignment
+    have largerFresh : larger.signature.typeOperators operator = none := by rw [← types]; exact fresh
+    exact (prior.freshModels other operator family notBool notFunction largerFresh assignment).restrictSignature included
+  instances := by
+    intro other later laterTypes assignment substitution
+    have largerTypes : ∀ operator arity, larger.signature.typeOperators operator = some arity →
+        later.typeOperators operator = some arity := by
+      intro operator arity registered
+      apply laterTypes operator arity
+      rw [types]
+      exact registered
+    apply SourceAgreement.restrictSignature (larger := withTypes larger.signature later)
+      (agreement := prior.instances other later largerTypes assignment substitution)
+    exact ⟨fun _ _ found => found,included.2⟩
+
+end Family
 
 end Mettapedia.Languages.HOLLight.DefinitionModelFamily

@@ -6,8 +6,9 @@ import Mathlib.Computability.MyhillNerode
 A derivative removes a specified initial letter from each word of a language:
 it is Mathlib's left quotient by a one-letter word. The equations for sums,
 products and Kleene star are proved directly from Mathlib's set-of-words
-semantics and its nonempty-factor description of Kleene star. They do not
-presuppose a regex matcher or its derivative algorithm.
+semantics and its nonempty-factor description of Kleene star. Continuation
+languages also give a recognition-bisimulation principle for state machines.
+Neither construction presupposes a regex matcher or its derivative algorithm.
 -/
 
 open scoped Computability
@@ -22,13 +23,11 @@ def leftDerivative (a : α) (L : Language α) : Language α :=
   L.leftQuotient [a]
 
 theorem leftDerivative_eq_leftQuotient (a : α) (L : Language α) :
-    leftDerivative a L = L.leftQuotient [a] :=
-  rfl
+    leftDerivative a L = L.leftQuotient [a] := rfl
 
 @[simp]
 theorem mem_leftDerivative (a : α) (L : Language α) (w : List α) :
-    w ∈ leftDerivative a L ↔ a :: w ∈ L :=
-  Iff.rfl
+    w ∈ leftDerivative a L ↔ a :: w ∈ L := Iff.rfl
 
 /-- The left quotient by a word removes its letters one at a time. -/
 theorem leftQuotient_cons (a : α) (word : List α) (L : Language α) :
@@ -36,9 +35,8 @@ theorem leftQuotient_cons (a : α) (word : List α) (L : Language α) :
   Language.leftQuotient_append L [a] word
 
 @[simp]
-theorem leftDerivative_zero (a : α) : leftDerivative a (0 : Language α) = 0 := by
-  ext w
-  simp
+theorem leftDerivative_zero (a : α) : leftDerivative a (0 : Language α) = 0 :=
+  Set.preimage_empty
 
 @[simp]
 theorem leftDerivative_one (a : α) : leftDerivative a (1 : Language α) = 0 := by
@@ -76,11 +74,7 @@ theorem mem_leftDerivative_letters (a : α) (P : α → Prop) (w : List α) :
       P a ∧ w = [] := by
   change (∃ b, P b ∧ a :: w = [b]) ↔ P a ∧ w = []
   simp only [List.cons.injEq]
-  constructor
-  · rintro ⟨b, hb, rfl, rfl⟩
-    exact ⟨hb, rfl⟩
-  · rintro ⟨ha, rfl⟩
-    exact ⟨a, ha, rfl, rfl⟩
+  aesop
 
 theorem leftDerivative_letters (a : α) (P : α → Prop) [Decidable (P a)] :
     leftDerivative a ({v | ∃ b, P b ∧ v = [b]} : Language α) =
@@ -91,33 +85,23 @@ theorem leftDerivative_letters (a : α) (P : α → Prop) [Decidable (P a)] :
 
 @[simp]
 theorem leftDerivative_add (a : α) (L M : Language α) :
-    leftDerivative a (L + M) = leftDerivative a L + leftDerivative a M := by
+    leftDerivative a (L + M) = leftDerivative a L + leftDerivative a M := Set.preimage_union
+
+/-- Consuming a letter commutes with an arbitrary union of languages. -/
+theorem leftDerivative_sSup (a : α) (S : Set (Language α)) :
+    leftDerivative a (sSup S) = sSup (leftDerivative a '' S) := by
   ext w
-  simp only [mem_leftDerivative, Language.mem_add]
+  change (∃ K ∈ S, a :: w ∈ K) ↔ ∃ K ∈ leftDerivative a '' S, w ∈ K
+  simp only [Set.mem_image]
+  aesop
 
 /-- Concatenation can consume the initial letter in the first factor, or in the
 second factor when the first factor accepts the empty word. -/
 theorem mem_leftDerivative_mul (a : α) (L M : Language α) (w : List α) :
     w ∈ leftDerivative a (L * M) ↔
       w ∈ leftDerivative a L * M ∨ ([] ∈ L ∧ w ∈ leftDerivative a M) := by
-  constructor
-  · intro h
-    obtain ⟨u, hu, v, hv, huv⟩ := Language.mem_mul.mp h
-    cases u with
-    | nil =>
-        right
-        simp only [List.nil_append] at huv
-        subst v
-        exact ⟨hu, hv⟩
-    | cons b u =>
-        left
-        simp only [List.cons_append, List.cons.injEq] at huv
-        obtain ⟨rfl, huv⟩ := huv
-        exact Language.mem_mul.mpr ⟨u, hu, v, hv, huv⟩
-  · rintro (h | ⟨hL, hM⟩)
-    · obtain ⟨u, hu, v, hv, rfl⟩ := Language.mem_mul.mp h
-      exact Language.mem_mul.mpr ⟨a :: u, hu, v, hv, rfl⟩
-    · exact Language.mem_mul.mpr ⟨[], hL, a :: w, hM, rfl⟩
+  simp only [mem_leftDerivative, Language.mem_mul, List.append_eq_cons_iff]
+  aesop
 
 /-- The language equation for concatenation, with an explicit nullability guard. -/
 theorem leftDerivative_mul (a : α) (L M : Language α) [Decidable ([] ∈ L)] :
@@ -133,26 +117,15 @@ theorem leftDerivative_kstar (a : α) (L : Language α) :
     leftDerivative a L∗ = leftDerivative a L * L∗ := by
   ext w
   constructor
-  · intro h
-    obtain ⟨parts, hparts, hall⟩ := Language.mem_kstar_iff_exists_nonempty.mp h
-    cases parts with
-    | nil => simp at hparts
-    | cons first rest =>
-        have hfirst := hall first (by simp)
-        cases first with
-        | nil => exact False.elim (hfirst.2 rfl)
-        | cons b u =>
-            simp only [List.flatten_cons, List.cons_append, List.cons.injEq] at hparts
-            obtain ⟨rfl, hw⟩ := hparts
-            have hrest : rest.flatten ∈ L∗ :=
-              Language.join_mem_kstar (fun v hv => (hall v (by simp [hv])).1)
-            exact Language.mem_mul.mpr ⟨u, hfirst.1, rest.flatten, hrest, hw.symm⟩
-  · intro h
-    obtain ⟨u, hu, v, hv, rfl⟩ := Language.mem_mul.mp h
-    obtain ⟨parts, rfl, hall⟩ := Language.mem_kstar.mp hv
-    apply Language.mem_kstar.mpr
-    refine ⟨(a :: u) :: parts, rfl, ?_⟩
-    exact List.forall_mem_cons.mpr ⟨hu, hall⟩
+  · intro member
+    obtain ⟨parts, eq, all⟩ := Language.mem_kstar.mp member
+    obtain ⟨before, first, rest, rfl, _, eq⟩ := List.cons_eq_flatten_iff.mp eq
+    exact Language.mem_mul.mpr ⟨first, all _ (by simp), rest.flatten,
+      Language.join_mem_kstar (fun v hv => all v (by simp [hv])), eq.symm⟩
+  · intro member
+    obtain ⟨u, hu, v, hv, rfl⟩ := Language.mem_mul.mp member
+    obtain ⟨parts, rfl, all⟩ := Language.mem_kstar.mp hv
+    exact Language.mem_kstar.mpr ⟨(a :: u) :: parts, rfl, List.forall_mem_cons.mpr ⟨hu, all⟩⟩
 
 /-- A language equation remains valid after consuming a letter. -/
 theorem leftDerivative_congr (a : α) {L M : Language α}
@@ -163,6 +136,19 @@ theorem leftDerivative_congr (a : α) {L M : Language α}
 theorem leftDerivative_mono (a : α) {L M : Language α} (h : L ≤ M) :
     leftDerivative a L ≤ leftDerivative a M :=
   fun _ hw => h hw
+
+/-- A relation respecting acceptance and each letter transition preserves all
+continuation observations, even for different and infinite state carriers. -/
+theorem acceptsFrom_eq_of_bisimulation {σ τ : Type*}
+    (M : DFA α σ) (N : DFA α τ) (R : σ → τ → Prop)
+    (observe : ∀ s t, R s t → (s ∈ M.accept ↔ t ∈ N.accept))
+    (step : ∀ s t, R s t → ∀ a, R (M.step s a) (N.step t a))
+    (s : σ) (t : τ) (related : R s t) : M.acceptsFrom s = N.acceptsFrom t := by
+  ext w
+  change M.evalFrom s w ∈ M.accept ↔ N.evalFrom t w ∈ N.accept
+  induction w generalizing s t with
+  | nil => exact observe s t related
+  | cons a rest ih => exact ih _ _ (step s t related a)
 
 namespace Controls
 

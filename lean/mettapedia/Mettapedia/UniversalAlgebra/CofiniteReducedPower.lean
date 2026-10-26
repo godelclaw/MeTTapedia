@@ -2,147 +2,44 @@ import Mathlib.Order.Filter.Cofinite
 import Mathlib.Order.Filter.Germ.Basic
 
 /-!
-# Cofinite reduced powers and relative infinity
+# Cofinite reduced powers: explicit tails and library germs
 
-The germ of a sequence at the cofinite filter is a reduced power requiring no
-choice of a free ultrafilter.  The identity sequence defines an element above
-every constant natural-number germ and outside the diagonal image.
-
-This is a choice-free relative-infinity baseline, not an ultraproduct.  The
-eventual order is only partial: two oscillating germs are explicitly
-incomparable.  Passing to a free ultrafilter can make the order total and supply
-first-order transfer, but that is an additional classical profile rather than a
-property of the cofinite construction.
+The constructive `Tail` presentation retains concrete thresholds and proves
+relative infinity and incomparable oscillators without classical choice.
+The order isomorphism below sends each tail class to the germ of the same
+sequence. Library-germ results reuse those constructive proofs; the bridge
+itself inherits the generic filter infrastructure's classical dependencies.
 -/
 
 set_option autoImplicit false
-
 namespace Mettapedia.UniversalAlgebra.CofiniteReducedPower
-
 open Filter
 
-/-- Sequences modulo eventual equality outside a finite set. -/
-abbrev Carrier (Value : Type*) : Type _ :=
-  Filter.Germ (Filter.cofinite : Filter Nat) Value
+abbrev Carrier (Value : Type*) : Type _ := Filter.Germ (Filter.cofinite : Filter Nat) Value
 
-/-- Embed a value as the germ of its constant sequence. -/
-def diagonal {Value : Type*} (value : Value) : Carrier Value :=
-  (value : Carrier Value)
-
-/-- The germ of the identity sequence. -/
-def growing : Carrier Nat :=
-  (fun index : Nat => index : Carrier Nat)
-
-/-- Constant germs remain distinct. -/
-theorem diagonal_injective :
-    Function.Injective (diagonal : Nat → Carrier Nat) := by
-  intro first second equalGerms
-  exact Filter.Germ.const_inj.mp equalGerms
-
-/-- Every standard natural is eventually below the growing germ. -/
-theorem diagonal_le_growing (value : Nat) :
-    diagonal value ≤ growing := by
-  change ∀ᶠ index : Nat in Filter.cofinite, value ≤ index
-  rw [Nat.cofinite_eq_atTop]
-  exact Filter.eventually_ge_atTop value
-
-/-- The growing germ is not any constant germ. -/
-theorem growing_ne_diagonal (value : Nat) :
-    growing ≠ diagonal value := by
-  intro equalGerms
-  have eventuallyConstant :
-      (fun index : Nat => index) =ᶠ[Filter.cofinite]
-        (fun _index : Nat => value) :=
-    Filter.Germ.coe_eq.mp equalGerms
-  rw [Nat.cofinite_eq_atTop] at eventuallyConstant
-  change (∀ᶠ index : Nat in Filter.atTop, index = value) at eventuallyConstant
-  rw [Filter.eventually_atTop] at eventuallyConstant
-  obtain ⟨threshold, constantAfter⟩ := eventuallyConstant
-  have impossible := constantAfter (max threshold (value + 1))
-    (le_max_left threshold (value + 1))
-  omega
-
-/-- The relative infinity is strictly above every standard diagonal point. -/
-theorem diagonal_lt_growing (value : Nat) :
-    diagonal value < growing := by
-  rw [lt_iff_le_and_ne]
-  exact ⟨diagonal_le_growing value, (growing_ne_diagonal value).symm⟩
-
-/-- The diagonal embedding does not exhaust the cofinite reduced power. -/
-theorem diagonal_not_surjective :
-    ¬ Function.Surjective (diagonal : Nat → Carrier Nat) := by
-  intro diagonalSurjective
-  obtain ⟨value, valueMaps⟩ := diagonalSurjective growing
-  exact growing_ne_diagonal value valueMaps.symm
-
-/-! ## The price of avoiding a free ultrafilter -/
-
-/-- An oscillating representative which is high at even indices. -/
+def diagonal {Value : Type*} (value : Value) : Carrier Value := (value : Carrier Value)
+def growing : Carrier Nat := (fun index : Nat => index : Carrier Nat)
 def evenHigh : Carrier Nat :=
   (fun index : Nat => if index % 2 = 0 then 1 else 0 : Carrier Nat)
-
-/-- An oscillating representative which is high at odd indices. -/
 def oddHigh : Carrier Nat :=
   (fun index : Nat => if index % 2 = 0 then 0 else 1 : Carrier Nat)
-
-/-- The even-high germ is not eventually below the odd-high germ. -/
-theorem not_evenHigh_le_oddHigh : ¬ evenHigh ≤ oddHigh := by
-  intro eventuallyBelow
-  change
-    (∀ᶠ index : Nat in Filter.cofinite,
-      (if index % 2 = 0 then 1 else 0) ≤
-        (if index % 2 = 0 then 0 else 1)) at eventuallyBelow
-  rw [Nat.cofinite_eq_atTop, Filter.eventually_atTop] at eventuallyBelow
-  obtain ⟨threshold, belowAfter⟩ := eventuallyBelow
-  have atEven := belowAfter (2 * threshold) (by omega)
-  have evenRemainder : (2 * threshold) % 2 = 0 := by omega
-  simp only [evenRemainder, ↓reduceIte] at atEven
-  omega
-
-/-- The odd-high germ is not eventually below the even-high germ. -/
-theorem not_oddHigh_le_evenHigh : ¬ oddHigh ≤ evenHigh := by
-  intro eventuallyBelow
-  change
-    (∀ᶠ index : Nat in Filter.cofinite,
-      (if index % 2 = 0 then 0 else 1) ≤
-        (if index % 2 = 0 then 1 else 0)) at eventuallyBelow
-  rw [Nat.cofinite_eq_atTop, Filter.eventually_atTop] at eventuallyBelow
-  obtain ⟨threshold, belowAfter⟩ := eventuallyBelow
-  have atOdd := belowAfter (2 * threshold + 1) (by omega)
-  have oddRemainder : (2 * threshold + 1) % 2 ≠ 0 := by omega
-  simp only [oddRemainder, ↓reduceIte] at atOdd
-  omega
-
-/-- Negative canary: the eventual order is genuinely partial.  A free
-ultrafilter is additional structure precisely because it decides such
-cofinite-indeterminate oscillations. -/
-theorem oscillators_incomparable :
-    (¬ evenHigh ≤ oddHigh) ∧ (¬ oddHigh ≤ evenHigh) :=
-  ⟨not_evenHigh_le_oddHigh, not_oddHigh_le_evenHigh⟩
-
-/-- The positive relative-infinity theorem paired with non-surjectivity. -/
-theorem cofinite_relative_infinity :
-    (∀ value : Nat, diagonal value < growing) ∧
-      ¬ Function.Surjective (diagonal : Nat → Carrier Nat) :=
-  ⟨diagonal_lt_growing, diagonal_not_surjective⟩
-
-/-! ## An explicit choice-free tail presentation
-
-Mathlib's generic filter-basis implementation is classical.  The following
-equivalent tail presentation isolates the mathematical core directly: two
-sequences agree when a concrete threshold bounds all their disagreements.  Its
-proofs use quotient soundness and propositional extensionality, but no classical
-choice and no ultrafilter-selection principle.
--/
 
 namespace Tail
 
 universe u
 
-/-- Eventual equality presented by an explicit tail threshold. -/
 def EventuallyEqual {Value : Type u} (first second : Nat → Value) : Prop :=
   ∃ threshold : Nat, ∀ index : Nat, threshold ≤ index →
     first index = second index
+
+/-- Combine two explicit tail bounds without choosing representatives or a filter. -/
+private theorem combineTails {P Q R : Nat → Prop}
+    (first : ∃ n, ∀ i, n ≤ i → P i) (second : ∃ n, ∀ i, n ≤ i → Q i)
+    (combine : ∀ i, P i → Q i → R i) : ∃ n, ∀ i, n ≤ i → R i := by
+  obtain ⟨n, hn⟩ := first
+  obtain ⟨m, hm⟩ := second
+  exact ⟨max n m, fun i hi => combine i (hn i ((le_max_left ..).trans hi))
+    (hm i ((le_max_right ..).trans hi))⟩
 
 theorem eventuallyEqual_refl {Value : Type u} (sequence : Nat → Value) :
     EventuallyEqual sequence sequence :=
@@ -159,15 +56,9 @@ theorem eventuallyEqual_trans {Value : Type u}
     {first second third : Nat → Value}
     (firstSecond : EventuallyEqual first second)
     (secondThird : EventuallyEqual second third) :
-    EventuallyEqual first third := by
-  obtain ⟨firstThreshold, firstAfter⟩ := firstSecond
-  obtain ⟨secondThreshold, secondAfter⟩ := secondThird
-  refine ⟨max firstThreshold secondThreshold, ?_⟩
-  intro index bound
-  exact (firstAfter index ((le_max_left ..).trans bound)).trans
-    (secondAfter index ((le_max_right ..).trans bound))
+    EventuallyEqual first third :=
+  combineTails firstSecond secondThird (fun _ => Eq.trans)
 
-/-- The explicit tail-equivalence relation on sequences. -/
 def sequenceSetoid (Value : Type u) : Setoid (Nat → Value) where
   r := EventuallyEqual
   iseqv :=
@@ -176,23 +67,18 @@ def sequenceSetoid (Value : Type u) : Setoid (Nat → Value) where
       fun {_first _second _third} firstSecond secondThird =>
         eventuallyEqual_trans firstSecond secondThird⟩
 
-/-- Sequences modulo equality after one explicit finite threshold. -/
 def Carrier (Value : Type u) : Type u :=
   Quotient (sequenceSetoid Value)
 
-/-- Form a tail class from a sequence. -/
 def ofSequence {Value : Type u} (sequence : Nat → Value) : Carrier Value :=
   Quotient.mk (sequenceSetoid Value) sequence
 
-/-- Embed a value as a constant tail class. -/
 def diagonal {Value : Type u} (value : Value) : Carrier Value :=
   ofSequence fun _index => value
 
-/-- The identity sequence as an explicit tail class. -/
 def growing : Carrier Nat :=
   ofSequence fun index => index
 
-/-- Eventually-below, also with an explicit threshold. -/
 def EventuallyLE {Value : Type u} [LE Value]
     (first second : Nat → Value) : Prop :=
   ∃ threshold : Nat, ∀ index : Nat, threshold ≤ index →
@@ -203,20 +89,9 @@ theorem eventuallyLE_transport {Value : Type u} [LE Value]
     (firstEqual : EventuallyEqual first first')
     (secondEqual : EventuallyEqual second second')
     (below : EventuallyLE first second) :
-    EventuallyLE first' second' := by
-  obtain ⟨belowThreshold, belowAfter⟩ := below
-  obtain ⟨firstThreshold, firstAfter⟩ := firstEqual
-  obtain ⟨secondThreshold, secondAfter⟩ := secondEqual
-  refine ⟨max belowThreshold (max firstThreshold secondThreshold), ?_⟩
-  intro index bound
-  have belowBound : belowThreshold ≤ index :=
-    (le_max_left belowThreshold (max firstThreshold secondThreshold)).trans bound
-  have firstBound : firstThreshold ≤ index :=
-    (le_max_of_le_right (le_max_left firstThreshold secondThreshold)).trans bound
-  have secondBound : secondThreshold ≤ index :=
-    (le_max_of_le_right (le_max_right firstThreshold secondThreshold)).trans bound
-  rw [← firstAfter index firstBound, ← secondAfter index secondBound]
-  exact belowAfter index belowBound
+    EventuallyLE first' second' :=
+  combineTails firstEqual (combineTails secondEqual below (fun _ => And.intro))
+    (fun _ hf h => by rw [← hf, ← h.1]; exact h.2)
 
 theorem eventuallyLE_congr {Value : Type u} [LE Value]
     {first first' second second' : Nat → Value}
@@ -228,7 +103,6 @@ theorem eventuallyLE_congr {Value : Type u} [LE Value]
       (eventuallyEqual_symm firstEqual)
       (eventuallyEqual_symm secondEqual)⟩
 
-/-- Lift eventual order to tail classes. -/
 def le {Value : Type u} [LE Value]
     (first second : Carrier Value) : Prop :=
   Quotient.liftOn₂ first second EventuallyLE
@@ -245,34 +119,19 @@ instance {Value : Type u} [Preorder Value] : Preorder (Carrier Value) where
     exact ⟨0, fun index _bound => le_refl (sequence index)⟩
   le_trans first second third := by
     refine Quotient.inductionOn₃' first second third ?_
-    intro firstSequence secondSequence thirdSequence firstBelow secondBelow
-    obtain ⟨firstThreshold, firstAfter⟩ := firstBelow
-    obtain ⟨secondThreshold, secondAfter⟩ := secondBelow
-    refine ⟨max firstThreshold secondThreshold, ?_⟩
-    intro index bound
-    exact (firstAfter index ((le_max_left ..).trans bound)).trans
-      (secondAfter index ((le_max_right ..).trans bound))
+    exact fun _ _ _ firstBelow secondBelow =>
+      combineTails firstBelow secondBelow (fun _ => le_trans)
 
 instance {Value : Type u} [PartialOrder Value] : PartialOrder (Carrier Value) where
   le_antisymm first second := by
     refine Quotient.inductionOn₂' first second ?_
-    intro firstSequence secondSequence firstBelow secondBelow
-    apply Quotient.sound
-    obtain ⟨firstThreshold, firstAfter⟩ := firstBelow
-    obtain ⟨secondThreshold, secondAfter⟩ := secondBelow
-    refine ⟨max firstThreshold secondThreshold, ?_⟩
-    intro index bound
-    exact le_antisymm
-      (firstAfter index ((le_max_left ..).trans bound))
-      (secondAfter index ((le_max_right ..).trans bound))
+    exact fun _ _ firstBelow secondBelow =>
+      Quotient.sound (combineTails firstBelow secondBelow (fun _ => le_antisymm))
 
 theorem diagonal_injective :
     Function.Injective (diagonal : Nat → Carrier Nat) := by
   intro first second equalClasses
-  have equalAfter : EventuallyEqual
-      (fun _index : Nat => first) (fun _index : Nat => second) :=
-    Quotient.eq''.mp equalClasses
-  obtain ⟨threshold, equalAt⟩ := equalAfter
+  obtain ⟨threshold, equalAt⟩ := Quotient.eq''.mp equalClasses
   exact equalAt threshold (le_refl threshold)
 
 theorem diagonal_le_growing (value : Nat) :
@@ -282,13 +141,9 @@ theorem diagonal_le_growing (value : Nat) :
 theorem growing_ne_diagonal (value : Nat) :
     growing ≠ diagonal value := by
   intro equalClasses
-  have equalAfter : EventuallyEqual
-      (fun index : Nat => index) (fun _index : Nat => value) :=
-    Quotient.eq''.mp equalClasses
-  obtain ⟨threshold, equalAt⟩ := equalAfter
-  have impossible : max threshold (value + 1) = value :=
-    equalAt (max threshold (value + 1))
-      (le_max_left threshold (value + 1))
+  obtain ⟨threshold, equalAt⟩ := Quotient.eq''.mp equalClasses
+  have impossible := equalAt (max threshold (value + 1)) (le_max_left ..)
+  dsimp at impossible
   omega
 
 theorem diagonal_lt_growing (value : Nat) :
@@ -302,8 +157,6 @@ theorem diagonal_not_surjective :
   obtain ⟨value, valueMaps⟩ := diagonalSurjective growing
   exact growing_ne_diagonal value valueMaps.symm
 
-/-- Even-high and odd-high sequences remain incomparable without an ultrafilter
-choosing one parity class as large. -/
 def evenHigh : Carrier Nat :=
   ofSequence fun index => if index % 2 = 0 then 1 else 0
 
@@ -335,22 +188,80 @@ theorem relative_infinity :
       ¬ Function.Surjective (diagonal : Nat → Carrier Nat) :=
   ⟨diagonal_lt_growing, diagonal_not_surjective⟩
 
-#print axioms diagonal_injective
-#print axioms diagonal_le_growing
-#print axioms growing_ne_diagonal
-#print axioms diagonal_lt_growing
-#print axioms diagonal_not_surjective
-#print axioms oscillators_incomparable
-#print axioms relative_infinity
-
 end Tail
 
-#print axioms diagonal_injective
-#print axioms diagonal_le_growing
-#print axioms growing_ne_diagonal
-#print axioms diagonal_lt_growing
-#print axioms diagonal_not_surjective
-#print axioms oscillators_incomparable
-#print axioms cofinite_relative_infinity
+/-- Representation change preserves the supplied sequences and their eventual order. -/
+def tailGermOrderIso {Value : Type*} [PartialOrder Value] : Tail.Carrier Value ≃o Carrier Value where
+  toEquiv := Quotient.congr (Equiv.refl _) (by
+    intro first second
+    change (∃ n, ∀ i, n ≤ i → first i = second i) ↔
+      ∀ᶠ i in (Filter.cofinite : Filter Nat), first i = second i
+    rw [Nat.cofinite_eq_atTop, Filter.eventually_atTop])
+  map_rel_iff' := by
+    intro first second
+    refine Quotient.inductionOn₂' first second ?_
+    intro f g
+    change (∀ᶠ i in (Filter.cofinite : Filter Nat), f i ≤ g i) ↔
+      ∃ n, ∀ i, n ≤ i → f i ≤ g i
+    rw [Nat.cofinite_eq_atTop, Filter.eventually_atTop]
+
+@[simp] theorem tailGermOrderIso_ofSequence {Value : Type*} [PartialOrder Value]
+    (sequence : Nat → Value) :
+    tailGermOrderIso (Tail.ofSequence sequence) = (sequence : Carrier Value) := rfl
+
+theorem diagonal_injective : Function.Injective (diagonal : Nat → Carrier Nat) :=
+  fun _ _ equal => Tail.diagonal_injective (tailGermOrderIso.injective equal)
+
+theorem diagonal_le_growing (value : Nat) : diagonal value ≤ growing :=
+  tailGermOrderIso.monotone (Tail.diagonal_le_growing value)
+
+theorem growing_ne_diagonal (value : Nat) : growing ≠ diagonal value :=
+  fun equal => Tail.growing_ne_diagonal value (tailGermOrderIso.injective equal)
+
+theorem diagonal_lt_growing (value : Nat) : diagonal value < growing :=
+  tailGermOrderIso.strictMono (Tail.diagonal_lt_growing value)
+
+theorem diagonal_not_surjective : ¬ Function.Surjective (diagonal : Nat → Carrier Nat) := by
+  intro surjective
+  obtain ⟨value, equal⟩ := surjective growing
+  exact growing_ne_diagonal value equal.symm
+
+theorem not_evenHigh_le_oddHigh : ¬ evenHigh ≤ oddHigh :=
+  fun below => Tail.not_evenHigh_le_oddHigh (tailGermOrderIso.le_iff_le.mp below)
+
+theorem not_oddHigh_le_evenHigh : ¬ oddHigh ≤ evenHigh :=
+  fun below => Tail.not_oddHigh_le_evenHigh (tailGermOrderIso.le_iff_le.mp below)
+
+theorem oscillators_incomparable : (¬ evenHigh ≤ oddHigh) ∧ (¬ oddHigh ≤ evenHigh) :=
+  ⟨not_evenHigh_le_oddHigh, not_oddHigh_le_evenHigh⟩
+
+theorem cofinite_relative_infinity :
+    (∀ value : Nat, diagonal value < growing) ∧
+      ¬ Function.Surjective (diagonal : Nat → Carrier Nat) :=
+  ⟨diagonal_lt_growing, diagonal_not_surjective⟩
+
+/-- A two-valued sequence whose class is not constant. -/
+def alternating : Carrier Bool :=
+  (fun n : Nat => if n % 2 = 0 then false else true : Nat → Bool)
+
+theorem alternating_ne_diagonal (value : Bool) : alternating ≠ diagonal value := by
+  intro equal
+  have h : ∀ᶠ n in (Filter.cofinite : Filter Nat),
+      (if n % 2 = 0 then false else true) = value := Filter.Germ.coe_eq.mp equal
+  rw [Nat.cofinite_eq_atTop, Filter.eventually_atTop] at h
+  obtain ⟨n, after⟩ := h
+  have even := after (2 * n) (by omega)
+  have odd := after (2 * n + 1) (by omega)
+  have heven : (2 * n) % 2 = 0 := by omega
+  have hodd : (2 * n + 1) % 2 ≠ 0 := by omega
+  simp only [heven, hodd, ↓reduceIte] at even odd
+  exact Bool.noConfusion (even.trans odd.symm)
+
+/-- The first-order property "at most two elements" is lost despite equational transfer. -/
+theorem boolean_three_distinct_classes :
+    ∃ a b c : Carrier Bool, a ≠ b ∧ a ≠ c ∧ b ≠ c :=
+  ⟨diagonal false, diagonal true, alternating,
+    fun equal => Bool.noConfusion (Filter.Germ.const_inj.mp equal),
+    (alternating_ne_diagonal false).symm, (alternating_ne_diagonal true).symm⟩
 
 end Mettapedia.UniversalAlgebra.CofiniteReducedPower

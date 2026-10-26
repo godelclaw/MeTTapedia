@@ -1,4 +1,6 @@
 import Mettapedia.TypeTheory.IndexedPolynomial
+import Mathlib.Logic.Equiv.Fin.Basic
+import Mettapedia.TypeTheory.IndexedPolynomialEquivalence
 
 /-!
 # Finite descriptions of indexed constructor telescopes
@@ -339,4 +341,172 @@ theorem result_wrong_index {context : List I.SortCode}
     IsEmpty (Arguments family (.result expression) environment index) :=
   ⟨fun arguments => different arguments.down.down⟩
 
+end Mettapedia.TypeTheory.IndexedPolynomial.Description
+
+/-! Recursive positions have an exact source-order ordinal codec. Index
+reading follows the original expression telescope, including data binders;
+the coherence theorem joins it to polynomial child indices. -/
+
+namespace Mettapedia.TypeTheory.IndexedPolynomial.Description
+universe u v
+variable {I : Interface.{u}}
+
+def recursiveCount : {context : List I.SortCode} → Code I context → Nat
+  | _, .result _ => 0
+  | _, .data _ body => recursiveCount body
+  | _, .recursive _ rest => recursiveCount rest + 1
+
+def positionToFin : {context : List I.SortCode} → (code : Code I context) →
+    {environment : Env I.Value context} → {index : I.Index} →
+    (shape : Shape code environment index) → Position code shape → Fin (recursiveCount code)
+  | _, .result _, _, _, _, position => PEmpty.elim position
+  | _, .data _ body, _, _, shape, position => positionToFin body shape.2 position
+  | _, .recursive _ rest, _, _, shape, position =>
+      match position with
+      | none => ⟨0, Nat.zero_lt_succ (recursiveCount rest)⟩
+      | some prior => (positionToFin rest shape prior).succ
+
+def positionOfFin : {context : List I.SortCode} → (code : Code I context) →
+    {environment : Env I.Value context} → {index : I.Index} →
+    (shape : Shape code environment index) → Fin (recursiveCount code) → Position code shape
+  | _, .result _, _, _, _, ordinal => Fin.elim0 ordinal
+  | _, .data _ body, _, _, shape, ordinal => positionOfFin body shape.2 ordinal
+  | _, .recursive _ rest, _, _, shape, ordinal =>
+      Fin.cases none (fun prior => some (positionOfFin rest shape prior)) ordinal
+
+theorem positionOfFin_toFin {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index}
+    (shape : Shape code environment index) (position : Position code shape) :
+    positionOfFin code shape (positionToFin code shape position) = position := by
+  induction code with
+  | result => exact PEmpty.elim position
+  | data sort body ih => exact ih shape.2 position
+  | recursive expression rest ih =>
+    cases position with
+    | none => rfl
+    | some position =>
+      change some (positionOfFin rest shape (positionToFin rest shape position)) = some position
+      exact congrArg some (ih shape position)
+
+theorem positionToFin_ofFin {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index}
+    (shape : Shape code environment index) (ordinal : Fin (recursiveCount code)) :
+    positionToFin code shape (positionOfFin code shape ordinal) = ordinal := by
+  induction code with
+  | result => exact Fin.elim0 ordinal
+  | data sort body ih => exact ih shape.2 ordinal
+  | recursive expression rest ih =>
+    refine Fin.cases ?_ (fun prior => ?_) ordinal
+    · rfl
+    · change (positionToFin rest shape (positionOfFin rest shape prior)).succ = prior.succ
+      exact congrArg Fin.succ (ih shape prior)
+
+def positionEquivFin {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index} (shape : Shape code environment index) :
+    Position code shape ≃ Fin (recursiveCount code) where
+  toFun := positionToFin code shape
+  invFun := positionOfFin code shape
+  left_inv := positionOfFin_toFin code shape
+  right_inv := positionToFin_ofFin code shape
+
+/-- Evaluation follows the authored telescope, independently of polynomial positions. -/
+def recursiveIndexAt : {context : List I.SortCode} → (code : Code I context) →
+    {environment : Env I.Value context} → {index : I.Index} →
+    Shape code environment index → Fin (recursiveCount code) → I.Index
+  | _, .result _, _, _, _, ordinal => Fin.elim0 ordinal
+  | _, .data _ body, _, _, shape, ordinal => recursiveIndexAt body shape.2 ordinal
+  | _, .recursive expression rest, environment, _, shape, ordinal =>
+      Fin.cases (I.evalIndex expression environment) (recursiveIndexAt rest shape) ordinal
+
+theorem next_positionOfFin {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index}
+    (shape : Shape code environment index) (ordinal : Fin (recursiveCount code)) :
+    next code shape (positionOfFin code shape ordinal) = recursiveIndexAt code shape ordinal := by
+  induction code with
+  | result => exact Fin.elim0 ordinal
+  | data sort body ih => exact ih shape.2 ordinal
+  | recursive expression rest ih =>
+    refine Fin.cases ?_ (fun prior => ?_) ordinal
+    · rfl
+    · exact ih shape prior
+
+theorem recursiveIndexAt_toFin {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index}
+    (shape : Shape code environment index) (position : Position code shape) :
+    recursiveIndexAt code shape (positionToFin code shape position) = next code shape position := by
+  rw [← next_positionOfFin, positionOfFin_toFin]
+
+
+def childrenVectorEquiv {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index} (shape : Shape code environment index)
+    (family : I.Index → Type v) :
+    (∀ position : Position code shape, family (next code shape position)) ≃
+      (∀ ordinal : Fin (recursiveCount code), family (recursiveIndexAt code shape ordinal)) :=
+  (positionEquivFin code shape).piCongr (fun position =>
+    Equiv.cast (congrArg family (recursiveIndexAt_toFin code shape position).symm))
+
+theorem positionToFin_injective {context : List I.SortCode} (code : Code I context)
+    {environment : Env I.Value context} {index : I.Index} (shape : Shape code environment index) :
+    Function.Injective (positionToFin code shape) := (positionEquivFin code shape).injective
+
+#print axioms childrenVectorEquiv
+#print axioms positionToFin_injective
+
+#print axioms positionEquivFin
+#print axioms next_positionOfFin
+#print axioms recursiveIndexAt_toFin
+end Mettapedia.TypeTheory.IndexedPolynomial.Description
+
+namespace Mettapedia.TypeTheory.IndexedPolynomial.Description
+universe u v
+variable {I : Interface.{u}}
+
+def vectorPolynomial {context : List I.SortCode} (code : Code I context) :
+    IndexedPolynomial.{u, u, u, 0} (Env I.Value context) (fun _ => I.Index) where
+  Shape := Shape code
+  Position := fun _ => Fin (recursiveCount code)
+  next := recursiveIndexAt code
+
+def positionSignatureEquiv {context : List I.SortCode} (code : Code I context) :
+    SignatureEquiv (polynomial code) (vectorPolynomial code) where
+  shape := fun _ _ => Equiv.refl _
+  position := positionEquivFin code
+  next_preserved := recursiveIndexAt_toFin code
+
+def inventoryVectorPolynomial {context : List I.SortCode}
+    (constructors : List (NamedConstructor I context)) :
+    IndexedPolynomial.{u, u, u, 0} (Env I.Value context) (fun _ => I.Index) where
+  Shape := (inventoryPolynomial constructors).Shape
+  Position := fun shape => Fin (recursiveCount (constructors.get shape.1).body)
+  next := fun shape => recursiveIndexAt (constructors.get shape.1).body shape.2
+
+def inventoryPositionSignatureEquiv {context : List I.SortCode}
+    (constructors : List (NamedConstructor I context)) :
+    SignatureEquiv (inventoryPolynomial constructors) (inventoryVectorPolynomial constructors) where
+  shape := fun _ _ => Equiv.refl _
+  position := fun shape => positionEquivFin (constructors.get shape.1).body shape.2
+  next_preserved := fun shape => recursiveIndexAt_toFin (constructors.get shape.1).body shape.2
+
+noncomputable def inventoryVectorFixEquiv {context : List I.SortCode}
+    (constructors : List (NamedConstructor I context)) (environment : Env I.Value context) (index : I.Index) :
+    Fix (inventoryPolynomial constructors) environment index ≃
+      Fix (inventoryVectorPolynomial constructors) environment index :=
+  (inventoryPositionSignatureEquiv constructors).fixEquiv environment index
+
+theorem inventoryVector_fold {context : List I.SortCode}
+    (constructors : List (NamedConstructor I context))
+    {carrier : Env I.Value context → I.Index → Type v}
+    (algebra : Algebra (inventoryVectorPolynomial constructors) carrier)
+    (environment : Env I.Value context) (index : I.Index)
+    (tree : Fix (inventoryPolynomial constructors) environment index) :
+    Fix.fold (inventoryVectorPolynomial constructors) algebra.act environment index
+      (inventoryVectorFixEquiv constructors environment index tree) =
+      Fix.fold (inventoryPolynomial constructors)
+        ((inventoryPositionSignatureEquiv constructors).pullAlgebra algebra).act environment index tree :=
+  (inventoryPositionSignatureEquiv constructors).fold_toFix algebra environment index tree
+
+#print axioms positionSignatureEquiv
+#print axioms inventoryPositionSignatureEquiv
+#print axioms inventoryVectorFixEquiv
+#print axioms inventoryVector_fold
 end Mettapedia.TypeTheory.IndexedPolynomial.Description

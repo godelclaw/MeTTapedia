@@ -1,35 +1,20 @@
 import Mettapedia.Algebra.WorkSpan
+import Mathlib.Data.Nat.Pairing
 
 /-!
-# Resource valuations beyond work and span
+# Additive and peak-allocation accounts
 
-`ConcurrentCostAlgebra` is the interface a resource readout must satisfy
-to compose along sequential phases and independent branches.  `WorkSpan`
-is one instance.  This module adds the other readouts a costed run
-admits, and — more usefully — shows that **they do not all fit**.
+Additive resources fit `ConcurrentCostAlgebra`. The declared peak-allocation
+model instead reuses storage between sequential phases and adds simultaneous
+branch allocations. It satisfies reverse interchange, while forward lax
+interchange fails. These are accounting laws, not measured runtime guarantees.
 
-Three families appear:
-
-* **Additive** resources — energy, communication, message counts.  Both
-  compositions accumulate: running two things in parallel does not make
-  them cheaper.  These are instances.
-* **Work-like / span-like** — the two coordinates of `WorkSpan`: work
-  accumulates in both, span accumulates sequentially and takes the slower
-  branch in parallel.  Already an instance.
-* **Peak allocation** — the high-water mark of concurrently live storage.
-  Sequential phases take the *maximum*; independent branches *add*, since
-  their allocations coexist.  This is the exact dual of span, and it is
-  **not** a `ConcurrentCostAlgebra`: the lax interchange law fails.
-
-The last point is the reason the interface is stated rather than assumed.
-Parallelism improves span and *worsens* peak allocation, so no single
-scalar readout can stand for "cost"; the resources genuinely conflict and
-must be carried plurally.
+Parallelism can improve span while increasing allocation. A scalar can encode
+several resources injectively; choosing which tradeoffs to prefer requires an
+additional policy, rather than an impossibility claim about scalar encodings.
 -/
 
 namespace Mettapedia.Algebra
-
-/-! ## Additive resources: energy, communication -/
 
 /-- Energy, message counts, and similar resources accumulate under both
 compositions: two branches running at once spend both their budgets. -/
@@ -50,8 +35,6 @@ def additiveAlgebra : ConcurrentCostAlgebra Nat where
     intro first second third fourth
     omega
 
-/-! ## Peak allocation: the dual, and why it does not fit -/
-
 /-- Peak concurrently-live storage.  Sequential phases reuse storage, so
 the peak is the maximum; independent branches hold their allocations at
 the same time, so the peak adds. -/
@@ -70,60 +53,58 @@ theorem peakAllocation_violates_lax_interchange :
           (peakSequential third fourth) ≤
         peakSequential (peakParallel first third)
           (peakParallel second fourth) := by
-  intro interchange
-  have collision := interchange 1 0 0 1
-  simp only [peakSequential, peakParallel] at collision
-  omega
+  exact fun interchange => by
+    simpa [peakSequential, peakParallel] using interchange 1 0 0 1
 
 /-- The witness, stated positively: one unit allocated in the first phase
 of one branch and the second phase of the other.  Serialized the peak is
 one; run as independent branches it is two. -/
 theorem peakAllocation_parallel_strictly_worse :
     peakSequential (peakParallel 1 0) (peakParallel 0 1) <
-      peakParallel (peakSequential 1 0) (peakSequential 0 1) := by
-  simp only [peakSequential, peakParallel]
-  omega
+      peakParallel (peakSequential 1 0) (peakSequential 0 1) := by decide
 
-/-! ## The tension: parallelism cannot improve everything -/
-
-/-- **Span and peak allocation pull in opposite directions.**  For the
-same two branches, running them in parallel never increases span and can
-strictly increase peak allocation.  No single scalar readout expresses
-both, which is why a costed run carries several valuations rather than
-one number. -/
+/-- Parallel execution never increases span but can increase the declared
+peak allocation. These are separate coordinates of the resource account. -/
 theorem parallelism_improves_span_worsens_allocation :
     (∀ left right : WorkSpan,
       (WorkSpan.parallel left right).span ≤
         (WorkSpan.sequential left right).span) ∧
     (∃ first second : Nat,
       peakSequential first second < peakParallel first second) := by
-  refine ⟨fun left right => ?_, ⟨1, 1, ?_⟩⟩
-  · simp only [WorkSpan.parallel, WorkSpan.sequential]
-    omega
-  · simp only [peakSequential, peakParallel]
-    omega
+  exact ⟨fun left right => (WorkSpan.parallel_le_sequential left right).2,
+    ⟨1, 1, by decide⟩⟩
 
-/-- A scalar that tracks the allocation coordinate faithfully is strictly
-increasing in that coordinate at the smallest split.
-
-**This is not a non-existence result**, and it was previously misnamed as one.
-It uses only `respectsAllocation`; the span hypothesis plays no part, because
-the two hypotheses constrain *different arguments* of a two-argument function
-and therefore cannot clash. A genuine "no single scalar serves both" theorem
-has to constrain one scalar under one composition — improving like span and
-worsening like allocation simultaneously — and that statement is **not proved
-here**.
-
-The honest joint obstruction available today is
-`peakAllocation_violates_lax_interchange`, which shows peak allocation is not
-an instance of the concurrent-cost interface at all. -/
+/-- Positive allocations make a split strictly larger than sequential reuse.
+The positivity guards exclude the zero-allocation equality case. -/
 theorem allocationRespecting_scalar_strictMono_at_unitSplit
     (scalar : WorkSpan → Nat → Nat)
     (respectsAllocation : ∀ (value : WorkSpan) (first second : Nat),
-      scalar value (peakSequential first second) <
+      0 < first → 0 < second → scalar value (peakSequential first second) <
         scalar value (peakParallel first second)) :
     ∀ value : WorkSpan, scalar value 1 < scalar value 2 := by
   intro value
-  simpa [peakSequential, peakParallel] using respectsAllocation value 1 1
+  simpa [peakSequential, peakParallel] using respectsAllocation value 1 1 (by decide) (by decide)
+
+/-- Synchronizing phases cannot exceed the sum of the separate branch peaks. -/
+theorem peakAllocation_reverse_interchange (first second third fourth : Nat) :
+    peakSequential (peakParallel first third) (peakParallel second fourth) ≤
+      peakParallel (peakSequential first second) (peakSequential third fourth) :=
+  max_add_add_le_max_add_max
+
+/-- The guarded scalar premise is inhabited: simply report allocation. -/
+theorem allocation_respects_positive_split (value : WorkSpan) (first second : Nat)
+    (firstPositive : 0 < first) (secondPositive : 0 < second) :
+    (fun (_ : WorkSpan) allocation => allocation) value (peakSequential first second) <
+      (fun (_ : WorkSpan) allocation => allocation) value (peakParallel first second) := by
+  simp only [peakSequential, peakParallel]
+  omega
+
+/-- An injective scalar encoding preserves all three coordinates, independently
+of whether it gives a useful order for optimization. -/
+theorem workSpan_allocation_scalar_encoding :
+    Function.Injective (fun value : WorkSpan × Nat =>
+      Nat.pair (Nat.pair value.1.work value.1.span) value.2) := by
+  rintro ⟨⟨_, _⟩, _⟩ ⟨⟨_, _⟩, _⟩ same
+  simpa only [Nat.pair_eq_pair, Prod.mk.injEq, WorkSpan.mk.injEq] using same
 
 end Mettapedia.Algebra

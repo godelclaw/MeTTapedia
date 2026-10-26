@@ -10,6 +10,7 @@ canonical comparison. The original allocation history stays with its answer.
 
 set_option autoImplicit false
 set_option maxHeartbeats 4000000
+set_option maxRecDepth 100000
 
 namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution
 
@@ -29,10 +30,69 @@ def source : ProgramQuotation.QuotedProgram :=
     sha256 "b20a814bc1b9baa86a6778e8fdff9c459ff27d272743bd48c5ddf25993bdba91"
 
 def library : BridgeKit.Library :=
-  ⟨RecursiveCollectionExecution.library.runtime, source.program, ["gslt:collection-presentation:"]⟩
+  RetainedMatchingWire.interpretedLibrary
 
 set_option maxRecDepth 100000 in
-theorem checked : library.check = true := by decide +kernel
+theorem checked : library.check = true := RetainedMatchingWire.interpreted_checked
+
+section ProofMetadata
+
+private local instance presentationEquationEq : DecidableEq SpaceSemantics.Equation := by
+  intro left right
+  apply decidable_of_iff (left.head = right.head ∧ left.arguments = right.arguments ∧ left.body = right.body)
+  constructor
+  · rintro ⟨head, arguments, body⟩
+    cases left
+    cases right
+    cases head
+    cases arguments
+    cases body
+    rfl
+  · intro same
+    cases same
+    exact ⟨rfl, rfl, rfl⟩
+
+/-- Direct outward calls derived from the actual family bodies. -/
+def presentationProofInheritedHeads : List String := ["gslt:automata:append", "gslt:automata:length", "gslt:recursive-collection:arrange", "gslt:collection:replay",  "gslt:complete:take", "gslt:complete:drop"]
+
+theorem presentationProofInheritedHeads_derived :
+    ((source.program.equations.flatMap (fun row => CompleteExecution.sourceLiteralHeads row.body)).filter
+      (fun head => head.startsWith "gslt:" && !(source.program.equations.map (·.head)).contains head)).eraseDups =
+        presentationProofInheritedHeads := by decide +kernel
+
+private def presentationMetadataBase : SpaceSemantics.Program where
+  equations := [RuleExecutionProgram.scopedProgram.equations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.equations[1]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[2]'(by decide +kernel)).program.equations[12]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[2]'(by decide +kernel)).program.equations[26]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)).program.equations[5]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[10]'(by decide +kernel)).program.equations[0]'(by decide +kernel)]
+  declarations := [RuleExecutionProgram.scopedProgram.declarations[0]'(by decide +kernel),
+    RuleExecutionProgram.scopedProgram.declarations[1]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[2]'(by decide +kernel)).program.declarations[12]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[2]'(by decide +kernel)).program.declarations[26]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[5]'(by decide +kernel)).program.declarations[5]'(by decide +kernel),
+    (RuleExecutionProgram.interpretedPremiseSupportSources[10]'(by decide +kernel)).program.declarations[0]'(by decide +kernel)]
+
+/-- Bounded source metadata; all operational conclusions retain the shared runtime. -/
+def presentationProofLibrary : Library := ⟨presentationMetadataBase, source.program, ["gslt:collection-presentation:"]⟩
+
+def presentationProofHeads (head : String) : Bool :=
+  !head.startsWith "gslt:" || presentationProofLibrary.owns head || presentationProofInheritedHeads.contains head
+
+theorem presentationProof_checked : presentationProofLibrary.check = true := by decide +kernel
+
+theorem presentationProof_agreement :
+    ProgramAgreementOn presentationProofHeads presentationProofLibrary.runtime library.runtime := by
+  apply programAgreementOn_of_retained_rows
+  · decide +kernel
+  · decide +kernel
+
+#print axioms presentationProofInheritedHeads_derived
+#print axioms presentationProof_checked
+#print axioms presentationProof_agreement
+
+end ProofMetadata
 
 def presentationTerm {α : Type} (element : α → Term)
     (result : α × List EquationalScopedReceipts.Event) : Term :=
@@ -43,7 +103,7 @@ macro_rules
   | `(tactic| presentation_eval $[[$facts,*]]? $[unfolding [$extra,*]]?) => do
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
-    `(tactic| (metta_call checked; metta_eval [$facts,*] with checked
+    `(tactic| (metta_call_in presentationProof_checked using presentationProof_agreement; metta_eval [$facts,*] with presentationProof_checked in presentationProof_agreement
       unfolding [Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
         Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
         Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -55,13 +115,13 @@ theorem append_returns {α : Type} (element : α → Term) (state : Effects.Stat
     PureReturns library.runtime [] state
       (apply "gslt:automata:append" [encoded (encodeList element left), encoded (encodeList element right)])
       state (encoded (encodeList element (left ++ right))) := by
-  metta_lift checked ["left", "right"] (RecursiveCollectionExecution.append_returns element state left right)
+  exact RecursiveCollectionExecution.append_returns element state left right
 
 @[metta_head "gslt:automata:length"]
 theorem length_returns {α : Type} (element : α → Term) (state : Effects.State) (items : List α) :
     PureReturns library.runtime [] state
       (apply "gslt:automata:length" [encoded (encodeList element items)]) state (number items.length) := by
-  metta_lift checked ["items"] (RecursiveCollectionExecution.length_returns element state items)
+  exact RecursiveCollectionExecution.length_returns element state items
 
 @[metta_head "gslt:recursive-collection:arrange"]
 theorem arrange_returns (state : Effects.State) (table : List String) (ordered : NameOrdered table)
@@ -70,8 +130,7 @@ theorem arrange_returns (state : Effects.State) (table : List String) (ordered :
       (apply "gslt:recursive-collection:arrange" [encoded (encodeList Term.string table),
         encoded (encodeCollectionType kind), encoded (encodeList encodePattern items)])
       state (encoded (encodeList encodePattern (arrange kind items))) := by
-  metta_lift checked ["names", "kind", "items"]
-    (RecursiveCollectionExecution.arrange_returns state table ordered kind items covered)
+  exact RecursiveCollectionExecution.arrange_returns state table ordered kind items covered
 
 @[metta_head "gslt:collection:replay"]
 theorem replay_returns (state : Effects.State) (idempotent : Bool) (items : List Pattern)
@@ -80,36 +139,48 @@ theorem replay_returns (state : Effects.State) (idempotent : Bool) (items : List
       (apply "gslt:collection:replay" [encoded (booleanTerm idempotent),
         encoded (encodeList encodePattern items), encoded (encodeList decisionTerm decisions)])
       state (encoded (encodeOption (pairTerm encodePattern) (replay idempotent items decisions))) := by
-  metta_lift checked ["idempotent", "items", "decisions"]
-    (recursive_from_logged% ["idempotent", "items", "decisions"]
-      (by metta_lift CollectionLoggedSearchExecution.checked ["idempotent", "items", "decisions"]
-        (by metta_lift ScopedCollectionExecution.checked ["idempotent", "items", "decisions"]
-          (CollectionSelectionExecution.replay_returns encodePattern state idempotent decisions items))))
-
-syntax "presentation_from_complete% " "[" str,* "] " term:max : term
-macro_rules
-  | `(presentation_from_complete% [$names,*] $fact) =>
-      `(by metta_lift checked [$names,*]
-        (by metta_lift RecursiveCollectionExecution.checked [$names,*]
-          (by metta_lift CompleteExecution.collection_base_checked [$names,*]
-            (by metta_lift CompleteExecution.canonical_checked [$names,*]
-              (by metta_lift CompleteExecution.laws_checked [$names,*] $fact)))))
+  exact CollectionSelectionExecution.replay_returns encodePattern state idempotent decisions items
 
 @[metta_head "gslt:complete:take"]
 theorem take_returns (state : Effects.State) (count : Nat) (items : List Pattern) :
     PureReturns library.runtime [] state
       (apply "gslt:complete:take" [number count, encoded (encodeList encodePattern items)])
       state (encoded (encodeList encodePattern (items.take count))) := by
-  exact presentation_from_complete% ["count", "items"]
-    (CompleteExecution.take_list_returns encodePattern state count items)
+  induction count generalizing items with
+  | zero =>
+    metta_call_in CompleteExecution.completeProof_checked using CompleteExecution.completeProof_agreement
+    metta_eval with CompleteExecution.completeProof_checked in CompleteExecution.completeProof_agreement
+      unfolding [encodeList, List.take, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+        Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+        Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
+        CettaWireAtom.encode, CettaWireAtom.encodeMany]
+  | succ count ih =>
+    metta_call_in CompleteExecution.completeProof_checked using CompleteExecution.completeProof_agreement
+    cases items with
+    | nil =>
+      metta_eval with CompleteExecution.completeProof_checked in CompleteExecution.completeProof_agreement
+        unfolding [encodeList, List.take, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+          Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
+          CettaWireAtom.encode, CettaWireAtom.encodeMany]
+    | cons head rest =>
+      have later := ih rest
+      metta_eval [later] with CompleteExecution.completeProof_checked
+        in CompleteExecution.completeProof_agreement unfolding
+        [encodeList, List.take, Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
+          Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
+          Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
+          CettaWireAtom.encode, CettaWireAtom.encodeMany]
 
 @[metta_head "gslt:complete:drop"]
 theorem drop_returns (state : Effects.State) (count : Nat) (items : List Pattern) :
     PureReturns library.runtime [] state
       (apply "gslt:complete:drop" [number count, encoded (encodeList encodePattern items)])
       state (encoded (encodeList encodePattern (items.drop count))) := by
-  exact presentation_from_complete% ["count", "items"]
-    (CompleteExecution.drop_list_returns encodePattern state count items)
+  have mapped (values : List Pattern) : encoded (encodeList encodePattern values) =
+      CompleteExecution.terms (values.map encodePattern) := by
+    simp only [CompleteExecution.terms, CettaWire.encodeList_map, Function.id_comp]
+  rw [mapped, mapped, List.map_drop]
+  exact CompleteExecution.drop_returns state count (items.map encodePattern)
 
 @[metta_head "gslt:collection-presentation:wrap"]
 theorem wrap_app_returns (state : Effects.State) (label : String) (items : List Pattern)
@@ -167,5 +238,18 @@ theorem wrap_collection_returns (state : Effects.State) (kind : CollType) (items
       state (encoded (encodeOption (presentationTerm encodePattern)
         (some (.collection kind (items ++ residual) none, remaining)))) := by
   presentation_eval [append_returns encodePattern state items residual] unfolding [encodePattern, encodeRest]
+
+#print axioms append_returns
+#print axioms length_returns
+#print axioms arrange_returns
+#print axioms replay_returns
+#print axioms take_returns
+#print axioms drop_returns
+#print axioms wrap_app_returns
+#print axioms wrap_lambda_returns
+#print axioms wrap_multiLambda_returns
+#print axioms wrap_subst_returns
+#print axioms wrap_cons_returns
+#print axioms wrap_collection_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution

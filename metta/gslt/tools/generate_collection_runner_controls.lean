@@ -24,6 +24,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Search
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RootCollection
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentCodec
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSharedOutputControls
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionExecutionQualification
 
 open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax
@@ -31,6 +32,27 @@ open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL
 open Mettapedia.Machines.ResumableSearchRunner (Machine Search)
 
 namespace CollectionRunnerControls
+
+mutual
+  def collectionNestingDepth : Pattern → Nat
+    | .bvar _ | .fvar _ => 0
+    | .apply _ arguments => collectionListDepth arguments
+    | .lambda _ body | .multiLambda _ _ body => collectionNestingDepth body
+    | .subst body value => max (collectionNestingDepth body) (collectionNestingDepth value)
+    | .collection _ elements _ => 1 + collectionListDepth elements
+  def collectionListDepth : List Pattern → Nat
+    | [] => 0
+    | first :: rest => max (collectionNestingDepth first) (collectionListDepth rest)
+end
+
+def measurement (label : String) (source : Pattern)
+    (work first frames publications providerRows : Nat) : String :=
+  "; GSLT-MEASUREMENT " ++ (Lean.Json.mkObj
+    [("label", .str label), ("collection_nesting_depth", Lean.toJson (collectionNestingDepth source)),
+     ("work_budget", Lean.toJson work), ("resume_first_budget", Lean.toJson first),
+     ("resume_extra_budget", Lean.toJson (work - first)),
+     ("retained_allocation_frames", Lean.toJson frames),
+     ("publications", Lean.toJson publications), ("provider_rows", Lean.toJson providerRows)]).compress ++ "\n"
 
 def searchControl {Run Receipt : Type} (label : String) (plan : GeneralExecutionAdmission.Plan)
     (expected : TypeExpr) (source : Pattern) (work : Nat)
@@ -1055,3 +1077,634 @@ def main : IO Unit := do
 
 end LocalQuantifierControls
 #eval LocalQuantifierControls.main
+
+namespace RetainedCollectionControls
+open Mettapedia.GSLT.LanguageDef CettaWire
+open Mettapedia.OSLF.MeTTaIL Syntax GeneralPremise RuleBinding ScopedRuleMatching
+open CollectionOccurrenceHandoff RecursiveCollectionHandoff CollectionOccurrenceBatch
+open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL
+private def authored : LanguageDef := CollectionNestedInputPetri.language.toOption.getD (LanguageDef.empty "")
+private def language : LanguageDef := (authored.toCore.toOption.map (·.language)).getD (LanguageDef.empty "")
+private def inputType : TypeExpr :=
+  (language.rewrites.head?.bind fun rule => rule.typeContext.lookup "rest").getD (.base "Marking")
+private def token (label : String) : Pattern := .apply label []
+private def bag (values : List Pattern) : Pattern := .collection .hashBag values none
+private def boxed (values : List Pattern) : Pattern := .apply "Box" [.apply "Flow" [bag values]]
+private def source : Pattern := boxed [token "A", token "A", token "B"]
+private def expected : Pattern := CanonicalBags.canon (boxed [token "A", token "B", token "B"])
+private def provider (values : List Pattern) (copies : Nat) : ProviderSnapshot :=
+  { signatures := [⟨"inspect", [inputType], [.input]⟩],
+    rows := List.replicate copies ⟨"inspect", [bag values]⟩ }
+private def plan (values : List Pattern) (copies : Nat) : GeneralExecutionAdmission.Plan :=
+  GeneralExecutionAdmission.compile ⟨language, [], provider values copies⟩
+    { sites := .all, includeDerivedEquations := false }
+
+private def allocated (values : List Pattern) (copies : Nat) :
+    List (Allocation (plan values copies) [] (.base "Workspace") (CanonicalBags.canon source)) :=
+  (jobs (plan values copies) [] (.base "Workspace") (CanonicalBags.canon source)).attach.flatMap fun selected =>
+    let job := selected.val
+    let valid := (jobs_exact _ _ _ _ _).mp selected.property
+    let matched := RecursiveCollectionMachine.run job.request 100 (RecursiveCollectionMachine.start job.request)
+    matched.answers.attach.filterMap fun published =>
+      allocate? job valid 100 published.val published.property 0
+
+
+private def call (head : String) (arguments : List String) : String :=
+  "(" ++ head ++ (if arguments.isEmpty then "" else " " ++ String.intercalate " " arguments) ++ ")"
+private def quote (value : Term) : String := call "quote" [value.render]
+private def letStar (bindings : List (String × String)) (body : String) : String :=
+  call "let*" ["(" ++ String.intercalate " " (bindings.map fun pair : String × String => call pair.1 [pair.2]) ++ ")", body]
+
+private def frameTermIn (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr} {expected : TypeExpr} {source : Pattern}
+    (frame : Frame plan bound expected source matcher) : Term :=
+  .application "RecursiveOccurrenceFrame"
+    [CollectionOccurrenceBatchExecution.originTerm frame.allocation.job frame.allocation.answer,
+      .application "RecursiveCollectionContinuation"
+        [RecursiveCollectionHandoffExecution.preparedTerm frame.allocation.request.prepared,
+          RetainedMatchingWire.Scheduled.stateTerm codec frame.state]]
+
+private def batchTermIn (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr} {expected : TypeExpr} {source : Pattern}
+    (batch : State plan bound expected source matcher) : Term :=
+  .application "RecursiveOccurrenceBatch"
+    [encodeList (frameTermIn matcher codec) batch.frames,
+      encodeList (CollectionOccurrenceBatchExecution.publicationTermWith codec.choiceTerm) batch.log]
+
+private def frameCall {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} {source : Pattern} (allocation : Allocation plan bound expected source)
+    (index : Nat) : List (String × String) :=
+  let request := allocation.request
+  let data : List (String × Term) :=
+    [("origin", CollectionOccurrenceBatchExecution.originTerm allocation.job allocation.answer),
+     ("bound", CompleteExecution.DescentCodec.typesTerm request.bound),
+     ("type", CompleteExecution.DescentCodec.typeTerm request.type),
+     ("rule", InferenceCettaWire.AuthoredRule.rewriteTerm request.rule),
+     ("spec", InferenceCettaWire.AuthoredRule.bindingSpecTerm request.spec),
+     ("prepared", RecursiveCollectionHandoffExecution.preparedTerm request.prepared)]
+  (data.map fun pair => (s!"${pair.1}{index}", quote pair.2)) ++
+    [(s!"$frame{index}", call "gslt:occurrence-batch:frame-begin"
+      [s!"$origin{index}", "$environment", toString request.depth,
+        s!"$bound{index}", s!"$type{index}", toString request.index,
+        s!"$rule{index}", s!"$spec{index}", s!"$prepared{index}"])]
+
+private def batchControl (label : String) (values : List Pattern) (copies : Nat)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (canonical : Bool) (begun : State (plan values copies) [] (.base "Workspace")
+      (CanonicalBags.canon source) matcher) : String :=
+  let allocations := allocated values copies
+  let environment := GeneralPlanEnvironment.environment (plan values copies)
+  let footprint := source.freeFvarNames ++ providerFreeNames environment.provider
+  let names := StructuralDescent.Scheduled.NameSupport.environmentNameTable environment footprint
+  let core := PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+    (environment.free.entriesOn footprint)
+  let profile := if canonical then RetainedMatchingWire.interpretedEnvironmentTerm names core else core
+  let first := 3
+  let middle := State.run first begun
+  let whole := State.run 200 begun
+  let frames := (allocations.zipIdx.flatMap fun pair => frameCall pair.1 pair.2)
+  let frameList := (List.range allocations.length).foldr
+    (fun index rest => call "LCons" [s!"$frame{index}", rest]) "LNil"
+  "!" ++ letStar
+    ([("$environment", quote profile)] ++ frames ++
+      [("$initial", call "gslt:occurrence-batch:begin" [frameList]),
+       ("$middle", call "gslt:occurrence-batch:run" ["$environment", toString first, "$initial"]),
+       ("$actual", call "gslt:occurrence-batch:run" ["$environment", "200", "$initial"]),
+       ("$resumed", call "gslt:occurrence-batch:run" ["$environment", toString (200 - first), "$middle"]),
+       ("$published", call "gslt:occurrence-batch:publication" ["$actual"]),
+       ("$count", call "gslt:automata:length" ["$published"])])
+    (call "println!" [call "CanonicalPostmatchControl"
+      [reprStr s!"{if canonical then "canonical" else "ordinary"}-{label}",
+       call "==" ["$initial", quote (batchTermIn matcher codec begun)],
+       call "==" ["$middle", quote (batchTermIn matcher codec middle)],
+       call "==" ["$actual", quote (batchTermIn matcher codec whole)],
+       call "==" ["$resumed", "$actual"],
+       call "==" ["$published", quote (encodeList
+         (CollectionOccurrenceBatchExecution.publicationTermWith codec.choiceTerm) whole.log)],
+       call "==" ["$count", toString whole.log.length]]])
+private def readoutControl (label : String) (values : List Pattern) (copies : Nat)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (canonical : Bool) (finish : Publication matcher.Choice → Option (GeneralRuleJobs.Receipt matcher.Choice))
+    (begun : State (plan values copies) [] (.base "Workspace")
+      (CanonicalBags.canon source) matcher) : String :=
+  let allocations := allocated values copies
+  let environment := GeneralPlanEnvironment.environment (plan values copies)
+  let footprint := source.freeFvarNames ++ providerFreeNames environment.provider
+  let names := StructuralDescent.Scheduled.NameSupport.environmentNameTable environment footprint
+  let core := PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+    (environment.free.entriesOn footprint)
+  let profile := if canonical then RetainedMatchingWire.interpretedEnvironmentTerm names core else core
+  let first := 3
+  let whole := State.run 200 begun
+  let receipts := whole.log.filterMap finish
+  let committed := CollectionCommittedObservation.retainedWith finish whole.log
+  let planWire : Term := .application "CompletePlan"
+    [profile, InferenceCettaWire.ContextObservation.permissionsTerm (plan values copies).permissions.sites,
+      encodeList InferenceCettaWire.AuthoredRule.typeTerm [], InferenceCettaWire.AuthoredRule.typeTerm (.base "Workspace"),
+      encodeList ScopedRuleJobReadoutExecution.rulePlanTerm (plan values copies).rules, .symbol "LNil",
+      .symbol (if StructuralDescent.checkEnvironment environment then "Admitted" else "Unadmitted")]
+  let frames := (allocations.zipIdx.flatMap fun pair => frameCall pair.1 pair.2)
+  let frameList := (List.range allocations.length).foldr
+    (fun index rest => call "LCons" [s!"$frame{index}", rest]) "LNil"
+  "!" ++ letStar
+    ([("$environment", quote profile)] ++ frames ++
+      [("$initial", call "gslt:occurrence-batch:begin" [frameList]),
+       ("$middle", call "gslt:occurrence-batch:run" ["$environment", toString first, "$initial"]),
+       ("$actual", call "gslt:occurrence-batch:run" ["$environment", "200", "$initial"]),
+       ("$resumed", call "gslt:occurrence-batch:run" ["$environment", toString (200 - first), "$middle"]),
+       ("$published", call "gslt:occurrence-batch:publication" ["$actual"]),
+       ("$count", call "gslt:automata:length" ["$published"]),
+       ("$plan", quote planWire),
+       ("$receipts", call "gslt:occurrence-search:read-log" ["$plan", "$published"]),
+       ("$committed", call "gslt:occurrence-search:read-committed" ["$plan", "$published"]),
+       ("$resumed-published", call "gslt:occurrence-batch:publication" ["$resumed"]),
+       ("$resumed-receipts", call "gslt:occurrence-search:read-log" ["$plan", "$resumed-published"]),
+       ("$resumed-committed", call "gslt:occurrence-search:read-committed" ["$plan", "$resumed-published"]),
+       ("$receipt-count", call "gslt:automata:length" ["$receipts"]),
+       ("$pair-count", call "gslt:automata:length" ["$committed"])])
+    (call "println!" [call "CanonicalReadoutControl"
+      [reprStr s!"{if canonical then "canonical" else "ordinary"}-{label}",
+       call "==" ["$receipts", quote (encodeList (ScopedRuleJobReadoutExecution.receiptTermWith codec.choiceTerm) receipts)],
+       call "==" ["$committed", quote (encodeList (CollectionOccurrenceBatchExecution.committedTermWith codec.choiceTerm) committed)],
+       call "==" ["$receipt-count", toString receipts.length],
+       call "==" ["$pair-count", toString committed.length],
+       call "==" ["$resumed-receipts", "$receipts"],
+       call "==" ["$resumed-committed", "$committed"]]])
+
+private def publicControl (label : String) (values : List Pattern) (copies : Nat)
+    (matcher : MatchingExecution) (codec : RetainedMatchingWire.MatchingCodec matcher)
+    (canonical : Bool)
+    (profile : (input : Pattern) → SeedProfile matcher (plan values copies) []
+      (.base "Workspace") (CanonicalBags.canon input))
+    (finish : Publication matcher.Choice → Option (GeneralRuleJobs.Receipt matcher.Choice)) : String :=
+  let p := plan values copies
+  let environment := GeneralPlanEnvironment.environment p
+  let footprint := source.freeFvarNames ++ providerFreeNames environment.provider
+  let names := StructuralDescent.Scheduled.NameSupport.environmentNameTable environment footprint
+  let core := PremiseOperationsExecution.GeneralExecution.environmentTerm environment
+    (environment.free.entriesOn footprint)
+  let environmentWire := if canonical then RetainedMatchingWire.interpretedEnvironmentTerm names core else core
+  let planWire := CompletePlanWire.planTermWithEnvironment p environmentWire [] (.base "Workspace")
+  let begun := CollectionOccurrenceSearch.beginWith matcher p [] (.base "Workspace") source
+  let middle := CollectionOccurrenceSearch.runWith p [] (.base "Workspace") profile 0 source 3
+  let whole := CollectionOccurrenceSearch.runWith p [] (.base "Workspace") profile 0 source 300
+  let wire := CollectionOccurrenceSearchExecution.runTermWith codec planWire finish
+  let receipts := CollectionOccurrenceSearch.publicationWith finish whole
+  CollectionRunnerControls.measurement s!"public-{if canonical then "canonical" else "ordinary"}-{label}"
+    source 300 3 whole.state.batch.frames.length whole.state.batch.log.length copies ++
+  "!" ++ letStar
+    [("$names", quote (encodeList Term.string names)), ("$plan", quote planWire),
+     ("$source", quote (InferenceCettaWire.encodePattern source)),
+     ("$zero", call "gslt:occurrence-search:run" ["$names", "0", "$plan", "$source", "0"]),
+     ("$middle", call "gslt:occurrence-search:run" ["$names", "0", "$plan", "$source", "3"]),
+     ("$actual", call "gslt:occurrence-search:run" ["$names", "0", "$plan", "$source", "300"]),
+     ("$resumed", call "gslt:occurrence-search:resume" ["$names", "0", "$middle", "297"]),
+     ("$receipts", call "gslt:occurrence-search:publication" ["$actual"])]
+    (call "println!" [call "PublicOccurrenceControl"
+      [reprStr s!"{if canonical then "canonical" else "ordinary"}-{label}",
+       call "==" ["$zero", quote (wire begun)],
+       call "==" ["$middle", quote (wire middle)],
+       call "==" ["$actual", quote (wire whole)],
+       call "==" ["$resumed", "$actual"],
+       call "==" [call "gslt:occurrence-search:status" ["$zero"], "SearchPending"],
+       call "==" [call "gslt:occurrence-search:status" ["$actual"],
+         quote (NativeOccurrenceSearchControls.statusTerm (CollectionOccurrenceSearch.statusWith whole))],
+       call "==" ["$receipts", quote (encodeList
+         (ScopedRuleJobReadoutExecution.receiptTermWith codec.choiceTerm) receipts)]]])
+
+def main : IO Unit := do
+  unless CollectionNestedInputPetri.language.isOk && authored.toCore.isOk do
+    throw (IO.userError "Guarded workflow authoring/core failed")
+  for (label, values, copies) in [("guarded", [token "A", token "B"], 1),
+      ("duplicate-validation", [token "A", token "B"], 2),
+      ("wrong-premise", [token "A"], 1), ("missing-premise", [token "A", token "B"], 0),
+      ("noncanonical-premise", [token "B", token "A"], 1)] do
+    let allocations := allocated values copies
+    unless allocations.length == 2 && (plan values copies).equations.isEmpty do
+      throw (IO.userError "Guarded workflow must retain both token allocations without extra equations")
+    let ordinary := State.begin allocations
+    let canonical := State.beginCanonical allocations
+    unless (State.run 3 canonical).frames.any (fun frame => !frame.state.agenda.isEmpty) do
+      throw (IO.userError "Resume checkpoint must interrupt unfinished work")
+    let ordinaryFinish : Publication → Option GeneralRuleJobs.Receipt :=
+      fun packet => packet.finish? (plan values copies) [] (.base "Workspace")
+    let canonicalFinish : Publication EquationalScopedReceipts.Event →
+        Option (GeneralRuleJobs.Receipt EquationalScopedReceipts.Event) :=
+      fun packet => packet.finishCanonical? (plan values copies) [] (.base "Workspace")
+    IO.println (batchControl label values copies MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec false ordinary)
+    IO.println (batchControl label values copies canonicalMatchingExecution
+      RetainedMatchingWire.canonicalCodec true canonical)
+    IO.println (readoutControl label values copies MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec false ordinaryFinish ordinary)
+    IO.println (readoutControl label values copies canonicalMatchingExecution
+      RetainedMatchingWire.canonicalCodec true canonicalFinish canonical)
+    IO.println (publicControl label values copies MatchingExecution.ordinary
+      RetainedMatchingWire.ordinaryCodec false
+      (fun input => ordinarySeedProfile (plan values copies) [] (.base "Workspace") (CanonicalBags.canon input))
+      ordinaryFinish)
+    IO.println (publicControl label values copies canonicalMatchingExecution
+      RetainedMatchingWire.canonicalCodec true
+      (fun input => canonicalSeedProfile (plan values copies) [] (.base "Workspace") input) canonicalFinish)
+
+end RetainedCollectionControls
+#eval RetainedCollectionControls.main
+
+namespace InterpretedNativeProbe
+
+open Mettapedia.GSLT.LanguageDef CettaWire
+open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching GeneralPremise
+open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL
+open RetainedMatchingWire
+open StructuralDescent.Scheduled
+
+def call (head : String) (arguments : List String) : String :=
+  "(" ++ head ++ (if arguments.isEmpty then "" else " " ++ String.intercalate " " arguments) ++ ")"
+
+def quote (value : Term) : String := call "quote" [value.render]
+
+def letStar (bindings : List (String × String)) (body : String) : String :=
+  call "let*" ["(" ++ String.intercalate " " (bindings.map fun (name, value) => call name [value]) ++ ")", body]
+
+def namesFor (environment : Environment) (source : Pattern) : List String :=
+  StructuralDescent.Scheduled.NameSupport.environmentNameTable environment
+    (source.freeFvarNames ++ providerFreeNames environment.provider)
+
+def control (profile : MatchingExecution) (codec : MatchingCodec profile) (canonical : Bool)
+    (label : String) (environment : Environment) (goal : Goal) (source : Pattern) (fuel : Nat) : String :=
+  let names := namesFor environment source
+  let environmentTerm := PremiseOperationsExecution.GeneralExecution.environmentTerm environment []
+  let nativeEnvironment := if canonical then
+      Term.application "InterpretedPremiseEnvironment" [encodeList Term.string names, environmentTerm]
+    else environmentTerm
+  let initial := start environment goal profile
+  let first := fuel / 2
+  let middle := run environment goal first initial
+  let expected := run environment goal fuel initial
+  "!" ++ letStar
+    [("$environment", quote nativeEnvironment),
+     ("$goal", quote (CompleteExecution.DescentCodec.goalTerm goal)),
+     ("$initial", call "gslt:descent:start" ["$goal"]),
+     ("$middle", call "gslt:descent:run" ["$environment", toString first, "$initial"]),
+     ("$actual", call "gslt:descent:run" ["$environment", toString fuel, "$initial"]),
+     ("$resumed", call "gslt:descent:run" ["$environment", toString (fuel-first), "$middle"]),
+     ("$complete", call "gslt:premise:machine-complete" ["$actual"])]
+    (call "println!" [call "InterpretedNativeControl"
+      [reprStr s!"{if canonical then "canonical" else "ordinary"}-{label}-{fuel}",
+       call "==" ["$initial", quote (RetainedMatchingWire.Scheduled.stateTerm codec initial)],
+       call "==" ["$middle", quote (RetainedMatchingWire.Scheduled.stateTerm codec middle)],
+       call "==" ["$actual", quote (RetainedMatchingWire.Scheduled.stateTerm codec expected)],
+       call "==" ["$resumed", "$actual"],
+       call "==" ["$complete", if complete environment goal expected then "True" else "False"]]])
+
+def cases : List (String × Environment × Goal × Pattern) :=
+  let child := SharedOutputControls.ChildPresentation.environment
+  let parent := SharedOutputControls.ChildPresentation.goal
+  let item := SharedOutputControls.ChildPresentation.a
+  let box := SharedOutputControls.ChildPresentation.box
+  let collection := SharedOutputControls.ChildPresentation.choice
+  let queries : Bool → Environment := fun present =>
+    SharedOutputControls.RetainedCollections.queryEnvironment present
+  let query := SharedOutputControls.RetainedCollections.queryGoal
+  let quantified := SharedOutputControls.RetainedCollections.quantifiedEnvironment
+  let quantifiedGoal := SharedOutputControls.RetainedCollections.quantifiedGoal
+  [("child-singleton", child, parent [item], box (collection [item])),
+   ("child-duplicate", child, parent [item,item], box (collection [item,item])),
+   ("child-missing", child, parent [], box (collection [])),
+   ("query-joined", queries true, query, box item),
+   ("query-missing", queries false, query, box item),
+   ("quantified-singleton", quantified, quantifiedGoal [SharedOutputControls.zero],
+     .apply "SetWrap" [.collection .hashSet [SharedOutputControls.zero] none]),
+   ("quantified-duplicate", quantified, quantifiedGoal [SharedOutputControls.zero,SharedOutputControls.zero],
+     .apply "SetWrap" [.collection .hashSet [SharedOutputControls.zero,SharedOutputControls.zero] none]),
+   ("quantified-missing", quantified, quantifiedGoal [SharedOutputControls.zero,SharedOutputControls.one],
+     .apply "SetWrap" [.collection .hashSet [SharedOutputControls.zero,SharedOutputControls.one] none]),
+   ("quantified-empty", quantified, quantifiedGoal [], .apply "SetWrap" [.collection .hashSet [] none])]
+
+
+def actualSum : IO Unit := do
+  let environment := Mettapedia.GSLT.LanguageDef.CollectionNestedConsumerControls.ActualSum.environment
+  let chaos := Mettapedia.GSLT.LanguageDef.CollectionNestedConsumerControls.ActualSum.chaos
+  let zero := Mettapedia.GSLT.LanguageDef.CollectionNestedConsumerControls.ActualSum.zero
+  for (label, depth, element) in [("actual-rsum-child-success", 2, chaos),
+      ("actual-rsum-child-missing", 2, zero), ("actual-rsum-depth-cut", 1, chaos)] do
+    let goal := Mettapedia.GSLT.LanguageDef.CollectionNestedConsumerControls.ActualSum.goal depth element
+    let source := Mettapedia.GSLT.LanguageDef.CollectionNestedConsumerControls.ActualSum.sum [element]
+    for fuel in [0, 7, 500] do
+      IO.println (InterpretedNativeProbe.control
+        Mettapedia.OSLF.MeTTaIL.RecursiveCollectionHandoff.canonicalMatchingExecution
+        Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RetainedMatchingWire.canonicalCodec
+        true label environment goal source fuel)
+
+def allPremises : IO Unit := do
+  for (label, environment, goal, source) in cases do
+    for fuel in [0, 7, 100] do
+      IO.println (control MatchingExecution.ordinary RetainedMatchingWire.ordinaryCodec
+        false label environment goal source fuel)
+      IO.println (control RecursiveCollectionHandoff.canonicalMatchingExecution
+        RetainedMatchingWire.canonicalCodec true label environment goal source fuel)
+end InterpretedNativeProbe
+#eval InterpretedNativeProbe.actualSum
+#eval InterpretedNativeProbe.allPremises
+
+namespace KnowledgeGraphProducerControls
+
+open CollectionRunnerControls (call letStar select)
+open NestedContinuationControls (quoted)
+open CollectionConsumers
+open CollectionConsumers.Controls.Observation.GraphControls
+open CollectionOccurrenceBatch CollectionCommittedObservation GeneralPremise
+open CollectionExecutionQualification.GraphObservation (logicalKeyTerm)
+
+private def graphType : TypeExpr := .base "Graph"
+
+private def packets (run : String) : String :=
+  select run
+    "(RecursiveOccurrenceRun $plan $source (RecursiveOccurrenceState $lanes (RecursiveOccurrenceBatch $frames $packets)) $published)"
+    "$packets"
+
+def control (label : String) (plan : GeneralExecutionAdmission.Plan) (source : Pattern)
+    (work first expectedPackets expectedKeys expectedFacts : Nat) : IO String := do
+  let environment := GeneralPlanEnvironment.environment plan
+  let footprint := source.freeFvarNames ++ providerFreeNames environment.provider
+  let names := CanonicalCompare.nameTable
+    (StructuralDescent.Scheduled.NameSupport.environmentNameTable environment footprint ++
+      CanonicalCompare.names source)
+  let planWire := CollectionOccurrenceSearchExecution.Interpreted.interpretedPlanTerm
+    names plan footprint [] graphType
+  let finish : Publication EquationalScopedReceipts.Event →
+      Option (GeneralRuleJobs.Receipt EquationalScopedReceipts.Event) :=
+    fun packet => packet.finishCanonical? plan [] graphType
+  let run := CollectionOccurrenceSearch.runWith plan [] graphType
+    (fun input => canonicalSeedProfile plan [] graphType input) 0 source work
+  let committed := CollectionOccurrenceSearch.committedWith finish run
+  let keys := orderedCommittedKeys logicalKey committed
+  let bag := keys.filterMap logicalEdge?
+  let facts := bag.eraseDups
+  unless run.state.batch.log.length == expectedPackets && committed.length == expectedPackets &&
+      keys.length == expectedKeys && facts.length == expectedFacts &&
+      CollectionOccurrenceSearch.statusWith run == .complete do
+    throw (IO.userError s!"Graph producer {label} has the wrong independent packet/key/fact account")
+  let choice := RecursiveCollectionExecution.eventTerm
+  let packetWire := encodeList (CollectionOccurrenceBatchExecution.publicationTermWith choice) run.state.batch.log
+  let pairWire := encodeList (CollectionOccurrenceBatchExecution.committedTermWith choice) committed
+  let receiptWire := encodeList (ScopedRuleJobReadoutExecution.receiptTermWith choice)
+    (CollectionOccurrenceSearch.publicationWith finish run)
+  let wire := CollectionOccurrenceSearchExecution.runTermWith
+    RetainedMatchingWire.canonicalCodec planWire finish run
+  pure (CollectionRunnerControls.measurement ("graph-" ++ label) source work first
+      run.state.batch.frames.length run.state.batch.log.length environment.provider.rows.length ++
+    "!" ++ letStar
+    [("$names", quoted (encodeList Term.string names)), ("$plan", quoted planWire),
+     ("$source", quoted (InferenceCettaWire.encodePattern source)),
+     ("$selected", quoted (encodeList Term.string ["x", "y", "z"])),
+     ("$wrong", quoted (InferenceCettaWire.encodePattern (edge "Z" "A"))),
+     ("$actual", call "gslt:occurrence-search:run" ["$names", "0", "$plan", "$source", toString work]),
+     ("$middle", call "gslt:occurrence-search:run" ["$names", "0", "$plan", "$source", toString first]),
+     ("$resumed", call "gslt:occurrence-search:resume" ["$names", "0", "$middle", toString (work - first)]),
+     ("$packets", packets "$actual"),
+     ("$pairs", call "gslt:occurrence-search:read-committed" ["$plan", "$packets"]),
+     ("$receipts", call "gslt:occurrence-search:publication" ["$actual"]),
+     ("$keys", call "gslt:occurrence-search:key-unique" ["$names", "$selected", "$pairs"]),
+     ("$bag", call "gslt:occurrence-search:key-bag" ["$names", "$selected", "\"Edge\"", "$pairs"]),
+     ("$facts", call "gslt:occurrence-search:key-facts" ["$names", "$selected", "\"Edge\"", "$pairs"]),
+     ("$twice", call "gslt:automata:append" ["$pairs", "$pairs"]),
+     ("$replayed-keys", call "gslt:occurrence-search:key-unique" ["$names", "$selected", "$twice"]),
+     ("$replayed-bag", call "gslt:occurrence-search:key-bag" ["$names", "$selected", "\"Edge\"", "$twice"]),
+     ("$replayed-facts", call "gslt:occurrence-search:key-facts" ["$names", "$selected", "\"Edge\"", "$twice"]),
+     ("$packets-twice", call "gslt:automata:append" ["$packets", "$packets"]),
+     ("$reread", call "gslt:occurrence-search:read-committed" ["$plan", "$packets-twice"]),
+     ("$reread-keys", call "gslt:occurrence-search:key-unique" ["$names", "$selected", "$reread"])]
+    (call "println!" [call "KnowledgeGraphProducerControl"
+      [reprStr label,
+       call "==" ["$actual", quoted wire],
+       call "==" ["$resumed", "$actual"],
+       call "==" ["$packets", quoted packetWire],
+       call "==" ["$pairs", quoted pairWire],
+       call "==" ["$keys", quoted (encodeList (logicalKeyTerm choice) keys)],
+       call "==" ["$bag", quoted (encodeList InferenceCettaWire.encodePattern bag)],
+       call "==" ["$facts", quoted (encodeList InferenceCettaWire.encodePattern facts)],
+       call "==" ["$receipts", quoted receiptWire],
+       call "==" [call "gslt:occurrence-search:status" ["$actual"], "SearchComplete"],
+       call "==" [call "gslt:occurrence-search:status" ["$middle"], "SearchPending"],
+       call "==" [call "gslt:automata:length" ["$packets"], toString expectedPackets],
+       call "==" [call "gslt:automata:length" ["$pairs"], toString expectedPackets],
+       call "==" [call "gslt:automata:length" ["$keys"], toString expectedKeys],
+       call "==" [call "gslt:automata:length" ["$bag"], toString bag.length],
+       call "==" [call "gslt:automata:length" ["$facts"], toString expectedFacts],
+       call "==" [call "gslt:automata:member" ["$wrong", "$facts"], "False"],
+       call "==" ["$replayed-keys", "$keys"],
+       call "==" ["$replayed-bag", "$bag"],
+       call "==" ["$replayed-facts", "$facts"],
+       call "==" ["$reread", call "gslt:automata:append" ["$pairs", "$pairs"]],
+       call "==" ["$reread-keys", "$keys"]]]))
+
+
+private def invarianceHelpers : String := "(: kg-producer-control:ad-keys (-> Atom Atom %Undefined%))\n(= (kg-producer-control:ad-keys $wanted $keys)\n (case $keys ((LNil LNil) ((LCons $key $rest)\n  (let* (($conclusion (gslt:occurrence-search:key-binary \"Edge\" $key))\n         ($later (kg-producer-control:ad-keys $wanted $rest)))\n   (if (== $conclusion (Some $wanted)) (LCons $key $later) $later))))))\n(: kg-producer-control:subset (-> Atom Atom %Undefined%))\n(= (kg-producer-control:subset $left $right)\n (case $left ((LNil True) ((LCons $key $rest)\n  (if (gslt:automata:member $key $right) (kg-producer-control:subset $rest $right) False)))))\n(: kg-producer-control:source-sensitive-ad (-> Atom Atom Atom Atom %Undefined%))\n(= (kg-producer-control:source-sensitive-ad $table $selected $wanted $pairs)\n (case $pairs ((LNil LNil) ((LCons $pair $rest)\n  (let* (($key (gslt:occurrence-search:key-extract $table $selected $pair))\n         ($conclusion (gslt:occurrence-search:key-binary \"Edge\" $key))\n         ($later (kg-producer-control:source-sensitive-ad $table $selected $wanted $rest)))\n   (if (== $conclusion (Some $wanted))\n    (case $pair (((CommittedOccurrence\n      (RecursiveOccurrencePublication\n       (RecursiveCollectionOrigin (RuleJob $ordinal $declaration $site) $variant $answer) $continued) $receipt)\n       (LCons (SourceSensitiveKey $site $key) $later)))) $later))))))"
+
+def invariance : IO String := do
+  let sources := [("base", twoRouteSource),
+    ("extended", irrelevantExtensionSource),
+    ("conclusion-present", graph [edge "A" "B", edge "B" "D", edge "A" "C", edge "C" "D", edge "A" "D"]),
+    ("reordered", reorderedDuplicateSource)]
+  let environment := GeneralPlanEnvironment.environment twoRoutePlan
+  let footprint := sources.flatMap (fun item => item.2.freeFvarNames) ++
+    providerFreeNames environment.provider
+  let names := CanonicalCompare.nameTable
+    (StructuralDescent.Scheduled.NameSupport.environmentNameTable environment footprint ++
+      sources.flatMap (fun item => CanonicalCompare.names item.2))
+  let planWire := CollectionOccurrenceSearchExecution.Interpreted.interpretedPlanTerm
+    names twoRoutePlan footprint [] graphType
+  let mut bindings := [("$names", quoted (encodeList Term.string names)),
+    ("$selected", quoted (encodeList Term.string ["x", "y", "z"])),
+    ("$plan", quoted planWire), ("$wanted", quoted (InferenceCettaWire.encodePattern (edge "A" "D")))]
+  for (tag, source) in sources ++ [("canonical", CanonicalBags.canon twoRouteSource)] do
+    let finish : Publication EquationalScopedReceipts.Event →
+        Option (GeneralRuleJobs.Receipt EquationalScopedReceipts.Event) :=
+      fun packet => packet.finishCanonical? twoRoutePlan [] graphType
+    let model := CollectionOccurrenceSearch.runWith twoRoutePlan [] graphType
+      (fun input => canonicalSeedProfile twoRoutePlan [] graphType input) 0 source 1600
+    let keys := orderedCommittedKeys logicalKey (CollectionOccurrenceSearch.committedWith finish model)
+    unless (keys.filter (fun key => logicalEdge? key == some (edge "A" "D"))).length == 2 do
+      throw (IO.userError s!"Graph invariance source {tag} lost an independent route")
+    bindings := bindings ++
+      [("$source-" ++ tag, if tag == "canonical" then
+          call "gslt:canon:canon" ["$names", "$source-base"]
+        else quoted (InferenceCettaWire.encodePattern source)),
+       ("$run-" ++ tag, call "gslt:occurrence-search:run"
+         ["$names", "0", "$plan", "$source-" ++ tag, "1600"]),
+       ("$packets-" ++ tag, packets ("$run-" ++ tag)),
+       ("$pairs-" ++ tag, call "gslt:occurrence-search:read-committed" ["$plan", "$packets-" ++ tag]),
+       ("$keys-" ++ tag, call "gslt:occurrence-search:key-unique" ["$names", "$selected", "$pairs-" ++ tag]),
+       ("$ad-" ++ tag, call "kg-producer-control:ad-keys" ["$wanted", "$keys-" ++ tag])]
+  bindings := bindings ++
+    [("$all-ad-1", call "gslt:automata:append" ["$ad-base", "$ad-extended"]),
+     ("$all-ad-2", call "gslt:automata:append" ["$all-ad-1", "$ad-conclusion-present"]),
+     ("$all-ad-3", call "gslt:automata:append" ["$all-ad-2", "$ad-reordered"]),
+     ("$all-ad-4", call "gslt:automata:append" ["$all-ad-3", "$ad-canonical"]),
+     ("$unique-ad", call "gslt:automata:unique" ["$all-ad-4"]),
+     ("$sensitive-base", call "kg-producer-control:source-sensitive-ad"
+       ["$names", "$selected", "$wanted", "$pairs-base"]),
+     ("$sensitive-extended", call "kg-producer-control:source-sensitive-ad"
+       ["$names", "$selected", "$wanted", "$pairs-extended"]),
+     ("$sensitive-combined", call "gslt:automata:append" ["$sensitive-base", "$sensitive-extended"]),
+     ("$sensitive-unique", call "gslt:automata:unique" ["$sensitive-combined"])]
+  let mut checks := []
+  for tag in ["base", "extended", "conclusion-present", "reordered", "canonical"] do
+    checks := checks ++ [call "==" [call "gslt:automata:length" ["$ad-" ++ tag], "2"]]
+    if tag != "base" then
+      checks := checks ++
+        [call "==" [call "kg-producer-control:subset" ["$ad-" ++ tag, "$ad-base"], "True"],
+         call "==" [call "kg-producer-control:subset" ["$ad-base", "$ad-" ++ tag], "True"]]
+  checks := checks ++
+    [call "==" [call "gslt:automata:length" ["$unique-ad"], "2"],
+     call "==" [call "gslt:automata:length" ["$sensitive-unique"], "4"]]
+  pure ("!" ++ letStar bindings
+    (call "println!" [call "KGProducerInvarianceControl"
+      (reprStr "source-presentation-and-extension-invariance" :: checks)]))
+
+def main : IO Unit := do
+  IO.println invarianceHelpers
+  for (label, plan, source, work, first, raw, keys, facts) in [
+      ("two-independent-routes", twoRoutePlan, twoRouteSource, 800, 3, 8, 2, 1),
+      ("guard-absent", guardedTwoRoutePlan 0, twoRouteSource, 800, 3, 0, 0, 0),
+      ("guard-one-validation", guardedTwoRoutePlan 1, twoRouteSource, 800, 3, 8, 2, 1),
+      ("guard-duplicate-validation", guardedTwoRoutePlan 2, twoRouteSource, 800, 3, 16, 2, 1),
+      ("missing-second-edge", twoRoutePlan, graph [edge "A" "B"], 200, 0, 0, 0, 0),
+      ("wrong-conclusion", twoRoutePlan, graph [edge "A" "B", edge "B" "C"], 400, 3, 4, 1, 1),
+      ("cyclic-source", twoRoutePlan, graph [edge "A" "B", edge "B" "A", edge "B" "C"], 1200, 3, 12, 3, 3),
+      ("irrelevant-source-extension", twoRoutePlan, irrelevantExtensionSource, 1600, 3, 18, 5, 4),
+      ("reordered-duplicate-source", twoRoutePlan, reorderedDuplicateSource, 800, 3, 8, 2, 1),
+      ("canonical-source-presentation", twoRoutePlan, CanonicalBags.canon twoRouteSource, 800, 3, 8, 2, 1)] do
+    IO.println (← control label plan source work first raw keys facts)
+  IO.println (← invariance)
+
+end KnowledgeGraphProducerControls
+#eval KnowledgeGraphProducerControls.main
+
+namespace NativeKGObservationControls
+open Mettapedia.GSLT.LanguageDef CettaWire
+open Mettapedia.OSLF.MeTTaIL Syntax CollectionCommittedObservation CollectionOccurrenceBatch CanonicalBags
+open Mettapedia.GSLT.LanguageDef.CollectionConsumers
+open Mettapedia.GSLT.LanguageDef.CollectionConsumers.Controls.Observation.GraphControls
+open Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL
+open CollectionExecutionQualification.GraphObservation
+
+def pairs (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) :=
+  retained plan [] (.base "Graph") packets
+
+def aToD (xs : List Committed) : List Committed :=
+  xs.filter fun pair => logicalEdge? (logicalKey pair) == some (edge "A" "D")
+
+def choiceTerm := RuleInstantiationExecution.GeneralExecution.bagChoiceTerm
+
+def render (label : String) (committed : List Committed) : String := Id.run do
+  let raw := encodeList (CollectionOccurrenceBatchExecution.committedTermWith choiceTerm) committed
+  let keys := orderedCommittedKeys logicalKey committed
+  let expectedKeys := encodeList (logicalKeyTerm choiceTerm) keys
+  let bag := keys.filterMap logicalEdge?
+  let expectedBag := encodeList InferenceCettaWire.encodePattern bag
+  let expectedFacts := encodeList InferenceCettaWire.encodePattern bag.eraseDups
+  let table := encodeList Term.string ["A","B","C","D","Edge","Graph"]
+  let selected := encodeList Term.string ["x","y","z"]
+  let wrong := InferenceCettaWire.encodePattern (edge "Z" "A")
+  return "!(println! (let* (($pairs (quote " ++ raw.render ++ ")) ($table (quote " ++ table.render ++
+    ")) ($selected (quote " ++ selected.render ++ ")) ($expectedKeys (quote " ++ expectedKeys.render ++
+    ")) ($expectedBag (quote " ++ expectedBag.render ++ ")) ($expectedFacts (quote " ++ expectedFacts.render ++
+    ")) ($wrong (quote " ++ CettaWire.Term.render wrong ++ "))" ++
+    " ($keys (gslt:occurrence-search:key-unique $table $selected $pairs))" ++
+    " ($bag (gslt:occurrence-search:key-bag $table $selected \"Edge\" $pairs))" ++
+    " ($facts (gslt:occurrence-search:key-facts $table $selected \"Edge\" $pairs))" ++
+    " ($twice (gslt:automata:append $pairs $pairs))" ++
+    " ($replayed (gslt:occurrence-search:key-unique $table $selected $twice)))" ++
+    " (KGDeclaredKeyControl " ++ reprStr label ++
+    " (== $keys $expectedKeys) (== $bag $expectedBag) (== $facts $expectedFacts)" ++
+    " (== (gslt:automata:length $keys) " ++ toString keys.length ++ ")" ++
+    " (== (gslt:automata:length $bag) " ++ toString bag.length ++ ")" ++
+    " (== (gslt:automata:length $facts) " ++ toString bag.eraseDups.length ++ ")" ++
+    " (== $replayed $keys) (== (gslt:automata:member $wrong $facts) False)" ++
+    " (== (gslt:automata:length $pairs) " ++ toString committed.length ++ "))))"
+
+def main : IO Unit := do
+  let route := pairs twoRoutePlan twoRouteFinished.batch.log
+  IO.println (render "two-independent-routes" route)
+  IO.println (render "duplicate-validation-one" (pairs (guardedTwoRoutePlan 1) (guardedTwoRouteFinished 1).batch.log))
+  IO.println (render "duplicate-validation-two" (pairs (guardedTwoRoutePlan 2) (guardedTwoRouteFinished 2).batch.log))
+  IO.println (render "cyclic-prefix" (pairs reachabilityPlan finishedDiamond.batch.log))
+  IO.println (render "source-extension-relevant-fact" (aToD (pairs twoRoutePlan irrelevantExtensionFinished.batch.log)))
+  IO.println (render "reordered-duplicate-source" (aToD (pairs twoRoutePlan reorderedDuplicateFinished.batch.log)))
+  IO.println (render "canonical-source-presentation" (aToD (pairs twoRoutePlan canonicalSourceFinished.batch.log)))
+  IO.println (render "source-extension-full-prefix" (pairs twoRoutePlan irrelevantExtensionFinished.batch.log))
+  IO.println (render "reordered-source-full-prefix" (pairs twoRoutePlan reorderedDuplicateFinished.batch.log))
+  IO.println (render "canonical-source-full-prefix" (pairs twoRoutePlan canonicalSourceFinished.batch.log))
+  let missing := CollectionOccurrenceMachine.run 0 160
+    (CollectionOccurrenceMachine.begin reachabilityPlan [] (.base "Graph") (graph [edge "A" "B"]))
+  IO.println (render "missing-second-edge" (pairs reachabilityPlan missing.batch.log))
+  IO.println (render "replayed-retained-pairs" (route ++ route))
+  match (orderedCommittedKeys logicalKey route).head? with
+  | none => throw (IO.userError "actual graph source produced no logical route")
+  | some key =>
+    let missingKey := logicalKeyTerm choiceTerm {key with first := none}
+    IO.println ("!(println! (let $key (quote " ++ missingKey.render ++
+      ") (KGDeclaredKeyNegative \"missing-first-conclusion\" (== (gslt:occurrence-search:key-binary \"Edge\" $key) None))))")
+    IO.println "!(println! (let $key (quote (WrongDeclaredFiringKey)) (KGDeclaredKeyNegative \"wrong-key-constructor\" (== (gslt:occurrence-search:key-binary \"Edge\" $key) None))))"
+
+#eval main
+end NativeKGObservationControls
+
+namespace FiniteExplorerControls
+
+open CollectionRunnerControls (call letStar select)
+open NestedContinuationControls (quoted)
+open CollectionConsumers
+open CollectionConsumers.Controls.Observation.GraphControls
+
+def control (label : String) (plan : GeneralExecutionAdmission.Plan) (source : Pattern)
+    (work nodeCount edgeCount : Nat) : IO String := do
+  let search := CollectionOccurrenceSearch.search plan [] (.base "Graph") 0
+  let names := StandardWire.planTable plan []
+  let standard := Term.application "Canonical"
+    [.symbol "LNil", .symbol "LNil", encodeList Term.string names]
+  let backend := CompleteExecution.CollectionOccurrence.backendTerm names 0
+  let planWire := CompletePlanWire.planTerm plan [] [] (.base "Graph")
+  let initial := Complete.Explore.begin search source
+  let middle := Complete.Settled.roundsUntilSettled search 3 initial
+  let whole := Complete.Settled.roundsUntilSettled search work initial
+  let graphEdges := Complete.Graph.edges search whole
+  unless Complete.Settled.settled search whole && whole.nodes.length == nodeCount &&
+      graphEdges.length == edgeCount do
+    throw (IO.userError s!"Finite explorer {label} has the wrong settled node/edge account")
+  let explorerWire := CompleteExecution.SearchWire.explorerTerm
+    (CollectionOccurrenceSearchExecution.runTerm []) ScopedRuleJobReadoutExecution.receiptTerm
+  pure ("!" ++ letStar
+    [("$backend", quoted backend), ("$standard", quoted standard), ("$plan", quoted planWire),
+     ("$source", quoted (InferenceCettaWire.encodePattern source)),
+     ("$initial", call "gslt:explore:begin" ["$backend", "$plan", "$standard", "$source"]),
+     ("$middle", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", "3", "$initial"]),
+     ("$whole", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", toString work, "$initial"]),
+     ("$resumed", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", toString (work - 3), "$middle"]),
+     ("$later", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", "50", "$whole"]),
+     ("$nodes", select "$whole" "(Explorer $round $nodes)" "$nodes"),
+     ("$settled", call "gslt:explore:settled" ["$backend", "$plan", "$nodes"]),
+     ("$states", call "gslt:explore:states" ["$whole"]),
+     ("$edges", call "gslt:explore:edges" ["$backend", "$standard", "$whole"])]
+    (call "println!" [call "FiniteExplorerControl"
+      [reprStr label,
+       call "==" ["$middle", quoted (explorerWire middle)],
+       call "==" ["$whole", quoted (explorerWire whole)],
+       call "==" ["$resumed", "$whole"],
+       call "==" ["$settled", "True"],
+       call "==" ["$later", "$whole"],
+       call "==" ["$states", quoted (encodeList InferenceCettaWire.encodePattern (whole.nodes.map (·.state)))],
+       call "==" ["$edges", quoted (encodeList
+         (CompleteExecution.SearchWire.edgeTerm ScopedRuleJobReadoutExecution.receiptTerm) graphEdges)],
+       call "==" [call "gslt:automata:length" ["$states"], toString nodeCount],
+       call "==" [call "gslt:automata:length" ["$edges"], toString edgeCount]]]))
+
+def main : IO Unit := do
+  IO.println (← control "self-cycle" reachabilityPlan (graph [edge "A" "A"]) 37 1 2)
+  IO.println (← control "closed-diamond" reachabilityPlan diamond 703 1 14)
+  IO.println (← control "two-route-closure" twoRoutePlan twoRouteSource 1081 2 16)
+
+end FiniteExplorerControls
+#eval FiniteExplorerControls.main

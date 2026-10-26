@@ -1,3 +1,4 @@
+import Mettapedia.Logic.HOL.ConstantSubstitutionSemantics
 import Mettapedia.Logic.HOL.ProofSyntaxModulo
 import Mettapedia.Logic.HOL.CanonicalTheory
 import Mettapedia.Logic.HOL.Semantics.ModelProperties
@@ -281,5 +282,16 @@ def inductionChain (sort : Base) (ctors : List (InductiveCtor Const sort)) {Γ :
 `∀P. case₁ ⇒ ⋯ ⇒ caseₖ ⇒ ∀t. P t`. -/
 def inductionFormula (sort : Base) (ctors : List (InductiveCtor Const sort)) : Formula Const [] :=
   .all (σ := .arr (.base sort) .prop) (inductionChain sort ctors (.var .vz))
+
+namespace Term
+
+theorem SymbolsSatisfy.closeAll (allowed : ∀ {type}, Const type → Prop)
+    (context : Ctx Base) (formula : Formula Const context) (supported : formula.SymbolsSatisfy allowed) :
+    (HOL.closeAll context formula).SymbolsSatisfy allowed := by
+  induction context with
+  | nil => exact supported
+  | cons type context ih => exact ih (.all formula) supported
+
+end Term
 
 end Mettapedia.Logic.HOL

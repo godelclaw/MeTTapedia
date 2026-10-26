@@ -24,14 +24,11 @@ theorem images_related (relation : Left → Right → Prop)
     (first : Middle → Left) (second : Middle → Right) (points : Finset Middle)
     (coherent : ∀ point ∈ points, relation (first point) (second point)) :
     Related relation (map first points) (map second points) := by
+  simp only [Related, mem_map]
   constructor
-  · intro value member
-    obtain ⟨point, present, rfl⟩ := (mem_map _ _ _).mp member
-    exact ⟨second point, (mem_map _ _ _).mpr ⟨point, present, rfl⟩,
-      coherent point present⟩
-  · intro other member
-    obtain ⟨point, present, rfl⟩ := (mem_map _ _ _).mp member
-    exact ⟨first point, (mem_map _ _ _).mpr ⟨point, present, rfl⟩,
-      coherent point present⟩
+  · rintro _ ⟨point, present, rfl⟩
+    exact ⟨second point, ⟨point, present, rfl⟩, coherent point present⟩
+  · rintro _ ⟨point, present, rfl⟩
+    exact ⟨first point, ⟨point, present, rfl⟩, coherent point present⟩
 
 end Mettapedia.CategoryTheory.FinitePowersetSpan

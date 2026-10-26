@@ -19,6 +19,13 @@ import Mettapedia.GSLT.Core.ContextualPseudoCwfBasePseudofunctor
 import Mettapedia.GSLT.Core.ContextualProfileInclusions
 import Mettapedia.GSLT.Core.BranchingTemporal
 import Mettapedia.GSLT.Causality.ResourceFrontier
+import Mettapedia.GSLT.Causality.FactLinearResources
+import Mettapedia.GSLT.Causality.SpaceRemovalContracts
+import Mettapedia.GSLT.Causality.MatchRemoveRealization
+import Mettapedia.GSLT.Causality.DiscreteDoublePushout
+import Mettapedia.GSLT.Causality.FactStoreSaturation
+import Mettapedia.GSLT.Causality.SemiringFactStores
+import Mettapedia.GSLT.Causality.DiscreteRewritingRegimes
 import Mettapedia.GSLT.Core.TickAutomatonLaneRecurrence
 import Mettapedia.GSLT.Core.SearchControlProperties
 import Mettapedia.GSLT.Core.OpenTotalityObservation

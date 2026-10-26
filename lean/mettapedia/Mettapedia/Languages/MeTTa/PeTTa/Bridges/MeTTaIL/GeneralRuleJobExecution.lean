@@ -269,6 +269,150 @@ theorem receiptTerm_injective : Function.Injective receiptTerm := by
   have decoded := congrArg decodeReceipt? same
   simpa only [decodeReceipt?_receiptTerm, Option.some.injEq] using decoded
 
+private def decodeOriginRowWith? {Choice : Type} (decodeChoice : Term → Option Choice) :
+    Term → Option (Nat × List Choice)
+  | .application "ArgumentOrigin" [.natural index, trace] => do
+      pure (index, ← decodeList decodeChoice trace)
+  | _ => none
+
+private theorem decodeOriginsWith_originsTerm {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (origins : List (Nat × List Choice)) :
+    decodeList (decodeOriginRowWith? decodeChoice) (RetainedMatchingWire.originsTerm choiceTerm origins) =
+      some origins := by
+  unfold RetainedMatchingWire.originsTerm
+  apply decodeList_encodeList
+  intro origin
+  simp [decodeOriginRowWith?, decodeList_encodeList decodeChoice choiceTerm inverse]
+
+mutual
+def decodeEventWith? {Choice : Type} (decodeChoice : Term → Option Choice) : Term → Option (GeneralPremise.Event Choice)
+  | .application "PremiseQueryEvent" [.natural index, .natural quantifiers, .natural row, origins] => do
+      pure (.query index quantifiers row (← decodeList (decodeOriginRowWith? decodeChoice) origins))
+  | .application "PremiseFreshnessEvent" [.natural index, .natural quantifiers, .string atom, subject] => do
+      pure (.freshness index quantifiers atom (← InferenceCettaWire.decodePattern subject))
+  | .application "PremiseQuantifiedEvent" [.natural index, .natural quantifiers, kind, elements] => do
+      pure (.quantified index quantifiers (← InferenceCettaWire.decodeCollectionType kind)
+        (← decodeQuantifiedEventsWith? decodeChoice elements))
+  | .application "PremiseChildEvent" [.natural index, .natural quantifiers, .natural declaration,
+      bound, source, target, trace, targetTrace, captured, completed, history] => do
+      pure (.child index quantifiers declaration (← decodeList InferenceCettaWire.AuthoredRule.decodeType? bound)
+        (← InferenceCettaWire.decodePattern source) (← InferenceCettaWire.decodePattern target)
+        (← decodeList decodeChoice trace) (← decodeList decodeChoice targetTrace) (← decodeAssignment? captured)
+        (← decodeAssignment? completed) (← decodeEventsWith? decodeChoice history))
+  | _ => none
+termination_by wire => sizeOf wire
+
+def decodeEventsWith? {Choice : Type} (decodeChoice : Term → Option Choice) :
+    Term → Option (List (GeneralPremise.Event Choice))
+  | .symbol "LNil" => some []
+  | .application "LCons" [event, events] => do
+      pure ((← decodeEventWith? decodeChoice event) :: (← decodeEventsWith? decodeChoice events))
+  | _ => none
+termination_by wire => sizeOf wire
+
+def decodeQuantifiedEventsWith? {Choice : Type} (decodeChoice : Term → Option Choice) :
+    Term → Option (List (Nat × Pattern × List (GeneralPremise.Event Choice)))
+  | .symbol "LNil" => some []
+  | .application "LCons" [.application "QuantifiedElement" [.natural index, element, history], rest] => do
+      pure ((index, ← InferenceCettaWire.decodePattern element, ← decodeEventsWith? decodeChoice history) ::
+        (← decodeQuantifiedEventsWith? decodeChoice rest))
+  | _ => none
+termination_by wire => sizeOf wire
+end
+
+mutual
+theorem decodeEventWith?_eventTerm {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (event : GeneralPremise.Event Choice) :
+    decodeEventWith? decodeChoice (RetainedMatchingWire.eventTerm choiceTerm event) = some event := by
+  cases event with
+  | query index quantifiers row origins =>
+      simp [RetainedMatchingWire.eventTerm, decodeEventWith?, decodeOriginsWith_originsTerm choiceTerm decodeChoice inverse]
+  | freshness index quantifiers atom subject => simp [RetainedMatchingWire.eventTerm, decodeEventWith?]
+  | quantified index quantifiers kind elements =>
+      simp [RetainedMatchingWire.eventTerm, decodeEventWith?,
+        decodeQuantifiedEventsWith?_quantifiedEventsTerm choiceTerm decodeChoice inverse elements]
+  | child index quantifiers declaration bound source target trace targetTrace captured completed history =>
+      simp [RetainedMatchingWire.eventTerm, decodeEventWith?,
+        PremiseOperationsExecution.GeneralExecution.Base.typesTerm,
+        decodeEventsWith?_eventsTerm choiceTerm decodeChoice inverse history,
+        decodeList_encodeList decodeChoice choiceTerm inverse, decodeList_encodeList]
+termination_by sizeOf event
+
+theorem decodeEventsWith?_eventsTerm {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (events : List (GeneralPremise.Event Choice)) :
+    decodeEventsWith? decodeChoice (RetainedMatchingWire.eventsTerm choiceTerm events) = some events := by
+  cases events with
+  | nil => simp [RetainedMatchingWire.eventsTerm, decodeEventsWith?]
+  | cons event events =>
+      simp [RetainedMatchingWire.eventsTerm, decodeEventsWith?,
+        decodeEventWith?_eventTerm choiceTerm decodeChoice inverse event,
+        decodeEventsWith?_eventsTerm choiceTerm decodeChoice inverse events]
+termination_by sizeOf events
+
+theorem decodeQuantifiedEventsWith?_quantifiedEventsTerm {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (elements : List (Nat × Pattern × List (GeneralPremise.Event Choice))) :
+    decodeQuantifiedEventsWith? decodeChoice (RetainedMatchingWire.quantifiedEventsTerm choiceTerm elements) =
+      some elements := by
+  cases elements with
+  | nil => simp [RetainedMatchingWire.quantifiedEventsTerm, decodeQuantifiedEventsWith?]
+  | cons entry rest =>
+      rcases entry with ⟨index, element, history⟩
+      simp [RetainedMatchingWire.quantifiedEventsTerm, decodeQuantifiedEventsWith?,
+        decodeEventsWith?_eventsTerm choiceTerm decodeChoice inverse history,
+        decodeQuantifiedEventsWith?_quantifiedEventsTerm choiceTerm decodeChoice inverse rest]
+termination_by sizeOf elements
+end
+
+/-- The choice encoder is declared separately from the retained receipt fields. -/
+def receiptTermWith {Choice : Type} (choiceTerm : Choice → Term) (receipt : Receipt Choice) : Term :=
+  .application "RuleJobReceipt" [jobTerm receipt.job, encodeList choiceTerm receipt.matcherTrace,
+    assignmentTerm receipt.captured, assignmentTerm receipt.completed,
+    RetainedMatchingWire.eventsTerm choiceTerm receipt.premiseHistory,
+    InferenceCettaWire.encodePattern receipt.localTarget, InferenceCettaWire.encodePattern receipt.target]
+
+def decodeReceiptWith? {Choice : Type} (decodeChoice : Term → Option Choice) : Term → Option (Receipt Choice)
+  | .application "RuleJobReceipt" [job, trace, captured, completed, history, localTarget, target] => do
+      pure ⟨← decodeJob? job, ← decodeList decodeChoice trace, ← decodeAssignment? captured,
+        ← decodeAssignment? completed, ← decodeEventsWith? decodeChoice history,
+        ← InferenceCettaWire.decodePattern localTarget, ← InferenceCettaWire.decodePattern target⟩
+  | _ => none
+
+theorem decodeReceiptWith?_receiptTermWith {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (receipt : Receipt Choice) : decodeReceiptWith? decodeChoice (receiptTermWith choiceTerm receipt) = some receipt := by
+  cases receipt
+  simp [receiptTermWith, decodeReceiptWith?, decodeList_encodeList decodeChoice choiceTerm inverse,
+    decodeEventsWith?_eventsTerm choiceTerm decodeChoice inverse]
+
+theorem receiptTermWith_injective {Choice : Type} (choiceTerm : Choice → Term)
+    (decodeChoice : Term → Option Choice) (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice) :
+    Function.Injective (receiptTermWith choiceTerm) := by
+  intro first second same
+  have decoded := congrArg (decodeReceiptWith? decodeChoice) same
+  simpa only [decodeReceiptWith?_receiptTermWith choiceTerm decodeChoice inverse, Option.some.injEq] using decoded
+
+theorem receiptTermWith_ordinary (receipt : Receipt) :
+    receiptTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm receipt = receiptTerm receipt := by
+  unfold receiptTermWith receiptTerm
+  rw [RetainedMatchingWire.ordinary_events]
+  rfl
+
+theorem decodeReceiptWith?_wrong_constructor {Choice : Type} (decodeChoice : Term → Option Choice) :
+    decodeReceiptWith? decodeChoice (.application "RootAnswer" []) = none := rfl
+
+#print axioms decodeEventWith?_eventTerm
+#print axioms decodeEventsWith?_eventsTerm
+#print axioms decodeQuantifiedEventsWith?_quantifiedEventsTerm
+#print axioms decodeReceiptWith?_receiptTermWith
+#print axioms receiptTermWith_injective
+#print axioms receiptTermWith_ordinary
+#print axioms decodeReceiptWith?_wrong_constructor
+
+
 def requestProjectionTerm (request : GeneralRuleJobExecution.Request) (footprint : List String) : Term :=
   .application "RuleJobRequestProjection"
     [PremiseOperationsExecution.GeneralExecution.environmentTerm request.environment (request.environment.free.entriesOn footprint),
@@ -852,9 +996,65 @@ private theorem finish_shape : (equation .finish).body = a "case"
     [a "RuleJobFinishInput" [v "request", v "result"], .expression (finishCases.map fun row => .expression [row.1, row.2])] := by
   decide +kernel
 
-private def finishBindings (request : GeneralRuleJobExecution.Request) (footprint : List String)
+/-- The primitive finisher receives the actual root data and a declared choice
+encoder. Premise histories, child traces and query origins remain intact. -/
+def rootResultTermWith {Choice : Type} (choiceTerm : Choice → Term)
+    (request : GeneralRuleJobExecution.Request) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice))
+    (localTarget : Pattern) : Term :=
+  .application "PremiseResult" [PremiseOperationsExecution.GeneralExecution.goalTerm request.goal,
+    .application "RootAnswer" [encodeList choiceTerm trace, assignmentTerm captured,
+      assignmentTerm completed, RetainedMatchingWire.eventsTerm choiceTerm history,
+      InferenceCettaWire.encodePattern localTarget]]
+
+private def finishValuesWith {Choice : Type} (choiceTerm : Choice → Term)
+    (request : GeneralRuleJobExecution.Request) (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice))
+    (localTarget : Pattern) : List Atom :=
+  [encoded (requestProjectionTerm request footprint),
+    encoded (rootResultTermWith choiceTerm request trace captured completed history localTarget)]
+
+private def finishValues (request : GeneralRuleJobExecution.Request) (footprint : List String)
+    (result : GeneralPremise.Execution.Result request.environment request.goal) : List Atom :=
+  [encoded (requestProjectionTerm request footprint), encoded (PremiseOperationsExecution.GeneralExecution.resultTerm result)]
+
+def finishRootQuery (request : GeneralRuleJobExecution.Request) (footprint : List String)
+    (result : GeneralPremise.Execution.Result request.environment request.goal) : Atom :=
+  a "gslt:rule:job-finish-root" (finishValues request footprint result)
+
+def finishRootQueryWith {Choice : Type} (choiceTerm : Choice → Term)
+    (request : GeneralRuleJobExecution.Request) (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice))
+    (localTarget : Pattern) : Atom :=
+  a "gslt:rule:job-finish-root"
+    (finishValuesWith choiceTerm request footprint trace captured completed history localTarget)
+
+theorem rootResultTermWith_ordinary (request : GeneralRuleJobExecution.Request)
     (trace : List GeneralScopedMatchMachine.BagChoice) (captured completed : Assignment)
-    (history : List GeneralPremise.Event) (localTarget : Pattern) : Subst :=
+    (history : List GeneralPremise.Event) (localTarget : Pattern)
+    (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget) :
+    rootResultTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm request trace captured completed history localTarget =
+      PremiseOperationsExecution.GeneralExecution.resultTerm (.root trace captured completed history localTarget valid) := by
+  unfold rootResultTermWith PremiseOperationsExecution.GeneralExecution.resultTerm
+  rw [RetainedMatchingWire.ordinary_events]
+  rfl
+
+private theorem finishValuesWith_ordinary (request : GeneralRuleJobExecution.Request)
+    (footprint : List String) (trace : List GeneralScopedMatchMachine.BagChoice)
+    (captured completed : Assignment) (history : List GeneralPremise.Event) (localTarget : Pattern)
+    (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget) :
+    finishValuesWith RetainedMatchingWire.ordinaryCodec.choiceTerm request footprint trace captured completed history localTarget =
+      finishValues request footprint (.root trace captured completed history localTarget valid) := by
+  unfold finishValuesWith finishValues
+  rw [rootResultTermWith_ordinary request trace captured completed history localTarget valid]
+  rfl
+
+private def finishBindingsWith {Choice : Type} (choiceTerm : Choice → Term)
+    (request : GeneralRuleJobExecution.Request) (footprint : List String)
+    (trace : List Choice) (captured completed : Assignment)
+    (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern) : Subst :=
   [("declarations", declarationsValue request.environment.language),
    ("rewrites", encoded (encodeList InferenceCettaWire.AuthoredRule.rewriteTerm request.environment.language.rewrites)),
    ("specifications", encoded (encodeList PremiseOperationsExecution.GeneralExecution.specificationTerm request.environment.specifications)),
@@ -872,66 +1072,56 @@ private def finishBindings (request : GeneralRuleJobExecution.Request) (footprin
    ("focusType", encoded (InferenceCettaWire.AuthoredRule.typeTerm request.job.site.focusType)),
    ("frames", framesValue request.job.site.typingFrames),
    ("goal", encoded (PremiseOperationsExecution.GeneralExecution.goalTerm request.goal)),
-   ("trace", encoded (PremiseOperationsExecution.GeneralExecution.traceTerm trace)),
+   ("trace", encoded (encodeList choiceTerm trace)),
    ("captured", encoded (RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm captured)),
    ("completed", encoded (RuleInstantiationExecution.ScopedCapture.scopedAssignmentTerm completed)),
-   ("history", encoded (PremiseOperationsExecution.GeneralExecution.eventsTerm history)),
+   ("history", encoded (RetainedMatchingWire.eventsTerm choiceTerm history)),
    ("localTarget", patternValue localTarget)].reverse
 
-private def finishValues (request : GeneralRuleJobExecution.Request) (footprint : List String)
-    (result : GeneralPremise.Execution.Result request.environment request.goal) : List Atom :=
-  [encoded (requestProjectionTerm request footprint), encoded (PremiseOperationsExecution.GeneralExecution.resultTerm result)]
-
-private theorem finish_frame_returns (state : State) (request : GeneralRuleJobExecution.Request)
-    (footprint : List String) (trace : List GeneralScopedMatchMachine.BagChoice)
-    (captured completed : Assignment) (history : List GeneralPremise.Event) (localTarget : Pattern)
-    (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound request.job.site.focusType
-      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+private theorem finish_frame_returnsWith {Choice : Type} (choiceTerm : Choice → Term) (state : State) (request : GeneralRuleJobExecution.Request)
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
     (answer : Atom)
     (continued : PureReturns runtime
-      (finishBindings request footprint trace captured completed history localTarget ++
-        environment .finish (finishValues request footprint (.root trace captured completed history localTarget valid)))
+      (finishBindingsWith choiceTerm request footprint trace captured completed history localTarget ++
+        environment .finish (finishValuesWith choiceTerm request footprint trace captured completed history localTarget))
       state finishGoalBody state answer) :
     PureReturns runtime [] state (a Helper.finish.head
-      (finishValues request footprint (.root trace captured completed history localTarget valid))) state answer := by
-  let values := finishValues request footprint (.root trace captured completed history localTarget valid)
+      (finishValuesWith choiceTerm request footprint trace captured completed history localTarget)) state answer := by
+  let values := finishValuesWith choiceTerm request footprint trace captured completed history localTarget
   let caller := environment .finish values
   apply helper_call .finish [] state _ values _ rfl (captured_closed _)
   rw [finish_shape]
   apply branch_returns caller
-    (finishBindings request footprint trace captured completed history localTarget ++ caller) state
+    (finishBindingsWith choiceTerm request footprint trace captured completed history localTarget ++ caller) state
     (a "RuleJobFinishInput" [v "request", v "result"])
     (a "RuleJobFinishInput" values) finishCases finishGoalBody
-  · simpa [caller, values, finishValues, environment, Helper.names, DataConstructor.head, applySubst, applySubst.applySubstList, Subst.lookup] using
+  · simpa [caller, values, finishValuesWith, rootResultTermWith, environment, Helper.names, DataConstructor.head, applySubst, applySubst.applySubstList, Subst.lookup] using
       (PureData.template_return runtime caller state _ (data_variables_template .input ["request", "result"]))
-  · simp [finishCases, finishBindings, caller, values, finishValues, environment, Helper.names,
+  · simp [finishCases, finishBindingsWith, caller, values, finishValuesWith, rootResultTermWith, environment, Helper.names,
       requestProjectionTerm, PremiseOperationsExecution.GeneralExecution.environmentTerm,
       PremiseOperationsExecution.DeclarationTyping.declarationsTerm,
-      jobTerm, siteTerm, PremiseOperationsExecution.GeneralExecution.resultTerm,
+      jobTerm, siteTerm,
       SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
       matchAtom, Subst.lookup, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   · exact continued
 
-def finishRootQuery (request : GeneralRuleJobExecution.Request) (footprint : List String)
-    (result : GeneralPremise.Execution.Result request.environment request.goal) : Atom :=
-  a "gslt:rule:job-finish-root" (finishValues request footprint result)
-
-theorem finish_root_finite_returns (state : State) (request : GeneralRuleJobExecution.Request)
+theorem finish_root_interpreted_finite_returns {Choice : Type}
+    (choiceTerm : Choice → Term) (meaning : GeneralPremise.MatchingInterpretation Choice) (state : State) (request : GeneralRuleJobExecution.Request)
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
-    (footprint : List String) (trace : List GeneralScopedMatchMachine.BagChoice)
-    (captured completed : Assignment) (history : List GeneralPremise.Event) (localTarget : Pattern)
-    (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound request.job.site.focusType
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound request.job.site.focusType
       request.job.site.focus request.job.ordinal trace captured completed history localTarget)
     (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint) :
     PureReturns runtime [] state
-      (finishRootQuery request footprint (.root trace captured completed history localTarget valid)) state
-      (encoded (encodeOption (fun answer : GeneralRuleJobExecution.Answer request => receiptTerm answer.val)
-        (GeneralRuleJobExecution.finishRoot request licensed trace captured completed history localTarget valid))) := by
-  let result := GeneralPremise.Execution.Result.root trace captured completed history localTarget valid
-  let caller := finishBindings request footprint trace captured completed history localTarget ++
-    environment .finish (finishValues request footprint result)
-  change PureReturns runtime [] state (a Helper.finish.head (finishValues request footprint result)) state _
-  apply finish_frame_returns
+      (finishRootQueryWith choiceTerm request footprint trace captured completed history localTarget) state
+      (encoded (encodeOption (fun answer : GeneralRuleJobExecution.AnswerIn meaning request => receiptTermWith choiceTerm answer.val)
+        (GeneralRuleJobExecution.finishRootIn meaning request licensed trace captured completed history localTarget valid))) := by
+  let caller := finishBindingsWith choiceTerm request footprint trace captured completed history localTarget ++
+    environment .finish (finishValuesWith choiceTerm request footprint trace captured completed history localTarget)
+  change PureReturns runtime [] state (a Helper.finish.head (finishValuesWith choiceTerm request footprint trace captured completed history localTarget)) state _
+  apply finish_frame_returnsWith
   change PureReturns runtime caller state finishGoalBody state _
   unfold finishGoalBody
   apply bool_if_returns caller state _ true _ _ _
@@ -939,14 +1129,14 @@ theorem finish_root_finite_returns (state : State) (request : GeneralRuleJobExec
       (PremiseOperationsExecution.GeneralExecution.goalTerm request.goal)
       (PremiseOperationsExecution.GeneralExecution.goalTerm request.goal)
       (v "goal") nativeGoalBody (by decide +kernel) (by decide +kernel)
-      (by simpa [caller, finishBindings, environment, finishValues, Helper.names, applySubst, Subst.lookup] using
+      (by simpa [caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names, applySubst, Subst.lookup] using
         variable_returns runtime caller state "goal")
       (by
         change PureReturns runtime caller state nativeGoalBody state (encoded (.application "RootGoal"
           [encodeList InferenceCettaWire.AuthoredRule.typeTerm request.job.site.focusBound,
            InferenceCettaWire.AuthoredRule.typeTerm request.job.site.focusType,
            InferenceCettaWire.encodePattern request.job.site.focus, .natural request.job.ordinal]))
-        simpa [nativeGoalBody, caller, finishBindings, environment, finishValues, Helper.names, DataConstructor.head,
+        simpa [nativeGoalBody, caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names, DataConstructor.head,
           applySubst, applySubst.applySubstList, Subst.lookup, CettaWireAtom.encode, CettaWireAtom.encodeMany] using
           (PureData.template_return runtime caller state _
             (data_variables_template .goal ["focusBound", "focusType", "focus", "ordinal"])))
@@ -957,7 +1147,7 @@ theorem finish_root_finite_returns (state : State) (request : GeneralRuleJobExec
     · have computed := retained_returns (by decide +kernel)
         (RuleInstantiationExecution.ContextObservation.permitted_captured_returns caller state
           request.plan.permissions.sites request.job.site.context (v "permissions") (v "context") (by
-            simp [caller, finishBindings, environment, finishValues, Helper.names, applySubst, Subst.lookup]))
+            simp [caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names, applySubst, Subst.lookup]))
       simpa only [permitted] using computed
     · simp only [ite_true]
       unfold finishRepresentedBody
@@ -966,22 +1156,22 @@ theorem finish_root_finite_returns (state : State) (request : GeneralRuleJobExec
       · exact replacement_representations_captured_returns caller state request.environment.language
           request.job.site.context request.job.site.typingFrames localTarget
           (v "declarations") (v "context") (v "frames") (v "localTarget") (by
-            simp [caller, finishBindings, environment, finishValues, Helper.names, representationValues,
+            simp [caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names, representationValues,
               applySubst, Subst.lookup])
       · cases represented : request.job.site.acceptsReplacementRepresentation request.environment.language localTarget with
         | false =>
-            simpa [GeneralRuleJobExecution.finishRoot, represented, encodeOption, CettaWireAtom.encode] using
+            simpa [GeneralRuleJobExecution.finishRootIn, represented, encodeOption, CettaWireAtom.encode] using
               symbol_returns runtime caller state "None"
         | true =>
             unfold finishFillBody
             let filled := ("target", patternValue (request.job.site.context.fill localTarget)) :: caller
             apply named_let_returns caller state "target" _
               (patternValue (request.job.site.context.fill localTarget)) _ _
-            · simp [caller, finishBindings, environment, finishValues, Helper.names, Subst.lookup]
+            · simp [caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names, Subst.lookup]
             · exact retained_returns (by decide +kernel)
                 (RuleInstantiationExecution.ContextObservation.fill_captured_returns caller state
                   request.job.site.context localTarget (v "context") (v "localTarget") (by
-                    simp [caller, finishBindings, environment, finishValues, Helper.names, applySubst, Subst.lookup]))
+                    simp [caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names, applySubst, Subst.lookup]))
             · unfold finishTypedBody
               have finite := Mettapedia.GSLT.LanguageDef.WellSorted.check_open_pattern_snapshot
                 request.environment.language request.environment.free request.bound request.expected
@@ -994,20 +1184,89 @@ theorem finish_root_finite_returns (state : State) (request : GeneralRuleJobExec
                     request.environment.language (request.environment.free.entriesOn footprint)
                     request.bound request.expected (request.job.site.context.fill localTarget)
                     (v "declarations") (v "free") (v "bound") (v "expected") (v "target") (by
-                      simp [filled, caller, finishBindings, environment, finishValues, Helper.names,
+                      simp [filled, caller, finishBindingsWith, environment, finishValuesWith, rootResultTermWith, Helper.names,
                         applySubst, Subst.lookup, PremiseOperationsExecution.DeclarationTyping.boundContextTerm]))
                 simpa only [finite] using computed
               · cases typed : WellSorted.checkOpenPatternWellSorted request.environment.language request.environment.free
                   request.bound request.expected (request.job.site.context.fill localTarget) with
                 | false =>
-                    simpa [GeneralRuleJobExecution.finishRoot, represented, typed, encodeOption,
+                    simpa [GeneralRuleJobExecution.finishRootIn, represented, typed, encodeOption,
                       CettaWireAtom.encode] using symbol_returns runtime filled state "None"
                 | true =>
-                    simpa [GeneralRuleJobExecution.finishRoot, represented, typed, encodeOption,
-                      nativeReceiptBody, receiptTerm, jobTerm, siteTerm, filled, caller, finishBindings,
-                      environment, finishValues, Helper.names, applySubst, applySubst.applySubstList,
+                    simpa [GeneralRuleJobExecution.finishRootIn, represented, typed, encodeOption,
+                      nativeReceiptBody, receiptTermWith, jobTerm, siteTerm, filled, caller, finishBindingsWith,
+                      environment, finishValuesWith, rootResultTermWith, Helper.names, applySubst, applySubst.applySubstList,
                       Subst.lookup, CettaWireAtom.encode, CettaWireAtom.encodeMany] using
                       (PureData.template_return runtime filled state _ native_receipt_template)
+
+theorem finish_root_interpreted_readout_returns {Choice : Type}
+    (choiceTerm : Choice → Term) (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (state : State) (request : GeneralRuleJobExecution.Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+    (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint) :
+    PureReturns runtime [] state
+      (finishRootQueryWith choiceTerm request footprint trace captured completed history localTarget) state
+      (encoded (encodeOption (receiptTermWith choiceTerm)
+        (GeneralRuleJobs.finish? request.plan request.bound request.expected request.job trace captured completed history))) := by
+  have returned := finish_root_interpreted_finite_returns choiceTerm meaning state request licensed footprint
+    trace captured completed history localTarget valid covered
+  rw [← GeneralRuleJobExecution.finishRootIn_eq_finish meaning request licensed trace captured completed history localTarget valid]
+  cases selected : GeneralRuleJobExecution.finishRootIn meaning request licensed trace captured completed history localTarget valid <;>
+    simpa only [selected, Option.map_none, Option.map_some, encodeOption] using returned
+
+#print axioms rootResultTermWith_ordinary
+#print axioms finish_root_interpreted_finite_returns
+#print axioms finish_root_interpreted_readout_returns
+
+theorem finish_root_finite_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (footprint : List String) (trace : List GeneralScopedMatchMachine.BagChoice)
+    (captured completed : Assignment) (history : List GeneralPremise.Event) (localTarget : Pattern)
+    (valid : GeneralPremise.RootFiring request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+    (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint) :
+    PureReturns runtime [] state
+      (finishRootQuery request footprint (.root trace captured completed history localTarget valid)) state
+      (encoded (encodeOption (fun answer : GeneralRuleJobExecution.Answer request => receiptTerm answer.val)
+        (GeneralRuleJobExecution.finishRoot request licensed trace captured completed history localTarget valid))) := by
+  have returned := finish_root_interpreted_finite_returns RetainedMatchingWire.ordinaryCodec.choiceTerm
+    GeneralPremise.ordinaryInterpretation state request licensed footprint trace captured completed history localTarget valid covered
+  change PureReturns runtime [] state
+    (a "gslt:rule:job-finish-root"
+      (finishValuesWith RetainedMatchingWire.ordinaryCodec.choiceTerm request footprint trace captured completed history localTarget))
+    state (encoded (encodeOption
+      (fun answer : GeneralRuleJobExecution.Answer request =>
+        receiptTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm answer.val)
+      (GeneralRuleJobExecution.finishRoot request licensed trace captured completed history localTarget valid))) at returned
+  have encodedReceipt : (fun answer : GeneralRuleJobExecution.Answer request =>
+      receiptTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm answer.val) =
+      (fun answer : GeneralRuleJobExecution.Answer request => receiptTerm answer.val) := by
+    funext answer
+    exact receiptTermWith_ordinary answer.val
+  rw [finishValuesWith_ordinary request footprint trace captured completed history localTarget valid, encodedReceipt] at returned
+  exact returned
+
+theorem finish_root_interpreted_finite_captured_returns {Choice : Type}
+    (choiceTerm : Choice → Term) (meaning : GeneralPremise.MatchingInterpretation Choice) (caller : Subst) (state : State)
+    (request : GeneralRuleJobExecution.Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+    (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint)
+    (one two : Atom)
+    (inputs : [one, two].map (applySubst caller) =
+      finishValuesWith choiceTerm request footprint trace captured completed history localTarget) :
+    PureReturns runtime caller state (a "gslt:rule:job-finish-root" [one, two]) state
+      (encoded (encodeOption (fun answer : GeneralRuleJobExecution.AnswerIn meaning request => receiptTermWith choiceTerm answer.val)
+        (GeneralRuleJobExecution.finishRootIn meaning request licensed trace captured completed history localTarget valid))) :=
+  helper_capture .finish caller state _ _ _ rfl inputs
+    (finish_root_interpreted_finite_returns choiceTerm meaning state request licensed footprint trace captured completed history localTarget valid covered)
 
 theorem finish_root_finite_captured_returns (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
@@ -1022,9 +1281,26 @@ theorem finish_root_finite_captured_returns (caller : Subst) (state : State)
       finishValues request footprint (.root trace captured completed history localTarget valid)) :
     PureReturns runtime caller state (a "gslt:rule:job-finish-root" [one, two]) state
       (encoded (encodeOption (fun answer : GeneralRuleJobExecution.Answer request => receiptTerm answer.val)
-        (GeneralRuleJobExecution.finishRoot request licensed trace captured completed history localTarget valid))) :=
-  helper_capture .finish caller state _ _ _ rfl inputs
-    (finish_root_finite_returns state request licensed footprint trace captured completed history localTarget valid covered)
+        (GeneralRuleJobExecution.finishRoot request licensed trace captured completed history localTarget valid))) := by
+  have actualInputs : [one, two].map (applySubst caller) =
+      finishValuesWith RetainedMatchingWire.ordinaryCodec.choiceTerm request footprint trace captured completed history localTarget := by
+    rw [finishValuesWith_ordinary request footprint trace captured completed history localTarget valid]
+    exact inputs
+  have returned := finish_root_interpreted_finite_captured_returns RetainedMatchingWire.ordinaryCodec.choiceTerm
+    GeneralPremise.ordinaryInterpretation caller state request licensed footprint trace captured completed history localTarget
+    valid covered one two actualInputs
+  change PureReturns runtime caller state (a "gslt:rule:job-finish-root" [one, two]) state
+    (encoded (encodeOption
+      (fun answer : GeneralRuleJobExecution.Answer request =>
+        receiptTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm answer.val)
+      (GeneralRuleJobExecution.finishRoot request licensed trace captured completed history localTarget valid))) at returned
+  have encodedReceipt : (fun answer : GeneralRuleJobExecution.Answer request =>
+      receiptTermWith RetainedMatchingWire.ordinaryCodec.choiceTerm answer.val) =
+      (fun answer : GeneralRuleJobExecution.Answer request => receiptTerm answer.val) := by
+    funext answer
+    exact receiptTermWith_ordinary answer.val
+  rw [encodedReceipt] at returned
+  exact returned
 
 theorem finish_root_run_returns (state : State) (request : GeneralRuleJobExecution.Request)
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
@@ -1135,6 +1411,94 @@ theorem runtime_closed : ProgramClosed executionHeads runtime := by
         !executionHeads equation.head || codeWithin executionHeads equation.body) = true := by decide +kernel
     have row := List.all_eq_true.mp checked equation member
     simpa only [supported, Bool.not_true, Bool.false_or] using row
+
+/-- The same inert readout operation transports to any program agreeing on its
+actual closed primitive dependency set. The local firing supplies its semantics. -/
+theorem finish_root_interpreted_captured_returns_in_extension {Choice : Type}
+    (choiceTerm : Choice → Term) (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (targetProgram : Program) (agreement : ProgramAgreementOn executionHeads runtime targetProgram)
+    (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+    (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint)
+    (requestName resultName : String)
+    (inputs : [v requestName, v resultName].map (applySubst caller) =
+      [encoded (requestProjectionTerm request footprint),
+        encoded (rootResultTermWith choiceTerm request trace captured completed history localTarget)]) :
+    PureReturns targetProgram caller state (a "gslt:rule:job-finish-root" [v requestName, v resultName]) state
+      (encoded (encodeOption (receiptTermWith choiceTerm)
+        (GeneralRuleJobs.finish? request.plan request.bound request.expected request.job trace captured completed history))) :=
+  path_of_closed_agreement runtime_closed agreement ⟨by rfl, rfl⟩
+    (helper_capture .finish caller state _ _ _ rfl inputs
+      (finish_root_interpreted_readout_returns choiceTerm meaning state request licensed footprint
+        trace captured completed history localTarget valid covered))
+
+theorem finish_root_interpreted_captured_receipt_iff_in_extension {Choice : Type}
+    (choiceTerm : Choice → Term) (decodeChoice : Term → Option Choice)
+    (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (targetProgram : Program) (agreement : ProgramAgreementOn executionHeads runtime targetProgram)
+    (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+    (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint)
+    (requestName resultName : String)
+    (inputs : [v requestName, v resultName].map (applySubst caller) =
+      [encoded (requestProjectionTerm request footprint),
+        encoded (rootResultTermWith choiceTerm request trace captured completed history localTarget)])
+    (receipt : GeneralRuleJobs.Receipt Choice) :
+    (∃ nativeFuel, run targetProgram nativeFuel {state, control := (.evaluate caller
+      (a "gslt:rule:job-finish-root" [v requestName, v resultName]))} =
+        .complete state [encoded (.application "Some" [receiptTermWith choiceTerm receipt])] [] []) ↔
+      GeneralRuleJobs.finish? request.plan request.bound request.expected request.job
+        trace captured completed history = some receipt := by
+  rw [pure_returns_completed_iff targetProgram caller state state _ _
+    (finish_root_interpreted_captured_returns_in_extension choiceTerm meaning targetProgram agreement caller state
+      request licensed footprint trace captured completed history localTarget valid covered requestName resultName inputs)
+    state [encoded (.application "Some" [receiptTermWith choiceTerm receipt])] [] []]
+  cases GeneralRuleJobs.finish? request.plan request.bound request.expected request.job trace captured completed history with
+  | none => simp [encodeOption, CettaWireAtom.encode]
+  | some found =>
+      simp only [true_and, encodeOption, List.cons.injEq, and_true, CettaWireAtom.encode_eq_encode,
+        Term.application.injEq, receiptTermWith_injective choiceTerm decodeChoice inverse |>.eq_iff, Option.some.injEq]
+      exact eq_comm
+
+theorem finish_root_interpreted_captured_valid_in_extension {Choice : Type}
+    (choiceTerm : Choice → Term) (decodeChoice : Term → Option Choice)
+    (inverse : ∀ choice, decodeChoice (choiceTerm choice) = some choice)
+    (meaning : GeneralPremise.MatchingInterpretation Choice)
+    (targetProgram : Program) (agreement : ProgramAgreementOn executionHeads runtime targetProgram)
+    (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (footprint : List String) (trace : List Choice)
+    (captured completed : Assignment) (history : List (GeneralPremise.Event Choice)) (localTarget : Pattern)
+    (valid : GeneralPremise.Interpreted.RootFiring meaning request.environment request.job.site.focusBound request.job.site.focusType
+      request.job.site.focus request.job.ordinal trace captured completed history localTarget)
+    (covered : ∀ name ∈ (request.job.site.context.fill localTarget).freeFvarNames, name ∈ footprint)
+    (requestName resultName : String)
+    (inputs : [v requestName, v resultName].map (applySubst caller) =
+      [encoded (requestProjectionTerm request footprint),
+        encoded (rootResultTermWith choiceTerm request trace captured completed history localTarget)])
+    (receipt : GeneralRuleJobs.Receipt Choice)
+    (observed : ∃ nativeFuel, run targetProgram nativeFuel {state, control := (.evaluate caller
+      (a "gslt:rule:job-finish-root" [v requestName, v resultName]))} =
+        .complete state [encoded (.application "Some" [receiptTermWith choiceTerm receipt])] [] []) :
+    receipt.ValidInWith meaning GeneralPremise.DynamicProvider.empty
+      request.plan request.bound request.expected request.source := by
+  have emitted := (finish_root_interpreted_captured_receipt_iff_in_extension choiceTerm decodeChoice inverse meaning
+    targetProgram agreement caller state request licensed footprint trace captured completed history localTarget
+    valid covered requestName resultName inputs receipt).mp observed
+  exact GeneralRuleJobs.finishWith_interpreted_root_sound licensed valid emitted
+
+#print axioms finish_root_interpreted_captured_returns_in_extension
+#print axioms finish_root_interpreted_captured_receipt_iff_in_extension
+#print axioms finish_root_interpreted_captured_valid_in_extension
 
 theorem finish_root_run_captured_variables_returns_in_extension (targetProgram : Program)
     (agreement : ProgramAgreementOn executionHeads runtime targetProgram)

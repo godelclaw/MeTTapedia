@@ -107,7 +107,9 @@ def resolvedQuery (environment : Environment) (outer : Goal) (request : Query.Re
   · simp only [expand, expandQuery]
     split
     · rename_i answer found
-      have decrease := queryDebt_cursor environment request state cursor answer found
+      have decrease := queryDebt_cursor
+        _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
+        environment request state cursor answer found
       exact .cons (continued _)
         (.cons (resolvedQuery environment outer request admission state ready (cursor + 1)
           tail continued) (.nil _ _))
@@ -116,10 +118,13 @@ def resolvedQuery (environment : Environment) (outer : Goal) (request : Query.Re
       · exact .nil _ _
       · rename_i pending
         have unfinished : state.agenda ≠ [] := by intro same; simp [same] at pending
-        have decrease := queryDebt_tick environment request state cursor found unfinished
+        have decrease := queryDebt_tick
+          _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost
+          environment request state cursor found unfinished
         exact .cons (resolvedQuery environment outer request admission
           (Query.tick environment request state) (Query.tick_ready admission ready) cursor tail continued) (.nil _ _)
-termination_by queryDebt environment request state cursor
+termination_by queryDebt
+  _root_.Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinaryCursorCost environment request state cursor
 decreasing_by all_goals assumption
 
 abbrev ResolvedRootBodies (environment : Environment) (outer : Goal)

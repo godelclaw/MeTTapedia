@@ -1,4 +1,5 @@
-import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Candidates
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Lists
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentExpand
 
 /-!
@@ -51,7 +52,7 @@ theorem complete_member_returns {α : Type} [DecidableEq α] (encoder : α → T
   have raised : PureReturns runtime [] state
       (apply "gslt:automata:member" [encoded (encoder value), encoded (encodeList id (values.map encoder))]) state
       (Effects.boolean (decide (encoder value ∈ values.map encoder))) := by
-    metta_raise ["x", "xs"] (scoped_member_returns state (encoder value) (values.map encoder))
+    exact scoped_member_returns state (encoder value) (values.map encoder)
   have member : (encoder value ∈ values.map encoder) ↔ value ∈ values := by
     constructor
     · intro found
@@ -85,24 +86,24 @@ def deepStateTerm (search : Complete.Deep.State family) : Term :=
 theorem complete_descent_start_returns (state : State) (environment : Environment) (goal : Goal) :
     PureReturns runtime [] state (apply "gslt:descent:start" [goalValue goal]) state
       (descentStateValue (StructuralDescent.Scheduled.start environment goal)) := by
-  metta_lift complete_checked ["goal"] (descent_start_returns state environment goal)
+  exact descent_start_returns state environment goal
 
 @[metta_head "gslt:deep:level-start"]
 theorem deep_level_start_returns (state : State) (depth : Nat) (published : List family.Payload) :
     PureReturns runtime [] state
       (apply "gslt:deep:level-start" [encoded wire.term, number depth, encoded (encodeList wire.payload published)])
       state (encoded (deepStateTerm wire (Complete.Deep.levelStart family depth published))) := by
-  metta_call complete_checked
+  metta_call_in completeProof_checked using completeProof_agreement
   metta_eval [wire.goal state depth,
-      complete_descent_start_returns state family.environment (family.goal depth)] with complete_checked
+      complete_descent_start_returns state family.environment (family.goal depth)] with completeProof_checked in completeProof_agreement
     unfolding [deepStateTerm, Complete.Deep.levelStart, goalValue, descentStateValue]
 
 @[metta_head "gslt:deep:start"]
 theorem deep_start_returns (state : State) :
     PureReturns runtime [] state (apply "gslt:deep:start" [encoded wire.term]) state
       (encoded (deepStateTerm wire (Complete.Deep.start family))) := by
-  metta_call complete_checked
-  metta_eval [deep_level_start_returns wire state 0 []] with complete_checked
+  metta_call_in completeProof_checked using completeProof_agreement
+  metta_eval [deep_level_start_returns wire state 0 []] with completeProof_checked in completeProof_agreement
     unfolding [Complete.Deep.start, encodeList]
 
 @[metta_head "gslt:deep:fresh"]
@@ -111,20 +112,20 @@ theorem deep_fresh_returns (state : State) (published : List family.Payload) : �
       (apply "gslt:deep:fresh" [encoded (encodeList wire.payload published), encoded (encodeList wire.payload answers)])
       state (encoded (encodeList wire.payload (Complete.Deep.fresh family published answers)))
   | [] => by
-    metta_call complete_checked
-    metta_eval unfolding [encodeList, Complete.Deep.fresh]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodeList, Complete.Deep.fresh]
   | answer :: rest => by
     have later := deep_fresh_returns state published rest
     have member := complete_member_returns wire.payload wire.injective state answer published
     by_cases found : answer ∈ published
     · rw [show Complete.Deep.fresh family published (answer :: rest) = Complete.Deep.fresh family published rest by
         simp [Complete.Deep.fresh, found]]
-      metta_call complete_checked
-      metta_eval [later, member] with complete_checked unfolding [encodeList, found]
+      metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [later, member] with completeProof_checked in completeProof_agreement unfolding [encodeList, found]
     · rw [show Complete.Deep.fresh family published (answer :: rest) =
           answer :: Complete.Deep.fresh family published rest by simp [Complete.Deep.fresh, found]]
-      metta_call complete_checked
-      metta_eval [later, member] with complete_checked unfolding [encodeList, found]
+      metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [later, member] with completeProof_checked in completeProof_agreement unfolding [encodeList, found]
 
 theorem answers_payloads {depth : Nat} (results : List (Result family.environment (family.goal depth))) :
     encodeList answerTerm results = encodeList wire.payload (results.map family.read) := by
@@ -136,12 +137,12 @@ theorem complete_payloads_returns (state : State) {environment : Environment} {g
     (results : List (Result environment goal)) :
     PureReturns runtime [] state (apply "gslt:descent:payloads" [encoded (encodeList resultTerm results)])
       state (encoded (encodeList answerTerm results)) := by
-  metta_lift complete_checked ["results"] (descent_payloads_returns state results)
+  exact descent_payloads_returns state results
 
 theorem complete_cut_returns (state : State) (obligations : List Obligation) :
     PureReturns runtime [] state (apply "gslt:descent:cut" [obligationsValue obligations]) state
       (Effects.boolean (obligations.any Complete.Deep.isCut)) := by
-  metta_lift complete_checked ["unresolved"] (descent_cut_returns state obligations)
+  exact descent_cut_returns state obligations
 
 @[metta_head "gslt:deep:publication"]
 theorem deep_publication_returns (state : State) (search : Complete.Deep.State family) :
@@ -151,10 +152,10 @@ theorem deep_publication_returns (state : State) (search : Complete.Deep.State f
   have payloads := complete_payloads_returns state answers
   rw [answers_payloads wire answers] at payloads
   have fresh := deep_fresh_returns wire state published (answers.map family.read)
-  have joined := complete_append_returns wire.payload state published
+  have joined := automata_append_returns wire.payload state published
     (Complete.Deep.fresh family published (answers.map family.read))
-  metta_call complete_checked
-  metta_eval [payloads, fresh, joined] with complete_checked
+  metta_call_in completeProof_checked using completeProof_agreement
+  metta_eval [payloads, fresh, joined] with completeProof_checked in completeProof_agreement
     unfolding [deepStateTerm, stateTerm, PremiseSchedulerExecution.schedulerStateTerm, Complete.Deep.State.publication]
 
 @[metta_head "gslt:deep:certified"]
@@ -166,12 +167,12 @@ theorem deep_certified_returns (state : State) (search : Complete.Deep.State fam
   have cut := complete_cut_returns state unresolved
   have bounded := wire.bounded state depth
   cases cutting : unresolved.any Complete.Deep.isCut
-  · metta_call complete_checked
-    metta_eval [cut] with complete_checked
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [cut] with completeProof_checked in completeProof_agreement
       unfolding [deepStateTerm, stateTerm, PremiseSchedulerExecution.schedulerStateTerm, obligationsValue, cutting,
         Complete.Deep.certified]
-  · metta_call complete_checked
-    metta_eval [cut, bounded] with complete_checked
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [cut, bounded] with completeProof_checked in completeProof_agreement
       unfolding [deepStateTerm, stateTerm, PremiseSchedulerExecution.schedulerStateTerm, obligationsValue, cutting,
         Complete.Deep.certified]
 
@@ -181,8 +182,8 @@ theorem deep_drained_returns (state : State) (search : Complete.Deep.State famil
       (Effects.boolean search.level.agenda.isEmpty) := by
   obtain ⟨depth, ⟨agenda, answers, unresolved, work⟩, published⟩ := search
   cases agenda <;>
-  · metta_call complete_checked
-    metta_eval unfolding [deepStateTerm, stateTerm, PremiseSchedulerExecution.schedulerStateTerm, encodeList]
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [deepStateTerm, stateTerm, PremiseSchedulerExecution.schedulerStateTerm, encodeList]
 
 @[metta_head "gslt:deep:complete"]
 theorem deep_complete_returns (state : State) (search : Complete.Deep.State family) :
@@ -192,10 +193,10 @@ theorem deep_complete_returns (state : State) (search : Complete.Deep.State fami
   have drained := deep_drained_returns wire state search
   have certified := deep_certified_returns wire state search
   cases empty : search.level.agenda.isEmpty
-  · metta_call complete_checked
-    metta_eval [drained] with complete_checked unfolding [empty, Complete.Deep.State.complete]
-  · metta_call complete_checked
-    metta_eval [drained, certified] with complete_checked unfolding [empty, Complete.Deep.State.complete]
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [drained] with completeProof_checked in completeProof_agreement unfolding [empty, Complete.Deep.State.complete]
+  · metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [drained, certified] with completeProof_checked in completeProof_agreement unfolding [empty, Complete.Deep.State.complete]
 
 /-- **`gslt:deep:tick` is `Deep.tick`**, given what `gslt:descent:tick` returns on the level. -/
 @[metta_head "gslt:deep:tick"]
@@ -217,16 +218,16 @@ theorem deep_tick_returns (state : State) (environmentData : Atom) (search : Com
       simp [Complete.Deep.tick, Complete.Deep.deepens, empty]
     rw [steady]
     obtain ⟨depth, level, published⟩ := search
-    metta_call complete_checked
-    metta_eval [drained, ticked] with complete_checked unfolding [empty, deepStateTerm, descentStateValue]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [drained, ticked] with completeProof_checked in completeProof_agreement unfolding [empty, deepStateTerm, descentStateValue]
   · cases checked : Complete.Deep.certified family search
     · have deeper : Complete.Deep.tick family search =
           Complete.Deep.levelStart family (search.depth + 1) search.publication := by
         simp [Complete.Deep.tick, Complete.Deep.deepens, empty, checked]
       rw [deeper]
       obtain ⟨depth, level, published⟩ := search
-      metta_call complete_checked
-      metta_eval [drained, certified, publication, started] with complete_checked
+      metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [drained, certified, publication, started] with completeProof_checked in completeProof_agreement
         unfolding [empty, checked, deepStateTerm]
     · have kept : Complete.Deep.tick family search = search := by
         obtain ⟨depth, ⟨agenda, answers, unresolved, work⟩, published⟩ := search
@@ -235,7 +236,37 @@ theorem deep_tick_returns (state : State) (environmentData : Atom) (search : Com
         | cons first rest => simp at empty
       rw [kept]
       obtain ⟨depth, level, published⟩ := search
-      metta_call complete_checked
-      metta_eval [drained, certified] with complete_checked unfolding [empty, checked, deepStateTerm]
+      metta_call_in completeProof_checked using completeProof_agreement
+      metta_eval [drained, certified] with completeProof_checked in completeProof_agreement unfolding [empty, checked, deepStateTerm]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.scoped_member_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_member_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deepStateTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_descent_start_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_level_start_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_start_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_fresh_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.answers_payloads
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_payloads_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.complete_cut_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_publication_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_certified_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_drained_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_complete_returns
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.deep_tick_returns

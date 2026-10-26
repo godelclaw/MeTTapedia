@@ -482,4 +482,105 @@ theorem ConvWitness.Checks.deterministic {signature : TermSignature} {definition
   have same := Option.some.inj (first.eval.symm.trans second.eval)
   exact ConversionResult.mk.inj same
 
+/-- Every stored native name, including definition dummy images, lies below the bound. -/
+def ConvWitness.VarsBelow (bound : Nat) : ConvWitness → Prop
+  | .refl expression => Preterm.VarsBelow bound expression
+  | .symm child => child.VarsBelow bound
+  | .trans first second => first.VarsBelow bound ∧ second.VarsBelow bound
+  | .congruence _ children => ∀ child ∈ children, child.VarsBelow bound
+  | .unfold _ arguments images =>
+      (∀ argument ∈ arguments, Preterm.VarsBelow bound argument) ∧ ∀ image ∈ images, image < bound
+termination_by witness => sizeOf witness
+
+
+theorem ConvWitness.Checks.endpoint_varsBelow {signature : TermSignature} {definitions : Definition.Signature}
+    {context : Context} {witness : ConvWitness} {left right : Preterm} {sort : Nat}
+    (checked : Checks signature definitions context witness left right sort)
+    (bound : Nat) (bounded : witness.VarsBelow bound) :
+    Preterm.VarsBelow bound left ∧ Preterm.VarsBelow bound right := by
+  induction checked using Checks.rec
+      (motive_2 := fun children left right binders _ =>
+        (∀ child ∈ children, child.VarsBelow bound) →
+          (∀ expression ∈ left, Preterm.VarsBelow bound expression) ∧
+          (∀ expression ∈ right, Preterm.VarsBelow bound expression)) with
+  | refl typed =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact ⟨bounded, bounded⟩
+  | symm child ih =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact (ih bounded).symm
+  | trans first second ihFirst ihSecond =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact ⟨(ihFirst bounded.1).1, (ihSecond bounded.2).2⟩
+  | congruence known children ih =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      obtain ⟨leftBound, rightBound⟩ := ih bounded
+      exact ⟨(Preterm.varsBelow_applyArgs _ _ _).mpr ⟨trivial, leftBound⟩,
+        (Preterm.varsBelow_applyArgs _ _ _).mpr ⟨trivial, rightBound⟩⟩
+  | unfold known unfolded typed =>
+      simp only [ConvWitness.VarsBelow] at bounded
+      exact ⟨(Preterm.varsBelow_applyArgs _ _ _).mpr ⟨trivial, bounded.1⟩,
+        unfolded.varsBelow bound bounded.1 bounded.2⟩
+  | nil => simp
+  | cons leftFits rightFits child tail ihChild ihTail =>
+      rename_i allBound
+      have head := ihChild (allBound _ List.mem_cons_self)
+      have rest := ihTail (fun child member => allBound child (List.mem_cons_of_mem _ member))
+      constructor
+      · intro expression member
+        rcases List.mem_cons.mp member with rfl | later
+        · exact head.1
+        · exact rest.1 expression later
+      · intro expression member
+        rcases List.mem_cons.mp member with rfl | later
+        · exact head.2
+        · exact rest.2 expression later
+
+
+theorem ConvWitness.Checks.payload_varsBelow {signature : TermSignature} {definitions : Definition.Signature}
+    {context : Context} {witness : ConvWitness} {left right : Preterm} {sort : Nat}
+    (checked : Checks signature definitions context witness left right sort) :
+    witness.VarsBelow context.length := by
+  induction checked using Checks.rec
+      (motive_2 := fun children _left _right _binders _ => ∀ child ∈ children, child.VarsBelow context.length) with
+  | refl typed => simpa only [ConvWitness.VarsBelow] using typed.varsBelow
+  | symm child ih => simpa only [ConvWitness.VarsBelow] using ih
+  | trans first second ihFirst ihSecond => simpa only [ConvWitness.VarsBelow] using And.intro ihFirst ihSecond
+  | congruence known children ih => simpa only [ConvWitness.VarsBelow] using ih
+  | unfold known unfolded typed =>
+      have leftBound := (Checks.unfold known unfolded typed).typed.1.varsBelow
+      simp only [ConvWitness.VarsBelow]
+      refine ⟨(Preterm.varsBelow_applyArgs _ _ _).mp leftBound |>.2, ?_⟩
+      cases unfolded with
+      | intro term body fits fresh substituted => exact fresh.images_lt
+  | nil => simp_all
+  | cons leftFits rightFits child tail ihChild ihTail =>
+      rename_i witness member
+      rcases List.mem_cons.mp member with rfl | later
+      · exact ihChild
+      · exact ihTail witness later
+
+
+theorem ConvWitness.VarsBelow.mono {small large : Nat} (ordered : small ≤ large) :
+    ∀ {witness : ConvWitness}, VarsBelow small witness → VarsBelow large witness
+  | .refl expression, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      exact bounded.mono ordered
+  | .symm child, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      exact mono ordered bounded
+  | .trans first second, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      exact ⟨mono ordered bounded.1, mono ordered bounded.2⟩
+  | .congruence symbol children, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      intro child member
+      exact mono ordered (bounded child member)
+  | .unfold symbol arguments images, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      exact ⟨fun argument member => (bounded.1 argument member).mono ordered,
+        fun image member => Nat.lt_of_lt_of_le (bounded.2 image member) ordered⟩
+termination_by witness => sizeOf witness
+
+
 end Mettapedia.Languages.MM0.Kernel

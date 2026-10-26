@@ -186,18 +186,6 @@ theorem family_extend
   exact congrArg (fun value : Option Domain.{w} => value.getD proposition)
     (family?_extend history accepted proof other operator replacement notBool notFunction fresh functionArity arguments)
 
-private theorem extend_commute (original : OperatorFamilies.{w}) (first second : TypeOp)
-    (firstFamily secondFamily : List Domain.{w} → Domain.{w}) (different : first ≠ second) :
-    extend (extend original first firstFamily) second secondFamily =
-      extend (extend original second secondFamily) first firstFamily := by
-  funext candidate arguments
-  by_cases firstMatch : candidate = first
-  · subst candidate
-    simp [extend, different]
-  · by_cases secondMatch : candidate = second
-    · subst candidate
-      simp [extend, Ne.symm different]
-    · simp [extend, firstMatch, secondMatch]
 
 include notBool notFunction fresh in
 /-- Rebuilding the prior definition's operator table computes exactly the

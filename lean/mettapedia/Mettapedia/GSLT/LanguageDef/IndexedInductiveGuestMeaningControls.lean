@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveVectorMeaning
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveGuestControls
 
 /-!
 # Dependent meaning and forward-execution boundary controls
@@ -141,3 +142,134 @@ theorem forward_existence_not_exclusivity :
 #print axioms forward_existence_not_exclusivity
 
 end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.MeaningControls
+
+namespace Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.MeaningControls.PositionCodec
+open Mettapedia.TypeTheory.IndexedPolynomial.Description
+open Mettapedia.GSLT.LanguageDef.IndexedInductiveExamples
+open Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Meaning
+
+/-- Two recursive fields separated by a data binder require different indices. -/
+def mixedCode : Code Mettapedia.GSLT.LanguageDef.IndexedInductiveExamples.Vectors.interface [] :=
+  .data .length (.recursive (.variable .here)
+    (.data .payload (.recursive (.successor (.variable (.there .here))) (.result (.literal 0)))))
+
+def mixedShape : Shape mixedCode PUnit.unit (0 : Nat) := ⟨(3 : Nat), true, ⟨⟨rfl⟩⟩⟩
+
+def first : Position mixedCode mixedShape := none
+def second : Position mixedCode mixedShape := some none
+
+def firstOrdinal : Fin (recursiveCount mixedCode) := ⟨0, by change 0 < 2; decide⟩
+def secondOrdinal : Fin (recursiveCount mixedCode) := ⟨1, by change 1 < 2; decide⟩
+
+theorem two_recursive_fields : recursiveCount mixedCode = 2 := rfl
+
+theorem first_roundtrip : positionOfFin mixedCode mixedShape (positionToFin mixedCode mixedShape first) = first :=
+  positionOfFin_toFin mixedCode mixedShape first
+
+theorem second_roundtrip : positionOfFin mixedCode mixedShape (positionToFin mixedCode mixedShape second) = second :=
+  positionOfFin_toFin mixedCode mixedShape second
+
+theorem second_ordinal_roundtrip :
+    positionToFin mixedCode mixedShape (positionOfFin mixedCode mixedShape secondOrdinal) = secondOrdinal :=
+  positionToFin_ofFin mixedCode mixedShape secondOrdinal
+
+theorem distinct_slots : positionToFin mixedCode mixedShape first ≠ positionToFin mixedCode mixedShape second := by
+  decide +kernel
+
+theorem first_index : next mixedCode mixedShape (positionOfFin mixedCode mixedShape firstOrdinal) = (3 : Nat) :=
+  next_positionOfFin mixedCode mixedShape firstOrdinal
+
+theorem second_index : next mixedCode mixedShape (positionOfFin mixedCode mixedShape secondOrdinal) = (4 : Nat) :=
+  next_positionOfFin mixedCode mixedShape secondOrdinal
+
+def indexedChildren : ∀ position : Position mixedCode mixedShape, Fin (next mixedCode mixedShape position)
+  | none => ⟨2, Nat.lt_succ_self 2⟩
+  | some none => ⟨3, Nat.lt_succ_self 3⟩
+  | some (some impossible) => PEmpty.elim impossible
+
+def indexedVector := childrenVectorEquiv mixedCode mixedShape Fin indexedChildren
+
+theorem vector_first : (indexedVector firstOrdinal).val = 2 := rfl
+
+theorem vector_second : (indexedVector secondOrdinal).val = (3 : Nat) := rfl
+
+theorem indexed_roundtrip :
+    (childrenVectorEquiv mixedCode mixedShape Fin).symm indexedVector = indexedChildren :=
+  (childrenVectorEquiv mixedCode mixedShape Fin).symm_apply_apply indexedChildren
+
+theorem repeated_values_retained : results mixedCode mixedShape (fun _ => (7 : Nat)) = [7, 7] :=
+  results_positionVector mixedCode mixedShape (fun _ => (7 : Nat))
+
+theorem deduplicating_changes_count : ([7, 7] : List Nat).eraseDups.length ≠ recursiveCount mixedCode := by
+  decide +kernel
+
+def zeroCode : Code Mettapedia.GSLT.LanguageDef.IndexedInductiveExamples.Vectors.interface [] := .result (.literal 0)
+
+def zeroShape : Shape zeroCode PUnit.unit (0 : Nat) := ⟨⟨rfl⟩⟩
+
+theorem empty_slots : recursiveCount zeroCode = 0 := rfl
+
+theorem zero_position_eliminates (position : Position zeroCode zeroShape) : False := PEmpty.elim position
+
+open Mettapedia.GSLT.LanguageDef.IndexedInductiveNatVec
+
+noncomputable def naturalVectorEquiv := inventoryVectorFixEquiv Natural.constructors PUnit.unit ()
+
+theorem natural_roundtrip :
+    naturalVectorEquiv.symm (naturalVectorEquiv (Natural.succ Natural.zero)) = Natural.succ Natural.zero :=
+  naturalVectorEquiv.symm_apply_apply _
+
+#print axioms first_roundtrip
+#print axioms first_index
+#print axioms indexed_roundtrip
+#print axioms repeated_values_retained
+#print axioms natural_roundtrip
+end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.MeaningControls.PositionCodec
+
+namespace Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.MeaningControls.PositionCodec
+open Mettapedia.TypeTheory.IndexedPolynomial.Description
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+open Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Meaning
+
+private abbrev indices := Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Controls.Vector.indexSyntax
+private abbrev quoteData := Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Controls.Vector.quoteData (n := 0)
+private abbrev quoteIndex := Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Controls.numeral (n := 0)
+
+theorem mixed_quoted : QuotedCode indices quoteData quoteIndex mixedCode := by
+  exact ⟨Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Controls.Vector.indexCompatibility _,
+    Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Controls.Vector.indexCompatibility _,
+    Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.Controls.Vector.indexCompatibility _⟩
+
+def repeatedSyntax : Position mixedCode mixedShape → Tm Unit 0 := fun _ => .const `child
+
+def recursiveCall (index child : Tm Unit 0) : Tm Unit 0 := .app (.app (.const `recurse) index) child
+
+theorem mixed_guest_positionVector :
+    (recursiveArguments indices mixedCode (quoteEnv quoteData PUnit.unit)
+      (fields quoteData mixedCode mixedShape repeatedSyntax)).map
+      (fun pair => recursiveCall pair.1 pair.2) =
+      List.ofFn (fun ordinal => recursiveCall
+        (quoteIndex (recursiveIndexAt mixedCode mixedShape ordinal))
+        (repeatedSyntax (positionOfFin mixedCode mixedShape ordinal))) :=
+  recursiveArguments_fields_positionVector indices quoteData quoteIndex mixedCode mixed_quoted
+    mixedShape repeatedSyntax recursiveCall
+
+#print axioms mixed_quoted
+#print axioms mixed_guest_positionVector
+
+
+def verdicts : List (String × Bool) :=
+  [("recursive slot codec counts two occurrences", decide (recursiveCount mixedCode = 2)),
+   ("recursive slot codec separates repeated positions", decide
+      ((positionToFin mixedCode mixedShape first).val ≠ (positionToFin mixedCode mixedShape second).val)),
+   ("recursive slot codec retains first dependent index",
+      Nat.beq (recursiveIndexAt mixedCode mixedShape firstOrdinal) 3),
+   ("recursive slot codec retains later dependent index",
+      Nat.beq (recursiveIndexAt mixedCode mixedShape secondOrdinal) 4),
+   ("recursive child vector preserves supplied values", decide
+      ((indexedVector firstOrdinal).val = 2 ∧ (indexedVector secondOrdinal).val = 3)),
+   ("recursive result traversal retains duplicate payloads", decide
+      (results mixedCode mixedShape (fun _ => (7 : Nat)) = [7, 7]))]
+
+end Mettapedia.GSLT.LanguageDef.IndexedInductive.Guest.MeaningControls.PositionCodec

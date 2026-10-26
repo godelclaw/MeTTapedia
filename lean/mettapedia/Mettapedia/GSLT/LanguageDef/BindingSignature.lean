@@ -515,3 +515,414 @@ theorem typedObject_iff_represented {language : LanguageDef} {bound : List TypeE
   · rintro ⟨term, rfl⟩
     exact erase_typed term
 end Mettapedia.GSLT.LanguageDef.BindingSyntax
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.SourceReadback
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.Binding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+set_option autoImplicit false
+variable {language : LanguageDef}
+
+/-- Read the body of the actual declared binding slot. A simple slot retains
+its whole source value; binding slots require their established wrapper. -/
+def readBody? {parameter : TermParam} {binders : List TypeExpr} {type : TypeExpr}
+    (scope : ParameterScope parameter binders type) (source : Pattern) : Option Pattern :=
+  match scope with
+  | .simple _ _ => some source
+  | .abstraction _ _ _ _ | .abstractionBase _ _ _ =>
+      match source with
+      | .lambda none body => some body
+      | _ => none
+  | .multiAbstraction _ _ _ _ count | .multiAbstractionBase _ _ _ count =>
+      match source with
+      | .multiLambda actual [] body => if count == actual then some body else none
+      | _ => none
+
+theorem readBody_eq_wrap {parameter : TermParam} {binders : List TypeExpr} {type : TypeExpr}
+    (scope : ParameterScope parameter binders type) {source body : Pattern}
+    (readback : readBody? scope source = some body) : source = scope.wrap body := by
+  cases scope with
+  | simple => exact Option.some.inj readback
+  | abstraction | abstractionBase =>
+      cases source <;> simp only [readBody?,reduceCtorEq] at readback
+      case lambda display pattern =>
+        cases display <;> simp only [reduceCtorEq] at readback
+        case none => cases readback; rfl
+  | multiAbstraction _ _ _ _ count | multiAbstractionBase _ _ _ count =>
+      cases source <;> simp only [readBody?,reduceCtorEq] at readback
+      case multiLambda actual displays pattern =>
+        cases displays <;> simp only [reduceCtorEq] at readback
+        case nil =>
+          split at readback
+          next same =>
+            have countSame : count = actual := beq_iff_eq.mp same
+            cases countSame
+            cases Option.some.inj readback
+            rfl
+          next => cases readback
+
+mutual
+/-- Compare a checked intrinsic term with its submitted source presentation.
+Display names and collection tails retain precisely the freedom of HasType;
+binding parameter wrappers follow their actual ParameterScope. -/
+def check : {bound : List TypeExpr} → {type : TypeExpr} →
+    Term (signatureOf language) bound type → Pattern → Bool
+  | _,_,.var position,source =>
+      match source with
+      | .bvar index => variableIndex position == index
+      | _ => false
+  | _,_,.op operator arguments,source =>
+      match operator with
+      | .constructor rule _ _ scopes =>
+          match source with
+          | .apply head patterns => (rule.label == head) && checkConstructorArguments scopes arguments patterns
+          | _ => false
+      | .collectionConstructor _ _ _ kind _ _ _ =>
+          match source with
+          | .collection actual patterns _ => (kind == actual) && checkArguments arguments patterns
+          | _ => false
+      | .lambda _ _ =>
+          match arguments with
+          | .cons body .nil =>
+              match source with
+              | .lambda _ pattern => check body pattern
+              | _ => false
+      | .multiLambda _ _ count =>
+          match arguments with
+          | .cons body .nil =>
+              match source with
+              | .multiLambda actual _ pattern => (count == actual) && check body pattern
+              | _ => false
+      | .subst _ _ =>
+          match arguments with
+          | .cons body (.cons replacement .nil) =>
+              match source with
+              | .subst pattern argument => check body pattern && check replacement argument
+              | _ => false
+      | .collection kind _ _ =>
+          match source with
+          | .collection actual patterns _ => (kind == actual) && checkArguments arguments patterns
+          | _ => false
+
+/-- Readback preserves every argument position and its actual binding prefix. -/
+def checkArguments : {arity : List (List TypeExpr × TypeExpr)} → {bound : List TypeExpr} →
+    Args (signatureOf language) arity bound → List Pattern → Bool
+  | _,_,.nil,sources => sources.isEmpty
+  | _,_,.cons head tail,sources =>
+      match sources with
+      | [] => false
+      | source::sources => check head source && checkArguments tail sources
+
+def checkConstructorArguments : {parameters : List TermParam} →
+    {arity : List (List TypeExpr × TypeExpr)} → {bound : List TypeExpr} →
+    ParameterScopes parameters arity → Args (signatureOf language) arity bound → List Pattern → Bool
+  | _,_,_,.nil,.nil,sources => sources.isEmpty
+  | _,_,_,.cons scope scopes,.cons head tail,sources =>
+      match sources with
+      | [] => false
+      | source::sources =>
+          match readBody? scope source with
+          | none => false
+          | some body => check head body && checkConstructorArguments scopes tail sources
+end
+
+mutual
+/-- Successful readback reconstructs the original complete source typing
+judgment, including substitution and submitted display/tail metadata. -/
+theorem typed : ∀ {bound : List TypeExpr} {type : TypeExpr}
+    (term : Term (signatureOf language) bound type) (source : Pattern),
+    check term source = true → HasType language FreeTypeContext.empty bound source type
+  | _,_,.var position,source,accepted => by
+      cases source <;> simp only [check,Bool.false_eq_true] at accepted
+      case bvar index =>
+        have same : variableIndex position = index := beq_iff_eq.mp accepted
+        exact .bvar (same ▸ variableIndex_lookup position)
+  | _,_,.op (.constructor rule member ordinary scopes) arguments,source,accepted => by
+      cases source <;> simp only [check,Bool.false_eq_true] at accepted
+      case apply label patterns =>
+        obtain ⟨same,children⟩ := Bool.and_eq_true_iff.mp accepted
+        have labelSame : rule.label = label := beq_iff_eq.mp same
+        subst label
+        exact .constructor member ordinary (constructorArgumentsTyped scopes arguments patterns children)
+  | _,_,.op (.collectionConstructor rule member parameter kind elementType shape count) arguments,source,accepted => by
+      cases source <;> simp only [check,Bool.false_eq_true] at accepted
+      case collection actual patterns rest =>
+        obtain ⟨same,children⟩ := Bool.and_eq_true_iff.mp accepted
+        have kindSame : kind = actual := beq_iff_eq.mp same
+        cases kindSame
+        exact .collectionConstructor member shape (elements_typed_of_replicate (argumentsTyped arguments patterns children))
+  | _,_,.op (.lambda _ _) arguments,source,accepted =>
+      match arguments with
+      | .cons body .nil => by
+          cases source <;> simp only [check,Bool.false_eq_true] at accepted
+          case lambda display pattern => exact .lambda (typed body pattern accepted)
+  | _,_,.op (.multiLambda _ _ count) arguments,source,accepted =>
+      match arguments with
+      | .cons body .nil => by
+          cases source <;> simp only [check,Bool.false_eq_true] at accepted
+          case multiLambda actual displays pattern =>
+            obtain ⟨same,child⟩ := Bool.and_eq_true_iff.mp accepted
+            have countSame : count = actual := beq_iff_eq.mp same
+            cases countSame
+            exact .multiLambda (typed body pattern child)
+  | _,_,.op (.subst _ _) arguments,source,accepted =>
+      match arguments with
+      | .cons body (.cons replacement .nil) => by
+          cases source <;> simp only [check,Bool.false_eq_true] at accepted
+          case subst pattern argument =>
+            obtain ⟨first,second⟩ := Bool.and_eq_true_iff.mp accepted
+            exact .subst (typed body pattern first) (typed replacement argument second)
+  | _,_,.op (.collection kind _ _) arguments,source,accepted => by
+      cases source <;> simp only [check,Bool.false_eq_true] at accepted
+      case collection actual patterns rest =>
+        obtain ⟨same,children⟩ := Bool.and_eq_true_iff.mp accepted
+        have kindSame : kind = actual := beq_iff_eq.mp same
+        cases kindSame
+        exact .collection (elements_typed_of_replicate (argumentsTyped arguments patterns children))
+
+theorem argumentsTyped : ∀ {arity : List (List TypeExpr × TypeExpr)} {bound : List TypeExpr}
+    (arguments : Args (signatureOf language) arity bound) (sources : List Pattern),
+    checkArguments arguments sources = true →
+      List.Forall₂ (fun slot source => HasType language FreeTypeContext.empty (slot.1 ++ bound) source slot.2)
+        arity sources
+  | _,_,.nil,sources,accepted => by
+      cases sources with
+      | nil => exact .nil
+      | cons => cases accepted
+  | _,_,.cons head tail,sources,accepted => by
+      cases sources with
+      | nil => cases accepted
+      | cons source sources =>
+          obtain ⟨first,rest⟩ := Bool.and_eq_true_iff.mp accepted
+          exact .cons (typed head source first) (argumentsTyped tail sources rest)
+
+theorem constructorArgumentsTyped : ∀ {parameters : List TermParam}
+    {arity : List (List TypeExpr × TypeExpr)} {bound : List TypeExpr}
+    (scopes : ParameterScopes parameters arity)
+    (arguments : Args (signatureOf language) arity bound) (sources : List Pattern),
+    checkConstructorArguments scopes arguments sources = true →
+      ArgumentsHaveTypes language FreeTypeContext.empty bound sources parameters
+  | _,_,_,.nil,.nil,sources,accepted => by
+      cases sources with
+      | nil => exact .nil
+      | cons => cases accepted
+  | _,_,_,.cons scope scopes,.cons head tail,sources,accepted => by
+      cases sources with
+      | nil => cases accepted
+      | cons source sources =>
+          simp only [checkConstructorArguments] at accepted
+          cases readback : readBody? scope source with
+          | none => simp only [readback,Bool.false_eq_true] at accepted
+          | some body =>
+              rw [readback] at accepted
+              obtain ⟨first,rest⟩ := Bool.and_eq_true_iff.mp accepted
+              obtain ⟨expected,representation,typeSame,bodyTyped⟩ := scope.wrap_typed (typed head body first)
+              have sourceSame := readBody_eq_wrap scope readback
+              rw [← sourceSame] at representation bodyTyped
+              exact .cons representation typeSame bodyTyped (constructorArgumentsTyped scopes tail sources rest)
+end
+
+
+mutual
+/-- Every original closed typing derivation has a checked intrinsic receipt.
+No canonical-display, object-only or closed-tail restriction is imposed. -/
+theorem typed_exists {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (typed : HasType language FreeTypeContext.empty bound source sort) :
+    ∃ term : Term (signatureOf language) bound sort, check term source = true := by
+  cases typed with
+  | bvar lookup =>
+      obtain ⟨position,same⟩ := variableIndex_exists_of_lookup _ _ _ lookup
+      exact ⟨.var position,by simp only [check,same,beq_self_eq_true]⟩
+  | fvar lookup => cases lookup
+  | constructor member ordinary arguments =>
+      obtain ⟨arity,scopes,values,readback⟩ := arguments_exists arguments
+      exact ⟨.op (.constructor _ member ordinary scopes) values,by
+        simpa only [check,beq_self_eq_true,Bool.true_and] using readback⟩
+  | @lambda bound display body domain codomain bodyTyped =>
+      obtain ⟨value,readback⟩ := typed_exists bodyTyped
+      exact ⟨.op (.lambda domain codomain) (.cons value .nil),readback⟩
+  | @multiLambda bound count displays body domain codomain bodyTyped =>
+      obtain ⟨value,readback⟩ := typed_exists bodyTyped
+      exact ⟨.op (.multiLambda domain codomain count) (.cons value .nil),by
+        simpa only [check,beq_self_eq_true,Bool.true_and] using readback⟩
+  | @subst bound body replacement domain codomain bodyTyped replacementTyped =>
+      obtain ⟨value,bodyReadback⟩ := typed_exists bodyTyped
+      obtain ⟨argument,replacementReadback⟩ := typed_exists replacementTyped
+      exact ⟨.op (.subst domain sort) (.cons value (.cons argument .nil)),by
+        simp only [check,bodyReadback,replacementReadback,Bool.and_self]⟩
+  | @collection bound kind elements rest elementType elementsTyped =>
+      obtain ⟨values,readback⟩ := elements_exists elementsTyped
+      exact ⟨.op (.collection kind elementType elements.length) values,by
+        simpa only [check,beq_self_eq_true,Bool.true_and] using readback⟩
+  | @collectionConstructor bound declaration paramName kind elements rest elementType member shape elementsTyped =>
+      obtain ⟨values,readback⟩ := elements_exists elementsTyped
+      exact ⟨.op (.collectionConstructor declaration member paramName kind elementType shape elements.length) values,by
+        simpa only [check,beq_self_eq_true,Bool.true_and] using readback⟩
+termination_by sizeOf source
+
+/-- Every declared argument spine supplies its actual binding scopes and
+intrinsic argument terms, in the original parameter order. -/
+theorem arguments_exists {bound : List TypeExpr} {sources : List Pattern}
+    {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes language FreeTypeContext.empty bound sources parameters) :
+    ∃ (arity : List (List TypeExpr × TypeExpr)) (scopes : ParameterScopes parameters arity)
+      (arguments : Args (signatureOf language) arity bound),
+      checkConstructorArguments scopes arguments sources = true := by
+  cases typed with
+  | nil => exact ⟨[],.nil,.nil,rfl⟩
+  | @cons bound source sources parameter parameters expected representation expectedType headTyped tailTyped =>
+      obtain ⟨arity,scopes,rest,restRead⟩ := arguments_exists tailTyped
+      cases parameter with
+      | simple paramName type =>
+          cases Option.some.inj expectedType
+          obtain ⟨value,readback⟩ := typed_exists headTyped
+          exact ⟨([],expected)::arity,.cons (.simple paramName expected) scopes,.cons value rest,by
+            simp only [checkConstructorArguments,readBody?,readback,restRead,Bool.and_self]⟩
+      | abstractionNamed binder paramName type =>
+          obtain ⟨body,rfl⟩ :=
+            (matchesParameterRepresentation_abstractionNamed_iff binder paramName type source).mp representation
+          cases type with
+          | base category =>
+              cases Option.some.inj expectedType
+              cases headTyped with
+              | lambda bodyTyped =>
+                  obtain ⟨value,readback⟩ := typed_exists bodyTyped
+                  exact ⟨([.base category],.base category)::arity,
+                    .cons (.abstractionBase binder paramName category) scopes,.cons value rest,by
+                      simp only [checkConstructorArguments,readBody?,readback,restRead,Bool.and_self]⟩
+          | arrow domain codomain =>
+              cases Option.some.inj expectedType
+              cases headTyped with
+              | lambda bodyTyped =>
+                  obtain ⟨value,readback⟩ := typed_exists bodyTyped
+                  exact ⟨([domain],codomain)::arity,
+                    .cons (.abstraction binder paramName domain codomain) scopes,.cons value rest,by
+                      simp only [checkConstructorArguments,readBody?,readback,restRead,Bool.and_self]⟩
+          | multiBinder domain => cases expectedType
+          | collection kind type => cases expectedType
+      | multiAbstractionNamed displays paramName type =>
+          obtain ⟨count,body,rfl⟩ :=
+            (matchesParameterRepresentation_multiAbstractionNamed_iff displays paramName type source).mp representation
+          cases type with
+          | base category =>
+              cases Option.some.inj expectedType
+              cases headTyped with
+              | multiLambda bodyTyped =>
+                  obtain ⟨value,readback⟩ := typed_exists bodyTyped
+                  exact ⟨(List.replicate count (.base category),.base category)::arity,
+                    .cons (.multiAbstractionBase displays paramName category count) scopes,.cons value rest,by
+                      simp only [checkConstructorArguments,readBody?,beq_self_eq_true,ite_true,
+                        readback,restRead,Bool.and_self]⟩
+          | arrow domain codomain =>
+              cases domain with
+              | multiBinder domain =>
+                  cases Option.some.inj expectedType
+                  cases headTyped with
+                  | multiLambda bodyTyped =>
+                      obtain ⟨value,readback⟩ := typed_exists bodyTyped
+                      exact ⟨(List.replicate count domain,codomain)::arity,
+                        .cons (.multiAbstraction displays paramName domain codomain count) scopes,.cons value rest,by
+                          simp only [checkConstructorArguments,readBody?,beq_self_eq_true,ite_true,
+                            readback,restRead,Bool.and_self]⟩
+              | base _ => cases expectedType
+              | arrow _ _ => cases expectedType
+              | collection _ _ => cases expectedType
+          | multiBinder domain => cases expectedType
+          | collection kind type => cases expectedType
+termination_by sizeOf sources
+
+theorem elements_exists {bound : List TypeExpr} {sources : List Pattern} {sort : TypeExpr}
+    (typed : ElementsHaveType language FreeTypeContext.empty bound sources sort) :
+    ∃ arguments : Args (signatureOf language) (List.replicate sources.length ([],sort)) bound,
+      checkArguments arguments sources = true := by
+  cases typed with
+  | nil => exact ⟨.nil,rfl⟩
+  | cons headTyped tailTyped =>
+      obtain ⟨value,headRead⟩ := typed_exists headTyped
+      obtain ⟨rest,tailRead⟩ := elements_exists tailTyped
+      exact ⟨.cons value rest,by simp only [checkArguments,headRead,tailRead,Bool.and_self]⟩
+termination_by sizeOf sources
+end
+
+/-- The checked receipt covers exactly the original complete closed typing
+judgment, rather than an object-pattern or canonical-presentation fragment. -/
+theorem typed_iff_receipt {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr} :
+    HasType language FreeTypeContext.empty bound source sort ↔
+      ∃ term : Term (signatureOf language) bound sort,check term source = true :=
+  ⟨typed_exists,fun ⟨term,accepted⟩ => typed term source accepted⟩
+
+
+
+/-- Transporting the ambient context index does not change source readback. -/
+theorem check_transport {first second : List TypeExpr} {sort : TypeExpr}
+    (same : first = second) (term : Term (signatureOf language) first sort) (source : Pattern) :
+    check (same ▸ term) source = check term source := by
+  cases same
+  rfl
+
+/-- The actual slot wrapper is accepted without changing the scope. -/
+theorem readBody_wrap {parameter : TermParam} {binders : List TypeExpr} {sort : TypeExpr}
+    (scope : ParameterScope parameter binders sort) (body : Pattern) :
+    readBody? scope (scope.wrap body) = some body := by
+  cases scope <;> simp only [ParameterScope.wrap,readBody?,beq_self_eq_true,ite_true]
+
+mutual
+/-- Original intrinsic terms provide executable receipts for their own raw
+erasure; no source-typing proof is searched or chosen at runtime. -/
+theorem check_erase : ∀ {bound : List TypeExpr} {sort : TypeExpr}
+    (term : Term (signatureOf language) bound sort),check term (erase term) = true
+  | _,_,.var _ => by simp only [check,erase,beq_self_eq_true]
+  | _,_,.op (.constructor _ _ _ scopes) arguments => by
+      simp only [check,erase,beq_self_eq_true,Bool.true_and]
+      exact checkConstructorArguments_erase scopes arguments
+  | _,_,.op (.collectionConstructor _ _ _ _ _ _ _) arguments => by
+      simp only [check,erase,beq_self_eq_true,Bool.true_and]
+      exact checkArguments_erase arguments
+  | _,_,.op (.lambda _ _) arguments =>
+      match arguments with
+      | .cons body .nil => check_erase body
+  | _,_,.op (.multiLambda _ _ _) arguments =>
+      match arguments with
+      | .cons body .nil => by
+          simp only [check,erase,beq_self_eq_true,Bool.true_and]
+          exact check_erase body
+  | _,_,.op (.subst _ _) arguments =>
+      match arguments with
+      | .cons body (.cons replacement .nil) => by
+          simp only [check,erase,check_erase body,check_erase replacement,Bool.and_self]
+  | _,_,.op (.collection _ _ _) arguments => by
+      simp only [check,erase,beq_self_eq_true,Bool.true_and]
+      exact checkArguments_erase arguments
+
+theorem checkArguments_erase : ∀ {arity : List (List TypeExpr × TypeExpr)} {bound : List TypeExpr}
+    (arguments : Args (signatureOf language) arity bound),
+    checkArguments arguments (eraseArguments arguments) = true
+  | _,_,.nil => rfl
+  | _,_,.cons head tail => by
+      simp only [checkArguments,eraseArguments,check_erase head,checkArguments_erase tail,Bool.and_self]
+
+theorem checkConstructorArguments_erase : ∀ {parameters : List TermParam}
+    {arity : List (List TypeExpr × TypeExpr)} {bound : List TypeExpr}
+    (scopes : ParameterScopes parameters arity) (arguments : Args (signatureOf language) arity bound),
+    checkConstructorArguments scopes arguments (eraseConstructorArguments scopes arguments) = true
+  | _,_,_,.nil,.nil => rfl
+  | _,_,_,.cons scope scopes,.cons head tail => by
+      simp only [checkConstructorArguments,eraseConstructorArguments,readBody_wrap,
+        check_erase head,checkConstructorArguments_erase scopes tail,Bool.and_self]
+end
+
+#print axioms readBody_eq_wrap
+#print axioms typed
+#print axioms argumentsTyped
+#print axioms constructorArgumentsTyped
+#print axioms typed_exists
+#print axioms arguments_exists
+#print axioms elements_exists
+#print axioms typed_iff_receipt
+#print axioms check_transport
+#print axioms readBody_wrap
+#print axioms check_erase
+#print axioms checkArguments_erase
+#print axioms checkConstructorArguments_erase
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.SourceReadback

@@ -117,8 +117,8 @@ macro_rules
     let facts := (facts.map (·.getElems)).getD #[]
     let extra := (extra.map (·.getElems)).getD #[]
     `(tactic|
-      (metta_call runner_checked
-       metta_eval [$facts,*] with runner_checked unfolding [
+      (metta_call_in runnerProof_checked using runnerProof_agreement
+       metta_eval [$facts,*] with runnerProof_checked in runnerProof_agreement unfolding [
          Mettapedia.Languages.ProcessCalculi.MORK.applySubst,
          Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
          Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?,
@@ -146,8 +146,7 @@ theorem raw_publication_returns (state : Effects.State) : ∀ jobs : CollectionP
   | [] => by root_eval unfolding [CollectionPlanExecution.planStateTerm, CollectionRootSearch.rawPublication]
   | job :: jobs => by
     have atSource := ScopedCollectionExecution.publication_returns state job.state
-    have atLogged := by
-      metta_lift CollectionLoggedSearchExecution.checked ["jobs"] atSource
+    have atLogged := atSource
     have published := collection_runner_lifted% ["jobs"] atLogged
     have tagged := raw_tag_returns state job.ordinal job.request
       (ScopedCollectionMachine.publication job.state)
@@ -215,8 +214,7 @@ theorem begin_returns (state : Effects.State) (footprint : List String)
     (CollectionRootSearch.requests plan profile source) (fun entry member =>
       CollectionExecutionAdmission.requestForSource?_fixed
         (CollectionExecutionAdmission.requestsForSource_selected member))
-  have begunAtLogged := by
-    metta_lift CollectionLoggedSearchExecution.checked ["requests"] begunAtSource
+  have begunAtLogged := begunAtSource
   have begun := collection_runner_lifted% ["requests"] begunAtLogged
   cases checked : WellSorted.checkOpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language
       (GeneralPlanEnvironment.environment plan).free [] expected source with
@@ -267,8 +265,7 @@ theorem tick_returns (state : Effects.State) (footprint : List String)
     root_eval unfolding [runTerm, CollectionRootSearch.tick, planValue, CompletePlanWire.planTerm]
   | matching typed matcher =>
     have completeAtSource := CollectionPlanExecution.complete_returns state matcher.state
-    have completeAtLogged := by
-      metta_lift CollectionLoggedSearchExecution.checked ["jobs"] completeAtSource
+    have completeAtLogged := completeAtSource
     have complete := collection_runner_lifted% ["jobs"] completeAtLogged
     cases done : CollectionPlanMachine.complete matcher.state with
     | true =>
@@ -286,8 +283,7 @@ theorem tick_returns (state : Effects.State) (footprint : List String)
     | false =>
       simp only [CollectionRootSearch.tick, done, Bool.false_eq_true, ↓reduceIte]
       have resumedAtSource := CollectionPlanExecution.resume_returns state 1 matcher.state
-      have resumedAtLogged := by
-        metta_lift CollectionLoggedSearchExecution.checked ["fuel", "jobs"] resumedAtSource
+      have resumedAtLogged := resumedAtSource
       have resumed := collection_runner_lifted% ["fuel", "jobs"] resumedAtLogged
       root_eval [complete, resumed] unfolding [planValue, CompletePlanWire.planTerm, runTerm,
         CollectionRootSearch.tick, CollectionRootSearch.Matching.resume, done,

@@ -169,3 +169,127 @@ theorem exhaustive_occurrences (environment : Environment)
 
 end Execution
 end Mettapedia.OSLF.MeTTaIL.StructuralDescent
+
+namespace Mettapedia.OSLF.MeTTaIL.StructuralDescent
+open Syntax RuleBinding ScopedRuleMatching GeneralPremise PatternTreeSize
+
+/-- A source measure certifies each actual immediate recursive call. The
+call list is read from the full interpreted history, including quantified
+bodies; it is independent of scheduler fuel or emitted endpoints. -/
+structure SourceMeasureCertificate (matcher : MatchingExecution) (environment : Environment)
+    (measure : Pattern → Nat) : Prop where
+  positive : ∀ source, 0 < measure source
+  decreases : ∀ {bound type source index trace captured completed history target},
+    Interpreted.RootFiring matcher.meaning environment bound type source index trace
+      captured completed history target →
+    ∀ child ∈ eventsChildSources history, measure child < measure source
+
+namespace Measured
+variable {matcher : MatchingExecution} {environment : Environment} {measure : Pattern → Nat}
+
+def ChildrenBounded (parent : Pattern) : Prop :=
+  ∀ bound type child, measure child < measure parent →
+    ∀ answer : Execution.RootAnswer environment bound type child matcher,
+      answer.requiredDepth ≤ measure child
+
+private theorem elements_depth_lt {context : Context} {parameter : String} {body : Premise}
+    {index : Nat} {elements : List Pattern} {initial final : Assignment}
+    {history : List (Nat × Pattern × List (Event matcher.Choice))} {parent : Pattern}
+    (held : Interpreted.QuantifiedElements matcher.meaning environment context parameter body index
+      elements initial final history)
+    (positive : 0 < measure parent)
+    (decreases : ∀ child ∈ elementsChildSources history, measure child < measure parent)
+    (bodyBound : ∀ first last event,
+      Interpreted.PremiseHolds matcher.meaning environment context.quantified body first last event →
+      (∀ child ∈ eventChildSources event, measure child < measure parent) →
+      eventDepth event < measure parent) : elementsDepth history < measure parent := by
+  induction elements generalizing index initial final history with
+  | nil => cases held; simpa only [elementsDepth] using positive
+  | cons element elements ih =>
+    cases held with
+    | cons _ head tail =>
+      have headBound := bodyBound _ _ _ head (by
+        intro child member
+        apply decreases child
+        simpa only [elementsChildSources,eventsChildSources,List.append_nil,List.mem_append] using Or.inl member)
+      have tailBound := ih tail (by
+        intro child member
+        apply decreases child
+        simpa only [elementsChildSources,eventsChildSources,List.append_nil,List.mem_append] using Or.inr member)
+      simpa only [elementsDepth,eventsDepth,Nat.max_zero] using max_lt headBound tailBound
+
+private theorem premise_depth_lt {context : Context} {premise : Premise}
+    {initial final : Assignment} {event : Event matcher.Choice} {parent : Pattern}
+    (held : Interpreted.PremiseHolds matcher.meaning environment context premise initial final event)
+    (positive : 0 < measure parent)
+    (decreases : ∀ child ∈ eventChildSources event, measure child < measure parent)
+    (children : ChildrenBounded (matcher := matcher) (environment := environment) (measure := measure) parent) :
+    eventDepth event < measure parent := by
+  cases held with
+  | query _ => simpa only [eventDepth] using positive
+  | freshness _ _ => simpa only [eventDepth] using positive
+  | @step _ source target actualSource actualTarget type initial final captured completed
+      childIndex trace targetTrace history typed interpreted child matched finalTyped =>
+    have smaller := decreases actualSource (by simp only [eventChildSources,List.mem_singleton])
+    have bounded := children _ _ actualSource smaller
+      ⟨childIndex,trace,captured,completed,history,actualTarget,child⟩
+    change 1 + eventsDepth history ≤ measure actualSource at bounded
+    simpa only [eventDepth] using lt_of_le_of_lt bounded smaller
+  | @scopedStep _ step actualSource actualTarget initial final captured completed
+      childIndex trace targetTrace history interpreted child matched finalTyped =>
+    have smaller := decreases actualSource (by simp only [eventChildSources,List.mem_singleton])
+    have bounded := children _ _ actualSource smaller
+      ⟨childIndex,trace,captured,completed,history,actualTarget,child⟩
+    change 1 + eventsDepth history ≤ measure actualSource at bounded
+    simpa only [eventDepth] using lt_of_le_of_lt bounded smaller
+  | quantified read elements =>
+    simpa only [eventDepth,eventChildSources] using
+      elements_depth_lt elements positive (by simpa only [eventChildSources] using decreases)
+        (fun _ _ _ body below => premise_depth_lt body positive below children)
+termination_by sizeOf premise
+
+private theorem premises_depth_lt {context : Context} {premises : List Premise}
+    {initial final : Assignment} {history : List (Event matcher.Choice)} {parent : Pattern}
+    (held : Interpreted.PremisesHold matcher.meaning environment context premises initial final history)
+    (positive : 0 < measure parent)
+    (decreases : ∀ child ∈ eventsChildSources history, measure child < measure parent)
+    (children : ChildrenBounded (matcher := matcher) (environment := environment) (measure := measure) parent) :
+    eventsDepth history < measure parent := by
+  cases held with
+  | nil => simpa only [eventsDepth] using positive
+  | cons head tail =>
+    have headBound := premise_depth_lt head positive (by
+      intro child member
+      exact decreases child (by simp only [eventsChildSources,List.mem_append];exact Or.inl member)) children
+    have tailBound := premises_depth_lt tail positive (by
+      intro child member
+      exact decreases child (by simp only [eventsChildSources,List.mem_append];exact Or.inr member)) children
+    simpa only [eventsDepth] using max_lt headBound tailBound
+termination_by premises.length
+
+/-- A proved source measure bounds the full interpreted receipt depth.
+Children are covered by well-founded source induction, not an oracle. -/
+theorem firing_depth_bound (certificate : SourceMeasureCertificate matcher environment measure)
+    (source : Pattern) :
+    ∀ bound type (answer : Execution.RootAnswer environment bound type source matcher),
+      answer.requiredDepth ≤ measure source := by
+  induction source using (InvImage.wf measure Nat.lt_wfRel.wf).induction with
+  | h source ih =>
+    intro bound type answer
+    have children : ChildrenBounded (matcher := matcher) (environment := environment) (measure := measure) source :=
+      fun childBound childType child smaller receipt => ih child smaller childBound childType receipt
+    cases answer with
+    | mk index trace captured completed history target held =>
+      have below := certificate.decreases held
+      cases held with
+      | fire declared specified admitted sorted matched capturedTyped premises converted targetTyped =>
+        have smaller := premises_depth_lt premises (certificate.positive source) below children
+        change 1 + eventsDepth history ≤ measure source
+        omega
+
+#print axioms elements_depth_lt
+#print axioms premise_depth_lt
+#print axioms premises_depth_lt
+#print axioms firing_depth_bound
+end Measured
+end Mettapedia.OSLF.MeTTaIL.StructuralDescent

@@ -50,3 +50,11 @@ def planTerm (plan : GeneralExecutionAdmission.Plan) (table : List (String × Ty
      admittedTerm (StructuralDescent.checkEnvironment (GeneralPlanEnvironment.environment plan))]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire.admittedTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire.equationDepthTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire.equationDeclarationTerm
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire.planTerm

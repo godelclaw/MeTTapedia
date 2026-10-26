@@ -3,22 +3,17 @@ import Mathlib.Data.Finite.Prod
 import Mathlib.Data.Set.Finite.Powerset
 
 /-!
-# The languages of regular expressions are regular
+# Regular languages from finite derivative-closed families
 
-A language is regular when a finite automaton accepts it, and by the
-Myhill–Nerode theorem when it has finitely many left quotients. A finite
-family of languages that is closed under removing a first letter contains
-every left quotient of each of its members, so each member is regular.
+Myhill–Nerode identifies regularity with finitely many left quotients. A finite
+family closed under letter derivatives contains every quotient of its members.
+For `L * M`, use `A * M + ⋃ S`, where `A` is a quotient of `L` and `S` is a
+set of quotients of `M`. For `L∗`, use `L∗` and `(⋃ S) * L∗` for sets of
+quotients of `L`. Derivatives commute with unions, so both families are closed.
 
-For a product `L * M` the family consists of the languages `A * M + ⋃ S`
-with `A` a left quotient of `L` and `S` a set of left quotients of `M`. For a
-star `L∗` it consists of `L∗` and the languages `(⋃ S) * L∗` with `S` a set of
-left quotients of `L`. Both are finite when `L` and `M` are regular, which
-gives closure of the regular languages under concatenation and star.
-
-The language of every expression is therefore regular, over any alphabet and
-with the wildcard, and so is the language Mathlib assigns to its own regular
-expressions.
+These constructions prove regularity of literal/wildcard expressions over any
+alphabet and of Mathlib's expressions. Balanced Boolean words separate these
+languages from a nonregular language with infinitely many distinct residuals.
 -/
 
 set_option autoImplicit false
@@ -47,14 +42,12 @@ consists of regular languages.** -/
 theorem isRegular_of_finite_closed {family : Set (Language α)} (finite : family.Finite)
     (closed : ∀ K ∈ family, ∀ a, leftDerivative a K ∈ family) {L : Language α}
     (member : L ∈ family) : L.IsRegular := by
-  apply Language.IsRegular.of_finite_range_leftQuotient
-  refine finite.subset ?_
+  refine Language.IsRegular.of_finite_range_leftQuotient (finite.subset ?_)
   rintro _ ⟨word, rfl⟩
   induction word using List.reverseRecOn with
   | nil => exact member
   | append_singleton word a ih =>
-      rw [leftQuotient_concat]
-      exact closed _ ih a
+      simpa only [leftQuotient_concat] using closed _ ih a
 
 /-- A word of a union of languages is a word of one of them. -/
 theorem mem_sSup_iff (S : Set (Language α)) (w : List α) :
@@ -64,15 +57,9 @@ theorem mem_sSup_iff (S : Set (Language α)) (w : List α) :
 /-- A word of a union of languages followed by a language. -/
 theorem mem_sSup_mul_iff (S : Set (Language α)) (M : Language α) (w : List α) :
     w ∈ sSup S * M ↔ ∃ K ∈ S, w ∈ K * M := by
-  constructor
-  · intro member
-    obtain ⟨first, firstMember, rest, restMember, rfl⟩ := Language.mem_mul.mp member
-    obtain ⟨K, inS, inK⟩ := (mem_sSup_iff S first).mp firstMember
-    exact ⟨K, inS, Language.mem_mul.mpr ⟨first, inK, rest, restMember, rfl⟩⟩
-  · rintro ⟨K, inS, member⟩
-    obtain ⟨first, firstMember, rest, restMember, rfl⟩ := Language.mem_mul.mp member
-    exact Language.mem_mul.mpr
-      ⟨first, (mem_sSup_iff S first).mpr ⟨K, inS, firstMember⟩, rest, restMember, rfl⟩
+  rw [sSup_eq_iSup, Language.iSup_mul]
+  simp_rw [Language.iSup_mul]
+  simp [Language.mem_iSup]
 
 theorem isRegular_zero : (0 : Language α).IsRegular :=
   isRegular_of_finite_closed (family := {0}) (Set.finite_singleton _)
@@ -81,9 +68,7 @@ theorem isRegular_zero : (0 : Language α).IsRegular :=
 theorem isRegular_one : (1 : Language α).IsRegular :=
   isRegular_of_finite_closed (family := {1, 0}) (Set.toFinite _)
     (by
-      rintro K (rfl | rfl) a
-      · exact Or.inr (leftDerivative_one a)
-      · exact Or.inr (leftDerivative_zero a))
+      rintro K (rfl | rfl) a <;> simp)
     (Or.inl rfl)
 
 /-- The language of a literal and the language of the wildcard are regular,
@@ -92,13 +77,9 @@ theorem isRegular_atomLanguage (atom : Atom α) : (atomLanguage atom).IsRegular 
   classical
   refine isRegular_of_finite_closed (family := {atomLanguage atom, 1, 0}) (Set.toFinite _) ?_
     (Or.inl rfl)
-  rintro K (rfl | rfl | rfl) a
-  · rw [leftDerivative_atomLanguage]
-    split
-    · exact Or.inr (Or.inl rfl)
-    · exact Or.inr (Or.inr rfl)
-  · exact Or.inr (Or.inr (leftDerivative_one a))
-  · exact Or.inr (Or.inr (leftDerivative_zero a))
+  rintro K (rfl | rfl | rfl) a <;>
+    simp only [leftDerivative_atomLanguage, leftDerivative_one, leftDerivative_zero]
+  all_goals first | (split_ifs <;> simp) | simp
 
 /-- The family for a product. -/
 def productFamily (L M : Language α) : Set (Language α) :=
@@ -123,18 +104,10 @@ theorem productFamily_closed (L M : Language α) (K : Language α)
   · rintro B (⟨C, inS, rfl⟩ | ⟨rfl, _⟩)
     · exact leftDerivative_mem_range_leftQuotient M a (inRight inS)
     · exact ⟨[a], rfl⟩
-  · ext w
-    simp only [mem_leftDerivative, Language.mem_add, mem_sSup_iff]
-    rw [← mem_leftDerivative, mem_leftDerivative_mul]
-    constructor
-    · rintro (product | ⟨B, ⟨C, inS, rfl⟩ | ⟨rfl, empty⟩, accepted⟩)
-      · exact Or.inl (Or.inl product)
-      · exact Or.inr ⟨C, inS, accepted⟩
-      · exact Or.inl (Or.inr ⟨empty, accepted⟩)
-    · rintro ((product | ⟨empty, accepted⟩) | ⟨C, inS, accepted⟩)
-      · exact Or.inl product
-      · exact Or.inr ⟨leftDerivative a M, Or.inr ⟨rfl, empty⟩, accepted⟩
-      · exact Or.inr ⟨leftDerivative a C, Or.inl ⟨C, inS, rfl⟩, accepted⟩
+  · classical
+    rw [leftDerivative_add, leftDerivative_mul, leftDerivative_sSup]
+    by_cases empty : [] ∈ A <;> simp [empty, sup_comm]
+    exact sup_assoc _ _ _
 
 /-- **The regular languages are closed under concatenation.** -/
 theorem isRegular_mul {L M : Language α} (left : L.IsRegular) (right : M.IsRegular) :
@@ -164,20 +137,11 @@ theorem starFamily_closed (L : Language α) (K : Language α)
     · rintro B (⟨C, inS, rfl⟩ | ⟨rfl, _⟩)
       · exact leftDerivative_mem_range_leftQuotient L a (inRange inS)
       · exact ⟨[a], rfl⟩
-    · show sSup _ * L∗ = leftDerivative a (sSup S * L∗)
-      ext w
-      rw [mem_leftDerivative, mem_sSup_mul_iff, mem_sSup_mul_iff]
-      constructor
-      · rintro ⟨B, ⟨C, inS, rfl⟩ | ⟨rfl, C, inS, empty⟩, accepted⟩
-        · exact ⟨C, inS, (mem_leftDerivative_mul a C (L∗) w).mpr (Or.inl accepted)⟩
-        · refine ⟨C, inS, (mem_leftDerivative_mul a C (L∗) w).mpr (Or.inr ⟨empty, ?_⟩)⟩
-          rw [leftDerivative_kstar]
-          exact accepted
-      · rintro ⟨C, inS, accepted⟩
-        rcases (mem_leftDerivative_mul a C (L∗) w).mp accepted with product | ⟨empty, later⟩
-        · exact ⟨leftDerivative a C, Or.inl ⟨C, inS, rfl⟩, product⟩
-        · rw [leftDerivative_kstar] at later
-          exact ⟨leftDerivative a L, Or.inr ⟨rfl, C, inS, empty⟩, later⟩
+    · classical
+      show sSup _ * L∗ = leftDerivative a (sSup S * L∗)
+      rw [leftDerivative_mul, leftDerivative_sSup, leftDerivative_kstar]
+      by_cases empty : ∃ C ∈ S, [] ∈ C <;> simp [mem_sSup_iff, empty]
+      exact (add_mul (leftDerivative a L) (sSup (leftDerivative a '' S)) (L∗)).trans (add_comm _ _)
 
 /-- **The regular languages are closed under star.** -/
 theorem isRegular_kstar {L : Language α} (regular : L.IsRegular) : (L∗).IsRegular :=
@@ -187,20 +151,14 @@ theorem isRegular_kstar {L : Language α} (regular : L.IsRegular) : (L∗).IsReg
 /-- **The language of a regular expression is regular.** -/
 theorem language_isRegular (p : Regex α) : (language p).IsRegular := by
   induction p with
-  | zero => exact isRegular_zero
-  | epsilon => exact isRegular_one
-  | char atom => exact isRegular_atomLanguage atom
   | plus p q hp hq => exact hp.add hq
-  | comp p q hp hq => exact isRegular_mul hp hq
-  | star p hp => exact isRegular_kstar hp
+  | _ => simp_all [language, isRegular_zero, isRegular_one, isRegular_atomLanguage,
+      isRegular_mul, isRegular_kstar]
 
 /-- An expression has finitely many derivatives up to their languages. -/
 theorem finite_derivative_languages [DecidableEq α] (p : Regex α) :
     (Set.range fun word => language (derivatives p word)).Finite := by
-  have quotients := (language_isRegular p).finite_range_leftQuotient
-  refine quotients.subset ?_
-  rintro _ ⟨word, rfl⟩
-  exact ⟨word, (derivatives_language p word).symm⟩
+  simpa only [derivatives_language] using (language_isRegular p).finite_range_leftQuotient
 
 /-- The language Mathlib assigns to one of its regular expressions is
 regular. -/
@@ -221,27 +179,21 @@ theorem balanced_quotients_differ {first second : ℕ} (different : first ≠ se
     balanced.leftQuotient (List.replicate first false) ≠
       balanced.leftQuotient (List.replicate second false) := by
   intro same
-  have member : List.replicate first true ∈
-      balanced.leftQuotient (List.replicate first false) := by
-    change (List.replicate first false ++ List.replicate first true).count false =
-      (List.replicate first false ++ List.replicate first true).count true
-    simp [List.count_append, List.count_replicate]
-  rw [same] at member
-  change (List.replicate second false ++ List.replicate first true).count false =
-    (List.replicate second false ++ List.replicate first true).count true at member
+  have member := congrArg (fun L : Language Bool => List.replicate first true ∈ L) same
+  change ((List.replicate first false ++ List.replicate first true).count false =
+    (List.replicate first false ++ List.replicate first true).count true) =
+    ((List.replicate second false ++ List.replicate first true).count false =
+    (List.replicate second false ++ List.replicate first true).count true) at member
   simp [List.count_append, List.count_replicate] at member
   exact different member.symm
 
 theorem balanced_not_regular : ¬ balanced.IsRegular := by
   intro regular
-  have finite := regular.finite_range_leftQuotient
-  have injective : Function.Injective fun count : ℕ =>
-      balanced.leftQuotient (List.replicate count false) := by
-    intro first second same
-    by_contra different
-    exact balanced_quotients_differ different same
-  exact Set.infinite_range_of_injective injective
-    (finite.subset (by rintro _ ⟨count, rfl⟩; exact ⟨_, rfl⟩))
+  exact Set.infinite_range_of_injective
+    (f := fun n : ℕ => balanced.leftQuotient (List.replicate n false))
+    (fun _ _ => not_imp_not.mp balanced_quotients_differ)
+    (regular.finite_range_leftQuotient.subset
+      (Set.range_comp_subset_range (fun n : ℕ => List.replicate n false) balanced.leftQuotient))
 
 /-- So no expression denotes it. -/
 theorem balanced_not_expressible (p : Regex Bool) : language p ≠ balanced :=

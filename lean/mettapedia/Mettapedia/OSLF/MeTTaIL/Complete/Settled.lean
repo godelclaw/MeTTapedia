@@ -104,6 +104,27 @@ theorem roundsUntilSettled_states (stable : Stable S) : ∀ (work : Nat) (explor
     · rw [Function.iterate_succ_apply]
       exact roundsUntilSettled_states stable work (step S explorer)
 
+theorem roundsUntilSettled_of_settled (explorer : Explorer σ Run Receipt)
+    (done : settled S explorer = true) (work : Nat) :
+    roundsUntilSettled S work explorer = explorer := by
+  cases work with
+  | zero => rfl
+  | succ work => simp [roundsUntilSettled, done]
+
+theorem roundsUntilSettled_add (first extra : Nat) (explorer : Explorer σ Run Receipt) :
+    roundsUntilSettled S (first + extra) explorer =
+      roundsUntilSettled S extra (roundsUntilSettled S first explorer) := by
+  induction first generalizing explorer with
+  | zero => simp only [Nat.zero_add, roundsUntilSettled]
+  | succ first ih =>
+      by_cases done : settled S explorer = true
+      · simp only [roundsUntilSettled_of_settled (S := S) explorer done]
+      · simp only [Nat.succ_add, roundsUntilSettled, done]
+        exact ih (step S explorer)
+
+#print axioms roundsUntilSettled_of_settled
+#print axioms roundsUntilSettled_add
+
 /-! ## The search modulo equations is stable -/
 
 section Classes

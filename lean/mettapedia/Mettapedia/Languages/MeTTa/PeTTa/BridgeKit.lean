@@ -226,7 +226,96 @@ theorem capture (checked : L.check = true) {head : String} (ready : L.headReady 
     rw [unchanged, captured]
   · exact returned
 
+/-- Unfold a small library's owned body while executing directly in an agreeing target program. -/
+theorem call_in {allowed : String → Bool} {program : Program}
+    (checked : L.check = true) (agreement : ProgramAgreementOn allowed L.runtime program)
+    {head : String} (supported : allowed head = true) (ready : L.headReady head = true)
+    (caller : Subst) (before after : State) (arguments values : List Atom) (answer : Atom)
+    (length : values.length = (L.formals head).length)
+    (captured : arguments.map (applySubst caller) = values)
+    (returned : PureReturns program (bind (L.formals head) values) before (L.body head) after answer) :
+    PureReturns program caller before (.expression (.symbol head :: arguments)) after answer := by
+  obtain ⟨equation, found⟩ : ∃ equation, L.equationOf head = some equation := by
+    cases found : L.equationOf head with
+    | none => simp [headReady, found] at ready
+    | some equation => exact ⟨equation, rfl⟩
+  obtain ⟨rows, arguments', distinct, ordinary, notIO, notNative, raw⟩ := defined_parts checked found ready
+  have bodyEq : L.body head = equation.body := by simp [body, found]
+  rw [bodyEq] at returned
+  apply PureData.raw_authored_call_return program caller (bind (L.formals head) values) before after
+    head arguments equation.body answer
+  · intro special
+    have : specialForms.contains head = true := by simpa [specialForms] using special
+    rw [this] at ordinary
+    cases ordinary
+  · exact notIO
+  · exact notNative
+  · rw [← agreement.dispatch head supported]
+    have present : equation ∈ L.runtime.equations.filter (·.head == head) := by rw [rows]; simp
+    exact List.any_eq_true.mpr ⟨equation, (List.mem_filter.mp present).1, (List.mem_filter.mp present).2⟩
+  · intro index bounded
+    rw [← agreement.demand head index supported]
+    have same : arguments.length = values.length := by simpa using congrArg List.length captured
+    exact raw index (by omega)
+  · rw [captured, ← agreement.bodies head values supported]
+    exact PureData.named_equation_clause L.runtime head equation (L.formals head) values
+      rows arguments' distinct length
+  · exact returned
+
+/-- Reuse an owned raw call under equal capture in the target program, without scanning its rows. -/
+theorem capture_in {allowed : String → Bool} {program : Program}
+    (checked : L.check = true) (agreement : ProgramAgreementOn allowed L.runtime program)
+    {head : String} (supported : allowed head = true) (ready : L.headReady head = true)
+    (caller : Subst) (before after : State) (arguments values : List Atom) (answer : Atom)
+    (length : values.length = (L.formals head).length)
+    (captured : arguments.map (applySubst caller) = values)
+    (returned : PureReturns program [] before (.expression (.symbol head :: values)) after answer) :
+    PureReturns program caller before (.expression (.symbol head :: arguments)) after answer := by
+  obtain ⟨equation, found⟩ : ∃ equation, L.equationOf head = some equation := by
+    cases found : L.equationOf head with
+    | none => simp [headReady, found] at ready
+    | some equation => exact ⟨equation, rfl⟩
+  obtain ⟨rows, _, _, ordinary, notIO, notNative, raw⟩ := defined_parts checked found ready
+  apply PureData.raw_capture_returns program [] caller before after head values arguments answer
+  · rw [← agreement.dispatch head supported]
+    have present : equation ∈ L.runtime.equations.filter (·.head == head) := by rw [rows]; simp
+    simp only [notIO, notNative, Bool.false_or]
+    exact List.any_eq_true.mpr ⟨equation, (List.mem_filter.mp present).1, (List.mem_filter.mp present).2⟩
+  · intro index bounded
+    rw [← agreement.demand head index supported]
+    exact raw index (by omega)
+  · intro special
+    have : specialForms.contains head = true := by simpa [specialForms] using special
+    rw [this] at ordinary
+    cases ordinary
+  · have unchanged : values.map (applySubst []) = values := by
+      have identity : applySubst [] = id := by
+        funext value
+        exact Mettapedia.Languages.ProcessCalculi.MORK.applySubst_nil value
+      simp only [identity, List.map_id]
+    rw [unchanged, captured]
+  · exact returned
+
 end Library
+
+/-- Transport a constructor template using only dispatch agreement for its literal heads.
+Captured variables retain arbitrary values; their payloads are never checked as code. -/
+theorem template_in_program {allowed : String → Bool} {first second : Program}
+    (agreement : ProgramAgreementOn allowed first second) {code : Atom}
+    (template : PureData.Template first code) (supported : codeWithin allowed code = true) :
+    PureData.Template second code := by
+  induction template with
+  | captured name => exact .captured name
+  | grounded value => exact .grounded value
+  | symbol name => exact .symbol name
+  | constructor head arguments inert ordinary children ih =>
+      simp only [codeWithin, expressionHeadWithin, Bool.and_eq_true,
+        atomsWithin_eq_all, List.all_eq_true] at supported
+      refine .constructor head arguments ?_ ordinary ?_
+      · rw [← agreement.dispatch head supported.1.1]
+        exact inert
+      · intro child member
+        exact ih child member (supported.2 child (List.mem_cons_of_mem _ member))
 
 /-! ## Literal bodies -/
 
@@ -286,3 +375,7 @@ elab "metta_literal" : tactic => do
 end Literal
 
 end Mettapedia.Languages.MeTTa.PeTTa.BridgeKit
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.BridgeKit.Library.call_in
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.BridgeKit.Library.capture_in
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.BridgeKit.template_in_program

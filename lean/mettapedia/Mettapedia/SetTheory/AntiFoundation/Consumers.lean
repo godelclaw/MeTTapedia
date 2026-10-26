@@ -39,7 +39,7 @@ inductive Proc where
   | cycR
   deriving DecidableEq
 
-def step : Proc → Lab → Proc → Prop
+def labelledStep : Proc → Lab → Proc → Prop
   | .loopA, .a, .loopA => True
   | .loopA2, .a, .loopA2 => True
   | .loopB, .b, .loopB => True
@@ -54,11 +54,11 @@ def next : Proc → Lab × Proc
   | .cycL => (.a, .cycR)
   | .cycR => (.a, .cycL)
 
-theorem step_iff (p : Proc) (lab : Lab) (q : Proc) : step p lab q ↔ next p = (lab, q) := by
+theorem labelledStep_iff (p : Proc) (lab : Lab) (q : Proc) : labelledStep p lab q ↔ next p = (lab, q) := by
   cases p <;> cases lab <;> cases q <;> constructor <;> intro h <;>
     first | rfl | exact trivial | exact h.elim | cases h
 
-def ustep (p q : Proc) : Prop := ∃ lab, step p lab q
+def ustep (p q : Proc) : Prop := ∃ lab, labelledStep p lab q
 
 def firstLabel : Proc → Lab
   | .loopB => .b
@@ -68,7 +68,7 @@ theorem firstLabel_next (p : Proc) : (next p).1 = firstLabel p := by
   cases p <;> rfl
 
 theorem ustep_next (p : Proc) : ustep p (next p).2 :=
-  ⟨(next p).1, (step_iff p (next p).1 (next p).2).mpr rfl⟩
+  ⟨(next p).1, (labelledStep_iff p (next p).1 (next p).2).mpr rfl⟩
 
 theorem unlabelled_total : IsBisimulation ustep ustep (fun _ _ => True) := by
   intro a b _
@@ -104,8 +104,8 @@ theorem sameA_next (p q : Proc) (h : sameA p q) :
 
 def IsLabelledBisimulation (R : Proc → Proc → Prop) : Prop :=
   ∀ p q, R p q →
-    (∀ lab p', step p lab p' → ∃ q', step q lab q' ∧ R p' q') ∧
-    (∀ lab q', step q lab q' → ∃ p', step p lab p' ∧ R p' q')
+    (∀ lab p', labelledStep p lab p' → ∃ q', labelledStep q lab q' ∧ R p' q') ∧
+    (∀ lab q', labelledStep q lab q' → ∃ p', labelledStep p lab p' ∧ R p' q')
 
 def LabelledBisimilar (p q : Proc) : Prop :=
   ∃ R, IsLabelledBisimulation R ∧ R p q
@@ -115,30 +115,30 @@ theorem sameA_labelled : IsLabelledBisimulation sameA := by
   obtain ⟨labEq, relNext⟩ := sameA_next p q h
   constructor
   · intro lab p' hp
-    have hn : next p = (lab, p') := (step_iff p lab p').mp hp
+    have hn : next p = (lab, p') := (labelledStep_iff p lab p').mp hp
     have hfst : (next p).1 = lab := congrArg Prod.fst hn
     have hsnd : (next p).2 = p' := congrArg Prod.snd hn
     refine ⟨(next q).2, ?_, ?_⟩
-    · exact (step_iff q lab (next q).2).mpr (Prod.ext (labEq.symm.trans hfst) rfl)
+    · exact (labelledStep_iff q lab (next q).2).mpr (Prod.ext (labEq.symm.trans hfst) rfl)
     · exact hsnd ▸ relNext
   · intro lab q' hq
-    have hn : next q = (lab, q') := (step_iff q lab q').mp hq
+    have hn : next q = (lab, q') := (labelledStep_iff q lab q').mp hq
     have hfst : (next q).1 = lab := congrArg Prod.fst hn
     have hsnd : (next q).2 = q' := congrArg Prod.snd hn
     refine ⟨(next p).2, ?_, ?_⟩
-    · exact (step_iff p lab (next p).2).mpr (Prod.ext (labEq.trans hfst) rfl)
+    · exact (labelledStep_iff p lab (next p).2).mpr (Prod.ext (labEq.trans hfst) rfl)
     · exact hsnd.symm ▸ relNext
 
-theorem step_label (p : Proc) (lab : Lab) (q : Proc) (h : step p lab q) :
+theorem labelledStep_label (p : Proc) (lab : Lab) (q : Proc) (h : labelledStep p lab q) :
     lab = firstLabel p :=
-  (congrArg Prod.fst ((step_iff p lab q).mp h)).symm.trans (firstLabel_next p)
+  (congrArg Prod.fst ((labelledStep_iff p lab q).mp h)).symm.trans (firstLabel_next p)
 
 theorem label_respects_labelled : Respects LabelledBisimilar firstLabel := by
   intro p q ⟨R, hR, h⟩
-  have stepP : step p (firstLabel p) (next p).2 :=
-    (step_iff p (firstLabel p) (next p).2).mpr (Prod.ext (firstLabel_next p) rfl)
+  have stepP : labelledStep p (firstLabel p) (next p).2 :=
+    (labelledStep_iff p (firstLabel p) (next p).2).mpr (Prod.ext (firstLabel_next p) rfl)
   obtain ⟨q', hq, _⟩ := (hR p q h).1 (firstLabel p) (next p).2 stepP
-  exact step_label q (firstLabel p) q' hq
+  exact labelledStep_label q (firstLabel p) q' hq
 
 theorem label_not_respects_unlabelled :
     ¬ Respects (Bisimilar ustep ustep) firstLabel := by

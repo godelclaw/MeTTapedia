@@ -225,7 +225,7 @@ theorem no_open_query {row : Nat} {final : Assignment}
   intro held
   let wanted : Query.CertifiedAnswer Dynamic.dynamicEnvironment openRequest :=
     ⟨row, final, origins, held⟩
-  have present := Query.answers_complete Dynamic.dynamicEnvironment openRequest 80 wanted
+  have present := Query.answers_complete MatchingExecution.ordinaryCursorLaws MatchingExecution.ordinary_answer_representation Dynamic.dynamicEnvironment openRequest 80 wanted
     (by decide +kernel)
   have empty : openState.answers = [] := by decide +kernel
   change wanted ∈ openState.answers at present

@@ -30,11 +30,11 @@ theorem nodes_list_of (state : State) (patterns : List Pattern)
       (number (listNodes patterns)) := by
   induction patterns with
   | nil =>
-    metta_call complete_checked
-    metta_eval unfolding [encodePatterns, CettaWireAtom.encode, CettaWireAtom.encodeMany]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodePatterns, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | cons pattern rest ih =>
-    metta_call complete_checked
-    metta_eval [each pattern (by simp), ih (fun other member => each other (by simp [member]))] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [each pattern (by simp), ih (fun other member => each other (by simp [member]))] with completeProof_checked in completeProof_agreement
       unfolding [encodePatterns, CettaWireAtom.encode, CettaWireAtom.encodeMany]
 
 /-- `gslt:deep:nodes` is `PatternTreeSize.nodes`. -/
@@ -43,29 +43,32 @@ theorem nodes_returns (state : State) (pattern : Pattern) :
     PureReturns runtime [] state (apply "gslt:deep:nodes" [patternValue pattern]) state (number (nodes pattern)) := by
   induction pattern using Pattern.inductionOn with
   | hbvar index =>
-    metta_call complete_checked
-    metta_eval unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | hfvar name =>
-    metta_call complete_checked
-    metta_eval unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval with completeProof_checked in completeProof_agreement unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | happly label arguments ih =>
-    metta_call complete_checked
-    metta_eval [nodes_list_of state arguments ih] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [nodes_list_of state arguments ih] with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | hlambda binder body ih =>
-    metta_call complete_checked
-    metta_eval [ih] with complete_checked unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [ih] with completeProof_checked in completeProof_agreement unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | hmultiLambda arity binders body ih =>
-    metta_call complete_checked
-    metta_eval [ih] with complete_checked unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [ih] with completeProof_checked in completeProof_agreement unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | hsubst body replacement bodyIH replacementIH =>
     rw [show nodes (.subst body replacement) = 1 + (nodes body + nodes replacement) by simp only [nodes]; omega]
-    metta_call complete_checked
-    metta_eval [bodyIH, replacementIH] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [bodyIH, replacementIH] with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
   | hcollection kind elements rest ih =>
-    metta_call complete_checked
-    metta_eval [nodes_list_of state elements ih] with complete_checked
+    metta_call_in completeProof_checked using completeProof_agreement
+    metta_eval [nodes_list_of state elements ih] with completeProof_checked in completeProof_agreement
       unfolding [encodePattern, CettaWireAtom.encode, CettaWireAtom.encodeMany]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution
+
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.nodes_list_of
+#print axioms Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.nodes_returns

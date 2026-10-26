@@ -1,6 +1,7 @@
 import Mettapedia.SetTheory.AntiFoundation.Graphs
 import Mettapedia.SetTheory.AntiFoundation.ReadingFixedPoints
 import Mathlib.Data.Fintype.Prod
+import Mettapedia.Order.FiniteSetFixedPoints
 import Mathlib.Data.Set.Card
 import Mathlib.Logic.Function.Iterate
 import Mathlib.SetTheory.Cardinal.Finite
@@ -39,6 +40,37 @@ def relPairs (R : α → α → Prop) : Set (α × α) :=
 @[simp] theorem mem_relPairs {R : α → α → Prop} {p : α × α} :
     p ∈ relPairs R ↔ R p.1 p.2 := Iff.rfl
 
+private theorem relPairs_injective :
+    Function.Injective (fun R : Setoid α => relPairs (⇑R)) := by
+  intro R S same
+  ext a b
+  exact Set.ext_iff.mp same (a, b)
+
+/-- Both iteration directions use the same finite-pair stabilization theorem. -/
+theorem ordered_iterate_stabilizes [Fintype α] (f : Setoid α →o Setoid α) (K : Setoid α)
+    (ordered : K ≤ f K ∨ f K ≤ K) :
+    f^[Fintype.card α * Fintype.card α] K =
+      f^[Fintype.card α * Fintype.card α + 1] K := by
+  apply relPairs_injective
+  have stable : ∀ n, relPairs (⇑(f^[n] K)) = relPairs (⇑(f^[n+1] K)) →
+      relPairs (⇑(f^[n+1] K)) = relPairs (⇑(f^[n+2] K)) := by
+    intro n same
+    rw [Function.iterate_succ_apply' f n, Function.iterate_succ_apply' f (n+1)]
+    exact congrArg (fun R : Setoid α => relPairs (⇑(f R))) (relPairs_injective same)
+  have card : Nat.card (α × α) = Fintype.card α * Fintype.card α := by
+    rw [Nat.card_prod, Nat.card_eq_fintype_card]
+  rcases ordered with up | down
+  · have monotone : Monotone (fun n => relPairs (⇑(f^[n] K))) :=
+      fun _ _ h _ related => (f.monotone.monotone_iterate_of_le_map up h) related
+    have result := Mettapedia.Order.FiniteSetFixedPoints.monotone_chain_stabilizes_at_card
+      _ monotone stable
+    rwa [card] at result
+  · have antitone : Antitone (fun n => relPairs (⇑(f^[n] K))) :=
+      fun _ _ h _ related => (f.monotone.antitone_iterate_of_map_le down h) related
+    have result := Mettapedia.Order.FiniteSetFixedPoints.antitone_chain_stabilizes_at_card
+      _ antitone stable
+    rwa [card] at result
+
 theorem bot_le_step_bot (edge : Edge α) : ⊥ ≤ step edge ⊥ := by
   rw [le_step_iff_isBisimulation]
   simpa [Setoid.bot_def] using (IsBisimulation.eq (r := edge))
@@ -47,61 +79,31 @@ theorem bot_le_step_bot (edge : Edge α) : ⊥ ≤ step edge ⊥ := by
 
 theorem iterate_le_succ (edge : Edge α) {K : Setoid α} (hK : K ≤ step edge K) (n : Nat) :
     (step edge)^[n] K ≤ (step edge)^[n + 1] K := by
-  induction n with
-  | zero =>
-    simp only [iterate_succ_apply', iterate_zero]
-    exact hK
-  | succ n ih =>
-    rw [iterate_succ_apply', iterate_succ_apply']
-    exact (step edge).monotone ih
+  exact (step edge).monotone.monotone_iterate_of_le_map hK (Nat.le_succ n)
 
 theorem le_iterate (edge : Edge α) {K : Setoid α} (hK : K ≤ step edge K) (n : Nat) :
     K ≤ (step edge)^[n] K := by
-  induction n with
-  | zero => exact le_rfl
-  | succ n ih => exact ih.trans (iterate_le_succ edge hK n)
+  exact (step edge).monotone.monotone_iterate_of_le_map hK (Nat.zero_le n)
 
 theorem iterate_le_of_reading (edge : Edge α) {K R : Setoid α} (hKR : K ≤ R)
     (hR : step edge R ≤ R) (n : Nat) : (step edge)^[n] K ≤ R := by
-  induction n with
-  | zero => exact hKR
-  | succ n ih =>
-    rw [iterate_succ_apply']
-    exact ((step edge).monotone ih).trans hR
+  exact ((step edge).monotone.iterate n hKR).trans
+    ((step edge).monotone.antitone_iterate_of_map_le hR (Nat.zero_le n))
 
 theorem iterate_stable (edge : Edge α) {K : Setoid α} {k : Nat}
     (h : (step edge)^[k] K = (step edge)^[k + 1] K) (n : Nat) :
     (step edge)^[k + n] K = (step edge)^[k] K := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    rw [Nat.add_succ, iterate_succ_apply', ih, ← iterate_succ_apply' (step edge) k]
-    exact h.symm
+  rw [Nat.add_comm k n, Function.iterate_add_apply]
+  exact Function.iterate_fixed (by rw [← iterate_succ_apply' (step edge) k]; exact h.symm) n
 
 theorem relPairs_ncard_le [Fintype α] (R : α → α → Prop) :
     (relPairs R).ncard ≤ Fintype.card α * Fintype.card α := by
-  calc (relPairs R).ncard
-      ≤ Nat.card (α × α) := Set.ncard_le_card _
-      _ = Nat.card α * Nat.card α := Nat.card_prod α α
-      _ = Fintype.card α * Fintype.card α := by
-          simp only [Nat.card_eq_fintype_card]
+  simpa only [Nat.card_eq_fintype_card, Fintype.card_prod] using (relPairs R).ncard_le_card
 
 theorem relPairs_ncard_lt_of_lt [Fintype α] {R S : Setoid α} (hle : R ≤ S) (hne : R ≠ S) :
     (relPairs (⇑R)).ncard < (relPairs (⇑S)).ncard := by
-  have hsub : relPairs (⇑R) ⊆ relPairs (⇑S) :=
-    fun _ hp => hle hp
-  have hne' : relPairs (⇑R) ≠ relPairs (⇑S) := by
-    intro heq
-    apply hne
-    ext a b
-    constructor
-    · exact fun hab => hle hab
-    · intro hab
-      have : (a, b) ∈ relPairs (⇑R) := by
-        rw [heq]
-        simpa [mem_relPairs] using hab
-      simpa [mem_relPairs] using this
-  exact Set.ncard_lt_ncard (ssubset_iff_subset_ne.mpr ⟨hsub, hne'⟩)
+  exact Set.ncard_lt_ncard (ssubset_iff_subset_ne.mpr
+    ⟨fun _ hp => hle hp, fun equal => hne (relPairs_injective equal)⟩)
 
 theorem ncard_iterate_ge [Fintype α] (edge : Edge α) {K : Setoid α} (hK : K ≤ step edge K)
     (n : Nat) (hstrict : ∀ k < n, (step edge)^[k] K ≠ (step edge)^[k + 1] K) :
@@ -117,13 +119,7 @@ theorem exists_iterate_fixed [Fintype α] (edge : Edge α) {K : Setoid α}
     (hK : K ≤ step edge K) :
     ∃ k, k ≤ Fintype.card α * Fintype.card α ∧
       (step edge)^[k] K = (step edge)^[k + 1] K := by
-  let N := Fintype.card α * Fintype.card α
-  exact Classical.byContradiction fun h =>
-    have hstrict : ∀ k < N + 1, (step edge)^[k] K ≠ (step edge)^[k + 1] K := by
-      intro k hk heq
-      exact h ⟨k, Nat.le_of_lt_succ hk, heq⟩
-    absurd ((ncard_iterate_ge edge hK (N + 1) hstrict).trans
-      (relPairs_ncard_le (⇑((step edge)^[N + 1] K)))) (Nat.not_succ_le_self N)
+  exact ⟨_, le_rfl, ordered_iterate_stabilizes (step edge) K (.inl hK)⟩
 
 /-- The closure of a setoid under the child-class step: one more iteration than there are
 pairs of nodes. -/
@@ -169,24 +165,12 @@ theorem iterate_fuel_eq_lfp [Fintype α] (edge : Edge α) :
 
 theorem iterate_top_succ_le (edge : Edge α) (n : Nat) :
     (step edge)^[n + 1] ⊤ ≤ (step edge)^[n] ⊤ := by
-  induction n with
-  | zero =>
-    simp only [iterate_succ_apply', iterate_zero]
-    exact le_top
-  | succ n ih =>
-    rw [iterate_succ_apply' (step edge) n]
-    rw [iterate_succ_apply' (step edge) (n + 1)]
-    exact (step edge).monotone ih
+  exact (step edge).monotone.antitone_iterate_of_map_le le_top (Nat.le_succ n)
 
 theorem gfp_le_iterate_top (edge : Edge α) (n : Nat) :
     (step edge).gfp ≤ (step edge)^[n] ⊤ := by
-  induction n with
-  | zero =>
-    simp only [iterate_zero]
-    exact le_top
-  | succ n ih =>
-    rw [iterate_succ_apply']
-    exact le_trans (le_of_eq (step edge).map_gfp.symm) ((step edge).monotone ih)
+  exact ((step edge).isFixedPt_gfp.iterate n).symm.trans_le
+    ((step edge).monotone.iterate n le_top)
 
 theorem iterate_top_fixed_eq_gfp (edge : Edge α) {n : Nat}
     (h : (step edge)^[n + 1] ⊤ = (step edge)^[n] ⊤) :
@@ -200,51 +184,29 @@ theorem iterate_top_fixed_eq_gfp (edge : Edge α) {n : Nat}
 theorem iterate_top_stable (edge : Edge α) {k : Nat}
     (h : (step edge)^[k + 1] ⊤ = (step edge)^[k] ⊤) (n : Nat) :
     (step edge)^[k + n] ⊤ = (step edge)^[k] ⊤ := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    rw [Nat.add_succ, iterate_succ_apply', ih, ← iterate_succ_apply' (step edge) k]
-    exact h
+  exact iterate_stable edge h.symm n
 
 theorem ncard_iterate_top_add_le [Fintype α] (edge : Edge α) (n : Nat)
     (hstrict : ∀ k < n, (step edge)^[k + 1] ⊤ ≠ (step edge)^[k] ⊤) :
     (relPairs (⇑((step edge)^[n] ⊤))).ncard + n ≤ Fintype.card α * Fintype.card α := by
   induction n with
-  | zero =>
-    rw [iterate_zero, Nat.add_zero]
-    exact relPairs_ncard_le _
+  | zero => change (relPairs (⇑(⊤ : Setoid α))).ncard ≤ _; exact relPairs_ncard_le _
   | succ n ih =>
-    have hdrop := relPairs_ncard_lt_of_lt (iterate_top_succ_le edge n)
+    have drops := relPairs_ncard_lt_of_lt (iterate_top_succ_le edge n)
       (hstrict n (Nat.lt_succ_self n))
-    have ih' := ih (fun k hk => hstrict k (Nat.lt_succ_of_lt hk))
-    have h1 : (relPairs (⇑((step edge)^[n + 1] ⊤))).ncard + 1 ≤
-        (relPairs (⇑((step edge)^[n] ⊤))).ncard := Nat.succ_le_of_lt hdrop
-    have assoc : (relPairs (⇑((step edge)^[n + 1] ⊤))).ncard + (n + 1) =
-        (relPairs (⇑((step edge)^[n + 1] ⊤))).ncard + 1 + n := by
-      rw [Nat.add_comm n 1, Nat.add_assoc]
-    rw [assoc]
-    exact (Nat.add_le_add_right h1 n).trans ih'
+    have earlier := ih (fun k hk => hstrict k (Nat.lt_succ_of_lt hk))
+    omega
 
 theorem exists_top_iterate_fixed [Fintype α] (edge : Edge α) :
     ∃ k, k ≤ Fintype.card α * Fintype.card α ∧
       (step edge)^[k + 1] ⊤ = (step edge)^[k] ⊤ := by
-  let N := Fintype.card α * Fintype.card α
-  exact Classical.byContradiction fun h =>
-    have hstrict : ∀ k < N + 1, (step edge)^[k + 1] ⊤ ≠ (step edge)^[k] ⊤ := by
-      intro k hk heq
-      exact h ⟨k, Nat.le_of_lt_succ hk, heq⟩
-    have hbound := ncard_iterate_top_add_le edge (N + 1) hstrict
-    have hpos : N + 1 ≤ (relPairs (⇑((step edge)^[N + 1] ⊤))).ncard + (N + 1) :=
-      Nat.le_add_left _ _
-    absurd (hpos.trans hbound) (Nat.not_succ_le_self N)
+  exact ⟨_, le_rfl, (ordered_iterate_stabilizes (step edge) ⊤ (.inr le_top)).symm⟩
 
 /-- The total relation iterated one step past the number of pairs is the greatest reading. -/
 theorem iterate_fuel_eq_gfp [Fintype α] (edge : Edge α) :
     (step edge)^[Fintype.card α * Fintype.card α + 1] ⊤ = (step edge).gfp := by
-  let N := Fintype.card α * Fintype.card α
-  obtain ⟨k, hk, heq⟩ := exists_top_iterate_fixed edge
-  obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le (Nat.le_succ_of_le hk)
-  rw [← Nat.succ_eq_add_one, hd, iterate_top_stable edge heq d, iterate_top_fixed_eq_gfp edge heq]
+  have fixed := ordered_iterate_stabilizes (step edge) ⊤ (.inr le_top)
+  exact fixed.symm.trans (iterate_top_fixed_eq_gfp edge fixed.symm)
 
 /-! ## Boolean matrix -/
 
@@ -259,69 +221,12 @@ theorem matrixStep_true_iff [DecidableEq α] (elems : List α) (complete : ∀ a
     (hedge : ∀ x y, edgeB x y = true ↔ edge x y) (M : α → α → Bool) (R : α → α → Prop)
     (hM : ∀ x y, M x y = true ↔ R x y) (a b : α) :
     matrixStep elems edgeB M a b = true ↔ SameChildren edge R a b := by
-  constructor
-  · intro h
-    rw [matrixStep, Bool.and_eq_true, List.all_eq_true, List.all_eq_true] at h
-    refine ⟨?_, ?_⟩
-    · intro a' ha'
-      have hdisj := h.1 a' (complete a')
-      rw [Bool.or_eq_true] at hdisj
-      cases hdisj with
-      | inl hfalse =>
-        have htrue : edgeB a a' = true := (hedge a a').mpr ha'
-        cases hB : edgeB a a'
-        · exact Bool.noConfusion (htrue.symm.trans hB)
-        · rw [hB] at hfalse
-          cases hfalse
-      | inr hany =>
-        rw [List.any_eq_true] at hany
-        obtain ⟨b', _, hb'⟩ := hany
-        rw [Bool.and_eq_true] at hb'
-        exact ⟨b', (hedge b b').mp hb'.1, (hM a' b').mp hb'.2⟩
-    · intro b' hb'
-      have hdisj := h.2 b' (complete b')
-      rw [Bool.or_eq_true] at hdisj
-      cases hdisj with
-      | inl hfalse =>
-        have htrue : edgeB b b' = true := (hedge b b').mpr hb'
-        cases hB : edgeB b b'
-        · exact Bool.noConfusion (htrue.symm.trans hB)
-        · rw [hB] at hfalse
-          cases hfalse
-      | inr hany =>
-        rw [List.any_eq_true] at hany
-        obtain ⟨a', _, ha'⟩ := hany
-        rw [Bool.and_eq_true] at ha'
-        exact ⟨a', (hedge a a').mp ha'.1, (hM a' b').mp ha'.2⟩
-  · intro h
-    rw [matrixStep, Bool.and_eq_true, List.all_eq_true, List.all_eq_true]
-    refine ⟨?_, ?_⟩
-    · intro a' _
-      rw [Bool.or_eq_true]
-      by_cases he : edge a a'
-      · right
-        obtain ⟨b', hb', hR⟩ := h.1 a' he
-        rw [List.any_eq_true]
-        refine ⟨b', complete b', ?_⟩
-        rw [Bool.and_eq_true]
-        exact ⟨(hedge b b').mpr hb', (hM a' b').mpr hR⟩
-      · left
-        cases hB : edgeB a a' with
-        | false => rfl
-        | true => exact (he ((hedge a a').mp hB)).elim
-    · intro b' _
-      rw [Bool.or_eq_true]
-      by_cases he : edge b b'
-      · right
-        obtain ⟨a', ha', hR⟩ := h.2 b' he
-        rw [List.any_eq_true]
-        refine ⟨a', complete a', ?_⟩
-        rw [Bool.and_eq_true]
-        exact ⟨(hedge a a').mpr ha', (hM a' b').mpr hR⟩
-      · left
-        cases hB : edgeB b b' with
-        | false => rfl
-        | true => exact (he ((hedge b b').mp hB)).elim
+  classical
+  have hfalse : ∀ x y, edgeB x y = false ↔ ¬ edge x y := by
+    intro x y
+    exact Bool.eq_false_iff.trans (not_congr (hedge x y))
+  simp [matrixStep, List.all_eq_true, List.any_eq_true, complete,
+    Bool.or_eq_true, Bool.and_eq_true, hfalse, hedge, hM, SameChildren, ← imp_iff_not_or]
 
 theorem matrixIter_iff [DecidableEq α] (elems : List α) (complete : ∀ a, a ∈ elems)
     (edge : Edge α) (edgeB : α → α → Bool)
@@ -372,7 +277,6 @@ instance : Fintype Loop where
   complete a := by cases a; simp
 
 theorem loop_card : Fintype.card Loop = 1 := by
-  rw [Fintype.card]
   decide
 
 def loopElems : List Loop := [Loop.node]
@@ -388,8 +292,6 @@ theorem loopEdgeB_iff (x y : Loop) : loopEdgeB x y = true ↔ loopEdge x y := by
   simp [loopEdgeB, loopEdge]
 
 theorem loop_matrixLfp_true : matrixLfp loopElems loopEdgeB Loop.node Loop.node = true := by
-  unfold matrixLfp matrixClosure
-  simp only [loop_card]
   decide
 
 theorem loop_lfp_node : (step loopEdge).lfp Loop.node Loop.node :=
@@ -401,7 +303,6 @@ instance : Fintype Cycle where
   complete a := by cases a <;> simp
 
 theorem cycle_card : Fintype.card Cycle = 2 := by
-  rw [Fintype.card]
   decide
 
 def cycleElems : List Cycle := [.l, .r]
@@ -422,23 +323,13 @@ theorem cycle_matrixLfp_values :
     matrixLfp cycleElems cycleEdgeB .l .r = false ∧
     matrixLfp cycleElems cycleEdgeB .r .l = false ∧
     matrixLfp cycleElems cycleEdgeB .r .r = true := by
-  unfold matrixLfp matrixClosure
-  simp only [cycle_card]
   decide
 
 theorem cycle_lfp_values :
     (step cycleEdge).lfp .l .l ∧ ¬ (step cycleEdge).lfp .l .r ∧
       ¬ (step cycleEdge).lfp .r .l ∧ (step cycleEdge).lfp .r .r := by
-  have t := cycle_matrixLfp_values
-  have ill := matrixLfp_iff_lfp cycleElems cycle_complete cycleEdge cycleEdgeB cycleEdgeB_iff .l .l
-  have ilr := matrixLfp_iff_lfp cycleElems cycle_complete cycleEdge cycleEdgeB cycleEdgeB_iff .l .r
-  have irl := matrixLfp_iff_lfp cycleElems cycle_complete cycleEdge cycleEdgeB cycleEdgeB_iff .r .l
-  have irr := matrixLfp_iff_lfp cycleElems cycle_complete cycleEdge cycleEdgeB cycleEdgeB_iff .r .r
-  refine ⟨ill.mp t.1, ?_, ?_, irr.mp t.2.2.2⟩
-  · intro h
-    cases (ilr.mpr h).symm.trans t.2.1
-  · intro h
-    cases (irl.mpr h).symm.trans t.2.2.1
+  simpa only [← matrixLfp_iff_lfp cycleElems cycle_complete cycleEdge cycleEdgeB
+    cycleEdgeB_iff, ← Bool.eq_false_iff] using cycle_matrixLfp_values
 
 theorem cycle_gfp_lr : (step cycleEdge).gfp .l .r := by
   rw [gfp_eq_bisimilar]
@@ -449,7 +340,6 @@ instance : Fintype Scott where
   complete a := by cases a <;> simp
 
 theorem scott_card : Fintype.card Scott = 2 := by
-  rw [Fintype.card]
   decide
 
 def scottElems : List Scott := [.s0, .s1]
@@ -471,23 +361,13 @@ theorem scott_matrixLfp_values :
     matrixLfp scottElems scottEdgeB .s0 .s1 = false ∧
     matrixLfp scottElems scottEdgeB .s1 .s0 = false ∧
     matrixLfp scottElems scottEdgeB .s1 .s1 = true := by
-  unfold matrixLfp matrixClosure
-  simp only [scott_card]
   decide
 
 theorem scott_lfp_values :
     (step scottEdge).lfp .s0 .s0 ∧ ¬ (step scottEdge).lfp .s0 .s1 ∧
       ¬ (step scottEdge).lfp .s1 .s0 ∧ (step scottEdge).lfp .s1 .s1 := by
-  have t := scott_matrixLfp_values
-  have i00 := matrixLfp_iff_lfp scottElems scott_complete scottEdge scottEdgeB scottEdgeB_iff .s0 .s0
-  have i01 := matrixLfp_iff_lfp scottElems scott_complete scottEdge scottEdgeB scottEdgeB_iff .s0 .s1
-  have i10 := matrixLfp_iff_lfp scottElems scott_complete scottEdge scottEdgeB scottEdgeB_iff .s1 .s0
-  have i11 := matrixLfp_iff_lfp scottElems scott_complete scottEdge scottEdgeB scottEdgeB_iff .s1 .s1
-  refine ⟨i00.mp t.1, ?_, ?_, i11.mp t.2.2.2⟩
-  · intro h
-    cases (i01.mpr h).symm.trans t.2.1
-  · intro h
-    cases (i10.mpr h).symm.trans t.2.2.1
+  simpa only [← matrixLfp_iff_lfp scottElems scott_complete scottEdge scottEdgeB
+    scottEdgeB_iff, ← Bool.eq_false_iff] using scott_matrixLfp_values
 
 theorem scott_gfp_s0_s1 : (step scottEdge).gfp .s0 .s1 := by
   rw [gfp_eq_bisimilar]
@@ -498,7 +378,6 @@ instance : Fintype Fin3 where
   complete a := by cases a <;> simp
 
 theorem fin_card : Fintype.card Fin3 = 3 := by
-  rw [Fintype.card]
   decide
 
 def finElems : List Fin3 := [.n0, .n1, .n2]
@@ -519,8 +398,6 @@ theorem finEdgeB_iff (x y : Fin3) : finEdgeB x y = true ↔ finEdge x y := by
 
 theorem fin_matrixLfp_diag (x y : Fin3) :
     matrixLfp finElems finEdgeB x y = decide (x = y) := by
-  unfold matrixLfp matrixClosure
-  simp only [fin_card]
   cases x <;> cases y <;> decide
 
 theorem fin_lfp_iff_eq (x y : Fin3) : (step finEdge).lfp x y ↔ x = y := by
@@ -540,26 +417,19 @@ def finPart01 : Setoid Fin3 :=
     | .n2 => true
 
 theorem finPart01_not_reading : step finEdge finPart01 ≠ finPart01 := by
-  intro h
-  have h01 : finPart01 .n0 .n1 := by
-    unfold finPart01
-    rw [Setoid.ker_def]
-  have hstep : step finEdge finPart01 .n0 .n1 := by
-    rw [h]
-    exact h01
-  rw [step_apply] at hstep
-  obtain ⟨a', ha', hrel⟩ := hstep.2 .n2 (by simp [finEdge])
-  cases a' <;> simp [finEdge] at ha'
-  unfold finPart01 at hrel
-  rw [Setoid.ker_def] at hrel
-  cases hrel
+  intro fixed
+  have related : SameChildren finEdge (⇑finPart01) .n0 .n1 :=
+    (step_apply _ _ _ _).mp (fixed.symm ▸ (rfl : finPart01 .n0 .n1))
+  obtain ⟨a, available, same⟩ := related.2 .n2 (by trivial)
+  cases a <;> simp [finEdge] at available
+  change (false : Bool) = true at same
+  cases same
 
 instance : Fintype Nest where
   elems := {.blank, .point}
   complete a := by cases a <;> simp
 
 theorem nest_card : Fintype.card Nest = 2 := by
-  rw [Fintype.card]
   decide
 
 def nestElems : List Nest := [.blank, .point]
@@ -580,23 +450,13 @@ theorem nest_matrixLfp_values :
     matrixLfp nestElems nestEdgeB .blank .point = false ∧
     matrixLfp nestElems nestEdgeB .point .blank = false ∧
     matrixLfp nestElems nestEdgeB .point .point = true := by
-  unfold matrixLfp matrixClosure
-  simp only [nest_card]
   decide
 
 theorem nest_lfp_values :
     (step nestEdge).lfp .blank .blank ∧ ¬ (step nestEdge).lfp .blank .point ∧
       ¬ (step nestEdge).lfp .point .blank ∧ (step nestEdge).lfp .point .point := by
-  have t := nest_matrixLfp_values
-  have ibb := matrixLfp_iff_lfp nestElems nest_complete nestEdge nestEdgeB nestEdgeB_iff .blank .blank
-  have ibp := matrixLfp_iff_lfp nestElems nest_complete nestEdge nestEdgeB nestEdgeB_iff .blank .point
-  have ipb := matrixLfp_iff_lfp nestElems nest_complete nestEdge nestEdgeB nestEdgeB_iff .point .blank
-  have ipp := matrixLfp_iff_lfp nestElems nest_complete nestEdge nestEdgeB nestEdgeB_iff .point .point
-  refine ⟨ibb.mp t.1, ?_, ?_, ipp.mp t.2.2.2⟩
-  · intro h
-    cases (ibp.mpr h).symm.trans t.2.1
-  · intro h
-    cases (ipb.mpr h).symm.trans t.2.2.1
+  simpa only [← matrixLfp_iff_lfp nestElems nest_complete nestEdge nestEdgeB
+    nestEdgeB_iff, ← Bool.eq_false_iff] using nest_matrixLfp_values
 
 theorem nest_not_gfp_blank_point : ¬ (step nestEdge).gfp .blank .point := by
   rw [gfp_eq_bisimilar]
@@ -604,15 +464,8 @@ theorem nest_not_gfp_blank_point : ¬ (step nestEdge).gfp .blank .point := by
   exact nest_point_not_bisim_blank ((bisimilarSetoid_iff nestEdge).mp h).symm
 
 theorem nest_top_not_reading : step nestEdge ⊤ ≠ ⊤ := by
-  intro h
-  have htop : (⊤ : Setoid Nest) .point .blank := by
-    simp [Setoid.top_def]
-  have hstep : step nestEdge ⊤ .point .blank := by
-    rw [h]
-    exact htop
-  rw [step_apply] at hstep
-  obtain ⟨b', hb', _⟩ := hstep.1 .blank (by simp [nestEdge])
-  cases b' <;> simp [nestEdge] at hb'
+  intro same
+  exact nest_not_gfp_blank_point ((step nestEdge).le_gfp same.symm.le (by trivial))
 
 /-! ## Three loops: every equivalence is a reading -/
 
@@ -630,7 +483,6 @@ instance : Fintype ThreeLoop where
 def threeEdge : Edge ThreeLoop := fun x y => x = y
 
 theorem three_card : Fintype.card ThreeLoop = 3 := by
-  rw [Fintype.card]
   decide
 
 def threeElems : List ThreeLoop := [.a, .b, .c]
@@ -645,14 +497,7 @@ theorem threeEdgeB_iff (x y : ThreeLoop) : threeEdgeB x y = true ↔ threeEdge x
 
 theorem three_step_apply (R : Setoid ThreeLoop) {x y : ThreeLoop} :
     step threeEdge R x y ↔ R x y := by
-  rw [step_apply, SameChildren]
-  constructor
-  · intro h
-    obtain ⟨_, hb', hR⟩ := h.1 x rfl
-    cases hb'
-    exact hR
-  · intro hxy
-    refine ⟨fun z hz => ⟨y, rfl, hz ▸ hxy⟩, fun z hz => ⟨x, rfl, hz ▸ hxy⟩⟩
+  simp [step_apply, SameChildren, threeEdge]
 
 /-- On three self-loops the child-class step fixes every equivalence. -/
 theorem three_every_reading (R : Setoid ThreeLoop) : step threeEdge R = R := by
@@ -696,34 +541,14 @@ theorem three_partition_table :
         threePairAC .a .c ∧ ¬ threePairAC .a .b ∧
           threePairBC .b .c ∧ ¬ threePairBC .a .b ∧
             (⊤ : Setoid ThreeLoop) .a .b := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro h
-    simp at h
-  · unfold threePairAB
-    rw [Setoid.ker_def]
-  · intro h
-    unfold threePairAB at h
-    rw [Setoid.ker_def] at h
-    cases h
-  · unfold threePairAC
-    rw [Setoid.ker_def]
-  · intro h
-    unfold threePairAC at h
-    rw [Setoid.ker_def] at h
-    cases h
-  · unfold threePairBC
-    rw [Setoid.ker_def]
-  · intro h
-    unfold threePairBC at h
-    rw [Setoid.ker_def] at h
-    cases h
-  · rw [Setoid.top_def]
-    trivial
+  change ¬ (ThreeLoop.a = ThreeLoop.b) ∧
+    (false = false) ∧ ¬ (false = true) ∧
+    (false = false) ∧ ¬ (false = true) ∧
+    (false = false) ∧ ¬ (true = false) ∧ True
+  decide
 
 theorem three_matrixLfp_diag (x y : ThreeLoop) :
     matrixLfp threeElems threeEdgeB x y = decide (x = y) := by
-  unfold matrixLfp matrixClosure
-  simp only [three_card]
   cases x <;> cases y <;> decide
 
 theorem three_lfp_iff_eq (x y : ThreeLoop) : (step threeEdge).lfp x y ↔ x = y := by

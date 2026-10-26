@@ -115,9 +115,10 @@ theorem firings_returns (state : Effects.State) : ∀ jobs : CollectionPlanMachi
         ((ScopedCollectionMachine.firings job.request job.state).map fun receipt =>
           (⟨job.ordinal, job.request, receipt⟩ : Firing))
         (CollectionPlanMachine.publication jobs)
+      simp only [ScopedCollectionMachine.firings] at tagged joined
       cases job
       collection_machine_eval [receipts, first, tagged, later, joined] unfolding [
         planStateTerm, jobTerm, planFiringTerm, CollectionPlanMachine.publication,
-        List.flatMap_cons]
+        List.flatMap_cons, ScopedCollectionMachine.firings]
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPlanExecution

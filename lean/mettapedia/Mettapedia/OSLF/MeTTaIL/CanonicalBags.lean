@@ -1,3 +1,4 @@
+import Mettapedia.OSLF.MeTTaIL.DerivedContexts
 import Mettapedia.OSLF.MeTTaIL.PatternLexOrder
 import Mathlib.Data.List.InsertIdx
 import Mathlib.Data.List.Perm.Basic
@@ -200,6 +201,21 @@ inductive BagStep : Pattern → Pattern → Prop where
   | element {kind : CollType} {before after : List Pattern} {element changed : Pattern} {rest : Option String} :
       BagStep element changed →
       BagStep (.collection kind (before ++ element :: after) rest) (.collection kind (before ++ changed :: after) rest)
+
+/-- An intrinsic collection step remains an intrinsic step in every
+structural one-hole context. Contextual execution authority is separate. -/
+theorem BagStep.fill (context : DerivedContexts.OneHoleContext) {left right : Pattern}
+    (step : BagStep left right) : BagStep (context.fill left) (context.fill right) := by
+  induction context with
+  | hole => exact step
+  | apply _ _ _ _ ih => exact .apply ih
+  | lambda _ _ ih => exact .lambda ih
+  | multiLambda _ _ _ ih => exact .multiLambda ih
+  | substBody _ _ ih => exact .substBody ih
+  | substReplacement _ _ ih => exact .substReplacement ih
+  | collection _ _ _ _ _ ih => exact .element ih
+
+#print axioms BagStep.fill
 
 /-! ## Permutations keep the canonical form -/
 

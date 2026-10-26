@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.BindingSignature
+import Mettapedia.GSLT.LanguageDef.NamedFreeContext
 import Mettapedia.GSLT.LanguageDef.WellSortedChecker
 import Mettapedia.GSLT.LanguageDef.InferenceCettaWireFormat
 import Mettapedia.OSLF.Syntax.BindingWireCodec
@@ -616,4 +617,57 @@ theorem encode_injective : Function.Injective codec.put := codec.put_injective
 
 end Header
 
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.Wire
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.Wire
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.Binding.WireCodec
+open Mettapedia.GSLT.LanguageDef.NamedFreeContext
+open Mettapedia.GSLT.LanguageDef.WellSorted
+set_option autoImplicit false
+
+/-- The same sorted Term codec reads the context suffix declared by the
+finite free-name header. No alternate source typing is encoded. -/
+def sourceReceiptDataCodec (language : LanguageDef) (bound : List TypeExpr) (sort : TypeExpr) :
+    Codec (SourceReceiptData language bound sort) :=
+  (Codec.sigma (Codec.list (Codec.prod Codec.string typeCodec)) (fun entries =>
+    termCodec language (bound ++ contextSorts entries) sort)).mapped
+    (fun receipt => ⟨receipt.entries,receipt.term⟩)
+    (fun ⟨entries,term⟩ => some ⟨entries,term⟩)
+    (by intro receipt; cases receipt; rfl)
+
+/-- Receipt checking is indexed by the independently submitted source. -/
+abbrev SourceReceipt (language : LanguageDef) (bound : List TypeExpr) (sort : TypeExpr) (source : Pattern) :=
+  {receipt : SourceReceiptData language bound sort // receipt.accepts source = true}
+
+/-- Packet input supplies only finite data. The actual spine, finite lookup
+header and exact open/close restoration are checked by the existing readback. -/
+def sourceReceiptCodec (language : LanguageDef) (bound : List TypeExpr) (sort : TypeExpr) (source : Pattern) :
+    Codec (SourceReceipt language bound sort source) :=
+  (sourceReceiptDataCodec language bound sort).mapped Subtype.val
+    (fun receipt => if accepted : receipt.accepts source = true then some ⟨receipt,accepted⟩ else none)
+    (by intro receipt; simp only [receipt.property,dite_true])
+
+/-- Every accepted source receipt proves the original raw typing judgment
+under its exact finite header. -/
+theorem sourceReceipt_typed {language : LanguageDef} {bound : List TypeExpr} {sort : TypeExpr} {source : Pattern}
+    (receipt : SourceReceipt language bound sort source) :
+    HasType language (FreeTypeContext.ofList receipt.val.entries) bound source sort :=
+  receipt.val.sound source receipt.property
+
+/-- The receipt codec covers every original typed source; only its finite
+used-name footprint is materialized. -/
+theorem sourceReceipt_exists {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {sort : TypeExpr} {source : Pattern}
+    (typed : HasType language free bound source sort) :
+    ∃ receipt : SourceReceipt language bound sort source,
+      ∀ name ∈ source.freeFvarNames,FreeTypeContext.ofList receipt.val.entries name = free name := by
+  obtain ⟨data,accepted,lookups⟩ := SourceReceiptData.exists_of_typed typed
+  exact ⟨⟨data,accepted⟩,lookups⟩
+
+#print axioms sourceReceiptDataCodec
+#print axioms sourceReceiptCodec
+#print axioms sourceReceipt_typed
+#print axioms sourceReceipt_exists
 end Mettapedia.GSLT.LanguageDef.BindingSyntax.Wire

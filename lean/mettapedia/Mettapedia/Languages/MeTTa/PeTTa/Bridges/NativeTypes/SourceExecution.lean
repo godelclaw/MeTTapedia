@@ -150,7 +150,7 @@ theorem session_within (installed : BindingPipeline.Installed) (source : Source)
     Scheduled.stateFreeWithin (footprint installed.Environment source) installed.Environment
       (sourceGoal installed.Environment source) session.state := by
   rw [session.replay]
-  exact Scheduled.run_free_within _ _ _
+  exact Scheduled.run_free_within Mettapedia.OSLF.MeTTaIL.GeneralPremise.MatchingExecution.ordinary_preservesFreeNames _ _ _
     (provider_coverage_mono _ _ _ (provider_within installed.Environment source)
       (provider_covered_by_own_names _))
     (Query.DynamicOutputsFreeWithin.of_unregistered _ _ finiteProvider)

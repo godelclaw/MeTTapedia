@@ -47,9 +47,7 @@ theorem supplied_matches_lumped (view : Fine → Coarse)
       coarsen (fineKernel action state) view = coarseKernel action (view state))
     (action : Action) (state : Coarse) :
     lumpedKernel view fineKernel representative action state = coarseKernel action state := by
-  have push := transition action (representative state)
-  rw [sectionLaw state] at push
-  exact push
+  simpa only [lumpedKernel, sectionLaw state] using transition action (representative state)
 
 /-- The supplied coarse kernel is the lumped kernel on every action. -/
 theorem supplied_kernel_agrees (view : Fine → Coarse)
@@ -58,26 +56,23 @@ theorem supplied_kernel_agrees (view : Fine → Coarse)
     (transition : ∀ action state,
       coarsen (fineKernel action state) view = coarseKernel action (view state)) :
     lumpedKernel view fineKernel representative = coarseKernel := by
-  funext action state
-  exact supplied_matches_lumped view fineKernel coarseKernel representative sectionLaw
-    transition action state
+  exact funext fun action => funext
+    (supplied_matches_lumped view fineKernel coarseKernel representative sectionLaw transition action)
+
+variable (view : Fine → Coarse)
+  (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
+  (transition : ∀ action state,
+    coarsen (fineKernel action state) view = coarseKernel action (view state))
+include transition
 
 /-- Coarse prediction agrees with the pushforward of expanded prediction. -/
-theorem prediction_preserved (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    (prior : Prob Fine) (action : Action) :
+theorem prediction_preserved (prior : Prob Fine) (action : Action) :
     coarsen (bind prior (fineKernel action)) view =
       bind (coarsen prior view) (coarseKernel action) :=
   coarsen_bind_of_rows view view (fineKernel action) (coarseKernel action) (transition action) prior
 
 /-- The same prediction square holds for a supplied prior with the same pushforward. -/
-theorem prediction_of_supplied_prior (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
+theorem prediction_of_supplied_prior (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
     (priorPush : coarsen finePrior view = coarsePrior) (action : Action) :
     coarsen (bind finePrior (fineKernel action)) view =
       bind coarsePrior (coarseKernel action) := by
@@ -85,11 +80,7 @@ theorem prediction_of_supplied_prior (view : Fine → Coarse)
       finePrior action, priorPush]
 
 /-- Filtering on positive evidence pushes forward to the coarse posterior. -/
-theorem filtering_preserved (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    (prior : Prob Fine) (action : Action) (likelihood : Coarse → ℝ)
+theorem filtering_preserved (prior : Prob Fine) (action : Action) (likelihood : Coarse → ℝ)
     (nonneg : ∀ state, 0 ≤ likelihood state)
     (possible : 0 < evidence (bind prior (fineKernel action)) (likelihood ∘ view)) :
     coarsen (posterior (bind prior (fineKernel action)) (likelihood ∘ view)
@@ -103,15 +94,15 @@ theorem filtering_preserved (view : Fine → Coarse)
   congr 1
   exact prediction_preserved view fineKernel coarseKernel transition prior action
 
+section Observed
+
+variable {Obs : Type*} [Fintype Obs] [DecidableEq Obs]
+variable (fineEmit : Action → Fine → Prob Obs) (coarseEmit : Action → Coarse → Prob Obs)
+  (emission : ∀ action state, fineEmit action state = coarseEmit action (view state))
+include emission
+
 /-- Joint transitions agree when emissions and state transitions push forward. -/
-theorem transition_emission_compatible (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    {Obs : Type*} [Fintype Obs] [DecidableEq Obs]
-    (fineEmit : Action → Fine → Prob Obs) (coarseEmit : Action → Coarse → Prob Obs)
-    (emission : ∀ action state, fineEmit action state = coarseEmit action (view state))
-    (action : Action) (state : Fine) :
+theorem transition_emission_compatible (action : Action) (state : Fine) :
     coarsen (joint (fineKernel action state) (fineEmit action))
         (fun next => (view next.1, next.2)) =
       joint (coarseKernel action (view state)) (coarseEmit action) := by
@@ -120,35 +111,18 @@ theorem transition_emission_compatible (view : Fine → Coarse)
   exact congrArg (fun law => joint law (coarseEmit action)) (transition action state)
 
 /-- Every finite adaptive policy has the same value when the reward factors through the view. -/
-theorem policy_preserved (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    {Obs : Type*} [Fintype Obs] [DecidableEq Obs]
-    (fineEmit : Action → Fine → Prob Obs) (coarseEmit : Action → Coarse → Prob Obs)
-    (emission : ∀ action state, fineEmit action state = coarseEmit action (view state))
-    (reward : Coarse → ℝ) {n : ℕ} (policy : ObservationPolicy Obs Action n) (state : Fine) :
+theorem policy_preserved (reward : Coarse → ℝ) {n : ℕ}
+    (policy : ObservationPolicy Obs Action n) (state : Fine) :
     adaptiveValue (fun action state => joint (fineKernel action state) (fineEmit action))
         (reward ∘ view) policy state =
       adaptiveValue (fun action state => joint (coarseKernel action state) (coarseEmit action))
         reward policy (view state) := by
-  refine adaptiveValue_coarsen view
-      (fun action state => joint (fineKernel action state) (fineEmit action))
-      (fun action state => joint (coarseKernel action state) (coarseEmit action))
-      ?_ reward policy state
-  intro action state
-  exact transition_emission_compatible view fineKernel coarseKernel transition
-    fineEmit coarseEmit emission action state
+  exact adaptiveValue_coarsen view _ _
+    (transition_emission_compatible view fineKernel coarseKernel transition
+      fineEmit coarseEmit emission) reward policy state
 
 /-- The prior-averaged policy value agrees for a supplied pushforward prior. -/
-theorem expected_policy_preserved (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    {Obs : Type*} [Fintype Obs] [DecidableEq Obs]
-    (fineEmit : Action → Fine → Prob Obs) (coarseEmit : Action → Coarse → Prob Obs)
-    (emission : ∀ action state, fineEmit action state = coarseEmit action (view state))
-    (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
+theorem expected_policy_preserved (finePrior : Prob Fine) (coarsePrior : Prob Coarse)
     (priorPush : coarsen finePrior view = coarsePrior) (reward : Coarse → ℝ) {n : ℕ}
     (policy : ObservationPolicy Obs Action n) :
     expect finePrior.1
@@ -157,96 +131,25 @@ theorem expected_policy_preserved (view : Fine → Coarse)
       expect coarsePrior.1
         (adaptiveValue (fun action state => joint (coarseKernel action state) (coarseEmit action))
           reward policy) := by
-  have averaged := expected_adaptiveValue_coarsen view
-    (fun action state => joint (fineKernel action state) (fineEmit action))
-    (fun action state => joint (coarseKernel action state) (coarseEmit action))
-    (fun action state => transition_emission_compatible view fineKernel coarseKernel transition
-      fineEmit coarseEmit emission action state)
-    finePrior reward policy
-  rw [priorPush] at averaged
-  exact averaged
+  simpa only [priorPush] using expected_adaptiveValue_coarsen view _ _
+    (transition_emission_compatible view fineKernel coarseKernel transition
+      fineEmit coarseEmit emission) finePrior reward policy
 
 /-- The finite execution trace pushes forward along the state map. -/
-theorem trace_preserved [DecidableEq Fine] (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    {Obs : Type*} [Fintype Obs] [DecidableEq Obs]
-    (fineEmit : Action → Fine → Prob Obs) (coarseEmit : Action → Coarse → Prob Obs)
-    (emission : ∀ action state, fineEmit action state = coarseEmit action (view state))
-    {n : ℕ} (policy : ObservationPolicy Obs Action n) (state : Fine) :
+theorem trace_preserved [DecidableEq Fine] {n : ℕ} (policy : ObservationPolicy Obs Action n) (state : Fine) :
     coarsen
         (traceLaw (fun action state => joint (fineKernel action state) (fineEmit action))
           policy state)
         (fun trace i => (view (trace i).1, (trace i).2)) =
       traceLaw (fun action state => joint (coarseKernel action state) (coarseEmit action))
         policy (view state) := by
-  induction n generalizing state with
-  | zero =>
-      conv_lhs => rw [traceLaw]
-      conv_rhs => rw [traceLaw]
-      rw [coarsen_dirac]
-      congr 1
-      funext i
-      exact i.elim0
-  | succ n ih =>
-      conv_lhs => rw [traceLaw]
-      conv_rhs => rw [traceLaw]
-      rw [coarsen_bind]
-      have kernelRewritten :
-          (fun next : Fine × Obs =>
-            coarsen
-              (coarsen
-                (traceLaw (fun action source => joint (fineKernel action source) (fineEmit action))
-                  (policy.2 next.2) next.1)
-                (fun earlier => Fin.cons next earlier))
-              (fun trace : Fin (n + 1) → Fine × Obs =>
-                fun i => (view (trace i).1, (trace i).2))) =
-            fun next : Fine × Obs =>
-              coarsen
-                (traceLaw
-                  (fun action source => joint (coarseKernel action source) (coarseEmit action))
-                  (policy.2 next.2) (view next.1))
-                (fun earlier => Fin.cons (view next.1, next.2) earlier) := by
-        funext next
-        rw [coarsen_comp]
-        have mapCons :
-            (fun trace : Fin (n + 1) → Fine × Obs => fun i => (view (trace i).1, (trace i).2)) ∘
-                (fun earlier : Fin n → Fine × Obs => Fin.cons next earlier) =
-              (fun earlier : Fin n → Coarse × Obs => Fin.cons (view next.1, next.2) earlier) ∘
-                (fun trace : Fin n → Fine × Obs => fun i => (view (trace i).1, (trace i).2)) := by
-          funext earlier i
-          cases i using Fin.cases with
-          | zero => rfl
-          | succ _ => rfl
-        rw [mapCons, ← coarsen_comp, ih]
-      rw [kernelRewritten]
-      have factored :
-          (fun next : Fine × Obs =>
-            coarsen
-              (traceLaw (fun action source => joint (coarseKernel action source) (coarseEmit action))
-                (policy.2 next.2) (view next.1))
-              (fun earlier => Fin.cons (view next.1, next.2) earlier)) =
-            (fun next : Coarse × Obs =>
-              coarsen
-                (traceLaw
-                  (fun action source => joint (coarseKernel action source) (coarseEmit action))
-                  (policy.2 next.2) next.1)
-                (fun earlier => Fin.cons next earlier)) ∘
-              fun next => (view next.1, next.2) := rfl
-      rw [factored, bind_of_coarsen,
-        transition_emission_compatible view fineKernel coarseKernel transition
-          fineEmit coarseEmit emission policy.1 state]
+  exact traceLaw_coarsen view _ _
+    (transition_emission_compatible view fineKernel coarseKernel transition
+      fineEmit coarseEmit emission) policy state
 
 /-- Expected terminal reward of the execution trace agrees with the preserved policy value. -/
-theorem trace_reward_preserved [DecidableEq Fine] (view : Fine → Coarse)
-    (fineKernel : Action → Fine → Prob Fine) (coarseKernel : Action → Coarse → Prob Coarse)
-    (transition : ∀ action state,
-      coarsen (fineKernel action state) view = coarseKernel action (view state))
-    {Obs : Type*} [Fintype Obs] [DecidableEq Obs]
-    (fineEmit : Action → Fine → Prob Obs) (coarseEmit : Action → Coarse → Prob Obs)
-    (emission : ∀ action state, fineEmit action state = coarseEmit action (view state))
-    (reward : Coarse → ℝ) {n : ℕ} (policy : ObservationPolicy Obs Action n) (state : Fine) :
+theorem trace_reward_preserved [DecidableEq Fine] (reward : Coarse → ℝ) {n : ℕ}
+    (policy : ObservationPolicy Obs Action n) (state : Fine) :
     (∑ trace,
         (traceLaw (fun action state => joint (fineKernel action state) (fineEmit action))
           policy state).1 trace *
@@ -255,16 +158,11 @@ theorem trace_reward_preserved [DecidableEq Fine] (view : Fine → Coarse)
         (traceLaw (fun action state => joint (coarseKernel action state) (coarseEmit action))
           policy (view state)).1 trace *
           reward (traceTerminal (view state) trace) := by
-  have fineReward :=
-    traceLaw_value (fun action state => joint (fineKernel action state) (fineEmit action))
-      (reward ∘ view) policy state
-  have coarseReward :=
-    traceLaw_value (fun action state => joint (coarseKernel action state) (coarseEmit action))
-      reward policy (view state)
-  simp only [Function.comp_apply] at fineReward
-  rw [fineReward, coarseReward]
-  exact policy_preserved view fineKernel coarseKernel transition fineEmit coarseEmit emission
-    reward policy state
+  simpa only [← traceLaw_value, Function.comp_apply] using
+    policy_preserved view fineKernel coarseKernel transition fineEmit coarseEmit emission
+      reward policy state
+
+end Observed
 
 end Supplied
 
@@ -276,27 +174,15 @@ variable {Fine Coarse : Type*} [Fintype Fine] [Fintype Coarse] [DecidableEq Coar
 noncomputable def diagonalCoupling {α : Type*} [Fintype α] [DecidableEq α] (law : Prob α) :
     Coupling law.1 law.1 where
   weight x y := if x = y then law.1 x else 0
-  nonneg x y := by
-    split_ifs
-    · exact law.2.1 x
-    · exact le_rfl
-  sum_right x :=
-    Finset.sum_ite_eq_of_mem Finset.univ x (fun _ => law.1 x) (Finset.mem_univ x)
-  sum_left y :=
-    Finset.sum_ite_eq_of_mem' Finset.univ y (fun x => law.1 x) (Finset.mem_univ y)
+  nonneg x y := by split_ifs <;> simp [law.2.1]
+  sum_right x := by simp
+  sum_left y := by simp
 
 /-- A diagonal cost vanishes when the cost itself vanishes on the diagonal. -/
 theorem diagonalCoupling_cost_diag {α : Type*} [Fintype α] [DecidableEq α]
     (law : Prob α) (m : α → α → ℝ) (diag : ∀ x, m x x = 0) :
     (diagonalCoupling law).cost m = 0 := by
-  unfold Coupling.cost
-  change ∑ x, ∑ y, (if x = y then law.1 x else 0) * m x y = 0
-  refine Finset.sum_eq_zero fun x _ => ?_
-  refine Finset.sum_eq_zero fun y _ => ?_
-  by_cases same : x = y
-  · subst same
-    rw [if_pos rfl, diag x, mul_zero]
-  · rw [if_neg same, zero_mul]
+  simp [Coupling.cost, diagonalCoupling, diag]
 
 /-- The absolute reward cost of the diagonal coupling is zero. -/
 theorem diagonalCoupling_abs_cost {α : Type*} [Fintype α] [DecidableEq α]
@@ -377,34 +263,17 @@ theorem carrier_cost_of_collision (view : Fine → Coarse) (representative : Coa
     (sectionLaw : Function.RightInverse representative view)
     (collision : ∃ s t : Fine, s ≠ t ∧ view s = view t) :
     Fintype.card Coarse < Fintype.card Fine := by
-  rcases collision with ⟨s, t, distinct, sameView⟩
-  have injectiveSection : Function.Injective representative := by
-    intro c d equal
-    have image := congrArg view equal
-    rw [sectionLaw c, sectionLaw d] at image
-    exact image
-  refine Fintype.card_lt_of_injective_not_surjective representative injectiveSection ?_
-  intro surjective
-  obtain ⟨c, hc⟩ := surjective s
-  obtain ⟨d, hd⟩ := surjective t
-  have cView : c = view s := by
-    have image := congrArg view hc
-    rwa [sectionLaw c] at image
-  have dView : d = view t := by
-    have image := congrArg view hd
-    rwa [sectionLaw d] at image
-  apply distinct
-  rw [← hc, ← hd, cView, dView, sameView]
+  apply Fintype.card_lt_of_surjective_not_injective view sectionLaw.surjective
+  rintro injective
+  obtain ⟨s, t, distinct, same⟩ := collision
+  exact distinct (injective same)
 
 /-- A point-mass coupling cannot place its mass on the other point. -/
 theorem point_masses_reject_off_support
     (coupling : Coupling (dirac true).1 (dirac false).1) :
     coupling.weight true true ≠ 1 := by
-  intro placed
-  have bounded := coupling.weight_le_right true true
-  simp [dirac_apply] at bounded
-  rw [placed] at bounded
-  linarith
+  rw [coupling.weight_eq_zero_of_right (y := true) (by simp [dirac_apply]) true]
+  exact zero_ne_one
 
 /-- Two different point masses have reward gap and coupling cost both equal to one. -/
 theorem discrepant_point_mass_gap :
@@ -413,22 +282,7 @@ theorem discrepant_point_mass_gap :
       (Coupling.ofDirac (𝕜 := ℝ) true false).cost
         (fun x y => |(fun bit : Bool => if bit then (1 : ℝ) else 0) x -
           (fun bit : Bool => if bit then (1 : ℝ) else 0) y|) := by
-  have leftValue :
-      (∑ b, (dirac true).1 b * (fun bit : Bool => if bit then (1 : ℝ) else 0) b) = 1 := by
-    rw [expectation_dirac]
-    simp
-  have rightValue :
-      (∑ b, (dirac false).1 b * (fun bit : Bool => if bit then (1 : ℝ) else 0) b) = 0 := by
-    rw [expectation_dirac]
-    simp
-  have costValue :
-      (Coupling.ofDirac (𝕜 := ℝ) true false).cost
-        (fun x y => |(fun bit : Bool => if bit then (1 : ℝ) else 0) x -
-          (fun bit : Bool => if bit then (1 : ℝ) else 0) y|) = 1 := by
-    rw [Coupling.cost_dirac]
-    simp
-  rw [leftValue, rightValue, costValue]
-  norm_num
+  rw [expectation_dirac, expectation_dirac, Coupling.cost_dirac]
 
 end CouplingBounds
 
@@ -707,14 +561,8 @@ theorem unsupported_prior_expansion :
     coarsen (bind (dirac (true, false)) (redundantFine ())) redundantView ≠
       bind (dirac false) (redundantCoarse ()) := by
   intro same
-  have leftLaw :
-      coarsen (bind (dirac (true, false)) (redundantFine ())) redundantView = dirac false := by
-    rw [bind_dirac, redundantFine, coarsen_dirac, redundantView, Bool.not_true]
-  have rightLaw : bind (dirac false) (redundantCoarse ()) = dirac true := by
-    rw [bind_dirac, redundantCoarse, Bool.not_false]
-  rw [leftLaw, rightLaw] at same
   have mass := congrArg (fun law : Prob Bool => law.1 false) same
-  simp [dirac_apply] at mass
+  simp [bind_dirac, redundantFine, redundantCoarse, coarsen_dirac, redundantView, dirac_apply] at mass
 
 /-- A likelihood supported on the state the flip has left. -/
 def missedFlag (flag : Bool) (state : Bool × Bool) : ℝ :=

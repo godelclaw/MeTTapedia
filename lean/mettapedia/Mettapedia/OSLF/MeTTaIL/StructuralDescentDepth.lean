@@ -33,10 +33,31 @@ def elementsDepth {Choice : Type} : List (Nat × Pattern × List (Event Choice))
 termination_by elements => sizeOf elements
 end
 
+/- Immediate child sources retain the order of their original events.
+Quantifier bodies belong to the current firing; a child's own history belongs
+to its recursive firing and is not included again here. -/
+mutual
+def eventChildSources {Choice : Type} : Event Choice → List Pattern
+  | .query _ _ _ _ | .freshness _ _ _ _ => []
+  | .child _ _ _ _ source _ _ _ _ _ _ => [source]
+  | .quantified _ _ _ elements => elementsChildSources elements
+termination_by event => sizeOf event
+
+def eventsChildSources {Choice : Type} : List (Event Choice) → List Pattern
+  | [] => []
+  | event :: events => eventChildSources event ++ eventsChildSources events
+termination_by events => sizeOf events
+
+def elementsChildSources {Choice : Type} : List (Nat × Pattern × List (Event Choice)) → List Pattern
+  | [] => []
+  | (_, _, history) :: elements => eventsChildSources history ++ elementsChildSources elements
+termination_by elements => sizeOf elements
+end
+
 namespace Execution
 
-def RootAnswer.requiredDepth {environment : Environment} {bound : List TypeExpr}
-    {type : TypeExpr} {source : Pattern} (answer : RootAnswer environment bound type source) : Nat :=
+def RootAnswer.requiredDepth {matcher : MatchingExecution} {environment : Environment} {bound : List TypeExpr}
+    {type : TypeExpr} {source : Pattern} (answer : RootAnswer environment bound type source matcher) : Nat :=
   1 + eventsDepth answer.history
 
 def OracleCompleteAt (environment : Environment) (oracle : Oracle environment) (depth : Nat) : Prop :=

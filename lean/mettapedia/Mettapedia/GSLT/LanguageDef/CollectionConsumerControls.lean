@@ -1,3 +1,5 @@
+import Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+import Mettapedia.OSLF.MeTTaIL.CollectionOccurrencePublication
 import Mettapedia.GSLT.LanguageDef.CollectionConsumers
 import Mettapedia.OSLF.MeTTaIL.CollectionMatcherBackend
 import Mettapedia.OSLF.MeTTaIL.CollectionRootSearch
@@ -876,3 +878,495 @@ theorem produced_source_reaches_C :
 end RootControls
 
 end Mettapedia.GSLT.LanguageDef.CollectionConsumers.Controls
+
+/-! Prefix observations retain their complete committed packets.
+These readouts make no enumeration-completion assertion. -/
+
+namespace Mettapedia.GSLT.LanguageDef.CollectionConsumers.Controls.Observation
+
+open _root_.Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CanonicalBags CollectionOccurrenceBatch CollectionCommittedObservation GeneralPremise
+open Mettapedia.GSLT.LanguageDef.CollectionConsumers
+
+namespace PetriControls
+
+open Mettapedia.GSLT.LanguageDef.CollectionConsumers
+
+def guardedLanguage : LanguageDef :=
+  let first := petri.rewrites[0]' (by cbv)
+  { petri with «rewrites» :=
+    [{ first with «name» := "route-left", premises := [.relationQuery "permit" []] },
+     { first with «name» := "route-right", premises := [.relationQuery "permit" []] }] }
+
+def plan (copies : Nat) : GeneralExecutionAdmission.Plan :=
+  GeneralExecutionAdmission.compile
+    ⟨guardedLanguage, [],
+      { signatures := [⟨"permit", [], []⟩],
+        rows := List.replicate copies ⟨"permit", []⟩ }⟩
+    { sites := .rootOnly, includeDerivedEquations := false }
+
+def source : Pattern := marking [token "A", token "A", token "B"]
+def expected : TypeExpr := .base "Marking"
+
+def finished (copies : Nat) : CollectionOccurrenceMachine.State (plan copies) [] expected source :=
+  CollectionOccurrenceMachine.run 0 120 (CollectionOccurrenceMachine.begin (plan copies) [] expected source)
+
+def check : IO Unit := do
+  let first := finished 1
+  let duplicate := finished 2
+  let none := finished 0
+  let left := retained (plan 1) [] expected first.batch.log
+  let replayed := retained (plan 2) [] expected duplicate.batch.log
+  IO.println s!"raw {left.length} / {replayed.length}; keys {(allocationKeys (plan 1) [] expected first.batch.log).card} / {(allocationKeys (plan 2) [] expected duplicate.batch.log).card}; successorStates {(successorStates (plan 2) [] expected duplicate.batch.log).card}; bag {(allocationBag (plan 2) [] expected duplicate.batch.log).card}"
+  unless left.length == 4 && replayed.length == 8 do
+    throw (IO.userError "actual committed packet count disagrees")
+  unless (allocationKeys (plan 2) [] expected duplicate.batch.log).card == 4 do
+    throw (IO.userError "validation duplicates changed declared occurrence count")
+  unless (successorStates (plan 2) [] expected duplicate.batch.log).card == 1 &&
+      (allocationBag (plan 2) [] expected duplicate.batch.log).card == 4 do
+    throw (IO.userError "fact and derivation aggregation were conflated")
+  unless (retained (plan 0) [] expected none.batch.log).isEmpty do
+    throw (IO.userError "missing premise produced a committed derivation")
+  unless (allocationKeys (plan 1) [] expected first.batch.log) ==
+      allocationKeys (plan 2) [] expected duplicate.batch.log do
+    throw (IO.userError "duplicated validation did not preserve declared keys")
+  let routes := ((retained (plan 2) [] expected duplicate.batch.log).map (fun entry => (allocationKey entry).authoredRule)).eraseDups
+  unless routes.length == 2 do
+    throw (IO.userError "independent authored routes were identified")
+  let allocations := ((retained (plan 2) [] expected duplicate.batch.log).map (fun entry => (allocationKey entry).allocation.trace)).eraseDups
+  unless allocations.length == 2 do
+    throw (IO.userError "equal physical token occurrences were identified")
+  IO.println "CommittedObservationControls: validation replay, route identity, token identity and absent premise passed"
+
+#eval check
+
+end PetriControls
+
+namespace GraphControls
+
+open Mettapedia.GSLT.LanguageDef.CollectionConsumers
+
+def source : Pattern := graph [edge "A" "B", edge "B" "C"]
+def finished := CollectionOccurrenceMachine.run 0 160
+  (CollectionOccurrenceMachine.begin reachabilityPlan [] (.base "Graph") source)
+
+def diamond : Pattern :=
+  graph [edge "A" "B", edge "B" "C", edge "A" "C", edge "C" "C"]
+def finishedDiamond := CollectionOccurrenceMachine.run 0 800
+  (CollectionOccurrenceMachine.begin reachabilityPlan [] (.base "Graph") diamond)
+
+def producedEdge? (key : AllocationKey) : Option Pattern := do
+  let first ← ScopedRuleMatching.lookup key.completed "x"
+  let last ← ScopedRuleMatching.lookup key.completed "z"
+  some (.apply "Edge" [first.body, last.body])
+
+def inferredBag (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) : Multiset Pattern :=
+  (allocationKeys plan [] (.base "Graph") packets).val.filterMap producedEdge?
+
+def inferredFacts (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) : Finset Pattern :=
+  (inferredBag plan packets).toFinset
+
+/-- The root graph observation retains the licensed typed path, but no
+source focus or residual/context payload. This projection is scoped to the
+root graph policy; allocation observations retain the complete site. -/
+structure LogicalSiteShape where
+  address : List Nat
+  bound : List TypeExpr
+  type : TypeExpr
+  typingFrames : List GeneralTypedSites.TypingFrame
+  deriving DecidableEq
+
+def logicalSiteShape (site : GeneralTypedSites.SiteData) : LogicalSiteShape :=
+  ⟨site.address, site.focusBound, site.focusType, site.typingFrames⟩
+
+theorem logicalSiteShape_ignores_payload (site : GeneralTypedSites.SiteData)
+    (focus : Pattern) (context : DerivedContexts.OneHoleContext) :
+    logicalSiteShape {site with focus := focus, context := context} = logicalSiteShape site := rfl
+
+/-- Root transitivity is identified by its non-rest input binding tuple.
+Its rule has no child-step premises; the retained child-history coordinate
+keeps explicit child evidence if a separate profile later authorizes it.
+Allocation-sensitive publication remains available beside this readout. -/
+structure LogicalKey (Choice : Type := GeneralScopedMatchMachine.BagChoice) where
+  selectedRule : Nat
+  authoredRule : Nat
+  siteShape : LogicalSiteShape
+  first : Option RuleBinding.ContextualValue
+  intermediate : Option RuleBinding.ContextualValue
+  last : Option RuleBinding.ContextualValue
+  childHistory : List (GeneralPremise.Event Choice)
+  deriving DecidableEq
+
+def logicalKey {Choice : Type} (committed : Committed Choice) : LogicalKey Choice :=
+  let packet := committed.1
+  let receipt := committed.2
+  ⟨packet.job.origin.ordinal, packet.job.origin.declaration.declarationIndex, logicalSiteShape packet.job.origin.site,
+    (ScopedRuleMatching.lookup receipt.completed "x").map canonValue,
+    (ScopedRuleMatching.lookup receipt.completed "y").map canonValue,
+    (ScopedRuleMatching.lookup receipt.completed "z").map canonValue,
+    validationHistoryReadout receipt.premiseHistory .factValidation⟩
+
+def logicalEdge? {Choice : Type} (key : LogicalKey Choice) : Option Pattern := do
+  let first ← key.first
+  let last ← key.last
+  some (.apply "Edge" [first.body, last.body])
+
+def logicalKeys (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) : Finset LogicalKey :=
+  declaredKeys logicalKey plan [] (.base "Graph") packets
+
+def logicalBag (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) : Multiset Pattern :=
+  (logicalKeys plan packets).val.filterMap logicalEdge?
+
+def logicalFacts (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) : Finset Pattern :=
+  (logicalBag plan packets).toFinset
+
+theorem logicalKey_ignores_allocation {Choice : Type} (packet : Publication Choice) (receipt : GeneralRuleJobs.Receipt Choice)
+    (allocation : RecursiveCollectionMachine.Answer) (variant : CollectionSelection.SiteVariant)
+    (trace : List Choice) :
+    logicalKey (⟨{packet.job with variant := variant}, allocation, packet.prepared, packet.outcome⟩,
+        {receipt with matcherTrace := trace}) =
+      logicalKey (packet, receipt) := rfl
+
+theorem logicalKey_ignores_source_payload {Choice : Type} (packet : Publication Choice) (receipt : GeneralRuleJobs.Receipt Choice)
+    (focus : Pattern) (context : DerivedContexts.OneHoleContext) :
+    let site := {packet.job.origin.site with focus := focus, context := context}
+    let origin := {packet.job.origin with site := site}
+    logicalKey (⟨⟨origin, packet.job.variant⟩, packet.answer, packet.prepared, packet.outcome⟩, receipt) =
+      logicalKey (packet, receipt) := rfl
+
+theorem logicalKey_canonical_source_presentation {Choice : Type} (packet : Publication Choice) (receipt : GeneralRuleJobs.Receipt Choice) :
+    let site := {packet.job.origin.site with focus := canon packet.job.origin.site.focus}
+    let origin := {packet.job.origin with site := site}
+    logicalKey (⟨⟨origin, packet.job.variant⟩, packet.answer, packet.prepared, packet.outcome⟩, receipt) =
+      logicalKey (packet, receipt) := rfl
+
+theorem logicalKey_ignores_query_validation {Choice : Type} (packet : Publication Choice) (receipt : GeneralRuleJobs.Receipt Choice)
+    (p q row : Nat) (origins : List (Nat × List Choice)) :
+    logicalKey (packet, {receipt with premiseHistory := [.query p q row origins]}) =
+      logicalKey (packet, {receipt with premiseHistory := []}) := rfl
+
+theorem logicalKey_erases_query_in_history {Choice : Type} (packet : Publication Choice)
+    (receipt : GeneralRuleJobs.Receipt Choice) (before after : List (GeneralPremise.Event Choice))
+    (premise quantifier row : Nat) (origins : List (Nat × List Choice)) :
+    logicalKey (packet, {receipt with premiseHistory := before ++ .query premise quantifier row origins :: after}) =
+      logicalKey (packet, {receipt with premiseHistory := before ++ after}) := by
+  simp only [logicalKey, query_administration_erases]
+
+theorem logicalKey_erases_freshness_in_history {Choice : Type} (packet : Publication Choice)
+    (receipt : GeneralRuleJobs.Receipt Choice) (before after : List (GeneralPremise.Event Choice))
+    (premise quantifier : Nat) (name : String) (subject : Pattern) :
+    logicalKey (packet, {receipt with premiseHistory := before ++ .freshness premise quantifier name subject :: after}) =
+      logicalKey (packet, {receipt with premiseHistory := before ++ after}) := by
+  simp only [logicalKey, freshness_administration_erases]
+
+theorem logicalBag_ordered_presentation (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) :
+    ((orderedCommittedKeys logicalKey (retained plan [] (.base "Graph") packets)).filterMap logicalEdge? :
+      Multiset Pattern) = logicalBag plan packets :=
+  orderedCommittedKeys_partial_bag logicalKey logicalEdge? _
+
+theorem logicalFacts_ordered_presentation (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) :
+    ((orderedCommittedKeys logicalKey (retained plan [] (.base "Graph") packets)).filterMap logicalEdge?).toFinset =
+      logicalFacts plan packets :=
+  orderedCommittedKeys_partial_facts logicalKey logicalEdge? _
+
+theorem logicalKey_nonrest_ext {Choice : Type} {first second : Committed Choice}
+    (rule : first.1.job.origin.ordinal = second.1.job.origin.ordinal)
+    (authored : first.1.job.origin.declaration.declarationIndex =
+      second.1.job.origin.declaration.declarationIndex)
+    (site : logicalSiteShape first.1.job.origin.site = logicalSiteShape second.1.job.origin.site)
+    (x : (ScopedRuleMatching.lookup first.2.completed "x").map canonValue =
+      (ScopedRuleMatching.lookup second.2.completed "x").map canonValue)
+    (y : (ScopedRuleMatching.lookup first.2.completed "y").map canonValue =
+      (ScopedRuleMatching.lookup second.2.completed "y").map canonValue)
+    (z : (ScopedRuleMatching.lookup first.2.completed "z").map canonValue =
+      (ScopedRuleMatching.lookup second.2.completed "z").map canonValue)
+    (children : validationHistoryReadout first.2.premiseHistory .factValidation =
+      validationHistoryReadout second.2.premiseHistory .factValidation) :
+    logicalKey first = logicalKey second := by
+  simp only [logicalKey, LogicalKey.mk.injEq]
+  exact ⟨rule, authored, site, x, y, z, children⟩
+
+theorem intermediate_distinguishes_route {Choice : Type} {first second : Committed Choice}
+    (different : (ScopedRuleMatching.lookup first.2.completed "y").map canonValue ≠
+      (ScopedRuleMatching.lookup second.2.completed "y").map canonValue) :
+    logicalKey first ≠ logicalKey second := by
+  intro same
+  exact different (congrArg LogicalKey.intermediate same)
+
+theorem logical_replay_invariant (plan : GeneralExecutionAdmission.Plan)
+    (earlier replay : List Publication) (already : logicalKeys plan replay ⊆ logicalKeys plan earlier) :
+    logicalBag plan (earlier ++ replay) = logicalBag plan earlier ∧
+      logicalFacts plan (earlier ++ replay) = logicalFacts plan earlier := by
+  have same : logicalKeys plan (earlier ++ replay) = logicalKeys plan earlier := by
+    unfold logicalKeys at already ⊢
+    rw [declaredKeys_append, Finset.union_eq_left.mpr already]
+  simp only [logicalBag, logicalFacts, same, and_self]
+
+theorem logical_balanced_observations {plan : GeneralExecutionAdmission.Plan} {source : Pattern}
+    {state : State plan [] (.base "Graph") source} (balanced : state.Balanced) :
+    logicalBag plan state.log = logicalBag plan (state.frames.flatMap Frame.publication) ∧
+      logicalFacts plan state.log = logicalFacts plan (state.frames.flatMap Frame.publication) := by
+  have same : logicalKeys plan state.log = logicalKeys plan (state.frames.flatMap Frame.publication) :=
+    declaredKeys_perm logicalKey plan [] (.base "Graph") balanced
+  simp only [logicalBag, logicalFacts, same, and_self]
+
+def twoRouteLanguage : LanguageDef :=
+  { reachability with «terms» := reachability.terms ++
+    [{ label := "D", category := "Node", params := [], syntaxPattern := [] }] }
+
+def twoRoutePlan : GeneralExecutionAdmission.Plan :=
+  GeneralExecutionAdmission.compile (snapshot twoRouteLanguage) permissions
+
+def twoRouteSource : Pattern := graph
+  [edge "A" "B", edge "B" "D", edge "A" "C", edge "C" "D"]
+
+def twoRouteFinished := CollectionOccurrenceMachine.run 0 800
+  (CollectionOccurrenceMachine.begin twoRoutePlan [] (.base "Graph") twoRouteSource)
+
+def irrelevantExtensionSource : Pattern := graph
+  [edge "A" "B", edge "B" "D", edge "A" "C", edge "C" "D", edge "D" "D"]
+
+def irrelevantExtensionFinished := CollectionOccurrenceMachine.run 0 1600
+  (CollectionOccurrenceMachine.begin twoRoutePlan [] (.base "Graph") irrelevantExtensionSource)
+
+def reorderedDuplicateSource : Pattern := graph
+  [edge "C" "D", edge "A" "B", edge "A" "C", edge "B" "D", edge "A" "B"]
+
+def reorderedDuplicateFinished := CollectionOccurrenceMachine.run 0 800
+  (CollectionOccurrenceMachine.begin twoRoutePlan [] (.base "Graph") reorderedDuplicateSource)
+
+def canonicalSourceFinished := CollectionOccurrenceMachine.run 0 800
+  (CollectionOccurrenceMachine.begin twoRoutePlan [] (.base "Graph") (canon twoRouteSource))
+
+def aToDKeys (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) : Finset LogicalKey :=
+  (logicalKeys plan packets).filter fun key => logicalEdge? key = some (edge "A" "D")
+
+/-- A separating readout that deliberately retains the forbidden source
+payload, used to check that the extension control detects that regression. -/
+def sourceSensitiveAToDKeys (plan : GeneralExecutionAdmission.Plan) (packets : List Publication) :
+    Finset (GeneralTypedSites.SiteData × LogicalKey) :=
+  ((retained plan [] (.base "Graph") packets).filter
+    (fun committed => logicalEdge? (logicalKey committed) == some (edge "A" "D"))).map
+      (fun committed => (committed.1.job.origin.site, logicalKey committed)) |>.toFinset
+
+def guardedTwoRouteLanguage : LanguageDef :=
+  {twoRouteLanguage with «rewrites» := twoRouteLanguage.rewrites.map fun rule =>
+    {rule with premises := [.relationQuery "permit" []]}}
+
+def guardedTwoRoutePlan (copies : Nat) : GeneralExecutionAdmission.Plan :=
+  GeneralExecutionAdmission.compile
+    ⟨guardedTwoRouteLanguage, [],
+      {signatures := [⟨"permit", [], []⟩],
+        rows := List.replicate copies ⟨"permit", []⟩}⟩ permissions
+
+def guardedTwoRouteFinished (copies : Nat) := CollectionOccurrenceMachine.run 0 800
+  (CollectionOccurrenceMachine.begin (guardedTwoRoutePlan copies) [] (.base "Graph") twoRouteSource)
+
+def actualRule : RewriteRule := (reachabilityPlan.rules[0]'(by cbv)).rule
+def actualSpec : RuleBindingSpec := (reachabilityPlan.rules[0]'(by cbv)).binding.spec
+
+def thirdEdge : Pattern := .apply "Edge" [.fvar "x", .fvar "z"]
+def firstEdge : Pattern := .apply "Edge" [.fvar "x", .fvar "y"]
+def secondEdge : Pattern := .apply "Edge" [.fvar "y", .fvar "z"]
+
+theorem actual_left : actualRule.left =
+    .collection .hashSet [firstEdge, secondEdge] (some "rest") := by cbv
+
+theorem actual_right : actualRule.right =
+    .collection .hashSet [firstEdge, secondEdge, thirdEdge] (some "rest") := by cbv
+
+theorem instantiated_collection {operation : Pattern → Pattern → Pattern}
+    {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
+    {assignment : ScopedRuleMatching.Assignment} {kind : CollType} {schemas : List Pattern}
+    {rest : String} {target : Pattern}
+    (produced : ScopedRuleMatching.instantiateWith? operation rule spec ambient .right [] 0 assignment
+      (.collection kind schemas (some rest)) = some target) :
+    ∃ explicit residual,
+      ScopedRuleMatching.instantiateArgsWith? operation rule spec ambient .right [] 0 assignment 0 schemas =
+        some explicit ∧ target = .collection kind (explicit ++ residual) none := by
+  simp only [ScopedRuleMatching.instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at produced
+  obtain ⟨explicit, built, value, found, arguments, occurrence, projected, interpreted, produced⟩ := produced
+  cases projected with
+  | collection actual residual rest =>
+      cases rest with
+      | none =>
+          simp only at produced
+          split_ifs at produced
+          · exact ⟨explicit, residual, built, (Option.some.inj produced).symm⟩
+      | some _ => cases produced
+  | _ => cases produced
+
+theorem instantiated_three_member {operation : Pattern → Pattern → Pattern}
+    {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
+    {assignment : ScopedRuleMatching.Assignment} {first second third : Pattern} {outputs : List Pattern}
+    (produced : ScopedRuleMatching.instantiateArgsWith? operation rule spec ambient .right [] 0 assignment 0
+      [first, second, third] = some outputs) :
+    ∃ value, ScopedRuleMatching.instantiateWith? operation rule spec ambient .right [2] 0 assignment third =
+      some value ∧ value ∈ outputs := by
+  simp only [ScopedRuleMatching.instantiateArgsWith?, Option.bind_eq_bind, Option.bind_eq_some_iff,
+    Option.bind_some, Option.some.injEq, List.nil_append] at produced
+  obtain ⟨one, oneMade, tail, tailMade, outputEq⟩ := produced
+  obtain ⟨two, twoMade, last, lastMade, tailEq⟩ := tailMade
+  obtain ⟨three, threeMade, lastEq⟩ := lastMade
+  cases outputEq
+  cases tailEq
+  cases lastEq
+  exact ⟨three, threeMade, by simp⟩
+
+theorem third_edge_readout {operation : Pattern → Pattern → Pattern} {ambient : Nat}
+    {assignment : ScopedRuleMatching.Assignment} {target : Pattern}
+    (produced : ScopedRuleMatching.instantiateWith? operation actualRule actualSpec ambient .right [2] 0
+      assignment thirdEdge = some target) :
+    ∃ first last,
+      ScopedRuleMatching.lookup assignment "x" = some first ∧
+      ScopedRuleMatching.lookup assignment "z" = some last ∧
+      target = .apply "Edge" [first.body, last.body] := by
+  have xArguments : RuleBinding.arguments? actualRule actualSpec "x" .right [2, 0] = some [] := by cbv
+  have zArguments : RuleBinding.arguments? actualRule actualSpec "z" .right [2, 1] = some [] := by cbv
+  simp only [thirdEdge, ScopedRuleMatching.instantiateWith?, ScopedRuleMatching.instantiateArgsWith?,
+    List.cons_append, List.nil_append, xArguments, zArguments,
+    Option.bind_eq_bind, Option.bind_eq_some_iff, Option.bind_some, Option.some.injEq] at produced
+  obtain ⟨arguments, built, outputEq⟩ := produced
+  obtain ⟨firstBody, firstMade, tail, tailMade, argumentsEq⟩ := built
+  obtain ⟨first, firstFound, firstRead⟩ := firstMade
+  obtain ⟨lastBody, lastMade, tailEq⟩ := tailMade
+  obtain ⟨last, lastFound, lastRead⟩ := lastMade
+  have firstEq := (ConditionalEquationExecution.instantiate_root_readout first ambient firstBody firstRead).2
+  have lastEq := (ConditionalEquationExecution.instantiate_root_readout last ambient lastBody lastRead).2
+  cases outputEq
+  cases argumentsEq
+  cases tailEq
+  exact ⟨first, last, firstFound, lastFound, by rw [firstEq, lastEq]⟩
+
+theorem logical_edge_is_authored_output {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} {source : Pattern} {packet : Publication} {receipt : GeneralRuleJobs.Receipt}
+    (valid : receipt.Valid plan bound expected source)
+    (selected : receipt.job.declaration.rule = actualRule)
+    (specified : receipt.job.declaration.binding.spec = actualSpec)
+    {fact : Pattern} (read : logicalEdge? (logicalKey (packet, receipt)) = some fact) :
+    ∃ items, receipt.localTarget = .collection .hashSet items none ∧ fact ∈ items.map canon := by
+  have reduced := (GeneralRuleJobs.receipt_root_readout valid).2.2.2.1
+  rw [selected, specified, ScopedRuleMatching.reductWith?, actual_right] at reduced
+  obtain ⟨explicit, residual, instantiated, target⟩ := instantiated_collection reduced
+  obtain ⟨third, thirdMade, member⟩ := instantiated_three_member instantiated
+  obtain ⟨first, last, firstFound, lastFound, thirdEq⟩ := third_edge_readout thirdMade
+  have inferred : fact = canon third := by
+    simp only [logicalKey, logicalEdge?, firstFound, lastFound, Option.map_some, Option.bind_some,
+      Option.bind_eq_bind, Option.some.injEq, CanonicalBags.canonValue] at read
+    rw [← read, thirdEq, canon_apply]
+    rfl
+  exact ⟨explicit ++ residual, target, by
+    rw [inferred]
+    exact List.mem_map_of_mem (List.mem_append_left residual member)⟩
+
+theorem logical_key_determines_fact {Choice : Type} {first second : Committed Choice}
+    (same : logicalKey first = logicalKey second) :
+    logicalEdge? (logicalKey first) = logicalEdge? (logicalKey second) :=
+  congrArg logicalEdge? same
+
+theorem two_route_selected {source : Pattern} {receipt : GeneralRuleJobs.Receipt}
+    (valid : receipt.Valid twoRoutePlan [] (.base "Graph") source) :
+    receipt.job.declaration.rule = actualRule ∧ receipt.job.declaration.binding.spec = actualSpec := by
+  have singleton : twoRoutePlan.rules = [reachabilityPlan.rules[0]'(by cbv)] := by cbv
+  have member := List.fst_mem_of_mem_zipIdx valid.1.1
+  rw [singleton, List.mem_singleton] at member
+  change receipt.job.declaration = reachabilityPlan.rules[0]'(by cbv) at member
+  rw [member]
+  exact ⟨rfl, rfl⟩
+
+/-- Each projected edge comes from the actual source rule match, over a
+presentation equivalent to the caller source, and is present in that rule's
+actual checked output. The inference map is not an assumed certificate. -/
+theorem retained_logical_edge_licensed {source : Pattern}
+    {state : State twoRoutePlan [] (.base "Graph") source} (balanced : state.Balanced)
+    {committed : Committed} (published : committed ∈ retained twoRoutePlan [] (.base "Graph") state.log)
+    {fact : Pattern} (read : logicalEdge? (logicalKey committed) = some fact) :
+    Same source (committed.1.job.presentedSource committed.1.prepared) ∧
+      GeneralScopedMatch.Matches actualRule actualSpec committed.2.job.site.focusBound.length
+        .left [] 0 [] (.collection .hashSet [firstEdge, secondEdge] (some "rest"))
+          committed.2.job.site.focus committed.2.captured ∧
+      ∃ items, committed.2.localTarget = .collection .hashSet items none ∧ fact ∈ items.map canon := by
+  have valid := retained_receipt_valid balanced published
+  have selected := two_route_selected valid
+  have matched := GeneralRuleJobs.receipt_source_matching valid
+  rw [selected.1, selected.2, actual_left] at matched
+  exact ⟨retained_source_same balanced published, matched,
+    logical_edge_is_authored_output valid selected.1 selected.2 read⟩
+
+def check : IO Unit := do
+  let raw := retained reachabilityPlan [] (.base "Graph") finished.batch.log
+  unless !raw.isEmpty do throw (IO.userError "authored graph module published no transitive inference")
+  unless (successorStates reachabilityPlan [] (.base "Graph") finished.batch.log).card == 1 do
+    throw (IO.userError "authored transitive graph observed more than one conclusion state")
+  unless (allocationBag reachabilityPlan [] (.base "Graph") finished.batch.log).card > 1 do
+    throw (IO.userError "set residual allocation occurrences were accidentally deduplicated")
+  for committed in raw do
+    unless CanonicalBags.canon committed.2.target ==
+        CanonicalBags.canon (graph [edge "A" "B", edge "B" "C", edge "A" "C"]) do
+      throw (IO.userError "authored graph transitivity produced a wrong conclusion")
+  let cyclic := retained reachabilityPlan [] (.base "Graph") finishedDiamond.batch.log
+  unless !cyclic.isEmpty do throw (IO.userError "cyclic graph consumer produced no inference")
+  unless (inferredFacts reachabilityPlan finished.batch.log) == {edge "A" "C"} do
+    throw (IO.userError "authored graph logical-edge readout produced a wrong fact")
+  unless decide (edge "C" "A" ∉ inferredFacts reachabilityPlan finished.batch.log) do
+    throw (IO.userError "authored graph inferred a reverse edge")
+  let routes := retained twoRoutePlan [] (.base "Graph") twoRouteFinished.batch.log
+  unless (inferredFacts twoRoutePlan twoRouteFinished.batch.log) == {edge "A" "D"} do
+    throw (IO.userError "two-route graph did not infer exactly A-to-D")
+  let intermediates := (routes.filterMap fun entry =>
+    (ScopedRuleMatching.lookup entry.2.completed "y").map (·.body)).eraseDups
+  unless intermediates.length == 2 do
+    throw (IO.userError "two independent graph routes were identified")
+  unless (inferredBag twoRoutePlan twoRouteFinished.batch.log).card > 1 do
+    throw (IO.userError "inferred fact set replaced the derivation bag")
+  unless (logicalKeys twoRoutePlan twoRouteFinished.batch.log).card == 2 &&
+      (logicalBag twoRoutePlan twoRouteFinished.batch.log).card == 2 &&
+      logicalFacts twoRoutePlan twoRouteFinished.batch.log == {edge "A" "D"} do
+    throw (IO.userError "set residual presentations manufactured logical graph derivations")
+  let once := (guardedTwoRouteFinished 1).batch.log
+  let duplicate := (guardedTwoRouteFinished 2).batch.log
+  unless (retained (guardedTwoRoutePlan 1) [] (.base "Graph") once).length == 8 &&
+      (retained (guardedTwoRoutePlan 2) [] (.base "Graph") duplicate).length == 16 do
+    throw (IO.userError "guarded graph raw validation publications changed")
+  unless logicalKeys (guardedTwoRoutePlan 1) once == logicalKeys (guardedTwoRoutePlan 2) duplicate &&
+      logicalKeys (guardedTwoRoutePlan 1) once == logicalKeys twoRoutePlan twoRouteFinished.batch.log do
+    throw (IO.userError "provider validation manufactured logical graph derivations")
+  unless (logicalBag (guardedTwoRoutePlan 2) duplicate).card == 2 &&
+      logicalFacts (guardedTwoRoutePlan 2) duplicate == {edge "A" "D"} do
+    throw (IO.userError "logical graph routes and fact aggregation were conflated")
+  let originalKeys := aToDKeys twoRoutePlan twoRouteFinished.batch.log
+  let extendedKeys := aToDKeys twoRoutePlan irrelevantExtensionFinished.batch.log
+  unless originalKeys.card == 2 && originalKeys == extendedKeys do
+    throw (IO.userError "Unrelated graph facts manufactured a new logical inference key")
+  unless aToDKeys twoRoutePlan reorderedDuplicateFinished.batch.log == originalKeys &&
+      aToDKeys twoRoutePlan canonicalSourceFinished.batch.log == originalKeys do
+    throw (IO.userError "Equivalent set presentations manufactured logical inference keys")
+  unless logicalFacts twoRoutePlan reorderedDuplicateFinished.batch.log == {edge "A" "D"} do
+    throw (IO.userError "Equivalent graph presentation changed inferred facts")
+  unless (sourceSensitiveAToDKeys twoRoutePlan twoRouteFinished.batch.log ∪
+      sourceSensitiveAToDKeys twoRoutePlan irrelevantExtensionFinished.batch.log).card == 4 do
+    throw (IO.userError "Source-payload identity negative no longer separates the two presentations")
+  IO.println "GraphLogicalIdentityControls: same 2 A-to-D keys under unrelated fact extension, reordered duplicates and canonical presentation; distinct intermediate remains distinct"
+  IO.println s!"AuthoredGraphObservationControls: {raw.length} committed allocations, {(successorStates reachabilityPlan [] (.base "Graph") finished.batch.log).card} fact-state, {(allocationBag reachabilityPlan [] (.base "Graph") finished.batch.log).card} occurrence derivations; cyclic packets {cyclic.length}"
+  IO.println s!"KnowledgeGraphObservationControls: {intermediates.length} independent routes, {routes.length} retained allocations -> {(inferredFacts twoRoutePlan twoRouteFinished.batch.log).card} inferred fact / {(inferredBag twoRoutePlan twoRouteFinished.batch.log).card} occurrence derivations"
+  IO.println "LogicalKnowledgeGraphControls: 8/16 allocation/validation packets -> 2 logical routes -> 1 inferred fact; consume/retain and duplicate validation do not multiply routes"
+
+#eval check
+
+#print axioms logicalKey_ignores_allocation
+#print axioms logicalKey_ignores_source_payload
+#print axioms logicalKey_canonical_source_presentation
+#print axioms logicalKey_ignores_query_validation
+#print axioms logicalKey_erases_query_in_history
+#print axioms logicalKey_erases_freshness_in_history
+#print axioms logicalKey_nonrest_ext
+#print axioms intermediate_distinguishes_route
+#print axioms logical_key_determines_fact
+#print axioms logicalBag_ordered_presentation
+#print axioms logicalFacts_ordered_presentation
+#print axioms retained_logical_edge_licensed
+
+end GraphControls
+
+end Mettapedia.GSLT.LanguageDef.CollectionConsumers.Controls.Observation

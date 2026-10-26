@@ -121,4 +121,63 @@ theorem duplicate_occurrences_distinct (signature : Signature sorts terms)
 #print axioms proofContext
 #print axioms hypothesis
 #print axioms duplicate_occurrences_distinct
+theorem antecedent_varsBelow (references : Symbol → Nat) (bound : Nat) (formation : Preterm)
+    (formationBound : Preterm.VarsBelow bound formation) (assumptions : List Preterm)
+    (bounded : ∀ proposition ∈ assumptions, Preterm.VarsBelow bound proposition) :
+    Preterm.VarsBelow bound (antecedent references formation assumptions) := by
+  induction assumptions with
+  | nil => exact formationBound
+  | cons first rest ih =>
+      exact ⟨⟨trivial, ih (fun proposition member => bounded proposition (List.mem_cons_of_mem _ member))⟩,
+        bounded first List.mem_cons_self⟩
+
+theorem formationProjection_varsBelow (signature : Signature sorts terms)
+    (rules : Rules theorems signature.symbol signature.ids.wff) (bound : Nat) (formation : Preterm)
+    (formationSorted : Preterm.HasType terms context formation [] signature.ids.wff)
+    (formationBound : Preterm.VarsBelow bound formation) (assumptions : List Preterm)
+    (sorted : ∀ proposition ∈ assumptions, Preterm.HasType terms context proposition [] signature.ids.wff)
+    (bounded : ∀ proposition ∈ assumptions, Preterm.VarsBelow bound proposition) :
+    (formationProjection (definitions := definitions) (hypotheses := hypotheses)
+      signature rules formation formationSorted assumptions sorted).val.VarsBelow bound := by
+  induction assumptions with
+  | nil => exact identity_varsBelow signature rules bound formation formationSorted formationBound
+  | cons first rest ih =>
+      simp only [formationProjection]
+      apply weaken_varsBelow signature rules bound
+      · exact antecedent_varsBelow signature.symbol bound formation formationBound rest
+          (fun proposition member => bounded proposition (List.mem_cons_of_mem _ member))
+      · exact bounded first List.mem_cons_self
+      · exact formationBound
+      · exact ih (fun proposition member => sorted proposition (List.mem_cons_of_mem _ member))
+          (fun proposition member => bounded proposition (List.mem_cons_of_mem _ member))
+
+theorem hypothesis_varsBelow (signature : Signature sorts terms)
+    (rules : Rules theorems signature.symbol signature.ids.wff) (bound : Nat) (formation : Preterm)
+    (formationSorted : Preterm.HasType terms context formation [] signature.ids.wff)
+    (formationBound : Preterm.VarsBelow bound formation) (assumptions : List Preterm)
+    (sorted : ∀ proposition ∈ assumptions, Preterm.HasType terms context proposition [] signature.ids.wff)
+    (bounded : ∀ proposition ∈ assumptions, Preterm.VarsBelow bound proposition)
+    (occurrence : Fin assumptions.length) :
+    (hypothesis (definitions := definitions) (hypotheses := hypotheses)
+      signature rules formation formationSorted assumptions sorted occurrence).val.VarsBelow bound := by
+  induction assumptions with
+  | nil => nomatch occurrence
+  | cons first rest ih =>
+      have tailBound : ∀ proposition ∈ rest, Preterm.VarsBelow bound proposition :=
+        fun proposition member => bounded proposition (List.mem_cons_of_mem _ member)
+      have contextBound := antecedent_varsBelow signature.symbol bound formation formationBound rest tailBound
+      rcases occurrence with ⟨index, smaller⟩
+      cases index with
+      | zero =>
+          exact right_varsBelow signature rules bound _ _ _ _ contextBound (bounded first List.mem_cons_self)
+      | succ index =>
+          simp only [hypothesis]
+          apply weaken_varsBelow signature rules bound
+          · exact contextBound
+          · exact bounded first List.mem_cons_self
+          · exact tailBound _ (List.get_mem _ _)
+          · exact ih (fun proposition member => sorted proposition (List.mem_cons_of_mem _ member)) tailBound _
+
+#print axioms hypothesis_varsBelow
+
 end Mettapedia.Languages.MM0.HOLKernelAssumptions

@@ -224,3 +224,129 @@ theorem fixed_point_schema_functionExtensionalityFree (source layer : Ty Base) :
 #print axioms fixed_point_schema
 #print axioms fixed_point_schema_functionExtensionalityFree
 end Mettapedia.Logic.HOL.PolynomialPredicate
+
+/-! Constructor and child relations can be defined from typed operations and
+explicit layer/position guards. These lambda bodies add no constructor law
+and require no relation constant as an additional primitive. -/
+
+namespace Mettapedia.Logic.HOL.PolynomialPredicate.Relations
+universe u v
+variable {Base : Type u} {Const : Ty Base → Type v} {Γ : Ctx Base}
+variable {α β ι : Ty Base}
+
+def constructorBody (valid : Term Const Γ (β ⇒ .prop)) (build : Term Const Γ (β ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) : Formula Const Γ :=
+  .and (.app valid layer) (.eq point (.app build layer))
+
+def constructorRelation (valid : Term Const Γ (β ⇒ .prop)) (build : Term Const Γ (β ⇒ α)) :
+    Term Const Γ (β ⇒ α ⇒ .prop) :=
+  .lam (.lam (constructorBody (weaken (weaken valid)) (weaken (weaken build))
+    (.var (.vs .vz)) (.var .vz)))
+
+def childBody (valid : Term Const Γ (β ⇒ ι ⇒ .prop)) (childAt : Term Const Γ (β ⇒ ι ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) : Formula Const Γ :=
+  .ex (.and (.app (.app (weaken valid) (weaken layer)) (.var .vz))
+    (.eq (weaken point) (.app (.app (weaken childAt) (weaken layer)) (.var .vz))))
+
+def childRelation (valid : Term Const Γ (β ⇒ ι ⇒ .prop)) (childAt : Term Const Γ (β ⇒ ι ⇒ α)) :
+    Term Const Γ (β ⇒ α ⇒ .prop) :=
+  .lam (.lam (childBody (weaken (weaken valid)) (weaken (weaken childAt))
+    (.var (.vs .vz)) (.var .vz)))
+
+@[simp] theorem rename_constructorBody {Ξ : Ctx Base} (ρ : Rename Base Γ Ξ)
+    (valid : Term Const Γ (β ⇒ .prop)) (build : Term Const Γ (β ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    rename ρ (constructorBody valid build layer point) = constructorBody
+      (rename ρ valid) (rename ρ build) (rename ρ layer) (rename ρ point) := rfl
+
+@[simp] theorem rename_childBody {Ξ : Ctx Base} (ρ : Rename Base Γ Ξ)
+    (valid : Term Const Γ (β ⇒ ι ⇒ .prop)) (childAt : Term Const Γ (β ⇒ ι ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    rename ρ (childBody valid childAt layer point) = childBody
+      (rename ρ valid) (rename ρ childAt) (rename ρ layer) (rename ρ point) := by
+  simp [childBody, rename, Rename.lift]
+
+@[simp] theorem subst_constructorBody {Ξ : Ctx Base} (θ : Subst Const Γ Ξ)
+    (valid : Term Const Γ (β ⇒ .prop)) (build : Term Const Γ (β ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    subst θ (constructorBody valid build layer point) = constructorBody
+      (subst θ valid) (subst θ build) (subst θ layer) (subst θ point) := rfl
+
+@[simp] theorem subst_childBody {Ξ : Ctx Base} (θ : Subst Const Γ Ξ)
+    (valid : Term Const Γ (β ⇒ ι ⇒ .prop)) (childAt : Term Const Γ (β ⇒ ι ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    subst θ (childBody valid childAt layer point) = childBody
+      (subst θ valid) (subst θ childAt) (subst θ layer) (subst θ point) := by
+  simp [childBody, subst, Subst.lift]
+
+variable {Δ : List (Formula Const Γ)}
+
+def constructor_beta (valid : Term Const Γ (β ⇒ .prop)) (build : Term Const Γ (β ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    ProofSyntax Const Δ (.eq (.app (.app (constructorRelation valid build) layer) point)
+      (constructorBody valid build layer point)) := by
+  have first : ProofSyntax Const Δ (.eq (.app (.app (constructorRelation valid build) layer) point)
+      (.app (.lam (constructorBody (weaken valid) (weaken build) (weaken layer) (.var .vz))) point)) := by
+    apply ProofSyntax.castIndices rfl ?_
+      (ProofSyntax.eqApp point (ProofSyntax.beta layer
+        (.lam (constructorBody (weaken (weaken valid)) (weaken (weaken build))
+          (.var (.vs .vz)) (.var .vz)))))
+    simp [constructorRelation, constructorBody, instantiate, subst, Subst.lift, Subst.single]
+    rfl
+  have second : ProofSyntax Const Δ
+      (.eq (.app (.lam (constructorBody (weaken valid) (weaken build) (weaken layer) (.var .vz))) point)
+        (constructorBody valid build layer point)) := by
+    apply ProofSyntax.castIndices rfl ?_ (ProofSyntax.beta point
+      (constructorBody (weaken valid) (weaken build) (weaken layer) (.var .vz)))
+    simp [instantiate, subst, Subst.single]
+  exact .eqTrans first second
+
+def child_beta (valid : Term Const Γ (β ⇒ ι ⇒ .prop)) (childAt : Term Const Γ (β ⇒ ι ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    ProofSyntax Const Δ (.eq (.app (.app (childRelation valid childAt) layer) point)
+      (childBody valid childAt layer point)) := by
+  have first : ProofSyntax Const Δ (.eq (.app (.app (childRelation valid childAt) layer) point)
+      (.app (.lam (childBody (weaken valid) (weaken childAt) (weaken layer) (.var .vz))) point)) := by
+    apply ProofSyntax.castIndices rfl ?_
+      (ProofSyntax.eqApp point (ProofSyntax.beta layer
+        (.lam (childBody (weaken (weaken valid)) (weaken (weaken childAt))
+          (.var (.vs .vz)) (.var .vz)))))
+    simp [childRelation, instantiate, subst, Subst.lift, Subst.single]
+    rfl
+  have second : ProofSyntax Const Δ
+      (.eq (.app (.lam (childBody (weaken valid) (weaken childAt) (weaken layer) (.var .vz))) point)
+        (childBody valid childAt layer point)) := by
+    apply ProofSyntax.castIndices rfl ?_ (ProofSyntax.beta point
+      (childBody (weaken valid) (weaken childAt) (weaken layer) (.var .vz)))
+    simp [instantiate, subst, Subst.single]
+  exact .eqTrans first second
+
+set_option backward.isDefEq.respectTransparency false in
+theorem constructor_beta_functionExtensionalityFree
+    (valid : Term Const Γ (β ⇒ .prop)) (build : Term Const Γ (β ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    ProofSyntax.FunctionExtensionalityFree (constructor_beta (Δ := Δ) valid build layer point) := by
+  simp [constructor_beta, ProofSyntax.FunctionExtensionalityFree]
+
+set_option backward.isDefEq.respectTransparency false in
+theorem child_beta_functionExtensionalityFree
+    (valid : Term Const Γ (β ⇒ ι ⇒ .prop)) (childAt : Term Const Γ (β ⇒ ι ⇒ α))
+    (layer : Term Const Γ β) (point : Term Const Γ α) :
+    ProofSyntax.FunctionExtensionalityFree (child_beta (Δ := Δ) valid childAt layer point) := by
+  simp [child_beta, ProofSyntax.FunctionExtensionalityFree]
+
+
+/-- A closed higher-order definition body. Operations remain explicit arguments. -/
+def constructorDefinition (source layer : Ty Base) : ClosedTerm Const
+    ((layer ⇒ .prop) ⇒ (layer ⇒ source) ⇒ layer ⇒ source ⇒ .prop) :=
+  .lam (.lam (constructorRelation (.var (.vs .vz)) (.var .vz)))
+
+def childDefinition (source layer position : Ty Base) : ClosedTerm Const
+    ((layer ⇒ position ⇒ .prop) ⇒ (layer ⇒ position ⇒ source) ⇒ layer ⇒ source ⇒ .prop) :=
+  .lam (.lam (childRelation (.var (.vs .vz)) (.var .vz)))
+
+#print axioms constructor_beta
+#print axioms child_beta
+#print axioms constructor_beta_functionExtensionalityFree
+#print axioms child_beta_functionExtensionalityFree
+end Mettapedia.Logic.HOL.PolynomialPredicate.Relations

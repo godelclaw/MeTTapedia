@@ -32,7 +32,8 @@ open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical (matchPatternForRule matchPatte
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts (OneHoleContext)
 open Mettapedia.OSLF.MeTTaIL.Substitution (liftBVars_zero)
 open Mettapedia.GSLT.LanguageDef.WellSorted (isObjectPattern isObjectPatternList)
-open Mettapedia.GSLT.LanguageDef.EquationSemantics (DerivedInstance CollectionCarrierRule AlgebraRule)
+open Mettapedia.GSLT.LanguageDef.EquationSemantics
+  (DerivedInstance CollectionCarrierRule AlgebraRule usesCollection_eq_true_of_collectionTypedAt)
 open Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalRegionControls (constant constantRule isObjectPatternList_iff)
 
 /-! ## The language -/
@@ -254,9 +255,6 @@ theorem params_simple {rule : GrammarRule} (member : rule ∈ wrapped.terms) :
 
 /-- The language declares no collections, so it derives no laws. -/
 theorem no_derived {source target : Pattern} : ¬ DerivedInstance wrapped source target := by
-  have notCarrier : ∀ {rule : GrammarRule} {kind : CollType}, ¬ CollectionCarrierRule wrapped rule kind := by
-    rintro rule kind ⟨authored, name, element, params⟩
-    exact params_simple authored name kind element params
   have notAlgebra : ∀ {rule : GrammarRule} {kind : CollType} {algebra : CollectionAlgebra},
       ¬ AlgebraRule wrapped rule kind algebra := by
     intro rule kind algebra declared
@@ -264,9 +262,12 @@ theorem no_derived {source target : Pattern} : ¬ DerivedInstance wrapped source
     exact params_simple declared.authored name kind _ params
   intro derived
   cases derived with
-  | bagPerm carrier => exact notCarrier carrier
-  | setPerm carrier => exact notCarrier carrier
-  | setDedup carrier => exact notCarrier carrier
+  | bagPerm member kindTyped _ =>
+      exact absurd (usesCollection_eq_true_of_collectionTypedAt member kindTyped) (by decide +kernel)
+  | setPerm member kindTyped _ =>
+      exact absurd (usesCollection_eq_true_of_collectionTypedAt member kindTyped) (by decide +kernel)
+  | setDedup member kindTyped =>
+      exact absurd (usesCollection_eq_true_of_collectionTypedAt member kindTyped) (by decide +kernel)
   | flatten declared => exact notAlgebra declared
   | singleton declared => exact notAlgebra declared
   | unitElim declared => exact notAlgebra declared
@@ -462,7 +463,7 @@ theorem unwrap_simulates {redex : Pattern} {witness : Witness} {contractum : Pat
       rw [canon_of_object firstObject] at twice
       exact twice
 
-theorem unwrap_coherent (fuel : ℕ) : Coherent relEnv wrapped fuel unwrapCanon unwrapDomain :=
+theorem unwrap_coherent (fuel : ℕ) : Coherent relEnv wrapped fuel unwrapCanon unwrapDomain List.singleton :=
   coherent_of_simulation (unwrap_canonical relEnv) unwrap_simulates
 
 /-! ## Verdicts -/
@@ -496,7 +497,8 @@ def reachesOk : Formula 0 := .possibly .any (.is ok)
 def oneResult : Formula 0 := Formula.exactlyOne .forward .any
 
 theorem decided_true {formula : Formula 0} (behavioural : formula.behaviouralForward = true)
-    (decided : decideCanonical RelationEnv.empty wrapped 2 unwrapCanon unwrapDomain formula start 2 = some true) :
+    (decided : decideCanonical RelationEnv.empty wrapped 2 unwrapCanon unwrapDomain List.singleton formula start 2 =
+      some true) :
     Wrapped.sat Env.closed formula start :=
   (decideCanonical_sound (unwrap_canonical _) (unwrap_coherent 2) behavioural decided).mp rfl
 

@@ -55,6 +55,7 @@ def evidenceKind : Evidence → String
   | .exploration _ => "exploration"
   | .closedRegion _ => "closed"
   | .canonicalRegion _ => "canonical"
+  | .decided => "decided"
 
 /-- An answer and the kind of evidence that settled it. -/
 def answerSummary : Answer → String

@@ -1,4 +1,4 @@
-import Mettapedia.Algorithms.MonotoneRankEnumeration
+import Mettapedia.Algorithms.RankedPrefix
 
 /-!
 # Lazy Cartesian rank extraction
@@ -65,21 +65,14 @@ theorem neighbors_monotone (axes : List Axis) : MonotoneRankEnumeration.Monotone
   induction axes with
   | nil => intro parent child member; simp [graph, neighbors] at member
   | cons axis axes ih =>
-      intro parent child member
-      rcases parent with ⟨head, tail⟩
-      change child ∈ (neighbors axes tail).map (head, ·) ++
-        (if within : head.val + 1 < axis.count then
-          [(⟨head.val + 1, within⟩, tail)] else []) at member
-      rcases List.mem_append.mp member with changedTail | increment
-      · obtain ⟨next, neighbor, same⟩ := List.mem_map.mp changedTail
-        subst child
-        exact Nat.add_le_add_left (ih tail next neighbor) (axis.weight head)
+      rintro ⟨head, tail⟩ child member
+      simp only [graph, neighbors, List.mem_append, List.mem_map] at member
+      rcases member with ⟨next, neighbor, rfl⟩ | increment
+      · exact Nat.add_le_add_left (ih tail next neighbor) (axis.weight head)
       · split at increment
         next within =>
-          have same : child = (⟨head.val + 1, within⟩, tail) :=
-            List.mem_singleton.mp increment
-          subst child
-          exact Nat.add_le_add_right (axis.ordered (by change head.val ≤ head.val + 1; omega)) _
+          obtain rfl := List.mem_singleton.mp increment
+          exact Nat.add_le_add_right (axis.ordered (Nat.le_succ _)) _
         next outside => simp at increment
 
 theorem generated_substitute {Node Answer : Type*} (system : BranchingSystem Node Answer)
@@ -107,18 +100,9 @@ theorem generated_head (axis : Axis) (axes : List Axis) (index : Nat)
     (within : index < axis.count) :
     Generated (graph (axis :: axes)).system [zero (axis :: axes)]
       (⟨index, within⟩, zero axes) := by
-  induction index with
-  | zero => exact .root (List.mem_singleton.mpr rfl)
-  | succ index ih =>
-      have earlier : index < axis.count := by omega
-      apply Generated.successor (ih earlier)
-      change ((⟨index + 1, within⟩ : Fin axis.count), zero axes) ∈
-        (neighbors axes (zero axes)).map
-          (fun tail => ((⟨index, earlier⟩ : Fin axis.count), tail)) ++ _
-      apply List.mem_append.mpr
-      right
-      rw [dif_pos within]
-      exact List.mem_singleton.mpr rfl
+  exact DerivationPrefix.source_of_fin_chain (graph (axis :: axes)) [zero (axis :: axes)]
+    (fun head => (head, zero axes)) (fun _ => by simp [zero])
+    (fun index within => by simp [graph, neighbors, within]) ⟨index, within⟩
 
 /-- Every independently specified rank combination is reachable.  The
 construction increments one coordinate at a time from the actual root. -/
@@ -149,21 +133,10 @@ theorem extract_best (axes : List Axis) (requested allowance : Nat) :
     ∀ first ∈ (extract axes requested allowance).1.published,
       ∀ other : Point axes, other ∉ (extract axes requested allowance).1.published →
         cost axes first ≤ cost axes other := by
-  have projection := congrArg Prod.fst
-    (demand_is_prefix (graph axes) requested allowance
-      (MonotoneRankEnumeration.initial [zero axes]))
-  let used := (extract axes requested allowance).2
-  change (extract axes requested allowance).1 =
-    MonotoneRankEnumeration.run (graph axes) used
-      (MonotoneRankEnumeration.initial [zero axes]) at projection
-  rw [projection]
-  have valid := run_invariant (graph axes) [zero axes] used
-    (MonotoneRankEnumeration.initial [zero axes])
-    (initial_invariant (graph axes) [zero axes])
-  have best := run_best (graph axes) (neighbors_monotone axes) [zero axes] used
-  refine ⟨(List.nodup_append.mp valid.distinct).1, best.1, ?_⟩
-  intro first member other remaining
-  exact best.2 first member other (every_point_reachable axes other) remaining
+  have valid := DerivationPrefix.demand_prefix_correct (graph axes) (neighbors_monotone axes)
+    [zero axes] requested allowance
+  exact ⟨valid.distinct, valid.ordered, fun first member other remaining =>
+    (valid.omitted other (every_point_reachable axes other) remaining).2 first member⟩
 
 theorem extract_no_overshoot (axes : List Axis) (requested allowance : Nat) :
     (extract axes requested allowance).1.published.length ≤ requested :=

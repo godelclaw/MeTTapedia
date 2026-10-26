@@ -1,7 +1,13 @@
 import Mettapedia.Cybernetics.ApproximateAdequacy.AdaptivePolicy
 import Mettapedia.Cybernetics.ApproximateAdequacy.DecisionBounds
 
-/-! # Finite policy semantics and sufficient representations -/
+/-!
+# Finite policy semantics and sufficient representations
+
+Joint state/observation compatibility transports the terminal distribution.
+Policy values are its expected rewards. Latent-state marginal agreement alone
+does not preserve the observations that select later actions.
+-/
 
 namespace Mettapedia.Cybernetics.ApproximateAdequacy
 
@@ -38,51 +44,56 @@ theorem terminalLaw_value [DecidableEq S] (kernel : A → S → Prob (S × O))
       exact expectation_dirac s reward
   | succ n ih =>
       rw [terminalLaw, expectation_bind]
-      change (∑ next, (kernel policy.1 s).1 next *
-        (∑ t, (terminalLaw kernel (policy.2 next.2) next.1).1 t * reward t)) = _
       simp only [ih, adaptiveValue, expect]
+
+section Coarsening
+
+variable [DecidableEq C] [DecidableEq O]
+variable (view : S → C) (source : A → S → Prob (S × O)) (target : A → C → Prob (C × O))
+variable (compatible : ∀ a s,
+  coarsen (source a s) (fun next => (view next.1, next.2)) = target a (view s))
+include compatible
+
+/-- Compatible joint steps preserve the independently defined terminal law.
+The branch-selecting observation is retained along with the state view. -/
+theorem terminalLaw_coarsen [DecidableEq S]
+    {n : ℕ} (policy : ObservationPolicy O A n) (s : S) :
+    coarsen (terminalLaw source policy s) view = terminalLaw target policy (view s) := by
+  induction n generalizing s with
+  | zero => exact coarsen_dirac s view
+  | succ n ih =>
+      change coarsen (bind (source policy.1 s)
+        (fun next => terminalLaw source (policy.2 next.2) next.1)) view = _
+      rw [coarsen_bind]
+      simp_rw [ih]
+      exact (bind_of_coarsen (source policy.1 s) (fun next => (view next.1, next.2))
+        (fun next => terminalLaw target (policy.2 next.2) next.1)).trans
+          (congrArg (fun law => bind law (fun next => terminalLaw target (policy.2 next.2) next.1))
+            (compatible policy.1 s))
 
 /-- Exact state aggregation preserves every adaptive policy value when it
 retains both next abstract state and the branch-selecting observation. -/
-theorem adaptiveValue_coarsen [DecidableEq C] [DecidableEq O]
-    (view : S → C) (source : A → S → Prob (S × O))
-    (target : A → C → Prob (C × O))
-    (compatible : ∀ a s,
-      coarsen (source a s) (fun next => (view next.1, next.2)) = target a (view s))
+theorem adaptiveValue_coarsen
     (reward : C → ℝ) {n : ℕ} (policy : ObservationPolicy O A n) (s : S) :
     adaptiveValue source (reward ∘ view) policy s =
       adaptiveValue target reward policy (view s) := by
-  induction n generalizing s with
-  | zero => rfl
-  | succ n ih =>
-      change (∑ next, (source policy.1 s).1 next *
-        adaptiveValue source (reward ∘ view) (policy.2 next.2) next.1) = _
-      have step_eq := congrArg
-        (fun p : Prob (C × O) => ∑ next, p.1 next *
-          adaptiveValue target reward (policy.2 next.2) next.1) (compatible policy.1 s)
-      rw [coarsen_expectation] at step_eq
-      change (∑ next, (source policy.1 s).1 next *
-        adaptiveValue source (reward ∘ view) (policy.2 next.2) next.1) =
-          ∑ next, (target policy.1 (view s)).1 next *
-            adaptiveValue target reward (policy.2 next.2) next.1
-      rw [← step_eq]
-      apply Finset.sum_congr rfl
-      intro next _
-      rw [ih]
+  classical
+  rw [← terminalLaw_value source (reward ∘ view), ← terminalLaw_value target reward]
+  simp only [Function.comp_apply]
+  rw [← coarsen_expectation (terminalLaw source policy s) view reward,
+    terminalLaw_coarsen view source target compatible]
 
 /-- A factored reward has the same prior-averaged policy value in the compressed model. -/
-theorem expected_adaptiveValue_coarsen [DecidableEq C] [DecidableEq O]
-    (view : S → C) (source : A → S → Prob (S × O))
-    (target : A → C → Prob (C × O))
-    (compatible : ∀ a s,
-      coarsen (source a s) (fun next => (view next.1, next.2)) = target a (view s))
+theorem expected_adaptiveValue_coarsen
     (prior : Prob S) (reward : C → ℝ) {n : ℕ} (policy : ObservationPolicy O A n) :
     expect prior.1 (adaptiveValue source (reward ∘ view) policy) =
       expect (coarsen prior view).1 (adaptiveValue target reward policy) := by
-  simp only [expect]
-  rw [coarsen_expectation]
-  exact Finset.sum_congr rfl (fun s _ => congrArg (fun v => prior.1 s * v)
-    (adaptiveValue_coarsen view source target compatible reward policy s))
+  rw [show adaptiveValue source (reward ∘ view) policy =
+    adaptiveValue target reward policy ∘ view from
+      funext (adaptiveValue_coarsen view source target compatible reward policy)]
+  exact (coarsen_expectation prior view _).symm
+
+end Coarsening
 
 /-- Nonempty admissible finite-horizon policies have an optimum. -/
 theorem finite_policy_optimal_exists [Fintype A] {n : ℕ}

@@ -117,6 +117,29 @@ theorem ChecksList.eval {signature : TermSignature} {definitions : Definition.Si
   | nil => simp [children?]
   | cons _ _ ihChild ihTail => simp [children?, ihChild, ihTail]
 
+/-- Recover the actual theorem instance from a checked application and
+the checked ordered conclusions of its children. -/
+theorem Checks.instantiates {signature : TermSignature} {definitions : Definition.Signature}
+    {theorems : TheoremSignature} {context : Context} {hypotheses premises : List Preterm}
+    {index : Nat} {declaration : TheoremDecl} {arguments : List Preterm}
+    {children : List ProofWitness} {conclusion : Preterm}
+    (checked : Checks signature definitions theorems context hypotheses
+      (.theoremApp index arguments children) conclusion)
+    (declared : theorems index = some declaration)
+    (childrenChecked : ChecksList signature definitions theorems context hypotheses children premises) :
+    TheoremDecl.Instantiates signature context declaration arguments ⟨premises, conclusion⟩ := by
+  cases checked with
+  | @theoremApp _ actual _ _ native found instantiated childProofs =>
+      have sameDeclaration : actual = declaration := Option.some.inj (found.symm.trans declared)
+      subst actual
+      have samePremises : native.hypotheses = premises :=
+        Option.some.inj (childProofs.eval.symm.trans childrenChecked.eval)
+      cases native with
+      | mk original conclusion =>
+          dsimp at samePremises
+          subst original
+          exact instantiated
+
 mutual
 
 theorem proof_sound {signature : TermSignature} {definitions : Definition.Signature}
@@ -319,5 +342,76 @@ theorem derives_iff_checked (signature : TermSignature) (definitions : Definitio
     exact ⟨witness, (ProofWitness.check_iff _ _ _ _ _ _ _).mpr checked⟩
   · rintro ⟨witness, accepted⟩
     exact ProofWitness.check_sound accepted
+
+theorem ProofWitness.Checks.varsBelow {signature : TermSignature} {definitions : Definition.Signature}
+    {theorems : TheoremSignature} {context : Context} {hypotheses : List Preterm}
+    {witness : ProofWitness} {expression : Preterm}
+    (checked : Checks signature definitions theorems context hypotheses witness expression)
+    (bounded : ∀ hypothesis ∈ hypotheses, Preterm.VarsBelow context.length hypothesis) :
+    Preterm.VarsBelow context.length expression := by
+  cases checked with
+  | hyp found => exact bounded _ (List.mem_of_getElem? found)
+  | theoremApp _ instantiated _ => exact instantiated.varsBelow.2
+  | conversion converted _ => exact converted.typed.2.varsBelow
+
+
+theorem ProofWitness.ChecksList.member {signature : TermSignature} {definitions : Definition.Signature}
+    {theorems : TheoremSignature} {context : Context} {hypotheses : List Preterm}
+    {children : List ProofWitness} {expressions : List Preterm}
+    (checked : ChecksList signature definitions theorems context hypotheses children expressions)
+    {child : ProofWitness} (member : child ∈ children) :
+    ∃ expression, Checks signature definitions theorems context hypotheses child expression := by
+  induction children generalizing expressions with
+  | nil => simp at member
+  | cons first rest ih =>
+      cases checked with
+      | cons head tail =>
+        rcases List.mem_cons.mp member with rfl | later
+        · exact ⟨_, head⟩
+        · exact ih tail later
+
+
+/-- Native variable slots in the submitted receipt; local-hypothesis indices are separate. -/
+def ProofWitness.VarsBelow (bound : Nat) : ProofWitness → Prop
+  | .hyp _ => True
+  | .theoremApp _ arguments children =>
+      (∀ argument ∈ arguments, Preterm.VarsBelow bound argument) ∧
+        ∀ child ∈ children, child.VarsBelow bound
+  | .conversion witness child => witness.VarsBelow bound ∧ child.VarsBelow bound
+termination_by witness => sizeOf witness
+
+
+theorem ProofWitness.Checks.payload_varsBelow {signature : TermSignature} {definitions : Definition.Signature}
+    {theorems : TheoremSignature} {context : Context} {hypotheses : List Preterm}
+    {witness : ProofWitness} {conclusion : Preterm}
+    (checked : Checks signature definitions theorems context hypotheses witness conclusion) :
+    witness.VarsBelow context.length := by
+  induction checked using Checks.rec
+      (motive_2 := fun children _conclusions _ => ∀ child ∈ children, child.VarsBelow context.length) with
+  | hyp known => simp only [ProofWitness.VarsBelow]
+  | theoremApp known instantiated children ih =>
+      simpa only [ProofWitness.VarsBelow] using And.intro instantiated.arguments_varsBelow ih
+  | conversion converted child ih =>
+      simpa only [ProofWitness.VarsBelow] using And.intro converted.payload_varsBelow ih
+  | nil => simp_all
+  | cons head tail ihHead ihTail =>
+      rename_i witness member
+      rcases List.mem_cons.mp member with rfl | later
+      · exact ihHead
+      · exact ihTail witness later
+
+
+theorem ProofWitness.VarsBelow.mono {small large : Nat} (ordered : small ≤ large) :
+    ∀ {witness : ProofWitness}, VarsBelow small witness → VarsBelow large witness
+  | .hyp index, _ => by simp only [VarsBelow]
+  | .theoremApp index arguments children, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      exact ⟨fun argument member => (bounded.1 argument member).mono ordered,
+        fun child member => mono ordered (bounded.2 child member)⟩
+  | .conversion converted child, bounded => by
+      simp only [VarsBelow] at bounded ⊢
+      exact ⟨bounded.1.mono ordered, mono ordered bounded.2⟩
+termination_by witness => sizeOf witness
+
 
 end Mettapedia.Languages.MM0.Kernel

@@ -104,6 +104,8 @@ theorem presentAt_returns (state : Effects.State) (table : List String) (ordered
     have child := presentAt_returns state table ordered bodyMatched childCovered suffix
     obtain ⟨presented, reconstructed, _, _⟩ := presentAt_complete bodyMatched suffix
     rw [reconstructed] at child
+    rw [presentAt.eq_def]
+    simp only [reconstructed]
     presentation_eval [append_returns Term.natural state path [0], child,
       wrap_lambda_returns state actual presented suffix]
       unfolding [presentAt, reconstructed, encodePattern]
@@ -131,6 +133,8 @@ theorem presentAt_returns (state : Effects.State) (table : List String) (ordered
     obtain ⟨replacement', replacementReconstructed, _, _⟩ := presentAt_complete replacementMatched suffix
     rw [bodyReconstructed] at first
     rw [replacementReconstructed] at second
+    rw [presentAt.eq_def]
+    simp only [List.append_assoc, bodyReconstructed, Option.bind_eq_bind, Option.bind_some, replacementReconstructed]
     presentation_eval [append_returns Term.natural state path [0], append_returns Term.natural state path [1],
       first, second, wrap_subst_returns state body' replacement' suffix]
       unfolding [presentAt, List.append_assoc, bodyReconstructed, replacementReconstructed, encodePattern]
@@ -141,7 +145,11 @@ theorem presentAt_returns (state : Effects.State) (table : List String) (ordered
     have children := presentArguments_returns state table ordered rows childrenCovered suffix
     obtain ⟨presented, reconstructed, _, _⟩ := presentArguments_complete rows suffix
     rw [reconstructed] at children
-    presentation_eval [children, wrap_collection_returns state .vec presented [] suffix]
+    rw [presentAt.eq_def]
+    simp only [reconstructed]
+    have wrapped := wrap_collection_returns state .vec presented [] suffix
+    simp only [List.append_nil] at wrapped
+    presentation_eval [children, wrapped]
       unfolding [presentAt.eq_def, reconstructed, encodePattern, encodeRest, encodeCollectionType, List.append_nil]
   | @vectorRest path depth initial schemas targets name trace middle final rows captured =>
     have childrenCovered : ∀ child ∈ targets.take schemas.length, Covered table child := by
@@ -169,12 +177,15 @@ theorem presentAt_returns (state : Effects.State) (table : List String) (ordered
       allocation (trace ++ suffix) suffix targetsCovered allocated children
     have replayed := tracedAllocations_replay allocated
     have count := tracedAllocations_length allocated
+    rw [presentAt.eq_def]
+    simp [List.cons_append, notVector, count, replayed, Allocation.erase, reconstructed]
     cases kind with
     | vec => exact False.elim (notVector rfl)
     | hashBag | hashSet =>
+      simp only [encodeOption, presentationTerm, encodePattern, encodeRest, encodeCollectionType,
+        InferenceCettaWire.encodePatterns_eq_encodeList] at unordered
       presentation_eval [unordered]
-        unfolding [presentAt.eq_def, reconstructed, encodePattern, encodeRest, encodeCollectionType,
-          List.cons_append, count, replayed, Allocation.erase]
+        unfolding [encodePattern, encodeRest, encodeCollectionType]
 termination_by sizeOf schema
 decreasing_by all_goals sizeOf_pattern_dec
 
@@ -208,5 +219,10 @@ theorem presentArguments_returns (state : Effects.State) (table : List String) (
 termination_by sizeOf schemas
 decreasing_by all_goals sizeOf_pattern_dec
 end
+
+#print axioms allocation_covered
+#print axioms unordered_returns
+#print axioms presentAt_returns
+#print axioms presentArguments_returns
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution

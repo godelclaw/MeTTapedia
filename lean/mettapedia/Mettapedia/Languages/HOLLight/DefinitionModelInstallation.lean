@@ -80,6 +80,30 @@ noncomputable def constantCore (primitives : Primitives initial) (prior : Family
         (prior.fullDomains _ _) substitution)
 
 
+/-- A constant-only chronological segment installs its original admitted
+values in any coherent predecessor family. The semantic theory is attached
+separately after its source equations have been proved. -/
+noncomputable def constantHistoryCore {before : TheoryContext}
+    (primitives : Primitives initial) (prior : Family.{w} initial before theory)
+    {after : TheoryContext} (history : DefinitionHistoryModels.ConstantHistory before after) :
+    Family.{w} initial after ∅ :=
+  match history with
+  | .nil => prior.retheorize ∅ (fun _ _ formula impossible => absurd impossible (Set.notMem_empty formula))
+  | .snoc earlier instances name source result accepted =>
+      (constantHistoryCore primitives prior earlier).constantCore primitives instances name source result accepted
+
+theorem constantHistoryCore_model {before after : TheoryContext}
+    (primitives : Primitives initial) (prior : Family.{w} initial before theory)
+    (history : DefinitionHistoryModels.ConstantHistory before after)
+    (other : OperatorFamilies.{w}) (assignment : Assignment.{w}) :
+    (constantHistoryCore primitives prior history).model other assignment =
+      history.extendModel (prior.model other assignment) := by
+  induction history with
+  | nil => rfl
+  | snoc earlier instances name source result accepted ih =>
+      exact congrArg (ConstantAdmission.sourceExtension result) ih
+
+
 noncomputable def typeDefinitionCore {initial context : TheoryContext} {theory : HOL.ClosedTheorySet Symbol} (primitives : Primitives initial) (prior : Family.{w} initial context theory)
     (instances : InstanceWitnesses) (request : TypeOperatorDefinitionRequest) (result : SourceTypeDefinitionResult)
     (accepted : admitSourceTypeInTheory context instances request = some result)

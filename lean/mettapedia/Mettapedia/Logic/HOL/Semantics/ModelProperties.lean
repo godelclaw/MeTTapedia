@@ -214,6 +214,25 @@ structure DedekindInfinityWitness
   omitted : M.Carrier b
   omitted_not_image : ∀ x, successor x ≠ omitted
 
+/-- A concrete natural-number coding supplies an injective successor and
+a point outside its image in the original full-domain model. -/
+def DedekindInfinityWitness.ofNatEquiv
+    {M : HenkinModel.{u, v, w} Base Const} {b : Base}
+    (full : M.FullDomains) (coding : M.Carrier b ≃ Nat) : M.DedekindInfinityWitness b where
+  successor := fun value => coding.symm (coding value + 1)
+  successor_admissible := full _ _
+  successor_injective := by
+    intro left right equal
+    apply coding.injective
+    apply Nat.add_right_cancel (m := 1)
+    simpa only [Equiv.apply_symm_apply] using congrArg coding equal
+  omitted := coding.symm 0
+  omitted_not_image := by
+    intro value equal
+    have impossible : coding value + 1 = 0 := by
+      simpa only [Equiv.apply_symm_apply] using congrArg coding equal
+    exact Nat.noConfusion impossible
+
 /-- The omitted point of a base-carrier infinity witness is automatically in
 the quantifier domain: base domains are full in every Henkin model here. -/
 theorem DedekindInfinityWitness.omitted_admissible
