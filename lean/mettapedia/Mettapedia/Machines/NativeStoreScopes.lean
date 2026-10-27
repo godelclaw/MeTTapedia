@@ -135,6 +135,32 @@ theorem valid_views_include_absence (captured live : Store) (scopes : List Scope
   have same := (List.all_eq_true.mp valid) scope member
   simpa [absent] using same.symm
 
+/-- A decision over a complete declared dependency has the same value at
+publication. This applies to an authorization predicate as well as an
+application condition. Authentication and the completeness of the authority
+scope remain obligations of the caller; a captured snapshot is not a grant. -/
+theorem committed_dependency_decision_is_current (live captured next : Store)
+    (reads writes : List Scope) (operations : List Mutation)
+    (scope : Scope) (decision : List Nat → Bool) (member : scope ∈ reads)
+    (accepted : commitViews live captured reads writes operations = .ok next) :
+    decision (observe scope live) = decision (observe scope captured) := by
+  have valid := ((committed_views_exact live captured next reads writes operations).mp accepted).2.2.1
+  have same := (List.all_eq_true.mp valid) scope (List.mem_append.mpr (Or.inr member))
+  have equal : observe scope captured = observe scope live := by simpa using same
+  rw [equal]
+
+/-- Revocation cannot race past a commit that declares the complete grant
+dependency in the same commit domain. This does not erase information already
+returned to a reader, or cover an independently mutated authority service. -/
+theorem changed_authorization_cannot_commit (live captured next : Store)
+    (reads writes : List Scope) (operations : List Mutation)
+    (authority : Scope) (allowed : List Nat → Bool) (member : authority ∈ reads)
+    (changed : allowed (observe authority captured) ≠ allowed (observe authority live)) :
+    commitViews live captured reads writes operations ≠ .ok next := by
+  intro accepted
+  exact changed (committed_dependency_decision_is_current live captured next
+    reads writes operations authority allowed member accepted).symm
+
 theorem changing_a_negative_dependency_conflicts :
     let initial : Store := ⟨1, 0, []⟩
     let proposal : Proposal := ⟨initial, (· == 7), [.add 7]⟩
