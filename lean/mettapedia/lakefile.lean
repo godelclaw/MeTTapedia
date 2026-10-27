@@ -102,6 +102,7 @@ meta if leattaIntegrationEnabled then
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaProgramEnvironment,
     `Mettapedia.GSLT.LanguageDef.LFEngineProbe,
     `Mettapedia.GSLT.LanguageDef.MIEvalEncoding,
+    `Mettapedia.GSLT.ReproducibleBuild.LeaTTaReplayInstance,
     `Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.LeaTTaDIndGEvaluator,
     `Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge,
     `Mettapedia.Languages.MeTTa.HE.EquationScopeControls,
