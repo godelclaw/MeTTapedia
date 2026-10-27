@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AIHUB="${AIHUB:-$(cd "$ROOT/../../.." && pwd)}"
 CETTA="${CETTA:-$AIHUB/hyperon/CeTTa/cetta}"
-SOURCE="$ROOT/generic_inference_checker_v0.metta"
+SOURCE="$ROOT/generic_inference_checker_controls_v0.metta"
 LOGDIR="$ROOT/parity_logs"
 LOG="$LOGDIR/generic_inference_checker_v0.log"
 EXPECTED_ASSERTIONS=51
@@ -17,18 +17,24 @@ if [[ "$actual_assertions" -ne "$EXPECTED_ASSERTIONS" ]]; then
   exit 1
 fi
 
-if ! "$CETTA" "$SOURCE" >"$LOG" 2>&1; then
+if ! "$CETTA" --lang "${CETTA_LANG:-he}" "$SOURCE" >"$LOG" 2>&1; then
   echo "GIC GATE: FAIL (CeTTa process failed; log: $LOG)"
   exit 1
 fi
 
-if grep -q 'Error\|❌' "$LOG"; then
+if grep -q 'Error\|❌\|Incomplete' "$LOG"; then
   echo "GIC GATE: FAIL (checker assertion failed; log: $LOG)"
   exit 1
 fi
 
-if [[ "$(grep -Fxc '[(GICSummary 51 51 0)]' "$LOG")" -ne 1 ]]; then
-  echo "GIC GATE: FAIL (exact summary absent or duplicated; log: $LOG)"
+if [[ "$(grep -Fxc '[(GICChecksFinished 51)]' "$LOG")" -ne 1 ]]; then
+  echo "GIC GATE: FAIL (completion marker absent or duplicated; log: $LOG)"
+  exit 1
+fi
+
+successful_outputs="$(grep -Fxc '[()]' "$LOG")"
+if [[ "$successful_outputs" -ne "$((EXPECTED_ASSERTIONS + 1))" ]]; then
+  echo "GIC GATE: FAIL (missing successful assertion outputs; log: $LOG)"
   exit 1
 fi
 

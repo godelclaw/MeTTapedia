@@ -16,7 +16,8 @@ Results:
 - `helperB_holds_after_delegation`: a concrete run hands the mailbox down the chain;
 - `helperB_loses_mailbox_after_revoke`: the `lead` revoking its grant withdraws the mailbox from the
   whole chain at once (revocation along derivation);
-- `helperB_denied_without_grant`: a resource handed over *without* the grant right cannot be passed on;
+- `helperB_denied_without_grant`: copying cannot restore a dropped grant flag;
+- `helperB_holds_use_only_copy`: a use-only capability can still be copied along an allowed edge;
 - `stranger_never_holds`: under any sequence of delegations and revocations, the `stranger` never holds
   any resource. Authority is confined to the agents reachable from the genesis grants.
 
@@ -97,10 +98,28 @@ def noGrantChain : List (Op Agent Resource) :=
   [ .pass lead (.obj mailbox) false helperA,
     .pass helperA (.obj mailbox) true helperB ]
 
-/-- `helperA` cannot delegate a resource it holds without grant, so `helperB` never receives it. -/
+/-- This run asks `helperA` to restore the dropped grant flag. That request is refused,
+so `helperB` receives neither kind of capability in this particular run. -/
 theorem helperB_denied_without_grant :
     ∀ g, ¬ Holds (run genesis noGrantChain) helperB (.obj mailbox) g := by
   intro g; cases g <;> (unfold Holds; decide)
+
+/-- Dropping the grant flag does not make a capability noncopyable. A holder with an
+allowed subject edge may still pass a use-only copy, as the delegation core specifies. -/
+theorem helperB_holds_use_only_copy :
+    Holds (run genesis [.pass lead (.obj mailbox) false helperA,
+                        .pass helperA (.obj mailbox) false helperB])
+      helperB (.obj mailbox) false := by
+  unfold Holds
+  decide
+
+/-- A use-only copy does not gain the grant flag. -/
+theorem helperB_use_only_copy_has_no_grant :
+    ¬ Holds (run genesis [.pass lead (.obj mailbox) false helperA,
+                          .pass helperA (.obj mailbox) false helperB])
+        helperB (.obj mailbox) true := by
+  unfold Holds
+  decide
 
 /-! ## The stranger is confined out -/
 

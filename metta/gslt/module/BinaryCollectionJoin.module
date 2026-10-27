@@ -1,0 +1,18 @@
+Module BinaryCollectionJoin {
+  Theory Monoid() {
+    Types { Item; }
+    Terms {
+      One . |- "one" : Item;
+      Op . x:Item, y:Item |- "(" x ";" y ")" : Item;
+    }
+    Equations {
+      (Op (Op x y) z) == (Op x (Op y z));
+      (Op x (One)) == x;
+      (Op (One) x) == x;
+    }
+  }
+  Theory Words(m: Monoid) {
+    m Replacements { Op => Word . xs:Vec(Item) |- "[" xs.*sep(",") "]" : Item; }
+  }
+  theory Words(Monoid())
+}

@@ -128,6 +128,8 @@ scoped syntax "..." ident : langDefRestVar
 scoped syntax "{" langDefRestVar "}" : langDefPattern
 scoped syntax "{" langDefPattern,+ "," langDefRestVar "}" : langDefPattern
 scoped syntax "{" langDefPattern,* "}" : langDefPattern
+scoped syntax "[" langDefPattern,* "]" : langDefPattern
+scoped syntax "#{" langDefPattern,* "}" : langDefPattern
 
 scoped syntax ident ":" langDefTypeExpr : langDefTypeBinding
 
@@ -149,6 +151,10 @@ scoped syntax ident "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident ";"
 scoped syntax str "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident ";" : langDefTermDecl
 scoped syntax ident "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" langDefEvalPolicy "]" ";" : langDefTermDecl
 scoped syntax str "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" langDefEvalPolicy "]" ";" : langDefTermDecl
+scoped syntax ident "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" "wrapped" "]" ";" : langDefTermDecl
+scoped syntax str "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" "wrapped" "]" ";" : langDefTermDecl
+scoped syntax ident "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" langDefEvalPolicy "]" "![" "wrapped" "]" ";" : langDefTermDecl
+scoped syntax str "." langDefTermParam,* "|-" langDefSyntaxAtom* ":" ident "![" langDefEvalPolicy "]" "![" "wrapped" "]" ";" : langDefTermDecl
 
 /-- An item of a rule row: a terminal, or a category. -/
 scoped syntax str : langDefRuleItem
@@ -494,6 +500,21 @@ private partial def splitPrefixPatternArgs (stx : TSyntax `langDefPattern) :
   | _ =>
       pure [stx]
 
+private partial def expandCollectionInfo (kind : CollType) (opening closing : String)
+    (elements : List (TSyntax `langDefPattern)) : MacroM ExpandedPattern := do
+  let expanded ← elements.mapM expandPatternInfo
+  let rest := expanded.getLast?.bind (·.restName?)
+  let concrete := if rest.isSome then expanded.dropLast else expanded
+  if concrete.any (fun element => element.restName?.isSome) then
+    Macro.throwError "collection rest `...rest` may only appear once at the end of a collection pattern"
+  let elementsTerm ← mkTermList (concrete.map (·.term))
+  let restTerm : TSyntax `term ← match rest with
+    | some restName => `(term| some $(mkStrTerm restName))
+    | none => `(term| none)
+  let term ← `(Pattern.collection $(collTerm kind) $elementsTerm $restTerm)
+  let items := concrete.map (·.sourceText) ++ (rest.map ("..." ++ ·)).toList
+  pure (mkExpandedPattern term (opening ++ String.intercalate ", " items ++ closing))
+
 private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM ExpandedPattern := do
   let stx : TSyntax `langDefPattern := ⟨normalizeChoiceSyntax stx0.raw⟩
   match stx with
@@ -632,32 +653,11 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       let term ← `(Pattern.multiLambda $(quote binders.getElems.size) $binderList $bodyTerm)
       pure (mkExpandedPattern term s!"^[{renderedBinders}].({body'.sourceText})")
   | `(langDefPattern| { $elems:langDefPattern,* }) => do
-      let elems' ← elems.getElems.toList.mapM expandPatternInfo
-      let trailingRest? := elems'.reverse.findSome? (·.restName?)
-      let concreteElems :=
-        match trailingRest? with
-        | some _ => elems'.dropLast
-        | none => elems'
-      if concreteElems.any (fun elem => elem.restName?.isSome) then
-        Macro.throwError "collection rest `...rest` may only appear once at the end of a collection pattern"
-      let elemsTerm ← mkTermList (concreteElems.map (·.term))
-      let sourceElements := String.intercalate ", " (concreteElems.map (·.sourceText))
-      let term ←
-        match trailingRest? with
-        | some restName =>
-            `(Pattern.collection CollType.hashBag $elemsTerm (some $(mkStrTerm restName)))
-        | none =>
-            `(Pattern.collection CollType.hashBag $elemsTerm none)
-      let sourceText :=
-        match trailingRest? with
-        | some restName =>
-            if concreteElems.isEmpty then
-              "{..." ++ restName ++ "}"
-            else
-              "{" ++ sourceElements ++ ", ..." ++ restName ++ "}"
-        | none =>
-            "{" ++ sourceElements ++ "}"
-      pure (mkExpandedPattern term sourceText)
+      expandCollectionInfo .hashBag "{" "}" elems.getElems.toList
+  | `(langDefPattern| [ $elems:langDefPattern,* ]) =>
+      expandCollectionInfo .vec "[" "]" elems.getElems.toList
+  | `(langDefPattern| #{ $elems:langDefPattern,* }) =>
+      expandCollectionInfo .hashSet "#{" "}" elems.getElems.toList
   | `(langDefPattern| ($ctor:ident $args:langDefPattern*)) => do
       let argSyntax ← args.toList.mapM (fun arg => splitPrefixPatternArgs ⟨arg⟩)
       let args' ← (flattenLists argSyntax).mapM expandPatternInfo
@@ -860,6 +860,18 @@ private def expandRuleDecl (label : String) (category : TSyntax `ident) (items :
        algebra? := none, collectionRepresentation := .bare } : GrammarRule))
 
 private def expandTermDecl : TSyntax `langDefTermDecl → MacroM (TSyntax `term)
+  | `(langDefTermDecl| $label:str . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ wrapped ] ; ) => do
+      let row ← expandNamedTermDecl label.getString category params.getElems syns none
+      `(({ $row with collectionRepresentation := .wrapped } : GrammarRule))
+  | `(langDefTermDecl| $label:ident . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ wrapped ] ; ) => do
+      let row ← expandNamedTermDecl (coreName label.getId) category params.getElems syns none
+      `(({ $row with collectionRepresentation := .wrapped } : GrammarRule))
+  | `(langDefTermDecl| $label:str . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ $policy:langDefEvalPolicy ] ![ wrapped ] ; ) => do
+      let row ← expandNamedTermDecl label.getString category params.getElems syns (some policy)
+      `(({ $row with collectionRepresentation := .wrapped } : GrammarRule))
+  | `(langDefTermDecl| $label:ident . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ $policy:langDefEvalPolicy ] ![ wrapped ] ; ) => do
+      let row ← expandNamedTermDecl (coreName label.getId) category params.getElems syns (some policy)
+      `(({ $row with collectionRepresentation := .wrapped } : GrammarRule))
   | `(langDefTermDecl| $label:str . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ; ) => do
       expandNamedTermDecl label.getString category params.getElems syns none
   | `(langDefTermDecl| $label:str . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ $policy:langDefEvalPolicy ] ; ) => do

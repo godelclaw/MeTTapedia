@@ -1,3 +1,6 @@
+import Mettapedia.OSLF.MeTTaIL.ReferenceStepDisciplines
+import Mettapedia.GSLT.LanguageDef.BindingCollectionEquationFamily
+import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceReplacement
 import Mathlib.Data.List.Forall2
 import Mettapedia.OSLF.MeTTaIL.CanonicalRenaming
 import Mettapedia.OSLF.MeTTaIL.ReferenceStepEquations
@@ -6,6 +9,7 @@ import Mettapedia.GSLT.LanguageDef.TypedPartialSpineRecovery
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.Permutation
 import Mettapedia.OSLF.MeTTaIL.Complete.Coherence
+import Mettapedia.OSLF.MeTTaIL.LawNormalTyping
 
 /-!
 # Deciding the declared equations of a bag presentation
@@ -11590,3 +11594,4445 @@ theorem native_group_source_account (language : LanguageDef) {unitLabel : String
 #print axioms native_group_source_account
 
 end Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.LexicalReadout
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware
+open Mettapedia.GSLT.LanguageDef.WellSorted EquationSemantics
+
+private def proc : TypeExpr := .base "P"
+private def dataType : TypeExpr := .collection .hashBag proc
+private def nestedType : TypeExpr := .collection .hashBag dataType
+private def bag (elements : List Pattern) : Pattern := .collection .hashBag elements none
+private def a : Pattern := .apply "A" []
+private def b : Pattern := .apply "B" []
+private def z : Pattern := .apply "Z" []
+private def zero : GrammarRule where
+  label := "Z"
+  category := "P"
+  params := []
+  syntaxPattern := []
+private def atomA : GrammarRule := {zero with label := "A"}
+private def atomB : GrammarRule := {zero with label := "B"}
+private def carrier : GrammarRule where
+  label := "Par"
+  category := "P"
+  params := [.simple "items" dataType]
+  syntaxPattern := []
+  algebra? := some {flatten := true, unit := some "Z"}
+private def wrapper : GrammarRule where
+  label := "Box"
+  category := "P"
+  params := [.simple "data" nestedType, .simple "algebra" proc]
+  syntaxPattern := []
+  collectionRepresentation := .wrapped
+private def language : LanguageDef where
+  name := "RoleAwareSource"
+  types := [TypeDecl.plain "P"]
+  terms := [zero, atomA, atomB, carrier, wrapper]
+  equations := []
+  rewrites := []
+private def dataInput : Pattern := bag [bag [a], bag [z,a]]
+private def source : Pattern := .apply "Box" [dataInput, bag [bag [a,b], z]]
+private def result : Pattern := .apply "Box" [dataInput, bag [a,b]]
+private def subSource : Pattern := .subst (bag [bag [.bvar 0, .bvar 1], z]) a
+private def subResult : Pattern := .subst (bag [.bvar 0, .bvar 1]) a
+
+private theorem declared : CollectionLaws.declared language = [⟨.hashBag, some "Z"⟩] := by cbv
+private theorem homogeneous : checkBareHomogeneous (CollectionLaws.declared language) language = true := by decide +kernel
+
+private theorem carrier_algebra : AlgebraRule language carrier .hashBag ⟨true, some "Z"⟩ := by
+  refine ⟨by decide +kernel, rfl, ⟨"items", rfl⟩, ?_⟩
+  intro identifier selected
+  cases Option.some.inj selected
+  exact ⟨zero, by decide +kernel, rfl, rfl, rfl⟩
+
+private theorem authorized : SourceAlgebras (CollectionLaws.declared language) language := by
+  intro rule member kind parameter law shape found
+  have choices : rule = zero ∨ rule = atomA ∨ rule = atomB ∨ rule = carrier ∨ rule = wrapper := by
+    simpa only [language, List.mem_cons, List.not_mem_nil, or_false] using member
+  have ordinaryShape := (GrammarRule.bareParams_cons_iff _ _ _).mp shape |>.2
+  rcases choices with rfl | rfl | rfl | rfl | rfl
+  · simp [zero] at ordinaryShape
+  · simp [atomA, zero] at ordinaryShape
+  · simp [atomB, zero] at ordinaryShape
+  · cases kind <;> simp [carrier, dataType, proc] at ordinaryShape
+    rw [declared] at found
+    simp only [lawFor, List.find?_cons] at found
+    cases found
+    exact carrier_algebra
+  · simp [wrapper] at ordinaryShape
+
+private theorem literal_source (label : String) : ReferenceStep.SourceCollections language (.apply label []) :=
+  .apply (by intro item member; cases member)
+
+private theorem par_source {bound : List TypeExpr} {elements : List Pattern}
+    (typed : HasType language FreeTypeContext.empty bound (bag elements) dataType)
+    (children : ∀ item ∈ elements, ReferenceStep.SourceCollections language item) :
+    ReferenceStep.SourceCollections language (bag elements) :=
+  .collection (.inr ⟨carrier, by decide +kernel, .simple "items" dataType,
+    by decide +kernel, proc, .here, FreeTypeContext.empty, bound, typed⟩) children
+
+private theorem data_source {elements : List Pattern} {element : TypeExpr}
+    (occurs : CollectionTypeOccurs .hashBag element nestedType)
+    (typed : HasType language FreeTypeContext.empty [] (bag elements) (.collection .hashBag element))
+    (children : ∀ item ∈ elements, ReferenceStep.SourceCollections language item) :
+    ReferenceStep.SourceCollections language (bag elements) :=
+  .collection (.inr ⟨wrapper, by decide +kernel, .simple "data" nestedType,
+    by decide +kernel, element, occurs, FreeTypeContext.empty, [], typed⟩) children
+
+private theorem data_eligible : ReferenceStep.SourceCollections language dataInput := by
+  apply data_source (element := dataType) .here (checkHasType_sound (by decide +kernel))
+  intro item member
+  have choices : item = bag [a] ∨ item = bag [z,a] := by
+    simpa only [dataInput, List.mem_cons, List.not_mem_nil, or_false] using member
+  rcases choices with rfl | rfl
+  · apply data_source (element := proc) (.element .here) (checkHasType_sound (by decide +kernel))
+    intro item member
+    obtain rfl := List.mem_singleton.mp member
+    exact literal_source "A"
+  · apply data_source (element := proc) (.element .here) (checkHasType_sound (by decide +kernel))
+    intro item member
+    rcases List.mem_cons.mp member with rfl | member
+    · exact literal_source "Z"
+    · obtain rfl := List.mem_singleton.mp member
+      exact literal_source "A"
+
+private theorem source_eligible : ReferenceStep.SourceCollections language source := by
+  apply ReferenceStep.SourceCollections.apply
+  intro item member
+  have choices : item = dataInput ∨ item = bag [bag [a,b], z] := by
+    simpa only [source, List.mem_cons, List.not_mem_nil, or_false] using member
+  rcases choices with rfl | rfl
+  · exact data_eligible
+  · apply par_source (bound := []) (checkHasType_sound (by decide +kernel))
+    intro item member
+    rcases List.mem_cons.mp member with rfl | member
+    · apply par_source (bound := []) (checkHasType_sound (by decide +kernel))
+      intro item member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact literal_source "A"
+      · obtain rfl := List.mem_singleton.mp member
+        exact literal_source "B"
+    · obtain rfl := List.mem_singleton.mp member
+      exact literal_source "Z"
+
+/-- The genuine mixed signature keeps its nested data containers and their
+unit-valued data, while the separate base-result algebra slot normalizes. -/
+theorem mixed_data_and_algebra (relEnv : Engine.RelationEnv) :
+    language.validate = [] ∧
+      checkBareHomogeneous (CollectionLaws.declared language) language = true ∧
+      HasType language FreeTypeContext.empty [] source proc ∧
+      reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] source proc = result ∧
+      source ≠ result ∧
+      HasType language FreeTypeContext.empty [] result proc ∧
+      ReferenceStep.Equivalent relEnv language source result := by
+  have typed : HasType language FreeTypeContext.empty [] source proc := checkHasType_sound (by decide +kernel)
+  have actual : reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] source proc = result := by cbv
+  have targetTyped := reduceAt_hasType homogeneous [] source typed
+  have equivalent := reduceAt_source_equivalent (relEnv := relEnv) homogeneous authorized [] source typed source_eligible
+  rw [actual] at targetTyped equivalent
+  exact ⟨by cbv, homogeneous, typed, actual, by decide +kernel, targetTyped, equivalent⟩
+
+private theorem substitution_eligible : ReferenceStep.SourceCollections language subSource := by
+  apply ReferenceStep.SourceCollections.subst
+  · apply par_source (bound := [proc,proc]) (checkHasType_sound (by decide +kernel))
+    intro item member
+    rcases List.mem_cons.mp member with rfl | member
+    · apply par_source (bound := [proc,proc]) (checkHasType_sound (by decide +kernel))
+      intro item member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact .bvar 0
+      · obtain rfl := List.mem_singleton.mp member
+        exact .bvar 1
+    · obtain rfl := List.mem_singleton.mp member
+      exact literal_source "Z"
+  · exact literal_source "A"
+
+/-- Pending substitution is handled in its actual domain extension, with
+normalization under that scope and the original outer bound context retained. -/
+theorem pending_substitution_scope (relEnv : Engine.RelationEnv) :
+    HasType language FreeTypeContext.empty [proc] subSource proc ∧
+      isObjectPattern subSource = false ∧
+      reduceAt (CollectionLaws.declared language) [proc] language FreeTypeContext.empty [proc] subSource proc = subResult ∧
+      HasType language FreeTypeContext.empty [proc] subResult proc ∧
+      ReferenceStep.Equivalent relEnv language subSource subResult := by
+  have typed : HasType language FreeTypeContext.empty [proc] subSource proc :=
+    HasType.subst (domain := proc) (checkHasType_sound (by decide +kernel)) (checkHasType_sound (by decide +kernel))
+  have actual : reduceAt (CollectionLaws.declared language) [proc] language FreeTypeContext.empty [proc] subSource proc = subResult := by cbv
+  have targetTyped := reduceAt_hasType homogeneous [proc] subSource typed
+  have equivalent := reduceAt_source_equivalent (relEnv := relEnv) homogeneous authorized [proc] subSource typed substitution_eligible
+  rw [actual] at targetTyped equivalent
+  exact ⟨typed, rfl, actual, targetTyped, equivalent⟩
+
+#print axioms authorized
+#print axioms mixed_data_and_algebra
+#print axioms pending_substitution_scope
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware
+open Mettapedia.GSLT.LanguageDef.WellSorted EquationSemantics
+
+private def wrongUnit : GrammarRule := {zero with label := "Wrong", category := "Q"}
+private def unlicensedCarrier : GrammarRule :=
+  {carrier with algebra? := some {flatten := true, unit := some "Wrong"}}
+private def unlicensedLanguage : LanguageDef :=
+  {language with
+    types := [TypeDecl.plain "P", TypeDecl.plain "Q"]
+    terms := [atomA, atomB, wrongUnit, unlicensedCarrier]}
+private def unlicensedSource : Pattern := bag [bag [a,b]]
+private def unlicensedTarget : Pattern := bag [a,b]
+
+private theorem unlicensed_no_algebra {rule : GrammarRule} {kind : CollType} {algebra : CollectionAlgebra} :
+    ¬ AlgebraRule unlicensedLanguage rule kind algebra := by
+  intro declaration
+  have choices : rule = atomA ∨ rule = atomB ∨ rule = wrongUnit ∨ rule = unlicensedCarrier := by
+    simpa only [unlicensedLanguage, List.mem_cons, List.not_mem_nil, or_false] using declaration.authored
+  obtain ⟨parameter, shape⟩ := declaration.selfSorted
+  rcases choices with rfl | rfl | rfl | rfl
+  · simp [atomA, zero] at shape
+  · simp [atomB, zero] at shape
+  · simp [wrongUnit, zero] at shape
+  · have declared := declaration.declared
+    change some (⟨true, some "Wrong"⟩ : CollectionAlgebra) = some algebra at declared
+    cases Option.some.inj declared
+    obtain ⟨unitRule, member, labelled, sorted, _⟩ := declaration.unitAuthored "Wrong" rfl
+    have choices : unitRule = atomA ∨ unitRule = atomB ∨ unitRule = wrongUnit ∨ unitRule = unlicensedCarrier := by
+      simpa only [unlicensedLanguage, List.mem_cons, List.not_mem_nil, or_false] using member
+    rcases choices with rfl | rfl | rfl | rfl
+    · simp [atomA, zero] at labelled
+    · simp [atomB, zero] at labelled
+    · simp [wrongUnit, zero, unlicensedCarrier, carrier] at sorted
+    · simp [unlicensedCarrier, carrier] at labelled
+
+private theorem unlicensed_generator_intrinsic (relEnv : Engine.RelationEnv) {first second : Pattern}
+    (generator : ReferenceStep.Generator relEnv unlicensedLanguage first second) :
+    CanonicalBags.BagStep first second := by
+  rcases generator with authored | derived
+  · cases authored with
+    | forward member _ _ => cases member
+    | reverse member _ _ => cases member
+  · cases derived with
+    | bagPerm _ _ permutation => exact .permute rfl permutation
+    | setPerm _ _ permutation => exact .permute rfl permutation
+    | setDedup _ _ => exact .members fun value => by simp
+    | flatten declaration _ _ => exact (unlicensed_no_algebra declaration).elim
+    | singleton declaration _ _ => exact (unlicensed_no_algebra declaration).elim
+    | unitElim declaration _ _ => exact (unlicensed_no_algebra declaration).elim
+    | emptyUnit declaration _ _ => exact (unlicensed_no_algebra declaration).elim
+
+private theorem unlicensed_equivalent_intrinsic (relEnv : Engine.RelationEnv) {first second : Pattern}
+    (related : ReferenceStep.Equivalent relEnv unlicensedLanguage first second) :
+    CanonicalBags.Same first second := by
+  induction related with
+  | rel _ _ step =>
+      cases step with
+      | inContext context generator => exact ((unlicensed_generator_intrinsic relEnv generator).fill context).canon_eq
+  | refl => rfl
+  | symm _ _ _ recurse => exact recurse.symm
+  | trans _ _ _ _ _ first second => exact first.trans second
+
+/-- Structural validity and typing preservation do not authorize an algebra
+whose selected unit has the wrong source category. The actual computed
+flattening is refused by the original reference equation relation. -/
+theorem wrong_unit_source_authority (relEnv : Engine.RelationEnv) :
+    unlicensedLanguage.validate = [] ∧
+      checkBareHomogeneous (CollectionLaws.declared unlicensedLanguage) unlicensedLanguage = true ∧
+      HasType unlicensedLanguage FreeTypeContext.empty [] unlicensedSource proc ∧
+      reduceAt (CollectionLaws.declared unlicensedLanguage) [] unlicensedLanguage
+        FreeTypeContext.empty [] unlicensedSource proc = unlicensedTarget ∧
+      HasType unlicensedLanguage FreeTypeContext.empty [] unlicensedTarget proc ∧
+      ¬ SourceAlgebras (CollectionLaws.declared unlicensedLanguage) unlicensedLanguage ∧
+      ¬ ReferenceStep.Equivalent relEnv unlicensedLanguage unlicensedSource unlicensedTarget := by
+  refine ⟨by cbv, by decide +kernel, checkHasType_sound (by decide +kernel), by cbv,
+    checkHasType_sound (by decide +kernel), ?_, ?_⟩
+  · intro authorized
+    have declaration := authorized unlicensedCarrier (by decide +kernel) .hashBag "items"
+      (⟨.hashBag,some "Wrong"⟩ : CollectionLaws.Laws) rfl (by decide +kernel)
+    exact unlicensed_no_algebra declaration
+  · intro related
+    have same := unlicensed_equivalent_intrinsic relEnv related
+    have different : ¬ CanonicalBags.Same unlicensedSource unlicensedTarget := by
+      unfold CanonicalBags.Same
+      cbv
+      intro impossible
+      cases impossible
+    exact different same
+
+#print axioms wrong_unit_source_authority
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware
+open Mettapedia.GSLT.LanguageDef.WellSorted EquationSemantics
+
+/-- Typed data readback and source equality have separate jobs. Role-aware
+traversal, even followed by intrinsic canonical sorting, keeps two distinct
+data presentations which the actual declared unit law equates. -/
+theorem data_unit_comparison_separation (relEnv : Engine.RelationEnv) :
+    HasType language FreeTypeContext.empty [] (bag [z]) dataType ∧
+      HasType language FreeTypeContext.empty [] (bag []) dataType ∧
+      ReferenceStep.Equivalent relEnv language (bag [z]) (bag []) ∧
+      reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] (bag [z]) dataType = bag [z] ∧
+      reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] (bag []) dataType = bag [] ∧
+      CanonicalBags.canon
+        (reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] (bag [z]) dataType) ≠
+      CanonicalBags.canon
+        (reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] (bag []) dataType) := by
+  have sourceLaw : DerivedInstance language (bag [z]) (bag []) :=
+    .unitElim (pre := []) (post := []) carrier_algebra rfl
+      ⟨FreeTypeContext.empty, [], checkHasType_sound (by decide +kernel)⟩
+  refine ⟨checkHasType_sound (by decide +kernel), checkHasType_sound (by decide +kernel),
+    .rel _ _ (.inContext .hole (.inr sourceLaw)), by cbv, by cbv, ?_⟩
+  cbv
+  intro impossible
+  cases impossible
+
+#print axioms data_unit_comparison_separation
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- Keep the submitted physical source record and normalize its value at
+its actual caller role. This does not invent a new source zipper from the
+normalized output or decide how an enclosing algebra splices the record. -/
+def sourceRecord (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr) (expected : TypeExpr)
+    (occurrence : SourceOccurrence) : SourceOccurrence :=
+  {occurrence with value := reduceAt laws domains language free bound occurrence.original expected}
+
+theorem sourceRecord_account (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr) (expected : TypeExpr)
+    (occurrence : SourceOccurrence) :
+    (sourceRecord laws domains language free bound expected occurrence).original = occurrence.original ∧
+      (sourceRecord laws domains language free bound expected occurrence).address = occurrence.address ∧
+      (sourceRecord laws domains language free bound expected occurrence).context = occurrence.context :=
+  ⟨rfl, rfl, rfl⟩
+
+theorem sourceRecords_address_account (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr) (expected : TypeExpr)
+    (occurrences : List SourceOccurrence) :
+    (occurrences.map (sourceRecord laws domains language free bound expected)).map SourceOccurrence.address =
+      occurrences.map SourceOccurrence.address := by
+  simp only [List.map_map, Function.comp_def, sourceRecord]
+
+/-- Replacement retains the exact typed occurrence, including the original
+parameter choices and the full context extended by every enclosing binder. -/
+theorem sourceRecord_typedAt {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    (checked : checkBareHomogeneous laws language = true) (domains : List TypeExpr)
+    {rootBound bound : List TypeExpr} {rootType expected : TypeExpr} {occurrence : SourceOccurrence}
+    (selected : TypedAt language free occurrence.original occurrence.context rootBound rootType bound expected) :
+    TypedAt language free (sourceRecord laws domains language free bound expected occurrence).value
+      occurrence.context rootBound rootType bound expected := by
+  apply selected.replaceAt
+  · intro context parameter represented
+    exact BagNormalForm.represents_fill context
+      (fun parameter represented => reduceAt_parameter_representation laws domains language free bound expected represented)
+      parameter represented
+  · exact reduceAt_hasType checked domains occurrence.original selected.focus_typed
+
+/-- The actual source equation relation follows the original source frame.
+It is independent of the occurrence's previous cached normal value. -/
+theorem sourceRecord_source {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (domains : List TypeExpr) {rootBound bound : List TypeExpr} {rootType expected : TypeExpr}
+    {occurrence : SourceOccurrence}
+    (selected : TypedAt language free occurrence.original occurrence.context rootBound rootType bound expected)
+    (eligible : ReferenceStep.SourceCollections language occurrence.original) :
+    ReferenceStep.Equivalent relEnv language (occurrence.context.fill occurrence.original)
+      (occurrence.context.fill (sourceRecord laws domains language free bound expected occurrence).value) :=
+  ReferenceStep.equivalent_fill occurrence.context
+    (reduceAt_source_equivalent checked authorized domains occurrence.original selected.focus_typed eligible)
+
+theorem sourceRecord_sourceCollections {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    (checked : checkBareHomogeneous laws language = true) (domains : List TypeExpr)
+    (domainRoles : ∀ domain ∈ domains, SourceTypeOccurrences language domain)
+    {rootBound bound : List TypeExpr} {rootType expected : TypeExpr} {occurrence : SourceOccurrence}
+    (selected : TypedAt language free occurrence.original occurrence.context rootBound rootType bound expected)
+    (eligible : ReferenceStep.SourceCollections language occurrence.original)
+    (role : SourceTypeOccurrences language expected) :
+    ReferenceStep.SourceCollections language
+      (sourceRecord laws domains language free bound expected occurrence).value :=
+  reduceAt_sourceCollections checked domains domainRoles occurrence.original selected.focus_typed eligible role
+
+#print axioms sourceRecord_typedAt
+#print axioms sourceRecord_source
+#print axioms sourceRecord_sourceCollections
+#print axioms sourceRecords_address_account
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily
+open WithAuthoredEquations.AlgebraFocus RoleAwareReadout
+
+/-- The finite checker reconstructs the source authority from the actual
+nonempty algebra row and its correctly sorted nullary unit. -/
+theorem automatic_source_algebra_authority :
+    checkSourceAlgebras (CollectionLaws.declared language) language = true ∧
+      ∃ receipt, checkedSourceAlgebras? (CollectionLaws.declared language) language = some receipt := by
+  refine ⟨by decide +kernel, ?_⟩
+  exact (checkedSourceAlgebras?_exact _ _).mpr
+    (checkSourceAlgebras_sound (by decide +kernel))
+
+theorem automatic_wrong_unit_rejected :
+    checkSourceAlgebras (CollectionLaws.declared unlicensedLanguage) unlicensedLanguage = false ∧
+      checkedSourceAlgebras? (CollectionLaws.declared unlicensedLanguage) unlicensedLanguage = none := by
+  have rejected : checkSourceAlgebras (CollectionLaws.declared unlicensedLanguage) unlicensedLanguage = false := by decide +kernel
+  exact ⟨rejected, by simp only [checkedSourceAlgebras?, rejected, Bool.false_eq_true, dite_false]⟩
+
+/-- The mixed nested-data output retains its actual declared collection type
+occurrences, including unit-valued data, without reusing an existential sort. -/
+theorem mixed_output_source_collections : ReferenceStep.SourceCollections language result := by
+  have typed : HasType language FreeTypeContext.empty [] source proc := checkHasType_sound (by decide +kernel)
+  have output := reduceAt_sourceCollections homogeneous [] (by intro domain member; cases member)
+    source typed source_eligible (SourceTypeOccurrences.base language "P")
+  have actual : reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] source proc = result := by cbv
+  exact actual ▸ output
+
+theorem substitution_output_source_collections : ReferenceStep.SourceCollections language subResult := by
+  have typed : HasType language FreeTypeContext.empty [proc] subSource proc :=
+    HasType.subst (domain := proc) (checkHasType_sound (by decide +kernel)) (checkHasType_sound (by decide +kernel))
+  have output := reduceAt_sourceCollections homogeneous [proc]
+    (by intro domain member; cases List.mem_singleton.mp member; exact SourceTypeOccurrences.base language "P")
+    subSource typed substitution_eligible (SourceTypeOccurrences.base language "P")
+  have actual : reduceAt (CollectionLaws.declared language) [proc] language FreeTypeContext.empty [proc] subSource proc = subResult := by cbv
+  exact actual ▸ output
+
+private def algebraSlot : SourceOccurrence :=
+  ⟨bag [bag [a,b],z], [1], .apply "Box" [dataInput] .hole [], bag [bag [a,b],z]⟩
+
+private theorem algebraSlot_typed :
+    TypedAt language FreeTypeContext.empty algebraSlot.original algebraSlot.context [] proc [] proc := by
+  apply TypedAt.application (rule := wrapper) (beforeParams := [.simple "data" nestedType])
+    (afterParams := []) (parameter := .simple "algebra" proc)
+  · decide +kernel
+  · intro bare
+    have checked := (usesBareCollection?_eq_true_iff wrapper).mpr bare
+    simp [usesBareCollection?, wrapper] at checked
+  · exact checkArgumentsHaveTypes_sound_of
+      (fun _ _ _ accepted => checkHasType_sound accepted) (by decide +kernel)
+  · rfl
+  · rfl
+  · rfl
+  · exact .here (checkHasType_sound (by decide +kernel))
+
+/-- Normalizing the real algebra slot retains the same globally typed zipper,
+its original address, and the surrounding nested-data argument. -/
+theorem typed_original_algebra_slot (relEnv : Engine.RelationEnv) :
+    (sourceRecord (CollectionLaws.declared language) [] language FreeTypeContext.empty [] proc algebraSlot).address = [1] ∧
+      (sourceRecord (CollectionLaws.declared language) [] language FreeTypeContext.empty [] proc algebraSlot).context = algebraSlot.context ∧
+      TypedAt language FreeTypeContext.empty
+        (sourceRecord (CollectionLaws.declared language) [] language FreeTypeContext.empty [] proc algebraSlot).value
+        algebraSlot.context [] proc [] proc ∧
+      ReferenceStep.Equivalent relEnv language source result := by
+  refine ⟨rfl, rfl, sourceRecord_typedAt homogeneous [] algebraSlot_typed, ?_⟩
+  have sourceSlot : ReferenceStep.SourceCollections language algebraSlot.original := by
+    have whole := source_eligible
+    cases whole with
+    | apply children =>
+        exact children (bag [bag [a,b],z]) (List.mem_cons_of_mem _ List.mem_cons_self)
+  have equivalent := sourceRecord_source (relEnv := relEnv) homogeneous
+    (checkSourceAlgebras_sound automatic_source_algebra_authority.1) [] algebraSlot_typed sourceSlot
+  have actual : sourceRecord (CollectionLaws.declared language) [] language FreeTypeContext.empty [] proc algebraSlot =
+      {algebraSlot with value := bag [a,b]} := by cbv
+  change ReferenceStep.Equivalent relEnv language (algebraSlot.context.fill algebraSlot.original)
+    (algebraSlot.context.fill (sourceRecord (CollectionLaws.declared language) [] language
+      FreeTypeContext.empty [] proc algebraSlot).value) at equivalent
+  rw [actual] at equivalent
+  exact equivalent
+
+/-- Unit deletion changes output positions. Reusing the output index as the
+source token address points at Z, whereas the two surviving equal tokens
+came from the distinct original addresses 1 and 2. -/
+theorem output_index_is_not_source_origin :
+    reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] (bag [z,a,a]) proc = bag [a,a] ∧
+      reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [] (bag [z,a,a]) dataType = bag [z,a,a] ∧
+      (sourceOccurrences "Z" (bag [z,a,a])).map SourceOccurrence.address = [[0],[1],[2]] ∧
+      (sourceOccurrences "Z" (bag [z,a,a])).map SourceOccurrence.original = [z,a,a] ∧
+      ((sourceOccurrences "Z" (bag [z,a,a]))[0]?).map SourceOccurrence.original ≠ some a := by
+  refine ⟨by cbv, by cbv, by cbv, by cbv, ?_⟩
+  decide +kernel
+
+#print axioms automatic_source_algebra_authority
+#print axioms automatic_wrong_unit_rejected
+#print axioms mixed_output_source_collections
+#print axioms substitution_output_source_collections
+#print axioms typed_original_algebra_slot
+#print axioms output_index_is_not_source_origin
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- A real visit retains the existing physical source record and its caller
+role. A missing role marks an unchecked argument held opaque. -/
+structure TypedOrigin where
+  source : SourceOccurrence
+  bound : List TypeExpr
+  expected : Option TypeExpr
+  declaration : Option (Nat × GrammarRule) := none
+  deriving Repr, DecidableEq
+
+def TypedOrigin.underContext (context : OneHoleContext) (origin : TypedOrigin) : TypedOrigin :=
+  {origin with source := origin.source.underContext context}
+
+/-- A removed node retains both its original occurrence and the algebra
+request which classified it. Source authority is checked independently. -/
+structure AlgebraAdministration where
+  origin : TypedOrigin
+  declaration : Nat × GrammarRule
+  law : Laws
+  deriving Repr, DecidableEq
+
+def AlgebraAdministration.underContext (context : OneHoleContext)
+    (event : AlgebraAdministration) : AlgebraAdministration :=
+  {event with origin := event.origin.underContext context}
+
+/-- The source visits keep their order. Surviving output roots, discarded
+unit nodes and flattened carrier nodes retain those original records.
+An unchecked subtree is held opaque and is not labelled complete. -/
+structure TaggedReduction where
+  target : Pattern
+  root : TypedOrigin
+  children : List TypedOrigin
+  below : List TypedOrigin
+  visited : List TypedOrigin
+  unitRemovals : List AlgebraAdministration
+  carrierRemovals : List AlgebraAdministration
+  complete : Bool
+  deriving Repr, DecidableEq
+
+def TaggedReduction.survivors (trace : TaggedReduction) : List TypedOrigin := trace.root :: trace.below
+
+def TaggedReduction.underContext (context : OneHoleContext) (trace : TaggedReduction) : TaggedReduction :=
+  {trace with
+    root := trace.root.underContext context
+    children := trace.children.map (TypedOrigin.underContext context)
+    below := trace.below.map (TypedOrigin.underContext context)
+    visited := trace.visited.map (TypedOrigin.underContext context)
+    unitRemovals := trace.unitRemovals.map (AlgebraAdministration.underContext context)
+    carrierRemovals := trace.carrierRemovals.map (AlgebraAdministration.underContext context)}
+
+private def originAt (bound : List TypeExpr) (expected : Option TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern) : TypedOrigin :=
+  ⟨⟨source, [], .hole, target⟩, bound, expected, declaration⟩
+
+private def opaqueTrace (bound : List TypeExpr) (expected : Option TypeExpr)
+    (source : Pattern) (complete : Bool := false) : TaggedReduction :=
+  let root := originAt bound expected none source source
+  ⟨source, root, [], [], [root], [], [], complete⟩
+
+private def liftedChildren (frame : Nat → OneHoleContext) : Nat → List TaggedReduction → List TaggedReduction
+  | _, [] => []
+  | index, child :: children => child.underContext (frame index) :: liftedChildren frame (index + 1) children
+
+private theorem liftedChildren_targets (frame : Nat → OneHoleContext) (index : Nat)
+    (children : List TaggedReduction) :
+    (liftedChildren frame index children).map TaggedReduction.target = children.map TaggedReduction.target := by
+  induction children generalizing index with
+  | nil => rfl
+  | cons child children recurse =>
+      simp only [liftedChildren, List.map_cons, TaggedReduction.underContext, recurse]
+
+private def assembleTrace (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern)
+    (children : List TaggedReduction) : TaggedReduction :=
+  let root := originAt bound (some expected) declaration source target
+  ⟨target, root, children.map TaggedReduction.root, children.flatMap TaggedReduction.survivors,
+    root :: children.flatMap TaggedReduction.visited,
+    children.flatMap TaggedReduction.unitRemovals, children.flatMap TaggedReduction.carrierRemovals,
+    children.all TaggedReduction.complete⟩
+
+private structure TaggedFrontier where
+  values : List Pattern
+  children : List TypedOrigin
+  below : List TypedOrigin
+  units : List AlgebraAdministration
+  carriers : List AlgebraAdministration
+
+private def spliceTagged (declaration : Nat × GrammarRule) (law : Laws)
+    (child : TaggedReduction) : TaggedFrontier :=
+  match child.target with
+  | .collection actual elements none =>
+      if actual = law.kind then
+        ⟨elements, child.children, child.below, child.unitRemovals,
+          child.carrierRemovals ++ [⟨child.root, declaration, law⟩]⟩
+      else ⟨[child.target], [child.root], child.survivors, child.unitRemovals, child.carrierRemovals⟩
+  | .apply label [] =>
+      if law.unit = some label then
+        ⟨[], [], child.below, child.unitRemovals ++ [⟨child.root, declaration, law⟩], child.carrierRemovals⟩
+      else ⟨[child.target], [child.root], child.survivors, child.unitRemovals, child.carrierRemovals⟩
+  | _ => ⟨[child.target], [child.root], child.survivors, child.unitRemovals, child.carrierRemovals⟩
+
+private theorem spliceTagged_values (declaration : Nat × GrammarRule) (law : Laws)
+    (child : TaggedReduction) : (spliceTagged declaration law child).values = CollectionLaws.splice law child.target := by
+  cases shape : child.target with
+  | collection actual elements rest =>
+      cases rest with
+      | none => simp only [spliceTagged, shape, CollectionLaws.splice]; split <;> rfl
+      | some tail => simp only [spliceTagged, shape, CollectionLaws.splice]
+  | apply label arguments =>
+      cases arguments with
+      | nil => simp only [spliceTagged, shape, CollectionLaws.splice]; split <;> rfl
+      | cons head tail => simp only [spliceTagged, shape, CollectionLaws.splice]
+  | _ => simp only [spliceTagged, shape, CollectionLaws.splice]
+
+private def finishTagged (laws : List Laws) (declaration : Nat × GrammarRule)
+    (kind : CollType) (children : List TaggedReduction) : TaggedFrontier :=
+  match lawFor laws kind with
+  | none => ⟨children.map TaggedReduction.target, children.map TaggedReduction.root,
+      children.flatMap TaggedReduction.survivors,
+      children.flatMap TaggedReduction.unitRemovals, children.flatMap TaggedReduction.carrierRemovals⟩
+  | some law =>
+      let fronts := children.map (spliceTagged declaration law)
+      ⟨fronts.flatMap TaggedFrontier.values, fronts.flatMap TaggedFrontier.children,
+        fronts.flatMap TaggedFrontier.below, fronts.flatMap TaggedFrontier.units,
+        fronts.flatMap TaggedFrontier.carriers⟩
+
+private theorem finishTagged_values (laws : List Laws) (declaration : Nat × GrammarRule)
+    (kind : CollType) (children : List TaggedReduction) :
+    (finishTagged laws declaration kind children).values =
+      finishAlgebra laws kind (children.map TaggedReduction.target) := by
+  unfold finishTagged finishAlgebra
+  cases found : lawFor laws kind with
+  | none => rfl
+  | some law =>
+      simp only [List.flatMap_map]
+      apply List.flatMap_congr
+      intro child member
+      exact spliceTagged_values declaration law child
+
+private def algebraTrace (laws : List Laws) (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Nat × GrammarRule) (source : Pattern) (kind : CollType) (rest : Option String)
+    (children : List TaggedReduction) : TaggedReduction :=
+  let front := finishTagged laws declaration kind children
+  let target := Pattern.collection kind front.values rest
+  let root := originAt bound (some expected) (some declaration) source target
+  ⟨target, root, front.children, front.below, root :: children.flatMap TaggedReduction.visited,
+    front.units, front.carriers, children.all TaggedReduction.complete⟩
+
+mutual
+  /-- Companion traversal of the actual role-aware reducer. Every origin is
+  created at a source visit, then moved as a record; equality of output values
+  is never used to reconstruct an original address. -/
+  def reduceAtTagged (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+      (free : FreeTypeContext) (bound : List TypeExpr) (source : Pattern) (expected : TypeExpr) : TaggedReduction :=
+    match source with
+    | .bvar _ | .fvar _ => opaqueTrace bound (some expected) source true
+    | .apply label arguments =>
+        match applicationRule? domains language free bound expected label arguments with
+        | none => opaqueTrace bound (some expected) source
+        | some rule =>
+            let children := liftedChildren (fun index => .apply label (arguments.take index) .hole
+              (arguments.drop (index + 1))) 0
+              (reduceArgumentsTagged laws domains language free bound arguments rule.params)
+            assembleTrace bound expected (some (language.terms.idxOf rule, rule)) source
+              (.apply label (children.map TaggedReduction.target)) children
+    | .lambda display body =>
+        match expected with
+        | .arrow domain codomain =>
+            let child := (reduceAtTagged laws domains language free (domain :: bound) body codomain).underContext
+              (.lambda display .hole)
+            assembleTrace bound expected none source (.lambda display child.target) [child]
+        | _ => opaqueTrace bound (some expected) source
+    | .multiLambda arity displays body =>
+        match expected with
+        | .arrow (.multiBinder domain) codomain =>
+            let child := (reduceAtTagged laws domains language free (List.replicate arity domain ++ bound) body codomain).underContext
+              (.multiLambda arity displays .hole)
+            assembleTrace bound expected none source (.multiLambda arity displays child.target) [child]
+        | _ => opaqueTrace bound (some expected) source
+    | .subst body replacement =>
+        match substitutionDomain? domains language free bound expected body replacement with
+        | none => opaqueTrace bound (some expected) source
+        | some domain =>
+            let first := (reduceAtTagged laws domains language free (domain :: bound) body expected).underContext
+              (.substBody .hole replacement)
+            let second := (reduceAtTagged laws domains language free bound replacement domain).underContext
+              (.substReplacement body .hole)
+            assembleTrace bound expected none source (.subst first.target second.target) [first,second]
+    | .collection kind elements rest =>
+        match expected with
+        | .collection actual element =>
+            if actual = kind then
+              let children := liftedChildren (fun index => .collection kind (elements.take index) .hole
+                (elements.drop (index + 1)) rest) 0
+                (reduceElementsTagged laws domains language free bound elements element)
+              assembleTrace bound expected none source (.collection kind (children.map TaggedReduction.target) rest) children
+            else opaqueTrace bound (some expected) source
+        | _ =>
+            match collectionRule? domains language free bound expected kind elements rest with
+            | none => opaqueTrace bound (some expected) source
+            | some rule =>
+                match bareCollectionElementType? rule kind expected with
+                | none => opaqueTrace bound (some expected) source
+                | some element =>
+                    let children := liftedChildren (fun index => .collection kind (elements.take index) .hole
+                      (elements.drop (index + 1)) rest) 0
+                      (reduceElementsTagged laws domains language free bound elements element)
+                    algebraTrace laws bound expected (language.terms.idxOf rule, rule) source kind rest children
+  termination_by sizeOf source
+
+  def reduceArgumentsTagged (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+      (free : FreeTypeContext) (bound : List TypeExpr) : List Pattern → List TermParam → List TaggedReduction
+    | [], _ => []
+    | argument :: arguments, parameter :: parameters =>
+        (match parameterType? parameter with
+        | some expected => reduceAtTagged laws domains language free bound argument expected
+        | none => opaqueTrace bound none argument) ::
+          reduceArgumentsTagged laws domains language free bound arguments parameters
+    | arguments, [] => arguments.map (fun argument => opaqueTrace bound none argument)
+  termination_by arguments _ => sizeOf arguments
+
+  def reduceElementsTagged (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+      (free : FreeTypeContext) (bound : List TypeExpr) : List Pattern → TypeExpr → List TaggedReduction
+    | [], _ => []
+    | element :: elements, expected => reduceAtTagged laws domains language free bound element expected ::
+        reduceElementsTagged laws domains language free bound elements expected
+  termination_by elements _ => sizeOf elements
+end
+
+private theorem reduceArgumentsTagged_targets_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (arguments : List Pattern) (parameters : List TermParam)
+    (each : ∀ argument ∈ arguments, ∀ expected,
+      (reduceAtTagged laws domains language free bound argument expected).target =
+        reduceAt laws domains language free bound argument expected) :
+    (reduceArgumentsTagged laws domains language free bound arguments parameters).map TaggedReduction.target =
+      reduceArguments laws domains language free bound arguments parameters := by
+  induction arguments generalizing parameters with
+  | nil => simp only [reduceArgumentsTagged, reduceArguments, List.map_nil]
+  | cons argument arguments recurse =>
+      cases parameters with
+      | nil => simp only [reduceArgumentsTagged, List.map_map, opaqueTrace, Function.comp_def, reduceArguments, List.map_id']
+      | cons parameter parameters =>
+          simp only [reduceArgumentsTagged, reduceArguments]
+          cases type : parameterType? parameter with
+          | none =>
+              simp only [opaqueTrace, List.map_cons]
+              exact congrArg (List.cons argument)
+                (recurse parameters (fun value member expected => each value (.tail _ member) expected))
+          | some expected =>
+              simp only [List.map_cons, each argument (.head _) expected]
+              exact congrArg (List.cons (reduceAt laws domains language free bound argument expected))
+                (recurse parameters (fun value member expected => each value (.tail _ member) expected))
+
+private theorem reduceElementsTagged_targets_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (elements : List Pattern) (expected : TypeExpr)
+    (each : ∀ element ∈ elements,
+      (reduceAtTagged laws domains language free bound element expected).target =
+        reduceAt laws domains language free bound element expected) :
+    (reduceElementsTagged laws domains language free bound elements expected).map TaggedReduction.target =
+      reduceElements laws domains language free bound elements expected := by
+  induction elements with
+  | nil => simp only [reduceElementsTagged, reduceElements, List.map_nil]
+  | cons element elements recurse =>
+      simp only [reduceElementsTagged, reduceElements, List.map_cons, each element (.head _)]
+      exact congrArg (List.cons (reduceAt laws domains language free bound element expected))
+        (recurse (fun value member => each value (.tail _ member)))
+
+/-- Erasing the companion origin account computes the actual existing
+role-aware reduction. It does not define the reducer by its own reference. -/
+theorem reduceAtTagged_target (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (source : Pattern) :
+    ∀ bound expected, (reduceAtTagged laws domains language free bound source expected).target =
+      reduceAt laws domains language free bound source expected := by
+  induction source using Pattern.inductionOn with
+  | hbvar index => intro bound expected; simp only [reduceAtTagged, reduceAt, opaqueTrace]
+  | hfvar identifier => intro bound expected; simp only [reduceAtTagged, reduceAt, opaqueTrace]
+  | happly label arguments recurse =>
+      intro bound expected
+      simp only [reduceAtTagged, reduceAt]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => rfl
+      | some rule =>
+          simp only [assembleTrace, liftedChildren_targets]
+          exact congrArg (Pattern.apply label)
+            (reduceArgumentsTagged_targets_of laws domains language free bound arguments rule.params
+              (fun argument member expected => recurse argument member bound expected))
+  | hlambda display body recurse =>
+      intro bound expected
+      cases expected <;> simp [reduceAtTagged, reduceAt, opaqueTrace, assembleTrace, TaggedReduction.underContext, recurse]
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          cases domain <;> simp [reduceAtTagged, reduceAt, opaqueTrace, assembleTrace, TaggedReduction.underContext, recurse]
+      | _ => simp [reduceAtTagged, reduceAt, opaqueTrace]
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected
+      simp only [reduceAtTagged, reduceAt]
+      cases selected : substitutionDomain? domains language free bound expected body replacement with
+      | none => rfl
+      | some domain =>
+          exact congrArg₂ Pattern.subst (bodyIH (domain :: bound) expected) (replacementIH bound domain)
+  | hcollection kind elements rest recurse =>
+      intro bound expected
+      cases expected with
+      | collection actual element =>
+          by_cases same : actual = kind
+          · simp only [reduceAtTagged, reduceAt, same, ↓reduceIte, assembleTrace, liftedChildren_targets]
+            exact congrArg (fun values => Pattern.collection kind values rest)
+              (reduceElementsTagged_targets_of laws domains language free bound elements element
+                (fun value member => recurse value member bound element))
+          · simp only [reduceAtTagged, reduceAt, same, ↓reduceIte, opaqueTrace]
+      | base category =>
+          simp only [reduceAtTagged, reduceAt]
+          cases selected : collectionRule? domains language free bound (.base category) kind elements rest with
+          | none => rfl
+          | some rule =>
+              dsimp only
+              cases elementRead : bareCollectionElementType? rule kind (.base category) with
+              | none => rfl
+              | some element =>
+                  simp only [algebraTrace, finishTagged_values, liftedChildren_targets]
+                  exact congrArg (fun values => Pattern.collection kind (finishAlgebra laws kind values) rest)
+                    (reduceElementsTagged_targets_of laws domains language free bound elements element
+                      (fun value member => recurse value member bound element))
+      | arrow domain codomain =>
+          simp only [reduceAtTagged, reduceAt]
+          cases selected : collectionRule? domains language free bound (.arrow domain codomain) kind elements rest with
+          | none => rfl
+          | some rule =>
+              dsimp only
+              cases elementRead : bareCollectionElementType? rule kind (.arrow domain codomain) with
+              | none => rfl
+              | some element =>
+                  simp only [algebraTrace, finishTagged_values, liftedChildren_targets]
+                  exact congrArg (fun values => Pattern.collection kind (finishAlgebra laws kind values) rest)
+                    (reduceElementsTagged_targets_of laws domains language free bound elements element
+                      (fun value member => recurse value member bound element))
+      | multiBinder body =>
+          simp only [reduceAtTagged, reduceAt]
+          cases selected : collectionRule? domains language free bound (.multiBinder body) kind elements rest with
+          | none => rfl
+          | some rule =>
+              dsimp only
+              cases elementRead : bareCollectionElementType? rule kind (.multiBinder body) with
+              | none => rfl
+              | some element =>
+                  simp only [algebraTrace, finishTagged_values, liftedChildren_targets]
+                  exact congrArg (fun values => Pattern.collection kind (finishAlgebra laws kind values) rest)
+                    (reduceElementsTagged_targets_of laws domains language free bound elements element
+                      (fun value member => recurse value member bound element))
+
+#print axioms reduceAtTagged_target
+
+/-- The original source visit sequence is partitioned without changing any
+record or multiplicity. Units and carrier administrations are not surviving
+tokens and are not new logical derivations. -/
+def TaggedReduction.SourceAccount (trace : TaggedReduction) : Prop :=
+  trace.visited.Perm (trace.survivors ++ trace.unitRemovals.map AlgebraAdministration.origin ++
+    trace.carrierRemovals.map AlgebraAdministration.origin)
+
+private theorem opaqueTrace_account (bound : List TypeExpr) (expected : Option TypeExpr)
+    (source : Pattern) (complete : Bool) : (opaqueTrace bound expected source complete).SourceAccount := by
+  exact List.Perm.refl _
+
+private theorem taggedAccount_underContext (context : OneHoleContext) {trace : TaggedReduction}
+    (account : trace.SourceAccount) : (trace.underContext context).SourceAccount := by
+  have mapped := account.map (TypedOrigin.underContext context)
+  simpa only [TaggedReduction.SourceAccount, TaggedReduction.underContext,
+    TaggedReduction.survivors, List.map_append, List.map_cons, List.map_map,
+    Function.comp_def, AlgebraAdministration.underContext] using mapped
+
+private theorem flatMap_partition_account {α : Type} (items : List α)
+    (visited kept units carriers : α → List TypedOrigin)
+    (each : ∀ item ∈ items, (visited item).Perm (kept item ++ units item ++ carriers item)) :
+    (items.flatMap visited).Perm
+      (items.flatMap kept ++ items.flatMap units ++ items.flatMap carriers) := by
+  induction items with
+  | nil => exact .refl _
+  | cons item items recurse =>
+      have first := each item (.head _)
+      have rest := recurse (fun other member => each other (.tail _ member))
+      apply List.perm_iff_count.mpr
+      intro origin
+      have firstCount := List.perm_iff_count.mp first origin
+      have restCount := List.perm_iff_count.mp rest origin
+      simp only [List.count_append, List.flatMap_cons] at firstCount restCount ⊢
+      omega
+
+private theorem assembleTrace_account (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern)
+    (children : List TaggedReduction) (each : ∀ child ∈ children, child.SourceAccount) :
+    (assembleTrace bound expected declaration source target children).SourceAccount := by
+  have combined := flatMap_partition_account children TaggedReduction.visited TaggedReduction.survivors
+    (fun child => child.unitRemovals.map AlgebraAdministration.origin)
+    (fun child => child.carrierRemovals.map AlgebraAdministration.origin) each
+  have rooted := combined.cons (originAt bound (some expected) declaration source target)
+  simpa only [TaggedReduction.SourceAccount, TaggedReduction.survivors, assembleTrace,
+    List.map_flatMap, List.cons_append] using rooted
+
+private theorem spliceTagged_account (declaration : Nat × GrammarRule) (law : Laws)
+    {child : TaggedReduction} (account : child.SourceAccount) :
+    child.visited.Perm ((spliceTagged declaration law child).below ++
+      (spliceTagged declaration law child).units.map AlgebraAdministration.origin ++
+      (spliceTagged declaration law child).carriers.map AlgebraAdministration.origin) := by
+  cases shape : child.target with
+  | collection actual elements rest =>
+      cases rest with
+      | none =>
+          simp only [spliceTagged, shape]
+          split
+          · apply List.perm_iff_count.mpr
+            intro origin
+            have count := List.perm_iff_count.mp account origin
+            simp only [TaggedReduction.survivors, List.count_cons, List.count_append,
+              List.map_append, List.map_cons, List.map_nil, List.count_nil] at count ⊢
+            omega
+          · exact account
+      | some => simpa only [spliceTagged, shape, TaggedReduction.SourceAccount] using account
+  | apply label arguments =>
+      cases arguments with
+      | nil =>
+          simp only [spliceTagged, shape]
+          split
+          · apply List.perm_iff_count.mpr
+            intro origin
+            have count := List.perm_iff_count.mp account origin
+            simp only [TaggedReduction.survivors, List.count_cons, List.count_append,
+              List.map_append, List.map_cons, List.map_nil, List.count_nil] at count ⊢
+            omega
+          · exact account
+      | cons => simpa only [spliceTagged, shape, TaggedReduction.SourceAccount] using account
+  | _ => simpa only [spliceTagged, shape, TaggedReduction.SourceAccount] using account
+
+private theorem finishTagged_account (laws : List Laws) (declaration : Nat × GrammarRule)
+    (kind : CollType) (children : List TaggedReduction)
+    (each : ∀ child ∈ children, child.SourceAccount) :
+    (children.flatMap TaggedReduction.visited).Perm
+      ((finishTagged laws declaration kind children).below ++
+        (finishTagged laws declaration kind children).units.map AlgebraAdministration.origin ++
+        (finishTagged laws declaration kind children).carriers.map AlgebraAdministration.origin) := by
+  unfold finishTagged
+  cases found : lawFor laws kind with
+  | none =>
+      simpa only [List.map_flatMap] using flatMap_partition_account children
+        TaggedReduction.visited TaggedReduction.survivors
+        (fun child => child.unitRemovals.map AlgebraAdministration.origin)
+        (fun child => child.carrierRemovals.map AlgebraAdministration.origin) each
+  | some law =>
+      simpa only [List.flatMap_map, List.map_flatMap, Function.comp_def] using
+        flatMap_partition_account children TaggedReduction.visited
+          (fun child => (spliceTagged declaration law child).below)
+          (fun child => (spliceTagged declaration law child).units.map AlgebraAdministration.origin)
+          (fun child => (spliceTagged declaration law child).carriers.map AlgebraAdministration.origin)
+          (fun child member => spliceTagged_account declaration law (each child member))
+
+private theorem algebraTrace_account (laws : List Laws) (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Nat × GrammarRule) (source : Pattern) (kind : CollType) (rest : Option String)
+    (children : List TaggedReduction) (each : ∀ child ∈ children, child.SourceAccount) :
+    (algebraTrace laws bound expected declaration source kind rest children).SourceAccount := by
+  have combined := finishTagged_account laws declaration kind children each
+  have rooted := combined.cons (originAt bound (some expected) (some declaration) source
+    (.collection kind (finishTagged laws declaration kind children).values rest))
+  simpa only [TaggedReduction.SourceAccount, TaggedReduction.survivors, algebraTrace,
+    List.cons_append] using rooted
+
+private theorem liftedChildren_account (frame : Nat → OneHoleContext) (index : Nat)
+    (children : List TaggedReduction) (each : ∀ child ∈ children, child.SourceAccount) :
+    ∀ child ∈ liftedChildren frame index children, child.SourceAccount := by
+  induction children generalizing index with
+  | nil => simp only [liftedChildren, List.not_mem_nil, false_implies, implies_true]
+  | cons child children recurse =>
+      intro current member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact taggedAccount_underContext (frame index) (each child (.head _))
+      · exact recurse (index + 1) (fun other member => each other (.tail _ member)) current member
+
+private theorem reduceArgumentsTagged_account_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (arguments : List Pattern) (parameters : List TermParam)
+    (each : ∀ argument ∈ arguments, ∀ expected,
+      (reduceAtTagged laws domains language free bound argument expected).SourceAccount) :
+    ∀ child ∈ reduceArgumentsTagged laws domains language free bound arguments parameters, child.SourceAccount := by
+  induction arguments generalizing parameters with
+  | nil => simp only [reduceArgumentsTagged, List.not_mem_nil, false_implies, implies_true]
+  | cons argument arguments recurse =>
+      cases parameters with
+      | nil =>
+          simp only [reduceArgumentsTagged]
+          intro child member
+          obtain ⟨value, _, rfl⟩ := List.mem_map.mp member
+          exact opaqueTrace_account bound none value false
+      | cons parameter parameters =>
+          simp only [reduceArgumentsTagged]
+          intro child member
+          rcases List.mem_cons.mp member with rfl | member
+          · cases type : parameterType? parameter with
+            | none => exact opaqueTrace_account bound none argument false
+            | some expected => exact each argument (.head _) expected
+          · exact recurse parameters (fun value member expected => each value (.tail _ member) expected) child member
+
+private theorem reduceElementsTagged_account_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (elements : List Pattern) (expected : TypeExpr)
+    (each : ∀ element ∈ elements, (reduceAtTagged laws domains language free bound element expected).SourceAccount) :
+    ∀ child ∈ reduceElementsTagged laws domains language free bound elements expected, child.SourceAccount := by
+  induction elements with
+  | nil => simp only [reduceElementsTagged, List.not_mem_nil, false_implies, implies_true]
+  | cons element elements recurse =>
+      intro child member
+      simp only [reduceElementsTagged] at member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact each element (.head _)
+      · exact recurse (fun value member => each value (.tail _ member)) child member
+
+/-- Every actual source visit is retained once in its original record: as a
+surviving output node, an explicit unit removal or a flattened carrier node.
+This conserves equal-token multiplicity and does not assign new identities. -/
+theorem reduceAtTagged_source_account (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (source : Pattern) :
+    ∀ bound expected, (reduceAtTagged laws domains language free bound source expected).SourceAccount := by
+  induction source using Pattern.inductionOn with
+  | hbvar index => intro bound expected; simpa only [reduceAtTagged] using opaqueTrace_account bound (some expected) (.bvar index) true
+  | hfvar identifier => intro bound expected; simpa only [reduceAtTagged] using opaqueTrace_account bound (some expected) (.fvar identifier) true
+  | happly label arguments recurse =>
+      intro bound expected
+      simp only [reduceAtTagged]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => exact opaqueTrace_account bound (some expected) (.apply label arguments) false
+      | some rule =>
+          apply assembleTrace_account
+          apply liftedChildren_account
+          exact reduceArgumentsTagged_account_of laws domains language free bound arguments rule.params
+            (fun argument member expected => recurse argument member bound expected)
+  | hlambda display body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          simp only [reduceAtTagged]
+          apply assembleTrace_account
+          intro child member
+          cases List.mem_singleton.mp member
+          exact taggedAccount_underContext _ (recurse (domain :: bound) codomain)
+      | _ => simp only [reduceAtTagged]; exact opaqueTrace_account _ _ _ _
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          cases domain with
+          | multiBinder inner =>
+              simp only [reduceAtTagged]
+              apply assembleTrace_account
+              intro child member
+              cases List.mem_singleton.mp member
+              exact taggedAccount_underContext _ (recurse (List.replicate arity inner ++ bound) codomain)
+          | _ => simp only [reduceAtTagged]; exact opaqueTrace_account _ _ _ _
+      | _ => simp only [reduceAtTagged]; exact opaqueTrace_account _ _ _ _
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected
+      simp only [reduceAtTagged]
+      cases selected : substitutionDomain? domains language free bound expected body replacement with
+      | none => exact opaqueTrace_account _ _ _ _
+      | some domain =>
+          apply assembleTrace_account
+          intro child member
+          rcases List.mem_cons.mp member with rfl | member
+          · exact taggedAccount_underContext _ (bodyIH (domain :: bound) expected)
+          · cases List.mem_singleton.mp member
+            exact taggedAccount_underContext _ (replacementIH bound domain)
+  | hcollection kind elements rest recurse =>
+      intro bound expected
+      cases expected with
+      | collection actual element =>
+          simp only [reduceAtTagged]
+          split
+          · apply assembleTrace_account
+            apply liftedChildren_account
+            exact reduceElementsTagged_account_of laws domains language free bound elements element
+              (fun value member => recurse value member bound element)
+          · exact opaqueTrace_account _ _ _ _
+      | base category =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.base category) kind elements rest with
+          | none => exact opaqueTrace_account _ _ _ _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.base category) with
+              | none => exact opaqueTrace_account _ _ _ _
+              | some element =>
+                  apply algebraTrace_account
+                  apply liftedChildren_account
+                  exact reduceElementsTagged_account_of laws domains language free bound elements element
+                    (fun value member => recurse value member bound element)
+      | arrow domain codomain =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.arrow domain codomain) kind elements rest with
+          | none => exact opaqueTrace_account _ _ _ _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.arrow domain codomain) with
+              | none => exact opaqueTrace_account _ _ _ _
+              | some element =>
+                  apply algebraTrace_account
+                  apply liftedChildren_account
+                  exact reduceElementsTagged_account_of laws domains language free bound elements element
+                    (fun value member => recurse value member bound element)
+      | multiBinder body =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.multiBinder body) kind elements rest with
+          | none => exact opaqueTrace_account _ _ _ _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.multiBinder body) with
+              | none => exact opaqueTrace_account _ _ _ _
+              | some element =>
+                  apply algebraTrace_account
+                  apply liftedChildren_account
+                  exact reduceElementsTagged_account_of laws domains language free bound elements element
+                    (fun value member => recurse value member bound element)
+
+#print axioms reduceAtTagged_source_account
+
+/-- The retained zipper and address point to this very source presentation.
+No equality between normalized values is used to select the source point. -/
+def TypedOrigin.Rooted (source : Pattern) (origin : TypedOrigin) : Prop :=
+  origin.source.context.fill origin.source.original = source ∧
+    origin.source.address = GeneralTypedSites.contextAddress origin.source.context
+
+private theorem originAt_rooted (bound : List TypeExpr) (expected : Option TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern) :
+    TypedOrigin.Rooted source (originAt bound expected declaration source target) := ⟨rfl,rfl⟩
+
+private theorem rooted_underContext (context : OneHoleContext) {source : Pattern} {origin : TypedOrigin}
+    (rooted : TypedOrigin.Rooted source origin) :
+    TypedOrigin.Rooted (context.fill source) (origin.underContext context) := by
+  refine ⟨?_, ?_⟩
+  · simpa only [TypedOrigin.underContext, SourceOccurrence.underContext, OneHoleContext.fill_comp] using
+      congrArg context.fill rooted.1
+  · have address : GeneralTypedSites.contextAddress (context.comp origin.source.context) =
+        GeneralTypedSites.contextAddress context ++ GeneralTypedSites.contextAddress origin.source.context := by
+      induction context <;> simp_all only [OneHoleContext.comp, GeneralTypedSites.contextAddress,
+        List.nil_append, List.cons_append]
+    simpa only [TypedOrigin.underContext, SourceOccurrence.underContext, address] using
+      congrArg (GeneralTypedSites.contextAddress context ++ ·) rooted.2
+
+private theorem opaqueTrace_rooted (bound : List TypeExpr) (expected : Option TypeExpr)
+    (source : Pattern) (complete : Bool) :
+    ∀ origin ∈ (opaqueTrace bound expected source complete).visited, TypedOrigin.Rooted source origin := by
+  intro origin member
+  cases List.mem_singleton.mp member
+  exact originAt_rooted bound expected none source source
+
+private theorem liftedTrace_rooted (context : OneHoleContext) {source : Pattern} {trace : TaggedReduction}
+    (each : ∀ origin ∈ trace.visited, TypedOrigin.Rooted source origin) :
+    ∀ origin ∈ (trace.underContext context).visited, TypedOrigin.Rooted (context.fill source) origin := by
+  intro origin member
+  obtain ⟨old,present,rfl⟩ := List.mem_map.mp member
+  exact rooted_underContext context (each old present)
+
+private theorem raw_source_reconstruct {α : Type} {items : List α} {index : Nat} {item : α}
+    (selected : items[index]? = some item) :
+    items.take index ++ item :: items.drop (index + 1) = items := by
+  obtain ⟨within, actual⟩ := List.getElem?_eq_some_iff.mp selected
+  have account := List.take_append_drop index items
+  rw [List.drop_eq_getElem_cons within, actual] at account
+  exact account
+
+private theorem liftedChildren_rooted {sources : List Pattern} {traces : List TaggedReduction}
+    (aligned : List.Forall₂ (fun source trace =>
+      ∀ origin ∈ trace.visited, TypedOrigin.Rooted source origin) sources traces)
+    (frame : Nat → OneHoleContext) (start : Nat) (whole : Pattern)
+    (fills : ∀ index source, sources[index]? = some source → (frame (start + index)).fill source = whole) :
+    ∀ origin ∈ (liftedChildren frame start traces).flatMap TaggedReduction.visited,
+      TypedOrigin.Rooted whole origin := by
+  induction aligned generalizing start with
+  | nil => simp only [liftedChildren, List.flatMap_nil, List.not_mem_nil, false_implies, implies_true]
+  | @cons source trace sources traces head tail recurse =>
+      intro origin member
+      simp only [liftedChildren, List.flatMap_cons, List.mem_append] at member
+      rcases member with earlier | later
+      · have atHead := fills 0 source (by rfl)
+        simp only [Nat.add_zero] at atHead
+        exact atHead ▸ liftedTrace_rooted (frame start) head origin earlier
+      · apply recurse (start + 1) ?_ origin later
+        intro index source selected
+        have found := fills (index + 1) source (by simpa only [List.getElem?_cons_succ] using selected)
+        simpa only [Nat.add_assoc, Nat.add_comm 1] using found
+
+private theorem reduceArgumentsTagged_rooted_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (arguments : List Pattern) (parameters : List TermParam)
+    (each : ∀ argument ∈ arguments, ∀ expected,
+      ∀ origin ∈ (reduceAtTagged laws domains language free bound argument expected).visited,
+        TypedOrigin.Rooted argument origin) :
+    List.Forall₂ (fun (source : Pattern) (trace : TaggedReduction) => ∀ origin ∈ trace.visited, TypedOrigin.Rooted source origin)
+      arguments (reduceArgumentsTagged laws domains language free bound arguments parameters) := by
+  induction arguments generalizing parameters with
+  | nil => simpa only [reduceArgumentsTagged] using (List.Forall₂.nil : List.Forall₂
+      (fun (source : Pattern) (trace : TaggedReduction) => ∀ origin ∈ trace.visited, TypedOrigin.Rooted source origin) [] [])
+  | cons argument arguments recurse =>
+      cases parameters with
+      | nil =>
+          simp only [reduceArgumentsTagged]
+          apply List.forall₂_map_right_iff.mpr
+          apply List.forall₂_same.mpr
+          intro source member
+          exact opaqueTrace_rooted bound none source false
+      | cons parameter parameters =>
+          simp only [reduceArgumentsTagged]
+          refine List.Forall₂.cons ?_ (recurse parameters (fun value member expected => each value (.tail _ member) expected))
+          cases actual : parameterType? parameter with
+          | none => exact opaqueTrace_rooted bound none argument false
+          | some expected => exact each argument (.head _) expected
+
+private theorem reduceElementsTagged_rooted_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (elements : List Pattern) (expected : TypeExpr)
+    (each : ∀ element ∈ elements,
+      ∀ origin ∈ (reduceAtTagged laws domains language free bound element expected).visited,
+        TypedOrigin.Rooted element origin) :
+    List.Forall₂ (fun (source : Pattern) (trace : TaggedReduction) => ∀ origin ∈ trace.visited, TypedOrigin.Rooted source origin)
+      elements (reduceElementsTagged laws domains language free bound elements expected) := by
+  induction elements with
+  | nil => simpa only [reduceElementsTagged] using (List.Forall₂.nil : List.Forall₂
+      (fun (source : Pattern) (trace : TaggedReduction) => ∀ origin ∈ trace.visited, TypedOrigin.Rooted source origin) [] [])
+  | cons element elements recurse =>
+      simpa only [reduceElementsTagged] using List.Forall₂.cons (each element (.head _))
+        (recurse (fun value member => each value (.tail _ member)))
+
+private theorem assembleTrace_rooted (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern)
+    (children : List TaggedReduction)
+    (each : ∀ origin ∈ children.flatMap TaggedReduction.visited, TypedOrigin.Rooted source origin) :
+    ∀ origin ∈ (assembleTrace bound expected declaration source target children).visited,
+      TypedOrigin.Rooted source origin := by
+  intro origin member
+  rcases List.mem_cons.mp member with rfl | member
+  · exact originAt_rooted bound (some expected) declaration source target
+  · exact each origin member
+
+private theorem algebraTrace_rooted (laws : List Laws) (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Nat × GrammarRule) (source : Pattern) (kind : CollType) (rest : Option String)
+    (children : List TaggedReduction)
+    (each : ∀ origin ∈ children.flatMap TaggedReduction.visited, TypedOrigin.Rooted source origin) :
+    ∀ origin ∈ (algebraTrace laws bound expected declaration source kind rest children).visited,
+      TypedOrigin.Rooted source origin := by
+  intro origin member
+  rcases List.mem_cons.mp member with rfl | member
+  · exact originAt_rooted bound (some expected) (some declaration) source _
+  · exact each origin member
+
+/-- Every record in the full visit account has its actual original zipper
+and address, including the records later classified as administration. -/
+theorem reduceAtTagged_original_points (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (source : Pattern) :
+    ∀ bound expected, ∀ origin ∈ (reduceAtTagged laws domains language free bound source expected).visited,
+      TypedOrigin.Rooted source origin := by
+  induction source using Pattern.inductionOn with
+  | hbvar index => intro bound expected; simpa only [reduceAtTagged] using opaqueTrace_rooted bound (some expected) (.bvar index) true
+  | hfvar identifier => intro bound expected; simpa only [reduceAtTagged] using opaqueTrace_rooted bound (some expected) (.fvar identifier) true
+  | happly label arguments recurse =>
+      intro bound expected
+      simp only [reduceAtTagged]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => exact opaqueTrace_rooted bound (some expected) (.apply label arguments) false
+      | some rule =>
+          apply assembleTrace_rooted
+          apply liftedChildren_rooted
+            (reduceArgumentsTagged_rooted_of laws domains language free bound arguments rule.params
+              (fun argument member expected => recurse argument member bound expected))
+          intro index source selected
+          simpa only [Nat.zero_add, OneHoleContext.fill] using
+            congrArg (Pattern.apply label) (raw_source_reconstruct selected)
+  | hlambda display body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          simp only [reduceAtTagged]
+          apply assembleTrace_rooted
+          simpa only [List.flatMap_cons, List.flatMap_nil, List.append_nil, OneHoleContext.fill] using
+            liftedTrace_rooted (.lambda display .hole) (recurse (domain :: bound) codomain)
+      | _ => simp only [reduceAtTagged]; exact opaqueTrace_rooted _ _ _ _
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          cases domain with
+          | multiBinder inner =>
+              simp only [reduceAtTagged]
+              apply assembleTrace_rooted
+              simpa only [List.flatMap_cons, List.flatMap_nil, List.append_nil, OneHoleContext.fill] using
+                liftedTrace_rooted (.multiLambda arity displays .hole) (recurse (List.replicate arity inner ++ bound) codomain)
+          | _ => simp only [reduceAtTagged]; exact opaqueTrace_rooted _ _ _ _
+      | _ => simp only [reduceAtTagged]; exact opaqueTrace_rooted _ _ _ _
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected
+      simp only [reduceAtTagged]
+      cases selected : substitutionDomain? domains language free bound expected body replacement with
+      | none => exact opaqueTrace_rooted _ _ _ _
+      | some domain =>
+          apply assembleTrace_rooted
+          intro origin member
+          simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.mem_append] at member
+          rcases member with first | second
+          · exact liftedTrace_rooted (.substBody .hole replacement) (bodyIH (domain :: bound) expected) origin first
+          · exact liftedTrace_rooted (.substReplacement body .hole) (replacementIH bound domain) origin second
+  | hcollection kind elements rest recurse =>
+      intro bound expected
+      have collectionChildren : ∀ element, ∀ origin ∈
+          (liftedChildren (fun index => .collection kind (elements.take index) .hole
+            (elements.drop (index + 1)) rest) 0
+            (reduceElementsTagged laws domains language free bound elements element)).flatMap TaggedReduction.visited,
+          TypedOrigin.Rooted (.collection kind elements rest) origin := by
+        intro element
+        apply liftedChildren_rooted
+          (reduceElementsTagged_rooted_of laws domains language free bound elements element
+            (fun value member => recurse value member bound element))
+        intro index source selected
+        simpa only [Nat.zero_add, OneHoleContext.fill] using
+          congrArg (fun values => Pattern.collection kind values rest) (raw_source_reconstruct selected)
+      cases expected with
+      | collection actual element =>
+          simp only [reduceAtTagged]
+          split
+          · exact assembleTrace_rooted _ _ _ _ _ _ (collectionChildren element)
+          · exact opaqueTrace_rooted _ _ _ _
+      | base category =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.base category) kind elements rest with
+          | none => exact opaqueTrace_rooted _ _ _ _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.base category) with
+              | none => exact opaqueTrace_rooted _ _ _ _
+              | some element => exact algebraTrace_rooted _ _ _ _ _ _ _ _ (collectionChildren element)
+      | arrow domain codomain =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.arrow domain codomain) kind elements rest with
+          | none => exact opaqueTrace_rooted _ _ _ _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.arrow domain codomain) with
+              | none => exact opaqueTrace_rooted _ _ _ _
+              | some element => exact algebraTrace_rooted _ _ _ _ _ _ _ _ (collectionChildren element)
+      | multiBinder body =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.multiBinder body) kind elements rest with
+          | none => exact opaqueTrace_rooted _ _ _ _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.multiBinder body) with
+              | none => exact opaqueTrace_rooted _ _ _ _
+              | some element => exact algebraTrace_rooted _ _ _ _ _ _ _ _ (collectionChildren element)
+
+#print axioms reduceAtTagged_original_points
+
+private theorem trace_underContext_distinct (context : OneHoleContext) {trace : TaggedReduction}
+    (distinct : (trace.visited.map (fun origin => origin.source.address)).Nodup) :
+    ((trace.underContext context).visited.map (fun origin => origin.source.address)).Nodup := by
+  have sourceDistinct : ((trace.visited.map TypedOrigin.source).map SourceOccurrence.address).Nodup := by
+    simpa only [List.map_map, Function.comp_def] using distinct
+  have rebased := underContext_distinct context sourceDistinct
+  simpa only [TaggedReduction.underContext, TypedOrigin.underContext, List.map_map,
+    Function.comp_def] using rebased
+
+private theorem liftedChildren_address_range (frame : Nat → OneHoleContext) (start : Nat)
+    (children : List TaggedReduction)
+    (frames : ∀ index, index < children.length →
+      GeneralTypedSites.contextAddress (frame (start + index)) = [start + index]) :
+    ∀ origin ∈ (liftedChildren frame start children).flatMap TaggedReduction.visited,
+      ∃ index suffix, start ≤ index ∧ index < start + children.length ∧ origin.source.address = index :: suffix := by
+  induction children generalizing start with
+  | nil => simp only [liftedChildren, List.flatMap_nil, List.not_mem_nil, false_implies, implies_true]
+  | cons child children recurse =>
+      intro origin member
+      simp only [liftedChildren, List.flatMap_cons, List.mem_append] at member
+      rcases member with earlier | later
+      · obtain ⟨old, present, rfl⟩ := List.mem_map.mp earlier
+        have headAddressRule := frames 0 (by simp only [List.length_cons]; omega)
+        simp only [Nat.add_zero] at headAddressRule
+        refine ⟨start, old.source.address, Nat.le_refl _, by simp only [List.length_cons]; omega, ?_⟩
+        simp only [TypedOrigin.underContext, SourceOccurrence.underContext, headAddressRule, List.singleton_append]
+      · obtain ⟨index,suffix,lower,upper,address⟩ := recurse (start + 1) (by
+          intro index within
+          have next := frames (index + 1) (by simp only [List.length_cons]; omega)
+          simpa only [Nat.add_assoc, Nat.add_comm 1] using next) origin later
+        exact ⟨index,suffix,by omega,by simp only [List.length_cons]; omega,address⟩
+
+private theorem liftedChildren_distinct (frame : Nat → OneHoleContext) (start : Nat)
+    (children : List TaggedReduction)
+    (frames : ∀ index, index < children.length →
+      GeneralTypedSites.contextAddress (frame (start + index)) = [start + index])
+    (each : ∀ child ∈ children, (child.visited.map (fun origin => origin.source.address)).Nodup) :
+    (((liftedChildren frame start children).flatMap TaggedReduction.visited).map
+      (fun origin => origin.source.address)).Nodup := by
+  induction children generalizing start with
+  | nil => exact List.Pairwise.nil
+  | cons child children recurse =>
+      have nextFrames : ∀ index, index < children.length →
+          GeneralTypedSites.contextAddress (frame (start + 1 + index)) = [start + 1 + index] := by
+        intro index within
+        have next := frames (index + 1) (by simp only [List.length_cons]; omega)
+        simpa only [Nat.add_assoc, Nat.add_comm 1] using next
+      have headAddressRule := frames 0 (by simp only [List.length_cons]; omega)
+      simp only [Nat.add_zero] at headAddressRule
+      simp only [liftedChildren, List.flatMap_cons, List.map_append]
+      refine List.nodup_append.mpr ⟨trace_underContext_distinct _ (each child (.head _)),
+        recurse (start + 1) nextFrames (fun other member => each other (.tail _ member)), ?_⟩
+      intro first firstMember second secondMember same
+      obtain ⟨firstOrigin, firstPresent, firstRead⟩ := List.mem_map.mp firstMember
+      obtain ⟨old, oldPresent, firstOriginEq⟩ := List.mem_map.mp firstPresent
+      obtain ⟨secondOrigin, secondPresent, secondRead⟩ := List.mem_map.mp secondMember
+      obtain ⟨index,suffix,lower,_,address⟩ := liftedChildren_address_range frame (start + 1) children nextFrames
+        secondOrigin secondPresent
+      have firstAddress : first = start :: old.source.address := by
+        rw [← firstRead, ← firstOriginEq]
+        simp only [TypedOrigin.underContext, SourceOccurrence.underContext, headAddressRule, List.singleton_append]
+      have secondAddress : second = index :: suffix := secondRead.symm.trans address
+      rw [firstAddress,secondAddress] at same
+      have indices := (List.cons.inj same).1
+      omega
+
+private theorem rootedTrace_distinct (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern) (children : List TaggedReduction)
+    (distinct : ((children.flatMap TaggedReduction.visited).map (fun origin => origin.source.address)).Nodup)
+    (nonempty : ∀ origin ∈ children.flatMap TaggedReduction.visited, origin.source.address ≠ []) :
+    ((assembleTrace bound expected declaration source target children).visited.map
+      (fun origin => origin.source.address)).Nodup := by
+  simp only [assembleTrace, List.map_cons, originAt, List.nodup_cons]
+  refine ⟨?_,distinct⟩
+  intro present
+  obtain ⟨origin,member,empty⟩ := List.mem_map.mp present
+  exact nonempty origin member empty
+
+private theorem algebraRootedTrace_distinct (laws : List Laws) (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Nat × GrammarRule) (source : Pattern) (kind : CollType) (rest : Option String)
+    (children : List TaggedReduction)
+    (distinct : ((children.flatMap TaggedReduction.visited).map (fun origin => origin.source.address)).Nodup)
+    (nonempty : ∀ origin ∈ children.flatMap TaggedReduction.visited, origin.source.address ≠ []) :
+    ((algebraTrace laws bound expected declaration source kind rest children).visited.map
+      (fun origin => origin.source.address)).Nodup := by
+  simp only [algebraTrace, List.map_cons, originAt, List.nodup_cons]
+  refine ⟨?_,distinct⟩
+  intro present
+  obtain ⟨origin,member,empty⟩ := List.mem_map.mp present
+  exact nonempty origin member empty
+
+private theorem reduceArgumentsTagged_length (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (arguments : List Pattern) (parameters : List TermParam) :
+    (reduceArgumentsTagged laws domains language free bound arguments parameters).length = arguments.length := by
+  induction arguments generalizing parameters with
+  | nil => simp only [reduceArgumentsTagged, List.length_nil]
+  | cons argument arguments recurse =>
+      cases parameters with
+      | nil => simp only [reduceArgumentsTagged, List.length_map]
+      | cons parameter parameters => simp only [reduceArgumentsTagged, List.length_cons, recurse]
+
+private theorem reduceElementsTagged_length (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (elements : List Pattern) (expected : TypeExpr) :
+    (reduceElementsTagged laws domains language free bound elements expected).length = elements.length := by
+  induction elements with
+  | nil => simp only [reduceElementsTagged, List.length_nil]
+  | cons element elements recurse => simp only [reduceElementsTagged, List.length_cons, recurse]
+
+private theorem reduceArgumentsTagged_distinct_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (arguments : List Pattern) (parameters : List TermParam)
+    (each : ∀ argument ∈ arguments, ∀ expected,
+      ((reduceAtTagged laws domains language free bound argument expected).visited.map (fun origin => origin.source.address)).Nodup) :
+    ∀ child ∈ reduceArgumentsTagged laws domains language free bound arguments parameters,
+      (child.visited.map (fun origin => origin.source.address)).Nodup := by
+  induction arguments generalizing parameters with
+  | nil => simp only [reduceArgumentsTagged, List.not_mem_nil, false_implies, implies_true]
+  | cons argument arguments recurse =>
+      cases parameters with
+      | nil =>
+          simp only [reduceArgumentsTagged]
+          intro child member
+          obtain ⟨source,_,rfl⟩ := List.mem_map.mp member
+          exact List.nodup_singleton _
+      | cons parameter parameters =>
+          simp only [reduceArgumentsTagged]
+          intro child member
+          rcases List.mem_cons.mp member with rfl | member
+          · cases type : parameterType? parameter with
+            | none => exact List.nodup_singleton _
+            | some expected => exact each argument (.head _) expected
+          · exact recurse parameters (fun value member expected => each value (.tail _ member) expected) child member
+
+private theorem reduceElementsTagged_distinct_of
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (elements : List Pattern) (expected : TypeExpr)
+    (each : ∀ element ∈ elements,
+      ((reduceAtTagged laws domains language free bound element expected).visited.map (fun origin => origin.source.address)).Nodup) :
+    ∀ child ∈ reduceElementsTagged laws domains language free bound elements expected,
+      (child.visited.map (fun origin => origin.source.address)).Nodup := by
+  induction elements with
+  | nil => simp only [reduceElementsTagged, List.not_mem_nil, false_implies, implies_true]
+  | cons element elements recurse =>
+      intro child member
+      simp only [reduceElementsTagged] at member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact each element (.head _)
+      · exact recurse (fun value member => each value (.tail _ member)) child member
+
+private theorem childVisits_nonempty (frame : Nat → OneHoleContext) (start : Nat) (children : List TaggedReduction)
+    (frames : ∀ index, index < children.length →
+      GeneralTypedSites.contextAddress (frame (start + index)) = [start + index]) :
+    ∀ origin ∈ (liftedChildren frame start children).flatMap TaggedReduction.visited, origin.source.address ≠ [] := by
+  intro origin member empty
+  obtain ⟨index,suffix,_,_,address⟩ := liftedChildren_address_range frame start children frames origin member
+  rw [address] at empty
+  cases empty
+
+/-- Equal normalized values never reuse one source visit: original child
+addresses remain pairwise distinct throughout the complete account. -/
+theorem reduceAtTagged_original_addresses_distinct (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (source : Pattern) :
+    ∀ bound expected,
+      ((reduceAtTagged laws domains language free bound source expected).visited.map
+        (fun origin => origin.source.address)).Nodup := by
+  induction source using Pattern.inductionOn with
+  | hbvar index => intro bound expected; simp only [reduceAtTagged, opaqueTrace, List.map_cons, List.map_nil]; exact List.nodup_singleton _
+  | hfvar identifier => intro bound expected; simp only [reduceAtTagged, opaqueTrace, List.map_cons, List.map_nil]; exact List.nodup_singleton _
+  | happly label arguments recurse =>
+      intro bound expected
+      simp only [reduceAtTagged]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => exact List.nodup_singleton _
+      | some rule =>
+          have frames : ∀ index, index < (reduceArgumentsTagged laws domains language free bound arguments rule.params).length →
+              GeneralTypedSites.contextAddress
+                (.apply label (arguments.take (0 + index)) .hole (arguments.drop (0 + index + 1))) = [0 + index] := by
+            intro index within
+            rw [reduceArgumentsTagged_length] at within
+            simp only [GeneralTypedSites.contextAddress, List.length_take, Nat.zero_add,
+              Nat.min_eq_left (Nat.le_of_lt within)]
+          apply rootedTrace_distinct
+          · exact liftedChildren_distinct _ _ _ frames
+              (reduceArgumentsTagged_distinct_of laws domains language free bound arguments rule.params
+                (fun value member expected => recurse value member bound expected))
+          · exact childVisits_nonempty _ _ _ frames
+  | hlambda display body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          simp only [reduceAtTagged]
+          apply rootedTrace_distinct
+          · simpa only [List.flatMap_cons, List.flatMap_nil, List.append_nil] using
+              trace_underContext_distinct (.lambda display .hole) (recurse (domain :: bound) codomain)
+          · intro origin member empty
+            simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil] at member
+            obtain ⟨old,_,rfl⟩ := List.mem_map.mp member
+            cases empty
+      | _ => simp only [reduceAtTagged]; exact List.nodup_singleton _
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected
+      cases expected with
+      | arrow domain codomain =>
+          cases domain with
+          | multiBinder inner =>
+              simp only [reduceAtTagged]
+              apply rootedTrace_distinct
+              · simpa only [List.flatMap_cons, List.flatMap_nil, List.append_nil] using
+                  trace_underContext_distinct (.multiLambda arity displays .hole) (recurse (List.replicate arity inner ++ bound) codomain)
+              · intro origin member empty
+                simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil] at member
+                obtain ⟨old,_,rfl⟩ := List.mem_map.mp member
+                cases empty
+          | _ => simp only [reduceAtTagged]; exact List.nodup_singleton _
+      | _ => simp only [reduceAtTagged]; exact List.nodup_singleton _
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected
+      simp only [reduceAtTagged]
+      cases selected : substitutionDomain? domains language free bound expected body replacement with
+      | none => exact List.nodup_singleton _
+      | some domain =>
+          have frames : ∀ index, index < ([reduceAtTagged laws domains language free (domain :: bound) body expected,
+              reduceAtTagged laws domains language free bound replacement domain] : List TaggedReduction).length →
+              GeneralTypedSites.contextAddress
+                ((fun index => if index = 0 then .substBody .hole replacement else .substReplacement body .hole) (0 + index)) = [0 + index] := by
+            intro index within
+            have indexCases : index = 0 ∨ index = 1 := by simp only [List.length_cons, List.length_nil] at within; omega
+            rcases indexCases with rfl | rfl <;> rfl
+          have each : ∀ trace ∈ [reduceAtTagged laws domains language free (domain :: bound) body expected,
+              reduceAtTagged laws domains language free bound replacement domain],
+              (trace.visited.map (fun origin => origin.source.address)).Nodup := by
+            intro trace member
+            rcases List.mem_cons.mp member with rfl | member
+            · exact bodyIH (domain :: bound) expected
+            · cases List.mem_singleton.mp member
+              exact replacementIH bound domain
+          apply rootedTrace_distinct
+          · simpa [liftedChildren] using
+              liftedChildren_distinct
+                (fun index => if index = 0 then .substBody .hole replacement else .substReplacement body .hole) 0 _ frames each
+          · simpa [liftedChildren] using
+              childVisits_nonempty
+                (fun index => if index = 0 then .substBody .hole replacement else .substReplacement body .hole) 0
+                [reduceAtTagged laws domains language free (domain :: bound) body expected,
+                  reduceAtTagged laws domains language free bound replacement domain] frames
+  | hcollection kind elements rest recurse =>
+      intro bound expected
+      have childrenDistinct : ∀ element,
+          (((liftedChildren (fun index => .collection kind (elements.take index) .hole
+            (elements.drop (index + 1)) rest) 0
+            (reduceElementsTagged laws domains language free bound elements element)).flatMap TaggedReduction.visited).map
+              (fun origin => origin.source.address)).Nodup ∧
+          (∀ origin ∈ (liftedChildren (fun index => .collection kind (elements.take index) .hole
+            (elements.drop (index + 1)) rest) 0
+            (reduceElementsTagged laws domains language free bound elements element)).flatMap TaggedReduction.visited,
+              origin.source.address ≠ []) := by
+        intro element
+        have frames : ∀ index, index < (reduceElementsTagged laws domains language free bound elements element).length →
+            GeneralTypedSites.contextAddress
+              (.collection kind (elements.take (0 + index)) .hole (elements.drop (0 + index + 1)) rest) = [0 + index] := by
+          intro index within
+          rw [reduceElementsTagged_length] at within
+          simp only [GeneralTypedSites.contextAddress, List.length_take, Nat.zero_add,
+            Nat.min_eq_left (Nat.le_of_lt within)]
+        exact ⟨liftedChildren_distinct _ _ _ frames
+          (reduceElementsTagged_distinct_of laws domains language free bound elements element
+            (fun value member => recurse value member bound element)), childVisits_nonempty _ _ _ frames⟩
+      cases expected with
+      | collection actual element =>
+          simp only [reduceAtTagged]
+          split
+          · exact rootedTrace_distinct _ _ _ _ _ _ (childrenDistinct element).1 (childrenDistinct element).2
+          · exact List.nodup_singleton _
+      | base category =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.base category) kind elements rest with
+          | none => exact List.nodup_singleton _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.base category) with
+              | none => exact List.nodup_singleton _
+              | some element => exact algebraRootedTrace_distinct _ _ _ _ _ _ _ _ (childrenDistinct element).1 (childrenDistinct element).2
+      | arrow domain codomain =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.arrow domain codomain) kind elements rest with
+          | none => exact List.nodup_singleton _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.arrow domain codomain) with
+              | none => exact List.nodup_singleton _
+              | some element => exact algebraRootedTrace_distinct _ _ _ _ _ _ _ _ (childrenDistinct element).1 (childrenDistinct element).2
+      | multiBinder body =>
+          simp only [reduceAtTagged]
+          cases selected : collectionRule? domains language free bound (.multiBinder body) kind elements rest with
+          | none => exact List.nodup_singleton _
+          | some rule =>
+              dsimp only
+              cases shape : bareCollectionElementType? rule kind (.multiBinder body) with
+              | none => exact List.nodup_singleton _
+              | some element => exact algebraRootedTrace_distinct _ _ _ _ _ _ _ _ (childrenDistinct element).1 (childrenDistinct element).2
+
+#print axioms reduceAtTagged_original_addresses_distinct
+
+def TaggedReduction.partition (trace : TaggedReduction) : List TypedOrigin :=
+  trace.survivors ++ trace.unitRemovals.map AlgebraAdministration.origin ++
+    trace.carrierRemovals.map AlgebraAdministration.origin
+
+/-- The full partition contains exactly the original visits, with distinct
+original addresses and genuine source zippers. This is a source-account
+statement, not a completeness theorem for every normalized output position. -/
+theorem reduceAtTagged_original_partition (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (source : Pattern)
+    (bound : List TypeExpr) (expected : TypeExpr) :
+    let trace := reduceAtTagged laws domains language free bound source expected
+    trace.visited.Perm trace.partition ∧
+      (trace.partition.map (fun origin => origin.source.address)).Nodup ∧
+      (∀ origin ∈ trace.partition, TypedOrigin.Rooted source origin) := by
+  dsimp only
+  have account := reduceAtTagged_source_account laws domains language free source bound expected
+  have distinct := reduceAtTagged_original_addresses_distinct laws domains language free source bound expected
+  refine ⟨account, ?_, ?_⟩
+  · exact (account.map (fun origin => origin.source.address)).nodup_iff.mp distinct
+  · intro origin member
+    exact reduceAtTagged_original_points laws domains language free source bound expected origin
+      (account.mem_iff.mpr member)
+
+#print axioms reduceAtTagged_original_partition
+
+open GeneralPremise.SchemaTyping
+
+private theorem liftedChildren_complete (frame : Nat → OneHoleContext) (index : Nat)
+    (children : List TaggedReduction) :
+    (liftedChildren frame index children).all TaggedReduction.complete = children.all TaggedReduction.complete := by
+  induction children generalizing index with
+  | nil => rfl
+  | cons child children recurse =>
+      simp only [liftedChildren, List.all_cons, TaggedReduction.underContext, recurse]
+
+private theorem reduceArgumentsTagged_complete_of_objects
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) {arguments : List Pattern} {parameters : List TermParam}
+    (each : ∀ argument ∈ arguments, ∀ expected,
+      HasType language free bound argument expected → isObjectPattern argument = true →
+        (reduceAtTagged laws domains language free bound argument expected).complete = true)
+    (typed : ArgumentsHaveTypes language free bound arguments parameters)
+    (objects : isObjectPatternList arguments = true) :
+    (reduceArgumentsTagged laws domains language free bound arguments parameters).all TaggedReduction.complete = true := by
+  induction arguments generalizing parameters with
+  | nil => cases typed; simp only [reduceArgumentsTagged, List.all_nil]
+  | cons argument arguments recurse =>
+      cases typed with
+      | cons representation parameterType head tail =>
+          simp only [isObjectPatternList, Bool.and_eq_true] at objects
+          simp only [reduceArgumentsTagged, parameterType, List.all_cons, Bool.and_eq_true]
+          exact ⟨each argument (.head _) _ head objects.1,
+            recurse (fun value member expected typed object => each value (.tail _ member) expected typed object) tail objects.2⟩
+
+private theorem reduceElementsTagged_complete_of_objects
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) {elements : List Pattern} {expected : TypeExpr}
+    (each : ∀ element ∈ elements, HasType language free bound element expected → isObjectPattern element = true →
+      (reduceAtTagged laws domains language free bound element expected).complete = true)
+    (typed : ElementsHaveType language free bound elements expected)
+    (objects : isObjectPatternList elements = true) :
+    (reduceElementsTagged laws domains language free bound elements expected).all TaggedReduction.complete = true := by
+  induction elements with
+  | nil => simp only [reduceElementsTagged, List.all_nil]
+  | cons element elements recurse =>
+      cases typed with
+      | cons head tail =>
+          simp only [isObjectPatternList, Bool.and_eq_true] at objects
+          simp only [reduceElementsTagged, List.all_cons, Bool.and_eq_true]
+          exact ⟨each element (.head _) head objects.1,
+            recurse (fun value member typed object => each value (.tail _ member) typed object) tail objects.2⟩
+
+/-- Every actually typed object uses checked recursive branches, so its
+source traversal has no opaque skipped subtree. No arbitrary typing-domain
+choice is identified with the selected domain of a pending substitution. -/
+theorem reduceAtTagged_complete_of_object (laws : List Laws) (domains : List TypeExpr)
+    (language : LanguageDef) (free : FreeTypeContext) (source : Pattern) :
+    ∀ {bound : List TypeExpr} {expected : TypeExpr}, HasType language free bound source expected →
+      isObjectPattern source = true →
+      (reduceAtTagged laws domains language free bound source expected).complete = true := by
+  induction source using Pattern.inductionOn with
+  | hbvar index => intro bound expected typed object; simp only [reduceAtTagged, opaqueTrace]
+  | hfvar identifier => intro bound expected typed object; simp only [reduceAtTagged, opaqueTrace]
+  | happly label arguments recurse =>
+      intro bound expected typed object
+      have accepted := checkSchemaType_complete_of_object (domains := domains) typed object
+      have existsRule : (applicationRule? domains language free bound expected label arguments).isSome = true :=
+        (applicationRule_isSome domains language free bound expected label arguments).trans accepted
+      simp only [isObjectPattern] at object
+      simp only [reduceAtTagged]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => simp only [selected, Option.isSome_none, Bool.false_eq_true] at existsRule
+      | some rule =>
+          obtain ⟨_,_,_,_,argumentsTyped⟩ := applicationRule_readout selected
+          simp only [assembleTrace, liftedChildren_complete]
+          exact reduceArgumentsTagged_complete_of_objects laws domains language free bound
+            (fun argument member expected typed object => recurse argument member typed object) argumentsTyped object
+  | hlambda display body recurse =>
+      intro bound expected typed object
+      cases typed with
+      | lambda bodyTyped =>
+          simp only [isObjectPattern] at object
+          simp only [reduceAtTagged, assembleTrace, List.all_cons, List.all_nil,
+            Bool.and_true, TaggedReduction.underContext]
+          exact recurse bodyTyped object
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected typed object
+      cases typed with
+      | multiLambda bodyTyped =>
+          simp only [isObjectPattern] at object
+          simp only [reduceAtTagged, assembleTrace, List.all_cons, List.all_nil,
+            Bool.and_true, TaggedReduction.underContext]
+          exact recurse bodyTyped object
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected typed object
+      simp only [isObjectPattern, Bool.false_eq_true] at object
+  | hcollection kind elements rest recurse =>
+      intro bound expected typed object
+      have accepted := checkSchemaType_complete_of_object (domains := domains) typed object
+      simp only [isObjectPattern, Bool.and_eq_true] at object
+      rcases CanonicalBags.hasType_collection_inv typed with ⟨element,rfl,items⟩ |
+        ⟨sourceRule,parameter,sourceElement,sourceDeclared,sourceParameters,rfl,sourceItems⟩
+      · simp only [reduceAtTagged, ↓reduceIte, assembleTrace, liftedChildren_complete]
+        exact reduceElementsTagged_complete_of_objects laws domains language free bound
+          (fun element member typed object => recurse element member typed object) items object.2
+      · have existsRule : (collectionRule? domains language free bound (.base sourceRule.category) kind elements rest).isSome = true :=
+          (collectionRule_base_isSome domains language free bound sourceRule.category kind elements rest).trans accepted
+        simp only [reduceAtTagged]
+        cases selected : collectionRule? domains language free bound (.base sourceRule.category) kind elements rest with
+        | none => simp only [selected, Option.isSome_none, Bool.false_eq_true] at existsRule
+        | some rule =>
+            obtain ⟨element,member,shape,items⟩ := collectionRule_readout selected
+            simp only [shape, algebraTrace, liftedChildren_complete]
+            exact reduceElementsTagged_complete_of_objects laws domains language free bound
+              (fun element member typed object => recurse element member typed object) items object.2
+
+#print axioms reduceAtTagged_complete_of_object
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open WithAuthoredEquations.AlgebraFocus RoleAwareReadout
+
+private def tracedData : Pattern := bag [bag [z,a,a]]
+private def tracedSource : Pattern := .apply "Box" [tracedData, bag [bag [a,a],z]]
+private def tracedTarget : Pattern := .apply "Box" [tracedData, bag [a,a]]
+private def actualTrace : TaggedReduction :=
+  reduceAtTagged (CollectionLaws.declared language) [] language FreeTypeContext.empty [] tracedSource proc
+
+/-- The actual mixed traversal keeps the data Z and both distinct copies of
+A. Only the scalar carrier and its separate unit are administration. -/
+theorem mixed_trace_physical_account :
+    HasType language FreeTypeContext.empty [] tracedSource proc ∧
+      actualTrace.complete = true ∧ actualTrace.target = tracedTarget ∧
+      actualTrace.unitRemovals.map (fun event => event.origin.source.address) = [[1,1]] ∧
+      actualTrace.carrierRemovals.map (fun event => event.origin.source.address) = [[1,0]] ∧
+      actualTrace.survivors.map (fun origin => origin.source.address) =
+        [[],[0],[0,0],[0,0,0],[0,0,1],[0,0,2],[1],[1,0,0],[1,0,1]] ∧
+      (actualTrace.visited.map (fun origin => origin.source.address)).Nodup ∧
+      actualTrace.SourceAccount ∧
+      (∀ origin ∈ actualTrace.visited, TypedOrigin.Rooted tracedSource origin) := by
+  refine ⟨checkHasType_sound (by decide +kernel), by cbv, by cbv, by cbv, by cbv, by cbv,
+    by decide +kernel, reduceAtTagged_source_account _ _ _ _ _ _ _,
+    reduceAtTagged_original_points _ _ _ _ _ _ _⟩
+
+private def originalUnitRecord : TypedOrigin :=
+  ⟨⟨z,[1,1],.apply "Box" [tracedData] (.collection .hashBag [bag [a,a]] .hole [] none) [],z⟩,
+    [],some proc,some (0,zero)⟩
+
+/-- The removal retains the actual unit constructor and the actual Par row
+which licenses it. Supplying a surviving A address for that record is false. -/
+theorem wrong_trace_origin_rejected :
+    actualTrace.unitRemovals = [⟨originalUnitRecord,(3,carrier),⟨.hashBag,some "Z"⟩⟩] ∧
+      TypedOrigin.Rooted tracedSource originalUnitRecord ∧
+      ¬ TypedOrigin.Rooted tracedSource
+        {originalUnitRecord with source := {originalUnitRecord.source with address := [1,0,0]}} := by
+  refine ⟨by cbv, ⟨rfl,rfl⟩, ?_⟩
+  intro wrong
+  have addresses := wrong.2
+  change [1,0,0] = [1,1] at addresses
+  cases addresses
+
+private def actualSubstitutionTrace : TaggedReduction :=
+  reduceAtTagged (CollectionLaws.declared language) [proc] language FreeTypeContext.empty [proc] subSource proc
+
+/-- Both bound-variable visits retain the exact domain extension under the
+pending substitution. Their source zippers still rebuild the original schema. -/
+theorem substitution_trace_scope_account :
+    actualSubstitutionTrace.complete = true ∧
+      actualSubstitutionTrace.target = subResult ∧
+      actualSubstitutionTrace.unitRemovals.map (fun event => event.origin.source.address) = [[0,1]] ∧
+      actualSubstitutionTrace.carrierRemovals.map (fun event => event.origin.source.address) = [[0,0]] ∧
+      (actualSubstitutionTrace.visited.filter (fun origin =>
+        origin.source.original == .bvar 0 || origin.source.original == .bvar 1)).map
+        (fun origin => (origin.bound,origin.expected,origin.source.address)) =
+        [([proc,proc],some proc,[0,0,0]),([proc,proc],some proc,[0,0,1])] ∧
+      actualSubstitutionTrace.SourceAccount ∧
+      (∀ origin ∈ actualSubstitutionTrace.visited, TypedOrigin.Rooted subSource origin) := by
+  exact ⟨by cbv, by cbv, by cbv, by cbv, by cbv,
+    reduceAtTagged_source_account _ _ _ _ _ _ _, reduceAtTagged_original_points _ _ _ _ _ _ _⟩
+
+#print axioms mixed_trace_physical_account
+#print axioms wrong_trace_origin_rejected
+#print axioms substitution_trace_scope_account
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open WithAuthoredEquations.AlgebraFocus RoleAwareReadout
+
+private def secondSort : TypeExpr := .base "Q"
+private def firstDomain : TypeExpr := .arrow proc proc
+private def selectedDomain : TypeExpr := .arrow secondSort secondSort
+private def domainChoiceLanguage : LanguageDef :=
+  {language with types := [TypeDecl.plain "P", TypeDecl.plain "Q"]}
+private def identityReplacement : Pattern := .lambda none (.bvar 0)
+private def domainChoiceSource : Pattern := .subst a identityReplacement
+private def domainChoiceTrace : TaggedReduction :=
+  reduceAtTagged (CollectionLaws.declared domainChoiceLanguage) [selectedDomain,firstDomain]
+    domainChoiceLanguage FreeTypeContext.empty [] domainChoiceSource proc
+
+/-- A valid raw signature does not make the existential substitution domain
+unique. The traversal records the actual finite checker's chosen domain;
+an arbitrary different typing derivation does not identify that context. -/
+theorem pending_domain_choice_boundary :
+    domainChoiceLanguage.validate = [] ∧
+      TypedAt domainChoiceLanguage FreeTypeContext.empty a (.substBody .hole identityReplacement)
+        [] proc [firstDomain] proc ∧
+      TypedAt domainChoiceLanguage FreeTypeContext.empty a (.substBody .hole identityReplacement)
+        [] proc [selectedDomain] proc ∧
+      substitutionDomain? [selectedDomain,firstDomain] domainChoiceLanguage FreeTypeContext.empty []
+        proc a identityReplacement = some selectedDomain ∧
+      domainChoiceTrace.visited.map (fun origin => (origin.source.address,origin.bound,origin.expected)) =
+        [([],[],some proc),([0],[selectedDomain],some proc),([1],[],some selectedDomain),
+          ([1,0],[secondSort],some secondSort)] ∧
+      [firstDomain] ≠ [selectedDomain] ∧ isObjectPattern domainChoiceSource = false := by
+  refine ⟨by cbv, ?_, ?_, by cbv, by cbv, by decide +kernel, rfl⟩
+  · exact .substBody (checkHasType_sound (by decide +kernel))
+      (.here (checkHasType_sound (by decide +kernel)))
+  · exact .substBody (checkHasType_sound (by decide +kernel))
+      (.here (checkHasType_sound (by decide +kernel)))
+
+#print axioms pending_domain_choice_boundary
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout.TypedPaths
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts ReferenceStep
+open Mettapedia.GSLT.LanguageDef.WellSorted EquationSemantics
+
+/-- The formation factors of the existing ordinary collection carrier.
+Formed already records its object syntax and same-context typing. -/
+def objectFormation (bound : List TypeExpr) (term : Pattern) : Prop :=
+  term.hasCanonicalBinderMetadata = true ∧ ScopeSafeAt bound.length term
+
+theorem formed_iff_open {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {expected : TypeExpr} {term : Pattern} :
+    ReferenceStep.Formed language free bound expected (objectFormation bound) term ↔
+      OpenPatternWellSorted language free bound expected term := by
+  constructor
+  · intro formed
+    exact ⟨formed.typed,formed.formed.1,formed.object,formed.formed.2⟩
+  · rintro ⟨typed,canonical,object,scope⟩
+    exact ⟨object,typed,canonical,scope⟩
+
+private def pathFormation (source : Pattern) (bound : List TypeExpr) (term : Pattern) : Prop :=
+  objectFormation bound term ∧ Represents source term
+
+private theorem represents_refl (source : Pattern) : Represents source source := fun _ represented => represented
+
+private theorem represents_trans {first middle last : Pattern}
+    (before : Represents first middle) (after : Represents middle last) : Represents first last :=
+  fun parameter represented => after parameter (before parameter represented)
+
+private theorem pathFormed_of_open {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {expected : TypeExpr} {origin source : Pattern}
+    (good : OpenPatternWellSorted language free bound expected source)
+    (represented : Represents origin source) :
+    ReferenceStep.Formed language free bound expected (pathFormation origin bound) source :=
+  ⟨good.2.2.1,good.1,⟨good.2.1,good.2.2.2⟩,represented⟩
+
+/-- One actual derived-law instance, with both endpoints typed in this very
+caller context, is a typed disciplined step. No raw-equivalence endpoint
+lifting is used. Its representation evidence is retained for enclosing slots. -/
+private theorem derived_root_step {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (discipline : EquationDiscipline) {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {origin source target : Pattern} (generator : DerivedInstance language source target)
+    (good : OpenPatternWellSorted language free bound expected source)
+    (targetTyped : HasType language free bound target expected) (represented : Represents origin source) :
+    ReferenceStep.TypedStep relEnv language discipline free bound expected (pathFormation origin bound) source target := by
+  refine ⟨pathFormed_of_open good represented, ?_, .inContext .hole (.inr generator)⟩
+  refine ⟨derived_isObjectPattern generator good.2.2.1,targetTyped,?_,?_⟩
+  · exact ⟨derived_hasCanonicalBinderMetadata generator good.2.1,targetTyped.isWellScopedAt⟩
+  · exact represents_trans represented (derived_represents generator)
+
+/-- Typed occurrence congruence for this actual constructed path. The
+source-dependent representation invariant discharges authored binder slots;
+the public result later forgets that auxiliary invariant. -/
+private theorem lift_path {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {discipline : EquationDiscipline} {free : FreeTypeContext}
+    {bound focusBound : List TypeExpr} {expected focusType : TypeExpr}
+    {origin source target : Pattern} {context : OneHoleContext}
+    (selected : TypedAt language free source context bound expected focusBound focusType)
+    (good : OpenPatternWellSorted language free bound expected (context.fill source))
+    (represented : Represents origin (context.fill source))
+    (path : ReferenceStep.TypedEquivalent relEnv language discipline free focusBound focusType
+      (pathFormation source focusBound) source target) :
+    ReferenceStep.TypedEquivalent relEnv language discipline free bound expected
+      (pathFormation origin bound) (context.fill source) (context.fill target) := by
+  apply ReferenceStep.TypedEquivalent.fill context ?_ path
+  intro term formed
+  have compatible : RepresentationCompatible source term := fun frame parameter representation =>
+    represents_fill frame formed.formed.2 parameter representation
+  have typed := selected.replace compatible formed.typed
+  refine ⟨isObjectPattern_fill_replace context good.2.2.1 (fun _ => formed.object),typed,?_,?_⟩
+  · exact ⟨hasCanonicalBinderMetadata_fill_replace context good.2.1 (fun _ => formed.formed.1.1),
+      typed.isWellScopedAt⟩
+  · exact represents_trans represented (represents_fill context formed.formed.2)
+
+/-- Actual flattening at a homogeneous algebra's base-result occurrence.
+The target spine is derived from the checked source spine and nested member;
+its same-context typing is not an additional endpoint assumption. -/
+theorem flatten_step {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (discipline : EquationDiscipline)
+    {free : FreeTypeContext} {bound : List TypeExpr} {rule : GrammarRule}
+    {kind : CollType} {parameter : String} {law : Laws}
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    (found : lawFor laws kind = some law)
+    (declaration : AlgebraRule language rule kind ⟨true,law.unit⟩)
+    (before middle after : List Pattern)
+    (typed : ElementsHaveType language free bound (before ++ .collection kind middle none :: after) (.base rule.category))
+    (canonical : (.collection kind (before ++ .collection kind middle none :: after) none : Pattern).hasCanonicalBinderMetadata = true)
+    (object : isObjectPattern (.collection kind (before ++ .collection kind middle none :: after) none) = true) :
+    ReferenceStep.TypedStep relEnv language discipline free bound (.base rule.category) (objectFormation bound)
+      (.collection kind (before ++ .collection kind middle none :: after) none)
+      (.collection kind (before ++ middle ++ after) none) := by
+  have sourceTyped : HasType language free bound
+      (.collection kind (before ++ .collection kind middle none :: after) none) (.base rule.category) :=
+    .collectionConstructor declaration.authored shape typed
+  have selectedTyped : HasType language free bound (.collection kind middle none) (.base rule.category) :=
+    CanonicalBags.elementsHaveType_iff.mp typed _ (by simp)
+  have middleTyped : ElementsHaveType language free bound middle (.base rule.category) := by
+    apply CanonicalBags.elementsHaveType_iff.mpr
+    intro item member
+    apply splice_base_typed checked found selectedTyped item
+    simpa only [CollectionLaws.splice, lawFor_kind found, ↓reduceIte] using member
+  have targetItems : ElementsHaveType language free bound (before ++ middle ++ after) (.base rule.category) := by
+    apply CanonicalBags.elementsHaveType_iff.mpr
+    intro item member
+    simp only [List.mem_append] at member
+    rcases member with (earlier | inner) | later
+    · exact CanonicalBags.elementsHaveType_iff.mp typed item (by simp [earlier])
+    · exact CanonicalBags.elementsHaveType_iff.mp middleTyped item inner
+    · exact CanonicalBags.elementsHaveType_iff.mp typed item (by simp [later])
+  have targetTyped : HasType language free bound (.collection kind (before ++ middle ++ after) none)
+      (.base rule.category) := .collectionConstructor declaration.authored shape targetItems
+  have generator : DerivedInstance language
+      (.collection kind (before ++ .collection kind middle none :: after) none)
+      (.collection kind (before ++ middle ++ after) none) :=
+    .flatten declaration rfl ⟨free,bound,sourceTyped⟩
+  exact ⟨⟨object,sourceTyped,canonical,sourceTyped.isWellScopedAt⟩,
+    ⟨derived_isObjectPattern generator object,targetTyped,
+      derived_hasCanonicalBinderMetadata generator canonical,targetTyped.isWellScopedAt⟩,
+    .inContext .hole (.inr generator)⟩
+
+/-- The declared unit is removed at its actual typed base-result collection,
+while the same free/bound context and formation factors are retained. -/
+theorem unit_step {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (discipline : EquationDiscipline) {free : FreeTypeContext} {bound : List TypeExpr} {rule : GrammarRule}
+    {kind : CollType} {parameter unitLabel : String} {algebra : CollectionAlgebra}
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    (declaration : AlgebraRule language rule kind algebra) (unit : algebra.unit = some unitLabel)
+    (before after : List Pattern)
+    (typed : ElementsHaveType language free bound (before ++ .apply unitLabel [] :: after) (.base rule.category))
+    (canonical : (.collection kind (before ++ .apply unitLabel [] :: after) none : Pattern).hasCanonicalBinderMetadata = true)
+    (object : isObjectPattern (.collection kind (before ++ .apply unitLabel [] :: after) none) = true) :
+    ReferenceStep.TypedStep relEnv language discipline free bound (.base rule.category) (objectFormation bound)
+      (.collection kind (before ++ .apply unitLabel [] :: after) none) (.collection kind (before ++ after) none) := by
+  have sourceTyped : HasType language free bound (.collection kind (before ++ .apply unitLabel [] :: after) none)
+      (.base rule.category) := .collectionConstructor declaration.authored shape typed
+  have targetItems : ElementsHaveType language free bound (before ++ after) (.base rule.category) := by
+    apply CanonicalBags.elementsHaveType_iff.mpr
+    intro item member
+    rcases List.mem_append.mp member with earlier | later
+    · exact CanonicalBags.elementsHaveType_iff.mp typed item (by simp [earlier])
+    · exact CanonicalBags.elementsHaveType_iff.mp typed item (by simp [later])
+  have targetTyped : HasType language free bound (.collection kind (before ++ after) none) (.base rule.category) :=
+    .collectionConstructor declaration.authored shape targetItems
+  have generator : DerivedInstance language
+      (.collection kind (before ++ .apply unitLabel [] :: after) none) (.collection kind (before ++ after) none) :=
+    .unitElim declaration unit ⟨free,bound,sourceTyped⟩
+  exact ⟨⟨object,sourceTyped,canonical,sourceTyped.isWellScopedAt⟩,
+    ⟨derived_isObjectPattern generator object,targetTyped,
+      derived_hasCanonicalBinderMetadata generator canonical,targetTyped.isWellScopedAt⟩,
+    .inContext .hole (.inr generator)⟩
+
+#print axioms flatten_step
+#print axioms unit_step
+
+/-- Intrinsic permutation is realized from the actual declared collection
+site at this source, including wrapped and nested data occurrences. Both
+endpoints retain the same caller type and local bound context. -/
+theorem permutation_step {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (discipline : EquationDiscipline) {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {kind : CollType} {elements other : List Pattern}
+    (unordered : CanonicalBags.Unordered kind = true) (permutation : elements.Perm other)
+    (site : ReferenceStep.CollectionLawSite language kind elements)
+    (good : OpenPatternWellSorted language free bound expected (.collection kind elements none)) :
+    ReferenceStep.TypedStep relEnv language discipline free bound expected (objectFormation bound)
+      (.collection kind elements none) (.collection kind other none) := by
+  have generator : DerivedInstance language (.collection kind elements none) (.collection kind other none) := by
+    rcases site with vector | ⟨rule,declared,typed⟩
+    · subst kind
+      cases unordered
+    · cases kind with
+      | vec => cases unordered
+      | hashBag => exact .bagPerm declared typed permutation
+      | hashSet => exact .setPerm declared typed permutation
+  have targetTyped := (CanonicalBags.BagStep.permute (rest := none) unordered permutation).hasType good.1
+  exact ⟨(formed_iff_open).mpr good,
+    ⟨derived_isObjectPattern generator good.2.2.1,targetTyped,
+      derived_hasCanonicalBinderMetadata generator good.2.1,targetTyped.isWellScopedAt⟩,
+    .inContext .hole (.inr generator)⟩
+
+/-- The actual selected lexical sorter is a typed permutation step. This
+states sorting only; set contraction is a separate derived-law path. -/
+theorem lexical_permutation_step {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (discipline : EquationDiscipline) {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {kind : CollType} {elements : List Pattern}
+    (unordered : CanonicalBags.Unordered kind = true)
+    (site : ReferenceStep.CollectionLawSite language kind elements)
+    (good : OpenPatternWellSorted language free bound expected (.collection kind elements none)) :
+    ReferenceStep.TypedStep relEnv language discipline free bound expected (objectFormation bound)
+      (.collection kind elements none) (.collection kind (PatternLexOrder.sortLex elements) none) :=
+  permutation_step discipline unordered (PatternLexOrder.sortLex_perm elements).symm site good
+
+#print axioms permutation_step
+#print axioms lexical_permutation_step
+
+private theorem strengthen_step {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {discipline : EquationDiscipline} {free : FreeTypeContext} {bound : List TypeExpr} {expected : TypeExpr}
+    {origin source target : Pattern}
+    (step : ReferenceStep.TypedStep relEnv language discipline free bound expected (objectFormation bound) source target)
+    (sourceRepresents : Represents origin source) (targetRepresents : Represents origin target) :
+    ReferenceStep.TypedStep relEnv language discipline free bound expected (pathFormation origin bound) source target :=
+  ⟨⟨step.1.object,step.1.typed,step.1.formed,sourceRepresents⟩,
+    ⟨step.2.1.object,step.2.1.typed,step.2.1.formed,targetRepresents⟩,step.2.2⟩
+
+private theorem base_collection_elements {laws : List Laws} {language : LanguageDef}
+    (checked : checkBareHomogeneous laws language = true)
+    {free : FreeTypeContext} {bound : List TypeExpr} {kind : CollType} {law : Laws}
+    (found : lawFor laws kind = some law) {elements : List Pattern} {category : String}
+    (typed : HasType language free bound (.collection kind elements none) (.base category)) :
+    ElementsHaveType language free bound elements (.base category) := by
+  apply CanonicalBags.elementsHaveType_iff.mpr
+  intro item member
+  apply splice_base_typed checked found typed item
+  simpa only [CollectionLaws.splice, lawFor_kind found, ↓reduceIte] using member
+
+private theorem splice_typed_path
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (discipline : EquationDiscipline)
+    {free : FreeTypeContext} {bound : List TypeExpr} {rule : GrammarRule} {kind : CollType}
+    {parameter : String} {law : Laws}
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    (found : lawFor laws kind = some law) (declaration : AlgebraRule language rule kind ⟨true,law.unit⟩)
+    (origin : Pattern) : ∀ (todo done : List Pattern),
+      OpenPatternWellSorted language free bound (.base rule.category) (.collection kind (done ++ todo) none) →
+      Represents origin (.collection kind (done ++ todo) none) →
+      ReferenceStep.TypedEquivalent relEnv language discipline free bound (.base rule.category)
+        (pathFormation origin bound) (.collection kind (done ++ todo) none)
+        (.collection kind (done ++ todo.flatMap (CollectionLaws.splice law)) none)
+  | [], done, good, represented => by
+      simp only [List.flatMap_nil,List.append_nil]
+      exact .refl _
+  | item :: todo, done, good, represented => by
+      have typed := base_collection_elements checked found good.1
+      have keep (fixed : CollectionLaws.splice law item = [item]) :
+          ReferenceStep.TypedEquivalent relEnv language discipline free bound (.base rule.category)
+            (pathFormation origin bound) (.collection kind (done ++ item :: todo) none)
+            (.collection kind (done ++ (item :: todo).flatMap (CollectionLaws.splice law)) none) := by
+        have regrouped : done ++ item :: todo = (done ++ [item]) ++ todo := by simp
+        have later := splice_typed_path (relEnv := relEnv) checked discipline shape found declaration origin todo (done ++ [item])
+          (regrouped ▸ good) (regrouped ▸ represented)
+        simpa only [List.flatMap_cons,fixed,List.append_assoc,List.singleton_append] using later
+      have sameKind := lawFor_kind found
+      cases item with
+      | collection actual middle rest =>
+          cases rest with
+          | none =>
+              by_cases same : actual = law.kind
+              · have actualEq : actual = kind := same.trans sameKind
+                have step := flatten_step (relEnv := relEnv) checked discipline shape found declaration done middle todo
+                  (by simpa only [actualEq] using typed) (by simpa only [actualEq] using good.2.1)
+                  (by simpa only [actualEq] using good.2.2.1)
+                have startRepresents : Represents origin (.collection kind (done ++ .collection kind middle none :: todo) none) := by
+                  simpa only [actualEq] using represented
+                have nextRepresents : Represents origin (.collection kind (done ++ middle ++ todo) none) :=
+                  represents_trans startRepresents (represents_collection kind _ none _)
+                have first := strengthen_step step startRepresents nextRepresents
+                have nextGood := (formed_iff_open).mp step.2.1
+                have later := splice_typed_path (relEnv := relEnv) checked discipline shape found declaration origin todo (done ++ middle)
+                  (by simpa only [List.append_assoc] using nextGood)
+                  (by simpa only [List.append_assoc] using nextRepresents)
+                have combined := Relation.EqvGen.trans _ _ _ (Relation.EqvGen.rel _ _ first) later
+                simpa only [ReferenceStep.TypedEquivalent, List.flatMap_cons, CollectionLaws.splice,
+                  sameKind, actualEq, ↓reduceIte,List.append_assoc] using combined
+              · exact keep (by simp only [CollectionLaws.splice,same,if_false])
+          | some other => exact keep rfl
+      | apply label arguments =>
+          cases arguments with
+          | nil =>
+              by_cases unit : law.unit = some label
+              · have step := unit_step (relEnv := relEnv) discipline shape declaration unit done todo
+                  typed good.2.1 good.2.2.1
+                have nextRepresents : Represents origin (.collection kind (done ++ todo) none) :=
+                  represents_trans represented (represents_collection kind _ none _)
+                have first := strengthen_step step represented nextRepresents
+                have nextGood := (formed_iff_open).mp step.2.1
+                have later := splice_typed_path (relEnv := relEnv) checked discipline shape found declaration origin todo done nextGood nextRepresents
+                have combined := Relation.EqvGen.trans _ _ _ (Relation.EqvGen.rel _ _ first) later
+                simpa only [ReferenceStep.TypedEquivalent,List.flatMap_cons,CollectionLaws.splice,
+                  unit,↓reduceIte,List.nil_append] using combined
+              · exact keep (by simp only [CollectionLaws.splice,unit,if_false])
+          | cons first rest => exact keep rfl
+      | bvar index => exact keep rfl
+      | fvar identifier => exact keep rfl
+      | lambda display body => exact keep rfl
+      | multiLambda arity displays body => exact keep rfl
+      | subst body replacement => exact keep rfl
+
+/-- Every actual splicing operation has a path through object terms of the
+same original caller fibre. Each nontrivial link is the declared flattening
+or unit step above; retained authored rows are not removed or used as an oracle. -/
+private theorem finishAlgebra_typed_path
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : EquationDiscipline) {free : FreeTypeContext} {bound : List TypeExpr}
+    {rule : GrammarRule} (declared : rule ∈ language.terms) {kind : CollType} {parameter : String}
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    {origin : Pattern} {elements : List Pattern}
+    (good : OpenPatternWellSorted language free bound (.base rule.category) (.collection kind elements none))
+    (represented : Represents origin (.collection kind elements none)) :
+    ReferenceStep.TypedEquivalent relEnv language discipline free bound (.base rule.category)
+      (pathFormation origin bound) (.collection kind elements none)
+      (.collection kind (finishAlgebra laws kind elements) none) := by
+  unfold finishAlgebra
+  cases found : lawFor laws kind with
+  | none => exact .refl _
+  | some law =>
+      have declaration := authorized rule declared kind parameter law shape found
+      simpa only [List.nil_append] using
+        splice_typed_path (relEnv := relEnv) checked discipline shape found declaration origin elements [] good represented
+
+#print axioms finishAlgebra_typed_path
+
+private theorem open_list_member {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {items : List Pattern} {item : Pattern} {expected : TypeExpr}
+    (typed : HasType language free bound item expected)
+    (canonical : Pattern.hasCanonicalBinderMetadataList items = true)
+    (objects : isObjectPatternList items = true) (member : item ∈ items) :
+    OpenPatternWellSorted language free bound expected item :=
+  ⟨typed,(hasCanonicalBinderMetadataList_iff).mp canonical item member,
+    (isObjectPatternList_iff).mp objects item member,typed.isWellScopedAt⟩
+
+private theorem arguments_typed_path
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {discipline : EquationDiscipline} {free : FreeTypeContext} {bound : List TypeExpr}
+    {rule : GrammarRule} (declared : rule ∈ language.terms) (ordinary : ¬ UsesBareCollection rule)
+    (origin : Pattern) : ∀ (todo : List Pattern) (todoRows : List TermParam)
+      (before : List Pattern) (beforeRows : List TermParam),
+      ArgumentsHaveTypes language free bound before beforeRows →
+      ArgumentsHaveTypes language free bound todo todoRows →
+      rule.params = beforeRows ++ todoRows →
+      OpenPatternWellSorted language free bound (.base rule.category) (.apply rule.label (before ++ todo)) →
+      Represents origin (.apply rule.label (before ++ todo)) →
+      (∀ argument ∈ todo, ∀ expected, OpenPatternWellSorted language free bound expected argument →
+        ReferenceStep.TypedEquivalent relEnv language discipline free bound expected (pathFormation argument bound)
+          argument (reduceAt laws domains language free bound argument expected)) →
+      ReferenceStep.TypedEquivalent relEnv language discipline free bound (.base rule.category)
+        (pathFormation origin bound) (.apply rule.label (before ++ todo))
+        (.apply rule.label (before ++ reduceArguments laws domains language free bound todo todoRows))
+  | [], todoRows, before, beforeRows, beforeTyped, todoTyped, shape, good, represented, each => by
+      cases todoTyped
+      simp only [reduceArguments]
+      exact .refl _
+  | argument :: todo, todoRows, before, beforeRows, beforeTyped, todoTyped, shape, good, represented, each => by
+      cases todoTyped with
+      | @cons _ _ _ parameterRow afterRows expected representation parameterType headTyped tailTyped =>
+          have fullTyped : ArgumentsHaveTypes language free bound (before ++ argument :: todo) rule.params := by
+            rw [shape]
+            exact argumentsHaveTypes_join representation parameterType headTyped tailTyped beforeTyped
+          have selected : TypedAt language free argument (.apply rule.label before .hole todo)
+              bound (.base rule.category) bound expected :=
+            .application declared ordinary fullTyped shape beforeTyped.length_eq.symm parameterType (.here headTyped)
+          have argumentGood := open_list_member headTyped
+            (show Pattern.hasCanonicalBinderMetadataList (before ++ argument :: todo) = true from good.2.1)
+            (show isObjectPatternList (before ++ argument :: todo) = true from good.2.2.1)
+            (by simp)
+          have argumentPath := each argument (.head _) expected argumentGood
+          have first := lift_path selected good represented argumentPath
+          have argumentEnd := argumentPath.formed_right (pathFormed_of_open argumentGood (represents_refl argument))
+          have nextRepresentation := argumentEnd.formed.2 parameterRow representation
+          have nextBeforeTyped : ArgumentsHaveTypes language free bound
+              (before ++ [reduceAt laws domains language free bound argument expected]) (beforeRows ++ [parameterRow]) :=
+            argumentsHaveTypes_join nextRepresentation parameterType argumentEnd.typed (.nil) beforeTyped
+          have nextShape : rule.params = (beforeRows ++ [parameterRow]) ++ afterRows := by
+            simpa only [List.append_assoc,List.singleton_append] using shape
+          have fullEnd := first.formed_right (pathFormed_of_open good represented)
+          have nextGood : OpenPatternWellSorted language free bound (.base rule.category)
+              (.apply rule.label ((before ++ [reduceAt laws domains language free bound argument expected]) ++ todo)) := by
+            simpa only [OneHoleContext.fill,List.append_assoc,List.singleton_append] using
+              (show OpenPatternWellSorted language free bound (.base rule.category)
+                ((.apply rule.label before .hole todo : OneHoleContext).fill
+                  (reduceAt laws domains language free bound argument expected)) from
+                ⟨fullEnd.typed,fullEnd.formed.1.1,fullEnd.object,fullEnd.formed.1.2⟩)
+          have nextRepresents : Represents origin
+              (.apply rule.label ((before ++ [reduceAt laws domains language free bound argument expected]) ++ todo)) := by
+            simpa only [OneHoleContext.fill,List.append_assoc,List.singleton_append] using fullEnd.formed.2
+          have later := arguments_typed_path (relEnv := relEnv) declared ordinary origin todo afterRows
+            (before ++ [reduceAt laws domains language free bound argument expected]) (beforeRows ++ [parameterRow])
+            nextBeforeTyped tailTyped nextShape nextGood nextRepresents
+            (fun value member expected good => each value (.tail _ member) expected good)
+          simp only [List.append_assoc,List.singleton_append] at later
+          have combined := Relation.EqvGen.trans _ _ _ first later
+          simpa only [ReferenceStep.TypedEquivalent,OneHoleContext.fill,reduceArguments,parameterType,
+            List.append_assoc,List.singleton_append] using combined
+
+private theorem elements_concat {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {element : TypeExpr} {before after : List Pattern}
+    (first : ElementsHaveType language free bound before element)
+    (second : ElementsHaveType language free bound after element) :
+    ElementsHaveType language free bound (before ++ after) element := by
+  apply CanonicalBags.elementsHaveType_iff.mpr
+  intro item member
+  rcases List.mem_append.mp member with earlier | later
+  · exact CanonicalBags.elementsHaveType_iff.mp first item earlier
+  · exact CanonicalBags.elementsHaveType_iff.mp second item later
+
+private theorem elements_typed_path
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {discipline : EquationDiscipline} {free : FreeTypeContext} {bound : List TypeExpr}
+    {kind : CollType} {element parentType : TypeExpr}
+    (role : parentType = .collection kind element ∨
+      ∃ rule parameter, rule ∈ language.terms ∧
+        rule.bareParams = [.simple parameter (.collection kind element)] ∧ parentType = .base rule.category)
+    (origin : Pattern) : ∀ (todo before : List Pattern),
+      ElementsHaveType language free bound before element → ElementsHaveType language free bound todo element →
+      OpenPatternWellSorted language free bound parentType (.collection kind (before ++ todo) none) →
+      Represents origin (.collection kind (before ++ todo) none) →
+      (∀ item ∈ todo, OpenPatternWellSorted language free bound element item →
+        ReferenceStep.TypedEquivalent relEnv language discipline free bound element (pathFormation item bound)
+          item (reduceAt laws domains language free bound item element)) →
+      ReferenceStep.TypedEquivalent relEnv language discipline free bound parentType
+        (pathFormation origin bound) (.collection kind (before ++ todo) none)
+        (.collection kind (before ++ reduceElements laws domains language free bound todo element) none)
+  | [], before, beforeTyped, todoTyped, good, represented, each => by
+      simp only [reduceElements]
+      exact .refl _
+  | item :: todo, before, beforeTyped, todoTyped, good, represented, each => by
+      cases todoTyped with
+      | cons headTyped tailTyped =>
+          have fullTyped := elements_concat beforeTyped (ElementsHaveType.cons headTyped tailTyped)
+          have selected : TypedAt language free item (.collection kind before .hole todo none)
+              bound parentType bound element := by
+            rcases role with rfl | ⟨rule,parameter,declared,shape,rfl⟩
+            · exact .collection fullTyped (.here headTyped)
+            · exact .collectionConstructor declared shape fullTyped (.here headTyped)
+          have itemGood := open_list_member headTyped
+            (show Pattern.hasCanonicalBinderMetadataList (before ++ item :: todo) = true from good.2.1)
+            (show isObjectPatternList (before ++ item :: todo) = true from good.2.2.1) (by simp)
+          have itemPath := each item (.head _) itemGood
+          have first := lift_path selected good represented itemPath
+          have itemEnd := itemPath.formed_right (pathFormed_of_open itemGood (represents_refl item))
+          have nextBeforeTyped := elements_concat beforeTyped (ElementsHaveType.cons itemEnd.typed (.nil _ _))
+          have fullEnd := first.formed_right (pathFormed_of_open good represented)
+          have nextGood : OpenPatternWellSorted language free bound parentType
+              (.collection kind ((before ++ [reduceAt laws domains language free bound item element]) ++ todo) none) := by
+            simpa only [OneHoleContext.fill,List.append_assoc,List.singleton_append] using
+              (show OpenPatternWellSorted language free bound parentType
+                ((.collection kind before .hole todo none : OneHoleContext).fill
+                  (reduceAt laws domains language free bound item element)) from
+                ⟨fullEnd.typed,fullEnd.formed.1.1,fullEnd.object,fullEnd.formed.1.2⟩)
+          have nextRepresents : Represents origin
+              (.collection kind ((before ++ [reduceAt laws domains language free bound item element]) ++ todo) none) := by
+            simpa only [OneHoleContext.fill,List.append_assoc,List.singleton_append] using fullEnd.formed.2
+          have later := elements_typed_path (relEnv := relEnv) role origin todo
+            (before ++ [reduceAt laws domains language free bound item element]) nextBeforeTyped tailTyped
+            nextGood nextRepresents (fun value member good => each value (.tail _ member) good)
+          simp only [List.append_assoc,List.singleton_append] at later
+          have combined := Relation.EqvGen.trans _ _ _ first later
+          simpa only [ReferenceStep.TypedEquivalent,OneHoleContext.fill,reduceElements,List.append_assoc,
+            List.singleton_append] using combined
+
+#print axioms arguments_typed_path
+#print axioms elements_typed_path
+
+private theorem reduceAt_typed_path
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext) (source : Pattern) :
+    ∀ {bound : List TypeExpr} {expected : TypeExpr}, OpenPatternWellSorted language free bound expected source →
+      ReferenceStep.TypedEquivalent relEnv language discipline free bound expected (pathFormation source bound)
+        source (reduceAt laws domains language free bound source expected) := by
+  induction source using Pattern.inductionOn with
+  | hbvar index => intro bound expected good; simp only [reduceAt]; exact .refl _
+  | hfvar identifier => intro bound expected good; simp only [reduceAt]; exact .refl _
+  | happly label arguments recurse =>
+      intro bound expected good
+      simp only [reduceAt]
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => exact .refl _
+      | some rule =>
+          obtain ⟨member,head,expectedEq,ordinary,argumentsTyped⟩ := applicationRule_readout selected
+          rw [← head,expectedEq] at good ⊢
+          simpa only [List.nil_append] using
+            arguments_typed_path (relEnv := relEnv) (laws := laws) (domains := domains) member ordinary
+              (.apply rule.label arguments) arguments rule.params [] [] .nil argumentsTyped rfl good
+              (represents_refl _) (fun argument member expected good => recurse argument member good)
+  | hlambda display body recurse =>
+      intro bound expected good
+      cases good.1 with
+      | lambda bodyTyped =>
+          have canonical := good.2.1
+          simp only [Pattern.hasCanonicalBinderMetadata,Bool.and_eq_true] at canonical
+          have bodyGood : OpenPatternWellSorted language free _ _ body :=
+            ⟨bodyTyped,canonical.2,good.2.2.1,bodyTyped.isWellScopedAt⟩
+          have path := lift_path (relEnv := relEnv) (TypedAt.lambda (.here bodyTyped)) good
+            (represents_refl _) (recurse bodyGood)
+          simpa only [reduceAt,OneHoleContext.fill] using path
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected good
+      cases good.1 with
+      | multiLambda bodyTyped =>
+          have canonical := good.2.1
+          simp only [Pattern.hasCanonicalBinderMetadata,Bool.and_eq_true] at canonical
+          have bodyGood : OpenPatternWellSorted language free _ _ body :=
+            ⟨bodyTyped,canonical.2,good.2.2.1,bodyTyped.isWellScopedAt⟩
+          have path := lift_path (relEnv := relEnv) (TypedAt.multiLambda (.here bodyTyped)) good
+            (represents_refl _) (recurse bodyGood)
+          simpa only [reduceAt,OneHoleContext.fill] using path
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected good
+      have impossible := good.2.2.1
+      simp only [isObjectPattern,Bool.false_eq_true] at impossible
+  | hcollection kind elements rest recurse =>
+      intro bound expected good
+      have closed : rest = none := by
+        have object := good.2.2.1
+        simp only [isObjectPattern,Bool.and_eq_true] at object
+        cases rest with
+        | none => rfl
+        | some identifier => cases object.1
+      subst rest
+      rcases CanonicalBags.hasType_collection_inv good.1 with ⟨element,rfl,items⟩ |
+        ⟨sourceRule,sourceParameter,sourceElement,sourceDeclared,sourceShape,rfl,sourceItems⟩
+      · simp only [reduceAt,↓reduceIte]
+        simpa only [List.nil_append] using
+          elements_typed_path (relEnv := relEnv) (laws := laws) (domains := domains) (.inl rfl)
+            (.collection kind elements none) elements [] (.nil _ _) items good (represents_refl _)
+            (fun item member good => recurse item member good)
+      · simp only [reduceAt]
+        cases selected : collectionRule? domains language free bound (.base sourceRule.category) kind elements none with
+        | none => exact .refl _
+        | some rule =>
+            obtain ⟨element,member,elementRead,items⟩ := collectionRule_readout selected
+            simp only [elementRead]
+            obtain ⟨expectedEq,parameter,shape⟩ := (bareCollectionElementType?_eq_some_iff _ _ _ _).mp elementRead
+            rw [expectedEq] at good ⊢
+            have first : ReferenceStep.TypedEquivalent relEnv language discipline free bound (.base rule.category)
+                (pathFormation (.collection kind elements none) bound) (.collection kind elements none)
+                (.collection kind (reduceElements laws domains language free bound elements element) none) := by
+              simpa only [List.nil_append] using
+                elements_typed_path (relEnv := relEnv) (laws := laws) (domains := domains)
+                  (.inr ⟨rule,parameter,member,shape,rfl⟩) (.collection kind elements none)
+                  elements [] (.nil _ _) items good (represents_refl _)
+                  (fun item member good => recurse item member good)
+            cases found : lawFor laws kind with
+            | none => simpa only [finishAlgebra,found] using first
+            | some law =>
+                have homogeneous := homogeneous_bare_of_checked checked found member shape
+                rw [homogeneous] at items shape first ⊢
+                have firstEnd := first.formed_right (pathFormed_of_open good (represents_refl _))
+                have normalizedGood : OpenPatternWellSorted language free bound (.base rule.category)
+                    (.collection kind (reduceElements laws domains language free bound elements (.base rule.category)) none) :=
+                  ⟨firstEnd.typed,firstEnd.formed.1.1,firstEnd.object,firstEnd.formed.1.2⟩
+                have later := finishAlgebra_typed_path (relEnv := relEnv) checked authorized discipline member shape
+                  normalizedGood firstEnd.formed.2
+                exact .trans _ _ _ first later
+
+/-- Actual role-directed normalization is a path through the ordinary
+collection carrier, at one free/bound/expected fibre throughout. Every
+nontrivial link is constructed above from the actual declared source law.
+No raw-equivalence endpoint lifting or reflective formation is assumed. -/
+theorem reduceAt_typed_equivalent
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (good : OpenPatternWellSorted language free bound expected source) :
+    ReferenceStep.TypedEquivalent relEnv language discipline free bound expected (objectFormation bound)
+      source (reduceAt laws domains language free bound source expected) :=
+  (reduceAt_typed_path (relEnv := relEnv) checked authorized discipline domains free source good).weaken
+    (fun _ formed => formed.1)
+
+/-- The checked tagged traversal has the same actual typed normalization
+path. This preserves its original source account without inferring a typed
+output-position map or a captured-body rebasing certificate. -/
+theorem reduceAtTagged_typed_equivalent
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (good : OpenPatternWellSorted language free bound expected source) :
+    ReferenceStep.TypedEquivalent relEnv language discipline free bound expected (objectFormation bound)
+      source (reduceAtTagged laws domains language free bound source expected).target := by
+  rw [reduceAtTagged_target]
+  exact reduceAt_typed_equivalent checked authorized discipline domains free source good
+
+#print axioms reduceAt_typed_equivalent
+#print axioms reduceAtTagged_typed_equivalent
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout.TypedPaths
+
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open WithAuthoredEquations.AlgebraFocus RoleAwareReadout TypedPaths
+
+private theorem traced_open :
+    OpenPatternWellSorted language FreeTypeContext.empty [] proc tracedSource := by
+  have typed := mixed_trace_physical_account.1
+  exact ⟨typed, by decide +kernel, by decide +kernel, typed.isWellScopedAt⟩
+
+/-- The exact mixed trace has a path in the ordinary typed equation carrier.
+The separate data Z and duplicate source visits retain their physical account. -/
+theorem mixed_trace_typed_normalization (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    ReferenceStep.TypedEquivalent relEnv language discipline FreeTypeContext.empty [] proc
+        (objectFormation []) tracedSource actualTrace.target ∧
+      actualTrace.target = tracedTarget ∧ actualTrace.SourceAccount ∧
+      (actualTrace.partition.map (fun origin => origin.source.address)).Nodup := by
+  have path := reduceAtTagged_typed_equivalent (relEnv := relEnv) homogeneous authorized
+    discipline [] FreeTypeContext.empty tracedSource traced_open
+  exact ⟨path, mixed_trace_physical_account.2.2.1,
+    reduceAtTagged_source_account _ _ _ _ _ _ _,
+    (reduceAtTagged_original_partition _ _ _ _ _ _ _).2.1⟩
+
+private def binderInput : Pattern :=
+  .lambda none (.multiLambda 2 [] (bag [bag [.bvar 3,.bvar 0,.bvar 1,.bvar 0],z]))
+private def binderOutput : Pattern :=
+  .lambda none (.multiLambda 2 [] (bag [.bvar 3,.bvar 0,.bvar 1,.bvar 0]))
+private def binderType : TypeExpr := .arrow proc (.arrow (.multiBinder proc) proc)
+
+/-- Lambda and multi-binder scopes retain the ambient variable and both local
+binders. The repeated local variable is not collapsed or relabelled. -/
+theorem binder_scopes_typed_normalization (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    OpenPatternWellSorted language FreeTypeContext.empty [proc] binderType binderInput ∧
+      reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [proc]
+        binderInput binderType = binderOutput ∧
+      ReferenceStep.TypedEquivalent relEnv language discipline FreeTypeContext.empty [proc] binderType
+        (objectFormation [proc]) binderInput binderOutput := by
+  have typed : HasType language FreeTypeContext.empty [proc] binderInput binderType :=
+    checkHasType_sound (by decide +kernel)
+  have good : OpenPatternWellSorted language FreeTypeContext.empty [proc] binderType binderInput :=
+    ⟨typed,by decide +kernel,by decide +kernel,typed.isWellScopedAt⟩
+  have actual : reduceAt (CollectionLaws.declared language) [] language FreeTypeContext.empty [proc]
+      binderInput binderType = binderOutput := by cbv
+  refine ⟨good,actual,?_⟩
+  simpa only [actual] using
+    reduceAt_typed_equivalent (relEnv := relEnv) homogeneous authorized discipline []
+      FreeTypeContext.empty binderInput good
+
+/-- Actual declared nested-parameter evidence licenses the selected lexical
+permutation at a data role. It keeps the unit-valued data and both copies of A. -/
+theorem nested_data_lexical_typed_step (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    PatternLexOrder.sortLex [b,z,a,a] = [a,a,b,z] ∧
+      ReferenceStep.TypedStep relEnv language discipline FreeTypeContext.empty [] dataType
+        (objectFormation []) (bag [b,z,a,a]) (bag [a,a,b,z]) := by
+  have typed : HasType language FreeTypeContext.empty [] (bag [b,z,a,a]) dataType :=
+    checkHasType_sound (by decide +kernel)
+  have good : OpenPatternWellSorted language FreeTypeContext.empty [] dataType (bag [b,z,a,a]) :=
+    ⟨typed,by decide +kernel,by decide +kernel,typed.isWellScopedAt⟩
+  have site : ReferenceStep.CollectionLawSite language .hashBag [b,z,a,a] :=
+    .inr ⟨wrapper,by decide +kernel,.simple "data" nestedType,by decide +kernel,
+      proc,.element .here,FreeTypeContext.empty,[],typed⟩
+  have actual : PatternLexOrder.sortLex [b,z,a,a] = [a,a,b,z] := by decide +kernel
+  refine ⟨actual,?_⟩
+  simpa only [actual, bag] using lexical_permutation_step (relEnv := relEnv) discipline rfl site good
+
+/-- Same-context typing rules out replacing the result by an arrow-valued
+object, even though that object has valid scope and binder metadata. -/
+theorem wrong_sort_typed_path_rejected (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    ¬ ReferenceStep.TypedEquivalent relEnv language discipline FreeTypeContext.empty [] proc
+      (objectFormation []) tracedSource (.lambda none (.bvar 0)) := by
+  intro path
+  have target := path.formed_right (formed_iff_open.mpr traced_open)
+  cases target.typed
+
+/-- An escaping variable is not a well-typed endpoint of this closed fibre. -/
+theorem escaping_typed_path_rejected (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    ¬ ReferenceStep.TypedEquivalent relEnv language discipline FreeTypeContext.empty [] proc
+      (objectFormation []) tracedSource (.bvar 0) := by
+  intro path
+  have target := path.formed_right (formed_iff_open.mpr traced_open)
+  cases target.typed with
+  | bvar selected => cases selected
+
+/-- Correct endpoint types do not supply a missing unit declaration. -/
+theorem wrong_unit_typed_path_rejected (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    ¬ ReferenceStep.TypedEquivalent relEnv unlicensedLanguage discipline FreeTypeContext.empty [] proc
+      (objectFormation []) unlicensedSource unlicensedTarget := by
+  obtain ⟨_,_,_,_,_,_,refused⟩ := wrong_unit_source_authority relEnv
+  intro path
+  exact refused path.toDisciplined.toEquivalent
+
+/-- Pending substitution has its existing raw source path. It is schema
+syntax, so its nontrivial normalization is outside the object typed carrier. -/
+theorem pending_substitution_typed_object_boundary (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    ReferenceStep.Equivalent relEnv language subSource subResult ∧
+      ¬ ReferenceStep.TypedEquivalent relEnv language discipline FreeTypeContext.empty [proc] proc
+        (objectFormation [proc]) subSource subResult := by
+  refine ⟨(pending_substitution_scope relEnv).2.2.2.2,?_⟩
+  intro path
+  rcases path.ends with same | both
+  · exact (by decide +kernel : subSource ≠ subResult) same
+  · have impossible := both.1.object
+    change false = true at impossible
+    cases impossible
+
+#print axioms mixed_trace_typed_normalization
+#print axioms binder_scopes_typed_normalization
+#print axioms nested_data_lexical_typed_step
+#print axioms wrong_sort_typed_path_rejected
+#print axioms escaping_typed_path_rejected
+#print axioms wrong_unit_typed_path_rejected
+#print axioms pending_substitution_typed_object_boundary
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+private theorem originAt_typed_readout
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {source target : Pattern} {expected : TypeExpr}
+    (declaration : Option (Nat × GrammarRule))
+    (typed : HasType language free bound source expected)
+    (readout : target = reduceAt laws domains language free bound source expected) :
+    ∃ role, (originAt bound (some expected) declaration source target).expected = some role ∧
+      TypedAt language free (originAt bound (some expected) declaration source target).source.original
+        (originAt bound (some expected) declaration source target).source.context
+        bound expected (originAt bound (some expected) declaration source target).bound role ∧
+      (originAt bound (some expected) declaration source target).source.value =
+        reduceAt laws domains language free (originAt bound (some expected) declaration source target).bound
+          (originAt bound (some expected) declaration source target).source.original role :=
+  ⟨expected,rfl,.here typed,readout⟩
+
+private theorem original_underContext_typedAt
+    {language : LanguageDef} {free : FreeTypeContext}
+    {rootBound localBound : List TypeExpr} {rootType localType expected : TypeExpr}
+    {source : Pattern} {origin : TypedOrigin} {frame : OneHoleContext}
+    (rooted : origin.source.context.fill origin.source.original = source)
+    (outer : TypedAt language free source frame rootBound rootType localBound localType)
+    (inner : TypedAt language free origin.source.original origin.source.context
+      localBound localType origin.bound expected) :
+    TypedAt language free (origin.underContext frame).source.original
+      (origin.underContext frame).source.context rootBound rootType
+      (origin.underContext frame).bound expected := by
+  have outerRead : TypedAt language free (origin.source.context.fill origin.source.original)
+      frame rootBound rootType localBound localType := by
+    rw [rooted]
+    exact outer
+  exact outerRead.comp inner
+
+private theorem liftedChildren_nil_readout (frame : Nat → OneHoleContext) (start : Nat) :
+    liftedChildren frame start [] = [] := rfl
+
+private theorem liftedChildren_cons_readout (frame : Nat → OneHoleContext) (start : Nat)
+    (child : TaggedReduction) (children : List TaggedReduction) :
+    liftedChildren frame start (child :: children) =
+      child.underContext (frame start) :: liftedChildren frame (start + 1) children := rfl
+
+private theorem liftedChildren_visited_at
+    (frame : Nat → OneHoleContext) (start : Nat) (children : List TaggedReduction)
+    {origin : TypedOrigin}
+    (member : origin ∈ (liftedChildren frame start children).flatMap TaggedReduction.visited) :
+    ∃ (index : Nat) (child : TaggedReduction) (inner : TypedOrigin), children[index]? = some child ∧ inner ∈ child.visited ∧
+      origin = inner.underContext (frame (start + index)) := by
+  induction children generalizing start with
+  | nil => simp only [liftedChildren_nil_readout,List.flatMap_nil,List.not_mem_nil] at member
+  | cons child children recurse =>
+      simp only [liftedChildren_cons_readout,List.flatMap_cons,List.mem_append] at member
+      rcases member with head | tail
+      · simp only [TaggedReduction.underContext,List.mem_map] at head
+        obtain ⟨inner,innerMember,rfl⟩ := head
+        exact ⟨0,child,inner,rfl,innerMember,by simp only [Nat.add_zero]⟩
+      · obtain ⟨index,selected,inner,atIndex,innerMember,actual⟩ := recurse (start + 1) tail
+        refine ⟨index + 1,selected,inner,?_,innerMember,?_⟩
+        · simpa only [List.getElem?_cons_succ] using atIndex
+        · simpa only [Nat.add_assoc,Nat.add_comm,Nat.add_left_comm] using actual
+
+private theorem reduceArgumentsTagged_at
+    (laws : List Laws) (domains : List TypeExpr) {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {arguments : List Pattern} {parameterRows : List TermParam}
+    (typed : ArgumentsHaveTypes language free bound arguments parameterRows) :
+    ∀ (index : Nat) (trace : TaggedReduction), (reduceArgumentsTagged laws domains language free bound arguments parameterRows)[index]? = some trace →
+      ∃ argument parameter expected,
+        arguments[index]? = some argument ∧ parameterRows[index]? = some parameter ∧
+        parameterType? parameter = some expected ∧
+        trace = reduceAtTagged laws domains language free bound argument expected ∧
+        HasType language free bound argument expected := by
+  induction arguments generalizing parameterRows with
+  | nil =>
+      cases typed
+      intro index trace selected
+      simp only [reduceArgumentsTagged,List.getElem?_nil] at selected
+      cases selected
+  | cons argument arguments recurse =>
+      cases typed with
+      | @cons _ _ _ parameter parameterRows expected representation parameterType headTyped tailTyped =>
+          intro index trace selected
+          cases index with
+          | zero =>
+              have actual : reduceAtTagged laws domains language free bound argument expected = trace := by
+                simpa only [reduceArgumentsTagged,parameterType,List.getElem?_cons_zero,Option.some.injEq] using selected
+              subst trace
+              exact ⟨argument,parameter,expected,rfl,rfl,parameterType,rfl,headTyped⟩
+          | succ index =>
+              have later : (reduceArgumentsTagged laws domains language free bound arguments parameterRows)[index]? = some trace := by
+                simpa only [reduceArgumentsTagged,parameterType,List.getElem?_cons_succ] using selected
+              obtain ⟨item,row,role,atArgument,atParameter,rowType,traceRead,itemTyped⟩ := recurse tailTyped index trace later
+              exact ⟨item,row,role,by simpa only [List.getElem?_cons_succ] using atArgument,
+                by simpa only [List.getElem?_cons_succ] using atParameter,rowType,traceRead,itemTyped⟩
+
+private theorem reduceElementsTagged_at
+    (laws : List Laws) (domains : List TypeExpr) {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {elements : List Pattern} {expected : TypeExpr}
+    (typed : ElementsHaveType language free bound elements expected) :
+    ∀ (index : Nat) (trace : TaggedReduction), (reduceElementsTagged laws domains language free bound elements expected)[index]? = some trace →
+      ∃ element, elements[index]? = some element ∧
+        trace = reduceAtTagged laws domains language free bound element expected ∧
+        HasType language free bound element expected := by
+  induction elements with
+  | nil =>
+      intro index trace selected
+      simp only [reduceElementsTagged,List.getElem?_nil] at selected
+      cases selected
+  | cons element elements recurse =>
+      cases typed with
+      | cons headTyped tailTyped =>
+          intro index trace selected
+          cases index with
+          | zero =>
+              have actual : reduceAtTagged laws domains language free bound element expected = trace := by
+                simpa only [reduceElementsTagged,List.getElem?_cons_zero,Option.some.injEq] using selected
+              subst trace
+              exact ⟨element,rfl,rfl,headTyped⟩
+          | succ index =>
+              have later : (reduceElementsTagged laws domains language free bound elements expected)[index]? = some trace := by
+                simpa only [reduceElementsTagged,List.getElem?_cons_succ] using selected
+              obtain ⟨item,atElement,traceRead,itemTyped⟩ := recurse tailTyped index trace later
+              exact ⟨item,by simpa only [List.getElem?_cons_succ] using atElement,traceRead,itemTyped⟩
+
+private theorem opaqueTrace_visits (bound : List TypeExpr) (expected : Option TypeExpr)
+    (source : Pattern) (complete : Bool) :
+    (opaqueTrace bound expected source complete).visited = [(opaqueTrace bound expected source complete).root] := rfl
+
+private theorem assembleTrace_visits (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Option (Nat × GrammarRule)) (source target : Pattern) (children : List TaggedReduction) :
+    (assembleTrace bound expected declaration source target children).visited =
+      (assembleTrace bound expected declaration source target children).root :: children.flatMap TaggedReduction.visited := rfl
+
+private theorem algebraTrace_visits (laws : List Laws) (bound : List TypeExpr) (expected : TypeExpr)
+    (declaration : Nat × GrammarRule) (source : Pattern) (kind : CollType) (rest : Option String)
+    (children : List TaggedReduction) :
+    (algebraTrace laws bound expected declaration source kind rest children).visited =
+      (algebraTrace laws bound expected declaration source kind rest children).root :: children.flatMap TaggedReduction.visited := rfl
+
+private theorem tagged_root_at (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr) (source : Pattern) (expected : TypeExpr) :
+    ∃ declaration, (reduceAtTagged laws domains language free bound source expected).root =
+      originAt bound (some expected) declaration source
+        (reduceAtTagged laws domains language free bound source expected).target := by
+  cases source with
+  | bvar index => exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+  | fvar identifier => exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+  | apply label arguments =>
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none => exact ⟨none,by simp only [reduceAtTagged,selected]; rfl⟩
+      | some rule => exact ⟨some (language.terms.idxOf rule,rule),by simp only [reduceAtTagged,selected]; rfl⟩
+  | lambda display body => cases expected <;> exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+  | multiLambda arity displays body =>
+      cases expected with
+      | arrow domain codomain => cases domain <;> exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+      | base category => exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+      | collection kind element => exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+      | multiBinder body => exact ⟨none,by simp only [reduceAtTagged]; rfl⟩
+  | subst body replacement =>
+      cases selected : substitutionDomain? domains language free bound expected body replacement with
+      | none => exact ⟨none,by simp only [reduceAtTagged,selected]; rfl⟩
+      | some domain => exact ⟨none,by simp only [reduceAtTagged,selected]; rfl⟩
+  | collection kind elements rest =>
+      cases expected with
+      | collection actual element =>
+          by_cases same : actual = kind
+          · exact ⟨none,by simp only [reduceAtTagged,same,↓reduceIte]; rfl⟩
+          · exact ⟨none,by simp only [reduceAtTagged,same,↓reduceIte]; rfl⟩
+      | base category =>
+          cases selected : collectionRule? domains language free bound (.base category) kind elements rest with
+          | none => exact ⟨none,by simp only [reduceAtTagged,selected]; rfl⟩
+          | some rule =>
+              cases element : bareCollectionElementType? rule kind (.base category) with
+              | none => exact ⟨none,by simp only [reduceAtTagged,selected,element]; rfl⟩
+              | some elementType => exact ⟨some (language.terms.idxOf rule,rule),by simp only [reduceAtTagged,selected,element]; rfl⟩
+      | arrow domain codomain =>
+          cases selected : collectionRule? domains language free bound (.arrow domain codomain) kind elements rest with
+          | none => exact ⟨none,by simp only [reduceAtTagged,selected]; rfl⟩
+          | some rule =>
+              cases element : bareCollectionElementType? rule kind (.arrow domain codomain) with
+              | none => exact ⟨none,by simp only [reduceAtTagged,selected,element]; rfl⟩
+              | some elementType => exact ⟨some (language.terms.idxOf rule,rule),by simp only [reduceAtTagged,selected,element]; rfl⟩
+      | multiBinder domain =>
+          cases selected : collectionRule? domains language free bound (.multiBinder domain) kind elements rest with
+          | none => exact ⟨none,by simp only [reduceAtTagged,selected]; rfl⟩
+          | some rule =>
+              cases element : bareCollectionElementType? rule kind (.multiBinder domain) with
+              | none => exact ⟨none,by simp only [reduceAtTagged,selected,element]; rfl⟩
+              | some elementType => exact ⟨some (language.terms.idxOf rule,rule),by simp only [reduceAtTagged,selected,element]; rfl⟩
+
+private theorem tagged_root_typed_readout
+    (laws : List Laws) (domains : List TypeExpr) {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {source : Pattern} {expected : TypeExpr}
+    (typed : HasType language free bound source expected) :
+    let origin := (reduceAtTagged laws domains language free bound source expected).root
+    ∃ role, origin.expected = some role ∧
+      TypedAt language free origin.source.original origin.source.context bound expected origin.bound role ∧
+      origin.source.value = reduceAt laws domains language free origin.bound origin.source.original role ∧
+      origin.declaration = (reduceAtTagged laws domains language free origin.bound origin.source.original role).root.declaration := by
+  dsimp only
+  obtain ⟨declaration,rootRead⟩ := tagged_root_at laws domains language free bound source expected
+  rw [rootRead]
+  refine ⟨expected,rfl,.here typed,reduceAtTagged_target laws domains language free source bound expected,?_⟩
+  exact (congrArg TypedOrigin.declaration rootRead).symm
+
+private theorem element_slot_typedAt
+    {language : LanguageDef} {free : FreeTypeContext} {bound : List TypeExpr}
+    {kind : CollType} {element parentType : TypeExpr}
+    (role : parentType = .collection kind element ∨
+      ∃ rule parameter, rule ∈ language.terms ∧
+        rule.bareParams = [.simple parameter (.collection kind element)] ∧ parentType = .base rule.category)
+    {elements : List Pattern} {item : Pattern} {index : Nat}
+    (typed : ElementsHaveType language free bound elements element) (selected : elements[index]? = some item) :
+    TypedAt language free item
+      (.collection kind (elements.take index) .hole (elements.drop (index + 1)) none)
+      bound parentType bound element := by
+  have allTyped : ElementsHaveType language free bound
+      (elements.take index ++ item :: elements.drop (index + 1)) element := by
+    rw [raw_source_reconstruct selected]
+    exact typed
+  have itemTyped := CanonicalBags.elementsHaveType_iff.mp typed item (List.mem_of_getElem? selected)
+  rcases role with rfl | ⟨rule,parameter,declared,shape,rfl⟩
+  · exact .collection allTyped (.here itemTyped)
+  · exact .collectionConstructor declared shape allTyped (.here itemTyped)
+
+/-- Every actual source visit retains its globally typed original zipper,
+its exact selected caller role and the recorded local reducer result. No
+algebra authority or equality of arbitrary typing derivations is assumed. -/
+theorem reduceAtTagged_visits_typedAt
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (source : Pattern) :
+    ∀ {bound : List TypeExpr} {expected : TypeExpr}, HasType language free bound source expected →
+      isObjectPattern source = true →
+      ∀ origin ∈ (reduceAtTagged laws domains language free bound source expected).visited,
+        ∃ role, origin.expected = some role ∧
+          TypedAt language free origin.source.original origin.source.context bound expected origin.bound role ∧
+          origin.source.value = reduceAt laws domains language free origin.bound origin.source.original role ∧
+          origin.declaration = (reduceAtTagged laws domains language free origin.bound origin.source.original role).root.declaration := by
+  induction source using Pattern.inductionOn with
+  | hbvar index =>
+      intro bound expected typed object origin member
+      simp only [reduceAtTagged,opaqueTrace_visits,List.mem_singleton] at member
+      subst origin
+      simpa only [reduceAtTagged,↓reduceIte] using tagged_root_typed_readout laws domains typed
+  | hfvar identifier =>
+      intro bound expected typed object origin member
+      simp only [reduceAtTagged,opaqueTrace_visits,List.mem_singleton] at member
+      subst origin
+      simpa only [reduceAtTagged,↓reduceIte] using tagged_root_typed_readout laws domains typed
+  | happly label arguments recurse =>
+      intro bound expected typed object origin member
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none =>
+          simp only [reduceAtTagged,selected,opaqueTrace_visits,List.mem_singleton] at member
+          subst origin
+          simpa only [reduceAtTagged,selected] using tagged_root_typed_readout laws domains typed
+      | some rule =>
+          obtain ⟨declared,head,expectedEq,ordinary,argumentsTyped⟩ := applicationRule_readout selected
+          simp only [reduceAtTagged,selected,assembleTrace_visits,List.mem_cons] at member
+          rcases member with root | childMember
+          · subst origin
+            simpa only [reduceAtTagged,selected] using tagged_root_typed_readout laws domains typed
+          · obtain ⟨index,child,inner,atChild,innerMember,rfl⟩ := liftedChildren_visited_at _ 0 _ childMember
+            obtain ⟨argument,parameter,argumentType,atArgument,atParameter,parameterType,childRead,argumentTyped⟩ :=
+              reduceArgumentsTagged_at laws domains argumentsTyped index child atChild
+            subst child
+            have argumentObject := (isObjectPatternList_iff).mp object argument (List.mem_of_getElem? atArgument)
+            obtain ⟨role,expectedRead,innerTyped,valueRead,headerRead⟩ :=
+              recurse argument (List.mem_of_getElem? atArgument) argumentTyped argumentObject inner innerMember
+            have outer : TypedAt language free argument
+                (.apply label (arguments.take index) .hole (arguments.drop (index + 1))) bound expected bound argumentType := by
+              simpa only [head,expectedEq] using
+                (RecursiveView.argument_slot_typedAt declared ordinary argumentsTyped atArgument atParameter parameterType)
+            have rooted := reduceAtTagged_original_points laws domains language free argument bound argumentType inner innerMember
+            exact ⟨role,expectedRead,by simpa only [Nat.zero_add] using original_underContext_typedAt rooted.1 outer innerTyped,valueRead,headerRead⟩
+  | hlambda display body recurse =>
+      intro bound expected typed object origin member
+      cases typed with
+      | lambda bodyTyped =>
+          simp only [reduceAtTagged,assembleTrace_visits,List.flatMap_cons,List.flatMap_nil,List.append_nil,List.mem_cons] at member
+          rcases member with root | childMember
+          · subst origin
+            simpa only [reduceAtTagged,↓reduceIte] using tagged_root_typed_readout laws domains (HasType.lambda (binder := display) bodyTyped)
+          · simp only [TaggedReduction.underContext,List.mem_map] at childMember
+            obtain ⟨inner,innerMember,rfl⟩ := childMember
+            obtain ⟨role,expectedRead,innerTyped,valueRead,headerRead⟩ := recurse bodyTyped object inner innerMember
+            have rooted := reduceAtTagged_original_points laws domains language free body _ _ inner innerMember
+            exact ⟨role,expectedRead,original_underContext_typedAt rooted.1 (TypedAt.lambda (.here bodyTyped)) innerTyped,valueRead,headerRead⟩
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected typed object origin member
+      cases typed with
+      | multiLambda bodyTyped =>
+          simp only [reduceAtTagged,assembleTrace_visits,List.flatMap_cons,List.flatMap_nil,List.append_nil,List.mem_cons] at member
+          rcases member with root | childMember
+          · subst origin
+            simpa only [reduceAtTagged,↓reduceIte] using tagged_root_typed_readout laws domains (HasType.multiLambda (arity := arity) (binders := displays) bodyTyped)
+          · simp only [TaggedReduction.underContext,List.mem_map] at childMember
+            obtain ⟨inner,innerMember,rfl⟩ := childMember
+            obtain ⟨role,expectedRead,innerTyped,valueRead,headerRead⟩ := recurse bodyTyped object inner innerMember
+            have rooted := reduceAtTagged_original_points laws domains language free body _ _ inner innerMember
+            exact ⟨role,expectedRead,original_underContext_typedAt rooted.1 (TypedAt.multiLambda (.here bodyTyped)) innerTyped,valueRead,headerRead⟩
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected typed object origin member
+      simp only [isObjectPattern,Bool.false_eq_true] at object
+  | hcollection kind elements rest recurse =>
+      intro bound expected typed object origin member
+      have closed : rest = none := by
+        have shape := object
+        simp only [isObjectPattern,Bool.and_eq_true] at shape
+        cases rest with
+        | none => rfl
+        | some identifier => cases shape.1
+      subst rest
+      have objects : isObjectPatternList elements = true := (Bool.and_eq_true_iff.mp object).2
+      rcases CanonicalBags.hasType_collection_inv typed with ⟨element,rfl,items⟩ |
+        ⟨sourceRule,sourceParameter,sourceElement,sourceDeclared,sourceShape,rfl,sourceItems⟩
+      · simp only [reduceAtTagged,↓reduceIte,assembleTrace_visits,List.mem_cons] at member
+        rcases member with root | childMember
+        · subst origin
+          simpa only [reduceAtTagged,↓reduceIte] using tagged_root_typed_readout laws domains typed
+        · obtain ⟨index,child,inner,atChild,innerMember,rfl⟩ := liftedChildren_visited_at _ 0 _ childMember
+          obtain ⟨item,atItem,childRead,itemTyped⟩ := reduceElementsTagged_at laws domains items index child atChild
+          subst child
+          have itemObject := (isObjectPatternList_iff).mp objects item (List.mem_of_getElem? atItem)
+          obtain ⟨role,expectedRead,innerTyped,valueRead,headerRead⟩ := recurse item (List.mem_of_getElem? atItem) itemTyped itemObject inner innerMember
+          have outer := element_slot_typedAt (kind := kind) (.inl rfl) items atItem
+          have rooted := reduceAtTagged_original_points laws domains language free item bound element inner innerMember
+          exact ⟨role,expectedRead,by simpa only [Nat.zero_add] using original_underContext_typedAt rooted.1 outer innerTyped,valueRead,headerRead⟩
+      · cases selected : collectionRule? domains language free bound (.base sourceRule.category) kind elements none with
+        | none =>
+            simp only [reduceAtTagged,selected,opaqueTrace_visits,List.mem_singleton] at member
+            subst origin
+            simpa only [reduceAtTagged,selected] using tagged_root_typed_readout laws domains typed
+        | some rule =>
+            obtain ⟨element,declared,elementRead,items⟩ := collectionRule_readout selected
+            obtain ⟨expectedEq,parameter,shape⟩ := (bareCollectionElementType?_eq_some_iff _ _ _ _).mp elementRead
+            simp only [reduceAtTagged,selected,elementRead,algebraTrace_visits,List.mem_cons] at member
+            rcases member with root | childMember
+            · subst origin
+              simpa only [reduceAtTagged,selected,elementRead] using tagged_root_typed_readout laws domains typed
+            · obtain ⟨index,child,inner,atChild,innerMember,rfl⟩ := liftedChildren_visited_at _ 0 _ childMember
+              obtain ⟨item,atItem,childRead,itemTyped⟩ := reduceElementsTagged_at laws domains items index child atChild
+              subst child
+              have itemObject := (isObjectPatternList_iff).mp objects item (List.mem_of_getElem? atItem)
+              obtain ⟨role,expectedRead,innerTyped,valueRead,headerRead⟩ := recurse item (List.mem_of_getElem? atItem) itemTyped itemObject inner innerMember
+              have outer := element_slot_typedAt (.inr ⟨rule,parameter,declared,shape,expectedEq⟩) items atItem
+              have rooted := reduceAtTagged_original_points laws domains language free item bound element inner innerMember
+              exact ⟨role,expectedRead,by simpa only [Nat.zero_add] using original_underContext_typedAt rooted.1 outer innerTyped,valueRead,headerRead⟩
+
+private theorem tagged_root_declaration
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (source : Pattern) (expected : TypeExpr) {index : Nat} {rule : GrammarRule}
+    (recorded : (reduceAtTagged laws domains language free bound source expected).root.declaration = some (index,rule)) :
+    language.terms[index]? = some rule := by
+  cases source with
+  | bvar identifier =>
+      simp only [reduceAtTagged] at recorded
+      change none = some (index,rule) at recorded
+      cases recorded
+  | fvar identifier =>
+      simp only [reduceAtTagged] at recorded
+      change none = some (index,rule) at recorded
+      cases recorded
+  | apply label arguments =>
+      cases selected : applicationRule? domains language free bound expected label arguments with
+      | none =>
+          simp only [reduceAtTagged,selected] at recorded
+          change none = some (index,rule) at recorded
+          cases recorded
+      | some chosen =>
+          obtain ⟨declared,_,_,_,_⟩ := applicationRule_readout selected
+          simp only [reduceAtTagged,selected] at recorded
+          change some (language.terms.idxOf chosen,chosen) = some (index,rule) at recorded
+          have indexEq := congrArg Prod.fst (Option.some.inj recorded)
+          have ruleEq := congrArg Prod.snd (Option.some.inj recorded)
+          change language.terms.idxOf chosen = index at indexEq
+          change chosen = rule at ruleEq
+          rw [← indexEq,← ruleEq]
+          exact List.getElem?_idxOf declared
+  | lambda display body =>
+      cases expected <;> simp only [reduceAtTagged] at recorded <;>
+        change none = some (index,rule) at recorded <;> cases recorded
+  | multiLambda arity displays body =>
+      cases expected with
+      | arrow domain codomain =>
+          cases domain <;> simp only [reduceAtTagged] at recorded <;>
+            change none = some (index,rule) at recorded <;> cases recorded
+      | base category =>
+          simp only [reduceAtTagged] at recorded
+          change none = some (index,rule) at recorded
+          cases recorded
+      | collection kind element =>
+          simp only [reduceAtTagged] at recorded
+          change none = some (index,rule) at recorded
+          cases recorded
+      | multiBinder domain =>
+          simp only [reduceAtTagged] at recorded
+          change none = some (index,rule) at recorded
+          cases recorded
+  | subst body replacement =>
+      cases selected : substitutionDomain? domains language free bound expected body replacement <;>
+        simp only [reduceAtTagged,selected] at recorded <;>
+        change none = some (index,rule) at recorded <;> cases recorded
+  | collection kind elements rest =>
+      cases expected with
+      | collection actual element =>
+          by_cases same : actual = kind <;> simp only [reduceAtTagged,same,↓reduceIte] at recorded <;>
+            change none = some (index,rule) at recorded <;> cases recorded
+      | base category =>
+          cases selected : collectionRule? domains language free bound (.base category) kind elements rest with
+          | none =>
+              simp only [reduceAtTagged,selected] at recorded
+              change none = some (index,rule) at recorded
+              cases recorded
+          | some chosen =>
+              obtain ⟨element,declared,elementRead,_⟩ := collectionRule_readout selected
+              simp only [reduceAtTagged,selected,elementRead] at recorded
+              change some (language.terms.idxOf chosen,chosen) = some (index,rule) at recorded
+              have indexEq := congrArg Prod.fst (Option.some.inj recorded)
+              have ruleEq := congrArg Prod.snd (Option.some.inj recorded)
+              change language.terms.idxOf chosen = index at indexEq
+              change chosen = rule at ruleEq
+              rw [← indexEq,← ruleEq]
+              exact List.getElem?_idxOf declared
+      | arrow domain codomain =>
+          cases selected : collectionRule? domains language free bound (.arrow domain codomain) kind elements rest with
+          | none =>
+              simp only [reduceAtTagged,selected] at recorded
+              change none = some (index,rule) at recorded
+              cases recorded
+          | some chosen =>
+              obtain ⟨element,declared,elementRead,_⟩ := collectionRule_readout selected
+              simp only [reduceAtTagged,selected,elementRead] at recorded
+              change some (language.terms.idxOf chosen,chosen) = some (index,rule) at recorded
+              have indexEq := congrArg Prod.fst (Option.some.inj recorded)
+              have ruleEq := congrArg Prod.snd (Option.some.inj recorded)
+              change language.terms.idxOf chosen = index at indexEq
+              change chosen = rule at ruleEq
+              rw [← indexEq,← ruleEq]
+              exact List.getElem?_idxOf declared
+      | multiBinder domain =>
+          cases selected : collectionRule? domains language free bound (.multiBinder domain) kind elements rest with
+          | none =>
+              simp only [reduceAtTagged,selected] at recorded
+              change none = some (index,rule) at recorded
+              cases recorded
+          | some chosen =>
+              obtain ⟨element,declared,elementRead,_⟩ := collectionRule_readout selected
+              simp only [reduceAtTagged,selected,elementRead] at recorded
+              change some (language.terms.idxOf chosen,chosen) = some (index,rule) at recorded
+              have indexEq := congrArg Prod.fst (Option.some.inj recorded)
+              have ruleEq := congrArg Prod.snd (Option.some.inj recorded)
+              change language.terms.idxOf chosen = index at indexEq
+              change chosen = rule at ruleEq
+              rw [← indexEq,← ruleEq]
+              exact List.getElem?_idxOf declared
+
+/-- A retained local declaration is the actual row at its recorded original
+signature position. Rootedness and equal output values cannot supply this
+header fact for a forged source record. -/
+theorem reduceAtTagged_visits_declared
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (typed : HasType language free bound source expected) (object : isObjectPattern source = true)
+    {origin : TypedOrigin} (member : origin ∈ (reduceAtTagged laws domains language free bound source expected).visited)
+    {index : Nat} {rule : GrammarRule} (recorded : origin.declaration = some (index,rule)) :
+    language.terms[index]? = some rule := by
+  obtain ⟨role,_,_,_,headerRead⟩ := reduceAtTagged_visits_typedAt laws domains language free source typed object origin member
+  apply tagged_root_declaration laws domains language free origin.bound origin.source.original role
+  rw [← headerRead]
+  exact recorded
+
+private theorem canonical_of_context_fill (context : OneHoleContext) {focus : Pattern}
+    (canonical : (context.fill focus).hasCanonicalBinderMetadata = true) :
+    focus.hasCanonicalBinderMetadata = true := by
+  induction context with
+  | hole => exact canonical
+  | apply label before inner after recurse =>
+      have children : Pattern.hasCanonicalBinderMetadataList (before ++ inner.fill focus :: after) = true := canonical
+      exact recurse ((hasCanonicalBinderMetadataList_iff).mp children _ (by simp))
+  | lambda display inner recurse => exact recurse (Bool.and_eq_true_iff.mp canonical).2
+  | multiLambda arity displays inner recurse => exact recurse (Bool.and_eq_true_iff.mp canonical).2
+  | substBody inner replacement recurse => exact recurse (Bool.and_eq_true_iff.mp canonical).1
+  | substReplacement body inner recurse => exact recurse (Bool.and_eq_true_iff.mp canonical).2
+  | collection kind before inner after rest recurse =>
+      have children : Pattern.hasCanonicalBinderMetadataList (before ++ inner.fill focus :: after) = true := canonical
+      exact recurse ((hasCanonicalBinderMetadataList_iff).mp children _ (by simp))
+
+private theorem original_visit_open
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {expected role : TypeExpr} {source : Pattern} {origin : TypedOrigin}
+    (good : OpenPatternWellSorted language free bound expected source)
+    (member : origin ∈ (reduceAtTagged laws domains language free bound source expected).visited)
+    (selected : TypedAt language free origin.source.original origin.source.context bound expected origin.bound role) :
+    OpenPatternWellSorted language free origin.bound role origin.source.original := by
+  have rooted := reduceAtTagged_original_points laws domains language free source bound expected origin member
+  have canonical : origin.source.original.hasCanonicalBinderMetadata = true :=
+    canonical_of_context_fill origin.source.context (by rw [rooted.1]; exact good.2.1)
+  have object : isObjectPattern origin.source.original = true :=
+    object_of_fill origin.source.context origin.source.original (by rw [rooted.1]; exact good.2.2.1)
+  exact ⟨selected.focus_typed,canonical,object,selected.focus_typed.isWellScopedAt⟩
+
+/-- The original visit and its recorded value have an actual typed source-law
+path at the earned local role. This does not identify an output address with
+an original address or choose a different declaration for an equal value. -/
+theorem reduceAtTagged_visit_typed_equivalent
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : ReferenceStep.EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (good : OpenPatternWellSorted language free bound expected source)
+    {origin : TypedOrigin} (member : origin ∈ (reduceAtTagged laws domains language free bound source expected).visited) :
+    ∃ role, origin.expected = some role ∧
+      TypedAt language free origin.source.original origin.source.context bound expected origin.bound role ∧
+      ReferenceStep.TypedEquivalent relEnv language discipline free origin.bound role (TypedPaths.objectFormation origin.bound)
+        origin.source.original origin.source.value ∧
+      origin.declaration = (reduceAtTagged laws domains language free origin.bound origin.source.original role).root.declaration := by
+  obtain ⟨role,expectedRead,selected,valueRead,headerRead⟩ :=
+    reduceAtTagged_visits_typedAt laws domains language free source good.1 good.2.2.1 origin member
+  have focused := original_visit_open good member selected
+  have path := TypedPaths.reduceAt_typed_equivalent (relEnv := relEnv) checked authorized discipline domains free origin.source.original focused
+  rw [← valueRead] at path
+  exact ⟨role,expectedRead,selected,path,headerRead⟩
+
+/-- The actual source zipper earns a full sort prefix. Any successful inverse
+capture of its recorded normalized value retains that role and the exact
+contextual headers at arbitrary dependency and binder arity. This reads
+success; it does not assert recovery succeeds across every equation. -/
+theorem reduceAtTagged_visit_capture_readout
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : ReferenceStep.EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (good : OpenPatternWellSorted language free bound expected source)
+    {origin : TypedOrigin} (member : origin ∈ (reduceAtTagged laws domains language free bound source expected).visited) :
+    ∃ role locals, origin.expected = some role ∧ origin.bound = locals ++ bound ∧
+      Admissible language free (locals ++ bound) role origin.source.value ∧
+      ∀ (dependencies : List TypeExpr) (arguments : List Pattern) (indices : List Nat) (value : RuleBinding.ContextualValue),
+        RuleBinding.variableSpine? locals.length arguments = some indices →
+        RestAwareTyping.PartialSortedSpine dependencies locals indices →
+        RuleBinding.recoverValue? dependencies bound.length locals.length arguments origin.source.value = some value →
+          value.dependencies = dependencies ∧ value.ambient = bound.length ∧
+          Admissible language free (dependencies ++ bound) role value.body := by
+  obtain ⟨role,expectedRead,selected,path,headerRead⟩ :=
+    reduceAtTagged_visit_typed_equivalent (relEnv := relEnv) checked authorized discipline domains free source good member
+  obtain ⟨locals,boundRead⟩ := selected.ambient_suffix
+  have focused := original_visit_open good member selected
+  have formed := path.formed_right (TypedPaths.formed_iff_open.mpr focused)
+  have valueGood : Admissible language free origin.bound role origin.source.value :=
+    ⟨formed.typed,formed.formed.1,formed.object⟩
+  rw [boundRead] at valueGood
+  refine ⟨role,locals,expectedRead,boundRead,valueGood,?_⟩
+  intro dependencies arguments indices value spineCheck spine recovered
+  exact RecursiveView.recoverValue?_admissible_from_success spineCheck spine valueGood recovered
+
+#print axioms reduceAtTagged_visit_typed_equivalent
+#print axioms reduceAtTagged_visit_capture_readout
+
+#print axioms tagged_root_declaration
+#print axioms reduceAtTagged_visits_declared
+
+#print axioms tagged_root_at
+#print axioms tagged_root_typed_readout
+#print axioms element_slot_typedAt
+#print axioms reduceAtTagged_visits_typedAt
+
+#print axioms originAt_typed_readout
+#print axioms original_underContext_typedAt
+#print axioms liftedChildren_visited_at
+#print axioms reduceArgumentsTagged_at
+#print axioms reduceElementsTagged_at
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout
+
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open WithAuthoredEquations.AlgebraFocus RoleAwareReadout TypedPaths
+
+/-- Every mixed-trace visit has its actual typed original zipper, local
+normalization path and original declaration index. Equal tokens stay separate
+members of the already conserved physical visit list. -/
+theorem mixed_visits_typed_readback (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    ∀ origin ∈ actualTrace.visited, ∃ role, origin.expected = some role ∧
+      TypedAt language FreeTypeContext.empty origin.source.original origin.source.context [] proc origin.bound role ∧
+      ReferenceStep.TypedEquivalent relEnv language discipline FreeTypeContext.empty origin.bound role
+        (objectFormation origin.bound) origin.source.original origin.source.value ∧
+      ∀ index declaration, origin.declaration = some (index,declaration) → language.terms[index]? = some declaration := by
+  intro origin member
+  obtain ⟨role,expectedRead,selected,path,_⟩ :=
+    reduceAtTagged_visit_typed_equivalent (relEnv := relEnv) homogeneous authorized discipline []
+      FreeTypeContext.empty tracedSource traced_open member
+  refine ⟨role,expectedRead,selected,path,?_⟩
+  intro index declaration recorded
+  exact reduceAtTagged_visits_declared _ _ _ _ _ traced_open.1 traced_open.2.2.1 member recorded
+
+private def nestedDataVisit : TypedOrigin :=
+  ⟨⟨tracedData,[0],.apply "Box" [] .hole [bag [bag [a,a],z]],tracedData⟩,[],some nestedType,none⟩
+
+/-- The actual inverse captures a nested data container at its data type.
+The inner Z remains data; the recovered body is not silently given P. -/
+theorem nested_data_capture_typed_readback (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    nestedDataVisit ∈ actualTrace.visited ∧ nestedDataVisit.source.address = [0] ∧
+      RuleBinding.recoverValue? [] 0 0 [] nestedDataVisit.source.value = some ⟨[],0,tracedData⟩ ∧
+      Admissible language FreeTypeContext.empty [] nestedType tracedData := by
+  have member : nestedDataVisit ∈ actualTrace.visited := by decide +kernel
+  have recovered : RuleBinding.recoverValue? [] 0 0 [] nestedDataVisit.source.value = some ⟨[],0,tracedData⟩ := by decide +kernel
+  obtain ⟨role,locals,expectedRead,boundRead,valueGood,readout⟩ :=
+    reduceAtTagged_visit_capture_readout (relEnv := relEnv) homogeneous authorized discipline []
+      FreeTypeContext.empty tracedSource traced_open member
+  change some nestedType = some role at expectedRead
+  cases Option.some.inj expectedRead
+  change [] = locals ++ [] at boundRead
+  simp only [List.append_nil] at boundRead
+  subst locals
+  have spine : RestAwareTyping.PartialSortedSpine [] [] [] := by
+    constructor <;> simp
+  have body := readout [] [] [] ⟨[],0,tracedData⟩ (by decide +kernel) spine recovered
+  exact ⟨member,rfl,recovered,body.2.2⟩
+
+private def forgedTraceRoot : TypedOrigin := {actualTrace.root with declaration := some (3,wrapper)}
+
+/-- A genuine original zipper does not validate a forged declaration header.
+The actual traversal cannot publish this otherwise unchanged root record. -/
+theorem wrong_declared_origin_rejected :
+    TypedOrigin.Rooted tracedSource forgedTraceRoot ∧ forgedTraceRoot ∉ actualTrace.visited := by
+  have rootMember : actualTrace.root ∈ actualTrace.visited := by decide +kernel
+  have rooted := reduceAtTagged_original_points (CollectionLaws.declared language) [] language
+    FreeTypeContext.empty tracedSource [] proc actualTrace.root rootMember
+  refine ⟨rooted,?_⟩
+  intro member
+  have declared := reduceAtTagged_visits_declared (CollectionLaws.declared language) [] language
+    FreeTypeContext.empty tracedSource traced_open.1 traced_open.2.2.1 member
+    (show forgedTraceRoot.declaration = some (3,wrapper) from rfl)
+  have refused : language.terms[3]? ≠ some wrapper := by decide +kernel
+  exact refused declared
+
+#print axioms mixed_visits_typed_readback
+#print axioms nested_data_capture_typed_readback
+#print axioms wrong_declared_origin_rejected
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout.OutputSites
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts GeneralTypedSites
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- An existing immutable source visit paired with a structural output site.
+The two addresses remain distinct data. Typing is established separately. -/
+structure OutputOrigin where
+  origin : TypedOrigin
+  site : SiteData
+  deriving Repr,DecidableEq
+
+mutual
+  /-- Read one exact subtree prefix. Records are consumed in their supplied
+  order; equality validates the next record instead of searching by value.
+  This is finite readout of an account, not runtime initialization. -/
+  def readAt (language : LanguageDef) (bound : List TypeExpr) (expected : TypeExpr)
+      (target : Pattern) (origins : List TypedOrigin) : Option (List OutputOrigin × List TypedOrigin) :=
+    match origins with
+    | [] => none
+    | origin :: remaining =>
+      if origin.bound == bound && origin.expected == some expected && origin.source.value == target then
+        let root : OutputOrigin := ⟨origin,SiteData.here bound expected target⟩
+        match target with
+        | .bvar _ | .fvar _ => some ([root],remaining)
+        | .apply label arguments =>
+            match origin.declaration with
+            | none => none
+            | some (declaration,rule) =>
+                if language.terms[declaration]? == some rule && rule.label == label &&
+                    expected == .base rule.category && !usesBareCollection? rule then do
+                  let (children,last) ← readArguments language bound declaration label arguments 0 arguments rule.params remaining
+                  pure (root :: children,last)
+                else none
+        | .lambda display body =>
+            match expected with
+            | .arrow domain codomain => do
+                let (children,last) ← readAt language (domain :: bound) codomain body remaining
+                pure (root :: children.map (fun entry =>
+                  {entry with site := entry.site.wrapLambda display domain}),last)
+            | _ => none
+        | .multiLambda arity displays body =>
+            match expected with
+            | .arrow (.multiBinder domain) codomain => do
+                let (children,last) ← readAt language (List.replicate arity domain ++ bound) codomain body remaining
+                pure (root :: children.map (fun entry =>
+                  {entry with site := entry.site.wrapMultiLambda arity displays domain}),last)
+            | _ => none
+        | .subst _ _ => none
+        | .collection kind elements rest =>
+            if rest.isNone then
+              match expected with
+              | .collection actual element =>
+                  if actual == kind then do
+                    let (children,last) ← readElements language bound element (.directCollection kind) kind elements 0 elements remaining
+                    pure (root :: children,last)
+                  else none
+              | _ =>
+                  match origin.declaration with
+                  | none => none
+                  | some (declaration,rule) =>
+                      if language.terms[declaration]? == some rule then
+                        match bareCollectionElementType? rule kind expected with
+                        | none => none
+                        | some element => do
+                            let (children,last) ← readElements language bound element (.authoredCollection declaration) kind elements 0 elements remaining
+                            pure (root :: children,last)
+                      else none
+            else none
+      else none
+  termination_by sizeOf target
+
+  def readArguments (language : LanguageDef) (bound : List TypeExpr) (declaration : Nat)
+      (label : String) (allArguments : List Pattern) (start : Nat) :
+      List Pattern → List TermParam → List TypedOrigin → Option (List OutputOrigin × List TypedOrigin)
+    | [],[],origins => some ([],origins)
+    | argument :: arguments,parameter :: parameterRows,origins =>
+        if matchesParameterRepresentation? parameter argument then do
+          let expected ← parameterType? parameter
+          let (first,afterFirst) ← readAt language bound expected argument origins
+          let (later,last) ← readArguments language bound declaration label allArguments (start + 1) arguments parameterRows afterFirst
+          pure (first.map (fun entry =>
+            {entry with site := entry.site.wrapApplication declaration label allArguments start}) ++ later,last)
+        else none
+    | _,_,_ => none
+  termination_by arguments _ _ => sizeOf arguments
+
+  def readElements (language : LanguageDef) (bound : List TypeExpr) (element : TypeExpr)
+      (frame : TypingFrame) (kind : CollType) (allElements : List Pattern) (start : Nat) :
+      List Pattern → List TypedOrigin → Option (List OutputOrigin × List TypedOrigin)
+    | [],origins => some ([],origins)
+    | item :: elements,origins => do
+        let (first,afterFirst) ← readAt language bound element item origins
+        let (later,last) ← readElements language bound element frame kind allElements (start + 1) elements afterFirst
+        pure (first.map (fun entry =>
+          {entry with site := entry.site.wrapCollection frame kind allElements start}) ++ later,last)
+  termination_by elements _ => sizeOf elements
+end
+
+/-- Complete readout refuses trailing records. It does not manufacture or
+reuse original visits to fill a missing normalized output occurrence. -/
+def readOutput (language : LanguageDef) (bound : List TypeExpr) (expected : TypeExpr)
+    (trace : TaggedReduction) : Option (List OutputOrigin) := do
+  let (entries,remaining) ← readAt language bound expected trace.target trace.survivors
+  if remaining.isEmpty then some entries else none
+
+private theorem wrapped_origins (wrap : SiteData → SiteData) (entries : List OutputOrigin) :
+    (entries.map (fun entry => {entry with site := wrap entry.site})).map OutputOrigin.origin =
+      entries.map OutputOrigin.origin := by
+  simp only [List.map_map]
+  rfl
+
+private theorem readArguments_account_of (language : LanguageDef) (bound : List TypeExpr)
+    (declaration : Nat) (label : String) (allArguments : List Pattern) (arguments : List Pattern) :
+    ∀ (parameterRows : List TermParam) (start : Nat) (origins : List TypedOrigin)
+      (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      (∀ argument ∈ arguments, ∀ expected origins entries suffix,
+        readAt language bound expected argument origins = some (entries,suffix) →
+          entries.map OutputOrigin.origin ++ suffix = origins) →
+      readArguments language bound declaration label allArguments start arguments parameterRows origins = some (entries,suffix) →
+      entries.map OutputOrigin.origin ++ suffix = origins := by
+  induction arguments with
+  | nil =>
+      intro parameterRows start origins entries suffix each accepted
+      cases parameterRows with
+      | nil =>
+          simp only [readArguments,Option.some.injEq] at accepted
+          have entriesEq := congrArg Prod.fst accepted
+          have suffixEq := congrArg Prod.snd accepted
+          change [] = entries at entriesEq
+          change origins = suffix at suffixEq
+          rw [← entriesEq,← suffixEq]
+          rfl
+      | cons parameter parameterRows => simp only [readArguments] at accepted; cases accepted
+  | cons argument arguments recurse =>
+      intro parameterRows start origins entries suffix each accepted
+      cases parameterRows with
+      | nil => simp only [readArguments] at accepted; cases accepted
+      | cons parameter parameterRows =>
+          cases representationRead : matchesParameterRepresentation? parameter argument with
+          | false => simp only [readArguments,representationRead] at accepted; cases accepted
+          | true =>
+            simp only [readArguments,representationRead,↓reduceIte] at accepted
+            cases parameterRead : parameterType? parameter with
+            | none => simp only [parameterRead,Option.bind_eq_bind,Option.bind_none] at accepted; cases accepted
+            | some expected =>
+                simp only [parameterRead,Option.bind_eq_bind,Option.bind_some,
+                  Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                obtain ⟨⟨first,afterFirst⟩,firstRead,⟨⟨later,last⟩,laterRead,finished⟩⟩ := accepted
+                have firstAccount := each argument (.head _) expected origins first afterFirst firstRead
+                have laterAccount := recurse parameterRows (start + 1) afterFirst later last
+                  (fun item member => each item (.tail _ member)) laterRead
+                have entriesEq := congrArg Prod.fst finished
+                have suffixEq := congrArg Prod.snd finished
+                change first.map (fun entry => {entry with site := entry.site.wrapApplication declaration label allArguments start}) ++ later = entries at entriesEq
+                change last = suffix at suffixEq
+                rw [← entriesEq,← suffixEq,List.map_append,wrapped_origins,List.append_assoc,laterAccount,firstAccount]
+
+private theorem readElements_account_of (language : LanguageDef) (bound : List TypeExpr)
+    (element : TypeExpr) (frame : TypingFrame) (kind : CollType) (allElements : List Pattern) (elements : List Pattern) :
+    ∀ (start : Nat) (origins : List TypedOrigin) (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      (∀ item ∈ elements, ∀ origins entries suffix,
+        readAt language bound element item origins = some (entries,suffix) →
+          entries.map OutputOrigin.origin ++ suffix = origins) →
+      readElements language bound element frame kind allElements start elements origins = some (entries,suffix) →
+      entries.map OutputOrigin.origin ++ suffix = origins := by
+  induction elements with
+  | nil =>
+      intro start origins entries suffix each accepted
+      simp only [readElements,Option.some.injEq] at accepted
+      have entriesEq := congrArg Prod.fst accepted
+      have suffixEq := congrArg Prod.snd accepted
+      change [] = entries at entriesEq
+      change origins = suffix at suffixEq
+      rw [← entriesEq,← suffixEq]
+      rfl
+  | cons item elements recurse =>
+      intro start origins entries suffix each accepted
+      simp only [readElements,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+      obtain ⟨⟨first,afterFirst⟩,firstRead,⟨⟨later,last⟩,laterRead,finished⟩⟩ := accepted
+      have firstAccount := each item (.head _) origins first afterFirst firstRead
+      have laterAccount := recurse (start + 1) afterFirst later last
+        (fun value member => each value (.tail _ member)) laterRead
+      have entriesEq := congrArg Prod.fst finished
+      have suffixEq := congrArg Prod.snd finished
+      change first.map (fun entry => {entry with site := entry.site.wrapCollection frame kind allElements start}) ++ later = entries at entriesEq
+      change last = suffix at suffixEq
+      rw [← entriesEq,← suffixEq,List.map_append,wrapped_origins,List.append_assoc,laterAccount,firstAccount]
+
+private theorem after_root_account {root : OutputOrigin} {head : TypedOrigin}
+    {children entries : List OutputOrigin} {remaining suffix last : List TypedOrigin}
+    (headRead : root.origin = head) (returned : (root :: children,last) = (entries,suffix))
+    (bodyAccount : children.map OutputOrigin.origin ++ last = remaining) :
+    entries.map OutputOrigin.origin ++ suffix = head :: remaining := by
+  have entriesEq := congrArg Prod.fst returned
+  have suffixEq := congrArg Prod.snd returned
+  change root :: children = entries at entriesEq
+  change last = suffix at suffixEq
+  rw [← entriesEq,← suffixEq,List.map_cons,List.cons_append,headRead,bodyAccount]
+
+/-- Every successful subtree read consumes exactly its original prefix.
+Neither missing entries nor equal values allow a source visit to be reused. -/
+theorem readAt_account (language : LanguageDef) (target : Pattern) :
+    ∀ (bound : List TypeExpr) (expected : TypeExpr) (origins : List TypedOrigin)
+      (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      readAt language bound expected target origins = some (entries,suffix) →
+        entries.map OutputOrigin.origin ++ suffix = origins := by
+  induction target using Pattern.inductionOn with
+  | hbvar index =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted
+          · exact after_root_account rfl (Option.some.inj accepted) rfl
+          · cases accepted
+  | hfvar identifier =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted
+          · exact after_root_account rfl (Option.some.inj accepted) rfl
+          · cases accepted
+  | happly label arguments recurse =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted
+          · cases declarationRead : origin.declaration with
+            | none => simp only [declarationRead] at accepted; cases accepted
+            | some pair =>
+                obtain ⟨declaration,rule⟩ := pair
+                simp only [declarationRead] at accepted
+                split at accepted
+                · simp only [Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                  obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                  have account := readArguments_account_of language bound declaration label arguments arguments
+                    rule.params 0 remaining children last (fun child member expected => recurse child member bound expected) childRead
+                  exact after_root_account rfl finished account
+                · cases accepted
+          · cases accepted
+  | hlambda display body recurse =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted
+          · cases expected with
+            | base category => cases accepted
+            | collection kind element => cases accepted
+            | multiBinder domain => cases accepted
+            | arrow domain codomain =>
+                simp only [Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                have account := recurse (domain :: bound) codomain remaining children last childRead
+                exact after_root_account rfl finished (by rw [wrapped_origins]; exact account)
+          · cases accepted
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted
+          · cases expected with
+            | base category => cases accepted
+            | collection kind element => cases accepted
+            | multiBinder domain => cases accepted
+            | arrow domain codomain =>
+                cases domain with
+                | base category => cases accepted
+                | arrow first second => cases accepted
+                | collection kind element => cases accepted
+                | multiBinder inner =>
+                    simp only [Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                    obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                    have account := recurse (List.replicate arity inner ++ bound) codomain remaining children last childRead
+                    exact after_root_account rfl finished (by rw [wrapped_origins]; exact account)
+          · cases accepted
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted <;> cases accepted
+  | hcollection kind elements rest recurse =>
+      intro bound expected origins entries suffix accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          simp only [readAt] at accepted
+          split at accepted
+          · split at accepted
+            · cases expected with
+              | collection actual element =>
+                  cases same : (actual == kind) with
+                  | true =>
+                    simp only [same,↓reduceIte,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                    obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                    have account := readElements_account_of language bound element (.directCollection kind) kind elements elements
+                      0 remaining children last (fun child member => recurse child member bound element) childRead
+                    exact after_root_account rfl finished account
+                  | false => simp only [same] at accepted; cases accepted
+              | base category =>
+                  cases declarationRead : origin.declaration with
+                  | none => simp only [declarationRead] at accepted; cases accepted
+                  | some pair =>
+                      obtain ⟨declaration,rule⟩ := pair
+                      simp only [declarationRead] at accepted
+                      split at accepted
+                      · cases elementRead : bareCollectionElementType? rule kind (.base category) with
+                        | none => simp only [elementRead] at accepted; cases accepted
+                        | some element =>
+                            simp only [elementRead,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                            obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                            have account := readElements_account_of language bound element (.authoredCollection declaration) kind elements elements
+                              0 remaining children last (fun child member => recurse child member bound element) childRead
+                            exact after_root_account rfl finished account
+                      · cases accepted
+              | arrow domain codomain =>
+                  cases declarationRead : origin.declaration with
+                  | none => simp only [declarationRead] at accepted; cases accepted
+                  | some pair =>
+                      obtain ⟨declaration,rule⟩ := pair
+                      simp only [declarationRead] at accepted
+                      split at accepted
+                      · cases elementRead : bareCollectionElementType? rule kind (.arrow domain codomain) with
+                        | none => simp only [elementRead] at accepted; cases accepted
+                        | some element =>
+                            simp only [elementRead,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                            obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                            have account := readElements_account_of language bound element (.authoredCollection declaration) kind elements elements
+                              0 remaining children last (fun child member => recurse child member bound element) childRead
+                            exact after_root_account rfl finished account
+                      · cases accepted
+              | multiBinder domain =>
+                  cases declarationRead : origin.declaration with
+                  | none => simp only [declarationRead] at accepted; cases accepted
+                  | some pair =>
+                      obtain ⟨declaration,rule⟩ := pair
+                      simp only [declarationRead] at accepted
+                      split at accepted
+                      · cases elementRead : bareCollectionElementType? rule kind (.multiBinder domain) with
+                        | none => simp only [elementRead] at accepted; cases accepted
+                        | some element =>
+                            simp only [elementRead,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                            obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                            have account := readElements_account_of language bound element (.authoredCollection declaration) kind elements elements
+                              0 remaining children last (fun child member => recurse child member bound element) childRead
+                            exact after_root_account rfl finished account
+                      · cases accepted
+            · cases accepted
+          · cases accepted
+
+/-- A complete readout accounts for the entire supplied survivor stream,
+with no hidden suffix and no origin reconstructed from equal output values. -/
+theorem readOutput_account (language : LanguageDef) (bound : List TypeExpr) (expected : TypeExpr)
+    (trace : TaggedReduction) (entries : List OutputOrigin)
+    (accepted : readOutput language bound expected trace = some entries) :
+    entries.map OutputOrigin.origin = trace.survivors := by
+  simp only [readOutput,Option.bind_eq_bind,Option.bind_eq_some_iff] at accepted
+  obtain ⟨⟨actual,suffix⟩,read,finished⟩ := accepted
+  have account := readAt_account language trace.target bound expected trace.survivors actual suffix read
+  cases suffix with
+  | nil =>
+      simp only [List.isEmpty_nil,↓reduceIte,Option.some.injEq] at finished
+      subst entries
+      simpa only [List.append_nil] using account
+  | cons head tail => simp only [List.isEmpty_cons] at finished; cases finished
+
+#print axioms readAt_account
+#print axioms readOutput_account
+
+#print axioms readArguments_account_of
+#print axioms readElements_account_of
+
+
+/-- Local value typing is indexed by the role and complete bound context
+stored at the actual original visit. It supplies no output zipper. -/
+def LocallyTyped (language : LanguageDef) (free : FreeTypeContext)
+    (origins : List TypedOrigin) : Prop :=
+  ∀ origin ∈ origins, ∀ expected, origin.expected = some expected →
+    HasType language free origin.bound origin.source.value expected
+
+private theorem locallyTyped_suffix {language : LanguageDef} {free : FreeTypeContext}
+    {first suffix origins : List TypedOrigin}
+    (account : first ++ suffix = origins) (typed : LocallyTyped language free origins) :
+    LocallyTyped language free suffix := by
+  intro origin member expected role
+  exact typed origin (account ▸ List.mem_append_right first member) expected role
+
+private theorem readAt_header (language : LanguageDef) (bound : List TypeExpr) (expected : TypeExpr)
+    (target : Pattern) {origins : List TypedOrigin} {entries : List OutputOrigin} {suffix : List TypedOrigin}
+    (accepted : readAt language bound expected target origins = some (entries,suffix)) :
+    ∃ origin remaining, origins = origin :: remaining ∧
+      origin.bound = bound ∧ origin.expected = some expected ∧ origin.source.value = target := by
+  cases origins with
+  | nil => simp only [readAt] at accepted; cases accepted
+  | cons origin remaining =>
+      simp only [readAt] at accepted
+      split at accepted
+      · rename_i header
+        have parsed : origin.bound = bound ∧ origin.expected = some expected ∧ origin.source.value = target := by
+          simpa only [Bool.and_eq_true,beq_iff_eq,and_assoc] using header
+        exact ⟨origin,remaining,rfl,parsed⟩
+      · cases accepted
+
+/-- A successfully read subtree uses precisely the next record's local
+context and role. No uniqueness of typing derivations is assumed. -/
+theorem readAt_target_typed (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (target : Pattern)
+    {origins : List TypedOrigin} {entries : List OutputOrigin} {suffix : List TypedOrigin}
+    (typed : LocallyTyped language free origins)
+    (accepted : readAt language bound expected target origins = some (entries,suffix)) :
+    HasType language free bound target expected := by
+  obtain ⟨origin,remaining,rfl,boundRead,roleRead,valueRead⟩ := readAt_header language bound expected target accepted
+  have localTyping := typed origin (.head _) expected roleRead
+  rw [boundRead,valueRead] at localTyping
+  exact localTyping
+
+private theorem readArguments_target_typed
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (declaration : Nat) (label : String) (allArguments : List Pattern) (arguments : List Pattern) :
+    ∀ (parameterRows : List TermParam) (start : Nat) (origins : List TypedOrigin)
+      (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      LocallyTyped language free origins →
+      readArguments language bound declaration label allArguments start arguments parameterRows origins = some (entries,suffix) →
+      ArgumentsHaveTypes language free bound arguments parameterRows := by
+  induction arguments with
+  | nil =>
+      intro parameterRows start origins entries suffix typed accepted
+      cases parameterRows with
+      | nil => exact .nil
+      | cons parameter parameterRows => simp only [readArguments] at accepted; cases accepted
+  | cons argument arguments recurse =>
+      intro parameterRows start origins entries suffix typed accepted
+      cases parameterRows with
+      | nil => simp only [readArguments] at accepted; cases accepted
+      | cons parameter parameterRows =>
+          cases representationRead : matchesParameterRepresentation? parameter argument with
+          | false => simp only [readArguments,representationRead] at accepted; cases accepted
+          | true =>
+              simp only [readArguments,representationRead,↓reduceIte] at accepted
+              cases parameterRead : parameterType? parameter with
+              | none => simp only [parameterRead,Option.bind_eq_bind,Option.bind_none] at accepted; cases accepted
+              | some expected =>
+                  simp only [parameterRead,Option.bind_eq_bind,Option.bind_some,
+                    Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                  obtain ⟨⟨first,afterFirst⟩,firstRead,⟨⟨later,last⟩,laterRead,finished⟩⟩ := accepted
+                  have firstAccount := readAt_account language argument bound expected origins first afterFirst firstRead
+                  exact .cons ((matchesParameterRepresentation?_eq_true_iff parameter argument).mp representationRead)
+                    parameterRead (readAt_target_typed language free bound expected argument typed firstRead)
+                    (recurse parameterRows (start + 1) afterFirst later last
+                      (locallyTyped_suffix firstAccount typed) laterRead)
+
+private theorem readElements_target_typed
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (element : TypeExpr) (frame : TypingFrame) (kind : CollType) (allElements : List Pattern) (elements : List Pattern) :
+    ∀ (start : Nat) (origins : List TypedOrigin) (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      LocallyTyped language free origins →
+      readElements language bound element frame kind allElements start elements origins = some (entries,suffix) →
+      ElementsHaveType language free bound elements element := by
+  induction elements with
+  | nil => intro start origins entries suffix typed accepted; exact .nil bound element
+  | cons item elements recurse =>
+      intro start origins entries suffix typed accepted
+      simp only [readElements,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+      obtain ⟨⟨first,afterFirst⟩,firstRead,⟨⟨later,last⟩,laterRead,finished⟩⟩ := accepted
+      have firstAccount := readAt_account language item bound element origins first afterFirst firstRead
+      exact .cons (readAt_target_typed language free bound element item typed firstRead)
+        (recurse (start + 1) afterFirst later last (locallyTyped_suffix firstAccount typed) laterRead)
+
+/-- The actual normalization trace supplies local typing for every survivor
+from its independently typed original visit and the checked role reducer. -/
+theorem reduceAtTagged_survivors_locallyTyped
+    {laws : List Laws} {language : LanguageDef}
+    (checked : checkBareHomogeneous laws language = true)
+    (domains : List TypeExpr) (free : FreeTypeContext) (source : Pattern)
+    {bound : List TypeExpr} {expected : TypeExpr}
+    (sourceTyped : HasType language free bound source expected)
+    (object : isObjectPattern source = true) :
+    LocallyTyped language free
+      (reduceAtTagged laws domains language free bound source expected).survivors := by
+  intro origin member role roleRead
+  have account := reduceAtTagged_source_account laws domains language free source bound expected
+  have visited : origin ∈ (reduceAtTagged laws domains language free bound source expected).visited :=
+    account.mem_iff.mpr (List.mem_append_left _ (List.mem_append_left _ member))
+  obtain ⟨actual,actualRead,originalTyped,valueRead,_⟩ :=
+    reduceAtTagged_visits_typedAt laws domains language free source sourceTyped object origin visited
+  have actualEq : actual = role := Option.some.inj (actualRead.symm.trans roleRead)
+  subst actual
+  have normalized := reduceAt_hasType checked domains origin.source.original originalTyped.focus_typed
+  rw [← valueRead] at normalized
+  exact normalized
+
+/-- The finite completed readout carries the complete original survivor
+account, and the removed units/carriers remain separate administrations. -/
+theorem readOutput_original_account
+    (laws : List Laws) (domains : List TypeExpr) (language : LanguageDef)
+    (free : FreeTypeContext) (source : Pattern) (bound : List TypeExpr) (expected : TypeExpr)
+    (entries : List OutputOrigin)
+    (accepted : readOutput language bound expected
+      (reduceAtTagged laws domains language free bound source expected) = some entries) :
+    let trace := reduceAtTagged laws domains language free bound source expected
+    trace.visited.Perm
+      (entries.map OutputOrigin.origin ++ trace.unitRemovals.map AlgebraAdministration.origin ++
+        trace.carrierRemovals.map AlgebraAdministration.origin) ∧
+    ((entries.map OutputOrigin.origin ++ trace.unitRemovals.map AlgebraAdministration.origin ++
+      trace.carrierRemovals.map AlgebraAdministration.origin).map
+        (fun origin => origin.source.address)).Nodup ∧
+    (∀ entry ∈ entries, TypedOrigin.Rooted source entry.origin) := by
+  dsimp only
+  have readAccount := readOutput_account language bound expected _ entries accepted
+  obtain ⟨partition,distinct,rooted⟩ := reduceAtTagged_original_partition laws domains language free source bound expected
+  refine ⟨?_,?_,?_⟩
+  · simpa only [TaggedReduction.partition,← readAccount] using partition
+  · simpa only [TaggedReduction.partition,← readAccount] using distinct
+  · intro entry member
+    apply rooted entry.origin
+    apply List.mem_append_left
+    apply List.mem_append_left
+    rw [← readAccount]
+    exact List.mem_map.mpr ⟨entry,member,rfl⟩
+
+#print axioms readAt_header
+#print axioms readAt_target_typed
+#print axioms readArguments_target_typed
+#print axioms readElements_target_typed
+#print axioms reduceAtTagged_survivors_locallyTyped
+#print axioms readOutput_original_account
+
+
+open Mettapedia.GSLT.LanguageDef.GeneralTypedOccurrence
+
+/-- Local readback metadata relates the output focus to its unchanged
+original visit. It does not identify the two structural addresses. -/
+def HeaderMatches (entry : OutputOrigin) : Prop :=
+  entry.site.focus = entry.origin.source.value ∧
+  entry.site.focusBound = entry.origin.bound ∧
+  entry.origin.expected = some entry.site.focusType
+
+/-- Output support uses the existing independently licensed typed-site
+judgment, including its declaration positions and complete binder context. -/
+def Supported (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (expected : TypeExpr) (target : Pattern) (entry : OutputOrigin) : Prop :=
+  Licensed language free OperationalPermissions.all bound expected target entry.site ∧ HeaderMatches entry
+
+private theorem suffix_head {α : Type} {all : List α} {start : Nat} {head : α} {tail : List α}
+    (remaining : all.drop start = head :: tail) : all[start]? = some head := by
+  have atZero := congrArg (fun items => items[0]?) remaining
+  simpa only [List.getElem?_drop,Nat.add_zero,List.getElem?_cons_zero] using atZero
+
+private theorem suffix_tail {α : Type} {all : List α} {start : Nat} {head : α} {tail : List α}
+    (remaining : all.drop start = head :: tail) : all.drop (start + 1) = tail := by
+  have afterHead := congrArg (List.drop 1) remaining
+  simpa only [List.drop_drop,List.drop_succ_cons,List.drop_zero] using afterHead
+
+private theorem readArguments_supported_of
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (declaration : Nat) (label : String) (allArguments : List Pattern) (allParameters : List TermParam)
+    (parentType : TypeExpr) (parent : Pattern)
+    (objects : isObjectPatternList allArguments = true)
+    (outer : ∀ index argument parameter expected inner,
+      allArguments[index]? = some argument → allParameters[index]? = some parameter →
+      parameterType? parameter = some expected →
+      Licensed language free OperationalPermissions.all bound expected argument inner →
+      Licensed language free OperationalPermissions.all bound parentType parent
+        (inner.wrapApplication declaration label allArguments index))
+    (arguments : List Pattern) :
+    ∀ (parameterRows : List TermParam) (start : Nat) (origins : List TypedOrigin)
+      (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      allArguments.drop start = arguments → allParameters.drop start = parameterRows →
+      (∀ argument ∈ arguments, ∀ expected origins entries suffix,
+        isObjectPattern argument = true → LocallyTyped language free origins →
+        readAt language bound expected argument origins = some (entries,suffix) →
+        ∀ entry ∈ entries, Supported language free bound expected argument entry) →
+      LocallyTyped language free origins →
+      readArguments language bound declaration label allArguments start arguments parameterRows origins = some (entries,suffix) →
+      ∀ entry ∈ entries, Supported language free bound parentType parent entry := by
+  induction arguments with
+  | nil =>
+      intro parameterRows start origins entries suffix argumentSuffix parameterSuffix each typed accepted entry member
+      cases parameterRows with
+      | nil =>
+          simp only [readArguments,Option.some.injEq] at accepted
+          have empty := congrArg Prod.fst accepted
+          change [] = entries at empty
+          rw [← empty] at member
+          cases member
+      | cons parameter parameterRows => simp only [readArguments] at accepted; cases accepted
+  | cons argument arguments recurse =>
+      intro parameterRows start origins entries suffix argumentSuffix parameterSuffix each typed accepted entry member
+      cases parameterRows with
+      | nil => simp only [readArguments] at accepted; cases accepted
+      | cons parameter parameterRows =>
+          cases representationRead : matchesParameterRepresentation? parameter argument with
+          | false => simp only [readArguments,representationRead] at accepted; cases accepted
+          | true =>
+              simp only [readArguments,representationRead,↓reduceIte] at accepted
+              cases parameterRead : parameterType? parameter with
+              | none => simp only [parameterRead,Option.bind_eq_bind,Option.bind_none] at accepted; cases accepted
+              | some expected =>
+                  simp only [parameterRead,Option.bind_eq_bind,Option.bind_some,
+                    Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                  obtain ⟨⟨first,afterFirst⟩,firstRead,⟨⟨later,last⟩,laterRead,finished⟩⟩ := accepted
+                  have entriesEq := congrArg Prod.fst finished
+                  change first.map (fun entry => {entry with site := entry.site.wrapApplication declaration label allArguments start}) ++ later = entries at entriesEq
+                  rw [← entriesEq] at member
+                  rcases List.mem_append.mp member with inFirst | inLater
+                  · obtain ⟨child,childMember,rfl⟩ := List.mem_map.mp inFirst
+                    have atArgument := suffix_head argumentSuffix
+                    have atParameter := suffix_head parameterSuffix
+                    have childObject : isObjectPattern argument = true := by
+                      have all := objects
+                      simp only [CanonicalBags.isObjectPatternList_eq_all,List.all_eq_true] at all
+                      exact all argument (List.mem_of_getElem? atArgument)
+                    obtain ⟨licensed,metadata⟩ := each argument (.head _) expected origins first afterFirst childObject typed firstRead child childMember
+                    exact ⟨outer start argument parameter expected child.site atArgument atParameter parameterRead licensed,metadata⟩
+                  · have firstAccount := readAt_account language argument bound expected origins first afterFirst firstRead
+                    exact recurse parameterRows (start + 1) afterFirst later last
+                      (suffix_tail argumentSuffix) (suffix_tail parameterSuffix)
+                      (fun item itemMember => each item (.tail _ itemMember))
+                      (locallyTyped_suffix firstAccount typed) laterRead entry inLater
+
+private theorem readElements_supported_of
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr)
+    (element : TypeExpr) (frame : TypingFrame) (kind : CollType) (allElements : List Pattern)
+    (parentType : TypeExpr) (parent : Pattern)
+    (objects : isObjectPatternList allElements = true)
+    (outer : ∀ index item inner, allElements[index]? = some item →
+      Licensed language free OperationalPermissions.all bound element item inner →
+      Licensed language free OperationalPermissions.all bound parentType parent
+        (inner.wrapCollection frame kind allElements index))
+    (elements : List Pattern) :
+    ∀ (start : Nat) (origins : List TypedOrigin) (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      allElements.drop start = elements →
+      (∀ item ∈ elements, ∀ origins entries suffix,
+        isObjectPattern item = true → LocallyTyped language free origins →
+        readAt language bound element item origins = some (entries,suffix) →
+        ∀ entry ∈ entries, Supported language free bound element item entry) →
+      LocallyTyped language free origins →
+      readElements language bound element frame kind allElements start elements origins = some (entries,suffix) →
+      ∀ entry ∈ entries, Supported language free bound parentType parent entry := by
+  induction elements with
+  | nil =>
+      intro start origins entries suffix elementSuffix each typed accepted entry member
+      simp only [readElements,Option.some.injEq] at accepted
+      have empty := congrArg Prod.fst accepted
+      change [] = entries at empty
+      rw [← empty] at member
+      cases member
+  | cons item elements recurse =>
+      intro start origins entries suffix elementSuffix each typed accepted entry member
+      simp only [readElements,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+      obtain ⟨⟨first,afterFirst⟩,firstRead,⟨⟨later,last⟩,laterRead,finished⟩⟩ := accepted
+      have entriesEq := congrArg Prod.fst finished
+      change first.map (fun entry => {entry with site := entry.site.wrapCollection frame kind allElements start}) ++ later = entries at entriesEq
+      rw [← entriesEq] at member
+      rcases List.mem_append.mp member with inFirst | inLater
+      · obtain ⟨child,childMember,rfl⟩ := List.mem_map.mp inFirst
+        have atItem := suffix_head elementSuffix
+        have childObject : isObjectPattern item = true := by
+          have all := objects
+          simp only [CanonicalBags.isObjectPatternList_eq_all,List.all_eq_true] at all
+          exact all item (List.mem_of_getElem? atItem)
+        obtain ⟨licensed,metadata⟩ := each item (.head _) origins first afterFirst childObject typed firstRead child childMember
+        exact ⟨outer start item child.site atItem licensed,metadata⟩
+      · have firstAccount := readAt_account language item bound element origins first afterFirst firstRead
+        exact recurse (start + 1) afterFirst later last (suffix_tail elementSuffix)
+          (fun value valueMember => each value (.tail _ valueMember))
+          (locallyTyped_suffix firstAccount typed) laterRead entry inLater
+
+private theorem after_root_supported
+    {language : LanguageDef} {free : FreeTypeContext} {bound : List TypeExpr}
+    {expected : TypeExpr} {target : Pattern} {root : OutputOrigin}
+    {children entries : List OutputOrigin} {last suffix : List TypedOrigin}
+    (returned : (root :: children,last) = (entries,suffix))
+    (rootSupported : Supported language free bound expected target root)
+    (childrenSupported : ∀ entry ∈ children, Supported language free bound expected target entry) :
+    ∀ entry ∈ entries, Supported language free bound expected target entry := by
+  have entriesEq := congrArg Prod.fst returned
+  intro entry member
+  change root :: children = entries at entriesEq
+  rw [← entriesEq] at member
+  rcases List.mem_cons.mp member with rfl | inChildren
+  · exact rootSupported
+  · exact childrenSupported entry inChildren
+
+#print axioms readArguments_supported_of
+#print axioms readElements_supported_of
+#print axioms after_root_supported
+
+
+private theorem readAt_head_supported
+    (language : LanguageDef) (free : FreeTypeContext) (bound : List TypeExpr) (expected : TypeExpr)
+    (target : Pattern) (origin : TypedOrigin) (remaining : List TypedOrigin)
+    {entries : List OutputOrigin} {suffix : List TypedOrigin}
+    (object : isObjectPattern target = true)
+    (typed : LocallyTyped language free (origin :: remaining))
+    (accepted : readAt language bound expected target (origin :: remaining) = some (entries,suffix)) :
+    Supported language free bound expected target ⟨origin,SiteData.here bound expected target⟩ := by
+  obtain ⟨head,tail,heads,boundRead,roleRead,valueRead⟩ := readAt_header language bound expected target accepted
+  have headEq := (List.cons.inj heads).1
+  subst head
+  exact ⟨.here rfl object (readAt_target_typed language free bound expected target typed accepted),
+    valueRead.symm,boundRead.symm,roleRead⟩
+
+/-- The finite reader constructs existing licensed output sites from exact
+recorded roles. Its declaration checks and representation checks are used
+in the proof; no arbitrary typing derivation is identified with a stored row. -/
+theorem readAt_supported (language : LanguageDef) (free : FreeTypeContext) (target : Pattern) :
+    ∀ (bound : List TypeExpr) (expected : TypeExpr) (origins : List TypedOrigin)
+      (entries : List OutputOrigin) (suffix : List TypedOrigin),
+      isObjectPattern target = true → LocallyTyped language free origins →
+      readAt language bound expected target origins = some (entries,suffix) →
+      ∀ entry ∈ entries, Supported language free bound expected target entry := by
+  induction target using Pattern.inductionOn with
+  | hbvar index =>
+      intro bound expected origins entries suffix object typed accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          have rootSupported := readAt_head_supported language free bound expected (.bvar index) origin remaining object typed accepted
+          simp only [readAt] at accepted
+          split at accepted
+          · simp only [Option.some.injEq] at accepted
+            exact after_root_supported accepted rootSupported (by intro entry member; cases member)
+          · cases accepted
+  | hfvar identifier =>
+      intro bound expected origins entries suffix object typed accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          have rootSupported := readAt_head_supported language free bound expected (.fvar identifier) origin remaining object typed accepted
+          simp only [readAt] at accepted
+          split at accepted
+          · simp only [Option.some.injEq] at accepted
+            exact after_root_supported accepted rootSupported (by intro entry member; cases member)
+          · cases accepted
+  | happly label arguments recurse =>
+      intro bound expected origins entries suffix object typed accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          have rootSupported := readAt_head_supported language free bound expected (.apply label arguments) origin remaining object typed accepted
+          have remainingTyped := locallyTyped_suffix (first := [origin]) rfl typed
+          simp only [isObjectPattern] at object
+          simp only [readAt] at accepted
+          split at accepted
+          · cases declarationRead : origin.declaration with
+            | none => simp only [declarationRead] at accepted; cases accepted
+            | some pair =>
+                obtain ⟨declaration,rule⟩ := pair
+                simp only [declarationRead] at accepted
+                split at accepted
+                · rename_i rowChecked
+                  simp only [Bool.and_eq_true,beq_iff_eq,Bool.not_eq_true'] at rowChecked
+                  obtain ⟨⟨⟨declared,labelEq⟩,expectedEq⟩,notBare⟩ := rowChecked
+                  have ordinary : ¬ UsesBareCollection rule := by
+                    intro bare
+                    have yes := (usesBareCollection?_eq_true_iff rule).mpr bare
+                    rw [notBare] at yes
+                    cases yes
+                  subst label
+                  subst expected
+                  simp only [Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                  obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                  have argumentsTyped := readArguments_target_typed language free bound declaration rule.label
+                    arguments arguments rule.params 0 remaining children last remainingTyped childRead
+                  have childrenSupported := readArguments_supported_of language free bound declaration rule.label
+                    arguments rule.params (.base rule.category) (.apply rule.label arguments) object
+                    (fun index argument parameter parameterType inner selected selectedParameter parameterRead licensed =>
+                      .application (List.mk_mem_zipIdx_iff_getElem?.mpr declared) ordinary argumentsTyped object
+                        selected selectedParameter parameterRead (.inl rfl) licensed)
+                    arguments rule.params 0 remaining children last rfl rfl
+                    (fun argument member expected origins entries suffix object typed read =>
+                      recurse argument member bound expected origins entries suffix object typed read)
+                    remainingTyped childRead
+                  exact after_root_supported finished rootSupported childrenSupported
+                · cases accepted
+          · cases accepted
+  | hlambda display body recurse =>
+      intro bound expected origins entries suffix object typed accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          have rootSupported := readAt_head_supported language free bound expected (.lambda display body) origin remaining object typed accepted
+          have remainingTyped := locallyTyped_suffix (first := [origin]) rfl typed
+          simp only [isObjectPattern] at object
+          simp only [readAt] at accepted
+          split at accepted
+          · cases expected with
+            | arrow domain codomain =>
+                simp only [Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                apply after_root_supported finished rootSupported
+                intro entry member
+                obtain ⟨child,childMember,rfl⟩ := List.mem_map.mp member
+                obtain ⟨licensed,metadata⟩ := recurse (domain :: bound) codomain remaining children last object remainingTyped childRead child childMember
+                exact ⟨.lambda rfl licensed,metadata⟩
+            | base category => cases accepted
+            | collection kind element => cases accepted
+            | multiBinder domain => cases accepted
+          · cases accepted
+  | hmultiLambda arity displays body recurse =>
+      intro bound expected origins entries suffix object typed accepted
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          have rootSupported := readAt_head_supported language free bound expected (.multiLambda arity displays body) origin remaining object typed accepted
+          have remainingTyped := locallyTyped_suffix (first := [origin]) rfl typed
+          simp only [isObjectPattern] at object
+          simp only [readAt] at accepted
+          split at accepted
+          · cases expected with
+            | arrow domain codomain =>
+                cases domain with
+                | multiBinder domain =>
+                    simp only [Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                    obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                    apply after_root_supported finished rootSupported
+                    intro entry member
+                    obtain ⟨child,childMember,rfl⟩ := List.mem_map.mp member
+                    obtain ⟨licensed,metadata⟩ := recurse (List.replicate arity domain ++ bound) codomain remaining children last object remainingTyped childRead child childMember
+                    exact ⟨.multiLambda rfl licensed,metadata⟩
+                | base category => cases accepted
+                | collection kind element => cases accepted
+                | arrow first second => cases accepted
+            | base category => cases accepted
+            | collection kind element => cases accepted
+            | multiBinder domain => cases accepted
+          · cases accepted
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected origins entries suffix object typed accepted
+      simp only [isObjectPattern,Bool.false_eq_true] at object
+  | hcollection kind elements rest recurse =>
+      intro bound expected origins entries suffix object typed accepted
+      have shape := object
+      simp only [isObjectPattern,Bool.and_eq_true] at shape
+      have noTail := Option.isNone_iff_eq_none.mp shape.1
+      subst rest
+      cases origins with
+      | nil => simp only [readAt] at accepted; cases accepted
+      | cons origin remaining =>
+          have rootSupported := readAt_head_supported language free bound expected (.collection kind elements none) origin remaining object typed accepted
+          have remainingTyped := locallyTyped_suffix (first := [origin]) rfl typed
+          simp only [readAt] at accepted
+          split at accepted
+          · simp only [Option.isNone_none,↓reduceIte] at accepted
+            cases expected with
+            | collection actual element =>
+                cases same : (actual == kind) with
+                | false => simp only [same] at accepted; cases accepted
+                | true =>
+                    have sameKind : actual = kind := (beq_iff_eq.mp same)
+                    subst actual
+                    simp only [same,↓reduceIte,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                    obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                    have elementsTyped := readElements_target_typed language free bound element (.directCollection kind)
+                      kind elements elements 0 remaining children last remainingTyped childRead
+                    have childrenSupported := readElements_supported_of language free bound element (.directCollection kind)
+                      kind elements (.collection kind element) (.collection kind elements none) shape.2
+                      (fun index item inner selected licensed => .directCollection
+                        (by cases kind <;> simp [OperationalPermissions.all]) elementsTyped shape.2 selected licensed)
+                      elements 0 remaining children last rfl
+                      (fun item member origins entries suffix object typed read =>
+                        recurse item member bound element origins entries suffix object typed read)
+                      remainingTyped childRead
+                    exact after_root_supported finished rootSupported childrenSupported
+            | base category =>
+                cases declarationRead : origin.declaration with
+                | none => simp only [declarationRead] at accepted; cases accepted
+                | some pair =>
+                    obtain ⟨declaration,rule⟩ := pair
+                    simp only [declarationRead] at accepted
+                    split at accepted
+                    · rename_i rowChecked
+                      have declared : language.terms[declaration]? = some rule := beq_iff_eq.mp rowChecked
+                      cases elementRead : bareCollectionElementType? rule kind (.base category) with
+                      | none => simp only [elementRead] at accepted; cases accepted
+                      | some element =>
+                          obtain ⟨expectedEq,parameter,parametersEq⟩ :=
+                            (bareCollectionElementType?_eq_some_iff rule kind (.base category) element).mp elementRead
+                          have categoryEq : category = rule.category := TypeExpr.base.inj expectedEq
+                          subst category
+                          simp only [elementRead,Option.bind_eq_bind,Option.bind_eq_some_iff,Option.pure_def,Option.some.injEq] at accepted
+                          obtain ⟨⟨children,last⟩,childRead,finished⟩ := accepted
+                          have elementsTyped := readElements_target_typed language free bound element (.authoredCollection declaration)
+                            kind elements elements 0 remaining children last remainingTyped childRead
+                          have childrenSupported := readElements_supported_of language free bound element (.authoredCollection declaration)
+                            kind elements (.base rule.category) (.collection kind elements none) shape.2
+                            (fun index item inner selected licensed => .authoredCollection
+                              (List.mk_mem_zipIdx_iff_getElem?.mpr declared) parametersEq
+                              (by cases kind <;> simp [OperationalPermissions.all]) elementsTyped shape.2 selected licensed)
+                            elements 0 remaining children last rfl
+                            (fun item member origins entries suffix object typed read =>
+                              recurse item member bound element origins entries suffix object typed read)
+                            remainingTyped childRead
+                          exact after_root_supported finished rootSupported childrenSupported
+                    · cases accepted
+            | arrow domain codomain =>
+                cases declarationRead : origin.declaration with
+                | none => simp only [declarationRead] at accepted; cases accepted
+                | some pair =>
+                    obtain ⟨declaration,rule⟩ := pair
+                    simp only [declarationRead] at accepted
+                    split at accepted
+                    · have impossible : bareCollectionElementType? rule kind (.arrow domain codomain) = none := by
+                        cases actual : bareCollectionElementType? rule kind (.arrow domain codomain) with
+                        | none => rfl
+                        | some element =>
+                            have wrong := (bareCollectionElementType?_eq_some_iff rule kind (.arrow domain codomain) element).mp actual
+                            cases wrong.1
+                      simp only [impossible] at accepted
+                      cases accepted
+                    · cases accepted
+            | multiBinder domain =>
+                cases declarationRead : origin.declaration with
+                | none => simp only [declarationRead] at accepted; cases accepted
+                | some pair =>
+                    obtain ⟨declaration,rule⟩ := pair
+                    simp only [declarationRead] at accepted
+                    split at accepted
+                    · have impossible : bareCollectionElementType? rule kind (.multiBinder domain) = none := by
+                        cases actual : bareCollectionElementType? rule kind (.multiBinder domain) with
+                        | none => rfl
+                        | some element =>
+                            have wrong := (bareCollectionElementType?_eq_some_iff rule kind (.multiBinder domain) element).mp actual
+                            cases wrong.1
+                      simp only [impossible] at accepted
+                      cases accepted
+                    · cases accepted
+          · cases accepted
+
+#print axioms readAt_head_supported
+#print axioms readAt_supported
+
+
+/-- Successful complete readout yields actual licensed output occurrences,
+not just endpoint typings. Structural permission remains independently
+selectable by a caller after this all-context readout. -/
+theorem readOutput_supported (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (trace : TaggedReduction)
+    (entries : List OutputOrigin) (object : isObjectPattern trace.target = true)
+    (typed : LocallyTyped language free trace.survivors)
+    (accepted : readOutput language bound expected trace = some entries) :
+    ∀ entry ∈ entries, Supported language free bound expected trace.target entry := by
+  simp only [readOutput,Option.bind_eq_bind,Option.bind_eq_some_iff] at accepted
+  obtain ⟨⟨actual,suffix⟩,read,finished⟩ := accepted
+  cases suffix with
+  | nil =>
+      simp only [List.isEmpty_nil,↓reduceIte,Option.some.injEq] at finished
+      subst entries
+      exact readAt_supported language free trace.target bound expected trace.survivors actual [] object typed read
+  | cons head tail => simp only [List.isEmpty_cons] at finished; cases finished
+
+/-- The source-normalization path earns object formation and the original
+visits earn local value typing. The reader then transports every returned
+survivor to its actual normalized output zipper and exact typed frames. -/
+theorem reduceAtTagged_readOutput_supported
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : ReferenceStep.EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (good : OpenPatternWellSorted language free bound expected source)
+    (entries : List OutputOrigin)
+    (accepted : readOutput language bound expected
+      (reduceAtTagged laws domains language free bound source expected) = some entries) :
+    ∀ entry ∈ entries, Supported language free bound expected
+      (reduceAtTagged laws domains language free bound source expected).target entry := by
+  have path := TypedPaths.reduceAtTagged_typed_equivalent (relEnv := relEnv)
+    checked authorized discipline domains free source good
+  have formed := path.formed_right (TypedPaths.formed_iff_open.mpr good)
+  exact readOutput_supported language free bound expected _ entries formed.object
+    (reduceAtTagged_survivors_locallyTyped checked domains free source good.1 good.2.2.1) accepted
+
+/-- Capturing a successfully read output focus keeps its recorded role and
+full sorted binder prefix. This reads an actual inverse success and does
+not claim that all authored equations preserve inverse-recovery success. -/
+theorem reduceAtTagged_readOutput_capture
+    {laws : List Laws} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (discipline : ReferenceStep.EquationDiscipline) (domains : List TypeExpr) (free : FreeTypeContext)
+    (source : Pattern) {bound : List TypeExpr} {expected : TypeExpr}
+    (good : OpenPatternWellSorted language free bound expected source)
+    (entries : List OutputOrigin)
+    (accepted : readOutput language bound expected
+      (reduceAtTagged laws domains language free bound source expected) = some entries)
+    {entry : OutputOrigin} (member : entry ∈ entries) :
+    ∃ locals, entry.site.focusBound = locals ++ bound ∧
+      Admissible language free entry.site.focusBound entry.site.focusType entry.site.focus ∧
+      ∀ (dependencies : List TypeExpr) (arguments : List Pattern) (indices : List Nat) (value : RuleBinding.ContextualValue),
+        RuleBinding.variableSpine? locals.length arguments = some indices →
+        RestAwareTyping.PartialSortedSpine dependencies locals indices →
+        RuleBinding.recoverValue? dependencies bound.length locals.length arguments entry.site.focus = some value →
+          value.dependencies = dependencies ∧ value.ambient = bound.length ∧
+          Admissible language free (dependencies ++ bound) entry.site.focusType value.body := by
+  obtain ⟨licensed,metadata⟩ := reduceAtTagged_readOutput_supported (relEnv := relEnv)
+    checked authorized discipline domains free source good entries accepted entry member
+  have readAccount := readOutput_account language bound expected _ entries accepted
+  have survivor : entry.origin ∈ (reduceAtTagged laws domains language free bound source expected).survivors := by
+    rw [← readAccount]
+    exact List.mem_map.mpr ⟨entry,member,rfl⟩
+  have account := reduceAtTagged_source_account laws domains language free source bound expected
+  have visited : entry.origin ∈ (reduceAtTagged laws domains language free bound source expected).visited :=
+    account.mem_iff.mpr (List.mem_append_left _ (List.mem_append_left _ survivor))
+  obtain ⟨role,locals,roleRead,boundRead,valueGood,inverse⟩ :=
+    reduceAtTagged_visit_capture_readout (relEnv := relEnv) checked authorized discipline domains free source good visited
+  have sameRole : role = entry.site.focusType := Option.some.inj (roleRead.symm.trans metadata.2.2)
+  subst role
+  refine ⟨locals,?_,?_,?_⟩
+  · exact metadata.2.1.trans boundRead
+  · rw [metadata.1,metadata.2.1,boundRead]
+    exact valueGood
+  · intro dependencies arguments indices value spineCheck spine recovered
+    exact inverse dependencies arguments indices value spineCheck spine (by simpa only [metadata.1] using recovered)
+
+#print axioms readOutput_supported
+#print axioms reduceAtTagged_readOutput_supported
+#print axioms reduceAtTagged_readOutput_capture
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.WithAuthoredEquations.AlgebraFocus.RoleAwareReadout.OutputSites
+
+namespace Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware DerivedContexts
+open Mettapedia.GSLT.LanguageDef.WellSorted EquationSemantics GeneralTypedOccurrence
+open WithAuthoredEquations.AlgebraFocus RoleAwareReadout OutputSites
+
+private def mixedOutputEntries : List OutputOrigin :=
+  (readOutput language [] proc actualTrace).getD []
+
+/-- Exact original records are paired with their new output positions.
+The nested data Z remains present, while the scalar unit and flattened
+carrier remain separate original administrations. -/
+theorem mixed_output_sites_and_account (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    readOutput language [] proc actualTrace = some mixedOutputEntries ∧
+      mixedOutputEntries.map (fun entry => entry.origin.source.address) =
+        [[],[0],[0,0],[0,0,0],[0,0,1],[0,0,2],[1],[1,0,0],[1,0,1]] ∧
+      mixedOutputEntries.map (fun entry => entry.site.address) =
+        [[],[0],[0,0],[0,0,0],[0,0,1],[0,0,2],[1],[1,0],[1,1]] ∧
+      (actualTrace).unitRemovals.map (fun event => event.origin.source.address) = [[1,1]] ∧
+      (actualTrace).carrierRemovals.map (fun event => event.origin.source.address) = [[1,0]] ∧
+      mixedOutputEntries[3]?.map (fun entry => entry.site.focus) = some z ∧
+      ∀ entry ∈ mixedOutputEntries,
+        Licensed language FreeTypeContext.empty GeneralTypedSites.OperationalPermissions.all [] proc (actualTrace).target entry.site ∧
+        TypedAt language FreeTypeContext.empty entry.site.focus entry.site.context [] proc entry.site.focusBound entry.site.focusType ∧
+        entry.site.context.fill entry.site.focus = (actualTrace).target ∧
+        entry.site.address = GeneralTypedSites.contextAddress entry.site.context ∧ HeaderMatches entry := by
+  have accepted : readOutput language [] proc actualTrace = some mixedOutputEntries := by decide +kernel
+  refine ⟨accepted,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel,?_⟩
+  intro entry member
+  obtain ⟨licensed,metadata⟩ := reduceAtTagged_readOutput_supported (relEnv := relEnv)
+    homogeneous authorized discipline [] FreeTypeContext.empty tracedSource traced_open mixedOutputEntries accepted entry member
+  exact ⟨licensed,licensed.typedAt,licensed.source_eq,licensed.address_eq,metadata⟩
+
+/-- The second output A has a new structural index. Substituting that
+output address into its original source record is a false source origin. -/
+theorem output_address_is_not_original_address :
+    ∃ entry ∈ mixedOutputEntries, entry.site.address = [1,1] ∧
+      entry.origin.source.address = [1,0,1] ∧ entry.site.focus = a ∧
+      ¬ TypedOrigin.Rooted tracedSource
+        {entry.origin with source := {entry.origin.source with address := entry.site.address}} := by
+  let entry := mixedOutputEntries[8]'(by decide +kernel)
+  have member : entry ∈ mixedOutputEntries := by decide +kernel
+  refine ⟨entry,member,by decide +kernel,by decide +kernel,by decide +kernel,?_⟩
+  intro rooted
+  have wrong := rooted.2
+  change entry.site.address = GeneralTypedSites.contextAddress entry.origin.source.context at wrong
+  have refused : entry.site.address ≠ GeneralTypedSites.contextAddress entry.origin.source.context := by decide +kernel
+  exact refused wrong
+
+private def scopedOutputSource : Pattern :=
+  .lambda none (.multiLambda 2 [] (bag [bag [.bvar 0,.bvar 3],z]))
+private def scopedOutputType : TypeExpr := .arrow proc (.arrow (.multiBinder proc) proc)
+private def scopedOutputTrace : TaggedReduction :=
+  reduceAtTagged (CollectionLaws.declared language) [] language FreeTypeContext.empty
+    [proc] scopedOutputSource scopedOutputType
+private def scopedOutputEntries : List OutputOrigin :=
+  (readOutput language [proc] scopedOutputType scopedOutputTrace).getD []
+private theorem scopedOutputGood :
+    OpenPatternWellSorted language FreeTypeContext.empty [proc] scopedOutputType scopedOutputSource := by
+  have typed : HasType language FreeTypeContext.empty [proc] scopedOutputSource scopedOutputType :=
+    checkHasType_sound (by decide +kernel)
+  exact ⟨typed,by decide +kernel,by decide +kernel,typed.isWellScopedAt⟩
+
+/-- Actual output capture crosses one lambda, a two-variable binder and
+an ambient variable. The nonempty increasing dependency spine is preserved. -/
+theorem scoped_output_capture_readback (relEnv : Engine.RelationEnv)
+    (discipline : ReferenceStep.EquationDiscipline) :
+    readOutput language [proc] scopedOutputType scopedOutputTrace = some scopedOutputEntries ∧
+      ∃ entry ∈ scopedOutputEntries,
+        entry.site.focus = .bvar 0 ∧ entry.site.focusBound = [proc,proc,proc,proc] ∧
+        RuleBinding.recoverValue? [proc,proc] 1 3 [.bvar 0,.bvar 2] entry.site.focus =
+          some ⟨[proc,proc],1,.bvar 0⟩ ∧
+        Admissible language FreeTypeContext.empty ([proc,proc] ++ [proc]) proc (.bvar 0) := by
+  have accepted : readOutput language [proc] scopedOutputType scopedOutputTrace = some scopedOutputEntries := by decide +kernel
+  let entry := scopedOutputEntries[3]'(by decide +kernel)
+  have member : entry ∈ scopedOutputEntries := by decide +kernel
+  have focusRead : entry.site.focus = .bvar 0 := by decide +kernel
+  have boundRead : entry.site.focusBound = [proc,proc,proc,proc] := by decide +kernel
+  have typeRead : entry.site.focusType = proc := by decide +kernel
+  have recovered : RuleBinding.recoverValue? [proc,proc] 1 3 [.bvar 0,.bvar 2] entry.site.focus =
+      some ⟨[proc,proc],1,.bvar 0⟩ := by decide +kernel
+  obtain ⟨locals,prefixRead,_,readout⟩ := reduceAtTagged_readOutput_capture (relEnv := relEnv)
+    homogeneous authorized discipline [] FreeTypeContext.empty scopedOutputSource scopedOutputGood scopedOutputEntries accepted member
+  rw [boundRead] at prefixRead
+  have prefixes : locals ++ [proc] = [proc,proc,proc] ++ [proc] := prefixRead.symm
+  have localsEq := List.append_cancel_right prefixes
+  subst locals
+  have spine : RestAwareTyping.PartialSortedSpine [proc,proc] [proc,proc,proc] [0,2] := by
+    constructor <;> decide +kernel
+  have body := readout [proc,proc] [.bvar 0,.bvar 2] [0,2] ⟨[proc,proc],1,.bvar 0⟩
+    (by decide +kernel) spine recovered
+  rw [typeRead] at body
+  exact ⟨accepted,entry,member,focusRead,boundRead,recovered,body.2.2⟩
+
+private def rootUnitTrace : TaggedReduction :=
+  reduceAtTagged (CollectionLaws.declared language) [] language FreeTypeContext.empty [] z proc
+private def rootUnitEntries : List OutputOrigin :=
+  (readOutput language [] proc rootUnitTrace).getD []
+private def unsupportedUnitPresentation : TaggedReduction :=
+  let originalRoot := rootUnitTrace.root
+  let presentedRoot : TypedOrigin := {originalRoot with source := {originalRoot.source with value := bag []}}
+  {rootUnitTrace with
+    target := bag []
+    root := presentedRoot}
+
+/-- The declared unit has a genuine empty-carrier equation, while the
+actual reducer keeps a unit at its own root. The unit constructor record
+cannot be reused as the empty carrier's declaration authority. -/
+theorem unit_root_presentation_requires_output_declaration (relEnv : Engine.RelationEnv) :
+    rootUnitTrace.target = z ∧ readOutput language [] proc rootUnitTrace = some rootUnitEntries ∧
+      rootUnitEntries.map (fun entry => entry.origin.declaration) = [some (0,zero)] ∧
+      ReferenceStep.Equivalent relEnv language z (bag []) ∧
+      readOutput language [] proc unsupportedUnitPresentation = none ∧
+      zero ≠ carrier := by
+  have emptyTyped : HasType language FreeTypeContext.empty [] (bag []) proc := checkHasType_sound (by decide +kernel)
+  have declaredEmpty : DerivedInstance language (bag []) z :=
+    .emptyUnit carrier_algebra rfl ⟨FreeTypeContext.empty,[],emptyTyped⟩
+  have equation : ReferenceStep.Equivalent relEnv language (bag []) z :=
+    .rel _ _ (.inContext .hole (.inr declaredEmpty))
+  exact ⟨by decide +kernel,by decide +kernel,by decide +kernel,.symm _ _ equation,
+    by decide +kernel,by decide +kernel⟩
+
+#print axioms mixed_output_sites_and_account
+#print axioms output_address_is_not_original_address
+#print axioms scoped_output_capture_readback
+#print axioms unit_root_presentation_requires_output_declaration
+
+end Mettapedia.GSLT.LanguageDef.BagNormalForm.RoleAwareSourceControls

@@ -45,6 +45,14 @@ are coherent (`BagForms.coherentQueries`).
 - `workflow {A, B}` steps (`ab_inspected_steps`); `workflow {A, A}` does not (`aa_inspected_stuck`).
 - Every run from `workflow {A, B, A}` reaches `workflow {B, B, B}` (`aba_inspected_reaches_bbb`).
 
+**The relabelled workflow** (`relabelledCore`): `workflow {x, ...rest} ⇒ workflow {y, ...rest}` when `next(x, y)`
+holds, a query whose second argument is an output: the answer binds `y`, and the right side uses it. The relation
+relabels `A` to `B` and `B` to `C`, read off canonical forms, so it respects them (`nexting_respects`).
+- Some run from `workflow {A, B}` reaches `workflow {C, C}` (`ab_relabelled_reaches_cc`), and every run from
+  `workflow {A, A}` does (`aa_relabelled_reaches_cc`).
+- `workflow {C}` does not step: `next` answers nothing for `C` (`c_relabelled_stuck`); no run from `workflow {B}`
+  reaches `workflow {A}` (`b_relabelled_not_a`).
+
 **Sets are left out of the domain** (`set_not_admitted`): the set laws identify `{A, A}` with `{A}`
 (`set_presentations_same`), yet a pattern `{x, ...rest}` leaves `{A}` in the rest at the first and the empty
 set at the second (`set_rests_differ`).
@@ -398,6 +406,100 @@ theorem aa_inspected_stuck : ¬ Inspected.sat Env.closed steps (workflow [token 
 /-- **Every run from `workflow {A, B, A}` reaches `workflow {B, B, B}`.** -/
 theorem aba_inspected_reaches_bbb : Inspected.sat Env.closed reachesBBB aba :=
   decided_true_queries inspected_no_equations inspected_no_algebra inspected_queried inspecting_respects 4 rfl
+    (by decide +kernel)
+
+/-! ## The relabelled workflow -/
+
+/-- `workflow {x, ...rest} ⇒ workflow {y, ...rest}`, when `next(x, y)` holds: the query's second argument is an
+output, bound by the answer and used on the right side. -/
+def relabel : RewriteRule :=
+  { name := "Relabel",
+    typeContext := [("x", .base "Place"), ("y", .base "Place"), ("rest", .collection .hashBag (.base "Place"))],
+    premises := [.relationQuery "next" [.fvar "x", .fvar "y"]],
+    left := .apply "Flow" [.collection .hashBag [.fvar "x"] (some "rest")],
+    right := .apply "Flow" [.collection .hashBag [.fvar "y"] (some "rest")], bindings := none }
+
+def relabelledCore : LanguageDef :=
+  { name := "Relabelled.Workflow",
+    types := [⟨"Place", .ast⟩, ⟨"Marking", .ast⟩, ⟨"Workflow", .ast⟩, ⟨"Workspace", .ast⟩],
+    terms := [placeRule "A", placeRule "B", placeRule "C", bagRule "Tokens" "Marking" "items", flowRule, boxRule],
+    equations := [], rewrites := [relabel] }
+
+theorem relabelled_no_equations : relabelledCore.equations = [] := rfl
+
+theorem relabelled_no_algebra : relabelledCore.hasAlgebraDeclarations = false := by decide
+
+theorem relabelled_queried : relabelledCore.rewrites.all (fun rule => rule.premises.all BagForms.query) = true := by
+  decide
+
+/-- The place a place is relabelled to. -/
+def nextPlace : Pattern → Option Pattern
+  | .apply "A" [] => some (token "B")
+  | .apply "B" [] => some (token "C")
+  | _ => none
+
+theorem nextPlace_canon {place next : Pattern} (found : nextPlace place = some next) : canon next = next := by
+  unfold nextPlace at found
+  split at found <;> cases found <;> simp [token, Mettapedia.OSLF.MeTTaIL.CanonicalBags.canon_apply]
+
+/-- `next(x, y)` answers the place `x` is relabelled to, read off the canonical form of `x`. -/
+def nexting : RelationEnv := ⟨fun relation arguments =>
+  match relation, arguments with
+  | "next", [place, _] =>
+    match nextPlace (BagForms.sortBags place) with
+    | some next => [[BagForms.sortBags place, next]]
+    | none => []
+  | _, _ => []⟩
+
+/-- **The relabelling respects canonical forms.** -/
+theorem nexting_respects : BagForms.RespectsCanon nexting := by
+  intro relation arguments tuple member
+  simp only [nexting] at member ⊢
+  split at member
+  · rename_i place output
+    have same : BagForms.sortBags (canon place) = BagForms.sortBags place := by
+      rw [BagForms.sortBags_eq, BagForms.sortBags_eq, Mettapedia.OSLF.MeTTaIL.CanonicalBags.canon_idempotent]
+    have canonical : canon (BagForms.sortBags place) = BagForms.sortBags place := by
+      rw [BagForms.sortBags_eq, Mettapedia.OSLF.MeTTaIL.CanonicalBags.canon_idempotent]
+    simp only [List.map_cons, List.map_nil, same]
+    split at member
+    · rename_i next found
+      rw [List.mem_singleton] at member
+      subst member
+      simp [nextPlace_canon found, canonical]
+    · simp at member
+  · simp at member
+
+abbrev Relabelled := referenceStructure nexting relabelledCore
+
+/-- Some run reaches the term. -/
+def someRunReaches (target : Pattern) : Formula 0 := .mu (.or (.is target) (.possibly .any (.var 0)))
+
+/-- Every run reaches the term. -/
+def everyRunReaches (target : Pattern) : Formula 0 :=
+  .mu (.or (.is target) (.and (.possibly .any .top) (.necessarily .any (.var 0))))
+
+/-- **Some run from `workflow {A, B}` reaches `workflow {C, C}`**: each answer binds the output `y`. -/
+theorem ab_relabelled_reaches_cc :
+    Relabelled.sat Env.closed (someRunReaches (workflow [token "C", token "C"])) (workflow [token "A", token "B"]) :=
+  decided_true_queries relabelled_no_equations relabelled_no_algebra relabelled_queried nexting_respects 4 rfl
+    (by decide +kernel)
+
+/-- **Every run from `workflow {A, A}` reaches `workflow {C, C}`.** -/
+theorem aa_relabelled_reaches_cc :
+    Relabelled.sat Env.closed (everyRunReaches (workflow [token "C", token "C"])) (workflow [token "A", token "A"]) :=
+  decided_true_queries relabelled_no_equations relabelled_no_algebra relabelled_queried nexting_respects 5 rfl
+    (by decide +kernel)
+
+/-- **`workflow {C}` does not step**: `next` answers nothing for `C`. -/
+theorem c_relabelled_stuck : ¬ Relabelled.sat Env.closed steps (workflow [token "C"]) :=
+  decided_false_queries relabelled_no_equations relabelled_no_algebra relabelled_queried nexting_respects 4 rfl
+    (by decide +kernel)
+
+/-- **No run from `workflow {B}` reaches `workflow {A}`.** -/
+theorem b_relabelled_not_a :
+    ¬ Relabelled.sat Env.closed (someRunReaches (workflow [token "A"])) (workflow [token "B"]) :=
+  decided_false_queries relabelled_no_equations relabelled_no_algebra relabelled_queried nexting_respects 4 rfl
     (by decide +kernel)
 
 /-! ## Sets -/

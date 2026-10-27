@@ -1,7 +1,8 @@
 ; Prepare one newly published recursive match and start its shared continuation.
 (: gslt:occurrence-collector:allocate (-> Atom Atom Atom Atom Atom Atom %Undefined%))
 (= (gslt:occurrence-collector:allocate $names $environment $depth $origin $query $answer)
-  (case (OccurrenceAllocationInput $origin $query $environment)
+  (let $metadata (gslt:premise:matching-environment $environment)
+    (case (OccurrenceAllocationInput $origin $query $metadata)
     (((OccurrenceAllocationInput
         (RecursiveOccurrenceJob
           (RuleJob $index $declaration $original-site)
@@ -24,7 +25,7 @@
                        $allocated-origin $environment $depth $bound $type $index $rule $spec $prepared)))
                 (Some $frame)))))
           None)
-        None)))))
+        None))))))
 
 (: gslt:occurrence-collector:collect (-> Atom Atom Atom Atom Atom Atom %Undefined%))
 (= (gslt:occurrence-collector:collect $names $environment $depth $origin $query $answers)

@@ -162,12 +162,10 @@ theorem capture_transfer_with (extra : List ℕ → Pattern → Prop)
   | @set bound bounds elements inner short each recurse =>
     intro term bindings termObject termExtra matched distinct restsKept
     · cases matched with
-      | @collection _ _ _ terms rest _ _ bag =>
-        have parts : rest.isNone = true ∧ isObjectPatternList terms = true := by
-          simpa [IsObject, isObjectPattern] using termObject
-        obtain rfl : rest = none := Option.isNone_iff_eq_none.mp parts.1
-        have termsHold : ∀ value ∈ terms, IsObject value := fun value member =>
-          isObjectPatternList_iff.mp parts.2 value member
+      | @collection _ _ _ terms _ rest _ bag =>
+        have parts : rest = none ∧ ∀ value ∈ terms, IsObject value := by
+          simpa [IsObject, isObjectPattern, isObjectPatternList_iff, Option.isNone_iff_eq_none] using termObject
+        obtain ⟨rfl, termsHold⟩ := parts
         rw [show Pattern.collection .hashSet terms none = set terms from rfl] at termExtra ⊢
         have names : (inner.toList ++ patternNamesList elements).Nodup := by
           simpa only [patternNames] using distinct

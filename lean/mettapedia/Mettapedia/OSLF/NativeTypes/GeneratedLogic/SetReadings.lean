@@ -11,7 +11,9 @@ equation `{x} ∪ rest = S` has every solution between `S ∖ {x}` and `S`, and 
 - **keep** (`keepStructure`): the largest. The rules fire where every member is written more often than any
   rule matches (`saturate`, `setWidth`), so a matched member stays.
 - **either** (`eitherStructure`): all of them. This is the language's own semantics, modulo its laws: a set may
-  be presented with a member copied, and a rule may consume the copy.
+  be presented with a member copied, and a rule may consume the copy. The laws hold at every boundary inside a step
+  too (`lawsReading`): a premise steps any presentation of its child, and its target and a relation's answers are
+  matched at any presentations of their values.
 
 Consume and keep are decided by closed regions of their readings (`Readings`). Either is the reference
 semantics; two lemmas about least fixed points prove its verdicts here (`reaches_of_step`,
@@ -91,9 +93,26 @@ member stays. -/
 abbrev keepStructure : NativeStructure Pattern :=
   readingStructure relEnv language (saturate (setWidth language + 1)) BagForms.sortBags
 
-/-- **Either**: the language's own semantics, modulo its laws; a set may be presented with a member copied, and a
-rule may consume the copy. -/
-abbrev eitherStructure : NativeStructure Pattern := referenceStructure relEnv language
+/-- **The reading of a language's rules modulo the set laws**: the language's own semantics modulo its laws at every
+internal boundary (`RuleReading.modulo` with the canonical forms of sets and bags). Its steps are listed at the
+presentations `presentations` lists, which do not change what a step is. -/
+def lawsReading (presentations : Pattern → List Pattern := List.singleton) : LanguageReading :=
+  { rules := .modulo BagForms.sortBags presentations }
+
+/-- **Either**: the language's own semantics, modulo its laws, at the top and at every internal boundary; a set may be
+presented with a member copied, and a rule may consume the copy. -/
+abbrev eitherStructure : NativeStructure Pattern := referenceStructure relEnv language lawsReading
+
+/-- **What a step is does not depend on the listed presentations.** -/
+theorem lawsReading_structure (presentations : Pattern → List Pattern) :
+    referenceStructure relEnv language (lawsReading presentations) = eitherStructure relEnv language :=
+  referenceStructure_congr rfl fun _ _ _ => Iff.rfl
+
+/-- **Rules without premises read the set laws at no internal boundary**: for them the either reading is the
+reference relation modulo the laws at the top. -/
+theorem eitherStructure_of_premises_nil (noPremises : ∀ rule ∈ language.rewrites, rule.premises = []) :
+    eitherStructure relEnv language = referenceStructure relEnv language :=
+  referenceStructure_congr rfl fun _ _ _ => stepValid_equational_iff_of_premises_nil noPremises
 
 /-! ## Two lemmas about least fixed points -/
 
@@ -160,6 +179,12 @@ def pool : LanguageDef :=
 theorem pool_no_equations : pool.equations = [] := rfl
 
 theorem pool_no_algebra : pool.hasAlgebraDeclarations = false := by decide
+
+theorem pool_premises_nil : ∀ rule ∈ pool.rewrites, rule.premises = [] := by
+  intro rule member
+  rw [show pool.rewrites = [useA] from rfl, List.mem_singleton] at member
+  subst member
+  rfl
 
 def onlyA : Pattern := set [token "A"]
 def onlyB : Pattern := set [token "B"]
@@ -288,13 +313,14 @@ theorem bab_state : IsState (set [token "B", token "A", token "B"]) := by decide
 /-- **Either: some run from `{A}` reaches `{B}`, but not every run does**: a member may be copied and a copy
 consumed, which leaves `{A, B}`, from which the same happens again. -/
 theorem either_verdicts : Either.sat Env.closed (reaches onlyB) onlyA ∧ ¬ Either.sat Env.closed (eventually onlyB) onlyA := by
+  rw [show Either = referenceStructure RelationEnv.empty pool from eitherStructure_of_premises_nil _ _ pool_premises_nil]
   constructor
   · obtain ⟨witness, fires⟩ := fires_onlyA
-    exact reaches_of_step Either ⟨onlyA_state, onlyB_state, onlyA, onlyB, witness, Relation.EqvGen.refl _, onlyA_state,
+    exact reaches_of_step (referenceStructure RelationEnv.empty pool) ⟨onlyA_state, onlyB_state, onlyA, onlyB, witness, Relation.EqvGen.refl _, onlyA_state,
       fires, onlyB_state, Relation.EqvGen.refl _, rfl⟩ ⟨onlyB_state.2, Relation.EqvGen.refl _⟩
   · let avoid : Set Pattern := fun state => IsState state ∧
       (ObjectEquivalent RelationEnv.empty pool .syntax state onlyA ∨ ObjectEquivalent RelationEnv.empty pool .syntax state bothAB)
-    refine not_eventually Either avoid ?_ ?_ ⟨onlyA_state, Or.inl (Relation.EqvGen.refl _)⟩
+    refine not_eventually (referenceStructure RelationEnv.empty pool) avoid ?_ ?_ ⟨onlyA_state, Or.inl (Relation.EqvGen.refl _)⟩
     · rintro state ⟨-, sameA | sameAB⟩ ⟨-, named⟩
       · exact absurd ((canon_same sameA).symm.trans (canon_same named)) (by decide +kernel)
       · exact absurd ((canon_same sameAB).symm.trans (canon_same named)) (by decide +kernel)

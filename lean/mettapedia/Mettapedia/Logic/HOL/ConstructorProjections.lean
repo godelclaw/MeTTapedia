@@ -344,6 +344,28 @@ theorem rename_thirdProjection (ρ : Rename Base Γ Ξ)
     rename ρ (thirdProjection selection constructor) = thirdProjection (rename ρ selection) (rename ρ constructor) := by
   simpa only [subst_ofRename] using subst_thirdProjection (Subst.ofRename ρ) selection constructor
 
+theorem weakenCtx_secondProjection (context : Ctx Base)
+    (selection : ClosedTerm Const (SelectionProofs.Selection second))
+    (constructor : ClosedTerm Const (Constructor first second third carrier)) :
+    weakenCtx context (secondProjection selection constructor) =
+      secondProjection (weakenCtx context selection) (weakenCtx context constructor) := by
+  induction context with
+  | nil => rfl
+  | cons type context ih =>
+    rw [weakenCtx_cons, ih]
+    exact rename_secondProjection Rename.weaken _ _
+
+theorem weakenCtx_thirdProjection (context : Ctx Base)
+    (selection : ClosedTerm Const (SelectionProofs.Selection third))
+    (constructor : ClosedTerm Const (Constructor first second third carrier)) :
+    weakenCtx context (thirdProjection selection constructor) =
+      thirdProjection (weakenCtx context selection) (weakenCtx context constructor) := by
+  induction context with
+  | nil => rfl
+  | cons type context ih =>
+    rw [weakenCtx_cons, ih]
+    exact rename_thirdProjection Rename.weaken _ _
+
 def second_law (selection : Term Const Γ (SelectionProofs.Selection second))
     (constructor : Term Const Γ (Constructor first second third carrier))
     (choice : ProofSyntax Const Δ (SelectionProofs.principle selection))

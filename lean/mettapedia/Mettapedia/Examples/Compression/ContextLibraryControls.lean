@@ -1,0 +1,39 @@
+import Mettapedia.Algorithms.Compression.ConstructorTrees
+import Mettapedia.Algorithms.Compression.DeferredArguments
+import Mettapedia.Algorithms.Compression.TemplateReification
+
+/-!
+# Constructor-aware source libraries and computational demand
+
+The owners prove dictionary round trips and actual template port transport.
+Their controls distinguish constructor identity, multiplicity, delayed effects
+and nondeterministic answers. These audit declarations do not identify the
+nonreflective demand model with arbitrary runtime source evaluation.
+-/
+
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.catalogue_covers
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.decode_encode
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.distinct_constructor_indices
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.encode_injective_on_covered
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.forest_roundtrip
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.matched_tree_reconstructed
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.Controls.tags_are_constructor_identity_not_callable_arguments
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.Controls.wrong_arity_is_refused
+#print axioms Mettapedia.Algorithms.Compression.ConstructorTrees.Controls.repeated_children_are_not_deduplicated
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.evaluate_compiled
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.compiled_demand_preserved
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.callOne_preserves
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.Controls.delayed_choice_is_not_cached
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.Controls.unused_delayed_failure_does_not_erase_success
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.Controls.delayed_effect_runs_at_each_request
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.Controls.unused_delayed_effect_is_not_run
+#print axioms Mettapedia.Algorithms.Compression.DeferredArguments.Controls.different_role_keys_keep_different_ports
+
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.expand_reify
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.matched_body_reconstructs
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.matched_tree_reconstructs
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.Controls.exported_port_order_is_not_reassigned
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.Controls.application_is_not_misread_as_a_nullary_port
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.Controls.missing_parameter_does_not_get_a_default
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.Controls.repeated_parameter_disagreement_is_rejected
+#print axioms Mettapedia.Algorithms.Compression.TemplateReification.Controls.repeated_parameter_agreement_is_accepted

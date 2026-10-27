@@ -22,8 +22,13 @@ open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 open scoped Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 
 #module_file "../../../../../../metta/gslt/module/gold/SouffleDatalog/Syntax.module"
+#module_file "../../../../../../metta/gslt/module/gold/SouffleDatalog/GroundKernel.module"
 #module_file "../../../../../../metta/gslt/module/gold/SouffleDatalog/Core.module"
 #module_file "../../../../../../metta/gslt/module/gold/SouffleDatalog/Language.module"
+
+#module_roundtrip GroundKernel
+#module_roundtrip Core
+#module_roundtrip Language
 
 def grammar? : Option LanguageDef := Syntax.language.toOption
 
@@ -91,6 +96,8 @@ theorem portableText_readback :
 #guard Syntax.language.isOk
 #guard Core.language.isOk
 #guard Language.language.isOk
+#guard (programData?.map (fun language => language.rewrites.length)) == some 2
+#guard (components?.map (fun language => language.rewrites.length)) == some 3
 #guard lexicalFragment.isOk
 #guard (grammar?.map (fun grammar => grammar.terms.length)) == some 101
 #guard (lexicalLanguage?.map (fun language => language.rewrites.length)) == some 1

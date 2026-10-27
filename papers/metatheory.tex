@@ -2037,6 +2037,51 @@ translation alone do not establish that operational correspondence.
 
 \subsection{Intensional, extensional and operational presentations}
 
+\paragraph{An admitted mathematical workspace.}
+The draft now exposes computation in a selected admitted scope, with an
+isolated policy that uses its published equations and a strict policy that
+also refuses conflicting ordinary rules at admitted heads.  These are local
+execution choices.  Ordinary MeTTa evaluation retains its own rule selection.
+The symbolic contract is provided by
+\leanname{TypedEquality.Normalization.ExecutableEvaluation.run_sound}:
+the existing synthesis, reduction and readback checks produce typed equality
+of the source and the returned term.  Its \leanname{run_substitution} and
+\leanname{run_context_extension} preserve that equality under the stated
+context operations.  Separately,
+\leanname{TypedEquality.Normalization.EquationAdmission.sound} checks every
+row of a proposed finite equation family, and \leanname{instance_sound}
+transports every accepted row along a typed simultaneous substitution.
+
+\begin{center}
+\begin{tikzpicture}[node distance=9mm and 13mm, every node/.style={font=\small},
+  box/.style={draw,rounded corners,align=center,text width=38mm,minimum height=10mm},
+  >=Stealth]
+\node[box] (computation) {source term and\\proposed readback};
+\node[box,right=of computation] (equality) {typed equality\\in the selected rules};
+\node[box,right=of equality] (meaning) {equal actual values\\in a selected set model};
+\node[box,below=of computation] (equations) {finite proposed\\computation equations};
+\draw[->] (computation) -- node[above] {\scriptsize(1)} (equality);
+\draw[->] (equations) -- node[below,sloped] {\scriptsize(2)} (equality);
+\draw[->] (equality) -- node[above] {\scriptsize(3)} (meaning);
+\end{tikzpicture}
+\end{center}
+
+Arrows (1) and (2) use the execution and equation-admission soundness theorems
+above. Arrow (3), under a set model and annotation lifting, is realized by the
+two \texttt{TowerInterpretation} companions:
+\leanname{ExecutableEvaluation.run_existing_values} and
+\leanname{EquationAdmission.existing_values}.  They compare independently
+supplied typed annotations at every satisfying environment; neither supplies
+universe assumptions or a model by fiat.  The native case compiler separately
+checks a proposed recursor and every original equation before publishing its
+fast computation clauses.  Native examples join ordinary execution, inspected
+definitions, dependent proof functions, and GSLT proposals whose exact endpoints
+are rechecked in the selected scope.  The natural-score selector has checked
+size, sortedness, eligibility and conditional source-order stability properties.
+These implementation qualifications do not establish a universal C refinement,
+an arbitrary higher-order presentation exporter, or the completeness of the
+selector's output from those four properties alone.
+
 The three useful vertices are intensional mathematics, extensional mathematics,
 and a language/operation presentation in GSLT-IL. These are semantic roles,
 not three necessarily disjoint logics or three mandatory implementations.
@@ -6501,15 +6546,241 @@ all hypersets. The arrows have the following checked meanings.
   Lexical binder shadowing is allowed by the general parser; eigenvariable
   freshness and the canonical name-bank condition remain distinct obligations.
   All 29 source-constructor execution controls now reconstruct proofs.
-  Universal completeness for all compiled proofs and totality on an
-  independently specified native certificate representation remain open;
-  arrow (13) denotes successful reconstruction, not every accepted native proof.
+  The independent grammar \leanname{HOLKernelProofReadback.AdmittedProof}
+  describes licensed local operands, ordered recursive premises, fresh binding
+  frames and beta-joinable conversion without carrying a source proof.
+  \leanname{readProof_of_admitted} proves total constructive reconstruction
+  across arbitrary admitted nesting and context changes.
+  \leanname{AdmittedProof.weakenFuel} preserves admission when its recursion
+  budget grows. \leanname{readSourceProof_of_admitted} restores the exact
+  ordered source sequent. Universal coverage of every compiled proof by this
+  admission grammar remains open; arrow (13) concerns this admitted class,
+  not every accepted native proof. The theorem
+  \leanname{compilation_and_admitted_reflection} states forward compilation
+  and admitted reflection with distinct certificate conditions, not an
+  equivalence of one acceptance condition with source provability.
   \leanname{SetOperationMM0ReadbackSemantics.program_typed} composes the
   reconstructed source proof with the cumulative proof compiler.
   \leanname{program_substitute} retains native substitution, while
   \leanname{sets_program_readout}, \leanname{hypersets_program_readout},
   \leanname{wellFounded_program_proves} and \leanname{codes_program_proves}
   interpret that same program in the four material models.
+  The totalized \leanname{AdmittedSourceProof.readback} computes its result
+  with the same executable reader; \leanname{readback_read} and
+  \leanname{readback_sequent} retain that computation and its submitted sequent.
+  \leanname{SetOperationMM0ReadbackSemantics.admittedProgram_typed},
+  \leanname{admittedProgram_substitute} and \leanname{admittedProgram_proves}
+  apply directly to this admitted-certificate input. Their set, hyperset,
+  well-founded and coded instances concern the actual computed dependent
+  proof program, under the same explicit hypothesis meanings.
+  The shared \leanname{HOLKernelStructuralReadback} constructions prove
+  admission of identity, composition, pairing, projections and weakening;
+  \leanname{hypothesis_admitted} and \leanname{formationProjection_admitted}
+  cover arbitrary ordered entry lists. For all 21 logical/equality schemas,
+  \leanname{HOLKernelInferenceReadback.read_nativeInstance} compares the actual
+  instantiated native premises and conclusion with the typed source operands.
+  \leanname{application_admitted} then constructs an admitted parent from its
+  admitted children and checked native instance. The shared kernel inversion
+  is \leanname{ProofWitness.Checks.instantiates}.
+  \leanname{compile_topI_admitted} and \leanname{compile_hyp_admitted} establish
+  the initial cases for the actual complete compiler over arbitrary ordered
+  source assumptions.
+  The environment reading now proves actual assignment and context coherence,
+  admission of compiled typing premises, and preservation of admitted ordered
+  hypotheses under logical assumption extension
+  (\leanname{HOLKernelEnvironmentReadback.Reading},
+  \leanname{initial_assumptions_admitted},
+  \leanname{Reading.assume_assumptions_admitted}).
+  Fresh bound-variable extension preserves the syntax reading
+  (\leanname{Reading.bind}). The common name-frame transport covers terms,
+  mixed judgments and every local structural, inference and binding schema.
+  Its whole-tree law \leanname{AdmittedProof.rename_of_prefix} retains the
+  native witness and theorem authority when that witness checks in a context
+  prefix on which the new frame preserves lookup.
+  \leanname{AdmittedProof.logical_weaken_of_prefix} supplies fresh-frame
+  weakening for the maintained logical reader. Bounds on native substitution,
+  theorem instances and checked conclusions justify this scope condition;
+  a name-capture control separates arbitrary frame extension.
+  The kernel law \leanname{ProofWitness.proof_in_prefix_iff} characterizes
+  prefix checking exactly by acceptance in the extended context and bounds on
+  every stored native variable, including child proofs and definition dummy
+  images. \leanname{AdmittedProof.rename_of_varsBelow} consumes this condition.
+  \leanname{initial_assumptions_varsBelow} bounds the actual initial hypothesis
+  receipts by the seven parameters and source binder bank;
+  \leanname{initial_assumptions_weaken_admitted} transports their admitted
+  readback to a fresh frame. Logical assumption extension preserves the bound
+  (\leanname{Environment.assume_assumptions_varsBelow}).
+  \leanname{HOLKernelTermTyping.compileWithAssignment_varsBelow} and
+  \leanname{HOLKernelTermCongruence.congruence_varsBelow} preserve the bound
+  for all 13 source term constructors, including abstraction and quantifiers,
+  under bounds on the encoded inputs and retained proof families. The common
+  congruence owner covers the stored-definition conversion receipts.
+  \leanname{HOLKernelAlpha.alphaDisjoint_varsBelow} bounds the two-bank
+  alpha-renaming receipt; \leanname{rebind_varsBelow} includes the intermediate
+  fresh bank for overlapping windows. Promoted rebinding and hypothesis
+  transport preserve the bound. The retained environment invariant
+  \leanname{Environment.ProofsVarsBelow} covers the projection, both typing
+  families and ordered hypothesis receipts. Its initialization and logical
+  extension laws are proved, while \leanname{bind_proofsVarsBelow} advances
+  the bound to the next working-bank entry. The reader consumes it through
+  \leanname{Reading.weaken_assumptions_admitted}. The actual formation
+  projection is admitted through logical and bound-variable extension
+  (\leanname{Reading.assume_projection_admitted},
+  \leanname{Reading.bind_projection_admitted}); typing receipt admission
+  follows from the reconstructed encoded term.
+  \leanname{HOLKernelInferenceReadback.read_instance_of_operands} establishes
+  exact ordered-premise and conclusion reading for all 21 nonbinding schemas
+  over arbitrary successfully decoded native operands. Canonical native
+  spellings are not required. \leanname{admittedApplicationOfOperands}
+  combines these readings with the actual theorem header and substitution;
+  the canonical constructors reuse it.
+  \leanname{HOLKernelCongruenceReadback} now admits the actual reflexivity,
+  transitivity, application and curried-application receipts. Its conversion
+  law retains native witnesses and requires explicit source beta reductions.
+  The seven logical function values have exact readback and beta-reduction
+  laws; all seven generated logical congruence constructors consequently
+  preserve admission, including stored-definition conversions and quantified
+  congruence. The fresh-name law \leanname{readTermWith_encode_fresh} requires
+  only that the used binder window avoid the distinct free names and the
+  parameter prefix. The canonical ordered-bank theorem specializes it;
+  controls separate a valid higher free name from actual variable capture.
+  The stronger \leanname{readTermWith_encode_renamed} requires correct lookup
+  of the source positions and permits shadowing unused target-frame names;
+  the earlier finite-window law now specializes this structural proof.
+  \leanname{readTermWith_encodeSubstitution} reads actual encoded substitution
+  images, and \leanname{readTermWith_encodeSubstitution_weaken} proves their
+  weakening under an outer binder even when an image reuses that binder's
+  name internally. A positive control retains an older free variable across
+  this shadowing; the capture control remains separate. These syntax laws do
+  not yet establish admission of the recursive substitution proof producer.
+  \leanname{HOLKernelAlphaReadback.alphaDisjoint_admitted} now covers the actual
+  two-window receipt for every term constructor; \leanname{rebind_admitted}
+  composes the three-window construction. Both permit an explicit source
+  renaming into the reader's context. Their name-freshness hypotheses now
+  protect only the source variable image, permitting an internal binder to
+  shadow an unrelated target variable. Native occurrence independence, bank
+  disjointness and the theorem policy remain explicit. The control
+  \leanname{shadowing_fresh_for_source_not_target} separates these two
+  freshness conditions. More generally,
+  \leanname{readTermWith_rename_of_present} preserves successful readings
+  under a name-frame map that keeps resolved variables and does not
+  shadow constants. \leanname{logical_reader_weaken_of_read} adds a fresh
+  variable without bounding the expression's internal binders. Failure need
+  not be preserved: a previously unresolved name may acquire a binding.
+  A second control shows why freshness from the variable frame alone cannot
+  protect a constant dictionary entry.
+  \leanname{readTermWith_encodeWithAssignment} extends pointwise compound-image
+  readings through all thirteen term constructors as intrinsic simultaneous
+  substitution. \leanname{readTermWith_substitution_encodings} consequently
+  gives identical readings for literal insertion and encoding the
+  source-substituted term, under the producer's joint finite binder budget.
+  A nested-binder control retains an older free variable while proving that
+  the two raw preterms differ.
+  \leanname{HOLKernelSubstitutionReadback.compile_admitted} now derives
+  admission of the actual recursive comparison receipt through all thirteen
+  constructors. Its shared binder case joins image rebinding, structural
+  weakening, pointwise congruence and the recursive lifted comparison; the
+  native witness survives the assignment-lift cast.
+  \leanname{HOLKernelSubstitutionReadback.instanceEquation_admitted} composes
+  the actual single-variable comparison under its argument-equality assumption.
+  Contextual reflexivity and transitivity supply the pointwise receipts.
+  \leanname{HOLKernelSourceInstantiationReadback.deriveInstance_equation_admitted}
+  reconstructs the derived equation in its fresh binder frame;
+  \leanname{beta_admitted} then admits the source-derived native beta
+  application with the exact renamed redex and substituted result.
+  Source universal elimination and existential introduction preserve admission
+  through their actual input proof and stored Boolean-equivalence conversion.
+  \leanname{canonicalBeta_admitted} follows argument rebinding, function
+  congruence, native beta and result rebinding back to the original encoding.
+  The shared \leanname{HOLKernelStructuralReadback.promote_admitted} and
+  \leanname{promoteUnder_admitted} derive admission for the existing
+  projection-based context promotions, including an extra retained assumption.
+  \leanname{deriveCanonicalInstance_admitted} reconstructs both receipts of
+  the same prepared package at their respective source frames. Native SPEC
+  and EXISTS now share \leanname{HOLKernelQuantifierReadback}, and the source
+  adapters reuse that owner. Canonical universal elimination and existential
+  introduction compose the actual prepared package, context promotion and
+  definition conversion; the projection's native scope bound protects its
+  movement into the new binder frame. \leanname{HOLKernelProofInstantiationReadback}
+  specializes beta, SPEC and EXISTS to the actual allocated environment, with
+  layout-derived name freshness and dictionary separation, retained premise
+  admission and the environment proof-bound invariant.
+  \leanname{HOLKernelExtensionalityReadback.functionExtensionality_admitted}
+  follows native specialization, substitution congruence, abstraction and eta.
+  Its retained pointwise premise is explicitly admitted in the fresh argument
+  frame. \leanname{Reading.functionExtensionality_admitted} joins the allocated
+  producer under that premise, with bounded projection transport and preserved
+  whole-statement casts. Source-context rebinding needs freshness against the
+  source-variable image, allowing unused target names to coincide with internal
+  alpha binders; existing consumers derive this from their stronger bounds.
+  The actual pointwise assignment-congruence producer now preserves
+  admission through all thirteen constructors in
+  \leanname{HOLKernelTermCongruenceReadback.congruence_admitted}.
+  Its input receipts satisfy \leanname{AdmissionUnderRenaming}, with proved
+  instances for alpha rebinding, assumption projection and weakening. Lambda
+  and both quantifiers share one binding construction. The control
+  \leanname{lookup_extension_can_capture_eigenvariable} explains why
+  successful term-reader transport alone does not preserve arbitrary proof
+  admission: a new frame variable can violate a rule's eigenvariable condition.
+  Promoted rebinding, Boolean equality
+  conversion/elimination and \leanname{weakenAssumption_admitted} retain the
+  actual receipts through context extension and conclusion casts.
+  \leanname{Reading.bind_assumptions_admitted} proves this invariant for every
+  ordered hypothesis occurrence in the allocated environment.
+  The actual source universal-introduction, abstraction-congruence and
+  existential-elimination constructions now preserve admission through their
+  native GEN, abstraction and CHOOSE steps, rebinding and equality joins.
+  Existential elimination transports the retained projection to the witness
+  frame under an explicit raw scope bound and preserves its conclusion cast.
+  The shared \leanname{AdmittedProof.logical_weaken_of_varsBelow} supplies this
+  transport in an arbitrary native context.
+  \leanname{Reading.eta_admitted} follows the actual allocated eta producer
+  through both rebinding receipts, its native eta application, symmetry and
+  transitivity. \leanname{compile_eta_admitted} consequently admits the complete
+  compiler's eta output for arbitrary closed function terms and ordered
+  assumptions. Its later-window readings and rebinding admission follow from
+  the existing environment and retained formation projection.
+  \leanname{HOLKernelProofCompilationReadback.compile_admitted} now proves
+  independent admission of the actual compiler image through all 29 source
+  constructors. Its contextual reading invariant allows additional reader
+  variables and derives admission of the actual environment leaves.
+  Extensionality invokes the child induction in its fresh argument frame;
+  arbitrary proof-tree weakening is not assumed.
+  \leanname{closed_compile_admitted} specializes the initial environment, and
+  \leanname{closed_compile_readback} reconstructs the original ordered sequent.
+  \leanname{admitted_certificate_iff_derivable} equates source derivability
+  with existence of an independently admitted certificate under the specified
+  native schema and reader policies. It does not assert arbitrary-certificate
+  reflection or proof-identity recovery. The complete route is
+  \[
+  \begin{array}{c}
+    \text{retained HOL proof (all 29 constructors)}\\
+    \downarrow\ \texttt{compile\_accepted}\\
+    \text{actual maintained-MM0 certificate}\\
+    \downarrow\ \texttt{closed\_compile\_admitted}\\
+    \text{independently admitted certificate}\\
+    \downarrow\ \texttt{readSourceProof\_of\_admitted}\\
+    \text{computed HOL proof at the original sequent}\\
+    \downarrow\ \texttt{admittedProgram\_typed},\ \texttt{admittedProgram\_substitute}\\
+    \text{cumulative }\Pi/\Sigma/\mathrm{Id}\text{ proof program}\\
+    \downarrow\ \texttt{compiled\_readback\_program}\\
+    \text{ZFSet, WFHSet, HSet, or coded-HSet interpretation}.
+  \end{array}
+  \]
+  The final arrow uses \leanname{admittedProgram_proves} with the chosen
+  model's full-domain theorem and the meanings of the source hypotheses;
+  \leanname{admitted_sets_readout}, \leanname{admitted_hypersets_readout},
+  \leanname{admitted_wellFounded_proves} and \leanname{admitted_codes_proves}
+  supply the four material specializations. Native schema selection, binder
+  apartness and the separate membership relations remain explicit.
+  The scoped programme is now qualified by 232 strict roots and consumers
+  against an unchanged 15,580-source dependency cohort. All 43 executable
+  reconstruction cases and 441 fresh pinned native checks pass. The foundation
+  audit covers 15,412 safe kernel declarations; 132 generated runtime
+  implementations are recorded separately. The selected strict targets have
+  zero warnings, while the dependency build's warning inventory remains
+  explicit. These checks qualify the recorded sources and native artifacts,
+  without claiming a C implementation refinement theorem.
 \end{enumerate}
 
 The common source vocabulary is owned by \leanname{Logic.HOL.SetOperationSignature}.
@@ -6836,6 +7107,19 @@ separates future replay behaviour from past receipt origin, whereas
 \leanname{repeated_cache_entry_changes_meaning} shows why cache multiplicity
 can change a future indexed lookup. Neither a behavioural quotient nor a
 conversion judgment by itself specifies which history a runtime stores.
+
+The higher-order extension has separate obligations. Goncharov et al.
+\cite{GoncharovHigherOrderDenotation} use a mixed-variance behaviour bifunctor
+$B:\mathcal C^{\mathrm{op}}\times\mathcal C\to\mathcal C$ and a locally final
+coalgebra $Z\to B(Z,Z)$, final for $B(Z,-)$. Their extension theorem requires
+relative flatness of the higher-order GSOS law; general recursion can violate
+that condition. Adequacy concerns the selected behavioural equivalence.
+Applying this route here requires a binding-aware signature and substitution,
+the corresponding higher-order law, a suitable local-finality construction,
+and a material comparison respecting those observations and universe bounds.
+None follows from finite-branching hyperset decoration alone. This extension
+remains outside the completed first-order comparison; increasing the universe
+by itself does not discharge its mixed-variance obligations.
 
 Pinned native qualification currently covers all 29 HOL proof-constructor
 fixtures with exact canonical conclusions and axiom-dependency checks,
@@ -15200,6 +15484,13 @@ D. Turi and G. D. Plotkin.
 \newblock In \emph{12th Annual IEEE Symposium on Logic in Computer Science},
   pp. 280--291, 1997.
 \newblock \url{https://doi.org/10.1109/LICS.1997.614955}.
+
+\bibitem{GoncharovHigherOrderDenotation}
+S. Goncharov, M. Peressotti, S. Tsampas, H. Urbat, and S. Volpe.
+\newblock Towards a higher-order bialgebraic denotational semantics.
+\newblock \emph{Proceedings of the ACM on Programming Languages}
+  10(ICFP), Article 295, 2026.
+\newblock \url{https://arxiv.org/abs/2602.18295v2}.
 
 \bibitem{GhalayiniKrishnaswamiSSA}
 J. E. Ghalayini and N. Krishnaswami.

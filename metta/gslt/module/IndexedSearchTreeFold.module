@@ -1,0 +1,17 @@
+Module AgentSearch {
+  Theory Data() {
+    Inductives {
+      SearchTree parameters (Answer : Type) indices () : Type {
+        solved (answer : Answer) : SearchTree Answer;
+        branch (children : List (SearchTree Answer)) : SearchTree Answer;
+      }
+    }
+    Rewrites {
+      FoldSolved : (Fold A B leaf node (solved A answer))
+        ~> (Apply leaf answer);
+      FoldBranch : (Fold A B leaf node (branch A children))
+        ~> (Apply node (MapFold A B leaf node children));
+    }
+  }
+  theory Data()
+}

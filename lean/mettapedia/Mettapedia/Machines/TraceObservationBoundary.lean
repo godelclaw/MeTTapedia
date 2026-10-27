@@ -68,6 +68,50 @@ def WellFormed (boundary : List Event) (receipt : CausalReceipt Event) : Prop :=
   boundary.Nodup ∧ Ordered boundary receipt.events ∧
     ∀ root ∈ receipt.roots, root ∈ receipt.known boundary
 
+/-- Relabel occurrence identities and their causes, preserving the displayed
+order. Identifying two occurrences is a separate quotient operation. -/
+def relabel {Target : Type*} (f : Event → Target) (receipt : CausalReceipt Event) :
+    CausalReceipt Target :=
+  ⟨receipt.roots.map f,
+    receipt.events.map (fun e => ⟨f e.event, e.directCauses.map f⟩)⟩
+
+theorem ordered_relabel_of_injective {Target : Type*} (f : Event → Target)
+    (injective : Function.Injective f) (available : List Event)
+    (events : List (CausalEvent Event)) (ordered : Ordered available events) :
+    Ordered (available.map f)
+      (events.map (fun e => ⟨f e.event, e.directCauses.map f⟩)) := by
+  induction events generalizing available with
+  | nil => simp [Ordered]
+  | cons event rest ih =>
+      rcases ordered with ⟨fresh, causes, tail⟩
+      simp only [List.map_cons, Ordered]
+      refine ⟨?_, ?_, ?_⟩
+      · intro present
+        obtain ⟨source, member, equal⟩ := List.mem_map.mp present
+        have same : source = event.event := injective equal
+        exact fresh (same ▸ member)
+      · intro cause member
+        obtain ⟨source, present, rfl⟩ := List.mem_map.mp member
+        exact List.mem_map.mpr ⟨source, causes source present, rfl⟩
+      · simpa only [List.map_append, List.map_cons, List.map_nil] using
+          ih (available ++ [event.event]) tail
+
+/-- Injective renaming preserves the receipt boundary, occurrences and
+causal order. This does not justify identifying two physical records. -/
+theorem relabel_wellFormed_of_injective {Target : Type*} (f : Event → Target)
+    (injective : Function.Injective f) (boundary : List Event)
+    (receipt : CausalReceipt Event) (valid : WellFormed boundary receipt) :
+    WellFormed (boundary.map f) (receipt.relabel f) := by
+  refine ⟨valid.1.map injective, ?_, ?_⟩
+  · exact ordered_relabel_of_injective f injective boundary receipt.events valid.2.1
+  · intro root present
+    obtain ⟨source, member, rfl⟩ := List.mem_map.mp present
+    have visible : source ∈ receipt.known boundary := valid.2.2 source member
+    have mapped : f source ∈ (receipt.known boundary).map f :=
+      List.mem_map.mpr ⟨source, visible, rfl⟩
+    simpa only [relabel, known, flattenedSupport, List.map_append, List.map_map,
+      Function.comp_def] using mapped
+
 def checkEvents [DecidableEq Event] (available : List Event) : List (CausalEvent Event) → Bool
   | [] => true
   | event :: rest => decide (event.event ∉ available) &&
@@ -111,6 +155,28 @@ theorem ordered_distinct (available : List Event) (events : List (CausalEvent Ev
     simpa only [List.map_cons, List.append_assoc, List.singleton_append] using
       ih (available ++ [event.event]) extended tail
 
+/-- If two visible physical identities are identified, plain relabelling
+cannot be a well-formed occurrence receipt. A quotient must coalesce and
+check the resulting causal relation separately. -/
+theorem relabel_collision_not_wellFormed {Target : Type*} (f : Event → Target)
+    (boundary : List Event) (receipt : CausalReceipt Event)
+    (valid : WellFormed boundary receipt) {left right : Event}
+    (leftPresent : left ∈ receipt.known boundary)
+    (rightPresent : right ∈ receipt.known boundary)
+    (distinct : left ≠ right) (identified : f left = f right) :
+    ¬ WellFormed (boundary.map f) (receipt.relabel f) := by
+  intro quotientValid
+  have original : (receipt.known boundary).Nodup := by
+    simpa only [known, flattenedSupport] using
+      ordered_distinct boundary receipt.events valid.1 valid.2.1
+  have mapped : ((receipt.known boundary).map f).Nodup := by
+    have distinct' := ordered_distinct (boundary.map f)
+      (receipt.relabel f).events quotientValid.1 quotientValid.2.1
+    simpa only [known, flattenedSupport, relabel, List.map_append,
+      List.map_map, Function.comp_def] using distinct'
+  have injectiveOn := (List.nodup_map_iff_inj_on original).mp mapped
+  exact distinct (injectiveOn left leftPresent right rightPresent identified)
+
 /-- Every retained cause has a strictly smaller chronological rank. -/
 theorem ordered_rank [DecidableEq Event] (available : List Event)
     (events : List (CausalEvent Event)) (ordered : Ordered available events)
@@ -153,6 +219,37 @@ theorem no_causal_cycle [DecidableEq Event] (boundary : List Event) (receipt : C
     ¬ Relation.TransGen receipt.Direct event event := by
   intro cycle
   exact Nat.lt_irrefl _ (ancestry_rank boundary receipt valid cycle)
+
+/-- A proposed logical receipt retains every represented physical cause after
+identity mapping. This is a property of the two graphs, not a claim that the
+physical graph contains every dependency of the computation. -/
+def PreservesCauses {Target : Type*} (f : Event → Target)
+    (physical : CausalReceipt Event) (logical : CausalReceipt Target) : Prop :=
+  ∀ ⦃cause effect⦄, physical.Direct cause effect → logical.Direct (f cause) (f effect)
+
+/-- Preserving immediate edges also preserves each nonempty causal path. -/
+theorem preserves_ancestry {Target : Type*} (f : Event → Target)
+    {physical : CausalReceipt Event} {logical : CausalReceipt Target}
+    (preserves : PreservesCauses f physical logical) {cause effect : Event}
+    (path : Relation.TransGen physical.Direct cause effect) :
+    Relation.TransGen logical.Direct (f cause) (f effect) := by
+  induction path with
+  | single edge => exact .single (preserves edge)
+  | tail _ edge ih => exact .tail ih (preserves edge)
+
+/-- Coalescing causally ordered physical occurrences would create a logical
+cycle. A valid quotient that preserves causes may merge concurrent copies,
+but must never identify an occurrence with one of its descendants. -/
+theorem no_identifying_ancestor {Target : Type*} [DecidableEq Target]
+    (f : Event → Target) (physical : CausalReceipt Event)
+    (logical : CausalReceipt Target) (boundary : List Target)
+    (valid : WellFormed boundary logical) (preserves : PreservesCauses f physical logical)
+    {cause effect : Event} (path : Relation.TransGen physical.Direct cause effect) :
+    f cause ≠ f effect := by
+  intro identified
+  have mapped := preserves_ancestry f preserves path
+  rw [identified] at mapped
+  exact no_causal_cycle boundary logical valid (f effect) mapped
 
 /-- Append one already-identified event. Rejected input leaves the original
 immutable receipt available to its caller. This checks structure, not whether
@@ -223,6 +320,60 @@ theorem duplicated_identity_refused :
 
 theorem cycle_refused :
     check [] (⟨[2], [⟨1, [2]⟩, ⟨2, [1]⟩]⟩ : CausalReceipt Nat) = false := by decide
+
+def physicalPath : CausalReceipt Nat :=
+  ⟨[3], [⟨1, []⟩, ⟨2, [1]⟩, ⟨3, [2]⟩]⟩
+
+def identifyThird (id : Nat) : Nat := if id = 3 then 1 else id
+
+/-- An acyclic physical path can become a logical cycle when its first and
+last nodes are identified. Payload equality alone cannot license the join. -/
+theorem physical_path_quotient_cycle :
+    check [] physicalPath = true ∧
+      check [] (physicalPath.relabel identifyThird) = false ∧
+      (physicalPath.relabel identifyThird).Direct 1 2 ∧
+      (physicalPath.relabel identifyThird).Direct 2 1 := by
+  constructor
+  · decide
+  constructor
+  · decide
+  constructor
+  · refine ⟨⟨2, [1]⟩, ?_, rfl, by simp⟩
+    simp [relabel, physicalPath, identifyThird]
+  · refine ⟨⟨1, [2]⟩, ?_, rfl, by simp⟩
+    simp [relabel, physicalPath, identifyThird]
+
+def coalescedFork : CausalReceipt Nat := ⟨[2], [⟨1, []⟩, ⟨2, [1]⟩]⟩
+
+def identifyFork (id : Nat) : Nat := if id = 3 then 2 else id
+
+/-- Parallel copies with equal causes can instead be represented by one
+occurrence. A plain non-injective relabel still requires that coalescing. -/
+theorem parallel_copies_can_coalesce :
+    check [] shared = true ∧ check [] (shared.relabel identifyFork) = false ∧
+      check [] coalescedFork = true ∧ coalescedFork.flattenedSupport = [1, 2] := by
+  decide
+
+/-- The coalesced fork preserves both physical cause edges, even though its
+two physical copies have become one logical occurrence. -/
+theorem coalesced_fork_preserves_causes :
+    PreservesCauses identifyFork shared coalescedFork := by
+  intro cause effect edge
+  obtain ⟨event, present, same, depends⟩ := edge
+  simp [shared] at present
+  rcases present with first | second | third
+  · subst event
+    simp at depends
+  · subst event
+    simp at same depends
+    subst effect
+    subst cause
+    simp [Direct, coalescedFork, identifyFork]
+  · subst event
+    simp at same depends
+    subst effect
+    subst cause
+    simp [Direct, coalescedFork, identifyFork]
 
 /-- A structurally valid graph can omit a real semantic dependency. Native
 event correspondence is required in addition to this structural checker. -/

@@ -1,3 +1,4 @@
+import Mettapedia.OSLF.MeTTaIL.LawNormalTyping
 import Mettapedia.GSLT.LanguageDef.BindingSignature
 import Mettapedia.GSLT.LanguageDef.EquationOccurrence
 import Mettapedia.OSLF.Syntax.BindingEquationFamilyModel
@@ -637,3 +638,81 @@ theorem full_contextual_satisfaction (language : LanguageDef) :
 end Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily
 
 #print axioms Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily.collection_typed_node
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily
+
+open Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws CanonicalBags.RoleAware
+open Mettapedia.GSLT.LanguageDef.WellSorted EquationSemantics
+
+private def checkSourceAlgebraRow (laws : List Laws) (language : LanguageDef) (rule : GrammarRule) : Bool :=
+  match rule.bareParams with
+  | [.simple parameter (.collection kind (.base category))] =>
+      if category = rule.category then
+        match lawFor laws kind with
+        | none => true
+        | some law => (checkedAlgebra? language rule kind ⟨true, law.unit⟩ parameter).isSome
+      else true
+  | _ => true
+
+/-- Check all actual base-result algebra choices of the role-aware traversal.
+Each nonempty request is discharged by the existing literal-row and unit checker. -/
+def checkSourceAlgebras (laws : List Laws) (language : LanguageDef) : Bool :=
+  language.terms.all (checkSourceAlgebraRow laws language)
+
+theorem checkSourceAlgebras_sound {laws : List Laws} {language : LanguageDef}
+    (accepted : checkSourceAlgebras laws language = true) : SourceAlgebras laws language := by
+  intro rule member kind parameter law shape found
+  have rowChecked := List.all_eq_true.mp accepted rule member
+  simp only [checkSourceAlgebraRow, shape, if_true, found] at rowChecked
+  obtain ⟨receipt, _⟩ := Option.isSome_iff_exists.mp rowChecked
+  exact receipt.down
+
+theorem checkSourceAlgebras_complete {laws : List Laws} {language : LanguageDef}
+    (authorized : SourceAlgebras laws language) : checkSourceAlgebras laws language = true := by
+  apply List.all_eq_true.mpr
+  intro rule member
+  unfold checkSourceAlgebraRow
+  split
+  next parameter kind category shape =>
+    by_cases same : category = rule.category
+    · subst category
+      simp only [if_true]
+      cases found : lawFor laws kind with
+      | none => rfl
+      | some law =>
+          have declaration := authorized rule member kind parameter law shape found
+          obtain ⟨receipt, checked⟩ := checkedAlgebra?_complete declaration
+            ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
+          simp only [checked, Option.isSome_some]
+    · simp only [same, if_false]
+  next => rfl
+
+theorem checkSourceAlgebras_exact (laws : List Laws) (language : LanguageDef) :
+    checkSourceAlgebras laws language = true ↔ SourceAlgebras laws language :=
+  ⟨checkSourceAlgebras_sound, checkSourceAlgebras_complete⟩
+
+/-- A finite proof-producing source-law receipt. Validation does not select
+an internal matching policy or authorize a compiler profile. -/
+def checkedSourceAlgebras? (laws : List Laws) (language : LanguageDef) :
+    Option (PLift (SourceAlgebras laws language)) :=
+  if accepted : checkSourceAlgebras laws language = true then
+    some ⟨checkSourceAlgebras_sound accepted⟩
+  else none
+
+theorem checkedSourceAlgebras?_exact (laws : List Laws) (language : LanguageDef) :
+    (∃ receipt, checkedSourceAlgebras? laws language = some receipt) ↔ SourceAlgebras laws language := by
+  constructor
+  · rintro ⟨receipt, _⟩
+    exact receipt.down
+  · intro authorized
+    simp only [checkedSourceAlgebras?, checkSourceAlgebras_complete authorized, dite_true]
+    exact ⟨⟨authorized⟩, True.intro⟩
+
+#print axioms checkSourceAlgebras_sound
+#print axioms checkSourceAlgebras_complete
+#print axioms checkSourceAlgebras_exact
+#print axioms checkedSourceAlgebras?_exact
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.CollectionEquationFamily

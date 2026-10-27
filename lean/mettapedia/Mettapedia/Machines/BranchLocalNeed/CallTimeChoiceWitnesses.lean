@@ -115,6 +115,31 @@ def bothMkc : Expr := call1 fnBoth (call0 fnMkc)
 def konstFail : Expr := call2 fnKonst (k0 symA) .fail
 def konstPick : Expr := call2 fnKonst (k0 symA) (call0 fnPick)
 
+/-! ## A source is interpreted in its program
+
+The same suspended expression may produce different values in two programs.
+Conversely, adding a rule that this expression cannot reach need not change
+its result. These examples concern the source semantics; they do not identify
+runtime Space handles or establish a native implementation correspondence.
+-/
+
+def singlePickProgram (answer : Nat) : SProgram :=
+  [ ⟨fnPick, 0, k0 answer⟩,
+    ⟨fnSame, 1, k2 symPair (.var 0) (.var 0)⟩ ]
+
+def singlePickWithUnrelatedRule : SProgram :=
+  singlePickProgram symA ++ [⟨fnSp1, 0, k0 symB⟩]
+
+theorem same_source_different_programs :
+    sourceValues .need (singlePickProgram symA) 60 samePick = some [pair vA vA] ∧
+    sourceValues .need (singlePickProgram symB) 60 samePick = some [pair vB vB] := by
+  constructor <;> decide +kernel
+
+theorem same_source_unrelated_rule :
+    sourceValues .need singlePickWithUnrelatedRule 60 samePick =
+      sourceValues .need (singlePickProgram symA) 60 samePick := by
+  decide +kernel
+
 /-! ## `same pick` -/
 
 theorem samePick_need :

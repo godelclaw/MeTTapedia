@@ -1,0 +1,22 @@
+Module IndexedNatVecAppend {
+  Theory Data() {
+    Inductives {
+      Nat parameters () indices () : Type {
+        Zero () : Nat;
+        Succ (previous : Nat) : Nat;
+      }
+      Vec parameters (A : Type) indices (length : Nat) : Type {
+        Nil () : Vec A Zero;
+        Cons (n : Nat, a : A, xs : Vec A n) : Vec A (Succ n);
+      }
+    }
+    Rewrites {
+      AddZero : (Add (Zero) m) ~> m;
+      AddSucc : (Add (Succ k) m) ~> (Succ (Add k m));
+      AppendNil : (Append A (Zero) m (Nil A) ys) ~> ys;
+      AppendCons : (Append A (Succ k) m (Cons A k x tail) ys)
+        ~> (Cons A (Add k m) x (Append A k m tail ys));
+    }
+  }
+  theory Data()
+}

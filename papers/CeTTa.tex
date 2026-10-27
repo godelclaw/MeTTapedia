@@ -1,7 +1,7 @@
-%% CeTTa: A Direct C Runtime for MeTTa with Verified Translation
+%% CeTTa: a direct C runtime for the MeTTa family
 %%
 %% Build:
-%%   pdflatex CeTTa.tex
+%%   latexmk -pdf CeTTa.tex     (or pdflatex CeTTa.tex, twice)
 
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
@@ -9,6 +9,8 @@
 \usepackage{lmodern}
 \usepackage{geometry}
 \geometry{margin=1in}
+\usepackage{xcolor}
+\usepackage[htt]{hyphenat}
 \usepackage{hyperref}
 \usepackage{longtable}
 \usepackage{booktabs}
@@ -25,10 +27,39 @@
   basicstyle=\ttfamily\small,
   breaklines=true,
   frame=single,
-  columns=fullflexible
+  columns=fullflexible,
+  keepspaces=true
 }
+\lstdefinestyle{metta}{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{black!45},
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  captionpos=t,
+  abovecaptionskip=2pt,
+  belowskip=4pt
+}
+\lstdefinestyle{out}{
+  basicstyle=\ttfamily\footnotesize,
+  frame=leftline,
+  framerule=1.2pt,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{black!3},
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  aboveskip=2pt,
+  belowskip=6pt,
+  xleftmargin=4pt
+}
+\renewcommand{\lstlistingname}{Listing}
 
 \newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\outhead}[1]{{\footnotesize\sffamily #1}\par\vspace{1pt}}
+\newcommand{\kind}[1]{\textsf{\small[#1]}}
 \newcommand{\PeTTa}{\textup{PeTTa}}
 \newcommand{\HE}{\textup{HE}}
 \newcommand{\CeTTa}{\textup{CeTTa}}
@@ -37,271 +68,1085 @@
 \newcommand{\RhoCalc}{\textup{RhoCalc}}
 
 \title{\CeTTa{}:\\
-\large A Direct C Runtime for MeTTa with Verified Translation}
+\large A Direct C Runtime for the MeTTa Family\\[2pt]
+\normalsize How to program it, how it is built, and what each line of
+development has achieved}
 \author{Zar Goertzel\\Oru\v{z}i}
-\date{\today}
+\date{27 October 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-MeTTa is a reflective, non-deterministic meta-language with three
-actively maintained runtimes: Hyperon Experimental (\HE{}, Rust),
-\PeTTa{} (Prolog), and \CeTTa{} (C).  This paper describes \CeTTa{},
-a direct C implementation of the \HE{} MeTTa evaluator (current development
-line 1.4.0-dev) that passes a
-535-test MeTTa regression suite (a 539-row manifest): 405 passed /
-0 failed on the default build and 401 passed / 0 failed on the
-MORK-bridge build, plus a heavy-golden lane at 17 passed / 0 failed
-(suite snapshot 2026-07-02, commit 9237afd), backed by a 23-case
-\HE{} I/O semantic conformance gate against upstream \HE{}~v0.2.10.
-On cross-runtime benchmarks---genomic-inference rows re-receipted
-2026-07-02 on commit 9237afd, branching-search rows measured
-2026-06-27---\CeTTa{} is fastest on startup-dominated shallow inference
-and on several genomic-inference rows (the 183-pair PLN evidence
-core, the full 1{,}399{,}997-line WM-PLN raw-loader checkpoint, and
-the 1{,}411{,}430-hypothesis deep genomic backward-chaining row),
-while \PeTTa{} wins on pure branching search (the 85{,}013-proof
-Metamath depth-5 benchmark) and on direct 8-Queens search.  A rerun-backed
-cross-engine chaining suite built on community chainers
-(Geisweiller's dependent-typed chainers and Metamath proofs;
-Treutlein's PeTTaChainer problems) shows that \CeTTa{}'s shallow
-advantage is startup-dominated rather than a general scaling property.
-Historical rows whose current drivers now disagree or fail---the old
-cross-engine miner speed table, the old full-1.4M WM-PLN scaling
-headline, and BTree---are explicitly excluded from the revised
-benchmark ladder.  The earlier tilepuzzle regression was root-caused
-to unbounded growth of the evaluation arena and closed by a tail-safe
-evaluation-arena garbage collector (on by default), restoring
-tilepuzzle as benchmark evidence: the full 181{,}440-state 8-puzzle
-search now completes in 8.80\,s at 233\,MiB peak resident memory
-(commit 9237afd).
-The runtime is organized as an explicit profile family:
-\code{he-compat} mirrors Rust \HE{} literally (including its quirks);
-the principled \code{he} line carries exact rationals, true division,
-and per-case recorded divergences; \code{he-extended} adds labeled
-extensions; \code{he-prime} adds dependent telescopes.  The one-step
-reduction relation is reflected into MeTTa itself as a modal layer
-(\code{transitions}, \code{box}, \code{diamond}, normal-form tests)
-aligned with the OSLF
-$\mathrm{LanguageDef}\to\mathrm{ReductionSpan}\to\Diamond/\Box$
-pipeline proven in Lean, and the first rule classes (grounded dispatch,
-argument congruence, equation matching) are welded to a reflectable
-small-step rule table whose rule-removal tests prove the engine
-genuinely depends on the declared rules.
-Three further pillars extend the architecture: parsers
-\emph{generated from the source grammars themselves} (per-language
-LanguageDefs compiled to native readers with differential, mutation, and
-purity gates --- the pipeline caught two defects in the source grammars
-before execution); \code{--lang zero}, a query-first occurrence-bag kernel
-whose semantics is carried through OSLF to native spatial/behavioral types,
-checked CertificateGSLT articles, MeTTa inference-kernel (MIK) authority, and
-native inference-kernel (NIK) replay obligations; and
-\code{--lang prime}, a \emph{distinct} lazy
-sibling language (branch-local call-by-need with call-time choice,
-opaque Need-cell capabilities, occurrence-bag results, and a
-policy-neutral certified search-control layer), whose living
-specification and design principles are distilled in the appendices.
-A correctness-gated four-engine benchmark study (adding JeTTa and
-MeTTaScript) locates each runtime's competence zone and measures the
-per-call and sharing costs that motivate the abstract-machine roadmap,
-whose derivation methodology now carries kernel-checked Lean
-foundations.
-The runtime features SymbolId-based dispatch (38\% instruction
-reduction), structured space kinds (queue, hash, stack), a pluggable
-match backend with PathMap/MORK integration, and compiled space
-artifacts via MORK's \code{.act} format for zero-copy indexed loading.
-It is backed by a sorry-free Lean proof (5{,}400+ lines) establishing
-semantic correspondence between \HE{} and \PeTTa{} evaluation on the
-pure fragment, including import commutativity and operational bridges
-for state and space allocation.  A kernel-checked HE$'$ telescope
-formalization extends the type system with dependent binder semantics.
-The \RhoCalc{} reaction machine's eval-at-\textsc{comm} semantics is given a
-witness-free, axiom-clean Lean characterization: the quiescent run of the
-canonical payload-evaluation process equals its structurally observable
-outcome set.
-We present a benchmark ladder from shallow evaluation through
-large-scale genomic inference and a cross-engine chaining suite, a
-freshness-first performance re-audit and triage, a specification gap
-analysis, and a three-machine architecture (local search, indexed
-shared-space, type elaboration) informed by GPT-5.4~Pro architectural
-review.  A second answer-first audit on 2026-08-09 validates the current
-native and counted-\PathMap{} routes under the full normal and sanitizer
-portfolios, removes an effectively complete candidate scan and a
-quadratic mutation/index-rebuild loop, and adds dialect-honest
-\PeTTa{}--SWI comparisons.  On the audited HexLife conjunction,
-\PathMap{} is slightly faster than native space in Prime and at parity in
-\PeTTa{}, while exact answer bags agree throughout.
-An initial \code{lib\_tptp} vertical now exercises the same specification
-discipline on a large standard language: a versioned all-family TPTP grammar
-generates the native ParserPack and admitted AST/document carriers, while a
-Lean development composes source-defined FOF-to-CNF transformations and carries one
-status-indexed ground TSTP refutation through a compact derivation-word GSLT
-to an independently proved unsatisfiability result.  Calculus-specific proof
-search remains example code rather than being built into TPTP or \CeTTa{}.
+\CeTTa{} is a direct C runtime for MeTTa, the reflective, nondeterministic
+language of the Hyperon framework.  One binary hosts several dialects: \PeTTa{}
+(the default, version 1.0.6, with a typed 1.1), \CeTTa{}'s fork of Hyperon
+Experimental 0.2.10 with its profile family, and MeTTa Prime, a distinct
+language with call by need, call-time choice and a native dependent kernel,
+beside the reflective rho calculus, MM2, MeTTa Zero and a HOL Light
+proof-stream checker.  This paper is written for a reader who wants to program
+\CeTTa{} today.  It teaches the language with listings that run on named
+binaries on three lanes, quotes their output, and records where the lanes
+differ.  It describes the architecture and the specification-driven
+semantics: profiles, oracle conformance, a reflective modal layer, and a
+small-step rule table whose rule-removal tests show that the evaluator depends
+on the declared rules.  It then gives each line of development its purpose,
+history and measured results: the published \code{main}; the opt line, whose
+October work realized \code{transform} natively, made space drains linear and
+cut the evaluator's cost of crossing between machines; pre-main, which unifies
+execution across those machines for the next \code{main}; the native
+inference kernel lines; and the Prime families, the draft, the weights, cost
+and parallel line, and \code{cetta-ours}, which keeps the live agents running.
+For spaces and channels it adopts the direction of an interaction basis: one
+atomic commit that observes, keeps or takes, and makes; spaces and channels as
+one object that differs only in the rights a holder has; region profiles as
+metadata.  The Prime draft runs this basis as a native kernel.  The
+reflective rho calculus with its Lean-characterized evaluation at
+communication, the cross-runtime benchmark ladder and the abstract-machine
+design record are kept, with their dates.
 \end{abstract}
 
 %% ────────────────────────────────────────────────────────────────────
 \section{Introduction}
+\label{sec:intro}
 
-MeTTa~\cite{metta} is a reflective, typed, non-deterministic language
-designed as the core language of the OpenCog Hyperon AGI framework.
-Three implementations exist:
+MeTTa~\cite{metta} is a reflective, typed, nondeterministic language
+designed as the core language of the OpenCog Hyperon framework.  A MeTTa
+program is a space of atoms; equations among those atoms say how expressions
+rewrite; a query may have many answers, and the answers form a bag.  Three
+families of implementation exist:
 
 \begin{description}
-\item[\HE{}] Hyperon Experimental (Rust, v0.2.10).  The reference
-  implementation with Python bindings and a large standard library.
-\item[\PeTTa{}] Prolog-based MeTTa (SWI-Prolog).  Leverages Prolog's
-  SLD resolution for backward chaining and pattern matching.
-\item[\CeTTa{}] Direct C evaluator (this work; current development line
-  1.4.0-dev).  Targets the \HE{} spec
-  with arena allocation, discrimination-trie indexing, and tail-call
-  optimization.
+\item[\HE{}] Hyperon Experimental, in Rust, the reference implementation with
+  Python bindings and a large standard library (version 0.2.10 is the
+  oracle used here).
+\item[\PeTTa{}] MeTTa compiled to Prolog clauses and run on SWI-Prolog, a
+  dialect of its own with Prolog's search and indexing.
+\item[\CeTTa{}] This work: a direct C runtime, now at version 1.5.0-dev on its
+  development lines, that runs the \HE{} dialect, the \PeTTa{} dialect (its
+  default) and MeTTa Prime from one binary.
 \end{description}
+
+\noindent
+The dialects share a surface syntax and differ in meaning.  \HE{} leaves an
+expression it cannot rewrite as data; \PeTTa{} makes a call that no clause
+accepts fail; Prime evaluates by need, so an argument the body never demands
+never runs.  A program written for one is not, in general, a program for
+another, and \CeTTa{} treats each as a named semantic product with its own
+oracle: upstream \HE{} for the \HE{} lane, SWI-\PeTTa{} for the \PeTTa{} lane,
+and the Prime metatheory for Prime.
+
+\paragraph{What this paper is for.}  Earlier versions of this paper described
+\CeTTa{} through its evidence.  This version is first a guide.
+Section~\ref{sec:tutorial} teaches programming in \CeTTa{} with listings run
+on all three lanes; Section~\ref{sec:architecture} describes how the runtime
+is built; Section~\ref{sec:specdriven} how its semantics is kept honest;
+Section~\ref{sec:lines} what each line of development is for and what it has
+measured; Sections~\ref{sec:prime-families}, \ref{sec:interaction}
+and~\ref{sec:prime} the Prime lines, the interaction basis for spaces and
+channels, and the Prime language.  The remaining sections keep the paper's
+earlier results, each with its date: the verified \HE{}--\PeTTa{} translation,
+the reflective rho calculus, the benchmark ladder and its studies, the
+performance analysis, the dialect landscape, the observer-factored account of
+nondeterminism and state, the dependent-telescope extension, and the generated
+readers.  The appendices record how every listing was run, and keep the
+\LeaTTa{} cross-check, the abstract-machine design record and the distilled
+principles.
 
 \paragraph{Contributions.}
 \begin{enumerate}
-\item A direct C runtime passing a 535-test MeTTa regression suite
-  (539-row manifest; default build 405/0, MORK-bridge build 401/0,
-  heavy-golden lane 17/0) plus 112
-  profile tests, validated against upstream \HE{} v0.2.10 as oracle.
-\item An explicit profile family (\code{he-compat} / \code{he} /
-  \code{he-extended} / \code{he-prime}) with per-case recorded
-  divergences and a fail-by-default conformance harness: the current
-  per-build gate replays 23 \HE{} I/O semantic fixtures against the
-  \HE{}~v0.2.10 baseline, while broader generated catalogs remain audit
-  material rather than headline claims (Section~\ref{sec:specdriven}).
-\item A reflective modal LTS layer over the evaluator's one-step
-  reduction relation---successor set, $\Box$/$\Diamond$,
-  normal-form tests---with runtime De~Morgan self-tests mirroring the
-  Galois connection proven in the Lean OSLF framework.
-\item The first specification weld: a reflectable small-step rule
-  table gating grounded dispatch, argument congruence, and equation
-  matching, with anti-decorative rule-removal tests.  This converts a
-  cross-branch one-step soundness bug (missing argument congruence)
-  into a structurally prevented class.
-\item A bidirectional \HE{}$\leftrightarrow$\PeTTa{} translator
-  (Prolog + executable Lean), with a sorry-free Lean proof of semantic
-  correspondence.
-\item Cross-runtime benchmarks (genomic-inference rows re-receipted
-  2026-07-02 on commit 9237afd; branching-search rows measured
-  2026-06-27, pre-GC):
-  \CeTTa{} is
-  10--100$\times$ faster than \HE{} on shallow evaluation, wins several
-  current genomic-inference rows (including the full TFBS-inclusive
-  WM-PLN raw-loader checkpoint), while \PeTTa{} is 4.8$\times$ faster
-  on the audited depth-5 Metamath proof-search row and faster on
-  direct 8-Queens search; only still-unresolved rows are quarantined
-  from the revised ladder.
-\item A tail-safe evaluation-arena garbage collector, on by default,
-  differentially validated (not verified) against the collector-off
-  reference across the fast regression corpus (406/406 agree) and under
-  ASan/UBSan with provenance assertions (404/404 agree); its headline
-  effect is the restored tilepuzzle capacity row---the full
-  181{,}440-state search completes in 8.80\,s at 233\,MiB, versus
-  unbounded arena growth before (Section~\ref{sec:tilepuzzle-gc}).
-\item An executable characterization of the semantic boundary between
-  \HE{} and \PeTTa{} on a named pure fragment, together with explicit
-  counterexamples at the free-variable, state, and effect boundaries; no
-  corpus percentage is promoted to a language theorem.
-\item An observer-factored account of non-determinism and mutable state:
-  complete-bag observers preserve contents and multiplicity without making
-  incidental traversal order semantic; effects remain permissive; and
-  \PeTTa{} Hyperpose composes translation-stage callability with a frozen
-  definition-occurrence view for each entered call.  \code{with\_mutex},
-  \code{transaction}, and \code{with-space-snapshot} provide explicit local
-  strengthening rather than a global ban on effectful branches.
-\item A witness-free, axiom-clean Lean characterization of the \RhoCalc{}
-  reaction machine's eval-at-\textsc{comm} semantics: the quiescent run of the
-  canonical payload-evaluation process equals its
-  structural-congruence-observed outcome set, with no certification witness in
-  the carrier (Section~\ref{sec:rho-lean}).
-\item A revision-pinned machine substrate: candidate-only
-  \code{MatchDecision} programs followed by authoritative rematching, an
-  explicit heap-based \PeTTa{} choice/continuation machine, prepared pure
-  programs, bounded \code{RuleMachine} artifacts, and observer-safe
-  substitution fusion.  Prime additionally separates computational zero
-  from the inert \code{Empty} datum and exposes an exact ordered outcome bag
-  with completion status before compatibility projections.
-\item A counted-\PathMap{} query realization whose Rust-backed occurrence
-  store remains authoritative while a synchronized native discrimination
-  view supplies derived candidate coordinates.  Logical-update snapshots,
-  declared order, and multiplicity remain observable; append-only index
-  maintenance removes the former rebuild-per-write behavior.
-\item A fail-closed, tool-isolated MM2-to-MeTTa prototype plus a curated
-  corpus gate.  The corpus records 43 programs (40 status agreements,
-  three explicit fork skips); 21 admitted programs are compared as exact
-  encoded atom multisets against native MM2 across HE, Prime, and \PeTTa{},
-  over both native and \PathMap{} spaces.  Unsupported MM2 semantics are
-  rejected rather than approximated (Section~\ref{sec:mm2-integration}).
+\item A tutorial of \CeTTa{}'s MeTTa in which every listing was run on a named
+  binary, on the \HE{}, \PeTTa{} and Prime lanes, with the outputs quoted and
+  the lanes' differences stated and explained: inert data against failure,
+  argument types that decide evaluation, call by need, module destinations,
+  the editable standard library with its \code{std:} originals, \code{transform},
+  and channels.
+\item A specification-driven semantics: explicit profiles; result-bag
+  conformance against upstream \HE{} and SWI-\PeTTa{}; a reflective modal
+  layer over the one-step relation; a small-step rule table of ten live rule
+  classes whose removal tests prove the evaluator depends on them, five of them
+  certified in Lean.
+\item A history of every line of development with its purpose and measured
+  results, among them: on a 96-cell panel against SWI-\PeTTa{} 1.0.6
+  (23 October 2026), \CeTTa{}'s \PeTTa{} lane was clearly faster on 78 of 92
+  comparable cells and clearly slower on 8; on each of the five programs
+  measured on 26 October, the native \code{transform} and its MeTTa library
+  ran faster than SWI-\PeTTa{} running the same library; space drains went
+  from quadratic to linear.
+\item The interaction basis as the direction for spaces and channels, with
+  what is proved in Lean, what the Prime draft runs, and what the native
+  runtime still lacks.
+\item The earlier results, kept and dated: the
+  \HE{}$\leftrightarrow$\PeTTa{} translation development (thirteen Lean
+  modules with no \code{sorry} in their sources); the reflective rho
+  calculus with an axiom-clean Lean characterization of evaluation at
+  communication and a funded, receipt-producing cost profile; the
+  cross-runtime benchmark ladder; the tail-safe evaluation-arena collector;
+  the counted-\PathMap{} backend and its faithful-backend obligations;
+  generated readers; MeTTa Zero.
 \end{enumerate}
+
+\paragraph{Conventions.}  A \emph{lane} is a language as \CeTTa{} runs it,
+selected by \code{-{}-lang}.  Every listing names its lanes, and
+Appendix~\ref{app:runs} names the binaries by the first twelve hexadecimal
+digits of their SHA-256 digests.  Statements about Prime carry their kind:
+\kind{draft} for the behaviour of the C draft, \kind{candidate} for a
+property of a candidate design, \kind{direction} for a design direction with
+its reasons, \kind{decided} for a recorded decision.  Dates are of 2026.
+``Instructions'' are user-mode instructions counted by \code{perf}.
+
+%% ────────────────────────────────────────────────────────────────────
+\section{Programming in \CeTTa{}}
+\label{sec:tutorial}
+
+This section teaches the language by running it.  Every listing below was run
+on the binaries named in Appendix~\ref{app:runs}, and every output panel is
+copied from that run.  The same source is run on three \emph{lanes}: \CeTTa{}'s
+\HE{} lane (\code{-{}-lang he}), its \PeTTa{} lane (\code{-{}-lang petta}, the
+default) and the Prime lane (\code{-{}-lang prime}).  The lanes are distinct
+dialects that share a surface syntax.  Where a listing behaves differently on
+two lanes, the text says so and says why; nothing in this section assumes that
+a program written for one lane runs the same on another.
+
+\subsection{Running a program}
+\label{sec:tut-running}
+
+One executable, \code{cetta}, hosts every language.  The \code{-{}-lang} option
+selects it:
+
+\begin{lstlisting}[style=metta]
+cetta program.metta                    # PeTTa 1.0.6, the default
+cetta --lang petta@1.1 program.metta   # PeTTa with static typing
+cetta --lang he program.metta          # CeTTa's fork of Hyperon Experimental 0.2.10
+cetta --lang he --profile extended program.metta
+cetta --lang prime program.metta       # MeTTa Prime
+cetta --lang rhocalc program.rho       # the reflective rho calculus
+\end{lstlisting}
+
+\noindent
+The binary also carries an MM2 front end, the MeTTa Zero kernel and its
+relatives, and a native HOL Light proof-stream checker; \code{cetta
+-{}-list-languages} prints the inventory and \code{cetta -{}-help} the options.
+The binary built from \code{main} (1.4.0-dev) defaults to the \HE{} lane;
+\PeTTa{} became the default on 17 October, in the 1.5 line.
+
+A program is a sequence of atoms.  An atom is a symbol (\code{red}), a
+variable (\code{\$x}), a grounded value (a number or a string) or an
+expression, a parenthesized sequence of atoms.  A top-level atom is added to
+the program's own space, \code{\&self}; a top-level \code{!(\ldots)} is a
+query, evaluated in place, whose answers are printed.  The lanes print
+differently.  \HE{} and Prime print the answers of one query as one bracketed
+list, \code{[a, b]}, and an effect that returns the unit value prints as
+\code{[()]}.  \PeTTa{} prints one line per answer and \code{true} for an
+effect.  Comments run from \code{;} to the end of the line.  The option
+\code{-{}-pretty-vars} prints fresh variables by their written names; the
+listings use it.
+
+\subsection{Equations and evaluation}
+\label{sec:tut-equations}
+
+An equation \code{(= lhs rhs)} says that an atom matching \code{lhs} may be
+rewritten to \code{rhs}.  Evaluating a call looks up the equations whose
+left side matches it, instantiates their right sides and evaluates those in
+turn.  Grounded operations such as \code{+} and \code{*} compute directly.
+
+\begin{lstlisting}[style=metta,caption={Equations and evaluation; all three lanes},label={lst:t01}]
+; Equations are atoms of the program space; a call rewrites by them.
+(= (double $x) (* 2 $x))
+(= (len ()) 0)
+(= (len (Cons $h $t)) (+ 1 (len $t)))
+(= (fact $n) (if (== $n 0) 1 (* $n (fact (- $n 1)))))
+!(double 21)
+!(len (Cons a (Cons b (Cons c ()))))
+!(fact 20)
+; a call no equation matches
+!(len nothing)
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[42]
+[3]
+[2432902008176640000]
+[(len nothing)]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+42
+3
+2432902008176640000
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[42]
+[3]
+[2432902008176640000]
+[(len nothing)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The three lanes agree on every computed answer.  They disagree on the last
+query, and the disagreement is a real difference between the dialects.  On the
+\HE{} and Prime lanes an expression that no equation rewrites is its own
+normal form: \code{(len nothing)} stays as data.  This is MeTTa's rule that
+what cannot be interpreted is left uninterpreted.  On the \PeTTa{} lane a
+function is compiled to Prolog clauses, and a call that no clause of a
+\emph{defined} function accepts fails: it has no answer.  SWI-\PeTTa{}, the
+reference implementation of the dialect, gives the same output on this
+listing and on the six \PeTTa{}-lane listings of
+Sections~\ref{sec:tut-nondet}--\ref{sec:tut-modules}, up to the spelling of
+fresh variables (\code{\$V0} against \code{\$\_0}).
+
+\subsection{Several answers, and the bag they form}
+\label{sec:tut-nondet}
+
+A call may match several equations.  Each match is a separate answer, and a
+query prints them all.  \code{superpose} makes the answers of a list, and
+\code{collapse} does the reverse: it evaluates its argument completely and
+returns one expression holding every answer.
+
+\begin{lstlisting}[style=metta,caption={Several answers, and the bag they form},label={lst:t02}]
+; Several equations for one call give several answers.
+(= (color) red)
+(= (color) green)
+(= (color) blue)
+!(color)
+; collapse turns the answers into one expression: the bag, as a value
+!(collapse (color))
+!(let $x (superpose (1 2 3)) (* $x $x))
+; duplicates are real occurrences
+!(collapse (superpose (a b a)))
+; an order-insensitive view of a bag
+!(let $bag (collapse (superpose (c a b))) (sort-atom $bag))
+; a head with no equations at all is data
+!(undefined-head 1)
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[red, green, blue]
+[(red green blue)]
+[1, 4, 9]
+[(a b a)]
+[(a b c)]
+[(undefined-head 1)]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+red
+green
+blue
+(red green blue)
+1
+4
+9
+(a b a)
+(a b c)
+(undefined-head 1)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[red, green, blue]
+[(red green blue)]
+[1, 4, 9]
+[(a b a)]
+[(a b c)]
+[(undefined-head 1)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The collection of answers is a \emph{bag}: a multiset, in which duplicates are
+real occurrences (\code{(a b a)} keeps both copies of \code{a}) and the order
+in which an engine happens to find the answers carries no meaning.  A printed
+result is necessarily a sequence, but programs and tests should not depend on
+it; the conformance gates of Section~\ref{sec:conformance} compare bags.  When
+a program wants a canonical sequence, it sorts the bag explicitly, as the
+fifth query does.  A program written for one engine may still exploit that
+engine's documented order; it then says so by being engine-specific.
+
+The fifth query binds the bag with \code{let} before sorting it, and this
+matters on the \HE{} lane.  There, a declared argument type of
+\code{Expression} or \code{Atom} tells the evaluator \emph{not} to evaluate
+that argument, and \code{sort-atom} is declared
+\code{(-> Expression Expression)}:
+
+\begin{lstlisting}[style=metta,caption={Argument types decide evaluation on the HE lane},label={lst:t02b}]
+; sort-atom is declared (-> Expression Expression) on the HE lane
+!(get-type sort-atom)
+!(sort-atom (c a b))
+; written directly, the argument is not evaluated first
+!(sort-atom (collapse (superpose (c a b))))
+; bound with let first, the bag is sorted
+!(let $bag (collapse (superpose (c a b))) (sort-atom $bag))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[(-> Expression Expression)]
+[(a b c)]
+[(c a b)]
+[(a b c)]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+%Undefined%
+(a b c)
+(a b c)
+(a b c)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[(-> Expression Expression)]
+[(a b c)]
+[(a b c)]
+[(a b c)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+Written directly, \code{(sort-atom (collapse \ldots))} sorts the
+\emph{unevaluated} expression \code{(collapse (superpose (c a b)))} and only
+then evaluates the result, so the bag comes out unsorted.  On the \PeTTa{}
+and Prime lanes \code{sort-atom} evaluates its argument first, although Prime
+declares the same type.  On the \HE{}
+lane the type of a function decides which of its arguments are evaluated, and
+\code{let} is the portable way to force a value before a call.  A
+user-defined function with a parameter typed \code{Atom} receives that
+argument unevaluated on the \HE{} and \PeTTa{} lanes alike (SWI-\PeTTa{}
+agrees), but not on the Prime lane (Section~\ref{sec:prime}).
+
+\subsection{Demand and call-time choice}
+\label{sec:tut-demand}
+
+The \HE{} and \PeTTa{} lanes are eager: arguments are evaluated before a
+function's equations are tried.  Prime evaluates by need: an argument is
+evaluated only when the chosen equation demands it, and then at most once.
+
+\begin{lstlisting}[style=metta,caption={Demand and call-time choice},label={lst:t03}]
+(= (const $x $y) $x)
+(= (pair $x) ($x $x))
+; is an argument the body never needs evaluated?
+!(const 5 (println! "argument evaluated"))
+; one choice, used twice
+!(pair (superpose (1 2)))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+argument evaluated
+[5]
+[(1 1), (2 2)]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+"argument evaluated"
+5
+(1 1)
+(2 2)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[5]
+[(1 1), (2 2)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+\code{const} never uses its second argument, so on the Prime lane the
+\code{println!} never runs; on the eager lanes it runs before \code{const} is
+entered.  The second query shows \emph{call-time choice}: the argument
+\code{(superpose (1 2))} is one choice, shared by both uses of \code{\$x}, so
+the answers are \code{(1 1)} and \code{(2 2)}, never \code{(1 2)}.  The eager
+lanes give the same answers for a different reason: they choose before the
+call.  Under call by need the sharing is the semantics: a delayed argument is
+one \emph{need cell}, and every use of it sees the same value
+(Section~\ref{sec:prime}).
+
+\subsection{Spaces: \code{match}, \code{add-atom}, \code{remove-atom}}
+\label{sec:tut-spaces}
+
+A \emph{space} is a store of atoms.  \code{new-space} makes one and
+\code{bind!} gives it a name; \code{add-atom} and \code{remove-atom} change it;
+\code{(match space pattern template)} answers one instance of the template
+for each stored atom that matches the pattern.  A comma pattern
+\code{(, p1 p2)} is a conjunction: both patterns must match, with shared
+variables bound alike.  The program space is a space like any other, and its
+equations are atoms in it.
+
+\begin{lstlisting}[style=metta,caption={Spaces, queries and updates},label={lst:t04}]
+!(bind! &kb (new-space))
+!(add-atom &kb (parent tom bob))
+!(add-atom &kb (parent bob ann))
+!(add-atom &kb (parent bob jim))
+; match: one answer per matching occurrence
+!(match &kb (parent bob $c) $c)
+; a conjunctive query
+!(match &kb (, (parent $g $p) (parent $p $c)) (grandparent $g $c))
+(= (children $p) (collapse (match &kb (parent $p $c) $c)))
+!(children bob)
+!(remove-atom &kb (parent bob jim))
+!(children bob)
+; the program space is a space too: equations are atoms in it
+(= (double $x) (* 2 $x))
+!(match &self (= (double $x) $body) $body)
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[()]
+[()]
+[()]
+[()]
+[ann, jim]
+[(grandparent tom ann), (grandparent tom jim)]
+[(ann jim)]
+[()]
+[(ann)]
+[(* 2 $x)]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+true
+true
+true
+ann
+jim
+(grandparent tom ann)
+(grandparent tom jim)
+(ann jim)
+true
+(ann)
+(* 2 $V0)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[()]
+[()]
+[()]
+[()]
+[ann, jim]
+[(grandparent tom ann), (grandparent tom jim)]
+[(bob ann jim)]
+[()]
+[(bob ann)]
+[(* 2 $x)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The lanes agree, with one exception that is a defect of the current Prime
+draft, not a property of Prime.  On the Prime lane, \code{(children bob)}
+answers \code{(bob ann jim)}: inside \code{match}, the pattern variable
+\code{\$p} is treated as a fresh variable even though the call has bound it to
+\code{bob}, so the query matches every parent.  The same probe gives the same
+answer on both draft binaries of Appendix~\ref{app:runs}.  The deviation was
+found by the interaction study of Section~\ref{sec:interaction} and is listed
+among the draft's open repairs in Section~\ref{sec:prime-draft} \kind{draft};
+the interaction form \code{transform} respects outer bindings.
+
+\subsection{Types}
+\label{sec:tut-types}
+
+A type declaration \code{(: atom type)} is itself an atom of the space.
+Arrow types \code{(-> A B C)} type functions.  What a lane does with a
+declaration differs more than anything else in this section.
+
+\begin{lstlisting}[style=metta,caption={Declared types and an ill-typed call},label={lst:t05}]
+(: Nat Type)
+(: Z Nat)
+(: S (-> Nat Nat))
+(: add (-> Nat Nat Nat))
+(= (add Z $y) $y)
+(= (add (S $x) $y) (S (add $x $y)))
+!(add (S Z) (S (S Z)))
+!(get-type (S Z))
+!(get-type add)
+; an argument of the wrong type
+!(add (S Z) "two")
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[(S (S (S Z)))]
+[Nat]
+[(-> Nat Nat Nat)]
+[(Error (add (S Z) "two") (BadArgType 2 Nat String))]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+(S (S (S Z)))
+Nat
+(-> Nat Nat Nat)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[(S (S (S Z)))]
+[Nat]
+[(-> Nat Nat Nat)]
+[(Error (add (S Z) "two") (BadArgType 2 Nat String))]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The \HE{} and Prime lanes check the call and answer an error value,
+\code{(Error \ldots (BadArgType 2 Nat String))}, which is ordinary data that a
+program can match.  The default \PeTTa{} lane checks argument types when the
+call runs and makes an ill-typed call fail, so the last query has no answer;
+SWI-\PeTTa{} agrees.  The typed \PeTTa{} 1.1 lane checks the whole program
+before running any of it and rejects it:
+
+\noindent\begin{minipage}[t]{0.98\textwidth}
+\outhead{PeTTa 1.1 lane}
+\begin{lstlisting}[style=out]
+PeTTa type error: Type mismatch: call arguments conflict with inferred type for add
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+Two further typed products exist on the \PeTTa{} side, the
+\code{typecheck-v2} and \code{typecheck-v3} profiles of
+Section~\ref{sec:petta-typecheck}.  Prime's typing is its own and never
+defers to \HE{}'s type engine \kind{decided}; Section~\ref{sec:prime}
+describes its faces.
+
+\subsection{Modules and imports}
+\label{sec:tut-modules}
+
+\code{import!} loads a file of atoms.  With \code{\&self} as its destination
+the atoms join the program space.  A module name is resolved relative to the
+importing file.  Libraries shipped with the binary are named
+\code{(library name)} on the \PeTTa{} lane, and by their module name on the
+\HE{} and Prime lanes (\code{!(import! \&self lts:he)},
+\code{!(import! \&self interaction)}).
+
+\begin{lstlisting}[style=metta,caption={Importing a module file},label={lst:t06}]
+; load a module file into the program space
+!(import! &self lib/geometry)
+!(square 7)
+!(area (rect 3 4))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[()]
+[49]
+[12]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+true
+49
+12
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[()]
+[49]
+[12]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+A module can also be loaded into a space of its own and queried there.  On the
+\HE{} and Prime lanes the destination must then be \code{\&self} or a name not
+yet bound; \code{import!} creates the space.  Importing into a space bound
+earlier with \code{bind!} is refused with an error value.  The \PeTTa{} lane
+accepts either form.
+
+\begin{lstlisting}[style=metta,caption={Importing a module into a space of its own},label={lst:t06b}]
+; load a module into a fresh space of its own, then query it
+!(import! &geo lib/geometry)
+!(match &geo (= (square $x) $body) $body)
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[()]
+[(* $x $x)]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+true
+(* $V0 $V0)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[()]
+[(* $x $x)]
+\end{lstlisting}
+\end{minipage}
+
+\subsection{The standard library, and redefining it}
+\label{sec:tut-stdlib}
+
+Every lane ships a standard library: list and expression operations
+(\code{car-atom}, \code{cdr-atom}, \code{size-atom}, \code{sort-atom},
+\code{foldl-atom}), numeric and string operations, space operations, and
+control (\code{if}, \code{case}, \code{let}, \code{let*}, \code{collapse},
+\code{superpose}).  It is precompiled into the binary, so a program starts
+without parsing it: a one-line query completes in under ten milliseconds at
+about 14\,MB of peak memory on the \HE{} and \PeTTa{} lanes (single runs).
+
+What happens when a program defines an equation for a library name differs by
+lane.  On the \HE{} lane the grounded operation wins and the program's
+equation is never consulted.  On the \PeTTa{} lane, as in SWI-\PeTTa{}, the
+library function is a static Prolog procedure, and the program's equation is
+refused with a permission error:
+
+\begin{lstlisting}[style=metta,caption={Adding an equation for a builtin on the HE and PeTTa lanes},label={lst:t07b}]
+(= (size-atom $x) many)
+!(collapse (size-atom (a b c)))
+!(std:size-atom (a b c))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.485\textwidth}
+\outhead{HE lane}
+\begin{lstlisting}[style=out]
+[(3)]
+[(std:size-atom (a b c))]
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+error: (Error (permission_error modify static_procedure (/ size-atom 2)) (context (: system (/ assertz 2)) $_))
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The Prime draft makes the standard definitions ordinary, editable occurrences
+of the program space and keeps the originals under the \code{std:} prefix
+\kind{draft}, since 26 October 2026.  An added equation is one more
+alternative; removing the standard rows removes their behaviour;
+\code{(std:definitions name)} returns the original declarations and equations
+as data, and re-adding them restores the original.  A qualified call such as
+\code{std:size-atom} always reaches the original implementation:
+
+\begin{lstlisting}[style=metta,caption={Editing a standard definition on the Prime lane},label={lst:t07}]
+; Standard definitions are ordinary, editable occurrences of the program
+; space; std: names keep the originals.
+!(size-atom (a b c))
+!(std:size-atom (a b c))
+!(collapse (std:definitions size-atom))
+; add an alternative: a second answer for every call
+(= (size-atom $x) many)
+!(collapse (size-atom (a b c)))
+!(std:size-atom (a b c))
+; remove the standard rows: only the program's equation is left
+!(let $d (std:definitions size-atom) (remove-atom &self $d))
+!(collapse (size-atom (a b c)))
+; restore them
+!(let $d (std:definitions size-atom) (add-atom &self $d))
+!(collapse (size-atom (a b c)))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.98\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[3]
+[3]
+[((: size-atom (-> Expression Number)) (= (size-atom $argument0) (std:size-atom $argument0)))]
+[(3 many)]
+[3]
+[(), ()]
+[(many)]
+[(), ()]
+[(many 3)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+After the restoration the bag is \code{(many 3)}: the program's equation now
+precedes the restored rows, and occurrence order is observable in the printed
+sequence, though not in the bag.  The native implementation of a standard
+operation is used only while the definitions it stands for are unchanged; an
+edited operation goes through ordinary equation evaluation.
+
+\subsection{\code{transform}: one atomic step over a space}
+\label{sec:tut-transform}
+
+\code{match} reads and \code{add-atom}/\code{remove-atom} write, one at a time.
+A program that must consume a job exactly once, or move money between two
+accounts, needs to read, consume and produce in one indivisible step.
+\code{transform} is that step.  Its sources are patterns, each marked by what
+the step does with the matched occurrence:
+
+\begin{itemize}
+\item a plain pattern or \code{(read p)} \emph{keeps} it (reads it and leaves it);
+\item \code{(take p)} \emph{takes} it (consumes it);
+\item \code{(absent p)}, \code{(unique p)} and \code{(all p P)} are
+  \emph{predicate queries}: they look at the whole space (no match, exactly one,
+  every match) and dispose of nothing;
+\item \code{(every c)} fires every match of \code{c} in the same step;
+\item \code{(let P E)} evaluates \code{E} once the sources have bound its
+  variables, and contributes no row when it has no value.
+\end{itemize}
+
+\noindent
+The template is instantiated once per fired row.  With a destination space as
+fourth argument the instances are added there and the answer is how many; with
+none they are answered to the caller.  On the \PeTTa{} lane the operation is a
+library, \code{lib\_transform}, written in MeTTa, and the binary fires it
+natively when the library is the unmodified one:
+
+\begin{lstlisting}[style=metta,caption={\code{transform} on the PeTTa lane},label={lst:t08}]
+!(import! &self (library lib_transform))
+!(bind! &s (new-space))
+!(add-atom &s (job 1))
+!(add-atom &s (job 2))
+!(add-atom &s (rate 3))
+; take one job and keep the rate, in one step
+!(transform &s (, (rate $r) (take (job $n))) (priced $n $r))
+; every: all remaining matches fire in this one commit
+!(transform &s (every (take (job $n))) (done $n))
+!(collapse (match &s (job $n) $n))
+; absent: a predicate query; here a closure that adds each path once
+!(bind! &g (new-space))
+!(add-atom &g (edge a b))
+!(add-atom &g (edge b c))
+!(transform &g (every (, (edge $x $y) (absent (path $x $y)))) (path $x $y) &g)
+!(transform &g (every (, (path $x $y) (edge $y $z) (absent (path $x $z)))) (path $x $z) &g)
+!(transform &g (every (, (path $x $y) (edge $y $z) (absent (path $x $z)))) (path $x $z) &g)
+!(sort-atom (collapse (match &g (path $x $y) ($x $y))))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane}
+\begin{lstlisting}[style=out]
+true
+true
+true
+true
+(priced 1 3)
+(done 2)
+()
+true
+true
+2
+1
+0
+((a b) (a c) (b c))
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{PeTTa lane, authored firing}
+\begin{lstlisting}[style=out]
+true
+true
+true
+true
+(priced 1 3)
+(done 2)
+()
+true
+true
+2
+1
+0
+((a b) (a c) (b c))
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\outhead{SWI-PeTTa}
+\begin{lstlisting}[style=out]
+true
+true
+true
+true
+(priced 1 3)
+(done 2)
+()
+true
+true
+2
+1
+0
+((a b) (a c) (b c))
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The first step keeps the rate and takes job~1; the \code{every} step takes
+every remaining job; the closure adds each path once, guarded by
+\code{absent}, and the third round adds nothing.  The native firing, the
+authored firing in the library (forced with an environment switch), and
+SWI-\PeTTa{} running the same library file all leave the same answers and the
+same space.  Section~\ref{sec:line-opt} describes how the native realization
+was built and measured.
+
+\subsection{Processes and channels}
+\label{sec:tut-processes}
+
+\paragraph{One interaction form on the Prime lane.}
+On the Prime lane the draft implements the interaction form of
+Section~\ref{sec:interaction} as a native kernel with a MeTTa library,
+imported as the module \code{interaction} \kind{draft}.  A step reads, keeps,
+takes and makes in one atomic \emph{commit}, across any number of spaces.
+\emph{Regions} made by \code{new-region} carry a profile (space, channel,
+mailbox, log or board) that fixes which of the four parts each holder may
+perform; a commit outside its holder's rights is not formed.  \code{await}
+parks a step until it can fire and fires it once; \code{whenever} installs it
+as a rule that fires on every enabling; Rholang's receipts
+(\code{for} with \code{<-}, \code{<=}, \code{<<-}) are aliases of these.
+
+\begin{lstlisting}[style=metta,caption={One interaction form on the Prime lane: commits, regions, waiting},label={lst:t09}]
+!(import! &self interaction)
+!(bind! &s (new-space))
+!(add-atom &s (job 1))
+!(add-atom &s (rate 3))
+; one commit: keep the rate, take the job, make the result
+!(transform &s (, (read (rate $r)) (take (job $n))) (priced $n $r))
+; a row never reads and takes the same occurrence
+!(add-atom &s Token)
+!(transform &s (, (read Token) (take Token)) committed)
+!(add-atom &s Token)
+!(transform &s (, (read Token) (take Token)) committed)
+; regions: a channel has no predicate queries, for anyone
+!(let $c (new-region channel) (rights-of $c))
+!(let $c (new-region channel) (transform $c (absent (msg $x)) empty))
+; waiting: await parks until the commit can fire, then fires once
+!(bind! &q (new-space))
+!(bind! &out (new-space))
+!(await (transform &q (take (job $x)) (add-atom &out (got $x))))
+!(transform &q () (, (add-atom &q (job 1)) (add-atom &q (job 2))))
+!(collapse (match &out (got $x) $x))
+; whenever: a rule that fires on every enabling
+!(whenever (transform &q (take (job $x)) (add-atom &out (served $x))))
+!(transform &q () (add-atom &q (job 3)))
+!(sort-atom (collapse (match &out (served $x) $x)))
+; Rholang's receipt, as an alias of await over a take
+!(bind! &c2 (new-space))
+!(for ((msg $m) <- &c2) (add-atom &out (heard $m)))
+!(transform &c2 () (add-atom &c2 (msg hello)))
+!(collapse (match &out (heard $m) $m))
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.98\textwidth}
+\outhead{Prime lane}
+\begin{lstlisting}[style=out]
+[()]
+[()]
+[()]
+[()]
+[(priced 1 3)]
+[()]
+[()]
+[committed]
+[(receive peek send)]
+[(Error transform (not-formed (missing-right observe (Sealed region))))]
+[()]
+[()]
+[()]
+[()]
+[(1)]
+[()]
+[()]
+[(2 3)]
+[()]
+[()]
+[()]
+[(hello)]
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The first commit keeps the rate and takes the job.  The two
+\code{(read Token) (take Token)} steps show \emph{identification}: one row may
+not keep and take the same occurrence, so with one token nothing commits (the
+step answers \code{()}), and with two it does.  A channel region has no predicate
+queries, so \code{absent} on it is not formed, whatever the holder.  The
+\code{await} fires once, on job~1; the rule installed by \code{whenever}
+serves the remaining job~2 and then job~3 as it arrives; and the receipt
+written with \code{for} is woken by the send.  These are the semantics of the
+interaction study, run on the draft binary; the trusted part is a small
+kernel, and the meaning is stated beside it in the library.
+
+\paragraph{The reflective rho calculus.}
+\code{-{}-lang rhocalc} runs the reflective higher-order rho calculus of
+Section~\ref{sec:rhocalc}.  A process sends on a name with \code{x!(P)} and
+receives with \code{for (\$y <- x) \{Q\}}; \code{@\{P\}} quotes a process into
+a name and \code{*\$y} runs the process a name quotes.  The one reduction,
+COMM, consumes a send and a receive on the same name.  When the message is
+itself code and the receiver runs it, a communication is an evaluation step:
+
+\begin{lstlisting}[style=metta,caption={Evaluation at COMM in the strict-core rho calculus},label={lst:t10}]
+// Eval at COMM: running code you were sent, with no execution primitive.
+//
+// The rho-calculus has no "run" instruction.  A quoted process is inert
+// data -- until it is communicated.  The runner idiom makes execution cost
+// exactly one handshake:
+//
+//     run!(P) | for ($y <- run) { *$y }   --COMM-->   P
+//
+// The send carries the program P as data (the engine quotes it on the
+// wire); the receiver drops (runs) whatever arrives.  Channels are quoted
+// processes, so run = @{0} and out = @{@{0}!(0)} are two distinct names.
+//
+// Here P = out!(0) is itself a send that completes a second handshake with
+// a receiver already waiting on out.  The whole program settles at 0 only
+// if the delivered code actually ran: first COMM delivers P, the drop
+// activates it, and the second COMM consumes it.
+//
+// Run: ./cetta --lang rhocalc examples/rho/pure/eval_at_comm.rho
+// Expected: 0
+
+@{0}!(@{@{0}!(0)}!(0)) |
+for ($y <- @{0}) {*$y} |
+for ($r <- @{@{0}!(0)}) {0}
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.98\textwidth}
+\outhead{\code{-{}-lang rhocalc}}
+\begin{lstlisting}[style=out]
+0
+\end{lstlisting}
+\end{minipage}
+
+\noindent
+The program settles at \code{0} only if the delivered code ran: the first COMM
+delivers the send \code{@\{@\{0\}!(0)\}!(0)}, the drop activates it, and the
+second COMM consumes it.  Without the last receiver the activated send is
+left over:
+
+\begin{lstlisting}[style=metta,caption={The same program without the last receiver},label={lst:t10c}]
+@{0}!(@{@{0}!(0)}!(0)) |
+for ($y <- @{0}) {*$y}
+\end{lstlisting}
+\noindent\begin{minipage}[t]{0.98\textwidth}
+\outhead{\code{-{}-lang rhocalc}}
+\begin{lstlisting}[style=out]
+@{@{0}!(0)}!(0)
+\end{lstlisting}
+\end{minipage}
+
+\subsection{What the listings show about the lanes}
+\label{sec:tut-summary}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.27\linewidth}p{0.20\linewidth}p{0.20\linewidth}p{0.25\linewidth}@{}}
+\toprule
+Behaviour & \HE{} lane & \PeTTa{} lane & Prime lane \\
+\midrule
+call no equation of a defined head matches & inert data & no answer & inert data \\
+parameter typed \code{Atom} & held & held & evaluated; \code{(Data Atom)} holds \kind{draft} \\
+unneeded argument & evaluated & evaluated & never evaluated \\
+ill-typed call & error value & no answer (1.1: program rejected) & error value \\
+\code{import!} into a bound space & refused & accepted & refused \\
+equation for a library name & ignored & refused & one more alternative; \code{std:} keeps the original \\
+outer variable inside a \code{match} pattern & bound & bound & fresh \kind{draft}, a defect \\
+\code{transform} & absent & \code{lib\_transform}, native firing & interaction kernel \kind{draft} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Each row is a listing or a probe above, run on the named binaries.  Wherever
+SWI-\PeTTa{} was run, it behaves as the \PeTTa{} column says; its output is
+identical up to the spelling of fresh variables, except that it reports the
+refused library equation as an error of its loader.
 
 %% ────────────────────────────────────────────────────────────────────
 \section{\CeTTa{} Architecture}
+\label{sec:architecture}
 
-\CeTTa{} is a direct evaluator, not a compiler or boot pipeline.  It
-implements the six mutual functions of the \HE{} evaluation spec
-(\code{EvalAtom}, \code{MettaCall}, \code{InterpretExpression},
-\code{InterpretFunction}, \code{InterpretArgs}, \code{InterpretTuple})
-as C functions with a shared arena allocator.
+\CeTTa{} is a direct evaluator, not a compiler or boot pipeline: every lane
+evaluates source atoms in place, and compiled fragments are optimizations that
+must give the evaluator's answers.  The \HE{} lane implements the six mutual
+functions of the \HE{} evaluation specification (\code{EvalAtom},
+\code{MettaCall}, \code{InterpretExpression}, \code{InterpretFunction},
+\code{InterpretArgs}, \code{InterpretTuple}) as C functions over shared
+arenas; the \PeTTa{} lane runs a heap-based choice and continuation machine;
+the Prime lane adds need cells and an exact outcome carrier over the same term
+and space substrate.
 
-\subsection{Core Design}
+\subsection{Size and parts}
+
+The pre-main tree, the candidate for the next \code{main}, has 182 C sources
+in its core (about 434{,}000 lines with headers), 65 native modules (about
+72{,}000 lines), and four Rust crates that bridge to \PathMap{} and MORK.  The
+Prime draft's core has 228 C sources (about 559{,}000 lines); the published
+\code{main} of August has 63 (about 197{,}000).  The growth since August is
+mostly new machinery rather than new surface: the \PeTTa{} machine, compiled
+fragments, typed tiers, native modules (JSON, regular expressions, Unicode
+classes, LanguageDef and parser machinery, TPTP, seals, module values),
+libraries for tensors, files and processes, a native HOL Light kernel, the
+space service, and the Prime judgments.
+
+\subsection{Core design}
 
 \begin{description}
-\item[Arena allocation.] All atoms are allocated from 64\,KB arena blocks.
-  No per-atom \code{malloc}/\code{free}.  Batch deallocation at scope exit.
-\item[Symbol interning.] A hash table maps symbol strings to unique
-  pointers, enabling O(1) pointer comparison for symbol equality.
-\item[Equation index.] Equations \code{(= lhs rhs)} are indexed by
-  head-symbol hash into 256 buckets, with a discrimination trie within
-  each bucket for fast LHS matching.
-\item[Substitution tree.] An epoch-based discrimination tree
-  (\code{SubstTree}) eliminates per-candidate variable renaming during
-  equation queries by tagging indexed variables with monotonic epochs.
-\item[Tail-call optimization.] A \code{TAIL\_REENTER} trampoline with
-  \code{goto tail\_call} eliminates stack growth for recursive equation
-  dispatch.
-\item[Unlimited fuel.] Default fuel is $-1$ (unlimited), matching the
-  \HE{} spec.  Stack overflow is caught via \code{sigaltstack} +
-  \code{SIGSEGV} handler with a clean error message.
-\item[Two-stage stdlib.] The standard library is precompiled into a
-  binary blob at build time (\code{cetta-stage0} $\to$
-  \code{--compile-stdlib} $\to$ blob $\to$ \code{cetta}), giving 6\,ms
-  startup.
+\item[Arenas.] Atoms are allocated from arenas of 64\,KB blocks by default,
+  with optional block growth, recycling of retired blocks and a per-arena
+  cache of canonical scalar atoms.  There is no per-atom \code{malloc} or
+  \code{free}; scratch is released in bulk at scope exit, per branch, and per
+  iteration of a deterministic tail loop.
+\item[Interning.] Symbols and terms intern into a term universe; equality on
+  the hot path compares identifiers.  The interning table uses a
+  hash-derived odd stride, so every probe sequence visits the whole table
+  (Appendix~\ref{app:algorithms}).
+\item[Equation index.] Equations are indexed by head-symbol hash into 256
+  buckets, with a discrimination trie inside each bucket; an epoch-based
+  substitution tree removes per-candidate variable renaming.
+\item[Tail calls and fuel.] A trampoline re-enters tail calls without growing
+  the C stack.  Fuel is unlimited by default; a stack overflow is caught on an
+  alternate signal stack and reported.
+\item[Precompiled standard library.] A stage-0 build compiles the standard
+  library into a binary blob that the final binary links, so programs start
+  without parsing it.
+\item[Compiled fragments.] Several admitted fragments run outside the general
+  evaluator, each with a conservative fallback.  \code{PreparedPureProgram}
+  admits deterministic, effect-free closed equation fragments: naive
+  \code{fib 30} runs in 0.04\,s on the pre-main \HE{} lane, and the runtime
+  counters show one admission and one commit of the prepared route.
+  \code{MatchDecision} compiles clause discrimination under revision-pinned
+  identity; \code{RuleMachineCoreV1} runs bounded admitted rule packages.
+\item[Named build products.] Each test and probe binary is named by its full
+  build configuration (sanitizers, statistics, bridge, Prolog and Python
+  linkage), so differently configured products never overwrite one another.
 \end{description}
 
-\subsection{Test Suite}
+\subsection{Tests and gates}
 
-\CeTTa{} is validated against the \HE{} CLI (v0.2.10) as oracle.
-Golden regression files are oracle-validated when introduced;
-\code{make test} replays them on every build.  As of the 2026-07-02
-snapshot on commit 9237afd:
-\textbf{405 passed, 0 failed, 71 skipped} on the default build and
-\textbf{401 passed, 0 failed, 75 skipped} on the MORK-bridge build
-(all bridge sub-lanes green), plus 112 profile tests covering module
-imports, foreign (Python) function dispatch, numeric-tower and
-profile-builtin splits, and extension builtins.  Two further lanes are
-fail-by-default: \code{make test-step-rules} disables individual
-rule-table entries and \emph{requires} the witnesses to fail
-(Section~\ref{sec:specdriven}), and the semantic conformance suite
-re-runs 23 curated \HE{} I/O fixtures live against upstream \HE{}
-(Section~\ref{sec:conformance}).
-
-The integration audit on combined candidate \code{3cd05c2} (2026-08-09) is
-a separate, newer receipt rather than a retroactive change to those July
-counts.  It composes the generic matching/\PathMap{}/MM2 hardening of
-\code{b53c1a8} with Zero's runner and compilation-certificate tranche from
-\code{a9d7764}.  Its default Python/module gate reports
-\textbf{419 passed, 0 failed}; focused MORK-build Zero, MM2 translator, and
-43-program corpus gates also pass.  The full normal and
-AddressSanitizer/UndefinedBehaviorSanitizer portfolios,
-Prime/heavy/\PathMap{}/MM2/ABI/mutation/differential lanes, and the
-answer-first performance portfolio all pass.  Test and probe products are
-now named by their complete build configuration, so optimized, sanitizer,
-runtime-statistics, and bridge products cannot overwrite one another.
-Configuration stamps are remade before dependency files are read, so a
-version or profile change cannot relink stale objects; unchanged focused
-targets reuse their binaries instead of recursively relinking \CeTTa{}.
+The test manifest of the pre-main tree lists 705 programs, of which 640 run on
+the \HE{} lane and 65 on the Prime lane; 476 belong to the ordinary
+\code{make test} lane and 659 compare against a golden output.  The Prime
+draft's manifest lists 898 (646 and 252).  Beyond the manifest the trees track
+about 2{,}300 (pre-main) and 2{,}800 (draft) test programs, run by dedicated
+lanes: the \PeTTa{} conformance gates against SWI-\PeTTa{}, the step-rule
+removal lane (Section~\ref{sec:langdefpack}), the \HE{} I/O semantic suite
+against upstream \HE{} (Section~\ref{sec:conformance}), sanitizer portfolios,
+the \PathMap{} and MORK lanes, and the Prime gates.  The receipts of these
+gates for each line are given with the line in Section~\ref{sec:lines}.
 
 %% ────────────────────────────────────────────────────────────────────
 \section{Specification-Driven Semantics: Profiles, Conformance, and the
@@ -348,9 +1193,13 @@ layers---never as visibility masks over one shared universe:
   Roman-compatible residual type checker enabled.
 \item[\code{petta/typecheck-v3}] A native refinement of v2's success-typing
   core, with whole-block fallback to v2 for mechanisms outside the factored
-  calculus.  The ordinary \code{--lang petta} profile remains unchanged;
+  calculus.  The ordinary \code{-{}-lang petta} profile remains unchanged;
   typing is an explicit opt-in semantic product, not a hidden mode of
   evaluation.
+\item[\code{petta@1.1}] The \PeTTa{} 1.1 language, typed: the whole program
+  is checked before any of it runs, and an ill-typed call rejects the program
+  (Section~\ref{sec:tut-types}).  The default \code{-{}-lang petta} is
+  \PeTTa{} 1.0.6.
 \end{description}
 
 Two rules keep this family honest.  First, unknown symbols stay
@@ -385,7 +1234,7 @@ snapshot is a measuring instrument only; new implementation and migration
 work targets the current upstream language.
 
 The typing profile is isolated in both directions.  Running ordinary
-\code{--lang petta} does not activate its operations or pay its admission
+\code{-{}-lang petta} does not activate its operations or pay its admission
 boundary, and a build may omit the v2 checker physically.  Conversely, the
 typed profile obtains declarations and expression facts from the live program
 revision rather than copying a second user-visible type space.  At the
@@ -631,7 +1480,7 @@ results (which are semantically real in MeTTa) are counted.
 \item[Archived catalog material.] Earlier generated rule-capacity and
   broad-corpus catalogs remain useful triage artifacts, but they are not
   treated as current paper evidence unless their driver emits the claimed
-  counts on the audited tree.  In particular, this revision does not
+  counts on the audited tree.  In particular, this paper does not
   carry a 24-capacity maturity table or a broad-corpus count as a live
   conformance result.
 \item[Adjudicated divergences.] Where \CeTTa{} deliberately diverges
@@ -646,12 +1495,12 @@ results (which are semantically real in MeTTa) are counted.
   instruction-layer reading, in opposite directions.
 \end{description}
 
-The conformance material carries an explicit
-\code{no\_runtime\_trace\_or\_certificate\_surface} flag, enforced by
-the suite: conformance is \emph{testing}, and the specification is
-what gets \emph{proven about} in Lean.  \CeTTa{} does not emit
-execution traces or certificates, and a per-run check is never
-presented as a proof.
+Conformance is \emph{testing}, and the specification is what gets
+\emph{proven about} in Lean: a per-run check is never presented as a
+proof.  Where the runtime does emit evidence (the Prime need trace, the
+commit traces of the interaction kernel, the receipts of the rho cost
+profile), an independent checker replays it; the runtime's own record is
+never the authority.
 
 \subsection{Plain \PeTTa{}: Semantic Decisions}
 \label{sec:petta-decisions}
@@ -813,61 +1662,52 @@ The differential discipline of Section~\ref{sec:bugclasses} was built to
 catch \emph{evaluator} defects.  When the \code{prime} lane's conversion
 judgment was migrated from its legacy route---normalize both sides
 through the \HE{} type-level normalizer, then compare the results
-syntactically---to a native $\lambda\Pi$ kernel that decides
-$\beta\eta$-conversion directly for the closed, well-scoped fragment,
-the same discipline exposed a subtler class: \emph{checker} false
-negatives.  The migration keeps the legacy route alive as a separately
-compiled test-only oracle (production has no toggle back), and compares
-verdicts over a pinned eleven-row corpus
-(\code{tests/prime/conformance/closed\_lambda\_pi\_convert.metta}).
-Nine rows agree.  Two do not, and in both the legacy verdict is wrong:
+syntactically---to a native $\lambda\Pi$ kernel that decides conversion
+directly for the closed, well-scoped fragment, the same discipline exposed
+a subtler class: \emph{checker} false negatives.  The migration kept the
+legacy route alive as a separately compiled test-only oracle (production
+has no toggle back) and compared the two over a pinned eleven-row corpus.
+At the corpus's first commit, on 24 August 2026, the routes agreed on six
+rows, including the refutation of the unequal well-typed operands
+\code{u0} and \code{(-> u0 u0)}.  On two rows the legacy verdict was wrong,
+and on three it answered where no answer was licensed:
 
 \begin{verbatim}
-; beta: (\f:(Pi U0 U0). f) (\y:U0. y)  vs  \y:U0. y
-!(conversion-status
-  (prime-judge &self
-    (Convert
-      (App (Lam (Pi U0 U0) (idx 0)) (Lam U0 (idx 0)))
-      (Lam U0 (idx 0)))))
-; native: [Established]     legacy: [Refuted]
-
-; eta: \f:(Pi U0 U0). \x:U0. f x  vs  \f:(Pi U0 U0). f
-!(conversion-status
-  (prime-judge &self
-    (Convert
-      (Lam (Pi U0 U0) (Lam U0 (App (idx 1) (idx 0))))
-      (Lam (Pi U0 U0) (idx 0)))))
-; native: [Established]     legacy: [Refuted]
+!(type:eq (-> (x : u0) u0) (-> (y : u0) u0))
+; native: [True]     legacy: [False]
+!(type:eq (sigma (x : u0) u0) (sigma (y : u0) u0))
+; native: [True]     legacy: [False]
+!(type:eq (idx 0) (idx 0))      ; an open, ill-typed operand
+; native: unresolved (the query stays inert)     legacy: [True]
 \end{verbatim}
 
 \noindent
-(Terms are de Bruijn: \code{(idx 0)} is the innermost binder.)  The
-first pair is one $\beta$-step apart; the second is an
-$\eta$-expansion.  The legacy route's normalizer neither reduces this
-redex nor knows $\eta$, so it compares two syntactically distinct terms
-it wrongly believes normal and \emph{refutes} a true conversion.  The
-instructive part is not that a normalizer was incomplete---that is
-ordinary---but that its incompleteness was silently promoted to
-refutation authority.  An incomplete procedure can honestly answer
-``incomplete''; it cannot honestly answer ``no.''
+The first two pairs differ only in the name of a bound variable.  The legacy
+route compared names where it should have compared binders, and so
+\emph{refuted} a true conversion.  The instructive part is not that a
+procedure was incomplete---that is ordinary---but that its incompleteness
+was silently promoted to refutation authority.  An incomplete procedure can
+honestly answer ``incomplete''; it cannot honestly answer ``no.''
 
 Three consequences are locked into the gates.  First, verdict equality
 with a buggy oracle cannot be the acceptance criterion for a checker
-migration: the differential gate separates \emph{exact agreements}
-(nine rows, including the refutation of unequal well-typed operands,
-which is a genuine negative, not a fallback) from \emph{adjudicated
-repairs} (the two rows above), and pins both expectation files so the
-divergence remains a permanent witness rather than a silent fix---the
-same adjudication policy Section~\ref{sec:conformance} applies to
-upstream behavioral divergences, now applied to a typing judgment.
-Second, the repaired class must earn its authority: mutation canaries
-that corrupt the native kernel's context discipline, $\beta$-rule, or
-$\eta$-rule are killed by the suite, so the tests demonstrably
-constrain the code that produces the new verdicts.  Third, the flip is
-class-exact and fail-open: outside the recognized fragment the legacy
-route still answers, and exhausting the native budget reports
-incomplete rather than silently retrying the other authority---a
-verdict must never depend on which checker happened to have budget.
+migration.  The current gate states the separation exactly: without the
+kernel only the built-in numeric constants are decided; the kernel alone
+decides the six universe and binder comparisons; ill-typed operands stay
+unresolved on both routes.  The pinned expectation files keep the
+divergence as a permanent witness rather than a silent fix---the same
+adjudication policy Section~\ref{sec:conformance} applies to upstream
+behavioral divergences, now applied to a typing judgment.  Second, the
+repaired class must earn its authority: mutation canaries that corrupt the
+kernel's admission (the receipts and generations of checking and of
+synthesis) are killed by the suite, so the tests demonstrably constrain the
+code that produces the new verdicts.  Third, the flip is class-exact and
+fail-open: outside the recognized fragment nothing is refuted, and
+exhausting the native budget reports incomplete rather than silently
+retrying the other authority---a verdict must never depend on which
+checker happened to have budget.  The four files of the closed
+$\lambda\Pi$ corpus (conversion, checking, synthesis and formation) give
+their expected outputs on the draft binary of Appendix~\ref{app:runs}.
 
 The same lesson closed a sibling defect at the interaction of typing
 and matching: a typed-applicability pruning path refuted
@@ -938,16 +1778,20 @@ digest over the canonical rule-descriptor text; the rule table; a
 disabled-rule mask populated from the
 \code{CETTA\_LANGDEF\_DISABLED\_RULES} environment variable; and a
 \emph{per-rule claim level} recording the strongest evidence behind
-each rule (Section~\ref{sec:rulecert}).  Ten rule classes are live and
+each rule (Section~\ref{sec:rulecert}).  The table has seventeen rows.  Ten rule classes are live and
 gate the \emph{only} implementations of their behavior in the one-step
 subsystem: grounded dispatch, leftmost expression congruence, equation
 match, \code{eval}, \code{chain}, \code{let}, \code{let*},
 \code{case}, \code{switch}, and \code{switch-minimal} (the last two
 split per their distinct upstream contracts,
-Section~\ref{sec:bugclasses}).  Quote/return and empty/error
-quiescence are structural rows: accounted in the table with written
-reasons, but not gateable, since disabling them would make the
-semantics incoherent rather than smaller.  Each row carries a
+Section~\ref{sec:bugclasses}).  Seven rows are accounted but not
+gateable.  Four are quiescence rows (quote, return, empty and error),
+since disabling them would make the semantics incoherent rather than
+smaller.  Three record full-evaluator behaviour of the extended profile
+that is not a coarse one-step rule: a comma in a space position folds
+the pointwise bag meet of the spaces, a pipe their additive union, and a
+two-argument sourced \code{match} is a seed-threaded conjunction across
+named spaces.  Each row carries a
 provenance string naming the fine-machine rules that justify it.  The
 pack is reflected into MeTTa by \code{lts:he:step-rules}.
 
@@ -968,8 +1812,9 @@ digest fingerprints rule \emph{content} (names, profiles, provenance,
 schema), while claims are \emph{evidence about} that content.
 Upgrading a rule's certification therefore must not---and verifiably
 does not---move the semantic object: the digest
-(\code{fnv1a64:12eec5b655a75904} at the time of writing) stayed fixed
-across every claim flip.  The pack is, by design, a hand-maintained
+stays fixed across claim flips; it moves only when rule content
+changes.  At the pre-main binary of Appendix~\ref{app:runs} it is
+\code{fnv1a64:eda58fb31fa185e1}, schema~2.  The pack is, by design, a hand-maintained
 object kept honest by the removal lane and the digest; we deliberately
 parked an earlier plan to generate specialized C from the rule source,
 because the weld's value lies in the named semantic object and its
@@ -991,15 +1836,16 @@ certification route is \emph{absorption}: for each coarse rule, a
 theorem that whenever the rule relates $a \to a'$, the official
 declarative judgment of the Mettapedia \HE{} formalization
 (\code{MettaCall}, \code{MinimalStep}, or \code{EvalAtom}) already
-relates the same atoms.  At the time of writing five of the ten live
-rules carry certification:
+relates the same atoms.  Five of the ten live rules carry
+certification; the claims below are those the pre-main binary reports
+through \code{lts:he:step-rules}:
 
 \begin{center}\footnotesize
 \begin{tabular}{lll}
 \toprule
 rule & claim & Lean witness \\
 \midrule
-\code{HES\_GroundedDispatch} & rule-sound &
+\code{HES\_GroundedDispatch} & rule-sound-on-fragment &
   \code{mettaCall\_absorbs\_grounded\_dispatch} \\
 \code{HES\_EquationMatch} & rule-sound &
   \code{mettaCall\_absorbs\_equation\_match} \\
@@ -1070,6 +1916,919 @@ obligation rather than silently pretending the legacy API was already
 faithful.
 
 %% ────────────────────────────────────────────────────────────────────
+\section{Lines of Development}
+\label{sec:lines}
+
+\CeTTa{} is developed on several lines at once, each a git branch with its
+own worktree and its own purpose.  This section gives each line's purpose,
+what landed and when, and what it measured.  Dates are those of the commits.
+Numbers come from the measurement reports written as the work landed; each
+says what was measured, against what, and how often.  ``Instructions'' are
+user-mode instructions counted by \code{perf}; ``G'' is $10^9$ of them.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  line/.style={draw, rounded corners, align=center, font=\small,
+    minimum height=9mm, inner sep=3pt, text width=28mm},
+  prime/.style={line, fill=green!8},
+  main/.style={line, fill=blue!7},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1pt},
+  >={Latex[length=2mm]}]
+\node[main] (main) at (0,0) {\code{main}\\{\scriptsize 1.4.0-dev, to 14 Aug}};
+\node[main] (opt) at (5.2,0) {opt\\{\scriptsize 1.5.0-dev}};
+\node[main] (pre) at (10.4,0) {pre-main\\{\scriptsize from 23 Oct}};
+\node[main] (nik) at (5.2,-2.4) {NIK\\{\scriptsize native inference kernel}};
+\node[line, fill=orange!10] (ours) at (0,-2.4) {\code{cetta-ours}\\{\scriptsize the live agents}};
+\node[prime] (wts) at (0,-4.9) {weights, cost, parallel\\{\scriptsize from 1 Oct}};
+\node[prime] (draft) at (10.4,-4.9) {Prime draft\\{\scriptsize from 10 Sep}};
+\draw[->] (main) -- node[lab, above=2pt]{27 Aug} (opt);
+\draw[<->] (opt) -- node[lab, above=2pt, align=center]{same commit\\26 Oct} (pre);
+\draw[<->] (opt) -- node[lab, right=3pt]{13 merges each way} (nik);
+\draw[->] (nik) -- node[lab, above=2pt]{23 Oct} (ours);
+\draw[->] (ours) -- node[lab, left=3pt]{24--25 Oct} (wts);
+\draw[->] (pre) -- node[lab, right=3pt, align=left]{opt and pre-main,\\26--27 Oct} (draft);
+\draw[->] (wts) -- node[lab, below=2pt]{27 Oct} (draft);
+\draw[->] (ours.south east) -- node[lab, above, sloped]{27 Oct} (draft.north west);
+\end{tikzpicture}
+\caption{The lines and their main merges in October.  An arrow points from the
+line merged to the line that merged it.  The weights line also took the draft
+and pre-main on 24 and 25 October, and the draft had taken opt, NIK, the
+weights line and \code{cetta-ours} several times before
+(Section~\ref{sec:line-draft}).}
+\label{fig:lines}
+\end{figure}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{0.20\linewidth}p{0.47\linewidth}@{}}
+\toprule
+line & head on 27 Oct & purpose \\
+\midrule
+\code{main} & 12da03b4, 14 Aug & the published, qualified baseline \\
+opt & feba78e3 + 59 staged files & the careful fixes: execution, query and memory architecture \\
+pre-main & feba78e3 + staged repairs & one execution contract across the machines, qualified for \code{main} \\
+NIK & 2f168dca & native inference kernels, then native application libraries \\
+Prime draft & a0f1077a + staged basis & Prime in C, in step with its metatheory \\
+weights & 750896ae & weights, cost accounting and parallel execution for Prime \\
+\code{cetta-ours} & d436e11b & the engine of the live agents, kept running by quick fixes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+A finding on \code{cetta-ours}, where quick fixes keep the agents running, is
+a lead for opt to reproduce and root-cause, never a change to copy.  Opt's
+method, stated with its October goal, is to find the floor of a cost by
+specializing, ask how broad a region of programs the semantics admits, build
+the fast path for that whole region, and prove it admissible with executable
+laws.
+
+%% ────────────────────────────────────────────────────────────────────
+\subsection{\code{main}}
+\label{sec:line-main}
+
+\code{main} is the published baseline of the public repository.  Its README
+describes it as a direct C runtime for MeTTa whose default lane is the \HE{}
+evaluator, and as a working snapshot rather than a polished release.  Its 215
+commits run from the first evaluator (19 March 2026) through the
+storage substrate (term universe, MORK and \PathMap{} backends, April), \HE{}
+conformance and the rho calculus (June), the tail-safe collector (2 July),
+Prime, parsing and dependent search (July), to a main-readiness tranche in
+August: the native \PeTTa{} corpus at 176/176, the counted-\PathMap{} query
+route, \code{MatchDecision}, \code{typecheck-v2}, the Prime outcome carrier
+and MeTTa Zero.  The last integration was declared qualified on 11 August, by
+a composed exhaustive run of 15 commands taking 7{,}490\,s, with the \PeTTa{}
+corpus at 183/183 and \code{fib(999999)} giving the same SHA-256 digest on
+the \HE{}, Prime and \PeTTa{} lanes.  The same tranche retired the ground-call
+memoization table, which earlier drafts of this paper described.
+
+Nothing has landed on \code{main} since 14 August.  Every other line contains
+it: pre-main is 205 commits ahead of it.
+
+%% ────────────────────────────────────────────────────────────────────
+\subsection{opt}
+\label{sec:line-opt}
+
+The opt line (branch \code{cetta-shared-opt-audit-20260807}) is the
+integration base for the execution, query and memory architecture, and the
+line of careful fixes.  Its September work is in
+Section~\ref{sec:benchmark-programs}; this section covers October.
+
+\paragraph{What landed.}
+\begin{center}
+\small
+\begin{tabular}{@{}lp{0.73\linewidth}@{}}
+\toprule
+date & what \\
+\midrule
+1 Oct & conformance checkpoint; an optional durable store; the open tier takes whole sequences \\
+3 Oct & the typed tier: compiled \PeTTa{} typed calls reuse exact guard facts \\
+4--5 Oct & owned execution: explicit ownership, owned \HE{} and \PeTTa{} sequencing, canonical \HE{} on owned continuation frames shared with \PeTTa{} \\
+7 Oct & directional matching (\code{=\%} rules, the \code{pat} library) \\
+10--11 Oct & the regional execution core: owned control and return storage, producer dependencies, ordered term-path indexes, counted conjunctions and cursors \\
+13 Oct & tabled suffix forwarding, a head-chain store, removal by marks (a bitmap with a Fenwick tree, one contraction per batch) \\
+14 Oct & the \PeTTa{} default pinned to version 1.0.6, with version selection \\
+16 Oct & resource lifetimes: results moved out of dying storage, ground matches from exact occurrences, reclaimable arena names, suspended calls that keep only what resuming needs \\
+17 Oct & HOL Light, MM0 and Megalodon kernels; streaming files; \code{lib\_re}; \PeTTa{} becomes the default language \\
+18 Oct & the prepared machine runs typed calls and MeTTa-defined library forms \\
+19--20 Oct & 64-bit variable identities; semi-naive saturation; one closure engine \\
+20--23 Oct & \PeTTa{} fast regions; JSON, process and tensor libraries merged from NIK \\
+24--25 Oct & the evaluator tax: \code{not} and \code{case} in the prepared machine, closures specialized by use (4b74b879), lifting by shape, \code{let} destinations admitted by evidence \\
+26 Oct & native \code{transform}, complete \PeTTa{} lists built flat, late output, linear drains and the head index (2030a80f) \\
+26--27 Oct & a spread hash for \code{unique-atom} (a93e4a6f); then, staged and not yet committed, bag-order reads, set spaces, a native query path, worst-case-optimal joins and joins over rows of bits \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The ledger against SWI-\PeTTa{} 1.0.6 (23 October).}  A fixed panel
+of 96 cells in 19 families, timed as whole processes, three-run medians,
+against the faster of two SWI-\PeTTa{} references (version 1.0.6 upstream and
+the local reference checkout on SWI-Prolog 10.1.9).  All 96 matched their
+declared observations.  Of the 92 comparable cells, \CeTTa{} was clearly faster
+on 78, SWI-\PeTTa{} on 8, and 6 overlapped.  Representative cells:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+cell & \CeTTa{} & SWI-\PeTTa{} \\
+\midrule
+HOL benchmark & 1.235\,s & 5.977\,s \\
+Peano & 0.017\,s & 1.520\,s \\
+MateSpace2 & 0.421\,s & 5.357\,s \\
+Nil, 233{,}680 proofs & 1.718\,s, 822.9\,MiB & 15.382\,s, 7{,}416.5\,MiB \\
+grouped join and count & 1.134\,s & 11.034\,s \\
+selector over 2{,}048 closures (a loss) & 2.04$\times$ SWI & \\
+Ambient (overlap) & 15.653\,s & 14.021\,s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Seven of the eight SWI-\PeTTa{} wins read foreign data, and on those cells
+45--60\% of \CeTTa{}'s instructions are in the embedded Prolog engine; on every
+other cell but the chainer cells (7--8\%) and one short Nil example dominated
+by the engine's start (about 11\,ms), the Prolog share is at most 2.3\%.
+
+\paragraph{Closures (24 October).}  A site applying many distinct closures
+paid an analysis per closure.  Specializing a closure from its second call,
+and telling values apart within their shape, took the 2{,}048-closure selector
+from 0.164\,s to 0.064\,s (SWI-\PeTTa{} 0.114\,s) and a 100{,}000-cell walk
+from 0.615\,s to 0.064\,s (SWI-\PeTTa{} 0.264\,s), best of three.  A first
+screen missed the chainer cells, which rose by 2--2.4\% in instructions; lifting
+closures by shape the next day brought them to 0.85--0.90 of their earlier
+count.
+
+\paragraph{The evaluator tax.}  A step of a loop written with \code{case}
+cost 26{,}820 instructions against 3{,}854 for the same loop written with
+\code{if} and \code{let}, and a step using \code{not} cost 31{,}369, because
+those forms fell off the prepared machine into the general one (8{,}004
+matches, exact counts, 24 October).  Moving them into the prepared machine
+brought a loop called through a caller's \code{case} from 8{,}585 to 3{,}785
+instructions per step, with the 97-cell screen unchanged (geometric mean
+1.0002).  Measured again on 26 October, integration had reopened the gap:
+from a pre-main checkpoint of 25 October the ten gate shapes cost
+11{,}470--14{,}080 instructions per element against 3{,}560 before, because
+an answer producer deep-copied its data twice; no merge had run the tax gate.
+After the repair the shapes cost 3{,}200--5{,}500 per step, and one of the ten
+(\code{case} with a byte slice, 5{,}459 to 5{,}694 depending on the build)
+remains above its 5{,}000 budget.
+
+\paragraph{\code{transform}, lists and drains (26 October).}  The native
+\code{transform} of Section~\ref{sec:tut-transform} fires the library's
+rows over the spaces' occurrence cursors and one trail-backed binding
+environment, and declines whenever the library or any data constructor it
+uses has been redefined, so the authored definition then runs.  A
+differential checks native, authored and specification firings on fixed and
+seeded programs; an independent check agreed on 1{,}992 of 2{,}018 firings,
+the rest being 20 null firings and 6 removals of a bare symbol.  Building
+complete \PeTTa{} lists flat, and binding a list built by \code{cons} after
+the body, removed most of the library's interpretation cost.  Wall times on a
+loaded machine (load about 14 on 16 cores; the report does not state run
+counts):
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+program & native & library on \CeTTa{} & library on SWI-\PeTTa{} \\
+\midrule
+COMM wave, 400 pairs & 0.020\,s & 0.033\,s & 0.110\,s \\
+drain, 1{,}600 jobs & 0.039\,s & 0.064\,s & 0.142\,s \\
+drain, 6{,}400 jobs & 0.123\,s & 0.232\,s & 0.330\,s \\
+closure, 40 nodes & 0.037\,s & 0.133\,s & 0.207\,s \\
+counting, zero groups & 0.016\,s & 0.018\,s & 0.092\,s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The 6{,}400-job drain peaks at 33\,MB on \CeTTa{} and 60\,MB on
+SWI-\PeTTa{}.  Drains had been quadratic for two separate reasons: a
+\code{once}-\code{match} built and sorted every remaining candidate, and a
+removal settled marks that forced a trie rebuild.  Reading through marks, a
+head index per head symbol and length, lazy matches on pinned cursors, and
+committing after the proposal unwinds made them linear: in instructions at
+1{,}600 and 6{,}400 jobs, native 3.56G and 51.3G became 0.55G and 2.09G, and
+the hand-written loop 1.00G and 13.3G became 0.24G and 0.93G.  The
+specification library \code{lib\_transform\_specs}, quadratic by design, still
+runs 1.8--2.3 times slower than on SWI-\PeTTa{}.
+
+\paragraph{Joins against MORK (27 October, staged).}  The latest opt work is
+staged but not committed.  It targets the programs MORK's MM2 language runs
+well, against MORK rebuilt from current upstream and SWI-\PeTTa{} running the
+faster correct program per task.  MORK and SWI-\PeTTa{} are single runs or
+best of two; \CeTTa{} is best of three.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+task & MORK & SWI-\PeTTa{} & \CeTTa{} & \CeTTa{} RSS / MORK \\
+\midrule
+transitive closure, 50K edges & 1.13\,s & 4.25\,s & 0.167\,s & 1.39 \\
+5-clique & 21.2\,s & 18.6\,s & 0.009\,s & 1.80 \\
+odd-even sort, 300 & 0.187\,s & 1.27\,s & 0.119\,s & 3.06 \\
+backward chaining, 1{,}000 & 15.7\,s & 0.27\,s & 0.026\,s & 1.67 \\
+Hexlife, 20 generations & 20.0\,s & 0.15\,s & 0.040\,s & 2.04 \\
+ancestry, 1{,}000 & 1.48\,s & 19.0\,s & 0.576\,s & 2.71 \\
+reachability, 500 & 8.71\,s & 0.21\,s & 0.035\,s & 0.43 \\
+counter machine, 300 & 104\,s & 1.76\,s & 0.544\,s & 0.60 \\
+process calculus, 200 & 26.3\,s & 27.9\,s & 8.10\,s & 1.32 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The odd-even sort's peak memory is just over three times MORK's.  The same
+batch found that four catalog cells had drifted 4--9\% slower across earlier
+batches, each screened only against its predecessor; screened against the
+goal's starting point the catalog is now 4.0\% faster on the geometric mean,
+with no cell above $+1.5\%$.
+
+\paragraph{Set aside.}  An earlier broad branch of Nil support was archived on
+6 October: building a term could run code and child spaces copied the whole
+parent.  A change that returned every \HE{} call's value at once was reverted
+on 17 October after it reproduced a duplicate from \code{unique} and let
+library natives ignore added equations; its non-\HE{} parts returned the next
+day.  An attempt to merge opt into the \code{cetta-ours} and weights
+integration was aborted on 17 October (41 conflicted files).
+
+\paragraph{Open.}  The staged work awaits commit.  The committed spread hash
+for \code{unique-atom} disagrees with structural equality on two
+representations of the empty list, and the checked replacement is not yet
+committed.  \code{remove-atom} of a bare symbol answers \code{true} and leaves
+the symbol.  Timing holds stand on three cells (+6\% to +14\%).
+SWI-\PeTTa{} still wins on Ambient, the rho cell, the chainer cells (2.3--3.8
+times) and the foreign-read cells.
+
+%% ────────────────────────────────────────────────────────────────────
+\subsection{pre-main}
+\label{sec:line-premain}
+
+pre-main (branch \code{pre-main-20261023}) was branched on 23 October from
+c632ecd1, the merge of opt into NIK, to make one line ready for \code{main}:
+coherent execution, smaller mechanisms, preserved performance.
+
+\paragraph{The problem.}  \CeTTa{} runs \PeTTa{} through several machines:
+the ordinary evaluator, the prepared register machine, the open-equation
+machine and the search machine, with the \HE{} evaluator beside them.  Each
+crossing between them rebuilt facts the caller already knew; a library native
+called from the open-equation machine made a host round trip of about
+2.4\,$\mu$s; and once one tier declined a caller, the whole callee closure
+paid that cost.
+
+\paragraph{The answer.}  One call and return contract, shared by every route:
+a borrowed invocation (\code{CettaInvocation}); a tagged outcome that keeps
+``declined'' apart from ``ran and gave no answers'', and finished data apart
+from pending computation (\code{CettaCallOutcome}); a return cursor that
+hands out answers without calling again (\code{CettaCallReturnCursor});
+owned sequencing that keeps a producer alive while its child runs and never
+replays an accepted answer (\code{CettaOwnedBind}); shared generated plans for
+scoped commitment and error handling; and source-fuel accounting by episode,
+with per-position debits.  Each step is paired with a Lean model of its
+contract.
+
+\paragraph{What it measured.}  Against the frozen c632ecd1 artifact, on a
+fixed 96-cell, 19-family panel (paired runs, medians, geometric means), the
+staged state of 27 October is 5.2\% lower in wall time, 3.8\% in instructions
+and 1.4\% in peak memory.  Pre-main's own work, measured before it merged
+opt's closure work on 25 October, was neutral within half a percent, so most
+of the step coincides with that merge.  Measured mechanism gains include an 8{,}004-step agent scan from
+37.65\,ms and 468.5M instructions to 18.82\,ms and 241.7M, and an
+open-equation-machine native call from 2{,}066 host goals to 2.  Correctness
+held at every checkpoint: the 471-program corpus in normal and statistics
+builds, 1{,}413 differential queries, and focused sanitizer runs.  Against
+SWI-\PeTTa{} 1.0.6, on references timed on 23 October, \CeTTa{} is slower on
+Ambient (15.06 against 14.02\,s) and the rho cell (3.80 against 2.87\,s), and
+faster on the lambda cell (1.11 against 1.29\,s) and a million-element map
+(0.416 against 1.664\,s).
+
+\paragraph{Open.}  Everything after feba78e3 is uncommitted, including the
+repair of the hash that kept two representations of the empty list apart.
+Native step lowering is held back by measured regressions (first 10\% in
+wall time on the NIK cell, after a repair 5.8\% on another).  The source grew by about 8{,}400 lines of mechanism
+against an aim of shrinking it by a tenth.  The exhaustive \code{main}
+qualification has not been run.
+
+%% ────────────────────────────────────────────────────────────────────
+\subsection{NIK}
+\label{sec:line-nik}
+
+NIK stands for \emph{native inference kernel}.  Its founding offer was: a
+user provides a calculus or an interactive theorem prover as a formal system,
+and \CeTTa{} provides a disciplined native kernel for it, an
+authority-indexed checking service generated from admitted GSLTs that must
+not become a second evaluator.
+
+\paragraph{What landed.}  In August: plural checking authorities in Prime and
+direct typing authorities (an admitted type cache cut 100{,}000
+\code{get-type} queries from 21.5G to 10.2G instructions), then hosting,
+LanguageDef-to-ParserPack generation and JSON.  In September:
+\code{lib\_tptp} and type interfaces.  From mid-September the line became the
+home of native application libraries for the agents and an automated
+mathematician port: TPTP and SZS results, JSON values, process execution and
+interactive process streams, \code{lib\_re}, tensors, sparse postings and
+embeddings, and a persistent connection to a Lean process.  Opt merged NIK
+thirteen times and NIK merged opt at least fifteen; merging them on
+20 October moved 17 workloads by $+0.74\%$ wall time and $+0.007\%$
+instructions (seven trials).  The automated mathematician's 875 supplied
+proofs replay through MeTTa and an independent Lean check.
+
+\paragraph{Side branches.}  Three side lines branched from NIK.
+\code{nik-vibe-mm0-20261002} holds uncommitted work on kernel formation for
+VibeITP and MM0 certificates.  \code{failed/nik-native-he-module-20261008}
+archives native \HE{} modules as one commit, never merged.  A detached
+worktree holds an Agda checker.
+
+\paragraph{Set aside.}  The native \HE{} modules were correct on every gate but
+slower (instructions $+26\%$ on forward chaining, $+109\%$ on an eight-way
+join), and were archived on 8 October and restarted one step at a time.  An
+Agda checker inside NIK was wound down: it could not refute.  Rebuilding the
+MM0 checker in MeTTa on the current tier was judged a loss against the native
+checker.
+
+\paragraph{Open.}  NIK's head adds incremental-compression libraries to opt;
+93 files of shared learner work are staged.  The kernel-theory programme has
+not yet run a kernel with real binders under two-way adequacy, or a measured
+computation tier against MM0 or Dedukti.
+
+%% ────────────────────────────────────────────────────────────────────
+\section{The Prime Families}
+\label{sec:prime-families}
+
+Three lines carry Prime and the agents built on \CeTTa{}: the Prime draft,
+the weights, cost and parallel line, and \code{cetta-ours}.  They exchange
+work constantly; on 27 October 2026 the draft had absorbed every commit of
+the other two.  This section follows them in turn and ends with that night's
+merges.  Statements about Prime carry their kind: \kind{draft} for the C
+draft's behaviour, \kind{candidate} for a property of a candidate design,
+\kind{direction} for a design direction with its reasons, and \kind{decided}
+for a recorded decision.
+
+\subsection{The Prime 2.0 draft}
+\label{sec:line-draft}
+
+The draft (branch \code{fable-prime-2.0-draft-20260910}) is Prime's one C
+worktree.  Its README describes Prime as a higher-order MeTTa in which code is
+a value, programs can be checked by a native dependent type kernel, and proofs
+are terms the kernel checks, and the draft as the place where Prime's
+semantics is settled against its formal metatheory, so its interfaces may
+still change.  Its working rule is that everything in Prime has three faces:
+extensional (its mathematical meaning, judged in \code{set:} and \code{hol:}
+spaces), intensional (how it is built and checked: the \code{type:} language
+and the kernel) and operational (what it does when run).  A construct is
+finished when it has all three and the links between them: it runs as its
+equations say, what runs is typed, and what is typed means the set it should.
+
+\paragraph{What landed.}  The draft's own history is in its branch log rather
+than its first-parent chain, because it was fast-forwarded onto
+\code{cetta-ours} on 21 October and onto the weights line on 22 and
+25 October \kind{draft}.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{0.75\linewidth}@{}}
+\toprule
+date & what \\
+\midrule
+10--23 Sep & the worktree begins on opt: \code{lang:}, \code{type:} and \code{set:} judgments with four-valued verdicts, four identity profiles, a curriculum of about 170 judgments; first commit 23 Sep \\
+24--29 Sep & the kernel trust boundary and certified transforms; typed conversion with $\eta$; cumulative subtyping; a level-general recursor; theorems published with their context \\
+25 Sep--8 Oct & scope machinery: names follow the rho calculus with sealed quotation; own-name records under scope profiles; \code{new} and run-time lambdas; lexical-fresh binding made the default on 8 Oct (115 programs translated, 480 of 480 Lean scope rows matching) \\
+1--4 Oct & universe levels below $\varepsilon_0$ with computed written levels; sets ambient; native priority control, demand and resumable search; binary arithmetic and an opt-in native arithmetic oracle; the Megalodon set face quarantined behind an explicit profile \\
+12 Oct & a HOL Light guest; declared binding languages; \HE{}-style type declarations answered by the grounded HOL fragments, never by \HE{}'s engine \\
+20--23 Oct & a fair first-answer scheduler and its two repairs; data versus \code{Atom} by construction; completed-value producers; one sequence view \\
+26 Oct & standard terms redefinable with \code{std:} backups (83cb3038); a mathematical workspace library \\
+26--27 Oct & merges of pre-main, opt, weights and \code{cetta-ours}; the interaction kernel, staged \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Set aside.}  A contextual call-by-push-value lane (1{,}382 lines of
+library and its tests) was removed on 22 October to be redone after the
+metatheory cleanup.  A tranche of collection space kinds was reviewed as not
+mergeable and is not in the tree.  The October loop work was built outside the tree
+and has not been ported.  The draft's set face had silently been Megalodon's higher-order Tarski
+Grothendieck theory; it was found and quarantined on 4 October.
+
+\paragraph{Measured.}  The draft's measurements are diagnostic rather than
+competitive.  Selecting 7 answers under native priority control costs 322
+scheduling quanta against 10{,}404 for completing a 200-answer stream (about
+6\,ms against 24\,ms).  A \code{let}-body fold over 500 to 2{,}000 items costs
+6.5G to 320G instructions, cubic in the length; a native iteration built outside the
+tree brought a 1{,}000-item fold from 43.9G to 0.26G but has not landed.
+On naive \code{fib 30} the Prime lane takes about 2.6\,s and 271\,MB
+against the \HE{} lane's 0.04\,s (single runs, Appendix~\ref{app:runs}): the
+need machinery is the cost.
+
+\paragraph{Open.}  Recorded known issues PK-3 to PK-5; thirteen fixtures that
+hang or differ because of the weights line (below); \code{==} on state handles
+comparing stale contents; the \code{cons}/\code{nil} contract; and the
+deviations of Section~\ref{sec:prime-draft}.  Verification of execution
+traces and receipts is deferred until the other draft work is resolved.
+
+\subsection{The weights, cost and parallel line}
+\label{sec:line-weights}
+
+This line (branch \code{prime-weights-parallel-20261001}, one writer) carries
+one goal: graded \code{where} and semantic weights, reflected and certified
+costs that programs can inspect, native parallel workers under resource
+contracts, and optional history, replay and debugging.  The space service with
+multi-account authority grew inside it: generation-stamped grants, stable
+service-scoped principals, one-shot tickets and a durable decision ledger.
+Its goal requires that fine-grained native execution preserve exact
+occurrences, bindings, current authority, declared observations and complete
+retained computation.
+
+It was created on 1 October from the draft, integrated owned execution, costs
+and parallel control on 11 October, mode-directed workers on 14 October,
+optional history on 16 October and native space workers on 18 October, and
+took the draft, \code{cetta-ours} and pre-main in three phases on 24 and
+25 October.  Its own whole-goal audit of 26 October puts it at about 80\%,
+with five of nine gates and 13 of 25 contract families supported, and states
+that its earlier estimates of 96\% and 90\% overstated completion; 12 to 20
+substantial blocks remain.  Its measured overheads are small where they were
+measured: compiled-in history recording costs 0.07--0.18\% in instructions
+over 138 executions, and recording on request 5--13\%.  Its first theory
+question, what one source interaction observes, keeps, consumes and emits, is
+the question Section~\ref{sec:interaction} answers.
+
+\subsection{\code{cetta-ours}}
+\label{sec:line-ours}
+
+\code{cetta-ours} (branch \code{cetta-ours} of the \code{godelclaw/CeTTa}
+remote) is the engine of the live agents.  Its README describes it as Prime
+combined with the native process, timer, mailbox, memory and Telegram
+libraries the agents use; the agents pin its revision, and their cognitive
+loops run on the \PeTTa{} lane.  It forked from opt on 4 October and has some
+200 commits of its own: managed symbols and collection experiments; unified
+HTTP, process and channel libraries; a revisioned space service; native
+tensors and memory collections with packed cosine search; native mailboxes;
+SQLite; authenticated service peers; and the primitives the agents' port from
+Python asked for.  It merged opt, NIK, the weights line and the draft
+repeatedly.
+
+Its fixes keep the agents running; opt takes its findings as leads.  Three
+examples, with the line that root-caused them:
+
+\begin{itemize}
+\item A responder grew to 6.7\,GiB over eight hours.  \code{cetta-ours} traced
+  it to overlapping library equations and fixed the library (403\,MB to 48\,MB
+  on a 1{,}000-cycle probe).  Opt reproduced it on its own head and fixed the
+  engine: reclaimable arena names, a resource ledger, and equations guarded by
+  \code{decons} leave no alternative behind; the reproducer went from 964.2M to
+  332.2M instructions and from 179.2 to 19.1\,MiB.
+\item A cut Prolog \code{eval} leaked its state, one per cut.  The quick fix
+  disposed of it; opt redesigned the evaluation lifecycle so that a
+  three-answer evaluation cut 203 times leaves no state live, and the same
+  change designed out a use-after-free.
+\item The agents' native ports ran 5 to 30 times slower per step than
+  expected.  Opt measured the tax as narrower: the seam between machines,
+  where one byte-slice call cost about 25{,}000 instructions as a host goal
+  against about 2{,}200 inside the prepared machine
+  (Section~\ref{sec:line-opt}).
+\end{itemize}
+
+\subsection{The merges of 26--27 October}
+\label{sec:merges}
+
+On the night of 26 to 27 October the draft took three merges: opt (as
+dd5dbf98, which also brought pre-main), the weights line (as 18c680aa), and
+\code{cetta-ours} at d436e11b (as a0f1077a, committed on 27 October).
+
+\begin{itemize}
+\item The opt merge kept both atom-table declarations, split cursor admission
+  from capture, refused detachment under an owned execution, and carried
+  opt's three-argument cursor interface into the draft's own call sites.
+\item The weights merge passed 274 of 284 fast Prime fixtures, and did not
+  build until one missing argument was supplied in the next merge.
+\item The \code{cetta-ours} merge had 22 conflict regions in the space
+  service.  The draft's multi-account authority layer and the incoming scoped
+  observations now work together: an observation belongs to the principal and
+  grant generation that captured it, and an observed batch is journaled with
+  its authority stamp and resolved revision.  Journals written by
+  \code{cetta-ours} binaries replay in the merged service across a checkpoint.
+  Generated files were regenerated from the merged sources, never merged by
+  hand.
+\end{itemize}
+
+\noindent
+The gate after the merges: \code{make test} passes except the manifest check,
+which fails on test files of unrelated work in progress and on one fixture
+missing from its lane.  In the full Prime gate no failure comes from the
+\code{cetta-ours} or opt merges: each also fails on the draft before them.
+Thirteen fixtures hang or differ because of the weights line, which fails them
+exactly as the merged draft does, while the draft after the opt merge runs
+them correctly in under a second.  Their repair belongs to the weights line.
+
+%% ────────────────────────────────────────────────────────────────────
+\section{Spaces and Channels: the Interaction Basis}
+\label{sec:interaction}
+
+MeTTa has spaces, stores of atoms that programs query and update.  Rholang and
+the rho calculus have channels, names on which processes send and receive
+messages.  A language for many interacting reasoners needs both, and needs
+them to compose: to consult shared knowledge, to consume an obligation exactly
+once, to publish a result, to wait, and to do all of it on many processors
+without changing what a program means.  A study of 26 October 2026, composed
+in~\cite{interaction-basis}, asked what single primitive serves both, what
+concurrency it admits, and what language sits on it.  Its answer is the
+\emph{direction} this paper adopts for \CeTTa{}'s spaces and channels
+\kind{direction}.  This section states the answer, what is proved, what runs
+in the Prime draft, and what is missing.
+
+\subsection{One interaction}
+
+A \emph{store} is a finite set of \emph{occurrences}: each occurrence has an
+identity that is never reused, and a label saying where it lives and which atom
+it carries.  Two occurrences may carry the same atom, so a bag of atoms is a
+set of occurrences.  A \emph{commit} is one atomic step with three parts:
+
+\begin{itemize}
+\item it \emph{observes}: matched reads pick occurrences, and \emph{predicate
+  queries} read a whole region (all of it, a count, or absence);
+\item it \emph{disposes}: each matched occurrence is \emph{taken} (consumed) or
+  \emph{kept};
+\item it \emph{emits}: it \emph{makes} fresh occurrences at any locations.
+\end{itemize}
+
+\noindent
+A commit is enabled when what it takes and keeps is present, nothing is both
+taken and kept, what it makes is fresh, and every predicate query holds.  In the
+language of graph rewriting it is a double-pushout span
+$L \supseteq K \rightarrow R$ with application conditions: $L$ is what is
+matched, $K$ what is kept, $R\setminus K$ what is made, and the predicate queries
+are the conditions.  Its four parts, keep, take, make and predicate query, form a
+\emph{basis}: none can be encoded by the others relative to a stated observer
+(a commit that encodes another must be enabled at the same stores, produce the
+same labels, and commute with the same commits).  A fresh name is a kind of
+make, not a fifth part, and choice belongs to rules with several rows, not to
+the commit~\cite{interaction-basis}.
+
+A predicate query is the part whose answer can change when an atom is
+\emph{added}: ``all'', ``how many'', ``none'', and ``everything here is like
+this'' (the absence of a counterexample).  Its answer depends on every
+occurrence that satisfies its pattern, including one made later, as a predicate
+read does in database concurrency control~\cite{predicate-locks}; so it
+conflicts with every take or make inside its region.  Each is a fold of the
+region's matches through an order-blind operation: \code{all} collects them as a
+bag, and a count, absence and uniqueness are folds of that bag.  A matched read
+stays true when atoms are added.  This one distinction carries most of the
+theory.
+
+\subsection{Spaces and channels are one object}
+
+Four rights, called \emph{facets}, license the four parts at a location:
+\code{receive} (take), \code{peek} (keep), \code{send} (make) and
+\code{observe} (predicate query).  A commit outside its holder's facets is not
+\emph{formed}, and is refused before it runs.  A space is a region whose
+holders have all four; a Rholang channel is a region without \code{observe}.
+The other named profiles are a mailbox (senders are blind), a log or fact
+region (nothing leaves) and a board (readers neither add nor remove).
+
+What makes this more than a naming scheme is that each missing right buys a
+law, proved in Lean~\cite{interaction-basis}:
+
+\begin{itemize}
+\item where nobody may query a region, arrivals never invalidate anything: a
+  commit stays enabled when occurrences arrive outside the regions it queries,
+  the cheap per-occurrence claims check is already serializable, and a
+  waiting guard is woken only by a make;
+\item where nobody takes and nobody queries, replicas merge into a legal
+  serial run without coordination, while consuming something exactly once can
+  never be coordination free;
+\item along runs of formed steps, authority is passed and never created.
+\end{itemize}
+
+\noindent
+A region's guarantees therefore depend on what \emph{others} may do there, so
+its permitted operations are declared with the region, kept by the authority
+layer, and checked when a program is formed \kind{direction}.
+
+\subsection{Meta-spaces}
+
+The study's answer to unifying spaces and channels ``into meta-spaces that can
+offer different interaction modes'' is a region with independent axes
+\kind{direction}:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{0.62\linewidth}@{}}
+\toprule
+axis & values \\
+\midrule
+read policy & what ``the same'' means and how answers are read: bag, set, list
+  order, or modulo declared equations \\
+profile & the facets each holder has \\
+predicate-query discipline & owned (one writer), stratified (sealed before the query),
+  or shared (validated at commit) \\
+coordination policy & free, escrow, owner or lease; home or replicated \\
+engine & storage and index; never changes meaning \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Today's dialects become read policies: Prime reads a bag, while \HE{} and
+\PeTTa{} read storage order, and a sequence reading specializes a bag reading
+but not conversely.  The one constraint between axes the study found runs from
+profile to engine: a predicate query modulo equations needs a matcher complete for
+those equations.
+
+\subsection{Today's operators as cases of the one form}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{0.62\linewidth}@{}}
+\toprule
+operator & as one commit \\
+\midrule
+\code{match} & an \code{every} of a read: one instance per occurrence and per answer \\
+\code{add-atom} & a commit that only makes \\
+\code{remove-atom} & a take; which occurrences it takes differs by lane \\
+counting by \code{collapse} & an \code{all} predicate query \\
+\code{unify} & a \code{let} source with no footprint \\
+\code{new-space} & a make of a fresh name \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+What the form adds is several takes in one commit (atomic joins), predicate
+queries with a declared stability discipline, waiting (\code{await}, \code{whenever}),
+rights on handles, and installed rules whose installation commutes exactly
+with the commits that do not query the rule base.
+
+\subsection{What is proved}
+
+The study produced 106 Lean modules (49{,}762 lines, none with \code{sorry};
+every cited theorem uses only \code{propext}, \code{Classical.choice} and
+\code{Quot.sound}), covering the commit and its exactness, batches and
+\code{every}, traces, isolation modes, waiting and fairness, names and rights,
+reflection, a congruent equivalence under which Rholang's receipts are exact
+aliases, types (sessions, footprints, facets), clocks and leases, coordination
+across locations with its impossibility results, and the admission of rules
+promoted from data~\cite{interaction-basis}.  Representative theorems, each
+present in the Lean tree: \code{Enabled.frame} (the frame law),
+\code{readTake\_one\_refused} (identification), \code{every\_refuses\_clash},
+\code{every\_complete\_spoiled\_by\_arrival} and \code{checkRun\_isSome\_iff}
+(the trace checker is exact).  A later audit of authority in the Prime runtimes
+added a permissions layer of 73 theorems, among them
+\code{absence\_preserved\_iff}: a universal read over a region is preserved by
+every run of the other subjects exactly when none of them can reach
+\code{send} at its names from the initial delegation state.
+
+\subsection{What runs in the Prime draft}
+
+On 27 October 2026 the Prime draft gained a native interaction kernel with a
+MeTTa library, five fixtures and a make target, staged for commit
+\kind{draft}.  Listing~\ref{lst:t09} runs on it.  Its measured state:
+
+\begin{itemize}
+\item \textbf{The commit.} \code{transform} reads, keeps, takes and makes in
+  one step across any number of regions; \code{every} rows are linear on their
+  own and the whole commit must be linear; predicate queries dispose of nothing; a
+  \code{let} runs once its variables are bound.  The kernel matches against the
+  live store, checks rights at every read, and never runs code: it hands each
+  \code{let} back to the library.
+\item \textbf{Regions and handles.} \code{new-region} answers an opaque handle
+  sealed by a brand private to the kernel; \code{facet} attenuates it.
+  Formation is checked when a firing is formed, when a rule is installed, and
+  at run time for locations supplied by data.
+\item \textbf{Waiting.} \code{await}, \code{whenever}, \code{choose},
+  \code{else}, \code{par} and \code{seq} are implemented; a parked firing is
+  woken by any change in a region its last attempt read.
+\item \textbf{A corpus in two styles.}  Twelve classic coordination programs
+  (producer/consumer, bank transfers, dining philosophers, barriers, reactive
+  rules, an MM2-style closure, CHR, Linda, Erlang receive with timeout, Rholang
+  contracts, rules as data, leases with fencing) were written twice and run
+  under 32 schedules each.  Written with today's idioms (\code{match},
+  \code{remove-atom}, \code{add-atom}, counting by \code{collapse}), 11 of the
+  12 violate their property under some schedule, though all are correct
+  sequentially.  Written with the interaction form, none does.
+\item \textbf{Verified traces.} The Lean trace checker accepts all 32 kernel
+  traces of the corpus and refuses all 3 corrupted ones.
+\end{itemize}
+
+\noindent
+Costs were measured on single runs.  Draining 2{,}000 jobs on the Prime lane
+takes $4.9\times10^{10}$ user instructions (3.5\,s) with today's idioms,
+$1.9\times10^{10}$ (1.4\,s) as a \code{whenever} rule, and $7.4\times10^{9}$
+(0.5\,s) as one \code{every} commit, of which filling the queue costs about
+$7\times10^{9}$.  On the same task the \PeTTa{} lane runs today's loop in
+$1.2\times10^{8}$ instructions, SWI-\PeTTa{} in 0.09\,s, and Rust \HE{} timed
+out at 500 jobs and was killed at 15.6\,GB at 2{,}000.  On the Prime lane the
+evaluator's need machinery, not the kernel, dominates (61\% of the rule form's
+time).
+
+The draft also carries the \PeTTa{}-lane \code{transform} of
+Section~\ref{sec:tut-transform}, merged from the opt line.  The two engines
+were run on twelve probes whose answers the theorems fix.  The value-level
+\PeTTa{} engine deviates on two: it fires a kernel that takes what an
+\code{every} row keeps, and it turns two stored schematic atoms into ground
+copies.  The occurrence kernel meets all twelve.  The direction is one engine,
+the occurrence kernel, with the \PeTTa{} engine's techniques (trail-backed
+bindings, \PeTTa{}'s index pattern, presentation admission) moved into it
+\kind{direction}.
+
+\subsection{Authority}
+
+An audit on 27 October found that ``authority'' names at least five unrelated
+mechanisms in the Prime runtimes \kind{draft}.  Three are permission
+mechanisms.  The space service's grant layer (principals, attenuating grants,
+one-shot tickets, a durable decision ledger) is unforgeable, attenuating and
+revocable, with one escape: a grant's ticket requirement is attenuated by
+subset, so a child grant may drop it and append without limit.  The
+interaction kernel's region facets are real capabilities with two gaps: a
+location that is not a handle resolves to its holder's rights, and one global
+seal brand lets a forged board pass.  The evaluator's effect ``authority'' is
+a thread-local flag checked against allowlists, which cannot be forged but
+cannot be delegated or attenuated either.  The direction is one carrier, the
+sealed handles, with the grant table as an instance of the delegation core and
+an effect capability in place of the flag \kind{direction}.
+
+\subsection{What is missing}
+
+The native runtime is the gap.  Reading the trees on 26 and 27 October, the
+study found no C tree with stable occurrence identities separate from content
+identities, per-occurrence claims in canonical order, per-region epochs bumped
+by takes and makes, a wait index by guard kind, or persistent receivers that
+are kept rather than taken and republished; the draft identifies an occurrence
+inside a commit by its space, the space's revision and its position.  The
+composed study estimates the native runtime at about 5\% of its scope, the
+theory at about 76\% and the surface language at about 50\%.  Three choices
+are open: the primary spelling of the firing (the form \code{transform} with
+\code{await}, \code{whenever}, \code{choose} and \code{else}, with Rholang's
+receipts as aliases, is the current lean), whether \code{Atom} means data, and
+which named profiles ship.  The draft's remaining deviations are listed in
+Section~\ref{sec:prime-draft}.
+
+%% ────────────────────────────────────────────────────────────────────
+\section{MeTTa Prime}
+\label{sec:prime}
+
+\code{-{}-lang prime} is a \emph{distinct} MeTTa language sharing \CeTTa{}'s
+substrate.  Its ordinary application semantics is branch-local call by need
+with call-time choice.  It is not an extension of \HE{}, and does not reduce to
+\HE{} by erasure; the ``\HE{} unchanged'' gates that accompany every Prime
+change establish that shared code does not interfere, not a semantic
+relationship.  Prime is also not one fixed system: it is a web of candidate
+type theories with carved profiles, and no statement about ``Prime'' may be
+broader than the theorem or behaviour that supports it \kind{decided}.  This
+section separates what the C draft does from what is a candidate, a direction
+or a recorded decision.
+
+\subsection{Recorded decisions}
+
+The decisions below were recorded with their sources and are not reopened
+without new evidence \kind{decided}.
+
+\begin{itemize}
+\item \textbf{Identity.} Native identity is intensional, with J and its
+  computation rule; K and uniqueness of identity proofs are not global, but
+  appear only in explicitly admitted scoped regions or hosted theories; proof
+  irrelevance is a mode to switch into, never the default.
+\item \textbf{$\eta$.} Prime keeps $\eta$; the known defect, untyped $\eta$
+  contraction, is repaired by type-directed $\eta$.
+\item \textbf{No fallback to \HE{}'s type engine} (11--12 October).  \HE{}-style
+  declarations in Prime are answered by the proper face that grounds their
+  fragment; outside it the answer is \emph{undetermined}.
+\item \textbf{Sets are ambient, and a type is a set} (2 October).  Which set
+  theory sits at the top is under investigation; the Megalodon set theory is
+  an opt-in profile, never the default.
+\item \textbf{Metavariables denote model elements} modulo the active equational
+  theory: a repeated pattern variable means equality modulo that theory.
+\item \textbf{Results are unordered multisets.} Order, \code{once} and
+  \code{select}, depth-first search, and sharing are opt-in policies; a
+  specification fixes no evaluation order.
+\end{itemize}
+
+\subsection{The language, as the draft runs it}
+
+\paragraph{Need cells and call-time choice.}  An argument is delayed in a
+\emph{need cell}: an opaque runtime capability with an immutable origin and a
+checked cache state machine.  Forcing a completed cell replays its cached bag;
+completed values and stable faults are memoized, while blackholes and
+interruptions remain retryable.  Every use of a cell sees the same value, so
+one delayed choice used twice yields correlated outcomes
+(Listing~\ref{lst:t03}).  The same distinction is available explicitly:
+\code{(let \$p (delay (superpose (A B))) (Pair (force \$p) (force \$p)))}
+answers \code{(Pair A A)} and \code{(Pair B B)}, while with \code{resample} in
+place of \code{delay} each force chooses afresh and all four pairs appear
+\kind{draft}.
+
+\paragraph{Outcomes.}  Prime's computational zero is the absence of
+occurrences.  The symbol \code{Empty} is inert data and the empty expression
+\code{()} is a unit datum: \code{(collapse Empty)} answers \code{(Empty)}.  A
+fault is one occurrence of the outcome bag, beside the others:
+\code{(collapse (superpose ((+ 1 1) (car-atom ()) 3)))} answers
+\code{(2 (Error (car-atom ()) \ldots) 3)}.  Internally an outcome carries the
+ordered occurrence bag, its completion reason and its budget state, so an
+incomplete frontier cannot be read as a proof of absence \kind{draft}.
+
+\paragraph{Variables.}  Bare \code{\$} is a fresh anonymous variable at each
+occurrence: \code{(= (both \$ \$) yes)} answers \code{yes} for
+\code{(both a b)}.  Named variables co-refer: \code{(= (same \$x \$x) hit)}
+leaves \code{(same a b)} inert \kind{draft}.  Binding is lexical-fresh by
+default since 8 October.
+
+\paragraph{Held data.}  Declare \code{(: hold (-> Atom Atom))},
+\code{(: hold2 (-> (Data Atom) Atom))}, and give both the equation
+\code{(= (hold \$x) (quoted \$x))} (and likewise for \code{hold2}).  A
+parameter typed \code{(Data Atom)} receives its argument as written:
+\code{(hold2 (+ 1 2))} answers \code{(quoted (+ 1 2))}.  A parameter typed
+\code{Atom} does not hold it: \code{(hold (+ 1 2))} answers
+\code{(quoted 3)} \kind{draft}, where the \HE{} lane would pass the
+expression unevaluated.  Whether \code{Atom} should mean data is one of the
+open choices of Section~\ref{sec:interaction}.
+
+\paragraph{Typing.}  Prime's typing has three faces, linked by the draft's
+fixtures: the \code{type:} language and its kernel (intensional), the
+\code{set:} and \code{hol:} judgments (extensional), and the evaluator
+(operational).  Ordinary function contracts consult the program's selected
+\code{get-type} relation, so a program may extend the classifier with its own
+equations (Listing~\ref{lst:t07}) without minting a checked theorem: native
+theorem publication still checks the proof under its context \kind{draft}.
+
+\paragraph{The standard library is editable.}  Since 26 October standard
+definitions are ordinary occurrences of the program space, and
+\code{std:}-qualified names keep the originals (Section~\ref{sec:tut-stdlib})
+\kind{draft}.
+
+\paragraph{Memoization is opt-in.}  \code{(pragma! search-table-mode variant)}
+enables the variant table for the session; with it naive \code{fib 30} takes
+about 0.2\,s on the draft's Prime lane (single runs).  Nothing is memoized by
+default.  An earlier ground-call table, which an earlier version of this paper
+described, was retired from the code on 11 August.
+
+\subsection{Proof search and native kernels}
+
+Prime hosts proof search as type inhabitation over the lazy frontier, with
+claim-bearing results lowered to an external checker rather than asserted by
+execution.  From August the draft reconstructs ordinary typed constructors at
+the ingress of its untrusted rule machine for a strictly positive list
+fragment (\code{rel:all}, \code{rel:fold}, \code{rel:list:member},
+\code{rel:any}, \code{rel:case-list}), keeping proof-tree shape, intermediate
+witnesses and occurrence identity; an unrecognized tree reaches the ordinary
+evidence-bearing check instead of being accepted \kind{draft}.  Each
+semantic fiber has one target checked across the native kernels; no goal is
+routed to a kernel by its feature \kind{decided}.
+
+\subsection{Deviations in the current draft}
+\label{sec:prime-draft}
+
+These are behaviours of the draft binary of Appendix~\ref{app:runs} that its
+own semantics or recorded decisions say are wrong, each with its reproducer
+\kind{draft}.
+
+\begin{enumerate}
+\item \textbf{\code{match} ignores outer bindings.}  A variable bound outside
+  a \code{match} is fresh inside its pattern (Listing~\ref{lst:t04}).
+  \code{transform} respects outer bindings.
+\item \textbf{Top-level reads run stored code.}  After
+  \code{!(add-atom \&self (stored (add-atom \&self (leaked three))))}, a bare
+  top-level \code{!(match \&self (stored \$c) \$c)} runs the stored
+  \code{add-atom}; wrapped in an expression, or bound with \code{let}, the same
+  read returns data.
+\item \textbf{Library loops nest a C frame per item} (known issue PK-3).
+  \code{add-atoms} over a \code{let}-bound list of 1{,}340 rows stops with
+  \code{(Incomplete stack-exhausted)} after storing 1{,}333 of them; a
+  \code{foldl-atom} whose step binds with \code{let} costs instructions cubic
+  in its length.
+\item \textbf{A streamed fold is quadratic in its answers} (PK-4), and
+  \textbf{held values reach sequence operations as a tag and their syntax}
+  (PK-5).
+\item \textbf{Thirteen fixtures hang or differ} after the weights merge,
+  reproduced on the weights line itself (Section~\ref{sec:merges}).
+\end{enumerate}
+
+\noindent
+Each known issue carries its reproducer, its diagnosis and a repair direction
+in the draft's documentation, and is removed by the change that fixes it,
+together with a regression test.
+
+%% ────────────────────────────────────────────────────────────────────
 \section{Verified \HE{}$\leftrightarrow$\PeTTa{} Translation}
 
 \subsection{Bidirectional Translator}
@@ -1083,50 +2842,49 @@ The translator handles 8 \HE{}$\to$\PeTTa{} rewrite rules
 (\code{chain}$\to$\code{let}, \code{collapse-bind}$\to$\code{collapse},
 \code{nop}$\to$\code{let~\$fresh~X~()}, etc.)\ and 5
 \PeTTa{}$\to$\HE{} rules (\code{progn}$\to$nested \code{let},
-\code{prog1}$\to$\code{let} with result capture, etc.).  All 437 real
-\code{.metta} files parse and translate successfully.
+\code{prog1}$\to$\code{let} with result capture, etc.).  At its last recorded
+corpus run, all 437 \code{.metta} files of the corpus then in use parsed and
+translated.
 
-\subsection{Sorry-Free Lean Proof}
+\subsection{The Lean development}
 
-The translation is backed by a \textbf{sorry-free, axiom-free} Lean
-proof across two files totaling 4{,}979 lines and 102
-definitions/theorems:
+The translation is backed by a Lean development that has grown from two
+files to thirteen modules of about 25{,}000 lines.  Its sources
+contain no \code{sorry}; every module was built after its last change; and the
+two headline theorems audited for this paper use only standard axioms
+(\code{simpleMatch\_applyBindings\_comm} uses none,
+\code{mettaCall\_equation\_step\_sound} uses \code{propext} and
+\code{Quot.sound}).
 
 \begin{description}
-\item[\code{HEPeTTaSound.lean}] (1{,}063 lines, 44 theorems.)
-  Proves that \HE{}'s equation matching corresponds to \PeTTa{}'s
-  \code{ruleApp} evaluation.  The key result:
-  \begin{quote}
-  \code{simpleMatch\_applyBindings\_comm}: if \HE{}'s
-  \code{simpleMatch} succeeds on two \code{TwoSortTranslatable} atoms,
-  then applying the translated bindings via \code{heBindingsToOSLF} to
-  the translated pattern recovers the translated target.
-  \end{quote}
-  This commutation property, combined with the existing
-  \code{matchPattern\_applyBindings\_complete} from the OSLF framework,
-  establishes that a \PeTTa{} \code{matchPattern} witness exists
-  whenever \HE{}'s \code{simpleMatch} succeeds.
-
-\item[\code{HEPeTTaTranslate.lean}] (3{,}916 lines, 58 theorems.)
-  The executable translator with:
-  \begin{itemize}
-  \item \code{translateHE\_translatable}: translation preserves
-    \code{Translatable} (output admits \code{atomToPattern}).
-  \item \code{translateHE\_preserves\_pureTranslatable}: translation
-    preserves the stronger \code{TwoSortTranslatable} fragment.
-  \item \code{translatePeTTa\_translatable}: same for the reverse
-    direction.
-  \item 9 \code{\#eval} tests matching Prolog output on concrete atoms.
-  \item 6 \code{rfl} examples kernel-verified by Lean.
-  \item Roundtrip idempotence examples (kernel-verified).
-  \end{itemize}
+\item[Matching correspondence.]
+  \code{simpleMatch\_applyBindings\_comm}: if \HE{}'s \code{simpleMatch}
+  succeeds on two \code{TwoSortTranslatable} atoms, then applying the
+  translated bindings to the translated pattern recovers the translated
+  target.  With \code{matchPattern\_applyBindings\_complete} from the OSLF
+  framework, a \PeTTa{} \code{matchPattern} witness exists whenever \HE{}'s
+  \code{simpleMatch} succeeds.
+\item[The executable translators.]
+  \code{translateHE\_translatable} and
+  \code{translateHE\_preserves\_pureTranslatable}: translation preserves the
+  \code{Translatable} and \code{TwoSortTranslatable} fragments; roundtrip and
+  stable-common theorems cover the validated fragment, including a
+  first-order \code{foldall} fixed point.
+\item[Source comparisons.]
+  The largest module, about 7{,}200 lines, proves the completed recursive
+  comparison of \HE{} and \PeTTa{} sources on an explicitly admitted pure
+  constructor and equation fragment, and transports successful tuple and
+  typed-argument spines through retained \PeTTa{} source paths.  Its own
+  documentation bounds the claim: defined-call misses, error propagation,
+  typing, effects and search policies keep separate admissions, and the
+  transport is not whole-program open-query equivalence.
 \end{description}
 
 %% ────────────────────────────────────────────────────────────────────
 \section{Reflective $\rho$-calculus and eval-at-\textsc{comm}}
 \label{sec:rhocalc}
 
-Under \code{--lang rhocalc} the same runtime stops being a term rewriter and becomes a
+Under \code{-{}-lang rhocalc} the same runtime stops being a term rewriter and becomes a
 concurrent process engine: its unit of work is not a rewrite but a \emph{reaction}, a
 rendezvous between a sender and a receiver on a shared channel. This brings channels with
 private names and genuine concurrency; and because the calculus is \emph{reflective}, a
@@ -1169,7 +2927,8 @@ a name quotes, with \code{*@P = P}. Channels are themselves quoted processes ---
 what makes the calculus higher-order. \CeTTa{} implements exactly these six strict-core
 constructors --- \code{rho:nil}, \code{rho:par}, \code{rho:send}, \code{rho:recv},
 \code{rho:quote}, \code{rho:drop} --- with \textsc{comm} as the only reduction. A program is
-reduced to quiescence by \code{cetta --lang rhocalc \textit{file}}, written either in a
+reduced to quiescence by \code{cetta --lang rhocalc \textit{file}}
+(Listing~\ref{lst:t10}), written either in a
 MeTTa-style S-expression syntax (\code{.mrho}) or a Rholang-like syntax (\code{.rho}); the
 runtime keeps a live index of sends and receive-sites, rebuilt after each reaction.  The
 deterministic (canonical) scheduler selects the key-least successor by streaming candidate
@@ -1180,7 +2939,7 @@ frontier, which keeps single-step selection cheap on wide parallel terms.
 \label{sec:rho-reflection}
 
 A surprising amount follows from \textsc{comm} and quote/drop alone, with no further
-primitives. Each item below is a standalone \code{--lang rhocalc} program.
+primitives. Each item below is a standalone \code{-{}-lang rhocalc} program.
 \begin{itemize}
 \item \emph{Name mobility.} A receive that drops its argument, placed beside a send carrying
   a quoted send, reduces to that inner send made live: a name has travelled across a channel
@@ -1236,8 +2995,10 @@ inductions that otherwise stall on the symmetry and transitivity of congruence. 
 hygiene side condition \code{noBoundUnderQuote}: the communicated variable must not occur
 under a quote, since a payload that hides a bound occurrence inside a quoted name defeats the
 characterization (a concrete counterexample exhibits exactly that failure). The development
-carries no \code{sorry}. A separate caveat on the trusted base: its conformance and DSL
-fixtures use \code{native\_decide}; the bridge theorem's own module does not.
+carries no \code{sorry}, and on 27 October the bridge theorem's axioms were exactly
+\code{propext}, \code{Classical.choice} and \code{Quot.sound}. A separate caveat on the trusted
+base: its conformance and DSL fixtures use \code{native\_decide}; the bridge theorem's own module
+does not.
 
 \subsection{rhometta: MeTTa at the reaction}
 
@@ -1338,7 +3099,9 @@ has two signed endpoints and two purses
 \end{lstlisting}
 
 \noindent
-which reduces to \code{purse pay \{()\} | purse pay \{()\} | \{0\}cont}: each signature paid
+which reduces to \code{purse pay \{()\} | purse pay \{()\} | \{0\}cont} (rerun on 27 October on
+the pre-main binary, with this and the next two examples' expected outputs reproduced exactly):
+each signature paid
 for its own endpoint, and the two purses are left empty beside the continuation. Now delete
 \code{bob}'s purse
 (\href{https://github.com/zariuq/CeTTa/blob/e23de3043462d80e27f9c9009bd0f1b955ed140c/tests/rhocalc_cost_run/missing_token_quiescent.rho}{\code{missing\_token\_quiescent.rho}}) and
@@ -1577,6 +3340,11 @@ walkthrough of the calculus, both syntaxes, and the profile.
 %% ────────────────────────────────────────────────────────────────────
 \section{Cross-Runtime Benchmarks}
 \label{sec:benchmark-programs}
+
+The rows in this section were measured between June and September 2026, on
+the commits named with them, and are kept as dated receipts; several engines
+and lines have changed since.  The October measurements of each line of
+development are in Section~\ref{sec:lines}.
 
 Benchmark artifacts are labeled by dialect route.  A row may be
 \emph{shared} (one dialect-agnostic source), \emph{\PeTTa{}-native},
@@ -1928,7 +3696,7 @@ The proof terms are machine-checkable evidence chains: \code{(ct cr3
 drivers the total wall-clock time is 0.13\,s on \CeTTa{} versus
 4.27\,s on \PeTTa{}.  We therefore keep the novel-gene discovery story,
 but we do \emph{not} reuse the older proof-count/time row as benchmark
-evidence in this revision.
+evidence in this paper.
 
 Biologically, the novel discoveries include MYOZ2 (hypertrophic
 cardiomyopathy gene, OMIM CMH16) and SEC24D (Cole-Carpenter bone
@@ -1945,6 +3713,7 @@ The following table summarizes all benchmarks, including both genomic
 inference (where \CeTTa{} wins) and pure search (where \PeTTa{} wins):
 
 \begin{center}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrl}
 \toprule
 Benchmark & Scale / note & \CeTTa{} & \PeTTa{} & \HE{} \\
@@ -1958,7 +3727,7 @@ Deep 17-phase genomic BC & 1{,}411{,}430 hypotheses & 46.33\,s & 64.05\,s & --- 
 8-Queens (direct shared lane) & 92 solutions & 8.22\,s & 0.05\,s & 2:08.77 \\
 Deep proof search & 85{,}013 proofs & 36.42\,s & 7.60\,s & $>$120\,s \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{center}
 
 \noindent\emph{Peak resident memory on the two heavy rows.}  On the full
@@ -1985,7 +3754,7 @@ benchmark rows shown here are only those rerun directly in that audit.
 To ground the inference-side comparison on community-written code
 rather than bespoke benchmarks, we assembled a cross-engine chaining
 suite that builds matched cross-engine rows from the same chainer
-families on \CeTTa{} (\code{--lang he}) and \PeTTa{}, with a per-row
+families on \CeTTa{} (\code{-{}-lang he}) and \PeTTa{}, with a per-row
 cross-engine contract (every result is
 validated against the other engine's output, never against \CeTTa{}'s
 own output).  The sources are
@@ -2136,11 +3905,11 @@ cardinality agreement: \CeTTa{}'s counted encoding preserves the language's
 bag contract.
 
 At the pinned \code{7707cef} candidate, the command-line
-\code{--space-engine pathmap} route stored only the bootstrap portion in
+\code{-{}-space-engine pathmap} route stored only the bootstrap portion in
 \PathMap{} and then fell back to the ordinary evaluator space.  The tables
 in this historical subsection therefore used explicit
-\code{(new-space pathmap)} objects.  This limitation no longer describes
-the current 1.4 development line: \code{--space-engine pathmap} now makes a
+\code{(new-space pathmap)} objects.  This limitation no longer held on
+the later 1.4 development line: \code{-{}-space-engine pathmap} made a
 counted \PathMap{} inside the Rust bridge's MORK \code{Space} container the
 primary occurrence store for generic MeTTa queries.  It uses MORK expression
 bytes as trie keys but does \emph{not} run those queries through MM2's
@@ -2246,12 +4015,15 @@ loops; and \CeTTa{} HE remains strongest on the low-output deduction row.
 Prime's failures and high Fibonacci cost are not presented as a competitive
 result: they are the measured obligations for the experimental Need-machine
 work---linear administrative cost within a demand path, followed by sound
-ground-call sharing across repeated pure calls.
+sharing across repeated pure calls.  Measured again on 27 October, naive
+\code{fib 30} takes 0.04\,s on the pre-main \HE{} lane, whose prepared pure
+route compiles it, about 0.06\,s on its \PeTTa{} lane, and about 2.6\,s with 271\,MB on
+the Prime draft (single runs, Appendix~\ref{app:runs}).
 
 \subsection{August 9 Answer-First Backend and Dialect Audit}
 \label{sec:august-backend-audit}
 
-The current 1.4 development line was audited again after the revision-pinned
+The 1.4 development line was audited again after the revision-pinned
 machine and \PathMap{} work.  Every timed row below was admitted only after
 the exact answer bag, multiplicity, and boundary answers were checked.
 Values are single whole-process observations on the audit workstation, not
@@ -2513,7 +4285,7 @@ algorithms in Appendix~\ref{app:algorithms}:
   recursive evaluation, answers and effect multisets alike, with
   per-unfolding invariants transferring to whole runs --- is a
   kernel-checked Lean theorem set
-  (\code{Languages/MeTTa/TailLoopKernel}).
+  (\code{Machines/DeterministicTail}).
 \end{itemize}
 
 On the bulk-ingest family the native engine matches the reference
@@ -2670,7 +4442,7 @@ than current benchmark evidence.
 
 \subsection{Architecture: Three Machines}
 
-Profiling and design analysis (informed by GPT-5.4 Pro architectural
+Profiling and design analysis (informed by an external architectural
 review) identifies three semantically distinct machines that should
 not share mutable state:
 
@@ -2702,7 +4474,7 @@ not share mutable state:
 \end{enumerate}
 
 Language profiles (\code{he\_compat}, \code{he\_extended},
-\code{he\_prime}, future \code{petta}) are compositional assemblies
+\code{he\_prime}, \code{petta}) are compositional assemblies
 over these machines, not ad-hoc forks in the evaluator.
 
 \subsection{Faithful Backend Obligations}
@@ -2762,7 +4534,7 @@ Recent Lean work extends the backend correctness story with three new contract f
 \begin{itemize}
 \item \code{CeTTaRuntimeContracts.lean} (20 theorems): canonicalization injectivity and BEq preservation (\code{term\_canon.c}), search-context save/rollback correctness (\code{search\_machine.c}), effect classification safety (\code{runtime\_effect\_classes.json}), and profile hierarchy (\code{session.c}).  Each theorem maps to a concrete refactoring risk it reduces.
 \item \code{IncrementalTableSemantics.lean} (15 theorems): specifies partial-table soundness, answer monotonicity, and completion for future tabling in \code{table\_store.c}.  Any correct implementation must satisfy \code{TableEntry.Sound} (partial reads are genuine) and \code{TableEntry.Exact} (completed tables equal \code{queryEquations}).
-\item \code{ProducerChoicePoint.lean} (10 theorems): formalizes the search-machine save/rollback/nested-choice-point protocol with combined bindings+scratch state.
+\item \code{ProducerChoicePoint.lean} (10 theorems): formalizes the search machine's save, rollback and nested choice-point protocol over combined bindings and scratch state.
 \end{itemize}
 
 Crucially, \CeTTa{}'s imported backend is binding-correct not through trusted direct bridge bindings, but because candidate narrowing is followed by seeded native rematch (\code{space\_subst\_match\_with\_seed}).  The theorem \code{imported\_seedRematch\_binding\_parity} in \code{SeedRematchContract.lean} formalizes this: when imported candidates are sound, the two-phase query produces the same result set as direct matching.
@@ -2919,6 +4691,12 @@ path still groups quadratically; and upstream source/sink coverage remains
 incomplete.  The prototype therefore remains under \code{tools/}, with no
 new unnamespaced standard-library builtins.
 
+A different route to the same workloads is to run them as ordinary MeTTa with
+native joins.  The opt line's staged work of 27 October does this for nine
+programs of an MM2 application suite, from transitive closure to a process
+calculus, and runs each faster than MORK, with one task just over three times
+MORK's peak memory (Section~\ref{sec:line-opt}).
+
 %% ────────────────────────────────────────────────────────────────────
 \section{The MeTTa Dialect Landscape}
 
@@ -3002,7 +4780,7 @@ nodes).  The sorry-free proof establishes that equation-matching
 semantics are preserved under translation on this fragment.  Extending
 the proof to the shared-variable conjunction fragment would require
 formalizing the monotonic constraint-store semantics of \HE{}'s
-\code{match~\&self}---a natural target for Phase~3 of the Lean proof.
+\code{match~\&self}---a natural next target for the Lean development.
 
 %% ────────────────────────────────────────────────────────────────────
 \section{Observation, Non-determinism, and Shared State}
@@ -3055,6 +4833,12 @@ sequence is observable for that run without becoming a cross-policy ordering
 theorem.  Likewise, \code{once} observes one permitted witness rather than
 the complete bag.  These distinctions are represented explicitly in the
 Prime observer algebra instead of being inferred from list layout.
+
+No lane promises to \emph{hide} its order.  A program may rely on an
+engine's documented order by being engine-specific; the default observation
+is the bag, and making one engine imitate another's incidental order is
+never worth a slowdown.  Where an engine is slower than it could be because
+it reproduces a reference's answer order, the order gives way.
 
 \subsection{Effects Remain Permissive}
 
@@ -3435,7 +5219,7 @@ computed codomains whose truth values still contain free variables.
 \section{Generated Readers: the LanguageDef as Syntax Authority}
 \label{sec:gslt2parse}
 
-A 2026-07 tranche (branch-local at the time of writing) replaces
+A tranche begun in July 2026 replaces
 hand-maintained readers with parsers \emph{generated from the source
 grammars themselves}.  Each language's concrete syntax is written as a
 \code{LanguageDef} (grammar productions, lexical scalar classes, and
@@ -3491,7 +5275,7 @@ derived --- three semantic artifacts, one authority, no hand-maintained
 agreement obligations between them:
 
 \begin{center}
-\begin{tikzpicture}[
+\begin{tikzpicture}[scale=0.93, transform shape,
   box/.style={draw, rounded corners, align=center, inner sep=4pt,
     font=\small}]
 \node[box] (root) {root \code{LanguageDef}\\
@@ -3510,7 +5294,7 @@ agreement obligations between them:
 \draw[-{Stealth}] (root) -- (eval);
 \draw[-{Stealth}] (root) -- (cost)
   node[midway, above right, font=\scriptsize]{\;$\mathrm{Cost}(-)$};
-\node[below=2.5mm of eval, font=\scriptsize, align=center]
+\node[below=2.5mm of eval, font=\scriptsize, align=center, text width=6cm]
   {pairwise agreement \emph{by theorem} --- never by hand-maintained
    synchronization};
 \end{tikzpicture}
@@ -3522,7 +5306,7 @@ has any information channel back to the language except the proved
 interfaces, so there is nothing left \emph{to} drift.  The formal side lives in the
 Mettapedia Lean development and is sorry- and axiom-clean across the
 roughly fifteen-thousand-line module family; the axiom reports below were
-re-checked against the kernel at the time of writing.  The pipeline, for
+re-checked against the kernel when this section was first written.  The pipeline, for
 the Metamath instance:
 
 \begin{center}
@@ -3996,9 +5780,8 @@ The resulting information has three distinct, proved uses.
 \begin{enumerate}
 \item \textbf{Spatial classification.}  Generated headed types recognize
   equation atoms and the exact query/evaluation request and answer
-  constructors.  The constructor list is computed from the language term
-  grammar (\code{zero\_constructorTypes}), rather than maintained as a
-  second inventory.
+  constructors.  The constructor list is generated from the language's term
+  grammar rather than maintained as a second inventory.
 \item \textbf{Behavioral evidence.}  Exact query and evaluation diamond
   theorems identify the OSLF diamond with existence of an answer in the
   corresponding Zero occurrence bag.
@@ -4035,19 +5818,21 @@ CertificateGSLT's open derivations now carry an ordered context of explicit
 premises, with a generic semantic-induction theorem: if every local rule
 application preserves meaning and every open premise has its declared
 meaning, the derived conclusion has its meaning.  Zero instantiates this
-interface with one admitted eight-rule \code{LanguageDef}: six spatial rules and
-two behavioral liveness rules.  A liveness rule cannot mint an answer edge
+interface with one admitted \code{LanguageDef} of spatial rules and two
+behavioral liveness rules, one for query rows and one for evaluation rows.
+A liveness rule cannot mint an answer edge
 by itself; it requires a query-row or evaluation-row premise tied to an
 actual occurrence in the interpreted Zero relation.
 
-The bridge in
-\href{https://github.com/zariuq/MeTTapedia/blob/main/lean/mettapedia/Mettapedia/OSLF/Framework/NativeTypeCertificateGSLT.lean}{\code{OSLF/Framework/NativeTypeCertificateGSLT.lean}}
-turns an accepted open \code{WireArticle} into MIK semantic authority and
-exposes the corresponding checked-lowering obligation for a native NIK.
-All eight Zero rule schemas have local semantic-preservation proofs.  A
-positive article plus its true row premise entails the OSLF behavioral
-claim; the negative canary changes the article to an out-of-range premise
-reference and is rejected.  This is proof-producing compilation structure,
+A generic waist
+(\href{https://github.com/zariuq/MeTTapedia/blob/main/lean/mettapedia/Mettapedia/OSLF/Framework/OSLFCertificateGSLTAuthority.lean}{\code{OSLF/Framework/OSLFCertificateGSLTAuthority.lean}})
+turns an accepted open \code{WireArticle} into semantic authority for any
+OSLF-generated native type system, and Zero specializes it to its MIK
+authority, exposing the corresponding checked-lowering obligation for a native
+NIK.  A positive article plus its true row premise entails the OSLF behavioral
+claim (\code{sample\_article\_semantic}); the negative canary changes the
+article's premise reference to an out-of-range occurrence and is rejected
+(\code{sample\_wrong\_premise\_rejected}).  This is proof-producing compilation structure,
 not merely a diagnostic trace.
 
 \paragraph{The current C boundary.}
@@ -4078,123 +5863,9 @@ generic C parser, admission path, and plan decoder; the resulting common-mode
 boundary is another reason the CertificateGSLT replay correspondence remains
 necessary.
 
-\section{MeTTa Prime: A Lazy Sibling Language}
-\label{sec:prime}
-
-\code{--lang prime} is a \emph{distinct} MeTTa language sharing \CeTTa{}'s
-implementation substrate: branch-local call-by-need with call-time choice
-as the ordinary application semantics.  It is not an extension of \HE{}
-and does not reduce to \HE{} under erasure; the ``\HE{} unchanged'' gates
-that accompany every Prime tranche establish noninterference on shared
-code, not a semantic relationship.  Appendix~\ref{app:prime-spec} distills
-the living specification; the highlights are:
-
-\begin{itemize}
-\item \textbf{Need cells.}  Suspensions are opaque runtime capabilities
-  with an immutable origin and a checked cache state machine; completed
-  values and stable faults memoize, blackholes and interruptions remain
-  retryable.  Call-time choice makes sharing observable: one delayed
-  choice used twice yields only correlated outcomes.
-\item \textbf{Equation dispatch.}  Rewrite candidates for one call share
-  one source suspension per argument; the candidate \emph{frontier} is a
-  scheduling notion, never a kind of equality.  The static frontier
-  policies were all refuted as complete semantics by a common law audit;
-  the selected direction keys producer identity to the Need cell itself
-  (application and source positions are subscription edges), with a
-  policy-neutral certified control layer under which breadth-first,
-  depth-first, ranked, and permuted exploration provably preserve the
-  answer bag.
-\item \textbf{Faults as data.}  Ordinary evaluation propagates faults;
-  explicit structural observers inspect a fault atom as data, so
-  error-conditional programming is a deliberate boundary rather than an
-  accident of evaluation order.
-\item \textbf{Exact outcome carrier.}  Prime's computational zero is the
-  absence of occurrences; the symbol \code{Empty} is ordinary inert data,
-  and the empty expression \code{()} remains a unit datum rather than choice
-  zero.  The internal \code{EvalOutcome} carries the ordered occurrence bag
-  (ordinary values and fault occurrences together), completion reason, and
-  budget state before any compatibility projection.  Its derived zero
-  observation distinguishes complete zero, nonzero, and pending zero, so an
-  incomplete frontier cannot be laundered into a proof of absence.
-\item \textbf{Anonymous variables.}  Bare \code{\$} is a fresh anonymous
-  variable per occurrence (it matches any term and binds nothing
-  referenceable); named variables retain co-reference.  This is
-  Prime-only: \HE{} bare \code{\$} remains governed by the \HE{} written
-  contract.
-\item \textbf{Dependence-aware evidence export.}  A shared-cause
-  discriminator is reproduced natively: two syntactically distinct
-  explanations sharing one producer outcome yield exact possible-world
-  probability $1/2$ where naive independent-explanation disjunction gives
-  $3/4$.  Prime exports dependence structure to evidence consumers;
-  probability and proof authority never move inside the evaluator.
-\end{itemize}
-
-Early experiments host proof search as type inhabitation over the lazy
-frontier (Metamath-style problems with premise selection and
-reduction-ordering guidance), which is the intended cognitive-language
-role: demand-driven search over an inspectable frontier, with
-claim-bearing results lowered to an external checker rather than asserted
-by execution.
-
-\subsection{Prime typed construction and request-local native kernels}
-
-The current Prime tranche implements a nontrivial portion of the native
-dependent theory directly in C; it has no generated-Lean artifact in its
-runtime dependency chain.  NIK does not impose one global ladder of execution
-modes.  For each request and dependency revision it considers the licensed
-realizations that support the requested capabilities.  A unique strongest
-realization is selected only when that request fibre has a licensed common
-upgrade for every pair.  Otherwise the incomparable maximal realizations
-remain visible and an explicit observation or cost policy selects among them.
-Thus native construction, direct decision, admitted flow, and certificate
-checking may coexist without pretending that one always subsumes the others.
-
-The RuleMachine remains an untrusted proof producer.  At its ingress boundary,
-Prime reconstructs ordinary typed constructors rather than installing
-benchmark-specific opcodes or parser authority modes.  The currently recognized
-strictly-positive list fragment contains the constructors of
-\code{rel:all}, \code{rel:fold}, \code{rel:list:member}, \code{rel:any}, and
-\code{rel:case-list}.  Their native values retain recursive proof-tree shape,
-intermediate witnesses, ordered answer occurrences, and occurrence identity.
-An unrecognized or ill-typed tree obtains no native value; it reaches the
-ordinary evidence-bearing checking boundary rather than being silently accepted
-or converted into an empty answer.
-
-Two source-grounded Hopper slices exercise this boundary.  The fold slice has
-sixteen declared cases (eight positive and eight negative), with all positive
-derivations reconstructed natively.  The branching slice has twelve declared
-\code{member}/\code{find-dup} cases (seven positive and five negative).  A
-separate repeated-member canary produces three ordered occurrences with three
-distinct native proof paths, showing that endpoint equality does not collapse
-derivation multiplicity.  Malformed \code{member}, \code{any}, and
-\code{case-list} trees are rejected by the real checking path.  In the complete
-Prime gate this tranche coexists with 395 regular-kernel checks, 352 typed-flow
-checks, nine native-calculus-selection checks, and the 90-check fast gate.
-
-This is an implementation and conformance milestone, not a verified C compiler
-or a completeness result for all Prime programs.  Leaf terms still enter through
-a check-once boundary, and zero-interior-check admitted execution has not yet
-replaced every eligible recursive path.  The remaining ILP work extends the same
-ordinary-family mechanism to the missing Hopper higher-order and structural
-tasks, broadens Popper and IGGP exact images, and qualifies performance only
-after answer-bag, provenance, currentness, fault, abstention, and zero-legacy-HE
-conditions all remain green.
-
-\paragraph{Practicality.}
-Ground-call memoization --- an off-by-default table admitting only
-ground, canonical, completed, effect-pure calls at an exact space
-revision, replayed as whole bags --- makes na\"ive recursive workloads
-practical (na\"ive \code{fib} runs in fractions of a second).  Judgment
-evaluation records its evidence at constant cost per step, so budgeted
-judgments scale linearly with the run they observe.  Prime's
-per-occurrence bookkeeping lives behind a single lazy extension pointer
-that is \code{NULL} on the \HE{} lane, so the shared evaluator carries
-no Prime overhead: paired storage ladders place the Prime-bearing
-engine below a Prime-free build on peak memory.
-Appendix~\ref{app:algorithms} records the algorithms and the
-asymptotic analysis.
-
+%% ────────────────────────────────────────────────────────────────────
 \section{Related Work}
+\label{sec:related}
 
 \paragraph{Concurrent constraint programming.}
 Saraswat et al.~\cite{saraswat1988} established the theoretical
@@ -4207,210 +5878,162 @@ constraint stores and independent-scope evaluation (Flat Concurrent
 Prolog) precisely characterizes the semantic boundary between \HE{} and
 \PeTTa{}.
 
+\paragraph{Coordination and the interaction basis.}
+The commit of Section~\ref{sec:interaction} is a double-pushout rewrite with
+application conditions in the sense of algebraic graph
+transformation~\cite{ehrig-agt}, specialized to bags of occurrences.  Its
+derived forms recover the classic coordination languages: Linda's tuple
+space~\cite{linda}, where \code{in} is a take and \code{rd} a keep;
+Constraint Handling Rules~\cite{chr}, whose simplification and propagation
+rules are takes and keeps with a history read as absence; the join
+calculus~\cite{join-calculus}, whose join patterns are multi-take commits on
+one location; software transactional memory~\cite{stm}, whose \code{retry}
+parks a commit on what it read and whose \code{orElse} is an ordered choice;
+and the reflective rho calculus~\cite{rho2005}, whose COMM is two takes.  What
+the basis adds to these is a single form in which predicate queries are a separate,
+declared part with their own stability discipline, and in which the laws a
+region enjoys follow from the rights others lack there.
+
+\paragraph{Incremental computation.}  The revision tokens of
+Section~\ref{sec:nondet-state} follow the dependency-tracking shape of Salsa,
+rustc's query system, build systems \`a la carte, Adapton and differential
+dataflow~\cite{salsa-red-green,rustc-red-green,build-systems-carte,adapton,differential-arrangements},
+coarsened to what MeTTa's occurrence identities and translation stages need.
+
 \paragraph{MeTTa ecosystem.}
 The MeTTaIL boot compilation pipeline~\cite{mettail} provides a
 contract-first, Lean-backed compilation path for MeTTa stdlib modules,
 complementing \CeTTa{}'s direct evaluation approach.  The Mettapedia
 formalization project provides the Lean specifications (\code{EvalSpec},
 \code{MeTTaEval}, \code{MatchSpec}) that ground both the translation
-proof and the \CeTTa{} evaluator design.  The PLN (Probabilistic Logic
-Networks) framework uses MeTTa's backward chaining extensively; the
-typed chainer pattern from Nil Geisweiller's \code{nilbc.metta} is
-the standard PLN idiom that works across all three runtimes.
+proof and the \CeTTa{} evaluator design.  JeTTa compiles MeTTa to JVM
+bytecode~\cite{jetta-slides,jetta-review}, and MORK runs the MM2 rewriting
+language over \PathMap{} tries; both appear in this paper's comparisons.  The
+PLN (Probabilistic Logic Networks) framework uses MeTTa's backward chaining
+extensively; the typed chainer pattern from Nil Geisweiller's
+\code{nilbc.metta} is the standard PLN idiom that works across all three
+runtimes.
 
 %% ────────────────────────────────────────────────────────────────────
 \section{Conclusion}
+\label{sec:conclusion}
 
-\CeTTa{} demonstrates that a direct C implementation of the MeTTa
-evaluator is competitive with \PeTTa{} on inference workloads, but not
-uniformly faster.  In the fresh reruns reported here, \CeTTa{} wins on
-startup-dominated shallow inference and on several genomic-inference
-rows (the 183-pair PLN evidence core and the 1{,}411{,}430-hypothesis
-deep genomic backward-chaining row), while \PeTTa{} wins decisively on
-pure branching search (the 85{,}013-proof Metamath row).  A
-cross-engine chaining suite (Section~\ref{sec:chaining-suite})
-confirms that \CeTTa{}'s shallow advantage is a startup-and-dispatch
-effect rather than a scaling property.  Historical rows whose current
-drivers are unresolved or no longer the same computation as their old
-headline---the old miner speed table and BTree---are
-excluded from the revised
-benchmark ladder rather than carried forward on trust.  Throughout,
-\CeTTa{} maintains
-oracle-verified correctness across a 535-test MeTTa regression suite and a
-23-case \HE{} I/O semantic conformance gate against upstream
-\HE{}~v0.2.10.
-The sorry-free Lean proof of \HE{}$\leftrightarrow$\PeTTa{} semantic
-correspondence (5{,}400+ lines, 0~sorries), including import
-commutativity and operational bridges for state and space allocation,
-establishes translator correspondence on its explicitly defined fragment;
-\CeTTa{}'s runtime correspondence remains a separate executable conformance
-claim rather than a blanket theorem about every profile and effect.  The
-compiled \code{.act} space format via
-MORK enables zero-copy indexed loading, demonstrated at the 100k-atom
-scale, with the large-scale attach path still under repair.
-On the process-calculus side, the \RhoCalc{} reaction machine's
-eval-at-\textsc{comm} semantics now has a witness-free, axiom-clean Lean
-characterization (Section~\ref{sec:rho-lean}): the quiescent run of the
-canonical payload-evaluation process is exactly its structurally observable
-outcome set, with no certification witness in the carrier.
+\CeTTa{} is now one binary for several MeTTa dialects, each a named semantic
+product with its own oracle.  The listings of Section~\ref{sec:tutorial} show
+both what the dialects share and where they differ, and the differences are
+principled: inert data against Prolog failure, argument types that decide
+evaluation, call by need, and an editable standard library.  The semantics is
+kept honest by result-bag conformance against upstream \HE{} and
+SWI-\PeTTa{}, by a reflective modal layer, and by a rule table whose removal
+tests show the evaluator depends on its declared rules.
 
-The mutable-state account is now observer-factored rather than
-scheduler-prescriptive.  Complete result observations preserve exact
-occurrence multiplicity without promising traversal order; effect traces may
-remain permissive; and \PeTTa{} Hyperpose combines translation-stage
-callability with a generation-stable view for each entered definition call.
-Memory safety and index integrity are runtime obligations even when a user
-chooses racy effects.  Mutexes, transactions, and snapshots strengthen local
-regions explicitly, while Prime's footprint and fuel structure can justify
-more aggressive parallel realizations without narrowing the \PeTTa{}
-compatibility language.
+The lines of development divide the work.  \code{main} is the published
+baseline of August.  Opt does the careful fixes: in October it realized
+\code{transform} natively over its MeTTa library, made space drains linear,
+brought the cost of crossing between machines toward the cost of an ordinary
+step, and, in staged work, runs an MM2 application suite as MeTTa faster than
+MORK.  Pre-main unifies execution across the machines behind one call and
+return contract, as the candidate for the next \code{main}.  The NIK line
+grew native kernels and native application libraries.  The Prime draft
+develops Prime in C in step with its metatheory, has absorbed the weights,
+cost and parallel line and \code{cetta-ours}, and runs the interaction basis
+as a native kernel.  The measured results are honest in both directions:
+\CeTTa{}'s \PeTTa{} lane is clearly faster than SWI-\PeTTa{} on most of a
+96-cell panel and still slower on foreign-data reads, the chainer cells, the
+Ambient program and a rho cell; the Prime lane is the slow one, and its need
+machinery is the cost.
 
-Beyond raw performance, \CeTTa{} now treats its own semantics as a
-first-class object.  The profile family makes \code{he-compat} (literal
-Rust \HE{}) and the principled \code{he} line distinct, recorded
-semantic products; the reflective modal layer exposes the one-step
-reduction relation---$\Diamond$, $\Box$, normal-form---to MeTTa
-programs themselves, aligned with the Lean OSLF derivation; and the
-small-step rule table makes the first reduction-rule classes named,
-reflectable, and removable, with rule-removal tests proving the engine
-depends on the declared rules rather than on duplicate hidden branches.
-The congruence bug that motivated this weld---an argument-congruence
-rule silently missing from the one-step relation on three branches at
-once---is exactly the drift class this architecture eliminates.
-MeTTa Zero makes the staged version of the same discipline concrete
-(Section~\ref{sec:zero-oslf-nik}): its public query and query-derived
-evaluator generate one relation-backed OSLF span; native types provide
-checked behavioral evidence and safe constructor-indexed planning; and
-open CertificateGSLT articles cross into MIK authority and NIK replay without
-discarding their semantic row obligations.  The negative multiplicity
-theorem prevents that modal analysis from being mistaken for the exact-bag
-semantics it accelerates.
+For spaces and channels the direction is one interaction form.  Its theory is
+largely proved; its surface runs in the Prime draft; its native runtime, with
+stable occurrence identities, per-occurrence claims, per-region epochs and a
+wait index, is the main thing still to build.
 
-The 1.4 development line also turns much of the earlier machine roadmap into
-runtime structure: revision-pinned \code{MatchDecision} and bounded
-\code{RuleMachine} artifacts, an explicit \PeTTa{} heap machine, exact Prime
-outcomes, and observer-safe substitution fusion.  Its counted \PathMap{}
-backend is now a real generic query route rather than a bootstrap-only store.
-The answer-first August audit found and removed both an effectively complete
-candidate scan and a quadratic mutation/index-rebuild loop; at 7{,}381
-HexLife cells Prime improves from 2.89\,s native to 2.53\,s on \PathMap{},
-while \PeTTa{} remains near backend parity (22.21 versus 22.71\,s).  The
-dialect-honest SWI table shows no broad performance collapse, but preserves
-two important open targets: \PeTTa{} control/allocation overhead on reverse
-and Roman, and high-cardinality \PeTTa{} control even after storage lookup is
-no longer the bottleneck.
-
-Tilepuzzle is settled capacity evidence again, but not a \CeTTa{} speed
-win.  The normalized contract counts 181{,}440 reachable boards
-including the start state; the \PeTTa{} native example's 181{,}441
-self-check is a counter-convention difference, not an extra board.  The
-\PeTTa{} native rerun remains much faster (1.40\,s, 121\,MiB), while the
-\CeTTa{} result is the repaired capacity row: the full board-count search
-now completes in 8.80\,s at 233\,MiB after the tail-safe
-evaluation-arena garbage collector (Section~\ref{sec:tilepuzzle-gc}).
-Trail-style rollback, bindings builders, and arena mark/reset remain
-candidates for further improving search-heavy workloads without
-converting \CeTTa{} into a Prolog engine.
-The guiding principle: \emph{backtracking should be rare, local, and
-hidden---not global, ambient, or user-visible.}
-
-\paragraph{Future work.}
+\paragraph{Remaining work.}
 \begin{itemize}
-\item \textbf{Complete HE one-step coverage:} equation matching is
-  table-routed; migrate the special forms (\code{chain}, \code{let},
-  \code{let*}, \code{case}, \code{switch}) one rule class at a time,
-  each with bag-equality and rule-removal gates.
-\item \textbf{\code{--compile-langdef} codegen:} a generator emitting
-  both the reflectable pack and specialized C for the hot evaluator
-  under one shared source digest, extending the
-  \code{--compile-stdlib} blob precedent; export Zero's proved native
-  head/dependency index into that plan ABI, retain the complete-table
-  fallback, and keep an evaluate-by-iterating-one-step mode as reference
-  oracle.
-\item \textbf{Zero NIK closure:} generate the native checker from the one
-  CertificateGSLT acceptance predicate; define authenticated query-row and
-  capability-receipt codecs that discharge open articles; prove native
-  codec/replay correspondence; then compose the compilation certificate
-  with a separate execution receipt.  Proof machinery remains a build-time
-  or on-demand path, absent from the ordinary runtime hot path.
-\item \textbf{Small-step / official-HE correspondence:} the
-  \code{HESmallStep} relation and its OSLF span exist in Lean
-  (proven; zero sorries); the remaining climb is the delimited
-  collapse/simulation theorems connecting it to the fine
-  \code{mettaHE} instruction machine.
-\item \textbf{Bounded modal operators:} fuel-bounded
-  \code{reachable-within} ($\Diamond^{\le k}$) and
-  \code{invariant-within} ($\Box^{\le k}$) over the now-faithful
-  one-step relation.
-\item \textbf{Complete the local search-machine transition:} the explicit
-  \PeTTa{} heap, choice, continuation, and rollback core is working.  Next
-  move mode/relation clause discrimination into the outer loop, compact
-  activation environments and shared continuations, and remove Prime's
-  retained per-result Need/receipt state on large materialized bags.  Keep
-  tilepuzzle and the same-source SWI portfolio as answer-first gates.
-\item \textbf{Qualify shared \PeTTa{} Hyperpose end to end:} retain the
-  translation-stage/per-call-snapshot contract while reviewing the
-  revision-bound equation authority and reusable worker lifecycle; select a
-  snapshot carrier by allocation and work receipts; recover compiled-plan
-  reuse only through an explicit representation morphism; then rerun paired
-  ECAN and PeTTaChainer distributions, separating completion, exact bags,
-  multiplicity, assertion behavior, median, and tail.
-\item \textbf{Versioned heterogeneous realization:} implement the open
-  $\mathsf{snapshot}\times\mathsf{operator\ plan}\to
-  \mathsf{delta}\times\mathsf{receipt}$ boundary with exact occurrence
-  evidence, stale-receipt rejection, backend-specific parallel admission,
-  and a total conservative fallback.  Prime may use proved commutation and
-  backend resource compatibility to choose a stronger parallel realization;
-  \PeTTa{} continues to permit user-managed effect races while the substrate
-  protects representation integrity.  Neither native nor \PathMap{} physics
-  becomes language semantics.
-\item \textbf{Indexed shared-space engine:} replace the synchronized native
-  candidate view, where admitted, with direct \PathMap{} descent and product
-  cursors; add leapfrog triejoin, grouped aggregation, and persistent
-  snapshot/fork experiments.  Preserve the SpaceEngine boundary (formalized in
-  \code{SpaceEngineBoundary.lean}: native $\subset$ pathmap $\subset$ mork,
-  with ACT as artifact-only boundary; \code{ACTArtifactBoundary.lean}
-  classifies \code{open-act}/\code{load-act!}/\code{dump!} as storage seams).
-  Retain authoritative native fallback wherever a direct route cannot preserve
-  the named observer.
-\item \textbf{MM2 as MeTTa data (working):} MM2 exec rules are atoms in
-  MORK-backed spaces.  MeTTa creates, inspects, rewrites, and steps them
-  through the ordinary space API\@.  \code{step!} is the execution interface;
-  \code{.mm2} files import via \code{include}/\code{import!}.  MeTTa can
-  pattern-match over MM2 code to analyze or transform programs---the
-  meta-language relationship is native.  The separate fail-closed hosted
-  translator is useful but incomplete: add runtime priority-queue semantics
-  with explicit \code{exec} consumption, replace quadratic distinct-count
-  grouping with one grouped pass/backend operator, and extend source/sink
-  coverage only under exact differential witnesses.
-\item \textbf{\PathMap{} algebra (working):}  \CeTTa{} already exposes MORK's
-  \PathMap{} substrate through the \code{mork:} builtins: the lattice
-  operations \code{mork:join}, \code{mork:meet}, \code{mork:subtract}, and
-  \code{mork:prefix-restrict}; read-only zipper navigation; product-zipper
-  Cartesian joins over two to four spaces; and overlay-zipper cursors.
-  Underneath, the Rust substrate is substantial---zipper navigation
-  (5{,}800 lines), product-zipper joins (2{,}000 lines), and the lattice
-  operations (1{,}600 lines)---and a Lean formalization (46 files, 19K+ lines)
-  proves the three-phase execution protocol, fold-level aggregation, and
-  \PathMap{} lattice correspondence.  What remains future is surfacing MORK's
-  aggregating sink types (count, sum, head, hash, and, Z3, WASM) and source
-  types (BTM, ACT, equality/inequality constraints) at the MeTTa level: the
-  kernel implements them, but the \code{mork:} API does not yet expose them.
-\item \textbf{HO search engine:} Lash-inspired SAT-driven proof
-  search for PLN and type-directed synthesis.  PicoSAT as
-  embedded SAT solver.  Separate from the evaluator.
-\item \textbf{Translator CLI:} \code{translate.sh} with
-  \code{he2petta}/\code{petta2he}, recursive and bundle modes.
-  Lean proof covers pure fragment + state + spaces (0~sorries).
-\item \textbf{Reaction-semantics formalization:} extend the witness-free
-  eval-at-\textsc{comm} characterization (Section~\ref{sec:rho-lean}) from the
-  single-reaction bag fragment to concurrent and persistent reactions, and
-  relax the hash-set-free channel side condition.
-\item \textbf{Real-project stateful workloads:} restore an end-to-end pattern
-  miner driver and keep the official ECAN programs as paired conformance and
-  performance portfolios.  Record result bags, multiplicity, effect/assertion
-  behavior, completion rate, and tail distributions before making any speed
-  claim.
+\item \textbf{Opt.} Commit the staged join work; commit the checked spread
+  hash, so that two representations of the empty list are one atom to
+  \code{unique-atom}; make \code{remove-atom} of a bare symbol remove it;
+  clear the three timing holds; and close the remaining SWI-\PeTTa{} wins.
+\item \textbf{Pre-main.} Commit the staged repairs, run the exhaustive
+  \code{main} qualification, and advance \code{main}.
+\item \textbf{Prime draft.} Repair the deviations of
+  Section~\ref{sec:prime-draft}, with the weights line repairing its thirteen
+  fixtures; make the occurrence kernel the single engine for \code{transform}
+  on both lanes; build the native runtime of the interaction basis; and close
+  the authority gaps: ticket requirements that a child grant may drop, names
+  that confer their holder's rights, and an effect capability in place of the
+  evaluator's thread-local flag.
+\item \textbf{\HE{} one-step certification.} Certify the five live rules that
+  are still bag-tested (\code{let}, \code{let*}, \code{case}, \code{switch},
+  \code{switch-minimal}), through the matcher bridge of
+  Section~\ref{sec:rulecert}, and carry the ground-query adequacy result to
+  queries that contain variables.
+\item \textbf{Zero native kernel closure.} Generate the native checker from the
+  one CertificateGSLT acceptance predicate, authenticate query-row and
+  capability receipts, and compose the build certificate with an execution
+  receipt.
+\item \textbf{Reaction semantics.} Extend the witness-free characterization of
+  evaluation at communication to concurrent and persistent reactions.
+\end{itemize}
+
+
+\appendix
+
+%% ════════════════════════════════════════════════════════════════════
+\section{How the Listings Were Run}
+\label{app:runs}
+
+Every listing and probe in Section~\ref{sec:tutorial}, and every probe quoted
+in Sections~\ref{sec:specdriven}, \ref{sec:interaction} and~\ref{sec:prime},
+was run on 27 October 2026 with the binaries below, each from the working
+state of its tree (which includes uncommitted changes) and each run in place,
+because a \CeTTa{} binary finds its libraries relative to its own location.
+A binary is named by the first twelve hexadecimal digits of the SHA-256 digest
+of its file; the digests were taken before the runs and again after them, and
+did not change.
+
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}p{0.25\linewidth}p{0.47\linewidth}p{0.20\linewidth}@{}}
+\toprule
+used for & binary (version, build date) & SHA-256, tree head \\
+\midrule
+\HE{} and \PeTTa{} lanes; rho calculus & \code{cetta} of the pre-main worktree (1.5.0-dev, 26 Oct) & \code{1db746ecc1ec}, feba78e3 \\
+Prime lane & the Prime draft's \code{cetta-interaction-basis-}\allowbreak\code{m5-20261027} (1.5.0-dev, 27 Oct) & \code{7b25fbd48cc0}, a0f1077a \\
+Prime lane, second binary & the Prime draft's \code{cetta-draft-merges-}\allowbreak\code{20261027} (1.5.0-dev, 27 Oct) & \code{ee205ed7c764}, a0f1077a \\
+runtime counters & the pre-main worktree's \code{cetta-main-runtime-stats} (1.5.0-dev, 25 Oct) & \code{54278a7df178} \\
+the published \code{main} & \code{cetta} of the \code{main} checkout (1.4.0-dev, 21 Sep) & \code{a45d87417931}, 12da03b4 \\
+SWI-\PeTTa{} & the \PeTTa{} reference checkout (1.0.6) on SWI-Prolog 10.1.9 & b74af1b \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The \HE{} lane runs as \code{cetta -{}-lang he -{}-pretty-vars file}, the \PeTTa{}
+lane as \code{cetta -{}-lang petta -{}-pretty-vars file}, the Prime lane as
+\code{cetta -{}-lang prime -{}-pretty-vars file}, and SWI-\PeTTa{} through its
+\code{run.sh} with \code{-{}-silent}.  The \code{transform} listing was run on
+SWI-\PeTTa{} with the same library file imported by a relative path, because
+\code{(library lib\_transform)} names a library shipped with \CeTTa{}; its
+native and authored firings on \CeTTa{} differ only by the environment switch
+\code{CETTA\_TRANSFORM\_REFERENCE=1}.  Timings quoted from these runs (startup,
+\code{fib}, the \code{variant} table) are single whole-process runs on a
+shared sixteen-core workstation, measured with \code{/usr/bin/time}, and are
+indicative only.
+
+\paragraph{Probes beyond the listings.}  The text also quotes these runs:
+\begin{itemize}
+\item the one-step reflection layer \code{lts:he} and the rule table
+  (\code{lts:he:step-rules}), on the \HE{} lane with the extended profile;
+\item untabled and tabled \code{fib 25} and \code{fib 30} on the \HE{},
+  \PeTTa{} and Prime lanes, and on \code{main};
+\item the Prime outcome, variable, held-data and \code{delay}/\code{resample}
+  behaviour, and the draft deviations of Section~\ref{sec:prime-draft};
+\item the closed $\lambda\Pi$ conformance files and the explicit
+  need-control fixture of the Prime draft, compared with their expected
+  outputs;
+\item the rho cost examples of Section~\ref{sec:rho-cost}, compared with their
+  expected outputs.
 \end{itemize}
 
 \appendix
@@ -4431,9 +6054,9 @@ notes and the checked-claims book are published at
 
 This appendix records a local scope-and-spot-check run on 2026-06-24; it
 is a coverage map, not a new benchmark ladder replacing the main paper.
-The \CeTTa{} side used \code{--profile he-extended --lang he}.  The
-\LeaTTa{} side used \code{--oracle} for assertion-bearing files and
-\code{--file} for pure loaders.  A bulk pass ran every \code{.metta}
+The \CeTTa{} side used \code{-{}-profile he-extended -{}-lang he}.  The
+\LeaTTa{} side used \code{-{}-oracle} for assertion-bearing files and
+\code{-{}-file} for pure loaders.  A bulk pass ran every \code{.metta}
 file under the \CeTTa{} tree (1255 files) through \LeaTTa{}.
 
 \paragraph{Coverage, in three tiers.}
@@ -4568,7 +6191,7 @@ enough to be attacked next rather than smudged into the oracle story.
 
 \emph{This appendix is explicitly experimental.  It captures design
 exploration from ongoing discussions (April~2026) between the authors
-and external reviewers (GPT-5.4 Pro), concerning the
+and external reviewers, concerning the
 post-phase-1f abstract-machine layer for \CeTTa{}.  The original proposal is
 retained because it records the design pressure, but the blanket statement
 that nothing is implemented is no longer true: several machine components
@@ -4726,7 +6349,7 @@ source-level operators:
   chosen in source syntax.
 \end{description}
 
-The request builder (one per \code{--lang}) normalizes concrete syntax
+The request builder (one per \code{-{}-lang}) normalizes concrete syntax
 into \code{SearchRequest~+~SearchLangContract}; the MAM consumes the
 normalized object, never raw source atoms.
 
@@ -4755,7 +6378,7 @@ The table remains a useful comparison vocabulary, not a frozen C ABI.
 \end{center}
 
 General implementation-level \code{SUSPEND/RESUME}, cancellation tokens,
-backend-independent snapshot handles, and a single per-\code{--lang} MAM
+backend-independent snapshot handles, and a single per-\code{-{}-lang} MAM
 registration hooks remain deferred; individual machines already carry
 narrower instances of several of these concerns.
 
@@ -4789,7 +6412,8 @@ without pretending that one universal machine has been completed:
   Ordinary clause activation previously traversed a result to apply its local
   substitution and then traversed it again for the enclosing environment.
   The current matcher can compose these substitutions and traverse once, but
-  only when \code{clause\_result\_payload\_observed} is false.  If an observer
+  only when the host reports that the equation's result payload is not
+  observed (today \code{equation\_result\_payload\_observed}).  If an observer
   may inspect the intermediate payload, the two-stage path remains
   authoritative.  Observer visibility, rather than benchmark identity, is the
   optimization license.
@@ -4874,7 +6498,8 @@ bind Prime or \CeTTa{} development.}
 \label{app:prime-spec}
 
 This appendix distills the Prime living specification and decision ledger
-as of 2026-07-23.  The living document separates selected design,
+as of 23 July 2026, and is kept as that record; the decisions recorded since,
+and the draft's current behaviour, are in Section~\ref{sec:prime}.  The living document separates selected design,
 implemented behavior, verified evidence, proposals, and open questions;
 every consequential clause carries a counts-primal evidence annotation
 (independent supporting items $n^{+}$ and unresolved counterexamples
@@ -5231,24 +6856,28 @@ bag --- ordering is non-semantic throughout the family.
 
 \subsection{Profile deltas}
 
-\textbf{\HE{} lane} (\code{--lang he}, profiles \code{he},
-\code{he-compat}, \code{he-extended}): eager evaluation; grounded
+\textbf{\HE{} lane} (\code{-{}-lang he}, profiles \code{he},
+\code{he-compat}, \code{extended}, \code{he-prime}): eager evaluation; an
+argument whose declared type is \code{Expression} or \code{Atom} is passed
+unevaluated; grounded
 operators receive unevaluated arguments unless their contract demands
 values; unknown symbols remain uninterpreted (never an error);
 \code{\&self} denotes the ambient space and \code{(new-space kind)}
 introduces backend-selected spaces.
 
-\textbf{Prime} (\code{--lang prime}): identical concrete syntax with
-three visible deltas --- bare \code{\$} is a \emph{fresh anonymous}
-variable per occurrence; the judgment form
-\code{(prime-judge s (May (PrimeEvaluate e) v) budget?)} expresses
-budgeted evaluation claims; and evaluation is branch-local call-by-need
+\textbf{Prime} (\code{-{}-lang prime}): identical concrete syntax with
+these visible deltas --- bare \code{\$} is a \emph{fresh anonymous}
+variable per occurrence; a parameter typed \code{(Data Atom)} holds its
+argument as written; standard definitions are editable, with originals
+under \code{std:}; and evaluation is branch-local call-by-need
 with call-time choice, so program meaning coincides with the eager
 reading exactly on the terminating, effect-in-demanded-position
 fragment (Appendix~\ref{app:migration}).
 
-\textbf{\PeTTa{}}: the same core grammar hosted on Prolog;
-imports use \code{!(import!\ \&self lib)}; test harness forms
+\textbf{\PeTTa{}} (\code{-{}-lang petta}, the default; \code{petta@1.1} is
+typed): the same core grammar compiled to Prolog clauses; a call that no
+clause of a defined function accepts has no answer; shipped libraries are
+imported as \code{!(import!\ \&self (library name))}; test harness forms
 (\code{!(test \dots)}) and library namespaces (\code{lib:op}) are
 conventions of the distribution rather than language deltas.
 
@@ -5285,8 +6914,8 @@ $\eval{s}{(f\,\bar a)}$ binds each argument to a \emph{need cell}
 choice), and evaluation proceeds by \emph{forcing} cells the taken path
 demands.  Forcing a completed cell replays its cached bag; forcing a
 fresh cell evaluates under the cell's captured lexical environment and
-memoizes values and stable faults.  The judgment form is a budgeted
-observation of this process:
+memoizes values and stable faults.  A budgeted observation of this
+process reads:
 \[
 \frac{\mathrm{force}^{\le k}(\eval{s}{e}) \ni v}
      {s \vdash \mathrm{May}\,(\mathrm{PrimeEvaluate}\ e)\ v\ \ \text{Established}\ (k)}
@@ -5329,15 +6958,20 @@ exactly the ones laziness makes visible.  A migration checklist:
 \item \textbf{Bare \code{\$} is anonymous.}  Rename any \HE{} program
   that used bare \code{\$} as a named variable; in Prime each occurrence
   is fresh and binds nothing referenceable.
-\item \textbf{Unbounded searches want the judge.}  Where \HE{} code
-  guarded a possibly-divergent evaluation with ad-hoc fuel, Prime offers
-  \code{(prime-judge s (May (PrimeEvaluate e) v))} under a default or
-  explicit budget: a bounded \emph{claim} about the run, with receipts,
-  rather than a truncated run.
-\item \textbf{Memoization is opt-in.}  \code{pragma!\ search-table-mode
-  ground-call} enables the ground-call table (admission: ground,
-  canonical, completed, effect-pure, exact revision; whole-bag replay).
-  Nothing is memoized by default.
+\item \textbf{Hold syntax with \code{(Data Atom)}.}  An \HE{} parameter
+  typed \code{Atom} receives its argument unevaluated; in the Prime draft such
+  a parameter is evaluated, and \code{(Data Atom)} is the type that holds
+  syntax as written (Section~\ref{sec:prime}).
+\item \textbf{Import into a fresh name.}  \code{import!} into a space bound
+  earlier is refused on the \HE{} and Prime lanes; import into \code{\&self}
+  or a name not yet bound (Section~\ref{sec:tut-modules}).
+\item \textbf{The standard library is editable.}  An equation for a library
+  name adds an alternative in Prime, where \HE{} ignores it and \PeTTa{}
+  refuses it; \code{std:} names reach the originals
+  (Section~\ref{sec:tut-stdlib}).
+\item \textbf{Memoization is opt-in.}  \code{(pragma!\ search-table-mode
+  variant)} enables the variant table for the session.  Nothing is
+  memoized by default.
 \item \textbf{Faults are data at a boundary.}  Ordinary evaluation
   propagates faults; use the structural observers to inspect them
   deliberately instead of pattern-matching on error shapes mid-flow.
@@ -5425,7 +7059,7 @@ A single-branch tail self-call executes as a loop: constant frames,
 accumulator-threaded effects, per-iteration arena reset, with any
 nondeterministic tail falling back to the general evaluator (the
 call-time-choice guard).  The lane's semantic license is
-kernel-checked (\code{Languages/MeTTa/TailLoopKernel}): iterative
+kernel-checked (\code{Machines/DeterministicTail}): iterative
 execution equals fuel-indexed recursive evaluation --- answers and
 effect \emph{multisets} alike; halting deterministic-tail runs are
 precisely the fuel-convergent class; and per-unfolding invariants
@@ -5435,15 +7069,15 @@ implementation against it.
 
 \subsection{Tables and views}
 
-Two memo structures share the revision discipline (a table entry is
-valid only at the exact space revision that produced it):
-the ground-call table (admission: ground, canonical, completed with
-value or stable fault, effect-pure receipt delta; whole-bag replay with
-per-occurrence receipt references), and the revision-keyed
-\emph{compiled view} direction now under construction --- per
-(head, revision) admissibility bits and value-specific-type-fact gates
-first, growing toward loop-body views derived from the specification by
-partial evaluation rather than bolted beside the evaluator as caches.
+Memo structures share the revision discipline: a table entry is valid
+only at the exact space revision that produced it.  The session's variant
+table (\code{(pragma! search-table-mode variant)}) is the memoization a
+program can request; an earlier ground-call table with whole-bag replay was
+retired on 11 August 2026.  The revision-keyed \emph{compiled view}
+direction starts from per-(head, revision) admissibility bits and
+value-specific type-fact gates, and grows toward loop-body views derived
+from the specification by partial evaluation rather than bolted beside the
+evaluator as caches.
 
 \subsection{Receipts under the valve}
 
@@ -5589,6 +7223,41 @@ covered workload families.
   ``The TPTP Format for Derivations,''
   TPTP World quick guide,
   \url{https://tptp.org/UserDocs/QuickGuide/Derivations.html}.
+\bibitem{interaction-basis}
+  Oru\v{z}i and Z.~Goertzel,
+  ``The Interaction Basis: Spaces, Channels and Concurrency for MeTTa
+  Prime,'' Working paper, 27 October 2026.
+
+\bibitem{ehrig-agt}
+  H.~Ehrig, K.~Ehrig, U.~Prange, and G.~Taentzer,
+  \emph{Fundamentals of Algebraic Graph Transformation},
+  Monographs in Theoretical Computer Science, Springer, 2006.
+
+\bibitem{linda}
+  D.~Gelernter,
+  ``Generative Communication in Linda,''
+  \emph{ACM Transactions on Programming Languages and Systems}, vol.~7,
+  no.~1, pp.~80--112, 1985.
+
+\bibitem{chr}
+  T.~Fr\"uhwirth,
+  ``Theory and Practice of Constraint Handling Rules,''
+  \emph{Journal of Logic Programming}, vol.~37, no.~1--3, pp.~95--138, 1998.
+
+\bibitem{join-calculus}
+  C.~Fournet and G.~Gonthier,
+  ``The Reflexive CHAM and the Join-Calculus,''
+  in \emph{Proc.\ POPL}, pp.~372--385, 1996.
+
+\bibitem{stm}
+  T.~Harris, S.~Marlow, S.~Peyton Jones, and M.~Herlihy,
+  ``Composable Memory Transactions,''
+  in \emph{Proc.\ PPoPP}, pp.~48--60, 2005.
+
+\bibitem{predicate-locks}
+  K.~P.~Eswaran, J.~N.~Gray, R.~A.~Lorie, and I.~L.~Traiger,
+  ``The Notions of Consistency and Predicate Locks in a Database System,''
+  \emph{Communications of the ACM}, 19(11):624--633, 1976.
 \end{thebibliography}
 
 \end{document}

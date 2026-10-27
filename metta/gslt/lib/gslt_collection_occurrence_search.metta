@@ -2,16 +2,14 @@
 (: gslt:occurrence-search:run (-> Atom Atom Atom Atom Atom %Undefined%))
 (= (gslt:occurrence-search:run $names $depth $plan $source $work)
   (case $plan
-    (((CompletePlan
-        (PremiseEnvironment $declarations $rewrites $specifications $provider $reflection $free)
-        $permissions $bound $expected $rules $equations $admitted)
-      (let* (($canonical (gslt:canon:canon $names $source))
-             ($initial (gslt:occurrence-discovery:begin
-               $declarations $free $permissions $bound $expected $canonical $rules))
-             ($state (gslt:occurrence-machine:run $names
-               (PremiseEnvironment $declarations $rewrites $specifications $provider $reflection $free)
-               $depth $work $initial)))
-        (gslt:occurrence-search:with-state $plan $source $state))))))
+    (((CompletePlan $environment $permissions $bound $expected $rules $equations $admitted)
+      (case (gslt:premise:matching-environment $environment)
+        (((PremiseEnvironment $declarations $rewrites $specifications $provider $reflection $free)
+          (let* (($canonical (gslt:canon:canon $names $source))
+                 ($initial (gslt:occurrence-discovery:begin
+                   $declarations $free $permissions $bound $expected $canonical $rules))
+                 ($state (gslt:occurrence-machine:run $names $environment $depth $work $initial)))
+            (gslt:occurrence-search:with-state $plan $source $state)))))))))
 
 (: gslt:occurrence-search:resume (-> Atom Atom Atom Atom %Undefined%))
 (= (gslt:occurrence-search:resume $names $depth $run $work)
@@ -84,10 +82,21 @@
       (let* (($presented (gslt:rule:scope-fill $context $preparedSource))
              ($job (RuleJob $ordinal $declaration
                (RuleJobSite $address $context $preparedSource $focusBound $focusType $frames)))
+             ($core (gslt:premise:matching-environment $environment))
+             ($seed
+               (case $environment
+                 (((InterpretedPremiseEnvironment $names $environmentCore)
+                   (case $allocation
+                     (((RecursiveCollectionAnswer $originalCaptured $originalTrace)
+                       (ScopedMatcherAnswer $originalCaptured $originalTrace)))))
+                  ($ordinary (ScopedMatcherAnswer $captured $trace)))))
              ($request (RuleJobRequestProjection
-               $environment $permissions $bound $expected $presented $job))
-             ($result (PremiseResult (RootGoal $focusBound $focusType $preparedSource $ordinal)
-               (RootAnswer $trace $captured $completed $history $target))))
+               $core $permissions $bound $expected $presented $job))
+             ($result
+               (case $seed
+                 (((ScopedMatcherAnswer $seedCaptured $seedTrace)
+                   (PremiseResult (RootGoal $focusBound $focusType $preparedSource $ordinal)
+                     (RootAnswer $seedTrace $seedCaptured $completed $history $target)))))))
         (gslt:rule:job-finish-root $request $result))))))
 
 (: gslt:occurrence-search:read-log (-> Atom Atom %Undefined%))
@@ -99,6 +108,17 @@
              ($later (gslt:occurrence-search:read-log $plan $rest)))
         (case $finished
           (((Some $receipt) (LCons $receipt $later))
+           (None $later))))))))
+
+(: gslt:occurrence-search:read-committed (-> Atom Atom %Undefined%))
+(= (gslt:occurrence-search:read-committed $plan $packets)
+  (case $packets
+    ((LNil LNil)
+     ((LCons $packet $rest)
+      (let* (($finished (gslt:occurrence-search:finish $plan $packet))
+             ($later (gslt:occurrence-search:read-committed $plan $rest)))
+        (case $finished
+          (((Some $receipt) (LCons (CommittedOccurrence $packet $receipt) $later))
            (None $later))))))))
 
 (: gslt:occurrence-search:with-state (-> Atom Atom Atom %Undefined%))
@@ -118,3 +138,103 @@
   (case $receipt
     (((RuleJobReceipt $job $trace $captured $completed $history $local $target)
       (gslt:canon:canon $names $target)))))
+
+; Ordered readout of declared one-step firing evidence.
+(: gslt:occurrence-search:key-event (-> Atom %Undefined%))
+(= (gslt:occurrence-search:key-event $event)
+   (case $event
+     (((PremiseQueryEvent $p $q $row $origins) None)
+      ((PremiseFreshnessEvent $p $q $atom $subject) None)
+      ((PremiseQuantifiedEvent $p $q $kind $elements)
+       (let $normalized (gslt:occurrence-search:key-elements $elements)
+         (Some (PremiseQuantifiedEvent $p $q $kind $normalized))))
+      ((PremiseChildEvent $p $q $declaration $bound $source $target $trace $target-trace $captured $completed $history)
+       (let $normalized (gslt:occurrence-search:key-history $history)
+         (Some (PremiseChildEvent $p $q $declaration $bound $source $target $trace $target-trace $captured $completed $normalized)))))))
+(: gslt:occurrence-search:key-history (-> Atom %Undefined%))
+(= (gslt:occurrence-search:key-history $history)
+   (case $history
+     ((LNil LNil)
+      ((LCons $event $rest)
+       (let* (($first (gslt:occurrence-search:key-event $event))
+              ($later (gslt:occurrence-search:key-history $rest)))
+         (case $first
+           ((None $later)
+            ((Some $evidence) (LCons $evidence $later)))))))))
+(: gslt:occurrence-search:key-elements (-> Atom %Undefined%))
+(= (gslt:occurrence-search:key-elements $elements)
+   (case $elements
+     ((LNil LNil)
+      ((LCons (QuantifiedElement $index $element $history) $rest)
+       (let* (($normalized (gslt:occurrence-search:key-history $history))
+              ($later (gslt:occurrence-search:key-elements $rest)))
+         (LCons (QuantifiedElement $index $element $normalized) $later))))))
+
+(: gslt:occurrence-search:key-binding (-> Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-binding $table $name $assignment)
+   (case (gslt:automata:binding $name $assignment)
+     ((None None)
+      ((Some (ContextualValue $dependencies $ambient $body))
+       (let $canonical (gslt:canon:canon $table $body)
+         (Some (ContextualValue $dependencies $ambient $canonical)))))))
+(: gslt:occurrence-search:key-values (-> Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-values $table $names $assignment)
+   (case $names
+     ((LNil LNil)
+      ((LCons $name $rest)
+       (let* (($first (gslt:occurrence-search:key-binding $table $name $assignment))
+              ($later (gslt:occurrence-search:key-values $table $rest $assignment)))
+         (LCons $first $later))))))
+(: gslt:occurrence-search:key-extract (-> Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-extract $table $names $committed)
+   (case $committed
+     (((CommittedOccurrence
+         (RecursiveOccurrencePublication
+           (RecursiveCollectionOrigin
+             (RuleJob $ordinal (RuleJobDeclaration $authored $rule $binding-plan)
+               (RuleJobSite $address $context $focus $bound $type $typing-frames))
+             $variant $answer) $continued)
+         (RuleJobReceipt $job $trace $captured $completed $history $local $target))
+       (let* (($values (gslt:occurrence-search:key-values $table $names $completed))
+              ($evidence (gslt:occurrence-search:key-history $history)))
+         (DeclaredFiringKey $ordinal $authored
+           (LogicalSiteShape $address $bound $type $typing-frames) $values $evidence))))))
+(: gslt:occurrence-search:key-project (-> Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-project $table $names $committed)
+   (case $committed
+     ((LNil LNil)
+      ((LCons $pair $rest)
+       (let* (($first (gslt:occurrence-search:key-extract $table $names $pair))
+              ($later (gslt:occurrence-search:key-project $table $names $rest)))
+         (LCons $first $later))))))
+(: gslt:occurrence-search:key-unique (-> Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-unique $table $names $committed)
+   (let $keys (gslt:occurrence-search:key-project $table $names $committed)
+     (gslt:automata:unique $keys)))
+(: gslt:occurrence-search:key-binary (-> Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-binary $head $key)
+   (case $key
+     (((DeclaredFiringKey $selected $authored $site
+         (LCons (Some (ContextualValue $first-dependencies $first-ambient $first))
+           (LCons $intermediate
+             (LCons (Some (ContextualValue $last-dependencies $last-ambient $last)) LNil))) $history)
+       (Some (PApp $head (LCons $first (LCons $last LNil)))))
+      ($missing None))))
+(: gslt:occurrence-search:key-conclusions (-> Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-conclusions $head $keys)
+   (case $keys
+     ((LNil LNil)
+      ((LCons $key $rest)
+       (let* (($first (gslt:occurrence-search:key-binary $head $key))
+              ($later (gslt:occurrence-search:key-conclusions $head $rest)))
+         (case $first
+           ((None $later)
+            ((Some $conclusion) (LCons $conclusion $later)))))))))
+(: gslt:occurrence-search:key-bag (-> Atom Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-bag $table $names $head $committed)
+   (let $keys (gslt:occurrence-search:key-unique $table $names $committed)
+     (gslt:occurrence-search:key-conclusions $head $keys)))
+(: gslt:occurrence-search:key-facts (-> Atom Atom Atom Atom %Undefined%))
+(= (gslt:occurrence-search:key-facts $table $names $head $committed)
+   (let $bag (gslt:occurrence-search:key-bag $table $names $head $committed)
+     (gslt:automata:unique $bag)))

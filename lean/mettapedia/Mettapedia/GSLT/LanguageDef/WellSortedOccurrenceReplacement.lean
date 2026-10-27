@@ -156,3 +156,80 @@ theorem TypedAt.replace {language : LanguageDef} {free : FreeTypeContext}
 #print axioms lambda_to_variable_not_representationCompatible
 
 end Mettapedia.GSLT.LanguageDef.WellSorted
+
+namespace Mettapedia.GSLT.LanguageDef.WellSorted
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.DerivedContexts
+
+/-- Retain the exact original zipper, parameter choices and binder-context
+indices when rebuilding its focus. This records one local replacement;
+no origin map through a subsequent whole-tree reduction is inferred. -/
+theorem TypedAt.replaceAt {language : LanguageDef} {free : FreeTypeContext}
+    {source target : Pattern} {context : OneHoleContext}
+    {bound focusBound : List TypeExpr} {ambientType focusType : TypeExpr}
+    (selected : TypedAt language free source context bound ambientType
+      focusBound focusType)
+    (compatible : RepresentationCompatible source target)
+    (replacement : HasType language free focusBound target focusType) :
+    TypedAt language free target context bound ambientType focusBound focusType := by
+  induction selected with
+  | here _ => exact .here replacement
+  | @application rule before after inner bound focusBound expected result
+      beforeParams afterParams parameter member ordinary arguments shape
+      length parameterType innerSelected inductionHypothesis =>
+      obtain ⟨actualBefore, actualParameter, actualAfter, actualExpected,
+          actualShape, actualLength, beforeTyped, oldRepresentation,
+          actualParameterType, _, afterTyped⟩ :=
+        ArgumentsHaveTypes.append_cons_split arguments
+      have aligned : beforeParams = actualBefore ∧
+          parameter :: afterParams = actualParameter :: actualAfter :=
+        List.append_inj (shape.symm.trans actualShape)
+          (length.trans actualLength.symm)
+      have parameterEq : parameter = actualParameter :=
+        (List.cons.inj aligned.2).1
+      have expectedEq : actualExpected = expected := by
+        have sameOption : some actualExpected = some expected := by
+          calc
+            some actualExpected = parameterType? actualParameter :=
+              actualParameterType.symm
+            _ = parameterType? parameter := congrArg parameterType? parameterEq.symm
+            _ = some expected := parameterType
+        exact Option.some.inj sameOption
+      have replacedInner : HasType language free bound
+          (inner.fill target) expected := (inductionHypothesis replacement).source_typed
+      have replacementRepresentation :
+          MatchesParameterRepresentation actualParameter (inner.fill target) := by
+        exact parameterEq.symm ▸ compatible inner parameter
+          (parameterEq ▸ oldRepresentation)
+      have replacedArgs : ArgumentsHaveTypes language free bound
+          (before ++ inner.fill target :: after) rule.params := by
+        rw [actualShape]
+        exact arguments_append beforeTyped
+          (.cons replacementRepresentation actualParameterType
+            (expectedEq ▸ replacedInner) afterTyped)
+      exact .application member ordinary replacedArgs shape length parameterType (inductionHypothesis replacement)
+  | lambda _ inductionHypothesis =>
+      exact .lambda (inductionHypothesis replacement)
+  | multiLambda _ inductionHypothesis =>
+      exact .multiLambda (inductionHypothesis replacement)
+  | substBody replacementTyped _ inductionHypothesis =>
+      exact .substBody replacementTyped (inductionHypothesis replacement)
+  | substReplacement bodyTyped _ inductionHypothesis =>
+      exact .substReplacement bodyTyped (inductionHypothesis replacement)
+  | collection elements _ inductionHypothesis =>
+      obtain ⟨beforeTyped, _, afterTyped⟩ :=
+        ElementsHaveType.append_cons_split elements
+      have replacedElements := elements_append beforeTyped
+        (ElementsHaveType.cons (inductionHypothesis replacement).source_typed afterTyped)
+      exact .collection replacedElements (inductionHypothesis replacement)
+  | collectionConstructor member shape elements _ inductionHypothesis =>
+      obtain ⟨beforeTyped, _, afterTyped⟩ :=
+        ElementsHaveType.append_cons_split elements
+      have replacedElements := elements_append beforeTyped
+        (ElementsHaveType.cons (inductionHypothesis replacement).source_typed afterTyped)
+      exact .collectionConstructor member shape replacedElements (inductionHypothesis replacement)
+
+#print axioms TypedAt.replaceAt
+
+end Mettapedia.GSLT.LanguageDef.WellSorted

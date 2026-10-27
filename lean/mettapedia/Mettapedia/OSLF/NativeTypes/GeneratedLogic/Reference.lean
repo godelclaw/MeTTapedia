@@ -165,12 +165,20 @@ inductive RuleReading where
   values (the equational internal boundary policy, with the equivalence of terms with one canonical form). Its steps
   are listed at the listed presentations of each child's class. -/
   | modulo (canon : Pattern → Pattern) (presentations : Pattern → List Pattern)
+  /-- As `modulo`, its steps listed by a table given as evidence: the presentations it visits and its entries, each a
+  presentation, a witness and a contractum, with whether the table was found complete. A listed entry is one the witness
+  checker accepts; the table lists every step of a visited presentation, up to its rule and contractum, when every entry
+  checks and a round over the table adds nothing. A premise's child may be of its term's own class, so a table is how
+  such steps are listed. -/
+  | moduloTabled (canon : Pattern → Pattern) (presentations : Pattern → List Pattern) (todo : List Pattern)
+      (table : List (Pattern × Witness × Pattern)) (complete : Bool)
 
 /-- Whether a reading of the rules is the reference relation. -/
 def RuleReading.isReference : RuleReading → Bool
   | .reference => true
   | .interpreted _ _ => false
   | .modulo _ _ => false
+  | .moduloTabled _ _ _ _ _ => false
 
 theorem RuleReading.eq_reference {rules : RuleReading} (reference : rules.isReference = true) :
     rules = .reference := by
@@ -178,6 +186,7 @@ theorem RuleReading.eq_reference {rules : RuleReading} (reference : rules.isRefe
   | reference => rfl
   | interpreted => cases reference
   | modulo => cases reference
+  | moduloTabled => cases reference
 
 /-- **One rule step in a reading of the rules**: a valid witness of the reference relation, or a step of the
 interpretation with the witness of no rule. -/
@@ -186,6 +195,8 @@ def RuleValid (relEnv : RelationEnv) (language : LanguageDef) : RuleReading → 
   | .interpreted interpretation base => fun source witness target =>
     witness = .base [] ∧ Mettapedia.OSLF.MeTTaIL.InterpretedContextualStep.Step interpretation base language source target
   | .modulo canon _ => fun source witness target =>
+    StepValid relEnv language source witness target (.equational (canonSetoid canon))
+  | .moduloTabled canon _ _ _ _ => fun source witness target =>
     StepValid relEnv language source witness target (.equational (canonSetoid canon))
 
 /-- **A reading of a language**: how its equations are read and how its rules fire. -/
@@ -398,6 +409,40 @@ def referenceStructure (reading : LanguageReading := .syntax) : NativeStructure 
   inRelation element relation := IsObject element ∧ ∃ representative, ObjectEquivalent relEnv language reading element representative ∧
     [representative] ∈ Mettapedia.OSLF.MeTTaIL.Engine.builtinRelationTuples language relation [representative] ++
       relEnv.tuples relation [representative]
+
+/-! ## Readings that agree -/
+
+variable {relEnv language} in
+/-- Readings with the same equations have the same equivalence of object terms. -/
+theorem objectEquivalent_congr {first second : LanguageReading} (equations : first.equations = second.equations)
+    (source target : Pattern) :
+    ObjectEquivalent relEnv language first source target = ObjectEquivalent relEnv language second source target := by
+  have steps : ObjectStep relEnv language first = ObjectStep relEnv language second := by
+    funext before after
+    simp only [ObjectStep, equations]
+  simp only [ObjectEquivalent, steps]
+
+variable {relEnv language} in
+theorem placed_congr {first second : LanguageReading} (equations : first.equations = second.equations) :
+    ∀ (label : StepLabel) (source redex : Pattern),
+      Placed relEnv language first label source redex = Placed relEnv language second label source redex
+  | .context hole context label, source, redex => by
+    simp only [Placed, objectEquivalent_congr equations, placed_congr equations label]
+  | .any, source, redex => by simp only [Placed, objectEquivalent_congr equations]
+  | .rule _, source, redex => by simp only [Placed, objectEquivalent_congr equations]
+  | .under _ _, source, redex => by simp only [Placed, objectEquivalent_congr equations]
+
+variable {relEnv language} in
+/-- **Readings with the same equations whose rules step alike have one reference structure.** -/
+theorem referenceStructure_congr {first second : LanguageReading} (equations : first.equations = second.equations)
+    (rules : ∀ source witness target, RuleValid relEnv language first.rules source witness target ↔
+      RuleValid relEnv language second.rules source witness target) :
+    referenceStructure relEnv language first = referenceStructure relEnv language second := by
+  have valid : ∀ source witness target, RuleValid relEnv language first.rules source witness target =
+      RuleValid relEnv language second.rules source witness target := fun source witness target =>
+    propext (rules source witness target)
+  unfold referenceStructure
+  simp only [objectEquivalent_congr equations, placed_congr equations, valid]
 
 /-- **Whether a query of a relation at a term succeeds**: the relation's tuples there, builtin or provided, include
 the term. -/

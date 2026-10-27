@@ -460,6 +460,28 @@ theorem stepValid_presented_iff_of_premises_nil (noPremises : ∀ rule ∈ langu
       cases premises
       exact .presentedRule found matched (by rw [none]; exact .presentedNil _)
 
+/-- **Rules without premises step alike under every equational policy**: a theory reads only the boundaries of
+premises. -/
+theorem stepValid_equational_iff_of_premises_nil {theory : Setoid Pattern}
+    (noPremises : ∀ rule ∈ language.rewrites, rule.premises = []) {source target : Pattern} {witness : Witness} :
+    StepValid relEnv language source witness target (.equational theory) ↔
+      StepValid relEnv language source witness target := by
+  constructor
+  · intro valid
+    cases valid with
+    | equationalRule found matched premises =>
+      have none := noPremises _ (List.mem_of_getElem? found)
+      rw [none] at premises
+      cases premises
+      exact .rule found matched (by rw [none]; exact .nil _)
+  · intro valid
+    cases valid with
+    | rule found matched premises =>
+      have none := noPremises _ (List.mem_of_getElem? found)
+      rw [none] at premises
+      cases premises
+      exact .equationalRule found matched (by rw [none]; exact .equationalNil _)
+
 /-! ## Listed presentations are equivalent presentations -/
 
 theorem forall₂_related_of_mem_sections {theory : Setoid Pattern}
@@ -545,6 +567,161 @@ theorem forAllValid_equational_of_presented {theory : Setoid Pattern}
     | presentedCons first rest =>
       exact .equationalCons (premiseValid_equational_of_presented related witness first)
         (forAllValid_equational_of_presented related witnesses rest)
+end
+
+/-! ## Checking a witness through presentations -/
+
+variable (relEnv language present)
+
+mutual
+/-- **Check a step witness through presentations** at a source, computing its target. A step premise's witness does not
+name the listed presentation of the child it stepped; each is tried. -/
+def checkPresentedStep (source : Pattern) : Witness → Option Pattern
+  | .rule index initial witnesses =>
+      match language.rewrites[index]? with
+      | none => none
+      | some rule =>
+          if initial ∈ matchPatternForRule language rule source then
+            (checkPresentedPremises (captureSites rule) initial rule.premises witnesses).map
+              (fun final => applyBindingsScoped (captureSites rule) final 0 rule.right)
+          else none
+  | _ => none
+
+/-- Check the witnesses of a list of premises through presentations. -/
+def checkPresentedPremises (sites : Pattern) (bindings : Bindings) : List Premise → List Witness → Option Bindings
+  | [], [] => some bindings
+  | premise :: premises, witness :: witnesses =>
+      match checkPresentedPremise sites bindings premise witness with
+      | none => none
+      | some middle => checkPresentedPremises sites middle premises witnesses
+  | _, _ => none
+
+/-- Check a premise witness through presentations. -/
+def checkPresentedPremise (sites : Pattern) (bindings : Bindings) : Premise → Witness → Option Bindings
+  | premise, .base result =>
+      if isBase premise = true ∧ result ∈ presentedBaseStep relEnv language present bindings premise then some result
+      else none
+  | premise, .premiseStep step candidate matched result =>
+      match stepEndpoints premise with
+      | none => none
+      | some (source, target) =>
+          if ((present (applyBindingsScoped sites bindings (stepDepth sites premise) source)).any fun redex =>
+                match checkPresentedStep redex step with
+                | some contractum => decide (candidate ∈ present contractum)
+                | none => false) = true ∧
+              matched ∈ matchPattern target candidate ∧ mergeBindings bindings matched = some result then
+            some result
+          else none
+  | .forAll collection parameter body, .forAll bodies =>
+      match bindings.lookup collection with
+      | some (.collection _ elements none) =>
+          if checkPresentedForAll sites bindings parameter body elements bodies = true then some bindings else none
+      | _ => none
+  | _, _ => none
+
+/-- Check the evidence for a quantified body at each element, through presentations. -/
+def checkPresentedForAll (sites : Pattern) (bindings : Bindings) (parameter : String) (body : Premise) :
+    List Pattern → List Witness → Bool
+  | [], [] => true
+  | element :: elements, witness :: witnesses =>
+      (checkPresentedPremise sites (bindParameter bindings parameter element) body witness).isSome &&
+        checkPresentedForAll sites bindings parameter body elements witnesses
+  | _, _ => false
+end
+
+variable {relEnv language present}
+
+mutual
+/-- **A checked witness through presentations is valid.** -/
+theorem stepValid_of_checkPresentedStep : ∀ (witness : Witness) {source target : Pattern},
+    checkPresentedStep relEnv language present source witness = some target →
+      StepValid relEnv language source witness target (.presented present)
+  | .rule index initial witnesses, source, target, checked => by
+    simp only [checkPresentedStep] at checked
+    split at checked
+    · cases checked
+    · rename_i rule found
+      split at checked
+      · rename_i matched
+        obtain ⟨final, premisesChecked, rfl⟩ := Option.map_eq_some_iff.mp checked
+        exact .presentedRule found matched (premisesValid_of_checkPresentedPremises witnesses premisesChecked)
+      · cases checked
+  | .base _, _, _, checked => by simp [checkPresentedStep] at checked
+  | .premiseStep _ _ _ _, _, _, checked => by simp [checkPresentedStep] at checked
+  | .forAll _, _, _, checked => by simp [checkPresentedStep] at checked
+
+theorem premisesValid_of_checkPresentedPremises : ∀ (witnesses : List Witness) {sites : Pattern}
+    {bindings final : Bindings} {premises : List Premise},
+    checkPresentedPremises relEnv language present sites bindings premises witnesses = some final →
+      PremisesValid relEnv language sites bindings premises witnesses final (.presented present)
+  | [], _, _, _, [], checked => by
+    simp only [checkPresentedPremises, Option.some.injEq] at checked
+    subst checked
+    exact .presentedNil _
+  | [], _, _, _, _ :: _, checked => by simp [checkPresentedPremises] at checked
+  | _ :: _, _, _, _, [], checked => by simp [checkPresentedPremises] at checked
+  | witness :: witnesses, sites, bindings, final, premise :: premises, checked => by
+    simp only [checkPresentedPremises] at checked
+    split at checked
+    · cases checked
+    · rename_i middle headChecked
+      exact .presentedCons (premiseValid_of_checkPresentedPremise witness headChecked)
+        (premisesValid_of_checkPresentedPremises witnesses checked)
+
+theorem premiseValid_of_checkPresentedPremise : ∀ (witness : Witness) {sites : Pattern} {bindings result : Bindings}
+    {premise : Premise}, checkPresentedPremise relEnv language present sites bindings premise witness = some result →
+      PremiseValid relEnv language sites bindings premise witness result (.presented present)
+  | .base produced, sites, bindings, result, premise, checked => by
+    simp only [checkPresentedPremise] at checked
+    split at checked
+    · rename_i holds
+      cases checked
+      exact presentedPremiseValid_of_base holds.1 holds.2
+    · cases checked
+  | .premiseStep step candidate matched produced, sites, bindings, result, premise, checked => by
+    simp only [checkPresentedPremise] at checked
+    split at checked
+    · cases checked
+    · rename_i source target endpoints
+      split at checked
+      · rename_i holds
+        cases checked
+        obtain ⟨tried, matchedMember, merged⟩ := holds
+        obtain ⟨redex, redexMember, succeeded⟩ := List.any_eq_true.mp tried
+        split at succeeded
+        · rename_i contractum stepped
+          exact .presentedStep endpoints redexMember (stepValid_of_checkPresentedStep step stepped)
+            (of_decide_eq_true succeeded) matchedMember merged
+        · cases succeeded
+      · cases checked
+  | .forAll bodies, sites, bindings, result, premise, checked => by
+    cases premise with
+    | forAll collection parameter body =>
+      simp only [checkPresentedPremise] at checked
+      split at checked
+      · rename_i kind elements found
+        split at checked
+        · rename_i bodiesChecked
+          cases checked
+          exact .presentedForAll found (forAllValid_of_checkPresentedForAll bodies bodiesChecked)
+        · cases checked
+      · cases checked
+    | _ => simp [checkPresentedPremise] at checked
+  | .rule _ _ _, _, _, _, premise, checked => by
+    cases premise <;> simp [checkPresentedPremise] at checked
+
+theorem forAllValid_of_checkPresentedForAll : ∀ (witnesses : List Witness) {sites : Pattern} {bindings : Bindings}
+    {parameter : String} {body : Premise} {elements : List Pattern},
+    checkPresentedForAll relEnv language present sites bindings parameter body elements witnesses = true →
+      ForAllValid relEnv language sites bindings parameter body elements witnesses (.presented present)
+  | [], _, _, _, _, [], _ => .presentedNil
+  | [], _, _, _, _, _ :: _, checked => by simp [checkPresentedForAll] at checked
+  | _ :: _, _, _, _, _, [], checked => by simp [checkPresentedForAll] at checked
+  | witness :: witnesses, sites, bindings, parameter, body, element :: elements, checked => by
+    simp only [checkPresentedForAll, Bool.and_eq_true, Option.isSome_iff_exists] at checked
+    obtain ⟨⟨result, headChecked⟩, rest⟩ := checked
+    exact .presentedCons (premiseValid_of_checkPresentedPremise witness headChecked)
+      (forAllValid_of_checkPresentedForAll witnesses rest)
 end
 
 end Mettapedia.OSLF.MeTTaIL.ReferenceStep

@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.MeTTaIL.LawNormalInstantiation
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSchemaTyping
+import Mettapedia.OSLF.MeTTaIL.ReferenceStepEquations
 
 /-!
 # Law-normal forms keep typing
@@ -1095,5 +1096,549 @@ theorem reduceAt_hasType {laws : List Laws} {language : LanguageDef} {free : Fre
 #print axioms applicationRule_isSome
 #print axioms collectionRule_base_isSome
 #print axioms substitutionDomain_isSome
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws DerivedContexts GeneralPremise.SchemaTyping
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.GSLT.LanguageDef.EquationSemantics
+
+/-- Source authority for the algebra row actually selected at a checked
+base-result occurrence. The existing checkedAlgebra? validator can supply
+each field from its literal row, parameter and authored unit inventory. -/
+def SourceAlgebras (laws : List Laws) (language : LanguageDef) : Prop :=
+  ∀ rule ∈ language.terms, ∀ kind parameter law,
+    rule.bareParams = [.simple parameter (.collection kind (.base rule.category))] →
+    lawFor laws kind = some law →
+      AlgebraRule language rule kind ⟨true, law.unit⟩
+
+private theorem equivalent_children {relEnv : Engine.RelationEnv} {language : LanguageDef}
+    (node : List Pattern → Pattern) (frame : List Pattern → List Pattern → OneHoleContext)
+    (fills : ∀ before item after, (frame before after).fill item = node (before ++ item :: after)) :
+    ∀ {first second : List Pattern}, List.Forall₂ (ReferenceStep.Equivalent relEnv language) first second →
+      ∀ before, ReferenceStep.Equivalent relEnv language (node (before ++ first)) (node (before ++ second)) := by
+  intro first second compared
+  induction compared with
+  | nil => intro before; exact .refl _
+  | @cons first second tail otherTail head tailCompared recurse =>
+      intro before
+      have initial := ReferenceStep.equivalent_fill (frame before tail) head
+      simp only [fills] at initial
+      have later := recurse (before ++ [second])
+      simp only [List.append_assoc, List.singleton_append] at later
+      exact .trans _ _ _ initial later
+
+private theorem reduceArguments_equivalent_of
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {free : FreeTypeContext} {bound : List TypeExpr} {arguments : List Pattern} {parameters : List TermParam}
+    (each : ∀ argument ∈ arguments, ∀ expected, HasType language free bound argument expected →
+      ReferenceStep.SourceCollections language argument →
+      ReferenceStep.Equivalent relEnv language argument (reduceAt laws domains language free bound argument expected))
+    (eligible : ∀ argument ∈ arguments, ReferenceStep.SourceCollections language argument)
+    (typed : ArgumentsHaveTypes language free bound arguments parameters) :
+    List.Forall₂ (ReferenceStep.Equivalent relEnv language) arguments
+      (reduceArguments laws domains language free bound arguments parameters) := by
+  induction arguments generalizing parameters with
+  | nil => cases typed; simpa only [reduceArguments] using (List.Forall₂.nil :
+      List.Forall₂ (ReferenceStep.Equivalent relEnv language) [] [])
+  | cons argument arguments recurse =>
+      cases typed with
+      | cons representation parameterType head tail =>
+        simp only [reduceArguments, parameterType]
+        exact .cons (each argument (.head _) _ head (eligible argument (.head _)))
+          (recurse
+            (fun argument member expected typed source => each argument (.tail _ member) expected typed source)
+            (fun argument member => eligible argument (.tail _ member)) tail)
+
+private theorem reduceElements_equivalent_of
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef} {relEnv : Engine.RelationEnv}
+    {free : FreeTypeContext} {bound : List TypeExpr} {elements : List Pattern} {expected : TypeExpr}
+    (each : ∀ element ∈ elements, HasType language free bound element expected →
+      ReferenceStep.SourceCollections language element →
+      ReferenceStep.Equivalent relEnv language element (reduceAt laws domains language free bound element expected))
+    (eligible : ∀ element ∈ elements, ReferenceStep.SourceCollections language element)
+    (typed : ElementsHaveType language free bound elements expected) :
+    List.Forall₂ (ReferenceStep.Equivalent relEnv language) elements
+      (reduceElements laws domains language free bound elements expected) := by
+  induction elements with
+  | nil => simpa only [reduceElements] using (List.Forall₂.nil :
+      List.Forall₂ (ReferenceStep.Equivalent relEnv language) [] [])
+  | cons element elements recurse =>
+      cases typed with
+      | cons head tail =>
+        simpa only [reduceElements] using List.Forall₂.cons
+          (each element (.head _) head (eligible element (.head _)))
+          (recurse
+            (fun element member typed source => each element (.tail _ member) typed source)
+            (fun element member => eligible element (.tail _ member)) tail)
+
+private theorem elements_insert_typed {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {expected : TypeExpr} {before after middle : List Pattern} {item : Pattern}
+    (typed : ElementsHaveType language free bound (before ++ item :: after) expected)
+    (inserted : ElementsHaveType language free bound middle expected) :
+    ElementsHaveType language free bound (before ++ middle ++ after) expected := by
+  apply CanonicalBags.elementsHaveType_iff.mpr
+  intro element member
+  simp only [List.mem_append] at member
+  rcases member with (earlier | inner) | later
+  · exact CanonicalBags.elementsHaveType_iff.mp typed element (by simp [earlier])
+  · exact CanonicalBags.elementsHaveType_iff.mp inserted element inner
+  · exact CanonicalBags.elementsHaveType_iff.mp typed element (by simp [later])
+
+private theorem source_splice_other {law : Laws} {pattern : Pattern}
+    (notNested : ¬ ∃ items, pattern = .collection law.kind items none)
+    (notUnit : ¬ ∃ label, pattern = .apply label [] ∧ law.unit = some label) :
+    CollectionLaws.splice law pattern = [pattern] := by
+  cases pattern with
+  | collection kind elements rest =>
+      cases rest with
+      | none =>
+          have different : kind ≠ law.kind := by
+            intro same
+            exact notNested ⟨elements, same ▸ rfl⟩
+          simp [CollectionLaws.splice, different]
+      | some => rfl
+  | apply label arguments =>
+      cases arguments with
+      | nil =>
+          have different : law.unit ≠ some label := fun same => notUnit ⟨label, rfl, same⟩
+          simp [CollectionLaws.splice, different]
+      | cons => rfl
+  | _ => rfl
+
+private theorem splice_source_equivalent
+    {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true)
+    {rule : GrammarRule} {kind : CollType} {parameter : String} {law : Laws}
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    (found : lawFor laws kind = some law)
+    (declaration : AlgebraRule language rule kind ⟨true, law.unit⟩)
+    {bound : List TypeExpr} : ∀ (todo done : List Pattern),
+      ElementsHaveType language free bound (done ++ todo) (.base rule.category) →
+      ReferenceStep.Equivalent relEnv language (.collection kind (done ++ todo) none)
+        (.collection kind (done ++ todo.flatMap (CollectionLaws.splice law)) none)
+  | [], _, _ => by simp only [List.flatMap_nil, List.append_nil]; exact .refl _
+  | item :: todo, done, typed => by
+      have itemTyped : HasType language free bound item (.base rule.category) :=
+        CanonicalBags.elementsHaveType_iff.mp typed item (by simp)
+      have splicedTyped : ElementsHaveType language free bound (CollectionLaws.splice law item) (.base rule.category) :=
+        CanonicalBags.elementsHaveType_iff.mpr
+          (splice_base_typed checked found itemTyped)
+      have sourceTyped : HasType language free bound (.collection kind (done ++ item :: todo) none)
+          (.base rule.category) := .collectionConstructor declaration.authored shape typed
+      have sorted : SortedAt language (.collection kind (done ++ item :: todo) none) rule.category :=
+        ⟨free, bound, sourceTyped⟩
+      have kindEq := lawFor_kind found
+      by_cases nested : ∃ items, item = .collection law.kind items none
+      · obtain ⟨inner, rfl⟩ := nested
+        have first : ReferenceStep.Equivalent relEnv language
+            (.collection kind (done ++ .collection law.kind inner none :: todo) none)
+            (.collection kind (done ++ inner ++ todo) none) := by
+          rw [kindEq] at sorted ⊢
+          exact .rel _ _ (.inContext .hole (.inr (.flatten declaration rfl sorted)))
+        have inserted : ElementsHaveType language free bound inner (.base rule.category) := by
+          simpa only [CollectionLaws.splice, ↓reduceIte] using splicedTyped
+        have next := elements_insert_typed typed inserted
+        have later := splice_source_equivalent (relEnv := relEnv) checked shape found declaration todo (done ++ inner) next
+        simpa [ReferenceStep.Equivalent, CollectionLaws.splice, List.append_assoc] using Relation.EqvGen.trans _ _ _ first later
+      · by_cases isUnit : ∃ label, item = .apply label [] ∧ law.unit = some label
+        · obtain ⟨label, rfl, unit⟩ := isUnit
+          have first : ReferenceStep.Equivalent relEnv language
+              (.collection kind (done ++ .apply label [] :: todo) none)
+              (.collection kind (done ++ todo) none) :=
+            .rel _ _ (.inContext .hole (.inr (.unitElim declaration unit sorted)))
+          have inserted : ElementsHaveType language free bound [] (.base rule.category) := .nil _ _
+          have next := elements_insert_typed typed inserted
+          simp only [List.append_nil] at next
+          have later := splice_source_equivalent (relEnv := relEnv) checked shape found declaration todo done next
+          simpa [ReferenceStep.Equivalent, CollectionLaws.splice, unit] using Relation.EqvGen.trans _ _ _ first later
+        · have regrouped : done ++ item :: todo = (done ++ [item]) ++ todo := by simp
+          have later := splice_source_equivalent (relEnv := relEnv) checked shape found declaration todo
+            (done ++ [item]) (regrouped ▸ typed)
+          simpa [source_splice_other nested isUnit, List.append_assoc] using later
+
+/-- A base-result splicing operation is licensed by its actual algebra row,
+including the unit inventory; endpoint typing alone is not that authority. -/
+theorem finishAlgebra_source_equivalent
+    {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    {rule : GrammarRule} (member : rule ∈ language.terms) {kind : CollType} {parameter : String}
+    (shape : rule.bareParams = [.simple parameter (.collection kind (.base rule.category))])
+    {bound : List TypeExpr} {elements : List Pattern}
+    (typed : ElementsHaveType language free bound elements (.base rule.category)) :
+    ReferenceStep.Equivalent relEnv language (.collection kind elements none)
+      (.collection kind (finishAlgebra laws kind elements) none) := by
+  unfold finishAlgebra
+  cases found : lawFor laws kind with
+  | none => exact .refl _
+  | some law =>
+      have declaration := authorized rule member kind parameter law shape found
+      simpa only [List.nil_append] using
+        splice_source_equivalent (relEnv := relEnv) checked shape found declaration elements [] typed
+
+/-- Full recursive source soundness for the actual role-aware traversal.
+The independent source inventory closes collection tails; constructor slots,
+binders and pending substitution scopes retain their real typed contexts.
+Direct collection-data roles preserve their outer container. -/
+theorem reduceAt_source_equivalent
+    {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext} {relEnv : Engine.RelationEnv}
+    (checked : checkBareHomogeneous laws language = true) (authorized : SourceAlgebras laws language)
+    (domains : List TypeExpr) (pattern : Pattern) :
+    ∀ {bound : List TypeExpr} {expected : TypeExpr}, HasType language free bound pattern expected →
+      ReferenceStep.SourceCollections language pattern →
+      ReferenceStep.Equivalent relEnv language pattern (reduceAt laws domains language free bound pattern expected) := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => intro bound expected typed source; simp only [reduceAt]; exact .refl _
+  | hfvar identifier => intro bound expected typed source; simp only [reduceAt]; exact .refl _
+  | happly label arguments recurse =>
+      intro bound expected typed source
+      cases source with
+      | apply eligible =>
+        rw [reduceAt]
+        cases selected : applicationRule? domains language free bound expected label arguments with
+        | none => exact .refl _
+        | some rule =>
+            obtain ⟨_, _, _, _, argumentsTyped⟩ := applicationRule_readout selected
+            have compared := reduceArguments_equivalent_of
+              (fun argument member _ typed source => recurse argument member typed source) eligible argumentsTyped
+            simpa only [List.nil_append] using equivalent_children (.apply label)
+              (fun before after => .apply label before .hole after) (fun _ _ _ => rfl) compared []
+  | hlambda binder body recurse =>
+      intro bound expected typed source
+      cases source with
+      | lambda eligible =>
+        cases typed with
+        | lambda bodyTyped =>
+            simpa only [reduceAt, OneHoleContext.fill] using
+              ReferenceStep.equivalent_fill (.lambda binder .hole) (recurse bodyTyped eligible)
+  | hmultiLambda arity binders body recurse =>
+      intro bound expected typed source
+      cases source with
+      | multiLambda eligible =>
+        cases typed with
+        | multiLambda bodyTyped =>
+            simpa only [reduceAt, OneHoleContext.fill] using
+              ReferenceStep.equivalent_fill (.multiLambda arity binders .hole) (recurse bodyTyped eligible)
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected typed source
+      cases source with
+      | subst bodyEligible replacementEligible =>
+        rw [reduceAt]
+        cases selected : substitutionDomain? domains language free bound expected body replacement with
+        | none => exact .refl _
+        | some domain =>
+            obtain ⟨_, bodyTyped, replacementTyped⟩ := substitutionDomain_readout selected
+            have first := ReferenceStep.equivalent_fill (.substBody .hole replacement)
+              (bodyIH bodyTyped bodyEligible)
+            have second := ReferenceStep.equivalent_fill
+              (.substReplacement (reduceAt laws domains language free (domain :: bound) body expected) .hole)
+              (replacementIH replacementTyped replacementEligible)
+            exact .trans _ _ _ first second
+  | hcollection kind elements rest recurse =>
+      intro bound expected typed source
+      cases source with
+      | collection site eligible =>
+        rcases hasType_collection_inv typed with ⟨element, rfl, items⟩ |
+          ⟨sourceRule, parameter, sourceElement, sourceDeclared, sourceParameters, rfl, sourceItems⟩
+        · simp only [reduceAt, ↓reduceIte]
+          have compared := reduceElements_equivalent_of
+            (fun element member typed source => recurse element member typed source) eligible items
+          simpa only [List.nil_append] using equivalent_children
+            (fun items => .collection kind items none)
+            (fun before after => .collection kind before .hole after none) (fun _ _ _ => rfl) compared []
+        · simp only [reduceAt]
+          cases selected : collectionRule? domains language free bound (.base sourceRule.category) kind elements none with
+          | none => exact .refl _
+          | some rule =>
+              obtain ⟨element, member, shape, items⟩ := collectionRule_readout selected
+              simp only [shape]
+              obtain ⟨expectedEq, selectedParameter, parameters⟩ :=
+                (bareCollectionElementType?_eq_some_iff _ _ _ _).mp shape
+              have compared := reduceElements_equivalent_of
+                (fun element member typed source => recurse element member typed source) eligible items
+              have first : ReferenceStep.Equivalent relEnv language (.collection kind elements none)
+                  (.collection kind (reduceElements laws domains language free bound elements element) none) := by
+                simpa only [List.nil_append] using equivalent_children
+                  (fun items => .collection kind items none)
+                  (fun before after => .collection kind before .hole after none) (fun _ _ _ => rfl) compared []
+              cases found : lawFor laws kind with
+              | none => simpa only [finishAlgebra, found] using first
+              | some law =>
+                  have homogeneous := homogeneous_bare_of_checked checked found member parameters
+                  rw [homogeneous] at items parameters first ⊢
+                  have normalizedItems := reduceElements_hasType_of laws domains language free bound
+                    (fun element present typed => reduceAt_hasType checked domains element typed) items
+                  have second := finishAlgebra_source_equivalent (relEnv := relEnv) checked authorized member parameters normalizedItems
+                  exact .trans _ _ _ first second
+
+#print axioms finishAlgebra_source_equivalent
+#print axioms reduceAt_source_equivalent
+
+end Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware
+
+namespace Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionLaws DerivedContexts GeneralPremise.SchemaTyping
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- The caller's actual type occurrences are licensed by declared parameter
+positions. This speaks about types and declarations, independently of a
+normalizer or any selected output. Vector order needs no equation witness. -/
+def SourceTypeOccurrences (language : LanguageDef) (type : TypeExpr) : Prop :=
+  ∀ kind element, kind ≠ .vec → CollectionTypeOccurs kind element type →
+    ∃ rule ∈ language.terms, ∃ parameter ∈ rule.params,
+      CollectionTypeOccurs kind element parameter.typeExpr
+
+private theorem collectionTypeOccurs_not_base {kind : CollType} {element : TypeExpr} {category : String}
+    (impossible : CollectionTypeOccurs kind element (.base category)) : False := by
+  cases impossible
+
+theorem SourceTypeOccurrences.base (language : LanguageDef) (category : String) :
+    SourceTypeOccurrences language (.base category) := by
+  intro kind element unordered impossible
+  exact False.elim (collectionTypeOccurs_not_base impossible)
+
+theorem SourceTypeOccurrences.of_parameter {language : LanguageDef} {rule : GrammarRule}
+    (declared : rule ∈ language.terms) {parameter : TermParam} (member : parameter ∈ rule.params)
+    {expected : TypeExpr} (actual : parameterType? parameter = some expected) :
+    SourceTypeOccurrences language expected := by
+  intro kind element unordered occurs
+  refine ⟨rule, declared, parameter, member, ?_⟩
+  cases parameter with
+  | simple identifier type =>
+      simp only [parameterType?, Option.some.injEq] at actual
+      cases actual
+      exact occurs
+  | abstractionNamed binder identifier type =>
+      cases type with
+      | base category =>
+          simp only [parameterType?, Option.some.injEq] at actual
+          cases actual
+          cases occurs with
+          | domain inner => exact False.elim (collectionTypeOccurs_not_base inner)
+          | codomain inner => exact False.elim (collectionTypeOccurs_not_base inner)
+      | arrow domain codomain =>
+          simp only [parameterType?, Option.some.injEq] at actual
+          cases actual
+          exact occurs
+      | multiBinder inner => simp only [parameterType?] at actual; cases actual
+      | collection actualKind inner => simp only [parameterType?] at actual; cases actual
+  | multiAbstractionNamed binders identifier type =>
+      cases type with
+      | base category =>
+          simp only [parameterType?, Option.some.injEq] at actual
+          cases actual
+          cases occurs with
+          | domain inner => cases inner with
+            | binder impossible => exact False.elim (collectionTypeOccurs_not_base impossible)
+          | codomain inner => exact False.elim (collectionTypeOccurs_not_base inner)
+      | arrow domain codomain =>
+          cases domain with
+          | multiBinder inner =>
+              simp only [parameterType?, Option.some.injEq] at actual
+              cases actual
+              exact occurs
+          | _ => simp only [parameterType?] at actual; cases actual
+      | multiBinder inner => simp only [parameterType?] at actual; cases actual
+      | collection actualKind inner => simp only [parameterType?] at actual; cases actual
+
+private theorem reduceArguments_sourceCollections_of
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef}
+    {free : FreeTypeContext} {bound : List TypeExpr} {arguments : List Pattern} {parameters : List TermParam}
+    (each : ∀ argument ∈ arguments, ∀ expected, HasType language free bound argument expected →
+      ReferenceStep.SourceCollections language argument → SourceTypeOccurrences language expected →
+      ReferenceStep.SourceCollections language (reduceAt laws domains language free bound argument expected))
+    (roles : ∀ parameter ∈ parameters, ∀ expected, parameterType? parameter = some expected →
+      SourceTypeOccurrences language expected)
+    (eligible : ∀ argument ∈ arguments, ReferenceStep.SourceCollections language argument)
+    (typed : ArgumentsHaveTypes language free bound arguments parameters) :
+    ∀ argument ∈ reduceArguments laws domains language free bound arguments parameters,
+      ReferenceStep.SourceCollections language argument := by
+  induction arguments generalizing parameters with
+  | nil => cases typed; simp only [reduceArguments, List.not_mem_nil, false_implies, implies_true]
+  | cons argument arguments recurse =>
+      cases typed with
+      | cons representation expected head tail =>
+        simp only [reduceArguments, expected]
+        intro value member
+        rcases List.mem_cons.mp member with rfl | member
+        · exact each argument (.head _) _ head (eligible argument (.head _)) (roles _ (.head _) _ expected)
+        · exact recurse
+            (fun other member expected typed source role => each other (.tail _ member) expected typed source role)
+            (fun parameter member expected actual => roles parameter (.tail _ member) expected actual)
+            (fun other member => eligible other (.tail _ member)) tail value member
+
+private theorem reduceElements_sourceCollections_of
+    {laws : List Laws} {domains : List TypeExpr} {language : LanguageDef}
+    {free : FreeTypeContext} {bound : List TypeExpr} {elements : List Pattern} {expected : TypeExpr}
+    (each : ∀ element ∈ elements, HasType language free bound element expected →
+      ReferenceStep.SourceCollections language element → SourceTypeOccurrences language expected →
+      ReferenceStep.SourceCollections language (reduceAt laws domains language free bound element expected))
+    (role : SourceTypeOccurrences language expected)
+    (eligible : ∀ element ∈ elements, ReferenceStep.SourceCollections language element)
+    (typed : ElementsHaveType language free bound elements expected) :
+    ∀ element ∈ reduceElements laws domains language free bound elements expected,
+      ReferenceStep.SourceCollections language element := by
+  induction elements with
+  | nil => simp only [reduceElements, List.not_mem_nil, false_implies, implies_true]
+  | cons element elements recurse =>
+      cases typed with
+      | cons head tail =>
+          simp only [reduceElements]
+          intro value member
+          rcases List.mem_cons.mp member with rfl | member
+          · exact each element (.head _) head (eligible element (.head _)) role
+          · exact recurse (fun other member typed source role => each other (.tail _ member) typed source role)
+              (fun other member => eligible other (.tail _ member)) tail value member
+
+private theorem splice_sourceCollections {language : LanguageDef} (law : Laws) {source : Pattern}
+    (eligible : ReferenceStep.SourceCollections language source) :
+    ∀ item ∈ splice law source, ReferenceStep.SourceCollections language item := by
+  cases source with
+  | collection kind elements rest =>
+      cases eligible with
+      | collection site children =>
+          simp only [splice]
+          split
+          · exact children
+          · intro item member; cases List.mem_singleton.mp member; exact .collection site children
+  | apply label arguments =>
+      cases arguments with
+      | nil =>
+          simp only [splice]
+          split
+          · simp
+          · intro item member; cases List.mem_singleton.mp member; exact eligible
+      | cons head tail =>
+          simp only [splice]
+          intro item member; cases List.mem_singleton.mp member; exact eligible
+  | _ =>
+      simp only [splice]
+      intro item member; cases List.mem_singleton.mp member; exact eligible
+
+private theorem finishAlgebra_sourceCollections {language : LanguageDef} {laws : List Laws}
+    {kind : CollType} {elements : List Pattern}
+    (eligible : ∀ item ∈ elements, ReferenceStep.SourceCollections language item) :
+    ∀ item ∈ finishAlgebra laws kind elements, ReferenceStep.SourceCollections language item := by
+  unfold finishAlgebra
+  cases found : lawFor laws kind with
+  | none => exact eligible
+  | some law =>
+      intro item member
+      obtain ⟨source, present, inner⟩ := List.mem_flatMap.mp member
+      exact splice_sourceCollections law (eligible source present) item inner
+
+/-- Actual output eligibility follows from the caller's declared type roles
+and the selected substitution-domain inventory. Those witnesses are retained
+through constructors and scope extensions; arbitrary existential source
+sorting is not silently reused at a different role. -/
+theorem reduceAt_sourceCollections
+    {laws : List Laws} {language : LanguageDef} {free : FreeTypeContext}
+    (checked : checkBareHomogeneous laws language = true) (domains : List TypeExpr)
+    (domainRoles : ∀ domain ∈ domains, SourceTypeOccurrences language domain) (pattern : Pattern) :
+    ∀ {bound : List TypeExpr} {expected : TypeExpr}, HasType language free bound pattern expected →
+      ReferenceStep.SourceCollections language pattern → SourceTypeOccurrences language expected →
+      ReferenceStep.SourceCollections language (reduceAt laws domains language free bound pattern expected) := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => intro bound expected typed source roles; simpa only [reduceAt] using source
+  | hfvar identifier => intro bound expected typed source roles; simpa only [reduceAt] using source
+  | happly label arguments recurse =>
+      intro bound expected typed source roles
+      cases source with
+      | apply eligible =>
+          rw [reduceAt]
+          cases selected : applicationRule? domains language free bound expected label arguments with
+          | none => exact .apply eligible
+          | some rule =>
+              obtain ⟨declared, _, _, _, argumentsTyped⟩ := applicationRule_readout selected
+              exact .apply (reduceArguments_sourceCollections_of
+                (fun argument member expected typed source roles => recurse argument member typed source roles)
+                (fun parameter member _ actual => SourceTypeOccurrences.of_parameter declared member actual)
+                eligible argumentsTyped)
+  | hlambda binder body recurse =>
+      intro bound expected typed source roles
+      cases source with
+      | lambda eligible =>
+          cases typed with
+          | lambda bodyTyped =>
+              simpa only [reduceAt] using ReferenceStep.SourceCollections.lambda
+                (recurse bodyTyped eligible (fun kind element unordered occurs =>
+                  roles kind element unordered (.codomain occurs)))
+  | hmultiLambda arity binders body recurse =>
+      intro bound expected typed source roles
+      cases source with
+      | multiLambda eligible =>
+          cases typed with
+          | multiLambda bodyTyped =>
+              simpa only [reduceAt] using ReferenceStep.SourceCollections.multiLambda
+                (recurse bodyTyped eligible (fun kind element unordered occurs =>
+                  roles kind element unordered (.codomain occurs)))
+  | hsubst body replacement bodyIH replacementIH =>
+      intro bound expected typed source roles
+      cases source with
+      | subst bodyEligible replacementEligible =>
+          rw [reduceAt]
+          cases selected : substitutionDomain? domains language free bound expected body replacement with
+          | none => exact .subst bodyEligible replacementEligible
+          | some domain =>
+              obtain ⟨present, bodyTyped, replacementTyped⟩ := substitutionDomain_readout selected
+              exact .subst (bodyIH bodyTyped bodyEligible roles)
+                (replacementIH replacementTyped replacementEligible (domainRoles domain present))
+  | hcollection kind elements rest recurse =>
+      intro bound expected typed source roles
+      cases source with
+      | collection site eligible =>
+          rcases hasType_collection_inv typed with ⟨element, rfl, items⟩ |
+            ⟨sourceRule, parameter, sourceElement, sourceDeclared, sourceParameters, rfl, sourceItems⟩
+          · simp only [reduceAt, ↓reduceIte]
+            have elementRoles : SourceTypeOccurrences language element :=
+              fun kind inner unordered occurs => roles kind inner unordered (.element occurs)
+            have children := reduceElements_sourceCollections_of
+              (fun element member typed source roles => recurse element member typed source roles)
+              elementRoles eligible items
+            have outputTyped := reduceElements_hasType_of laws domains language free bound
+              (fun element present typed => reduceAt_hasType checked domains element typed) items
+            apply ReferenceStep.SourceCollections.collection ?_ children
+            by_cases vector : kind = .vec
+            · exact .inl vector
+            · obtain ⟨rule, member, parameter, parameterMember, occurs⟩ := roles kind element vector .here
+              exact .inr ⟨rule, member, parameter, parameterMember, element, occurs,
+                free, bound, HasType.collection outputTyped⟩
+          · simp only [reduceAt]
+            cases selected : collectionRule? domains language free bound (.base sourceRule.category) kind elements none with
+            | none => exact .collection site eligible
+            | some rule =>
+                obtain ⟨element, declared, shape, items⟩ := collectionRule_readout selected
+                simp only [shape]
+                obtain ⟨expectedEq, selectedParameter, parameters⟩ :=
+                  (bareCollectionElementType?_eq_some_iff _ _ _ _).mp shape
+                have fullParameters := ((GrammarRule.bareParams_cons_iff _ _ _).mp parameters).2
+                have elementRoles : SourceTypeOccurrences language element := by
+                  intro innerKind inner unordered occurs
+                  exact ⟨rule, declared, .simple selectedParameter (.collection kind element),
+                    by simp only [fullParameters, List.mem_singleton], .element occurs⟩
+                have children := reduceElements_sourceCollections_of
+                  (fun element member typed source roles => recurse element member typed source roles)
+                  elementRoles eligible items
+                have normalizedItems := reduceElements_hasType_of laws domains language free bound
+                  (fun element present typed => reduceAt_hasType checked domains element typed) items
+                have outputTyped : ElementsHaveType language free bound
+                    (finishAlgebra laws kind (reduceElements laws domains language free bound elements element)) element := by
+                  cases found : lawFor laws kind with
+                  | none => simpa only [finishAlgebra, found] using normalizedItems
+                  | some law =>
+                      have homogeneous := homogeneous_bare_of_checked checked found declared parameters
+                      rw [homogeneous] at normalizedItems ⊢
+                      exact finishAlgebra_base_typed checked normalizedItems
+                exact .collection (.inr ⟨rule, declared, .simple selectedParameter (.collection kind element),
+                  by simp only [fullParameters, List.mem_singleton], element, .here,
+                  free, bound, HasType.collection outputTyped⟩) (finishAlgebra_sourceCollections children)
+
+#print axioms SourceTypeOccurrences.of_parameter
+#print axioms reduceAt_sourceCollections
 
 end Mettapedia.OSLF.MeTTaIL.CanonicalBags.RoleAware

@@ -71,7 +71,7 @@ decreasing_by all_goals sizeOf_pattern_dec
 def premise : Premise → String
   | .freshness condition =>
       match condition.term with
-      | .collection _ [] (some rest) => s!"{condition.varName} # ...{rest}"
+      | .collection .hashBag [] (some rest) => s!"{condition.varName} # ...{rest}"
       | term => s!"{condition.varName} # {pattern [] term}"
   | .congruence source target => s!"{pattern [] source} ~> {pattern [] target}"
   | .scopedStep step =>
@@ -111,17 +111,30 @@ def evalPolicy : Option TermEvalPolicy → String
   | some .oracle => " ![oracle]"
 
 def rule (row : GrammarRule) : String :=
+  let representation := match row.collectionRepresentation with
+    | .bare => ""
+    | .wrapped => " ![wrapped]"
   s!"{quote row.label} . {commas (row.params.map termParam)} |- {" ".intercalate (row.syntaxPattern.map syntaxItem)} : " ++
-    s!"{row.category}{evalPolicy row.evalPolicy?};"
+    s!"{row.category}{evalPolicy row.evalPolicy?}{representation};"
 
 private def guarded (premises : List Premise) (body : String) : String :=
   if premises.isEmpty then body else s!"if {commas (premises.map premise)} then {body}"
 
 def equation (row : Equation) : String :=
-  guarded row.premises s!"{pattern [] row.left} == {pattern [] row.right};"
+  if row.typeContext.isEmpty then
+    guarded row.premises s!"{pattern [] row.left} == {pattern [] row.right};"
+  else
+    let context := commas (row.typeContext.map fun (name, sort) => s!"{name}:{type sort}")
+    let conditions := if row.premises.isEmpty then "" else " | " ++ commas (row.premises.map premise)
+    s!"{quote row.name} . {context}{conditions} |- {pattern [] row.left} = {pattern [] row.right};"
 
 def rewrite (row : RewriteRule) : String :=
-  s!"{row.name} : " ++ guarded row.premises s!"{pattern [] row.left} ~> {pattern [] row.right};"
+  if row.typeContext.isEmpty then
+    s!"{row.name} : " ++ guarded row.premises s!"{pattern [] row.left} ~> {pattern [] row.right};"
+  else
+    let context := commas (row.typeContext.map fun (name, sort) => s!"{name}:{type sort}")
+    let conditions := if row.premises.isEmpty then "" else " | " ++ commas (row.premises.map premise)
+    s!"{quote row.name} . {context}{conditions} |- {pattern [] row.left} ~> {pattern [] row.right};"
 
 /-! ## Modules -/
 

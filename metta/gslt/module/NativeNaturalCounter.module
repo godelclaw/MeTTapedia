@@ -1,0 +1,20 @@
+Module NativeNaturalCounter {
+  Theory NaturalCounter() {
+    Types { Nat; Term; State; }
+    Terms {
+      NZero . |- "zero" : Nat;
+      NSucc . n:Nat |- "succ" n : Nat;
+      Counter . n:Nat |- "counter" n : State;
+      Embed . n:Nat |- "number" n : Term;
+      Apply . f:Term, a:Term |- "apply" f a : Term;
+      NatEliminate . p:Term, z:Term, s:Term, n:Nat |- "nat-eliminate" p z s n : Term;
+    }
+    Rewrites {
+      Advance : (Counter n) ~> (Counter (NSucc n));
+      NatZero : (NatEliminate p z s (NZero)) ~> z;
+      NatSucc : (NatEliminate p z s (NSucc n))
+        ~> (Apply (Apply s (Embed n)) (NatEliminate p z s n));
+    }
+  }
+  theory NaturalCounter()
+}

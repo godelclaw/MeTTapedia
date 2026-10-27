@@ -1,6 +1,6 @@
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ClosedExploration
 import Mettapedia.OSLF.MeTTaIL.InterpretedContextualStep
-import Mettapedia.OSLF.MeTTaIL.ReferenceStepPresented
+import Mettapedia.OSLF.MeTTaIL.ReferenceStepTabled
 
 /-!
 # Closed regions modulo equations
@@ -331,6 +331,9 @@ def ruleSteps (relEnv : RelationEnv) (language : LanguageDef) (fuel : ℕ) :
   | .interpreted interpretation base => fun term =>
     (rewriteAt interpretation base language fuel term).map fun target => (.base [], target)
   | .modulo canon presentations => presentedStepsAt relEnv language (listedPresent canon presentations) fuel
+  | .moduloTabled canon presentations _ table _ => fun shown =>
+    (tableStepper table shown).filter fun step =>
+      checkPresentedStep relEnv language (listedPresent canon presentations) shown step.1 == some step.2
 
 /-- **Whether the fuel lists a reading's steps at a term completely**: the reference relation checks it; an
 interpretation claims nothing, and canonical forms coherent for it are coherent at the fuel they list at. -/
@@ -338,6 +341,7 @@ def ruleEnough (relEnv : RelationEnv) (language : LanguageDef) (fuel : ℕ) : Ru
   | .reference => enough relEnv language fuel
   | .interpreted _ _ => fun _ => true
   | .modulo canon presentations => presentedEnough relEnv language (listedPresent canon presentations) fuel
+  | .moduloTabled _ _ todo _ complete => fun shown => complete && decide (shown ∈ todo)
 
 /-- **Every listed step is a step of the reading.** -/
 theorem ruleValid_of_mem_ruleSteps {relEnv : RelationEnv} {language : LanguageDef} {fuel : ℕ} {rules : RuleReading}
@@ -353,6 +357,10 @@ theorem ruleValid_of_mem_ruleSteps {relEnv : RelationEnv} {language : LanguageDe
   | modulo canon presentations =>
     exact stepValid_equational_of_presented (fun _ _ listed => (canon_eq_of_mem_listedPresent listed).symm) _
       (stepValid_of_mem_presentedStepsAt member)
+  | moduloTabled canon presentations todo table complete =>
+    obtain ⟨-, checked⟩ := List.mem_filter.mp member
+    exact stepValid_equational_of_presented (fun _ _ listed => (canon_eq_of_mem_listedPresent listed).symm) _
+      (stepValid_of_checkPresentedStep _ (by simpa using checked))
 
 /-! ## Canonical forms and coherence -/
 
@@ -642,14 +650,16 @@ def canonicalRegion (rules : RuleReading := .reference) : Bool :=
         enoughAt relEnv language fuel presentations term rules &&
         (listedAt relEnv language fuel presentations term rules).all fun entry => canon entry.2 ∈ region))
 
-/-- **The canonical region as a finite structure**: its steps lead to the canonical forms of listed
-successors, and each admitted term names its canonical form. -/
-def canonicalExploration (rules : RuleReading := .reference) : FiniteStructure (Fin region.length) where
+/-- **The steps listed at each state of a region**, listed once. -/
+def regionListings (rules : RuleReading := .reference) : List (List (Witness × Pattern)) :=
+  region.map fun term => listedAt relEnv language fuel presentations term rules
+
+/-- The canonical region as a finite structure over its listings. -/
+def explorationOf (listings : List (List (Witness × Pattern))) : FiniteStructure (Fin region.length) where
   elements := List.finRange region.length
   complete := List.mem_finRange
   step source label target := isStateBool region[source] && isStateBool region[target] &&
-    (listedAt relEnv language fuel presentations region[source] rules).any fun entry =>
-      canon entry.2 == region[target] && label.admits entry.1
+    (listings.getD source.1 []).any fun entry => canon entry.2 == region[target] && label.admits entry.1
   built _ _ _ := false
   split _ _ _ _ := false
   empty _ _ := false
@@ -663,7 +673,17 @@ def canonicalExploration (rules : RuleReading := .reference) : FiniteStructure (
   apply inner _ := inner
   inRelation element relation := isObjectPattern region[element] && relationHolds relEnv language relation region[element]
 
+/-- **The canonical region as a finite structure**: its steps lead to the canonical forms of listed
+successors, and each admitted term names its canonical form. Each state's steps are listed once. -/
+def canonicalExploration (rules : RuleReading := .reference) : FiniteStructure (Fin region.length) :=
+  explorationOf relEnv language canon domain region (regionListings relEnv language fuel presentations region rules)
+
 variable {relEnv language fuel canon domain presentations region}
+
+theorem regionListings_getD {rules : RuleReading} (index : Fin region.length) :
+    (regionListings relEnv language fuel presentations region rules).getD index.1 [] =
+      listedAt relEnv language fuel presentations region[index] rules := by
+  simp [regionListings, List.getD_eq_getElem?_getD]
 
 theorem canonicalRegion_parts {rules : RuleReading}
     (closed : canonicalRegion relEnv language fuel canon domain presentations region rules = true) :
@@ -689,7 +709,7 @@ def regionMorphism (canonical : Canonical relEnv language canon domain reading)
   step := by
     intro source label target own checked
     change (_ && _ && _) = true at checked
-    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq] at checked
+    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq, regionListings_getD] at checked
     obtain ⟨⟨sourceState, targetState⟩, entry, member, same, admits⟩ := checked
     obtain ⟨sourceAdmitted, sourceCanon, sourceListing⟩ :=
       (canonicalRegion_parts closed).2 _ (List.getElem_mem source.2)
@@ -724,7 +744,7 @@ def regionMorphism (canonical : Canonical relEnv language canon domain reading)
     obtain ⟨target, isTarget⟩ := exists_index (successors entry member)
     refine ⟨target, ?_, isTarget.trans reached⟩
     show (_ && _ && _) = true
-    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq]
+    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq, regionListings_getD]
     refine ⟨⟨isStateBool_of_isState sourceState, isStateBool_of_isState (by rw [isTarget, reached]; exact targetState)⟩,
       entry, member, isTarget.symm, (sameLabels label).symm.trans admits⟩
   sameIff first second := by
@@ -889,7 +909,7 @@ def regionMorphismOn {admissible : StepLabel → Bool} (canonical : Canonical re
     intro source label target admittedLabel checked
     have own := StepLabel.isContext_of_admittedBy admittedLabel
     change (_ && _ && _) = true at checked
-    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq] at checked
+    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq, regionListings_getD] at checked
     obtain ⟨⟨sourceState, targetState⟩, entry, member, same, admits⟩ := checked
     obtain ⟨sourceAdmitted, sourceCanon, sourceListing⟩ :=
       (canonicalRegion_parts closed).2 _ (List.getElem_mem source.2)
@@ -925,7 +945,7 @@ def regionMorphismOn {admissible : StepLabel → Bool} (canonical : Canonical re
     obtain ⟨target, isTarget⟩ := exists_index (successors entry member)
     refine ⟨target, ?_, isTarget.trans reached⟩
     show (_ && _ && _) = true
-    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq]
+    simp only [Bool.and_eq_true, List.any_eq_true, beq_iff_eq, regionListings_getD]
     exact ⟨⟨isStateBool_of_isState sourceState, isStateBool_of_isState (by rw [isTarget, reached]; exact targetState)⟩,
       entry, member, isTarget.symm,
       (sameLabels label (StepLabel.admissible_of_admittedBy admittedLabel)).symm.trans admits⟩

@@ -2437,7 +2437,11 @@ belief states.  The formalization proves a concrete obstruction theorem
 for observation-only carriers and replaces the impossible additive
 theorem set with a \emph{credal} one: lower and upper latent-state
 strengths are packaged as an indefinite truth value, and these bounds
-are propagated into lower and upper finite-horizon decision values.%
+are propagated into lower and upper finite-horizon trace-mass values.
+The environment uses unnormalized extended-trace masses, whose row total is
+the past trace probability. Recursive envelopes re-select model-specific rows
+at later histories after the action is given; static values retain one model.
+Normalized conditional HMM planning remains a separate extension.%
 \footnote{Formalized in
 \codepath{Mettapedia/Logic/WMControlledFiniteHiddenMarkovCredal.lean}
 and packaged for downstream use in

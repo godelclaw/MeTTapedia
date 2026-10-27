@@ -26,6 +26,10 @@ premises.
   - a freshness condition reads the same names;
   - a quantified premise holds at each canonical member as it holds at a member of the same class.
 - **Coherence** (`modulo_coherent`, `moduloForms`): the front door's canonical forms for the reading.
+- **Listing by table** (`tabledFormsAt`): where a premise's child has the class of its term (`{x, x}` of `{x}`),
+  derivations nest without bound and no fuel lists them all. A table of the region reached from the asked term lists
+  them; it is certified once (`TableCertified`: every entry checks, and a round adds nothing), and its forms keep the
+  rule labels (`tabled_coherent`).
 
 A quantified premise whose body steps has one witness per element, and the copies of a member may step differently:
 labels that look under a rule's premises can tell the copies apart, rule labels cannot. The forms keep every label when
@@ -54,12 +58,10 @@ variable {language : LanguageDef} {sort : String}
 theorem object_collection_iff {kind : CollType} {elements : List Pattern} {rest : Option String} :
     IsObject (.collection kind elements rest) ↔ rest = none ∧ ∀ element ∈ elements, IsObject element := by
   simp only [IsObject, isObjectPattern, Bool.and_eq_true, isObjectPatternList_iff, Option.isNone_iff_eq_none]
-  rfl
 
 theorem object_apply_iff {label : String} {arguments : List Pattern} :
     IsObject (.apply label arguments) ↔ ∀ argument ∈ arguments, IsObject argument := by
   simp only [IsObject, isObjectPattern, isObjectPatternList_iff]
-  rfl
 
 theorem object_canon_iff {term : Pattern} : IsObject (canon term) ↔ IsObject term := by
   simp only [IsObject, BagForms.canon_object]
@@ -161,7 +163,7 @@ theorem applyBindingsScoped_object {lhs : Pattern} {bindings : Bindings} {rests 
     · rename_i entry found
       have object := kept.1 _ (List.mem_of_find?_eq_some found)
       split
-      · simp only [IsObject, Mettapedia.GSLT.LanguageDef.isObjectPattern_liftBVars]
+      · simp only [IsObject, Mettapedia.GSLT.LanguageDef.WellSorted.isObjectPattern_liftBVars]
         exact object
       · exact object
     · rfl
@@ -212,7 +214,7 @@ theorem applyBindingsScoped_object {lhs : Pattern} {bindings : Bindings} {rests 
       · exact elementsObject element inElements
       · split at inRest
         · obtain ⟨original, inside, rfl⟩ := List.mem_map.mp inRest
-          simp only [IsObject, Mettapedia.GSLT.LanguageDef.isObjectPattern_liftBVars]
+          simp only [IsObject, Mettapedia.GSLT.LanguageDef.WellSorted.isObjectPattern_liftBVars]
           exact restMembers original inside
         · exact restMembers element inRest
 
@@ -225,27 +227,26 @@ theorem find?_mergeBindings_of_find? : ∀ (second : Bindings) {first result : B
     simp only [mergeBindings, List.foldlM_nil, Option.pure_def, Option.some.injEq] at merged
     subst merged
     exact found
-  | head :: tail, first, result, name, entry, merged, found => by
+  | (headName, headValue) :: tail, first, result, name, entry, merged, found => by
     rw [mergeBindings_cons] at merged
-    cases hit : first.find? (fun item => item.1 == head.1) with
+    cases hit : first.find? (fun item : String × Pattern => item.1 == headName) with
     | none =>
       rw [hit] at merged
-      simp only [Option.bind_some] at merged
-      refine find?_mergeBindings_of_find? tail merged ?_
-      have other : head.1 ≠ name := by
+      have other : headName ≠ name := by
         intro same
         subst same
         rw [found] at hit
         cases hit
-      rw [List.find?_cons]
-      simp only [beq_iff_eq, other, if_false]
-      exact found
+      have miss : (headName == name) = false := beq_eq_false_iff_ne.mpr other
+      exact find?_mergeBindings_of_find? tail merged (by rw [List.find?_cons]; simp only [miss]; exact found)
     | some existing =>
+      obtain ⟨existingName, existingValue⟩ := existing
       rw [hit] at merged
-      split at merged
-      · simp only [Option.bind_some] at merged
+      by_cases same : existingValue = headValue
+      · subst same
+        simp only [beq_self_eq_true, ↓reduceIte, Option.bind_some] at merged
         exact find?_mergeBindings_of_find? tail merged found
-      · cases merged
+      · simp [beq_iff_eq, same] at merged
 
 theorem mem_of_mem_mergeBindings_left : ∀ (second : Bindings) {first result : Bindings} {entry : String × Pattern},
     mergeBindings first second = some result → entry ∈ first → entry ∈ result
@@ -253,33 +254,41 @@ theorem mem_of_mem_mergeBindings_left : ∀ (second : Bindings) {first result : 
     simp only [mergeBindings, List.foldlM_nil, Option.pure_def, Option.some.injEq] at merged
     subst merged
     exact member
-  | head :: tail, first, result, entry, merged, member => by
+  | (headName, headValue) :: tail, first, result, entry, merged, member => by
     rw [mergeBindings_cons] at merged
-    cases hit : first.find? (fun item => item.1 == head.1) with
+    cases hit : first.find? (fun item : String × Pattern => item.1 == headName) with
     | none =>
       rw [hit] at merged
-      simp only [Option.bind_some] at merged
       exact mem_of_mem_mergeBindings_left tail merged (List.mem_cons_of_mem _ member)
     | some existing =>
+      obtain ⟨existingName, existingValue⟩ := existing
       rw [hit] at merged
-      split at merged
-      · simp only [Option.bind_some] at merged
+      by_cases same : existingValue = headValue
+      · subst same
+        simp only [beq_self_eq_true, ↓reduceIte, Option.bind_some] at merged
         exact mem_of_mem_mergeBindings_left tail merged member
-      · cases merged
+      · simp [beq_iff_eq, same] at merged
+
+theorem find?_filter_of_imp {α : Type} {p q : α → Bool} : ∀ {list : List α},
+    (∀ item ∈ list, p item = true → q item = true) → (list.filter q).find? p = list.find? p
+  | [], _ => rfl
+  | item :: items, imp => by
+    have rest := find?_filter_of_imp (p := p) (q := q) fun other member => imp other (List.mem_cons_of_mem _ member)
+    by_cases hit : p item = true
+    · have kept := imp item List.mem_cons_self hit
+      simp [kept, hit]
+    · by_cases kept : q item = true
+      · simp [kept, hit, rest]
+      · simp [kept, hit, rest]
 
 theorem find?_bindParameter_of_ne {bindings : Bindings} {parameter name : String} {element : Pattern}
     (other : parameter ≠ name) :
     (bindParameter bindings parameter element).find? (·.1 == name) = bindings.find? (·.1 == name) := by
-  simp only [bindParameter, List.find?_cons, beq_iff_eq, other, if_false]
-  induction bindings with
-  | nil => rfl
-  | cons head tail ih =>
-    by_cases same : head.1 = parameter
-    · have : head.1 ≠ name := same ▸ other
-      simp [List.filter_cons, same, List.find?_cons, this, ih]
-    · by_cases hit : head.1 = name
-      · simp [List.filter_cons, same, List.find?_cons, hit]
-      · simp [List.filter_cons, same, List.find?_cons, hit, ih]
+  have miss : (parameter == name) = false := beq_eq_false_iff_ne.mpr other
+  simp only [bindParameter, List.find?_cons, miss]
+  refine find?_filter_of_imp fun item _ hit => ?_
+  have sameName : item.1 = name := by simpa using hit
+  simpa [sameName] using fun same : name = parameter => other same.symm
 
 theorem kept_merge {rests : List String} {bindings matched result : Bindings} (kept : Kept rests bindings)
     (objects : ∀ entry ∈ matched, IsObject entry.2) (merged : mergeBindings bindings matched = some result) :
@@ -301,7 +310,7 @@ theorem kept_bindParameter {rests : List String} {bindings : Bindings} {paramete
     · exact kept.1 entry inside
   · obtain ⟨elements, found⟩ := kept.2 name inRests
     refine ⟨elements, ?_⟩
-    rw [find?_bindParameter_of_ne (fun same => fresh (same ▸ inRests))]
+    rw [find?_bindParameter_of_ne (fun same => fresh (by rw [same]; exact inRests))]
     exact found
 
 theorem kept_canon {rests : List String} {bindings : Bindings} (kept : Kept rests bindings) :
@@ -484,14 +493,14 @@ theorem answersAlike_empty : AnswersAlike RelationEnv.empty language := by
       cases rest with
       | cons sameRight tail =>
         cases tail
-        simp only [List.mem_cons, List.mem_singleton, List.not_mem_nil, or_false] at member
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at member
         rcases member with rfl | rfl
         · refine ⟨fun value inside => ?_, _, List.mem_cons_self, .cons sameLeft (.cons sameLeft .nil)⟩
-          simp only [List.mem_cons, List.mem_singleton, List.not_mem_nil, or_false] at inside
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at inside
           rcases inside with rfl | rfl <;> exact objects _ List.mem_cons_self
         · refine ⟨fun value inside => ?_, _, List.mem_cons_of_mem _ List.mem_cons_self,
             .cons sameRight (.cons sameRight .nil)⟩
-          simp only [List.mem_cons, List.mem_singleton, List.not_mem_nil, or_false] at inside
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at inside
           rcases inside with rfl | rfl <;> exact objects _ (List.mem_cons_of_mem _ List.mem_cons_self)
   · cases member
 
@@ -503,11 +512,6 @@ structure ModuloSetLanguage (relEnv : RelationEnv) (language : LanguageDef) (car
   answers : AnswersAlike relEnv language
 
 /-! ## Labels -/
-
-/-- **The labels kept**: every label when `deep`; otherwise those that do not look under a rule's premises. -/
-def keptLabel (deep : Bool) : StepLabel → Bool
-  | .under _ _ => deep
-  | _ => true
 
 /-- Two witnesses every label reads alike. -/
 abbrev AgreeAll (first second : Witness) : Prop := ∀ label : StepLabel, label.admits first = label.admits second
@@ -536,7 +540,7 @@ abbrev listed (bounds : List ℕ) : Pattern → List Pattern :=
   listedPresent BagForms.sortBags (capturePresentations bounds)
 
 /-- **The reading of a language's rules modulo the set laws**, its steps listed under bounds by depth. -/
-def moduloReading (bounds : List ℕ) : LanguageReading := { rules := .modulo BagForms.sortBags (capturePresentations bounds) }
+abbrev moduloReading (bounds : List ℕ) : LanguageReading := lawsReading (capturePresentations bounds)
 
 /-- The set laws: terms with one canonical form. -/
 abbrev setLaws : Setoid Pattern := canonSetoid BagForms.sortBags
@@ -631,7 +635,7 @@ theorem forAll_members {relEnv : RelationEnv} {theory : Setoid Pattern} {sites :
       · obtain ⟨found, inside, result, valid⟩ := forAll_members tail other inTail
         exact ⟨found, List.mem_cons_of_mem _ inside, result, valid⟩
 
-theorem forAllValid_of_each {relEnv : RelationEnv} {present : Pattern → List Pattern} {sites : Pattern}
+theorem presentedForAllValid_of_each {relEnv : RelationEnv} {present : Pattern → List Pattern} {sites : Pattern}
     {bindings : Bindings} {parameter : String} {body : Premise} :
     ∀ (elements : List Pattern), (∀ element ∈ elements, ∃ witness result,
       PremiseValid relEnv language sites (bindParameter bindings parameter element) body witness result
@@ -640,7 +644,8 @@ theorem forAllValid_of_each {relEnv : RelationEnv} {present : Pattern → List P
   | [], _ => ⟨[], .presentedNil⟩
   | element :: elements, each => by
     obtain ⟨witness, result, valid⟩ := each element List.mem_cons_self
-    obtain ⟨bodies, rest⟩ := forAllValid_of_each elements fun other member => each other (List.mem_cons_of_mem _ member)
+    obtain ⟨bodies, rest⟩ :=
+      presentedForAllValid_of_each elements fun other member => each other (List.mem_cons_of_mem _ member)
     exact ⟨witness :: bodies, .presentedCons valid rest⟩
 
 /-! ## Relation queries -/
@@ -682,4 +687,392 @@ theorem matchRelationArgs_values : ∀ (arguments : List Pattern) {seed : Bindin
       | _ => simp [BagForms.isMetavariable] at metavariables
 termination_by arguments => arguments.length
 
+/-! ## Every step modulo the set laws is listed -/
+
+theorem object_of_sortBags {first second : Pattern} (same : BagForms.sortBags first = BagForms.sortBags second)
+    (object : IsObject first) : IsObject second := by
+  rw [BagForms.sortBags_eq_canon] at same
+  exact object_of_same same object
+
+theorem forall₂_same_canon : ∀ values : List Pattern, List.Forall₂ Same values (values.map canon)
+  | [] => .nil
+  | value :: values => .cons (canon_idempotent value).symm (forall₂_same_canon values)
+
+theorem sections_canon (bounds : List ℕ) : ∀ {tuple presented tuple' : List Pattern},
+    List.Forall₂ setLaws.r tuple presented → List.Forall₂ Same tuple tuple' →
+      presented.map canon ∈ List.sections (tuple'.map (listed bounds))
+  | [], [], [], .nil, .nil => by simp [List.sections]
+  | _ :: _, value :: _, other :: _, .cons related relatedRest, .cons same sameRest => by
+    rw [List.map_cons, List.map_cons]
+    refine List.mem_sections.mpr (.cons ?_ (List.mem_sections.mp (sections_canon bounds relatedRest sameRest)))
+    have class' : canon value = BagForms.sortBags other := by
+      have related' : BagForms.sortBags _ = BagForms.sortBags value := related
+      rw [BagForms.sortBags_eq_canon] at related' ⊢
+      exact related'.symm.trans same
+    rw [class']
+    exact sortBags_mem_listed bounds other
+
+theorem mem_of_lookup {bindings : Bindings} {name : String} {value : Pattern}
+    (found : Bindings.lookup bindings name = some value) : ∃ entry ∈ bindings, entry.2 = value := by
+  simp only [Bindings.lookup, Option.map_eq_some_iff] at found
+  obtain ⟨entry, hit, rfl⟩ := found
+  exact ⟨entry, List.mem_of_find?_eq_some hit, rfl⟩
+
+/-- The claim of `modulo_listed` for steps whose witnesses are smaller than `size`. -/
+def ListedBelow (relEnv : RelationEnv) (language : LanguageDef) (bounds : List ℕ) (deep : Bool) (size : ℕ) : Prop :=
+  ∀ (witness : Witness), sizeOf witness < size → ∀ {redex contractum : Pattern},
+    StepValid relEnv language redex witness contractum (.equational setLaws) → IsObject redex →
+      IsObject contractum ∧ ∃ shown ∈ capturePresentations bounds (BagForms.sortBags redex), ∃ witness' contractum',
+        StepValid relEnv language shown witness' contractum' (.presented (listed bounds)) ∧
+          (∀ label : StepLabel, keptLabel deep label = true → label.admits witness = label.admits witness') ∧
+            BagForms.sortBags contractum' = BagForms.sortBags contractum
+
+variable {relEnv : RelationEnv} {carrier : GrammarRule} {bounds : List ℕ} {deep : Bool}
+
+theorem agreeAll_of_kept {witness witness' : Witness} (isDeep : deep = true)
+    (agree : ∀ label : StepLabel, keptLabel deep label = true → label.admits witness = label.admits witness') :
+    AgreeAll witness witness' :=
+  fun label => agree label (by cases label <;> simp [keptLabel, isDeep])
+
+/-- **A step premise moves to canonical captures**: its child keeps its class, so the child's step is matched at a
+listed presentation of it, and the target's match moves to a listed presentation of the result. -/
+theorem stepPremise_listed {size : ℕ} (below : ListedBelow relEnv language bounds deep size) {rests : List String} {premise : Premise}
+    {source target : Pattern} (endpoints : stepEndpoints premise = some (source, target))
+    (schema : objectSchema rests source = true) (targetElement : NestedElement language carrier.category bounds target)
+    (targetDistinct : (patternNames target).Nodup) {sites : Pattern} {bindings result : Bindings} {witness : Witness}
+    (valid : PremiseValid relEnv language sites bindings premise witness result (.equational setLaws))
+    (small : sizeOf witness < size) (kept : Kept rests bindings) :
+    Kept rests result ∧ ∃ witness', PremiseValid relEnv language sites (BagForms.canonBindings bindings) premise
+      witness' (BagForms.canonBindings result) (.presented (listed bounds)) ∧
+      (deep = true → List.Forall₂ AgreeAll (premiseSteps witness) (premiseSteps witness')) := by
+  cases valid with
+  | @equationalStep _ _ _ matched _ _ source' target' redex contractum candidate step endpoints' before stepped after
+      presentedMatch merged =>
+    rw [endpoints] at endpoints'
+    simp only [Option.some.injEq, Prod.mk.injEq] at endpoints'
+    obtain ⟨rfl, rfl⟩ := endpoints'
+    have childObject := applyBindingsScoped_object (lhs := sites) kept source (stepDepth sites premise) schema
+    have sameChild : BagForms.sortBags (applyBindingsScoped sites (BagForms.canonBindings bindings)
+        (stepDepth sites premise) source) = BagForms.sortBags (applyBindingsScoped sites bindings (stepDepth sites premise)
+          source) := by
+      rw [BagForms.sortBags_eq_canon]
+      exact BagForms.applyBindingsScoped_same sites (BagForms.bindingsSame_canon bindings) _ source
+    have redexClass : BagForms.sortBags (applyBindingsScoped sites bindings (stepDepth sites premise) source) =
+        BagForms.sortBags redex := before
+    have redexObject : IsObject redex := object_of_sortBags redexClass childObject
+    have stepSmall : sizeOf step < size := by
+      simp only [Witness.premiseStep.sizeOf_spec] at small
+      omega
+    obtain ⟨contractumObject, shown, shownListed, step', contractum', stepped', agree, sameContractum⟩ :=
+      below step stepSmall stepped redexObject
+    have shownMember : shown ∈ listed bounds
+        (applyBindingsScoped sites (BagForms.canonBindings bindings) (stepDepth sites premise) source) := by
+      apply mem_listed
+      rw [sameChild, redexClass]
+      exact shownListed
+    obtain ⟨presented, candidatePresented, presentedMatched⟩ := presentedMatch
+    have afterClass : BagForms.sortBags contractum = BagForms.sortBags candidate := after
+    have presentedClass : BagForms.sortBags candidate = BagForms.sortBags presented := candidatePresented
+    have presentedObject : IsObject presented := object_of_sortBags (afterClass.trans presentedClass) contractumObject
+    have matchedRel := matchPattern_iff_matchRel.mp presentedMatched
+    obtain ⟨partner, partnerListed, partnerMatched⟩ :=
+      capture_transfer_object targetElement presentedObject matchedRel targetDistinct
+    have partnerMember : partner ∈ listed bounds contractum' := by
+      apply mem_listed
+      rw [sameContractum, afterClass, presentedClass]
+      exact partnerListed
+    refine ⟨kept_merge kept (captures_object matchedRel presentedObject) merged,
+      .premiseStep step' partner (BagForms.canonBindings matched) (BagForms.canonBindings result),
+      .presentedStep endpoints shownMember stepped' partnerMember (matchPattern_iff_matchRel.mpr partnerMatched)
+        (BagForms.mergeBindings_canon matched merged), fun isDeep => ?_⟩
+    exact .cons (agreeAll_of_kept isDeep agree) .nil
+  | equationalFreshness _ => simp [stepEndpoints] at endpoints
+  | equationalQuery _ => simp [stepEndpoints] at endpoints
+  | equationalForAll _ _ => simp [stepEndpoints] at endpoints
+
+/-- **A premise moves to canonical captures**, its steps matched at listed presentations. -/
+theorem premise_listed (lang : ModuloSetLanguage relEnv language carrier bounds deep) {size : ℕ}
+    (below : ListedBelow relEnv language bounds deep size) {rests : List String} :
+    ∀ (premise : Premise) {sites : Pattern} {bindings result : Bindings} {witness : Witness},
+      PremiseValid relEnv language sites bindings premise witness result (.equational setLaws) →
+      sizeOf witness < size → ModuloPremise language carrier.category bounds rests deep premise → Kept rests bindings →
+      Kept rests result ∧ ∃ witness', PremiseValid relEnv language sites (BagForms.canonBindings bindings) premise
+        witness' (BagForms.canonBindings result) (.presented (listed bounds)) ∧
+        (deep = true → List.Forall₂ AgreeAll (premiseSteps witness) (premiseSteps witness'))
+  | .freshness condition, sites, bindings, result, witness, valid, _, admitted, kept => by
+    cases valid with
+    | equationalFreshness member =>
+      obtain ⟨rfl, canonical⟩ := freshness_canon admitted member
+      exact ⟨kept, .base _, .presentedFreshness canonical, fun _ => .nil⟩
+    | equationalStep endpoints _ _ _ _ _ => simp [stepEndpoints] at endpoints
+  | .relationQuery relation arguments, sites, bindings, result, witness, valid, _, admitted, kept => by
+    cases valid with
+    | equationalQuery query =>
+      obtain ⟨tuple, provided, presented, related, extension, matched, merged⟩ := query
+      have requestCanon : arguments.map (applyBindings (BagForms.canonBindings bindings)) =
+          (arguments.map (applyBindings bindings)).map canon := by
+        rw [List.map_map]
+        apply List.map_congr_left
+        intro argument member
+        exact BagForms.applyBindings_metavariable_canon bindings (List.all_eq_true.mp admitted argument member)
+      have requestObjects : ∀ value ∈ arguments.map (applyBindings bindings), IsObject value := by
+        intro value member
+        obtain ⟨argument, inside, rfl⟩ := List.mem_map.mp member
+        have isVariable := List.all_eq_true.mp admitted argument inside
+        cases argument with
+        | fvar name =>
+          rw [BagForms.applyBindings_var]
+          cases found : Bindings.lookup bindings name with
+          | none => rfl
+          | some value =>
+            obtain ⟨entry, entryMember, rfl⟩ := mem_of_lookup found
+            exact kept.1 entry entryMember
+        | _ => simp [BagForms.isMetavariable] at isVariable
+      obtain ⟨tupleObjects, tuple', provided', sameTuple⟩ :=
+        lang.answers relation _ _ requestObjects (forall₂_same_canon _) tuple provided
+      rw [← requestCanon] at provided'
+      have presentedObjects : ∀ value ∈ presented, IsObject value := by
+        intro value member
+        obtain ⟨original, originalMember, related'⟩ := exists_left_of_forall₂ related value member
+        exact object_of_sortBags related' (tupleObjects original originalMember)
+      refine ⟨kept_merge kept (fun entry member => presentedObjects _
+          (matchRelationArgs_values arguments admitted matched entry member)) merged, .base _, .presentedQuery ?_,
+        fun _ => .nil⟩
+      simp only [presentedQueryStep, List.mem_flatMap, List.mem_filterMap]
+      exact ⟨tuple', provided', presented.map canon, sections_canon bounds related sameTuple, _,
+        BagForms.matchRelationArgs_canon arguments admitted matched, BagForms.mergeBindings_canon extension merged⟩
+    | equationalStep endpoints _ _ _ _ _ => simp [stepEndpoints] at endpoints
+  | .congruence source target, _, _, _, _, valid, small, admitted, kept =>
+    stepPremise_listed below rfl admitted.1 admitted.2.1 admitted.2.2 valid small kept
+  | .scopedStep premise, _, _, _, _, valid, small, admitted, kept =>
+    stepPremise_listed below rfl admitted.1 admitted.2.1 admitted.2.2 valid small kept
+  | .forAll collection parameter body, sites, bindings, result, witness, valid, small, admitted, kept => by
+    obtain ⟨fresh, bodyAdmitted, quiet⟩ := admitted
+    cases valid with
+    | @equationalForAll _ _ _ _ _ _ kind elements bodies found bodiesValid =>
+      obtain ⟨entry, entryMember, entryValue⟩ := mem_of_lookup found
+      have valueObject : IsObject (.collection kind elements none) := entryValue ▸ kept.1 entry entryMember
+      have elementsObject := (object_collection_iff.mp valueObject).2
+      have each : ∀ element ∈ arrange kind (elements.map canon), ∃ witness result,
+          PremiseValid relEnv language sites (bindParameter (BagForms.canonBindings bindings) parameter element) body
+            witness result (.presented (listed bounds)) := by
+        intro element member
+        obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp ((arrange_mem element).mp member)
+        obtain ⟨bodyWitness, bodyMember, bodyResult, bodyValid⟩ := forAll_members bodiesValid original originalMember
+        have bodySmall : sizeOf bodyWitness < size := by
+          have := List.sizeOf_lt_of_mem bodyMember
+          simp only [Witness.forAll.sizeOf_spec] at small
+          omega
+        obtain ⟨-, bodyWitness', bodyValid', -⟩ := premise_listed lang below body bodyValid bodySmall bodyAdmitted
+          (kept_bindParameter kept (elementsObject original originalMember) fresh)
+        rw [canonBindings_bindParameter] at bodyValid'
+        exact ⟨bodyWitness', _, bodyValid'⟩
+      obtain ⟨bodies', bodiesValid'⟩ := presentedForAllValid_of_each _ each
+      have found' : Bindings.lookup (BagForms.canonBindings bindings) collection =
+          some (.collection kind (arrange kind (elements.map canon)) none) := by
+        rw [BagForms.lookup_canonBindings, found]
+        simp [canon_collection]
+      refine ⟨kept, .forAll bodies', .presentedForAll found' bodiesValid', fun isDeep => ?_⟩
+      rw [forAllSteps_of_stepsInside body (quiet isDeep) bodiesValid,
+        forAllSteps_of_stepsInside body (quiet isDeep) bodiesValid']
+      exact .nil
+    | equationalStep endpoints _ _ _ _ _ => simp [stepEndpoints] at endpoints
+
+/-- **A rule's premises move to canonical captures.** -/
+theorem premises_listed (lang : ModuloSetLanguage relEnv language carrier bounds deep) {size : ℕ}
+    (below : ListedBelow relEnv language bounds deep size) {rests : List String} {sites : Pattern} :
+    ∀ {premises : List Premise} {bindings final : Bindings} {witnesses : List Witness},
+      PremisesValid relEnv language sites bindings premises witnesses final (.equational setLaws) →
+      (∀ witness ∈ witnesses, sizeOf witness < size) →
+      (∀ premise ∈ premises, ModuloPremise language carrier.category bounds rests deep premise) → Kept rests bindings →
+      Kept rests final ∧ ∃ witnesses', PremisesValid relEnv language sites (BagForms.canonBindings bindings) premises
+        witnesses' (BagForms.canonBindings final) (.presented (listed bounds)) ∧
+        (deep = true → List.Forall₂ AgreeAll (premiseStepsList witnesses) (premiseStepsList witnesses'))
+  | [], _, _, _, valid, _, _, kept => by
+    cases valid
+    exact ⟨kept, [], .presentedNil _, fun _ => .nil⟩
+  | premise :: premises, _, _, _, valid, small, admitted, kept => by
+    cases valid with
+    | equationalCons head tail =>
+      obtain ⟨middleKept, witness', head', headAgree⟩ :=
+        premise_listed lang below premise head (small _ List.mem_cons_self) (admitted premise List.mem_cons_self) kept
+      obtain ⟨finalKept, rest', tail', tailAgree⟩ :=
+        premises_listed lang below tail (fun other member => small other (List.mem_cons_of_mem _ member))
+          (fun other member => admitted other (List.mem_cons_of_mem _ member)) middleKept
+      exact ⟨finalKept, witness' :: rest', .presentedCons head' tail', fun isDeep =>
+        List.rel_append (headAgree isDeep) (tailAgree isDeep)⟩
+
+/-- **Every step modulo the set laws from an object term is listed** at a listed presentation of its canonical form,
+with the kept labels and up to canonical form, and leads to an object term. -/
+theorem modulo_listed (lang : ModuloSetLanguage relEnv language carrier bounds deep) :
+    ∀ size, ListedBelow relEnv language bounds deep size
+  | 0 => fun _ small => absurd small (Nat.not_lt_zero _)
+  | size + 1 => by
+    intro witness small redex contractum valid object
+    cases valid with
+    | @equationalRule _ _ index rule initial final witnesses found matched premises =>
+      have below := modulo_listed lang size
+      have admittedRule := lang.rules rule (List.mem_of_getElem? found)
+      rw [matchPatternForRule_eq_syntactic] at matched
+      have matchedRel := matchPattern_iff_matchRel.mp matched
+      have keptInitial : Kept (restNames rule.left) initial := by
+        refine ⟨captures_object matchedRel object, fun name inRests => ?_⟩
+        obtain ⟨elements, member⟩ := rests_bound admittedRule.left matchedRel name inRests
+        exact ⟨elements, find?_of_mem_nodup
+          (nested_captures_distinct admittedRule.left matchedRel admittedRule.distinct) member⟩
+      have premisesSmall : ∀ other ∈ witnesses, sizeOf other < size := by
+        intro other member
+        have := List.sizeOf_lt_of_mem member
+        simp only [Witness.rule.sizeOf_spec] at small
+        omega
+      obtain ⟨finalKept, witnesses', premises', agree⟩ :=
+        premises_listed lang below premises premisesSmall admittedRule.premises keptInitial
+      obtain ⟨partner, partnerListed, partnerMatched⟩ :=
+        capture_transfer_object admittedRule.left object matchedRel admittedRule.distinct
+      have matchedFinal : BagForms.canonBindings initial ∈ matchPatternForRule language rule partner := by
+        rw [matchPatternForRule_eq_syntactic]
+        exact matchPattern_iff_matchRel.mpr partnerMatched
+      refine ⟨applyBindingsScoped_object finalKept rule.right 0 admittedRule.right, partner, partnerListed, _, _,
+        .presentedRule found matchedFinal premises', admits_rule_agree deep agree, ?_⟩
+      rw [BagForms.sortBags_eq_canon]
+      exact BagForms.applyBindingsScoped_same _ (BagForms.bindingsSame_canon final) 0 rule.right
+
+/-! ## Canonical forms -/
+
+/-- The canonical forms of a hereditary set language read only its equations, so they serve the reading modulo the
+set laws. -/
+theorem moduloCanonicalDetermined (lang : HereditaryLanguage language carrier) (bounds : List ℕ) :
+    CanonicalDetermined relEnv language BagForms.sortBags (hereditary language carrier.category) (moduloReading bounds) :=
+  have forms := hereditary_canonicalDetermined (relEnv := relEnv) lang
+  { object := forms.object, determined := forms.determined, equivalent := forms.equivalent, same := forms.same,
+    closed := forms.closed }
+
+theorem moduloCanonical (lang : HereditaryLanguage language carrier) (bounds : List ℕ) :
+    Canonical relEnv language BagForms.sortBags (hereditary language carrier.category) (moduloReading bounds) :=
+  (moduloCanonicalDetermined lang bounds).canonical
+
+/-- **Coherence modulo the set laws**: a step from any presentation of a canonical hereditary set, with every internal
+boundary read modulo the set laws, is matched, with the kept labels and up to canonical form, by a step listed at a
+listed presentation. -/
+theorem modulo_coherent (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) :
+    CoherentOn relEnv language fuel BagForms.sortBags (hereditary language carrier.category) (capturePresentations bounds)
+      (keptLabel deep) (moduloReading bounds) := by
+  intro state redex witness contractum _ admitted canonState complete before redexState valid
+  have canonical := moduloCanonical (relEnv := relEnv) lang.hereditary bounds
+  have redexCanon : BagForms.sortBags redex = state := ((canonical.same admitted before).symm).trans canonState
+  obtain ⟨-, shown, listedShown, witness', contractum', fired, agree, same⟩ :=
+    modulo_listed lang _ witness (Nat.lt_succ_self _) valid redexState.2
+  rw [redexCanon] at listedShown
+  exact ⟨(witness', contractum'), mem_listedAt.mpr ⟨shown, listedShown,
+    mem_presentedStepsAt_of_enough (enoughAt_iff.mp complete _ listedShown) fired⟩, agree, same⟩
+
+/-- **The forms read the either structure**: the listed presentations do not change what a step is. -/
+theorem moduloReading_structure (bounds : List ℕ) :
+    referenceStructure relEnv language (moduloReading bounds) = eitherStructure relEnv language :=
+  lawsReading_structure relEnv language _
+
+/-- **Canonical forms for a hereditary set language read modulo the set laws**, for the front door. -/
+def moduloForms (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) :
+    CanonicalForms relEnv language fuel where
+  reading := moduloReading bounds
+  canon := BagForms.sortBags
+  domain := hereditary language carrier.category
+  canonical := moduloCanonical lang.hereditary bounds
+  presentations := capturePresentations bounds
+  labels := keptLabel deep
+  coherent := modulo_coherent lang fuel
+
+/-- **The forms read the either structure.** -/
+theorem moduloForms_structure (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) :
+    referenceStructure relEnv language (formsReading (some (moduloForms lang fuel))) = eitherStructure relEnv language :=
+  moduloReading_structure bounds
+
+/-! ## Listing by table -/
+
+/-- **The reading modulo the set laws listed by a table** given as evidence, under bounds by depth. -/
+abbrev tabledReading (bounds : List ℕ) (todo : List Pattern) (table : List Entry) (complete : Bool) :
+    LanguageReading :=
+  { rules := .moduloTabled BagForms.sortBags (capturePresentations bounds) todo table complete }
+
+theorem tabledReading_structure (bounds : List ℕ) (todo : List Pattern) (table : List Entry) (complete : Bool) :
+    referenceStructure relEnv language (tabledReading bounds todo table complete) = eitherStructure relEnv language :=
+  referenceStructure_congr rfl fun _ _ _ => Iff.rfl
+
+/-- **Coherence modulo the set laws, listed by a table**: a step from any presentation of a canonical hereditary set is
+matched, with the rule labels and up to canonical form, by a step the table lists at a listed presentation, wherever the
+table is certified and visits the presentation. -/
+theorem tabled_coherent (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) (todo : List Pattern)
+    (table : List Entry) {complete : Bool}
+    (certified : complete = true → TableCertified relEnv language (listed bounds) todo table = true) :
+    CoherentOn relEnv language fuel BagForms.sortBags (hereditary language carrier.category) (capturePresentations bounds)
+      (keptLabel false) (tabledReading bounds todo table complete) := by
+  intro state redex witness contractum _ admitted canonState complete' before redexState valid
+  have canonical := moduloCanonical (relEnv := relEnv) lang.hereditary bounds
+  have redexCanon : BagForms.sortBags redex = state := ((canonical.same admitted before).symm).trans canonState
+  obtain ⟨-, shown, listedShown, witness', contractum', fired, agree, same⟩ :=
+    modulo_listed lang _ witness (Nat.lt_succ_self _) valid redexState.2
+  rw [redexCanon] at listedShown
+  have enough := enoughAt_iff.mp complete' _ listedShown
+  simp only [ruleEnough, Bool.and_eq_true, decide_eq_true_eq] at enough
+  obtain ⟨isComplete, visited⟩ := enough
+  have checkedAll := certified isComplete
+  simp only [TableCertified, Bool.and_eq_true, List.all_eq_true] at checkedAll
+  obtain ⟨checked, stable⟩ := checkedAll
+  obtain ⟨entry, inside, sameRedex, sameRule, sameTarget⟩ :=
+    table_complete (stable_of_regionStable stable) _ _ (Nat.lt_succ_self _) visited fired
+  refine ⟨(entry.2.1, contractum'), mem_listedAt.mpr ⟨shown, listedShown, ?_⟩, fun label kept => ?_, same⟩
+  · show (entry.2.1, contractum') ∈ (tableStepper table shown).filter _
+    refine List.mem_filter.mpr ⟨?_, ?_⟩
+    · simp only [tableStepper, List.mem_map, List.mem_filter, beq_iff_eq]
+      exact ⟨entry, ⟨inside, sameRedex⟩, by rw [← sameTarget]⟩
+    · have entryChecked := checked entry inside
+      rw [sameRedex, sameTarget] at entryChecked
+      exact entryChecked
+  · have shallow : keptLabel deep label = true := by cases label <;> simp_all [keptLabel]
+    exact (agree label shallow).trans (admits_of_ruleIndex sameRule.symm label kept)
+
+/-- **Canonical forms modulo the set laws, listed by a table** given as evidence, keeping the rule labels. The table is
+certified once. -/
+def tabledFormsWith (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) (todo : List Pattern)
+    (table : List Entry) (complete : Bool)
+    (certified : complete = true → TableCertified relEnv language (listed bounds) todo table = true) :
+    CanonicalForms relEnv language fuel where
+  reading := tabledReading bounds todo table complete
+  canon := BagForms.sortBags
+  domain := hereditary language carrier.category
+  canonical := (show CanonicalDetermined relEnv language BagForms.sortBags (hereditary language carrier.category)
+    (tabledReading bounds todo table complete) from
+      have forms := moduloCanonicalDetermined (relEnv := relEnv) lang.hereditary bounds
+      { object := forms.object, determined := forms.determined, equivalent := forms.equivalent, same := forms.same,
+        closed := forms.closed }).canonical
+  presentations := capturePresentations bounds
+  labels := keptLabel false
+  coherent := tabled_coherent lang fuel todo table certified
+
+/-- Tabled forms from a table, certified once. -/
+def tabledForms (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) (todo : List Pattern)
+    (table : List Entry) : CanonicalForms relEnv language fuel :=
+  tabledFormsWith lang fuel todo table (TableCertified relEnv language (listed bounds) todo table) id
+
+/-- Tabled forms from a tabulated region. -/
+def tabledFormsOf (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ)
+    (region : List Pattern × List Entry) : CanonicalForms relEnv language fuel :=
+  tabledForms lang fuel region.1 region.2
+
+/-- **The tabled forms for a question about a term**: the region reached from the presentations of its canonical form,
+tabulated within `rounds`, certified once. -/
+def tabledFormsAt (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ) (term : Pattern)
+    (rounds : ℕ) : CanonicalForms relEnv language fuel :=
+  tabledFormsOf lang fuel (regionTabulate relEnv language (listed bounds) rounds
+    (capturePresentations bounds (BagForms.sortBags term)) [])
+
+/-- **The tabled forms read the either structure.** -/
+theorem tabledFormsAt_structure (lang : ModuloSetLanguage relEnv language carrier bounds deep) (fuel : ℕ)
+    (term : Pattern) (rounds : ℕ) :
+    referenceStructure relEnv language (formsReading (some (tabledFormsAt lang fuel term rounds))) =
+      eitherStructure relEnv language :=
+  tabledReading_structure _ _ _ _
+
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetReadings
+
+

@@ -1055,15 +1055,18 @@
         ($_ False)))
      False))
 
+; The grounded iterator consumes a list value. Resolve a supplied list-producing
+; program before entering it; Atom-typed callers may retain that program as data.
 (= (gic-index-load-constructors $space $constructors)
-   (case
-     (chain (context-space) $fold-space
-       (eval
-         (_minimal-foldl-llist $constructors True $valid $declaration
-           (gic-index-load-constructor-step $space $valid $declaration)
-           $fold-space)))
-     (((return $result) $result)
-      ($_ False))))
+   (let $rows $constructors
+     (case
+       (chain (context-space) $fold-space
+         (eval
+           (_minimal-foldl-llist $rows True $valid $declaration
+             (gic-index-load-constructor-step $space $valid $declaration)
+             $fold-space)))
+       (((return $result) $result)
+        ($_ False)))))
 
 (= (gic-index-load-judgment-step $space $valid $declaration)
    (if $valid
@@ -1089,14 +1092,15 @@
      False))
 
 (= (gic-index-load-judgments $space $judgments)
-   (case
-     (chain (context-space) $fold-space
-       (eval
-         (_minimal-foldl-llist $judgments True $valid $declaration
-           (gic-index-load-judgment-step $space $valid $declaration)
-           $fold-space)))
-     (((return $result) $result)
-      ($_ False))))
+   (let $rows $judgments
+     (case
+       (chain (context-space) $fold-space
+         (eval
+           (_minimal-foldl-llist $rows True $valid $declaration
+             (gic-index-load-judgment-step $space $valid $declaration)
+             $fold-space)))
+       (((return $result) $result)
+        ($_ False)))))
 
 (= (gic-index-load-rule-step $space $valid $rule)
    (if $valid
@@ -1119,14 +1123,15 @@
      False))
 
 (= (gic-index-load-rules $space $rules)
-   (case
-     (chain (context-space) $fold-space
-       (eval
-         (_minimal-foldl-llist $rules True $valid $rule
-           (gic-index-load-rule-step $space $valid $rule)
-           $fold-space)))
-     (((return $result) $result)
-      ($_ False))))
+   (let $rows $rules
+     (case
+       (chain (context-space) $fold-space
+         (eval
+           (_minimal-foldl-llist $rows True $valid $rule
+             (gic-index-load-rule-step $space $valid $rule)
+             $fold-space)))
+       (((return $result) $result)
+        ($_ False)))))
 
 ; The language is destructured exactly once at the public boundary.  Passing a
 ; large serialized language through a second helper duplicates a deeply nested
@@ -1285,14 +1290,15 @@
      False))
 
 (= (gic-index-check-dag-list $space $nodes)
-   (case
-     (chain (context-space) $fold-space
-       (eval
-         (_minimal-foldl-llist $nodes True $valid $node
-           (gic-index-check-dag-list-step $space $valid $node)
-           $fold-space)))
-     (((return $result) $result)
-      ($_ False))))
+   (let $rows $nodes
+     (case
+       (chain (context-space) $fold-space
+         (eval
+           (_minimal-foldl-llist $rows True $valid $node
+             (gic-index-check-dag-list-step $space $valid $node)
+             $fold-space)))
+       (((return $result) $result)
+        ($_ False)))))
 
 (= (gic-index-check-dag-list-valid $space $goal $root-id $nodes)
    (if (gic-index-check-dag-list $space $nodes)
@@ -1308,14 +1314,15 @@
    (if $valid (gic-index-check-dag-list $space $nodes) False))
 
 (= (gic-index-check-dag-blocks $space $blocks)
-   (case
-     (chain (context-space) $fold-space
-       (eval
-         (_minimal-foldl-llist $blocks True $valid $nodes
-           (gic-index-check-dag-block-step $space $valid $nodes)
-           $fold-space)))
-     (((return $result) $result)
-      ($_ False))))
+   (let $rows $blocks
+     (case
+       (chain (context-space) $fold-space
+         (eval
+           (_minimal-foldl-llist $rows True $valid $nodes
+             (gic-index-check-dag-block-step $space $valid $nodes)
+             $fold-space)))
+       (((return $result) $result)
+        ($_ False)))))
 
 (= (gic-index-check-dag-blocks-valid $space $goal $root-id $blocks)
    (if (gic-index-check-dag-blocks $space $blocks)
@@ -1625,7 +1632,8 @@
      (((GICIndexOK $space) (gic-index-checks $space $checks))
       ($_ False))))
 
-; ---------- Executable teeth ------------------------------------------------
+; ---------- Calibration declarations ---------------------------------------
+; Executable assertions live in generic_inference_checker_controls_v0.metta.
 (= (gic-A) (PApp "A" LNil))
 (= (gic-B) (PApp "B" LNil))
 (= (gic-imp $left $right)
@@ -1726,154 +1734,41 @@
      (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
      (PrCons (gic-proof-a) (PrCons (gic-proof-imp-ab) PrNil))))
 
-!(assertEqual (gic-language-valid (gic-language)) True)
-!(assertEqual (gic-check (gic-language) (gic-proves (gic-B)) (gic-proof-b)) True)
-!(assertEqual
-  (gic-check (gic-language) (gic-proves (gic-A)) (gic-proof-b))
-  False)
-!(assertEqual
-  (gic-check (gic-language) (gic-proves (gic-B))
-    (GProof
-      (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-      (PrCons (gic-proof-imp-ab) (PrCons (gic-proof-a) PrNil))))
-  False)
-!(assertEqual
-  (gic-check (gic-language) (gic-proves (gic-B))
-    (GProof
-      (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-      (PrCons (gic-proof-a) PrNil)))
-  False)
-!(assertEqual
-  (gic-check (gic-language) (gic-proves (gic-B))
-    (GProof
-      (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-      (PrCons (gic-proof-a)
-        (PrCons (gic-proof-imp-ab) (PrCons (gic-proof-a) PrNil)))))
-  False)
-!(assertEqual
-  (gic-check (gic-language) (gic-proves (gic-B))
-    (GProof (GRuleInst "missing-rule" LNil) PrNil))
-  False)
+
+
+
+
+
+
+
 
 ; Exact-depth binder argument: Var 0 is closed relative to depth one.
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-proves (PLam BNone (Var 0)))
-    (GProof (GRuleInst "lam" (LCons (Var 0) LNil)) PrNil))
-  True)
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-proves (PLam BNone (Var 1)))
-    (GProof (GRuleInst "lam" (LCons (Var 1) LNil)) PrNil))
-  False)
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-proves (PLam BNone (PLam (BSome "x") (Var 0))))
-    (GProof
-      (GRuleInst "lam" (LCons (PLam (BSome "x") (Var 0)) LNil)) PrNil))
-  False)
+
+
+
 
 ; Explicit substitution is transported as syntax; it is not evaluated here.
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-proves (PSubst (Var 0) (gic-A)))
-    (GProof
-      (GRuleInst "subst" (LCons (Var 0) (LCons (gic-A) LNil))) PrNil))
-  True)
+
 
 ; Generic side conditions are executable parts of the same flat language.
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-substitutes (Var 0) (gic-A) (gic-A))
-    (GProof
-      (GRuleInst "explicit-substitution"
-        (LCons (Var 0) (LCons (gic-A) (LCons (gic-A) LNil))))
-      PrNil))
-  True)
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-substitutes (Var 0) (gic-A) (gic-B))
-    (GProof
-      (GRuleInst "explicit-substitution"
-        (LCons (Var 0) (LCons (gic-A) (LCons (gic-B) LNil))))
-      PrNil))
-  False)
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-drops-unused (gic-A) (gic-A))
-    (GProof
-      (GRuleInst "unused-binder-elimination"
-        (LCons (gic-A) (LCons (gic-A) LNil)))
-      PrNil))
-  True)
-!(assertEqual
-  (gic-check (gic-language)
-    (gic-drops-unused (Var 0) (gic-A))
-    (GProof
-      (GRuleInst "unused-binder-elimination"
-        (LCons (Var 0) (LCons (gic-A) LNil)))
-      PrNil))
-  False)
+
+
+
+
 
 ; Admission negatives ensure malformed serialized languages cannot acquire
 ; validity merely because one rule lookup happens to succeed.
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1 1 (gic-constructors) (gic-judgments)
-      (LCons (gic-ax-a) (LCons (gic-ax-a) LNil)) GNoConversion))
-  False)
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1 1 (gic-constructors) (gic-judgments)
-      (LCons
-        (GRuleV1 "bad-depth" (LCons (Formal "x" 0) LNil) LNil
-          (gic-proves (PLam BNone (FVar "x"))) LNil)
-        LNil)
-      GNoConversion))
-  False)
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1 1 (gic-constructors) (gic-judgments)
-      (LCons
-        (GRuleV1 "bad-rest" (LCons (Formal "x" 0) LNil) LNil
-          (gic-proves (PCollection "Bag" LNil (RSome "x"))) LNil)
-        LNil)
-      GNoConversion))
-  False)
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1
-      2 (gic-constructors) (gic-judgments) (gic-rules) GNoConversion))
-  False)
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1 1
-      (gic-constructors) (gic-judgments) (gic-rules)
-      (GConversion "Proves" "conversion-v1")))
-  False)
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1 1
-      (gic-constructors) (gic-judgments) (gic-rules)
-      (GConversion "Converts" "conversion-v1")))
-  True)
-!(assertEqual
-  (gic-language-valid
-    (GInferenceLanguageV1 1 (gic-constructors) (gic-judgments)
-      (LCons (gic-invalid-side-condition-rule) LNil)
-      GNoConversion))
-  False)
+
+
+
+
+
+
+
 
 ; Batch admission validates the language once, then checks both the
 ; positive witness and its exact wrong-goal negative against the same rules.
-!(assertEqual
-  (gic-check-batch (gic-language)
-    (CheckCons
-      (GCheck (gic-proves (gic-B)) (gic-proof-b) True)
-      (CheckCons
-        (GCheck (gic-proves (gic-A)) (gic-proof-b) False)
-        CheckNil)))
-  True)
+
 
 (= (gic-proof-dag)
    (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
@@ -1884,65 +1779,14 @@
            (DrCons "a" (DrCons "imp" DrNil)))
          DnNil))))
 
-!(assertEqual
-  (gic-check-dag (gic-language) (gic-proves (gic-B)) "b"
-    (gic-proof-dag))
-  True)
-!(assertEqual
-  (gic-check-dag (gic-language) (gic-proves (gic-B)) "b"
-    (DnCons
-      (GDNode "b"
-        (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-        (DrCons "a" (DrCons "imp" DrNil)))
-      (gic-proof-dag)))
-  False)
-!(assertEqual
-  (gic-check-dag (gic-language) (gic-proves (gic-B)) "b"
-    (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-      (DnCons (GDNode "a" (GRuleInst "ax-imp-ab" LNil) DrNil) DnNil)))
-  False)
-!(assertEqual
-  (gic-check-dag (gic-language) (gic-proves (gic-B)) "b"
-    (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-      (DnCons (GDNode "imp" (GRuleInst "ax-imp-ab" LNil) DrNil)
-        (DnCons
-          (GDNode "b"
-            (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-            (DrCons "missing" (DrCons "imp" DrNil)))
-          DnNil))))
-  False)
-!(assertEqual
-  (gic-check-dag (gic-language) (gic-proves (gic-B)) "b"
-    (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-      (DnCons (GDNode "imp" (GRuleInst "ax-imp-ab" LNil) DrNil)
-        (DnCons
-          (GDNode "b"
-            (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-            (DrCons "imp" (DrCons "a" DrNil)))
-          DnNil))))
-  False)
-!(assertEqual
-  (gic-check-dag-batch (gic-language) (gic-proof-dag)
-    (DagCheckCons
-      (GDagRootCheck (gic-proves (gic-B)) "b" True)
-      (DagCheckCons
-        (GDagRootCheck (gic-proves (gic-B)) "missing" False)
-        DagCheckNil)))
-  True)
-!(assertEqual
-  (gic-check-dag-indexed (gic-language) (gic-proves (gic-B)) "b"
-    (gic-proof-dag))
-  True)
-!(assertEqual
-  (gic-check-dag-indexed (gic-language) (gic-proves (gic-B)) "b"
-    (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-      (DnCons (GDNode "imp" (GRuleInst "ax-imp-ab" LNil) DrNil)
-        (DnCons
-          (GDNode "b"
-            (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-            (DrCons "missing" (DrCons "imp" DrNil)))
-          DnNil))))
-  False)
+
+
+
+
+
+
+
+
 (= (gic-proof-dag-chunks)
    (DcCons
      (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
@@ -1954,25 +1798,8 @@
            (DrCons "a" (DrCons "imp" DrNil)))
          DnNil)
        DcNil)))
-!(assertEqual
-  (gic-check-dag-chunks-indexed
-    (gic-language) (gic-proves (gic-B)) "b"
-    (gic-proof-dag-chunks))
-  True)
-!(assertEqual
-  (gic-check-dag-chunks-indexed
-    (gic-language) (gic-proves (gic-B)) "b"
-    (DcCons
-      (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-        (DnCons (GDNode "imp" (GRuleInst "ax-imp-ab" LNil) DrNil) DnNil))
-      (DcCons
-        (DnCons
-          (GDNode "b"
-            (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-            (DrCons "missing" (DrCons "imp" DrNil)))
-          DnNil)
-        DcNil)))
-  False)
+
+
 (= (gic-proof-dag-streaming-chunks)
    (DscCons
      (DsnCons
@@ -1993,157 +1820,20 @@
            (DrCons 0 (DrCons 1 DrNil)))
          DsnNil)
        DscNil)))
-!(assertEqual
-  (gic-check-dag-streaming-indexed
-    (gic-language) (gic-proves (gic-B)) 2
-    (gic-proof-dag-streaming-chunks))
-  True)
+
 ; A needed premise released after node zero is absent at node two.
-!(assertEqual
-  (gic-check-dag-streaming-indexed
-    (gic-language) (gic-proves (gic-B)) 2
-    (DscCons
-      (DsnCons
-        (GSLiveNode
-          (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-          (DrCons 0 DrNil))
-        (DsnCons
-          (GSLiveNode
-            (GDNode 1 (GRuleInst "ax-imp-ab" LNil) DrNil)
-            DrNil)
-          DsnNil))
-      (DscCons
-        (DsnCons
-          (GSLiveNode
-            (GDNode 2
-              (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-              (DrCons 0 (DrCons 1 DrNil)))
-            (DrCons 1 DrNil))
-          DsnNil)
-        DscNil)))
-  False)
+
 ; Consecutive IDs reject reuse even after the old entry was released.
-!(assertEqual
-  (gic-check-dag-streaming-indexed
-    (gic-language) (gic-proves (gic-B)) 2
-    (DscCons
-      (DsnCons
-        (GSLiveNode
-          (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-          (DrCons 0 DrNil))
-        (DsnCons
-          (GSLiveNode
-            (GDNode 0 (GRuleInst "ax-imp-ab" LNil) DrNil)
-            DrNil)
-          DsnNil))
-      DscNil))
-  False)
+
 ; Unknown releases fail closed.
-!(assertEqual
-  (gic-check-dag-streaming-indexed
-    (gic-language) (gic-proves (gic-A)) 0
-    (DscCons
-      (DsnCons
-        (GSLiveNode
-          (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-          (DrCons 99 DrNil))
-        DsnNil)
-      DscNil))
-  False)
-!(assertEqual
-  (gic-check-dag-pure-streaming
-    (gic-language) (gic-proves (gic-B)) 2
-    (gic-proof-dag-streaming-chunks))
-  True)
-!(assertEqual
-  (gic-check-dag-pure-stream-step
-    (gic-language)
-    (GICPureStreamState 0 DEnvNil)
-    (DsnCons
-      (GSLiveNode
-        (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-        DrNil)
-      (DsnCons
-        (GSLiveNode
-          (GDNode 1 (GRuleInst "ax-imp-ab" LNil) DrNil)
-          DrNil)
-        DsnNil)))
-  (GICPureStreamOK
-    (GICPureStreamState 2
-      (DEnvCons
-        (DVal 1 (gic-proves (gic-imp (gic-A) (gic-B))))
-        (DEnvCons (DVal 0 (gic-proves (gic-A))) DEnvNil)))))
-!(assertEqual
-  (gic-check-dag-pure-streaming
-    (gic-language) (gic-proves (gic-B)) 2
-    (DscCons
-      (DsnCons
-        (GSLiveNode
-          (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-          (DrCons 0 DrNil))
-        (DsnCons
-          (GSLiveNode
-            (GDNode 1 (GRuleInst "ax-imp-ab" LNil) DrNil)
-            DrNil)
-          DsnNil))
-      (DscCons
-        (DsnCons
-          (GSLiveNode
-            (GDNode 2
-              (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-              (DrCons 0 (DrCons 1 DrNil)))
-            (DrCons 1 DrNil))
-          DsnNil)
-        DscNil)))
-  False)
-!(assertEqual
-  (gic-check-dag-pure-streaming
-    (gic-language) (gic-proves (gic-B)) 2
-    (DscCons
-      (DsnCons
-        (GSLiveNode
-          (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-          (DrCons 0 DrNil))
-        (DsnCons
-          (GSLiveNode
-            (GDNode 0 (GRuleInst "ax-imp-ab" LNil) DrNil)
-            DrNil)
-          DsnNil))
-      DscNil))
-  False)
-!(assertEqual
-  (gic-check-dag-pure-streaming
-    (gic-language) (gic-proves (gic-A)) 0
-    (DscCons
-      (DsnCons
-        (GSLiveNode
-          (GDNode 0 (GRuleInst "ax-a" LNil) DrNil)
-          (DrCons 99 DrNil))
-        DsnNil)
-      DscNil))
-  False)
-!(assertEqual
-  (gic-check-dag-terminal-indexed
-    (gic-language) (gic-proves (gic-B))
-    (DcCons
-      (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-        (DnCons (GDNode "imp" (GRuleInst "ax-imp-ab" LNil) DrNil) DnNil))
-      DcNil)
-    (GDNode "b"
-      (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-      (DrCons "a" (DrCons "imp" DrNil))))
-  True)
-!(assertEqual
-  (gic-check-dag-terminal-indexed
-    (gic-language) (gic-proves (gic-B))
-    (DcCons
-      (DnCons (GDNode "a" (GRuleInst "ax-a" LNil) DrNil)
-        (DnCons (GDNode "imp" (GRuleInst "ax-imp-ab" LNil) DrNil) DnNil))
-      DcNil)
-    (GDNode "b"
-      (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil)))
-      (DrCons "missing" (DrCons "imp" DrNil))))
-  False)
+
+
+
+
+
+
+
+
 
 (= (gic-proof-b-trace)
    (GaCons (GApply (GRuleInst "ax-a" LNil))
@@ -2157,47 +1847,3 @@
      (GaCons GSave
        (GaCons (GRef 0)
          (GaCons (GApply (GRuleInst "join-a" LNil)) GaNil)))))
-
-!(assertEqual
-  (gic-check-trace (gic-language) (gic-proves (gic-B))
-    (gic-proof-b-trace))
-  True)
-!(assertEqual
-  (gic-check-trace (gic-language) (gic-proves (gic-A))
-    (gic-saved-a-trace))
-  True)
-!(assertEqual
-  (gic-check-trace (gic-language) (gic-proves (gic-A))
-    (GaCons (GRef 0) GaNil))
-  False)
-!(assertEqual
-  (gic-check-trace (gic-language) (gic-proves (gic-B))
-    (GaCons
-      (GApply (GRuleInst "mp" (LCons (gic-A) (LCons (gic-B) LNil))))
-      GaNil))
-  False)
-!(assertEqual
-  (gic-check-trace (gic-language) (gic-proves (gic-A))
-    (GaCons (GApply (GRuleInst "ax-a" LNil))
-      (GaCons (GApply (GRuleInst "ax-a" LNil)) GaNil)))
-  False)
-!(assertEqual
-  (gic-check-trace-batch (gic-language)
-    (TraceCheckCons
-      (GTraceCheck (gic-proves (gic-B)) (gic-proof-b-trace) True)
-      (TraceCheckCons
-        (GTraceCheck (gic-proves (gic-A))
-          (GaCons (GRef 0) GaNil) False)
-        TraceCheckNil)))
-  True)
-!(assertEqual
-  (gic-check-trace-indexed (gic-language)
-    (TraceCheckCons
-      (GTraceCheck (gic-proves (gic-B)) (gic-proof-b-trace) True)
-      (TraceCheckCons
-        (GTraceCheck (gic-proves (gic-A))
-          (GaCons (GRef 0) GaNil) False)
-        TraceCheckNil)))
-  True)
-
-!(GICSummary 51 51 0)

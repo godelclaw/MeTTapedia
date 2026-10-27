@@ -301,6 +301,15 @@ input_file gsltModuleSource where
   path := "../../metta/gslt/lib/gslt_module.metta"
   text := false
 
+input_dir gsltSouffleDatalogModuleSources where
+  path := "../../metta/gslt/module/gold/SouffleDatalog"
+  text := true
+  filter := .extension "module"
+
+lean_lib GSLTSouffleDatalogQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.SouffleDatalog]
+  needs := #[`@/gsltSouffleDatalogModuleSources]
+
 lean_lib GSLTModuleQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ModuleAssemblyExecution]
   needs := #[`@/gsltModuleSource]

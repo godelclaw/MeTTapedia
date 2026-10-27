@@ -178,8 +178,9 @@ theorem pool_eventually_open :
 /-- **The front door decides the pool as the language's semantics has it**: some run from `{A}` reaches `{B}`, and
 not every run does, as `either_verdicts` derives from the least fixed points. -/
 theorem pool_verdicts :
-    Either.sat Env.closed (reaches onlyB) onlyA ∧ ¬ Either.sat Env.closed (eventually onlyB) onlyA :=
-  ⟨ask_proved pool_reaches_answer, ask_refuted pool_eventually_answer⟩
+    Either.sat Env.closed (reaches onlyB) onlyA ∧ ¬ Either.sat Env.closed (eventually onlyB) onlyA := by
+  rw [show Either = referenceStructure RelationEnv.empty pool from eitherStructure_of_premises_nil _ _ pool_premises_nil]
+  exact ⟨ask_proved pool_reaches_answer, ask_refuted pool_eventually_answer⟩
 
 /-! ## Mixtures at the front door -/
 

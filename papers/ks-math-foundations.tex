@@ -1,5 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
+\DeclareUnicodeCharacter{0398}{\ensuremath{\Theta}}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{hyperref}
 \usepackage{url}
@@ -392,9 +393,9 @@ the key axiom is distributivity:
 \]
 
 \begin{remark}[Why the multiplicative case needs a different interface]
-For multiplication on $(0,\infty)$, the identity $1$ is \emph{not} a minimum.  So an attempt to reuse the
-additive semigroup interface for $\otimes$ would be structurally mismatched.
-Instead one derives that $\otimes$ is multiplication-like from distributivity and associativity.
+An identity need not be a minimum element. The direct tensor route uses
+associativity, distributivity and an injective right scaling map; the global
+inverse route instead consumes an additive order isomorphism onto the reals.
 \end{remark}
 
 \begin{theorem}[Product representation]
@@ -406,6 +407,7 @@ Instead one derives that $\otimes$ is multiplication-like from distributivity an
   \item Distributive over $+$: $(x+y)\otimes t = (x\otimes t)+(y\otimes t)$.
   \item Associative: $(x\otimes y)\otimes z = x\otimes(y\otimes z)$.
   \item Positive: $x,y>0 \Rightarrow x\otimes y > 0$.
+  \item The map $t\mapsto1\otimes t$ is injective.
   \end{itemize}
 \end{itemize}
 \textbf{Conclusion:}
@@ -419,8 +421,15 @@ We have two proof routes with different flavors.
 Fix $t$ and consider $f_t(x) := x\otimes t$ on $(0,\infty)$.
 Distributivity says $f_t$ is additive on positive reals.  Positivity of $\otimes$ rules out
 Hamel-basis pathologies (Gate~R) and forces $f_t(x)=k(t)\,x$.
-Associativity then forces the scale factors to be coherent: $k(t)=c\,t$ for a constant $c>0$,
-yielding $x\otimes y = xy/C$.
+Associativity and injectivity of $k$ reflect commutativity and give
+$k(t)=tk(1)$, yielding $x\otimes y=xy/C$.
+Left projection is associative, positive and distributive, but has a constant
+right scaling map and does not have this multiplication representation.
+
+For normalized event valuations, only attained-value distributivity follows
+from disjoint additivity and rectangle compatibility. A global positive-real
+preimage premise is impossible because all values are at most one. The finite
+three-point/Boolean example verifies the attained law with distinct masses.
 
 \subsection{Fibonacci proof (K\&S original)}
 
@@ -619,7 +628,7 @@ For a probability distribution $p$ on $n$ states, Shannon entropy appears as the
 \[
 S(p) = -\sum_{i=1}^n p_i\log p_i = \log n - D(p\,\|\,\mathrm{uniform}).
 \]
-Entropy is the KL divergence from $p$ to the uniform distribution.
+Entropy is $\log n$ minus the KL divergence from $p$ to the uniform distribution.
 
 \paragraph{Countable/discrete measures.}
 The same formulas make sense for countable state spaces as series, and they can be identified with the
@@ -694,30 +703,22 @@ The event algebra admits countable joins: for any sequence $(e_n)$ of events,
 the supremum $\bigsqcup_n e_n$ exists.
 \end{axiom}
 
-\begin{axiom}[Scale completeness]
-The scale $S$ is sequentially complete: every bounded monotone sequence $(s_n)$ has a supremum.
+\begin{axiom}[Represented sequential scale closure]
+For the supplied additive order representation $\Theta:S\to\mathbb{R}$,
+every bounded increasing sequence in $\Theta(S)$ has its real supremum in $\Theta(S)$.
 \end{axiom}
 
-\begin{axiom}[Scott continuity]
-The valuation $v : E \to S$ is Scott continuous: for any directed family\footnote{A family
-where any two elements have an upper bound in the family---the natural generalization
-of ``increasing sequence'' to non-linear index sets.} $(e_i)_{i \in I}$,
-$v(\bigsqcup_i e_i) = \bigsqcup_i v(e_i)$.
+\begin{axiom}[Increasing-sequence continuity]
+For each increasing event sequence $(e_n)$, the represented values are increasing
+and bounded, and
+$\Theta(v(\bigsqcup_n e_n))=\sup_n\Theta(v(e_n))$.
 \end{axiom}
 
-These axioms are \textbf{necessary}---they cannot be derived from the basic K\&S axioms---but
-they are mathematically natural extensions that preserve the core algebraic structure.
-The Archimedean property (no infinitesimals) already constrains the scale to embed into $\mathbb{R}$,
-and scale completeness is the natural additional requirement for handling infinite operations.
-
-\begin{remark}[Categorical perspective: $\sigma$-frames]
-From a categorical viewpoint, moving from Boolean algebras to $\sigma$-algebras corresponds to
-moving from frames to \emph{$\sigma$-frames} (lattices with countable joins and finite meets,
-where finite meets distribute over countable joins).  The Scott continuity axiom is the
-natural morphism condition in this setting.  This connects the algebraic foundations to
-pointless topology and locale theory, where $\sigma$-additivity becomes structural rather
-than axiomatic.
-\end{remark}
+These are sufficient extension hypotheses in the formal theorem, separate from
+finite additivity. It also assumes $\Theta(\mathrm{ident})=0$. No unrestricted
+directed-family continuity or top-event normalization is asserted. The event
+interface supplies countable joins without asserting a full $\sigma$-frame
+or a measurable-space structure.
 
 \subsection{The $\sigma$-additivity theorem}
 
@@ -805,12 +806,9 @@ suffice to force the calculus, and which regularity principles are logically ind
 \end{remark}
 
 \begin{remark}[Imprecise probabilities]
-Not all applications justify a single sharp measure.  Representing uncertainty by sets of
-measures (credal sets) or interval bounds corresponds algebraically to weakening the scale
-from a total order to a partial order.\footnote{See Walley~\cite{Walley1991}.}
-Conversely, our formalization proves that total order is \emph{necessary} for point-valued
-representations: if the scale has incomparable elements, no faithful embedding into $\mathbb{R}$
-exists.
+An order-reflecting scalar map forces totality of the source order; one-way
+fidelity does not. A chosen interval or credal model can retain additional
+uncertainty, but partial order alone supplies no such model or coherence laws.
 \end{remark}
 
 \appendix
@@ -846,7 +844,7 @@ Product representation & \texttt{tensor\_coe\_eq\_mul\_div\_const} & \path{Multi
 \hline
 Variational theorem & \texttt{variationalEquation\_solution\_measurable} & \path{Variational/Main.lean} \\
 \hline
-KL divergence bridge & \texttt{klDiv\_toMeasure\_eq\_divergenceInfTop} & \path{Information/DivergenceMathlib.lean} \\
+Extended KL bridge & \texttt{klDiv\_toMeasure\_eq\_divergenceInfTop\_all} & \path{Information/DivergenceMathlib.lean} \\
 \hline
 Regraduation & order isomorphism & various \\
 \hline

@@ -102,3 +102,91 @@
            (gslt:collection-presentation:unordered $names $path $kind $schemas $targets $events))
          None))
      ($other None))))
+
+; Incremental physical grouping keeps original records as opaque payloads.
+(: gslt:collection-presentation:group-reverse-onto (-> Atom Atom %Undefined%))
+(= (gslt:collection-presentation:group-reverse-onto $items $reversed)
+  (case $items
+    ((LNil $reversed)
+     ((LCons $head $tail)
+       (gslt:collection-presentation:group-reverse-onto $tail (LCons $head $reversed))))))
+
+(: gslt:collection-presentation:group-expand (-> Atom %Undefined%))
+(= (gslt:collection-presentation:group-expand $work)
+  (case $work
+    (((GroupingGroups $slots $closed $selected $remaining)
+      (if (== $slots 0)
+        (GroupingExpansion LNil LNil)
+        (let* (($previous (- $slots 1))
+               ($bucket (gslt:collection-presentation:group-reverse-onto $selected LNil))
+               ($closed-next (gslt:automata:append $closed (LCons $bucket LNil)))
+               ($next (if (== $previous 0)
+                        (GroupingResidual $closed-next LNil $remaining)
+                        (GroupingGroups $previous $closed-next LNil $remaining))))
+          (GroupingExpansion
+            (LCons $next (LCons (GroupingSelectGroup $slots $closed $selected $remaining 0) LNil))
+            LNil))))
+     ((GroupingSelectGroup $slots $closed $selected $remaining $cursor)
+      (case (gslt:rule:row-at $cursor $remaining)
+        ((None (GroupingExpansion LNil LNil))
+         ((Some $occurrence)
+          (let* (($residual (gslt:rule:scope-match-erase-at $cursor $remaining))
+                 ($next (+ $cursor 1)))
+            (GroupingExpansion
+              (LCons (GroupingGroups $slots $closed (LCons $occurrence $selected) $residual)
+                (LCons (GroupingSelectGroup $slots $closed $selected $remaining $next) LNil))
+              LNil))))))
+     ((GroupingResidual $closed $selected LNil)
+      (let $residual (gslt:collection-presentation:group-reverse-onto $selected LNil)
+        (GroupingExpansion LNil (LCons (GroupingAllocation $closed $residual) LNil))))
+     ((GroupingResidual $closed $selected (LCons $head $tail))
+      (GroupingExpansion
+        (LCons (GroupingSelectResidual $closed $selected (LCons $head $tail) 0) LNil)
+        LNil))
+     ((GroupingSelectResidual $closed $selected $remaining $cursor)
+      (case (gslt:rule:row-at $cursor $remaining)
+        ((None (GroupingExpansion LNil LNil))
+         ((Some $occurrence)
+          (let* (($residual (gslt:rule:scope-match-erase-at $cursor $remaining))
+                 ($next (+ $cursor 1)))
+            (GroupingExpansion
+              (LCons (GroupingResidual $closed (LCons $occurrence $selected) $residual)
+                (LCons (GroupingSelectResidual $closed $selected $remaining $next) LNil))
+              LNil)))))))))
+
+(: gslt:collection-presentation:group-begin (-> Atom Atom %Undefined%))
+(= (gslt:collection-presentation:group-begin $count $occurrences)
+  (let $first (if (== $count 0)
+                (GroupingResidual LNil LNil $occurrences)
+                (GroupingGroups $count LNil LNil $occurrences))
+    (GroupingState (LCons $first LNil) LNil)))
+
+(: gslt:collection-presentation:group-tick (-> Atom %Undefined%))
+(= (gslt:collection-presentation:group-tick $state)
+  (case $state
+    (((GroupingState LNil $answers) $state)
+     ((GroupingState (LCons $work $pending) $answers)
+      (case (gslt:collection-presentation:group-expand $work)
+        (((GroupingExpansion $children $published)
+          (let* (($agenda (gslt:automata:append $children $pending))
+                 ($next-answers (gslt:automata:append $answers $published)))
+            (GroupingState $agenda $next-answers)))))))))
+
+(: gslt:collection-presentation:group-run (-> Atom Atom %Undefined%))
+(= (gslt:collection-presentation:group-run $steps $state)
+  (if (== $steps 0)
+    $state
+    (let* (($next (gslt:collection-presentation:group-tick $state))
+           ($remaining (- $steps 1)))
+      (gslt:collection-presentation:group-run $remaining $next))))
+
+(: gslt:collection-presentation:group-complete (-> Atom %Undefined%))
+(= (gslt:collection-presentation:group-complete $state)
+  (case $state
+    (((GroupingState LNil $answers) True)
+     ((GroupingState (LCons $head $tail) $answers) False))))
+
+(: gslt:collection-presentation:group-answers (-> Atom %Undefined%))
+(= (gslt:collection-presentation:group-answers $state)
+  (case $state
+    (((GroupingState $agenda $answers) $answers))))

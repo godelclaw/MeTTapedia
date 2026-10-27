@@ -103,6 +103,8 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureSetRules
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureFreshness
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureSteps
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureModulo
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureModuloControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySorted
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySortedControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySortedHigherOrder
@@ -233,7 +235,8 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointControl
   canonical term is matched there, and steps keep closed processes closed processes. Entering, leaving and opening
   answered at the front door, under ambients and modulo the laws, with their negatives.
 - `Readings`: a language's rules fired at a chosen presentation of each state, with canonical targets; a
-  closed region of a reading decides every behavioural formula exactly.
+  closed region of a reading decides every behavioural formula exactly. Its steps are listed by the fuel, or, where
+  derivations nest without bound, by a certified table of the region, exact over the rule labels.
 - `SetReadings`: three readings of a set language. Consume fires at the canonical form, keep where every
   member is written more often than any rule matches, and either is the language's own semantics; they
   are separated on one rule, and keep only adds members.
@@ -377,6 +380,13 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointControl
   explicit substitutions) are coherent. A premise that steps a captured member is coherent with presentations listed
   to the state's height, the member captured where its step fires. Controls: a query two sets down, a quantified
   premise over a rest, a freshness premise, and a member step that fires only at a copy, with negatives.
+- `CanonicalCaptureModulo`, `CanonicalCaptureModuloControls`: hereditary set languages read modulo the set laws at
+  every boundary inside a step (the either reading): canonical forms for the front door whatever the premises are
+  (step premises from any schema, relation queries in an environment that answers alike requests alike, freshness,
+  quantified premises), every label kept unless a quantified premise's body steps. Where a premise's child has the
+  class of its term, derivations nest without bound, and a certified table of the region lists them, keeping the rule
+  labels. Controls: a step premise of a compound and of a rest, a scoped step, a query with freshness and a step, and
+  a quantified premise whose body steps, with negatives.
 - `ManySorted`, `ManySortedControls`: many-sorted native types, over carriers by sort, as one-sorted native types with
   sort guards: the sorted structure of any one-sorted structure, and the guarded translation, exact in corresponding
   environments; sorted verdicts at the front door for a language of names and processes, with negatives.
@@ -476,7 +486,8 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointControl
 - `ServedRelationControls`: a rule querying a served relation fires on what the service serves, and not unregistered.
 - `DeclaredReadings`: a language declares how it reads its sets (consume, keep, either); the front door answers by
   the declaration, exactly in the declared structure; either is consume over all presentations.
-- `DeclaredReadingControls`: the pool language declared three ways, with the readings' verdicts.
+- `DeclaredReadingControls`: languages declared three ways, with the readings' verdicts where they part: at the top of
+  a step, at a member, at a premise's child and at a rest.
 - `ContextLabelControls`: context labels in `tiny` (a term that needs its context, a context that offers nothing, a
   binder context) and on the Petri net beside tokens, with its least labels, an inert token and a token told apart.
 - `PathSystems`: a transition system with listed successors, whose configurations need no encoding, unfolded from a

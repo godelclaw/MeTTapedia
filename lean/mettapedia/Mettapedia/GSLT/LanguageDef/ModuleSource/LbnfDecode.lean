@@ -126,6 +126,13 @@ def ruleItems (atoms : List Atom) : Decode (List TermParam × List SyntaxItem) :
     | (label, _) => throw s!"unexpected rule item {label}"
   pure (params.toList, syntaxItems.toList)
 
+def evalPolicy (atom : Atom) : Decode TermEvalPolicy := do
+  match ← node atom with
+  | ("EPRewrite", []) => pure .rewrite
+  | ("EPFold", []) => pure .fold
+  | ("EPOracle", []) => pure .oracle
+  | (label, _) => throw s!"unexpected evaluation policy {label}"
+
 def termDecl (atom : Atom) : Decode GrammarRule := do
   match ← node atom with
   | ("TDecl", [label, params, items, category]) =>
@@ -134,6 +141,21 @@ def termDecl (atom : Atom) : Decode GrammarRule := do
   | ("TDeclCore", [label, params, items, category]) =>
       pure { label := ← token label, category := ← token category,
              params := ← (← list params).mapM termParam, syntaxPattern := ← (← list items).mapM syntaxItem }
+  | ("TDeclWrapped", [label, params, items, category])
+  | ("TDeclCoreWrapped", [label, params, items, category]) =>
+      pure { label := ← token label, category := ← token category,
+             params := ← (← list params).mapM termParam, syntaxPattern := ← (← list items).mapM syntaxItem,
+             collectionRepresentation := .wrapped }
+  | ("TDeclPolicy", [label, params, items, category, policy])
+  | ("TDeclCorePolicy", [label, params, items, category, policy]) =>
+      pure { label := ← token label, category := ← token category,
+             params := ← (← list params).mapM termParam, syntaxPattern := ← (← list items).mapM syntaxItem,
+             evalPolicy? := some (← evalPolicy policy) }
+  | ("TDeclPolicyWrapped", [label, params, items, category, policy])
+  | ("TDeclCorePolicyWrapped", [label, params, items, category, policy]) =>
+      pure { label := ← token label, category := ← token category,
+             params := ← (← list params).mapM termParam, syntaxPattern := ← (← list items).mapM syntaxItem,
+             evalPolicy? := some (← evalPolicy policy), collectionRepresentation := .wrapped }
   | ("TRule", [label, category, items]) =>
       let (params, syntaxPattern) ← ruleItems (← list items)
       pure { label := ← token label, category := ← token category, params, syntaxPattern }
@@ -161,6 +183,14 @@ partial def pattern (binders : List String) (atom : Atom) : Decode Pattern := do
   | ("PBagRest", [elements, rest]) => pure (.collection .hashBag (← elementsOf binders elements) (some (← token rest)))
   | ("PRestOnly", [rest]) => pure (.collection .hashBag [] (some (← token rest)))
   | ("PEmpty", []) => pure (.collection .hashBag [] none)
+  | ("PVec", [elements]) => pure (.collection .vec (← elementsOf binders elements) none)
+  | ("PVecRest", [elements, rest]) => pure (.collection .vec (← elementsOf binders elements) (some (← token rest)))
+  | ("PVecRestOnly", [rest]) => pure (.collection .vec [] (some (← token rest)))
+  | ("PVecEmpty", []) => pure (.collection .vec [] none)
+  | ("PSet", [elements]) => pure (.collection .hashSet (← elementsOf binders elements) none)
+  | ("PSetRest", [elements, rest]) => pure (.collection .hashSet (← elementsOf binders elements) (some (← token rest)))
+  | ("PSetRestOnly", [rest]) => pure (.collection .hashSet [] (some (← token rest)))
+  | ("PSetEmpty", []) => pure (.collection .hashSet [] none)
   | ("PBinder", [binder, body]) =>
       let name ← token binder
       pure (.lambda (some name) (← pattern (name :: binders) body))
@@ -179,12 +209,16 @@ where
       | ("EElem", [inner]) => pattern binders inner
       | (label, _) => throw s!"unexpected element {label}"
 
-def premise (atom : Atom) : Decode Premise := do
+partial def premise (atom : Atom) : Decode Premise := do
   match ← node atom with
   | ("PrFresh", [name, term]) => pure (.freshness ⟨← token name, ← pattern [] term⟩)
   | ("PrStep", [source, target]) => pure (.congruence (← pattern [] source) (← pattern [] target))
   | ("PrQuery", [relation, arguments]) =>
       pure (.relationQuery (← token relation) (← pattern.callArguments [] arguments))
+  | ("PrNamedQuery", [relation, arguments]) =>
+      pure (.relationQuery (← token relation) (← pattern.callArguments [] arguments))
+  | ("PrForAll", [collection, parameter, body]) =>
+      pure (.forAll (← token collection) (← token parameter) (← premise body))
   | (label, _) => throw s!"unexpected premise {label}"
 
 /-- A typed context of a core row. -/
@@ -216,7 +250,14 @@ def equationRow (atom : Atom) : Numbered Equation := do
   | ("EqCore", [label, context, left, right]) =>
       pure { name := ← token label, typeContext := ← bindings context, premises := [],
              left := ← pattern [] left, right := ← pattern [] right }
+  | ("EqNamedCore", [label, context, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context, premises := [],
+             left := ← pattern [] left, right := ← pattern [] right }
   | ("EqCoreIf", [label, context, premises, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context,
+             premises := ← ((← list premises).mapM premise : Decode _),
+             left := ← pattern [] left, right := ← pattern [] right }
+  | ("EqNamedCoreIf", [label, context, premises, left, right]) =>
       pure { name := ← token label, typeContext := ← bindings context,
              premises := ← ((← list premises).mapM premise : Decode _),
              left := ← pattern [] left, right := ← pattern [] right }
@@ -233,7 +274,13 @@ def rewriteRow (atom : Atom) : Decode RewriteRule := do
   | ("RwCore", [label, context, left, right]) =>
       pure { name := ← token label, typeContext := ← bindings context, premises := [],
              left := ← pattern [] left, right := ← pattern [] right }
+  | ("RwNamedCore", [label, context, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context, premises := [],
+             left := ← pattern [] left, right := ← pattern [] right }
   | ("RwCoreIf", [label, context, premises, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context, premises := ← (← list premises).mapM premise,
+             left := ← pattern [] left, right := ← pattern [] right }
+  | ("RwNamedCoreIf", [label, context, premises, left, right]) =>
       pure { name := ← token label, typeContext := ← bindings context, premises := ← (← list premises).mapM premise,
              left := ← pattern [] left, right := ← pattern [] right }
   | (label, _) => throw s!"unexpected rewrite {label}"

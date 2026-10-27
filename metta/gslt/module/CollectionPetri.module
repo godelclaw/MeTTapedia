@@ -1,0 +1,19 @@
+Module CollectionPetri {
+  Theory Markings() {
+    Types { Place; Marking; }
+    Terms {
+      A . |- "A" : Place;
+      B . |- "B" : Place;
+      C . |- "C" : Place;
+      D . |- "D" : Place;
+      MarkingBag . tokens:HashBag(Place) |- "{" tokens.*sep(",") "}" : Marking;
+    }
+    Rewrites {
+      ConsumeAB : (MarkingBag {(A), (B), ...rest})
+        ~> (MarkingBag {(C), (D), ...rest});
+      RecycleC : (MarkingBag {(C), ...rest})
+        ~> (MarkingBag {(A), ...rest});
+    }
+  }
+  theory Markings()
+}

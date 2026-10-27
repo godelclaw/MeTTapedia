@@ -2972,6 +2972,162 @@ elimination. These are semantic computation laws. A selected DTT profile must
 still form the declarations and decide which iota equations are judgmental.
 \lean{PositiveInductiveBlock.Admitted.recursor_construct, PositiveInductiveBlock.Admitted.recursor_unique, PositiveInductiveBlock.Admitted.eliminator_construct, PositiveInductiveBlock.Admitted.eliminator_unique}
 
+\paragraph{Guarded representations and recursive spaces.}
+A source family need not inhabit every index. An unindexed raw tree therefore
+retains its original index and constructor shape, with a recursive validity
+predicate. A partial position code also checks canonical padding outside its
+image: valid required children do not justify an extra stored child. Encoding
+and proof-directed decoding are inverse, and validity is exactly least
+constructor-closed membership. Direct positions and finite-to-natural slots
+instantiate one construction.
+\lean{IndexedPolynomial.GuardedRaw.algebraRepresentation, IndexedPolynomial.GuardedRaw.member_iff_valid, IndexedPolynomial.SlotEncoding.Controls.tail_refused}
+
+The common recursive-space presentation takes an indexed polynomial, natural
+slot codes and a constructor-tag map. Its image retains the complete shape,
+result index and child function. Both inverse laws and constructor coherence
+hold. First-order inventories use the source-order finite codec; registered
+codes and complete registered blocks reuse their existing ordered-position
+equivalence. Natural, Vector and SearchTree controls retain values, order and
+arity. Changed tags, absent payloads, hidden children and changed Vector arity
+have separating refusals. These are semantic representations; registered
+ordered finitarity does not provide an executable decoder.
+\lean{IndexedPolynomial.RecursiveSpaceRepresentation.recursiveAlgebraRepresentation, IndexedPositiveContainer.RecursiveSpaceRepresentation.blockRepresentation, IndexedInductive.RecursiveSpaceControls.Registered.relational_order_retained, IndexedInductive.RecursiveSpaceControls.Registered.vector_three_third_present}
+
+The relational construction underlying HOL Light's recursive space is also
+formalized. Its numerical pairing and relational injections construct the
+least generated subtype, retaining the arbitrary bottom filler selected by the
+source choice term. Abstraction/representation laws, constructor separation,
+injectivity and full predicate induction supply the recursive-space algebra;
+its least membership agrees with the existing HOL fixed-point syntax in a
+full-function-space model. Those algebraic laws yield the polynomial
+comparison. Constructor-only recursion leaves its bottom result unspecified;
+a supplied bottom gives a unique recursion function.
+\lean{HOLLight.RecursiveSpaceSemantics.represent_abstract, HOLLight.RecursiveSpaceSemantics.model, HOLLight.RecursiveSpaceSemantics.predicateMember_iff_rawMember, RecursiveSpace.equivalence, RecursiveSpace.recurse_unique, RecursiveSpace.constructor_recursion_not_unique}
+
+First-order constructor data has a fixed product type independent of the
+parameter environment. The dependent sum of its indexed shapes is equivalent
+to that product, and the original expression interpreter computes the result
+and child indices. The same target recursive-space algebra can consequently
+serve every environment. A changed environment may require a different result
+index for the same data tuple: the context remains part of the validity
+contract. This semantic equivalence concerns host equality in the declaration
+description; it supplies no erasure theorem for object proof syntax.
+\lean{IndexedPolynomial.Description.constructorDataEquiv, IndexedPolynomial.Description.recursive_index_from_data, IndexedPolynomial.Description.DataRepresentation.encode_constructor, IndexedInductive.ConstructorDataControls.wrong_parameter_index_refused}
+
+Separately, the actual HOL Light recursive-space certificates replay on the
+selected native checker: 78,963 retained theorem outputs pass exact conclusion
+and axiom-dependency checks. Standard-policy acceptance, sealed-policy refusal
+and a forged-conclusion refusal pass. The retained history explicitly declares
+\code{ETA_AX}, \code{SELECT_AX} and \code{INFINITY_AX}; individual proof masks do
+not erase surrounding declaration commitments. A Prime curriculum consumer
+retrieves the four opaque constructor/induction/recursion facts through the
+kernel service and rejects forged conclusions and printed authority seals.
+The complete closure also passes the typed registered source receiver:
+78,962 source events give 78,960 registered commands and 78,963 theorem
+outputs, including the actual \code{prod}, \code{num} and \code{recspace}
+admissions. A separately selected profile fixes the primitive basis and the
+three permitted axioms. Changed type conclusions, missing existence parents,
+repeated names, unlisted axioms and malformed source inputs are refused.
+The indexed adapter remains an untrusted source producer. Typed reception does
+not itself prove original-source reading adequacy, identify the interpretation
+with the relational model or supply Prime-space type-definition transport.
+
+For constant-only reference definitions, the actual receiving computation now
+constructs the original chronological model history. Its ordered outputs are
+the admitted definition equations, and the constructed model satisfies every
+equation at every source type instance. Carriers and full function domains are
+preserved. A closed two-definition document supplies nonempty applications;
+a changed output and a repeated source name are refused. This construction
+validates admitted definition equations, not the truth of a profile's extra
+axiom commitments. Carrier-changing type definitions, the full recursive-space
+model correspondence, complete native proof production and implementation
+refinement remain separate obligations.
+\lean{HOLLight.DefinitionReplayModels.replay_constant_history, HOLLight.DefinitionReplayModels.replay_constant_models, HOLLight.DefinitionReplayModels.loaded_reference_models, HOLLight.DefinitionReplayModels.Controls.profile_definitions_have_model, HOLLight.DefinitionReplayModels.Controls.forged_reference_refused}
+
+The source receiver's existing schema matcher also supplies complete type
+instantiation certificates. Consistent repeated parameters and identity entries
+removed during normalization retain the required substitution action. The
+independent final instance check rejects incompatible repetitions. Annotation,
+sequent, theorem and inference-parameter formation checks are exact with this
+executable finder, without assuming a certificate-selection family. These are
+formation results, not completeness of proof search or implementation
+refinement.
+\lean{HOLLight.TypeInstantiationCertificates.instanceCertificates_complete, HOLLight.TypeInstantiationCertificates.constantInstanceB_exact, HOLLight.TypeInstantiationCertificates.inferenceFormationCheck_exact, HOLLight.TypeInstantiationCertificates.Controls.inconsistent_not_instance}
+
+A generic retained pointed witness now specializes through the original native
+\texttt{INST\_TYPE} and \texttt{INST} operations. For arbitrary source carrier
+types and predicates, the computed conclusion is the exact pointed-predicate
+application, with empty hypotheses and no native logical axiom dependencies.
+The original predicate need not be inhabited. Empty-predicate and
+function-carrier instances each export 569 primitive nodes; open and sealed
+native replay accepts them and refuses changed conclusions. General registered
+type introduction retains its separate formation, closedness, freshness and
+definition-equation obligations.
+\lean{HOLLight.PointedPredicateInstantiation.specializedProof_accepted, HOLLight.PointedPredicateInstantiation.specialized_conclusion, HOLLight.PointedPredicateInstantiation.specialized_hypotheses, HOLLight.PointedPredicateInstantiation.specialized_axioms, HOLLight.PointedPredicateInstantiation.Controls.changed_conclusion_refused}
+
+The registered substitution producer checks every stored maplet, including an
+unused entry. From a formed input theorem and formed stored maplets, the
+actual receiver constructs its two-command execution, appending two theorem
+outputs and two receipts. Earlier proof addresses and source derivations are
+preserved. A closed example changes both a carrier type and a free term;
+unused undeclared type and term maplets are refused. Its execution has a path
+in the existing registered GSLT and the existing OSLF theorem-reachability
+readout. This observation concerns support; occurrence-sensitive observations,
+scheduling and native implementation costs remain separate.
+\lean{HOLLight.DefinitionAdapters.TheoremFormed.substitute, HOLLight.RegisteredSubstitution.apply_available, HOLLight.RegisteredSubstitution.preserves_lookup, HOLLight.RegisteredSubstitution.preserves_derivations, HOLLight.RegisteredSubstitution.execution_path, HOLLight.RegisteredSubstitution.Controls.final_observed}
+
+One cached generic proof now has independent primitive replay, exact endpoint
+and registered-formation proofs. The shared proof-graph reception construction
+also proves the converse: successful reception gives the same primitive graph
+and its actual formation obligations. An undeclared constant separates the two
+checks. Signature extension transports the cached formation results through the
+complete executable instance finder. Consequently the registered witness
+producer requires only a formed carrier and a formed expanded predicate in a
+signature extending the primitive core. It returns the original compiler
+theorem at its exact address, without a per-node witness-formation premise or
+inhabitance premise for the original predicate. Registered introduction now
+composes this reception with actual source type admission. The admitted
+signature's instance certificates check both the original inputs and the newly
+registered maps; successful admission constructs the same definition for either
+successful provider. The existing structural formation theorem constructs both
+pointwise laws. Fresh names and predicate closedness remain explicit inputs,
+while equation formation is not a caller premise. The final command retains
+two new theorem addresses and one ordered receipt, preserving source derivations.
+\lean{HOLLight.PointedPredicateTemplate.accepted, HOLLight.PointedPredicateTemplate.exact_conclusion, HOLLight.PointedPredicateTemplate.nodes_formed, HOLLight.ProofExecution.Registered.replayProofs_iff, HOLLight.RegisteredPointedPredicate.replay_available, HOLLight.RegisteredPointedPredicate.replay_preserves_derivations}
+\lean{HOLLight.RegisteredPointedTypeDefinition.introduce_available, HOLLight.RegisteredPointedTypeDefinition.introduce_roots, HOLLight.RegisteredPointedTypeDefinition.introduce_derived_laws, HOLLight.RegisteredPointedTypeDefinition.finish_counts}
+
+Constructed mixed and universal-predecessor histories already supply the
+carrier-changing model installation. Registered replay now connects each actual
+proof, constant and type command to that semantic family machinery. The type
+existence licence follows from the earlier cached theorem's proof. Each
+declaration constructs its new interpretation and schemas and proves preservation
+of the preceding licensed schemas. The empty-policy replay theorem supplies its
+own initial frame and constructs a full-domain model of the received cache,
+retaining each sequent's hypotheses. The actual pointed producer has one such
+model in which both returned hypothesis-free laws hold. The retained
+$\eta$/choice/infinity profile now has an interpreted reference initialization.
+One coherent primitive family fixes the individual carrier to lifted natural
+numbers, follows the nine original Boolean definition admissions, and validates
+the actual formed, closed source commitments. The reference replay retains nine
+cached equations and nine command receipts. Adjoining the three interpreted
+schemas enlarges the selected policy while retaining the model. Every accepted
+registered proof, constant or type-definition replay after this reference state
+therefore has a constructed full-domain model, with source sequent hypotheses
+retained. A finite individual carrier cannot supply the infinity witness.
+The complete original interleaved source history still needs its own model
+correspondence; the nine-definition reference route is not that original trace.
+Identification with the particular recursive-space relational model and native
+implementation refinement also remain separate.
+\lean{HOLLight.StandardTheoryInterpretation.referenceHistory_model, HOLLight.SourceProfileModels.reference_replayed, HOLLight.SourceProfileModels.reference_models_eta, HOLLight.SourceProfileModels.reference_models_selection, HOLLight.SourceProfileModels.reference_models_infinity, HOLLight.SourceProfileModels.replay_models}
+\lean{HOLLight.InferenceInterpretation.inference, HOLLight.RegisteredReplayModels.replay_models, HOLLight.RegisteredReplayModels.Frame.cached_falsity_refused, HOLLight.RegisteredPointedModels.introduce_laws_models, HOLLight.RegisteredPointedModels.introduce_available_models}
+
+The relative transitivity control concludes $x=z$ from $x=y$ and $y=z$ while
+retaining both source assumptions. Its native certificate is accepted under the
+standard policy, but the same conclusion with those hypotheses dropped is
+refused. Standard-policy acceptance is consequently distinct from an empty
+source hypothesis context.
+
+
 Strict positivity does not imply finite execution. The positive Reader
 container has a natural-number position at one shape and is not finitary.
 Accordingly a separate registry capability supplies a finite position type at

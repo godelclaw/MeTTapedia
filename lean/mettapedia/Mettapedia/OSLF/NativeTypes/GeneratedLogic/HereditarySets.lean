@@ -459,14 +459,12 @@ theorem closed_match_object {pattern : Pattern} (holds : Hereditary language sor
     have canonicalMembers := member_canonical canonical
     change MatchRel (.collection .hashSet values none) term bindings at matched
     cases matched with
-    | @collection _ _ _ terms rest _ _ bag =>
-      have parts : rest.isNone = true ∧ isObjectPatternList terms = true := by
-        simpa [IsObject, isObjectPattern] using termObject
-      have noRest : rest = none := Option.isNone_iff_eq_none.mp parts.1
-      subst noRest
+    | @collection _ _ _ terms _ rest _ bag =>
+      have parts : rest = none ∧ ∀ value ∈ terms, IsObject value := by
+        simpa [IsObject, isObjectPattern, isObjectPatternList_iff, Option.isNone_iff_eq_none] using termObject
+      obtain ⟨rfl, termsObject⟩ := parts
       obtain ⟨members, rfl⟩ := closed_bag_match_object values terms bindings
-        (fun value member => ih value member (canonicalMembers value member))
-        (fun element member => isObjectPatternList_iff.mp parts.2 element member) bag
+        (fun value member => ih value member (canonicalMembers value member)) termsObject bag
       refine ⟨?_, rfl⟩
       have arranged : arrange .hashSet values = values := by
         have := canonical

@@ -1,0 +1,18 @@
+Module CollectionNestedInputPetri {
+  Theory Workflow() {
+    Types { Place; Marking; Workflow; Workspace; }
+    Terms {
+      A . |- "A" : Place;
+      B . |- "B" : Place;
+      Tokens . items:HashBag(Place) |- "{" items.*sep(",") "}" : Marking;
+      Flow . marking:Marking |- "workflow" marking : Workflow;
+      Box . workflow:Workflow |- "box" workflow : Workspace;
+    }
+    Rewrites {
+      ConsumeA : if inspect(rest) then
+        (Flow (Tokens {(A), ...rest}))
+        ~> (Flow (Tokens {(B), ...rest}));
+    }
+  }
+  theory Workflow()
+}

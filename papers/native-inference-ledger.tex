@@ -1594,6 +1594,44 @@ D & Independently type its returned Vector of types & \name{NativeVectorAll.Resu
 D & Check the finite conversion from the named application to its output & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.application_conversion} & PCQ & proved\\
 D & Refuse the same Vector-of-types certificate for swapped result witnesses & \name{NativeVectorAll.ResultView.OriginalInputUniverses.ClosedResultDefinition.swapped_refused} & PCQ & proved\\
 \midrule
+D & Reconstruct guarded raw trees with canonical unused slots & \name{IndexedPolynomial.GuardedRaw.algebraRepresentation} & PQ & proved\\
+D & Compare indexed polynomial families with their guarded recursive-space image & \name{IndexedPolynomial.RecursiveSpaceRepresentation.recursiveAlgebraRepresentation} & PCQ & proved\\
+D & Construct the relational recursive-space algebra & \name{HOLLight.RecursiveSpaceSemantics.model} & PCQ & proved\\
+D & Interpret least membership in the existing HOL syntax & \name{HOLLight.RecursiveSpaceSemantics.predicateMember_iff_rawMember} & PCQ & proved\\
+D & Retain ordered registered blocks through the representation & \name{IndexedPositiveContainer.RecursiveSpaceRepresentation.blockRepresentation} & PCQ & proved\\
+D & Recover indexed shapes from fixed constructor data & \name{IndexedPolynomial.Description.constructorDataEquiv} & none & proved\\
+D & Refuse a changed parameter index for the same payload & \name{IndexedInductive.ConstructorDataControls.wrong_parameter_index_refused} & P & proved\\
+D & Recover the chronological history of received constant definitions & \name{HOLLight.DefinitionReplayModels.replay_constant_history} & PCQ & proved\\
+D & Construct models of source-profile reference definitions at all type instances & \name{HOLLight.DefinitionReplayModels.loaded_reference_models} & PCQ & proved\\
+D & Complete the actual registered type-instantiation certificate finder & \name{HOLLight.TypeInstantiationCertificates.instanceCertificates_complete} & PCQ & proved\\
+D & Decide inference-parameter formation with the actual certificates & \name{HOLLight.TypeInstantiationCertificates.inferenceFormationCheck_exact} & PCQ & proved\\
+D & Specialize the generic pointed witness to its exact native conclusion & \name{HOLLight.PointedPredicateInstantiation.specialized_conclusion} & PCQ & proved\\
+D & Preserve registered theorem formation under type-correct substitution & \name{HOLLight.DefinitionAdapters.TheoremFormed.substitute} & PCQ & proved\\
+D & Execute checked type and term instantiation with two retained receipts & \name{HOLLight.RegisteredSubstitution.apply_available} & PCQ & proved\\
+D & Preserve earlier proof addresses through registered instantiation & \name{HOLLight.RegisteredSubstitution.preserves_lookup} & PCQ & proved\\
+D & Retain the actual instantiation execution as a GSLT path & \name{HOLLight.RegisteredSubstitution.execution_path} & PCQ & proved\\
+D & Observe the specialized theorem by OSLF reachability & \name{HOLLight.RegisteredSubstitution.Controls.final_observed} & PCQ & proved\\
+D & Check the cached generic pointed-witness certificate & \name{HOLLight.PointedPredicateTemplate.accepted} & PCQ & proved\\
+D & Check every cached source-formation obligation & \name{HOLLight.PointedPredicateTemplate.graph_formed} & PCQ & proved\\
+D & Characterize registered proof reception by primitive replay and formation & \name{HOLLight.ProofExecution.Registered.replayProofs_iff} & PCQ & proved\\
+D & Receive specialized witnesses from ordinary formed inputs & \name{HOLLight.RegisteredPointedPredicate.replay_available} & PCQ & proved\\
+D & Preserve source derivations in specialized witness reception & \name{HOLLight.RegisteredPointedPredicate.replay_preserves_derivations} & PCQ & proved\\
+D & Introduce a registered pointed type from ordinary formed inputs & \name{HOLLight.RegisteredPointedTypeDefinition.introduce_available} & PCQ & proved\\
+D & Retain the exact addresses of both type-definition laws & \name{HOLLight.RegisteredPointedTypeDefinition.introduce_roots} & PCQ & proved\\
+D & Derive both returned laws in the registered source calculus & \name{HOLLight.RegisteredPointedTypeDefinition.introduce_derived_laws} & PCQ & proved\\
+D & Count two theorem outputs and one type-definition receipt & \name{HOLLight.RegisteredPointedTypeDefinition.finish_counts} & PCQ & proved\\
+D & Preserve relative provability through all native inference operations & \name{HOLLight.InferenceInterpretation.inference} & PCQ & proved\\
+D & Construct a model from actual axiom-free registered replay & \name{HOLLight.RegisteredReplayModels.replay_models} & PCQ & proved\\
+D & Exclude translated falsity from the interpreted cache & \name{HOLLight.RegisteredReplayModels.Frame.cached_falsity_refused} & PCQ & proved\\
+D & Validate both actual pointed-type laws in one constructed model & \name{HOLLight.RegisteredPointedModels.introduce_laws_models} & PCQ & proved\\
+D & Join formed-input introduction and constructed model availability & \name{HOLLight.RegisteredPointedModels.introduce_available_models} & PCQ & proved\\
+D & Identify the Boolean interpretation with its admitted reference history & \name{HOLLight.StandardTheoryInterpretation.referenceHistory_model} & PCQ & proved\\
+D & Validate the actual source eta commitment in the reference model & \name{HOLLight.SourceProfileModels.reference_models_eta} & PCQ & proved\\
+D & Validate the actual source choice commitment in the reference model & \name{HOLLight.SourceProfileModels.reference_models_selection} & PCQ & proved\\
+D & Validate the actual source infinity commitment with a constructed witness & \name{HOLLight.SourceProfileModels.reference_models_infinity} & PCQ & proved\\
+D & Replay all nine reference declarations with exact outputs and receipts & \name{HOLLight.SourceProfileModels.reference_replayed} & PCQ & proved\\
+D & Construct models for accepted replay after the three-axiom reference state & \name{HOLLight.SourceProfileModels.replay_models} & PCQ & proved\\
+\midrule
 A3 & Finite-stack realization of the HOL Light to MM0 translation & --- & --- & open\\
 A2 & Existing shared-lemma HOL translation equals the node-by-node translation & --- & --- & open\\
 A4 & Free symmetric monoidal category of consuming processes & --- & --- & open\\

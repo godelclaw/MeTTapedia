@@ -19,26 +19,30 @@ open Mettapedia.GSLT.LanguageDef.GauthierE1
 open Mettapedia.GSLT.LanguageDef.GauthierRoleAntiUnification
 open Mettapedia.GSLT.LanguageDef.GauthierCanonicalSchema
 
+universe u
+
 abbrev Environment := SchemaHole → Option Prog
 
 def empty : Environment := fun _ => none
 
 /-- Extending an environment may fill holes, but cannot replace assignments. -/
-def Extends (after before : Environment) : Prop :=
+def Extends {Value : Type u} (after before : SchemaHole → Option Value) : Prop :=
   ∀ key value, before key = some value → after key = some value
 
-theorem Extends.refl (env : Environment) : Extends env env := fun _ _ h => h
+theorem Extends.refl {Value : Type u} (env : SchemaHole → Option Value) : Extends env env := fun _ _ h => h
 
-theorem Extends.trans {first second third : Environment}
+theorem Extends.trans {Value : Type u} {first second third : SchemaHole → Option Value}
     (h₁ : Extends second first) (h₂ : Extends third second) : Extends third first :=
   fun key value h => h₂ key value (h₁ key value h)
 
-def assign (env : Environment) (key : SchemaHole) (value : Prog) : Option Environment :=
+def assign {Value : Type u} [DecidableEq Value] (env : SchemaHole → Option Value)
+    (key : SchemaHole) (value : Value) : Option (SchemaHole → Option Value) :=
   match env key with
   | none => some (fun other => if other = key then some value else env other)
   | some old => if old = value then some env else none
 
-theorem assign_sound {env next : Environment} {key : SchemaHole} {value : Prog}
+theorem assign_sound {Value : Type u} [DecidableEq Value]
+    {env next : SchemaHole → Option Value} {key : SchemaHole} {value : Value}
     (found : assign env key value = some next) :
     Extends next env ∧ next key = some value := by
   unfold assign at found
@@ -162,7 +166,8 @@ theorem matchList_sound : ∀ (env next : Environment) (patterns : List SchemaPa
 end
 
 /-- Supplying an already consistent assignment succeeds without rebinding it. -/
-theorem assign_existing (env : Environment) (key : SchemaHole) (value : Prog)
+theorem assign_existing {Value : Type u} [DecidableEq Value]
+    (env : SchemaHole → Option Value) (key : SchemaHole) (value : Value)
     (present : env key = some value) : assign env key value = some env := by
   simp [assign, present]
 

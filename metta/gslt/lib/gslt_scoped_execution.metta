@@ -2018,79 +2018,7 @@
       ($bad None))))
 
 (: gslt:premise:query-expand-in (-> Atom Atom Atom %Undefined%))
-(= (gslt:premise:query-expand-in $environment $request $task)
-   (case $environment
-     (((PremiseEnvironment $declarations $rewrites $specifications (PremiseProvider $signatures $rows) $reflection $free)
-       (case $request
-         (((PremiseQueryRequest (PremiseContext $ruleIndex $rule $spec $bound $premise $quantifiers) $relation $arguments $initial)
-           (case $task
-             ((PremiseQueryStart
-               (let $arity (gslt:automata:length $arguments)
-                 (case (gslt:premise:signature $relation $arity (PremiseProvider $signatures $rows))
-                   ((None (Some (PremiseExpansion LNil LNil (LCons (PremiseSignatureUnavailable $relation $arity) LNil))))
-                    ((Some $signature) (Some (PremiseExpansion (LCons (PremiseQueryRows $signature 0) LNil) LNil LNil)))
-                    ($badSignature None)))))
-              ((PremiseQueryRows $signature $cursor)
-               (case (gslt:rule:row-at $cursor $rows)
-                 ((None (Some (PremiseExpansion LNil LNil LNil)))
-                  ((Some (PremiseProviderRow $rowRelation $values))
-                   (case $signature
-                     (((PremiseSignature $signatureRelation $types $modes)
-                       (let* (($next (+ $cursor 1))
-                              ($checked (gslt:premise:check-row $declarations $free $bound $signature (PremiseProviderRow $rowRelation $values))))
-                         (if $checked
-                           (Some (PremiseExpansion
-                             (LCons (PremiseQueryArguments $cursor 0 $initial $arguments $values $modes LNil)
-                               (LCons (PremiseQueryRows $signature $next) LNil)) LNil LNil))
-                           (Some (PremiseExpansion (LCons (PremiseQueryRows $signature $next) LNil) LNil LNil)))))
-                      ($badSignature None))))
-                  ($badRow None))))
-              ((PremiseQueryArguments $rowIndex $index $assignment LNil LNil LNil $origins)
-               (if (gslt:premise:check-assignment $declarations $free $bound $rule $spec $assignment)
-                 (Some (PremiseExpansion LNil (LCons (PremiseQueryAnswer $rowIndex $assignment $origins) LNil) LNil))
-                 (Some (PremiseExpansion LNil LNil LNil))))
-              ((PremiseQueryArguments $rowIndex $index $assignment (LCons $schema $schemas) (LCons $value $values) (LCons RelationInput $modes) $origins)
-               (let* (($ambient (gslt:automata:length $bound))
-                      ($site (RulePremise $premise $quantifiers $index)))
-                 (case (gslt:rule:scope-instantiate-at None $rule $spec $ambient $site LNil 0 $assignment $schema)
-                   ((None (Some (PremiseExpansion LNil LNil (LCons (PremiseInputUnavailable $rowIndex $index) LNil))))
-                    ((Some $actual)
-                     (if (== $actual $value)
-                       (let* (($next (+ $index 1))
-                              ($extended (gslt:automata:append $origins (LCons (ArgumentOrigin $index LNil) LNil))))
-                         (Some (PremiseExpansion
-                           (LCons (PremiseQueryArguments $rowIndex $next $assignment $schemas $values $modes $extended) LNil) LNil LNil)))
-                       (Some (PremiseExpansion LNil LNil LNil))))
-                    ($badInstantiation None)))))
-              ((PremiseQueryArguments $rowIndex $index $assignment (LCons $schema $schemas) (LCons $value $values) (LCons RelationOutput $modes) $origins)
-               (let* (($query (gslt:premise:query-matching-request (PremiseContext $ruleIndex $rule $spec $bound $premise $quantifiers) $index $assignment $schema $value))
-                      ($started (gslt:rule:scope-matcher-start $query)))
-                 (Some (PremiseExpansion
-                   (LCons (PremiseQueryMatcher $rowIndex $index $schemas $values $modes $origins $query $started 0) LNil) LNil LNil))))
-              ((PremiseQueryArguments $rowIndex $index $assignment $schemas $values $modes $origins)
-               (Some (PremiseExpansion LNil LNil (LCons (PremiseArgumentShape $rowIndex $index) LNil))))
-              ((PremiseQueryMatcher $rowIndex $argument $schemas $values $modes $origins $query $state $cursor)
-               (case $state
-                 (((ScopedMatcherState $agenda $answers)
-                   (case (gslt:rule:row-at $cursor $answers)
-                     (((Some (ScopedMatcherAnswer $assignment $trace))
-                       (let* (($nextArgument (+ $argument 1))
-                              ($nextCursor (+ $cursor 1))
-                              ($extended (gslt:automata:append $origins (LCons (ArgumentOrigin $argument $trace) LNil))))
-                         (Some (PremiseExpansion
-                           (LCons (PremiseQueryArguments $rowIndex $nextArgument $assignment $schemas $values $modes $extended)
-                             (LCons (PremiseQueryMatcher $rowIndex $argument $schemas $values $modes $origins $query $state $nextCursor) LNil)) LNil LNil))))
-                      (None
-                       (if (gslt:rule:scope-matcher-complete $state)
-                         (Some (PremiseExpansion LNil LNil LNil))
-                         (let $stepped (gslt:rule:scope-matcher-tick $query $state)
-                           (Some (PremiseExpansion
-                             (LCons (PremiseQueryMatcher $rowIndex $argument $schemas $values $modes $origins $query $stepped $cursor) LNil) LNil LNil)))))
-                      ($badAnswer None))))
-                  ($badState None))))
-              ($badTask None))))
-          ($badRequest None))))
-      ($badEnvironment None))))
+(= (gslt:premise:query-expand-in $environment $request $task) (case (gslt:premise:matching-environment $environment) (((PremiseEnvironment $declarations $rewrites $specifications (PremiseProvider $signatures $rows) $reflection $free) (case $request (((PremiseQueryRequest (PremiseContext $ruleIndex $rule $spec $bound $premise $quantifiers) $relation $arguments $initial) (case $task ((PremiseQueryStart (let $arity (gslt:automata:length $arguments) (case (gslt:premise:signature $relation $arity (PremiseProvider $signatures $rows)) ((None (Some (PremiseExpansion LNil LNil (LCons (PremiseSignatureUnavailable $relation $arity) LNil)))) ((Some $signature) (Some (PremiseExpansion (LCons (PremiseQueryRows $signature 0) LNil) LNil LNil))) ($badSignature None))))) ((PremiseQueryRows $signature $cursor) (case (gslt:rule:row-at $cursor $rows) ((None (Some (PremiseExpansion LNil LNil LNil))) ((Some (PremiseProviderRow $rowRelation $values)) (case $signature (((PremiseSignature $signatureRelation $types $modes) (let* (($next (+ $cursor 1)) ($checked (gslt:premise:check-row $declarations $free $bound $signature (PremiseProviderRow $rowRelation $values)))) (if $checked (Some (PremiseExpansion (LCons (PremiseQueryArguments $cursor 0 $initial $arguments $values $modes LNil) (LCons (PremiseQueryRows $signature $next) LNil)) LNil LNil)) (Some (PremiseExpansion (LCons (PremiseQueryRows $signature $next) LNil) LNil LNil))))) ($badSignature None)))) ($badRow None)))) ((PremiseQueryArguments $rowIndex $index $assignment LNil LNil LNil $origins) (if (gslt:premise:check-assignment $declarations $free $bound $rule $spec $assignment) (Some (PremiseExpansion LNil (LCons (PremiseQueryAnswer $rowIndex $assignment $origins) LNil) LNil)) (Some (PremiseExpansion LNil LNil LNil)))) ((PremiseQueryArguments $rowIndex $index $assignment (LCons $schema $schemas) (LCons $value $values) (LCons RelationInput $modes) $origins) (let* (($ambient (gslt:automata:length $bound)) ($site (RulePremise $premise $quantifiers $index))) (case (gslt:rule:scope-instantiate-at None $rule $spec $ambient $site LNil 0 $assignment $schema) ((None (Some (PremiseExpansion LNil LNil (LCons (PremiseInputUnavailable $rowIndex $index) LNil)))) ((Some $actual) (if (gslt:premise:matching-input $environment $actual $value) (let* (($next (+ $index 1)) ($extended (gslt:automata:append $origins (LCons (ArgumentOrigin $index LNil) LNil)))) (Some (PremiseExpansion (LCons (PremiseQueryArguments $rowIndex $next $assignment $schemas $values $modes $extended) LNil) LNil LNil))) (Some (PremiseExpansion LNil LNil LNil)))) ($badInstantiation None))))) ((PremiseQueryArguments $rowIndex $index $assignment (LCons $schema $schemas) (LCons $value $values) (LCons RelationOutput $modes) $origins) (let* (($query (gslt:premise:query-matching-request (PremiseContext $ruleIndex $rule $spec $bound $premise $quantifiers) $index $assignment $schema $value)) ($started (gslt:premise:matching-start $environment $query))) (Some (PremiseExpansion (LCons (PremiseQueryMatcher $rowIndex $index $schemas $values $modes $origins $query $started 0) LNil) LNil LNil)))) ((PremiseQueryArguments $rowIndex $index $assignment $schemas $values $modes $origins) (Some (PremiseExpansion LNil LNil (LCons (PremiseArgumentShape $rowIndex $index) LNil)))) ((PremiseQueryMatcher $rowIndex $argument $schemas $values $modes $origins $query $state $cursor) (case (gslt:premise:matching-answer-at $environment $state $cursor) (((Some (ScopedMatcherAnswer $assignment $trace)) (let* (($nextArgument (+ $argument 1)) ($nextCursor (+ $cursor 1)) ($extended (gslt:automata:append $origins (LCons (ArgumentOrigin $argument $trace) LNil)))) (Some (PremiseExpansion (LCons (PremiseQueryArguments $rowIndex $nextArgument $assignment $schemas $values $modes $extended) (LCons (PremiseQueryMatcher $rowIndex $argument $schemas $values $modes $origins $query $state $nextCursor) LNil)) LNil LNil)))) (None (if (gslt:premise:matching-complete $environment $state) (Some (PremiseExpansion LNil LNil LNil)) (let $stepped (gslt:premise:matching-tick $environment $query $state) (Some (PremiseExpansion (LCons (PremiseQueryMatcher $rowIndex $argument $schemas $values $modes $origins $query $stepped $cursor) LNil) LNil LNil))))) ($badAnswer None)))) ($badTask None)))) ($badRequest None)))) ($badEnvironment None))))
 
 
 ; Original scoped matcher tasks and physical choice histories.
@@ -3270,3 +3198,42 @@
            None)
          None))
       ($_ None))))
+
+(: gslt:premise:matching-environment (-> Atom %Undefined%))
+(= (gslt:premise:matching-environment $environment)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core) $core)
+      ($ordinary $ordinary))))
+(: gslt:premise:matching-start (-> Atom Atom %Undefined%))
+(= (gslt:premise:matching-start $environment $request)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-start $names $request))
+      ($ordinary (gslt:rule:scope-matcher-start $request)))))
+(: gslt:premise:matching-tick (-> Atom Atom Atom %Undefined%))
+(= (gslt:premise:matching-tick $environment $request $state)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-tick $names $state))
+      ($ordinary (gslt:rule:scope-matcher-tick $request $state)))))
+(: gslt:premise:matching-complete (-> Atom Atom %Undefined%))
+(= (gslt:premise:matching-complete $environment $state)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-complete $state))
+      ($ordinary (gslt:rule:scope-matcher-complete $state)))))
+(: gslt:premise:matching-answer-at (-> Atom Atom Atom %Undefined%))
+(= (gslt:premise:matching-answer-at $environment $state $cursor)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-answer-at $state $cursor))
+      ($ordinary
+       (case $state
+         (((ScopedMatcherState $agenda $answers) (gslt:rule:row-at $cursor $answers))
+          ($bad None)))))))
+(: gslt:premise:matching-input (-> Atom Atom Atom %Undefined%))
+(= (gslt:premise:matching-input $environment $actual $expected)
+   (case $environment
+     (((InterpretedPremiseEnvironment $names $core)
+       (gslt:recursive-collection:canonical-input $names $actual $expected))
+      ($ordinary (== $actual $expected)))))

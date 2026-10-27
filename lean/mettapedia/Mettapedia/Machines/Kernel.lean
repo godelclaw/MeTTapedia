@@ -4,6 +4,7 @@ import Mettapedia.Machines.Kernel.Delegation
 import Mettapedia.Machines.Kernel.SexOSGenesis
 import Mettapedia.Machines.Kernel.TraceReplay
 import Mettapedia.Machines.Kernel.AgentCoordination
+import Mettapedia.Machines.Kernel.CorrelatedReplies
 
 /-!
 # Kernels of authority

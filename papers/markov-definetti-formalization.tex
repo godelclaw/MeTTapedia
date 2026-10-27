@@ -1241,7 +1241,7 @@ Includes concrete binary regression examples (\texttt{binaryCopyHMM\_observedCyl
 
 File: \texttt{FiniteHiddenMarkovDeFinettiBridge.lean} (339 lines, 0~\texttt{sorry}).
 
-\subsection{Controlled Finite HMMs, Credal Beliefs, and POMDP-Style Planning}
+\subsection{Controlled Finite HMMs, Credal Beliefs, and Trace-Mass Planning}
 
 The action-conditioned extension turns the finite HMM theorem set into a structured
 finite POMDP substrate.  The latent transition kernel now depends on an
@@ -1273,7 +1273,12 @@ tracking, so the formalization moves to a \emph{credal} world-model layer.
 For a finite family of controlled HMMs, the interval-valued object
 \texttt{filteringCredalPLNITV} packages lower and upper latent-state strengths
 as a live indefinite truth value.  Recursive lower and upper optimal-value
-envelopes then propagate that ambiguity into decision theory.
+envelopes then propagate that ambiguity into trace-mass decision values.
+The environment bridge uses unnormalized extended-trace masses: each row sums
+to the past trace probability. Recursive envelopes may re-select a model's row
+after each action and history; static values retain one model throughout.
+These are subprobability semantics. Normalized conditional HMM planning is a
+separate extension.
 
 The planning bridge itself is concrete.  A controlled finite HMM is turned into
 a \texttt{BayesianAgents.Environment}, and the resulting value and

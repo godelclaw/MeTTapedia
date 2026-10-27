@@ -1,0 +1,17 @@
+Module CollectionReachability {
+  Theory Closure() {
+    Types { Node; Fact; Graph; }
+    Terms {
+      A . |- "A" : Node;
+      B . |- "B" : Node;
+      C . |- "C" : Node;
+      Edge . source:Node, target:Node |- "edge" source target : Fact;
+      Facts . facts:HashSet(Fact) |- "{" facts.*sep(",") "}" : Graph;
+    }
+    Rewrites {
+      Transitive : (Facts {(Edge x y), (Edge y z), ...rest})
+        ~> (Facts {(Edge x y), (Edge y z), (Edge x z), ...rest});
+    }
+  }
+  theory Closure()
+}
