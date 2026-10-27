@@ -2,7 +2,7 @@ import Mettapedia.Logic.HOL.CanonicalTheory
 import Mettapedia.Logic.HOL.Lindenbaum
 import Mettapedia.Logic.HOL.Syntax.Closed
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -101,4 +101,4 @@ def forall_ {α : HTy} (φ : Formula [α]) : Sentence := .all φ
 /-- Existential closure of a one-variable formula. -/
 def exists_ {α : HTy} (φ : Formula [α]) : Sentence := .ex φ
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.ClassSemantics
-import Mettapedia.AutoBooks.Codex.Henkin1950.Semantics
+import Mettapedia.Logic.HOL.Henkin1950.ClassSemantics
+import Mettapedia.Logic.HOL.Henkin1950.Semantics
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -224,7 +224,7 @@ theorem canonicalClassModel_propBivalence
         CanonicalClassModel.denoteTerm, CanonicalFrame.denoteTerm,
         ClassAssignment.closeTerm, ClassAssignment.chooseRepresentatives_extend,
         RepresentativeAssignment.extend,
-        Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm, subst] using hTop
+        Mettapedia.Logic.HOL.Henkin1950.closeTerm, subst] using hTop
     exact
       (CM.denoteFormula_or_iff
         ν
@@ -242,7 +242,7 @@ theorem canonicalClassModel_propBivalence
         CanonicalClassModel.denoteTerm, CanonicalFrame.denoteTerm,
         ClassAssignment.closeTerm, ClassAssignment.chooseRepresentatives_extend,
         RepresentativeAssignment.extend,
-        Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm, subst] using hBot
+        Mettapedia.Logic.HOL.Henkin1950.closeTerm, subst] using hBot
     exact
       (CM.denoteFormula_or_iff
         ν
@@ -417,4 +417,4 @@ theorem not_exists_theorem1_sentenceSoundBridge_of_not_excludedMiddle
   rintro ⟨M, hBridge⟩
   exact hNotEM (excludedMiddle_of_theorem1_sentenceSoundBridge hT hEx hAll hBridge)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

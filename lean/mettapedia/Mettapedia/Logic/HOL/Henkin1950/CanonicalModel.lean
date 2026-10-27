@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalPropClasses
-import Mettapedia.AutoBooks.Codex.Henkin1950.TheoremTransport
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalPropClasses
+import Mettapedia.Logic.HOL.Henkin1950.TheoremTransport
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -160,7 +160,7 @@ def pointPredicateAssignment
         M.denoteTerm ν t := by
   apply congrArg (classOf (T := M.T))
   unfold ClassAssignment.closeTerm
-  unfold Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm
+  unfold Mettapedia.Logic.HOL.Henkin1950.closeTerm
   rw [weaken, subst_rename]
   apply subst_ext
   intro α v
@@ -334,7 +334,7 @@ theorem denoteFormula_emptyAssignment_iff_mem
     (φ : Sentence) :
     M.denoteFormula M.emptyAssignment φ ↔ φ ∈ M.T := by
   change
-    Mettapedia.AutoBooks.Codex.Henkin1950.closeFormula
+    Mettapedia.Logic.HOL.Henkin1950.closeFormula
         (ClassAssignment.chooseRepresentatives M.emptyAssignment) φ ∈ M.T ↔
       φ ∈ M.T
   exact Iff.of_eq <|
@@ -626,4 +626,4 @@ end CanonicalDescriptionModel
 
 end CanonicalClassModel
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

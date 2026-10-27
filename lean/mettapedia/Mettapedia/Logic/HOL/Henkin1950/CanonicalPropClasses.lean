@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalFrame
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalFrame
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -195,4 +195,4 @@ formula holds in the canonical frame. -/
 
 end CanonicalFrame
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

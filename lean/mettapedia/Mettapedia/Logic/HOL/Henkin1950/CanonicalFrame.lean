@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalTruthLaws
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalTruthLaws
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -73,7 +73,7 @@ def denoteFormula
     denoteTerm ν (.app f t) =
       appClass (T := T) (denoteTerm ν f) (denoteTerm ν t) := by
   unfold denoteTerm ClassAssignment.closeTerm
-  unfold Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm
+  unfold Mettapedia.Logic.HOL.Henkin1950.closeTerm
   rfl
 
 /-- If an equality formula holds in the canonical frame, then the denotations of
@@ -219,4 +219,4 @@ theorem denoteFormula_imp_mp
 
 end CanonicalFrame
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

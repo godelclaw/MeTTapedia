@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalAssignments
-import Mettapedia.AutoBooks.Codex.Henkin1950.CompleteTheories
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalAssignments
+import Mettapedia.Logic.HOL.Henkin1950.CompleteTheories
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -60,13 +60,13 @@ substitution as closing with the extended chosen representative assignment. -/
 @[simp] theorem classAssignment_closeTerm_extend
     (ν : ClassAssignment T Γ) (c : TermClass T σ) (φ : Term (σ :: Γ) τ) :
     ClassAssignment.closeTerm (ClassAssignment.extend ν c) φ =
-      Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm
+      Mettapedia.Logic.HOL.Henkin1950.closeTerm
         (RepresentativeAssignment.extend
           (ClassAssignment.chooseRepresentatives ν)
           (ClassAssignment.representative c))
         φ := by
   unfold ClassAssignment.closeTerm
-  unfold Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm
+  unfold Mettapedia.Logic.HOL.Henkin1950.closeTerm
   apply subst_ext
   intro α v
   simp
@@ -187,4 +187,4 @@ theorem holds_all_iff_forall_closed_instances
     rcases hAll (φ := closeBody ν φ) hAllNotMem with ⟨t, ht⟩
     exact ht (hInstances t)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.ExtensionalSoundness
+import Mettapedia.Logic.HOL.Henkin1950.ExtensionalSoundness
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -132,4 +132,4 @@ theorem not_satisfiable_of_inconsistent_of_eqAppArgSound
   intro hT hSat
   exact hT (theorem3_forward_consistent_of_eqAppArgSound hSound hSat)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

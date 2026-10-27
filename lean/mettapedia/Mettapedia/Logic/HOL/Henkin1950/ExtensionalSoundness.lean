@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.Semantics
+import Mettapedia.Logic.HOL.Henkin1950.Semantics
 import Mettapedia.Logic.HOL.Soundness
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -212,4 +212,4 @@ theorem consistent_of_satisfiable_of_eqAppArgSound
     (HenkinModel.models_bot M.toHenkinModel) <|
       models_of_setProvable_of_eqAppArgSound M (hSound M) hM hBot
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

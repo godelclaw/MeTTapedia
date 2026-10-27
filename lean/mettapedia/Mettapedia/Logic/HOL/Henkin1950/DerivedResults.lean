@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.AxiomSchemes
+import Mettapedia.Logic.HOL.Henkin1950.AxiomSchemes
 import Mettapedia.Logic.HOL.DerivationExtensionality
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -254,4 +254,4 @@ theorem derived31 {Γ : Ctx Atom} {α : HTy} (φ : Formula (α :: Γ)) :
           [weaken (Base := Atom) (Const := Primitive) (σ := α) (.all φ)] from by
         simp)))
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

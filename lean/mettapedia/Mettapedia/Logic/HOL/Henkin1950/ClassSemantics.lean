@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalModel
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalModel
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -246,4 +246,4 @@ theorem theorem1_classDescription
     CanonicalClassModel.CanonicalDescriptionModel.satisfiableInClassDescription
       (M := M.toCanonicalDescriptionModel hA11)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

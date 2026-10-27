@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.Syntax
+import Mettapedia.Logic.HOL.Henkin1950.Syntax
 import Mettapedia.Logic.HOL.PrimeHenkinExtension
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -74,4 +74,4 @@ theorem exists_primeConsistentExtension_separating
     ⟨U, hExt, hClosed, hUCons, hPrime, hOmit⟩
   exact ⟨U, ⟨⟨hExt, hClosed, hUCons, hPrime⟩, hOmit⟩⟩
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

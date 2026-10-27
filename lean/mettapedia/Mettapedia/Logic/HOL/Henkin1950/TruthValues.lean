@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CompleteTheories
+import Mettapedia.Logic.HOL.Henkin1950.CompleteTheories
 import Mettapedia.Logic.HOL.LindenbaumSet
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -134,4 +134,4 @@ theorem top_ne_bot
 
 end CompleteConsistentTheory
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

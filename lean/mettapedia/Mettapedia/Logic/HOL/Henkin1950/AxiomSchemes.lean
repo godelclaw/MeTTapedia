@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.Soundness
+import Mettapedia.Logic.HOL.Henkin1950.Soundness
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -169,4 +169,4 @@ theorem axiom11_validInGeneral {α : HTy} :
   intro hpx
   exact M.iota_sound α p hp ⟨x, hx, hpx⟩
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

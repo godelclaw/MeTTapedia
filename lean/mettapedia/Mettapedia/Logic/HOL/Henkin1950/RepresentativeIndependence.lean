@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalTruth
-import Mettapedia.AutoBooks.Codex.Henkin1950.DerivedResults
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalTruth
+import Mettapedia.Logic.HOL.Henkin1950.DerivedResults
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -610,4 +610,4 @@ theorem holds_iff_closeFormula_of_realizes
           v)
       φ
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

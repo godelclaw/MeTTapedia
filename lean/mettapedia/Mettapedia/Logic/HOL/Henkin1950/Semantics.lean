@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.Syntax
+import Mettapedia.Logic.HOL.Henkin1950.Syntax
 import Mettapedia.Logic.HOL.Semantics.Henkin
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -167,4 +167,4 @@ theorem not_validInGeneral_bot : ¬ ValidInGeneral (.bot : Sentence) := by
   intro h
   exact not_validInStandard_bot (validInStandard_of_validInGeneral h)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

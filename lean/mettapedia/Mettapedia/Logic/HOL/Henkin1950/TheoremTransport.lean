@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.AxiomSchemes
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalTruth
+import Mettapedia.Logic.HOL.Henkin1950.AxiomSchemes
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalTruth
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -240,4 +240,4 @@ theorem holds_axiom10
     Holds T ν (axiom10 (σ := σ) (τ := τ)) :=
   holds_of_theoremInContext (T := T) hT ν axiom10_theorem
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

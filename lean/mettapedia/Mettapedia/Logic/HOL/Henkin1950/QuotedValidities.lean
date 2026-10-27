@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.CanonicalModel
+import Mettapedia.Logic.HOL.Henkin1950.CanonicalModel
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -2821,4 +2821,4 @@ theorem derived30_validInGeneral (B : Sentence) :
   · exact hB
   · exact False.elim (hB (h (by simpa [not, HenkinModel.models, PreModel.models] using hB)))
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

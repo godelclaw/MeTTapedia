@@ -619,8 +619,8 @@ import Mettapedia.CogArch
 -- transitive closure pulls in `Logic.MarkovLogic*` modules that still have genuine
 -- 4.31 proof-level breakage (a follow-up round fixes those in place and adds it).
 
--- AutoBooks / Henkin (1950): "Completeness in the Theory of Types"
-import Mettapedia.AutoBooks.Codex.Henkin1950
+-- Henkin (1950): "Completeness in the Theory of Types"
+import Mettapedia.Logic.HOL.Henkin1950
 
 -- The Navier--Stokes research lane remains available under
 -- `Mettapedia.FluidDynamics`, but is intentionally outside the default build.

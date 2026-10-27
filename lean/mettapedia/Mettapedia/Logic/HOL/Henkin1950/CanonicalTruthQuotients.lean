@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.RepresentativeIndependence
+import Mettapedia.Logic.HOL.Henkin1950.RepresentativeIndependence
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -93,4 +93,4 @@ theorem holds_ex_iff_exists_class_witness
   · rintro ⟨c, hc⟩
     exact holds_ex_of_class_witness hT ν c hc
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

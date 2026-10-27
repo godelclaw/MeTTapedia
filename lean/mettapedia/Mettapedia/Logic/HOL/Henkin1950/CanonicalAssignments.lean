@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.TermQuotients
+import Mettapedia.Logic.HOL.Henkin1950.TermQuotients
 import Mettapedia.Logic.HOL.Soundness
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.Soundness
@@ -314,7 +314,7 @@ the original quotient-valued assignment. -/
 /-- Closing a term using a quotient-valued assignment means closing it using the
 chosen representatives of those quotient classes. -/
 noncomputable def closeTerm (ν : ClassAssignment T Γ) (t : Term Γ τ) : ClosedTerm τ :=
-  Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm (chooseRepresentatives ν) t
+  Mettapedia.Logic.HOL.Henkin1950.closeTerm (chooseRepresentatives ν) t
 
 /-- Formula version of `ClassAssignment.closeTerm`. -/
 noncomputable abbrev closeFormula (ν : ClassAssignment T Γ) (φ : Formula Γ) : Sentence :=
@@ -347,7 +347,7 @@ closing the outer free variables. -/
         (subst
           (Subst.lift (Base := Atom) (Const := Primitive)
             (chooseRepresentatives ν)) u) =
-      Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm
+      Mettapedia.Logic.HOL.Henkin1950.closeTerm
         (RepresentativeAssignment.extend
           (chooseRepresentatives ν) (representative c)) u := by
             exact
@@ -357,11 +357,11 @@ closing the outer free variables. -/
                 (u := u))
     _ = closeTerm (extend ν c) u := by
           unfold ClassAssignment.closeTerm
-          unfold Mettapedia.AutoBooks.Codex.Henkin1950.closeTerm
+          unfold Mettapedia.Logic.HOL.Henkin1950.closeTerm
           apply subst_ext
           intro τ v
           simp
 
 end ClassAssignment
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

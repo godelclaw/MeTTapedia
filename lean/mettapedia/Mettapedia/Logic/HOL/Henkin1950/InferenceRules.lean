@@ -1,6 +1,6 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.DerivedResults
+import Mettapedia.Logic.HOL.Henkin1950.DerivedResults
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -65,4 +65,4 @@ theorem ruleV_modusPonens {A B : Sentence} :
   intro hAB hA
   exact .impE hAB hA
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

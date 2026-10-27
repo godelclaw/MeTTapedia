@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.Syntax
+import Mettapedia.Logic.HOL.Henkin1950.Syntax
 import Mettapedia.Logic.HOL.DerivationExtensionality
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -219,4 +219,4 @@ theorem appClass_respects_representatives
     ((classOf_eq_iff (T := T)).2 hfg)
     ((classOf_eq_iff (T := T)).2 htu)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950

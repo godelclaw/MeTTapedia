@@ -1,7 +1,7 @@
-import Mettapedia.AutoBooks.Codex.Henkin1950.Semantics
+import Mettapedia.Logic.HOL.Henkin1950.Semantics
 import Mettapedia.Logic.HOL.Soundness
 
-namespace Mettapedia.AutoBooks.Codex.Henkin1950
+namespace Mettapedia.Logic.HOL.Henkin1950
 
 open Mettapedia.Logic.HOL
 
@@ -59,4 +59,4 @@ theorem imp_self_validInStandard (φ : Sentence) :
     ValidInStandard (.imp φ φ) :=
   theorem_validInStandard (Derivation.theorem_imp_refl (Const := Primitive) φ)
 
-end Mettapedia.AutoBooks.Codex.Henkin1950
+end Mettapedia.Logic.HOL.Henkin1950
