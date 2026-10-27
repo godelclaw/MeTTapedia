@@ -28,10 +28,10 @@ open SourceSExprPatternInstantiation (instantiate? instantiateList?)
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def sourceSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/plain_bnf_semantic_admission_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/plain_bnf_semantic_admission_v1.metta"
 
 def providerSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/experiments/gslt2parse_foundation/presentations/shared/cetta_petta_ground_integer_relations_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/experiments/gslt2parse_foundation/presentations/shared/cetta_petta_ground_integer_relations_v1.metta"
 
 private def rawRows : SExpr → List SExpr
   | .list [.atom "gslt-presentation-v1", _, .list (.atom "signature" :: _),
