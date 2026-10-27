@@ -544,7 +544,8 @@ theorem collection_rule_of_hasType
   | collection elementsTyped =>
       exact Or.inl ⟨_, rfl, elementsTyped⟩
   | collectionConstructor membership shape elementsTyped =>
-      exact Or.inr ⟨_, membership, _, _, shape, rfl, elementsTyped⟩
+      exact Or.inr ⟨_, membership, _, _, ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2, rfl,
+        elementsTyped⟩
 
 /-- A closed set pattern is an atom `U`, an atom `W`, or a hash set of closed set patterns. -/
 theorem set_closed_shape (pattern : Pattern)
