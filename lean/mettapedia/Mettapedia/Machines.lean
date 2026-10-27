@@ -46,6 +46,7 @@ import Mettapedia.Machines.NativeStoreMaximum
 import Mettapedia.Machines.NativeScalarText
 import Mettapedia.Machines.NativeProviderConstraints
 import Mettapedia.Machines.NativeProviderDomain
+import Mettapedia.Machines.NativeProviderAdmission
 
 /-!
 # Abstract-machine foundations
