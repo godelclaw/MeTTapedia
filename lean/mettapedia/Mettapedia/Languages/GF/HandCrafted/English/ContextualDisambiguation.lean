@@ -4,8 +4,8 @@ import Mettapedia.Languages.GF.Typing
 import Mettapedia.Languages.GF.LinguisticInvariance
 import Mettapedia.Languages.GF.WorldModelSemantics
 import Mettapedia.Languages.GF.Generated.PaperAmbiguityPGFWitnesses
-import Mettapedia.PLN.WorldModel.PLNWorldModel
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 namespace Mettapedia.Languages.GF.HandCrafted.English.ContextualDisambiguation
 
@@ -16,9 +16,9 @@ open Mettapedia.Languages.GF.Typing
 open Mettapedia.Languages.GF.LinguisticInvariance
 open Mettapedia.Languages.GF.WorldModelSemantics
 open Mettapedia.Languages.GF.Generated.PaperAmbiguityPGFWitnesses
-open Mettapedia.Logic.EvidenceClass
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceClass
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.Languages.GF.HandCrafted.English
 open Mettapedia.Languages.GF.HandCrafted.English.Examples
 open Nouns Verbs Adjectives Syntax Pronouns Relatives
@@ -26,10 +26,10 @@ open Nouns Verbs Adjectives Syntax Pronouns Relatives
 /-! ## Same-Surface Telescope Ambiguity -/
 
 /-- NP-attachment reading: John saw [the man with the telescope]. -/
-def telescopeNPAttachmentSurface : String := Examples.telescopeNPAttachmentSurface
+def telescopeNPAttachmentSurface : String := Examples.telescopeNPAttachmentText
 
 /-- VP-attachment reading: John [saw the man] [with the telescope]. -/
-def telescopeVPAttachmentSurface : String := Examples.telescopeVPAttachmentSurface
+def telescopeVPAttachmentSurface : String := Examples.telescopeVPAttachmentText
 
 theorem telescope_np_surface :
     telescopeNPAttachmentSurface = "John sees the man with the telescope" := by
@@ -102,7 +102,7 @@ abbrev GFPattern := Mettapedia.OSLF.MeTTaIL.Syntax.Pattern
 abbrev TelescopeState := BinaryEvidence × BinaryEvidence
 
 noncomputable instance : EvidenceType TelescopeState :=
-  { inferInstanceAs (AddCommMonoid TelescopeState) with }
+  { toAddCommMonoid := inferInstance }
 
 private def telescopeNPQuery : GFPattern := gfAbstractToPattern telescopeNPAttachmentTree
 private def telescopeVPQuery : GFPattern := gfAbstractToPattern telescopeVPAttachmentTree
@@ -130,6 +130,14 @@ noncomputable instance : BinaryWorldModel TelescopeState GFPattern where
       · subst hvp
         cases W₁
         cases W₂
+        simp [telescopeVPQuery_ne_telescopeNPQuery]
+      · simp [hnp, hvp]
+  evidence_zero q := by
+    by_cases hnp : q = telescopeNPQuery
+    · subst hnp
+      simp
+    · by_cases hvp : q = telescopeVPQuery
+      · subst hvp
         simp [telescopeVPQuery_ne_telescopeNPQuery]
       · simp [hnp, hvp]
 
@@ -183,10 +191,10 @@ theorem telescope_modifier_scene_values :
 /-! ## Same-Surface Anna Ambiguity -/
 
 /-- NP-attachment reading: Anna dressed [the baby in the crib]. -/
-def annaNPAttachmentSurface : String := Examples.annaNPAttachmentSurface
+def annaNPAttachmentSurface : String := Examples.annaNPAttachmentText
 
 /-- VP-attachment reading: Anna [dressed the baby] [in the crib]. -/
-def annaVPAttachmentSurface : String := Examples.annaVPAttachmentSurface
+def annaVPAttachmentSurface : String := Examples.annaVPAttachmentText
 
 theorem anna_np_surface :
     annaNPAttachmentSurface = "Anna dresses the baby in the crib" := by
@@ -254,7 +262,7 @@ private theorem annaVPQuery_ne_annaNPQuery :
 abbrev AnnaState := BinaryEvidence × BinaryEvidence
 
 noncomputable instance : EvidenceType AnnaState :=
-  { inferInstanceAs (AddCommMonoid AnnaState) with }
+  { toAddCommMonoid := inferInstance }
 
 noncomputable instance : BinaryWorldModel AnnaState GFPattern where
   evidence W q :=
@@ -262,6 +270,18 @@ noncomputable instance : BinaryWorldModel AnnaState GFPattern where
     else if q = annaVPQuery then W.2
     else 0
   evidence_add W₁ W₂ q := by
+    by_cases hNP : q = annaNPQuery
+    · subst hNP
+      cases W₁
+      cases W₂
+      simp
+    · by_cases hVP : q = annaVPQuery
+      · subst hVP
+        cases W₁
+        cases W₂
+        simp [annaVPQuery_ne_annaNPQuery]
+      · simp [hNP, hVP]
+  evidence_zero q := by
     by_cases hNP : q = annaNPQuery
     · subst hNP
       simp

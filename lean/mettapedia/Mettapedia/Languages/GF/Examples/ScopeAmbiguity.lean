@@ -159,7 +159,34 @@ theorem emla_scope_nondet :
     · exact ⟨emla_det1, emla_restr1, Multiset.mem_add.mpr (Or.inl (Multiset.mem_singleton_self _))⟩
     · simp [emla_state2, emla_det1, emla_restr1, emla_det2, emla_restr2]
 
-/-! ## Stage 5: Store → QFormula2 — Two Readings -/
+/-! ## Stage 5: Store → QFormula2 — Two Readings
+
+`surfaceScope` and `inverseScope` are the standard names for the two readings
+of a doubly-quantified sentence: the surface-scope reading takes the
+quantifiers in their linear order, the inverse-scope reading reverses them.
+The pair is terminology, not a metaphor, and neither half should be renamed
+independently of the other.
+
+* R. May, *The Grammar of Quantification* (1977) and *Logical Form: Its
+  Structure and Derivation* (MIT Press, 1985) — inverse scope derived by
+  Quantifier Raising at LF.
+* T. Reinhart, "Quantifier Scope: How Labor is Divided Between QR and Choice
+  Functions", *Linguistics and Philosophy* 20 (1997).
+* D. Fox, *Economy and Semantic Interpretation* (MIT Press, 2000) — scope
+  economy over the surface/inverse alternation.
+* A. Szabolcsi, *Quantification* (Cambridge University Press, 2010).
+* E. G. Ruys and Y. Winter, "Quantifier Scope in Formal Linguistics",
+  *Handbook of Philosophical Logic* — survey using exactly this pair.
+* K. É. Kiss and J. Pafel, "Quantifier Scope Ambiguities", *The Blackwell
+  Companion to Syntax* (2017).
+* Processing: G. Ioup (1975); H. Kurtzman and M. MacDonald, "Resolution of
+  quantifier scope ambiguities", *Cognition* 48 (1993); S. Tunstall (1998);
+  C. Anderson (2004), whose Processing Scope Economy principle exists to
+  explain the observed preference for the surface-scope reading.
+* Cross-linguistic: English is scope-fluid (both readings available) while
+  Mandarin is scope-rigid (surface only) — see G. Scontras et al., "Chinese
+  Scope: an experimental investigation".
+-/
 
 /-- Body: love_V2(q1, q2) -/
 theorem emla_body : termToBody emla_afterV1b =
@@ -202,7 +229,7 @@ def emla_state3_inverse : GrammarState :=
 /-- Auto-assembly (surface): `storeToQFormula2` on the surface-scoped state
     agrees with the manual `surfaceScope` formula.
 
-    Proof: rewrite store to literal form, apply `scopeOrderedQuants_two_surface_spec`,
+    Proof: rewrite store to literal form, apply `scopeOrderedQuants_two_source_order_spec`,
     then reduce `assembleFromQuants`. -/
 theorem emla_surface_auto_assembly :
     storeToQFormula2 emla_state3_surface = surfaceScope := by
@@ -218,7 +245,7 @@ theorem emla_surface_auto_assembly :
       StoreAtom.scope "q1" "q2"} : Multiset StoreAtom) := by
     simp [Multiset.singleton_add, Multiset.cons_add]
   rw [hstore]
-  rw [scopeOrderedQuants_two_surface_spec
+  rw [scopeOrderedQuants_two_source_order_spec
     "q1" (.fvar "every_Det") (.apply "UseN" [.fvar "man_N"])
     "q2" (.fvar "someSg_Det") (.apply "UseN" [.fvar "woman_N"])
     (by simp) (by simp)]
@@ -239,7 +266,7 @@ theorem emla_inverse_auto_assembly :
     simp [Multiset.singleton_add, Multiset.cons_add]
     exact Multiset.cons_swap _ _ _
   rw [hstore]
-  rw [scopeOrderedQuants_two_surface_spec
+  rw [scopeOrderedQuants_two_source_order_spec
     "q2" (.fvar "someSg_Det") (.apply "UseN" [.fvar "woman_N"])
     "q1" (.fvar "every_Det") (.apply "UseN" [.fvar "man_N"])
     (by simp) (by simp)]

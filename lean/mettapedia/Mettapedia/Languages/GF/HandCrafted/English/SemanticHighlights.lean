@@ -1,12 +1,12 @@
-import Mettapedia.Languages.GF.HandCrafted.English.InterfaceContrast
-import Mettapedia.Languages.GF.Examples.ScopeAmbiguity
+import Mettapedia.Languages.GF.ArchivedLegacy.HandCrafted.English.InterfaceContrast
+import Mettapedia.Languages.GF.ArchivedLegacy.Examples.ScopeAmbiguity
 import Mettapedia.Languages.GF.WorldModelVisibleBridge
 import Mettapedia.Languages.GF.VisibleLayer
 import Mettapedia.Languages.GF.WorldModelSemantics
 import Mettapedia.OSLF.Formula
 import Mettapedia.OSLF.MeTTaIL.Syntax
 import Mettapedia.OSLF.QuantifiedFormula2
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # GF English Semantic Highlights
@@ -19,7 +19,7 @@ namespace Mettapedia.Languages.GF.HandCrafted.English.SemanticHighlights
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.QuantifiedFormula2
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Languages.GF.VisibleLayer
 open Mettapedia.Languages.GF.WorldModelSemantics
 open Mettapedia.Languages.GF.WorldModelVisibleBridge
@@ -104,7 +104,7 @@ theorem modal_syntax_lifts_to_temporal
     (I : AtomSem) {φ : OSLFFormula} (hpos : positiveFormula φ)
     {p : Pattern}
     (h : sem (Mettapedia.OSLF.Framework.TypeSynthesis.langReduces
-      Mettapedia.Languages.GF.OSLFBridge.gfRGLLanguageDef) I φ p) :
+      Mettapedia.Languages.GF.OSLFBridge.gfLegacySemanticLanguageDef) I φ p) :
     sem (gfReducesTemporal π) I φ p :=
   sem_syntax_lifts_to_temporal π I hpos h
 
