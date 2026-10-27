@@ -327,6 +327,7 @@ theorem twenty_levels_eager_cardinality :
     (List.replicate (2 ^ (List.replicate 20 (0 : Nat)).length) (7 : Nat)).length =
       1048576 := by
   simp only [List.length_replicate]
+  norm_num
 
 /-- The actual bounded cursor's visible payload list, discarding its state.
 All inputs to this admitted family succeed; the default is never used. -/

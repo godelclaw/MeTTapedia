@@ -319,7 +319,7 @@ theorem transition_valid (interface : RuleWitness.{0, 0} rules) (store : Store J
               exact checked
 
 def ValidOutcome {interface : RuleWitness.{0, 0} rules} {store : Store J interface.W Origin} :
-    Outcome (State interface store) (List (Delivery interface store)) Empty → Prop
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome (State interface store) (List (Delivery interface store)) Empty → Prop
   | .exhausted state | .stuck state => ValidState state
   | .finished delivered => ∀ delivery ∈ delivered, delivery.Valid
   | .faulted => False
@@ -434,13 +434,13 @@ private def readDelivered (delivery : Delivery interface store) :
     (delivery.report.work.cursor.root 1).map CheckedJudgment.judgment)
 
 private def readFinished :
-    Outcome (State interface store) (List (Delivery interface store)) Empty →
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome (State interface store) (List (Delivery interface store)) Empty →
       Option (List (Nat × Bool × List NodeId × Nat × Option Nat))
   | .finished delivered => some (delivered.map readDelivered)
   | _ => none
 
 private def readPaused :
-    Outcome (State interface store) (List (Delivery interface store)) Empty →
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome (State interface store) (List (Delivery interface store)) Empty →
       Option (Nat × List NodeId × Nat × Nat × List Nat × Option Nat)
   | .exhausted (.handling active (.waiting saved later _) work) =>
       some (active.ticket, work.pending, work.accepted, saved.ticket,
@@ -509,7 +509,7 @@ private def invalidRequest : Request interface deduplicatedStore :=
   ⟨11, CheckedCursor.begin interface deduplicatedStore, [0, 1]⟩
 
 private def refusalView :
-    Outcome (State interface deduplicatedStore) (List (Delivery interface deduplicatedStore)) Empty →
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome (State interface deduplicatedStore) (List (Delivery interface deduplicatedStore)) Empty →
       Option (List (Bool × List NodeId × Nat))
   | .finished delivered => some (delivered.map fun item =>
       (item.report.accepted, item.report.work.pending, item.report.work.accepted))
@@ -521,7 +521,7 @@ theorem deleting_a_repeated_premise_changes_acceptance :
   rfl
 
 private def cacheView :
-    Outcome (State interface store) (List (Delivery interface store)) Empty → Option (List (List Nat))
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome (State interface store) (List (Delivery interface store)) Empty → Option (List (List Nat))
   | .finished delivered => some (delivered.map fun item => item.report.work.cursor.state.cache.toList)
   | _ => none
 
