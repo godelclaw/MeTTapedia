@@ -37,7 +37,7 @@ theorem two_mode_schwartz_divergence_free_zero_bridge_schwartz_pressure_slice_wi
       smoothSpaceTimePressure
         (fun s : NSTime => fun y : NSSpace =>
           (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
+    exact
       (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
   exact
     twoModeSchwartzDivergenceFreeInitialVelocity_finiteTimeWitness_of_momentumEquation_schwartzPressureSlice
@@ -79,7 +79,7 @@ theorem two_mode_schwartz_divergence_free_zero_bridge_schwartz_pressure_slice_BK
       smoothSpaceTimePressure
         (fun s : NSTime => fun y : NSSpace =>
           (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
+    exact
       (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
   exact
     twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPremise_of_momentumEquation_schwartzPressureSlice
@@ -121,7 +121,7 @@ theorem two_mode_schwartz_divergence_free_zero_bridge_explicitClosure_schwartz_p
       smoothSpaceTimePressure
         (fun s : NSTime => fun y : NSSpace =>
           (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
+    exact
       (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
   exact
     twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPremise_of_explicitClosure_schwartzPressureSlice
@@ -144,7 +144,7 @@ theorem two_mode_schwartz_divergence_free_zero_bridge_explicitClosure_schwartz_p
       (fun x => by simpa using (initialSpatialDivergence_zero x))
       (by
         intro t x
-        simpa using spatialPressureGradient_zero t x)
+        simpa [Pi.zero_def] using spatialPressureGradient_zero t x)
 
 theorem one_one_antiprofile_schwartz_pressure_slice_zero_BKM_premise_regression :
     ∃ W : ExplicitFiniteTimeRegularityWitness 0 (0 : NSInitialVelocity) 0,

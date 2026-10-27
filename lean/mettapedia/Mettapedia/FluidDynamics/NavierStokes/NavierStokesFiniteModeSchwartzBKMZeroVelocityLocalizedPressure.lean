@@ -29,7 +29,7 @@ theorem schwartzMap_gradient_constant_eq_zero
   let f : NSSpace → ℝ := fun z => q z
   let g : NSSpace := gradient f (0 : NSSpace)
   have hdiff : Differentiable ℝ f := by
-    simpa [f] using q.smooth'.differentiable (by simp)
+    exact q.differentiable
   have hgzero : g = 0 := by
     by_contra hg
     let φ : NSSpace →L[ℝ] ℝ := fderiv ℝ f (0 : NSSpace)
@@ -37,17 +37,15 @@ theorem schwartzMap_gradient_constant_eq_zero
       intro z
       apply ContinuousLinearMap.ext
       intro v
-      have hz : DifferentiableAt ℝ f z := hdiff z
-      have h0 : DifferentiableAt ℝ f (0 : NSSpace) := hdiff 0
       have hgradz : gradient f z = gradient f (0 : NSSpace) := by
         simpa [f] using hconst z
       calc
         (fderiv ℝ f z) v = ⟪gradient f z, v⟫ := by
-          rw [← inner_gradient_left hz]
+          rw [← inner_gradient_left]
         _ = ⟪g, v⟫ := by
           simpa [g] using congrArg (fun w : NSSpace => ⟪w, v⟫) hgradz
         _ = (fderiv ℝ f (0 : NSSpace)) v := by
-          rw [inner_gradient_left h0]
+          exact inner_gradient_left
         _ = φ v := rfl
     let M : ℝ := (SchwartzMap.seminorm ℝ 0 0) q
     have hMnonneg : 0 ≤ M :=
@@ -85,10 +83,9 @@ theorem schwartzMap_gradient_constant_eq_zero
     have hdiff_eq : q (r • g) - q (0 : NSSpace) = φ ((r • g) - 0) := by
       linarith
     have hφg : φ g = ‖g‖ ^ 2 := by
-      have h0 : DifferentiableAt ℝ f (0 : NSSpace) := hdiff 0
       calc
         φ g = ⟪gradient f (0 : NSSpace), g⟫ := by
-          rw [inner_gradient_left h0]
+          rw [inner_gradient_left]
         _ = ⟪g, g⟫ := rfl
         _ = ‖g‖ ^ 2 := real_inner_self_eq_norm_sq g
     have hphi : φ ((r • g) - 0) = r * ‖g‖ ^ 2 := by

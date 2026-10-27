@@ -147,12 +147,7 @@ theorem WeightedObservable.windowedColeHopfHeatSeedOnlyShiftKernel_vorticity_eq_
     (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
       (ι := ι) (X := X)
       selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).vorticity t₂ y := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.windowedColeHopfHeatSeedOnlyShiftKernel_vorticity_eq_of_topDownBridge
         (ι := ι) (X := X) (κ := κ)
         selector K hzero c ν hc hν
@@ -197,12 +192,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatSeedOnlyShiftKernelTop
           L.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le
             (ι := ι) (X := X)
             selector K c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatSeedOnlyShiftKernelTopDownBridge_of_vorticity_ne
         (ι := ι) (X := X) (κ := κ)
         selector K hzero c ν hc hν

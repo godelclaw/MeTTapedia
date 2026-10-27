@@ -74,8 +74,8 @@ theorem exists_ExplicitFiniteTimeRegularityWitness_equalAmplitudeAntiProfileInit
       { velocity := twoModeSchwartzVelocity a a f (-f)
         pressure := p
         smooth_velocity := by
-          simpa [equalAmplitudeAntiProfileSchwartzVelocity_zero a f] using
-            (zeroFiniteTimeRegularityWitness ν T).smooth_velocity
+          rw [equalAmplitudeAntiProfileSchwartzVelocity_zero a f]
+          exact (zeroFiniteTimeRegularityWitness ν T).smooth_velocity
         smooth_pressure := hp
         momentum_equation_on := by
           intro t x ht0 htT
@@ -91,12 +91,12 @@ theorem exists_ExplicitFiniteTimeRegularityWitness_equalAmplitudeAntiProfileInit
           simpa [equalAmplitudeAntiProfileSchwartzVelocity_zero a f] using
             spatialDivergence_zero t x
         initial_condition := by
-          simpa [equalAmplitudeAntiProfileSchwartzInitialVelocity_zero (a 0) f,
-            equalAmplitudeAntiProfileSchwartzVelocity_zero a f] using
-            (zeroFiniteTimeRegularityWitness ν T).initial_condition
+          rw [equalAmplitudeAntiProfileSchwartzInitialVelocity_zero (a 0) f,
+            equalAmplitudeAntiProfileSchwartzVelocity_zero a f]
+          exact (zeroFiniteTimeRegularityWitness ν T).initial_condition
         bounded_energy_on := by
-          simpa [equalAmplitudeAntiProfileSchwartzVelocity_zero a f] using
-            (zeroFiniteTimeRegularityWitness ν T).bounded_energy_on }
+          rw [equalAmplitudeAntiProfileSchwartzVelocity_zero a f]
+          exact (zeroFiniteTimeRegularityWitness ν T).bounded_energy_on }
     exact ⟨W, rfl, rfl⟩
 
 /-- Internal-pressure witness obstruction for the cancelled equal-amplitude
