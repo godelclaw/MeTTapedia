@@ -146,8 +146,7 @@ theorem continuous_initialKineticEnergyDensity_of_smoothInitialVelocityData
     {u₀ : NSInitialVelocity}
     (hsmooth : smoothInitialVelocityData u₀) :
     Continuous (initialKineticEnergyDensity u₀) := by
-  simpa [initialKineticEnergyDensity] using
-    (continuous_norm.comp hsmooth.continuous).pow (2 : ℕ)
+  exact hsmooth.continuous.norm.pow (2 : ℕ)
 
 /-- Any nonzero smooth initial velocity profile that is invariant under
 translation in the streamwise direction is not finite-energy admissible on

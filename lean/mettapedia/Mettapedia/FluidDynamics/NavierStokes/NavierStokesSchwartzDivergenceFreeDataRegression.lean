@@ -53,7 +53,7 @@ theorem zero_schwartzDivergenceFree_regularity_clause_regression
     ExplicitSchwartzDivergenceFreeNavierStokesRegularityClause
       ν zeroSchwartzDivergenceFreeInitialVelocity := by
   rw [ExplicitSchwartzDivergenceFreeNavierStokesRegularityClause_iff]
-  simpa using ExplicitFiniteEnergyAdmissibleNavierStokesRegularityClause_zero ν
+  exact ExplicitFiniteEnergyAdmissibleNavierStokesRegularityClause_zero ν
 
 theorem zero_structured_schwartzDivergenceFree_regularity_clause_regression
     (ν : ℝ) :
@@ -69,7 +69,7 @@ theorem zero_schwartzDivergenceFree_timeOnlyPressure_regularity_clause_regressio
     ExplicitSchwartzDivergenceFreeNavierStokesRegularityClause
       ν zeroSchwartzDivergenceFreeInitialVelocity := by
   rw [ExplicitSchwartzDivergenceFreeNavierStokesRegularityClause_iff]
-  simpa using
+  exact
     ExplicitFiniteEnergyAdmissibleNavierStokesRegularityClause_zero_timeOnlyPressure
       ν
       (fun t : NSTime => t + 1)

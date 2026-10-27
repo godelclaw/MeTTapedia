@@ -73,8 +73,8 @@ theorem finiteModeShearAcceleration_solution_no_polynomialPressureMomentumOn
               finiteModeNonPressureMomentumDefect (0 : ℝ) finiteModeShearAccelerationMode
                 finiteModeUnitForcingCoefficients finiteModeIdentityCoefficientCurve 0 x =
             0 := by
-        simpa [finiteModeNonPressureMomentumDefect, sub_eq_add_neg,
-          add_assoc, add_left_comm, add_comm] using hres
+        rw [finiteModeNonPressureMomentumDefect, add_comm, sub_add_eq_add_sub]
+        exact hres
       have hgrad :
           spatialPressureGradient (fun s y => MvPolynomial.eval y (P s)) 0 x =
             -finiteModeNonPressureMomentumDefect (0 : ℝ) finiteModeShearAccelerationMode

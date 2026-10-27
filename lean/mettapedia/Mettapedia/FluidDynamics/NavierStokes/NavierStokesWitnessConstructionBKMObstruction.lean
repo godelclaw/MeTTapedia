@@ -151,11 +151,8 @@ theorem boxedPartialPeriodizationSteadySeed_BKMData_iff_stationaryMomentum
           (boxedPartialPeriodizationSchwartzDivergenceFreeInitialVelocity N L u₀).1 T with
       ⟨Ω, B, hEnv, hInt⟩
     refine ⟨W, hWvel, hWpress, Ω, B, ?_, hInt⟩
-    simpa [hWvel, boxedPartialPeriodizationSteadySeedVelocity,
-      boxedPartialPeriodizationNavierStokesProblemData,
-      boxedPartialPeriodizationFiniteEnergyAdmissibleProblemData,
-      NSSchwartzDivergenceFreeInitialVelocity.toFiniteEnergyAdmissibleNavierStokesProblemData]
-      using hEnv
+    rw [hWvel]
+    exact hEnv
 
 /-- Any smooth pressure gauge with zero spatial gradient leaves the boxed
 steady-seed BKM-data criterion unchanged: the packaged finite-time data exist
@@ -253,7 +250,7 @@ theorem
         (by simpa using smoothSpaceTimePressure_const (0 : ℝ))
         (by
           intro t x
-          simpa using spatialPressureGradient_zero t x)).symm)
+          exact spatialPressureGradient_zero t x)).symm)
 
 /-- Allowing an arbitrary smooth zero-spatial-gradient pressure gauge does not
 enlarge the boxed steady-seed BKM-data surface: such packaged data exist for
@@ -287,7 +284,7 @@ theorem
     refine ⟨fun _ : NSTime => fun _ : NSSpace => (0 : ℝ), ?_, ?_, ?_⟩
     · simpa using smoothSpaceTimePressure_const (0 : ℝ)
     · intro t x
-      simpa using spatialPressureGradient_zero t x
+      exact spatialPressureGradient_zero t x
     · exact
         (boxedPartialPeriodizationSteadySeed_zeroSpatialGradientPressure_BKMData_iff_stationaryMomentum_zeroPressure
           hν N L u₀ T
@@ -295,7 +292,7 @@ theorem
           (by simpa using smoothSpaceTimePressure_const (0 : ℝ))
           (by
             intro t x
-            simpa using spatialPressureGradient_zero t x)).2 hstat
+            exact spatialPressureGradient_zero t x)).2 hstat
 
 /-- A single failed zero-pressure stationary residual rules out the whole
 smooth zero-spatial-gradient pressure repair class at the boxed steady-seed

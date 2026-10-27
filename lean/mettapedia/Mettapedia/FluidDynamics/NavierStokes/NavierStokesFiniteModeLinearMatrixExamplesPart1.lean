@@ -36,7 +36,7 @@ def finiteModeLinearMapKineticEnergyDensity
 theorem finiteModeLinearMapKineticEnergyDensity_continuous
     (L : NSSpace →L[ℝ] NSSpace) :
     Continuous (finiteModeLinearMapKineticEnergyDensity L) := by
-  simpa [finiteModeLinearMapKineticEnergyDensity] using (L.continuous.norm.pow 2)
+  exact L.continuous.norm.pow 2
 
 /-- A nonzero linear spatial velocity profile has nonintegrable kinetic-energy
 density on `ℝ^3`.  The proof is the Haar-scaling obstruction: the density scales
@@ -348,7 +348,7 @@ theorem finiteModeLinearMatrix_traceFreeSymmetric_reconstructed_velocityAffineQu
       ν ε A (fun t _ht => finiteModeLinearMatrixAffinePressureMatrix_symm A hA t)
       htrace
 
-/-- The time-dependent matrix-linear velocity `u(t,x)=g(t) A x`, represented
+/- The time-dependent matrix-linear velocity `u(t,x)=g(t) A x`, represented
 using the same one-mode polynomial reconstruction surface. -/
 end NavierStokes
 end FluidDynamics

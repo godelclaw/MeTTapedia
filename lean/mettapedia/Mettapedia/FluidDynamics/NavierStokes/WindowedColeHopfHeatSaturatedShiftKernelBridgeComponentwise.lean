@@ -89,13 +89,7 @@ theorem WeightedObservable.windowedColeHopfHeatShiftKernel_abs_eq_abs_of_topDown
       |(L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
         (ι := ι) (X := X)
         selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).vorticity t₂ y₂| := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.windowedColeHopfHeatShiftKernel_abs_eq_abs_of_topDownBridge_eq_saturatedCandidate_of_stationary_shiftInvariant
         (ι := ι) (X := X)
         selector K a c ν hsum hc hν
@@ -258,13 +252,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatShiftKernelTopDownBrid
           L.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le
             (ι := ι) (X := X)
             selector a c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatShiftKernelTopDownBridge_eq_saturatedCandidate_of_abs_ne_abs_of_stationary_shiftInvariant
         (ι := ι) (X := X)
         selector K a c ν hsum hc hν
@@ -486,13 +474,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatShiftKernelTopDownBrid
           L.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le
             (ι := ι) (X := X)
             selector a c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatShiftKernelTopDownBridge_eq_saturatedCandidate_of_abs_saturatedCoeff_lt_abs_totalCoeffSum_of_stationary_shiftInvariant
         (ι := ι) (X := X)
         selector K a c ν hlarge hc hν
@@ -562,13 +544,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatShiftKernelTopDownBrid
           L.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le
             (ι := ι) (X := X)
             selector a c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatShiftKernelTopDownBridge_eq_saturatedCandidate_of_abs_saturatedCoeff_le_abs_totalCoeffSum_of_totalCoeffSum_ne_zero_of_stationary_shiftInvariant
         (ι := ι) (X := X)
         selector K a c ν hlarge hsum hc hν

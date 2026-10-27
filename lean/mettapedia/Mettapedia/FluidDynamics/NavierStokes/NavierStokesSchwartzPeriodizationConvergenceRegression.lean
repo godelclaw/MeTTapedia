@@ -49,7 +49,7 @@ theorem boxedPartialPeriodizationConvergesOnCube_zero_schwartzDivergenceFree_reg
     BoxedPartialPeriodizationConvergesOnCube R L
       (zeroSchwartzDivergenceFreeInitialVelocity.1 : NSInitialVelocity)
       (zeroSchwartzDivergenceFreeInitialVelocity.1 : NSInitialVelocity) := by
-  simpa using boxedPartialPeriodizationConvergesOnCube_zero_regression R L
+  exact boxedPartialPeriodizationConvergesOnCube_zero_regression R L
 
 theorem boxedPartialPeriodizationConvergesOnCube_zero_schwartzDivergenceFree_interface_regression
     {R L : ℝ} (hL : L ≠ 0) :

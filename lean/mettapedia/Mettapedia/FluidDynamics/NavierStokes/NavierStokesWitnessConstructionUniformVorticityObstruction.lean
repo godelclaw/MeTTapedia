@@ -142,11 +142,8 @@ theorem boxedPartialPeriodizationSteadySeed_uniformVorticityData_iff_stationaryM
       ⟨W, hWvel, hWpress,
         schwartzInitialVelocityVorticityBound
           (boxedPartialPeriodizationSchwartzDivergenceFreeInitialVelocity N L u₀).1, ?_⟩
-    simpa [hWvel, boxedPartialPeriodizationSteadySeedVelocity,
-      boxedPartialPeriodizationNavierStokesProblemData,
-      boxedPartialPeriodizationFiniteEnergyAdmissibleProblemData,
-      NSSchwartzDivergenceFreeInitialVelocity.toFiniteEnergyAdmissibleNavierStokesProblemData]
-      using
+    rw [hWvel]
+    exact
         (uniformVorticityBoundUpTo_timeIndependentVelocity
           (boxedPartialPeriodizationSchwartzDivergenceFreeInitialVelocity N L u₀).1 T)
 
@@ -239,7 +236,7 @@ theorem
         (by simpa using smoothSpaceTimePressure_const (0 : ℝ))
         (by
           intro t x
-          simpa using spatialPressureGradient_zero t x)).symm)
+          exact spatialPressureGradient_zero t x)).symm)
 
 /-- Allowing an arbitrary smooth zero-spatial-gradient pressure gauge does not
 enlarge the boxed steady-seed uniform-vorticity-data surface: such packaged data
@@ -271,7 +268,7 @@ theorem
     refine ⟨fun _ : NSTime => fun _ : NSSpace => (0 : ℝ), ?_, ?_, ?_⟩
     · simpa using smoothSpaceTimePressure_const (0 : ℝ)
     · intro t x
-      simpa using spatialPressureGradient_zero t x
+      exact spatialPressureGradient_zero t x
     · exact
         (boxedPartialPeriodizationSteadySeed_zeroSpatialGradientPressure_uniformVorticityData_iff_stationaryMomentum_zeroPressure
           hν N L u₀ T
@@ -279,7 +276,7 @@ theorem
           (by simpa using smoothSpaceTimePressure_const (0 : ℝ))
           (by
             intro t x
-            simpa using spatialPressureGradient_zero t x)).2 hstat
+            exact spatialPressureGradient_zero t x)).2 hstat
 
 /-- A single failed zero-pressure stationary residual rules out the whole
 smooth zero-spatial-gradient pressure repair class at the boxed steady-seed

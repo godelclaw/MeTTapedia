@@ -58,8 +58,7 @@ theorem WeightedObservable.windowedColeHopfHeatSeedLiveOperator_eq_live_of_selfC
       (L.windowedColeHopfHeatUniformVorticityTendril
         (ι := ι) (X := X)
         selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y := by
-  simpa [selfCompatibility, WeightedObservable.windowedColeHopfHeatSeedLiveOperatorCandidate] using
-    hself t y
+  exact hself t y
 
 theorem WeightedObservable.windowedColeHopfHeatSeedLiveOperator_eq_live_of_topDownBridge
     (L : WeightedObservable)
@@ -208,12 +207,7 @@ theorem WeightedObservable.windowedColeHopfHeatSeedLiveOperator_eq_live_of_topDo
       (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
         (ι := ι) (X := X)
         selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).vorticity t y := by
-  simpa [WeightedObservable.windowedColeHopfHeatSeedLiveOperatorInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSeedLiveOperatorCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.windowedColeHopfHeatSeedLiveOperator_eq_live_of_topDownBridge
         (ι := ι) (X := X)
         selector O c ν hc hν
@@ -264,12 +258,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatSeedLiveOperatorTopDow
           L.windowedColeHopfHeatSeedLiveOperatorCandidate_of_componentwise_abs_le
             (ι := ι) (X := X)
             selector O c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatSeedLiveOperatorInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSeedLiveOperatorCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatSeedLiveOperatorTopDownBridge_of_operator_ne_live
         (ι := ι) (X := X)
         selector O c ν hc hν

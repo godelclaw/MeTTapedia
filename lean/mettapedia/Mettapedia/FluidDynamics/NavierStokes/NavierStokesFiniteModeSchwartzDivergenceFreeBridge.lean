@@ -63,7 +63,7 @@ theorem
       (u₀ := twoModeSchwartzDivergenceFreeInitialVelocity
         (a 0) (b 0) f g hfDiv hgDiv)).2 <|
       by
-        simpa [twoModeSchwartzDivergenceFreeInitialVelocity, twoModeSchwartzInitialVelocity] using
+        exact
           (ExplicitFiniteEnergyAdmissibleNavierStokesRegularityClause_twoModeSchwartzInitialVelocity_of_momentumEquation
             ha hb f g A B c π ρ q hc hπ hρ haBound hbBound hfDiv hgDiv heq)
 

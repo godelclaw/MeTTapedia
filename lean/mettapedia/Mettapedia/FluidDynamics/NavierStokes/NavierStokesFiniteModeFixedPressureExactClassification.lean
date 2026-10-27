@@ -79,7 +79,7 @@ theorem oneOneTwoModeSchwartzVelocity_finiteTimeWitness_pressure_iff_inviscidClo
       simpa using
         (spatialDivergence_twoModeSchwartzVelocity_zero
           (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g hfDiv hgDiv t x)
-    · simpa [twoModeSchwartzVelocity, timeIndependentVelocity, twoModeSchwartzInitialVelocity] using
+    · exact
         (boundedKineticEnergyUpTo_timeIndependentVelocity
           (u₀ := twoModeSchwartzInitialVelocity 1 1 f g)
           (T := T)
@@ -140,7 +140,7 @@ theorem oneOneTwoModeSchwartzVelocity_globalOutputWithVelocityPressure_iff_invis
           (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g hfDiv hgDiv t x)
     · exact MatchesInitialVelocity_twoModeSchwartzVelocity
         (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g
-    · simpa [twoModeSchwartzVelocity, timeIndependentVelocity, twoModeSchwartzInitialVelocity] using
+    · exact
         (boundedKineticEnergy_timeIndependentVelocity
           (u₀ := twoModeSchwartzInitialVelocity 1 1 f g)
           (finiteInitialKineticEnergy_twoModeSchwartzInitialVelocity 1 1 f g))

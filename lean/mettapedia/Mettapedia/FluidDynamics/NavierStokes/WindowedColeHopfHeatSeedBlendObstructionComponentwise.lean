@@ -107,12 +107,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatSeedBlendTopDownBridge
             (ι := ι) (X := X)
             selector a b c ν hc hν
             curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatSeedBlendInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSeedBlendCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatSeedBlendTopDownBridge_of_sum_ne_one_of_nonzero_initial
         (ι := ι) (X := X)
         selector a b c ν hab hc hν
@@ -216,12 +211,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatSeedBlendTopDownBridge
             (ι := ι) (X := X)
             selector a b c ν hc hν
             curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatSeedBlendInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSeedBlendCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatSeedBlendTopDownBridge_of_ne_one_of_zero_initial_nonzero_live
         (ι := ι) (X := X)
         selector a b c ν ha hc hν
@@ -325,12 +315,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatSeedBlendTopDownBridge
             (ι := ι) (X := X)
             selector a b c ν hc hν
             curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatSeedBlendInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSeedBlendCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatSeedBlendTopDownBridge_of_ne_zero_of_zero_live_nonzero_initial
         (ι := ι) (X := X)
         selector a b c ν hb hc hν

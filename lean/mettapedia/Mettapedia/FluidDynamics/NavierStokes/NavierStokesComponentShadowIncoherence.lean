@@ -50,7 +50,7 @@ def componentShadowZeroOutput
       rfl⟩
   smooth_pressure := by
     let W0 := zeroNavierStokesGlobalRegularityWitness P.viscosity_pos
-    simpa using W0.smooth_pressure
+    exact W0.smooth_pressure
   momentum_equation := by
     let W0 := zeroNavierStokesGlobalRegularityWitness P.viscosity_pos
     exact ⟨(0 : NSVelocityField), W0.smooth_velocity, by
@@ -121,7 +121,7 @@ theorem componentFeffermanClause_constantInitialVelocity_of_component_eq_zero
       (P := constantInitialVelocityProblemData ν hν c) i
       (by
         intro x
-        simpa [constantInitialVelocity] using hci)
+        exact hci)
 
 /-- Therefore the current scalar component shadow is strictly weaker than the
 actual concrete vector-valued clause: for nonzero constant data with one zero

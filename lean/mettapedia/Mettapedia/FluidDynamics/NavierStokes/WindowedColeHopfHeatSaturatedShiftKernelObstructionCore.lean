@@ -96,12 +96,7 @@ theorem WeightedObservable.windowedColeHopfHeatShiftKernel_liveZeroCoeffSum_mul_
       a * (w / (1 + |w|)) =
         ∑ i, (K.seedCoeff i * T.vorticity 1 (y + K.seedShift i) +
           K.liveCoeff i * T.vorticity t (y + K.liveShift i)) := by
-    simpa [w, shiftKernelCompatibilityPred, sampleKernelCompatibilityPred,
-      seedLiveOperatorCompatibilityPred,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate,
-      SeedLiveShiftKernel.toSampleKernel, SeedLiveSampleKernel.toSeedLiveOperator]
-      using hcompat t y
+    exact hcompat t y
   have hEq' :
       a * (w / (1 + |w|)) =
         ∑ i, (if K.liveShift i = 0 then K.liveCoeff i else 0) * w := by
@@ -210,12 +205,7 @@ theorem WeightedObservable.windowedColeHopfHeatShiftKernel_zeroAnchorCoeffSum_mu
       a * (w / (1 + |w|)) =
         ∑ i, (K.seedCoeff i * T.vorticity 1 (y + K.seedShift i) +
           K.liveCoeff i * T.vorticity 1 (y + K.liveShift i)) := by
-    simpa [w, shiftKernelCompatibilityPred, sampleKernelCompatibilityPred,
-      seedLiveOperatorCompatibilityPred,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate,
-      SeedLiveShiftKernel.toSampleKernel, SeedLiveSampleKernel.toSeedLiveOperator]
-      using hcompat 1 y
+    exact hcompat 1 y
   have hEq' :
       a * (w / (1 + |w|)) =
         (SeedLiveShiftKernel.seedCoeffSumAt K 0 + SeedLiveShiftKernel.liveCoeffSumAt K 0) * w := by
