@@ -64,7 +64,7 @@ mutual
             (bound := bound.map (mapTypeExpr morphism.symbols)) mappedLookup)
     | @constructor bound rule arguments membership notBare argumentsTyped =>
         obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-          targetParameters⟩ := morphism.mapsTerms rule membership
+          targetParameters, targetRepresentation⟩ := morphism.mapsTerms rule membership
         have mappedArguments := argumentsTyped.mapTyping morphism
         have mappedNotBare :
             ¬ UsesBareCollection (mapGrammarRule morphism.symbols rule) :=
@@ -80,7 +80,8 @@ mutual
           simpa [targetParameters] using mappedArguments
         simpa [mapPattern, targetLabel, targetCategory, mapTypeExpr] using
           (HasType.constructor targetMembership (by
-            simpa [UsesBareCollection, targetParameters, mapGrammarRule] using
+            simpa [UsesBareCollection, GrammarRule.bareParams, targetParameters,
+              targetRepresentation, mapGrammarRule] using
               mappedNotBare) targetArguments)
     | @lambda bound binder body domain codomain bodyTyped =>
         have mappedBody := bodyTyped.mapTyping morphism
@@ -109,14 +110,19 @@ mutual
     | @collectionConstructor bound rule parameterName kind elements rest
         elementType membership parameterShape elementsTyped restTyped =>
         obtain ⟨targetRule, targetMembership, targetLabel, targetCategory,
-          targetParameters⟩ := morphism.mapsTerms rule membership
+          targetParameters, targetRepresentation⟩ := morphism.mapsTerms rule membership
         have mappedElements := elementsTyped.mapTyping morphism
         have mappedParameterShape :
-            targetRule.params =
+            targetRule.bareParams =
               [.simple parameterName
                 (.collection kind
                   (mapTypeExpr morphism.symbols elementType))] := by
-          simp [targetParameters, parameterShape, mapTermParam, mapTypeExpr]
+          have viewed : targetRule.bareParams =
+              rule.bareParams.map (mapTermParam morphism.symbols) := by
+            cases mode : rule.collectionRepresentation <;>
+              simp [GrammarRule.bareParams, targetRepresentation,
+                targetParameters, mode]
+          simp [viewed, parameterShape, mapTermParam, mapTypeExpr]
         simpa [mapPattern, targetLabel, targetCategory, mapTypeExpr] using
           (HasType.collectionConstructor targetMembership
             mappedParameterShape mappedElements

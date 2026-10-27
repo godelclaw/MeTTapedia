@@ -54,7 +54,9 @@ private theorem pInputNotBare : ¬ UsesBareCollection pInputRule := by
   intro h
   rcases h with ⟨_, _, _, shape⟩
   have actual : pInputRule.params.length = 2 := by decide +kernel
-  rw [shape] at actual
+  obtain ⟨_, parameterShape⟩ :=
+    (GrammarRule.bareParams_cons_iff pInputRule _ []).mp shape
+  rw [parameterShape] at actual
   cases actual
 
 private theorem inputArgumentsTyped :

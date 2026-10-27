@@ -223,7 +223,8 @@ inductive ContextualInstance (relEnv : Engine.RelationEnv) (language : LanguageD
     (contextIndex declarationIndex : Nat) (rule : RewriteRule)
     (site : Site language free bound expected permissions source)
     {Receipt : Type} (receipt : Receipt)
-    (evidence : ContextualEvidence Receipt := by exact conditionalEvidence) : Prop where
+    (evidence : ContextualEvidence Receipt := by
+      exact Mettapedia.OSLF.MeTTaIL.ContextualAuthoredEquationExecution.conditionalEvidence) : Prop where
   | fill (contextOrigin : evidence.contextIndex receipt = contextIndex)
       (context : evidence.context receipt = site.context)
       (focusBound : evidence.focusBound receipt = site.focusBound)
