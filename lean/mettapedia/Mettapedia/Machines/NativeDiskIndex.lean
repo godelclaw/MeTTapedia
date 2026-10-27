@@ -155,6 +155,38 @@ theorem out_of_range_critical_bit_is_refused :
 theorem misplaced_leaf_is_refused :
     lookup 100 100 malformedHeap 3 [true] 0 [(0, true)] = .corrupt := by decide
 
+/-- A published reference includes its segment generation, not just offsets.
+The native frame codec supplies the observed generation. This model does not
+prove freshness of random identifiers, the codec, or the physical file read. -/
+structure BoundRoot where
+  generation : Nat
+  reference : Nat
+deriving DecidableEq, Repr
+
+def lookupBound (expected : BoundRoot) (observedGeneration limit fuel : Nat)
+    (heap : Heap) (key : Key) : Answer :=
+  if expected.generation = observedGeneration then
+    lookup limit fuel heap expected.reference key 0 []
+  else .corrupt
+
+theorem different_segment_cannot_answer (expected : BoundRoot)
+    (observedGeneration limit fuel : Nat) (heap : Heap) (key : Key)
+    (different : expected.generation ≠ observedGeneration) :
+    lookupBound expected observedGeneration limit fuel heap key = .corrupt := by
+  simp [lookupBound, different]
+
+theorem bound_captured_read_is_unchanged (expected : BoundRoot)
+    (observedGeneration limit fuel endOffset : Nat) (before after : Heap) (key : Key)
+    (closed : closedBelow before endOffset)
+    (unchanged : extendsBelow before after endOffset) (captured : expected.reference ≤ endOffset) :
+    lookupBound expected observedGeneration limit fuel after key =
+      lookupBound expected observedGeneration limit fuel before key := by
+  unfold lookupBound
+  split
+  · exact captured_root_read_is_unchanged limit fuel before after endOffset
+      expected.reference 0 key [] closed unchanged captured
+  · rfl
+
 /-- These are the actual local conditions checked while descending: critical
 bits increase and remain below the limit implied by the permitted key size. -/
 def acceptsPath (start limit : Nat) : List Nat → Bool
