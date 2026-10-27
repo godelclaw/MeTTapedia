@@ -161,6 +161,7 @@ def zfRelations : Relations Symbol setTy where
   bound _ := .lam .bot
   typed type := .lam (typedDef type)
   named term := if hereditary membership hfRule.category term then .lam (isSet term) else .lam .bot
+  inRelation _ := .lam .bot
   apply := .lam (.lam (.var (.vs .vz)))
   same := .lam (.lam (.eq (.var (.vs .vz)) (.var .vz)))
 
@@ -245,6 +246,7 @@ theorem zfRelations_interprets : Interprets model.{0} (Equiv.refl _) zfRelations
   bound _ _ _ := Iff.rfl
   typed valuation type whole := denote_typed valuation type whole
   named valuation term whole := denote_named valuation term whole
+  inRelation _ _ _ := Iff.rfl
   apply _ _ _ := rfl
   same _ _ _ := Iff.rfl
 

@@ -16,6 +16,11 @@ needs no recursion through formulas.
 `KripkeHenkinGeneral.sound`. The only condition on the data is that every
 constant denotes an admissible value (`constAdm`).
 
+Equality of base elements may grow along the worlds (`Frame.baseEq`): two
+elements distinct at a world may become equal later, as two sets with the same
+members become equal once their members are settled. By default it is identity
+at every world.
+
 The hand-built countermodels of `ForkedFrameCountermodel` follow this
 construction at one fixed frame.
 -/
@@ -26,13 +31,28 @@ namespace KripkeFrameModel
 
 universe u v x
 
-/-- Worlds under a preorder, and a carrier for each base type. -/
+/-- Worlds under a preorder, a carrier for each base type, and an equality of base elements at each world, growing
+along the worlds; identity unless given. -/
 structure Frame (Base : Type u) where
   World : Type x
   le : World → World → Prop
   le_refl : ∀ W, le W W
   le_trans : ∀ {U V W : World}, le U V → le V W → le U W
   Carrier : Base → Type x
+  baseEq : World → (b : Base) → Carrier b → Carrier b → Prop := fun _ _ d e => d = e
+  baseEq_mono : ∀ {U V : World} {b : Base} {d e : Carrier b}, le U V → baseEq U b d e → baseEq V b d e := by
+    intro _ _ _ _ _ _ same
+    exact same
+  baseEq_refl : ∀ (W : World) (b : Base) (d : Carrier b), baseEq W b d d := by
+    intro _ _ _
+    rfl
+  baseEq_symm : ∀ {W : World} {b : Base} {d e : Carrier b}, baseEq W b d e → baseEq W b e d := by
+    intro _ _ _ _ same
+    exact Eq.symm same
+  baseEq_trans : ∀ {W : World} {b : Base} {d e k : Carrier b},
+      baseEq W b d e → baseEq W b e k → baseEq W b d k := by
+    intro _ _ _ _ _ first second
+    exact Eq.trans first second
 
 variable {Base : Type u}
 
@@ -57,7 +77,7 @@ def Adm : (τ : Ty Base) → F.Val τ → Prop
 /-- World-indexed observational equality. -/
 def Eqv : F.World → (τ : Ty Base) → F.Val τ → F.Val τ → Prop
   | W, .prop, S, T => ∀ V, F.le W V → (S V ↔ T V)
-  | _, .base _, d, e => d = e
+  | W, .base b, d, e => F.baseEq W b d e
   | W, .arr σ τ, f, g => ∀ V, F.le W V → ∀ d, Adm σ d → Eqv V τ (f d) (g d)
 
 end
@@ -68,24 +88,24 @@ theorem eqv_mono {τ : Ty Base} {U V : F.World} {d e : F.Val τ} (hUV : F.le U V
     (h : F.Eqv U τ d e) : F.Eqv V τ d e := by
   cases τ with
   | prop => exact fun V' hV' => h V' (F.le_trans hUV hV')
-  | base b => exact h
+  | base b => exact F.baseEq_mono hUV h
   | arr σ τ => exact fun V' hV' => h V' (F.le_trans hUV hV')
 
 theorem eqv_refl : ∀ {τ : Ty Base} {W : F.World} {d : F.Val τ}, F.Adm τ d → F.Eqv W τ d d
   | .prop, _, _, _ => fun _ _ => Iff.rfl
-  | .base _, _, _, _ => rfl
+  | .base _, W, d, _ => F.baseEq_refl W _ d
   | .arr _ _, _, _, hf => fun _V _hV d hd => eqv_refl (hf.1 d hd)
 
 theorem eqv_symm : ∀ {τ : Ty Base} {W : F.World} {d e : F.Val τ},
     F.Eqv W τ d e → F.Eqv W τ e d
   | .prop, _, _, _, h => fun V hV => (h V hV).symm
-  | .base _, _, _, _, h => h.symm
+  | .base _, _, _, _, h => F.baseEq_symm h
   | .arr _ _, _, _, _, h => fun V hV d hd => eqv_symm (h V hV d hd)
 
 theorem eqv_trans : ∀ {τ : Ty Base} {W : F.World} {d e k : F.Val τ},
     F.Eqv W τ d e → F.Eqv W τ e k → F.Eqv W τ d k
   | .prop, _, _, _, _, h₁, h₂ => fun V hV => (h₁ V hV).trans (h₂ V hV)
-  | .base _, _, _, _, _, h₁, h₂ => h₁.trans h₂
+  | .base _, _, _, _, _, h₁, h₂ => F.baseEq_trans h₁ h₂
   | .arr _ _, _, _, _, _, h₁, h₂ => fun V hV d hd =>
       eqv_trans (h₁ V hV d hd) (h₂ V hV d hd)
 
@@ -102,11 +122,11 @@ def preModel : KripkePreModel Base Const where
   le_refl := F.le_refl
   le_trans := F.le_trans
   Carrier := F.Carrier
-  baseEq := fun _ _ d e => d = e
-  baseEq_mono := fun _ h => h
-  baseEq_refl := fun _ _ _ => rfl
-  baseEq_symm := fun h => h.symm
-  baseEq_trans := fun h₁ h₂ => h₁.trans h₂
+  baseEq := F.baseEq
+  baseEq_mono := F.baseEq_mono
+  baseEq_refl := F.baseEq_refl
+  baseEq_symm := F.baseEq_symm
+  baseEq_trans := F.baseEq_trans
   adm := fun _ τ d => F.Adm τ d
   adm_mono := fun _ h => h
   prop_adm_upset := fun h => h

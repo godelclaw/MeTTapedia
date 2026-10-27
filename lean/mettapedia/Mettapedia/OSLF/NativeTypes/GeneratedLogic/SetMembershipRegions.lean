@@ -201,21 +201,37 @@ theorem sat_local_regional {region : Set ZFSet.{0}} (closed : ∀ y ∈ region, 
         (preserved other otherMember)
     exact ⟨direction agree, direction fun index z zInside => (agree index z zInside).symm⟩
   | _, .possibly _ inner, modal, parts, _, _, agree, y, inside => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
+    replace parts := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     exact exists_congr fun next => and_congr_right fun step =>
       sat_local_regional closed inner modal parts agree next (closed y inside next step.2)
   | _, .necessarily _ inner, modal, parts, _, _, agree, y, inside => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
+    replace parts := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     exact forall_congr' fun next => imp_congr_right fun step =>
       sat_local_regional closed inner modal parts agree next (closed y inside next step.2)
   | _, .atLeast _ .forward _ inner, modal, parts, _, _, agree, y, inside => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
+    replace parts := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     exact ⟨fun many => many.mono fun other found => ⟨found.1,
         (sat_local_regional closed inner modal parts agree other (closed y inside other found.1.2)).mp found.2⟩,
       fun many => many.mono fun other found => ⟨found.1,
         (sat_local_regional closed inner modal parts agree other (closed y inside other found.1.2)).mpr found.2⟩⟩
   | _, .allButFewer _ .forward _ inner, modal, parts, _, _, agree, y, inside => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
+    replace parts := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     exact not_congr ⟨fun many => many.mono fun other found => ⟨found.1, fun holds =>
         found.2 ((sat_local_regional closed inner modal parts agree other (closed y inside other found.1.2)).mpr holds)⟩,
       fun many => many.mono fun other found => ⟨found.1, fun holds =>
@@ -849,8 +865,12 @@ theorem decideOn_iff_regional (region : Region) : ∀ {n : ℕ} (formula : Formu
         (region.inside _ member)) _ term holds inside]
     exact (sat_nu_iff_regional sets modalInner partsInner region.finite region.closed region.ncard_le inside).symm
   | _, .possibly label inner, modal, parts, env, sets, agree, term, holds, inside => by
-    have modalInner : inner.regional = true := modal
-    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
+    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     rw [decideOn, Bool.and_eq_true, decide_eq_true_eq, List.any_eq_true]
     change _ ↔ ∃ next, (memberLabel label ∧ next ∈ zfOf term) ∧ extensional.sat sets inner next
     constructor
@@ -863,8 +883,12 @@ theorem decideOn_iff_regional (region : Region) : ∀ {n : ℕ} (formula : Formu
       exact ⟨labelled, value, valueMember, (decideOn_iff_regional region inner modalInner partsInner agree value
         (hf_members holds value valueMember) (region.closed _ inside _ member)).mpr holdsAt⟩
   | _, .necessarily label inner, modal, parts, env, sets, agree, term, holds, inside => by
-    have modalInner : inner.regional = true := modal
-    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
+    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     rw [decideOn, Bool.or_eq_true, Bool.not_eq_true', decide_eq_false_iff_not, List.all_eq_true]
     change _ ↔ ∀ next, (memberLabel label ∧ next ∈ zfOf term) → extensional.sat sets inner next
     constructor
@@ -958,8 +982,12 @@ theorem decideOn_iff_regional (region : Region) : ∀ {n : ℕ} (formula : Formu
           exact holdsAll element ⟨set, isSingle⟩
       · exact Or.inl (Or.inl set)
   | _, .atLeast count .forward label inner, modal, parts, env, sets, agree, term, holds, inside => by
-    have modalInner : inner.regional = true := modal
-    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
+    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     change _ ↔ extensional.AtLeast count fun other =>
       (memberLabel label ∧ other ∈ zfOf term) ∧ extensional.sat sets inner other
     by_cases labelled : memberLabel label
@@ -971,8 +999,12 @@ theorem decideOn_iff_regional (region : Region) : ∀ {n : ℕ} (formula : Formu
         fun many => many.mono fun _ found => ⟨found.1.2, found.2⟩⟩
     · rw [decideOn, if_neg labelled, decide_eq_true_eq, atLeast_unlabelled labelled]
   | _, .allButFewer count .forward label inner, modal, parts, env, sets, agree, term, holds, inside => by
-    have modalInner : inner.regional = true := modal
-    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
+    have partsInner : inner.modal = true ∨ PartsClosed region.sets := parts.imp_left fun inside => by
+      simp only [Formula.modal, Bool.and_eq_true] at inside
+      exact inside.2
     change _ ↔ ¬ extensional.AtLeast count fun other =>
       (memberLabel label ∧ other ∈ zfOf term) ∧ ¬ extensional.sat sets inner other
     by_cases labelled : memberLabel label

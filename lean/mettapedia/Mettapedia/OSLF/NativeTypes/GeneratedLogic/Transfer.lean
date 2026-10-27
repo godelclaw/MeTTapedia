@@ -4,14 +4,16 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Semantics
 # Generated formulas along homomorphisms
 
 A homomorphism of native structures carries steps to steps, with their labels, shapes to shapes, types
-to types and names to names (`Hom`). Along it the generated logic splits into two fragments, exchanged by the dual
+to types, names to names and relations to relations (`Hom`). It carries a term's own steps: a context label places a
+term in a context, which only a structure of terms can do, so homomorphisms between arbitrary structures say nothing
+of it, and the fragments below have no context labels. Along it the generated logic splits into two fragments, exchanged by the dual
 (`existential_dual`):
 - **existential formulas hold at images** (`sat_of_hom`). These are built from the formers that assert
-  a step, a predecessor, a shape, a type, a name or a witness, together with `∧`, `∨` and both fixed
-  points;
+  a step, a predecessor, a shape, a type, a name, a relation or a witness, together with `∧`, `∨` and both
+  fixed points;
 - **universal formulas come back** (`sat_of_hom_universal`). These are built from the duals: every
-  step, every predecessor, every presentation of a shape, `nonEmpty`, `notBound`, `untyped`, `isNot`
-  and `everyOf`.
+  step, every predecessor, every presentation of a shape, `nonEmpty`, `notBound`, `untyped`, `isNot`,
+  `notInRelation` and `everyOf`.
 
 A finite structure that a language maps into therefore refutes existential formulas and proves
 universal ones for it. This is the reach of a finite-model certificate. The hom formers belong to
@@ -30,7 +32,8 @@ universe u v
 /-- **A homomorphism of native structures**: a map carrying steps to steps and shapes to shapes. -/
 structure Hom {Source : Type u} {Target : Type v} (S : NativeStructure Source) (T : NativeStructure Target) where
   map : Source → Target
-  step : ∀ {source label target}, S.step source label target → T.step (map source) label (map target)
+  step : ∀ {source label target}, label.isContext = false → S.step source label target →
+    T.step (map source) label (map target)
   built : ∀ {element constructor parts}, S.built element constructor parts →
     T.built (map element) constructor (parts.map map)
   split : ∀ {element kind first second}, S.split element kind first second →
@@ -42,16 +45,18 @@ structure Hom {Source : Type u} {Target : Type v} (S : NativeStructure Source) (
   bound : ∀ {element index}, S.bound element index → T.bound (map element) index
   typed : ∀ {element type}, S.typed element type → T.typed (map element) type
   named : ∀ {element term}, S.named element term → T.named (map element) term
+  inRelation : ∀ {element relation}, S.inRelation element relation → T.inRelation (map element) relation
 
 namespace Formula
 
 mutual
 /-- Whether a formula asserts only existence: steps, predecessors, shapes and witnesses. -/
 def existential : {n : ℕ} → Formula n → Bool
-  | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .bound _ | _, .typed _ | _, .is _ => true
+  | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .bound _ | _, .typed _ | _, .is _ | _, .inRelation _ => true
   | _, .and left right | _, .or left right | _, .split _ left right => existential left && existential right
   | _, .mu inner | _, .nu inner => existential inner
-  | _, .possibly _ formula | _, .sometimeBefore _ formula | _, .single _ formula | _, .body formula
+  | _, .possibly label formula | _, .sometimeBefore label formula => !label.isContext && existential formula
+  | _, .single _ formula | _, .body formula
   | _, .multiBody _ formula | _, .someOf _ formula => existential formula
   | _, .built _ arguments => existentialList arguments
   | _, _ => false
@@ -64,10 +69,12 @@ end
 mutual
 /-- Whether a formula asserts only universality: every step, every predecessor, every presentation. -/
 def universal : {n : ℕ} → Formula n → Bool
-  | _, .top | _, .bot | _, .var _ | _, .nonEmpty _ | _, .notBound _ | _, .untyped _ | _, .isNot _ => true
+  | _, .top | _, .bot | _, .var _ | _, .nonEmpty _ | _, .notBound _ | _, .untyped _ | _, .isNot _
+  | _, .notInRelation _ => true
   | _, .and left right | _, .or left right | _, .everySplit _ left right => universal left && universal right
   | _, .mu inner | _, .nu inner => universal inner
-  | _, .necessarily _ formula | _, .alwaysBefore _ formula | _, .everySingle _ formula | _, .everyBody formula
+  | _, .necessarily label formula | _, .alwaysBefore label formula => !label.isContext && universal formula
+  | _, .everySingle _ formula | _, .everyBody formula
   | _, .everyMultiBody _ formula | _, .everyOf _ formula => universal formula
   | _, .everyBuilt _ arguments => universalList arguments
   | _, _ => false
@@ -81,13 +88,14 @@ mutual
 /-- **The dual exchanges the two fragments.** -/
 theorem existential_dual : ∀ {n : ℕ} (formula : Formula n), existential formula.dual = universal formula
   | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _
-  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ => rfl
+  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ | _, .inRelation _ | _, .notInRelation _ => rfl
   | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right => by
     simp only [dual, existential, universal, existential_dual left, existential_dual right]
   | _, .mapsAll _ _ | _, .mapsSome _ _ | _, .atLeast _ _ _ _ | _, .allButFewer _ _ _ _ => rfl
   | _, .mu inner | _, .nu inner => by simp only [dual, existential, universal, existential_dual inner]
   | _, .possibly _ formula | _, .necessarily _ formula | _, .sometimeBefore _ formula
-  | _, .alwaysBefore _ formula | _, .single _ formula | _, .everySingle _ formula | _, .body formula
+  | _, .alwaysBefore _ formula => by simp only [dual, existential, universal, existential_dual formula]
+  | _, .single _ formula | _, .everySingle _ formula | _, .body formula
   | _, .everyBody formula | _, .multiBody _ formula | _, .everyMultiBody _ formula | _, .someOf _ formula
   | _, .everyOf _ formula => by simp only [dual, existential, universal, existential_dual formula]
   | _, .built _ arguments | _, .everyBuilt _ arguments => by
@@ -163,11 +171,14 @@ theorem sat_of_hom : ∀ {n : ℕ} (formula : Formula n), formula.existential = 
       (EnvForward.extend hom related fun _ innerMember => Set.mem_image_of_mem hom.map innerMember) other
       (preserved other otherMember)
   | _, .possibly _ formula, existential, _, _, related, _, holds => by
+    simp only [Formula.existential, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at existential
     obtain ⟨next, step, nextHolds⟩ := holds
-    exact ⟨hom.map next, hom.step step, sat_of_hom formula existential related next nextHolds⟩
+    exact ⟨hom.map next, hom.step existential.1 step, sat_of_hom formula existential.2 related next nextHolds⟩
   | _, .sometimeBefore _ formula, existential, _, _, related, _, holds => by
+    simp only [Formula.existential, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at existential
     obtain ⟨previous, step, previousHolds⟩ := holds
-    exact ⟨hom.map previous, hom.step step, sat_of_hom formula existential related previous previousHolds⟩
+    exact ⟨hom.map previous, hom.step existential.1 step,
+      sat_of_hom formula existential.2 related previous previousHolds⟩
   | _, .built _ arguments, existential, _, _, related, _, holds => by
     obtain ⟨parts, isBuilt, all⟩ := holds
     exact ⟨parts.map hom.map, hom.built isBuilt, satAll_of_hom arguments existential related parts all⟩
@@ -189,6 +200,7 @@ theorem sat_of_hom : ∀ {n : ℕ} (formula : Formula n), formula.existential = 
   | _, .bound _, _, _, _, _, _, holds => hom.bound holds
   | _, .typed _, _, _, _, _, _, holds => hom.typed holds
   | _, .is _, _, _, _, _, _, holds => hom.named holds
+  | _, .inRelation _, _, _, _, _, _, holds => hom.inRelation holds
   | _, .someOf _ formula, existential, _, _, related, _, holds => by
     obtain ⟨witness, isTyped, witnessHolds⟩ := holds
     exact ⟨hom.map witness, hom.typed isTyped, sat_of_hom formula existential related witness witnessHolds⟩
@@ -198,6 +210,7 @@ theorem sat_of_hom : ∀ {n : ℕ} (formula : Formula n), formula.existential = 
   | _, .everyBody _, existential, _, _, _, _, _ | _, .everyMultiBody _ _, existential, _, _, _, _, _
   | _, .notBound _, existential, _, _, _, _, _ | _, .untyped _, existential, _, _, _, _, _
   | _, .isNot _, existential, _, _, _, _, _ | _, .mapsAll _ _, existential, _, _, _, _, _
+  | _, .notInRelation _, existential, _, _, _, _, _
   | _, .mapsSome _ _, existential, _, _, _, _, _ | _, .everyOf _ _, existential, _, _, _, _, _ => by
     simp [Formula.existential] at existential
 
@@ -245,11 +258,13 @@ theorem sat_of_hom_universal : ∀ {n : ℕ} (formula : Formula n), formula.univ
     exact sat_of_hom_universal inner universal (EnvBackward.extend hom related fun _ inner => inner) other
       (preserved (hom.map other) otherMember)
   | _, .necessarily _ formula, universal, _, _, related, _, holds => by
+    simp only [Formula.universal, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at universal
     intro next step
-    exact sat_of_hom_universal formula universal related next (holds _ (hom.step step))
+    exact sat_of_hom_universal formula universal.2 related next (holds _ (hom.step universal.1 step))
   | _, .alwaysBefore _ formula, universal, _, _, related, _, holds => by
+    simp only [Formula.universal, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at universal
     intro previous step
-    exact sat_of_hom_universal formula universal related previous (holds _ (hom.step step))
+    exact sat_of_hom_universal formula universal.2 related previous (holds _ (hom.step universal.1 step))
   | _, .everyBuilt _ arguments, universal, _, _, related, _, holds => by
     intro parts isBuilt
     exact satSome_of_hom_universal arguments universal related parts (holds _ (hom.built isBuilt))
@@ -272,6 +287,7 @@ theorem sat_of_hom_universal : ∀ {n : ℕ} (formula : Formula n), formula.univ
   | _, .notBound _, _, _, _, _, _, holds => fun isBound => holds (hom.bound isBound)
   | _, .untyped _, _, _, _, _, _, holds => fun isTyped => holds (hom.typed isTyped)
   | _, .isNot _, _, _, _, _, _, holds => fun isNamed => holds (hom.named isNamed)
+  | _, .notInRelation _, _, _, _, _, _, holds => fun isIn => holds (hom.inRelation isIn)
   | _, .everyOf _ formula, universal, _, _, related, _, holds => by
     intro witness isTyped
     exact sat_of_hom_universal formula universal related witness (holds (hom.map witness) (hom.typed isTyped))
@@ -281,6 +297,7 @@ theorem sat_of_hom_universal : ∀ {n : ℕ} (formula : Formula n), formula.univ
   | _, .body _, universal, _, _, _, _, _ | _, .multiBody _ _, universal, _, _, _, _, _
   | _, .bound _, universal, _, _, _, _, _ | _, .typed _, universal, _, _, _, _, _
   | _, .is _, universal, _, _, _, _, _ | _, .mapsAll _ _, universal, _, _, _, _, _
+  | _, .inRelation _, universal, _, _, _, _, _
   | _, .mapsSome _ _, universal, _, _, _, _, _ | _, .someOf _ _, universal, _, _, _, _, _ => by
     simp [Formula.universal] at universal
 

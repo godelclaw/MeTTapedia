@@ -25,6 +25,7 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Outcomes
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.RhometaReduction
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.ParallelWave
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CommFootprint
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.BackwardNotImageFinite
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedRepNu
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SpiceRule
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CommRule

@@ -46,6 +46,11 @@ structure GroundSetRule (rule : RewriteRule) (takes gives : List String) (rest :
 def GroundRules (language : LanguageDef) : Prop :=
   ∀ rule ∈ language.rewrites, ∃ takes gives rest, GroundSetRule rule takes gives rest
 
+theorem GroundRules.noPremises {language : LanguageDef} (rules : GroundRules language) :
+    ∀ rule ∈ language.rewrites, rule.premises = [] := fun rule member => by
+  obtain ⟨_, _, _, ground⟩ := rules rule member
+  exact ground.noPremises
+
 theorem count_eraseIdx : ∀ (list : List Pattern) (index : ℕ) (bound : index < list.length) (value : Pattern),
     list.count value = (list.eraseIdx index).count value + (if list[index] == value then 1 else 0)
   | _ :: _, 0, _, value => by simp [List.count_cons]
@@ -280,20 +285,20 @@ theorem atoms_state {values : List Pattern} (atoms : Atoms language sort values)
 theorem elementStep {first second : List Pattern}
     (firstElements : Elements language sort first) (secondElements : Elements language sort second)
     (law : DerivedInstance language (.collection .hashSet first none) (.collection .hashSet second none)) :
-    ObjectEquivalent relEnv language (.collection .hashSet first none) (.collection .hashSet second none) :=
+    ObjectEquivalent relEnv language .syntax (.collection .hashSet first none) (.collection .hashSet second none) :=
   Relation.EqvGen.rel _ _
     ⟨elements_object firstElements, elements_object secondElements, .inContext .hole (Or.inr law)⟩
 
 theorem perm_equivalent (setCarrier : SetCarrier language carrier sort) {first second : List Pattern}
     (elements : Elements language sort first) (perm : first.Perm second) :
-    ObjectEquivalent relEnv language (.collection .hashSet first none) (.collection .hashSet second none) :=
+    ObjectEquivalent relEnv language .syntax (.collection .hashSet first none) (.collection .hashSet second none) :=
   elementStep elements (elements.of_subset fun _ member => perm.symm.subset member)
     (.setPerm_of_sorted (elements_sorted setCarrier elements) perm)
 
 /-- **A presentation of elements is equivalent to its arrangement**, sorted without repetition. -/
 theorem toArranged (setCarrier : SetCarrier language carrier sort) :
     ∀ (fuel : ℕ) (values : List Pattern), values.length ≤ fuel → Elements language sort values →
-      ObjectEquivalent relEnv language (.collection .hashSet values none)
+      ObjectEquivalent relEnv language .syntax (.collection .hashSet values none)
         (.collection .hashSet (arrange .hashSet values) none)
   | fuel, values, short, elements => by
     by_cases distinct : values.Nodup
@@ -315,7 +320,7 @@ theorem toArranged (setCarrier : SetCarrier language carrier sort) :
           · simp
           · simp [rest]
       have toTwice := perm_equivalent (relEnv := relEnv) setCarrier elements perm
-      have toOnce : ObjectEquivalent relEnv language (.collection .hashSet (duplicate :: duplicate :: others) none)
+      have toOnce : ObjectEquivalent relEnv language .syntax (.collection .hashSet (duplicate :: duplicate :: others) none)
           (.collection .hashSet (duplicate :: others) none) :=
         elementStep twiceElements onceElements (.setDedup_of_sorted (elements_sorted setCarrier twiceElements))
       cases fuel with
@@ -341,7 +346,7 @@ theorem toArranged (setCarrier : SetCarrier language carrier sort) :
 theorem presentations_equivalent (setCarrier : SetCarrier language carrier sort) {first second : List Pattern}
     (firstElements : Elements language sort first) (secondElements : Elements language sort second)
     (same : ∀ value, value ∈ first ↔ value ∈ second) :
-    ObjectEquivalent relEnv language (.collection .hashSet first none) (.collection .hashSet second none) := by
+    ObjectEquivalent relEnv language .syntax (.collection .hashSet first none) (.collection .hashSet second none) := by
   have toFirst := toArranged (relEnv := relEnv) setCarrier first.length first le_rfl firstElements
   have toSecond := toArranged (relEnv := relEnv) setCarrier second.length second le_rfl secondElements
   rw [arrange_eq_of_presents (kind := .hashSet) same] at toFirst
@@ -363,7 +368,7 @@ theorem sortBags_set {values : List Pattern} (atoms : Atoms language sort values
 /-- **A presentation of atoms is equivalent to its canonical form.** -/
 theorem equivalent_sortBags (setCarrier : SetCarrier language carrier sort) {values : List Pattern}
     (atoms : Atoms language sort values) :
-    ObjectEquivalent relEnv language (set values) (BagForms.sortBags (set values)) := by
+    ObjectEquivalent relEnv language .syntax (set values) (BagForms.sortBags (set values)) := by
   rw [sortBags_set atoms]
   exact toArranged setCarrier values.length values le_rfl atoms.elements
 
@@ -441,7 +446,7 @@ theorem consume_step_iff (lang : GroundSetLanguage language carrier sort) {value
   constructor
   · rintro ⟨-, -, witness, contractum, valid, -, reached⟩
     obtain ⟨index, rule, takes, gives, rest, residual, found, ground, counted, -, rfl⟩ :=
-      ground_step lang.rules valid
+      ground_step lang.rules ((stepValid_presented_iff_of_premises_nil lang.rules.noPremises).mp valid)
     refine ⟨index, rule, takes, gives, rest, found, ground, fun label member => ?_, ?_⟩
     · have := counted (token label)
       have inTaken : 0 < (takes.map token).count (token label) :=
@@ -465,7 +470,8 @@ theorem consume_step_iff (lang : GroundSetLanguage language carrier sort) {value
           residual_mem counted distinct (tokens_nodup ground.distinct) value]
   · rintro ⟨index, rule, takes, gives, rest, found, ground, present, rfl⟩
     obtain ⟨residual, counted, fired⟩ := ground_fires (relEnv := relEnv) found ground present
-    refine ⟨atoms_state atoms, ?_, _, _, fired, rfl, ?_⟩
+    refine ⟨atoms_state atoms, ?_, _, _, (stepValid_presented_iff_of_premises_nil lang.rules.noPremises).mpr fired, rfl,
+      ?_⟩
     · have givenAtoms : Atoms language sort (gives.map token ++ values.filter (· ∉ takes.map token)) := by
         refine Atoms.append (fun value member => ?_) (atoms.of_subset fun value member => (List.mem_filter.mp member).1)
         obtain ⟨label, inGives, rfl⟩ := List.mem_map.mp member
@@ -552,7 +558,7 @@ theorem keep_step_iff (lang : GroundSetLanguage language carrier sort) {values :
   · rintro ⟨-, -, witness, contractum, valid, -, reached⟩
     rw [presented] at valid
     obtain ⟨index, rule, takes, gives, rest, residual, found, ground, counted, -, rfl⟩ :=
-      ground_step lang.rules valid
+      ground_step lang.rules ((stepValid_presented_iff_of_premises_nil lang.rules.noPremises).mp valid)
     have enough : ∀ value ∈ takes.map token, 2 ≤ setWidth language + 1 := by
       intro value member
       have := width_takes (List.mem_of_getElem? found) ground
@@ -598,7 +604,8 @@ theorem keep_step_iff (lang : GroundSetLanguage language carrier sort) {values :
       obtain ⟨label, inGives, rfl⟩ := List.mem_map.mp member
       exact ⟨label, rfl, lang.atomsOfSort rule (List.mem_of_getElem? found) takes gives rest ground label
         (List.mem_append_right _ inGives)⟩
-    refine ⟨atoms_state atoms, ?_, _, _, by rw [presented]; exact fired, rfl, ?_⟩
+    refine ⟨atoms_state atoms, ?_, _, _,
+      by rw [presented]; exact (stepValid_presented_iff_of_premises_nil lang.rules.noPremises).mpr fired, rfl, ?_⟩
     · rw [sortBags_set givenAtoms]
       exact atoms_state (givenAtoms.of_subset fun value member => (arrange_mem value).mp member)
     · apply sortBags_set_congr
@@ -616,7 +623,7 @@ theorem keep_step_iff (lang : GroundSetLanguage language carrier sort) {values :
         simp only [List.mem_append, residualMem value]
 
 theorem sortBags_same (lang : GroundSetLanguage language carrier sort) {first second : Pattern}
-    (equivalent : ObjectEquivalent relEnv language first second) :
+    (equivalent : ObjectEquivalent relEnv language .syntax first second) :
     BagForms.sortBags first = BagForms.sortBags second := by
   rw [BagForms.sortBags_eq_canon]
   exact BagForms.canon_eq_of_equivalent lang.noEquations lang.noAlgebra equivalent
@@ -701,7 +708,8 @@ theorem either_residual_mem {presented residual : List Pattern} {takes : List St
 rule's atoms from some presentation of it, keeps those the presentation wrote twice, and gives the rule's atoms. -/
 theorem either_step_of (lang : GroundSetLanguage language carrier sort) {values : List Pattern}
     (atoms : Atoms language sort values) (canonical : BagForms.sortBags (set values) = set values) {label : StepLabel}
-    {target : Pattern} (step : (referenceStructure relEnv language).step (set values) label target) :
+    (own : label.isContext = false) {target : Pattern}
+    (step : (referenceStructure relEnv language).step (set values) label target) :
     ∃ (index : ℕ) (rule : RewriteRule) (takes gives kept : List String) (rest : String),
       language.rewrites[index]? = some rule ∧ GroundSetRule rule takes gives rest ∧
       (∀ name ∈ takes, token name ∈ values) ∧ (∀ name ∈ kept, name ∈ takes) ∧
@@ -709,6 +717,7 @@ theorem either_step_of (lang : GroundSetLanguage language carrier sort) {values 
         values.filter fun value => value ∉ takes.map token ∨ value ∈ kept.map token)) := by
   have tokens := tokens_of_atoms atoms
   obtain ⟨-, -, redex, contractum, witness, before, -, valid, -, after, -⟩ := step
+  rw [placed_iff own] at before
   have redexCanonical : BagForms.sortBags redex = set values := (sortBags_same lang before).symm.trans canonical
   obtain ⟨presented, rfl, presentedTokens, sameMembers⟩ := presentation_of_canonical tokens redexCanonical
   obtain ⟨index, rule, takes, gives, rest, residual, found, ground, counted, -, rfl⟩ := ground_step lang.rules valid
@@ -856,7 +865,7 @@ theorem either_one_iff (lang : GroundSetLanguage language carrier sort)
   constructor
   · intro step
     obtain ⟨index, rule, takes, gives, kept, rest, found, ground, present, inside, reached⟩ :=
-      either_step_of lang atoms canonical step
+      either_step_of lang atoms canonical rfl step
     rw [targetCanonical] at reached
     obtain ⟨atom, rfl⟩ := List.length_eq_one_iff.mp (single rule (List.mem_of_getElem? found) takes gives rest ground)
     by_cases keptAtom : atom ∈ kept
@@ -1067,7 +1076,7 @@ theorem either_is_consume_keeping_parts (lang : GroundSetLanguage language carri
   constructor
   · intro step
     obtain ⟨index, rule, takes, gives, kept, rest, found, ground, present, inside, reached⟩ :=
-      either_step_of lang atoms canonical step
+      either_step_of lang atoms canonical rfl step
     rw [targetCanonical] at reached
     let part := takes.filter (· ∈ kept)
     have partMember : part ∈ takes.sublists := List.mem_sublists.mpr List.filter_sublist

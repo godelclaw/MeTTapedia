@@ -213,8 +213,7 @@ theorem ask_decides (free : language.isEquationFree = true) (bounded : Closure r
       exfalso
       have notEstablished := List.find?_eq_none.mp none _ member
       have notRefuted := List.find?_eq_none.mp noRefutation _ member
-      simp only [Evidence.establishes, Evidence.refutes, free, forward, decided, Bool.true_and,
-        beq_iff_eq, Option.some.injEq] at notEstablished notRefuted
+      simp only [Evidence.establishes, Evidence.refutes, free, forward, decided] at notEstablished notRefuted
       cases verdict
       · exact notRefuted rfl
       · exact notEstablished rfl

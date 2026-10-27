@@ -1,3 +1,4 @@
+import Mettapedia.OSLF.MeTTaIL.CanonicalRenaming
 import Mettapedia.GSLT.LanguageDef.BindingSignatureWire
 import Mettapedia.GSLT.LanguageDef.BindingSignatureSubstitution
 import Mettapedia.GSLT.LanguageDef.NamedFreeContext
@@ -983,28 +984,6 @@ theorem variable_spine_contract {dependencies locals : List TypeExpr}
   cases Option.some.inj checked
   exact ⟨readback, length, by assumption, bounds⟩
 
-private theorem raw_recovery_occurrence_identity
-    (dependencies locals ambient : Nat) (indices : List Nat)
-    (length : indices.length = dependencies)
-    (unique : indices.Nodup) (bounds : ∀ index ∈ indices, index < locals)
-    (index : Nat) :
-    substitute (recoveryAssignment locals dependencies ambient indices)
-      (occurrenceAssignment dependencies locals (indices.map Pattern.bvar) index) =
-      .bvar index := by
-  by_cases dependent : index < dependencies
-  · have inIndices : index < indices.length := by omega
-    have member : indices[index] ∈ indices := List.getElem_mem inIndices
-    have localBound := bounds _ member
-    simp only [occurrenceAssignment, dependent, if_true, List.getD_map]
-    rw [List.getD_eq_getElem _ _ inIndices]
-    simp only [substitute, recoveryAssignment, localBound, if_true, member,
-      unique.idxOf_getElem index inIndices]
-  · have ambientIndex : ¬ locals + (index - dependencies) < locals := by omega
-    simp only [occurrenceAssignment, dependent, if_false, substitute,
-      recoveryAssignment, ambientIndex]
-    congr 1
-    omega
-
 /-- The actual inverse occurrence action undoes typed contextual
 instantiation, including the independent ambient segment and nested binders. -/
 theorem recovered_body_of_instance {dependencies locals ambient : List TypeExpr}
@@ -1024,7 +1003,8 @@ theorem recovered_body_of_instance {dependencies locals ambient : List TypeExpr}
       (occurrenceAssignment dependencies.length locals.length (indices.map Pattern.bvar) index)) =
       Pattern.bvar := by
     funext index
-    exact raw_recovery_occurrence_identity _ _ _ indices length unique bounds index
+    exact Mettapedia.OSLF.MeTTaIL.CanonicalBags.raw_recovery_occurrence_identity
+      _ _ _ indices length unique bounds index
   rw [composed, substitute_id]
 
 /-- Preservation constructs recovery success from the typed contextual
@@ -13938,3 +13918,6 @@ theorem parseEvidence?_snapshot_complete
   exact (parseEvidence?_exists_iff_openTyped (snapshot_names_unique admitted)
     typed.2.1 typed.2.2.1).mpr typed
 end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+
+#print axioms Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.InputRecovery.recovered_body_of_instance
+#print axioms Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.InputRecovery.recoverValue?_typed_instance

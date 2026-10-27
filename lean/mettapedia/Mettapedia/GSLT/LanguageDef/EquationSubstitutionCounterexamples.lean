@@ -478,16 +478,7 @@ private theorem derivedInstance_canonicalize_eq
     {left right : Pattern}
     (derived : DerivedInstance binderOccurrenceLanguage left right) :
     canonicalize presentation left = canonicalize presentation right := by
-  have noSet {rule : GrammarRule}
-      (declaration : CollectionCarrierRule binderOccurrenceLanguage rule .hashSet) :
-      False := by
-    rcases declaration with ⟨authored, parameter, elementType, parameters⟩
-    simp only [binderOccurrenceLanguage, List.mem_cons, List.not_mem_nil,
-      or_false] at authored
-    rcases authored with rfl | rfl | rfl | rfl | rfl <;>
-      simp [zeroRule, dropRule, quoteRule, parallelRule, nameBinderRule,
-        TypeExpr.proc, TypeExpr.name, TypeExpr.baseType, TypeExpr.bag,
-        TypeExpr.funType] at parameters
+  have noSets : binderOccurrenceLanguage.usesCollection .hashSet = false := by decide
   have noAlgebra {rule : GrammarRule} {kind : CollType}
       {algebra : CollectionAlgebra}
       (declaration : AlgebraRule binderOccurrenceLanguage rule kind algebra) :
@@ -502,8 +493,14 @@ private theorem derivedInstance_canonicalize_eq
   cases derived with
   | bagPerm _ _ permutation =>
       exact canonicalize_parallel_permutation presentation permutation
-  | setPerm declaration _ _ => exact (noSet declaration).elim
-  | setDedup declaration _ => exact (noSet declaration).elim
+  | setPerm declaration typed _ =>
+      have usesSets := usesCollection_eq_true_of_collectionTypedAt declaration typed
+      rw [noSets] at usesSets
+      cases usesSets
+  | setDedup declaration typed =>
+      have usesSets := usesCollection_eq_true_of_collectionTypedAt declaration typed
+      rw [noSets] at usesSets
+      cases usesSets
   | flatten declaration _ _ => exact (noAlgebra declaration).elim
   | singleton declaration _ _ => exact (noAlgebra declaration).elim
   | unitElim declaration _ _ => exact (noAlgebra declaration).elim

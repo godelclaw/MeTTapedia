@@ -4,6 +4,9 @@ import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.NativeAuthoring
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.UpstreamTheoryQuotation
 import Mettapedia.GSLT.LanguageDef.KernelAuthority
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
+import Mettapedia.GSLT.Parsing.ParserProfileWire
+import Mettapedia.GSLT.Parsing.ExactPresentation
+import Std.Data.String.ToNat
 
 set_option autoImplicit false
 
@@ -37,6 +40,239 @@ def coreCodec : PartialCodec LanguageDef Term where
   encode := ModuleAlgebra.NativeAuthoring.Wire.language
   decode := ModuleAlgebra.NativeAuthoring.Wire.language?
   decode_encode := ModuleAlgebra.NativeAuthoring.Wire.language_roundtrip
+
+/-! ## Portable authored syntax
+
+The grammar is an ordinary complete five-field core. Its lexical profile is
+retained beside it as data, without adding a field to `LanguageDef` or changing
+the module envelope. Reading this specification does not certify lexical
+admission, packed parsing, ambiguity selection or execution.
+-/
+
+structure SyntaxDescription where
+  grammar : LanguageDef
+  profile : Parsing.ParserProfileSemantics.ParserProfileLayer
+  deriving Repr
+
+/-! The human module language already carries applications, quoted constructor
+names, numeral constructors and the shared `LNil`/`LCons` carrier. This adapter reads lexical-profile
+data returned by an ordinary authored message. It does not reinterpret a
+grammar sort or production name as a lexical declaration. -/
+
+private def sourceString (value : String) : Pattern := .apply value []
+
+private def sourceString? : Pattern → Option String
+  | .apply value [] => some value
+  | _ => none
+
+private def sourceNatural (value : Nat) : Pattern := .apply (Nat.repr value) []
+
+private def sourceNatural? (value : Pattern) : Option Nat := do
+  let text ← sourceString? value
+  let number ← text.toNat?
+  if Nat.repr number = text then some number else none
+
+private theorem sourceNatural_roundtrip (value : Nat) :
+    sourceNatural? (sourceNatural value) = some value := by
+  simp [sourceNatural?, sourceNatural, sourceString?, Nat.toNat?_repr]
+
+private def sourceList {α : Type} (encode : α → Pattern) : List α → Pattern
+  | [] => .apply "LNil" []
+  | value :: values => .apply "LCons" [encode value, sourceList encode values]
+
+private def readSourceList? {α : Type} (decode : Pattern → Option α) :
+    Pattern → Option (List α)
+  | .apply "LNil" [] => some []
+  | .apply "LCons" [value, values] => do
+      let head ← decode value
+      let tail ← readSourceList? decode values
+      pure (head :: tail)
+  | _ => none
+termination_by term => sizeOf term
+
+private theorem sourceList_roundtrip {α : Type}
+    (encode : α → Pattern) (decode : Pattern → Option α)
+    (roundtrip : ∀ value, decode (encode value) = some value) (values : List α) :
+    readSourceList? decode (sourceList encode values) = some values := by
+  induction values with
+  | nil => simp [sourceList, readSourceList?]
+  | cons value values ih => simp [sourceList, readSourceList?, roundtrip, ih]
+
+private def sourceClass (declaration : Parsing.ParserProfileSemantics.LexicalClassDecl) :
+    Pattern :=
+  let constructor := match declaration.kind with
+    | .points _ => "LexicalClassPoints"
+    | .except _ => "LexicalClassExcept"
+  let values := match declaration.kind with
+    | .points points => points
+    | .except excluded => excluded
+  .apply constructor [sourceString declaration.name,
+    sourceList sourceNatural values]
+
+private def sourceClass? : Pattern → Option Parsing.ParserProfileSemantics.LexicalClassDecl
+  | .apply "LexicalClassPoints" [name, points] => do
+      let className ← sourceString? name
+      let values ← readSourceList? sourceNatural? points
+      pure ⟨className, .points values⟩
+  | .apply "LexicalClassExcept" [name, excluded] => do
+      let className ← sourceString? name
+      let values ← readSourceList? sourceNatural? excluded
+      pure ⟨className, .except values⟩
+  | _ => none
+
+private theorem sourceClass_roundtrip
+    (declaration : Parsing.ParserProfileSemantics.LexicalClassDecl) :
+    sourceClass? (sourceClass declaration) = some declaration := by
+  rcases declaration with ⟨className, points | excluded⟩ <;>
+    simp [sourceClass?, sourceClass, sourceString?, sourceString,
+      sourceList_roundtrip sourceNatural sourceNatural? sourceNatural_roundtrip]
+
+private def sourceState (state : Parsing.ParserProfileSemantics.LexicalStateDecl) : Pattern :=
+  .apply "LexicalState" [sourceString state.resultSort, sourceString state.className,
+    sourceString state.ruleLabel]
+
+private def sourceState? : Pattern → Option Parsing.ParserProfileSemantics.LexicalStateDecl
+  | .apply "LexicalState" [result, className, ruleLabel] => do
+      let resultSort ← sourceString? result
+      let scalarClass ← sourceString? className
+      let lexicalRule ← sourceString? ruleLabel
+      pure ⟨resultSort, scalarClass, lexicalRule⟩
+  | _ => none
+
+private theorem sourceState_roundtrip
+    (state : Parsing.ParserProfileSemantics.LexicalStateDecl) :
+    sourceState? (sourceState state) = some state := by
+  cases state
+  rfl
+
+def lexicalData (profile : Parsing.ParserProfileSemantics.ParserProfileLayer) : Pattern :=
+  .apply "GSLTParserProfileLayerV1" [sourceString profile.name,
+    sourceString profile.startSort, sourceList sourceClass profile.classes,
+    sourceList sourceState profile.states]
+
+def readLexicalData? : Pattern → Option Parsing.ParserProfileSemantics.ParserProfileLayer
+  | .apply "GSLTParserProfileLayerV1"
+      [name, start, classes, states] => do
+      let profileName ← sourceString? name
+      let startSort ← sourceString? start
+      let lexicalClasses ← readSourceList? sourceClass? classes
+      let lexicalStates ← readSourceList? sourceState? states
+      pure ⟨profileName, startSort, lexicalClasses, lexicalStates⟩
+  | _ => none
+
+@[simp] theorem lexicalData_roundtrip
+    (profile : Parsing.ParserProfileSemantics.ParserProfileLayer) :
+    readLexicalData? (lexicalData profile) = some profile := by
+  cases profile
+  simp [readLexicalData?, lexicalData, sourceString?, sourceString,
+    sourceList_roundtrip sourceClass sourceClass? sourceClass_roundtrip,
+    sourceList_roundtrip sourceState sourceState? sourceState_roundtrip]
+
+theorem lexicalData_injective : Function.Injective lexicalData := by
+  intro left right same
+  have decoded := congrArg readLexicalData? same
+  simpa using decoded
+
+theorem lexicalData_tail_refused (profileName startSort rest : String)
+    (declaration : Parsing.ParserProfileSemantics.LexicalClassDecl) :
+    readLexicalData? (.apply "GSLTParserProfileLayerV1"
+      [sourceString profileName, sourceString startSort,
+        .apply "LCons" [sourceClass declaration, .fvar rest], .apply "LNil" []]) = none := by
+  simp [readLexicalData?, sourceString?, sourceString, readSourceList?, sourceClass_roundtrip]
+
+theorem lexicalData_noncanonical_natural_refused :
+    readLexicalData? (.apply "GSLTParserProfileLayerV1"
+      [.apply "P" [], .apply "S" [],
+        .apply "LCons" [.apply "LexicalClassPoints"
+          [.apply "Digit" [], .apply "LCons" [.apply "048" [], .apply "LNil" []]],
+          .apply "LNil" []], .apply "LNil" []]) = none := by
+  have parsed : "048".toNat? = some 48 := by cbv
+  have different : Nat.repr 48 ≠ "048" := by cbv
+  simp [readLexicalData?, readSourceList?, sourceClass?, sourceString?, sourceNatural?, parsed, different]
+
+#print axioms lexicalData_roundtrip
+#print axioms lexicalData_injective
+#print axioms lexicalData_tail_refused
+#print axioms lexicalData_noncanonical_natural_refused
+
+def syntaxTerm (description : SyntaxDescription) : Term :=
+  .application "GSLTSyntaxV1"
+    [coreCodec.encode description.grammar,
+      Parsing.ParserProfileWire.encode description.profile]
+
+def syntax? : Term → Option SyntaxDescription
+  | .application "GSLTSyntaxV1" [grammar, profile] => do
+      let decodedGrammar ← coreCodec.decode grammar
+      let decodedProfile ← Parsing.ParserProfileWire.decode? profile
+      pure ⟨decodedGrammar, decodedProfile⟩
+  | _ => none
+
+@[simp] theorem syntax_roundtrip (description : SyntaxDescription) :
+    syntax? (syntaxTerm description) = some description := by
+  cases description
+  simp [syntax?, syntaxTerm, coreCodec.decode_encode,
+    Parsing.ParserProfileWire.decode_encode]
+
+def syntaxCodec : PartialCodec SyntaxDescription Term where
+  encode := syntaxTerm
+  decode := syntax?
+  decode_encode := syntax_roundtrip
+
+/-- Typed conversion uses the actual independent decoder and encoder. The
+representation law concerns the entire grammar/profile payload. -/
+def syntaxPresentation : Parsing.ExactPresentation.Presentation
+    (fun _ : Unit => SyntaxDescription) (fun _ : Unit => Term) where
+  key := ⟨"gslt:authored-syntax", 1⟩
+  expand := fun {_} => syntax?
+  view := fun {_} => syntaxTerm
+  expand_view := fun {_} => syntax_roundtrip
+
+def syntaxSpecification (description : SyntaxDescription) : Value :=
+  Value.Wire.quoteTerm (syntaxTerm description)
+
+def admitSyntaxSpecification? (value : Value) : Option SyntaxDescription :=
+  (Value.Wire.readTerm? value).bind syntax?
+
+@[simp] theorem syntaxSpecification_roundtrip (description : SyntaxDescription) :
+    admitSyntaxSpecification? (syntaxSpecification description) = some description := by
+  simp [admitSyntaxSpecification?, syntaxSpecification]
+
+def syntaxExport (exportName : String) (description : SyntaxDescription) : Export :=
+  ⟨exportName, syntaxSpecification description⟩
+
+def readSyntaxExport? (expectedName : String) (entry : Export) : Option SyntaxDescription :=
+  if entry.name = expectedName then admitSyntaxSpecification? entry.spec else none
+
+@[simp] theorem readSyntaxExport_syntaxExport (exportName : String)
+    (description : SyntaxDescription) :
+    readSyntaxExport? exportName (syntaxExport exportName description) = some description := by
+  simp [readSyntaxExport?, syntaxExport]
+
+theorem readSyntaxExport_wrong_name (expectedName : String) (entry : Export)
+    (different : entry.name ≠ expectedName) : readSyntaxExport? expectedName entry = none := by
+  simp [readSyntaxExport?, different]
+
+def renderSyntax (description : SyntaxDescription) : String := Text.render (syntaxTerm description)
+
+def readSyntax? (source : String) : Option SyntaxDescription :=
+  (Text.read? source).bind syntax?
+
+@[simp] theorem readSyntax_renderSyntax (description : SyntaxDescription) :
+    readSyntax? (renderSyntax description) = some description := by
+  simp [readSyntax?, renderSyntax]
+
+theorem syntaxTerm_injective : Function.Injective syntaxTerm := syntaxCodec.encode_injective
+
+theorem syntax_wrong_arity (grammar profile extra : Term) :
+    syntax? (.application "GSLTSyntaxV1" [grammar, profile, extra]) = none := rfl
+
+#print axioms syntax_roundtrip
+#print axioms syntaxSpecification_roundtrip
+#print axioms readSyntaxExport_syntaxExport
+#print axioms readSyntaxExport_wrong_name
+#print axioms readSyntax_renderSyntax
+#print axioms syntaxTerm_injective
+#print axioms syntax_wrong_arity
 
 def productCodec {left : CompositionalLayer.{0, u} LanguageDef}
     {right : CompositionalLayer.{0, v} LanguageDef}

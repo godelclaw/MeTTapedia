@@ -121,41 +121,44 @@ theorem iterate_closed (nonempty : start ≠ []) (distinct : start.Nodup) (start
 /-! ## Canonical regions -/
 
 variable {relEnv : RelationEnv} {language : LanguageDef} {fuel : ℕ} {canon : Pattern → Pattern} {domain : Pattern → Bool}
+  {reading : LanguageReading}
   {presentations : Pattern → List Pattern}
 
-theorem growCanonical_eq_iterate (term : Pattern) : ∀ rounds,
-    growCanonical relEnv language fuel canon presentations term rounds =
-      iterate (nextCanonical relEnv language fuel canon presentations) [canon term] rounds
+theorem growCanonical_eq_iterate (term : Pattern) (rules : RuleReading := .reference) : ∀ rounds,
+    growCanonical relEnv language fuel canon presentations term rounds rules =
+      iterate (fun state => nextCanonical relEnv language fuel canon presentations state rules) [canon term] rounds
   | 0 => rfl
   | rounds + 1 => by
-    rw [iterate_succ, ← growCanonical_eq_iterate term rounds]
+    rw [iterate_succ, ← growCanonical_eq_iterate term rules rounds]
     rfl
 
-/-- **A canonical closure of a term**: a list of admitted terms that contains the term's canonical form and
-the canonical forms of the listed successors of each of its states, where every state's steps are listed
-completely, at presentations that have it as canonical form. -/
+/-- **A canonical closure of an admitted term**: a list of admitted canonical forms that contains the term's
+canonical form and the canonical forms of the listed successors of each of its states, where every state's steps are
+listed completely, at presentations that have it as canonical form. -/
 structure CanonicalClosure (relEnv : RelationEnv) (language : LanguageDef) (fuel : ℕ) (canon : Pattern → Pattern)
-    (domain : Pattern → Bool) (presentations : Pattern → List Pattern) (term : Pattern) (closure : List Pattern) :
-    Prop where
+    (domain : Pattern → Bool) (presentations : Pattern → List Pattern) (term : Pattern) (closure : List Pattern)
+    (rules : RuleReading := .reference) : Prop where
+  subject : domain term = true
   start : canon term ∈ closure
   admitted : ∀ state ∈ closure, domain state = true
+  canonical : ∀ state ∈ closure, canon state = state
   presented : ∀ state ∈ closure, isStateBool state = true → canon state = state →
     ∀ shown ∈ presentations state, domain shown = true ∧ canon shown = state
-  closed : ∀ state ∈ closure, isStateBool state = true → ∀ entry ∈ listedAt relEnv language fuel presentations state,
-    canon entry.2 ∈ closure
-  listed : ∀ state ∈ closure, isStateBool state = true → enoughAt relEnv language fuel presentations state = true
+  closed : ∀ state ∈ closure, isStateBool state = true →
+    ∀ entry ∈ listedAt relEnv language fuel presentations state rules, canon entry.2 ∈ closure
+  listed : ∀ state ∈ closure, isStateBool state = true → enoughAt relEnv language fuel presentations state rules = true
 
 /-- **The grown canonical region closes** once the rounds reach the closure's size. -/
-theorem growCanonical_closed (canonical : Canonical relEnv language canon domain) {term : Pattern}
-    {closure : List Pattern} (bounded : CanonicalClosure relEnv language fuel canon domain presentations term closure)
+theorem growCanonical_closed {term : Pattern} {closure : List Pattern} {rules : RuleReading}
+    (bounded : CanonicalClosure relEnv language fuel canon domain presentations term closure rules)
     {rounds : ℕ} (enoughRounds : closure.length ≤ rounds) :
     canonicalRegion relEnv language fuel canon domain presentations
-      (growCanonical relEnv language fuel canon presentations term rounds) = true := by
-  rw [growCanonical_eq_iterate]
+      (growCanonical relEnv language fuel canon presentations term rounds rules) rules = true := by
+  rw [growCanonical_eq_iterate term rules]
   have starts : ∀ other ∈ [canon term], other ∈ closure := fun other inside => by
     rw [List.mem_singleton] at inside
     exact inside ▸ bounded.start
-  have closedNext : ∀ source ∈ closure, ∀ other ∈ nextCanonical relEnv language fuel canon presentations source,
+  have closedNext : ∀ source ∈ closure, ∀ other ∈ nextCanonical relEnv language fuel canon presentations source rules,
       other ∈ closure := by
     intro source member other listed
     by_cases isState : isStateBool source = true
@@ -167,27 +170,13 @@ theorem growCanonical_closed (canonical : Canonical relEnv language canon domain
   have still := iterate_closed (List.cons_ne_nil _ _) (List.nodup_singleton _) starts closedNext enoughRounds
   simp only [canonicalRegion, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, beq_iff_eq, Bool.or_eq_true,
     Bool.not_eq_true']
-  have stateAdmitted : ∀ state, state ∈ iterate (nextCanonical relEnv language fuel canon presentations)
-    [canon term] rounds →
+  have stateAdmitted : ∀ state, state ∈ iterate (fun source => nextCanonical relEnv language fuel canon presentations
+    source rules) [canon term] rounds →
       domain state = true := fun state member =>
     bounded.admitted state (iterate_subset starts closedNext rounds state member)
-  have stateCanonical : ∀ state, state ∈ iterate (nextCanonical relEnv language fuel canon presentations) [canon term]
-      rounds → canon state = state := by
-    intro state member
-    rcases mem_iterate member with inside | ⟨source, listed⟩
-    · rw [List.mem_singleton] at inside
-      rw [inside]
-      refine canonical.idempotent ?_
-      rw [← canonical.determined]
-      exact bounded.admitted _ bounded.start
-    · by_cases isState : isStateBool source = true
-      · rw [nextCanonical, if_pos isState] at listed
-        obtain ⟨entry, -, rfl⟩ := List.mem_map.mp listed
-        refine canonical.idempotent ?_
-        rw [← canonical.determined]
-        exact stateAdmitted _ member
-      · rw [nextCanonical, if_neg isState] at listed
-        cases listed
+  have stateCanonical : ∀ state, state ∈ iterate (fun source => nextCanonical relEnv language fuel canon presentations
+      source rules) [canon term] rounds → canon state = state := fun state member =>
+    bounded.canonical state (iterate_subset starts closedNext rounds state member)
   refine ⟨iterate_nodup (List.nodup_singleton _) rounds, fun state member =>
     ⟨⟨stateAdmitted state member, stateCanonical state member⟩, ?_⟩⟩
   by_cases isState : isStateBool state = true
@@ -198,20 +187,22 @@ theorem growCanonical_closed (canonical : Canonical relEnv language canon domain
   · exact Or.inl (by simpa using isState)
 
 /-- **Every behavioural formula is decided** modulo the equations, and the verdict is the truth. -/
-theorem decideCanonical_complete {admissible : StepLabel → Bool} (canonical : Canonical relEnv language canon domain)
-    (coherent : CoherentOn relEnv language fuel canon domain presentations admissible) {term : Pattern}
-    {closure : List Pattern} (bounded : CanonicalClosure relEnv language fuel canon domain presentations term closure)
+theorem decideCanonical_complete {admissible : StepLabel → Bool} (canonical : Canonical relEnv language canon domain reading)
+    (coherent : CoherentOn relEnv language fuel canon domain presentations admissible reading) {term : Pattern}
+    {closure : List Pattern}
+    (bounded : CanonicalClosure relEnv language fuel canon domain presentations term closure reading.rules)
     {formula : Formula 0} (behavioural : formula.behaviouralIn admissible = true) {rounds : ℕ}
     (enoughRounds : closure.length ≤ rounds) :
-    ∃ verdict, decideCanonical relEnv language fuel canon domain presentations formula term rounds = some verdict ∧
-      (verdict = true ↔ (referenceStructure relEnv language).sat Env.closed formula term) := by
-  have closed := growCanonical_closed canonical bounded enoughRounds
-  have decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds =
+    ∃ verdict, decideCanonical relEnv language fuel canon domain presentations formula term rounds reading.rules =
+        some verdict ∧
+      (verdict = true ↔ (referenceStructure relEnv language reading).sat Env.closed formula term) := by
+  have closed := growCanonical_closed bounded enoughRounds
+  have decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds reading.rules =
       some ((canonicalExploration relEnv language fuel canon domain presentations
-        (growCanonical relEnv language fuel canon presentations term rounds)).check
-        formula ⟨0, growCanonical_length_pos relEnv language fuel canon presentations term rounds⟩) := by
+        (growCanonical relEnv language fuel canon presentations term rounds reading.rules) reading.rules).check
+        formula ⟨0, growCanonical_length_pos relEnv language fuel canon presentations term rounds reading.rules⟩) := by
     unfold decideCanonical
-    rw [if_pos closed]
+    rw [if_pos (by rw [bounded.subject, closed]; rfl)]
   exact ⟨_, decided, decideCanonical_sound_on canonical coherent behavioural decided⟩
 
 variable {signature : Mettapedia.OSLF.Framework.FiniteModels.Signature}
@@ -219,7 +210,8 @@ variable {signature : Mettapedia.OSLF.Framework.FiniteModels.Signature}
 /-- **`ask` decides modulo the equations**: given canonical forms, on a finite canonical closure it answers
 proved or refuted, never open. -/
 theorem ask_decides_modulo (forms : CanonicalForms relEnv language fuel) {term : Pattern} {closure : List Pattern}
-    (bounded : CanonicalClosure relEnv language fuel forms.canon forms.domain forms.presentations term closure)
+    (bounded : CanonicalClosure relEnv language fuel forms.canon forms.domain forms.presentations term closure
+      forms.reading.rules)
     {formula : Formula 0} (behavioural : formula.behaviouralIn forms.labels = true) {rounds : ℕ}
     (enoughRounds : closure.length ≤ rounds) (hint : Option CertificateCandidate) :
     ∃ evidence, ask relEnv signature language fuel formula term hint rounds (some forms) = .proved evidence ∨

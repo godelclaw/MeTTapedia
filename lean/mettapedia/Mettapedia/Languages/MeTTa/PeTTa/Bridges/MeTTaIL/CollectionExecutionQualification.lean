@@ -1,3 +1,9 @@
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution.AllocationAdvance
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution.AllocationChildrenControls
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution.RetainedTransitionControls
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution.ConstructorScanControls
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionPresentationExecution.ConstructorControls
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution.RestSchemaOccurrence
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CollectionOccurrence
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionOccurrenceSearchExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionOccurrenceDiscoveryExecution
@@ -464,5 +470,51 @@ theorem unfinished_eq_nil_iff (depth : Nat) (explorer : Explorer plan bound expe
 #print axioms edges_forget
 #print axioms every_public_edge_has_pair
 #print axioms unfinished_eq_nil_iff
+
+/-- Every retained edge projects to a valid source receipt in the actual explorer. -/
+theorem edge_valid (depth : Nat) (source : Pattern) (work : Nat)
+    (edge : Pattern × Committed × Pattern)
+    (published : edge ∈ edges (Complete.Explore.explore
+      (CollectionOccurrenceSearch.search plan bound expected depth) source work)) :
+    (CollectionOccurrenceSearch.search plan bound expected depth).Valid edge.1 edge.2.1.2 ∧
+      edge.2.2 = (CollectionOccurrenceSearch.search plan bound expected depth).target edge.2.1.2 := by
+  have projected : forget edge ∈ Complete.Graph.edges
+      (CollectionOccurrenceSearch.search plan bound expected depth)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.search plan bound expected depth) source work) := by
+    rw [← edges_forget depth]
+    exact List.mem_map.mpr ⟨edge, published, rfl⟩
+  exact Complete.Graph.edge_valid
+    (CollectionOccurrenceSearch.search_lawful plan bound expected depth) source work (forget edge) projected
+
+/-- Settled exploration covers every outgoing presented step from a reached node
+with a full packet/receipt pair. No incoming-universe coverage is inferred. -/
+theorem settled_edges_cover_steps
+    (checked : CollectionOccurrenceMachine.checkGuardFragment plan = true)
+    (noEquations : plan.equations = [])
+    (noLaws : Complete.Normalized.laws plan = [])
+    (noExtrusions : Complete.Normalized.extrusions plan = [])
+    (depth : Nat) (source : Pattern) (work : Nat)
+    (done : Complete.Settled.settled (CollectionOccurrenceSearch.search plan bound expected depth)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.search plan bound expected depth) source work) = true) :
+    ∀ node ∈ (Complete.Explore.explore
+        (CollectionOccurrenceSearch.search plan bound expected depth) source work).nodes,
+      ∀ target, (Complete.Presented.gslt plan bound expected).Step node.state target →
+        ∃ pair target', (node.state, pair, target') ∈ edges
+            (Complete.Explore.explore (CollectionOccurrenceSearch.search plan bound expected depth) source work) ∧
+          CanonicalBags.Same target target' := by
+  intro node member target stepped
+  obtain ⟨receipt, target', published, same⟩ :=
+    CollectionOccurrenceSearch.settled_edges_cover_steps checked noEquations noLaws noExtrusions
+      depth source work done node member target stepped
+  obtain ⟨rich, retained, projected⟩ := every_public_edge_has_pair depth _
+    (node.state, receipt, target') published
+  have sourceSame : rich.1 = node.state := congrArg Prod.fst projected
+  have targetSame : rich.2.2 = target' := congrArg (fun edge => edge.2.2) projected
+  have readout : rich = (node.state, rich.2.1, target') :=
+    Prod.ext sourceSame (Prod.ext rfl targetSame)
+  exact ⟨rich.2.1, target', readout ▸ retained, same⟩
+
+#print axioms edge_valid
+#print axioms settled_edges_cover_steps
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CollectionExecutionQualification.RetainedGraph

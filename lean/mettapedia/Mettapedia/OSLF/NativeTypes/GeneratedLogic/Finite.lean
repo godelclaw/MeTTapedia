@@ -217,6 +217,7 @@ structure FiniteStructure (Carrier : Type u) where
   named : Carrier → Pattern → Bool
   same : Carrier → Carrier → Bool
   apply : Carrier → Carrier → Carrier
+  inRelation : Carrier → String → Bool
 
 namespace FiniteStructure
 
@@ -236,6 +237,7 @@ def native : NativeStructure Carrier where
   named element term := F.named element term = true
   same first second := F.same first second = true
   apply := F.apply
+  inRelation element relation := F.inRelation element relation = true
 
 /-- A decided step in the direction. -/
 def stepIn (direction : Direction) (element : Carrier) (label : StepLabel) (other : Carrier) : Bool :=
@@ -312,6 +314,8 @@ def eval : {n : ℕ} → (Fin n → Carrier → Bool) → Formula n → Carrier 
   | _, _, .untyped type, element => !F.typed element type
   | _, _, .is term, element => F.named element term
   | _, _, .isNot term, element => !F.named element term
+  | _, _, .inRelation relation, element => F.inRelation element relation
+  | _, _, .notInRelation relation, element => !F.inRelation element relation
   | _, env, .mapsAll argument result, element =>
       F.elements.any fun inner => F.body element inner &&
         F.elements.all fun value => eval env argument value || eval env result (F.apply inner value)
@@ -558,6 +562,8 @@ theorem eval_iff : ∀ {n : ℕ} (formula : Formula n) (env : Fin n → Carrier 
   | _, .untyped _, env, element => by simp [eval, NativeStructure.sat, native]
   | _, .is _, env, element => by simp [eval, NativeStructure.sat, native]
   | _, .isNot _, env, element => by simp [eval, NativeStructure.sat, native]
+  | _, .inRelation _, env, element => by simp [eval, NativeStructure.sat, native]
+  | _, .notInRelation _, env, element => by simp [eval, NativeStructure.sat, native]
   | _, .mapsAll argument result, env, element => by
     simp only [eval, List.any_eq_true, List.all_eq_true, Bool.and_eq_true, Bool.or_eq_true, NativeStructure.sat,
       native, eval_iff argument, eval_iff result]

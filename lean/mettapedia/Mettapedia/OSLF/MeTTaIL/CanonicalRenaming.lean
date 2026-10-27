@@ -626,6 +626,121 @@ theorem variableSpine?_arguments {depth : Nat} {arguments : List Pattern} {indic
   · cases rest; exact arguments_eq
   · cases rest
 
+/-- The actual variable-spine check proves injectivity of its numerical indices. -/
+theorem variableSpine?_nodup {depth : Nat} {arguments : List Pattern} {indices : List Nat}
+    (spine : variableSpine? depth arguments = some indices) : indices.Nodup := by
+  unfold variableSpine? at spine
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at spine
+  obtain ⟨found, _, checked⟩ := spine
+  split at checked
+  · cases checked
+    assumption
+  · cases checked
+
+/-- Inverse recovery undoes the checked dependency and ambient occurrence action
+at each index. Unselected local indices occur only on the destination side. -/
+theorem raw_recovery_occurrence_identity
+    (dependencies locals ambient : Nat) (indices : List Nat)
+    (length : indices.length = dependencies)
+    (unique : indices.Nodup) (bounds : ∀ index ∈ indices, index < locals)
+    (index : Nat) :
+    substitute (recoveryAssignment locals dependencies ambient indices)
+      (occurrenceAssignment dependencies locals (indices.map Pattern.bvar) index) =
+      .bvar index := by
+  by_cases dependent : index < dependencies
+  · have inIndices : index < indices.length := by omega
+    have member : indices[index] ∈ indices := List.getElem_mem inIndices
+    have localBound := bounds _ member
+    simp only [occurrenceAssignment, dependent, if_true, List.getD_map]
+    rw [List.getD_eq_getElem _ _ inIndices]
+    simp only [substitute, recoveryAssignment, localBound, if_true, member,
+      unique.idxOf_getElem index inIndices]
+  · have ambientIndex : ¬ locals + (index - dependencies) < locals := by omega
+    simp only [occurrenceAssignment, dependent, if_false, substitute,
+      recoveryAssignment, ambientIndex]
+    congr 1
+    omega
+
+/-- Successful forward instantiation along an actual injective local-variable
+spine recovers the exact original contextual value, including its headers.
+The forward success already earns the scope conditions for every raw body. -/
+theorem recoverValue?_instantiateValue? {value : ContextualValue} {ambient depth : Nat}
+    {arguments : List Pattern} {indices : List Nat} {target : Pattern}
+    (spine : variableSpine? depth arguments = some indices)
+    (forward : instantiateValue? value ambient depth arguments = some target) :
+    recoverValue? value.dependencies ambient depth arguments target = some value := by
+  obtain ⟨sameAmbient, arity, _, _, instantiated, targetScoped⟩ :=
+    (instantiateValue?_eq_some_iff _ _ _ _ _).mp forward
+  have arityIndices : indices.length = value.dependencies.length := by
+    simpa only [variableSpine?_arguments spine, List.length_map] using arity
+  have recoveredBody :
+      substitute (recoveryAssignment depth value.dependencies.length ambient indices) target =
+        value.body := by
+    rw [← instantiated, variableSpine?_arguments spine, ContextSubstitution.substitute_comp]
+    have composed : (fun index => substitute
+        (recoveryAssignment depth value.dependencies.length ambient indices)
+        (occurrenceAssignment value.dependencies.length depth (indices.map Pattern.bvar) index)) =
+        Pattern.bvar := by
+      funext index
+      exact raw_recovery_occurrence_identity _ _ _ indices arityIndices
+        (variableSpine?_nodup spine) (variableSpine?_lt spine) index
+    rw [composed, ContextSubstitution.substitute_id]
+  have candidate : ContextualValue.mk value.dependencies ambient
+      (substitute (recoveryAssignment depth value.dependencies.length ambient indices) target) = value := by
+    cases value
+    simp_all only
+  unfold recoverValue?
+  simp only [targetScoped, Bool.not_true, Bool.false_eq_true, if_false,
+    Option.bind_eq_bind, spine, Option.bind_some, arityIndices, bne_self_eq_false]
+  rw [candidate]
+  simp only [forward, beq_self_eq_true, if_true]
+
+namespace RecoveryControls
+
+private def scalar : TypeExpr := .base "P"
+private def captured : ContextualValue :=
+  ⟨[scalar, scalar], 1, .lambda "under"
+    (.apply "Pair" [.fvar "external", .bvar 1, .bvar 2, .bvar 3])⟩
+private def arguments : List Pattern := [.bvar 0, .bvar 2]
+private def instantiated : Pattern :=
+  .lambda "under" (.apply "Pair" [.fvar "external", .bvar 1, .bvar 3, .bvar 4])
+
+/-- Independent dependencies, an ambient variable and a named free atom
+survive the actual forward action and exact recovery below another binder. -/
+theorem named_free_partial_spine :
+    variableSpine? 3 arguments = some [0, 2] ∧
+      instantiateValue? captured 1 3 arguments = some instantiated ∧
+      recoverValue? captured.dependencies 1 3 arguments instantiated = some captured := by
+  have checked : variableSpine? 3 arguments = some [0, 2] := by decide +kernel
+  have forward : instantiateValue? captured 1 3 arguments = some instantiated := by decide +kernel
+  exact ⟨checked, forward, recoverValue?_instantiateValue? checked forward⟩
+
+/-- A noninjective forward occurrence can succeed, while inverse recovery
+correctly refuses to assign two dependency positions to one local binder. -/
+theorem repeated_local_refused :
+    instantiateValue? captured 1 3 [.bvar 0, .bvar 0] =
+        some (.lambda "under" (.apply "Pair" [.fvar "external", .bvar 1, .bvar 1, .bvar 4])) ∧
+      variableSpine? 3 [.bvar 0, .bvar 0] = none ∧
+      recoverValue? captured.dependencies 1 3 [.bvar 0, .bvar 0]
+        (.lambda "under" (.apply "Pair" [.fvar "external", .bvar 1, .bvar 1, .bvar 4])) = none := by
+  decide +kernel
+
+/-- A body outside its own dependency-plus-ambient context cannot acquire
+inverse authority: the original forward check rejects it. -/
+theorem escaped_body_refused :
+    instantiateValue? (⟨[scalar, scalar], 1, .bvar 3⟩ : ContextualValue) 1 3 arguments = none := by
+  decide +kernel
+
+#print axioms named_free_partial_spine
+#print axioms repeated_local_refused
+#print axioms escaped_body_refused
+
+end RecoveryControls
+
+#print axioms variableSpine?_nodup
+#print axioms raw_recovery_occurrence_identity
+#print axioms recoverValue?_instantiateValue?
+
 /-- With a variable spine, instantiation renames indices. -/
 theorem occurrenceAssignment_eq {depth : Nat} {arguments : List Pattern} {indices : List Nat}
     (spine : variableSpine? depth arguments = some indices) (dependencies : Nat) :
@@ -746,5 +861,132 @@ theorem canon_reverse_not_rename :
   simp only [substitute, ContextSubstitution.substituteList_eq_map, List.map_cons, List.map_nil, canon_collection,
     bvar, arrange_bag]
   decide
+
+/-- An actual context substitution is the identity when it fixes precisely
+the free indices used by the pattern. Binder lifts keep their local prefix. -/
+theorem substitute_eq_of_free_fixed (assignment : ContextSubstitution.Assignment) (pattern : Pattern)
+    (fixed : ∀ index, FreeIn index pattern → assignment index = .bvar index) :
+    substitute assignment pattern = pattern := by
+  induction pattern using Pattern.inductionOn generalizing assignment with
+  | hbvar index => exact fixed index (.bvar index)
+  | hfvar identifier => rfl
+  | happly label arguments recurse =>
+      simp only [substitute, ContextSubstitution.substituteList_eq_map]
+      apply congrArg (Pattern.apply label)
+      simpa only [List.map_id] using
+        (List.map_congr_left (l := arguments) (f := substitute assignment) (g := id)
+          (fun child member => recurse child member assignment
+            (fun index used => fixed index (.apply member used))))
+  | hlambda display body recurse =>
+      simp only [substitute]
+      apply congrArg (Pattern.lambda display)
+      apply recurse
+      intro index used
+      by_cases localIndex : index < 1
+      · simp only [lift, localIndex, if_true]
+      · have outerUsed : FreeIn (index - 1) (.lambda display body) :=
+          .lambda (by simpa only [Nat.sub_add_cancel (by omega : 1 ≤ index)] using used)
+        simp only [lift, localIndex, if_false, fixed _ outerUsed, Substitution.liftBVars, Nat.zero_le, if_true]
+        congr 1
+        omega
+  | hmultiLambda arity displays body recurse =>
+      simp only [substitute]
+      apply congrArg (Pattern.multiLambda arity displays)
+      apply recurse
+      intro index used
+      by_cases localIndex : index < arity
+      · simp only [lift, localIndex, if_true]
+      · have outerUsed : FreeIn (index - arity) (.multiLambda arity displays body) :=
+          .multiLambda (by simpa only [Nat.sub_add_cancel (by omega : arity ≤ index)] using used)
+        simp only [lift, localIndex, if_false, fixed _ outerUsed, Substitution.liftBVars, Nat.zero_le, if_true]
+        congr 1
+        omega
+  | hsubst body replacement bodyRecurse replacementRecurse =>
+      simp only [substitute]
+      have sameBody : substitute (lift 1 assignment) body = body := by
+        apply bodyRecurse
+        intro index used
+        by_cases localIndex : index < 1
+        · simp only [lift, localIndex, if_true]
+        · have outerUsed : FreeIn (index - 1) (.subst body replacement) :=
+            .substBody (by simpa only [Nat.sub_add_cancel (by omega : 1 ≤ index)] using used)
+          simp only [lift, localIndex, if_false, fixed _ outerUsed, Substitution.liftBVars, Nat.zero_le, if_true]
+          congr 1
+          omega
+      rw [sameBody, replacementRecurse assignment (fun index used => fixed index (.substReplacement used))]
+  | hcollection kind elements tail recurse =>
+      simp only [substitute, ContextSubstitution.substituteList_eq_map]
+      apply congrArg (fun values => Pattern.collection kind values tail)
+      simpa only [List.map_id] using
+        (List.map_congr_left (l := elements) (f := substitute assignment) (g := id)
+          (fun child member => recurse child member assignment
+            (fun index used => fixed index (.element member used))))
+
+/-- A scoped inverse body forces every used local variable into the actual
+selected spine. Forward instantiation then returns the exact original target. -/
+theorem instantiate_recovery_body {dependencies : List TypeExpr} {ambient depth : Nat}
+    {arguments : List Pattern} {indices : List Nat} {target : Pattern}
+    (checked : variableSpine? depth arguments = some indices)
+    (arity : indices.length = dependencies.length)
+    (bodyScoped : Pattern.isWellScopedAt (dependencies.length + ambient)
+      (substitute (recoveryAssignment depth dependencies.length ambient indices) target) = true) :
+    substitute (occurrenceAssignment dependencies.length depth arguments)
+      (substitute (recoveryAssignment depth dependencies.length ambient indices) target) = target := by
+  rw [ContextSubstitution.substitute_comp]
+  apply substitute_eq_of_free_fixed
+  intro index used
+  by_cases localIndex : index < depth
+  · have selected : index ∈ indices := by
+      by_contra omitted
+      have image := used.rename (rename := recoveryIndex depth dependencies.length ambient indices)
+      rw [← recoveryAssignment_eq] at image
+      have outside := image.lt_of_scoped bodyScoped
+      simp only [recoveryIndex, localIndex, if_true, omitted, if_false] at outside
+      omega
+    have position : indices.idxOf index < indices.length := List.idxOf_lt_length_of_mem selected
+    have dependencyPosition : indices.idxOf index < dependencies.length := by omega
+    simp only [recoveryAssignment, localIndex, if_true, selected, substitute,
+      occurrenceAssignment, dependencyPosition, variableSpine?_arguments checked, List.getD_map]
+    rw [List.getD_eq_getElem _ _ position, List.getElem_idxOf]
+  · have outsideDependencies : ¬ dependencies.length + (index - depth) < dependencies.length := by omega
+    simp only [recoveryAssignment, localIndex, if_false, substitute, occurrenceAssignment,
+      outsideDependencies]
+    congr 1
+    omega
+
+/-- Actual recovery success is constructed from its checked inverse body;
+no prior capture-success or matching-completeness premise is assumed. -/
+theorem recoverValue?_of_inverse_scoped {dependencies : List TypeExpr} {ambient depth : Nat}
+    {arguments : List Pattern} {indices : List Nat} {target : Pattern}
+    (checked : variableSpine? depth arguments = some indices)
+    (arity : indices.length = dependencies.length)
+    (targetScoped : target.isWellScopedAt (depth + ambient) = true)
+    (bodyScoped : Pattern.isWellScopedAt (dependencies.length + ambient)
+      (substitute (recoveryAssignment depth dependencies.length ambient indices) target) = true) :
+    recoverValue? dependencies ambient depth arguments target =
+      some ⟨dependencies, ambient,
+        substitute (recoveryAssignment depth dependencies.length ambient indices) target⟩ := by
+  have argumentScopes : arguments.all (fun argument => argument.isWellScopedAt (depth + ambient)) = true := by
+    rw [variableSpine?_arguments checked, List.all_map, List.all_eq_true]
+    intro index member
+    simp only [Function.comp_apply, Pattern.isWellScopedAt, decide_eq_true_eq]
+    have bounded := variableSpine?_lt checked index member
+    omega
+  have argumentArity : arguments.length = dependencies.length := by
+    simpa only [variableSpine?_arguments checked, List.length_map] using arity
+  have forward : instantiateValue?
+      ⟨dependencies, ambient, substitute (recoveryAssignment depth dependencies.length ambient indices) target⟩
+      ambient depth arguments = some target :=
+    (instantiateValue?_eq_some_iff _ _ _ _ _).mpr
+      ⟨rfl, argumentArity, bodyScoped, argumentScopes,
+        instantiate_recovery_body checked arity bodyScoped, targetScoped⟩
+  unfold recoverValue?
+  simp only [targetScoped, Bool.not_true, Bool.false_eq_true, if_false,
+    Option.bind_eq_bind, checked, Option.bind_some, arity, bne_self_eq_false,
+    forward, beq_self_eq_true, if_true]
+
+#print axioms substitute_eq_of_free_fixed
+#print axioms instantiate_recovery_body
+#print axioms recoverValue?_of_inverse_scoped
 
 end Mettapedia.OSLF.MeTTaIL.CanonicalBags

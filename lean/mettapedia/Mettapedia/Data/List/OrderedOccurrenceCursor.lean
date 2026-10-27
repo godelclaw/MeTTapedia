@@ -1,5 +1,6 @@
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Induction
+import Mathlib.Data.List.Enum
 
 /-!
 # Ordered occurrence cursors
@@ -186,6 +187,30 @@ theorem project_zipIdx (keep : Nat → Bool) (rows : List α) :
           simpa [project, visible, List.zipIdx_append, retained, rank] using
             congrArg (fun before => before ++ [(row, rankBefore keep rows.length)]) ih
 
+/-- A selected physical row and its visible rank name the same payload.
+The logical observation is constructed independently by filtering full rows. -/
+theorem visible_at_rank (keep : Nat → Bool) (rows : List α)
+    (position : Nat) (value : α) (found : rows[position]? = some value)
+    (retained : keep position = true) :
+    (visible keep rows)[rankBefore keep position]? = some value := by
+  obtain ⟨bound, equal⟩ := List.getElem?_eq_some_iff.mp found
+  have zippedBound : position < rows.zipIdx.length := by simpa using bound
+  have source : (value, position) ∈ rows.zipIdx := by
+    have zipped : rows.zipIdx[position]'zippedBound = (value, position) := by
+      simpa [List.getElem_zipIdx] using congrArg (fun x => (x, position)) equal
+    rw [← zipped]
+    exact List.getElem_mem (by simpa using bound)
+  have selected : (value, rankBefore keep position) ∈ project keep rows.zipIdx := by
+    apply List.mem_filterMap.mpr
+    exact ⟨(value, position), source, by simp [retained]⟩
+  rw [project_zipIdx] at selected
+  obtain ⟨index, indexBound, pair⟩ := List.exists_mem_zipIdx'.mp
+    (show ∃ entry ∈ (visible keep rows).zipIdx,
+      entry = (value, rankBefore keep position) from ⟨_, selected, rfl⟩)
+  have same : index = rankBefore keep position := (Prod.ext_iff.mp pair).2
+  subst index
+  exact List.getElem?_eq_some_iff.mpr ⟨indexBound, (Prod.ext_iff.mp pair).1⟩
+
 /-- Payload filtering can be performed by an index before positional
 projection, provided that the source coordinates remain attached. -/
 theorem project_filter (keep : Nat → Bool) (candidate : α → Bool)
@@ -249,6 +274,83 @@ theorem zipIdx_filter_suffix (rows : List α) (lower start : Nat) :
 
 end Positions
 
+namespace Delivery
+
+def Valid (keep : Nat → Bool) (rows : List α) (pending : List Nat) : Prop :=
+  ∀ position ∈ pending, ∃ value, rows[position]? = some value ∧ keep position = true
+
+/-- Separate selection and read: recover the payload at its logical rank. -/
+def indirect (keep : Nat → Bool) (rows : List α) :
+    List Nat → Option ((Nat × α) × List Nat)
+  | [] => none
+  | position :: rest => ((Positions.visible keep rows)[Positions.rankBefore keep position]?).map
+      (fun value => ((Positions.rankBefore keep position, value), rest))
+
+/-- The cursor already selected this physical occurrence. Its direct read
+keeps the same logical coordinate and exact residual frontier. -/
+def fused (keep : Nat → Bool) (rows : List α) :
+    List Nat → Option ((Nat × α) × List Nat)
+  | [] => none
+  | position :: rest => rows[position]?.map
+      (fun value => ((Positions.rankBefore keep position, value), rest))
+
+theorem fused_refines (keep : Nat → Bool) (rows : List α) (pending : List Nat)
+    (valid : Valid keep rows pending) :
+    fused keep rows pending = indirect keep rows pending := by
+  cases pending with
+  | nil => rfl
+  | cons position rest =>
+      obtain ⟨value, found, retained⟩ := valid position (by simp)
+      simp [fused, indirect, found, Positions.visible_at_rank keep rows position value found retained]
+
+theorem duplicate_occurrences_keep_coordinates :
+    fused (fun p => p != 1) ([7, 99, 7] : List Nat) [0, 2] =
+      some ((0, 7), [2]) ∧
+    fused (fun p => p != 1) ([7, 99, 7] : List Nat) [2] =
+      some ((1, 7), []) := by decide
+
+theorem logical_coordinate_is_not_physical :
+    let rows := [7, 99, 7]
+    rows[Positions.rankBefore (fun p => p != 1) 2]? = some 99 ∧
+      (fused (fun p => p != 1) rows [2]).map (fun result => result.1.2) = some 7 := by
+  decide
+
+/-- A preparatory contraction, implemented independently of the logical
+view's indexed filter. It retains order and duplicate payloads. -/
+def compactFrom (keep : Nat → Bool) : Nat → List α → List α
+  | _, [] => []
+  | position, row :: rest =>
+      if keep position then row :: compactFrom keep (position + 1) rest
+      else compactFrom keep (position + 1) rest
+
+private theorem compactFrom_indexed (keep : Nat → Bool) (rows : List α) (start : Nat) :
+    compactFrom keep start rows =
+      ((rows.zipIdx start).filter fun row => keep row.2).map Prod.fst := by
+  induction rows generalizing start with
+  | nil => rfl
+  | cons row rest ih =>
+      cases kept : keep start <;> simp [compactFrom, List.zipIdx_cons, kept, ih]
+
+def captureAfterPreparation (keep : Nat → Bool) (rows : List α) : Nat × List α :=
+  let prepared := compactFrom keep 0 rows
+  (prepared.length, prepared)
+
+theorem prepared_capture_refines (keep : Nat → Bool) (rows : List α) :
+    (captureAfterPreparation keep rows).2 = Positions.visible keep rows ∧
+    (captureAfterPreparation keep rows).1 = (Positions.visible keep rows).length := by
+  have prepared : compactFrom keep 0 rows = Positions.visible keep rows :=
+    compactFrom_indexed keep rows 0
+  simp [captureAfterPreparation, prepared]
+
+theorem early_ceiling_can_refuse_fresh_cursor :
+    let rows := [7, 99, 7]
+    let prepared := compactFrom (fun p => p != 1) 0 rows
+    rows.length > prepared.length ∧
+    (captureAfterPreparation (fun p => p != 1) rows).1 = prepared.length ∧
+    prepared = [7, 7] := by decide
+
+end Delivery
+
 namespace Canaries
 
 def firstSeven : Occurrence Nat := ⟨0, 7⟩
@@ -294,6 +396,12 @@ end Canaries
 #print axioms values_preserve_order_and_multiplicity
 #print axioms Positions.visible_length
 #print axioms Positions.project_zipIdx
+#print axioms Positions.visible_at_rank
+#print axioms Delivery.fused_refines
+#print axioms Delivery.duplicate_occurrences_keep_coordinates
+#print axioms Delivery.logical_coordinate_is_not_physical
+#print axioms Delivery.prepared_capture_refines
+#print axioms Delivery.early_ceiling_can_refuse_fresh_cursor
 #print axioms Positions.project_candidates
 #print axioms Positions.zipIdx_filter_prefix
 #print axioms Positions.zipIdx_filter_suffix

@@ -36,6 +36,7 @@ def shapes : FiniteStructure (Fin 3) where
   named _ _ := false
   same first second := decide (first = second)
   apply inner _ := inner
+  inRelation _ _ := false
 
 /-- Built by `Nil`. -/
 def builtByNil : Formula 0 := .built "Nil" .nil
@@ -117,6 +118,7 @@ theorem nilCopies_bisimulation : shapes.native.StructuralBisimulation nilCopies 
   bound := fun _ => Iff.rfl
   typed := fun _ => Iff.rfl
   named := fun _ => Iff.rfl
+  inRelation := fun _ => Iff.rfl
 
 theorem nils_structural : shapes.native.StructurallyBisimilar 0 1 :=
   ⟨nilCopies, nilCopies_bisimulation, Or.inr ⟨by decide, by decide⟩⟩

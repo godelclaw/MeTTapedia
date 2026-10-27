@@ -137,3 +137,41 @@ theorem edges_cover_steps (checked : Predecessors.equationsChecked plan = true) 
 end Classes
 
 end Mettapedia.OSLF.MeTTaIL.Complete.Graph
+
+
+namespace Mettapedia.OSLF.MeTTaIL.Complete.Graph
+
+open Mettapedia.Machines.ResumableSearchRunner
+
+variable {σ Run Receipt : Type} (S : Search σ Run Receipt)
+
+/-- A valid receipt returning to the same state gives histories of every
+finite length. The receipt and all its provenance are retained each time. -/
+theorem self_return_history (source : σ) (receipt : Receipt)
+    (valid : S.Valid source receipt) (returns : S.target receipt = source)
+    (count : Nat) :
+    History S (List.replicate (count + 1) source) (List.replicate count receipt) := by
+  induction count with
+  | zero => simpa using History.start (S := S) source
+  | succ count ih =>
+      have previous : History S (source :: List.replicate count source)
+          (List.replicate count receipt) := by
+        simpa only [List.replicate_succ] using ih
+      have next := History.commit previous valid
+      simpa only [returns, List.replicate_succ] using next
+
+/-- A finite graph or a finite set of one-step receipt identities does not
+bound the lengths of its unfolded histories when it contains a real cycle. -/
+theorem self_return_histories_unbounded (source : σ) (receipt : Receipt)
+    (valid : S.Valid source receipt) (returns : S.target receipt = source)
+    (bound : Nat) :
+    ∃ states receipts, History S states receipts ∧ bound < receipts.length := by
+  exact ⟨List.replicate (bound + 2) source,
+    List.replicate (bound + 1) receipt,
+    self_return_history S source receipt valid returns (bound + 1),
+    by simp only [List.length_replicate]; omega⟩
+
+#print axioms self_return_history
+#print axioms self_return_histories_unbounded
+
+end Mettapedia.OSLF.MeTTaIL.Complete.Graph

@@ -37,7 +37,7 @@ open Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetReadings (memberLabel)
 /-! ## Hypersets as a native structure -/
 
 /-- **Hypersets as a native structure**: steps go from a hyperset to its members, and equality is equality of
-hypersets. Hypersets are built by no constructor, bind nothing and carry no names; every hyperset is a `Set`. -/
+hypersets. Hypersets are built by no constructor, bind nothing and carry no names or relations; every hyperset is a `Set`. -/
 def hypersets : NativeStructure HSet.{0} where
   step source label target := memberLabel label ∧ target ∈ source
   built _ _ _ := False
@@ -51,6 +51,7 @@ def hypersets : NativeStructure HSet.{0} where
   named _ _ := False
   same first second := first = second
   apply inner _ := inner
+  inRelation _ _ := False
 
 /-! ## Finite membership graphs -/
 
@@ -138,17 +139,18 @@ def finite : FiniteStructure (Fin graph.size) where
   named _ _ := false
   same := graph.bisim
   apply inner _ := inner
+  inRelation _ _ := false
 
 /-- **Decoration is a step morphism into the hypersets.** -/
 noncomputable def decoration : StepMorphism graph.finite.native hypersets where
   map := HSet.decorate graph.edge
   step := by
-    intro source label target stepped
+    intro source label target _ stepped
     change (decide (memberLabel label) && (graph.children source).contains target) = true at stepped
     rw [Bool.and_eq_true, decide_eq_true_eq, List.contains_iff_mem] at stepped
     exact ⟨stepped.1, HSet.decorate_mem_decorate stepped.2⟩
   stepBack := by
-    rintro source label _ ⟨labelled, member⟩
+    rintro source label _ _ ⟨labelled, member⟩
     obtain ⟨child, edge, rfl⟩ := HSet.mem_decorate.mp member
     refine ⟨child, ?_, rfl⟩
     change (decide (memberLabel label) && (graph.children source).contains child) = true

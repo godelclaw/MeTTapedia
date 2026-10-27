@@ -2399,48 +2399,59 @@ private theorem rho_costAlgebraRule_shape
   rw [algebraEquality, colorEquality]
   cases color <;> rfl
 
-/-- No generated rho constructor can declare a set carrier.  Bare collection
-declarations in either Cost colour reflect to the sole bare source
-constructor, rho parallel composition, whose carrier is a bag. -/
-private theorem rho_costCollectionCarrierRule_hashSet_false
-    {rule : GrammarRule}
-    (carrier : EquationSemantics.CollectionCarrierRule
-      rhoCIGSLT.costWholeLanguage rule .hashSet) : False := by
-  obtain ⟨parameterName, elementType, parameterShape⟩ := carrier.selfSorted
-  have bare : UsesBareCollection rule :=
-    ⟨parameterName, .hashSet, elementType,
-      (GrammarRule.bareParams_cons_iff _ _ _).mpr
-        ⟨rho_costWholeLanguage_representation_bare rule carrier.authored, parameterShape⟩⟩
-  have coreMembership : rule ∈ rhoCIGSLT.costCoreLanguage.terms := by
-    simpa only [rhoCIGSLT.costWholeLanguage_terms] using carrier.authored
-  obtain ⟨constructor, materializes⟩ :=
-    rhoCIGSLT.exists_declaredCostConstructor_of_mem rule coreMembership
-  have materializedBare : UsesBareCollection
-      (rhoCIGSLT.materializeDeclaredCostConstructor constructor) := by
-    rw [materializes]
-    exact bare
-  obtain ⟨color, role⟩ :=
-    rhoCIGSLT.exists_static_role_of_materialize_usesBareCollection constructor
-      materializedBare
-  let preimage := costStaticConstructorPreimage rhoCIGSLT color constructor role
-  obtain ⟨sourceParameterName, sourceCollectionType, sourceElementType,
-      sourceShape⟩ := preimage.usesBareCollection_iff.mp materializedBare
-  have sourceRuleEquality : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
-    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2
-      ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2
-  have mappedShape := preimage.parametersMap
-  rw [materializes, parameterShape,
-    ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2] at mappedShape
-  have collectionTypeEquality : sourceCollectionType = .hashSet := by
-    have shape : sourceParameterName = parameterName ∧
-        sourceCollectionType = .hashSet ∧
-        mapTypeExpr (color.symbols rhoCIGSLT) sourceElementType = elementType := by
-      simpa [mapTermParam, mapTypeExpr] using mappedShape.symm
-    exact shape.2.1
-  subst sourceCollectionType
-  rw [sourceRuleEquality] at sourceShape
-  simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
-    TypeExpr.baseType] at sourceShape
+private theorem mentionsCollection_costBaseTypeExpr (kind : CollType) (type : TypeExpr) :
+    (costBaseTypeExpr type).mentionsCollection kind = type.mentionsCollection kind := by
+  induction type <;> simp_all [costBaseTypeExpr, TypeExpr.mentionsCollection]
+
+private theorem mentionsCollection_costWrappedTypeExpr (kind : CollType) (sort : String)
+    (type : TypeExpr) :
+    (costWrappedTypeExpr sort type).mentionsCollection kind = type.mentionsCollection kind := by
+  induction type with
+  | base name => simp only [costWrappedTypeExpr]; split <;> rfl
+  | arrow d c hd hc => simp [costWrappedTypeExpr, TypeExpr.mentionsCollection, hd, hc]
+  | multiBinder b hb => simp [costWrappedTypeExpr, TypeExpr.mentionsCollection, hb]
+  | collection k e he => simp [costWrappedTypeExpr, TypeExpr.mentionsCollection, he]
+
+private theorem params_mentions_costBaseConstructor {theory : IGSLT}
+    (cut : InteractionCutPresentation theory) (kind : CollType) (rule : GrammarRule) :
+    ((costBaseConstructor cut rule).params.any fun p => (TermParam.typeExpr p).mentionsCollection kind) =
+      (rule.params.any fun p => (TermParam.typeExpr p).mentionsCollection kind) := by
+  rw [costBaseConstructor_def]
+  simp only [List.any_map]
+  conv_rhs => rw [← List.zipIdx_map_fst 0 rule.params, List.any_map]
+  congr 1
+  funext entry
+  simp only [Function.comp_apply, costBaseParameter_def]
+  split <;> simp [mentionsCollection_costBaseTypeExpr, mentionsCollection_costWrappedTypeExpr]
+
+private theorem params_mentions_costWrappedConstructor {theory : IGSLT} (kind : CollType)
+    (rule : GrammarRule) :
+    ((costWrappedConstructor (theory := theory) rule).params.any fun p =>
+        (TermParam.typeExpr p).mentionsCollection kind) =
+      (rule.params.any fun p => (TermParam.typeExpr p).mentionsCollection kind) := by
+  simp [costWrappedConstructor, List.any_map, Function.comp_def, mentionsCollection_costWrappedTypeExpr]
+
+/-- No rho Cost declaration mentions a set anywhere in its parameters: the
+source calculus has none, continuation retyping maps parameter types
+structurally, and the Cost apparatus has no collection parameters. -/
+private theorem rho_costWholeLanguage_usesCollection_hashSet :
+    rhoCIGSLT.costWholeLanguage.usesCollection .hashSet = false := by
+  have source : rhoCIGSLT.theory.presentation.presentation.language.usesCollection .hashSet = false := by
+    decide
+  have apparatus : ∀ sort : String, ((costCoreConstructors sort).any fun rule => rule.params.any fun p =>
+      (TermParam.typeExpr p).mentionsCollection .hashSet) = false := by
+    intro sort
+    simp [costCoreConstructors, costSignatureUnitConstructor, costSignatureProductConstructor,
+      costKeyLeafConstructor, costKeyBranchConstructor, costSignatureCommitConstructor,
+      costSignedConstructor, costTokenStackEmptyConstructor, costTokenStackConsConstructor,
+      costFundingConstructor, costContactConstructor, TermParam.typeExpr, TypeExpr.mentionsCollection]
+  simp only [LanguageDef.usesCollection, WrappableIGSLT.costWholeLanguage_terms,
+    WrappableIGSLT.costCoreLanguage_terms, ContinuationRetypingPlan.generatedLanguage_terms,
+    List.any_append, List.any_map, Function.comp_def, params_mentions_costBaseConstructor,
+    params_mentions_costWrappedConstructor, apparatus, Bool.or_false, Bool.or_eq_false_iff]
+  refine ⟨source, List.any_eq_false.mpr fun c _ => ?_⟩
+  exact List.any_eq_false.mp source c.1 c.2
+
 
 section DerivedAlgebra
 
@@ -2515,10 +2526,12 @@ theorem rho_costDerivedGenerator_canonicalize_eq
   cases witness with
   | bagPerm rule elements elements' _ _ permutation =>
       exact canonicalize_parallel_permutation _ permutation
-  | setPerm rule elements elements' carrier _ _ =>
-      exact False.elim (rho_costCollectionCarrierRule_hashSet_false carrier)
-  | setDedup rule element elements carrier _ =>
-      exact False.elim (rho_costCollectionCarrierRule_hashSet_false carrier)
+  | setPerm rule elements elements' member receipt _ =>
+      exact absurd (EquationSemantics.usesCollection_eq_true_of_collectionTypedAt member receipt.erase)
+        (by rw [rho_costWholeLanguage_usesCollection_hashSet]; decide)
+  | setDedup rule element elements member receipt =>
+      exact absurd (EquationSemantics.usesCollection_eq_true_of_collectionTypedAt member receipt.erase)
+        (by rw [rho_costWholeLanguage_usesCollection_hashSet]; decide)
   | flatten rule kind algebra pre inner post algebraRule _ _ =>
       obtain ⟨rfl, _⟩ := rho_costAlgebraRule_shape algebraRule
       simpa only [rhoCostDerivedGeneratorColor, rho_costParallelCollection] using

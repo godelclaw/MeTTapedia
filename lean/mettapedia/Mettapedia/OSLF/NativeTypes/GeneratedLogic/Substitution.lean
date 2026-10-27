@@ -61,6 +61,8 @@ def Formula.rename : {n m : ℕ} → (Fin n → Fin m) → Formula n → Formula
   | _, _, _, .untyped type => .untyped type
   | _, _, _, .is term => .is term
   | _, _, _, .isNot term => .isNot term
+  | _, _, _, .inRelation relation => .inRelation relation
+  | _, _, _, .notInRelation relation => .notInRelation relation
   | _, _, along, .mapsAll argument result => .mapsAll (argument.rename along) (result.rename along)
   | _, _, along, .mapsSome argument result => .mapsSome (argument.rename along) (result.rename along)
   | _, _, along, .someOf type formula => .someOf type (formula.rename along)
@@ -113,6 +115,8 @@ def Formula.subst : {n m : ℕ} → (Fin n → Formula m) → Formula n → Form
   | _, _, _, .untyped type => .untyped type
   | _, _, _, .is term => .is term
   | _, _, _, .isNot term => .isNot term
+  | _, _, _, .inRelation relation => .inRelation relation
+  | _, _, _, .notInRelation relation => .notInRelation relation
   | _, _, substitution, .mapsAll argument result =>
     .mapsAll (argument.subst substitution) (result.subst substitution)
   | _, _, substitution, .mapsSome argument result =>
@@ -198,6 +202,8 @@ theorem sat_rename : ∀ {n m : ℕ} (along : Fin n → Fin m) (formula : Formul
   | _, _, _, .untyped _, _, _ => Iff.rfl
   | _, _, _, .is _, _, _ => Iff.rfl
   | _, _, _, .isNot _, _, _ => Iff.rfl
+  | _, _, _, .inRelation _, _, _ => Iff.rfl
+  | _, _, _, .notInRelation _, _, _ => Iff.rfl
   | _, _, along, .mapsAll argument result, env, _ =>
     exists_congr fun inner => and_congr Iff.rfl (forall_congr' fun value =>
       or_congr (sat_rename along argument env value) (sat_rename along result env _))
@@ -306,6 +312,8 @@ theorem sat_subst : ∀ {n m : ℕ} (substitution : Fin n → Formula m) (formul
   | _, _, _, .untyped _, _, _ => Iff.rfl
   | _, _, _, .is _, _, _ => Iff.rfl
   | _, _, _, .isNot _, _, _ => Iff.rfl
+  | _, _, _, .inRelation _, _, _ => Iff.rfl
+  | _, _, _, .notInRelation _, _, _ => Iff.rfl
   | _, _, substitution, .mapsAll argument result, env, _ =>
     exists_congr fun inner => and_congr Iff.rfl (forall_congr' fun value =>
       or_congr (sat_subst substitution argument env value) (sat_subst substitution result env _))

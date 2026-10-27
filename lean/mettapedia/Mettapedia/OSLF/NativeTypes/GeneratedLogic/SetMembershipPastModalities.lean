@@ -40,7 +40,7 @@ namespace Formula
 def plainModal : {n : ℕ} → Formula n → Bool
   | _, .top | _, .bot => true
   | _, .and left right | _, .or left right => plainModal left && plainModal right
-  | _, .possibly _ inner | _, .necessarily _ inner => plainModal inner
+  | _, .possibly label inner | _, .necessarily label inner => !label.isContext && plainModal inner
   | _, _ => false
 
 /-- **The modal depth**: the longest nesting of steps. -/
@@ -57,7 +57,9 @@ theorem regional_of_plainModal : ∀ {n : ℕ} (formula : Formula n), formula.pl
     simp only [plainModal, Bool.and_eq_true] at plain
     simp only [Formula.regional, regional_of_plainModal left plain.1, regional_of_plainModal right plain.2,
       Bool.and_self]
-  | _, .possibly _ inner, plain | _, .necessarily _ inner, plain => regional_of_plainModal inner plain
+  | _, .possibly _ inner, plain | _, .necessarily _ inner, plain => by
+    simp only [plainModal, Bool.and_eq_true] at plain
+    simp only [Formula.regional, plain.1, regional_of_plainModal inner plain.2, Bool.and_self]
   | _, .var _, plain | _, .is _, plain | _, .isNot _, plain | _, .empty _, plain | _, .nonEmpty _, plain
   | _, .typed _, plain | _, .untyped _, plain | _, .mu _, plain | _, .nu _, plain | _, .single _ _, plain
   | _, .everySingle _ _, plain | _, .atLeast _ _ _ _, plain | _, .allButFewer _ _ _ _, plain
@@ -110,6 +112,8 @@ theorem sat_iff_of_bisimUpTo : ∀ {n : ℕ} (formula : Formula n), formula.plai
       (sat_iff_of_bisimUpTo right plain.2 k depth.2 env related)
   | _, .possibly _ _, _, 0, depth, _, _, _, _ => absurd depth (by simp [Formula.modalDepth])
   | _, .possibly label inner, plain, k + 1, depth, env, _, _, related => by
+    simp only [Formula.plainModal, Bool.and_eq_true] at plain
+    replace plain := plain.2
     have depth' : inner.modalDepth ≤ k := by simpa [Formula.modalDepth] using depth
     obtain ⟨forth, back⟩ := (S.bisimUpTo_succ_iff).mp related
     constructor
@@ -121,6 +125,8 @@ theorem sat_iff_of_bisimUpTo : ∀ {n : ℕ} (formula : Formula n), formula.plai
       exact ⟨next, step, (sat_iff_of_bisimUpTo inner plain k depth' env related').mpr holds⟩
   | _, .necessarily _ _, _, 0, depth, _, _, _, _ => absurd depth (by simp [Formula.modalDepth])
   | _, .necessarily label inner, plain, k + 1, depth, env, _, _, related => by
+    simp only [Formula.plainModal, Bool.and_eq_true] at plain
+    replace plain := plain.2
     have depth' : inner.modalDepth ≤ k := by simpa [Formula.modalDepth] using depth
     obtain ⟨forth, back⟩ := (S.bisimUpTo_succ_iff).mp related
     constructor
@@ -374,17 +380,21 @@ def decideSomeOf (formula : Formula 0) : Bool := (subsetTerms formula.modalDepth
 /-- **Decide whether every set has a plain modal formula.** -/
 def decideEveryOf (formula : Formula 0) : Bool := (subsetTerms formula.modalDepth).all (decideRegional formula)
 
+/-- A plain modal formula has no context labels. -/
+theorem plain_free (plain : formula.plainModal = true) : formula.contextFree = true :=
+  Formula.contextFree_of_forward formula (Formula.forward_of_regional formula (Formula.regional_of_plainModal formula plain))
+
 theorem decideRegional_iff_extensional (plain : formula.plainModal = true) {term : Pattern} (holds : IsHF term) :
     decideRegional formula term = true ↔ extensional.sat Env.closed formula (zfOf term) :=
   (decideRegional_iff (Formula.regional_of_plainModal formula plain) holds).trans
     (sat_iff_extensional (Formula.forward_of_regional formula (Formula.regional_of_plainModal formula plain)) holds)
 
 /-- **The search for a containing set is exact**, among the hereditary terms. -/
-theorem decideSometimeBefore_iff {label : StepLabel} (plain : formula.plainModal = true) {term : Pattern}
-    (holds : IsHF term) :
+theorem decideSometimeBefore_iff {label : StepLabel} (own : label.isContext = false)
+    (plain : formula.plainModal = true) {term : Pattern} (holds : IsHF term) :
     decideSometimeBefore label formula term = true ↔
       HFNative.sat Env.closed (.sometimeBefore label formula) ⟨term, holds⟩ := by
-  rw [sat_iff_hfSets, sometimeBefore_iff_search plain (d := formula.modalDepth) (Nat.le_succ _)]
+  rw [sat_iff_hfSets _ (by simp only [Formula.contextFree, own, Bool.not_false, Bool.true_and]; exact plain_free plain), sometimeBefore_iff_search plain (d := formula.modalDepth) (Nat.le_succ _)]
   simp only [decideSometimeBefore, Bool.and_eq_true, decide_eq_true_eq, List.any_eq_true]
   refine and_congr Iff.rfl ⟨?_, ?_⟩
   · rintro ⟨part, member, decided⟩
@@ -400,11 +410,11 @@ theorem decideSometimeBefore_iff {label : StepLabel} (plain : formula.plainModal
     exact satisfied
 
 /-- **The search over all containing sets is exact**, among the hereditary terms. -/
-theorem decideAlwaysBefore_iff {label : StepLabel} (plain : formula.plainModal = true) {term : Pattern}
-    (holds : IsHF term) :
+theorem decideAlwaysBefore_iff {label : StepLabel} (own : label.isContext = false)
+    (plain : formula.plainModal = true) {term : Pattern} (holds : IsHF term) :
     decideAlwaysBefore label formula term = true ↔
       HFNative.sat Env.closed (.alwaysBefore label formula) ⟨term, holds⟩ := by
-  rw [sat_iff_hfSets, alwaysBefore_iff_search plain (d := formula.modalDepth) (Nat.le_succ _)]
+  rw [sat_iff_hfSets _ (by simp only [Formula.contextFree, own, Bool.not_false, Bool.true_and]; exact plain_free plain), alwaysBefore_iff_search plain (d := formula.modalDepth) (Nat.le_succ _)]
   simp only [decideAlwaysBefore, Bool.or_eq_true, Bool.not_eq_true', decide_eq_false_iff_not, List.all_eq_true]
   constructor
   · rintro (unlabelled | every) labelled part within
@@ -424,7 +434,7 @@ theorem decideAlwaysBefore_iff {label : StepLabel} (plain : formula.plainModal =
 /-- **The search for a set with the formula is exact.** -/
 theorem decideSomeOf_iff (plain : formula.plainModal = true) {term : Pattern} (holds : IsHF term) :
     decideSomeOf formula = true ↔ HFNative.sat Env.closed (.someOf (.base "Set") formula) ⟨term, holds⟩ := by
-  rw [sat_iff_hfSets, someOf_iff_search plain (d := formula.modalDepth) le_rfl]
+  rw [sat_iff_hfSets _ (by simp only [Formula.contextFree]; exact plain_free plain), someOf_iff_search plain (d := formula.modalDepth) le_rfl]
   simp only [decideSomeOf, List.any_eq_true]
   constructor
   · rintro ⟨part, member, decided⟩
@@ -437,7 +447,7 @@ theorem decideSomeOf_iff (plain : formula.plainModal = true) {term : Pattern} (h
 /-- **The search over all sets is exact.** -/
 theorem decideEveryOf_iff (plain : formula.plainModal = true) {term : Pattern} (holds : IsHF term) :
     decideEveryOf formula = true ↔ HFNative.sat Env.closed (.everyOf (.base "Set") formula) ⟨term, holds⟩ := by
-  rw [sat_iff_hfSets, everyOf_iff_search plain (d := formula.modalDepth) le_rfl]
+  rw [sat_iff_hfSets _ (by simp only [Formula.contextFree]; exact plain_free plain), everyOf_iff_search plain (d := formula.modalDepth) le_rfl]
   simp only [decideEveryOf, List.all_eq_true]
   constructor
   · intro every part within

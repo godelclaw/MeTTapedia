@@ -458,6 +458,8 @@ import Mettapedia.GSLT.LanguageDef.HOLHenkinBiformCanary
 import Mettapedia.GSLT.LanguageDef.BiformTheoryCanary
 import Mettapedia.GSLT.LanguageDef.BiformDependentContext
 import Mettapedia.GSLT.LanguageDef.BiformDependentIdentityCanary
+import Mettapedia.GSLT.Coordination
+import Mettapedia.GSLT.Timing
 
 /-!
 # Graph-Structured Lambda Theories (GSLT)

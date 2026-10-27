@@ -310,7 +310,7 @@ theorem canon_of_object {term : Pattern} (object : IsObject term) : unwrapCanon 
 theorem canon_of_not_object {term : Pattern} (notObject : ¬ IsObject term) : unwrapCanon term = term :=
   if_neg notObject
 
-theorem unwrap_same {first second : Pattern} (equivalent : ObjectEquivalent relEnv wrapped first second) :
+theorem unwrap_same {first second : Pattern} (equivalent : ObjectEquivalent relEnv wrapped .syntax first second) :
     unwrapCanon first = unwrapCanon second := by
   induction equivalent with
   | rel first second step =>
@@ -323,7 +323,7 @@ theorem unwrap_same {first second : Pattern} (equivalent : ObjectEquivalent relE
   | trans _ _ _ _ _ first second => exact first.trans second
 
 /-- `Wrap t` is `t` by one instance of the equation. -/
-theorem unwrap_step {inner : Pattern} (object : IsObject inner) : ObjectStep relEnv wrapped (wrap inner) inner := by
+theorem unwrap_step {inner : Pattern} (object : IsObject inner) : ObjectStep relEnv wrapped .syntax (wrap inner) inner := by
   have instance_ : AuthoredEquation relEnv wrapped (wrap inner)
       (applyBindingsScoped (captureSitesOf (wrap (.fvar "x")) []) [("x", inner)] 0 (.fvar "x")) :=
     AuthoredEquation.forward (equation := unwrapEquation) (initial := [("x", inner)]) (List.mem_singleton_self _)
@@ -339,7 +339,7 @@ theorem fills_apply (name : String) (before after : List Pattern) (pattern : Pat
 
 mutual
 /-- **Every object term is equivalent to its unwrapping.** -/
-theorem unwrap_equivalent : ∀ term : Pattern, IsObject term → ObjectEquivalent relEnv wrapped term (unwrap term)
+theorem unwrap_equivalent : ∀ term : Pattern, IsObject term → ObjectEquivalent relEnv wrapped .syntax term (unwrap term)
   | .bvar _, _ => Relation.EqvGen.refl _
   | .fvar _, _ => Relation.EqvGen.refl _
   | .apply _ [], _ => Relation.EqvGen.refl _
@@ -392,7 +392,7 @@ theorem unwrap_equivalent : ∀ term : Pattern, IsObject term → ObjectEquivale
       exact congr
 
 theorem unwrapList_equivalent : ∀ patterns : List Pattern, isObjectPatternList patterns = true →
-    ∀ pattern ∈ patterns, ObjectEquivalent relEnv wrapped pattern (unwrap pattern)
+    ∀ pattern ∈ patterns, ObjectEquivalent relEnv wrapped .syntax pattern (unwrap pattern)
   | [], _ => fun _ member => nomatch member
   | pattern :: patterns, objects => by
     simp only [isObjectPatternList, Bool.and_eq_true] at objects
@@ -407,8 +407,9 @@ end
 /-- The domain of the canonical forms: object terms. -/
 def unwrapDomain (term : Pattern) : Bool := isObjectPattern term
 
-/-- **Removing `Wrap` gives canonical forms for the equation** on object terms. -/
-theorem unwrap_canonical (relEnv : RelationEnv) : Canonical relEnv wrapped unwrapCanon unwrapDomain where
+/-- **Removing `Wrap` gives canonical forms for the equation** on object terms, read off them. -/
+theorem unwrap_canonicalDetermined (relEnv : RelationEnv) :
+    CanonicalDetermined relEnv wrapped unwrapCanon unwrapDomain where
   object admitted := admitted
   determined term := by
     by_cases object : IsObject term
@@ -422,6 +423,10 @@ theorem unwrap_canonical (relEnv : RelationEnv) : Canonical relEnv wrapped unwra
   closed object := by
     rw [canon_of_object object]
     exact unwrap_scoped _ 0
+
+/-- **Removing `Wrap` gives canonical forms for the equation** on object terms. -/
+theorem unwrap_canonical (relEnv : RelationEnv) : Canonical relEnv wrapped unwrapCanon unwrapDomain :=
+  (unwrap_canonicalDetermined relEnv).canonical
 
 /-! ## Coherence by simulation -/
 

@@ -74,43 +74,99 @@ def SplitsRealized (S : NativeStructure system.Term) (spatial : SpatialTheory sy
     (∀ whole first second, S.split whole (kindOf index) first second ↔ spatial.Split index whole first second) ∧
       SplitsRealized S spatial left ∧ SplitsRealized S spatial right
 
+/-- **The formula's atoms are among the covered tests.** -/
+def AtomsCovered (covered : Leaf → Prop) : Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Leaf → Prop
+  | .atom leaf => covered leaf
+  | .top | .bottom => True
+  | .conj left right | .disj left right | .imp left right | .separating _ left right =>
+    AtomsCovered covered left ∧ AtomsCovered covered right
+  | .neg inner | .possibility inner | .outgoingUniversal inner => AtomsCovered covered inner
+
+theorem atomsCovered_all : ∀ (formula : Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Leaf),
+    AtomsCovered (fun _ => True) formula
+  | .atom _ | .top | .bottom => trivial
+  | .conj left right | .disj left right | .imp left right | .separating _ left right =>
+    ⟨atomsCovered_all left, atomsCovered_all right⟩
+  | .neg inner | .possibility inner | .outgoingUniversal inner => atomsCovered_all inner
+
+/-- **The structure realizes the separating conjunctions a formula uses on a region**: at the region's elements the
+splits of each kind used are the spatial theory's splits at the index, and their parts stay in the region. -/
+def SplitsRealizedOn (region : system.Term → Prop) (S : NativeStructure system.Term) (spatial : SpatialTheory system) :
+    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Leaf → Prop
+  | .atom _ | .top | .bottom => True
+  | .conj left right | .disj left right | .imp left right =>
+    SplitsRealizedOn region S spatial left ∧ SplitsRealizedOn region S spatial right
+  | .neg inner | .possibility inner | .outgoingUniversal inner => SplitsRealizedOn region S spatial inner
+  | .separating index left right =>
+    (∀ whole, region whole → ∀ first second,
+      (S.split whole (kindOf index) first second ↔ spatial.Split index whole first second)) ∧
+    (∀ whole first second, region whole → spatial.Split index whole first second → region first ∧ region second) ∧
+      SplitsRealizedOn region S spatial left ∧ SplitsRealizedOn region S spatial right
+
+/-- Realized everywhere, realized on every region where the theory's splits stay. -/
+theorem SplitsRealized.on {S : NativeStructure system.Term} {spatial : SpatialTheory system} :
+    ∀ {formula : Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Leaf},
+      SplitsRealized kindOf S spatial formula → SplitsRealizedOn kindOf (fun _ => True) S spatial formula
+  | .atom _, _ | .top, _ | .bottom, _ => trivial
+  | .conj left right, realized | .disj left right, realized | .imp left right, realized =>
+    ⟨SplitsRealized.on (formula := left) realized.1, SplitsRealized.on (formula := right) realized.2⟩
+  | .neg inner, realized | .possibility inner, realized | .outgoingUniversal inner, realized =>
+    SplitsRealized.on (formula := inner) realized
+  | .separating _ left right, realized =>
+    ⟨fun whole _ first second => realized.1 whole first second, fun _ _ _ _ _ => ⟨trivial, trivial⟩,
+      SplitsRealized.on (formula := left) realized.2.1, SplitsRealized.on (formula := right) realized.2.2⟩
+
 variable {positive negative kindOf}
 
-/-- **Front-door formulas embed exactly**, at both polarities, over a structure with the GSLT's steps
-and the spatial theory's splits. -/
-theorem sat_ofCore {admitted : system.Term → Prop} (tests : Leaf → Test system admitted)
-    (spatial : SpatialTheory system) {S : NativeStructure system.Term}
-    (steps : ∀ source target, S.step source .any target ↔ system.Step source target) {env : Env system.Term m}
-    (onPositive : ∀ leaf term, term ∈ env (positive leaf) ↔ (tests leaf).predicate.1 term)
-    (onNegative : ∀ leaf term, term ∈ env (negative leaf) ↔ ¬ (tests leaf).predicate.1 term) :
+/-- **Front-door formulas embed exactly on a region closed under steps**, at both polarities, over a structure whose
+steps from the region are the GSLT's and whose splits there are the spatial theory's. -/
+theorem sat_ofCore_on {admitted : system.Term → Prop} (tests : Leaf → Test system admitted)
+    (spatial : SpatialTheory system) {S : NativeStructure system.Term} (region : system.Term → Prop)
+    (covered : Leaf → Prop)
+    (steps : ∀ source, region source → ∀ target, (S.step source .any target ↔ system.Step source target))
+    (closed : ∀ source target, region source → system.Step source target → region target) {env : Env system.Term m}
+    (onPositive : ∀ leaf, covered leaf → ∀ term, region term →
+      (term ∈ env (positive leaf) ↔ (tests leaf).predicate.1 term))
+    (onNegative : ∀ leaf, covered leaf → ∀ term, region term →
+      (term ∈ env (negative leaf) ↔ ¬ (tests leaf).predicate.1 term)) :
     ∀ (formula : Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Leaf) (polarity : Bool),
-      SplitsRealized kindOf S spatial formula → ∀ term,
+      AtomsCovered covered formula → SplitsRealizedOn kindOf region S spatial formula → ∀ term, region term →
         (S.sat env (ofCore positive negative kindOf polarity formula) term ↔
           cond polarity ((denotation tests formula spatial).1 term) (¬ (denotation tests formula spatial).1 term))
-  | .atom leaf, polarity, _, term => by
+  | .atom leaf, polarity, atoms, _, term, inside => by
     cases polarity
-    · exact onNegative leaf term
-    · exact onPositive leaf term
-  | .top, polarity, _, _ => by cases polarity <;> simp [ofCore, NativeStructure.sat, denotation]
-  | .bottom, polarity, _, _ => by cases polarity <;> simp [ofCore, NativeStructure.sat, denotation]
-  | .conj left right, polarity, realized, term => by
-    have first := fun polarity => sat_ofCore tests spatial steps onPositive onNegative left polarity realized.1 term
-    have second := fun polarity => sat_ofCore tests spatial steps onPositive onNegative right polarity realized.2 term
+    · exact onNegative leaf atoms term inside
+    · exact onPositive leaf atoms term inside
+  | .top, polarity, _, _, _, _ => by cases polarity <;> simp [ofCore, NativeStructure.sat, denotation]
+  | .bottom, polarity, _, _, _, _ => by cases polarity <;> simp [ofCore, NativeStructure.sat, denotation]
+  | .conj left right, polarity, atoms, realized, term, inside => by
+    have first := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        left polarity atoms.1 realized.1 term inside
+    have second := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        right polarity atoms.2 realized.2 term inside
     cases polarity
     · simp only [ofCore, NativeStructure.sat, first false, second false, cond]
       exact not_and_or.symm
     · simp only [ofCore, NativeStructure.sat, first true, second true, cond]
       rfl
-  | .disj left right, polarity, realized, term => by
-    have first := fun polarity => sat_ofCore tests spatial steps onPositive onNegative left polarity realized.1 term
-    have second := fun polarity => sat_ofCore tests spatial steps onPositive onNegative right polarity realized.2 term
+  | .disj left right, polarity, atoms, realized, term, inside => by
+    have first := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        left polarity atoms.1 realized.1 term inside
+    have second := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        right polarity atoms.2 realized.2 term inside
     cases polarity
     · simp only [ofCore, NativeStructure.sat, first false, second false, cond]
       exact not_or.symm
     · simp only [ofCore, NativeStructure.sat, first true, second true, cond]
       rfl
-  | .neg inner, polarity, realized, term => by
-    have holds := fun polarity => sat_ofCore tests spatial steps onPositive onNegative inner polarity realized term
+  | .neg inner, polarity, atoms, realized, term, inside => by
+    have holds := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        inner polarity atoms realized term inside
     cases polarity
     · rw [show ofCore positive negative kindOf false (.neg inner) = ofCore positive negative kindOf true inner from rfl,
         holds true]
@@ -118,52 +174,125 @@ theorem sat_ofCore {admitted : system.Term → Prop} (tests : Leaf → Test syst
     · rw [show ofCore positive negative kindOf true (.neg inner) = ofCore positive negative kindOf false inner from rfl,
         holds false]
       rfl
-  | .imp premise conclusion, polarity, realized, term => by
-    have first := fun polarity => sat_ofCore tests spatial steps onPositive onNegative premise polarity realized.1 term
-    have second := fun polarity => sat_ofCore tests spatial steps onPositive onNegative conclusion polarity realized.2 term
+  | .imp premise conclusion, polarity, atoms, realized, term, inside => by
+    have first := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        premise polarity atoms.1 realized.1 term inside
+    have second := fun polarity =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        conclusion polarity atoms.2 realized.2 term inside
     cases polarity
     · simp only [ofCore, NativeStructure.sat, first true, second false, cond]
       exact Classical.not_imp.symm
     · simp only [ofCore, NativeStructure.sat, first false, second true, cond]
       exact imp_iff_not_or.symm
-  | .possibility inner, polarity, realized, term => by
-    have holds := fun polarity next => sat_ofCore tests spatial steps onPositive onNegative inner polarity realized next
+  | .possibility inner, polarity, atoms, realized, term, inside => by
+    have holds := fun polarity next (nextInside : region next) =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        inner polarity atoms realized next nextInside
     have diamond := gsltDiamond_spec system (denotation tests inner spatial).1 term
     cases polarity
     · change (∀ next, S.step term .any next → S.sat env (ofCore positive negative kindOf false inner) next) ↔
         ¬ Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond system (denotation tests inner spatial).1 term
       rw [diamond]
-      simp only [holds false, steps, cond, not_exists, not_and]
+      constructor
+      · rintro every ⟨next, stepped, holdsAt⟩
+        exact (holds false next (closed term next inside stepped)).mp
+          (every next ((steps term inside next).mpr stepped)) holdsAt
+      · intro none next step
+        have stepped := (steps term inside next).mp step
+        exact (holds false next (closed term next inside stepped)).mpr fun holdsAt => none ⟨next, stepped, holdsAt⟩
     · change (∃ next, S.step term .any next ∧ S.sat env (ofCore positive negative kindOf true inner) next) ↔
         Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond system (denotation tests inner spatial).1 term
       rw [diamond]
-      simp only [holds true, steps, cond]
-  | .outgoingUniversal inner, polarity, realized, term => by
-    have holds := fun polarity next => sat_ofCore tests spatial steps onPositive onNegative inner polarity realized next
+      constructor
+      · rintro ⟨next, step, holdsAt⟩
+        have stepped := (steps term inside next).mp step
+        exact ⟨next, stepped, (holds true next (closed term next inside stepped)).mp holdsAt⟩
+      · rintro ⟨next, stepped, holdsAt⟩
+        exact ⟨next, (steps term inside next).mpr stepped, (holds true next (closed term next inside stepped)).mpr holdsAt⟩
+  | .outgoingUniversal inner, polarity, atoms, realized, term, inside => by
+    have holds := fun polarity next (nextInside : region next) =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        inner polarity atoms realized next nextInside
     cases polarity
     · change (∃ next, S.step term .any next ∧ S.sat env (ofCore positive negative kindOf false inner) next) ↔
         ¬ ∀ next, system.Step term next → (denotation tests inner spatial).1 next
-      simp only [holds false, steps, cond, not_forall, exists_prop]
+      constructor
+      · rintro ⟨next, step, holdsAt⟩ every
+        have stepped := (steps term inside next).mp step
+        exact (holds false next (closed term next inside stepped)).mp holdsAt (every next stepped)
+      · intro notEvery
+        obtain ⟨next, stepped, fails⟩ : ∃ next, system.Step term next ∧ ¬ (denotation tests inner spatial).1 next := by
+          by_contra none
+          exact notEvery fun next stepped => by_contra fun fails => none ⟨next, stepped, fails⟩
+        exact ⟨next, (steps term inside next).mpr stepped, (holds false next (closed term next inside stepped)).mpr fails⟩
     · change (∀ next, S.step term .any next → S.sat env (ofCore positive negative kindOf true inner) next) ↔
         ∀ next, system.Step term next → (denotation tests inner spatial).1 next
-      simp only [holds true, steps, cond]
-  | .separating index left right, polarity, realized, term => by
-    have first := fun polarity part => sat_ofCore tests spatial steps onPositive onNegative left polarity realized.2.1 part
-    have second := fun polarity part =>
-      sat_ofCore tests spatial steps onPositive onNegative right polarity realized.2.2 part
+      constructor
+      · intro every next stepped
+        exact (holds true next (closed term next inside stepped)).mp (every next ((steps term inside next).mpr stepped))
+      · intro every next step
+        have stepped := (steps term inside next).mp step
+        exact (holds true next (closed term next inside stepped)).mpr (every next stepped)
+  | .separating index left right, polarity, atoms, realized, term, inside => by
+    have first := fun polarity part (partInside : region part) =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        left polarity atoms.1 realized.2.2.1 part partInside
+    have second := fun polarity part (partInside : region part) =>
+      sat_ofCore_on tests spatial region covered steps closed onPositive onNegative
+        right polarity atoms.2 realized.2.2.2 part partInside
+    have splits := realized.1 term inside
+    have parts := fun firstPart secondPart => realized.2.1 term firstPart secondPart inside
     cases polarity
     · change (∀ firstPart secondPart, S.split term (kindOf index) firstPart secondPart →
           S.sat env (ofCore positive negative kindOf false left) firstPart ∨
             S.sat env (ofCore positive negative kindOf false right) secondPart) ↔
         ¬ ∃ firstPart secondPart, spatial.Split index term firstPart secondPart ∧
           (denotation tests left spatial).1 firstPart ∧ (denotation tests right spatial).1 secondPart
-      simp only [first false, second false, realized.1, cond, not_exists, not_and, ← not_and_or]
+      constructor
+      · rintro every ⟨firstPart, secondPart, split, holdsLeft, holdsRight⟩
+        obtain ⟨leftInside, rightInside⟩ := parts firstPart secondPart split
+        rcases every firstPart secondPart ((splits firstPart secondPart).mpr split) with fails | fails
+        · exact (first false firstPart leftInside).mp fails holdsLeft
+        · exact (second false secondPart rightInside).mp fails holdsRight
+      · intro none firstPart secondPart split
+        have split' := (splits firstPart secondPart).mp split
+        obtain ⟨leftInside, rightInside⟩ := parts firstPart secondPart split'
+        by_cases holdsLeft : (denotation tests left spatial).1 firstPart
+        · exact .inr ((second false secondPart rightInside).mpr fun holdsRight =>
+            none ⟨firstPart, secondPart, split', holdsLeft, holdsRight⟩)
+        · exact .inl ((first false firstPart leftInside).mpr holdsLeft)
     · change (∃ firstPart secondPart, S.split term (kindOf index) firstPart secondPart ∧
           S.sat env (ofCore positive negative kindOf true left) firstPart ∧
             S.sat env (ofCore positive negative kindOf true right) secondPart) ↔
         ∃ firstPart secondPart, spatial.Split index term firstPart secondPart ∧
           (denotation tests left spatial).1 firstPart ∧ (denotation tests right spatial).1 secondPart
-      simp only [first true, second true, realized.1, cond]
+      constructor
+      · rintro ⟨firstPart, secondPart, split, holdsLeft, holdsRight⟩
+        have split' := (splits firstPart secondPart).mp split
+        obtain ⟨leftInside, rightInside⟩ := parts firstPart secondPart split'
+        exact ⟨firstPart, secondPart, split', (first true firstPart leftInside).mp holdsLeft,
+          (second true secondPart rightInside).mp holdsRight⟩
+      · rintro ⟨firstPart, secondPart, split', holdsLeft, holdsRight⟩
+        obtain ⟨leftInside, rightInside⟩ := parts firstPart secondPart split'
+        exact ⟨firstPart, secondPart, (splits firstPart secondPart).mpr split',
+          (first true firstPart leftInside).mpr holdsLeft, (second true secondPart rightInside).mpr holdsRight⟩
+
+/-- **Front-door formulas embed exactly**, at both polarities, over a structure with the GSLT's steps
+and the spatial theory's splits. -/
+theorem sat_ofCore {admitted : system.Term → Prop} (tests : Leaf → Test system admitted)
+    (spatial : SpatialTheory system) {S : NativeStructure system.Term}
+    (steps : ∀ source target, S.step source .any target ↔ system.Step source target) {env : Env system.Term m}
+    (onPositive : ∀ leaf term, term ∈ env (positive leaf) ↔ (tests leaf).predicate.1 term)
+    (onNegative : ∀ leaf term, term ∈ env (negative leaf) ↔ ¬ (tests leaf).predicate.1 term)
+    (formula : Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Leaf) (polarity : Bool)
+    (realized : SplitsRealized kindOf S spatial formula) (term : system.Term) :
+    S.sat env (ofCore positive negative kindOf polarity formula) term ↔
+      cond polarity ((denotation tests formula spatial).1 term) (¬ (denotation tests formula spatial).1 term) :=
+  sat_ofCore_on tests spatial (fun _ => True) (fun _ => True) (fun source _ target => steps source target)
+    (fun _ _ _ _ => trivial) (fun leaf _ term _ => onPositive leaf term) (fun leaf _ term _ => onNegative leaf term)
+    formula polarity (atomsCovered_all formula) realized.on term trivial
 
 end FrontDoor
 

@@ -698,7 +698,7 @@ theorem helper_call (program : Program) (agreement : ProgramAgreementOn ownedHea
     helper.head arguments (queryEquation helper).body answer
     (by cases helper <;> decide) (by cases helper <;> decide) (by cases helper <;> decide) _ _ _ returned
   · rw [← agreement.dispatch helper.head (helper_supported helper)]
-    exact query_dispatch helper
+    exact query_registered helper
   · intro index bounded
     apply helper_raw program agreement helper index
     have same : arguments.length = values.length := by simpa using congrArg List.length captured

@@ -676,3 +676,7 @@ lean_exe candidateBindingEquations where
 
 lean_exe rhoCandidateServices where
   root := `Mettapedia.Languages.MeTTa.PrimeComparisons.Rho.CheckCandidateServices
+
+lean_exe oslf where
+  root := `Mettapedia.OSLF.NativeTypes.Product.Main
+  supportInterpreter := true

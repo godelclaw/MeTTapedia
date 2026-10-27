@@ -186,13 +186,13 @@ private theorem rhoDerivedInstance_canonicalize_eq
   cases derived with
   | bagPerm _ _ permutation =>
       exact canonicalize_bag_perm permutation
-  | setPerm declaration _ _ =>
+  | setPerm declaration typed _ =>
       have usesSets :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       exact absurd usesSets (by decide)
-  | setDedup declaration _ =>
+  | setDedup declaration typed =>
       have usesSets :=
-        usesCollection_eq_true_of_collectionCarrierRule declaration
+        usesCollection_eq_true_of_collectionTypedAt declaration typed
       exact absurd usesSets (by decide)
   | @flatten rule kind algebra pre inner post algebraRule _ _ =>
       obtain ⟨rfl, _, _⟩ := rhoAlgebraRule_shape algebraRule

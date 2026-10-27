@@ -43,6 +43,7 @@ def behavioural : {n : ℕ} → Formula n → Bool
 theorem behavioural_dual : ∀ {n : ℕ} (formula : Formula n), (dual formula).behavioural = formula.behavioural
   | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _
   | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ | _, .mapsAll _ _ | _, .mapsSome _ _
+  | _, .inRelation _ | _, .notInRelation _
   | _, .split _ _ _ | _, .everySplit _ _ _ | _, .single _ _ | _, .everySingle _ _ | _, .body _
   | _, .everyBody _ | _, .multiBody _ _ | _, .everyMultiBody _ _ | _, .someOf _ _ | _, .everyOf _ _
   | _, .built _ _ | _, .everyBuilt _ _ | _, .atLeast _ _ _ _ | _, .allButFewer _ _ _ _ => by
@@ -216,6 +217,7 @@ theorem sat_of_bisimilar : ∀ {n : ℕ} (formula : Formula n), formula.behaviou
   | _, .bound _, behavioural, _, _, _, _, _, _ | _, .notBound _, behavioural, _, _, _, _, _, _
   | _, .typed _, behavioural, _, _, _, _, _, _ | _, .untyped _, behavioural, _, _, _, _, _, _
   | _, .is _, behavioural, _, _, _, _, _, _ | _, .isNot _, behavioural, _, _, _, _, _, _
+  | _, .inRelation _, behavioural, _, _, _, _, _, _ | _, .notInRelation _, behavioural, _, _, _, _, _, _
   | _, .mapsAll _ _, behavioural, _, _, _, _, _, _ | _, .mapsSome _ _, behavioural, _, _, _, _, _, _
   | _, .someOf _ _, behavioural, _, _, _, _, _, _ | _, .everyOf _ _, behavioural, _, _, _, _, _, _ => by
     simp [Formula.behavioural] at behavioural
@@ -391,11 +393,11 @@ open Mettapedia.GSLT.LanguageDef.WellSorted (OpenPatternWellSorted FreeTypeConte
 
 /-- **A language's states agree on every closed formula exactly when they are equal modulo its
 equations.** -/
-theorem agree_iff_objectEquivalent (relEnv : RelationEnv) (language : LanguageDef) {first second : Pattern}
-    (firstState : IsState first) (secondState : IsState second) :
-    (∀ formula : Formula 0, (referenceStructure relEnv language).sat Env.closed formula first ↔
-      (referenceStructure relEnv language).sat Env.closed formula second) ↔
-        ObjectEquivalent relEnv language first second := by
+theorem agree_iff_objectEquivalent (relEnv : RelationEnv) (language : LanguageDef) {reading : LanguageReading}
+    {first second : Pattern} (firstState : IsState first) (secondState : IsState second) :
+    (∀ formula : Formula 0, (referenceStructure relEnv language reading).sat Env.closed formula first ↔
+      (referenceStructure relEnv language reading).sat Env.closed formula second) ↔
+        ObjectEquivalent relEnv language reading first second := by
   constructor
   · intro agree
     obtain ⟨-, equivalent⟩ := (agree (.is first)).mp ⟨firstState.2, Relation.EqvGen.refl _⟩
@@ -405,13 +407,13 @@ theorem agree_iff_objectEquivalent (relEnv : RelationEnv) (language : LanguageDe
 
 /-- **The same for the formulas the language generates**, at well-sorted states: the singleton type of
 a well-sorted state is generated. -/
-theorem generated_agree_iff_objectEquivalent (relEnv : RelationEnv) (language : LanguageDef) {first second : Pattern}
-    (firstState : IsState first) (secondState : IsState second)
+theorem generated_agree_iff_objectEquivalent (relEnv : RelationEnv) (language : LanguageDef)
+    {reading : LanguageReading} {first second : Pattern} (firstState : IsState first) (secondState : IsState second)
     (wellSorted : ∃ type, OpenPatternWellSorted language FreeTypeContext.empty [] type first) :
     (∀ formula : Formula 0, GeneratedBy language formula →
-      ((referenceStructure relEnv language).sat Env.closed formula first ↔
-        (referenceStructure relEnv language).sat Env.closed formula second)) ↔
-        ObjectEquivalent relEnv language first second := by
+      ((referenceStructure relEnv language reading).sat Env.closed formula first ↔
+        (referenceStructure relEnv language reading).sat Env.closed formula second)) ↔
+        ObjectEquivalent relEnv language reading first second := by
   constructor
   · intro agree
     obtain ⟨-, equivalent⟩ := (agree (.is first) wellSorted).mp ⟨firstState.2, Relation.EqvGen.refl _⟩

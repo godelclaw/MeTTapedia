@@ -181,3 +181,182 @@ theorem normalized_stable (mode : Normalized.Commit := .standard) : Stable (Norm
 end Classes
 
 end Mettapedia.OSLF.MeTTaIL.Complete.Settled
+
+
+namespace Mettapedia.OSLF.MeTTaIL.Complete.Settled
+
+open Mettapedia.Machines.ResumableSearchRunner (Search Status)
+open Mettapedia.OSLF.MeTTaIL.Complete.Explore (Node Explorer expand step explore Explored)
+
+variable {σ Run Receipt : Type} [DecidableEq σ] {S : Search σ Run Receipt}
+
+private theorem persist_more (source : σ) (work more : Nat)
+    (node : Node σ Run Receipt) (present : node ∈ (explore S source work).nodes) :
+    ∃ later ∈ (explore S source (work + more)).nodes,
+      later.state = node.state ∧ later.born = node.born := by
+  induction more with
+  | zero => exact ⟨node, present, rfl, rfl⟩
+  | succ more ih =>
+      obtain ⟨later, inside, same, born⟩ := ih
+      obtain ⟨next, nextInside, nextSame, nextBorn⟩ := Explore.nodes_persist source _ later inside
+      exact ⟨next, by simpa only [Nat.add_assoc] using nextInside,
+        nextSame.trans same, nextBorn.trans born⟩
+
+private theorem fresh_unseen (seen : List σ) (children : List (Node σ Run Receipt))
+    (node : Node σ Run Receipt) (present : node ∈ Explore.fresh seen children) : node.state ∉ seen := by
+  induction children generalizing seen with
+  | nil => cases present
+  | cons child children ih =>
+      simp only [Explore.fresh] at present
+      split at present
+      · exact ih seen present
+      · rename_i unknown
+        rcases List.mem_cons.mp present with rfl | remaining
+        · exact unknown
+        · intro known
+          exact ih (child.state :: seen) remaining (List.mem_cons_of_mem _ known)
+
+private theorem finite_discovery_cutoff (source : σ) (carrier : List σ) :
+    ∃ cutoff, ∀ state ∈ carrier, Explored (S := S) source state →
+      ∃ node ∈ (explore S source cutoff).nodes, node.state = state := by
+  classical
+  induction carrier with
+  | nil => exact ⟨0, by intro state member; cases member⟩
+  | cons state carrier ih =>
+      obtain ⟨cutoff, covered⟩ := ih
+      by_cases reached : Explored (S := S) source state
+      · obtain ⟨round, node, present, same⟩ := reached
+        refine ⟨round + cutoff, ?_⟩
+        intro target member explored
+        rcases List.mem_cons.mp member with rfl | inside
+        · obtain ⟨later, laterInside, laterSame, _⟩ := persist_more source round cutoff node present
+          exact ⟨later, laterInside, laterSame.trans same⟩
+        · obtain ⟨old, oldInside, oldSame⟩ := covered target inside explored
+          obtain ⟨later, laterInside, laterSame, _⟩ := persist_more source cutoff round old oldInside
+          exact ⟨later, by simpa only [Nat.add_comm cutoff round] using laterInside,
+            laterSame.trans oldSame⟩
+      · refine ⟨cutoff, ?_⟩
+        intro target member explored
+        rcases List.mem_cons.mp member with rfl | inside
+        · exact False.elim (reached explored)
+        · exact covered target inside explored
+
+omit [DecidableEq σ] in
+private theorem complete_later (lawful : S.Lawful) (stable : Stable S)
+    (source : σ) (first extra : Nat) (done : S.status (S.run source first) = .complete) :
+    S.status (S.run source (first + extra)) = .complete := by
+  rw [← lawful.resume_run]
+  exact (stable _ extra done).2
+
+omit [DecidableEq σ] in
+private theorem uniform_local_finish (lawful : S.Lawful) (stable : Stable S)
+    (carrier : List σ) (drains : ∀ state ∈ carrier, ∃ work, S.status (S.run state work) = .complete) :
+    ∃ work, ∀ state ∈ carrier, S.status (S.run state work) = .complete := by
+  induction carrier with
+  | nil => exact ⟨0, by intro state member; cases member⟩
+  | cons state carrier ih =>
+      obtain ⟨first, done⟩ := drains state List.mem_cons_self
+      obtain ⟨later, restDone⟩ := ih (fun target member => drains target (List.mem_cons_of_mem _ member))
+      refine ⟨first + later, ?_⟩
+      intro target member
+      rcases List.mem_cons.mp member with rfl | inside
+      · exact complete_later lawful stable target first later done
+      · simpa only [Nat.add_comm later first] using
+          complete_later lawful stable target later first (restDone target inside)
+
+/-- A finite state carrier and genuine local drainage suffice for the actual
+explorer to settle. Receipts to old states remain in their source runs. The
+conclusion makes no claim about unfolded histories through graph cycles. -/
+theorem eventually_settled_of_finite_carrier (lawful : S.Lawful) (stable : Stable S)
+    (source : σ) (carrier : List σ)
+    (within : ∀ work, ∀ node ∈ (explore S source work).nodes, node.state ∈ carrier)
+    (drains : ∀ state ∈ carrier, ∃ work, S.status (S.run state work) = .complete) :
+    ∃ work, settled S (explore S source work) = true := by
+  obtain ⟨cutoff, covered⟩ := finite_discovery_cutoff (S := S) source carrier
+  have allCovered : ∀ state, Explored (S := S) source state →
+      ∃ node ∈ (explore S source cutoff).nodes, node.state = state := by
+    intro state reached
+    obtain ⟨work, node, present, same⟩ := reached
+    exact covered state (same ▸ within work node present) ⟨work, node, present, same⟩
+  have bornBound : ∀ extra, ∀ node ∈ (explore S source (cutoff + extra)).nodes, node.born ≤ cutoff := by
+    intro extra
+    induction extra with
+    | zero =>
+        intro node present
+        simpa only [Nat.add_zero, Explore.explore_round] using
+          (Explore.explore_good lawful source cutoff).born node present
+    | succ extra ih =>
+        intro node present
+        change node ∈ (step S (explore S source (cutoff + extra))).nodes at present
+        simp only [step, List.mem_append] at present
+        rcases present with old | fresh
+        · obtain ⟨pair, pairInside, rfl⟩ := List.mem_map.mp old
+          obtain ⟨earlier, earlierInside, rfl⟩ := List.mem_map.mp pairInside
+          exact ih earlier earlierInside
+        · have inNext : node ∈ (explore S source (cutoff + extra + 1)).nodes := by
+            exact List.mem_append_right _ fresh
+          obtain ⟨early, earlyInside, earlySame⟩ := allCovered node.state ⟨_, node, inNext, rfl⟩
+          obtain ⟨now, nowInside, nowSame, _⟩ := persist_more source cutoff extra early earlyInside
+          have known : node.state ∈
+              (((explore S source (cutoff + extra)).nodes.map (expand S (explore S source (cutoff + extra)).round)).map Prod.fst).map (·.state) := by
+            refine List.mem_map.mpr ⟨(expand S (explore S source (cutoff + extra)).round now).1, ?_, ?_⟩
+            · exact List.mem_map_of_mem (List.mem_map_of_mem nowInside)
+            · exact nowSame.trans earlySame
+          exact False.elim (fresh_unseen _ _ node fresh known)
+  obtain ⟨budget, finished⟩ := uniform_local_finish lawful stable carrier drains
+  refine ⟨cutoff + budget + 1, List.all_eq_true.mpr ?_⟩
+  intro node present
+  have good := Explore.explore_good lawful source (cutoff + budget + 1)
+  have born : node.born ≤ cutoff := by
+    apply bornBound (budget + 1) node
+    simpa only [Nat.add_assoc] using present
+  have enough : budget ≤ (explore S source (cutoff + budget + 1)).round - node.born := by
+    rw [Explore.explore_round]
+    omega
+  obtain ⟨more, total⟩ := Nat.exists_eq_add_of_le enough
+  have done := complete_later lawful stable node.state budget more (finished node.state (within _ node present))
+  rw [← total, ← good.run node present] at done
+  simp only [nodeSettled, Bool.and_eq_true, beq_iff_eq]
+  refine ⟨done, good.expanded node present ?_⟩
+  rw [Explore.explore_round]
+  omega
+
+omit [DecidableEq σ] in
+private theorem history_head_within (carrier : List σ)
+    (closed : ∀ state ∈ carrier, ∀ receipt, S.Valid state receipt → S.target receipt ∈ carrier)
+    (source : σ) (initial : source ∈ carrier)
+    {states : List σ} {receipts : List Receipt}
+    (history : Mettapedia.Machines.ResumableSearchRunner.History S states receipts) :
+    ∀ current, states.head? = some current → states.getLast? = some source → current ∈ carrier := by
+  induction history with
+  | start first =>
+      intro current head last
+      have same : first = current := by simpa only [List.head?_cons, Option.some.injEq] using head
+      have origin : first = source := by simpa only [List.getLast?_singleton, Option.some.injEq] using last
+      exact (same.symm.trans origin) ▸ initial
+  | @commit state states receipts receipt history valid ih =>
+      intro current head last
+      have priorLast : (state :: states).getLast? = some source := by
+        simpa only [List.getLast?_cons_cons] using last
+      have known := ih state rfl priorLast
+      have same : S.target receipt = current := by
+        simpa only [List.head?_cons, Option.some.injEq] using head
+      exact same ▸ closed state known receipt valid
+
+/-- Closure under actual valid receipts supplies the finite carrier premise
+of the explorer drainage theorem. No discovery-tree edge is discarded. -/
+theorem eventually_settled_of_closed_carrier (lawful : S.Lawful) (stable : Stable S)
+    (source : σ) (carrier : List σ) (initial : source ∈ carrier)
+    (closed : ∀ state ∈ carrier, ∀ receipt, S.Valid state receipt → S.target receipt ∈ carrier)
+    (drains : ∀ state ∈ carrier, ∃ work, S.status (S.run state work) = .complete) :
+    ∃ work, settled S (explore S source work) = true := by
+  apply eventually_settled_of_finite_carrier lawful stable source carrier _ drains
+  intro work node present
+  obtain ⟨history, head, last⟩ := Explore.node_chain lawful source work node present
+  exact history_head_within carrier closed source initial history node.state head last
+
+#print axioms eventually_settled_of_closed_carrier
+
+#print axioms eventually_settled_of_finite_carrier
+
+end Mettapedia.OSLF.MeTTaIL.Complete.Settled

@@ -8,7 +8,7 @@ A certificate has two parts: a finite model, which selects the native types that
 preorder, which says how they move. Both can be found by computation, and every result is checked by
 the same verdicts as a hand-written certificate, so the search itself carries no proof obligation.
 
-- **The preorder from the model** (`abstractBelow`): the reflexive-transitive closure of the rules'
+- **The preorder from the model** (`abstractClosure`, read by `belowIn`): the reflexive-transitive closure of the rules'
   abstract steps under every table, closed under the declared congruence sites. A certificate from a
   model (`Certificate.ofModel`) needs only the model.
 - **Models as cells.** A signature lists what a model interprets (`Slot`): constructors with their
@@ -29,7 +29,7 @@ the same verdicts as a hand-written certificate, so the search itself carries no
   nothing up to renaming the values.
 - **The contextual semantics** (`Semantics.contextual`): a rule with congruence premises forces its
   step once the pairs its premises need are in the relation, so the preorder is a least fixed point
-  (`contextualBelow`, `Certificate.ofContextualCells`), and the finder searches for it the same way,
+  (`contextualRelation`, `Certificate.ofContextualCells`), and the finder searches for it the same way,
   assigning only the cells of steps whose premises already hold.
 -/
 
@@ -78,11 +78,14 @@ def closeRounds (sites : List Site) : ℕ → List (A × A) → List (A × A)
       let next := closeOnce elements model sites relation
       if next.length == relation.length then relation else closeRounds sites rounds next
 
-/-- **The preorder from the model**: the least relation the rules and sites force, read reflexively. -/
-def abstractBelow (language : LanguageDef) (sites : List Site) : A → A → Bool :=
-  let closure := closeRounds elements model sites (elements.length * elements.length + 1)
-    (ruleSteps elements model language).dedup
-  fun first second => first == second || (first, second) ∈ closure
+/-- The least relation the rules and sites force. -/
+def abstractClosure (language : LanguageDef) (sites : List Site) : List (A × A) :=
+  closeRounds elements model sites (elements.length * elements.length + 1) (ruleSteps elements model language).dedup
+
+/-- A relation read reflexively. Kept out of line, so that a relation given to it is computed once and shared by every
+question asked of it. -/
+@[noinline] def belowIn (relation : List (A × A)) (first second : A) : Bool :=
+  first == second || (first, second) ∈ relation
 
 end Synthesis
 
@@ -94,7 +97,7 @@ def ofModel (elements : List A) (complete : ∀ entry : A, entry ∈ elements) (
   elements := elements
   complete := complete
   model := model
-  below := abstractBelow elements model language sites
+  below := belowIn (abstractClosure elements model language sites)
 
 end Certificate
 
@@ -422,10 +425,9 @@ def contextualClosure (steps : List (List (A × A) × A × A)) : ℕ → List (A
         if first.2 == second.1 then some (first.1, second.2) else none).dedup
       if next.length == relation.length then relation else contextualClosure steps rounds next
 
-/-- The preorder the contextual semantics forces, read reflexively. -/
-def contextualBelow (language : LanguageDef) : A → A → Bool :=
-  let closure := contextualClosure (contextualSteps elements model language) (elements.length * elements.length + 1) []
-  fun first second => first == second || (first, second) ∈ closure
+/-- The least relation the contextual semantics forces. -/
+def contextualRelation (language : LanguageDef) : List (A × A) :=
+  contextualClosure (contextualSteps elements model language) (elements.length * elements.length + 1) []
 
 end ContextualPreorder
 
@@ -438,7 +440,7 @@ def ofContextualCells (elements : List A) (complete : ∀ entry : A, entry ∈ e
   elements := elements
   complete := complete
   model := sparseModel elements junk signature cells
-  below := contextualBelow elements (sparseModel elements junk signature cells) language
+  below := belowIn (contextualRelation elements (sparseModel elements junk signature cells) language)
 
 end Certificate
 

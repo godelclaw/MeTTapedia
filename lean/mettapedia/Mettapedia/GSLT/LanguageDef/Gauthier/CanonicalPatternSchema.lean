@@ -418,7 +418,7 @@ end
 mutual
 
 /-- Equality of erased schemas reconstructs structural alpha-equivalence. -/
-def alphaSameOfSchemaWithEq
+theorem alphaSameOfSchemaWithEq
     (leftOccurrences rightOccurrences : List HoleKey) :
     (left right : Pattern) →
       schemaWith leftOccurrences left = schemaWith rightOccurrences right →
@@ -437,7 +437,7 @@ def alphaSameOfSchemaWithEq
         (SchemaPattern.node.inj equal).2)
 
 /-- Forest counterpart of `alphaSameOfSchemaWithEq`. -/
-def alphaSameChildrenOfSchemaListWithEq
+theorem alphaSameChildrenOfSchemaListWithEq
     (leftOccurrences rightOccurrences : List HoleKey) :
     (left right : List Pattern) →
       schemaListWith leftOccurrences left =

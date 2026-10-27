@@ -78,9 +78,9 @@ theorem atomSet_sortBags (term : Pattern) :
     rw [sortBags_set atoms]
     exact atomSet_iff.mpr ⟨_, rfl, atoms.of_subset fun value member => (arrange_mem value).mp member⟩
 
-/-- **Canonical forms for a ground set language**: each member written once, in order. -/
-theorem canonical (lang : GroundSetLanguage language carrier sort) :
-    Canonical relEnv language BagForms.sortBags (atomSet language sort) where
+/-- **Canonical forms for a ground set language**: each member written once, in order; the domain is read off them. -/
+theorem canonicalDetermined (lang : GroundSetLanguage language carrier sort) :
+    CanonicalDetermined relEnv language BagForms.sortBags (atomSet language sort) where
   object admitted := by
     obtain ⟨values, rfl, atoms⟩ := atomSet_iff.mp admitted
     exact elements_object atoms.elements
@@ -92,6 +92,11 @@ theorem canonical (lang : GroundSetLanguage language carrier sort) :
   closed _ := by
     rw [BagForms.sortBags_eq_canon]
     exact BagForms.canon_wellScoped _ 0
+
+/-- **Canonical forms for a ground set language**: each member written once, in order. -/
+theorem canonical (lang : GroundSetLanguage language carrier sort) :
+    Canonical relEnv language BagForms.sortBags (atomSet language sort) :=
+  (canonicalDetermined lang).canonical
 
 /-! ## Presentations and coherence -/
 

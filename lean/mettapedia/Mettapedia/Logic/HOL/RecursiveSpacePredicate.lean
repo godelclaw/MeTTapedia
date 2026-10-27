@@ -1,6 +1,7 @@
 import Mettapedia.Logic.HOL.PositivePredicate
 import Mettapedia.Logic.HOL.TypeSubstitutionSemantics
 import Mettapedia.Logic.HOL.ConstantSubstitutionSemantics
+import Mettapedia.Logic.HOL.PredicateFixedPointSemantics
 
 /-!
 # Positive indexed-family predicates over recursive-space operations
@@ -13,6 +14,7 @@ Datatype-specific guards remain explicit inputs to this operator.
 -/
 
 set_option autoImplicit false
+set_option backward.isDefEq.respectTransparency false
 
 namespace Mettapedia.Logic.HOL.RecursiveSpacePredicate
 
@@ -54,6 +56,14 @@ def code : PositivePredicate.Code Const signature.space [signature.space] :=
                 (.eq (.app (.var (.vs .vz)) (.var .vz)) (weakenCtx _ signature.bottom))))))))))
 
 def operator : ClosedTerm Const (PredicateFixedPoint.Operator signature.space) := signature.code.operator
+
+/-- Replace the three fixed guards by typed terms while retaining the
+constructor algebra, payload and slot types. -/
+def withGuards
+    (shape : ClosedTerm Const (signature.number ⇒ signature.payload ⇒ .prop))
+    (active : ClosedTerm Const (signature.payload ⇒ signature.number ⇒ .prop))
+    (edge : ClosedTerm Const (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop)) : Signature Const :=
+  { signature with validShape := shape, active := active, validEdge := edge }
 
 def monotonicity : ProofSyntax Const ([] : List (ClosedFormula Const))
     (PredicateFixedPoint.monotone signature.operator) := signature.code.operator_monotone
@@ -102,10 +112,51 @@ theorem operator_meaning (predicate : Ty.denote model.Carrier (signature.space �
   simp only [model.eqv_iff_eq_of_fullDomains full,admitted,true_and,forall_true_left]
   rfl
 
+/-- Guard equalities preserve the actual generated positive operator. -/
+theorem withGuards_operator_denote
+    (shape : ClosedTerm Const (signature.number ⇒ signature.payload ⇒ .prop))
+    (active : ClosedTerm Const (signature.payload ⇒ signature.number ⇒ .prop))
+    (edge : ClosedTerm Const (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop))
+    (shapeMeaning : denotes model shape = denotes model signature.validShape)
+    (activeMeaning : denotes model active = denotes model signature.active)
+    (edgeMeaning : denotes model edge = denotes model signature.validEdge) :
+    denotes model (signature.withGuards shape active edge).operator = denotes model signature.operator := by
+  funext predicate point
+  apply ULift.ext
+  apply propext
+  rw [(signature.withGuards shape active edge).operator_meaning model full,
+    signature.operator_meaning model full]
+  simp only [withGuards, shapeMeaning, activeMeaning, edgeMeaning]
+
+/-- Installed guards with the same denotations preserve the least predicate,
+including its inactive-slot padding condition. -/
+theorem withGuards_least_denote
+    (shape : ClosedTerm Const (signature.number ⇒ signature.payload ⇒ .prop))
+    (active : ClosedTerm Const (signature.payload ⇒ signature.number ⇒ .prop))
+    (edge : ClosedTerm Const (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop))
+    (shapeMeaning : denotes model shape = denotes model signature.validShape)
+    (activeMeaning : denotes model active = denotes model signature.active)
+    (edgeMeaning : denotes model edge = denotes model signature.validEdge) :
+    denotes model (PredicateFixedPoint.least (signature.withGuards shape active edge).operator) =
+      denotes model (PredicateFixedPoint.least signature.operator) := by
+  have operators := signature.withGuards_operator_denote model full shape active edge shapeMeaning activeMeaning edgeMeaning
+  funext point
+  apply ULift.ext
+  apply propext
+  simp only [denotes, PredicateFixedPoint.least_denote]
+  change (∀ predicate, model.adm _ predicate →
+    (∀ value, model.adm signature.space value →
+      (denotes model (signature.withGuards shape active edge).operator predicate value).down → (predicate value).down) →
+    (predicate point).down) ↔ _
+  rw [operators]
+  rfl
+
 end Signature
 
 #print axioms Signature.monotonicity
 #print axioms Signature.fixedPoint
 #print axioms Signature.operator_meaning
+#print axioms Signature.withGuards_operator_denote
+#print axioms Signature.withGuards_least_denote
 
 end Mettapedia.Logic.HOL.RecursiveSpacePredicate

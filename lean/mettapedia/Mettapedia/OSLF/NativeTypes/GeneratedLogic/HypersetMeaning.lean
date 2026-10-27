@@ -47,6 +47,7 @@ def codedGraph : NativeStructure ZFSet.{0} where
   named _ _ := False
   same first second := ∃ a b, first = zfOf (coding.code a) ∧ second = zfOf (coding.code b) ∧ graph.bisim a b = true
   apply inner _ := inner
+  inRelation _ _ := False
 
 theorem code_injective {first second : Fin graph.size} (same : zfOf (coding.code first) = zfOf (coding.code second)) :
     first = second := by
@@ -148,7 +149,9 @@ theorem denote_graphFormula : ∀ {n : ℕ} (formula : Formula n), Formula.graph
           (envAgrees_underFixedPoint valuation agrees (fun w => ULift.up (w ∈ invariant)) z)).mpr (preserved z member),
         inside⟩
   | _, .possibly label inner, fragment, _, valuation, x, env, sets, agrees => by
-    have fragmentInner : Formula.graphFragment inner = true := fragment
+    have fragmentInner : Formula.graphFragment inner = true := by
+      simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+      exact fragment.2
     by_cases labelled : memberLabel label
     · simp only [graphFormula, if_pos labelled]
       rw [denote_existentialInline]
@@ -163,7 +166,9 @@ theorem denote_graphFormula : ∀ {n : ℕ} (formula : Formula n), Formula.graph
     · simp only [graphFormula, if_neg labelled]
       exact (denote_falsity valuation).trans (iff_of_false id fun ⟨_, ⟨found, _⟩, _⟩ => labelled found)
   | _, .necessarily label inner, fragment, _, valuation, x, env, sets, agrees => by
-    have fragmentInner : Formula.graphFragment inner = true := fragment
+    have fragmentInner : Formula.graphFragment inner = true := by
+      simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+      exact fragment.2
     by_cases labelled : memberLabel label
     · simp only [graphFormula, if_pos labelled]
       change (∀ z : ZFSet.{0}, True → (model.denote (edgeFormula coding (graphEdges graph) (weaken x) (.var .vz))
@@ -196,11 +201,11 @@ theorem denote_graphFormula : ∀ {n : ℕ} (formula : Formula n), Formula.graph
 def codeMorphism : StepMorphism graph.finite.native (codedGraph coding) where
   map node := zfOf (coding.code node)
   step := by
-    intro source label target stepped
+    intro source label target _ stepped
     have found := graphStep_iff.mp stepped
     exact ⟨found.1, source, target, found.2, rfl, rfl⟩
   stepBack := by
-    rintro source label _ ⟨labelled, node, child, member, same, rfl⟩
+    rintro source label _ _ ⟨labelled, node, child, member, same, rfl⟩
     have equal := code_injective coding same
     subst equal
     exact ⟨child, graphStep_iff.mpr ⟨labelled, member⟩, rfl⟩
@@ -222,8 +227,11 @@ theorem behaviouralForward_of_graphFragment : ∀ {n : ℕ} (formula : Formula n
     simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
     simp only [Formula.behaviouralForward, behaviouralForward_of_graphFragment left fragment.1,
       behaviouralForward_of_graphFragment right fragment.2, Bool.and_self]
-  | _, .mu inner, fragment | _, .nu inner, fragment | _, .possibly _ inner, fragment
-  | _, .necessarily _ inner, fragment => behaviouralForward_of_graphFragment inner fragment
+  | _, .mu inner, fragment | _, .nu inner, fragment => behaviouralForward_of_graphFragment inner fragment
+  | _, .possibly _ inner, fragment | _, .necessarily _ inner, fragment => by
+    simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+    simp only [Formula.behaviouralForward, fragment.1, behaviouralForward_of_graphFragment inner fragment.2,
+      Bool.and_self]
   | _, .sometimeBefore _ _, fragment | _, .alwaysBefore _ _, fragment | _, .atLeast _ _ _ _, fragment
   | _, .allButFewer _ _ _ _, fragment | _, .built _ _, fragment | _, .everyBuilt _ _, fragment
   | _, .split _ _ _, fragment | _, .everySplit _ _ _, fragment | _, .empty _, fragment | _, .nonEmpty _, fragment

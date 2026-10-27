@@ -1808,6 +1808,21 @@ theorem actual_core (tasks : List Pattern) :
   rw [sourceCore serviceCompiled,sourceCore liftCompiled,sourceCore allCompiled]
   rfl
 
+theorem uniform_directed_checked :
+    checkUniformDirectedProfile (directedEnvironment [start,start]) [term] = true := by cbv
+
+theorem uniform_directed_profile : UniformDirectedProfile (fun schema => Mettapedia.OSLF.MeTTaIL.Match.binderFree schema = true)
+    (directedEnvironment [start,start]) [term] := UniformDirectedProfile.of_check uniform_directed_checked
+
+/-- Missing child reductions do not invalidate the finite provider/profile
+certificate and do not authorize a successful source witness. -/
+theorem uniform_directed_missing_checked :
+    checkUniformDirectedProfile (directedEnvironment [start,one]) [term] = true := by cbv
+
+#print axioms uniform_directed_checked
+#print axioms uniform_directed_profile
+#print axioms uniform_directed_missing_checked
+
 /-- This source theorem reaches the authored language through the real
 binding-plan annotation pass and preserves its literal internal boundaries. -/
 theorem actual_authored_step_iff {source target : Pattern}
@@ -1816,7 +1831,7 @@ theorem actual_authored_step_iff {source target : Pattern}
     (∃ index trace captured completed history,RootFiring (directedEnvironment [start,start]) [] term source
       index trace captured completed history target) ↔
     ReferenceStep.Step (providerRelEnv (directedEnvironment [start,start]).provider) directedLanguage source target :=
-  (directed_step_iff_reference profile_good _ (providerRelEnv_reads _) typed).trans
+  (uniform_directed_profile.roots_iff_reference _ (providerRelEnv_reads _) (by simp) typed).trans
     (reference_step_same_core_iff (actual_core _) _)
 
 /-- Every source witness on a Lift application uses the actual lifted rule
@@ -2885,6 +2900,53 @@ theorem petri_source_core : petriEnvironment.language.rewrites.map ruleCore =
 theorem graph_source_core : graphEnvironment.language.rewrites.map ruleCore =
     Mettapedia.GSLT.LanguageDef.CollectionConsumers.reachability.rewrites.map ruleCore := by cbv
 
+theorem petri_uniform_checked :
+    checkUniformDirectedProfile petriEnvironment [.base "Marking"] = true := by cbv
+
+theorem graph_uniform_checked :
+    checkUniformDirectedProfile graphEnvironment [.base "Graph"] = true := by cbv
+
+theorem petri_uniform_profile : UniformDirectedProfile (fun schema => binderFree schema = true)
+    petriEnvironment [.base "Marking"] := UniformDirectedProfile.of_check petri_uniform_checked
+
+theorem graph_uniform_profile : UniformDirectedProfile (fun schema => binderFree schema = true)
+    graphEnvironment [.base "Graph"] := UniformDirectedProfile.of_check graph_uniform_checked
+
+/-- Every source witness at the authored Marking fibre is covered by one
+checked table profile, without a witness-specific eligibility premise. -/
+theorem petri_uniform_source_iff {bound : List TypeExpr} {source target : Pattern}
+    (sourceTyped : OpenPatternWellSorted petriEnvironment.language petriEnvironment.free bound (.base "Marking") source) :
+    (∃ index trace captured completed history,RootFiring petriEnvironment bound (.base "Marking")
+      source index trace captured completed history target) ↔
+      ReferenceStep.Step (providerRelEnv petriEnvironment.provider)
+        Mettapedia.GSLT.LanguageDef.CollectionConsumers.petri source target :=
+  (petri_uniform_profile.roots_iff_reference (providerRelEnv petriEnvironment.provider)
+    (providerRelEnv_reads _) (by simp) sourceTyped).trans
+      (reference_step_same_core_iff petri_source_core _)
+
+/-- Set-valued graph roots use the same derived source eligibility. The
+profile fixes Graph rather than inferring a carrier from an empty set. -/
+theorem graph_uniform_source_iff {bound : List TypeExpr} {source target : Pattern}
+    (sourceTyped : OpenPatternWellSorted graphEnvironment.language graphEnvironment.free bound (.base "Graph") source) :
+    (∃ index trace captured completed history,RootFiring graphEnvironment bound (.base "Graph")
+      source index trace captured completed history target) ↔
+      ReferenceStep.Step (providerRelEnv graphEnvironment.provider)
+        Mettapedia.GSLT.LanguageDef.CollectionConsumers.reachability source target :=
+  (graph_uniform_profile.roots_iff_reference (providerRelEnv graphEnvironment.provider)
+    (providerRelEnv_reads _) (by simp) sourceTyped).trans
+      (reference_step_same_core_iff graph_source_core _)
+
+theorem petri_auxiliary_sort_is_not_root_carrier :
+    checkUniformDirectedProfile petriEnvironment [.base "Place"] = false := by cbv
+
+#print axioms petri_uniform_checked
+#print axioms graph_uniform_checked
+#print axioms petri_uniform_profile
+#print axioms graph_uniform_profile
+#print axioms petri_uniform_source_iff
+#print axioms graph_uniform_source_iff
+#print axioms petri_auxiliary_sort_is_not_root_carrier
+
 /-- Bare marking roots satisfy the forward source boundary without adding
 an application wrapper or requiring a constructor-headed rule schema. -/
 theorem petri_source_sound {bound : List TypeExpr} {expected : TypeExpr} {source target : Pattern}
@@ -3775,39 +3837,7 @@ theorem petri_source_complete {bound : List TypeExpr} {source target : Pattern}
     (sourceStep : ReferenceStep.Step (providerRelEnv petriEnvironment.provider) Mettapedia.GSLT.LanguageDef.CollectionConsumers.petri source target) :
     ∃ index trace captured completed history,RootFiring petriEnvironment bound (.base "Marking")
       source index trace captured completed history target := by
-  obtain ⟨witness,valid⟩ := (reference_step_same_core_iff petri_source_core _).mpr sourceStep
-  cases valid with
-  | @rule _ index rule initial final witnesses declared matched premises =>
-    let selectedOrdinal := index
-    let selectedRule := rule
-    have branch : index = 0 ∨ index = 1 := by
-      have bounded := (List.getElem?_eq_some_iff.mp declared).1
-      have length : petriEnvironment.language.rewrites.length = 2 := by cbv
-      rw [length] at bounded
-      omega
-    rcases branch with rfl | rfl
-    all_goals
-      cbv at declared
-      cases Option.some.inj declared
-      refine ⟨selectedOrdinal,?_⟩
-      apply root_fromReference_recursive (Schema := fun schema => binderFree schema = true)
-        (index := selectedOrdinal) (rule := selectedRule)
-        (providerRelEnv petriEnvironment.provider) (providerRelEnv_reads _) (by cbv)
-        (collectionChoiceDeterministic_of_check (by cbv)) (by cbv) (by cbv)
-        (by cbv) (by cbv) (by cbv) (by decide +kernel) (by cbv) (by cbv)
-        (binderFree_schema_restAware (by cbv) (domains := []) (by cbv))
-        (binderFree_schema_restAware (by cbv) (domains := []) (by cbv))
-      · intro premise member
-        change premise ∈ [] at member
-        cases member
-      · intro premise member
-        change premise ∈ [] at member
-        cases member
-      · cbv
-      · cbv
-      · cbv
-      · exact sourceTyped
-      · exact .rule (by cbv) matched premises
+  exact (BareReferenceControls.petri_uniform_source_iff sourceTyped).mpr sourceStep
 
 /-- Every original literal root step at the actual declared Graph fibre
 reconstructs a typed firing, including its authored concrete rest. -/
@@ -3816,38 +3846,7 @@ theorem graph_source_complete {bound : List TypeExpr} {source target : Pattern}
     (sourceStep : ReferenceStep.Step (providerRelEnv graphEnvironment.provider) Mettapedia.GSLT.LanguageDef.CollectionConsumers.reachability source target) :
     ∃ index trace captured completed history,RootFiring graphEnvironment bound (.base "Graph")
       source index trace captured completed history target := by
-  obtain ⟨witness,valid⟩ := (reference_step_same_core_iff graph_source_core _).mpr sourceStep
-  cases valid with
-  | @rule _ index rule initial final witnesses declared matched premises =>
-    let selectedOrdinal := index
-    let selectedRule := rule
-    have zero : index = 0 := by
-      have bounded := (List.getElem?_eq_some_iff.mp declared).1
-      have length : graphEnvironment.language.rewrites.length = 1 := by cbv
-      rw [length] at bounded
-      omega
-    subst index
-    cbv at declared
-    cases Option.some.inj declared
-    refine ⟨selectedOrdinal,?_⟩
-    apply root_fromReference_recursive (Schema := fun schema => binderFree schema = true)
-      (index := selectedOrdinal) (rule := selectedRule)
-      (providerRelEnv graphEnvironment.provider) (providerRelEnv_reads _) (by cbv)
-      (collectionChoiceDeterministic_of_check (by cbv)) (by cbv) (by cbv)
-      (by cbv) (by cbv) (by cbv) (by decide +kernel) (by cbv) (by cbv)
-      (binderFree_schema_restAware (by cbv) (domains := []) (by cbv))
-      (binderFree_schema_restAware (by cbv) (domains := []) (by cbv))
-    · intro premise member
-      change premise ∈ [] at member
-      cases member
-    · intro premise member
-      change premise ∈ [] at member
-      cases member
-    · cbv
-    · cbv
-    · cbv
-    · exact sourceTyped
-    · exact .rule (by cbv) matched premises
+  exact (BareReferenceControls.graph_uniform_source_iff sourceTyped).mpr sourceStep
 
 /-- This actual set rule is outside the former constructor-headed inverse
 profile; its literal inverse above uses the genuine Graph typing fibre. -/
@@ -3884,28 +3883,43 @@ theorem original_quantified_root : ReferenceStep.StepValid (providerRelEnv provi
     (.rule 0 rawInitial [witness]) (atom "A") := by
   exact (ReferenceStep.checkStep_eq_some_iff _ _ _).mp (by decide +kernel)
 
+theorem quantified_uniform_checked : checkUniformDirectedProfile environment [term] = true := by cbv
+
+theorem quantified_uniform_profile : UniformDirectedProfile (fun schema => Mettapedia.OSLF.MeTTaIL.Match.binderFree schema = true)
+    environment [term] := UniformDirectedProfile.of_check quantified_uniform_checked
+
+/-- The recursive collection-output/finite-quantifier consumer has uniform
+coverage for all its valid source witnesses, without local output leakage. -/
+theorem quantified_uniform_source_iff {bound : List TypeExpr} {source target : Pattern}
+    (sourceTyped : OpenPatternWellSorted language FreeTypeContext.empty bound term source) :
+    (∃ index trace captured completed history,RootFiring environment bound term source
+      index trace captured completed history target) ↔
+      ReferenceStep.Step (providerRelEnv provider) language source target :=
+  quantified_uniform_profile.roots_iff_reference (providerRelEnv provider) (providerRelEnv_reads _)
+    (by simp) sourceTyped
+
+#print axioms quantified_uniform_checked
+#print axioms quantified_uniform_profile
+#print axioms quantified_uniform_source_iff
+
 /-- Recursive output matching and finite local quantification join the actual
 root firing with its original authored table and exact source conclusion. -/
 theorem quantified_source_root_complete : ∃ trace captured completed history,
     RootFiring environment [] term source 0 trace captured completed history (atom "A") := by
-  exact root_fromReference_recursive (Schema := fun schema => binderFree schema = true)
-    (environment := environment) (rule := authoredRule) (spec := spec) (bound := []) (type := term)
-    (source := source) (target := atom "A") (index := 0) (initial := rawInitial) (witnesses := [witness])
-    (providerRelEnv provider) (providerRelEnv_reads provider) actual_environment_checked.1
-    (collectionChoiceDeterministic_of_check (by cbv)) actual_environment_checked.2.2.2.1
-    (by cbv) (by cbv) actual_environment_checked.2.1 actual_environment_checked.2.2.1
-    (by decide +kernel) (by cbv) (by cbv)
-    (binderFree_schema_restAware (by cbv) (domains := []) (by cbv))
-    (binderFree_schema_restAware (by cbv) (domains := []) (by cbv))
-    (by
-      intro premise member
-      cases List.mem_singleton.mp member
-      exact recursive_validation)
-    (by
-      intro premise member
-      cases List.mem_singleton.mp member
-      exact literal_input_eligibility)
-    (by cbv) (by cbv) (by cbv) (checkOpenPatternWellSorted_sound (by cbv)) original_quantified_root
+  obtain ⟨index,trace,captured,completed,history,fired⟩ :=
+    (quantified_uniform_source_iff (bound := []) (source := source) (target := atom "A")
+      (checkOpenPatternWellSorted_sound (by cbv))).mpr
+      ⟨_,original_quantified_root⟩
+  have zero : index = 0 := by
+    have selected : ∃ rule,environment.language.rewrites[index]? = some rule := by
+      cases fired with
+      | fire declared _ _ _ _ _ _ _ _ => exact ⟨_,declared⟩
+    obtain ⟨rule,declared⟩ := selected
+    have bound := (List.getElem?_eq_some_iff.mp declared).1
+    change index < 1 at bound
+    omega
+  subst index
+  exact ⟨trace,captured,completed,history,fired⟩
 
 #print axioms original_quantified_root
 #print axioms quantified_source_root_complete
@@ -4007,3 +4021,704 @@ theorem typed_root_firing_refused {index : Nat} {trace : List GeneralScopedMatch
 #print axioms typed_root_firing_refused
 
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.CallerFibreSeparator
+
+
+namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.RecursiveReverseControls
+open _root_.Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax Match RuleBinding ScopedRuleMatching
+open Mettapedia.OSLF.Framework.GeneralCanonicalAgreement QuantifiedReference
+open RecursiveReadbackControls (term)
+
+/-- The real literal-input separator remains outside the checked profile. -/
+theorem structured_input_uniform_profile_refused :
+    checkUniformDirectedProfile inputEnvironment [term] = false := by
+  cases checked : checkUniformDirectedProfile inputEnvironment [term] with
+  | false => rfl
+  | true =>
+      have profile := UniformDirectedProfile.of_check checked
+      obtain ⟨spec,row⟩ := profile.rows (type := term) (by simp)
+        (show inputEnvironment.language.rewrites[0]? = some inputRule from rfl)
+      exact False.elim (structured_input_eligibility_refused
+        (row.inputs _ (List.mem_cons_self ..)))
+
+#print axioms structured_input_uniform_profile_refused
+end Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.RecursiveReverseControls
+
+namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.CallerFibreSeparator
+open _root_.Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax Match RuleBinding ScopedRuleMatching
+open Mettapedia.OSLF.Framework.GeneralCanonicalAgreement QuantifiedReference
+
+/-- A genuine well-typed source at another fibre cannot make this profile
+certify the untyped reference result. The original separator is retained. -/
+theorem wrong_caller_uniform_profile_refused :
+    checkUniformDirectedProfile environment [.collection .hashBag node] = false := by
+  cases checked : checkUniformDirectedProfile environment [.collection .hashBag node] with
+  | false => rfl
+  | true =>
+      have profile := UniformDirectedProfile.of_check checked
+      obtain ⟨index,trace,captured,completed,history,fired⟩ :=
+        (profile.roots_iff_reference (providerRelEnv provider) (providerRelEnv_reads _) (by simp)
+          empty_source_is_a_typed_Node_bag).mpr original_reference_fires
+      exact False.elim (typed_root_firing_refused fired)
+
+#print axioms wrong_caller_uniform_profile_refused
+end Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.CallerFibreSeparator
+
+
+set_option autoImplicit false
+open scoped Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
+
+namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.GraphOriginalReference
+
+open _root_.Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open RuleBinding ScopedRuleMatching GeneralPremise CanonicalBags
+open Mettapedia.OSLF.Framework.GeneralCanonicalAgreement
+open QuantifiedReference GeneralFirstOrderProjection
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+local instance : DecidableEq RecursiveCollectionHandoff.canonicalMatchingExecution.Choice :=
+  inferInstanceAs (DecidableEq EquationalScopedReceipts.Event)
+
+open Mettapedia.GSLT.LanguageDef.CollectionConsumers.Controls.Observation.GraphControls
+
+def environment : Environment := GeneralPlanEnvironment.environment twoRoutePlan
+
+theorem actual_four_node_profile_checked :
+    checkUniformDirectedProfile environment [.base "Graph"] = true := by cbv
+
+theorem actual_four_node_profile :
+    UniformDirectedProfile (fun schema => Match.binderFree schema = true) environment [.base "Graph"] :=
+  UniformDirectedProfile.of_check actual_four_node_profile_checked
+
+theorem actual_four_node_source_core : environment.language.rewrites.map ruleCore =
+    twoRouteLanguage.rewrites.map ruleCore := by cbv
+
+/-- Every actual source witness at the Graph fibre reconstructs through the
+shared recursive inverse with its own initial and final binding lookups. -/
+theorem original_step_reconstructs_bindings (relEnv : Engine.RelationEnv)
+    {source target : Pattern} {witness : ReferenceStep.Witness}
+    (typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") source)
+    (stepped : ReferenceStep.StepValid relEnv twoRouteLanguage source witness target) :
+    ∃ index initial witnesses trace captured completed history,
+      witness = .rule index initial witnesses ∧
+      RootFiring environment [] (.base "Graph") source index trace captured completed history target ∧
+      ∃ (rule : RewriteRule) (spec : RuleBindingSpec) (referenceFinal : Match.Bindings),
+        environment.language.rewrites[index]? = some rule ∧ specification? environment index = some spec ∧
+        BindingAgreement rule.left.freeFvarNames captured initial ∧
+        ReferenceStep.PremisesValid relEnv environment.language (ReferenceStep.captureSites rule)
+          initial rule.premises witnesses referenceFinal ∧
+        BindingAgreement (premisesFlow environment.language environment.provider rule spec
+          rule.left.freeFvarNames rule.premises).available completed referenceFinal := by
+  have compiled := reference_step_same_core actual_four_node_source_core.symm relEnv stepped
+  have sourceTyped : OpenPatternWellSorted environment.language environment.free [] (.base "Graph") source :=
+    (GeneralPlanEnvironment.typing_iff twoRoutePlan [] (.base "Graph") source).mpr typed
+  have reads : ReadsProvider relEnv environment.provider := ReadsProvider.empty relEnv
+  exact directed_root_fromReference_recursive_with_bindings relEnv reads actual_four_node_profile.valid
+    actual_four_node_profile.choices actual_four_node_profile.providerClosed
+    (actual_four_node_profile.step_eligible (by simp) compiled) sourceTyped compiled
+
+/-- The existing graph identity read directly on a source witness's bindings.
+Only the actual transitive source row can license this key. -/
+def referenceLogicalKey (index : Nat) (bindings : Match.Bindings) : LogicalKey EquationalScopedReceipts.Event :=
+  ⟨index, 0, ⟨[], [], .base "Graph", []⟩,
+    (bindings.lookup "x").map (fun body => canonValue (localValue [] body)),
+    (bindings.lookup "y").map (fun body => canonValue (localValue [] body)),
+    (bindings.lookup "z").map (fun body => canonValue (localValue [] body)), []⟩
+
+private theorem root_binding_lookup {names : List String} {captured : Assignment} {bindings : Match.Bindings}
+    (roots : RootValues 0 captured) (agreement : BindingAgreement names captured bindings) (captureName : String) :
+    (ScopedRuleMatching.lookup (canonAssignment captured) captureName).map canonValue =
+      (bindings.lookup captureName).map (fun body => canonValue (localValue [] body)) := by
+  rw [lookup_canonAssignment]
+  cases found : ScopedRuleMatching.lookup captured captureName with
+  | none =>
+    have absent : bindings.lookup captureName = none := by
+      simpa only [found, Option.map_none] using (agreement.lookups captureName).symm
+    simp only [Option.map_none, absent]
+  | some value =>
+    have metadata := roots captureName value found
+    have read := agreement.lookups captureName
+    simp only [found, Option.map_some] at read
+    rw [← read]
+    simp only [Option.map_some]
+    apply congrArg some
+    rcases value with ⟨dependencies, ambient, body⟩
+    rcases metadata with ⟨dependenciesEq, ambientEq, _⟩
+    dsimp only at dependenciesEq ambientEq
+    cases dependenciesEq
+    cases ambientEq
+    simp only [canonValue, localValue, List.length_nil, canon_idempotent]
+
+def graphRootJob (source : Pattern) : GeneralRuleJobs.Job :=
+  ⟨0, twoRoutePlan.rules[0]'(by cbv), GeneralTypedSites.SiteData.here [] (.base "Graph") source⟩
+
+theorem graphRootJob_valid {source : Pattern}
+    (typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") source) :
+    (graphRootJob source).Valid twoRoutePlan [] (.base "Graph") source := by
+  have compiled := (GeneralPlanEnvironment.typing_iff twoRoutePlan [] (.base "Graph") source).mpr typed
+  refine ⟨by cbv; exact .head _, .here (by rfl) typed.2.2.1 compiled.1⟩
+
+def graphRootReceipt {Choice : Type} (source : Pattern) (trace : List Choice)
+    (captured completed : Assignment) (history : List (Event Choice)) (target : Pattern) :
+    GeneralRuleJobs.Receipt Choice :=
+  ⟨graphRootJob source, trace, captured, completed, history, target, target⟩
+
+/-- A reconstructed root enters the actual rule-job receipt family. Target
+and capture checks come from that root, not a completed-outcome field. -/
+theorem graphRootReceipt_validIn {Choice : Type} {meaning : MatchingInterpretation Choice}
+    {source target : Pattern} {trace : List Choice} {captured completed : Assignment} {history : List (Event Choice)}
+    (fired : Interpreted.RootFiring meaning environment [] (.base "Graph") source 0 trace
+      captured completed history target) :
+    (graphRootReceipt source trace captured completed history target).ValidInWith meaning DynamicProvider.empty
+      twoRoutePlan [] (.base "Graph") source := by
+  have sourceSorted : OpenPatternWellSorted environment.language environment.free [] (.base "Graph") source := by
+    cases fired with
+    | fire _ _ _ sorted _ _ _ _ _ => exact sorted
+  have targetSorted : OpenPatternWellSorted environment.language environment.free [] (.base "Graph") target := by
+    cases fired with
+    | fire _ _ _ _ _ _ _ _ sorted => exact sorted
+  refine ⟨graphRootJob_valid ((GeneralPlanEnvironment.typing_iff twoRoutePlan [] (.base "Graph") source).mp sourceSorted),
+    ?_, rfl, rfl, ?_⟩
+  · simpa only [graphRootReceipt, graphRootJob, GeneralTypedSites.SiteData.here,
+      GeneralPlanEnvironment.environmentWith_empty, environment] using fired
+  · simpa only [graphRootReceipt, environment, GeneralPlanEnvironment.environmentWith_empty,
+      GeneralPlanEnvironment.environment] using targetSorted
+
+/-- The source binding key is exactly the already-declared receipt key after
+canonical capture normalization; no second derivation identity is selected. -/
+theorem graphRootReceipt_key {source target : Pattern} {names : List String} {captured : Assignment}
+    {bindings : Match.Bindings} (trace : List EquationalScopedReceipts.Event)
+    (roots : RootValues 0 captured) (agreement : BindingAgreement names captured bindings) :
+    sourceLogicalKey (graphRootReceipt source trace (canonAssignment captured) (canonAssignment captured) [] target) =
+      referenceLogicalKey 0 bindings := by
+  have declaration : (twoRoutePlan.rules[0]'(by cbv)).declarationIndex = 0 := by cbv
+  simp only [sourceLogicalKey, graphRootReceipt, graphRootJob, logicalSiteShape,
+    GeneralTypedSites.SiteData.here, referenceLogicalKey, validationHistoryReadout,
+    declaration, root_binding_lookup roots agreement]
+
+private theorem actual_rule_metadata :
+    environment.language.rewrites = [actualRule] ∧ specification? environment 0 = some actualSpec ∧
+      actualRule.premises = [] ∧ checkZeroDependencies actualSpec = true ∧
+      CollectionRootSearch.checkBindingSpines actualSpec = true := by cbv
+
+private theorem graph_root_properties {Choice : Type} {meaning : MatchingInterpretation Choice}
+    {source target : Pattern} {index : Nat}
+    {trace : List Choice} {captured completed : Assignment} {history : List (Event Choice)}
+    (fired : Interpreted.RootFiring meaning environment [] (.base "Graph") source index trace captured completed history target) :
+    index = 0 ∧ completed = captured ∧ history = [] ∧ RootValues 0 captured := by
+  obtain ⟨rows, actualSpecified, empty, zero, _⟩ := actual_rule_metadata
+  cases fired with
+  | @fire _ _ _ _ index rule spec trace captured completed history declared specified
+      admitted sorted matched captureTyped premises reduced targetTyped =>
+    have position := declared
+    rw [rows] at position
+    cases index with
+    | succ index => simp only [List.getElem?_cons_succ, List.getElem?_nil] at position; cases position
+    | zero =>
+      have sameRule : rule = actualRule := Option.some.inj position.symm
+      cases sameRule
+      have sameSpec : spec = actualSpec := Option.some.inj (specified.symm.trans actualSpecified)
+      cases sameSpec
+      rw [empty] at premises
+      cases premises
+      exact ⟨rfl, rfl, rfl, captureTyped.rootValues zero⟩
+
+/-- An actual literal root supplies a real canonical match and a reduct
+transported through the existing instantiation law. Its EqEvent trace is
+subsequently consumed unchanged by canonical publication coverage. -/
+theorem ordinary_root_canonical_receipt {source target : Pattern}
+    {trace : List GeneralScopedMatchMachine.BagChoice} {captured : Assignment}
+    (fired : RootFiring environment [] (.base "Graph") source 0 trace captured captured [] target) :
+    ∃ (canonicalTrace : List EquationalScopedReceipts.Event) (canonicalTarget : Pattern),
+      (graphRootReceipt source canonicalTrace (canonAssignment captured) (canonAssignment captured) [] canonicalTarget).ValidInWith
+        RecursiveCollectionHandoff.canonicalMatchingInterpretation DynamicProvider.empty
+        twoRoutePlan [] (.base "Graph") source ∧ Same target canonicalTarget := by
+  obtain ⟨rows, actualSpecified, empty, _, spines⟩ := actual_rule_metadata
+  cases fired with
+  | @fire _ _ _ _ _ rule spec _ _ _ _ declared specified admitted sourceSorted matched captureTyped
+      premises reduced targetSorted =>
+    have declaredActual : environment.language.rewrites[0]? = some actualRule := by rw [rows]; rfl
+    have sameRule : rule = actualRule := Option.some.inj (declared.symm.trans declaredActual)
+    cases sameRule
+    have sameSpec : spec = actualSpec := Option.some.inj (specified.symm.trans actualSpecified)
+    cases sameSpec
+    have increasing : IncreasingSpines actualRule actualSpec := CollectionRootSearch.checkBindingSpines_sound spines
+    have normalized := EquationalScopedMatching.ordinary_canonical increasing matched.matching
+    obtain ⟨canonicalTrace, traced⟩ := EquationalScopedReceipts.Meaning.traced normalized
+    have canonicalMatched : RecursiveCollectionHandoff.canonicalMatchingInterpretation.Matches
+        ⟨actualRule, actualSpec, 0, .left, [], 0, [], actualRule.left, source⟩ canonicalTrace
+        (canonAssignment captured) := by
+      change EquationalScopedReceipts.Matches literalBodyComparison actualRule actualSpec 0 .left [] 0 []
+        actualRule.left (canon source) canonicalTrace (canonAssignment captured)
+      simpa only [canonAssignment, List.map_nil, List.length_nil] using traced
+    obtain ⟨canonicalTarget, projected, same⟩ := instantiateWith?_same actualRule actualSpec 0
+      (ScopedReflectiveExecution.binderOperation environment.reflection actualRule)
+      (binderOperation_same environment.reflection actualRule) actualRule.right .right [] 0
+      captured (canonAssignment captured) target (assignSame_canon captured) reduced
+    have root : Interpreted.RootFiring RecursiveCollectionHandoff.canonicalMatchingInterpretation environment
+        [] (.base "Graph") source 0 canonicalTrace (canonAssignment captured) (canonAssignment captured) [] canonicalTarget :=
+      .fire declaredActual actualSpecified admitted sourceSorted canonicalMatched
+        (typedAssignment_canon captureTyped) (by rw [empty]; exact .nil) projected
+        (openPatternWellSorted_of_eqvGen ((same_iff _ _).mp same) targetSorted)
+    exact ⟨canonicalTrace, canonicalTarget, graphRootReceipt_validIn root, same⟩
+
+/-- Each literal original source witness determines its own canonical
+receipt key through the shared binding readback. Equal conclusions do not
+identify different intermediate bindings. -/
+theorem original_step_canonical_key_receipt (relEnv : Engine.RelationEnv)
+    {source target : Pattern} {witness : ReferenceStep.Witness}
+    (typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") source)
+    (stepped : ReferenceStep.StepValid relEnv twoRouteLanguage source witness target) :
+    ∃ (bindings : Match.Bindings), witness = .rule 0 bindings [] ∧
+      ∃ (receipt : GeneralRuleJobs.Receipt EquationalScopedReceipts.Event),
+        receipt.ValidInWith RecursiveCollectionHandoff.canonicalMatchingInterpretation DynamicProvider.empty
+          twoRoutePlan [] (.base "Graph") source ∧
+        sourceLogicalKey receipt = referenceLogicalKey 0 bindings ∧ Same target receipt.target := by
+  obtain ⟨index, initial, witnesses, trace, captured, completed, history, witnessed, fired,
+    rule, spec, referenceFinal, selected, _, captures, premises, _⟩ :=
+    original_step_reconstructs_bindings relEnv typed stepped
+  obtain ⟨indexEq, completedEq, historyEq, roots⟩ := graph_root_properties fired
+  subst index
+  subst completed
+  subst history
+  have declaredActual : environment.language.rewrites[0]? = some actualRule := by
+    rw [actual_rule_metadata.1]; rfl
+  have sameRule : rule = actualRule := Option.some.inj (selected.symm.trans declaredActual)
+  cases sameRule
+  rw [actual_rule_metadata.2.2.1] at premises
+  cases premises
+  obtain ⟨canonicalTrace, canonicalTarget, valid, same⟩ := ordinary_root_canonical_receipt fired
+  refine ⟨initial, witnessed, graphRootReceipt source canonicalTrace
+    (canonAssignment captured) (canonAssignment captured) [] canonicalTarget, valid, ?_, same⟩
+  exact graphRootReceipt_key canonicalTrace roots captures
+
+/-- The exact source-witness key reaches the existing joint committed
+account. The packet and full EqEvent receipt are retained as the pair. -/
+theorem original_step_key_eventually_published (relEnv : Engine.RelationEnv)
+    {source target : Pattern} {witness : ReferenceStep.Witness}
+    (typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") source)
+    (stepped : ReferenceStep.StepValid relEnv twoRouteLanguage source witness target) :
+    ∃ (bindings : Match.Bindings) (work : Nat) (pair : CollectionCommittedObservation.Committed EquationalScopedReceipts.Event),
+      witness = .rule 0 bindings [] ∧
+      pair ∈ CollectionOccurrenceSearch.committedWith (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+        (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph"))
+        ((CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0).run source work) ∧
+      logicalKey pair = referenceLogicalKey 0 bindings := by
+  obtain ⟨bindings, witnessed, receipt, valid, observed, _⟩ :=
+    original_step_canonical_key_receipt relEnv typed stepped
+  obtain ⟨work, pair, published, key⟩ := canonical_two_route_source_key_eventually_published valid
+  exact ⟨bindings, work, pair, witnessed, published, key.trans observed⟩
+
+/-- Select the actual literal source match by its intermediate node. -/
+def routeBindings (via : String) : Match.Bindings :=
+  ((Match.matchPattern actualRule.left twoRouteSource).find?
+    (fun bindings => bindings.lookup "y" == some (Mettapedia.GSLT.LanguageDef.CollectionConsumers.token via))).getD []
+
+def routeTarget (via : String) : Pattern :=
+  Match.applyBindingsScoped (ReferenceStep.captureSites transitiveAuthoredRule) (routeBindings via) 0
+    transitiveAuthoredRule.right
+
+private theorem original_rule_metadata :
+    twoRouteLanguage.rewrites[0]? = some transitiveAuthoredRule ∧
+      transitiveAuthoredRule.left = actualRule.left ∧ transitiveAuthoredRule.premises = [] := by cbv
+
+theorem two_route_source_typed :
+    OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") twoRouteSource :=
+  checkOpenPatternWellSorted_sound (by cbv)
+
+theorem route_match_B : routeBindings "B" ∈
+    ReflectiveCanonical.matchPatternForRule twoRouteLanguage transitiveAuthoredRule twoRouteSource := by
+  rw [ReflectiveCanonical.matchPatternForRule_eq_syntactic, original_rule_metadata.2.1]
+  unfold routeBindings
+  rw [actual_left]
+  cbv
+  exact .head _
+
+theorem route_match_C : routeBindings "C" ∈
+    ReflectiveCanonical.matchPatternForRule twoRouteLanguage transitiveAuthoredRule twoRouteSource := by
+  rw [ReflectiveCanonical.matchPatternForRule_eq_syntactic, original_rule_metadata.2.1]
+  unfold routeBindings
+  rw [actual_left]
+  cbv
+  exact .tail _ (.head _)
+
+theorem route_step_B (relEnv : Engine.RelationEnv) :
+    ReferenceStep.StepValid relEnv twoRouteLanguage twoRouteSource
+      (.rule 0 (routeBindings "B") []) (routeTarget "B") := by
+  apply ReferenceStep.StepValid.rule original_rule_metadata.1 route_match_B
+  rw [original_rule_metadata.2.2]
+  exact .nil _
+
+theorem route_step_C (relEnv : Engine.RelationEnv) :
+    ReferenceStep.StepValid relEnv twoRouteLanguage twoRouteSource
+      (.rule 0 (routeBindings "C") []) (routeTarget "C") := by
+  apply ReferenceStep.StepValid.rule original_rule_metadata.1 route_match_C
+  rw [original_rule_metadata.2.2]
+  exact .nil _
+
+theorem source_routes_distinct : referenceLogicalKey 0 (routeBindings "B") ≠
+    referenceLogicalKey 0 (routeBindings "C") := by
+  intro same
+  have intermediate := congrArg LogicalKey.intermediate same
+  unfold referenceLogicalKey routeBindings at intermediate
+  rw [actual_left] at intermediate
+  cbv at intermediate
+  simp at intermediate
+
+theorem source_routes_same_fact :
+    logicalEdge? (referenceLogicalKey 0 (routeBindings "B")) = some (Mettapedia.GSLT.LanguageDef.CollectionConsumers.edge "A" "D") ∧
+    logicalEdge? (referenceLogicalKey 0 (routeBindings "C")) = some (Mettapedia.GSLT.LanguageDef.CollectionConsumers.edge "A" "D") := by
+  unfold referenceLogicalKey routeBindings
+  rw [actual_left]
+  cbv
+
+/-- No literal transitive match in the actual source uses D as its
+intermediate. The fallback is not accepted as an original rule witness. -/
+theorem absent_route_refused : routeBindings "D" ∉
+    ReflectiveCanonical.matchPatternForRule twoRouteLanguage transitiveAuthoredRule twoRouteSource := by
+  rw [ReflectiveCanonical.matchPatternForRule_eq_syntactic, original_rule_metadata.2.1]
+  unfold routeBindings
+  rw [actual_left]
+  cbv
+  intro impossible
+  cases impossible with
+  | tail _ later =>
+    cases later with
+    | tail _ absent => cases absent
+
+theorem wrong_conclusion_refused (relEnv : Engine.RelationEnv) :
+    ¬ ReferenceStep.StepValid relEnv twoRouteLanguage twoRouteSource
+      (.rule 0 (routeBindings "B") []) twoRouteSource := by
+  intro stepped
+  have valid := (ReferenceStep.checkStep_eq_some_iff relEnv twoRouteLanguage _).mpr (route_step_B relEnv)
+  have invalid := (ReferenceStep.checkStep_eq_some_iff relEnv twoRouteLanguage _).mpr stepped
+  have equal : routeTarget "B" = twoRouteSource := Option.some.inj (valid.symm.trans invalid)
+  unfold routeTarget routeBindings at equal
+  rw [actual_left] at equal
+  cbv at equal
+  simp at equal
+
+/-- At any reached node of a settled graph, every actual literal source
+witness at an equivalent presentation contributes its own binding key.
+Settlement is inherited from the proved finite-carrier and local-drainage
+result; it is not inferred from this key projection. -/
+theorem original_rule_key_at_settled_node (relEnv : Engine.RelationEnv)
+    (source : Pattern) (work : Nat)
+    (done : Complete.Settled.settled (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work) = true)
+    (node : Complete.Explore.Node Pattern
+      (CollectionOccurrenceSearch.Run twoRoutePlan [] (.base "Graph") RecursiveCollectionHandoff.canonicalMatchingExecution)
+      (GeneralRuleJobs.Receipt EquationalScopedReceipts.Event))
+    (reached : node ∈ (Complete.Explore.explore
+      (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0) source work).nodes)
+    {representative target : Pattern} {bindings : Match.Bindings}
+    (same : Same node.state representative)
+    (typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") representative)
+    (stepped : ReferenceStep.StepValid relEnv twoRouteLanguage representative (.rule 0 bindings []) target) :
+    referenceLogicalKey 0 bindings ∈ CollectionCommittedObservation.committedKeys logicalKey
+      ((Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work).nodes.flatMap (fun reached => CollectionOccurrenceSearch.committedWith
+          (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+          (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph")) reached.run)) := by
+  obtain ⟨recovered, witnessed, receipt, valid, observed, _⟩ :=
+    original_step_canonical_key_receipt relEnv typed stepped
+  have bindingsRead : bindings = recovered := (ReferenceStep.Witness.rule.inj witnessed).2.1
+  have account := canonical_two_route_settled_source_key_basis source work done node reached representative same receipt valid
+  rw [observed, ← bindingsRead] at account
+  exact account
+
+/-- Both independently authored transitive inferences are present together
+in one settled full-packet account. Their keys are distinct and both read
+out as the same inferred edge. This is a one-step key-basis statement. -/
+theorem actual_two_routes_completed_keys (relEnv : Engine.RelationEnv) :
+    ∃ work, Complete.Settled.settled (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        twoRouteSource work) = true ∧
+      let account := (Complete.Explore.explore
+        (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0) twoRouteSource work).nodes.flatMap
+        (fun reached => CollectionOccurrenceSearch.committedWith
+          (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+          (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph")) reached.run)
+      referenceLogicalKey 0 (routeBindings "B") ∈ CollectionCommittedObservation.committedKeys logicalKey account ∧
+      referenceLogicalKey 0 (routeBindings "C") ∈ CollectionCommittedObservation.committedKeys logicalKey account ∧
+      referenceLogicalKey 0 (routeBindings "B") ≠ referenceLogicalKey 0 (routeBindings "C") ∧
+      logicalEdge? (referenceLogicalKey 0 (routeBindings "B")) = some (Mettapedia.GSLT.LanguageDef.CollectionConsumers.edge "A" "D") ∧
+      logicalEdge? (referenceLogicalKey 0 (routeBindings "C")) = some (Mettapedia.GSLT.LanguageDef.CollectionConsumers.edge "A" "D") := by
+  obtain ⟨work, done⟩ := canonical_two_route_eventually_settled twoRouteSource
+  obtain ⟨node, reached, sourceRead⟩ := (Complete.Explore.explore_good
+    (CollectionOccurrenceSearch.canonical_search_lawful twoRoutePlan [] (.base "Graph") 0) twoRouteSource work).source
+  have same : Same node.state twoRouteSource := by rw [sourceRead]; rfl
+  exact ⟨work, done,
+    original_rule_key_at_settled_node relEnv twoRouteSource work done node reached same two_route_source_typed (route_step_B relEnv),
+    original_rule_key_at_settled_node relEnv twoRouteSource work done node reached same two_route_source_typed (route_step_C relEnv),
+    source_routes_distinct, source_routes_same_fact⟩
+
+
+/-- The source equation witnesses only move presentations. They do not
+supply additional logical derivations: publication is keyed by the actual
+literal rule witness's preserved bindings. -/
+theorem original_modulo_key_eventually_published (relEnv : Engine.RelationEnv)
+    {source target : Pattern}
+    (typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") source)
+    (stepped : ReferenceStep.StepModulo relEnv twoRouteLanguage source target) :
+    ∃ (redex contractum : Pattern) (bindings : Match.Bindings) (work : Nat)
+        (pair : CollectionCommittedObservation.Committed EquationalScopedReceipts.Event),
+      ReferenceStep.Equivalent relEnv twoRouteLanguage source redex ∧
+      ReferenceStep.StepValid relEnv twoRouteLanguage redex (.rule 0 bindings []) contractum ∧
+      ReferenceStep.Equivalent relEnv twoRouteLanguage contractum target ∧
+      pair ∈ CollectionOccurrenceSearch.committedWith (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+        (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph"))
+        ((CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0).run source work) ∧
+      logicalKey pair = referenceLogicalKey 0 bindings := by
+  obtain ⟨redex, contractum, initial, ⟨witness, literal⟩, final⟩ := stepped
+  have noEquations : twoRouteLanguage.equations = [] := by cbv
+  have noAlgebra : twoRouteLanguage.hasAlgebraDeclarations = false := by cbv
+  have same := ReferenceStep.equivalent_same noEquations noAlgebra initial
+  have redexTyped := ReferenceStep.equivalent_openPatternWellSorted noEquations noAlgebra initial typed
+  obtain ⟨bindings, work, pair, witnessed, published, key⟩ :=
+    original_step_key_eventually_published relEnv redexTyped literal
+  rw [witnessed] at literal
+  have presentations := CollectionOccurrenceSearch.canonical_committed_run_same
+    twoRoutePlan [] (.base "Graph") 0 redex source work same.symm
+  rw [presentations] at published
+  exact ⟨redex, contractum, bindings, work, pair, initial, literal, final, published, key⟩
+
+#print axioms original_rule_key_at_settled_node
+#print axioms actual_two_routes_completed_keys
+#print axioms original_step_key_eventually_published
+#print axioms two_route_source_typed
+#print axioms route_match_B
+#print axioms route_match_C
+#print axioms route_step_B
+#print axioms route_step_C
+#print axioms source_routes_distinct
+#print axioms source_routes_same_fact
+#print axioms absent_route_refused
+#print axioms wrong_conclusion_refused
+#print axioms actual_four_node_profile_checked
+#print axioms actual_four_node_profile
+#print axioms actual_four_node_source_core
+#print axioms original_step_reconstructs_bindings
+#print axioms graphRootJob_valid
+#print axioms graphRootReceipt_validIn
+#print axioms graphRootReceipt_key
+#print axioms original_step_canonical_key_receipt
+#print axioms ordinary_root_canonical_receipt
+#print axioms original_modulo_key_eventually_published
+
+
+private theorem root_binding_lookup_raw {names : List String} {captured : Assignment} {bindings : Match.Bindings}
+    (roots : RootValues 0 captured) (agreement : BindingAgreement names captured bindings) (captureName : String) :
+    (ScopedRuleMatching.lookup captured captureName).map canonValue =
+      (bindings.lookup captureName).map (fun body => canonValue (localValue [] body)) := by
+  cases found : ScopedRuleMatching.lookup captured captureName with
+  | none =>
+    have absent : bindings.lookup captureName = none := by
+      simpa only [found, Option.map_none] using (agreement.lookups captureName).symm
+    simp only [Option.map_none, absent]
+  | some value =>
+    have metadata := roots captureName value found
+    have read := agreement.lookups captureName
+    simp only [found, Option.map_some] at read
+    rw [← read]
+    simp only [Option.map_some]
+    apply congrArg some
+    rcases value with ⟨dependencies, ambient, body⟩
+    rcases metadata with ⟨dependenciesEq, ambientEq, _⟩
+    dsimp only at dependenciesEq ambientEq
+    cases dependenciesEq
+    cases ambientEq
+    rfl
+
+private theorem graph_job_exact {source : Pattern} {job : GeneralRuleJobs.Job}
+    (valid : job.Valid twoRoutePlan [] (.base "Graph") source) : job = graphRootJob source := by
+  let actualDeclaration := twoRoutePlan.rules[0]'(by cbv)
+  have rows : twoRoutePlan.rules = [actualDeclaration] := by
+    dsimp only [actualDeclaration]
+    cbv
+  have position : job.ordinal = 0 ∧ job.declaration = actualDeclaration := by
+    have member := valid.1
+    rw [rows] at member
+    change (job.declaration, job.ordinal) ∈ [(actualDeclaration, 0)] at member
+    have fields := Prod.mk.inj (List.mem_singleton.mp member)
+    exact ⟨fields.2, fields.1⟩
+  have generated := GeneralTypedSites.generate_complete valid.2
+  have permissions : twoRoutePlan.permissions.sites = .rootOnly := rfl
+  rw [permissions, GeneralTypedSites.generate_rootOnly] at generated
+  have site : job.site = GeneralTypedSites.SiteData.here [] (.base "Graph") source := by
+    split at generated
+    · exact List.mem_singleton.mp generated
+    · cases generated
+  rcases job with ⟨ordinal, declaration, focus⟩
+  dsimp only at position site
+  rcases position with ⟨rfl, rfl⟩
+  cases site
+  rfl
+
+/-- The actual canonical root determines a literal original-language
+witness with the same captured binding key, including its intermediate. -/
+theorem canonical_root_original_key (relEnv : Engine.RelationEnv)
+    {source target : Pattern} {trace : List EquationalScopedReceipts.Event} {captured : Assignment}
+    (fired : Interpreted.RootFiring RecursiveCollectionHandoff.canonicalMatchingInterpretation environment
+      [] (.base "Graph") source 0 trace captured captured [] target) :
+    ∃ (redex : Pattern) (bindings : Match.Bindings),
+      ReferenceStep.Equivalent relEnv twoRouteLanguage source redex ∧
+      OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") redex ∧
+      ReferenceStep.StepValid relEnv twoRouteLanguage redex (.rule 0 bindings []) target ∧
+      sourceLogicalKey (graphRootReceipt source trace captured captured [] target) = referenceLogicalKey 0 bindings := by
+  obtain ⟨rows, actualSpecified, _, zero, _⟩ := actual_rule_metadata
+  cases fired with
+  | @fire _ _ _ _ _ rule spec _ _ _ _ declared specified admitted sourceSorted matched captureTyped
+      premises reduced targetSorted =>
+    have declaredActual : environment.language.rewrites[0]? = some actualRule := by rw [rows]; rfl
+    have sameRule : rule = actualRule := Option.some.inj (declared.symm.trans declaredActual)
+    cases sameRule
+    have sameSpec : spec = actualSpec := Option.some.inj (specified.symm.trans actualSpecified)
+    cases sameSpec
+    have roots := captureTyped.rootValues zero
+    obtain ⟨redex, bindings, same, step, agreement⟩ := canonical_transitive_primitive_reference_with_bindings
+      relEnv twoRouteLanguage _ original_rule_metadata.1 original_rule_metadata.2.1
+      (by cbv : transitiveAuthoredRule.right = actualRule.right) original_rule_metadata.2.2 matched roots reduced
+    have typed : OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") source :=
+      (GeneralPlanEnvironment.typing_iff twoRoutePlan [] (.base "Graph") source).mp sourceSorted
+    refine ⟨redex, bindings, typed_graph_same_reference_equivalent relEnv twoRouteLanguage
+      (fun _ member => member) typed same,
+      openPatternWellSorted_of_eqvGen ((same_iff _ _).mp same) typed, step, ?_⟩
+    have declaration : (twoRoutePlan.rules[0]'(by cbv)).declarationIndex = 0 := by cbv
+    simp only [sourceLogicalKey, graphRootReceipt, graphRootJob, logicalSiteShape,
+      GeneralTypedSites.SiteData.here, referenceLogicalKey, validationHistoryReadout,
+      declaration, root_binding_lookup_raw roots agreement]
+
+/-- Every valid actual canonical receipt has an original source witness
+with exactly its declared graph key. Its full trace and packet remain
+available independently of this logical identity projection. -/
+theorem canonical_receipt_original_key (relEnv : Engine.RelationEnv) {source : Pattern}
+    {receipt : GeneralRuleJobs.Receipt EquationalScopedReceipts.Event}
+    (valid : receipt.ValidInWith RecursiveCollectionHandoff.canonicalMatchingInterpretation DynamicProvider.empty
+      twoRoutePlan [] (.base "Graph") source) :
+    ∃ (redex : Pattern) (bindings : Match.Bindings),
+      ReferenceStep.Equivalent relEnv twoRouteLanguage source redex ∧
+      OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") redex ∧
+      ReferenceStep.StepValid relEnv twoRouteLanguage redex (.rule 0 bindings []) receipt.target ∧
+      sourceLogicalKey receipt = referenceLogicalKey 0 bindings := by
+  have jobRead := graph_job_exact valid.1
+  have root : Interpreted.RootFiring RecursiveCollectionHandoff.canonicalMatchingInterpretation environment
+      [] (.base "Graph") source 0 receipt.matcherTrace receipt.captured receipt.completed receipt.premiseHistory
+      receipt.localTarget := by
+    simpa only [jobRead, graphRootJob, GeneralTypedSites.SiteData.here,
+      GeneralPlanEnvironment.environmentWith_empty, environment] using valid.2.1
+  have targetRead : receipt.target = receipt.localTarget := by
+    simpa only [jobRead, graphRootJob, GeneralTypedSites.SiteData.here, DerivedContexts.OneHoleContext.fill]
+      using valid.2.2.2.1
+  obtain ⟨_, completedRead, historyRead, _⟩ := graph_root_properties root
+  rw [completedRead, historyRead] at root
+  obtain ⟨redex, bindings, equivalent, typed, step, key⟩ := canonical_root_original_key relEnv root
+  refine ⟨redex, bindings, equivalent, typed, ?_, ?_⟩
+  · simpa only [targetRead] using step
+  · simpa only [sourceLogicalKey, graphRootReceipt, jobRead, completedRead, historyRead] using key
+
+#print axioms canonical_root_original_key
+#print axioms canonical_receipt_original_key
+
+/-- Settlement completes the declared one-step source-witness key basis
+on the actual typed graph domain. It does not complete unfolded proof
+histories or identify them with graph paths. -/
+theorem canonical_settled_original_key_iff (relEnv : Engine.RelationEnv)
+    (source : Pattern) (work : Nat)
+    (done : Complete.Settled.settled (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work) = true) (key : LogicalKey EquationalScopedReceipts.Event) :
+    key ∈ CollectionCommittedObservation.committedKeys logicalKey
+      ((Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work).nodes.flatMap (fun reached => CollectionOccurrenceSearch.committedWith
+          (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+          (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph")) reached.run)) ↔
+      ∃ node ∈ (Complete.Explore.explore
+        (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0) source work).nodes,
+        ∃ (redex target : Pattern) (bindings : Match.Bindings),
+          ReferenceStep.Equivalent relEnv twoRouteLanguage node.state redex ∧
+          OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") redex ∧
+          ReferenceStep.StepValid relEnv twoRouteLanguage redex (.rule 0 bindings []) target ∧
+          referenceLogicalKey 0 bindings = key := by
+  constructor
+  · intro observed
+    obtain ⟨node, reached, representative, same, receipt, valid, readKey⟩ :=
+      canonical_two_route_observed_key_source source work observed
+    obtain ⟨redex, bindings, equation, typed, step, keyRead⟩ := canonical_receipt_original_key relEnv valid
+    have representativeTyped := canonical_two_route_receipt_source_typed valid
+    have toNode := typed_graph_same_reference_equivalent relEnv twoRouteLanguage
+      (fun _ member => member) representativeTyped same.symm
+    exact ⟨node, reached, redex, receipt.target, bindings,
+      Relation.EqvGen.trans _ _ _ (Relation.EqvGen.symm _ _ toNode) equation,
+      typed, step, keyRead.symm.trans readKey⟩
+  · rintro ⟨node, reached, redex, target, bindings, equation, typed, step, rfl⟩
+    have noEquations : twoRouteLanguage.equations = [] := by cbv
+    have noAlgebra : twoRouteLanguage.hasAlgebraDeclarations = false := by cbv
+    exact original_rule_key_at_settled_node relEnv source work done node reached
+      (ReferenceStep.equivalent_same noEquations noAlgebra equation) typed step
+
+/-- The finite carrier and earned local drainage provide a settled graph;
+the source-witness correspondence then certifies its exact declared key
+basis independently of any unfolded-history completion policy. -/
+theorem canonical_eventually_exact_original_key_basis (relEnv : Engine.RelationEnv) (source : Pattern) :
+    ∃ work, Complete.Settled.settled (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work) = true ∧
+      ∀ key : LogicalKey EquationalScopedReceipts.Event,
+        key ∈ CollectionCommittedObservation.committedKeys logicalKey
+          ((Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+            source work).nodes.flatMap (fun reached => CollectionOccurrenceSearch.committedWith
+              (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+              (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph")) reached.run)) ↔
+          ∃ node ∈ (Complete.Explore.explore
+            (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0) source work).nodes,
+            ∃ (redex target : Pattern) (bindings : Match.Bindings),
+              ReferenceStep.Equivalent relEnv twoRouteLanguage node.state redex ∧
+              OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") redex ∧
+              ReferenceStep.StepValid relEnv twoRouteLanguage redex (.rule 0 bindings []) target ∧
+              referenceLogicalKey 0 bindings = key := by
+  obtain ⟨work, done⟩ := canonical_two_route_eventually_settled source
+  exact ⟨work, done, canonical_settled_original_key_iff relEnv source work done⟩
+
+#print axioms canonical_settled_original_key_iff
+#print axioms canonical_eventually_exact_original_key_basis
+
+/-- The fact-set observation forgets logical-key multiplicity while
+retaining a genuine typed original source witness for every conclusion. -/
+theorem canonical_settled_original_fact_iff (relEnv : Engine.RelationEnv)
+    (source : Pattern) (work : Nat)
+    (done : Complete.Settled.settled (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+      (Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work) = true) (fact : Pattern) :
+    fact ∈ ((CollectionCommittedObservation.committedKeys logicalKey
+      ((Complete.Explore.explore (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0)
+        source work).nodes.flatMap (fun node => CollectionOccurrenceSearch.committedWith
+          (matcher := RecursiveCollectionHandoff.canonicalMatchingExecution)
+          (fun packet => packet.finishCanonical? twoRoutePlan [] (.base "Graph")) node.run))).val.filterMap
+            logicalEdge?).toFinset ↔
+      ∃ node ∈ (Complete.Explore.explore
+        (CollectionOccurrenceSearch.canonicalSearch twoRoutePlan [] (.base "Graph") 0) source work).nodes,
+        ∃ (redex target : Pattern) (bindings : Match.Bindings),
+          ReferenceStep.Equivalent relEnv twoRouteLanguage node.state redex ∧
+          OpenPatternWellSorted twoRouteLanguage FreeTypeContext.empty [] (.base "Graph") redex ∧
+          ReferenceStep.StepValid relEnv twoRouteLanguage redex (.rule 0 bindings []) target ∧
+          logicalEdge? (referenceLogicalKey 0 bindings) = some fact := by
+  simp only [Multiset.mem_toFinset, Multiset.mem_filterMap, Finset.mem_val]
+  constructor
+  · rintro ⟨key, observed, read⟩
+    obtain ⟨node, reached, redex, target, bindings, equation, typed, step, keyed⟩ :=
+      (canonical_settled_original_key_iff relEnv source work done key).mp observed
+    have sameRead : logicalEdge? (referenceLogicalKey 0 bindings) = logicalEdge? key :=
+      congrArg (fun actualKey : LogicalKey EquationalScopedReceipts.Event => logicalEdge? actualKey) keyed
+    exact ⟨node, reached, redex, target, bindings, equation, typed, step, sameRead.trans read⟩
+  · rintro ⟨node, reached, redex, target, bindings, equation, typed, step, read⟩
+    exact ⟨referenceLogicalKey 0 bindings,
+      (canonical_settled_original_key_iff relEnv source work done (referenceLogicalKey 0 bindings)).mpr
+        ⟨node, reached, redex, target, bindings, equation, typed, step, rfl⟩, read⟩
+
+#print axioms canonical_settled_original_fact_iff
+
+end Mettapedia.OSLF.MeTTaIL.GeneralPremise.SharedOutputControls.GraphOriginalReference

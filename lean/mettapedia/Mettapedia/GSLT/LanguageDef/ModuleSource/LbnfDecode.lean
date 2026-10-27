@@ -111,11 +111,32 @@ def syntaxItem (atom : Atom) : Decode SyntaxItem := do
   | ("SISep", [name, separator]) => pure (.op (.sep (← token name) (← token separator) none))
   | (label, _) => throw s!"unexpected syntax item {label}"
 
+/-- A rule row's items: each category becomes the next parameter, `argument:0`, `argument:1`, …, as `languageDef!`
+names them. -/
+def ruleItems (atoms : List Atom) : Decode (List TermParam × List SyntaxItem) := do
+  let mut params : Array TermParam := #[]
+  let mut syntaxItems : Array SyntaxItem := #[]
+  for item in atoms do
+    match ← node item with
+    | ("RITerminal", [lexeme]) => syntaxItems := syntaxItems.push (.terminal (← token lexeme))
+    | ("RICategory", [sort]) =>
+        let name := s!"argument:{params.size}"
+        params := params.push (.simple name (.base (← token sort)))
+        syntaxItems := syntaxItems.push (.nonTerminal name)
+    | (label, _) => throw s!"unexpected rule item {label}"
+  pure (params.toList, syntaxItems.toList)
+
 def termDecl (atom : Atom) : Decode GrammarRule := do
   match ← node atom with
   | ("TDecl", [label, params, items, category]) =>
       pure { label := ← token label, category := ← token category,
              params := ← (← list params).mapM termParam, syntaxPattern := ← (← list items).mapM syntaxItem }
+  | ("TDeclCore", [label, params, items, category]) =>
+      pure { label := ← token label, category := ← token category,
+             params := ← (← list params).mapM termParam, syntaxPattern := ← (← list items).mapM syntaxItem }
+  | ("TRule", [label, category, items]) =>
+      let (params, syntaxPattern) ← ruleItems (← list items)
+      pure { label := ← token label, category := ← token category, params, syntaxPattern }
   | (label, _) => throw s!"unexpected constructor {label}"
 
 /-- A pattern under binders, innermost first. -/
@@ -143,8 +164,15 @@ partial def pattern (binders : List String) (atom : Atom) : Decode Pattern := do
   | ("PBinder", [binder, body]) =>
       let name ← token binder
       pure (.lambda (some name) (← pattern (name :: binders) body))
+  | ("PCall", [label, arguments]) =>
+      pure (.apply (← token label) (← callArguments binders arguments))
   | (label, _) => throw s!"unexpected pattern {label}"
 where
+  callArguments (binders : List String) (atom : Atom) : Decode (List Pattern) := do
+    (← list atom).mapM fun argument => do
+      match ← node argument with
+      | ("CArg", [inner]) => pattern binders inner
+      | (label, _) => throw s!"unexpected argument {label}"
   elementsOf (binders : List String) (atom : Atom) : Decode (List Pattern) := do
     (← list atom).mapM fun element => do
       match ← node element with
@@ -155,7 +183,16 @@ def premise (atom : Atom) : Decode Premise := do
   match ← node atom with
   | ("PrFresh", [name, term]) => pure (.freshness ⟨← token name, ← pattern [] term⟩)
   | ("PrStep", [source, target]) => pure (.congruence (← pattern [] source) (← pattern [] target))
+  | ("PrQuery", [relation, arguments]) =>
+      pure (.relationQuery (← token relation) (← pattern.callArguments [] arguments))
   | (label, _) => throw s!"unexpected premise {label}"
+
+/-- A typed context of a core row. -/
+def bindings (atom : Atom) : Decode (List (String × TypeExpr)) := do
+  (← list atom).mapM fun binding => do
+    match ← node binding with
+    | ("CBinding", [name, type]) => pure (← token name, ← typeExpr type)
+    | (label, _) => throw s!"unexpected binding {label}"
 
 /-! ## Theories -/
 
@@ -176,6 +213,13 @@ def equationRow (atom : Atom) : Numbered Equation := do
       let premises ← ((← list premises).mapM premise : Decode _)
       pure { name := ← nextEquation, typeContext := [], premises,
              left := ← pattern [] left, right := ← pattern [] right }
+  | ("EqCore", [label, context, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context, premises := [],
+             left := ← pattern [] left, right := ← pattern [] right }
+  | ("EqCoreIf", [label, context, premises, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context,
+             premises := ← ((← list premises).mapM premise : Decode _),
+             left := ← pattern [] left, right := ← pattern [] right }
   | (label, _) => throw s!"unexpected equation {label}"
 
 def rewriteRow (atom : Atom) : Decode RewriteRule := do
@@ -186,6 +230,12 @@ def rewriteRow (atom : Atom) : Decode RewriteRule := do
   | ("RwIf", [label, premises, left, right]) =>
       pure { name := ← token label, typeContext := [], premises := ← (← list premises).mapM premise,
              left := ← pattern [] left, right := ← pattern [] right }
+  | ("RwCore", [label, context, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context, premises := [],
+             left := ← pattern [] left, right := ← pattern [] right }
+  | ("RwCoreIf", [label, context, premises, left, right]) =>
+      pure { name := ← token label, typeContext := ← bindings context, premises := ← (← list premises).mapM premise,
+             left := ← pattern [] left, right := ← pattern [] right }
   | (label, _) => throw s!"unexpected rewrite {label}"
 
 def block (atom : Atom) : Numbered Block := do
@@ -193,7 +243,18 @@ def block (atom : Atom) : Numbered Block := do
   | ("BTypes", [rows]) =>
       pure (.types (← (← list rows).mapM fun row => do
         match ← node row with
-        | ("SRow", [name]) => token name
+        | ("SRow", [name]) => do pure (TypeDecl.plain (← token name))
+        | ("SCarrier", [name, carrier]) => do
+            let kind ← match ← token carrier with
+              | "String" => pure CarrierKind.builtinString
+              | "Int" => pure CarrierKind.builtinInt
+              | "Bool" => pure CarrierKind.builtinBool
+              | "label" => pure CarrierKind.tokenLabel
+              | "raw" => pure CarrierKind.tokenRaw
+              | "proofTok" => pure CarrierKind.tokenProof
+              | "path" => pure CarrierKind.tokenPath
+              | other => throw s!"the carrier `{other}` needs an explicit interpretation"
+            pure ⟨← token name, kind⟩
         | (label, _) => throw s!"unexpected sort {label}"))
   | ("BExports", [rows]) =>
       pure (.exports (← (← list rows).mapM fun row => do
@@ -214,7 +275,10 @@ def block (atom : Atom) : Numbered Block := do
 
 partial def expr (atom : Atom) : Numbered Expr := do
   match ← node atom with
-  | ("MRef", [name]) => pure (.ref (← token name))
+  | ("MRef", [name]) =>
+      -- `Empty` is the empty theory, as the Lean commands read it.
+      let name ← token name
+      pure (if name == "Empty" then .extend none [] else .ref name)
   | ("MApply", [target, args]) => pure (.apply (← path target) (← (← list args).mapM expr))
   | ("MJoin", [left, right]) => pure (.join (← expr left) (← expr right))
   | ("MLet", [name, value, body]) => pure (.letIn (← token name) (← expr value) (← expr body))

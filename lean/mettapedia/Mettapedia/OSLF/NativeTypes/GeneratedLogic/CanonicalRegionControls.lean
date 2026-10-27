@@ -274,7 +274,7 @@ theorem canon_of_not_object {term : Pattern} (notObject : ¬ IsObject term) : al
   if_neg notObject
 
 theorem alias_same (laws : AliasLaws language) {first second : Pattern}
-    (equivalent : ObjectEquivalent relEnv language first second) : aliasCanon first = aliasCanon second := by
+    (equivalent : ObjectEquivalent relEnv language .syntax first second) : aliasCanon first = aliasCanon second := by
   induction equivalent with
   | rel first second step =>
     obtain ⟨firstObject, secondObject, step⟩ := step
@@ -286,7 +286,7 @@ theorem alias_same (laws : AliasLaws language) {first second : Pattern}
   | trans _ _ _ _ _ first second => exact first.trans second
 
 /-- `A` is `B` by one instance of the equation. -/
-theorem alias_step (laws : AliasLaws language) : ObjectStep relEnv language (constant "A") (constant "B") := by
+theorem alias_step (laws : AliasLaws language) : ObjectStep relEnv language .syntax (constant "A") (constant "B") := by
   refine ⟨rfl, rfl, ?_⟩
   exact EquationStep.inContext .hole (Or.inl (AuthoredEquation.forward (equation := aliasEquation) (initial := [])
     (by rw [laws.equations]; exact List.mem_singleton_self _) (matchRel_complete (.apply .nil rfl))
@@ -295,7 +295,7 @@ theorem alias_step (laws : AliasLaws language) : ObjectStep relEnv language (con
 mutual
 /-- **Every object term is equivalent to its renaming.** -/
 theorem rename_equivalent (laws : AliasLaws language) :
-    ∀ term : Pattern, IsObject term → ObjectEquivalent relEnv language term (rename term)
+    ∀ term : Pattern, IsObject term → ObjectEquivalent relEnv language .syntax term (rename term)
   | .bvar _, _ => Relation.EqvGen.refl _
   | .fvar _, _ => Relation.EqvGen.refl _
   | .apply name [], _ => by
@@ -342,7 +342,7 @@ theorem rename_equivalent (laws : AliasLaws language) :
       exact congr
 
 theorem renameList_equivalent (laws : AliasLaws language) : ∀ patterns : List Pattern,
-    isObjectPatternList patterns = true → ∀ pattern ∈ patterns, ObjectEquivalent relEnv language pattern (rename pattern)
+    isObjectPatternList patterns = true → ∀ pattern ∈ patterns, ObjectEquivalent relEnv language .syntax pattern (rename pattern)
   | [], _ => fun _ member => nomatch member
   | pattern :: patterns, objects => by
     simp only [isObjectPatternList, Bool.and_eq_true] at objects
@@ -359,8 +359,8 @@ def aliasDomain (term : Pattern) : Bool := isObjectPattern term
 
 /-- **Replacing `A` by `B` gives canonical forms for the equation** on object terms, in any language with
 these laws. -/
-theorem alias_canonical (laws : AliasLaws language) (relEnv : RelationEnv) :
-    Canonical relEnv language aliasCanon aliasDomain where
+theorem alias_canonicalDetermined (laws : AliasLaws language) (relEnv : RelationEnv) :
+    CanonicalDetermined relEnv language aliasCanon aliasDomain where
   object admitted := admitted
   determined term := by
     by_cases object : IsObject term
@@ -374,6 +374,11 @@ theorem alias_canonical (laws : AliasLaws language) (relEnv : RelationEnv) :
   closed object := by
     rw [canon_of_object object]
     exact rename_scoped _ 0
+
+/-- And so canonical forms on their domain. -/
+theorem alias_canonical (laws : AliasLaws language) (relEnv : RelationEnv) :
+    Canonical relEnv language aliasCanon aliasDomain :=
+  (alias_canonicalDetermined laws relEnv).canonical
 
 /-! ## Coherence -/
 
@@ -489,7 +494,9 @@ def aliasClosure : List Pattern := [constant "B", constant "C"]
 
 theorem alias_closure :
     CanonicalClosure RelationEnv.empty aliased 2 aliasCanon aliasDomain List.singleton (constant "A") aliasClosure where
+  subject := by decide +kernel
   admitted := by decide +kernel
+  canonical := by decide +kernel
   start := by decide +kernel
   presented := by decide +kernel
   closed := by decide +kernel

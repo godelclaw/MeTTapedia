@@ -1,0 +1,190 @@
+import Mettapedia.Algorithms.Compression.RepeatedBlock
+import Mettapedia.Algorithms.Compression.SyntaxFactor
+import Mettapedia.Algorithms.Compression.Framing
+import Mettapedia.Algorithms.Compression.TemplateMatching
+import Mettapedia.Algorithms.Compression.FramedTree
+import Mettapedia.Algorithms.Compression.UnsignedBytes
+import Mettapedia.Algorithms.Compression.WholeArtifact
+import Mettapedia.Algorithms.Compression.Search
+import Mettapedia.Algorithms.Compression.FairSearch
+import Mettapedia.Algorithms.Compression.ScopedGuidance
+import Mettapedia.Algorithms.Compression.TemplateGrammar
+import Mettapedia.Algorithms.Compression.CompactDag
+import Mettapedia.Algorithms.Compression.SourceFrame
+import Mettapedia.Algorithms.Compression.TreeArchive
+import Mettapedia.Algorithms.Compression.ScopedFactor
+import Mettapedia.Examples.Compression.ScopedTemplateControls
+import Mettapedia.Examples.Compression.ScopedGuidanceControls
+import Mettapedia.Computability.KolmogorovComplexity.FeatureTheory
+import Mettapedia.Computability.KolmogorovComplexity.FeatureIncompressibility
+import Mettapedia.Computability.KolmogorovComplexity.BoundedFeature
+import Mettapedia.Languages.FeatureScene.Basic
+
+/-! Integration audit. Generic algorithms do not import this example client. -/
+
+#print axioms Mettapedia.Algorithms.Compression.Checked.accept_iff
+#print axioms Mettapedia.Algorithms.Compression.Checked.select_sound
+#print axioms Mettapedia.Algorithms.Compression.Checked.select_none_iff
+#print axioms Mettapedia.Algorithms.Compression.Checked.compress_correct
+#print axioms Mettapedia.Algorithms.Compression.Checked.compress_strict_of_nonempty
+#print axioms Mettapedia.Algorithms.Compression.Checked.checkedProgramStep
+#print axioms Mettapedia.Algorithms.Compression.RepeatedBlock.decode_encode
+#print axioms Mettapedia.Algorithms.Compression.RepeatedBlock.encode_size_le
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.Tree.expand_abstract
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.extract_reconstructs
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.decode_encode
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.observation_after_expansion
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.nontrivial_factor
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.capture_is_refused
+#print axioms Mettapedia.Algorithms.Compression.SyntaxFactor.unguarded_capture_changes_source
+#print axioms Mettapedia.Languages.FeatureScene.eval_rename
+#print axioms Mettapedia.Languages.FeatureScene.step_sound
+#print axioms Mettapedia.Languages.FeatureScene.reduction_wellFounded
+#print axioms Mettapedia.Languages.FeatureScene.derivation_sound
+#print axioms Mettapedia.Languages.FeatureScene.same_colour_constraints
+#print axioms Mettapedia.Languages.FeatureScene.black_is_not_white
+#print axioms Mettapedia.Languages.FeatureScene.colour_alone_does_not_identify_object
+#print axioms Mettapedia.Languages.FeatureScene.reduction_is_not_symmetric
+#print axioms Mettapedia.Algorithms.Compression.Framing.decode_encode_append
+#print axioms Mettapedia.Algorithms.Compression.Framing.decode_sound
+#print axioms Mettapedia.Algorithms.Compression.Framing.record_prefixFree
+#print axioms Mettapedia.Algorithms.Compression.Framing.encoded_length
+#print axioms Mettapedia.Algorithms.Compression.Framing.decodePadded_encode
+#print axioms Mettapedia.Algorithms.Compression.Framing.decodePadded_sound
+#print axioms Mettapedia.Algorithms.Compression.Framing.encodePadded_length
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.assign_sound
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.expand_mono
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.matchPattern_sound
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.matchList_sound
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.matchPattern_complete
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.match_from_empty_iff
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.canonical_reconstructs
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.pairwise_seed_matches
+#print axioms Mettapedia.Algorithms.Compression.TemplateMatching.repeated_hole_equal
+#print axioms Mettapedia.Algorithms.Compression.FramedTree.encoded_length
+#print axioms Mettapedia.Algorithms.Compression.FramedTree.size_le_encoded
+#print axioms Mettapedia.Algorithms.Compression.FramedTree.decodeAll_encode
+#print axioms Mettapedia.Algorithms.Compression.FramedTree.decodeAll_sound
+#print axioms Mettapedia.Algorithms.Compression.FramedTree.encode_injective
+#print axioms Mettapedia.Algorithms.Compression.UnsignedBytes.decode_encode
+#print axioms Mettapedia.Algorithms.Compression.UnsignedBytes.decode_sound
+#print axioms Mettapedia.Algorithms.Compression.UnsignedBytes.decodeMachine_encode
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.accept_iff
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.accepted_bits_decrease
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.refine_preserves
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.refine_optimal_in_region
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.changed_observation_refused
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.no_gain_refused
+#print axioms Mettapedia.Algorithms.Compression.WholeArtifact.refine_append
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.accept_iff
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.step_preserves
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.refine_preserves
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.refine_optimal_in_region
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.refine_append
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.invalid_refused
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.no_gain_refused
+#print axioms Mettapedia.Algorithms.Compression.CostedArtifact.nontransitive_error_does_not_accumulate
+#print axioms Mettapedia.Algorithms.Compression.ScopedFactor.restore_factorOne
+#print axioms Mettapedia.Algorithms.Compression.ScopedFactor.restore_factor
+#print axioms Mettapedia.Algorithms.Compression.ScopedFactor.factor_length
+#print axioms Mettapedia.Algorithms.Compression.ScopedFactor.call_records_shared_match
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.minimum_cost
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.after_valid
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.deadline_decreases
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.serviced_within
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.run_add
+#print axioms Mettapedia.Algorithms.Compression.Search.proposal_origin
+#print axioms Mettapedia.Algorithms.Compression.Search.best_preserves
+#print axioms Mettapedia.Algorithms.Compression.Search.best_le_every_emitted
+#print axioms Mettapedia.Algorithms.Compression.Search.best_resume
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.ticket_unique
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.entry_serviced_within
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.run_valid
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.pending_account
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.successor_account
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.services_reachable
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.complete_covers_reachable
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.CoverageControls.finite_budget_can_miss_live_root
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.CoverageControls.age_services_root_behind_loop
+#print axioms Mettapedia.Algorithms.Compression.FairQueue.CoverageControls.equal_values_keep_distinct_occurrences
+#print axioms Mettapedia.Algorithms.Compression.Search.best_eventually_le_reachable
+#print axioms Mettapedia.Algorithms.Compression.Search.best_le_reachable_of_complete
+#print axioms Mettapedia.Algorithms.Compression.ScopedGuidance.terms_matched
+#print axioms Mettapedia.Algorithms.Compression.ScopedGuidance.arguments_complete
+#print axioms Mettapedia.Algorithms.Compression.ScopedGuidance.terms_mem_iff
+#print axioms Mettapedia.Algorithms.Compression.ScopedGuidance.terms_reconstruct
+#print axioms Mettapedia.Algorithms.Compression.ScopedGuidance.arguments_eq_late
+#print axioms Mettapedia.Algorithms.Compression.ScopedGuidance.terms_eq_late
+#print axioms Mettapedia.Algorithms.Compression.TemplateGrammar.forests_mem_iff
+#print axioms Mettapedia.Algorithms.Compression.TemplateGrammar.terms_mem_iff
+#print axioms Mettapedia.Algorithms.Compression.TemplateGrammar.enumerate_mem_iff
+#print axioms KolmogorovComplexity.FeatureTheory.feature_iff_step
+#print axioms KolmogorovComplexity.FeatureTheory.exists_shortest_feature
+#print axioms KolmogorovComplexity.FeatureTheory.exists_shortest_descriptive
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_maps_conditional
+#print axioms KolmogorovComplexity.FeatureTheory.singleton_of_compressible
+#print axioms KolmogorovComplexity.FeatureTheory.exists_universal_feature
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_feature_constant_bound
+#print axioms KolmogorovComplexity.FeatureTheory.prefix_complexity_agrees
+#print axioms KolmogorovComplexity.FeatureTheory.decodeFeatureThenRun_partrec
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_feature_plain_lower
+#print axioms KolmogorovComplexity.FeatureTheory.canonical_shortest_feature_plain_lower
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_maps_prefix
+#print axioms KolmogorovComplexity.FeatureTheory.strict_step_not_necessarily_shortest
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.gather_map
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.interpret_resolve
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.foldRecords_unfoldRecords
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.evaluate_unfold
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.unfoldRecords_length
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.gather_length
+#print axioms Mettapedia.Algorithms.Compression.Framing.byteLength_measure
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.measured_fold
+#print axioms Mettapedia.Algorithms.Compression.CompactDag.measured_evaluate
+#print axioms Mettapedia.Algorithms.Compression.SourceFrame.restore_rename
+#print axioms Mettapedia.Algorithms.Compression.SourceFrame.restore_freeze
+#print axioms Mettapedia.Algorithms.Compression.SourceFrame.restore_fresh
+#print axioms Mettapedia.Algorithms.Compression.SourceFrame.fresh_alias_iff
+#print axioms Mettapedia.Algorithms.Compression.SourceFrame.declarations_length
+#print axioms Mettapedia.Algorithms.Compression.SourceFrame.restored_occurrences
+#print axioms Mettapedia.Algorithms.Compression.TreeArchive.referenceCatalogue_covers
+#print axioms Mettapedia.Algorithms.Compression.TreeArchive.decode_encode
+#print axioms Mettapedia.Algorithms.Compression.TreeArchive.encode_injective_on_covered
+#print axioms Mettapedia.Algorithms.Compression.TreeArchive.matched_template_reconstructs
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplates.applyBody_recovered
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplates.matched_expandsAtT
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplates.matched_expandsAtA
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplates.matched_expands
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplateWire.schemaOperatorGet_put
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplateWire.matchExpand_reconstructs
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplateWire.source_wire_injective
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplateWire.schema_wire_injective
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Authored.subset_reconstructs
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Authored.repeated_depths_reconstruct
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.missing_sort_uninhabited
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.no_total_ordinary_assignment
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.no_total_meta_assignment
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.actual_match
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.actual_reconstruction
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.actual_wire_reconstruction
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.missing_used_capture_refused
+#print axioms Mettapedia.Examples.Compression.ScopedTemplateControls.Unused.wrong_sort_wire_refused
+#print axioms Mettapedia.Algorithms.Compression.ScopedChoices.positions_complete
+#print axioms Mettapedia.Algorithms.Compression.ScopedChoices.chosenSpine_present
+#print axioms Mettapedia.Algorithms.Compression.ScopedChoices.variable_present
+#print axioms Mettapedia.Algorithms.Compression.ScopedChoices.parameter_present
+#print axioms Mettapedia.Algorithms.Compression.ScopedChoices.checked_refinement_eq_late
+#print axioms Mettapedia.Algorithms.Compression.ScopedTemplateWire.schemaOperatorEquality
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.body_present
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.body_match
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.pattern_match
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.generated_contextual_pattern
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.generated_pattern_reconstructs
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.depth_zero_exhausted
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.Binder.repeated_spine_refused
+#print axioms Mettapedia.Examples.Compression.ScopedGuidanceControls.absent_unused_parameters_do_not_block_generation
+
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_b_maps_prefix
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_b_feature_plain_lower
+#print axioms KolmogorovComplexity.FeatureTheory.natural_factor_residual_iff
+#print axioms KolmogorovComplexity.FeatureTheory.shortest_b_le_residual_complexity
+#print axioms KolmogorovComplexity.FeatureTheory.reference_b_feature_information

@@ -92,7 +92,7 @@ theorem ask_ab_overlapping_split_answer :
 /-- **The front door with the parts decider proves the overlapping split.** -/
 theorem ask_ab_overlapping_split :
     (referenceStructure RelationEnv.empty pairPool).sat Env.closed overlappingSplit bothAB :=
-  askWith_proved ask_ab_overlapping_split_answer
+  askWith_proved (by rfl) ask_ab_overlapping_split_answer
 
 theorem ask_ab_not_every_first_fires_answer :
     askWith RelationEnv.empty pairSignature pairPool 2 everyFirstFires bothAB (groundPartsDecider pairPool_ground 2 2)
@@ -102,6 +102,6 @@ theorem ask_ab_not_every_first_fires_answer :
 /-- **And refutes the every-split.** -/
 theorem ask_ab_not_every_first_fires :
     ¬ (referenceStructure RelationEnv.empty pairPool).sat Env.closed everyFirstFires bothAB :=
-  askWith_refuted ask_ab_not_every_first_fires_answer
+  askWith_refuted (by rfl) ask_ab_not_every_first_fires_answer
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetReadings

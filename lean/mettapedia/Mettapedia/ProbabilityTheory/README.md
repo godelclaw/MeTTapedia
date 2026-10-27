@@ -10,14 +10,12 @@ directory.
 
 A few threads, each with a one-line "why":
 
-- **Where do the sum and product rules come from?** *Cox's theorem* answers this:
-  if degrees of belief are real numbers and you accept a couple of consistency
-  axioms (e.g. the plausibility of `A and B` depends only on the plausibility of `A`
-  and of `B`-given-`A`), then — up to rescaling — your beliefs *must* obey ordinary
-  probability. The *Knuth–Skilling* program pushes the same idea further: it shows
-  that the rules of inference fall out of the structure of an ordered lattice of
-  statements, so probability is the unique consistent way to put numbers on a
-  distributive lattice. (This is the flagship development — see `Hypercube/` below.)
+- **Where do the sum and product rules come from?** Cox's functional-equation
+  development constructs a multiplicative regraduation on `(0,1]` under explicit
+  range, order, associativity and continuity hypotheses. Knuth–Skilling's ordered
+  semigroup route uses its stated separation hypotheses. An event probability
+  calculus additionally needs the event structure and compatible complement law.
+  Neither associativity alone nor a taxonomy label supplies all of this.
 - **What if you can't commit to a single probability?** Real agents often only know
   that a probability lies *between* bounds. *Imprecise probability* and *belief
   functions* (Dempster–Shafer) formalize reasoning with whole *sets* of allowed
@@ -34,15 +32,14 @@ A few threads, each with a one-line "why":
   views tie the elementary derivations back to Mathlib's measure theory and to the
   categorical (`Kleisli`-of-a-monad) picture of probabilistic maps.
 
-The payoff of doing this in Lean is that "probability is forced, not chosen" stops
-being a slogan and becomes a checked theorem.
+Lean makes the assumptions and representation maps part of each checked statement.
 
 ## Topics
 
 | Area | Where | What it formalizes |
 |------|-------|--------------------|
-| Cox's theorem | `Cox/`, `Cox.lean` | derivation of the product/sum rules from consistency axioms; includes a discontinuous counterexample showing where the regularity hypotheses bite |
-| Knuth–Skilling foundations | `Hypercube/KnuthSkilling/` (under the hypercube; see `Hypercube/README.md`) | inference as the unique consistent valuation on an ordered lattice — the flagship lane |
+| Cox foundations | `ProbabilityTheory.Cox` (standalone), local `Cox/Regraduation.lean` and `Cox/DiscontinuousCounterexample.lean` | canonical product derivation; positive-power uniqueness and interior calibration; controls separating algebraic rules from valid Cox operations |
+| Knuth–Skilling foundations | standalone `KnuthSkilling.*`, local `Common/OrderedCombination.lean` and `Hypercube/KnuthSkilling/` | canonical representation hypotheses, calibration, sequential actions and interval observations |
 | Probability "hypercube" | `Hypercube/` (23) | the axis space of inference: commutativity, distributivity, precision, ordering, additivity — **has its own [README](Hypercube/README.md)** |
 | Bayesian networks | `BayesianNetworks/` (30) | local Markov property, d-separation, inference |
 | Imprecise probability / belief functions | `ImpreciseProbability/` (7), `BeliefFunctions/` (1), `ImpreciseProbability.lean`, `BeliefFunctions.lean` | credal sets, Dempster–Shafer belief functions |
@@ -52,35 +49,29 @@ being a slogan and becomes a checked theorem.
 | Distributions & structures | `Distributions/` (2), `Structures/` (1), `Common/` (6), `Foundations/` (1) | shared building blocks (e.g. valuations, common foundations) |
 | Bridges & unification | `MeasureBridge.lean`, `Unified.lean`, `UnifiedProbabilityBridge.lean`, `CommonFoundations.lean`, `AssociativityTheorem.lean`, `FiniteMeasureSupport.lean`, `Basic.lean` | ties the strands to Mathlib measure theory and to one another |
 
-> **Note on the Knuth–Skilling code.** It lives at
-> `ProbabilityTheory/Hypercube/KnuthSkilling/`, *inside* the hypercube subtree — not
-> at a top-level `KnuthSkilling/` directory. As of this writing that subtree is
-> `sorry`-free; for its detailed account see
-> [`Hypercube/README.md`](Hypercube/README.md). This top-level README intentionally
-> does not duplicate it.
+The canonical proof implementation is the standalone foundations package
+(`lean/standalone/ks-foundations-of-inference`), using `KnuthSkilling.*` and
+`ProbabilityTheory.Cox.*`. Local Cox entrypoints import it without redeclaring
+its structures. The hypercube modules are interpretation and example layers.
 
-## Formalization status
+`Common/OrderedCombination.lean` distinguishes the generated iterate range from
+a representation of the whole carrier. Its right-regular action retains
+sequential order; additive readouts and interval envelopes are separate
+observations. Nonempty families with a shared positive anchor have point
+envelopes. Completeness alone does not fix a scale or force shrinking bounds.
 
-This umbrella directory's **directly-owned** files (i.e. everything *except* the
-`Hypercube/` and `HigherOrderProbability/` subtrees, which each have their own
-README and report their own status) total **74 `.lean` files**, with exactly **one** open
-`sorry`, in the work-in-progress `FreeProbability/Basic.lean`. There are no source-level
-`axiom` declarations in this scope (a source grep, *not* a per-theorem `#print axioms`
-audit, so a theorem can still inherit a standard Mathlib axiom transitively), and nothing
-in this scope uses `native_decide`.
+## Checking
 
-The `Hypercube/` and `HigherOrderProbability/` subtrees report their own status in
-their own READMEs; both are `sorry`-free as of this writing.
-
-Reproduce from this directory — the `sorry`/`admit` regex is a *raw* scan that also matches
-prose in comments/strings, so the footer count (1, in `FreeProbability/Basic.lean`) is the
-authoritative comment-stripped figure:
+Build the relevant targets from the Lean package root:
 
 ```bash
-rg -n --glob '*.lean' '\b(sorry|admit)\b' .
-rg -n --glob '*.lean' '^\s*(@\[[^]]*\]\s*)*axiom\s' .   # axiom declarations (prints nothing)
-rg -n --glob '*.lean' 'native_decide' .                 # prints nothing in this scope
+lake build Mettapedia.ProbabilityTheory.Cox Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling
+lake build Mettapedia.ProbabilityTheoryClean
 ```
+
+These checks qualify their declared import graphs; they are not a status claim
+for unrelated probability developments. Theorem statements distinguish supplied
+structures, derived laws, and counterexamples.
 
 ## References
 

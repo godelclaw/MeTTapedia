@@ -9,6 +9,8 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Controls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Finite
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.FiniteControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CertificateEquations
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CertificateFreshEquations
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CertificateFreshEquationsControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Certificates
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CertificateControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.EquationControls
@@ -30,6 +32,21 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SyntacticEmbeddings
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.MuEmbedding
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.FrontDoorEmbeddings
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.DriverBridge
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.FrontDoorAgreement
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SplitMorphism
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AnswerBagReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AnswerBagControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ObservationAtoms
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ObservationAtomsControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.LocalDriverReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PartrecDriverReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PartrecDriverReadingControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.LambdaDriverReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.LambdaDriverReadingControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoCanonicalForms
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoDriverReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoPresentations
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoDriverReadingControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.EmbeddingControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.VerdictCatalogue
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.VerdictCatalogueControls
@@ -54,6 +71,10 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.InstanceControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AlgebraCanonicalForms
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PiCanonicalForms
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PiControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ComputedNormalForm
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AlgebraTypedForms
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AmbientCanonicalForms
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AmbientControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Readings
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetReadings
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.GroundSetReadings
@@ -75,6 +96,60 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ExactMorphism
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipHFUniverse
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.TwoLevelSetRules
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.TwoLevelSetRuleControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.NestedSetRules
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.NestedSetRuleControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.FeatureControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureSetRules
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureFreshness
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureSteps
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalCaptureControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySorted
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySortedControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySortedHigherOrder
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ManySortedStructural
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PresheafReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.OpenTerms
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Judgments
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.EntailmentHigherOrder
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.JudgmentControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PresheafControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.BackwardReach
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ExploredDecider
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ExploredControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCrossing
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCrossingControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Hints
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ScopedCongruences
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedTypes
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedFormers
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedFixedPoints
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedDecision
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.EngineAgreement
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ObservedSystems
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RelationalAnswerFrontDoor
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PathSystems
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SortWitnesses
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.StaticDecider
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ContextLabels
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.TokenNets
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.TokenNetAdequacy
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.TokenNetDistinctions
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PresentedContexts
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PresentedContextControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ForwardEquivalence
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoPartnerAdequacy
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoPartnerControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CarrierTyping
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CarrierControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.HostEvaluation
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.HostEvaluationControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ServedRelations
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ServedRelationControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.DeclaredReadings
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.DeclaredReadingControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ContextLabelControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.AnswerBagNames
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipSplits
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipSplitControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipSomeDescriptions
@@ -84,11 +159,15 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.HypersetProofControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.HypersetMeaning
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipExcludedMiddle
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipExcludedMiddleControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipIndependence
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipKripkeSets
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipExtensionalIndependence
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipUpwardSplits
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipUpwardSplitControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalParts
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.BagCanonicalParts
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.FrontDoorParts
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalPresentations
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.PetriPartsControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.GroundSetParts
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.GroundSetPartsControls
@@ -97,6 +176,11 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipPastModalities
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipPastModalityControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWay
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTypes
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipDetermined
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPoints
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointDecision
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointControls
 
 /-!
 # The native type language a language generates
@@ -104,11 +188,12 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
 - `Formula`: the formulas, in negation normal form with an involutive dual: structural formers from
   constructors, collection kinds and binders; modalities from steps, labelled by rule and by site;
   counting modalities, which count distinct terms one step away; types, singletons and quantifiers over
-  a type; least and greatest fixed points.
+  a type; atoms of the language's declared relations; least and greatest fixed points.
 - `Semantics`: satisfaction in a native structure over a carrier; the dual is negation.
 - `Substitution`: renaming and substituting fixed-point variables, with their meaning; substituting closed
   formulas for free atoms closes a formula with the same truth.
-- `Reference`: the native structure of a language, its terms read modulo its equations.
+- `Reference`: the native structure of a language, its terms read modulo its equations. A term is in a declared
+  relation when a query of the relation at an equivalent term succeeds (`inRelation`, `relationHolds`).
 - `Transfer`: existential formulas hold at images of a homomorphism, universal ones come back.
 - `Invariance`: formulas are monotone, and closed formulas hold alike at equivalent terms.
 - `Generated`: Φ(L), the formulas whose formers the language provides, closed under the dual.
@@ -116,6 +201,10 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
 - `Finite`: an exact evaluator on finite structures, with fixed points by iteration.
 - `CertificateEquations`: finite checks that a certificate's model respects the language's equations
   (bag, set and algebra laws, and first-order authored equations).
+- `CertificateFreshEquations`, `CertificateFreshEquationsControls`: certificates for equations with binders, read with
+  fresh values: a metavariable used under fewer binders than it is captured under is closed, and its table is a
+  constant. A model passing the check respects every reading of fresh or closed discipline; the η-law, with a model
+  that separates two terms the syntax theory equates, and a model that breaks η refused.
 - `Certificates`: a valid finite-model certificate maps the language's structure into a finite one, so
   the evaluator's verdicts there are theorems about the language.
 - `Exploration`: a listed region of terms sits inside the language, so existential formulas that hold
@@ -135,6 +224,14 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
 - `AlgebraCanonicalForms`, `PiCanonicalForms`: canonical forms for a collection algebra in one sort, from the
   bag normal form on closed sorted terms; the π-calculus read modulo its parallel laws, coherent for plain
   steps.
+- `ComputedNormalForm`: the bag normal form computed by insertion sort and structural recursion, so the kernel
+  evaluates it.
+- `AlgebraTypedForms`: canonical forms for a collection algebra in several sorts, in the typed reading at the sorts:
+  each law relates closed terms of one sort, and the bag normal form is read off them.
+- `AmbientCanonicalForms`, `AmbientControls`: mobile ambients modulo their parallel laws, with processes and names.
+  Steps are listed at the padded form, where every ambient's content is a bag; a step from any equivalent of a
+  canonical term is matched there, and steps keep closed processes closed processes. Entering, leaving and opening
+  answered at the front door, under ambients and modulo the laws, with their negatives.
 - `Readings`: a language's rules fired at a chosen presentation of each state, with canonical targets; a
   closed region of a reading decides every behavioural formula exactly.
 - `SetReadings`: three readings of a set language. Consume fires at the canonical form, keep where every
@@ -188,6 +285,19 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
   excluded middle over the three laws, and "... empty or not empty" to weak excluded middle; so hypotheses with the
   three laws prove every regional native type that holds exactly when they prove excluded middle. At the empty set the
   first is proved from the three laws alone, and excluded middle for a bounded formula is the full one here.
+- `SetMembershipIndependence`: excluded middle does not follow from the laws of the empty set, the power set,
+  separation, union, replacement and induction along membership, even with weak excluded middle and the Gödel–Dummett
+  law: a Kripke model of three-valued sets over two stages, coded in base three, satisfies them all and refutes it. So
+  "every split of `1` has a first part that is empty or has a member" is true with no proof from them, and no such
+  hypotheses are complete for the regional fragment. In every Kripke model, two stages above a stage where the three
+  laws hold have a common later stage (Cantor), so weak excluded middle holds wherever the laws hold.
+- `SetMembershipKripkeSets`: sets over any listing of stages, with an equality that grows along the stages: two sets
+  are equal at a stage when their members agree at every later stage. Membership respects it, and the laws of the
+  empty set, the power set, separation, union, replacement and induction along membership hold, with extensionality
+  and the indiscernibility of equal sets, in a Kripke–Henkin model of the checker's proofs.
+- `SetMembershipExtensionalIndependence`: over two stages excluded middle fails, and over a fork weak excluded middle
+  fails, so neither follows from those laws, extensionality included; neither does its every-split at `1`. The fork
+  escapes the Cantor argument because the sets of `P(∅)` cut out at the root become equal at the later stages.
 - `SetMembershipUpwardSplits`, `SetMembershipUpwardSplitControls`: every-splits whose part formulas have upward
   shapes (true of a part as soon as it has certain members) are proved from the three laws, nested anywhere, since
   the union says which part each member lies in. What costs excluded middle is a part formula that says a part lacks
@@ -204,6 +314,9 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
 - `HypersetMeaning`: the sentences mean the coded graph among the sets, and coding is a step morphism, so a
   sentence about a coded graph is true among the sets exactly when the hyperset its node pictures has the native
   type.
+- `CanonicalPresentations`: constructor formers, every-built formers and types at the front door for any language
+  with canonical forms, through a listing of the presentations of canonical terms that extends a listing of parts;
+  over admitted labels, with a certified decider.
 - `CanonicalParts`, `FrontDoorParts`: splits at the front door for any language with canonical forms. Canonical
   forms list the parts of each canonical collection, complete and sound for the language's splits; a closed region
   that also holds the listed parts decides the behavioural formulas with splits and emptiness exactly, and is a
@@ -232,6 +345,18 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
   hereditarily finite sets are decidable. A step back sees one level less, so a two-way formula holds alike at sets
   bisimilar up to its two-way depth; steps back and sorts become searches over subsets of a finite stage, and an
   evaluation on hereditary terms is exact.
+- `SetMembershipTypes`: the types of hereditarily finite sets for a finite list of closed formulas. When each formula is
+  decided by the members' types, the realized types stabilize by stage `2 ^ n`, so a step back or a sort over a formula
+  of the list is decided by the subsets, or the sets, of that stage.
+- `SetMembershipDetermined`: each former preserves being decided by the members' types: a step forward reads them, a
+  named set is pinned by its members' names, a split is matched part for part, and a step back reads the set's own type,
+  which a local closure decides.
+- `SetMembershipFixedPoints`, `SetMembershipFixedPointDecision`, `SetMembershipFixedPointControls`: fixed points under
+  steps back, nested freely. A guarded formula reads each fixed-point variable under a step forward taken after its
+  binder and never across a step back or a sort. Its closure (each subformula with the enclosing fixed points put back)
+  is local, and the evaluation, fixed points iterated by height and steps back by the stage of the closure, decides
+  every guarded native type of the hereditarily finite sets. The two-way formulas are guarded. The bound is doubly
+  exponential; fixed points whose variable crosses a step back stay open.
 - `TwoLevelSetRules`: set rules whose members may be set patterns with a rest, as in `{ {x, y, ...inner}, ...rest }`.
   Matching a set or a bag is invariant under permuting the members of each layer, and the listed presentations write
   each member between once and a bound times, each copy canonical or with copies of its own members. Every step from
@@ -239,6 +364,135 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
   at a listed presentation, so these languages have canonical forms.
 - `TwoLevelSetRuleControls`: a rule that picks a member of a member with two members. At `{{0}}` the step needs an
   inner copy: it is proved over the canonical region and unknown without the forms.
+- `NestedSetRules`, `NestedSetRuleControls`: set rules nested at any depth, with copies bounded depth by depth: a
+  match at any presentation moves to a listed presentation, each set holding each member up to its depth's bound
+  times, each copy listed one depth below (`nested_transfer`). The generic bag transfer and regrouping by classes
+  are shared with the two-level rules. A rule three sets deep fires at a copy two sets down, with its negatives.
+- `FeatureControls`: universally quantified premises over vectors, vector matching, and freshness premises on
+  closed terms, at the front door, with their negatives.
+- `CanonicalCaptureSetRules`, `CanonicalCaptureFreshness`, `CanonicalCaptureSteps`, `CanonicalCaptureControls`: set
+  rules listed at presentations whose captures are all canonical: partners, then the canonical set of the remaining
+  members. Premises that hold at canonical captures (relation queries over metavariables in an environment respecting
+  canonical forms, guards, universally quantified premises over them, freshness premises over subjects without
+  explicit substitutions) are coherent. A premise that steps a captured member is coherent with presentations listed
+  to the state's height, the member captured where its step fires. Controls: a query two sets down, a quantified
+  premise over a rest, a freshness premise, and a member step that fires only at a copy, with negatives.
+- `ManySorted`, `ManySortedControls`: many-sorted native types, over carriers by sort, as one-sorted native types with
+  sort guards: the sorted structure of any one-sorted structure, and the guarded translation, exact in corresponding
+  environments; sorted verdicts at the front door for a language of names and processes, with negatives.
+- `ManySortedHigherOrder`, `ManySortedStructural`: the higher-order translation of many-sorted formulas through their
+  guarded translation; the sorted structural logic embedded exactly, its classes forming a sorted structure.
+- `PresheafReading`: native types read in the presheaf topos over a site of stages by Kripke–Joyal forcing; forcing is
+  closed under pulling back and sound for the classical judgment over valuations, equal to it on negative formulas at
+  every stage, and equal to classical truth (so to the higher-order translation) at the closed stage on existential
+  formers over negative formulas.
+- `OpenTerms`: open terms with named free variables; substitution with identity and composition; contexts,
+  valuations and substitutions between contexts; the site of a language's inhabited contexts; the open judgment
+  `Γ ⊢ t : φ`, closed under substitution and reached one variable at a time; forcing at a context.
+- `Judgments`, `EntailmentHigherOrder`: front-door entries with evidence for `Γ ⊢ t : φ` (decided over complete
+  fibres, refuted by a typed valuation), for entailment `φ ⊑ ψ` at a type (an open judgment of a variable; proved by a
+  finite-model certificate or a derivation in higher-order logic, refuted by a separating value), for inhabitation
+  (a witness, or emptiness), and for Σ and Π over a type of families of native types indexed by its values (compiled
+  over complete fibres, a witness or a counter-value otherwise); fibres of constant sorts.
+- `JudgmentControls`, `PresheafControls`: each judgment at the front door with positive and negative verdicts; the
+  readings agreeing on a negative formula and at the closed stage, and parting on a disjunction and on excluded middle
+  at an open stage, and on a box over a disjunction at a closed term.
+- `BackwardReach`: backward search as evidence of the front door. Reaching named goals and having an ancestor among them
+  are least fixed points; in an equation-free, unconditional, first-order language the reference steps are root
+  rewrites, so the Herbrand backward search decides both formulas and their duals, on infinite state spaces too.
+- `ExploredDecider`: explored graphs as a certified decider. Two spans with the same steps between forward-closed good
+  states satisfy the same future formulas; a root-profile language's compiled plan has the reference steps between
+  well-sorted states; a valid query's explored verdict is exact about its generated formula. The runs of a first-order
+  language between object states are its reference steps, so μ-calculus statements about them are generated formulas.
+- `ExploredControls`: the counters, never halting from four by backward search though they run forever, and never
+  deadlocking or recurring to even counts through explored graphs over abstractions of their counts; the finite
+  models' questions about a rising level, asked at the front door and read back as μ-calculus statements.
+- `SetMembershipCrossing`, `SetMembershipCrossingControls`: fixed points whose variable crosses steps back, decided on
+  the hereditarily finite sets when the variable sits at no greater depth than its binder: every unfolding is a
+  two-way formula of bounded depth, determined by its values at the subsets of `V_D`, so the unfoldings stabilize
+  within the number of those subsets, and a stable unfolding is the fixed point; ascending chains, going up from `{∅}`
+  never meeting `∅`, and a property read after a step forward and a step back, kernel-evaluated.
+- `SetMembershipCountedTypes`, `SetMembershipCountedFormers`, `SetMembershipCountedFixedPoints`,
+  `SetMembershipCountedDecision`, `SetMembershipCountedControls`: counting members and singletons with fixed points
+  under steps back. Sets are described by their members' types counted up to a cap; each former is decided by the
+  counts at the cap it needs (a split at the sum of its parts' caps, a step back by swapping the set inside its
+  container); the multiplicities of the types in `V_k`, read up to one more than the cap, stabilize, and a stable stage
+  holds distinct representatives enough for every container and sort search. The count-guarded formulas are decided by
+  an exact evaluation; kernel-evaluated controls count distinct members, singletons, and members lying in some set.
+- `EngineAgreement`: on aligned, equation-free languages the front door steps where the engine steps over a relation
+  environment, so consumers stated through the engine's relation ask the front door: some step to a term, no step.
+- `ObservedSystems`: a transition system with declared observations is the one-rule language `x ~> y` when
+  `next(x, y)`, its observations declared relations read by `inRelation`; the front door's steps are the system's, and
+  for a system on an encoded carrier "some successor has the observation" is the native type `◇(inRelation name)`,
+  and `◇`, `□` at an encoded configuration range over the encodings of its successors.
+- `SortWitnesses`: the sort quantifiers by witness search: a sort's closed terms, enumerated from the grammar and
+  checked by the well-sortedness checker, each asked with the front door; a witness proves `someOf`, a counterexample
+  refutes `everyOf`; certified deciders combine (`Decider.orElse`).
+- `StaticDecider`: in a language with no equations the static formers (named terms, types, constructors, collections,
+  binders, bound variables, with their duals and the connectives) are decided at the term, whatever its region.
+- `ContextLabels`: a context label `.context x C ℓ` ranges over the steps with label `ℓ` of the term placed in the
+  context `C` at its metavariable `x`, read up to the equations (a placed presentation steps); in a congruent context it
+  is a step of the term itself, placed. Complete successors decide the connectives and the step modalities, context
+  labels included (`modalDecider`); canonical forms list them, for contexts congruent on the domain, which every context
+  is in an equation-free language and with sorted bags. Morphisms between native structures, and the fragments they
+  carry, speak of a term's own labels; context labels are the language's.
+- `TokenNets`: a language of bags of tokens whose rules consume and produce tokens beside a rest is a reactive system in
+  the parallel context category: markings are equivalent exactly when they are permutations, a marking's steps are the
+  net's reactions, its steps beside tokens are its reactions in that context, and a least-labelled transition, whose
+  label is what the marking lacks of a rule's consumed tokens, is a context step at the front door.
+- `TokenNetAdequacy`: a formula over parallel contexts of tokens is a context-labelled native type with the same truth
+  at markings; with finitely many reactions, saturated bisimilarity of markings against every environment of tokens is
+  agreement on those native types (Hennessy–Milner for parallel contexts, `GSLT/Logic/BagHennessyMilner`); a token no
+  rule consumes is inert.
+- `TokenNetDistinctions`: the native types of a token net are an observer of the distinction calculus (the crisp
+  metric tolerance of the native-type report); two markings are indistinguishable under it exactly when saturated
+  bisimilar, apart exactly when some environment tells them apart.
+- `PresentedContexts`: a language's presented context theory (`GSLT/LanguageDef/Contexts`), whose one-hole contexts
+  are labels, has the front door's context steps as its transitions: in an equation-free language aligned with the
+  reference relation, between closed interfaces, a presented transition is the context step whose label is the
+  context's shape with its hole a fresh metavariable. Its bisimilarity, as any probe sees it, is characterized by the
+  probe's modal formulas when steps are finitely many up to the equations (`GSLT/Contexts/ContextHennessyMilner`).
+- `PresentedContextControls`: the contact theory's presented labels read at the front door.
+- `ForwardEquivalence`: forward bisimilarity over a class of labels. Forward-bisimilar elements satisfy the same
+  forward formulas over those labels; on a region closed under their steps, with finitely many successors up to an
+  equivalence the formulas respect, agreement on those formulas is forward bisimilarity. Neither predecessors nor
+  the other labels need be finite.
+- `RhoPartnerAdequacy`: ρ at the front door, with the parallel partners `{x, Q}` as context labels. Its plain
+  steps between closed processes are its steps modulo its equations, a partner's context step is the
+  partner-labelled step, partner steps are finitely many up to the equations, and so the front door's native
+  types under partners characterize ρ's partner bisimilarity.
+- `RhoPartnerControls`: a waiting receiver and the inert process agree on the plain forward formulas and are told
+  apart by a partner's formula.
+- `CarrierTyping`: the typing former reads the carriers a language declares, through the carrier-aware companion of
+  the declaration-derived typing, decided exactly; without builtin carriers the two typings coincide.
+- `CarrierControls`: integer and string carriers at the front door (`42 : Int`, `Var(x) : Expr`, a regex literal over
+  a string atom), with negatives.
+- `HostEvaluation`: constructors the host evaluates (`fold`, `oracle`) meet their host in the relation environment:
+  each gets a host rule `f(x₁, …, xₙ) ⇒ y if host:f(x₁, …, xₙ, y)`, which steps exactly as the host answers; without a
+  host nothing is evaluated.
+- `HostEvaluationControls`: a natively evaluated addition on numerals, with and without its host.
+- `ServedRelations`: relations that dynamic services serve are native to the front door: a provider with services
+  reads as the relation environment that answers its rows and what its services serve for each request.
+- `ServedRelationControls`: a rule querying a served relation fires on what the service serves, and not unregistered.
+- `DeclaredReadings`: a language declares how it reads its sets (consume, keep, either); the front door answers by
+  the declaration, exactly in the declared structure; either is consume over all presentations.
+- `DeclaredReadingControls`: the pool language declared three ways, with the readings' verdicts.
+- `ContextLabelControls`: context labels in `tiny` (a term that needs its context, a context that offers nothing, a
+  binder context) and on the Petri net beside tokens, with its least labels, an inert token and a token told apart.
+- `PathSystems`: a transition system with listed successors, whose configurations need no encoding, unfolded from a
+  root on paths of successor positions encoded as patterns; `◇`, `□` and the observations at a path are those of the
+  configuration it reaches.
+- `RelationalAnswerFrontDoor`: a relational answer source whose runs of a request are listed exactly unfolds, per
+  request, into a finite system of the request, its runs and their answer occurrences; "some run emits an observed
+  answer" is `◇◇(inRelation "answer")` and "the request completes and every run is observed" is
+  `◇⊤ ∧ □(inRelation "run")` at the request.
+- `Hints`: hints by search for the front door: the signature a language's models interpret, the goals a formula is
+  about when it says they are reached or never reached, and the finder's cells separating the term from them, given to
+  `ask` as a candidate it checks (`askFound`).
+- `ScopedCongruences`: a scoped step premise whose local binders fit within its source's capture depth steps as the
+  congruence between its endpoints; written so, the language keeps its reference relation witness for witness, its
+  equation instances under every reading, and its native types, and strategies that read congruences apply to the core
+  form of congruences under binders.
 - `CalculusPresentation`: a proof calculus read as rewriting on goal stacks. A rule whose conclusion fixes
   its instance is the rewrite `[conclusion, ...rest] ⇒ [premises, ...rest]`; on proper goal lists the
   presentation's steps are exactly resolution steps by such rules, and where only such rules conclude,
@@ -284,7 +538,43 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipTwoWayControls
 - `DriverBridge`: the driver-based front door read in the generated logic. Given a faithful rendering of
   a driver's GSLT into the reference structure and its tests as closed formulas, a driver formula's
   meaning is the truth of a closed generated formula; the generated front door's answers settle it, and
-  in an equation-free language it decides every driver formula on a finite closure.
+  in an equation-free language it decides every driver formula on a finite closure. A reading (`Reading`), by a
+  split morphism or by steps, makes a decided answer of the driver-based front door the truth of the query's closed
+  formula; a rendering whose image the steps (and splits) do not leave is a step (split) morphism from the structure
+  it pulls back. A formula's tests are listed in a table (`LeafTable`), so drivers with infinitely many tests are read.
+- `SplitMorphism`: steps and splits forth and back carry the formulas of steps, splits and connectives.
+- `FrontDoorAgreement`: the runtime and the generated front door agree on installed drivers, at every budget, also
+  with a certified decider (`frontDoorWith`), on queries and on driver formulas (`frontDoorOn`); the generated front
+  door with the runtime as its first strategy is one front door (`askThrough`).
+- `AnswerBagReading`, `AnswerBagControls`: the answer-bag driver read in the answer language of a payload language:
+  on bags of closed payloads with no bag inside, the reference equivalence is permutation, splits are partitions, and
+  every driver formula means its closed formula; the completed-answer verdicts agree with the generated front door
+  and the bag parts decider.
+- `AnswerBagNames`: every bag formula at every bag of answers is the front door's native type at the bag of the
+  answers' names (numerals of a payload language, by position among the answers and the formula's values); renaming
+  injective on them keeps every bag formula; the front door's decided answers are sound.
+- `ObservationAtoms`, `ObservationAtomsControls`: a driver's observations declared with the language as unary
+  relations, read as relation atoms; the λ-calculus observing sizes.
+- `LocalDriverReading`, `PartrecDriverReading`, `LambdaDriverReading`: readings of the runtime drivers. The local
+  driver of a language whose rules fire at the root, are first-order and aligned; the partial-recursive machine's two
+  drivers; the λ-calculus driver by steps, in the authored λ language restricted to the selected rules, whose steps
+  are the intrinsically scoped λ semantics (`Instances.Lambda.ReferenceAgreement`). Constructor tests are constructor
+  formulas for represented declarations: simple parameters and abstractions over one variable.
+- `RhoCanonicalForms`, `RhoDriverReading`: ρ in its own reading, its equations as the typed judgment at its element
+  types under its scope policy and its rules through its reflection profile. Its admitted elements (closed processes,
+  names and input continuations, sealed) keep their kind along the equivalence, canonicalization gives canonical forms
+  on them, coherent for plain steps; the ρ driver is read by steps there.
+- TODO(integration, Normalized driver): the sixth runtime driver, `Instances.Normalized`, decides over the plan
+  occurrence semantics (`MeTTaIL.GeneralOccurrenceSemantics`: rule-job receipts and equation-job completions), not
+  over the reference step relation. Its reading at the front door needs one theorem: that semantics agrees with
+  `ReferenceStep` on the language whose equality is the profile's normalization laws (wrappers kept apart). The
+  occurrence-semantics work builds pieces of that agreement in parallel (recovered captures against
+  `ReferenceStep.Equivalent`); the reading should be built on those pieces once they land, not on a second bridge.
+- `RhoPresentations`: ρ's presentations listed for its canonical forms: splits by dealing parallel components, the
+  quotation `@P` presented also as `@*@P`, types by kind; its presentation decider.
+- `PartrecDriverReadingControls`, `LambdaDriverReadingControls`, `RhoDriverReadingControls`: the runtime's verdicts
+  about the machine, the λ-calculus and the ρ-calculus, obtained from the generated front door, with the agreement
+  proved; ρ's presentations modulo its equations, and its communications open without its forms.
 - `FiniteControls`, `CertificateControls`, `SearchControls`, `EquivalenceControls`, `StructuralControls`,
   `HigherOrderControls`, `EmbeddingControls`, `VerdictCatalogueControls`, `CountingControls`,
   `CompletenessControls`, `CanonicalRegionControls`, `CanonicalUnwrapControls`, `SubstitutionControls`,

@@ -38,11 +38,18 @@ def type : TypeExpr → String
       let collection := match kind with | .vec => "Vec" | .hashBag => "HashBag" | .hashSet => "HashSet"
       collection ++ "(" ++ type element ++ ")"
 
-/-- A pattern, with the names of the enclosing binders, innermost first. -/
+/-- Whether a label reads as an identifier. -/
+private def identifierLike (label : String) : Bool :=
+  match label.toList with
+  | [] => false
+  | first :: rest => (first.isAlpha || first == '_') && rest.all fun c => c.isAlphanum || c == '_'
+
+/-- A pattern, with the names of the enclosing binders, innermost first. A constant whose label is not an identifier
+is written as a string, which reads back as that constant. -/
 def pattern (names : List String) : Pattern → String
   | .bvar index => (names[index]?).getD s!"#{index}"
   | .fvar name => name
-  | .apply label [] => s!"({label})"
+  | .apply label [] => if identifierLike label then s!"({label})" else quote label
   | .apply label arguments =>
       if label == Pattern.evalHead then
         "(subst " ++ " ".intercalate (arguments.map (pattern names)) ++ ")"
@@ -121,8 +128,21 @@ def rewrite (row : RewriteRule) : String :=
 private def blockLines (title : String) (rows : List String) : List String :=
   [title ++ " {"] ++ rows.map ("  " ++ ·) ++ ["}"]
 
+/-- A type row: the sort, with its carrier when it is not the abstract syntax. CeTTa's core names the builtin
+carriers `String`, `Int` and `Bool`; the token carriers keep the names of `languageDef!`. -/
+def typeRow (declaration : TypeDecl) : String :=
+  match declaration.carrier with
+  | .ast => declaration.name ++ ";"
+  | .builtinString => declaration.name ++ " = String;"
+  | .builtinInt => declaration.name ++ " = Int;"
+  | .builtinBool => declaration.name ++ " = Bool;"
+  | .tokenLabel => declaration.name ++ " = label;"
+  | .tokenRaw => declaration.name ++ " = raw;"
+  | .tokenProof => declaration.name ++ " = proofTok;"
+  | .tokenPath => declaration.name ++ " = path;"
+
 def block : Block → List String
-  | .types sorts => blockLines "Types" (sorts.map (· ++ ";"))
+  | .types declarations => blockLines "Types" (declarations.map typeRow)
   | .exports rows => blockLines "Exports" (rows.map fun row => match row.renamed with
       | none => row.sort ++ ";"
       | some target => s!"{row.sort} => {target};")

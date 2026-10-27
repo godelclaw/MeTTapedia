@@ -261,6 +261,44 @@ structure Correspondence (signature : Signature)
       RecursiveSpaceSemantics.construct filler (numbers.symm tag) payload
         (fun n => relation (children (numbers n)))
 
+namespace Correspondence
+open Mettapedia.TypeTheory
+variable {signature : Signature} {model : HOL.HenkinModel.{0,0,w+1} AtomicTy Symbol}
+  {filler : RecursiveSpaceSemantics.Relation (signature.Payload model)}
+  (comparison : Correspondence signature model filler) [Nonempty (signature.Payload model)]
+
+/-- The received source carrier is compared with structural recursive trees,
+using the same relation comparison as the retained source roots. -/
+noncomputable def trees : RecursiveSpace.Tree (signature.Payload model) ≃ signature.Carrier model :=
+  (RecursiveSpaceSemantics.representation filler).trans comparison.relation.symm
+
+theorem trees_bottom : comparison.trees RecursiveSpace.bottom = signature.origin model := by
+  apply comparison.relation.injective
+  change comparison.relation (comparison.relation.symm
+    (RecursiveSpaceSemantics.representation filler RecursiveSpace.bottom)) = _
+  rw [Equiv.apply_symm_apply, comparison.bottom]
+  rfl
+
+theorem trees_construct (tag : Nat) (payload : signature.Payload model)
+    (children : Nat → RecursiveSpace.Tree (signature.Payload model)) :
+    comparison.trees (RecursiveSpace.construct tag payload children) =
+      signature.constructor model (comparison.numbers tag) payload
+        (fun n => comparison.trees (children (comparison.numbers.symm n))) := by
+  apply comparison.relation.injective
+  change comparison.relation (comparison.relation.symm
+    (RecursiveSpaceSemantics.representation filler (RecursiveSpace.construct tag payload children))) = _
+  rw [Equiv.apply_symm_apply, comparison.constructor]
+  simp only [Equiv.symm_apply_apply]
+  change RecursiveSpaceSemantics.construct filler tag payload
+    (fun n => RecursiveSpaceSemantics.representation filler (children n)) = _
+  congr 1
+  funext n
+  exact (comparison.relation.apply_symm_apply _).symm
+
+#print axioms trees_bottom
+#print axioms trees_construct
+end Correspondence
+
 open SourceProfileModels TypeFamilySemantics
 
 /-- Source replay earns the model and the six interpreted root laws. The

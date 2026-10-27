@@ -141,10 +141,47 @@ theorem nestedRestPreciselyClassified :
     TypedOccurrenceAt collectionLanguage restFree [atom]
       nestedRestSchema (.arrow proc (.collection .hashBag proc))
       [proc] [0, 1] "rest" := by
-  refine .rest nestedSite [proc, atom] (.collection .hashBag proc) proc
-    (by decide +kernel) rfl ?_ (by decide +kernel) rfl rfl
-    (by decide +kernel)
+  have localTyped : HasType collectionLanguage restFree [proc, atom]
+      nestedSite.focus (.collection .hashBag proc) :=
+    checkSchemaHasType_sound (by decide +kernel)
+  exact .rest nestedSite [proc, atom] (.collection .hashBag proc) proc
+    (by decide +kernel) rfl localTyped (.lambda (.here localTyped.forget))
+    (by decide +kernel) rfl rfl (by decide +kernel)
+
+/-- Local rest typing does not identify the unused binder's sort. The
+classifier also checks the actual descent through the complete schema. -/
+theorem nestedRestWrongPrefixLocallyTyped :
+    HasType collectionLanguage restFree [.arrow proc proc, atom]
+      nestedSite.focus (.collection .hashBag proc) := by
   exact checkSchemaHasType_sound (by decide +kernel)
+
+theorem nestedRestWrongPrefixNotClassified :
+    ¬ TypedOccurrenceAt collectionLanguage restFree [atom]
+      nestedRestSchema (.arrow proc (.collection .hashBag proc))
+      [.arrow proc proc] [0, 1] "rest" := by
+  intro classified
+  cases classified with
+  | term context focusBound result decoded _ _ _ _ _ =>
+      have absent : termZipperAt? nestedRestSchema [0, 1] = none := by
+        decide +kernel
+      rw [absent] at decoded
+      cases decoded
+  | rest site focusBound focusType elementType decoded _ _ selected _
+      prefixEq _ _ =>
+      have actual : restSiteAt? nestedRestSchema [0, 1] = some nestedSite := by
+        decide +kernel
+      have siteEq : site = nestedSite := Option.some.inj (decoded.symm.trans actual)
+      subst site
+      change WellSorted.TypedAt collectionLanguage restFree nestedSite.focus
+        (.lambda none .hole) [atom]
+        (.arrow proc (.collection .hashBag proc)) focusBound focusType at selected
+      cases selected with
+      | lambda inner =>
+          have same := inner.hole_indices.1
+          rw [prefixEq] at same
+          have impossible : TypeExpr.arrow proc proc = proc :=
+            (List.cons.inj same).1
+          cases impossible
 
 /-- The rest address is under a Proc binder, while the supplied open Atom
 depends on the ambient binder. The selected runtime depth is one and the

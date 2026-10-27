@@ -42,7 +42,7 @@ structure Replacement where
 
 /-- One block of a theory body. -/
 inductive Block where
-  | types (sorts : List String)
+  | types (declarations : List TypeDecl)
   | exports (rows : List Export)
   | terms (rules : List GrammarRule)
   | replacements (rows : List Replacement)

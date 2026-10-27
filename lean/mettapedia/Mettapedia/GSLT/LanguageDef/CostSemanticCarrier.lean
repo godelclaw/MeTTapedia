@@ -103,7 +103,6 @@ def normalize {source : CIGSLT} {color : CostStaticColor}
   current := state.current.normalize
   canonicalPath := by
     rw [CostStaticSourceTerm.normalize_idempotent]
-    exact Relation.EqvGen.refl _
 
 @[simp]
 theorem normalize_current {source : CIGSLT} {color : CostStaticColor}

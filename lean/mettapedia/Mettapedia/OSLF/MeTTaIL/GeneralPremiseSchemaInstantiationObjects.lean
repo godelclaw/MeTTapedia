@@ -91,6 +91,30 @@ theorem contextSubstitute_objects {body : Pattern} {assignment : ContextSubstitu
       rcases List.mem_map.mp member with ⟨element, elementMember, rfl⟩
       exact ih element elementMember ((objectList_iff _).mp bodyObject.2 element elementMember) images
 
+/-- Successful inverse occurrence substitution retains objecthood of
+the supplied target. The inverse maps indices to indices and introduces
+neither pending substitutions nor symbolic collection tails. -/
+theorem recoverValue?_objects {dependencies : List TypeExpr} {ambient depth : Nat}
+    {arguments : List Pattern} {target : Pattern} {value : ContextualValue}
+    (object : isObjectPattern target = true)
+    (recovered : recoverValue? dependencies ambient depth arguments target = some value) :
+    isObjectPattern value.body = true := by
+  unfold recoverValue? at recovered
+  split at recovered <;> try contradiction
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at recovered
+  obtain ⟨indices, _, recovered⟩ := recovered
+  split at recovered <;> try contradiction
+  split at recovered <;> try contradiction
+  cases Option.some.inj recovered
+  apply contextSubstitute_objects object
+  intro index
+  simp only [recoveryAssignment]
+  split
+  · split <;> rfl
+  · rfl
+
+#print axioms recoverValue?_objects
+
 theorem instantiateValue?_objects {value : ContextualValue} {ambient depth : Nat}
     {actual : Pattern} (object : isObjectPattern value.body = true)
     (projected : instantiateValue? value ambient depth [] = some actual) :

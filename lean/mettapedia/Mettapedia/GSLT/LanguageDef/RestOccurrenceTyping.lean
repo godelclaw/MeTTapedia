@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.RestAwareTyping
+import Mettapedia.GSLT.LanguageDef.WellSortedOccurrence
 import Mettapedia.OSLF.MeTTaIL.RestOccurrenceAddress
 
 /-!
@@ -72,6 +73,98 @@ theorem ElementsHaveType.append_cons_split
             ElementsHaveType.append_cons_split tailTyped
           exact ⟨.cons headTyped beforeTyped, middleTyped, afterTyped⟩
 
+/-- A single rest-aware derivation retains both local schema typing and
+ordinary typing descent along the exact enclosing context. These witnesses
+share the focus type and the complete ordered binder-sort prefix. -/
+theorem HasType.focusAtContext_with_descent
+    {language : LanguageDef} {free : FreeTypeContext}
+    {focus : Pattern} (context : OneHoleContext)
+    {bound : List TypeExpr} {type : TypeExpr}
+    (typed : HasType language free bound (context.fill focus) type) :
+    ∃ focusBound focusType binderPrefix,
+      HasType language free focusBound focus focusType ∧
+      TypedAt language free focus context bound type focusBound focusType ∧
+      focusBound = binderPrefix ++ bound ∧
+      binderPrefix.length = binderCount context := by
+  induction context generalizing bound type with
+  | hole =>
+      exact ⟨bound, type, [], typed, .here typed.forget, rfl, rfl⟩
+  | apply constructor before inner after inductionHypothesis =>
+      cases typed with
+      | constructor membership ordinary arguments =>
+          obtain ⟨beforeParameters, parameter, afterParameters, expected,
+              parametersEq, parametersLength, _, _, parameterType,
+              middle, _⟩ := arguments.append_cons_split
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis middle
+          exact ⟨focusBound, focusType, binderPrefix, focusTyped,
+            .application membership ordinary arguments.forget
+              parametersEq parametersLength parameterType selected,
+            prefixEq, by simpa [binderCount] using prefixLength⟩
+  | lambda binder inner inductionHypothesis =>
+      cases typed with
+      | @lambda bound binder body domain codomain bodyTyped =>
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis bodyTyped
+          refine ⟨focusBound, focusType, binderPrefix ++ [domain],
+            focusTyped, .lambda selected, ?_, ?_⟩
+          · simpa [List.append_assoc] using prefixEq
+          · simp [binderCount, List.length_append]
+            omega
+  | multiLambda arity binders inner inductionHypothesis =>
+      cases typed with
+      | @multiLambda bound arity binders body domain codomain bodyTyped =>
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis bodyTyped
+          refine ⟨focusBound, focusType,
+            binderPrefix ++ List.replicate arity domain,
+            focusTyped, .multiLambda selected, ?_, ?_⟩
+          · simpa [List.append_assoc] using prefixEq
+          · simpa [binderCount, List.length_append,
+              List.length_replicate, Nat.add_assoc, Nat.add_comm,
+              Nat.add_left_comm] using prefixLength
+  | substBody inner replacement inductionHypothesis =>
+      cases typed with
+      | @subst bound body replacement domain codomain bodyTyped replacementTyped =>
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis bodyTyped
+          refine ⟨focusBound, focusType, binderPrefix ++ [domain],
+            focusTyped, .substBody replacementTyped.forget selected, ?_, ?_⟩
+          · simpa [List.append_assoc] using prefixEq
+          · simp [binderCount, List.length_append]
+            omega
+  | substReplacement body inner inductionHypothesis =>
+      cases typed with
+      | subst bodyTyped replacementTyped =>
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis replacementTyped
+          exact ⟨focusBound, focusType, binderPrefix, focusTyped,
+            .substReplacement bodyTyped.forget selected,
+            prefixEq, by simpa [binderCount] using prefixLength⟩
+  | collection kind before inner after rest inductionHypothesis =>
+      cases typed with
+      | collection elements _ =>
+          obtain ⟨_, middle, _⟩ := elements.append_cons_split
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis middle
+          exact ⟨focusBound, focusType, binderPrefix, focusTyped,
+            .collection elements.forget selected,
+            prefixEq, by simpa [binderCount] using prefixLength⟩
+      | collectionConstructor membership shape elements _ =>
+          obtain ⟨_, middle, _⟩ := elements.append_cons_split
+          obtain ⟨focusBound, focusType, binderPrefix,
+              focusTyped, selected, prefixEq, prefixLength⟩ :=
+            inductionHypothesis middle
+          exact ⟨focusBound, focusType, binderPrefix, focusTyped,
+            .collectionConstructor membership shape elements.forget selected,
+            prefixEq, by simpa [binderCount] using prefixLength⟩
+
 /-- A rest-aware schema derivation descends along any existing one-hole
 context, retaining the type of the focus and the ordered binder-sort prefix.
 The collection-rest premises in both the focus and its siblings remain part
@@ -85,78 +178,42 @@ theorem HasType.focusAtContext
       HasType language free focusBound focus focusType ∧
       focusBound = binderPrefix ++ bound ∧
       binderPrefix.length = binderCount context := by
-  induction context generalizing bound type with
-  | hole =>
-      exact ⟨bound, type, [], typed, rfl, rfl⟩
-  | apply constructor before inner after inductionHypothesis =>
-      cases typed with
-      | constructor _ _ arguments =>
-          obtain ⟨_, _, _, _, _, _, _, _, _, middle, _⟩ :=
-            arguments.append_cons_split
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis middle
-          exact ⟨focusBound, focusType, binderPrefix,
-            focusTyped, prefixEq, by simpa [binderCount] using prefixLength⟩
-  | lambda binder inner inductionHypothesis =>
-      cases typed with
-      | @lambda bound binder body domain codomain bodyTyped =>
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis bodyTyped
-          refine ⟨focusBound, focusType, binderPrefix ++ [domain],
-            focusTyped, ?_, ?_⟩
-          · simpa [List.append_assoc] using prefixEq
-          · simp [binderCount, List.length_append]
-            omega
-  | multiLambda arity binders inner inductionHypothesis =>
-      cases typed with
-      | @multiLambda bound arity binders body domain codomain bodyTyped =>
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis bodyTyped
-          refine ⟨focusBound, focusType,
-            binderPrefix ++ List.replicate arity domain,
-            focusTyped, ?_, ?_⟩
-          · simpa [List.append_assoc] using prefixEq
-          · simpa [binderCount, List.length_append,
-              List.length_replicate, Nat.add_assoc, Nat.add_comm,
-              Nat.add_left_comm] using prefixLength
-  | substBody inner replacement inductionHypothesis =>
-      cases typed with
-      | @subst bound body replacement domain codomain bodyTyped _ =>
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis bodyTyped
-          refine ⟨focusBound, focusType, binderPrefix ++ [domain],
-            focusTyped, ?_, ?_⟩
-          · simpa [List.append_assoc] using prefixEq
-          · simp [binderCount, List.length_append]
-            omega
-  | substReplacement body inner inductionHypothesis =>
-      cases typed with
-      | subst _ replacementTyped =>
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis replacementTyped
-          exact ⟨focusBound, focusType, binderPrefix,
-            focusTyped, prefixEq, by simpa [binderCount] using prefixLength⟩
-  | collection kind before inner after rest inductionHypothesis =>
-      cases typed with
-      | collection elements _ =>
-          obtain ⟨_, middle, _⟩ := elements.append_cons_split
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis middle
-          exact ⟨focusBound, focusType, binderPrefix,
-            focusTyped, prefixEq, by simpa [binderCount] using prefixLength⟩
-      | collectionConstructor _ _ elements _ =>
-          obtain ⟨_, middle, _⟩ := elements.append_cons_split
-          obtain ⟨focusBound, focusType, binderPrefix,
-              focusTyped, prefixEq, prefixLength⟩ :=
-            inductionHypothesis middle
-          exact ⟨focusBound, focusType, binderPrefix,
-            focusTyped, prefixEq, by simpa [binderCount] using prefixLength⟩
+  obtain ⟨focusBound, focusType, binderPrefix,
+      focusTyped, _, prefixEq, prefixLength⟩ :=
+    typed.focusAtContext_with_descent context
+  exact ⟨focusBound, focusType, binderPrefix, focusTyped, prefixEq, prefixLength⟩
+
+/-- A decoded rest site retains a global typing descent and its local
+rest-aware typing from the same authored schema derivation. -/
+theorem HasType.restSiteAt_with_descent
+    {language : LanguageDef} {free : FreeTypeContext}
+    {pattern : Pattern} {bound : List TypeExpr} {rootType : TypeExpr}
+    (typed : HasType language free bound pattern rootType)
+    {path : List Nat} {site : RestSite}
+    (decoded : restSiteAt? pattern path = some site) :
+    ∃ focusBound focusType binderPrefix elementType,
+      HasType language free focusBound site.focus focusType ∧
+      TypedAt language free site.focus site.context bound rootType
+        focusBound focusType ∧
+      free site.name = some (.collection site.kind elementType) ∧
+      focusBound = binderPrefix ++ bound ∧
+      binderPrefix.length = binderCount site.context ∧
+      Mettapedia.OSLF.MeTTaIL.RuleBinding.occurrenceDepthAt?
+        pattern path 0 = some binderPrefix.length := by
+  have sourceAtFocus : HasType language free bound
+      (site.context.fill site.focus) rootType := by
+    rw [restSiteAt?_fill decoded]
+    exact typed
+  obtain ⟨focusBound, focusType, binderPrefix,
+      focusTyped, selected, prefixEq, prefixLength⟩ :=
+    sourceAtFocus.focusAtContext_with_descent site.context
+  have collectionTyped : HasType language free focusBound
+      (.collection site.kind site.elements (some site.name)) focusType :=
+    focusTyped
+  obtain ⟨elementType, lookup⟩ := collectionTyped.restDeclared
+  refine ⟨focusBound, focusType, binderPrefix, elementType,
+    focusTyped, selected, lookup, prefixEq, prefixLength, ?_⟩
+  simpa [prefixLength] using restSiteAt?_depth decoded 0
 
 /-- A decoded collection-rest address in an authored schema has a rest-aware
 typing derivation at its enclosing collection, the rest's exact collection
@@ -174,20 +231,11 @@ theorem HasType.restSiteAt
       binderPrefix.length = binderCount site.context ∧
       Mettapedia.OSLF.MeTTaIL.RuleBinding.occurrenceDepthAt?
         pattern path 0 = some binderPrefix.length := by
-  have sourceAtFocus : HasType language free bound
-      (site.context.fill site.focus) rootType := by
-    rw [restSiteAt?_fill decoded]
-    exact typed
-  obtain ⟨focusBound, focusType, binderPrefix,
-      focusTyped, prefixEq, prefixLength⟩ :=
-    sourceAtFocus.focusAtContext site.context
-  have collectionTyped : HasType language free focusBound
-      (.collection site.kind site.elements (some site.name)) focusType :=
-    focusTyped
-  obtain ⟨elementType, lookup⟩ := collectionTyped.restDeclared
-  refine ⟨focusBound, focusType, binderPrefix, elementType,
-    focusTyped, lookup, prefixEq, prefixLength, ?_⟩
-  simpa [prefixLength] using restSiteAt?_depth decoded 0
+  obtain ⟨focusBound, focusType, binderPrefix, elementType,
+      focusTyped, _, lookup, prefixEq, prefixLength, runtimeDepth⟩ :=
+    typed.restSiteAt_with_descent decoded
+  exact ⟨focusBound, focusType, binderPrefix, elementType,
+    focusTyped, lookup, prefixEq, prefixLength, runtimeDepth⟩
 
 /-- Computed rest name and binder depth can be refined to the complete
 rest-aware collection derivation and the actual binder-sort prefix. -/

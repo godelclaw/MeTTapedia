@@ -10,6 +10,11 @@ import Mettapedia.GSLT.LanguageDef.ModuleSource.LbnfDecode
 open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 #module_file "../../../lean/mettapedia/artifacts/upstream-authoring-20261008/UnivAlg.module"
 #module_file "../../../lean/mettapedia/artifacts/upstream-authoring-20261008/Rholang.module"
+#module_file "../../../lean/mettapedia/artifacts/oslf-languages/RegexCore.module"
+#module_file "../module/godelclaw/RetryWake.module"
+#module_file "../module/godelclaw/StreamEvents.module"
+#module_file "../module/godelclaw/ToolCalls.module"
+#module_file "../module/godelclaw/ComponentAPI.module"
 open Mettapedia.GSLT.LanguageDef.ModuleSource
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 
@@ -17,8 +22,11 @@ def check (input : System.FilePath) : IO Unit := do
   let source ← IO.FS.readFile input
   match Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics.readSource source with
   | .error e => throw (IO.userError s!"read error {e}")
-  | .ok [.expression [.symbol "ModuleReads", univalg, rholang]] =>
-      for (label, parsed, lean) in [("UnivAlg", univalg, UnivAlg.module), ("Rholang", rholang, Rholang.module)] do
+  | .ok [.expression [.symbol "ModuleReads", univalg, rholang, regex, retry, stream, tools, component]] =>
+      for (label, parsed, lean) in [("UnivAlg", univalg, UnivAlg.module), ("Rholang", rholang, Rholang.module),
+          ("RegexCore", regex, RegexCore.module), ("RetryWake", retry, GodelClawRetryWake.module),
+          ("StreamEvents", stream, StreamEvents.module), ("ToolCalls", tools, ToolCalls.module),
+          ("ComponentAPI", component, ComponentAPI.module)] do
         match LbnfDecode.acceptedTrees parsed >>= fun trees => match trees with
             | [tree] => LbnfDecode.decode tree
             | _ => .error "expected one tree" with

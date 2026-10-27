@@ -18,11 +18,13 @@ such formula is decided by a finite evaluation.
   a set containing `x` may be taken to be `x` with a subset of `V_n`, for `n` the depth of the body (at least one),
   and a set of the sort may be taken to be a subset of `V_n`.
 - **The evaluation** (`evalTwoWay`) runs on hereditary terms: steps forward read the members, splits the coverings of
-  the members, named sets compare sets, and steps back and sorts try the subsets of a finite stage. It is exact (`evalTwoWay_iff`), so the truth of a two-way native type at a hereditary
-  term, read among the hereditary terms, is decidable (`twoWay_decide`).
+  the members, named sets compare sets, and steps back and sorts try the subsets of a finite stage. It is exact
+  (`evalTwoWay_iff`), so the truth of a two-way native type at a hereditary term, read among the hereditary terms, is
+  decidable (`twoWay_decide`).
 
-The question this answers for the fixed-point-free fragment, whether native types with steps back are decidable on
-`V_ω`, stays open with fixed points: a fixed point is not bounded by a depth.
+This answers, for the fixed-point-free fragment, whether native types with steps back are decidable on `V_ω`. A fixed
+point is not bounded by a depth; the types of `SetMembershipTypes` bound it instead when its variable does not cross a
+step back (`SetMembershipFixedPoints`).
 -/
 
 set_option autoImplicit false
@@ -216,11 +218,11 @@ theorem twoWay_sat_iff : ∀ {n : ℕ} (formula : Formula n), formula.twoWay = t
     constructor
     · rintro ⟨next, step, holds⟩
       obtain ⟨next', step', related'⟩ := forth label next.1 step
-      exact ⟨⟨next', hfSets_generated.step second.2 step'⟩, step',
+      exact ⟨⟨next', hfSets_generated.step (memberLabel_own step'.1) second.2 step'⟩, step',
         (twoWay_sat_iff inner fragment k depth' env (first := next) (second := ⟨next', _⟩) related').mp holds⟩
     · rintro ⟨next', step', holds⟩
       obtain ⟨next, step, related'⟩ := back label next'.1 step'
-      exact ⟨⟨next, hfSets_generated.step first.2 step⟩, step,
+      exact ⟨⟨next, hfSets_generated.step (memberLabel_own step.1) first.2 step⟩, step,
         (twoWay_sat_iff inner fragment k depth' env (first := ⟨next, _⟩) (second := next') related').mpr holds⟩
   | _, .necessarily _ _, _, 0, depth, _, _, _, _ => absurd depth (by simp [Formula.twoWayDepth])
   | _, .necessarily label inner, fragment, k + 1, depth, env, first, second, related => by
@@ -229,12 +231,12 @@ theorem twoWay_sat_iff : ∀ {n : ℕ} (formula : Formula n), formula.twoWay = t
     constructor
     · intro every next' step'
       obtain ⟨next, step, related'⟩ := back label next'.1 step'
-      exact (twoWay_sat_iff inner fragment k depth' env (first := ⟨next, hfSets_generated.step first.2 step⟩)
+      exact (twoWay_sat_iff inner fragment k depth' env (first := ⟨next, hfSets_generated.step (memberLabel_own step.1) first.2 step⟩)
         (second := next') related').mp (every _ step)
     · intro every next step
       obtain ⟨next', step', related'⟩ := forth label next.1 step
       exact (twoWay_sat_iff inner fragment k depth' env (first := next)
-        (second := ⟨next', hfSets_generated.step second.2 step'⟩) related').mpr (every _ step')
+        (second := ⟨next', hfSets_generated.step (memberLabel_own step'.1) second.2 step'⟩) related').mpr (every _ step')
   | _, .sometimeBefore label inner, fragment, k, depth, env, first, second, related => by
     have depth' : inner.twoWayDepth ≤ k + 1 := by simp only [Formula.twoWayDepth] at depth; omega
     constructor
@@ -647,8 +649,8 @@ theorem evalTwoWay_iff : ∀ (formula : Formula 0), formula.twoWay = true → �
 
 /-- **The truth of a two-way native type at a hereditary term, read among the hereditary terms, is decided by the
 evaluation.** -/
-theorem twoWay_decide (fragment : formula.twoWay = true) {term : Pattern} (holds : IsHF term) :
-    evalTwoWay formula term = true ↔ HFNative.sat Env.closed formula ⟨term, holds⟩ :=
-  (evalTwoWay_iff formula fragment holds).trans (sat_iff_hfSets formula ⟨term, holds⟩).symm
+theorem twoWay_decide (fragment : formula.twoWay = true) (free : formula.contextFree = true) {term : Pattern}
+    (holds : IsHF term) : evalTwoWay formula term = true ↔ HFNative.sat Env.closed formula ⟨term, holds⟩ :=
+  (evalTwoWay_iff formula fragment holds).trans (sat_iff_hfSets formula free ⟨term, holds⟩).symm
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetReadings

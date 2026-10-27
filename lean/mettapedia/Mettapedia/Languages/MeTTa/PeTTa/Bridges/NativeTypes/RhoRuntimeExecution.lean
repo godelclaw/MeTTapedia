@@ -44,6 +44,7 @@ private theorem hit_nil_returns (state : Effects.State) (standard : Term) (targe
       (apply "rho:native:hit" [encoded standard, patternValue target, .symbol "LNil"])
       state (Effects.boolean false) := by rho_native_eval
 
+set_option maxHeartbeats 4000000 in
 private theorem hit_cons_hit_returns (state : Effects.State) (standard receipt : Term)
     (rest : List Term) (target reached : Pattern)
     (here : PureReturns helperLibrary.runtime [] state
@@ -55,6 +56,7 @@ private theorem hit_cons_hit_returns (state : Effects.State) (standard receipt :
   subst reached
   rho_native_eval [here] unfolding [encodeList]
 
+set_option maxHeartbeats 4000000 in
 private theorem hit_cons_miss_returns (state : Effects.State) (standard receipt : Term)
     (rest : List Term) (target reached : Pattern) (result : Bool)
     (here : PureReturns helperLibrary.runtime [] state

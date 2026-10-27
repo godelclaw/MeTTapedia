@@ -489,6 +489,8 @@ import Mettapedia.OSLF.Syntax.SignatureMorphism
 import Mettapedia.OSLF.Syntax.SignatureMorphismReadback
 import Mettapedia.OSLF.Syntax.DeclaredBindingControls
 import Mettapedia.OSLF.Syntax.SignatureMorphismMetas
+import Mettapedia.OSLF.Syntax.SignatureMorphismSlots
+import Mettapedia.OSLF.Syntax.RhoSortErasure
 import Mettapedia.OSLF.Syntax.TheoryMorphism
 import Mettapedia.OSLF.Syntax.PositionEnumeration
 import Mettapedia.OSLF.Syntax.EquationalQuotient

@@ -46,6 +46,7 @@ def syntactic (step : Pattern → Pattern → Prop) : NativeStructure Pattern wh
   named element term := element = term
   same first second := first = second
   apply inner value := Mettapedia.OSLF.MeTTaIL.Substitution.instantiateBVar value inner
+  inRelation _ _ := False
 
 /-! ## Structural-modal formulas -/
 

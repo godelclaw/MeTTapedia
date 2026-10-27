@@ -16,7 +16,8 @@ stays refuted (`ask_proved_persists`, `ask_refuted_persists`). Each kind of evid
 **The portfolio is fair** (`ask_settled_of_evidence`): when any one kind of evidence decides the question
 at some rounds, the front door answers at those rounds and at every later one. Sharing the rounds starves
 no strategy: the region a term reaches (`ask_settled_of_explored`), a closed region
-(`ask_settled_of_closed`), a closed canonical region (`ask_settled_of_canonical`).
+(`ask_settled_of_closed`), a closed canonical region (`ask_settled_of_canonical`), a backward search
+(`ask_settled_of_backward`).
 -/
 
 set_option autoImplicit false
@@ -104,15 +105,15 @@ theorem decideFrom_persists {formula : Formula 0} {term : Pattern} {rounds more 
 /-- **A closed canonical region adds nothing in the next round.** -/
 theorem growCanonical_still_of_closed {canon : Pattern → Pattern} {domain : Pattern → Bool}
     {presentations : Pattern → List Pattern} {term : Pattern}
-    {rounds : ℕ}
+    {rounds : ℕ} {rules : RuleReading}
     (closed : canonicalRegion relEnv language fuel canon domain presentations
-      (growCanonical relEnv language fuel canon presentations term rounds) =
+      (growCanonical relEnv language fuel canon presentations term rounds rules) rules =
       true) :
-    growCanonical relEnv language fuel canon presentations term (rounds + 1) =
-      growCanonical relEnv language fuel canon presentations term rounds := by
+    growCanonical relEnv language fuel canon presentations term (rounds + 1) rules =
+      growCanonical relEnv language fuel canon presentations term rounds rules := by
   obtain ⟨-, all⟩ := canonicalRegion_parts closed
-  rw [growCanonical_eq_iterate, growCanonical_eq_iterate, iterate_succ]
-  rw [growCanonical_eq_iterate] at all
+  rw [growCanonical_eq_iterate term rules, growCanonical_eq_iterate term rules, iterate_succ]
+  rw [growCanonical_eq_iterate term rules] at all
   apply addNew_of_subset
   intro other inside
   obtain ⟨state, member, listed⟩ := List.mem_flatMap.mp inside
@@ -127,21 +128,23 @@ theorem growCanonical_still_of_closed {canon : Pattern → Pattern} {domain : Pa
 /-- **The verdict of a closed canonical region stays.** -/
 theorem decideCanonical_persists {canon : Pattern → Pattern} {domain : Pattern → Bool}
     {presentations : Pattern → List Pattern} {formula : Formula 0}
-    {term : Pattern} {rounds more : ℕ} {verdict : Bool}
-    (decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds = some verdict)
-    (le : rounds ≤ more) : decideCanonical relEnv language fuel canon domain presentations formula term more =
+    {term : Pattern} {rounds more : ℕ} {verdict : Bool} {rules : RuleReading}
+    (decided : decideCanonical relEnv language fuel canon domain presentations formula term rounds rules = some verdict)
+    (le : rounds ≤ more) : decideCanonical relEnv language fuel canon domain presentations formula term more rules =
       some verdict := by
   have closed : canonicalRegion relEnv language fuel canon domain presentations
-      (growCanonical relEnv language fuel canon presentations term rounds) = true := by
+      (growCanonical relEnv language fuel canon presentations term rounds rules) rules = true := by
     unfold decideCanonical at decided
     split at decided
-    · assumption
+    · rename_i checked
+      exact (Bool.and_eq_true_iff.mp checked).2
     · cases decided
   have still := growCanonical_still_of_closed closed
-  rw [growCanonical_eq_iterate, growCanonical_eq_iterate] at still
+  rw [growCanonical_eq_iterate term rules, growCanonical_eq_iterate term rules] at still
   have stays := iterate_stays still (more - rounds)
-  rw [show rounds + (more - rounds) = more by omega, ← growCanonical_eq_iterate, ← growCanonical_eq_iterate] at stays
-  rw [decideCanonical_eq] at decided ⊢
+  rw [show rounds + (more - rounds) = more by omega, ← growCanonical_eq_iterate term rules,
+    ← growCanonical_eq_iterate term rules] at stays
+  rw [decideCanonical_eq (rules := rules)] at decided ⊢
   rw [stays]
   exact decided
 
@@ -154,7 +157,7 @@ def appendHom (region tail : List Pattern) :
     Hom (exploration relEnv language fuel region).native (exploration relEnv language fuel (region ++ tail)).native where
   map index := ⟨index, by rw [List.length_append]; omega⟩
   step := by
-    intro source label target checked
+    intro source label target _ checked
     simpa [FiniteStructure.native, exploration, List.getElem_append_left] using checked
   built := by
     intro element constructor parts checked
@@ -182,6 +185,9 @@ def appendHom (region tail : List Pattern) :
     simpa [FiniteStructure.native, exploration, List.getElem_append_left] using checked
   named := by
     intro element term checked
+    simpa [FiniteStructure.native, exploration, List.getElem_append_left] using checked
+  inRelation := by
+    intro element relation checked
     simpa [FiniteStructure.native, exploration, List.getElem_append_left] using checked
 
 variable {relEnv language fuel}
@@ -221,21 +227,23 @@ theorem mem_gathered {hint : Option CertificateCandidate} {rounds : ℕ} {eviden
       (∃ found, explain CertificateCandidate.decode CertificateCandidate.cost (provesBy signature language formula term)
         rounds = some found ∧ evidence = .certificate found.1) ∨
       (∃ found, explain CertificateCandidate.decode CertificateCandidate.cost (refutesBy signature language formula term)
-        rounds = some found ∧ evidence = .certificate found.1) := by
+        rounds = some found ∧ evidence = .certificate found.1) ∨ evidence = .backward rounds := by
   simp only [gathered, List.mem_append, List.mem_map, Option.mem_toList, List.mem_cons, List.not_mem_nil,
     or_false] at member
-  rcases member with ((⟨candidate, inHint, rfl⟩ | rfl | rfl | rfl) | ⟨found, inProofs, rfl⟩) | ⟨found, inRefutations, rfl⟩
+  rcases member with (((⟨candidate, inHint, rfl⟩ | rfl | rfl | rfl) | ⟨found, inProofs, rfl⟩) |
+      ⟨found, inRefutations, rfl⟩) | rfl
   · exact Or.inl ⟨candidate, inHint, rfl⟩
   · exact Or.inr (Or.inl rfl)
   · exact Or.inr (Or.inr (Or.inl rfl))
   · exact Or.inr (Or.inr (Or.inr (Or.inl rfl)))
   · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨found, inProofs, rfl⟩))))
-  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨found, inRefutations, rfl⟩))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨found, inRefutations, rfl⟩)))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))
 
 theorem certificate_mem_gathered_of_hint {hint : Option CertificateCandidate} {rounds : ℕ} {candidate : CertificateCandidate}
     (inHint : candidate ∈ hint) : Evidence.certificate candidate ∈ gathered signature language formula term hint rounds := by
   simp only [gathered, List.mem_append, List.mem_map, Option.mem_toList]
-  exact Or.inl (Or.inl (Or.inl ⟨candidate, inHint, rfl⟩))
+  exact Or.inl (Or.inl (Or.inl (Or.inl ⟨candidate, inHint, rfl⟩)))
 
 /-- **Evidence that establishes the formula at some rounds** has a counterpart that does at more. -/
 theorem establishes_persists {forms : Option (CanonicalForms relEnv language fuel)} {hint : Option CertificateCandidate}
@@ -245,9 +253,11 @@ theorem establishes_persists {forms : Option (CanonicalForms relEnv language fue
     ∃ later ∈ gathered signature language formula term hint more,
       later.establishes relEnv signature language fuel formula term forms = true := by
   rcases mem_gathered member with ⟨candidate, inHint, rfl⟩ | rfl | rfl | rfl | ⟨found, inProofs, rfl⟩ |
-      ⟨found, inRefutations, rfl⟩
+      ⟨found, inRefutations, rfl⟩ | rfl
   · exact ⟨_, certificate_mem_gathered_of_hint inHint, checked⟩
-  · exact ⟨.exploration more, by simp [gathered], exploresFrom_persists checked le⟩
+  · refine ⟨.exploration more, by simp [gathered], ?_⟩
+    simp only [Evidence.establishes, Bool.and_eq_true] at checked ⊢
+    exact ⟨checked.1, exploresFrom_persists checked.2 le⟩
   · refine ⟨.closedRegion more, by simp [gathered], ?_⟩
     simp only [Evidence.establishes, Bool.and_eq_true, beq_iff_eq] at checked ⊢
     exact ⟨checked.1, decideFrom_persists checked.2 le⟩
@@ -261,6 +271,9 @@ theorem establishes_persists {forms : Option (CanonicalForms relEnv language fue
     exact ⟨.certificate found.1, by simp [gathered, explain, kept], checked⟩
   · have kept := search_persists _ inRefutations le
     exact ⟨.certificate found.1, by simp [gathered, explain, kept], checked⟩
+  · refine ⟨.backward more, by simp [gathered], ?_⟩
+    simp only [Evidence.establishes, Bool.and_eq_true] at checked ⊢
+    exact ⟨checked.1, backwardEstablishes_mono le checked.2⟩
 
 /-- **Evidence that refutes the formula at some rounds** has a counterpart that does at more. -/
 theorem refutes_persists {forms : Option (CanonicalForms relEnv language fuel)} {hint : Option CertificateCandidate}
@@ -270,9 +283,11 @@ theorem refutes_persists {forms : Option (CanonicalForms relEnv language fuel)} 
     ∃ later ∈ gathered signature language formula term hint more,
       later.refutes relEnv signature language fuel formula term forms = true := by
   rcases mem_gathered member with ⟨candidate, inHint, rfl⟩ | rfl | rfl | rfl | ⟨found, inProofs, rfl⟩ |
-      ⟨found, inRefutations, rfl⟩
+      ⟨found, inRefutations, rfl⟩ | rfl
   · exact ⟨_, certificate_mem_gathered_of_hint inHint, checked⟩
-  · exact ⟨.exploration more, by simp [gathered], exploresFrom_persists checked le⟩
+  · refine ⟨.exploration more, by simp [gathered], ?_⟩
+    simp only [Evidence.refutes, Bool.and_eq_true] at checked ⊢
+    exact ⟨checked.1, exploresFrom_persists checked.2 le⟩
   · refine ⟨.closedRegion more, by simp [gathered], ?_⟩
     simp only [Evidence.refutes, Bool.and_eq_true, beq_iff_eq] at checked ⊢
     exact ⟨checked.1, decideFrom_persists checked.2 le⟩
@@ -286,6 +301,9 @@ theorem refutes_persists {forms : Option (CanonicalForms relEnv language fuel)} 
     exact ⟨.certificate found.1, by simp [gathered, explain, kept], checked⟩
   · have kept := search_persists _ inRefutations le
     exact ⟨.certificate found.1, by simp [gathered, explain, kept], checked⟩
+  · refine ⟨.backward more, by simp [gathered], ?_⟩
+    simp only [Evidence.refutes, Bool.and_eq_true] at checked ⊢
+    exact ⟨checked.1, backwardRefutes_mono le checked.2⟩
 
 /-- **A proved question stays proved** with more rounds. -/
 theorem ask_proved_persists {forms : Option (CanonicalForms relEnv language fuel)} {hint : Option CertificateCandidate}
@@ -317,11 +335,11 @@ theorem ask_refuted_persists {forms : Option (CanonicalForms relEnv language fue
     · rename_i found
       obtain ⟨later, member, checked⟩ :=
         refutes_persists le (List.mem_of_find?_eq_some found) (List.find?_some found)
-      have fails := Evidence.refutes_sound checked
+      have fails := Evidence.refutes_sound (formsFor_formsReading forms) checked
       unfold ask
       split
       · rename_i proving
-        exact absurd (Evidence.establishes_sound (List.find?_some proving)) fails
+        exact absurd (Evidence.establishes_sound (formsFor_formsReading forms) (List.find?_some proving)) fails
       · split
         · rename_i laterEvidence _
           exact ⟨laterEvidence, rfl⟩
@@ -372,30 +390,32 @@ theorem ask_settled_of_evidence {forms : Option (CanonicalForms relEnv language 
 theorem ask_settled_of_explored {forms : Option (CanonicalForms relEnv language fuel)}
     {hint : Option CertificateCandidate} {rounds : ℕ}
     (explored : exploresFrom relEnv language fuel formula term rounds = true ∨
-      exploresAgainstFrom relEnv language fuel formula term rounds = true) {more : ℕ} (le : rounds ≤ more) :
+      exploresAgainstFrom relEnv language fuel formula term rounds = true) {more : ℕ} (le : rounds ≤ more)
+    (reference : formsReference forms = true := by rfl) :
     ∃ answer, ask relEnv signature language fuel formula term hint more forms = .proved answer ∨
       ask relEnv signature language fuel formula term hint more forms = .refuted answer :=
-  ask_settled_of_evidence (evidence := .exploration rounds) (by simp [gathered]) explored le
+  ask_settled_of_evidence (evidence := .exploration rounds) (by simp [gathered])
+    (by simpa [Evidence.establishes, Evidence.refutes, reference] using explored) le
 
 /-- **A closed region**: when it closes on an equation-free language, the front door answers every forward
 formula from then on. -/
 theorem ask_settled_of_closed {forms : Option (CanonicalForms relEnv language fuel)}
     {hint : Option CertificateCandidate} {rounds : ℕ} {verdict : Bool} (free : language.isEquationFree = true)
     (forward : formula.forward = true) (decided : decideFrom relEnv language fuel formula term rounds = some verdict)
-    {more : ℕ} (le : rounds ≤ more) :
+    {more : ℕ} (le : rounds ≤ more) (reference : formsReference forms = true := by rfl) :
     ∃ answer, ask relEnv signature language fuel formula term hint more forms = .proved answer ∨
       ask relEnv signature language fuel formula term hint more forms = .refuted answer := by
   refine ask_settled_of_evidence (evidence := .closedRegion rounds) (by simp [gathered]) ?_ le
   cases verdict
-  · exact Or.inr (by simp [Evidence.refutes, free, forward, decided])
-  · exact Or.inl (by simp [Evidence.establishes, free, forward, decided])
+  · exact Or.inr (by simp [Evidence.refutes, free, forward, decided, reference])
+  · exact Or.inl (by simp [Evidence.establishes, free, forward, decided, reference])
 
 /-- **A closed canonical region**: given canonical forms, when it closes, the front door answers every
 behavioural formula from then on. -/
 theorem ask_settled_of_canonical (forms : CanonicalForms relEnv language fuel) {hint : Option CertificateCandidate}
     {rounds : ℕ} {verdict : Bool} (behavioural : formula.behaviouralIn forms.labels = true)
-    (decided : decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds =
-      some verdict)
+    (decided : decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds
+      forms.reading.rules = some verdict)
     {more : ℕ} (le : rounds ≤ more) :
     ∃ answer, ask relEnv signature language fuel formula term hint more (some forms) = .proved answer ∨
       ask relEnv signature language fuel formula term hint more (some forms) = .refuted answer := by
@@ -403,5 +423,16 @@ theorem ask_settled_of_canonical (forms : CanonicalForms relEnv language fuel) {
   cases verdict
   · exact Or.inr (by simp [Evidence.refutes, behavioural, decided])
   · exact Or.inl (by simp [Evidence.establishes, behavioural, decided])
+
+/-- **A backward search**: when it decides reaching named goals, or never reaching them, the front door answers from
+then on. -/
+theorem ask_settled_of_backward {forms : Option (CanonicalForms relEnv language fuel)} {hint : Option CertificateCandidate}
+    {rounds : ℕ}
+    (decides : backwardEstablishes language formula term rounds = true ∨ backwardRefutes language formula term rounds = true)
+    {more : ℕ} (le : rounds ≤ more) (reference : formsReference forms = true := by rfl) :
+    ∃ answer, ask relEnv signature language fuel formula term hint more forms = .proved answer ∨
+      ask relEnv signature language fuel formula term hint more forms = .refuted answer :=
+  ask_settled_of_evidence (evidence := .backward rounds) (by simp [gathered])
+    (by simpa [Evidence.establishes, Evidence.refutes, reference] using decides) le
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic

@@ -86,6 +86,8 @@ structure NativeStructure (Carrier : Type u) where
   same : Carrier → Carrier → Prop
   /-- A body applied to an argument. -/
   apply : Carrier → Carrier → Carrier
+  /-- The element is in the declared relation. -/
+  inRelation : Carrier → String → Prop
 
 namespace NativeStructure
 
@@ -189,6 +191,8 @@ def sat : {n : ℕ} → Env Carrier n → Formula n → Carrier → Prop
       ∀ inner, S.body element inner → ∃ value, sat env argument value ∧ sat env result (S.apply inner value)
   | _, env, .someOf type formula, _ => ∃ witness, S.typed witness type ∧ sat env formula witness
   | _, env, .everyOf type formula, _ => ∀ witness, S.typed witness type → sat env formula witness
+  | _, _, .inRelation relation, element => S.inRelation element relation
+  | _, _, .notInRelation relation, element => ¬ S.inRelation element relation
 
 /-- Every formula of the list holds at the corresponding part, and the lengths agree. -/
 def satAll : {n : ℕ} → Env Carrier n → Formulas n → List Carrier → Prop
@@ -289,6 +293,8 @@ theorem sat_dual : ∀ {n : ℕ} (formula : Formula n) (env : Env Carrier n) (el
   | _, .untyped type, env, element => by simp [dual, sat]
   | _, .is term, env, element => by simp [dual, sat]
   | _, .isNot term, env, element => by simp [dual, sat]
+  | _, .inRelation relation, env, element => by simp [dual, sat]
+  | _, .notInRelation relation, env, element => by simp [dual, sat]
   | _, .mapsAll argument result, env, element => by
     simp only [dual, sat, sat_dual argument, sat_dual result, not_exists, not_and, not_forall, not_or]
   | _, .mapsSome argument result, env, element => by

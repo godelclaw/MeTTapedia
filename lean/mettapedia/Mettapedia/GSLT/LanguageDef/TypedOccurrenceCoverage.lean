@@ -23,7 +23,7 @@ open Mettapedia.OSLF.MeTTaIL.RuleBinding
 set_option autoImplicit false
 
 /-- Exactly the two typed site forms selected by authored occurrence paths.
-Both retain the local binder-sort prefix, rather than only its depth. -/
+Both retain the global typing descent and its local binder-sort prefix. -/
 inductive TypedOccurrenceAt (language : LanguageDef)
     (free : FreeTypeContext) (bound : List TypeExpr)
     (pattern : Pattern) (rootType : TypeExpr)
@@ -46,6 +46,8 @@ inductive TypedOccurrenceAt (language : LanguageDef)
       (decoded : restSiteAt? pattern path = some site)
       (siteName : site.name = name)
       (selected : HasType language free focusBound site.focus focusType)
+      (selectedContext : TypedAt language free site.focus site.context
+        bound rootType focusBound focusType)
       (lookup : free name = some (.collection site.kind elementType))
       (contextPrefix : focusBound = binderPrefix ++ bound)
       (prefixLength : binderPrefix.length = binderCount site.context)
@@ -74,10 +76,10 @@ theorem HasType.occurrenceAt_typed
     exact ⟨binderPrefix, .term context focusBound result decoded selected
       lookup contextPrefix prefixLength runtimeDepth⟩
   · obtain ⟨focusBound, focusType, binderPrefix, elementType,
-        selected, lookup, contextPrefix, prefixLength, runtimeDepth⟩ :=
-      typed.restSiteAt decoded
+        selected, selectedContext, lookup, contextPrefix, prefixLength, runtimeDepth⟩ :=
+      typed.restSiteAt_with_descent decoded
     exact ⟨binderPrefix, .rest site focusBound focusType elementType
-      decoded siteName selected (siteName ▸ lookup) contextPrefix
+      decoded siteName selected selectedContext (siteName ▸ lookup) contextPrefix
       prefixLength runtimeDepth⟩
 
 /-- A classified typed occurrence really is an occurrence of the claimed
@@ -93,7 +95,7 @@ theorem TypedOccurrenceAt.executable
   cases typed with
   | term _ _ _ decoded _ _ _ _ _ =>
       exact termZipperAt?_occurrenceAt? decoded
-  | rest _ _ _ _ decoded siteName _ _ _ _ _ =>
+  | rest _ _ _ _ decoded siteName _ _ _ _ _ _ =>
       simpa [siteName] using restSiteAt?_occurrenceAt? decoded
 
 /-- The binder sorts exposed by a typed address have exactly the depth used
@@ -107,7 +109,7 @@ theorem TypedOccurrenceAt.runtimeDepth
     occurrenceDepthAt? pattern path 0 = some binderPrefix.length := by
   cases typed with
   | term _ _ _ _ _ _ _ _ runtimeDepth => exact runtimeDepth
-  | rest _ _ _ _ _ _ _ _ _ _ runtimeDepth => exact runtimeDepth
+  | rest _ _ _ _ _ _ _ _ _ _ _ runtimeDepth => exact runtimeDepth
 
 /-- A captured contextual value and the arguments at either kind of typed
 authored occurrence produce the executable term at the syntactically selected

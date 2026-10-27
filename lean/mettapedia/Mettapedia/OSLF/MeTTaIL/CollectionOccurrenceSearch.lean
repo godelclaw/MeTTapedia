@@ -179,13 +179,13 @@ theorem publicationWithPackets_origins {plan : GeneralExecutionAdmission.Plan} {
   simp only [CollectionCommittedObservation.commit?]
   cases packet.finish? plan bound expected <;> rfl
 
-private theorem status_complete {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
-    {expected : TypeExpr} (run : Run plan bound expected) :
-    status run = .complete ↔
+private theorem statusWith_complete {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} {matcher : GeneralPremise.MatchingExecution} (run : Run plan bound expected matcher) :
+    statusWith run = .complete ↔
       run.state.matchers.all (fun lane => RecursiveCollectionMachine.complete lane.state) = true ∧
       run.state.batch.frames.all (fun frame => frame.state.agenda.isEmpty) = true ∧
       run.state.batch.frames.all (fun frame => frame.state.unresolved.isEmpty) = true := by
-  unfold status statusWith
+  unfold statusWith
   split
   · split <;> simp_all [Bool.and_eq_true]
   · rename_i missing
@@ -195,22 +195,31 @@ private theorem status_complete {plan : GeneralExecutionAdmission.Plan} {bound :
     · rintro ⟨matching, idle, _⟩
       exact False.elim (missing (by simp only [Bool.and_eq_true]; exact ⟨matching, idle⟩))
 
+private theorem status_complete {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} (run : Run plan bound expected) :
+    status run = .complete ↔
+      run.state.matchers.all (fun lane => RecursiveCollectionMachine.complete lane.state) = true ∧
+      run.state.batch.frames.all (fun frame => frame.state.agenda.isEmpty) = true ∧
+      run.state.batch.frames.all (fun frame => frame.state.unresolved.isEmpty) = true :=
+  statusWith_complete run
+
 private theorem idle_frame {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
-    {expected : TypeExpr} {source : Pattern} (frame : Frame plan bound expected source)
+    {expected : TypeExpr} {source : Pattern} {matcher : GeneralPremise.MatchingExecution} (frame : Frame plan bound expected source matcher)
     (idle : frame.state.agenda = []) : Frame.run 1 frame = frame := by
-  have same : RecursiveCollectionContinuation.run frame.allocation.request 1 frame.state = frame.state := by
+  have same : StructuralDescent.Scheduled.run frame.allocation.request.environment frame.allocation.request.goal 1 frame.state = frame.state := by
     change GeneralPremise.Scheduler.run _ 1 frame.state = frame.state
     simp only [GeneralPremise.Scheduler.run, GeneralPremise.Scheduler.tick_idle _ _ idle]
-  change { frame with state := RecursiveCollectionContinuation.run _ 1 frame.state } = frame
+  change { frame with state := StructuralDescent.Scheduled.run frame.allocation.request.environment frame.allocation.request.goal 1 frame.state } = frame
   rw [same]
 
-private theorem drained_round {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
-    {expected : TypeExpr} {source : Pattern} (depth : Nat)
-    (state : CollectionOccurrenceMachine.State plan bound expected source)
+private theorem drained_roundWith {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} {source : Pattern} {matcher : GeneralPremise.MatchingExecution}
+    (profile : SeedProfile matcher plan bound expected source) (depth : Nat)
+    (state : CollectionOccurrenceMachine.State plan bound expected source matcher)
     (matching : ∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true)
     (idle : ∀ frame ∈ state.batch.frames, frame.state.agenda = []) :
-    (CollectionOccurrenceMachine.round depth state).batch = state.batch ∧
-      ∀ lane ∈ (CollectionOccurrenceMachine.round depth state).matchers,
+    (CollectionOccurrenceMachine.roundWith profile depth state).batch = state.batch ∧
+      ∀ lane ∈ (CollectionOccurrenceMachine.roundWith profile depth state).matchers,
         RecursiveCollectionMachine.complete lane.state = true := by
   have fresh : state.matchers.flatMap (CollectionOccurrenceMatcher.Lane.allocations depth) = [] := by
     apply List.flatMap_eq_nil_iff.mpr
@@ -227,13 +236,33 @@ private theorem drained_round {plan : GeneralExecutionAdmission.Plan} {bound : L
     intro frame member
     simp only [Frame.fresh, idle_frame frame (idle frame member), List.drop_length]
   constructor
-  · simp only [CollectionOccurrenceMachine.round, CollectionOccurrenceMachine.roundWith,
+  · simp only [CollectionOccurrenceMachine.roundWith,
       fresh, State.installWith, List.map_nil, List.append_nil, State.round, retained, noPublication]
   · intro lane member
     obtain ⟨original, inside, rfl⟩ := List.mem_map.mp member
     simpa only [CollectionOccurrenceMatcher.Lane.resume,
       RecursiveCollectionMachine.run_complete original.job.request 1 (matching original inside)]
       using matching original inside
+
+private theorem drained_runWith {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} {source : Pattern} {matcher : GeneralPremise.MatchingExecution}
+    (profile : SeedProfile matcher plan bound expected source) (depth work : Nat)
+    (state : CollectionOccurrenceMachine.State plan bound expected source matcher)
+    (matching : ∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true)
+    (idle : ∀ frame ∈ state.batch.frames, frame.state.agenda = []) :
+    (CollectionOccurrenceMachine.runWith profile depth work state).batch = state.batch ∧
+      ∀ lane ∈ (CollectionOccurrenceMachine.runWith profile depth work state).matchers,
+        RecursiveCollectionMachine.complete lane.state = true := by
+  induction work generalizing state with
+  | zero => exact ⟨rfl, matching⟩
+  | succ work ih =>
+    obtain ⟨same, matching'⟩ := drained_roundWith profile depth state matching idle
+    have idle' : ∀ frame ∈ (CollectionOccurrenceMachine.roundWith profile depth state).batch.frames,
+        frame.state.agenda = [] := by
+      rw [same]
+      exact idle
+    obtain ⟨same', matching''⟩ := ih _ matching' idle'
+    exact ⟨same'.trans same, matching''⟩
 
 private theorem drained_run {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
     {expected : TypeExpr} {source : Pattern} (depth work : Nat)
@@ -242,17 +271,8 @@ private theorem drained_run {plan : GeneralExecutionAdmission.Plan} {bound : Lis
     (idle : ∀ frame ∈ state.batch.frames, frame.state.agenda = []) :
     (CollectionOccurrenceMachine.run depth work state).batch = state.batch ∧
       ∀ lane ∈ (CollectionOccurrenceMachine.run depth work state).matchers,
-        RecursiveCollectionMachine.complete lane.state = true := by
-  induction work generalizing state with
-  | zero => exact ⟨rfl, matching⟩
-  | succ work ih =>
-    obtain ⟨same, matching'⟩ := drained_round depth state matching idle
-    have idle' : ∀ frame ∈ (CollectionOccurrenceMachine.round depth state).batch.frames,
-        frame.state.agenda = [] := by
-      rw [same]
-      exact idle
-    obtain ⟨same', matching''⟩ := ih _ matching' idle'
-    exact ⟨same'.trans same, matching''⟩
+        RecursiveCollectionMachine.complete lane.state = true :=
+  drained_runWith (ordinarySeedProfile plan bound expected source) depth work state matching idle
 
 /-- Completion is stable for the actual retained machine. Exhausted matcher
 lanes install no new allocations, idle continuations publish no suffix, and
@@ -710,3 +730,649 @@ theorem orderedCommittedKeys_replay {Choice Key : Type} [DecidableEq Key]
 #print axioms orderedCommittedKeys_replay
 
 end Mettapedia.OSLF.MeTTaIL.CollectionCommittedObservation
+
+
+namespace Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CollectionOccurrenceBatch CollectionOccurrenceMatcher
+open Mettapedia.Machines.ResumableSearchRunner
+
+variable {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} {source : Pattern} {matcher : GeneralPremise.MatchingExecution}
+
+private theorem frame_idle (work : Nat) (frame : Frame plan bound expected source matcher)
+    (idle : frame.state.agenda = []) : Frame.run work frame = frame := by
+  induction work generalizing frame with
+  | zero => rfl
+  | succ work ih =>
+      have first : Frame.run 1 frame = frame := by
+        have same := GeneralPremise.Scheduler.tick_idle
+          (StructuralDescent.Scheduled.expand frame.allocation.request.environment frame.allocation.request.goal)
+          frame.state idle
+        change { frame with state := GeneralPremise.Scheduler.run _ 1 frame.state } = frame
+        simp only [GeneralPremise.Scheduler.run, same]
+      rw [show work + 1 = 1 + work by omega, Frame.run_add, first]
+      exact ih frame idle
+
+private theorem initialized_frame_drains (profile : SeedProfile matcher plan bound expected source)
+    (drain : ∀ allocation : Allocation plan bound expected source,
+      ∃ work, (Frame.run work (Frame.initialWith profile allocation)).state.agenda = [])
+    (frame : Frame plan bound expected source matcher)
+    (initialized : CollectionOccurrenceMachine.InitializedWith profile frame) :
+    ∃ work, (Frame.run work frame).state.agenda = [] := by
+  obtain ⟨elapsed, started⟩ := initialized
+  obtain ⟨work, idle⟩ := drain frame.allocation
+  have same : Frame.run work frame = Frame.run elapsed (Frame.run work (Frame.initialWith profile frame.allocation)) := by
+    calc
+      _ = Frame.run work (Frame.run elapsed (Frame.initialWith profile frame.allocation)) := congrArg (Frame.run work) started
+      _ = Frame.run (elapsed + work) (Frame.initialWith profile frame.allocation) := (Frame.run_add ..).symm
+      _ = _ := by rw [Nat.add_comm elapsed work, Frame.run_add]
+  refine ⟨work, ?_⟩
+  rw [same, frame_idle elapsed _ idle]
+  exact idle
+
+private theorem initialized_frames_drain (profile : SeedProfile matcher plan bound expected source)
+    (drain : ∀ allocation : Allocation plan bound expected source,
+      ∃ work, (Frame.run work (Frame.initialWith profile allocation)).state.agenda = [])
+    (frames : List (Frame plan bound expected source matcher))
+    (initialized : ∀ frame ∈ frames, CollectionOccurrenceMachine.InitializedWith profile frame) :
+    ∃ work, ∀ frame ∈ frames, (Frame.run work frame).state.agenda = [] := by
+  induction frames with
+  | nil => exact ⟨0, by intro frame member; cases member⟩
+  | cons frame frames ih =>
+      obtain ⟨first, finished⟩ := initialized_frame_drains profile drain frame (initialized frame List.mem_cons_self)
+      obtain ⟨rest, restFinished⟩ := ih (fun other member => initialized other (List.mem_cons_of_mem _ member))
+      refine ⟨first + rest, ?_⟩
+      intro target member
+      rcases List.mem_cons.mp member with rfl | inside
+      · rw [Frame.run_add, frame_idle rest _ finished]
+        exact finished
+      · rw [Nat.add_comm first rest, Frame.run_add, frame_idle first _ (restFinished target inside)]
+        exact restFinished target inside
+
+private theorem matcher_lanes_drain (lanes : List (Lane plan bound expected source)) :
+    ∃ work, ∀ lane ∈ lanes, RecursiveCollectionMachine.complete (lane.resume work).state = true := by
+  induction lanes with
+  | nil => exact ⟨0, by intro lane member; cases member⟩
+  | cons lane lanes ih =>
+      obtain ⟨first, finished⟩ := RecursiveCollectionMachine.finiteDrain lane.job.request lane.state
+      obtain ⟨rest, restFinished⟩ := ih
+      refine ⟨first + rest, ?_⟩
+      intro target member
+      rcases List.mem_cons.mp member with rfl | inside
+      · change RecursiveCollectionMachine.complete (RecursiveCollectionMachine.run _ (first + rest) _) = true
+        rw [RecursiveCollectionMachine.run_add, RecursiveCollectionMachine.run_complete _ rest finished]
+        exact finished
+      · have finished := restFinished target inside
+        change RecursiveCollectionMachine.complete (RecursiveCollectionMachine.run _ (first + rest) _) = true
+        rw [Nat.add_comm first rest, RecursiveCollectionMachine.run_add]
+        rw [RecursiveCollectionMachine.run_complete _ first finished]
+        exact finished
+
+private theorem matcher_drained_round (profile : SeedProfile matcher plan bound expected source) (depth : Nat)
+    (state : CollectionOccurrenceMachine.State plan bound expected source matcher)
+    (matching : ∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true) :
+    (CollectionOccurrenceMachine.roundWith profile depth state).batch = state.batch.round ∧
+      ∀ lane ∈ (CollectionOccurrenceMachine.roundWith profile depth state).matchers,
+        RecursiveCollectionMachine.complete lane.state = true := by
+  have fresh : state.matchers.flatMap (Lane.allocations depth) = [] := by
+    apply List.flatMap_eq_nil_iff.mpr
+    intro lane member
+    simp only [Lane.allocations, Lane.fresh,
+      RecursiveCollectionMachine.run_complete lane.job.request 1 (matching lane member),
+      List.drop_length, CollectionOccurrenceMatcher.collect]
+  constructor
+  · simp only [CollectionOccurrenceMachine.roundWith, fresh, State.installWith,
+      List.map_nil, List.append_nil]
+  · intro lane member
+    obtain ⟨old, inside, rfl⟩ := List.mem_map.mp member
+    simpa only [Lane.resume,
+      RecursiveCollectionMachine.run_complete old.job.request 1 (matching old inside)]
+      using matching old inside
+
+private theorem matcher_drained_run (profile : SeedProfile matcher plan bound expected source) (depth work : Nat)
+    (state : CollectionOccurrenceMachine.State plan bound expected source matcher)
+    (matching : ∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true) :
+    (CollectionOccurrenceMachine.runWith profile depth work state).batch = State.run work state.batch ∧
+      ∀ lane ∈ (CollectionOccurrenceMachine.runWith profile depth work state).matchers,
+        RecursiveCollectionMachine.complete lane.state = true := by
+  induction work generalizing state with
+  | zero => exact ⟨rfl, matching⟩
+  | succ work ih =>
+      obtain ⟨same, done⟩ := matcher_drained_round profile depth state matching
+      obtain ⟨later, final⟩ := ih _ done
+      exact ⟨later.trans (congrArg (State.run work) same), final⟩
+
+/-- The joint machine drains a selected seed profile when its genuine local
+initializations drain. This premise is discharged separately for each backend;
+unresolved obligations remain in the returned retained frames. -/
+theorem runWith_eventually_drained (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr)
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (CanonicalBags.canon actualSource))
+    (depth : Nat) (source : Pattern)
+    (drain : ∀ allocation : Allocation plan bound expected (CanonicalBags.canon source),
+      ∃ work, (Frame.run work (Frame.initialWith (profile source) allocation)).state.agenda = []) :
+    ∃ work,
+      let state := (runWith plan bound expected profile depth source work).state
+      (∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true) ∧
+        ∀ frame ∈ state.batch.frames, frame.state.agenda = [] := by
+  let initial := CollectionOccurrenceMachine.beginWith matcher plan bound expected (CanonicalBags.canon source)
+  obtain ⟨first, finished⟩ := matcher_lanes_drain initial.matchers
+  let matched := CollectionOccurrenceMachine.runWith (profile source) depth first initial
+  have matching : ∀ lane ∈ matched.matchers, RecursiveCollectionMachine.complete lane.state = true := by
+    intro lane member
+    rw [CollectionOccurrenceMachine.runWith_matchers] at member
+    obtain ⟨old, inside, rfl⟩ := List.mem_map.mp member
+    exact finished old inside
+  obtain ⟨rest, settled⟩ := initialized_frames_drain (profile source) drain matched.batch.frames
+    (CollectionOccurrenceMachine.runWith_initialized (profile source) depth first)
+  obtain ⟨same, finalMatching⟩ := matcher_drained_run (profile source) depth rest matched matching
+  refine ⟨first + rest, ?_⟩
+  change (∀ lane ∈ (CollectionOccurrenceMachine.runWith (profile source) depth (first + rest) initial).matchers,
+      RecursiveCollectionMachine.complete lane.state = true) ∧
+    ∀ frame ∈ (CollectionOccurrenceMachine.runWith (profile source) depth (first + rest) initial).batch.frames,
+      frame.state.agenda = []
+  rw [CollectionOccurrenceMachine.runWith_add]
+  refine ⟨finalMatching, ?_⟩
+  rw [same, State.run_frames]
+  intro frame member
+  obtain ⟨old, inside, rfl⟩ := List.mem_map.mp member
+  exact settled old inside
+
+/-- Ordinary execution is the original profile specialization of the
+shared joint drainage proof. Unresolved obligations are still retained. -/
+theorem search_eventually_drained (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) (source : Pattern) :
+    ∃ work,
+      let state := ((search plan bound expected depth).run source work).state
+      (∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true) ∧
+        ∀ frame ∈ state.batch.frames, frame.state.agenda = [] := by
+  apply runWith_eventually_drained plan bound expected
+    (fun actualSource => ordinarySeedProfile plan bound expected (CanonicalBags.canon actualSource)) depth source
+  intro allocation
+  exact RecursiveCollectionContinuation.eventually_settled allocation.request
+
+/-- The canonical profile supplies its actual allocation-derived seed to
+the existing finite work certificate. No matching outcome or fresh trace is chosen. -/
+theorem canonical_runWith_eventually_drained (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) (source : Pattern) :
+    ∃ work,
+      let state := (runWith plan bound expected (canonicalSeedProfile plan bound expected) depth source work).state
+      (∀ lane ∈ state.matchers, RecursiveCollectionMachine.complete lane.state = true) ∧
+        ∀ frame ∈ state.batch.frames, frame.state.agenda = [] := by
+  apply runWith_eventually_drained plan bound expected (canonicalSeedProfile plan bound expected) depth source
+  intro allocation
+  exact RecursiveCollectionContinuation.Canonical.eventually_settled allocation.request allocation.canonical_seed
+
+/-- Draining selected work removes pending status. It does not turn a
+retained unresolved obligation into a completion certificate. -/
+theorem runWith_eventually_not_pending (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr)
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (CanonicalBags.canon actualSource))
+    (depth : Nat) (source : Pattern)
+    (drain : ∀ allocation : Allocation plan bound expected (CanonicalBags.canon source),
+      ∃ work, (Frame.run work (Frame.initialWith (profile source) allocation)).state.agenda = []) :
+    ∃ work, statusWith (runWith plan bound expected profile depth source work) ≠ .pending := by
+  obtain ⟨work, matching, agendas⟩ := runWith_eventually_drained plan bound expected profile depth source drain
+  refine ⟨work, ?_⟩
+  have matchers : ((runWith plan bound expected profile depth source work).state.matchers.all
+      (fun lane => RecursiveCollectionMachine.complete lane.state)) = true := List.all_eq_true.mpr matching
+  have frames : ((runWith plan bound expected profile depth source work).state.batch.frames.all
+      (fun frame => frame.state.agenda.isEmpty)) = true :=
+    List.all_eq_true.mpr (fun frame member => by simp only [agendas frame member, List.isEmpty_nil])
+  unfold statusWith
+  rw [matchers, frames]
+  simp only [Bool.true_and, ↓reduceIte]
+  split <;> intro impossible <;> cases impossible
+
+/-- Fixed-depth ordinary execution eventually stops being pending. A
+blocked result continues to retain its unresolved obligations. -/
+theorem search_eventually_not_pending (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) (source : Pattern) :
+    ∃ work, (search plan bound expected depth).status
+      ((search plan bound expected depth).run source work) ≠ .pending := by
+  apply runWith_eventually_not_pending plan bound expected
+    (fun actualSource => ordinarySeedProfile plan bound expected (CanonicalBags.canon actualSource)) depth source
+  intro allocation
+  exact RecursiveCollectionContinuation.eventually_settled allocation.request
+
+theorem canonical_runWith_eventually_not_pending (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) (source : Pattern) :
+    ∃ work, statusWith (runWith plan bound expected (canonicalSeedProfile plan bound expected) depth source work) ≠ .pending := by
+  apply runWith_eventually_not_pending plan bound expected (canonicalSeedProfile plan bound expected) depth source
+  intro allocation
+  exact RecursiveCollectionContinuation.Canonical.eventually_settled allocation.request allocation.canonical_seed
+
+#print axioms runWith_eventually_drained
+#print axioms canonical_runWith_eventually_drained
+#print axioms runWith_eventually_not_pending
+#print axioms canonical_runWith_eventually_not_pending
+#print axioms search_eventually_drained
+#print axioms search_eventually_not_pending
+
+end Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+
+
+namespace Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax CollectionOccurrenceBatch
+open Mettapedia.Machines.ResumableSearchRunner
+
+/-- A completed ordinary run keeps its entire retained batch under resume,
+including all original allocation packets and chronological publications. -/
+theorem complete_resume_batch {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} (depth : Nat) (run : Run plan bound expected) (extra : Nat)
+    (done : status run = .complete) :
+    ((search plan bound expected depth).resume run extra).state.batch = run.state.batch := by
+  have ready := (status_complete run).mp done
+  have idle : ∀ frame ∈ run.state.batch.frames, frame.state.agenda = [] := by
+    intro frame member
+    exact List.isEmpty_iff.mp (List.all_eq_true.mp ready.2.1 frame member)
+  exact (drained_run depth extra run.state (List.all_eq_true.mp ready.1) idle).1
+
+/-- The selected finisher remains explicit; completion freezes complete
+packet/receipt pairs before any observation identity is applied. -/
+theorem complete_resume_committed {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr}
+    (finish : Publication → Option GeneralRuleJobs.Receipt)
+    (depth : Nat) (run : Run plan bound expected) (extra : Nat)
+    (done : status run = .complete) :
+    committedWith finish ((search plan bound expected depth).resume run extra) =
+      committedWith finish run := by
+  unfold committedWith
+  rw [complete_resume_batch depth run extra done]
+
+theorem complete_resume_packets {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} (depth : Nat) (run : Run plan bound expected) (extra : Nat)
+    (done : status run = .complete) :
+    publicationWithPackets ((search plan bound expected depth).resume run extra) =
+      publicationWithPackets run := by
+  unfold publicationWithPackets
+  rw [complete_resume_batch depth run extra done]
+
+/-- A settled explorer retains the same complete packet account after a
+round, including receipts whose target already has an explored node. -/
+theorem settled_committed_step {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} (depth : Nat)
+    (explorer : Complete.Explore.Explorer Pattern (Run plan bound expected) GeneralRuleJobs.Receipt)
+    (done : Complete.Settled.settled (search plan bound expected depth) explorer = true) :
+    ((Complete.Explore.step (search plan bound expected depth) explorer).nodes.flatMap
+        (fun node => publicationWithPackets node.run)) =
+      explorer.nodes.flatMap (fun node => publicationWithPackets node.run) := by
+  let S := search plan bound expected depth
+  have each : ∀ node ∈ explorer.nodes, Complete.Settled.nodeSettled S node = true :=
+    List.all_eq_true.mp done
+  have noChildren : (explorer.nodes.map (Complete.Explore.expand S explorer.round)).flatMap Prod.snd = [] := by
+    apply List.flatMap_eq_nil_iff.mpr
+    intro pair member
+    obtain ⟨node, present, rfl⟩ := List.mem_map.mp member
+    exact (Complete.Settled.expand_settled (search_stable plan bound expected depth)
+      explorer.round node (each node present)).1
+  dsimp only [S] at noChildren
+  simp only [Complete.Explore.step, noChildren, Complete.Explore.fresh, List.append_nil]
+  simp only [List.flatMap_map]
+  apply List.flatMap_congr
+  intro node member
+  change publicationWithPackets (S.resume node.run 1) = publicationWithPackets node.run
+  apply complete_resume_packets depth node.run 1
+  have complete := (Bool.and_eq_true_iff.mp (each node member)).1
+  exact beq_iff_eq.mp complete
+
+/-- Arbitrarily much additional explorer scheduling keeps the full account
+once closed. This proves no completion claim for unfolded graph paths. -/
+theorem settled_committed_iterate {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} (depth extra : Nat)
+    (explorer : Complete.Explore.Explorer Pattern (Run plan bound expected) GeneralRuleJobs.Receipt)
+    (done : Complete.Settled.settled (search plan bound expected depth) explorer = true) :
+    ((Nat.iterate (Complete.Explore.step (search plan bound expected depth)) extra explorer).nodes.flatMap
+        (fun node => publicationWithPackets node.run)) =
+      explorer.nodes.flatMap (fun node => publicationWithPackets node.run) := by
+  induction extra generalizing explorer with
+  | zero => rfl
+  | succ extra ih =>
+      rw [Function.iterate_succ_apply]
+      exact (ih _ (Complete.Settled.step_settled (search_stable plan bound expected depth) explorer done).2).trans
+        (settled_committed_step depth explorer done)
+
+#print axioms complete_resume_batch
+#print axioms complete_resume_committed
+#print axioms complete_resume_packets
+#print axioms settled_committed_step
+#print axioms settled_committed_iterate
+
+end Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+
+namespace Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax
+open CanonicalBags CollectionOccurrenceBatch
+
+theorem publicationWithPackets_run_prefix (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth : Nat)
+    (source : Pattern) (first extra : Nat) :
+    publicationWithPackets ((search plan bound expected depth).run source first) <+:
+      publicationWithPackets ((search plan bound expected depth).run source (first + extra)) := by
+  have grown := resumeWith_committed_prefix
+    (fun input => ordinarySeedProfile plan bound expected (canon input))
+    (fun packet => packet.finish? plan bound expected)
+    depth ((search plan bound expected depth).run source first) extra
+  change publicationWithPackets ((search plan bound expected depth).run source first) <+:
+    publicationWithPackets ((search plan bound expected depth).resume
+      ((search plan bound expected depth).run source first) extra) at grown
+  rw [(search_lawful plan bound expected depth).resume_run] at grown
+  exact grown
+
+/-- Source presentation changes with the same built-in collection meaning
+leave the actual committed account unchanged at every work allowance. -/
+theorem publicationWithPackets_run_same (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth : Nat)
+    (source other : Pattern) (work : Nat) (same : Same source other) :
+    publicationWithPackets ((search plan bound expected depth).run source work) =
+      publicationWithPackets ((search plan bound expected depth).run other work) := by
+  exact congrArg (fun presentation =>
+    CollectionCommittedObservation.retained plan bound expected
+      (CollectionOccurrenceMachine.run depth work
+        (CollectionOccurrenceMachine.begin plan bound expected presentation)).batch.log) same
+
+/-- A genuinely complete local search contains every pair that any of its
+work prefixes can publish, including prefixes requested after completion. -/
+theorem complete_packets_cover_work (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth : Nat)
+    (source : Pattern) (spent rounds : Nat)
+    (done : status ((search plan bound expected depth).run source spent) = .complete) :
+    ∀ pair ∈ publicationWithPackets ((search plan bound expected depth).run source rounds),
+      pair ∈ publicationWithPackets ((search plan bound expected depth).run source spent) := by
+  intro pair published
+  by_cases early : rounds ≤ spent
+  · obtain ⟨extra, total⟩ := Nat.exists_eq_add_of_le early
+    rw [total]
+    exact (publicationWithPackets_run_prefix plan bound expected depth source rounds extra).subset published
+  · obtain ⟨extra, total⟩ := Nat.exists_eq_add_of_le (Nat.le_of_lt (Nat.lt_of_not_le early))
+    have same := complete_resume_packets depth
+      ((search plan bound expected depth).run source spent) extra done
+    rw [(search_lawful plan bound expected depth).resume_run, ← total] at same
+    rw [same] at published
+    exact published
+
+/-- Every actual local committed pair is retained at a settled explored
+node. This preserves the packet/receipt association, not only its target. -/
+theorem settled_node_packets_complete (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth : Nat)
+    (source : Pattern) (work : Nat)
+    (done : Complete.Settled.settled (search plan bound expected depth)
+      (Complete.Explore.explore (search plan bound expected depth) source work) = true)
+    (node : Complete.Explore.Node Pattern (Run plan bound expected) GeneralRuleJobs.Receipt)
+    (present : node ∈ (Complete.Explore.explore (search plan bound expected depth) source work).nodes)
+    (rounds : Nat) (pair : CollectionCommittedObservation.Committed)
+    (published : pair ∈ publicationWithPackets
+      ((search plan bound expected depth).run node.state rounds)) :
+    pair ∈ publicationWithPackets node.run := by
+  have atNode := Bool.and_eq_true_iff.mp (List.all_eq_true.mp done node present)
+  have actual := (Complete.Explore.explore_good (search_lawful plan bound expected depth) source work).run node present
+  have complete : status ((search plan bound expected depth).run node.state
+      ((Complete.Explore.explore (search plan bound expected depth) source work).round - node.born)) = .complete := by
+    rw [← actual]
+    exact beq_iff_eq.mp atNode.1
+  have member := complete_packets_cover_work plan bound expected depth node.state _ rounds complete pair published
+  rw [← actual] at member
+  exact member
+
+#print axioms publicationWithPackets_run_prefix
+#print axioms publicationWithPackets_run_same
+#print axioms complete_packets_cover_work
+#print axioms settled_node_packets_complete
+
+end Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+
+namespace Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax CanonicalBags GeneralPremise CollectionOccurrenceBatch
+open Mettapedia.Machines.ResumableSearchRunner
+
+/-- Completion freezes the actual retained batch for the selected profile.
+No interpretation of its packet identities or histories is required. -/
+theorem complete_resumeWith_batch {matcher : MatchingExecution} {plan : GeneralExecutionAdmission.Plan}
+    {bound : List TypeExpr} {expected : TypeExpr}
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (canon actualSource))
+    (depth : Nat) (run : Run plan bound expected matcher) (extra : Nat)
+    (done : statusWith run = .complete) :
+    (resumeWith profile depth run extra).state.batch = run.state.batch := by
+  have ready := (statusWith_complete run).mp done
+  have idle : ∀ frame ∈ run.state.batch.frames, frame.state.agenda = [] := by
+    intro frame member
+    exact List.isEmpty_iff.mp (List.all_eq_true.mp ready.2.1 frame member)
+  exact (drained_runWith (profile run.source) depth extra run.state (List.all_eq_true.mp ready.1) idle).1
+
+/-- An explicit finisher retains every complete packet/receipt pair after
+completion, including the original seed and full selected histories. -/
+theorem complete_resumeWith_committed {matcher : MatchingExecution} {plan : GeneralExecutionAdmission.Plan}
+    {bound : List TypeExpr} {expected : TypeExpr}
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (canon actualSource))
+    (finish : Publication matcher.Choice → Option (GeneralRuleJobs.Receipt matcher.Choice))
+    (depth : Nat) (run : Run plan bound expected matcher) (extra : Nat)
+    (done : statusWith run = .complete) :
+    committedWith finish (resumeWith profile depth run extra) = committedWith finish run := by
+  unfold committedWith
+  rw [complete_resumeWith_batch profile depth run extra done]
+
+theorem complete_resumeWith_publication {matcher : MatchingExecution} {plan : GeneralExecutionAdmission.Plan}
+    {bound : List TypeExpr} {expected : TypeExpr}
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (canon actualSource))
+    (finish : Publication matcher.Choice → Option (GeneralRuleJobs.Receipt matcher.Choice))
+    (depth : Nat) (run : Run plan bound expected matcher) (extra : Nat)
+    (done : statusWith run = .complete) :
+    publicationWith finish (resumeWith profile depth run extra) = publicationWith finish run := by
+  unfold publicationWith
+  rw [complete_resumeWith_batch profile depth run extra done]
+
+theorem complete_resumeWith_status {matcher : MatchingExecution} {plan : GeneralExecutionAdmission.Plan}
+    {bound : List TypeExpr} {expected : TypeExpr}
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (canon actualSource))
+    (depth : Nat) (run : Run plan bound expected matcher) (extra : Nat)
+    (done : statusWith run = .complete) :
+    statusWith (resumeWith profile depth run extra) = .complete := by
+  have ready := (statusWith_complete run).mp done
+  have idle : ∀ frame ∈ run.state.batch.frames, frame.state.agenda = [] := by
+    intro frame member
+    exact List.isEmpty_iff.mp (List.all_eq_true.mp ready.2.1 frame member)
+  obtain ⟨same, matching⟩ := drained_runWith (profile run.source) depth extra run.state
+    (List.all_eq_true.mp ready.1) idle
+  apply (statusWith_complete _).mpr
+  refine ⟨List.all_eq_true.mpr matching, ?_, ?_⟩
+  · simpa only [resumeWith, same] using ready.2.1
+  · simpa only [resumeWith, same] using ready.2.2
+
+/-- The canonical profile uses the existing five search operations and full
+EqEvent receipts. Validity is explicitly interpretation-relative; this
+definition supplies no authority for the original ReferenceStep relation. -/
+def canonicalSearch (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) :
+    Search Pattern (Run plan bound expected RecursiveCollectionHandoff.canonicalMatchingExecution)
+      (GeneralRuleJobs.Receipt EquationalScopedReceipts.Event) where
+  run := runWith plan bound expected (canonicalSeedProfile plan bound expected) depth
+  resume := resumeWith (canonicalSeedProfile plan bound expected) depth
+  publication := publicationWith (fun packet => packet.finishCanonical? plan bound expected)
+  status := statusWith
+  target receipt := canon receipt.target
+  Valid source receipt := ∃ representative, Same source representative ∧
+    receipt.ValidInWith RecursiveCollectionHandoff.canonicalMatchingInterpretation DynamicProvider.empty
+      plan bound expected representative
+
+/-- Source validity is earned by the actual balanced log and original
+allocation-derived canonical seed, with no supplied firing equivalence. -/
+theorem canonical_search_lawful (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) : (canonicalSearch plan bound expected depth).Lawful where
+  resume_run := resumeWith_runWith plan bound expected (canonicalSeedProfile plan bound expected) depth
+  publication_prefix := by
+    intro source first extra
+    have grown := resumeWith_log_prefix (canonicalSeedProfile plan bound expected) depth
+      (runWith plan bound expected (canonicalSeedProfile plan bound expected) depth source first) extra
+    rw [resumeWith_runWith] at grown
+    exact grown.filterMap _
+  sound := by
+    intro source work receipt member
+    obtain ⟨packet, logged, finished⟩ := List.mem_filterMap.mp member
+    have balanced := (CollectionOccurrenceMachine.runWith_invariant
+      (canonicalSeedProfile plan bound expected source) depth work
+      (CollectionOccurrenceMachine.beginWith_invariant RecursiveCollectionHandoff.canonicalMatchingExecution
+        (plan := plan) (bound := bound) (expected := expected) (source := canon source) depth)).1
+    obtain ⟨frame, _, published⟩ := List.mem_flatMap.mp (balanced.subset logged)
+    have valid := Frame.publication_canonical_valid (source := source) frame published finished
+    exact ⟨packet.job.presentedSource packet.prepared, valid.2, valid.1⟩
+
+theorem canonical_search_stable (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (expected : TypeExpr) (depth : Nat) : Complete.Settled.Stable (canonicalSearch plan bound expected depth) := by
+  intro run extra done
+  exact ⟨complete_resumeWith_publication (canonicalSeedProfile plan bound expected)
+      (fun packet => packet.finishCanonical? plan bound expected) depth run extra done,
+    complete_resumeWith_status (canonicalSeedProfile plan bound expected) depth run extra done⟩
+
+/-- The canonical receipt account is exactly the existing explicit committed
+readout, with each original allocation packet still beside its EqEvent receipt. -/
+theorem canonicalSearch_committed {plan : GeneralExecutionAdmission.Plan} {bound : List TypeExpr}
+    {expected : TypeExpr} (run : Run plan bound expected RecursiveCollectionHandoff.canonicalMatchingExecution)
+    (depth : Nat) :
+    (committedWith (fun packet => packet.finishCanonical? plan bound expected) run).map Prod.snd =
+      (canonicalSearch plan bound expected depth).publication run :=
+  committedWith_forgets _ run
+
+#print axioms complete_resumeWith_batch
+#print axioms complete_resumeWith_committed
+#print axioms complete_resumeWith_publication
+#print axioms complete_resumeWith_status
+#print axioms canonical_search_lawful
+#print axioms canonical_search_stable
+#print axioms canonicalSearch_committed
+
+end Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+
+namespace Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch
+
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax CanonicalBags GeneralPremise CollectionOccurrenceBatch
+open Mettapedia.Machines.ResumableSearchRunner
+
+theorem committedWith_run_prefix {matcher : MatchingExecution} (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr)
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (canon actualSource))
+    (finish : Publication matcher.Choice → Option (GeneralRuleJobs.Receipt matcher.Choice))
+    (depth : Nat) (source : Pattern) (first extra : Nat) :
+    committedWith finish (runWith plan bound expected profile depth source first) <+:
+      committedWith finish (runWith plan bound expected profile depth source (first + extra)) := by
+  have grown := resumeWith_committed_prefix profile finish depth
+    (runWith plan bound expected profile depth source first) extra
+  rw [resumeWith_runWith] at grown
+  exact grown
+
+/-- Complete local selected execution contains every actual pair from any
+finite work allowance, before or after the completion allowance. -/
+theorem complete_committedWith_cover_work {matcher : MatchingExecution} (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr)
+    (profile : (actualSource : Pattern) → SeedProfile matcher plan bound expected (canon actualSource))
+    (finish : Publication matcher.Choice → Option (GeneralRuleJobs.Receipt matcher.Choice))
+    (depth : Nat) (source : Pattern) (spent rounds : Nat)
+    (done : statusWith (runWith plan bound expected profile depth source spent) = .complete) :
+    ∀ pair ∈ committedWith finish (runWith plan bound expected profile depth source rounds),
+      pair ∈ committedWith finish (runWith plan bound expected profile depth source spent) := by
+  intro pair published
+  by_cases early : rounds ≤ spent
+  · obtain ⟨extra, total⟩ := Nat.exists_eq_add_of_le early
+    rw [total]
+    exact (committedWith_run_prefix plan bound expected profile finish depth source rounds extra).subset published
+  · obtain ⟨extra, total⟩ := Nat.exists_eq_add_of_le (Nat.le_of_lt (Nat.lt_of_not_le early))
+    have same := complete_resumeWith_committed profile finish depth
+      (runWith plan bound expected profile depth source spent) extra done
+    rw [resumeWith_runWith, ← total] at same
+    rw [same] at published
+    exact published
+
+private theorem canonical_profile_run_congr (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth work : Nat)
+    {firstSource secondSource : Pattern} (same : firstSource = secondSource)
+    (firstProfile : SeedProfile RecursiveCollectionHandoff.canonicalMatchingExecution plan bound expected firstSource)
+    (secondProfile : SeedProfile RecursiveCollectionHandoff.canonicalMatchingExecution plan bound expected secondSource)
+    (firstSeed : ∀ allocation, (firstProfile allocation).answer = allocation.request.answer)
+    (secondSeed : ∀ allocation, (secondProfile allocation).answer = allocation.request.answer) :
+    CollectionCommittedObservation.retainedWith (fun packet => packet.finishCanonical? plan bound expected)
+      (CollectionOccurrenceMachine.runWith firstProfile depth work
+        (CollectionOccurrenceMachine.beginWith RecursiveCollectionHandoff.canonicalMatchingExecution
+          plan bound expected firstSource)).batch.log =
+    CollectionCommittedObservation.retainedWith (fun packet => packet.finishCanonical? plan bound expected)
+      (CollectionOccurrenceMachine.runWith secondProfile depth work
+        (CollectionOccurrenceMachine.beginWith RecursiveCollectionHandoff.canonicalMatchingExecution
+          plan bound expected secondSource)).batch.log := by
+  cases same
+  have profiles : firstProfile = secondProfile := by
+    funext allocation
+    have answers := (firstSeed allocation).trans (secondSeed allocation).symm
+    cases first : firstProfile allocation
+    cases second : secondProfile allocation
+    simp only [first, second] at answers
+    cases answers
+    rfl
+  rw [profiles]
+
+/-- Canonical source normalization fixes the complete actual committed pair
+account. Source-dependent seed proofs do not change the retained seed data. -/
+theorem canonical_committed_run_same (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth : Nat)
+    (source other : Pattern) (work : Nat) (same : Same source other) :
+    committedWith (fun packet => packet.finishCanonical? plan bound expected)
+      ((canonicalSearch plan bound expected depth).run source work) =
+    committedWith (fun packet => packet.finishCanonical? plan bound expected)
+      ((canonicalSearch plan bound expected depth).run other work) := by
+  change CollectionCommittedObservation.retainedWith (fun packet => packet.finishCanonical? plan bound expected)
+    (CollectionOccurrenceMachine.runWith (canonicalSeedProfile plan bound expected source) depth work
+      (CollectionOccurrenceMachine.beginWith RecursiveCollectionHandoff.canonicalMatchingExecution
+        plan bound expected (canon source))).batch.log =
+    CollectionCommittedObservation.retainedWith (fun packet => packet.finishCanonical? plan bound expected)
+      (CollectionOccurrenceMachine.runWith (canonicalSeedProfile plan bound expected other) depth work
+        (CollectionOccurrenceMachine.beginWith RecursiveCollectionHandoff.canonicalMatchingExecution
+          plan bound expected (canon other))).batch.log
+  apply canonical_profile_run_congr plan bound expected depth work same
+  · intro allocation
+    rfl
+  · intro allocation
+    rfl
+
+/-- A settled canonical node retains every actual local pair, with its
+original EqEvent seed and chronological conditional history. -/
+theorem canonical_settled_node_committed_complete (plan : GeneralExecutionAdmission.Plan)
+    (bound : List TypeExpr) (expected : TypeExpr) (depth : Nat)
+    (source : Pattern) (work : Nat)
+    (done : Complete.Settled.settled (canonicalSearch plan bound expected depth)
+      (Complete.Explore.explore (canonicalSearch plan bound expected depth) source work) = true)
+    (node : Complete.Explore.Node Pattern
+      (Run plan bound expected RecursiveCollectionHandoff.canonicalMatchingExecution)
+      (GeneralRuleJobs.Receipt EquationalScopedReceipts.Event))
+    (present : node ∈ (Complete.Explore.explore (canonicalSearch plan bound expected depth) source work).nodes)
+    (rounds : Nat) (pair : CollectionCommittedObservation.Committed EquationalScopedReceipts.Event)
+    (published : pair ∈ committedWith (fun packet => packet.finishCanonical? plan bound expected)
+      ((canonicalSearch plan bound expected depth).run node.state rounds)) :
+    pair ∈ committedWith (fun packet => packet.finishCanonical? plan bound expected) node.run := by
+  have atNode := Bool.and_eq_true_iff.mp (List.all_eq_true.mp done node present)
+  have actual := (Complete.Explore.explore_good (canonical_search_lawful plan bound expected depth)
+    source work).run node present
+  have complete : statusWith ((canonicalSearch plan bound expected depth).run node.state
+      ((Complete.Explore.explore (canonicalSearch plan bound expected depth) source work).round - node.born)) = .complete := by
+    rw [← actual]
+    exact beq_iff_eq.mp atNode.1
+  have member := complete_committedWith_cover_work plan bound expected
+    (canonicalSeedProfile plan bound expected) (fun packet => packet.finishCanonical? plan bound expected)
+    depth node.state _ rounds complete pair published
+  change pair ∈ committedWith (fun packet => packet.finishCanonical? plan bound expected)
+    ((canonicalSearch plan bound expected depth).run node.state
+      ((Complete.Explore.explore (canonicalSearch plan bound expected depth) source work).round - node.born)) at member
+  rw [← actual] at member
+  exact member
+
+#print axioms committedWith_run_prefix
+#print axioms complete_committedWith_cover_work
+#print axioms canonical_committed_run_same
+#print axioms canonical_settled_node_committed_complete
+
+end Mettapedia.OSLF.MeTTaIL.CollectionOccurrenceSearch

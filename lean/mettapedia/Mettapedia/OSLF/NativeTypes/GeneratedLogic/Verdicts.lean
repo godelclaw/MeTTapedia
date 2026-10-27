@@ -1,5 +1,6 @@
 import Mettapedia.TypeTheory.DisplayedEvidence
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Search
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Persistence
 import Mettapedia.OSLF.NativeTypes.Decision.Reference.Core
 import Mettapedia.OSLF.NativeTypes.Executable.ExploredCompiled
 import Mettapedia.OSLF.NativeTypes.Executable.FiniteModelKripke
@@ -14,7 +15,9 @@ type, and the precision order of `DisplayedEvidence` is the order of refinement 
 
 - **Proof-carrying outcomes** (`Reference.Core.Outcome`, shared by the finite checkers, the explored
   graphs and the finite μ-calculus) map in exactly (`ofOutcome`, `ofOutcome_answer`).
-- **`ask`** maps in with its evidence as the reason for a refutation (`ofAsk`).
+- **`ask`** maps in with its evidence as the reason for a refutation (`ofAsk`); in brief, an answer is its sign and its
+  kind of evidence (`answerSummary`); the status refines with more budget
+  (`ofAsk_refines`). With a certified decider, `askWith` maps in alike (`ofAskWith`).
 - **Verdicts that carry no proof** map in through their soundness theorems (`ofChecks`). Instances:
   - the explored-graph verdict (`ofExplored`);
   - backward-search answers (`ofBackward`);
@@ -99,16 +102,74 @@ def describe : Evidence → String
   | .exploration rounds => s!"an exploration of {rounds} rounds"
   | .closedRegion rounds => s!"a closed region grown in {rounds} rounds"
   | .canonicalRegion rounds => s!"a closed canonical region grown in {rounds} rounds"
+  | .backward rounds => s!"a backward search of {rounds} rounds"
   | .decided => "a certified decider"
+
+/-- The kind of evidence, in a word. -/
+def evidenceKind : Evidence → String
+  | .certificate _ => "certificate"
+  | .exploration _ => "exploration"
+  | .closedRegion _ => "closed"
+  | .canonicalRegion _ => "canonical"
+  | .backward _ => "backward"
+  | .decided => "decided"
+
+/-- **An answer in brief**: `P` or `R` (proved or refuted) with the kind of evidence, or `open`. -/
+def answerSummary : Answer → String
+  | .proved evidence => "P " ++ evidenceKind evidence
+  | .refuted evidence => "R " ++ evidenceKind evidence
+  | .unknown _ => "open"
 
 /-- **An answer of `ask` as a verdict.** -/
 def ofAsk (relEnv : RelationEnv) (signature : Mettapedia.OSLF.Framework.FiniteModels.Signature)
     (language : LanguageDef) (fuel : ℕ) (formula : Formula 0) (term : Pattern)
     (hint : Option CertificateCandidate) (rounds : ℕ) (forms : Option (CanonicalForms relEnv language fuel) := none) :
-    Verdict ((referenceStructure relEnv language).sat Env.closed formula term) :=
+    Verdict ((referenceStructure relEnv language (formsReading forms)).sat Env.closed formula term) :=
   match answered : ask relEnv signature language fuel formula term hint rounds forms with
   | .proved _ => .established ⟨ask_proved answered⟩
   | .refuted evidence => .refuted ⟨describe evidence, fun holds => ask_refuted answered holds.down⟩
+  | .unknown _ => .suspended
+
+/-- The Boolean reading of `ask`'s verdict is the reading of its answer. -/
+theorem ofAsk_answer (relEnv : RelationEnv) (signature : Mettapedia.OSLF.Framework.FiniteModels.Signature)
+    (language : LanguageDef) (fuel : ℕ) (formula : Formula 0) (term : Pattern)
+    (hint : Option CertificateCandidate) (rounds : ℕ) (forms : Option (CanonicalForms relEnv language fuel)) :
+    (ofAsk relEnv signature language fuel formula term hint rounds forms).answer =
+      match ask relEnv signature language fuel formula term hint rounds forms with
+      | .proved _ => some true
+      | .refuted _ => some false
+      | .unknown _ => none := by
+  unfold ofAsk
+  split <;> rename_i answered <;> simp only [answered] <;> rfl
+
+/-- **The displayed status refines with more budget**: a settled verdict stays settled, with the same answer. -/
+theorem ofAsk_refines {relEnv : RelationEnv} {signature : Mettapedia.OSLF.Framework.FiniteModels.Signature}
+    {language : LanguageDef} {fuel : ℕ} {formula : Formula 0} {term : Pattern}
+    {hint : Option CertificateCandidate} {forms : Option (CanonicalForms relEnv language fuel)} {rounds more : ℕ}
+    (le : rounds ≤ more) {verdict : Bool}
+    (settled : (ofAsk relEnv signature language fuel formula term hint rounds forms).answer = some verdict) :
+    (ofAsk relEnv signature language fuel formula term hint more forms).answer = some verdict := by
+  rw [ofAsk_answer] at settled ⊢
+  split at settled
+  · rename_i evidence answered
+    obtain ⟨later, kept⟩ := ask_proved_persists le answered
+    rw [kept]
+    exact settled
+  · rename_i evidence answered
+    obtain ⟨later, kept⟩ := ask_refuted_persists le answered
+    rw [kept]
+    exact settled
+  · cases settled
+
+/-- **An answer of `askWith` as a verdict**: a certified decider's answer, or else `ask`'s. -/
+def ofAskWith (relEnv : RelationEnv) (signature : Mettapedia.OSLF.Framework.FiniteModels.Signature)
+    (language : LanguageDef) (fuel : ℕ) (formula : Formula 0) (term : Pattern) (decider : Decider relEnv language)
+    (hint : Option CertificateCandidate) (rounds : ℕ) :
+    Verdict ((referenceStructure relEnv language).sat Env.closed formula term) :=
+  match answered : askWith relEnv signature language fuel formula term decider hint rounds with
+  | .proved _ => .established ⟨askWith_proved (reading := .syntax) (forms := none) rfl answered⟩
+  | .refuted evidence => .refuted ⟨describe evidence, fun holds =>
+      askWith_refuted (reading := .syntax) (forms := none) rfl answered holds.down⟩
   | .unknown _ => .suspended
 
 /-! ## Verdicts that carry no proof -/

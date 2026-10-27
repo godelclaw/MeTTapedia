@@ -229,26 +229,26 @@ theorem sorted_of_check {pattern : Pattern}
 
 /-- One law step between object sets, at the root. -/
 theorem lawStep {source target : Pattern} (sourceObject : IsObject source) (targetObject : IsObject target)
-    (law : DerivedInstance pool source target) : ObjectEquivalent RelationEnv.empty pool source target :=
+    (law : DerivedInstance pool source target) : ObjectEquivalent RelationEnv.empty pool .syntax source target :=
   Relation.EqvGen.rel _ _ ⟨sourceObject, targetObject, .inContext .hole (Or.inr law)⟩
 
-theorem onlyA_twice : ObjectEquivalent RelationEnv.empty pool onlyA (set [token "A", token "A"]) :=
+theorem onlyA_twice : ObjectEquivalent RelationEnv.empty pool .syntax onlyA (set [token "A", token "A"]) :=
   Relation.EqvGen.symm _ _ (lawStep (by decide) (by decide)
     (.setDedup_of_sorted (sorted_of_check (by decide +kernel))))
 
-theorem bothAB_twice : ObjectEquivalent RelationEnv.empty pool bothAB (set [token "A", token "A", token "B"]) :=
+theorem bothAB_twice : ObjectEquivalent RelationEnv.empty pool .syntax bothAB (set [token "A", token "A", token "B"]) :=
   Relation.EqvGen.symm _ _ (lawStep (by decide) (by decide)
     (.setDedup_of_sorted (sorted_of_check (by decide +kernel))))
 
-theorem ba_bothAB : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "A"]) bothAB :=
+theorem ba_bothAB : ObjectEquivalent RelationEnv.empty pool .syntax (set [token "B", token "A"]) bothAB :=
   lawStep (by decide) (by decide) (.setPerm_of_sorted (sorted_of_check (by decide +kernel)) (List.Perm.swap _ _ _))
 
-theorem bab_bothAB : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "A", token "B"]) bothAB := by
-  have toBBA : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "A", token "B"])
+theorem bab_bothAB : ObjectEquivalent RelationEnv.empty pool .syntax (set [token "B", token "A", token "B"]) bothAB := by
+  have toBBA : ObjectEquivalent RelationEnv.empty pool .syntax (set [token "B", token "A", token "B"])
       (set [token "B", token "B", token "A"]) :=
     lawStep (by decide) (by decide)
       (.setPerm_of_sorted (sorted_of_check (by decide +kernel)) ((List.Perm.swap _ _ _).cons _))
-  have toBA : ObjectEquivalent RelationEnv.empty pool (set [token "B", token "B", token "A"]) (set [token "B", token "A"]) :=
+  have toBA : ObjectEquivalent RelationEnv.empty pool .syntax (set [token "B", token "B", token "A"]) (set [token "B", token "A"]) :=
     lawStep (by decide) (by decide) (.setDedup_of_sorted (sorted_of_check (by decide +kernel)))
   exact toBBA.trans _ _ _ (toBA.trans _ _ _ ba_bothAB)
 
@@ -272,7 +272,7 @@ theorem fires_onlyA : ∃ witness, StepValid RelationEnv.empty pool onlyA witnes
   fires_of_listed (by decide +kernel)
 
 /-- The canonical form is invariant under the set laws, here. -/
-theorem canon_same {first second : Pattern} (equivalent : ObjectEquivalent RelationEnv.empty pool first second) :
+theorem canon_same {first second : Pattern} (equivalent : ObjectEquivalent RelationEnv.empty pool .syntax first second) :
     BagForms.sortBags first = BagForms.sortBags second := by
   rw [BagForms.sortBags_eq_canon]
   exact BagForms.canon_eq_of_equivalent pool_no_equations pool_no_algebra equivalent
@@ -293,7 +293,7 @@ theorem either_verdicts : Either.sat Env.closed (reaches onlyB) onlyA ∧ ¬ Eit
     exact reaches_of_step Either ⟨onlyA_state, onlyB_state, onlyA, onlyB, witness, Relation.EqvGen.refl _, onlyA_state,
       fires, onlyB_state, Relation.EqvGen.refl _, rfl⟩ ⟨onlyB_state.2, Relation.EqvGen.refl _⟩
   · let avoid : Set Pattern := fun state => IsState state ∧
-      (ObjectEquivalent RelationEnv.empty pool state onlyA ∨ ObjectEquivalent RelationEnv.empty pool state bothAB)
+      (ObjectEquivalent RelationEnv.empty pool .syntax state onlyA ∨ ObjectEquivalent RelationEnv.empty pool .syntax state bothAB)
     refine not_eventually Either avoid ?_ ?_ ⟨onlyA_state, Or.inl (Relation.EqvGen.refl _)⟩
     · rintro state ⟨-, sameA | sameAB⟩ ⟨-, named⟩
       · exact absurd ((canon_same sameA).symm.trans (canon_same named)) (by decide +kernel)
@@ -453,7 +453,7 @@ theorem keep_keeps_members (rules : language.rewrites.all keepsRest = true) {ele
   obtain ⟨-, -, witness, contractum, valid, -, reached⟩ := step
   subst reached
   cases valid with
-  | @rule _ index rule initial final witnesses found matched premises =>
+  | @presentedRule _ _ index rule initial final witnesses found matched premises =>
     obtain ⟨patterns, results, rest, leftIs, rightIs, noPremises⟩ :=
       keepsRest_shape (List.all_eq_true.mp rules rule (List.mem_of_getElem? found))
     rw [noPremises] at premises

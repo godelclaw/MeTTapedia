@@ -141,6 +141,24 @@ theorem Hereditary.elements (setCarrier : SetCarrier language carrier carrier.ca
     (inside : ∀ value ∈ values, Hereditary language carrier.category value) :
     Elements language carrier.category values := fun value member => (inside value member).typed setCarrier
 
+/-! ## Heights -/
+
+mutual
+/-- The height of a set term: one more than its members'. -/
+def height : Pattern → ℕ
+  | .collection _ values _ => heightList values + 1
+  | .bvar _ | .fvar _ | .apply _ _ | .lambda _ _ | .multiLambda _ _ _ | .subst _ _ => 0
+
+/-- The greatest height in a list. -/
+def heightList : List Pattern → ℕ
+  | [] => 0
+  | value :: values => max (height value) (heightList values)
+end
+
+theorem height_le_heightList : ∀ {values : List Pattern} {value : Pattern}, value ∈ values → height value ≤ heightList values
+  | _ :: _, _, .head _ => le_max_left _ _
+  | _ :: _, _, .tail _ member => (height_le_heightList member).trans (le_max_right _ _)
+
 /-! ## Canonical forms -/
 
 theorem sortBags_set_values (values : List Pattern) :
@@ -188,7 +206,7 @@ structure HereditaryLanguage (language : LanguageDef) (carrier : GrammarRule) : 
 /-- **A hereditary term is equivalent to its canonical form.** -/
 theorem hereditary_equivalent (lang : HereditaryLanguage language carrier) {term : Pattern}
     (holds : Hereditary language carrier.category term) :
-    ObjectEquivalent relEnv language term (BagForms.sortBags term) := by
+    ObjectEquivalent relEnv language .syntax term (BagForms.sortBags term) := by
   induction holds with
   | atom _ => exact Relation.EqvGen.refl _
   | @members values inside equivalent =>
@@ -213,9 +231,10 @@ theorem hereditary_equivalent (lang : HereditaryLanguage language carrier) {term
     rw [sortBags_set_values]
     exact Relation.EqvGen.trans _ _ _ inner outer
 
-/-- **Canonical forms for a hereditary set language**: every set sorted without repetition, bottom up. -/
-theorem hereditary_canonical (lang : HereditaryLanguage language carrier) :
-    Canonical relEnv language BagForms.sortBags (hereditary language carrier.category) where
+/-- **Canonical forms for a hereditary set language**: every set sorted without repetition, bottom up; the domain is
+read off them. -/
+theorem hereditary_canonicalDetermined (lang : HereditaryLanguage language carrier) :
+    CanonicalDetermined relEnv language BagForms.sortBags (hereditary language carrier.category) where
   object admitted := (((hereditary_iff _).mp admitted).typed lang.setCarrier).2.2
   determined term := by
     apply Bool.eq_iff_iff.mpr
@@ -228,6 +247,11 @@ theorem hereditary_canonical (lang : HereditaryLanguage language carrier) :
   closed _ := by
     rw [BagForms.sortBags_eq_canon]
     exact BagForms.canon_wellScoped _ 0
+
+/-- **Canonical forms for a hereditary set language**: every set sorted without repetition, bottom up. -/
+theorem hereditary_canonical (lang : HereditaryLanguage language carrier) :
+    Canonical relEnv language BagForms.sortBags (hereditary language carrier.category) :=
+  (hereditary_canonicalDetermined lang).canonical
 
 /-! ## Matching flat set patterns at presentations with copies -/
 
@@ -377,6 +401,82 @@ theorem closed_match {pattern : Pattern} (holds : Hereditary language sort patte
             exact List.map_congr_left canonicalMembers
           simpa [set, fixed] using this
         rw [sortBags_set_values, arrange_eq_of_presents (kind := .hashSet) members, arranged]
+
+/-! ## Closed patterns at object terms -/
+
+/-- **Hereditary terms are object terms.** -/
+theorem Hereditary.object {term : Pattern} (holds : Hereditary language sort term) : IsObject term := by
+  induction holds with
+  | atom _ => rfl
+  | @members values _ inside =>
+    show isObjectPattern (.collection .hashSet values none) = true
+    simp only [isObjectPattern, Option.isNone_none, Bool.true_and]
+    exact isObjectPatternList_iff.mpr inside
+
+theorem closed_bag_match_object : ∀ (patterns elements : List Pattern) (bindings : Bindings),
+    (∀ pattern ∈ patterns, ∀ {term : Pattern} {bindings : Bindings}, IsObject term →
+      MatchRel pattern term bindings → BagForms.sortBags term = pattern ∧ bindings = []) →
+    (∀ element ∈ elements, IsObject element) → MatchBagRel patterns none .hashSet elements bindings →
+    (∀ value, value ∈ elements.map BagForms.sortBags ↔ value ∈ patterns) ∧ bindings = []
+  | [], elements, bindings, _, _, bag => by
+    cases bag
+    exact ⟨fun _ => by simp, rfl⟩
+  | pattern :: patterns, elements, bindings, each, elementsObject, bag => by
+    cases bag with
+    | cons index bound head tail merged =>
+      obtain ⟨same, rfl⟩ := each pattern List.mem_cons_self (elementsObject _ (List.getElem_mem bound)) head
+      obtain ⟨members, rfl⟩ := closed_bag_match_object patterns _ _
+        (fun other member => each other (List.mem_cons_of_mem _ member))
+        (fun element member => elementsObject element (List.mem_of_mem_eraseIdx member)) tail
+      refine ⟨fun value => ?_, by simpa [mergeBindings] using merged.symm⟩
+      have counted := count_eraseIdx (elements.map BagForms.sortBags) index (by simpa using bound) value
+      rw [List.eraseIdx_map] at counted
+      simp only [List.getElem_map, same] at counted
+      rw [List.mem_cons, ← members value, ← List.count_pos_iff, ← List.count_pos_iff, counted]
+      by_cases hit : pattern = value
+      · subst hit
+        simp
+      · simp only [beq_iff_eq, hit, if_false, Nat.add_zero]
+        constructor
+        · exact Or.inr
+        · rintro (rfl | positive)
+          · exact absurd rfl hit
+          · exact positive
+
+/-- **A closed hereditary canonical pattern matches only presentations of itself** among object terms, binding
+nothing. -/
+theorem closed_match_object {pattern : Pattern} (holds : Hereditary language sort pattern)
+    (canonical : BagForms.sortBags pattern = pattern) :
+    ∀ {term : Pattern} {bindings : Bindings}, IsObject term → MatchRel pattern term bindings →
+      BagForms.sortBags term = pattern ∧ bindings = [] := by
+  induction holds with
+  | atom atom =>
+    intro term bindings _ matched
+    obtain ⟨rfl, rfl⟩ := matchRel_atom matched
+    exact ⟨rfl, rfl⟩
+  | @members values inside ih =>
+    intro term bindings termObject matched
+    have canonicalMembers := member_canonical canonical
+    change MatchRel (.collection .hashSet values none) term bindings at matched
+    cases matched with
+    | @collection _ _ _ terms rest _ _ bag =>
+      have parts : rest.isNone = true ∧ isObjectPatternList terms = true := by
+        simpa [IsObject, isObjectPattern] using termObject
+      have noRest : rest = none := Option.isNone_iff_eq_none.mp parts.1
+      subst noRest
+      obtain ⟨members, rfl⟩ := closed_bag_match_object values terms bindings
+        (fun value member => ih value member (canonicalMembers value member))
+        (fun element member => isObjectPatternList_iff.mp parts.2 element member) bag
+      refine ⟨?_, rfl⟩
+      have arranged : arrange .hashSet values = values := by
+        have := canonical
+        rw [sortBags_set_values] at this
+        have fixed : values.map BagForms.sortBags = values := by
+          conv_rhs => rw [← List.map_id values]
+          exact List.map_congr_left canonicalMembers
+        simpa [set, fixed] using this
+      show BagForms.sortBags (set terms) = set values
+      rw [sortBags_set_values, arrange_eq_of_presents (kind := .hashSet) members, arranged]
 
 /-- **A presentation covers another up to `width` matched copies**: its terms are canonical, and it holds each
 class as often as the other does when that is at most `width` times, and more than `width` times otherwise. -/

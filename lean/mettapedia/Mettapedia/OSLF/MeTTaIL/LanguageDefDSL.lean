@@ -137,6 +137,7 @@ scoped syntax ident "#" langDefPattern : langDefPremise
 scoped syntax langDefPattern "~>" langDefPattern : langDefPremise
 scoped syntax "scopedStep(" "[" langDefTypeExpr,* "]" "," langDefTypeExpr "," langDefPattern "," langDefPattern ")" : langDefPremise
 scoped syntax ident "(" langDefPattern,* ")" : langDefPremise
+scoped syntax str "(" langDefPattern,* ")" : langDefPremise
 scoped syntax ident ".*map(" "|" ident "|" langDefPremise ")" : langDefPremise
 scoped syntax "forAll(" ident "," ident "," langDefPremise ")" : langDefPremise
 
@@ -162,6 +163,10 @@ scoped syntax ident "." langDefTypeBinding,* "|" langDefPremise,* "|-" langDefPa
 scoped syntax ident "." langDefTypeBinding,* "|-" langDefPattern "~>" langDefPattern ";" : langDefRewriteDecl
 scoped syntax ident "." langDefPremise,* "|-" langDefPattern "~>" langDefPattern ";" : langDefRewriteDecl
 scoped syntax ident "." langDefTypeBinding,* "|" langDefPremise,* "|-" langDefPattern "~>" langDefPattern ";" : langDefRewriteDecl
+scoped syntax str "." langDefTypeBinding,* "|-" langDefPattern "=" langDefPattern ";" : langDefEquationDecl
+scoped syntax str "." langDefTypeBinding,* "|" langDefPremise,* "|-" langDefPattern "=" langDefPattern ";" : langDefEquationDecl
+scoped syntax str "." langDefTypeBinding,* "|-" langDefPattern "~>" langDefPattern ";" : langDefRewriteDecl
+scoped syntax str "." langDefTypeBinding,* "|" langDefPremise,* "|-" langDefPattern "~>" langDefPattern ";" : langDefRewriteDecl
 
 private def mkStrTerm (s : String) : TSyntax `term :=
   ⟨Syntax.mkStrLit s⟩
@@ -757,6 +762,12 @@ private partial def expandPremiseInfo (stx0 : TSyntax `langDefPremise) : MacroM 
       let sourceArgs := String.intercalate ", " (args'.map (·.sourceText))
       let term ← `(Premise.relationQuery $(mkStrTerm relName) $argsTerm)
       pure ⟨term, s!"{rel.getId.toString}({sourceArgs})"⟩
+  | `(langDefPremise| $rel:str($args:langDefPattern,*)) => do
+      let args' ← args.getElems.toList.mapM expandPatternInfo
+      let argsTerm ← mkTermList (args'.map (·.term))
+      let sourceArgs := String.intercalate ", " (args'.map (·.sourceText))
+      let term ← `(Premise.relationQuery $(mkStrTerm rel.getString) $argsTerm)
+      pure ⟨term, s!"{rel.raw.reprint.getD rel.getString}({sourceArgs})"⟩
   | `(langDefPremise| $collection:ident.*map(| $param:ident | $body:langDefPremise)) => do
       let body' ← expandPremiseInfo body
       let collectionName := coreName collection.getId
@@ -861,11 +872,17 @@ private def expandTermDecl : TSyntax `langDefTermDecl → MacroM (TSyntax `term)
       expandRuleDecl (coreName label.getId) category items
   | stx => Macro.throwErrorAt stx "unsupported term declaration"
 
+/-- A row's label: an identifier, or a string as in the core rows of CeTTa's module format. -/
+private def rowLabel (nm : Syntax) : String :=
+  match nm.isStrLit? with
+  | some text => text
+  | none => coreName nm.getId
+
 private def mkEquationTerm
     (nm : Syntax)
     (ctxTerm premisesTerm lhsTerm rhsTerm : TSyntax `term) :
     MacroM (TSyntax `term) :=
-  `(Equation.mk (bindings := none) $(mkStrTerm (coreName nm.getId))
+  `(Equation.mk (bindings := none) $(mkStrTerm (rowLabel nm))
       $ctxTerm
       $premisesTerm
       $lhsTerm
@@ -875,7 +892,7 @@ private def mkRewriteTerm
     (nm : Syntax)
     (ctxTerm premisesTerm lhsTerm rhsTerm : TSyntax `term) :
     MacroM (TSyntax `term) :=
-  `(RewriteRule.mk (bindings := none) $(mkStrTerm (coreName nm.getId))
+  `(RewriteRule.mk (bindings := none) $(mkStrTerm (rowLabel nm))
       $ctxTerm
       $premisesTerm
       $lhsTerm

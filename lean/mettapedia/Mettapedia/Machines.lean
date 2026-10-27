@@ -36,6 +36,7 @@ import Mettapedia.Machines.IdentityPressureSchedule
 import Mettapedia.Machines.RefusalObservation
 import Mettapedia.Machines.TraceObservationBoundary
 import Mettapedia.Machines.OSLFConeBridge
+import Mettapedia.Machines.Kernel
 
 /-!
 # Abstract-machine foundations

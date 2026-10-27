@@ -104,10 +104,15 @@ def stepEndpoints : Premise → Option (Pattern × Pattern)
 
 /-- The presentation policy keeps the literal internal premise boundaries. An equational policy
 licenses ordinary matching at an explicitly equivalent presentation; it does not authorize a
-normalizer, a typing transport, or a change to the outer rule matcher. -/
+normalizer, a typing transport, or a change to the outer rule matcher. A presented policy reads every
+internal boundary through listed presentations of terms: a premise steps a listed presentation of its
+child, its target is matched against a listed presentation of the result, and a relation's answers are
+matched as listed presentations; the relation is asked about the instantiated arguments, as under the
+other policies. A reading that presents each term one way lists one presentation. -/
 inductive InternalBoundaryPolicy where
   | presentation
   | equational (theory : Setoid Pattern)
+  | presented (present : Pattern → List Pattern)
 
 /-- Ordinary target matching at a presentation related by the selected source theory. -/
 def PresentedMatch (theory : Setoid Pattern) (schema value : Pattern) (bindings : Bindings) : Prop :=
@@ -123,6 +128,17 @@ def PresentedQuery (theory : Setoid Pattern) (relEnv : RelationEnv) (language : 
     ∃ presented, List.Forall₂ theory.r tuple presented ∧
       ∃ extension ∈ matchRelationArgs bindings arguments presented,
         mergeBindings bindings extension = some result
+
+/-- A relation query through listed presentations: the relation is asked about the instantiated
+arguments, and each answer is matched, at listed presentations of its values, by the ordinary argument
+matcher and merged. -/
+def presentedQueryStep (present : Pattern → List Pattern) (relEnv : RelationEnv) (language : LanguageDef)
+    (bindings : Bindings) (relation : String) (arguments : List Pattern) : List Bindings :=
+  let request := arguments.map (applyBindings bindings)
+  (builtinRelationTuples language relation request ++ relEnv.tuples relation request).flatMap fun tuple =>
+    (List.sections (tuple.map present)).flatMap fun presented =>
+      (matchRelationArgs bindings arguments presented).filterMap fun extension =>
+        mergeBindings bindings extension
 
 /-! ## Validity -/
 
@@ -173,6 +189,32 @@ inductive PremiseValid (relEnv : RelationEnv) (language : LanguageDef) :
       ForAllValid relEnv language sites bindings parameter body elements bodies (.equational theory) →
       PremiseValid relEnv language sites bindings (.forAll collection parameter body) (.forAll bodies) bindings
         (.equational theory)
+  | presentedFreshness {present : Pattern → List Pattern} {sites : Pattern} {bindings result : Bindings}
+      {condition : FreshnessCondition} :
+      result ∈ premiseStepWithEnv relEnv language bindings (.freshness condition) →
+      PremiseValid relEnv language sites bindings (.freshness condition) (.base result) result
+        (.presented present)
+  | presentedQuery {present : Pattern → List Pattern} {sites : Pattern} {bindings result : Bindings}
+      {relation : String} {arguments : List Pattern} :
+      result ∈ presentedQueryStep present relEnv language bindings relation arguments →
+      PremiseValid relEnv language sites bindings (.relationQuery relation arguments) (.base result) result
+        (.presented present)
+  | presentedStep {present : Pattern → List Pattern} {sites : Pattern} {bindings matched result : Bindings}
+      {premise : Premise} {source target redex contractum candidate : Pattern} {step : Witness} :
+      stepEndpoints premise = some (source, target) →
+      redex ∈ present (applyBindingsScoped sites bindings (stepDepth sites premise) source) →
+      StepValid relEnv language redex step contractum (.presented present) →
+      candidate ∈ present contractum → matched ∈ matchPattern target candidate →
+      mergeBindings bindings matched = some result →
+      PremiseValid relEnv language sites bindings premise (.premiseStep step candidate matched result) result
+        (.presented present)
+  | presentedForAll {present : Pattern → List Pattern} {sites : Pattern} {bindings : Bindings}
+      {collection parameter : String} {body : Premise} {kind : CollType} {elements : List Pattern}
+      {bodies : List Witness} :
+      bindings.lookup collection = some (.collection kind elements none) →
+      ForAllValid relEnv language sites bindings parameter body elements bodies (.presented present) →
+      PremiseValid relEnv language sites bindings (.forAll collection parameter body) (.forAll bodies) bindings
+        (.presented present)
 
 /-- **Valid evidence for a quantified body at each element**: the body holds once the parameter is
 bound to the element. What the body binds stays inside it. -/
@@ -197,6 +239,17 @@ inductive ForAllValid (relEnv : RelationEnv) (language : LanguageDef) :
       ForAllValid relEnv language sites bindings parameter body elements witnesses (.equational theory) →
       ForAllValid relEnv language sites bindings parameter body (element :: elements) (witness :: witnesses)
         (.equational theory)
+  | presentedNil {present : Pattern → List Pattern} {sites : Pattern} {bindings : Bindings} {parameter : String}
+      {body : Premise} :
+      ForAllValid relEnv language sites bindings parameter body [] [] (.presented present)
+  | presentedCons {present : Pattern → List Pattern} {sites : Pattern} {bindings result : Bindings}
+      {parameter : String} {body : Premise} {element : Pattern} {elements : List Pattern}
+      {witness : Witness} {witnesses : List Witness} :
+      PremiseValid relEnv language sites (bindParameter bindings parameter element) body witness result
+        (.presented present) →
+      ForAllValid relEnv language sites bindings parameter body elements witnesses (.presented present) →
+      ForAllValid relEnv language sites bindings parameter body (element :: elements) (witness :: witnesses)
+        (.presented present)
 
 /-- **Valid witnesses for a list of premises**, threading the bindings. -/
 inductive PremisesValid (relEnv : RelationEnv) (language : LanguageDef) :
@@ -216,6 +269,14 @@ inductive PremisesValid (relEnv : RelationEnv) (language : LanguageDef) :
       PremisesValid relEnv language sites middle premises witnesses final (.equational theory) →
       PremisesValid relEnv language sites initial (premise :: premises) (witness :: witnesses) final
         (.equational theory)
+  | presentedNil {present : Pattern → List Pattern} {sites : Pattern} (bindings : Bindings) :
+      PremisesValid relEnv language sites bindings [] [] bindings (.presented present)
+  | presentedCons {present : Pattern → List Pattern} {sites : Pattern} {initial middle final : Bindings}
+      {premise : Premise} {premises : List Premise} {witness : Witness} {witnesses : List Witness} :
+      PremiseValid relEnv language sites initial premise witness middle (.presented present) →
+      PremisesValid relEnv language sites middle premises witnesses final (.presented present) →
+      PremisesValid relEnv language sites initial (premise :: premises) (witness :: witnesses) final
+        (.presented present)
 
 /-- **A valid step witness**: the rule at `index` matches the source, its premises hold, and the
 target is its right side under the final bindings, instantiated scope-correctly. -/
@@ -236,6 +297,14 @@ inductive StepValid (relEnv : RelationEnv) (language : LanguageDef) :
         (.equational theory) →
       StepValid relEnv language source (.rule index initial witnesses)
         (applyBindingsScoped (captureSites rule) final 0 rule.right) (.equational theory)
+  | presentedRule {present : Pattern → List Pattern} {source : Pattern} {index : ℕ} {rule : RewriteRule}
+      {initial final : Bindings} {witnesses : List Witness} :
+      language.rewrites[index]? = some rule →
+      initial ∈ matchPatternForRule language rule source →
+      PremisesValid relEnv language (captureSites rule) initial rule.premises witnesses final
+        (.presented present) →
+      StepValid relEnv language source (.rule index initial witnesses)
+        (applyBindingsScoped (captureSites rule) final 0 rule.right) (.presented present)
 end
 
 /-- The same reference source family with an explicitly selected internal boundary policy. -/
