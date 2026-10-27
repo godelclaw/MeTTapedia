@@ -170,9 +170,8 @@ theorem bag_equiv {machine : Machine} {configuration : Configuration}
   refine Relation.EqvGen.rel _ _ ?_
   show EquationContextStep base universalTheory first.1 second.1
   rw [firstShape, secondShape]
-  exact EquationContextStep.inContext .hole (Or.inr (DerivedInstance.bagPerm
-    (rule := mixConstructor) ⟨mixConstructor_mem, "members", .base "Soup", rfl⟩ holds.sortedAt
-    (holds.trans othersHold.symm)))
+  exact EquationContextStep.inContext .hole (Or.inr (DerivedInstance.bagPerm_of_sorted
+    (category := mixConstructor.category) holds.sortedAt (holds.trans othersHold.symm)))
 
 /-- The static equivalence of the terms of an interface is contained in that
 of the patterns. -/

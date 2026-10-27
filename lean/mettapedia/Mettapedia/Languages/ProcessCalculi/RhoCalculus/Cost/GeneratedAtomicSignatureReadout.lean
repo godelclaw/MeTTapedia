@@ -82,11 +82,21 @@ theorem bare_inventory :
         GeneratedCollectionEquationModel.parallelRule .wrapped] := by
   decide +kernel
 
-theorem collection_bare {rule : GrammarRule} {kind : CollType}
-    (declaration : CollectionCarrierRule language rule kind) :
+/-- Only the bare parallel formers mention a bag or a set in a parameter, so
+they are the only rules whose typed occurrences license a bag or set law. -/
+theorem bag_or_set_bare {kind : CollType} (bagOrSet : kind ≠ .vec) :
+    ∀ rule ∈ language.terms, ∀ parameter ∈ rule.params,
+      parameter.typeExpr.mentionsCollection kind = true → bareCollection rule = true := by
+  cases kind
+  · exact absurd rfl bagOrSet
+  all_goals decide +kernel
+
+theorem collection_bare {rule : GrammarRule} {kind : CollType} {elements : List Pattern}
+    (bagOrSet : kind ≠ .vec) (declaration : rule ∈ language.terms)
+    (typed : WellSorted.CollectionTypedAt language rule kind elements) :
     rule ∈ language.terms ∧ bareCollection rule = true := by
-  obtain ⟨name, element, shape⟩ := declaration.selfSorted
-  exact ⟨declaration.authored, by rw [bareCollection, shape]⟩
+  obtain ⟨parameter, member, mentioned⟩ := typed.mentions
+  exact ⟨declaration, bag_or_set_bare bagOrSet rule declaration parameter member mentioned⟩
 
 theorem algebra_bare {rule : GrammarRule} {kind : CollType}
     {account : CollectionAlgebra} (declaration : AlgebraRule language rule kind account) :
@@ -98,9 +108,12 @@ theorem witness_bare {left right : Pattern}
     (witness : DerivedGeneratorWitness language left right) :
     declaringRule witness ∈ language.terms ∧ bareCollection (declaringRule witness) = true := by
   cases witness with
-  | bagPerm rule first second declaration sorted permutation => exact collection_bare declaration
-  | setPerm rule first second declaration sorted permutation => exact collection_bare declaration
-  | setDedup rule value rest declaration sorted => exact collection_bare declaration
+  | bagPerm rule first second declaration typed permutation =>
+      exact collection_bare (by decide) declaration typed.erase
+  | setPerm rule first second declaration typed permutation =>
+      exact collection_bare (by decide) declaration typed.erase
+  | setDedup rule value rest declaration typed =>
+      exact collection_bare (by decide) declaration typed.erase
   | flatten rule kind account pre inner post declaration enabled sorted => exact algebra_bare declaration
   | singleton rule kind account value declaration enabled sorted => exact algebra_bare declaration
   | unitElim rule kind account unit pre post declaration selected sorted => exact algebra_bare declaration

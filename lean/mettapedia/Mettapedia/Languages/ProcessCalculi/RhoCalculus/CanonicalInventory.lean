@@ -18,12 +18,14 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open CanonicalSupport
 
 /-- The four static rows and the shapes of all other declarations used by
-rho normalization. Additional process constructors may contain binders. -/
+rho normalization. Additional process constructors may contain binders.
+No parameter type contains set data, so no set law is typed. -/
 structure CanonicalInventory (language : LanguageDef) where
   shared : ∀ index : Fin 4, rhoCalc.terms[index.val] ∈ language.terms
   rows : ∀ rule ∈ language.terms, rule ∈ rhoCalc.terms ∨
     (rule.label ≠ "NQuote" ∧ rule.label ≠ "PDrop" ∧ rule.category = "Proc" ∧
       ¬ UsesBareCollection rule ∧ ParametersCanonicalizable rule.params)
+  noSets : language.usesCollection .hashSet = false
 
 namespace CanonicalInventory
 variable {language : LanguageDef}
@@ -32,6 +34,7 @@ variable {language : LanguageDef}
 theorem asynchronous : CanonicalInventory rhoCalc where
   shared := fun _ => List.getElem_mem _
   rows := fun _ member => Or.inl member
+  noSets := by decide
 
 /-- Synchronous output is an additional ordinary process constructor; its
 three arguments all have authored Name or Proc result types. -/
@@ -49,6 +52,7 @@ theorem synchronous : CanonicalInventory Synchronous.rhoSyncCalc where
     · simp [UsesBareCollection, Synchronous.rhoSyncOutputRule]
     · simp [ParametersCanonicalizable, Synchronous.rhoSyncOutputRule, parameterType?]
       exact ⟨trivial, trivial⟩
+  noSets := by decide
 
 theorem quote_row (inventory : CanonicalInventory language)
     {rule : GrammarRule} (member : rule ∈ language.terms) (label : rule.label = "NQuote") :

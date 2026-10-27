@@ -62,9 +62,7 @@ theorem path_reverseTop (laws : BareBagTheory language bag unit) (base : BasePre
     Path base language pattern (reverseTop pattern) := by
   match pattern, admissible with
   | .collection .hashBag elements none, admissible =>
-      obtain ⟨parameterName, shape⟩ := laws.bagShape
-      exact path_of_derived (DerivedInstance.bagPerm (rule := bag)
-        ⟨laws.bagAuthored, parameterName, _, shape⟩
+      exact path_of_derived (DerivedInstance.bagPerm_of_sorted (category := bag.category)
         (sortedAt_of_admissible laws admissible collectionless)
         (List.reverse_perm elements).symm)
   | .collection .hashBag _ (some _), _ => exact .refl

@@ -292,6 +292,29 @@ theorem dkLanguage_terms_plain : ∀ rule ∈ (dkLanguage names rules).terms,
 
 theorem dkLanguage_equations : (dkLanguage names rules).equations = [] := rfl
 
+/-- No parameter of a `dkLanguage` constructor mentions a collection. -/
+private theorem dkLanguage_params_plain (kind : OSLF.MeTTaIL.Syntax.CollType) :
+    ∀ rule ∈ (dkLanguage names rules).terms, ∀ parameter ∈ rule.params,
+      parameter.typeExpr.mentionsCollection kind = false := by
+  intro rule member
+  rcases List.mem_append.mp member with lf | named
+  · rw [lfLanguageDef_terms] at lf
+    simp only [lfTermRules, List.mem_cons, List.not_mem_nil, or_false] at lf
+    rcases lf with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+      simp [sortTypeRule, sortKindRule, srtRule, conRule, varRule, piRule, lamRule,
+        appRule, lfBody, TermParam.typeExpr, TypeExpr.mentionsCollection]
+  · obtain ⟨symbol, _, rfl⟩ := List.mem_map.mp named
+    simp [nameRule]
+
+/-- So no bag or set law is typed in `dkLanguage`. -/
+private theorem dkLanguage_not_collectionTyped {rule : GrammarRule}
+    {kind : OSLF.MeTTaIL.Syntax.CollType} {elements : List Pattern}
+    (member : rule ∈ (dkLanguage names rules).terms)
+    (typed : CollectionTypedAt (dkLanguage names rules) rule kind elements) : False := by
+  obtain ⟨parameter, inRule, mentioned⟩ := typed.mentions
+  rw [dkLanguage_params_plain kind rule member parameter inRule] at mentioned
+  cases mentioned
+
 /-- **`dkLanguage` has no equation step.** -/
 theorem dk_not_equationContextStep {left right : Pattern} :
     ¬ EquationContextStep base (dkLanguage names rules) left right := by
@@ -301,15 +324,9 @@ theorem dk_not_equationContextStep {left right : Pattern} :
     | forward member _ _ _ => rw [dkLanguage_equations] at member; cases member
     | reverse member _ _ _ => rw [dkLanguage_equations] at member; cases member
   · cases derived with
-    | bagPerm carrier _ _ =>
-        obtain ⟨parameterName, elementType, parameters⟩ := carrier.selfSorted
-        exact (dkLanguage_terms_shape _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
-    | setPerm carrier _ _ =>
-        obtain ⟨parameterName, elementType, parameters⟩ := carrier.selfSorted
-        exact (dkLanguage_terms_shape _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
-    | setDedup carrier _ =>
-        obtain ⟨parameterName, elementType, parameters⟩ := carrier.selfSorted
-        exact (dkLanguage_terms_shape _ carrier.authored).2 ⟨parameterName, _, elementType, parameters⟩
+    | bagPerm member typed _ => exact dkLanguage_not_collectionTyped member typed
+    | setPerm member typed _ => exact dkLanguage_not_collectionTyped member typed
+    | setDedup member typed => exact dkLanguage_not_collectionTyped member typed
     | flatten algebra _ _ =>
         have none := (dkLanguage_terms_plain _ algebra.authored).1
         rw [algebra.declared] at none

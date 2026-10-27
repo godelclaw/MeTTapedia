@@ -98,8 +98,7 @@ theorem rho_pair_swaps :
       rhoPair rhoPairSwapped := by
   apply Relation.EqvGen.rel
   refine EquationContextStep.inContext .hole (Or.inr ?_)
-  exact DerivedInstance.bagPerm (rule := rhoParallelConstructor.1)
-    ⟨rhoParallelConstructor.2, "ps", .base "Proc", rfl⟩
+  exact DerivedInstance.bagPerm_of_sorted (category := rhoParallelConstructor.1.category)
     ⟨FreeTypeContext.empty, [], rhoPair.2.1⟩
     (List.Perm.swap _ _ _)
 
