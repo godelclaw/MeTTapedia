@@ -36,6 +36,11 @@ import Mettapedia.Machines.IdentityPressureSchedule
 import Mettapedia.Machines.RefusalObservation
 import Mettapedia.Machines.TraceObservationBoundary
 import Mettapedia.Machines.OSLFConeBridge
+import Mettapedia.Machines.SpaceServiceChecks
+import Mettapedia.Machines.NativeStoreTransactions
+import Mettapedia.Machines.NativeStoreScopes
+import Mettapedia.Machines.NativeStoreResources
+import Mettapedia.Machines.NativeDiskIndex
 
 /-!
 # Abstract-machine foundations

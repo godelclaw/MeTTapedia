@@ -1018,3 +1018,7 @@ import Mettapedia.PLN.Bridges.CogArch
 
 import Mettapedia.Algebra.Polynomial
 import Mettapedia.Combinatorics.Matching.GHZ.AxiomAudit
+import Mettapedia.Protocols
+import Mettapedia.Machines.SpaceServiceChecks
+import Mettapedia.Machines.NativeStoreTransactions
+import Mettapedia.Machines.NativeStoreScopes
