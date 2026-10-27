@@ -217,10 +217,7 @@ theorem WeightedObservable.windowedColeHopfHeatSeedOnlyOperator_vorticity_eq_of_
     (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
       (ι := ι) (X := X)
       selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).vorticity t₂ y := by
-  simpa [WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.windowedColeHopfHeatSeedOnlyOperator_vorticity_eq_of_topDownBridge
         (ι := ι) (X := X)
         selector O hseedOnly c ν hc hν
@@ -273,10 +270,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatSeedOnlyOperatorTopDow
             (fun x => gamma_le_card_mul_sq_of_abs_le
               (D := fun i => curlFrame i x) hcurlComponentBound_nonneg (hcurl x))
             x := by
-  simpa [WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatSeedOnlyOperatorTopDownBridge_of_vorticity_ne
         (ι := ι) (X := X)
         selector O hseedOnly c ν hc hν

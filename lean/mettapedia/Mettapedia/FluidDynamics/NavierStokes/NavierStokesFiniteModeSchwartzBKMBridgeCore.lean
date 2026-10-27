@@ -48,7 +48,7 @@ theorem
             (a 0) (b 0) f g hfDiv hgDiv).1 : NSInitialVelocity) T,
         W.velocity = twoModeSchwartzVelocity a b f g ∧
           W.pressure = affineAddScalarSchwartzPressure c π ρ q := by
-  simpa [twoModeSchwartzDivergenceFreeInitialVelocity, twoModeSchwartzInitialVelocity] using
+  exact
     (show ∃ W :
         ExplicitFiniteTimeRegularityWitness ν
           (twoModeSchwartzInitialVelocity (a 0) (b 0) f g) T,

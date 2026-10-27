@@ -107,7 +107,7 @@ theorem not_finiteInitialKineticEnergy_finiteModeLinearMatrixTimeVelocity_initia
   have hInt :
       MeasureTheory.Integrable
         (kineticEnergyDensity (finiteModeLinearMatrixTimeVelocity A g) 0) := by
-    simpa [finiteInitialKineticEnergy, initialKineticEnergyDensity, kineticEnergyDensity] using hE
+    exact hE
   exact not_integrable_kineticEnergyDensity_finiteModeLinearMatrixTimeVelocity hA hg0 hInt
 
 /-- The pressure matrix closing the time-dependent matrix-linear velocity

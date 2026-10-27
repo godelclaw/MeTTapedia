@@ -278,7 +278,7 @@ theorem
     refine ⟨fun _ : NSTime => fun _ : NSSpace => (0 : ℝ), ?_, ?_, ?_⟩
     · simpa using smoothSpaceTimePressure_const (0 : ℝ)
     · intro t x
-      simpa using spatialPressureGradient_zero t x
+      exact spatialPressureGradient_zero t x
     · rw [ExactPairWitnessConstructionRoute_iff_exists_finiteTimeWitness]
       exact
         (boxedPartialPeriodizationSteadySeed_zeroSpatialGradientPressure_finiteTimeWitness_iff_stationaryMomentum_zeroPressure
@@ -287,7 +287,7 @@ theorem
           (by simpa using smoothSpaceTimePressure_const (0 : ℝ))
           (by
             intro t x
-            simpa using spatialPressureGradient_zero t x)).2 hstat
+            exact spatialPressureGradient_zero t x)).2 hstat
 
 /-- On the boxed steady-seed route, every smooth zero-spatial-gradient pressure
 gauge is propositionally the same as the zero-pressure representative. This is

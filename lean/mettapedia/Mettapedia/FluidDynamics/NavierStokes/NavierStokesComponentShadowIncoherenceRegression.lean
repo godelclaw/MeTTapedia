@@ -46,8 +46,8 @@ theorem component_shadow_zero_output_regression
       nsCoord0
       (by
         intro x
-        simpa [constantInitialVelocity] using splitShadowCounterexampleVelocity_component_zero)).velocity = 0 := by
-  simp
+        exact splitShadowCounterexampleVelocity_component_zero)).velocity = 0 := by
+  rfl
 
 theorem component_shadow_without_concrete_clause_regression
     {ν : ℝ} (hν : 0 < ν) :
