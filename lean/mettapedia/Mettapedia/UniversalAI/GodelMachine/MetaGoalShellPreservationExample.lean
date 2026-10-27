@@ -95,8 +95,14 @@ theorem expectedUtilityFromStart_toyMachine (r : ℝ) :
     expectedUtilityFromStart (toyMachine r) = r := by
   simp [expectedUtilityFromStart, expectedUtility, toyMachine,
     GodelMachineState.toRealisticValueData, vValueRealistic, qValueRealistic,
+    RealisticValueData.toFinite, finiteQ, branchWeight,
     constantPolicy, constantUtility, deterministicEnv, zeroDiscount,
     History.wellFormed]
+  rw [Finset.sum_eq_single (Percept.mk false false)]
+  · simp
+  · intro e _ other
+    simp [other]
+  · simp
 
 theorem toyMachine_validModification_of_lt {r s : ℝ} (hrs : r < s) :
     validModification (toyMachine r) (toyMachine s) := by

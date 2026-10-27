@@ -24,9 +24,9 @@ example : twoColoring.swapOnKempeComponent 0 1 twoComponent 0 = 1 := by
           change ((0 : Fin 2) = 0 ∨ (0 : Fin 2) = 1)
           simp :
           (0 : Fin 2) ∈ twoColoring.bicoloredSet 0 1))
-  simpa [twoColoring] using
-    (twoColoring.swapOnKempeComponent_apply_of_mem
-      (a := 0) (b := 1) (K := twoComponent) hmem)
+  rw [twoColoring.swapOnKempeComponent_apply_of_mem
+    (a := 0) (b := 1) (K := twoComponent) hmem]
+  decide
 
 def K3 : SimpleGraph (Fin 3) := ⊤
 
@@ -46,8 +46,8 @@ example : threeColoring.swapOnKempeComponent 0 1 threeComponent 2 = 2 := by
       threeColoring.mem_bicoloredSet_of_mem_kempeComponentSet (a := 0) (b := 1) h
     change ((2 : Fin 3) = 0 ∨ (2 : Fin 3) = 1) at hpair
     simp at hpair
-  simpa [threeColoring] using
-    (threeColoring.swapOnKempeComponent_apply_of_not_mem
-      (a := 0) (b := 1) (K := threeComponent) hnot)
+  rw [threeColoring.swapOnKempeComponent_apply_of_not_mem
+    (a := 0) (b := 1) (K := threeComponent) hnot]
+  decide
 
 end Mettapedia.GraphTheory.ColoringRegression

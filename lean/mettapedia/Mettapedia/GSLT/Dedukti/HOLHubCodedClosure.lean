@@ -157,12 +157,12 @@ theorem subst_succ_var (j index : Nat) (N : LF.Term) :
   rw [Dedukti.lift_subst (.var index) 1 0 j N (Nat.zero_le j), lift_var, shiftAt_zero]
 
 /-- The image of a substitution placed under one more hypothesis. -/
-theorem image_vs_reduces {Γ Γ' Θ Θ' : Ctx Base} {θ : HOL.Subst Const Γ Γ'}
+theorem image_vs_reduces {Γ Γ' Θ Θ' : Ctx Base} {σ : Ty Base} {θ : HOL.Subst Const Γ Γ'}
     {ρ : HOL.Rename Base Γ Θ} {ρ' : HOL.Rename Base Γ' Θ'} {j : Nat} {N : LF.Term}
     (image : ∀ {τ : Ty Base} (v : Var Γ τ), Reduces STTfa.theory
       (e.translate (HOL.rename ρ' (θ v))) (subst j N (.var (varIndex (ρ v))))) :
     ∀ {τ : Ty Base} (v : Var Γ τ), Reduces STTfa.theory
-      (e.translate (HOL.rename (Δ := .prop :: Θ') (fun w => .vs (ρ' w)) (θ v)))
+      (e.translate (HOL.rename (Δ := σ :: Θ') (fun w => .vs (ρ' w)) (θ v)))
       (subst (j + 1) (lift 1 0 N) (.var (varIndex (ρ v) + 1))) := by
   intro τ v
   rw [translate_rename_vs e ρ' (θ v), subst_succ_var]
@@ -273,25 +273,25 @@ of the framework, which `Θ` lists, with `prop` for a hypothesis. -/
 inductive PreCoded (e : Encoding Base Const) :
     {Γ Θ : Ctx Base} → HOL.Rename Base Γ Θ → LF.Term → Prop
   | hyp {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {index : Nat} :
-      (∀ {σ : Ty Base} (v : Var Γ σ), varIndex (ρ v) ≠ index) → PreCoded e ρ (.var index)
+      (∀ {σ : Ty Base} (v : Var Γ σ), varIndex (ρ v) ≠ index) → PreCoded e @ρ (.var index)
   | lamHyp {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {domain body : LF.Term} :
       ProofShape domain →
-      PreCoded e (Θ := .prop :: Θ) (fun v => .vs (ρ v)) body → PreCoded e ρ (.lam domain body)
+      PreCoded e (Θ := .prop :: Θ) (fun v => .vs (ρ v)) body → PreCoded e @ρ (.lam domain body)
   | lamObj {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} (σ : Ty Base) {domain body : LF.Term} :
       Reduces STTfa.theory (e.El (e.code σ)) domain →
-      PreCoded e (HOL.Rename.lift (σ := σ) ρ) body → PreCoded e ρ (.lam domain body)
+      PreCoded e (HOL.Rename.lift (σ := σ) ρ) body → PreCoded e @ρ (.lam domain body)
   | appProof {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {function argument : LF.Term} :
-      PreCoded e ρ function → PreCoded e ρ argument → PreCoded e ρ (.app function argument)
+      PreCoded e @ρ function → PreCoded e @ρ argument → PreCoded e @ρ (.app function argument)
   | appObj {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {function argument : LF.Term} {σ : Ty Base}
-      (witness : Term Const Γ σ) : witness.isCore = true → PreCoded e ρ function →
+      (witness : Term Const Γ σ) : witness.isCore = true → PreCoded e @ρ function →
       Reduces STTfa.theory (e.translate (HOL.rename ρ witness)) argument →
-      PreCoded e ρ (.app function argument)
+      PreCoded e @ρ (.app function argument)
 
 variable {e : Encoding Base Const}
 
 /-- A coded reduct has no head constant. -/
 theorem PreCoded.headConst_none {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M : LF.Term}
-    (coded : PreCoded e ρ M) : headConst M = none := by
+    (coded : PreCoded e @ρ M) : headConst M = none := by
   induction coded with
   | hyp _ => rfl
   | lamHyp _ _ _ => rfl
@@ -303,7 +303,7 @@ theorem PreCoded.headConst_none {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} 
 placement that skips `k` on the images of the old objects and sends the new
 objects to `k`. -/
 theorem PreCoded.weaken : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M : LF.Term},
-    PreCoded e ρ M →
+    PreCoded e @ρ M →
     ∀ {Γ' Θ' : Ctx Base} (r : HOL.Rename Base Γ Γ') (ρ' : HOL.Rename Base Γ' Θ') (k : Nat),
       (∀ {τ : Ty Base} (v : Var Γ τ), varIndex (ρ' (r v)) = shiftAt k (varIndex (ρ v))) →
       (∀ {τ : Ty Base} (w : Var Γ' τ), (∀ v : Var Γ τ, r v ≠ w) → varIndex (ρ' w) = k) →
@@ -357,7 +357,7 @@ theorem PreCoded.weaken : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M
 
 /-- **Substitution of a coded proof for a hypothesis.** -/
 theorem PreCoded.substHyp : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {B : LF.Term},
-    PreCoded e ρ B →
+    PreCoded e @ρ B →
     ∀ {Θ' : Ctx Base} (ρ' : HOL.Rename Base Γ Θ') (j : Nat) (P : LF.Term), PreCoded e ρ' P →
       (∀ {τ : Ty Base} (v : Var Γ τ), subst j P (.var (varIndex (ρ v))) = .var (varIndex (ρ' v))) →
       (∀ index : Nat, (∀ {τ : Ty Base} (v : Var Γ τ), varIndex (ρ v) ≠ index) → index ≠ j →
@@ -443,7 +443,7 @@ theorem PreCoded.substHyp : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} 
 
 /-- **Substitution of the translation of a core term for an object.** -/
 theorem PreCoded.substObj : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {B : LF.Term},
-    PreCoded e ρ B →
+    PreCoded e @ρ B →
     ∀ {Γ' Θ' : Ctx Base} (ρ' : HOL.Rename Base Γ' Θ') (θ : HOL.Subst Const Γ Γ') (j : Nat)
       (N : LF.Term), HOL.CoreSubst θ →
       (∀ {τ : Ty Base} (v : Var Γ τ), Reduces STTfa.theory
@@ -528,9 +528,9 @@ theorem ProofLike.of_conv {X Y : LF.Term} (converted : Conv STTfa.theory X Y) (l
   obtain ⟨S, fromR, fromP⟩ := STTfa.confluent Y R P fromY toP
   exact ⟨S, shape.reduces fromP, toR.trans fromR⟩
 
-theorem ProofLike.lift {X : LF.Term} (like : ProofLike X) : ProofLike (lift 1 0 X) := by
+theorem ProofLike.lift {X : LF.Term} (like : ProofLike X) : ProofLike (LFTyping.lift 1 0 X) := by
   obtain ⟨P, shape, toP⟩ := like
-  exact ⟨lift 1 0 P, shape.lift 1 0, toP.liftTerm sttfa_closedBodies 1 0⟩
+  exact ⟨LFTyping.lift 1 0 P, shape.lift 1 0, toP.liftTerm sttfa_closedBodies 1 0⟩
 
 theorem ProofLike.subst {X : LF.Term} (like : ProofLike X) (index : Nat) (replacement : LF.Term) :
     ProofLike (subst index replacement X) := by
@@ -663,7 +663,7 @@ theorem shapedCtx_objects (Γ : Ctx Base) : ShapedCtx e (HOL.Rename.id (Γ := Γ
 
 /-- **The types of coded reducts have the shape of the types of proofs.** -/
 theorem PreCoded.proofLike : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M : LF.Term},
-    PreCoded e ρ M → ∀ {context : LFTyping.Ctx} {A : LF.Term}, ShapedCtx e ρ context →
+    PreCoded e @ρ M → ∀ {context : LFTyping.Ctx} {A : LF.Term}, ShapedCtx e ρ context →
       LambdaPiModulo (sttfaProofTheory e) context M A → ProofLike A := by
   intro Γ Θ ρ M coded
   induction coded with
@@ -758,7 +758,7 @@ theorem translate_typed_shaped : ∀ {Γ : Ctx Base} {σ : Ty Base} (t : Term Co
 hypotheses with objects.  A β-step substitutes a proof for a hypothesis or the
 translation of a core term for an object; typing excludes the other pairings. -/
 theorem PreCoded.step : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M : LF.Term},
-    PreCoded e ρ M → ∀ {context : LFTyping.Ctx} {A M' : LF.Term}, ShapedCtx e ρ context →
+    PreCoded e @ρ M → ∀ {context : LFTyping.Ctx} {A M' : LF.Term}, ShapedCtx e ρ context →
       WellFormedCtx LFProfile.standardLF (sttfaProofTheory e) context →
       LambdaPiModulo (sttfaProofTheory e) context M A → Step STTfa.theory M M' →
       PreCoded e ρ M' := by
@@ -795,8 +795,8 @@ theorem PreCoded.step : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M :
         have lamDomain := conv_pi_domain (conv_proofTheory lamConv)
         cases functionCoded with
         | lamHyp _ bodyCoded =>
-            refine bodyCoded.substHyp ρ 0 arg argumentCoded (fun v => ?_) ?_
-            · show subst 0 arg (.var (varIndex (ρ v) + 1)) = .var (varIndex (ρ v))
+            refine bodyCoded.substHyp ρ 0 argument argumentCoded (fun v => ?_) ?_
+            · show subst 0 argument (.var (varIndex (ρ v) + 1)) = .var (varIndex (ρ v))
               simp [LFTyping.subst]
             · intro index notObject differs τ v same
               obtain ⟨i, rfl⟩ := Nat.exists_eq_succ_of_ne_zero differs
@@ -833,16 +833,16 @@ theorem PreCoded.step : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M :
                     (.trans _ _ _ domainConv (El_conv_elNF names σ)))))
             obtain rfl := Encoding.elNF_injective names.base names.hub.elAt_injective
               names.hub.elAt_not_pi sameDecoding
-            refine bodyCoded.substObj ρ (HOL.Subst.single witness) 0 arg (HOL.CoreSubst.single core)
+            refine bodyCoded.substObj ρ (HOL.Subst.single witness) 0 argument (HOL.CoreSubst.single core)
               (fun v => ?_) ?_
             · cases v with
               | vz =>
-                  show Reduces STTfa.theory (e.translate (HOL.rename ρ witness)) (subst 0 arg (.var 0))
+                  show Reduces STTfa.theory (e.translate (HOL.rename ρ witness)) (subst 0 argument (.var 0))
                   simpa [LFTyping.subst] using reduces
               | vs w =>
                   show Reduces STTfa.theory (.var (varIndex (ρ w)))
-                    (subst 0 arg (.var (varIndex (ρ w) + 1)))
-                  rw [show subst 0 arg (.var (varIndex (ρ w) + 1)) = .var (varIndex (ρ w)) by
+                    (subst 0 argument (.var (varIndex (ρ w) + 1)))
+                  rw [show subst 0 argument (.var (varIndex (ρ w) + 1)) = .var (varIndex (ρ w)) by
                     simp [LFTyping.subst]]
             · intro index notObject
               cases index with
@@ -870,7 +870,7 @@ theorem PreCoded.reduces {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M N : 
 /-- **A normal coded reduct is coded**: its object domains and witnesses are in
 normal form. -/
 theorem PreCoded.toCoded : ∀ {Γ Θ : Ctx Base} {ρ : HOL.Rename Base Γ Θ} {M : LF.Term},
-    PreCoded e ρ M → IsNormal (Step STTfa.theory) M → Coded names ρ M := by
+    PreCoded e @ρ M → IsNormal (Step STTfa.theory) M → Coded names ρ M := by
   intro Γ Θ ρ M coded
   induction coded with
   | hyp notObject => intro _; exact .hyp notObject

@@ -773,7 +773,8 @@ theorem any_boxed_instance_to_atomic {permitted : Bool} {items : List Pattern}
   obtain ⟨_, focusEq, boundEq, typeEq⟩ := box_site_fields site
   cases valid with
   | fill origin context bound type declaration atomic target scope typing =>
-      simpa only [focusEq, boundEq, typeEq] using atomic
+      simpa only [focusEq, boundEq, typeEq,
+        ContextualAuthoredEquationExecution.conditionalEvidence] using atomic
 
 theorem any_boxed_instance_readout {permitted : Bool} {items : List Pattern}
     {site : TypedContextualEquationExecution.Site (environment permitted).language
@@ -790,7 +791,9 @@ theorem any_boxed_instance_readout {permitted : Bool} {items : List Pattern}
   cases valid with
   | fill origin context bound type declaration atomic target scope typing =>
       exact ⟨origin, declaration, context.trans contextEq, bound.trans boundEq,
-        type.trans typeEq, by simpa only [contextEq] using target⟩
+        type.trans typeEq, by
+          simpa only [contextEq, ContextualAuthoredEquationExecution.conditionalEvidence]
+            using target⟩
 
 theorem atomic_source_open {permitted : Bool} {items : List Pattern}
     {atomic : ConditionalEquationExecution.Receipt}

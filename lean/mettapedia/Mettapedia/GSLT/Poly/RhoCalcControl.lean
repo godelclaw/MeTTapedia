@@ -75,19 +75,23 @@ theorem outputRule_params :
 
 theorem not_bare_zero : ¬ UsesBareCollection zeroRule := by
   intro ⟨_, _, _, shape⟩
-  simp [zeroRule_params] at shape
+  cases mode : zeroRule.collectionRepresentation <;>
+    simp [GrammarRule.bareParams, mode, zeroRule_params] at shape
 
 theorem not_bare_drop : ¬ UsesBareCollection dropRule := by
   intro ⟨_, _, _, shape⟩
-  simp [dropRule_params, TypeExpr.name, TypeExpr.baseType] at shape
+  cases mode : dropRule.collectionRepresentation <;>
+    simp [GrammarRule.bareParams, mode, dropRule_params, TypeExpr.name, TypeExpr.baseType] at shape
 
 theorem not_bare_quote : ¬ UsesBareCollection quoteRule := by
   intro ⟨_, _, _, shape⟩
-  simp [quoteRule_params, TypeExpr.proc, TypeExpr.baseType] at shape
+  cases mode : quoteRule.collectionRepresentation <;>
+    simp [GrammarRule.bareParams, mode, quoteRule_params, TypeExpr.proc, TypeExpr.baseType] at shape
 
 theorem not_bare_output : ¬ UsesBareCollection outputRule := by
   intro ⟨_, _, _, shape⟩
-  simp [outputRule_params, TypeExpr.name, TypeExpr.baseType] at shape
+  cases mode : outputRule.collectionRepresentation <;>
+    simp [GrammarRule.bareParams, mode, outputRule_params, TypeExpr.name, TypeExpr.baseType] at shape
 
 /-- The unit process `PZero`. -/
 def procZero : Pattern := .apply "PZero" []

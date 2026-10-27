@@ -1,6 +1,7 @@
 import Mettapedia.CogArch.GodelClaw.Ethics.EthicsFormulaWMBridge
 import Mettapedia.Ethics.FOETCore
 import Mettapedia.Ethics.GewirthBridge
+import Mettapedia.Ethics.StructuredParadigms
 
 set_option autoImplicit false
 

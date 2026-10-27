@@ -29,7 +29,7 @@ namespace Mettapedia.Machines.Cursor.QueueCost
 
 open Mettapedia.TypeTheory
 open Mettapedia.TypeTheory.IndexedPolynomial
-open CategoryTheory
+open _root_.CategoryTheory
 
 variable (Item : Type)
 
