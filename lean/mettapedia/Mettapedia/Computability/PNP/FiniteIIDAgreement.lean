@@ -20,6 +20,7 @@ open Mettapedia.ProbabilityTheory
 
 universe u v
 
+section WeightedAgreement
 
 variable {Input : Type u} {Output : Type v}
 variable [Fintype Input] [DecidableEq Output]

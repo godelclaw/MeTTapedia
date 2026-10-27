@@ -121,8 +121,8 @@ theorem bool_coin_asymmetric_recoding_not_tolerance_one_regression :
   have hcoinTrue : coinTrueFiberCount boolCoinAsymmetricRecoding true = 2 := by
     simp [coinTrueFiberCount, boolCoinAsymmetricRecoding, finiteEventCount]
   have hcoinFalse : coinFalseFiberCount boolCoinAsymmetricRecoding true = 1 := by
-    simpa [coinFalseFiberCount, boolCoinAsymmetricRecoding] using
-      (finiteEventCount_eq_self (α := Bool) true)
+    simp [coinFalseFiberCount, boolCoinAsymmetricRecoding, finiteEventCount]
+    decide
   have himb : finiteCoinFiberImbalance boolCoinAsymmetricRecoding true = 1 := by
     rw [finiteCoinFiberImbalance, hcoinTrue, hcoinFalse]
     norm_num

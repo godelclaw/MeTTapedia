@@ -7,8 +7,7 @@ def boolToBitVec1ActualSparseChar : Bool → BitVec 1 := fun b _ => b
 theorem boolToBitVec1ActualSparseChar_injective :
     Function.Injective boolToBitVec1ActualSparseChar := by
   intro a b hab
-  have h := congrFun hab 0
-  simpa using h
+  exact congrFun hab 0
 
 def constBitVec1ActualSparseChar : Bool → BitVec 1 := fun _ _ => false
 

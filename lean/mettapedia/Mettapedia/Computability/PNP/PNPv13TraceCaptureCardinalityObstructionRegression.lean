@@ -58,7 +58,10 @@ theorem collapsed_trace_surface_not_capturesAllBoolObservers_of_cardinality_regr
     V13TraceCaptureSurface.not_capturesAllBoolObservers_of_traceCard_lt_relevantStateCard
       (S := v13CollapsedTraceSurface) inferInstance inferInstance
       (by
-        simpa using (show 1 < Fintype.card V13ToyTraceState by decide))
+        rw [Fintype.card_congr
+          (Equiv.subtypeUnivEquiv (p := v13CollapsedTraceSurface.targetRelevant)
+            (fun _ => trivial))]
+        decide)
 
 /-- A two-trace alphabet cannot capture all Boolean observers on four
 target-relevant states. -/

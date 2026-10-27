@@ -9,6 +9,10 @@ roadmap for honest proof-state movement, not a P versus NP result.
 
 namespace Mettapedia.Computability.PNP
 
+-- Membership proofs below unfold the whole roadmap; checking them needs more
+-- than the default recursion depth.
+set_option maxRecDepth 4096
+
 /-- Roadmap stage tags for the current PNP lane. -/
 inductive PNPRoadmapStage where
   | sourceMap

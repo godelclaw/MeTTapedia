@@ -6,8 +6,7 @@ def boolToBitVec1Char : Bool → BitVec 1 := fun b _ => b
 
 theorem boolToBitVec1Char_injective : Function.Injective boolToBitVec1Char := by
   intro a b hab
-  have h := congrFun hab 0
-  simpa using h
+  exact congrFun hab 0
 
 def constBitVec1Char : Bool → BitVec 1 := fun _ _ => false
 

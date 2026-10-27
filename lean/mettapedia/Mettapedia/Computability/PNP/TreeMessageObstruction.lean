@@ -38,6 +38,9 @@ lemma tailBits_consBits {n : ℕ} (b : Bool) (x : VisibleBits n) :
   funext i
   simp [tailBits, consBits]
 
+@[simp] lemma consBits_zero {n : ℕ} (b : Bool) (x : VisibleBits n) :
+    consBits b x 0 = b := rfl
+
 lemma consBits_head_tail {n : ℕ} (x : VisibleBits (n + 1)) :
     consBits (x 0) (tailBits x) = x := by
   funext i

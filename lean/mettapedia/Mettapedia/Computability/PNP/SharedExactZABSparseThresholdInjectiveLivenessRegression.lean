@@ -6,8 +6,7 @@ def boolToBitVec1 : Bool → BitVec 1 := fun b _ => b
 
 theorem boolToBitVec1_injective : Function.Injective boolToBitVec1 := by
   intro a b hab
-  have h := congrFun hab 0
-  simpa using h
+  exact congrFun hab 0
 
 theorem fullExactVisibleRuleFamily_realizedBySharedExactZABSparseThresholdAffineFamily_bool0_regression :
     RealizedBySharedExactZABSparseThresholdAffineFamily

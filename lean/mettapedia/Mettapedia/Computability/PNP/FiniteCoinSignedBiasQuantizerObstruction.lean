@@ -65,7 +65,7 @@ theorem countIndependentWithinOutputDefect_finiteCoinOutput_le_of_finiteCoinSign
       (fun _ω => True)
       (finiteCoinSourceTrue (Coin := Coin))
       (finiteCoinOutput (finiteCoinSignedBiasQuantizedRecoding r q)) := by
-  simpa [finiteCoinSignedBiasQuantizedRecoding] using
+  exact
     countIndependentWithinOutputDefect_finiteCoinOutput_le_of_signedBiasOneSided
       r (fun y => q (finiteCoinSignedFiberBias r y))
       (finiteOutputFiberSignedBiasOneSided_of_finiteCoinSignedBiasQuantizerOneSided

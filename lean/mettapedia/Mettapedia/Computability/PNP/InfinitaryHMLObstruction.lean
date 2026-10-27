@@ -177,20 +177,6 @@ theorem infinite_rhoEvaluationContextShapes : Infinite (GSLTContext rhoGSLT) :=
 #print axioms rhoParLadder_contextShape_injective
 #print axioms infinite_rhoEvaluationContextShapes
 
-theorem not_injective_rhoDepthFragment_one_to_finite_code
-    {Code : Type*} [Fintype Code]
-    (encode : DepthFragment (S := rhoGSLT) 1 → Code) :
-    ¬ Function.Injective encode := by
-  letI := infinite_rhoMinimalContexts
-  exact not_injective_depthFragment_one_to_finite_code (S := rhoGSLT) encode
-
-theorem not_injective_rhoHMLFormula_to_finite_code
-    {Code : Type*} [Fintype Code]
-    (encode : HMLFormula rhoGSLT → Code) :
-    ¬ Function.Injective encode := by
-  letI := infinite_rhoMinimalContexts
-  exact not_injective_hmlFormula_to_finite_code (S := rhoGSLT) encode
-
 end Rho
 
 end Mettapedia.Computability.PNP

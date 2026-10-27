@@ -12,7 +12,6 @@ namespace Mettapedia.Computability.PNP.InfinitaryHMLObstructionRegression
 
 open Mettapedia.Computability.PNP
 open Mettapedia.GSLT
-open Mettapedia.GSLT.Meredith.RhoExample
 open Mettapedia.GSLT.HMLFormula
 
 theorem not_surjective_depth_fragment_one_of_finite_code_regression
@@ -42,29 +41,5 @@ theorem not_injective_hml_formula_to_finite_code_regression
     (encode : HMLFormula S → Code) :
     ¬ Function.Injective encode := by
   exact not_injective_hmlFormula_to_finite_code (S := S) encode
-
-theorem not_surjective_rho_depth_fragment_one_of_finite_code_regression
-    {Code : Type*} [Fintype Code]
-    (decode : Code → DepthFragment (S := rhoGSLT) 1) :
-    ¬ Function.Surjective decode := by
-  exact not_surjective_rhoDepthFragment_one_of_finite_code decode
-
-theorem not_surjective_rho_hml_formula_of_finite_code_regression
-    {Code : Type*} [Fintype Code]
-    (decode : Code → HMLFormula rhoGSLT) :
-    ¬ Function.Surjective decode := by
-  exact not_surjective_rhoHMLFormula_of_finite_code decode
-
-theorem not_injective_rho_depth_fragment_one_to_finite_code_regression
-    {Code : Type*} [Fintype Code]
-    (encode : DepthFragment (S := rhoGSLT) 1 → Code) :
-    ¬ Function.Injective encode := by
-  exact not_injective_rhoDepthFragment_one_to_finite_code encode
-
-theorem not_injective_rho_hml_formula_to_finite_code_regression
-    {Code : Type*} [Fintype Code]
-    (encode : HMLFormula rhoGSLT → Code) :
-    ¬ Function.Injective encode := by
-  exact not_injective_rhoHMLFormula_to_finite_code encode
 
 end Mettapedia.Computability.PNP.InfinitaryHMLObstructionRegression

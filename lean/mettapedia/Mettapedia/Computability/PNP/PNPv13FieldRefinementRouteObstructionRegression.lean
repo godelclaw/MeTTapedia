@@ -32,7 +32,7 @@ theorem bool_pair_unit_then_secondCoordinateRepeatedField_has_refined_bad_cell_r
     V13FieldedBadCellFrom
       ([] : List (FiniteEvent (Bool × Bool)))
       [v13BoolPairUnitFieldedStep, v13BoolPairSecondCoordinateRepeatedFieldedStep] := by
-  simpa [v13BoolPairSecondCoordinateRepeatedFieldedStep] using
+  exact
     (v13FieldedBadCellFrom_append_cons_of_refinement_bad_coarse_cell
       (Ω := Bool × Bool)
       (fine := v13BoolPairSecondCoordinateField)
@@ -49,7 +49,7 @@ theorem bool_pair_unit_then_secondCoordinateRepeatedField_refinement_blocks_rout
         [v13BoolPairUnitFieldedStep, v13BoolPairSecondCoordinateRepeatedFieldedStep]) ∧
       ¬ V13FieldSwitchingFailureMatching
         [v13BoolPairUnitFieldedStep, v13BoolPairSecondCoordinateRepeatedFieldedStep] := by
-  simpa [V13FieldSwitchingInstantiated, V13FieldSwitchingFailureMatching,
+  simpa [v13BoolPairUnitFieldedStep, V13FieldSwitchingInstantiated, V13FieldSwitchingFailureMatching,
     v13BoolPairSecondCoordinateRepeatedFieldedStep] using
     (v13FieldRefinementBadCoarseCell_blocks_fixedFieldRoute_at
       (Ω := Bool × Bool)

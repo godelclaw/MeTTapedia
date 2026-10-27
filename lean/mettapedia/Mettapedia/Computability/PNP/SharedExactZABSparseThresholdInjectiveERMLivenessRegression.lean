@@ -6,8 +6,7 @@ def boolToBitVec1 : Bool → BitVec 1 := fun b _ => b
 
 theorem boolToBitVec1_injective : Function.Injective boolToBitVec1 := by
   intro a b hab
-  have h := congrFun hab 0
-  simpa using h
+  exact congrFun hab 0
 
 def exactVisiblePostSwitchSurfaceBool0Equiv :
     ExactVisiblePostSwitchData Bool 0 ≃ Bool where

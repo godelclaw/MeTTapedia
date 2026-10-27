@@ -166,7 +166,7 @@ theorem countIndependentWithinOutputDefect_finiteCoinOutputWithDither_le_of_fini
       (fun _ω => True)
       (finiteCoinSourceTrue (Coin := Coin × Dither))
       (finiteCoinOutput (finiteCoinSignedBiasDitheredQuantizedRecoding r q)) := by
-  simpa [finiteCoinSignedBiasDitheredQuantizedRecoding, finiteCoinOutputWithDither] using
+  exact
     countIndependentWithinOutputDefect_finiteCoinOutput_le_of_signedBiasOneSided
       (r := finiteCoinOutputWithDither r)
       (g := fun yd => q (finiteCoinSignedFiberBias r yd.1, yd.2))

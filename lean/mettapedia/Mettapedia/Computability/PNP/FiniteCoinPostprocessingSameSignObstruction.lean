@@ -1,4 +1,6 @@
 import Mettapedia.Computability.PNP.FiniteCoinPostprocessingImprovementObstruction
+import Mathlib.Data.Int.NatAbs
+import Mathlib.Tactic.Linarith
 
 /-!
 # P vs NP grassroots: same-sign postprocessing obstruction

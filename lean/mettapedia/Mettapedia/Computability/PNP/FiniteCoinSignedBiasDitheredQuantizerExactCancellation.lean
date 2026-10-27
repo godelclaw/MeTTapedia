@@ -108,7 +108,7 @@ theorem finiteCoinSignedBiasDitheredQuantizedRecoding_exactCancellation_iff_obse
           finiteEventCount (Coin × Dither)
             (fun cd =>
               q (finiteCoinSignedFiberBias r (r false cd.1), cd.2) = z) := by
-            simpa [finiteCoinSignedBiasDitheredQuantizedRecoding] using
+            exact
               (finiteCoinRecodingFiberBalanced_postprocessedSide_iff_observedFiber_count_eq
                 (r := fun b (cd : Coin × Dither) => r b cd.1)
                 (side := fun cd : Coin × Dither => cd.2)

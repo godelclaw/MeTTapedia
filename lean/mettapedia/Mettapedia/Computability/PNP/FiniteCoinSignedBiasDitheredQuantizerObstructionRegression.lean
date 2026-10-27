@@ -99,8 +99,8 @@ theorem bool_coin_asymmetric_recoding_with_dither_not_tolerance_zero_regression 
   have hcoinTrue : coinTrueFiberCount boolCoinAsymmetricRecoding true = 2 := by
     simp [coinTrueFiberCount, boolCoinAsymmetricRecoding, finiteEventCount]
   have hcoinFalse : coinFalseFiberCount boolCoinAsymmetricRecoding true = 1 := by
-    simpa [coinFalseFiberCount, boolCoinAsymmetricRecoding] using
-      (finiteEventCount_eq_self (α := Bool) true)
+    simp [coinFalseFiberCount, boolCoinAsymmetricRecoding, finiteEventCount]
+    decide
   have hpos : 0 < finiteCoinSignedFiberBias boolCoinAsymmetricRecoding true := by
     rw [finiteCoinSignedFiberBias, hcoinTrue, hcoinFalse]
     norm_num

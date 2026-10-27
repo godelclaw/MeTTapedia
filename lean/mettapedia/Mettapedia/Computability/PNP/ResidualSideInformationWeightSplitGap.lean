@@ -8,6 +8,7 @@ import Mettapedia.Computability.PNP.ResidualSideInformationResolutionCostSupport
 import Mettapedia.Computability.PNP.ResidualSideInformationResolutionCostSupportedPackagesNoVisiblePairBalancing
 import Mettapedia.Computability.PNP.ResidualSideInformationResolutionCostExactSuccessPackages
 import Mettapedia.Computability.PNP.ResidualSideInformationResolutionCostExactSuccessEquivalences
+import Mathlib.Tactic.FinCases
 
 /-!
 # P vs NP crux: no visible-pair balancing still need not imply residual success
@@ -89,9 +90,7 @@ theorem target_flips_under_resolveSwap : ∀ x, target (resolveSwap x) = !(targe
 
 theorem weight_invariant_under_resolveSwap : ∀ x, weight (resolveSwap x) = weight x := by
   intro x
-  cases x with
-  | mk i b =>
-      simp [resolveSwap, weight]
+  rfl
 
 theorem target_eq_true_of_side_false_weight_two
     (x : Ω) (hside : side x = false) (hweight : weight x = 2) :
