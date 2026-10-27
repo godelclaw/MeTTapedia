@@ -10,6 +10,7 @@ import Mettapedia.Protocols.Nostr.Sealed
 import Mettapedia.Protocols.Nostr.SymbolicAuthorship
 import Mettapedia.Protocols.Symbolic.Knowledge
 import Mettapedia.Protocols.Symbolic.Equational
+import Mettapedia.Protocols.Symbolic.EquationalConsequence
 import Mettapedia.Protocols.Symbolic.Label
 import Mettapedia.Protocols.Symbolic.Trace
 import Mettapedia.Protocols.Symbolic.ThreatModel
