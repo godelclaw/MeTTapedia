@@ -85,7 +85,8 @@ private theorem decodeGoalSource?_goalTerm (environment : Environment)
       some source := by
   cases source
   simp [decodeGoalSource?, DescentCodec.goalTerm, SourceExecution.sourceGoal, Scheduled.sourceGoal,
-    DescentCodec.typesTerm, DescentCodec.typeTerm, DescentCodec.patternTerm, decodeList_encodeList]
+    Scheduled.sourceGoalWith, DescentCodec.typesTerm, DescentCodec.typeTerm,
+    DescentCodec.patternTerm, decodeList_encodeList]
 
 theorem sourceGoal_fields {firstEnvironment secondEnvironment : Environment}
     {first second : SourceExecution.Source}
