@@ -8,6 +8,8 @@ namespace Mettapedia.Logic
 namespace MarkovDeFinettiHard
 
 open MeasureTheory
+open Mettapedia.ProbabilityTheory.Exchangeability
+open Mettapedia.ProbabilityTheory.Exchangeability.MarkovDeFinettiHard
 
 namespace FortiniCrossCounterexample
 
@@ -94,6 +96,7 @@ lemma rowSucc10_pathB :
     refine ⟨?_, ?_⟩
     · exact pathB_one
     · simp [visitCountBefore, pathB]
+      decide
   have htime : nthVisitTime (k := 2) pathB s1 0 = some 1 := by
     exact (nthVisitTime_eq_some_iff (k := 2) pathB s1 0 1).2 hvisit
   calc
@@ -316,8 +319,8 @@ lemma carrier_n1_N2_eq_xs001 (x : Fin 3 → S) (hx : x ∈ carrier_n1_N2) : x = 
     simpa [successorAt, prefixExtend] using hsucc
   funext j
   fin_cases j
-  · simpa [xs001] using hx0nat
-  · simpa [xs001] using hx1nat
+  · exact hx0nat
+  · exact hx1nat
   · simpa [xs001] using hx2nat
 
 lemma carrier_n1_N2_subsingleton : Subsingleton carrier_n1_N2 := by
@@ -336,8 +339,8 @@ lemma mem_carrier_n0_N2_xs010 : xs010 ∈ carrier_n0_N2 := by
   subst hn0
   refine ⟨0, by decide, ?_, ?_⟩
   · exact nthVisitTime_zero_eq_some_zero_of_start (k := 2)
-      (prefixExtend (k := 2) 2 xs010) s0 (by simp [prefixExtend, xs010])
-  · simp [successorAt, prefixExtend, xs010]
+      (prefixExtend (k := 2) 2 xs010) s0 (by decide)
+  · decide
 
 lemma mem_carrier_n0_N2_xs011 : xs011 ∈ carrier_n0_N2 := by
   classical
@@ -348,7 +351,7 @@ lemma mem_carrier_n0_N2_xs011 : xs011 ∈ carrier_n0_N2 := by
   subst hn0
   refine ⟨0, by decide, ?_, ?_⟩
   · exact nthVisitTime_zero_eq_some_zero_of_start (k := 2)
-      (prefixExtend (k := 2) 2 xs011) s0 (by simp [prefixExtend, xs011])
+      (prefixExtend (k := 2) 2 xs011) s0 (by decide)
   · simp [successorAt, prefixExtend, xs011]
 
 lemma xs010_ne_xs011 : xs010 ≠ xs011 := by
@@ -392,8 +395,8 @@ theorem not_hcarrier0_strong_shape_k2 :
           ∀ xs :
             rowVisitCylinderEventUpToPrefixCarrier (k := 2) s0 {n}
               (fun m => if m = n then s1 else s0) N,
-            Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := N) xs.1 =
-              Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := N) (e xs).1) := by
+            Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := N) xs.1 =
+              Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := N) (e xs).1) := by
   intro hall
   have hallEquiv :
       ∀ n N : ℕ,
@@ -467,7 +470,7 @@ lemma mem_cylinder_append_singleton_iff_det
 
 /-- Prefix measure induced by a deterministic path. -/
 def deterministicPrefixMeasure (path : ℕ → S) :
-    Mettapedia.Logic.UniversalPrediction.FiniteAlphabet.PrefixMeasure S where
+    Mettapedia.UniversalAI.UniversalPrediction.FiniteAlphabet.PrefixMeasure S where
   toFun xs := deterministicPathMeasure path (MarkovDeFinettiRecurrence.cylinder (k := 2) xs)
   root_eq_one' := by
     simp [deterministicPathMeasure, MarkovDeFinettiRecurrence.cylinder]
@@ -536,10 +539,10 @@ lemma hμ_deterministicPrefixMeasure_of_evidenceInvariant
     (path : ℕ → S)
     (hcongr :
       ∀ (n : ℕ) (x1 x2 : Fin (n + 1) → S),
-        Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) x1
-          = Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) x2 →
+        Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) x1
+          = Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) x2 →
         (deterministicPrefixFn path x1 ↔ deterministicPrefixFn path x2)) :
-    Mettapedia.Logic.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
+    Mettapedia.UniversalAI.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
       (k := 2) (deterministicPrefixMeasure path) := by
   have hμ_ofFn_true :
       ∀ {n : ℕ} {xs : Fin (n + 1) → S}, deterministicPrefixFn path xs →
@@ -562,8 +565,8 @@ lemma hμ_deterministicPrefixMeasure_of_evidenceInvariant
     change deterministicPrefixMeasure path (List.ofFn x1) =
         deterministicPrefixMeasure path (List.ofFn x2)
     have hh :
-        Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) x1
-          = Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) x2 →
+        Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) x1
+          = Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) x2 →
         (deterministicPrefixFn path x1 ↔ deterministicPrefixFn path x2) :=
       hcongr n x1 x2
     have hiff : deterministicPrefixFn path x1 ↔ deterministicPrefixFn path x2 := hh he
@@ -591,7 +594,7 @@ lemma mem_cylinder_append_singleton_iff
       ω ∈ MarkovDeFinettiRecurrence.cylinder (k := 2) x ∧ ω x.length = a :=
   mem_cylinder_append_singleton_iff_det (ω := ω) x a
 
-abbrev μPath : Mettapedia.Logic.UniversalPrediction.FiniteAlphabet.PrefixMeasure S :=
+abbrev μPath : Mettapedia.UniversalAI.UniversalPrediction.FiniteAlphabet.PrefixMeasure S :=
   deterministicPrefixMeasure pathC
 
 lemma hExt_μPath :
@@ -633,25 +636,25 @@ lemma deterministicPrefixFn_pathC_iff_pathCPrefixFn
 lemma transCount_pos_of_transition {n : ℕ} (xs : Fin (n + 1) → S)
     (i : Fin n) (a b : S)
     (h0 : xs (Fin.castSucc i) = a) (h1 : xs (Fin.succ i) = b) :
-    0 < Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs a b := by
+    0 < Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs a b := by
   classical
-  unfold Mettapedia.Logic.MarkovExchangeability.transCount
+  unfold Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount
   refine Finset.card_pos.mpr ?_
   refine ⟨i, ?_⟩
   simp [h0, h1]
 
 lemma pathCPrefixFn_zeroCounts {n : ℕ} {xs : Fin (n + 1) → S}
     (hxs : pathCPrefixFn xs) :
-    Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs s0 s0 = 0 ∧
-      Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs s1 s0 = 0 := by
+    Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs s0 s0 = 0 ∧
+      Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs s1 s0 = 0 := by
   refine ⟨?_, ?_⟩
-  · unfold Mettapedia.Logic.MarkovExchangeability.transCount
+  · unfold Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount
     refine Finset.card_eq_zero.mpr ?_
     refine Finset.filter_eq_empty_iff.mpr ?_
     intro i _ hi
     have hs : xs (Fin.succ i) = s1 := hxs.2 i
     exact (by decide : (s1 : S) ≠ s0) (hs.symm.trans hi.2)
-  · unfold Mettapedia.Logic.MarkovExchangeability.transCount
+  · unfold Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount
     refine Finset.card_eq_zero.mpr ?_
     refine Finset.filter_eq_empty_iff.mpr ?_
     intro i _ hi
@@ -660,8 +663,8 @@ lemma pathCPrefixFn_zeroCounts {n : ℕ} {xs : Fin (n + 1) → S}
 
 lemma pathCPrefixFn_of_start_and_zeroCounts {n : ℕ} {xs : Fin (n + 1) → S}
     (hstart : xs 0 = s0)
-    (h00 : Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs s0 s0 = 0)
-    (h10 : Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs s1 s0 = 0) :
+    (h00 : Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs s0 s0 = 0)
+    (h10 : Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs s1 s0 = 0) :
     pathCPrefixFn xs := by
   refine ⟨hstart, ?_⟩
   intro i
@@ -682,53 +685,53 @@ lemma pathCPrefixFn_of_start_and_zeroCounts {n : ℕ} {xs : Fin (n + 1) → S}
       exact Or.inr (by simpa [s1] using hp1')
   rcases hprev with hps0 | hps1
   · have hpos :
-      0 < Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs s0 s0 :=
+      0 < Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs s0 s0 :=
       transCount_pos_of_transition xs i s0 s0 hps0 hs0
     exact (Nat.not_lt_zero _ ) (h00 ▸ hpos)
   · have hpos :
-      0 < Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xs s1 s0 :=
+      0 < Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xs s1 s0 :=
       transCount_pos_of_transition xs i s1 s0 hps1 hs0
     exact (Nat.not_lt_zero _ ) (h10 ▸ hpos)
 
 lemma pathCPrefixFn_congr_of_evidenceEq
     {n : ℕ} {xs₁ xs₂ : Fin (n + 1) → S}
     (he :
-      Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) xs₁
-        = Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) xs₂) :
+      Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) xs₁
+        = Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) xs₂) :
     pathCPrefixFn xs₁ ↔ pathCPrefixFn xs₂ := by
   have hforward :
       ∀ {xsa xsb : Fin (n + 1) → S},
-        Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) xsa =
-          Mettapedia.Logic.MarkovExchangeability.evidenceOf (n := n) xsb →
+        Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) xsa =
+          Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf (n := n) xsb →
         pathCPrefixFn xsa → pathCPrefixFn xsb := by
     intro xsa xsb heq hxa
     have hs : xsa 0 = xsb 0 := by
-      simpa [Mettapedia.Logic.MarkovExchangeability.evidenceOf] using
-        congrArg Mettapedia.Logic.MarkovExchangeability.MarkovEvidence.start heq
+      simpa [Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf] using
+        congrArg Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.MarkovEvidence.start heq
     have hstart : xsb 0 = s0 := by
       calc
         xsb 0 = xsa 0 := hs.symm
         _ = s0 := hxa.1
     have hcounts := pathCPrefixFn_zeroCounts hxa
-    have h00 : Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xsb s0 s0 = 0 := by
+    have h00 : Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xsb s0 s0 = 0 := by
       have htc :
-          Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xsa s0 s0 =
-            Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xsb s0 s0 := by
-        simpa [Mettapedia.Logic.MarkovExchangeability.evidenceOf] using
+          Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xsa s0 s0 =
+            Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xsb s0 s0 := by
+        simpa [Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf] using
           congrArg (fun e => e.trans s0 s0) heq
       exact htc.symm ▸ hcounts.1
-    have h10 : Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xsb s1 s0 = 0 := by
+    have h10 : Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xsb s1 s0 = 0 := by
       have htc :
-          Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xsa s1 s0 =
-            Mettapedia.Logic.MarkovExchangeability.transCount (n := n) xsb s1 s0 := by
-        simpa [Mettapedia.Logic.MarkovExchangeability.evidenceOf] using
+          Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xsa s1 s0 =
+            Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.transCount (n := n) xsb s1 s0 := by
+        simpa [Mettapedia.ProbabilityTheory.Exchangeability.MarkovExchangeability.evidenceOf] using
           congrArg (fun e => e.trans s1 s0) heq
       exact htc.symm ▸ hcounts.2
     exact pathCPrefixFn_of_start_and_zeroCounts hstart h00 h10
   exact ⟨hforward he, hforward he.symm⟩
 
 lemma hμ_μPath :
-    Mettapedia.Logic.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
+    Mettapedia.UniversalAI.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
       (k := 2) μPath := by
   refine hμ_deterministicPrefixMeasure_of_evidenceInvariant (path := pathC) ?_
   intro n x1 x2
@@ -927,9 +930,9 @@ theorem not_exists_rowKernel_hrow_for_Ppath :
   exact one_ne_zero honezero
 
 theorem exists_deterministic_witness_not_hperm :
-    ∃ (μ : Mettapedia.Logic.UniversalPrediction.FiniteAlphabet.PrefixMeasure S) (P : Measure (ℕ → S)),
+    ∃ (μ : Mettapedia.UniversalAI.UniversalPrediction.FiniteAlphabet.PrefixMeasure S) (P : Measure (ℕ → S)),
       IsProbabilityMeasure P ∧
-      Mettapedia.Logic.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
+      Mettapedia.UniversalAI.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
         (k := 2) μ ∧
       (∀ xs : List S, μ xs = P (MarkovDeFinettiRecurrence.cylinder (k := 2) xs)) ∧
       ¬ StartRestrictedRowSuccessorPermInvariant (k := 2) P := by
@@ -953,10 +956,10 @@ theorem exists_deterministic_witness_not_hperm :
 the same witness has `hμ+hExt+¬hperm`, and no row-kernel can satisfy
 `hrow` (hence no witness with both `hrow` and `hEval`). -/
 theorem deterministic_witness_blocks_hrow_hEval_derivation_test :
-    ∃ (μ : Mettapedia.Logic.UniversalPrediction.FiniteAlphabet.PrefixMeasure S)
+    ∃ (μ : Mettapedia.UniversalAI.UniversalPrediction.FiniteAlphabet.PrefixMeasure S)
       (P : Measure (ℕ → S)),
       IsProbabilityMeasure P ∧
-      Mettapedia.Logic.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
+      Mettapedia.UniversalAI.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
         (k := 2) μ ∧
       (∀ xs : List S, μ xs = P (MarkovDeFinettiRecurrence.cylinder (k := 2) xs)) ∧
       ¬ StartRestrictedRowSuccessorPermInvariant (k := 2) P ∧
@@ -983,10 +986,10 @@ theorem deterministic_witness_blocks_hrow_hEval_derivation_test :
   exact hNoHrow ⟨rowKernel, hrow⟩
 
 theorem not_derivable_startRestrictedRowSuccessorPermInvariant :
-    ¬ (∀ (μ : Mettapedia.Logic.UniversalPrediction.FiniteAlphabet.PrefixMeasure (Fin 2))
+    ¬ (∀ (μ : Mettapedia.UniversalAI.UniversalPrediction.FiniteAlphabet.PrefixMeasure (Fin 2))
           (P : Measure (ℕ → Fin 2)),
           IsProbabilityMeasure P →
-          Mettapedia.Logic.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
+          Mettapedia.UniversalAI.UniversalPrediction.MarkovExchangeabilityBridge.MarkovExchangeablePrefixMeasure
             (k := 2) μ →
           (∀ xs : List (Fin 2),
               μ xs = P (MarkovDeFinettiRecurrence.cylinder (k := 2) xs)) →
