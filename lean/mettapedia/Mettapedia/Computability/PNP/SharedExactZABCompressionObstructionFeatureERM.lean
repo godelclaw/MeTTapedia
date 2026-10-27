@@ -22,7 +22,7 @@ variable {n p r k : ℕ} {Index : Type*}
 /-- The final shared-basis exact `(zfeat(z), a, b)` affine-feature ERM
 interface inherits the same exact-surface lower bound on `BitVec n`. -/
 theorem SharedExactZABAffineFeatureERMRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -37,7 +37,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.bitVecSurfaceCard_le_of_surje
 interface cannot be surjective once its exponential feature budget sits below
 the full exact-surface threshold. -/
 theorem SharedExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -52,7 +52,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_bud
 affine-feature ERM interface cannot be surjective when its shared affine width
 is strictly smaller than the full exact visible width. -/
 theorem SharedExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_lt_visibleWidth
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -66,7 +66,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_lt_
 /-- The final shared-basis exact `(zfeat(z), a, b)` sparse-threshold ERM
 interface inherits the same exact-surface lower bound on `BitVec n`. -/
 theorem SharedExactZABSparseThresholdERMRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -81,7 +81,7 @@ theorem SharedExactZABSparseThresholdERMRecoveryData.bitVecSurfaceCard_le_of_sur
 interface cannot be surjective once its linear threshold budget sits below the
 full exact-surface threshold. -/
 theorem SharedExactZABSparseThresholdERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}

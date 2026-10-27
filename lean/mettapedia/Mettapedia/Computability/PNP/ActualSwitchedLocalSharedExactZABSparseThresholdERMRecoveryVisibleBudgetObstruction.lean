@@ -43,7 +43,7 @@ section BitVec
 
 variable {n k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface (BitVec n) k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {zfeat : BitVec n → BitVec r} {q : ℝ≥0∞}
 
 /-- Surjective actual-local shared exact sparse-threshold recovery data on
@@ -87,7 +87,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_le_
           zfeat
           q))
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound) :
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound) :
     n ≤ 2 * r + 2 * k + 1 := by
   rcases h with ⟨h⟩
   exact
@@ -101,7 +101,7 @@ extractor width is below the unconditional point-block visible-budget
 threshold. -/
 theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hsurj : Function.Surjective T.predictorFamily.predict)
@@ -118,7 +118,7 @@ the manuscript-facing recovery layer: below the half-width threshold, no
 sparse-threshold recovery data. -/
 theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hgap : 2 * r + 2 * k + 1 < n) :
@@ -132,7 +132,7 @@ theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_pr
 /-- In particular, the full-rule manuscript-facing recovery endpoint is
 excluded on `BitVec n` whenever `2*r + 2*k + 1 < n`. -/
 theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :
@@ -158,7 +158,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
 unconditional visible-budget obstruction by changing the extractor: below the
 half-width threshold, no extractor at all can support the packet. -/
 theorem fullRuleActualSwitchedLocalInterface_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
@@ -181,11 +181,11 @@ excluded below the same unconditional half-width threshold once the sample
 bound is large enough for surjectivity. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     {sampleBound : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
@@ -214,10 +214,10 @@ enough for surjectivity, below the half-width threshold no extractor at all can
 support the packet. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     {sampleBound : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
         Nonempty

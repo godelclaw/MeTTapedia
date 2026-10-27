@@ -17,7 +17,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
     {Z : Type v} [Fintype Z] {k : ℕ} :
     Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.predict := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_zeroSample_exactVisibleRuleDecode
@@ -25,9 +25,9 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exact_decoder_no_finite_predictor_cover_regression
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.FinitePredictorCover (2 ^ s) := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_finitePredictorCover_of_lt_surfaceCard
@@ -35,9 +35,9 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exact_decoder_no_finite_index_representative_cover_regression
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.FiniteIndexRepresentativeCover (2 ^ s) := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_finiteIndexRepresentativeCover_of_lt_surfaceCard
@@ -45,9 +45,9 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exact_decoder_no_finite_predictor_quotient_regression
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.FinitePredictorQuotient (2 ^ s) := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_finitePredictorQuotient_of_lt_surfaceCard
@@ -55,13 +55,13 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exact_decoder_no_exact_visible_compression_regression
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ExactVisibleCompressionTarget
         (Z := Z) (k := k)
         (Index := BitFallbackZeroSampleImage.ZeroSampleIndex
-          Z k (Fintype.card (ExactVisiblePostSwitchSurface Z k)))
+          Z k (Fintype.card (ExactVisiblePostSwitchData Z k)))
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-          Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+          Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
           (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily s := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_exactVisibleCompressionTarget_of_lt_surfaceCard
@@ -69,10 +69,10 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exact_decoder_no_clocked_exact_visible_realization_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-          Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+          Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
           (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.RealizedByClockedBitFamily F := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_exists_clockedExactVisibleRealization_of_lt_surfaceCard
@@ -138,10 +138,10 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exa
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_clocked_exact_visible_realization_regression
     {Z : Type v} {k fallbackBits s clock : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k) :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k 0 fallbackBits fallback).predictorFamily.RealizedByClockedBitFamily F) ↔
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (BitFallbackZeroSampleImage.fallbackDecoderFamily fallback).RealizedByClockedBitFamily F := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exists_clockedExactVisibleRealization_iff_fallbackDecoderFamily
@@ -163,7 +163,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_exact_decoder_s
     {Z : Type v} [Fintype Z] {k sampleBound : ℕ} :
     Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k sampleBound (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k sampleBound (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.predict := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode
@@ -176,10 +176,10 @@ theorem kpoly_anchor_exact_visible_rule_decode_surjective_regression
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_exact_decoder_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k sampleBound s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-          Z k sampleBound (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+          Z k sampleBound (Fintype.card (ExactVisiblePostSwitchData Z k))
           (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily s clock := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_clockedPayload_of_exactVisibleRuleDecode_of_lt_surfaceCard
@@ -187,10 +187,10 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_exact_decoder_n
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_zero_sample_exact_decoder_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-          Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+          Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
           (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily s clock := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_clockedPayload_of_lt_surfaceCard

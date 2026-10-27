@@ -10,7 +10,7 @@ theorem boolToBitVec1_injective : Function.Injective boolToBitVec1 := by
   simpa using h
 
 def exactVisiblePostSwitchSurfaceBool0Equiv :
-    ExactVisiblePostSwitchSurface Bool 0 ≃ Bool where
+    ExactVisiblePostSwitchData Bool 0 ≃ Bool where
   toFun u := u.z
   invFun z := ⟨z, fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
   left_inv := by
@@ -27,12 +27,12 @@ def exactVisiblePostSwitchSurfaceBool0Equiv :
     rfl
 
 theorem card_exactVisiblePostSwitchSurface_bool0 :
-    Fintype.card (ExactVisiblePostSwitchSurface Bool 0) = 2 := by
+    Fintype.card (ExactVisiblePostSwitchData Bool 0) = 2 := by
   simpa using Fintype.card_congr exactVisiblePostSwitchSurfaceBool0Equiv
 
 theorem exists_samples_sharedExactZABSparseThresholdAffineERMFamily_eq_fullExactVisibleRuleFamily_bool0_regression :
     ∃ samples :
-        ExactVisibleRule Bool 0 → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool,
+        ExactVisibleRule Bool 0 → Sample (ExactVisiblePostSwitchData Bool 0) Bool,
       sharedExactZABSparseThresholdAffineERMFamily
           (Z := Bool)
           (p := allAffinePointBlockFeatureCount (1 + (0 + 0)))

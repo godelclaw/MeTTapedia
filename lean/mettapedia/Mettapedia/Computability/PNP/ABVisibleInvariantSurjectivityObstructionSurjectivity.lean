@@ -14,7 +14,7 @@ variable {Z : Type*} {k : ℕ}
 
 theorem exists_ne_exactVisiblePostSwitchSurface_of_same_abVisibleData
     [Nontrivial Z] :
-    ∃ u v : ExactVisiblePostSwitchSurface Z k, u ≠ v ∧ abVisibleData u = abVisibleData v := by
+    ∃ u v : ExactVisiblePostSwitchData Z k, u ≠ v ∧ abVisibleData u = abVisibleData v := by
   classical
   obtain ⟨z₀, z₁, hz⟩ := exists_pair_ne Z
   let a : BitVec k := default
@@ -22,7 +22,7 @@ theorem exists_ne_exactVisiblePostSwitchSurface_of_same_abVisibleData
   refine ⟨⟨z₀, a, b⟩, ⟨z₁, a, b⟩, ?_, rfl⟩
   intro h
   apply hz
-  simpa [a, b] using congrArg (fun u : ExactVisiblePostSwitchSurface Z k => u.z) h
+  simpa [a, b] using congrArg (fun u : ExactVisiblePostSwitchData Z k => u.z) h
 
 theorem not_surjective_predict_of_abVisibleInvariant_of_nontrivial
     [Nontrivial Z]
@@ -33,7 +33,7 @@ theorem not_surjective_predict_of_abVisibleInvariant_of_nontrivial
   classical
   obtain ⟨u, v, huv, hab⟩ :=
     exists_ne_exactVisiblePostSwitchSurface_of_same_abVisibleData (Z := Z) (k := k)
-  let rule : ExactVisiblePostSwitchSurface Z k → Bool :=
+  let rule : ExactVisiblePostSwitchData Z k → Bool :=
     fun w => if h : w = u then true else false
   intro hsurj
   rcases hsurj rule with ⟨i, hi⟩

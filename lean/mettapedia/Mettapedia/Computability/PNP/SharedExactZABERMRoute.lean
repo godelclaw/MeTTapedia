@@ -71,12 +71,12 @@ theorem sharedExactZABAffineDecisionListERMFamily_surfaceCard_le_of_surjective_p
     [Fintype Z]
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
           (Z := Z) (p := p) (r := r) (k := k) zfeat features samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ p + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ p + 1 := by
   exact
     (sharedExactZABAffineDecisionListERMTargetData
       (Z := Z) (p := p) (r := r) (k := k) (Index := Index)
@@ -86,8 +86,8 @@ theorem sharedExactZABAffineDecisionListERMFamily_not_surjective_of_lt_surfaceCa
     [Fintype Z]
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
           (Z := Z) (p := p) (r := r) (k := k) zfeat features samples).predict := by

@@ -39,7 +39,7 @@ section Abstract
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u}
 variable {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- On any finite region of mass `> q`, equality of realized predictors on that
@@ -47,7 +47,7 @@ region already forces global equality inside a manuscript-facing sparse-threshol
 recovery packet. -/
 theorem SharedExactZABSparseThresholdERMRecoveryData.predict_eq_of_agrees_on_region_of_lt_regionMass
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
-    {region : Finset (ExactVisiblePostSwitchSurface Z k)} {i j : Index}
+    {region : Finset (ExactVisiblePostSwitchData Z k)} {i j : Index}
     (hmass : q < region.sum (fun x => μ x))
     (hagree :
       ∀ x, x ∈ region →
@@ -78,7 +78,7 @@ recovery packet only if its region traces fit inside the Boolean trace space on
 every finite region of mass `> q`. -/
 theorem SharedExactZABSparseThresholdERMRecoveryData.injective_restrict_region_of_injective_predict_of_lt_regionMass
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x))
     (hinj : Function.Injective T.predictorFamily.predict) :
     Function.Injective
@@ -99,7 +99,7 @@ has mass `> q`. -/
 theorem SharedExactZABSparseThresholdERMRecoveryData.card_le_two_pow_regionCard_of_injective_predict_of_lt_regionMass
     [Fintype Index]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x))
     (hinj : Function.Injective T.predictorFamily.predict) :
     Fintype.card Index ≤ 2 ^ region.card := by
@@ -129,7 +129,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_regionCa
     [Fintype Index]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hinj : Function.Injective T.predictorFamily.predict)
     (hmass : q < region.sum (fun x => μ x))
     (hcard : 2 ^ region.card < Fintype.card Index) :

@@ -15,9 +15,9 @@ variable {Z : Type*} {k : ℕ}
 /-- An invariant predictor cannot agree with a target on both sides of a
 same-`(a,b)` fiber that the target separates. -/
 theorem exists_disagreement_of_abFiberInvariantRule_of_abFiberSeparation
-    {target predict : ExactVisiblePostSwitchSurface Z k → Bool}
+    {target predict : ExactVisiblePostSwitchData Z k → Bool}
     (hpredict : ABFiberInvariantRule (Z := Z) (k := k) predict)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v) :
     predict u ≠ target u ∨ predict v ≠ target v := by
@@ -32,10 +32,10 @@ theorem exists_disagreement_of_abFiberInvariantRule_of_abFiberSeparation
 same-`(a,b)` fiber separated by the target, an invariant predictor has a
 positive-mass disagreement point. -/
 theorem exists_pos_mass_disagreement_of_abFiberInvariantRule_of_abFiberSeparation
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target predict : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target predict : ExactVisiblePostSwitchData Z k → Bool}
     (hpredict : ABFiberInvariantRule (Z := Z) (k := k) predict)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -53,10 +53,10 @@ theorem exists_pos_mass_disagreement_of_abVisibleInvariant_predict_of_abFiberSep
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
     (i : Index)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -72,10 +72,10 @@ theorem exists_pos_mass_disagreement_of_factorsThrough_abVisibleData_predict_of_
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
     (i : Index)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -94,10 +94,10 @@ theorem agreementMass_lt_one_of_abVisibleInvariant_predict_of_abFiberSeparation
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
     (i : Index)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -116,10 +116,10 @@ theorem agreementMass_lt_one_of_factorsThrough_abVisibleData_predict_of_abFiberS
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
     (i : Index)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -139,9 +139,9 @@ theorem not_exists_agreementMass_eq_one_of_abVisibleInvariant_of_abFiberSeparati
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -161,9 +161,9 @@ theorem not_exists_agreementMass_eq_one_of_factorsThrough_abVisibleData_of_abFib
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :

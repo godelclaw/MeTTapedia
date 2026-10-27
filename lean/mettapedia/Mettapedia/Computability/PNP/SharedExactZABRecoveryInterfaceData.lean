@@ -21,7 +21,7 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 
 structure SharedExactZABAffineFeatureRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
@@ -39,7 +39,7 @@ structure SharedExactZABAffineFeatureRecoveryData
 
 structure SharedExactZABSparseThresholdRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where

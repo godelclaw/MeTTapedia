@@ -13,7 +13,7 @@ theorem bitVec1HeavyRegionActualSparseRecoveryFullRuleRegion_card :
 
 theorem bitVec1HeavyRegionActualSparseRecoveryFullRuleRegion_card_lt_surfaceCard :
     bitVec1HeavyRegionActualSparseRecoveryRegion.card <
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec 1) 0) := by
+      Fintype.card (ExactVisiblePostSwitchData (BitVec 1) 0) := by
   rw [bitVec1HeavyRegionActualSparseRecoveryFullRuleRegion_card]
   rw [card_exactVisiblePostSwitchSurface_bitVec]
   norm_num

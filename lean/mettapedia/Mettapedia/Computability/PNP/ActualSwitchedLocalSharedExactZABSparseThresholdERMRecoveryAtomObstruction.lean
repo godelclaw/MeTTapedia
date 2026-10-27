@@ -46,7 +46,7 @@ universe u v w
 
 variable {Z : Type v} [Fintype Z] {k : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block} {r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- If a surjective actual switched-local sparse-threshold recovery packet is
@@ -58,14 +58,14 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    {x y : ExactVisiblePostSwitchSurface Z k}
+    {x y : ExactVisiblePostSwitchData Z k}
     (hxy : x ≠ y)
     (hmass : q < μ x) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   classical
   rintro ⟨h⟩
-  let target : ExactVisiblePostSwitchSurface Z k → Bool := fun _ => false
-  let spike : ExactVisiblePostSwitchSurface Z k → Bool := fun u => decide (u = y)
+  let target : ExactVisiblePostSwitchData Z k → Bool := fun _ => false
+  let spike : ExactVisiblePostSwitchData Z k → Bool := fun u => decide (u = y)
   obtain ⟨i, hi⟩ := hsurj target
   obtain ⟨j, hj⟩ := hsurj spike
   rcases h.targetData.realized j with ⟨code, hcode⟩
@@ -154,7 +154,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
       hbad⟩
   have hregion :
       q <
-        ({x} : Finset (ExactVisiblePostSwitchSurface Z k)).sum
+        ({x} : Finset (ExactVisiblePostSwitchData Z k)).sum
           (fun u => μ u) := by
     simpa using hmass
   exact
@@ -183,7 +183,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    {x y : ExactVisiblePostSwitchSurface Z k}
+    {x y : ExactVisiblePostSwitchData Z k}
     (hxy : x ≠ y)
     (hq_lt : q < 1) :
     ¬ Nonempty
@@ -207,8 +207,8 @@ variable {zfeat : Z → BitVec r} {q : ℝ≥0∞}
 plug-in-majority actual-local endpoint once the sample bound is large enough to
 make that endpoint surjective on the exact visible surface. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_pure_atom_lt_one
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
-    {x y : ExactVisiblePostSwitchSurface Z k}
+    (hsample : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
+    {x y : ExactVisiblePostSwitchData Z k}
     (hxy : x ≠ y)
     (hq_lt : q < 1) :
     ¬ Nonempty
@@ -229,7 +229,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
 /-- The same pure-atom obstruction specializes to the full-rule actual-local
 counterexample surface on any exact visible type with two distinct points. -/
 theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_pure_atom_lt_one
-    {x y : ExactVisiblePostSwitchSurface Z k}
+    {x y : ExactVisiblePostSwitchData Z k}
     {zfeat : Z → BitVec r}
     (hxy : x ≠ y)
     (hq_lt : q < 1) :
@@ -253,7 +253,7 @@ section BitVec
 
 variable {n k r : ℕ} {q : ℝ≥0∞}
 variable {zfeat : BitVec n → BitVec r}
-variable {x : ExactVisiblePostSwitchSurface (BitVec n) k}
+variable {x : ExactVisiblePostSwitchData (BitVec n) k}
 
 /-- On any nontrivial `BitVec` exact visible surface, the full-rule actual-local
 counterexample already rules out pure-atom strict recovery for the sparse-
@@ -268,15 +268,15 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
           zfeat
           q) := by
   have htwo :
-      2 ≤ Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) :=
+      2 ≤ Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) :=
     two_le_card_exactVisiblePostSwitchSurface_bitVec_of_width_pos
       (n := n) (k := k) hvis
   have hone :
-      1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+      1 < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
     omega
   obtain ⟨y, hy⟩ :=
     Fintype.exists_ne_of_one_lt_card
-      (α := ExactVisiblePostSwitchSurface (BitVec n) k)
+      (α := ExactVisiblePostSwitchData (BitVec n) k)
       hone x
   exact
     fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_pure_atom_lt_one

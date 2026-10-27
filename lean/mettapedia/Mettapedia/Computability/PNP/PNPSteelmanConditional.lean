@@ -11,13 +11,11 @@ The repaired lower-bound side has two finite components:
 * `NoThreadingLemma` shows why a neutral local statistic cannot also be
   sufficient for the full deterministic witness bit.
 
-What remains is the single open input named here as
-`StarSWAverageCaseWitnessBitHardness`: average-case witness-bit hardness for
-short predictors on the masked isolated ensemble.  The theorem
-`pnp_steelman_conditional` proves only the conditional plumbing from exact
-kernel-flip neutrality plus this open SW/hardness input through the
-pivot/independence, compression-from-success, and self-reduction clash
-interfaces.  It does not assert an unconditional P versus NP separation.
+The headline implication consumes two premise packages: kernel-flip neutrality
+plus `StarSWAverageCaseWitnessBitHardness`, and the non-SW framework fields for
+pivot independence, compression from success, and the self-reduction clash.
+It does not prove those framework fields and does not assert an unconditional
+P versus NP separation.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -28,11 +26,11 @@ set_option autoImplicit false
 An abstract finite bookkeeping interface for the non-SW part of the repaired PNP
 chain.
 
-The fields are deliberately small: `pivotIndependenceStep` is the finite
+The fields are deliberately explicit: `pivotIndependenceStep` is the finite
 pivot/independence product bound, `compressionFromSuccessStep` is the
 enumerative coding step, and `selfReductionClashStep` is the final upper/lower
-clash.  The only open route input is represented separately by
-`StarSWAverageCaseWitnessBitHardness`.
+clash.  These are substantive framework premises in addition to the separate
+`StarSWAverageCaseWitnessBitHardness` premise.
 -/
 structure PNPConditionalFramework where
   Predictor : Type
@@ -70,7 +68,7 @@ structure KernelFlipNeutrality (F : PNPConditionalFramework) where
     F.halfBudget ≤ F.halfPlusSlackBudget
 
 /--
-The single open input: the SW/average-case witness-bit hardness principle.
+The separate SW/average-case witness-bit hardness premise.
 
 It says that the exact half-bound for `u`-local predictors transfers to all
 short predictors.  This is the irreducible average-case hardness hypothesis; it
@@ -118,21 +116,38 @@ theorem kpolyLowerBound_of_kernelFlipNeutrality_starSW
   F.compressionFromSuccessStep
     (smallSuccess_of_kernelFlipNeutrality_starSW hKernel hSW)
 
-/--
-The repaired steelman conditional: exact kernel-flip neutrality plus the open
-average-case witness-bit hardness input implies the abstract PNP separation
-endpoint supplied by the framework.
+/-- Audit displayed beside the headline: the framework contributes three
+non-SW premises in addition to kernel neutrality and StarSW. -/
+def pnpSteelmanFrameworkPremiseBundleAudit : List String :=
+  ["pivotIndependenceStep", "compressionFromSuccessStep",
+    "selfReductionClashStep"]
 
-No unconditional separation is asserted; the `StarSWAverageCaseWitnessBitHardness`
-field is the explicit remaining hypothesis.
--/
-theorem pnp_steelman_conditional
+theorem pnpSteelmanFrameworkPremiseBundleAudit_exact :
+    pnpSteelmanFrameworkPremiseBundleAudit =
+      ["pivotIndependenceStep", "compressionFromSuccessStep",
+        "selfReductionClashStep"] := by
+  rfl
+
+/-- StarSW plus the non-SW framework premise bundle implies the abstract
+endpoint.  No framework premise, StarSW statement, or unconditional separation
+is proved by this composition theorem. -/
+theorem pnp_steelman_starSW_frameworkBundle_conditional
     {F : PNPConditionalFramework}
     (hKernel : KernelFlipNeutrality F)
     (hSW : StarSWAverageCaseWitnessBitHardness F) :
     F.pNeNPClaim :=
   F.selfReductionClashStep
     (kpolyLowerBound_of_kernelFlipNeutrality_starSW hKernel hSW)
+
+/-- Superseded compatibility name.  Use the headline whose name exposes both
+the StarSW and framework premise bundles. -/
+@[deprecated pnp_steelman_starSW_frameworkBundle_conditional (since := "2026-07-13")]
+theorem pnp_steelman_conditional
+    {F : PNPConditionalFramework}
+    (hKernel : KernelFlipNeutrality F)
+    (hSW : StarSWAverageCaseWitnessBitHardness F) :
+    F.pNeNPClaim :=
+  pnp_steelman_starSW_frameworkBundle_conditional hKernel hSW
 
 /-! ## Toy inhabitant for the conditional interface -/
 
@@ -191,7 +206,7 @@ theorem toyPNP_kpolyLowerBound_nonvacuous :
 
 theorem toy_pnp_steelman_conditional_nonvacuous :
     toyPNPConditionalFramework.pNeNPClaim :=
-  pnp_steelman_conditional
+  pnp_steelman_starSW_frameworkBundle_conditional
     toyPNPKernelFlipNeutrality toyPNPStarSW
 
 end Mettapedia.Computability.PNP

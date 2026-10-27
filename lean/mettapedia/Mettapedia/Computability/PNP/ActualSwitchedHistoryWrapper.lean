@@ -114,7 +114,7 @@ theorem not_switchedHistoryExactVisibleCompressionWrapper_of_true_fieldedSwitchi
     {s : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ SwitchedHistoryExactVisibleCompressionWrapper Ω T s hist items := by
   intro hwrap
   exact
@@ -134,7 +134,7 @@ theorem not_switchedHistoryClockedKpolyFiniteLearningWrapper_of_true_fieldedSwit
     {s clock : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ SwitchedHistoryClockedKpolyFiniteLearningWrapper Ω T s clock hist items := by
   intro hwrap
   exact
@@ -153,7 +153,7 @@ theorem not_surjective_predict_of_switchedHistoryExactVisibleCompressionWrapper_
     {s : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hwrap : SwitchedHistoryExactVisibleCompressionWrapper Ω T s hist items)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective T.predictorFamily.predict := by
   intro hsurj
   exact
@@ -170,7 +170,7 @@ theorem not_surjective_predict_of_switchedHistoryClockedKpolyFiniteLearningWrapp
     {s clock : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hwrap : SwitchedHistoryClockedKpolyFiniteLearningWrapper Ω T s clock hist items)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective T.predictorFamily.predict := by
   intro hsurj
   exact
@@ -184,7 +184,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_switchedHistoryExactVisibleComp
     {Ω : Type x} [Fintype Ω]
     {s : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ SwitchedHistoryExactVisibleCompressionWrapper
         Ω (fullRuleActualSwitchedLocalInterface Z k) s hist items := by
   exact
@@ -199,7 +199,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_switchedHistoryClockedKpolyFini
     {Ω : Type x} [Fintype Ω]
     {s clock : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ SwitchedHistoryClockedKpolyFiniteLearningWrapper
         Ω (fullRuleActualSwitchedLocalInterface Z k) s clock hist items := by
   exact
@@ -214,7 +214,7 @@ threshold. -/
 theorem actualSwitchedLocalInterface_not_forall_switchedHistoryExactVisibleCompressionWrapper_of_lt_surfaceCard
     [Fintype Z]
     {s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} {Block : Type v} {Ω : Type x} [Fintype Ω]
         (T : ActualSwitchedLocalInterface Z k Index Block)
         (hist : List (FiniteEvent Ω)) (items : List (V13FieldedStep Ω)),
@@ -230,7 +230,7 @@ theorem actualSwitchedLocalInterface_not_forall_switchedHistoryExactVisibleCompr
       hs
       (hall
         (Index := ExactVisibleRule Z k)
-        (Block := ExactVisiblePostSwitchSurface Z k)
+        (Block := ExactVisiblePostSwitchData Z k)
         (Ω := ULift.{x} Bool)
         (fullRuleActualSwitchedLocalInterface Z k)
         []
@@ -242,7 +242,7 @@ threshold. -/
 theorem actualSwitchedLocalInterface_not_forall_switchedHistoryClockedKpolyFiniteLearningWrapper_of_lt_predictorCard
     [Fintype Z]
     {s clock : ℕ}
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} {Block : Type v} {Ω : Type x} [Fintype Ω]
         (T : ActualSwitchedLocalInterface Z k Index Block)
         (hist : List (FiniteEvent Ω)) (items : List (V13FieldedStep Ω)),
@@ -258,7 +258,7 @@ theorem actualSwitchedLocalInterface_not_forall_switchedHistoryClockedKpolyFinit
       hs
       (hall
         (Index := ExactVisibleRule Z k)
-        (Block := ExactVisiblePostSwitchSurface Z k)
+        (Block := ExactVisiblePostSwitchData Z k)
         (Ω := ULift.{x} Bool)
         (fullRuleActualSwitchedLocalInterface Z k)
         []

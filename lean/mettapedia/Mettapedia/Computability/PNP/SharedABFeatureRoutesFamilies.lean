@@ -40,13 +40,13 @@ def RealizedBySharedABAffineDecisionListFamily
 /-- Shared truth-table family directly on the reduced raw `(a, b)` surface. -/
 noncomputable def sharedABAffineFeatureBitFamily
     (features : Fin r → AffineColumnCode (k + k)) :
-    BitEncodedClassifierFamily (ABVisibleSurface k) (2 ^ r) where
+    BitEncodedClassifierFamily (ABVisibleState k) (2 ^ r) where
   decode table := sharedABAffineFeaturePredict (k := k) features table
 
 /-- Shared sparse-threshold family directly on the reduced raw `(a, b)` surface. -/
 noncomputable def sharedABSparseThresholdAffineBitFamily
     (features : Fin r → AffineColumnCode (k + k)) :
-    BitEncodedClassifierFamily (ABVisibleSurface k) (2 * r) where
+    BitEncodedClassifierFamily (ABVisibleState k) (2 * r) where
   decode raw x :=
     let code := (sharedSparseThresholdCodeEquivBitCode r).symm raw
     sharedABSparseThresholdAffinePredict (k := k) features code x
@@ -54,7 +54,7 @@ noncomputable def sharedABSparseThresholdAffineBitFamily
 /-- Shared decision-list family directly on the reduced raw `(a, b)` surface. -/
 noncomputable def sharedABAffineDecisionListBitFamily
     (features : Fin r → AffineColumnCode (k + k)) :
-    BitEncodedClassifierFamily (ABVisibleSurface k) (r + 1) where
+    BitEncodedClassifierFamily (ABVisibleState k) (r + 1) where
   decode raw x :=
     let code := (sharedAffineDecisionListCodeEquivBitCode r).symm raw
     sharedABAffineDecisionListPredict (k := k) features code x
@@ -126,7 +126,7 @@ theorem abVisible_surfaceCard_le_of_surjective_predict_of_realizedBySharedABAffi
     {features : Fin r → AffineColumnCode (k + k)}
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedBySharedABAffineFeatureFamily (r := r) (k := k) features H) :
-    Fintype.card (ABVisibleSurface k) ≤ 2 ^ r := by
+    Fintype.card (ABVisibleState k) ≤ 2 ^ r := by
   exact
     IndexedPredictorFamily.bitBudget_lowerBound_of_surjective_predict_fintype
       (G := H) (s := 2 ^ r) hsurj
@@ -139,7 +139,7 @@ theorem abVisible_surfaceCard_le_of_surjective_predict_of_realizedBySharedABSpar
     {features : Fin r → AffineColumnCode (k + k)}
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedBySharedABSparseThresholdAffineFamily (r := r) (k := k) features H) :
-    Fintype.card (ABVisibleSurface k) ≤ 2 * r := by
+    Fintype.card (ABVisibleState k) ≤ 2 * r := by
   exact
     IndexedPredictorFamily.bitBudget_lowerBound_of_surjective_predict_fintype
       (G := H) (s := 2 * r) hsurj
@@ -152,7 +152,7 @@ theorem abVisible_surfaceCard_le_of_surjective_predict_of_realizedBySharedABAffi
     {features : Fin r → AffineColumnCode (k + k)}
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedBySharedABAffineDecisionListFamily (r := r) (k := k) features H) :
-    Fintype.card (ABVisibleSurface k) ≤ r + 1 := by
+    Fintype.card (ABVisibleState k) ≤ r + 1 := by
   exact
     IndexedPredictorFamily.bitBudget_lowerBound_of_surjective_predict_fintype
       (G := H) (s := r + 1) hsurj
@@ -163,7 +163,7 @@ theorem not_realizedBySharedABAffineFeatureFamily_of_surjective_predict_of_lt_su
     {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (hs : 2 ^ r < Fintype.card (ABVisibleSurface k))
+    (hs : 2 ^ r < Fintype.card (ABVisibleState k))
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedBySharedABAffineFeatureFamily (r := r) (k := k) features H := by
   intro hreal
@@ -175,7 +175,7 @@ theorem not_realizedBySharedABSparseThresholdAffineFamily_of_surjective_predict_
     {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (hs : 2 * r < Fintype.card (ABVisibleSurface k))
+    (hs : 2 * r < Fintype.card (ABVisibleState k))
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedBySharedABSparseThresholdAffineFamily (r := r) (k := k) features H := by
   intro hreal
@@ -187,7 +187,7 @@ theorem not_realizedBySharedABAffineDecisionListFamily_of_surjective_predict_of_
     {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (hs : r + 1 < Fintype.card (ABVisibleSurface k))
+    (hs : r + 1 < Fintype.card (ABVisibleState k))
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedBySharedABAffineDecisionListFamily (r := r) (k := k) features H := by
   intro hreal

@@ -88,10 +88,10 @@ decoder family. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exists_clockedExactVisibleRealization_iff_fallbackDecoderFamily
     {Z : Type v} {k fallbackBits s clock : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k) :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k 0 fallbackBits fallback).predictorFamily.RealizedByClockedBitFamily F) ↔
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (BitFallbackZeroSampleImage.fallbackDecoderFamily fallback).RealizedByClockedBitFamily F := by
   simpa [BitFallbackZeroSampleImage.zeroSampleWrapperFamily] using
     (BitFallbackZeroSampleImage.exists_clockedExactVisibleRealization_iff_fallbackDecoderFamily

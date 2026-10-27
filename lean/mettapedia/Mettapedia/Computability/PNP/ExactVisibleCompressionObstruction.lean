@@ -80,7 +80,7 @@ theorem no_injective_bitCode_to_fullExactVisibleRule_of_lt
   classical
   simpa [ExactVisibleRule] using
     (no_injective_bitCode_of_lt_card
-      (Input := ExactVisiblePostSwitchSurface Z k) (s := s) hs)
+      (Input := ExactVisiblePostSwitchData Z k) (s := s) hs)
 
 /-- Equivalently, no `s`-bit decoder can surject onto the full exact visible
 rule class below the exact-data domain cardinality threshold. -/
@@ -91,7 +91,7 @@ theorem not_surjective_decode_to_fullExactVisibleRule_of_lt
   classical
   simpa [ExactVisibleRule] using
     (not_surjective_decode_to_fullClassifier_of_lt
-      (Input := ExactVisiblePostSwitchSurface Z k) (decode := decode) hs)
+      (Input := ExactVisiblePostSwitchData Z k) (decode := decode) hs)
 
 end
 
@@ -105,7 +105,7 @@ theorem exactVisibleCompressionTarget_card_of_fintype
     [Fintype Z]
     (G : ExactVisibleSwitchedFamily Z k Index) :
     ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G
-      (Fintype.card (ExactVisiblePostSwitchSurface Z k)) := by
+      (Fintype.card (ExactVisiblePostSwitchData Z k)) := by
   exact IndexedPredictorFamily.hasBitBudget_card_of_fintype G
 
 /-- Quantitative form: if an exact switched family on the full visible
@@ -116,11 +116,11 @@ theorem exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hsurj : Function.Surjective G.predict)
     (hsmall : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ s := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ s := by
   classical
   exact
     IndexedPredictorFamily.bitBudget_lowerBound_of_surjective_predict_fintype
-      (G := G) (s := s) (Input := ExactVisiblePostSwitchSurface Z k) hsurj hsmall
+      (G := G) (s := s) (Input := ExactVisiblePostSwitchData Z k) hsurj hsmall
 
 /-- Sharpness form: under surjectivity onto the full exact visible rule class,
 the truth-table budget is achievable and no smaller exact budget exists. -/
@@ -129,10 +129,10 @@ theorem exactVisibleCompressionTarget_card_isSharp_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hsurj : Function.Surjective G.predict) :
     ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k)) ∧
+        (Fintype.card (ExactVisiblePostSwitchData Z k)) ∧
       ∀ {t : ℕ},
         ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G t →
-          Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ t := by
+          Fintype.card (ExactVisiblePostSwitchData Z k) ≤ t := by
   refine ⟨exactVisibleCompressionTarget_card_of_fintype (Z := Z) (k := k) G, ?_⟩
   intro t hsmall
   exact
@@ -174,7 +174,7 @@ theorem invariantCompressionTarget_surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hsurj : Function.Surjective G.predict)
     (hsmall : InvariantCompressionTarget (Z := Z) (k := k) (Index := Index) G s) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ s := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ s := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := s) (Index := Index) hsurj
@@ -199,7 +199,7 @@ theorem forkCompressionTarget_surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hsurj : Function.Surjective G.predict)
     (hsmall : ForkCompressionTarget (Z := Z) (k := k) (Index := Index) G s) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ s := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ s := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := s) (Index := Index) hsurj

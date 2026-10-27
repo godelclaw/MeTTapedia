@@ -5,10 +5,10 @@ import Mathlib.Tactic.NormNum
 namespace Mettapedia.Computability.PNP
 
 def bool0VisiblePointActualSparse :
-    ExactVisiblePostSwitchSurface Bool 0 :=
+    ExactVisiblePostSwitchData Bool 0 :=
   ⟨false, fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
 
-noncomputable def bool0PureMeasureActualSparse : PMF (ExactVisiblePostSwitchSurface Bool 0) :=
+noncomputable def bool0PureMeasureActualSparse : PMF (ExactVisiblePostSwitchData Bool 0) :=
   PMF.pure bool0VisiblePointActualSparse
 
 theorem fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresholdERMRecoveryData_bool0_regression :

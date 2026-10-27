@@ -17,7 +17,7 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 
 structure SharedExactZABDecisionListRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
     (G : ExactVisibleSwitchedFamily Z k Index)
@@ -38,7 +38,7 @@ section
 variable [Fintype Z]
 
 theorem SharedExactZABDecisionListRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -53,7 +53,7 @@ theorem SharedExactZABDecisionListRecoveryData.targetData
   exact ⟨h.realized⟩
 
 theorem SharedExactZABDecisionListRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -66,7 +66,7 @@ theorem SharedExactZABDecisionListRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem SharedExactZABDecisionListRecoveryData.finitePredictorCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -79,7 +79,7 @@ theorem SharedExactZABDecisionListRecoveryData.finitePredictorCover
   exact (h.targetData).finitePredictorCover
 
 theorem SharedExactZABDecisionListRecoveryData.finiteIndexRepresentativeCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -92,7 +92,7 @@ theorem SharedExactZABDecisionListRecoveryData.finiteIndexRepresentativeCover
   exact (h.targetData).finiteIndexRepresentativeCover
 
 theorem SharedExactZABDecisionListRecoveryData.finitePredictorQuotient
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -105,7 +105,7 @@ theorem SharedExactZABDecisionListRecoveryData.finitePredictorQuotient
   exact (h.targetData).finitePredictorQuotient
 
 theorem SharedExactZABDecisionListRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -115,11 +115,11 @@ theorem SharedExactZABDecisionListRecoveryData.surfaceCard_le_of_surjective_pred
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index)
         μ zfeat features G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ p + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ p + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -128,12 +128,12 @@ theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_lt_surf
       SharedExactZABDecisionListRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index)
         μ zfeat features G q)
-    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem SharedExactZABDecisionListRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}

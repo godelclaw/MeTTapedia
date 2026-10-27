@@ -116,7 +116,7 @@ theorem strict_agreement_bound_forces_positive_mass_disagreement_regression
 
 theorem exact_zab_recovery_forces_positive_mass_bad_code_disagreement_regression
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -135,7 +135,7 @@ theorem exact_zab_recovery_forces_positive_mass_bad_code_disagreement_regression
 
 theorem exact_zab_recovery_region_mass_le_of_bad_code_agrees_regression
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -146,7 +146,7 @@ theorem exact_zab_recovery_region_mass_le_of_bad_code_agrees_regression
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x =
@@ -156,7 +156,7 @@ theorem exact_zab_recovery_region_mass_le_of_bad_code_agrees_regression
 
 theorem exact_zab_recovery_large_region_forces_positive_mass_bad_code_disagreement_regression
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -167,7 +167,7 @@ theorem exact_zab_recovery_large_region_forces_positive_mass_bad_code_disagreeme
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x)) :
     ∃ x, x ∈ region ∧ μ x ≠ 0 ∧
       (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x ≠
@@ -176,7 +176,7 @@ theorem exact_zab_recovery_large_region_forces_positive_mass_bad_code_disagreeme
 
 theorem exact_zab_region_agreeing_bad_code_blocks_erm_recovery_regression
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -184,7 +184,7 @@ theorem exact_zab_region_agreeing_bad_code_blocks_erm_recovery_regression
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x =
@@ -199,14 +199,14 @@ theorem exact_zab_region_agreeing_bad_code_blocks_erm_recovery_regression
 
 theorem exact_zab_region_bad_code_forces_deceptive_sample_mass_regression
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (i : Index)
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x =
@@ -222,7 +222,7 @@ theorem exact_zab_pure_bad_code_blocks_erm_recovery_regression
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchSurface Z k}
+    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchData Z k}
     (i : Index)
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes

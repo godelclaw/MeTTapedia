@@ -17,7 +17,7 @@ theorem constBitVec1ActualSparse_not_injective : ¬ Function.Injective constBitV
   exact Bool.false_ne_true h
 
 def exactVisiblePostSwitchSurfaceBool0EquivActualSparse :
-    ExactVisiblePostSwitchSurface Bool 0 ≃ Bool where
+    ExactVisiblePostSwitchData Bool 0 ≃ Bool where
   toFun u := u.z
   invFun z := ⟨z, fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
   left_inv := by
@@ -34,7 +34,7 @@ def exactVisiblePostSwitchSurfaceBool0EquivActualSparse :
     rfl
 
 theorem card_exactVisiblePostSwitchSurface_bool0_actualSparse :
-    Fintype.card (ExactVisiblePostSwitchSurface Bool 0) = 2 := by
+    Fintype.card (ExactVisiblePostSwitchData Bool 0) = 2 := by
   simpa using Fintype.card_congr exactVisiblePostSwitchSurfaceBool0EquivActualSparse
 
 theorem fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresholdERMData_bool0_regression :

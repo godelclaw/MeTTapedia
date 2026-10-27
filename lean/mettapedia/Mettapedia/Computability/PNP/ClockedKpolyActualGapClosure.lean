@@ -31,7 +31,7 @@ variable {Z : Type v} [Fintype Z] {r k clock : ℕ} {Index : Type u}
 full clocked finite-learning payload at the decision-list bit budget. -/
 theorem exactZABDecisionListERMClockedKpolyFiniteLearningPayload
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (exactZABDecisionListERMFamily
         (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples)
@@ -48,7 +48,7 @@ decision-list ERM family, that identification is sufficient to close the
 clocked payload target. -/
 theorem clockedKpolyFiniteLearningPayload_of_eq_exactZABDecisionListERMFamily
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hG :
       G =
@@ -72,7 +72,7 @@ family has the full clocked finite-learning payload. -/
 theorem bitVecZABDecisionListERMClockedKpolyFiniteLearningPayload
     [Fintype (BitVec r)]
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (bitVecZABDecisionListERMFamily
         (r := r) (k := k) (Index := Index) samples)
@@ -88,7 +88,7 @@ family variable `G`. -/
 theorem clockedKpolyFiniteLearningPayload_of_eq_bitVecZABDecisionListERMFamily
     [Fintype (BitVec r)]
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     (hG :
       G =
@@ -105,7 +105,7 @@ because it contains the exact-family identification and therefore the exact
 visible compression target. -/
 theorem BitVecZABERMRecoveryData.clockedKpolyFiniteLearningPayload
     [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData
@@ -126,7 +126,7 @@ variable {Z : Type v} [Fintype Z] {k s clock : ℕ}
 no finite predictor cover of size `2^s` below the full visible truth-table
 budget. -/
 theorem fullExactVisibleRuleFamily_not_finitePredictorCover_of_lt_surfaceCard
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (fullExactVisibleRuleFamily Z k).FinitePredictorCover (2 ^ s) := by
   intro hcover
   have hsmall :
@@ -145,7 +145,7 @@ theorem fullExactVisibleRuleFamily_not_finitePredictorCover_of_lt_surfaceCard
 /-- The same full exact-visible Boolean family refutes the clocked finite
 learning payload below the full visible truth-table budget. -/
 theorem fullExactVisibleRuleFamily_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (fullExactVisibleRuleFamily Z k) s clock := by
   intro hpayload
@@ -165,7 +165,7 @@ theorem fullExactVisibleRuleFamily_not_clockedKpolyFiniteLearningPayload_of_lt_s
 /-- Therefore the bare exact-visible family interface cannot imply the small
 finite predictor-image theorem for every switched family. -/
 theorem currentExactVisibleInterface_not_forall_finitePredictorCover_of_lt_surfaceCard
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index),
         G.FinitePredictorCover (2 ^ s)) := by
   intro hforall
@@ -177,7 +177,7 @@ theorem currentExactVisibleInterface_not_forall_finitePredictorCover_of_lt_surfa
 /-- Therefore the bare exact-visible family interface cannot imply the clocked
 finite-learning payload for every switched family. -/
 theorem currentExactVisibleInterface_not_forall_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index),
         ClockedKpolyFiniteLearningPayload G s clock) := by
   intro hforall

@@ -13,7 +13,7 @@ universe u v w z
 of the exact-visible family along `visibleOf`. -/
 theorem kpolyCoverage_anchor_supportFullRule_outputFamily_factorsThrough_predictorFamily
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FactorsThrough
       visibleOf (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily :=
   supportFullRule_outputFamily_factorsThrough_predictorFamily visibleOf
@@ -22,7 +22,7 @@ theorem kpolyCoverage_anchor_supportFullRule_outputFamily_factorsThrough_predict
 the support map to hit every exact-visible input. -/
 theorem kpolyCoverage_anchor_supportFullRule_observedRuleMap_injective_forces_surjective
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hinj :
       Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict) :
@@ -34,7 +34,7 @@ to full exact-visible rules forces the support map to hit every exact-visible
 input. -/
 theorem kpolyCoverage_anchor_supportFullRule_exactDecoder_forces_surjective
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (decode : (Block → Bool) → ExactVisibleRule Z k)
     (hdecode :
       ∀ rule : ExactVisibleRule Z k,

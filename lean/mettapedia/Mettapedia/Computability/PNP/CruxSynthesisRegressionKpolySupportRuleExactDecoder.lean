@@ -13,7 +13,7 @@ universe u v w z
 
 theorem kpoly_anchor_support_full_rule_output_family_factors_regression
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FactorsThrough
       visibleOf (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily := by
   exact
@@ -22,7 +22,7 @@ theorem kpoly_anchor_support_full_rule_output_family_factors_regression
 
 theorem kpoly_anchor_support_full_rule_observed_rule_injective_forces_surjective_regression
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hinj :
       Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict) :
@@ -33,7 +33,7 @@ theorem kpoly_anchor_support_full_rule_observed_rule_injective_forces_surjective
 
 theorem kpoly_anchor_support_full_rule_exact_decoder_forces_surjective_regression
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (decode : (Block → Bool) → ExactVisibleRule Z k)
     (hdecode :
       ∀ rule : ExactVisibleRule Z k,

@@ -56,7 +56,7 @@ theorem bitVecZABVisibleData_injective :
           rfl
 
 @[simp] theorem exactZABAffineFeatureSummary_id_canonical
-    (u : ExactVisiblePostSwitchSurface (BitVec n) k) :
+    (u : ExactVisiblePostSwitchData (BitVec n) k) :
     exactZABAffineFeatureSummary
         (Z := BitVec n) (p := n + (k + k)) (r := n) (k := k)
         (fun z => z) (canonicalAffineBasis (n + (k + k))) u =

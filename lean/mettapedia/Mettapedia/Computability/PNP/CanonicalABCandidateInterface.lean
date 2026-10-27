@@ -52,7 +52,7 @@ theorem CanonicalABDecisionListCandidateData.surfaceCard_le_of_surjective_predic
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : CanonicalABDecisionListCandidateData (Z := Z) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * k + 1 := by
   exact canonicalABDecisionList_surfaceCard_le_of_surjective_predict
     (Z := Z) (k := k) (Index := Index) h.invariant h.realized hsurj
 
@@ -60,7 +60,7 @@ theorem CanonicalABDecisionListCandidateData.not_surjective_predict_of_lt_surfac
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : CanonicalABDecisionListCandidateData (Z := Z) (k := k) (Index := Index) G)
-    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact canonicalABDecisionList_not_surjective_of_lt_surfaceCard
     (Z := Z) (k := k) (Index := Index) h.invariant h.realized hs

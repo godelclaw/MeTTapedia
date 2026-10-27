@@ -21,10 +21,10 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 structure ExactABAffineDecisionListERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G = exactABAffineDecisionListERMFamily (Z := Z) (r := r) (k := k) samples
   agreement_le :
@@ -39,7 +39,7 @@ section
 variable [Fintype Z]
 
 def ExactABAffineDecisionListERMRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -51,7 +51,7 @@ def ExactABAffineDecisionListERMRecoveryData.targetData
     (Z := Z) (r := r) (k := k) (Index := Index) samples
 
 theorem ExactABAffineDecisionListERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -64,29 +64,29 @@ theorem ExactABAffineDecisionListERMRecoveryData.compressionTarget
     (Z := Z) (r := r) (k := k) (Index := Index) samples
 
 theorem ExactABAffineDecisionListERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABAffineDecisionListERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 2) + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 2) + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineDecisionListERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABAffineDecisionListERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
-    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactABAffineDecisionListERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :

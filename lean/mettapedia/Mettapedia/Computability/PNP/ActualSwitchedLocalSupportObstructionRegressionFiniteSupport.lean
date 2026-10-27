@@ -15,7 +15,7 @@ universe v
 section FiniteObservedSupport
 
 variable {Z : Type v} {Block : Type*} {k s clock : ℕ}
-variable (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+variable (visibleOf : Block → ExactVisiblePostSwitchData Z k)
 
 theorem regression_supportFullRule_surjective :
     Function.Surjective
@@ -131,7 +131,7 @@ theorem regression_supportFullRule_no_property_decoder_of_same_output_ne
       visibleOf property hsame hprop
 
 theorem regression_supportFullRule_no_eval_decoder_of_missed_point
-    (u₀ : ExactVisiblePostSwitchSurface Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k)
     (hmiss : ∀ phi, visibleOf phi ≠ u₀) :
     ¬ ∃ decode : (Block → Bool) → Bool,
       ∀ rule : ExactVisibleRule Z k,
@@ -143,7 +143,7 @@ theorem regression_supportFullRule_no_eval_decoder_of_missed_point
       visibleOf u₀ hmiss
 
 theorem regression_supportFullRule_exists_eval_decoder_iff_mem_range
-    (u₀ : ExactVisiblePostSwitchSurface Z k) :
+    (u₀ : ExactVisiblePostSwitchData Z k) :
     (∃ decode : (Block → Bool) → Bool,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -154,7 +154,7 @@ theorem regression_supportFullRule_exists_eval_decoder_iff_mem_range
       visibleOf u₀
 
 theorem regression_supportFullRule_all_eval_decoders_iff_surjective :
-    (∀ u₀ : ExactVisiblePostSwitchSurface Z k,
+    (∀ u₀ : ExactVisiblePostSwitchData Z k,
       ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -165,7 +165,7 @@ theorem regression_supportFullRule_all_eval_decoders_iff_surjective :
       visibleOf
 
 theorem regression_supportFullRule_exists_query_decoder_iff_forall_mem_range
-    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchSurface Z k) :
+    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchData Z k) :
     (∃ decode : (Block → Bool) → Query → Bool,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -176,7 +176,7 @@ theorem regression_supportFullRule_exists_query_decoder_iff_forall_mem_range
       visibleOf queryOf
 
 theorem regression_supportFullRule_no_query_decoder_of_missed_query
-    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchSurface Z k)
+    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchData Z k)
     (q₀ : Query) (hmiss : ∀ phi, visibleOf phi ≠ queryOf q₀) :
     ¬ ∃ decode : (Block → Bool) → Query → Bool,
       ∀ rule : ExactVisibleRule Z k,
@@ -189,7 +189,7 @@ theorem regression_supportFullRule_no_query_decoder_of_missed_query
 
 theorem regression_supportFullRule_adaptive_query_decoder_of_all_queries_reachable
     {α : Type*}
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α)
     (hreach : AdaptiveBoolQueryTree.AllQueriesReachable visibleOf tree) :
     ∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
@@ -202,7 +202,7 @@ theorem regression_supportFullRule_adaptive_query_decoder_of_all_queries_reachab
 
 theorem regression_supportFullRule_adaptive_query_decoder_iff_constant_on_observed_fibers
     {α : Type*}
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α) :
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α) :
     (∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -219,7 +219,7 @@ theorem regression_supportFullRule_adaptive_query_decoder_iff_constant_on_observ
 
 theorem regression_supportFullRule_no_adaptive_query_decoder_of_same_output_eval_ne
     {α : Type*}
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α)
     {rule₀ rule₁ : ExactVisibleRule Z k}
     (hsame :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -237,7 +237,7 @@ theorem regression_supportFullRule_no_adaptive_query_decoder_of_same_output_eval
       visibleOf tree hsame hne
 
 theorem regression_supportFullRule_no_root_adaptive_query_decoder_of_missed_point
-    (u₀ : ExactVisiblePostSwitchSurface Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k)
     {α : Type*} {valueFalse valueTrue : α}
     (hmiss : ∀ phi, visibleOf phi ≠ u₀)
     (hne : valueFalse ≠ valueTrue) :
@@ -255,7 +255,7 @@ theorem regression_supportFullRule_no_root_adaptive_query_decoder_of_missed_poin
 
 theorem regression_supportFullRule_exists_unobservable_eval_of_not_surjective
     (hnot : ¬ Function.Surjective visibleOf) :
-    ∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+    ∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -268,7 +268,7 @@ theorem regression_supportFullRule_exists_unobservable_eval_of_not_surjective
 theorem regression_supportFullRule_no_observed_rule_injective_below_surface_card
     [Fintype Z] [Fintype Block]
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict := by
   exact
@@ -278,7 +278,7 @@ theorem regression_supportFullRule_no_observed_rule_injective_below_surface_card
 theorem regression_supportFullRule_card_small_off_support_rules_indistinguishable
     [Fintype Z] [Fintype Block]
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ∃ rule₀ rule₁ : ExactVisibleRule Z k,
       rule₀ ≠ rule₁ ∧
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -292,7 +292,7 @@ theorem regression_supportFullRule_card_small_off_support_rules_indistinguishabl
 theorem regression_supportFullRule_no_exact_decoder_below_surface_card
     [Fintype Z] [Fintype Block]
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ decode : (Block → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -305,8 +305,8 @@ theorem regression_supportFullRule_no_exact_decoder_below_surface_card
 theorem regression_supportFullRule_exists_unobservable_eval_below_surface_card
     [Fintype Z] [Fintype Block]
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -317,7 +317,7 @@ theorem regression_supportFullRule_exists_unobservable_eval_below_surface_card
       visibleOf hcard
 
 theorem regression_supportFullRule_uniform_section_transfers_cover_card
-    [Fintype Block] {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    [Fintype Block] {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -327,7 +327,7 @@ theorem regression_supportFullRule_uniform_section_transfers_cover_card
       visibleOf hsec
 
 theorem regression_supportFullRule_uniform_section_transfers_clocked_payload
-    [Fintype Z] [Fintype Block] {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    [Fintype Z] [Fintype Block] {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     ClockedKpolyFiniteLearningPayload
@@ -338,10 +338,10 @@ theorem regression_supportFullRule_uniform_section_transfers_clocked_payload
       visibleOf hsec
 
 theorem regression_supportFullRule_uniform_section_forces_surface_card_le_support_card
-    [Fintype Z] [Fintype Block] {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    [Fintype Z] [Fintype Block] {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ Fintype.card Block := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ Fintype.card Block := by
   exact
     supportFullRule_surfaceCard_le_blockCard_of_uniformVisibleSection
       visibleOf hsec
@@ -349,8 +349,8 @@ theorem regression_supportFullRule_uniform_section_forces_surface_card_le_suppor
 theorem regression_supportFullRule_no_uniform_section_below_surface_card
     [Fintype Z] [Fintype Block]
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ sec : ExactVisiblePostSwitchSurface Z k → Block,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ sec : ExactVisiblePostSwitchData Z k → Block,
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec := by
   exact
     supportFullRule_not_hasUniformVisibleSection_of_card_lt_surfaceCard
@@ -358,7 +358,7 @@ theorem regression_supportFullRule_no_uniform_section_below_surface_card
 
 theorem regression_supportFullRule_observed_small_not_full_cover
     [Fintype Z] [Fintype Block]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FinitePredictorCover
         (2 ^ Fintype.card Block) ∧
       ¬ (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -367,7 +367,7 @@ theorem regression_supportFullRule_observed_small_not_full_cover
 
 theorem regression_supportFullRule_no_clocked_payload
     [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily s clock := by
   exact supportFullRule_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard

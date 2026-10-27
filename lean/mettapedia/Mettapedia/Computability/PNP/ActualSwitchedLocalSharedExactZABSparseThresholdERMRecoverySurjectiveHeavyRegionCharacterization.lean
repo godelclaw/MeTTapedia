@@ -38,7 +38,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 namespace SharedExactZABSparseThresholdERMRecoveryData
@@ -48,8 +48,8 @@ proper-region mass family. -/
 theorem allProperRegionMass_le_of_surjective_predict
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
-    ∀ region : Finset (ExactVisiblePostSwitchSurface Z k),
-      (∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) →
+    ∀ region : Finset (ExactVisiblePostSwitchData Z k),
+      (∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) →
         region.sum (fun x => μ x) ≤ q := by
   intro region hout
   exact h.regionMass_le_of_surjective_predict_of_exists_not_mem hsurj region hout
@@ -57,7 +57,7 @@ theorem allProperRegionMass_le_of_surjective_predict
 /-- Therefore the surjective branch already forces `q` above the complement
 mass of the lightest visible point. -/
 theorem one_sub_apply_lightestPoint_le_of_surjective_predict
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
     1 - μ (PMF.lightestPoint μ) ≤ q := by
@@ -72,7 +72,7 @@ end SharedExactZABSparseThresholdERMRecoveryData
 /-- So on the surjective branch, falling below the lightest-point threshold is
 already impossible. -/
 theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
@@ -87,9 +87,9 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
 plug-in-majority endpoint once the sample bound is large enough for
 surjectivity. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     {sampleBound : ℕ}
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
@@ -109,7 +109,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
 /-- In particular, the full-rule actual-local endpoint is already impossible
 below the same lightest-point threshold. -/
 theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (zfeat : Z → BitVec r)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty

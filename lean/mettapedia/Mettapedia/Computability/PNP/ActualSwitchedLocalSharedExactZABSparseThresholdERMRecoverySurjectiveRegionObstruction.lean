@@ -37,7 +37,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 namespace SharedExactZABSparseThresholdERMRecoveryData
@@ -49,15 +49,15 @@ hide two distinct realized predictors that agree on it. -/
 theorem regionMass_le_of_surjective_predict_of_not_mem
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    {x₀ : ExactVisiblePostSwitchSurface Z k}
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    {x₀ : ExactVisiblePostSwitchData Z k}
     (hx₀ : x₀ ∉ region) :
     region.sum (fun x => μ x) ≤ q := by
   classical
   by_contra hq
   have hmass : q < region.sum (fun x => μ x) := lt_of_not_ge hq
-  let target : ExactVisiblePostSwitchSurface Z k → Bool := fun _ => false
-  let altered : ExactVisiblePostSwitchSurface Z k → Bool :=
+  let target : ExactVisiblePostSwitchData Z k → Bool := fun _ => false
+  let altered : ExactVisiblePostSwitchData Z k → Bool :=
     fun x => if x = x₀ then true else false
   obtain ⟨i, hi⟩ := hsurj target
   obtain ⟨j, hj⟩ := hsurj altered
@@ -96,8 +96,8 @@ finite visible region. -/
 theorem regionMass_le_of_surjective_predict_of_exists_not_mem
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) :
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) :
     region.sum (fun x => μ x) ≤ q := by
   rcases hout with ⟨x₀, hx₀⟩
   exact h.regionMass_le_of_surjective_predict_of_not_mem hsurj region hx₀
@@ -111,8 +111,8 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    {x₀ : ExactVisiblePostSwitchSurface Z k}
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    {x₀ : ExactVisiblePostSwitchData Z k}
     (hx₀ : x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
@@ -127,8 +127,8 @@ switched family. -/
 theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_not_mem_of_lt_regionMass
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    {x₀ : ExactVisiblePostSwitchSurface Z k}
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    {x₀ : ExactVisiblePostSwitchData Z k}
     (hx₀ : x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ ∃ zfeat : Z → BitVec r,
@@ -150,8 +150,8 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rintro ⟨h⟩
@@ -163,8 +163,8 @@ extractor at once whenever some proper visible region has mass above `q`. -/
 theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_exists_not_mem_of_lt_regionMass
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by

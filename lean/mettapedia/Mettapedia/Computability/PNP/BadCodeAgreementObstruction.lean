@@ -192,7 +192,7 @@ the atom to collapse to global equality with the target predictor. -/
 theorem ExactZABERMRecoveryData.decode_eq_predict_of_pure_atom_agreement_lt_one
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchSurface Z k}
+    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchData Z k}
     (h :
       ExactZABERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index)
@@ -214,7 +214,7 @@ package. -/
 theorem not_ExactZABERMRecoveryData_of_pure_badCode_agrees
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchSurface Z k}
+    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchData Z k}
     (i : Index)
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
@@ -234,7 +234,7 @@ theorem not_ExactZABERMRecoveryData_of_pure_badCode_agrees
 /-- More generally, exact-ZAB recovery with `q < 1` forces every bad code to
 disagree with the target on positive sampling mass. -/
 theorem ExactZABERMRecoveryData.exists_pos_mass_disagreement_of_badCode
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -256,7 +256,7 @@ theorem ExactZABERMRecoveryData.exists_pos_mass_disagreement_of_badCode
 /-- Exact-ZAB recovery bounds must dominate the mass of every finite region on
 which a bad code agrees with the selected target predictor. -/
 theorem ExactZABERMRecoveryData.regionMass_le_of_badCode_agrees_on
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -267,7 +267,7 @@ theorem ExactZABERMRecoveryData.regionMass_le_of_badCode_agrees_on
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x =
@@ -281,7 +281,7 @@ theorem ExactZABERMRecoveryData.regionMass_le_of_badCode_agrees_on
 whose mass is above the advertised agreement threshold must contain a
 positive-mass point where the bad code disagrees with the target. -/
 theorem ExactZABERMRecoveryData.exists_pos_mass_disagreement_in_region_of_badCode
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -292,7 +292,7 @@ theorem ExactZABERMRecoveryData.exists_pos_mass_disagreement_in_region_of_badCod
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x)) :
     ∃ x, x ∈ region ∧ μ x ≠ 0 ∧
       (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x ≠
@@ -304,7 +304,7 @@ theorem ExactZABERMRecoveryData.exists_pos_mass_disagreement_in_region_of_badCod
 /-- Therefore exact-ZAB recovery is impossible when one bad code agrees on a
 finite region whose sampling mass already exceeds the advertised threshold. -/
 theorem not_ExactZABERMRecoveryData_of_badCode_agrees_on_region_gt
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -312,7 +312,7 @@ theorem not_ExactZABERMRecoveryData_of_badCode_agrees_on_region_gt
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x =
@@ -327,14 +327,14 @@ theorem not_ExactZABERMRecoveryData_of_badCode_agrees_on_region_gt
 /-- A finite region on which one exact-ZAB bad code agrees also forces a
 positive lower bound on the corresponding IID deceptive-sample mass. -/
 theorem exactZAB_regionMass_pow_le_deceptiveSampleMass_of_badCode_agrees_on
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (i : Index)
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x =
@@ -351,7 +351,7 @@ theorem exactZAB_regionMass_pow_le_deceptiveSampleMass_of_badCode_agrees_on
 theorem not_CanonicalZABERMRecoveryData_of_pure_badCode_agrees
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchSurface Z k}
+    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchData Z k}
     (i : Index)
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
@@ -378,7 +378,7 @@ variable {r k : ℕ} {Index : Type*}
 bound as soon as a bad code agrees at the atom. -/
 theorem not_BitVecZABERMRecoveryData_of_pure_badCode_agrees
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
-    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchSurface (BitVec r) k}
+    {q : ℝ≥0∞} {x : ExactVisiblePostSwitchData (BitVec r) k}
     (i : Index)
     (c :
       (rawExactZABDecisionListBitFamily

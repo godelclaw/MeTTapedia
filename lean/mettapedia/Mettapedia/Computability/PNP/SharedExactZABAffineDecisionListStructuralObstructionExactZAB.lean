@@ -20,7 +20,7 @@ theorem bitVecZABVisibleData_bijective {n k : ℕ} :
   refine (Fintype.bijective_iff_injective_and_card
     (bitVecZABVisibleData (r := n) (k := k))).2 ?_
   refine ⟨bitVecZABVisibleData_injective (n := n) (k := k), ?_⟩
-  rw [card_exactVisiblePostSwitchSurface_bitVec, card_bitVecZABVisibleSurface]
+  rw [card_exactVisiblePostSwitchSurface_bitVec, card_bitVecZABVisibleState]
 
 theorem not_injective_exactZABAffineDecisionListSignature_id_of_one_lt
     {n p k : ℕ}

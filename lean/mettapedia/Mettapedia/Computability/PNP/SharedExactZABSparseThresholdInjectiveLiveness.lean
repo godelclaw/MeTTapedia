@@ -69,7 +69,7 @@ variable {Z : Type*} {r k : ℕ}
     (zfeat : Z → BitVec r)
     (code : SharedSparseThresholdCode
       (allAffinePointBlockFeatureCount (r + (k + k))))
-    (u : ExactVisiblePostSwitchSurface Z k) :
+    (u : ExactVisiblePostSwitchData Z k) :
     sharedExactZABSparseThresholdAffinePredict
         (Z := Z)
         (p := allAffinePointBlockFeatureCount (r + (k + k)))

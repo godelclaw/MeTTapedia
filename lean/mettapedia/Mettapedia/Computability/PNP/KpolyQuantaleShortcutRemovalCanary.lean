@@ -21,7 +21,7 @@ noncomputable section
 
 /-- The singleton exact-visible surface: `Z = Unit`, `k = 0`. -/
 abbrev KpolyShortcutCanarySurface :=
-  ExactVisiblePostSwitchSurface Unit 0
+  ExactVisiblePostSwitchData Unit 0
 
 /-- The canary feature type is the exact-visible surface itself. -/
 abbrev KpolyShortcutCanaryFeature :=

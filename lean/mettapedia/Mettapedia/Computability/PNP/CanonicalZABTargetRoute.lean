@@ -115,7 +115,7 @@ theorem canonicalZABDecisionList_surfaceCard_le_of_surjective_predict
       RealizedByRawExactZABDecisionListFamily
         (Z := Z) (r := r) (k := k) zfeat G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   simpa [two_mul, Nat.mul_comm, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
     (canonicalZABDecisionListTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) zfeat G hreal).surfaceCard_le_of_surjective_predict
@@ -128,9 +128,9 @@ theorem canonicalZABDecisionList_not_surjective_of_lt_surfaceCard
     (hreal :
       RealizedByRawExactZABDecisionListFamily
         (Z := Z) (r := r) (k := k) zfeat G)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
-  have hs' : r + (k + k) + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k) := by
+  have hs' : r + (k + k) + 1 < Fintype.card (ExactVisiblePostSwitchData Z k) := by
     simpa [two_mul, Nat.mul_comm, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using hs
   exact
     (canonicalZABDecisionListTargetData

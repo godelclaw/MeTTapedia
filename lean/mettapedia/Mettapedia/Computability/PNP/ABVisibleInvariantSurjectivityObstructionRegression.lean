@@ -21,7 +21,7 @@ theorem canonicalABCodeFamily_ignores_z_regression :
         ⟨true, default, default⟩ := by
   rfl
 
-def zProjectionRule (u : ExactVisiblePostSwitchSurface Bool 1) : Bool := u.z
+def zProjectionRule (u : ExactVisiblePostSwitchData Bool 1) : Bool := u.z
 
 theorem canonicalABCodeFamily_not_zProjectionRule_regression :
     (canonicalABCodeFamily (Z := Bool) (k := 1) boolConstantCodes).predict () ≠
@@ -80,7 +80,7 @@ theorem canonicalABDecisionListCandidateData_not_exists_predict_eq_boolZProjecti
 theorem ab_visible_invariant_predict_disagrees_on_separating_support_regression
     {Index : Type*} {G : ExactVisibleSwitchedFamily Bool 1 Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := 1) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -90,7 +90,7 @@ theorem ab_visible_invariant_predict_disagrees_on_separating_support_regression
       (k := 1) hinv (μ := μ) i hfalse htrue
 
 theorem canonicalABCodeFamily_disagrees_with_zProjection_on_two_point_support_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ∃ x, μ x ≠ 0 ∧
@@ -101,7 +101,7 @@ theorem canonicalABCodeFamily_disagrees_with_zProjection_on_two_point_support_re
       (k := 1) (Index := Unit) boolConstantCodes (μ := μ) () hfalse htrue
 
 theorem canonicalABDecisionListCandidateData_disagrees_with_zProjection_on_two_point_support_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ∃ x, μ x ≠ 0 ∧
@@ -117,7 +117,7 @@ theorem canonicalABDecisionListCandidateData_disagrees_with_zProjection_on_two_p
 theorem ab_visible_invariant_predict_has_subunit_agreement_on_two_point_support_regression
     {Index : Type*} {G : ExactVisibleSwitchedFamily Bool 1 Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := 1) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -127,7 +127,7 @@ theorem ab_visible_invariant_predict_has_subunit_agreement_on_two_point_support_
       (k := 1) hinv (μ := μ) i hfalse htrue
 
 theorem canonicalABCodeFamily_subunit_agreement_with_zProjection_on_two_point_support_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     agreementMass μ (boolZProjectionRule (k := 1))
@@ -137,7 +137,7 @@ theorem canonicalABCodeFamily_subunit_agreement_with_zProjection_on_two_point_su
       (k := 1) (Index := Unit) boolConstantCodes (μ := μ) () hfalse htrue
 
 theorem canonicalABDecisionListCandidateData_subunit_agreement_with_zProjection_on_two_point_support_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     agreementMass μ (boolZProjectionRule (k := 1))
@@ -152,7 +152,7 @@ theorem canonicalABDecisionListCandidateData_subunit_agreement_with_zProjection_
 theorem ab_visible_invariant_family_has_no_perfect_agreement_on_two_point_support_regression
     {Index : Type*} {G : ExactVisibleSwitchedFamily Bool 1 Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := 1) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := 1)) (G.predict i) = 1 := by
@@ -161,7 +161,7 @@ theorem ab_visible_invariant_family_has_no_perfect_agreement_on_two_point_suppor
       (k := 1) hinv (μ := μ) hfalse htrue
 
 theorem canonicalABCodeFamily_has_no_perfect_agreement_with_zProjection_on_two_point_support_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := 1))
@@ -171,7 +171,7 @@ theorem canonicalABCodeFamily_has_no_perfect_agreement_with_zProjection_on_two_p
       (k := 1) (Index := Unit) boolConstantCodes (μ := μ) hfalse htrue
 
 theorem canonicalABDecisionListCandidateData_has_no_perfect_agreement_with_zProjection_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 1)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 1)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := 1))

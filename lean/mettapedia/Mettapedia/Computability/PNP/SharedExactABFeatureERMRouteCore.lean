@@ -17,21 +17,21 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 /-- ERM inside the shared raw exact `(a, b)` affine-feature class. -/
 noncomputable def sharedExactABAffineFeatureERMFamily
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (sharedExactABAffineFeatureBitFamily Z features).indexedEmpiricalRiskFamily samples
 
 /-- ERM inside the shared raw exact `(a, b)` sparse-threshold class. -/
 noncomputable def sharedExactABSparseThresholdAffineERMFamily
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (sharedExactABSparseThresholdAffineBitFamily Z features).indexedEmpiricalRiskFamily samples
 
 theorem sharedExactABAffineFeatureERMFamily_invariant
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ABVisibleInvariant
       (Z := Z) (k := k)
       (sharedExactABAffineFeatureERMFamily
@@ -64,7 +64,7 @@ theorem sharedExactABAffineFeatureERMFamily_invariant
 theorem sharedExactABSparseThresholdAffineERMFamily_invariant
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ABVisibleInvariant
       (Z := Z) (k := k)
       (sharedExactABSparseThresholdAffineERMFamily
@@ -100,7 +100,7 @@ theorem sharedExactABSparseThresholdAffineERMFamily_invariant
 theorem sharedExactABAffineFeatureERMFamily_realized
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     RealizedBySharedABAffineFeatureFamily
       (r := r) (k := k) features
       (liftToABVisibleFamily
@@ -141,7 +141,7 @@ theorem sharedExactABAffineFeatureERMFamily_realized
 theorem sharedExactABSparseThresholdAffineERMFamily_realized
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     RealizedBySharedABSparseThresholdAffineFamily
       (r := r) (k := k) features
       (liftToABVisibleFamily

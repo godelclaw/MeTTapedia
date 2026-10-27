@@ -101,7 +101,7 @@ theorem canonicalZABCodeFamily_surfaceCard_le_of_surjective_predict
     (hsurj :
       Function.Surjective
         (canonicalZABCodeFamily (Z := Z) (r := r) (k := k) zfeat codes).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   exact
     CanonicalZABDecisionListCandidateData.surfaceCard_le_of_surjective_predict
       (canonicalZABDecisionListCandidateData_of_codes
@@ -112,7 +112,7 @@ theorem canonicalZABCodeFamily_not_surjective_of_lt_surfaceCard
     [Fintype Z]
     (zfeat : Z → BitVec r)
     (codes : Index → SharedAffineDecisionListCode (r + (k + k)))
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (canonicalZABCodeFamily (Z := Z) (r := r) (k := k) zfeat codes).predict := by
   exact

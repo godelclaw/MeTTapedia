@@ -9,7 +9,7 @@ namespace Mettapedia.Computability.PNP
 namespace ActualSwitchedLocalInterface
 
 theorem regression_switchedHistoryBudget_lt_surfaceCard_bitVec2 :
-    2 + 2 * 0 + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0) := by
+    2 + 2 * 0 + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0) := by
   exact
     switchedHistoryBudget_lt_surfaceCard_of_le_of_two_le
       (n := 2) (k := 0) (r := 2) (by norm_num) (by norm_num)

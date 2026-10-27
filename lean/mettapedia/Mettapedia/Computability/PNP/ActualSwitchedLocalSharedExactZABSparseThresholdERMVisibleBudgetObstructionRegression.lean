@@ -4,7 +4,7 @@ import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThres
 namespace Mettapedia.Computability.PNP
 
 theorem fullRuleActualSwitchedLocalInterface_sharedExactZABSparseThresholdERMData_surfaceCard_le_bool0_regression :
-    Fintype.card (ExactVisiblePostSwitchSurface Bool 0) ≤
+    Fintype.card (ExactVisiblePostSwitchData Bool 0) ≤
       2 * allAffinePointBlockFeatureCount (1 + (0 + 0)) := by
   rcases
     fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresholdERMData_bool0_regression

@@ -10,7 +10,7 @@ namespace Mettapedia.Computability.PNP.SameWidthZABObstructionRegression
 
 theorem exactZABDecisionListERMFamily_same_width_regression
     (zfeat : BitVec 2 → BitVec 2)
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 2) 0) Bool) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := BitVec 2) (r := 2) (k := 0) zfeat samples).predict := by

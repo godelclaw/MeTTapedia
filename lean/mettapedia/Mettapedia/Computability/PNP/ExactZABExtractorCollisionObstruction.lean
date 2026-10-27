@@ -25,7 +25,7 @@ variable {Z : Type*} {r k : ℕ}
 only depends on the visible summary `exactZABVisibleData`. -/
 def ExactZABFiberInvariantRule
     (zfeat : Z → BitVec r)
-    (rule : ExactVisiblePostSwitchSurface Z k → Bool) : Prop :=
+    (rule : ExactVisiblePostSwitchData Z k → Bool) : Prop :=
   ∀ u v,
     exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat u =
       exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat v →
@@ -35,7 +35,7 @@ def ExactZABFiberInvariantRule
 distinguishes two exact inputs with the same visible summary. -/
 def ExactZABFiberSeparatingRule
     (zfeat : Z → BitVec r)
-    (rule : ExactVisiblePostSwitchSurface Z k → Bool) : Prop :=
+    (rule : ExactVisiblePostSwitchData Z k → Bool) : Prop :=
   ∃ u v,
     exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat u =
       exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat v ∧
@@ -43,7 +43,7 @@ def ExactZABFiberSeparatingRule
 
 theorem not_exactZABFiberSeparatingRule_of_exactZABFiberInvariantRule
     {zfeat : Z → BitVec r}
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hinv : ExactZABFiberInvariantRule (Z := Z) (r := r) (k := k) zfeat rule) :
     ¬ ExactZABFiberSeparatingRule (Z := Z) (r := r) (k := k) zfeat rule := by
   rintro ⟨u, v, huv, hneq⟩
@@ -52,7 +52,7 @@ theorem not_exactZABFiberSeparatingRule_of_exactZABFiberInvariantRule
 theorem rawExactZABDecisionListPredict_eq_of_exactZABVisibleData_eq
     (zfeat : Z → BitVec r)
     (code : SharedAffineDecisionListCode (r + (k + k)))
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (huv :
       exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat u =
         exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat v) :
@@ -68,7 +68,7 @@ theorem exactZABFiberInvariantRule_of_eq_predict_of_realizedByRawExactZABDecisio
       RealizedByRawExactZABDecisionListFamily
         (Z := Z) (r := r) (k := k) zfeat G)
     {i : Index}
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hi : G.predict i = rule) :
     ExactZABFiberInvariantRule (Z := Z) (r := r) (k := k) zfeat rule := by
   rcases hreal i with ⟨code, hcode⟩
@@ -90,7 +90,7 @@ theorem not_exists_predict_eq_of_realizedByRawExactZABDecisionListFamily_of_exac
     (hreal :
       RealizedByRawExactZABDecisionListFamily
         (Z := Z) (r := r) (k := k) zfeat G)
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hsep : ExactZABFiberSeparatingRule (Z := Z) (r := r) (k := k) zfeat rule) :
     ¬ ∃ i, G.predict i = rule := by
   rintro ⟨i, hi⟩
@@ -103,15 +103,15 @@ theorem not_exists_predict_eq_of_realizedByRawExactZABDecisionListFamily_of_exac
 
 /-- The point-mass rule at one exact visible input. -/
 noncomputable def exactZABPointRule
-    (u0 : ExactVisiblePostSwitchSurface Z k) :
-    ExactVisiblePostSwitchSurface Z k → Bool :=
+    (u0 : ExactVisiblePostSwitchData Z k) :
+    ExactVisiblePostSwitchData Z k → Bool :=
   fun u => by
     classical
     exact decide (u = u0)
 
 theorem exactZABPointRule_exactZABFiberSeparatingRule_of_ne_of_eq_visible
     {zfeat : Z → BitVec r}
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (huv :
       exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat u =
         exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat v)
@@ -140,8 +140,8 @@ theorem exists_exactZABFiberSeparatingRule_of_not_injective
   rcases hcollision with ⟨z0, z1, hne, hz⟩
   let a : BitVec k := default
   let b : BitVec k := default
-  let u : ExactVisiblePostSwitchSurface Z k := ⟨z0, a, b⟩
-  let v : ExactVisiblePostSwitchSurface Z k := ⟨z1, a, b⟩
+  let u : ExactVisiblePostSwitchData Z k := ⟨z0, a, b⟩
+  let v : ExactVisiblePostSwitchData Z k := ⟨z1, a, b⟩
   have huv :
       exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat u =
         exactZABVisibleData (Z := Z) (r := r) (k := k) zfeat v := by
@@ -216,7 +216,7 @@ theorem ExactZABDecisionListTargetData.not_surjective_predict_of_card_gt_bitVec
 
 theorem ExactZABDecisionListRecoveryData.not_surjective_predict_of_not_injective_zfeat
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -239,7 +239,7 @@ theorem CanonicalZABDecisionListCandidateData.not_surjective_predict_of_not_inje
 
 theorem exactZABDecisionListERMFamily_not_surjective_of_not_injective_zfeat
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hni : ¬ Function.Injective zfeat) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
@@ -252,7 +252,7 @@ theorem exactZABDecisionListERMFamily_not_surjective_of_not_injective_zfeat
 theorem exactZABDecisionListERMFamily_not_surjective_of_card_gt_bitVec
     [Fintype Z]
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hcard : 2 ^ r < Fintype.card Z) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
@@ -264,7 +264,7 @@ theorem exactZABDecisionListERMFamily_not_surjective_of_card_gt_bitVec
 
 theorem CanonicalZABERMRecoveryData.not_surjective_predict_of_not_injective_zfeat
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

@@ -13,9 +13,9 @@ universe u v w z
 reachable-support quotient cannot identify full exact-visible rules. -/
 theorem kpolyCoverage_anchor_supportFullRule_no_observedRuleMap_injective_below_surfaceCard
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict :=
   supportFullRule_not_observedRuleMap_injective_of_card_lt_surfaceCard visibleOf hcard
@@ -25,9 +25,9 @@ rules that are distinct as full predictors but indistinguishable on observed
 block outputs. -/
 theorem kpolyCoverage_anchor_supportFullRule_distinct_rules_same_output_below_surfaceCard
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ∃ rule₀ rule₁ : ExactVisibleRule Z k,
       rule₀ ≠ rule₁ ∧
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -42,9 +42,9 @@ decoder can recover all full exact-visible rules from observed block-output
 traces. -/
 theorem kpolyCoverage_anchor_supportFullRule_no_exactDecoder_below_surfaceCard
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ decode : (Block → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -57,10 +57,10 @@ theorem kpolyCoverage_anchor_supportFullRule_no_exactDecoder_below_surfaceCard
 exact-visible rule bit is not observable from the block-output quotient. -/
 theorem kpolyCoverage_anchor_supportFullRule_exists_unobservable_eval_below_surfaceCard
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode

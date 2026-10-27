@@ -1,0 +1,53 @@
+import Mettapedia.Computability.PNP.V13FaithfulQuantitativeFrontiers
+
+/-!
+# Regression checks for the faithful quantitative v13 statement layer
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check V13QuantitativeEnsemble
+#check v13PolynomialClockFuel
+#check V13ClockedKpolySemantics
+#check v13ClockedKpolyAtLeast
+#check V13HiddenGaugeProductFrontier
+#check V13FiniteGaugeGroupAction
+#check V13FiniteGaugeGroupAction.ManuscriptFacing
+#check V13FiniteGaugeGroupAction.identityGaugeAction_not_manuscriptFacing
+#check V13FaithfulGaugeInterface
+#check V13DeclaredNeutralPairNeutrality
+#check V13FullPublicSyntaxCoverage
+#check V13D31PublicSyntaxNeutrality
+#check V13FullPublicSyntaxObservability
+#check V13SafeQSSMFrontier
+#check V13BoundedGaugeIncidenceFrontier
+#check V13AtomicEvidenceBudgetFrontier
+#check V13BoundaryMixingFrontier
+#check V13GlobalMessageIncompressibilityFrontier
+#check V13Section11SameObjectUpper
+#check V13FaithfulAnalyticFrontiers
+
+#print axioms V13QuantitativeEnsemble
+#print axioms v13PolynomialClockFuel
+#print axioms V13ClockedKpolySemantics
+#print axioms v13ClockedKpolyAtLeast
+#print axioms V13HiddenGaugeProductFrontier
+#print axioms V13FiniteGaugeGroupAction
+#print axioms V13FiniteGaugeGroupAction.ManuscriptFacing
+#print axioms V13FiniteGaugeGroupAction.identityGaugeAction_not_manuscriptFacing
+#print axioms V13FaithfulGaugeInterface
+#print axioms V13DeclaredNeutralPairNeutrality
+#print axioms V13FullPublicSyntaxCoverage
+#print axioms V13D31PublicSyntaxNeutrality
+#print axioms V13FullPublicSyntaxObservability
+#print axioms V13SafeQSSMFrontier
+#print axioms V13BoundedGaugeIncidenceFrontier
+#print axioms V13AtomicEvidenceBudgetFrontier
+#print axioms V13BoundaryMixingFrontier
+#print axioms V13GlobalMessageIncompressibilityFrontier
+#print axioms V13Section11SameObjectUpper
+#print axioms V13FaithfulAnalyticFrontiers
+
+end Mettapedia.Computability.PNP

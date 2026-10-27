@@ -18,9 +18,9 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_family_disagreement_suppor
     (fallback : FallbackIndex → ExactVisibleRule Z k)
     (index :
       BoundedSampleFallbackFamilyIndex
-        FallbackIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+        FallbackIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.disagreementSupport (fallback index.1)
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict index u)).card ≤
         sampleBound := by
@@ -110,10 +110,10 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_family_zero_sample_exact_v
 theorem kpoly_anchor_bounded_sample_majority_fallback_family_zero_sample_clocked_realization_regression
     {FallbackIndex : Type v} {Z : Type v} {k s clock : ℕ}
     (fallback : FallbackIndex → ExactVisibleRule Z k) :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k 0 fallback).predictorFamily.RealizedByClockedBitFamily F) ↔
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (FallbackZeroSampleImage.fallbackFamily fallback).RealizedByClockedBitFamily F := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_zeroSample_exists_clockedExactVisibleRealization_iff_fallbackFamily
@@ -155,7 +155,7 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_family_finite_cover_regres
         FallbackIndex Z k sampleBound fallback).predictorFamily.FinitePredictorCover
       (Fintype.card FallbackIndex *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card) := by
+          (ExactVisiblePostSwitchData Z k) sampleBound).card) := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_finitePredictorCover
       (Z := Z) (k := k) (sampleBound := sampleBound) fallback
@@ -209,8 +209,8 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_family_not_surjective_smal
     (hcard :
       Fintype.card FallbackIndex *
           (PluginSampleMajority.smallSubsets
-            (ExactVisiblePostSwitchSurface Z k) sampleBound).card <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+            (ExactVisiblePostSwitchData Z k) sampleBound).card <
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
         FallbackIndex Z k sampleBound fallback).predictorFamily.predict := by
@@ -226,10 +226,10 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_family_hamming_cover_produ
       Function.Surjective
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       Fintype.card FallbackIndex *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card := by
+          (ExactVisiblePostSwitchData Z k) sampleBound).card := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_boolClassifierSpace_card_le_code_mul_smallSubsets_card_of_surjective
       (Z := Z) (k := k) (sampleBound := sampleBound) fallback hsurj

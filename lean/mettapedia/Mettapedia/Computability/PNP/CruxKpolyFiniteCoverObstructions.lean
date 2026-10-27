@@ -16,7 +16,7 @@ predictor-image cover below the full exact visible Boolean classifier space. -/
 theorem kpolyCoverage_anchor_not_exactVisible_finitePredictorCover_of_surjective_predict
     {Z : Type*} [Fintype Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hN : N < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ G.FinitePredictorCover N :=
   not_exactVisible_finitePredictorCover_of_surjective_predict hN hsurj
@@ -27,7 +27,7 @@ space. -/
 theorem kpolyCoverage_anchor_not_exactVisible_finiteIndexRepresentativeCover_of_surjective_predict
     {Z : Type*} [Fintype Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hN : N < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ G.FiniteIndexRepresentativeCover N :=
   not_exactVisible_finiteIndexRepresentativeCover_of_surjective_predict hN hsurj
@@ -38,7 +38,7 @@ space. -/
 theorem kpolyCoverage_anchor_not_exactVisible_finitePredictorQuotient_of_surjective_predict
     {Z : Type*} [Fintype Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hN : N < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ G.FinitePredictorQuotient N :=
   not_exactVisible_finitePredictorQuotient_of_surjective_predict hN hsurj
@@ -49,9 +49,9 @@ exact visible family. -/
 theorem kpolyCoverage_anchor_not_clockedRealization_of_surjective_predict_of_lt_predictorCard
     {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F :=
   not_exists_clockedExactVisibleRealization_of_surjective_predict_of_lt_predictorCard
     hs hsurj
@@ -61,7 +61,7 @@ clocked finite-learning payload below the full predictor-image cardinality. -/
 theorem kpolyCoverage_anchor_not_clockedFiniteLearningPayload_of_surjective_predict_of_lt_predictorCard
     {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ ClockedKpolyFiniteLearningPayload G s clock :=
   not_clockedKpolyFiniteLearningPayload_of_surjective_predict_of_lt_predictorCard
@@ -73,7 +73,7 @@ switched predictors. -/
 theorem kpolyCoverage_anchor_not_exactVisibleCompressionTarget_of_injective_realization_of_lt_card
     {Probe Z : Type*} [Fintype Probe] {k s : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, G.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe) :
@@ -86,11 +86,11 @@ exact-visible realization below the probe cardinality. -/
 theorem kpolyCoverage_anchor_not_clockedRealization_of_injective_realization_of_lt_card
     {Probe Z : Type*} [Fintype Probe] {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, G.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F :=
   not_exists_clockedExactVisibleRealization_of_injective_realization_of_lt_card
     target hinj hreal hs
@@ -100,7 +100,7 @@ clocked finite-learning payload below the probe cardinality. -/
 theorem kpolyCoverage_anchor_not_clockedFiniteLearningPayload_of_injective_realization_of_lt_card
     {Probe Z : Type*} [Fintype Probe] [Fintype Z] {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, G.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe) :

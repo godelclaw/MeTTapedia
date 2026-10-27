@@ -40,7 +40,7 @@ theorem pluginLookupActualSwitchedLocalInterface_not_nonempty_sharedExactZABSpar
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (pluginLookupActualSwitchedLocalInterface Z k)
@@ -56,12 +56,12 @@ theorem pluginLookupActualSwitchedLocalInterface_not_nonempty_sharedExactZABSpar
 impossible on the unrestricted plug-in lookup endpoint below the same
 visible-budget threshold. -/
 theorem pluginLookupActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_surfaceCard
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (q : ℝ≥0∞)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ
@@ -116,7 +116,7 @@ theorem pluginLookupActualSwitchedLocalInterface_not_nonempty_sharedExactZABSpar
 the same unconditional half-width obstruction on the unrestricted plug-in
 lookup endpoint. -/
 theorem pluginLookupActualSwitchedLocalInterface_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_succ_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (h :
@@ -136,7 +136,7 @@ theorem pluginLookupActualSwitchedLocalInterface_visibleWidth_le_two_mul_extract
 stronger sparse-threshold recovery packet below the same unconditional
 visible-budget threshold. -/
 theorem pluginLookupActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :

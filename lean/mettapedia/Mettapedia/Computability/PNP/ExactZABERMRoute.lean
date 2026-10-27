@@ -76,7 +76,7 @@ theorem exactZABDecisionListERMCompressionTarget_twoMul
 image whenever it is honestly ERM over the fixed decision-list class. -/
 theorem exactZABDecisionListERMFinitePredictorCover
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FinitePredictorCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -88,7 +88,7 @@ theorem exactZABDecisionListERMFinitePredictorCover
 predictor image. -/
 theorem exactZABDecisionListERMFiniteIndexRepresentativeCover
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FiniteIndexRepresentativeCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -100,7 +100,7 @@ theorem exactZABDecisionListERMFiniteIndexRepresentativeCover
 its predictor image. -/
 theorem exactZABDecisionListERMFinitePredictorQuotient
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FinitePredictorQuotient
       (2 ^ (r + 2 * k + 1)) := by
@@ -111,12 +111,12 @@ theorem exactZABDecisionListERMFinitePredictorQuotient
 theorem exactZABDecisionListERMFamily_surfaceCard_le_of_surjective_predict
     [Fintype Z]
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := Z) (r := r) (k := k) zfeat samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   exact
     (exactZABDecisionListERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples).surfaceCard_le_of_surjective_predict
@@ -125,8 +125,8 @@ theorem exactZABDecisionListERMFamily_surfaceCard_le_of_surjective_predict
 theorem exactZABDecisionListERMFamily_not_surjective_of_lt_surfaceCard
     [Fintype Z]
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := Z) (r := r) (k := k) zfeat samples).predict := by

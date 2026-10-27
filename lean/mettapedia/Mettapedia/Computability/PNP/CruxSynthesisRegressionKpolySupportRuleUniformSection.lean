@@ -14,7 +14,7 @@ universe u v w z
 theorem kpoly_anchor_uniform_visible_section_transfers_observed_cover_regression
     {Z : Type v} {Block Index : Type v} {k N : ℕ}
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec : T.HasUniformVisibleSection sec)
     (hcover : T.outputFamily.FinitePredictorCover N) :
     T.predictorFamily.FinitePredictorCover N := by
@@ -24,8 +24,8 @@ theorem kpoly_anchor_uniform_visible_section_transfers_observed_cover_regression
 
 theorem kpoly_anchor_support_full_rule_uniform_section_finite_cover_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -36,8 +36,8 @@ theorem kpoly_anchor_support_full_rule_uniform_section_finite_cover_regression
 
 theorem kpoly_anchor_support_full_rule_uniform_section_clocked_payload_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k clock : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     ClockedKpolyFiniteLearningPayload
@@ -49,21 +49,21 @@ theorem kpoly_anchor_support_full_rule_uniform_section_clocked_payload_regressio
 
 theorem kpoly_anchor_support_full_rule_uniform_section_forces_card_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ Fintype.card Block := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ Fintype.card Block := by
   exact
     kpolyCoverage_anchor_supportFullRule_uniformSection_forces_surfaceCard_le_supportCard
       visibleOf hsec
 
 theorem kpoly_anchor_support_full_rule_no_uniform_section_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ sec : ExactVisiblePostSwitchSurface Z k → Block,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ sec : ExactVisiblePostSwitchData Z k → Block,
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec := by
   exact
     kpolyCoverage_anchor_supportFullRule_no_uniformSection_below_surfaceCard

@@ -20,7 +20,7 @@ theorem regression_exactZAB_ERM_construction_zab_data
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ZABDecisionListData
       (exactZABDecisionListERMConstruction
         (Z := Z) (k := k) (r := r) (Index := Index) (Block := Block)
@@ -35,7 +35,7 @@ noncomputable def regression_exactZAB_ERM_construction_bit_code_data
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     BitCodeData
       (exactZABDecisionListERMConstruction
         (Z := Z) (k := k) (r := r) (Index := Index) (Block := Block)
@@ -50,7 +50,7 @@ theorem regression_exactZAB_ERM_construction_cover
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMConstruction
       (Z := Z) (k := k) (r := r) (Index := Index) (Block := Block)
       zOf aOf bOf zfeat samples).predictorFamily.FinitePredictorCover
@@ -66,7 +66,7 @@ theorem regression_exactZAB_ERM_construction_payload
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (exactZABDecisionListERMConstruction
         (Z := Z) (k := k) (r := r) (Index := Index) (Block := Block)
@@ -80,7 +80,7 @@ theorem regression_bitVecZAB_ERM_construction_cover
     (zOf : Block → BitVec r)
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     (bitVecZABDecisionListERMConstruction
       (r := r) (k := k) (Index := Index) (Block := Block)
       zOf aOf bOf samples).predictorFamily.FinitePredictorCover
@@ -95,7 +95,7 @@ theorem regression_bitVecZAB_ERM_construction_payload
     (zOf : Block → BitVec r)
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (bitVecZABDecisionListERMConstruction
         (r := r) (k := k) (Index := Index) (Block := Block)

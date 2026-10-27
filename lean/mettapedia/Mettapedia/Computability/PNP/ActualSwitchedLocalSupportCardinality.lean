@@ -19,9 +19,9 @@ variable {Block : Type*}
 /-- If the support map is not surjective, some exact-visible bit is not
 observable from the block-output quotient. -/
 theorem supportFullRule_exists_unobservable_eval_of_not_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hnot : ¬ Function.Surjective visibleOf) :
-    ∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+    ∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -42,9 +42,9 @@ theorem supportFullRule_exists_unobservable_eval_of_not_surjective
 surface cannot identify exact-visible rules by their observed outputs. -/
 theorem supportFullRule_not_observedRuleMap_injective_of_card_lt_surfaceCard
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict := by
   intro hinj
@@ -58,9 +58,9 @@ theorem supportFullRule_not_observedRuleMap_injective_of_card_lt_surfaceCard
 rules that the observed block-output quotient cannot distinguish. -/
 theorem supportFullRule_exists_distinct_rules_same_outputFamily_of_card_lt_surfaceCard
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ∃ rule₀ rule₁ : ExactVisibleRule Z k,
       rule₀ ≠ rule₁ ∧
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -78,9 +78,9 @@ theorem supportFullRule_exists_distinct_rules_same_outputFamily_of_card_lt_surfa
 outputs to full exact-visible rules. -/
 theorem supportFullRule_not_exists_exactDecoder_of_card_lt_surfaceCard
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ decode : (Block → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -97,10 +97,10 @@ theorem supportFullRule_not_exists_exactDecoder_of_card_lt_surfaceCard
 unobservable from the observed block-output quotient. -/
 theorem supportFullRule_exists_unobservable_eval_of_card_lt_surfaceCard
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -117,8 +117,8 @@ theorem supportFullRule_exists_unobservable_eval_of_card_lt_surfaceCard
 the output index, the observed finite cover really does transfer to the full
 exact-visible family. -/
 theorem supportFullRule_predictorFamily_finitePredictorCover_card_of_uniformVisibleSection
-    [Fintype Block] (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    [Fintype Block] (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -133,8 +133,8 @@ theorem supportFullRule_predictorFamily_finitePredictorCover_card_of_uniformVisi
 when the uniform visible section exists. -/
 theorem supportFullRule_clockedKpolyFiniteLearningPayload_card_of_uniformVisibleSection
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block} {clock : ℕ}
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block} {clock : ℕ}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     ClockedKpolyFiniteLearningPayload
@@ -151,11 +151,11 @@ forces `visibleOf` to be surjective, hence the support must be at least as
 large as the full exact-visible surface. -/
 theorem supportFullRule_surfaceCard_le_blockCard_of_uniformVisibleSection
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ Fintype.card Block := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ Fintype.card Block := by
   classical
   have hsurj : Function.Surjective visibleOf := by
     intro u
@@ -169,10 +169,10 @@ theorem supportFullRule_surfaceCard_le_blockCard_of_uniformVisibleSection
 support is smaller than the exact-visible surface. -/
 theorem supportFullRule_not_hasUniformVisibleSection_of_card_lt_surfaceCard
     [Fintype Z] [Fintype Block]
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ sec : ExactVisiblePostSwitchSurface Z k → Block,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ sec : ExactVisiblePostSwitchData Z k → Block,
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec := by
   rintro ⟨sec, hsec⟩
   exact
@@ -183,8 +183,8 @@ theorem supportFullRule_not_hasUniformVisibleSection_of_card_lt_surfaceCard
 /-- But the selected local-rule image is still the full exact-visible Boolean
 rule family, so it has no below-surface finite predictor cover. -/
 theorem supportFullRule_not_finitePredictorCover_of_lt_surfaceCard
-    [Fintype Z] {s : ℕ} (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    [Fintype Z] {s : ℕ} (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
   simpa using
@@ -195,8 +195,8 @@ theorem supportFullRule_not_finitePredictorCover_of_lt_surfaceCard
 exact-visible predictor-image bound. -/
 theorem supportFullRule_observedSmall_and_not_exactVisibleCover
     [Fintype Z] [Fintype Block] {s : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FinitePredictorCover
         (2 ^ Fintype.card Block) ∧
       ¬ (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -211,8 +211,8 @@ theorem supportFullRule_observedSmall_and_not_exactVisibleCover
 payload for the full exact-visible local-rule family. -/
 theorem supportFullRule_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     [Fintype Z] {s clock : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily s clock := by
   simpa using

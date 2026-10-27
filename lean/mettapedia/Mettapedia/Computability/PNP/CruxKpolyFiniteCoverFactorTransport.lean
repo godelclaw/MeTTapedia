@@ -187,8 +187,8 @@ theorem kpolyCoverage_anchor_clockedFiniteLearningPayload_card_le_of_factorsThro
     {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index View : Type*} [Fintype View]
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : IndexedPredictorFamily Index View}
-    {view : ExactVisiblePostSwitchSurface Z k → View}
-    {sec : View → ExactVisiblePostSwitchSurface Z k}
+    {view : ExactVisiblePostSwitchData Z k → View}
+    {sec : View → ExactVisiblePostSwitchData Z k}
     (hfactor : G.FactorsThrough view H)
     (hsection : Function.RightInverse sec view)
     (hsurj : Function.Surjective H.predict)
@@ -206,8 +206,8 @@ theorem kpolyCoverage_anchor_not_clockedFiniteLearningPayload_of_factorsThrough_
     {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index View : Type*} [Fintype View]
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : IndexedPredictorFamily Index View}
-    {view : ExactVisiblePostSwitchSurface Z k → View}
-    {sec : View → ExactVisiblePostSwitchSurface Z k}
+    {view : ExactVisiblePostSwitchData Z k → View}
+    {sec : View → ExactVisiblePostSwitchData Z k}
     (hs : 2 ^ s < 2 ^ Fintype.card View)
     (hfactor : G.FactorsThrough view H)
     (hsection : Function.RightInverse sec view)

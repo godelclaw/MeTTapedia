@@ -4,11 +4,11 @@ import Mathlib.Tactic.NormNum
 namespace Mettapedia.Computability.PNP
 
 def bitVec1ZeroVisiblePointActualSparseRecovery :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨zeroVec, zeroVec, zeroVec⟩
 
 def bitVec1OneVisiblePointActualSparseRecovery :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨fun _ => true, zeroVec, zeroVec⟩
 
 def idBitVec1ActualSparseRecovery : BitVec 1 → BitVec 1 := fun x => x

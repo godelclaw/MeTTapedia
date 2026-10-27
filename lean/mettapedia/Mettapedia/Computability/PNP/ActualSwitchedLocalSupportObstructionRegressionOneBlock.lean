@@ -15,7 +15,7 @@ universe v
 section OneBlock
 
 variable {Z : Type v} {k s clock : ℕ}
-variable (u0 : ExactVisiblePostSwitchSurface Z k)
+variable (u0 : ExactVisiblePostSwitchData Z k)
 
 theorem regression_oneBlockFullRule_surjective :
     Function.Surjective
@@ -32,14 +32,14 @@ theorem regression_oneBlockFullRule_observed_cover_two :
 
 theorem regression_oneBlockFullRule_no_uniform_section
     [Fintype Z]
-    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ sec : ExactVisiblePostSwitchSurface Z k → Unit,
+    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ sec : ExactVisiblePostSwitchData Z k → Unit,
       (oneBlockFullRuleActualSwitchedLocalInterface u0).HasUniformVisibleSection sec := by
   exact oneBlockFullRule_not_hasUniformVisibleSection_of_one_lt_surfaceCard u0 hcard
 
 theorem regression_oneBlockFullRule_off_support_rules_indistinguishable
     [Fintype Z]
-    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ∃ rule₀ rule₁ : ExactVisibleRule Z k,
       rule₀ ≠ rule₁ ∧
         (oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.predict rule₀ =
@@ -52,7 +52,7 @@ theorem regression_oneBlockFullRule_off_support_rules_indistinguishable
 
 theorem regression_oneBlockFullRule_no_exact_decoder
     [Fintype Z]
-    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ decode : (Unit → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
         decode ((oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.predict rule) =
@@ -63,8 +63,8 @@ theorem regression_oneBlockFullRule_no_exact_decoder
 
 theorem regression_oneBlockFullRule_exists_unobservable_eval
     [Fintype Z]
-    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ∃ u : ExactVisiblePostSwitchSurface Z k,
+    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ∃ u : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Unit → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode ((oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.predict rule) =
@@ -75,14 +75,14 @@ theorem regression_oneBlockFullRule_exists_unobservable_eval
 
 theorem regression_oneBlockFullRule_no_full_cover
     [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (oneBlockFullRuleActualSwitchedLocalInterface u0).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
   exact oneBlockFullRule_not_finitePredictorCover_of_lt_surfaceCard u0 hs
 
 theorem regression_oneBlockFullRule_observed_small_not_full_cover
     [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.FinitePredictorCover 2 ∧
       ¬ (oneBlockFullRuleActualSwitchedLocalInterface u0).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
@@ -90,7 +90,7 @@ theorem regression_oneBlockFullRule_observed_small_not_full_cover
 
 theorem regression_oneBlockFullRule_no_clocked_payload
     [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (oneBlockFullRuleActualSwitchedLocalInterface u0).predictorFamily s clock := by
   exact oneBlockFullRule_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard

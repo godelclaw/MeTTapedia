@@ -33,11 +33,11 @@ theorem exists_samples_sharedExactZABSparseThresholdAffineERMFamily_eq_fullExact
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     ∃ samples :
         ExactVisibleRule Z k →
-          Sample (ExactVisiblePostSwitchSurface Z k) Bool,
+          Sample (ExactVisiblePostSwitchData Z k) Bool,
         sharedExactZABSparseThresholdAffineERMFamily
             (Z := Z)
             (p := allAffinePointBlockFeatureCount (r + (k + k)))
@@ -84,13 +84,13 @@ theorem exists_samples_sharedExactZABSparseThresholdAffineERMFamily_eq_fullExact
               simp [F]
       _ = (fullExactVisibleRuleFamily Z k).predict rule := hcode.symm
       _ = rule := rfl
-  let pointSamples : ExactVisibleRule Z k → PointSample (ExactVisiblePostSwitchSurface Z k) m :=
+  let pointSamples : ExactVisibleRule Z k → PointSample (ExactVisiblePostSwitchData Z k) m :=
     fun rule =>
       Classical.choose
         (F.exists_sample_empiricalRiskPredictor_eq_target_of_bitBudget_bound_lt
           rule m (htarget rule) hbound)
   let samples :
-      ExactVisibleRule Z k → Sample (ExactVisiblePostSwitchSurface Z k) Bool :=
+      ExactVisibleRule Z k → Sample (ExactVisiblePostSwitchData Z k) Bool :=
     fun rule => labeledByTarget rule (pointSamples rule)
   refine ⟨samples, ?_⟩
   cases hERM :
@@ -140,11 +140,11 @@ theorem exists_samples_sharedExactZABSparseThresholdAffineERMFamily_eq_fullExact
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     ∃ samples :
         ExactVisibleRule Z k →
-          Sample (ExactVisiblePostSwitchSurface Z k) Bool,
+          Sample (ExactVisiblePostSwitchData Z k) Bool,
         sharedExactZABSparseThresholdAffineERMFamily
             (Z := Z)
             (p := allAffinePointBlockFeatureCount (r + (k + k)))

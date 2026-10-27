@@ -20,7 +20,7 @@ section Recovery
 variable [Fintype Z]
 
 theorem ExactZABAffineFeatureRecoveryData.not_surjective_predict_of_not_injective_zfeat
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -32,7 +32,7 @@ theorem ExactZABAffineFeatureRecoveryData.not_surjective_predict_of_not_injectiv
   exact (h.targetData).not_surjective_predict_of_not_injective_zfeat hni
 
 theorem ExactZABSparseThresholdRecoveryData.not_surjective_predict_of_not_injective_zfeat
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -44,7 +44,7 @@ theorem ExactZABSparseThresholdRecoveryData.not_surjective_predict_of_not_inject
   exact (h.targetData).not_surjective_predict_of_not_injective_zfeat hni
 
 theorem ExactZABAffineDecisionListRecoveryData.not_surjective_predict_of_not_injective_zfeat
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -56,7 +56,7 @@ theorem ExactZABAffineDecisionListRecoveryData.not_surjective_predict_of_not_inj
   exact (h.targetData).not_surjective_predict_of_not_injective_zfeat hni
 
 theorem SharedExactZABAffineFeatureRecoveryData.not_surjective_predict_of_not_injective_zfeat
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -68,7 +68,7 @@ theorem SharedExactZABAffineFeatureRecoveryData.not_surjective_predict_of_not_in
   exact (h.targetData).not_surjective_predict_of_not_injective_zfeat hni
 
 theorem SharedExactZABSparseThresholdRecoveryData.not_surjective_predict_of_not_injective_zfeat
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -80,7 +80,7 @@ theorem SharedExactZABSparseThresholdRecoveryData.not_surjective_predict_of_not_
   exact (h.targetData).not_surjective_predict_of_not_injective_zfeat hni
 
 theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_not_injective_zfeat
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}

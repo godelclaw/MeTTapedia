@@ -80,7 +80,7 @@ theorem kpoly_anchor_not_shared_ab_affine_feature_of_injective_probe_regression
     {Probe : Type*} [Fintype Probe] {r k : ℕ} {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 ^ r) < Fintype.card Probe) :
@@ -93,7 +93,7 @@ theorem kpoly_anchor_not_shared_ab_sparse_threshold_of_injective_probe_regressio
     {Probe : Type*} [Fintype Probe] {r k : ℕ} {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 * r) < Fintype.card Probe) :
@@ -106,7 +106,7 @@ theorem kpoly_anchor_not_shared_ab_decision_list_of_injective_probe_regression
     {Probe : Type*} [Fintype Probe] {r k : ℕ} {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (r + 1) < Fintype.card Probe) :
@@ -121,7 +121,7 @@ theorem kpoly_anchor_not_shared_exact_ab_affine_feature_of_factorsThrough_inject
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 ^ r) < Fintype.card Probe)
@@ -138,7 +138,7 @@ theorem kpoly_anchor_not_shared_exact_ab_sparse_threshold_of_factorsThrough_inje
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 * r) < Fintype.card Probe)
@@ -155,7 +155,7 @@ theorem kpoly_anchor_not_shared_exact_ab_decision_list_of_factorsThrough_injecti
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (r + 1) < Fintype.card Probe)

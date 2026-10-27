@@ -20,17 +20,17 @@ section
 variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 noncomputable def exactABAffineFeatureERMFamily
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (exactABAffineFeatureBitFamily Z r k).indexedEmpiricalRiskFamily samples
 
 noncomputable def exactABSparseThresholdAffineERMFamily
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (exactABSparseThresholdAffineBitFamily Z r k).indexedEmpiricalRiskFamily samples
 
 theorem exactABAffineFeatureERMTargetData
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactABAffineFeatureTargetData
       (Z := Z) (r := r) (k := k) (Index := Index)
       (exactABAffineFeatureERMFamily (Z := Z) (r := r) (k := k) samples) := by
@@ -59,7 +59,7 @@ theorem exactABAffineFeatureERMTargetData
                 (Z := Z) (r := r) (k := k) code) u
 
 theorem exactABSparseThresholdAffineERMTargetData
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactABSparseThresholdTargetData
       (Z := Z) (r := r) (k := k) (Index := Index)
       (exactABSparseThresholdAffineERMFamily (Z := Z) (r := r) (k := k) samples) := by
@@ -88,7 +88,7 @@ theorem exactABSparseThresholdAffineERMTargetData
                 (Z := Z) (r := r) (k := k) code) u
 
 theorem exactABAffineFeatureERMCompressionTarget
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (exactABAffineFeatureERMFamily (Z := Z) (r := r) (k := k) samples)
@@ -98,7 +98,7 @@ theorem exactABAffineFeatureERMCompressionTarget
       (Z := Z) (r := r) (k := k) (Index := Index) samples).compressionTarget
 
 theorem exactABSparseThresholdAffineERMCompressionTarget
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (exactABSparseThresholdAffineERMFamily (Z := Z) (r := r) (k := k) samples)
@@ -109,11 +109,11 @@ theorem exactABSparseThresholdAffineERMCompressionTarget
 
 theorem exactABAffineFeatureERMFamily_surfaceCard_le_of_surjective_predict
     [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (exactABAffineFeatureERMFamily (Z := Z) (r := r) (k := k) samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 1) + 2 ^ r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 1) + 2 ^ r := by
   exact
     (exactABAffineFeatureERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) samples).surfaceCard_le_of_surjective_predict
@@ -121,11 +121,11 @@ theorem exactABAffineFeatureERMFamily_surfaceCard_le_of_surjective_predict
 
 theorem exactABSparseThresholdAffineERMFamily_surfaceCard_le_of_surjective_predict
     [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (exactABSparseThresholdAffineERMFamily (Z := Z) (r := r) (k := k) samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 3) := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 3) := by
   exact
     (exactABSparseThresholdAffineERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) samples).surfaceCard_le_of_surjective_predict
@@ -133,8 +133,8 @@ theorem exactABSparseThresholdAffineERMFamily_surfaceCard_le_of_surjective_predi
 
 theorem exactABAffineFeatureERMFamily_not_surjective_of_lt_surfaceCard
     [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : r * ((k + k) + 1) + 2 ^ r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : r * ((k + k) + 1) + 2 ^ r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (exactABAffineFeatureERMFamily (Z := Z) (r := r) (k := k) samples).predict := by
   exact
@@ -144,8 +144,8 @@ theorem exactABAffineFeatureERMFamily_not_surjective_of_lt_surfaceCard
 
 theorem exactABSparseThresholdAffineERMFamily_not_surjective_of_lt_surfaceCard
     [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : r * ((k + k) + 3) < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : r * ((k + k) + 3) < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (exactABSparseThresholdAffineERMFamily (Z := Z) (r := r) (k := k) samples).predict := by
   exact
@@ -158,8 +158,8 @@ section
 variable [Fintype Z]
 
 def exactABAffineFeatureERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -181,8 +181,8 @@ def exactABAffineFeatureERMRecoveryData
       (Z := Z) (r := r) (k := k) (Index := Index) samples).realized
 
 def exactABSparseThresholdAffineERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -204,8 +204,8 @@ def exactABSparseThresholdAffineERMRecoveryData
       (Z := Z) (r := r) (k := k) (Index := Index) samples).realized
 
 theorem exactABAffineFeatureERMRecoveryLowerBound
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -230,8 +230,8 @@ theorem exactABAffineFeatureERMRecoveryLowerBound
       μ samples q hq).recoveryLowerBound i m
 
 theorem exactABSparseThresholdAffineERMRecoveryLowerBound
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,

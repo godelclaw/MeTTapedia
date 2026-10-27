@@ -41,7 +41,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 namespace SharedExactZABSparseThresholdERMRecoveryData
@@ -53,7 +53,7 @@ theorem one_sub_apply_le_of_injective_zfeat
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index)
-    (y : ExactVisiblePostSwitchSurface Z k) :
+    (y : ExactVisiblePostSwitchData Z k) :
     1 - μ y ≤ q := by
   classical
   have hregion :
@@ -65,21 +65,21 @@ theorem one_sub_apply_le_of_injective_zfeat
         (Finset.univ.erase y).sum (fun u => μ u) + μ y := by
     simpa [pmf_sum_univ_eq_one μ, add_comm] using
       (Finset.sum_erase_add
-        (s := (Finset.univ : Finset (ExactVisiblePostSwitchSurface Z k)))
+        (s := (Finset.univ : Finset (ExactVisiblePostSwitchData Z k)))
         (a := y)
-        (f := fun u : ExactVisiblePostSwitchSurface Z k => μ u)
+        (f := fun u : ExactVisiblePostSwitchData Z k => μ u)
         (Finset.mem_univ y)).symm
   simpa [ENNReal.sub_eq_of_eq_add (μ.apply_ne_top y) hsum] using hregion
 
 /-- Therefore every injective manuscript-facing recovery packet already forces
 `q` above the complement of the uniform point mass. -/
 theorem one_sub_inv_card_le_of_injective_zfeat
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹ ≤ q := by
   obtain ⟨y, hy⟩ := PMF.exists_apply_le_inv_card μ
   exact le_trans
     (tsub_le_tsub_left hy 1)
@@ -90,14 +90,14 @@ end SharedExactZABSparseThresholdERMRecoveryData
 /-- No injective manuscript-facing recovery packet can exist below the
 uniform-complement threshold `1 - |surface|⁻¹`. -/
 theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_zfeat_of_lt_one_sub_inv_card
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index)
     (hq_lt :
-      q < 1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹) :
+      q < 1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rintro ⟨h⟩
   exact not_lt_of_ge
@@ -110,11 +110,11 @@ section BitVec
 
 variable {n k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface (BitVec n) k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {zfeat : BitVec n → BitVec r} {q : ℝ≥0∞}
 
 local instance exactVisiblePostSwitchSurfaceNonemptyBitVec :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec n) k) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 /-- On the `BitVec n` exact visible surface, every injective manuscript-facing

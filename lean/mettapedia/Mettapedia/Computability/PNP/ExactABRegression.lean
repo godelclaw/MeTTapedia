@@ -22,7 +22,7 @@ section
 variable {Index : Type*}
 
 theorem exact_ab_route_small_budget_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool) :
     ¬ Function.Surjective
         (exactABAffineDecisionListERMFamily
           (Z := BitVec 2) (r := 1) (k := 1) samples).predict := by
@@ -32,7 +32,7 @@ theorem exact_ab_route_small_budget_regression
       (by norm_num)
 
 theorem exact_ab_affine_feature_erm_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -42,7 +42,7 @@ theorem exact_ab_affine_feature_erm_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem exact_ab_sparse_threshold_erm_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -52,7 +52,7 @@ theorem exact_ab_sparse_threshold_erm_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem exact_ab_affine_decision_list_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -62,7 +62,7 @@ theorem exact_ab_affine_decision_list_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem exact_ab_raw_erm_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :

@@ -16,7 +16,7 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 def sharedExactABAffineDecisionListERMTargetData
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     SharedABDecisionListTargetData
       (Z := Z) (r := r) (k := k) (Index := Index)
       (sharedExactABAffineDecisionListERMFamily
@@ -32,7 +32,7 @@ def sharedExactABAffineDecisionListERMTargetData
 theorem sharedExactABAffineDecisionListERMCompressionTarget
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (sharedExactABAffineDecisionListERMFamily
@@ -45,12 +45,12 @@ theorem sharedExactABAffineDecisionListERMCompressionTarget
 theorem sharedExactABAffineDecisionListERMFamily_surfaceCard_le_of_surjective_predict
     [Inhabited Z] [Fintype Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactABAffineDecisionListERMFamily
           (Z := Z) (r := r) (k := k) features samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 1 := by
   exact
     (sharedExactABAffineDecisionListERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) features samples).surfaceCard_le_of_surjective_predict
@@ -59,8 +59,8 @@ theorem sharedExactABAffineDecisionListERMFamily_surfaceCard_le_of_surjective_pr
 theorem sharedExactABAffineDecisionListERMFamily_not_surjective_of_lt_surfaceCard
     [Inhabited Z] [Fintype Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : r + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : r + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (sharedExactABAffineDecisionListERMFamily
           (Z := Z) (r := r) (k := k) features samples).predict := by

@@ -43,7 +43,7 @@ theorem ExactABAffineFeatureTargetData.not_surjective_predict_of_budget_lt
     h.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineFeatureRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -54,7 +54,7 @@ theorem ExactABAffineFeatureRecoveryData.bitVecSurfaceCard_le_of_surjective_pred
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineFeatureRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -65,7 +65,7 @@ theorem ExactABAffineFeatureRecoveryData.not_surjective_predict_of_budget_lt
   exact h.targetData.not_surjective_predict_of_budget_lt hbudget
 
 theorem exactABAffineFeatureERMFamily_bitVecSurfaceCard_le_of_surjective_predict
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (exactABAffineFeatureERMFamily
@@ -77,7 +77,7 @@ theorem exactABAffineFeatureERMFamily_bitVecSurfaceCard_le_of_surjective_predict
       hsurj
 
 theorem exactABAffineFeatureERMFamily_not_surjective_of_budget_lt
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : r * ((k + k) + 1) + 2 ^ r < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (exactABAffineFeatureERMFamily
@@ -88,7 +88,7 @@ theorem exactABAffineFeatureERMFamily_not_surjective_of_budget_lt
       (n := n) (r := r) (k := k) (Index := Index) samples hsurj
 
 theorem ExactABAffineFeatureERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -122,7 +122,7 @@ theorem ExactABSparseThresholdTargetData.not_surjective_predict_of_budget_lt
     h.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABSparseThresholdRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -133,7 +133,7 @@ theorem ExactABSparseThresholdRecoveryData.bitVecSurfaceCard_le_of_surjective_pr
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABSparseThresholdRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -144,7 +144,7 @@ theorem ExactABSparseThresholdRecoveryData.not_surjective_predict_of_budget_lt
   exact h.targetData.not_surjective_predict_of_budget_lt hbudget
 
 theorem exactABSparseThresholdAffineERMFamily_bitVecSurfaceCard_le_of_surjective_predict
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (exactABSparseThresholdAffineERMFamily
@@ -156,7 +156,7 @@ theorem exactABSparseThresholdAffineERMFamily_bitVecSurfaceCard_le_of_surjective
       hsurj
 
 theorem exactABSparseThresholdAffineERMFamily_not_surjective_of_budget_lt
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : r * ((k + k) + 3) < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (exactABSparseThresholdAffineERMFamily
@@ -167,7 +167,7 @@ theorem exactABSparseThresholdAffineERMFamily_not_surjective_of_budget_lt
       (n := n) (r := r) (k := k) (Index := Index) samples hsurj
 
 theorem ExactABSparseThresholdERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -201,7 +201,7 @@ theorem ExactABAffineDecisionListTargetData.not_surjective_predict_of_budget_lt
     h.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineDecisionListRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -212,7 +212,7 @@ theorem ExactABAffineDecisionListRecoveryData.bitVecSurfaceCard_le_of_surjective
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineDecisionListRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -223,7 +223,7 @@ theorem ExactABAffineDecisionListRecoveryData.not_surjective_predict_of_budget_l
   exact h.targetData.not_surjective_predict_of_budget_lt hbudget
 
 theorem exactABAffineDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_predict
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (exactABAffineDecisionListERMFamily
@@ -235,7 +235,7 @@ theorem exactABAffineDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_pr
       hsurj
 
 theorem exactABAffineDecisionListERMFamily_not_surjective_of_budget_lt
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : r * ((k + k) + 2) + 1 < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (exactABAffineDecisionListERMFamily
@@ -246,7 +246,7 @@ theorem exactABAffineDecisionListERMFamily_not_surjective_of_budget_lt
       (n := n) (r := r) (k := k) (Index := Index) samples hsurj
 
 theorem ExactABAffineDecisionListERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :

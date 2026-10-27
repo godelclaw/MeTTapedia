@@ -40,7 +40,7 @@ namespace ActualSwitchedLocalInterface
 section BitVec
 
 variable {n k r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {q : ℝ≥0∞} {zfeat : BitVec n → BitVec r}
 
 /-- If a full-rule `BitVec n` recovery packet exists below the threshold
@@ -91,7 +91,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
 endpoint once the sample bound is large enough for surjectivity. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_lt_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv
     {sampleBound p : ℕ}
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (h : SharedExactZABSparseThresholdERMRecoveryData
       μ
       (boundedSamplePluginMajorityActualSwitchedLocalInterface (BitVec n) k sampleBound)
@@ -99,7 +99,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_lt_
       q)
     (hq_lt : q < 1 - (2 ^ p : ℝ≥0∞)⁻¹) :
     n + 2 * k < p := by
-  letI : Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k) :=
+  letI : Nonempty (ExactVisiblePostSwitchData (BitVec n) k) :=
     ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
   by_contra hnot
   have hle : p ≤ n + 2 * k := Nat.not_lt.mp hnot
@@ -109,7 +109,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_lt_
           (BitVec n) k sampleBound).predictorFamily.predict :=
     boundedSamplePluginMajorityActualSwitchedLocalInterface_surjective
       (Z := BitVec n) k sampleBound hsample
-  have hcard : 1 - (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) : ℝ≥0∞)⁻¹ ≤ q := by
+  have hcard : 1 - (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) : ℝ≥0∞)⁻¹ ≤ q := by
     exact h.one_sub_inv_card_le_of_surjective_predict hsurj
   have hbound : 1 - (2 ^ p : ℝ≥0∞)⁻¹ ≤ q := by
     exact le_trans
@@ -121,7 +121,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_lt_
 `1 - 2^-p` whenever `p ≤ n + 2*k`. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv_of_le_visibleWidth
     {sampleBound p : ℕ}
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hwidth : p ≤ n + 2 * k)
     (hq_lt : q < 1 - (2 ^ p : ℝ≥0∞)⁻¹) :
     ¬ Nonempty

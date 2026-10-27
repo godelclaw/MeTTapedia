@@ -7,17 +7,17 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k1NonemptyActualSparseRecoveryInjectiveConcentration :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 def zeroVisiblePointActualSparseRecoveryInjectiveConcentration :
-    ExactVisiblePostSwitchSurface (BitVec 1) 1 :=
+    ExactVisiblePostSwitchData (BitVec 1) 1 :=
   ⟨zeroVec, zeroVec, zeroVec⟩
 
 def idBitVec1ActualSparseRecoveryInjectiveConcentration : BitVec 1 → BitVec 1 := fun x => x
 
 noncomputable def uniformMeasureBitVec1k1ActualSparseRecoveryInjectiveConcentration :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   PMF.uniformOfFintype _
 
 def constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjectiveConcentration :
@@ -25,7 +25,7 @@ def constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjective
       (BitVec 1)
       1
       Unit
-      (ExactVisiblePostSwitchSurface (BitVec 1) 1) where
+      (ExactVisiblePostSwitchData (BitVec 1) 1) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b

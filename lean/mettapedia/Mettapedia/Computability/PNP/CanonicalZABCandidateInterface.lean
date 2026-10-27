@@ -100,7 +100,7 @@ theorem CanonicalZABDecisionListCandidateData.surfaceCard_le_of_surjective_predi
       CanonicalZABDecisionListCandidateData
         (Z := Z) (r := r) (k := k) (Index := Index) zfeat G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem CanonicalZABDecisionListCandidateData.not_surjective_predict_of_lt_surfaceCard
@@ -110,7 +110,7 @@ theorem CanonicalZABDecisionListCandidateData.not_surjective_predict_of_lt_surfa
     (h :
       CanonicalZABDecisionListCandidateData
         (Z := Z) (r := r) (k := k) (Index := Index) zfeat G)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 

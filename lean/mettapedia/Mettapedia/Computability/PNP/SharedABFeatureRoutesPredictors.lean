@@ -19,7 +19,7 @@ variable {Z : Type*} {r k : ℕ}
 noncomputable def sharedABAffineFeaturePredict
     (features : Fin r → AffineColumnCode (k + k))
     (table : BitCode (2 ^ r))
-    (x : ABVisibleSurface k) : Bool :=
+    (x : ABVisibleState k) : Bool :=
   table ((Fintype.equivFinOfCardEq (by simp [BitVec] : Fintype.card (BitVec r) = 2 ^ r))
     (affineFeatureVector features (abVisibleBits (k := k) x)))
 
@@ -27,7 +27,7 @@ noncomputable def sharedABAffineFeaturePredict
 noncomputable def sharedABSparseThresholdAffinePredict
     (features : Fin r → AffineColumnCode (k + k))
     (code : SharedSparseThresholdCode r)
-    (x : ABVisibleSurface k) : Bool :=
+    (x : ABVisibleState k) : Bool :=
   decide (thresholdCodeValue (r := r) code.2 ≤
     maskedAffineFeatureCount (k := k + k) features code.1 (abVisibleBits (k := k) x))
 
@@ -35,7 +35,7 @@ noncomputable def sharedABSparseThresholdAffinePredict
 noncomputable def sharedABAffineDecisionListPredict
     (features : Fin r → AffineColumnCode (k + k))
     (code : SharedAffineDecisionListCode r)
-    (x : ABVisibleSurface k) : Bool :=
+    (x : ABVisibleState k) : Bool :=
   match firstActiveFeature? (affineFeatureVector features (abVisibleBits (k := k) x)) with
   | some j => code.1 j
   | none => code.2

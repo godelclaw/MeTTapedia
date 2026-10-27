@@ -16,7 +16,7 @@ section
 variable {n r k : ℕ} {Index : Type*}
 
 theorem ExactZABERMRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -28,7 +28,7 @@ theorem ExactZABERMRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -40,7 +40,7 @@ theorem ExactZABERMRecoveryData.not_surjective_predict_of_budget_lt
   exact h.targetData.not_surjective_predict_of_budget_lt hbudget
 
 theorem ExactZABERMRecoveryData.not_surjective_predict_of_le_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}

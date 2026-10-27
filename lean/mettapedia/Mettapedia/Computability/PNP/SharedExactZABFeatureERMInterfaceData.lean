@@ -19,12 +19,12 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 
 structure SharedExactZABAffineFeatureERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   features : Fin p → AffineColumnCode (r + (k + k))
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G =
       sharedExactZABAffineFeatureERMFamily
@@ -39,12 +39,12 @@ structure SharedExactZABAffineFeatureERMRecoveryData
 
 structure SharedExactZABSparseThresholdERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   features : Fin p → AffineColumnCode (r + (k + k))
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G =
       sharedExactZABSparseThresholdAffineERMFamily

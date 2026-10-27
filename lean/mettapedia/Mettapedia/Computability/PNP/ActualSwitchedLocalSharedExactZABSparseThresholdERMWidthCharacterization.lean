@@ -83,8 +83,8 @@ theorem fullRuleActualSwitchedLocalInterface_exists_sharedExactZABSparseThreshol
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ m) :
     ∃ zfeat : BitVec n → BitVec r,
       Nonempty
         (SharedExactZABSparseThresholdERMData
@@ -102,8 +102,8 @@ theorem fullRuleActualSwitchedLocalInterface_exists_sharedExactZABSparseThreshol
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ m) :
     (∃ zfeat : BitVec n → BitVec r,
       Nonempty
         (SharedExactZABSparseThresholdERMData

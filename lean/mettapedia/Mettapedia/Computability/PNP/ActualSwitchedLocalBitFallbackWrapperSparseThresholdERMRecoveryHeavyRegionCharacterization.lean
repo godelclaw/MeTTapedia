@@ -32,13 +32,13 @@ universe v
 section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r sampleBound fallbackBits : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
 
 /-- If the fallback decoder is already surjective, then any hypothetical
 sparse-threshold recovery packet on the wrapped endpoint forces `q` above the
 lightest-point complement mass. -/
 theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_one_sub_apply_lightestPoint_le_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_fallback_surjective
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hsurj : Function.Surjective fallback)
     (zfeat : Z → BitVec r)
@@ -60,7 +60,7 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
 /-- Therefore a surjective fallback decoder cannot rescue the wrapped endpoint
 below the lightest-point threshold. -/
 theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_fallback_surjective_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hsurj : Function.Surjective fallback)
     (zfeat : Z → BitVec r)
@@ -85,7 +85,7 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
 /-- In particular, the canonical truth-table fallback decoder cannot rescue
 the wrapped endpoint below the same lightest-point threshold. -/
 theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_exactVisibleRuleDecode_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (zfeat : Z → BitVec r)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty
@@ -93,7 +93,7 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             Z k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+            (Fintype.card (ExactVisiblePostSwitchData Z k))
             (exactVisibleRuleDecode (Z := Z) (k := k)))
           zfeat
           q) := by
@@ -102,7 +102,7 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       (μ := μ)
       (T := boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k)))
       (zfeat := zfeat)
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_surjective_exactVisibleRuleDecode

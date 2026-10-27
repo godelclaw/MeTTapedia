@@ -18,7 +18,7 @@ variable {r k : ℕ}
 feature family below the reduced truth-table threshold. -/
 theorem fullABRuleFamily_not_realizedBySharedABAffineFeatureFamily_of_lt_surfaceCard
     (features : Fin r → AffineColumnCode (k + k))
-    (hs : 2 ^ r < Fintype.card (ABVisibleSurface k)) :
+    (hs : 2 ^ r < Fintype.card (ABVisibleState k)) :
     ¬ RealizedBySharedABAffineFeatureFamily (r := r) (k := k) features
         (fullABRuleFamily k) := by
   exact
@@ -34,13 +34,13 @@ theorem fullABRuleFamily_not_realizedBySharedABAffineFeatureFamily_of_lt_cardFor
   exact
     fullABRuleFamily_not_realizedBySharedABAffineFeatureFamily_of_lt_surfaceCard
       (r := r) (k := k) features
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
 
 /-- The full raw `(a,b)` rule family cannot be realized by a shared sparse
 threshold family below the reduced truth-table threshold. -/
 theorem fullABRuleFamily_not_realizedBySharedABSparseThresholdAffineFamily_of_lt_surfaceCard
     (features : Fin r → AffineColumnCode (k + k))
-    (hs : 2 * r < Fintype.card (ABVisibleSurface k)) :
+    (hs : 2 * r < Fintype.card (ABVisibleState k)) :
     ¬ RealizedBySharedABSparseThresholdAffineFamily (r := r) (k := k) features
         (fullABRuleFamily k) := by
   exact
@@ -57,13 +57,13 @@ theorem fullABRuleFamily_not_realizedBySharedABSparseThresholdAffineFamily_of_lt
   exact
     fullABRuleFamily_not_realizedBySharedABSparseThresholdAffineFamily_of_lt_surfaceCard
       (r := r) (k := k) features
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
 
 /-- The full raw `(a,b)` rule family cannot be realized by a shared decision-list
 family below the reduced truth-table threshold. -/
 theorem fullABRuleFamily_not_realizedBySharedABAffineDecisionListFamily_of_lt_surfaceCard
     (features : Fin r → AffineColumnCode (k + k))
-    (hs : r + 1 < Fintype.card (ABVisibleSurface k)) :
+    (hs : r + 1 < Fintype.card (ABVisibleState k)) :
     ¬ RealizedBySharedABAffineDecisionListFamily (r := r) (k := k) features
         (fullABRuleFamily k) := by
   exact
@@ -80,7 +80,7 @@ theorem fullABRuleFamily_not_realizedBySharedABAffineDecisionListFamily_of_lt_ca
   exact
     fullABRuleFamily_not_realizedBySharedABAffineDecisionListFamily_of_lt_surfaceCard
       (r := r) (k := k) features
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
 
 end ReducedFullRules
 

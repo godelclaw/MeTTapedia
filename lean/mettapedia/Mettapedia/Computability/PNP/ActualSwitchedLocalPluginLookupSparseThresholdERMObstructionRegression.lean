@@ -47,7 +47,7 @@ theorem pluginLookupActualSwitchedLocalInterfaceBitVec2k0_zeroExtractor_not_none
 /-- The stronger sparse-threshold recovery packet is likewise impossible on the
 same unrestricted plug-in lookup endpoint at extractor width `0`. -/
 theorem pluginLookupActualSwitchedLocalInterfaceBitVec2k0_zeroExtractor_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_regression
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 0))
     (q : ℝ≥0∞) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData

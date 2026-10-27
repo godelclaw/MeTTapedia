@@ -7,7 +7,7 @@ namespace Mettapedia.Computability.PNP
 
 def fin4RuleFamilyBool0Quotient
     (p : Fin 4) :
-    ExactVisiblePostSwitchSurface Bool 0 → Bool :=
+    ExactVisiblePostSwitchData Bool 0 → Bool :=
   match p.1 with
   | 0 => fun _ => false
   | 1 => fun u => decide (u.z = false)

@@ -7,7 +7,7 @@ namespace Mettapedia.Computability.PNP
 def constBitVec0BoundedSampleSampleWindow : BitVec 1 → BitVec 0 := fun _ i => Fin.elim0 i
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k0NonemptyBoundedSampleSampleWindow :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_sampleWindow_gap_regression
@@ -55,7 +55,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_bitVec1k0r0sampleBound3_regression :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
-          (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+          (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchData (BitVec 1) 0))
           (boundedSamplePluginMajorityActualSwitchedLocalInterface
             (BitVec 1) 0 3)
           constBitVec0BoundedSampleSampleWindow
@@ -67,7 +67,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
       (k := 0)
       (sampleBound := 3)
       (zfeat := constBitVec0BoundedSampleSampleWindow)
-      (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+      (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchData (BitVec 1) 0))
       (q := 0)
       (by norm_num)
       (by norm_num)

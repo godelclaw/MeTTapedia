@@ -44,7 +44,7 @@ theorem fullExactVisibleRuleFamily_not_realizedByRawExactZABDecisionListFamily_o
         (Index := ExactVisibleRule (BitVec n) k)
         zfeat (fullExactVisibleRuleFamily (BitVec n) k) := ⟨hreal⟩
   have hs :
-      r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+      r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
     have hs' : r + 2 * k + 1 < 2 ^ (n + 2 * k) := by
       omega
     simpa [card_exactVisiblePostSwitchSurface_bitVec] using hs'
@@ -66,7 +66,7 @@ theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABAffineFeatureFami
         (Index := ExactVisibleRule (BitVec n) k)
         zfeat features (fullExactVisibleRuleFamily (BitVec n) k) := ⟨hreal⟩
   have hs :
-      2 ^ p < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+      2 ^ p < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
     have hs' : 2 ^ p < 2 ^ (n + 2 * k) := by
       exact (Nat.pow_lt_pow_iff_right Nat.one_lt_two).2 hfeat
     simpa [card_exactVisiblePostSwitchSurface_bitVec] using hs'
@@ -88,7 +88,7 @@ theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABSparseThresholdAf
         (Index := ExactVisibleRule (BitVec n) k)
         zfeat features (fullExactVisibleRuleFamily (BitVec n) k) := ⟨hreal⟩
   have hs :
-      2 * p < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+      2 * p < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
     simpa [card_exactVisiblePostSwitchSurface_bitVec] using hlin
   exact
     (htarget.not_surjective_predict_of_lt_surfaceCard hs)
@@ -108,7 +108,7 @@ theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABAffineDecisionLis
         (Index := ExactVisibleRule (BitVec n) k)
         zfeat features (fullExactVisibleRuleFamily (BitVec n) k) := ⟨hreal⟩
   have hs :
-      p + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+      p + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
     have hs' : p + 1 < 2 ^ (n + 2 * k) := by
       omega
     simpa [card_exactVisiblePostSwitchSurface_bitVec] using hs'

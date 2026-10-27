@@ -63,7 +63,7 @@ end Helpers
 section ExactVisible
 
 variable {Z : Type v} [Fintype Z] {p r k : ℕ} {Index : Type u}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)}
 variable {zfeat : Z → BitVec r}
 variable {G : ExactVisibleSwitchedFamily Z k Index} {q : ℝ≥0∞}
 
@@ -79,7 +79,7 @@ theorem regionMass_le_of_badCode_agrees_on
     (c :
       (sharedExactZABSparseThresholdAffineBitFamily Z zfeat h.features).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hagree :
       ∀ x, x ∈ region →
         (sharedExactZABSparseThresholdAffineBitFamily Z zfeat h.features).decode c.1 x =
@@ -99,7 +99,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block} {r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)}
 variable {zfeat : Z → BitVec r} {q : ℝ≥0∞}
 
 namespace SharedExactZABSparseThresholdERMRecoveryData
@@ -112,13 +112,13 @@ theorem regionMass_le_of_injective_zfeat_of_not_mem
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    {x₀ : ExactVisiblePostSwitchSurface Z k}
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    {x₀ : ExactVisiblePostSwitchData Z k}
     (hx₀ : x₀ ∉ region) :
     region.sum (fun x => μ x) ≤ q := by
   classical
   let target := T.predictorFamily.predict i
-  let altered : ExactVisiblePostSwitchSurface Z k → Bool := flipAt target x₀
+  let altered : ExactVisiblePostSwitchData Z k → Bool := flipAt target x₀
   have hreal :
       RealizedBySharedExactZABSparseThresholdAffineFamily
         (Z := Z)
@@ -221,8 +221,8 @@ theorem not_nonempty_of_injective_zfeat_of_not_mem_of_lt_regionMass
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    {x₀ : ExactVisiblePostSwitchSurface Z k}
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    {x₀ : ExactVisiblePostSwitchData Z k}
     (hx₀ : x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
@@ -239,8 +239,8 @@ theorem not_nonempty_of_injective_zfeat_of_exists_not_mem_of_lt_regionMass
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rcases hout with ⟨x₀, hx₀⟩
@@ -257,8 +257,8 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
     (zfeat : Z → BitVec r)
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
@@ -281,8 +281,8 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
     (zfeat : Z → BitVec r)
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData

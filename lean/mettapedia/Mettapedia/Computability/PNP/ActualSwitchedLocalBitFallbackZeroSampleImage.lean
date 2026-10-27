@@ -46,7 +46,7 @@ abbrev ZeroSampleIndex
     (Z : Type v) (k fallbackBits : ℕ) :=
   BoundedSampleFallbackFamilyIndex
     (ULift.{v} (BitCode fallbackBits))
-    (ExactVisiblePostSwitchSurface Z k) 0
+    (ExactVisiblePostSwitchData Z k) 0
 
 /-- The exact-visible predictor family of the zero-sample bit-coded fallback
 wrapper. -/
@@ -162,9 +162,9 @@ surface: radius zero adds no extra predictor-image compression content. -/
 theorem exists_clockedExactVisibleRealization_iff_fallbackDecoderFamily
     {Z : Type v} {k fallbackBits s clock : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k) :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (zeroSampleWrapperFamily fallback).RealizedByClockedBitFamily F) ↔
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (fallbackDecoderFamily fallback).RealizedByClockedBitFamily F := by
   rw [exists_clockedExactVisibleRealization_iff_finitePredictorCover,
     exists_clockedExactVisibleRealization_iff_finitePredictorCover,

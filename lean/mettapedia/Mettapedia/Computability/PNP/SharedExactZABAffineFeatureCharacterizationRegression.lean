@@ -43,8 +43,8 @@ theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABAffineFeatureFami
       (Z := Bool) (p := 0) (r := 0) (k := 0)
       (fun _ => zeroVec) (fun i => nomatch i) ?_
   intro hinj
-  let u0 : ExactVisiblePostSwitchSurface Bool 0 := ⟨false, zeroVec, zeroVec⟩
-  let u1 : ExactVisiblePostSwitchSurface Bool 0 := ⟨true, zeroVec, zeroVec⟩
+  let u0 : ExactVisiblePostSwitchData Bool 0 := ⟨false, zeroVec, zeroVec⟩
+  let u1 : ExactVisiblePostSwitchData Bool 0 := ⟨true, zeroVec, zeroVec⟩
   have hsame :
       exactZABAffineFeatureSummary
           (Z := Bool) (p := 0) (r := 0) (k := 0)

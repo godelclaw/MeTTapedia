@@ -20,7 +20,7 @@ threshold below `1 - 2^-p` already forces the direct visible-width bound
 `n + 2*k < p`. -/
 theorem kpolyCoverage_anchor_fullRuleActualLocal_visibleWidth_lt_of_nonempty_recovery_of_lt_one_sub_pow_inv
     {n k r p : ℕ}
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -46,7 +46,7 @@ can support the full-rule manuscript-facing recovery packet below
 `1 - 2^-p`. -/
 theorem kpolyCoverage_anchor_fullRuleActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv_of_le_visibleWidth
     {n k r p : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hwidth : p ≤ n + 2 * k)
     (hq_lt : q < 1 - (2 ^ p : ℝ≥0∞)⁻¹) :
@@ -74,7 +74,7 @@ to bounded-sample plug-in-majority endpoints once the sample bound is large
 enough for surjectivity. -/
 theorem kpolyCoverage_anchor_boundedSamplePluginMajorityActualLocal_visibleWidth_lt_of_nonempty_recovery_of_lt_one_sub_pow_inv
     {n k r sampleBound p : ℕ}
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -84,7 +84,7 @@ theorem kpolyCoverage_anchor_boundedSamplePluginMajorityActualLocal_visibleWidth
             (BitVec n) k sampleBound)
           zfeat
           q))
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hq_lt : q < 1 - (2 ^ p : ℝ≥0∞)⁻¹) :
     n + 2 * k < p := by
   rcases h with ⟨h⟩
@@ -104,9 +104,9 @@ can support the bounded-sample plug-in-majority recovery packet below
 `1 - 2^-p` once the sample bound is large enough for surjectivity. -/
 theorem kpolyCoverage_anchor_boundedSamplePluginMajorityActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv_of_le_visibleWidth
     {n k r sampleBound p : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hwidth : p ≤ n + 2 * k)
     (hq_lt : q < 1 - (2 ^ p : ℝ≥0∞)⁻¹) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
@@ -136,7 +136,7 @@ threshold below `1 - 2^-(2*r + 4*k + slack + 1)` sharpens the visible-width
 ceiling from the unconditional half-width bound to `n ≤ 2*r + 2*k + slack`. -/
 theorem kpolyCoverage_anchor_fullRuleActualLocal_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_add_slack_of_nonempty_recovery_of_lt_one_sub_pow_inv
     {n k r slack : ℕ}
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -162,7 +162,7 @@ theorem kpolyCoverage_anchor_fullRuleActualLocal_visibleWidth_le_two_mul_extract
 extractor at all can support the full-rule manuscript-facing recovery packet. -/
 theorem kpolyCoverage_anchor_fullRuleActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv_of_two_mul_extractorWidth_add_two_mul_k_add_slack_lt_visibleWidth
     {n k r slack : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + slack < n)
     (hq_lt : q < 1 - (2 ^ (2 * r + 4 * k + slack + 1) : ℝ≥0∞)⁻¹) :
@@ -190,7 +190,7 @@ ceiling applies to bounded-sample plug-in-majority endpoints once the sample
 bound is large enough for surjectivity. -/
 theorem kpolyCoverage_anchor_boundedSamplePluginMajorityActualLocal_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_add_slack_of_nonempty_recovery_of_lt_one_sub_pow_inv
     {n k r sampleBound slack : ℕ}
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -200,7 +200,7 @@ theorem kpolyCoverage_anchor_boundedSamplePluginMajorityActualLocal_visibleWidth
             (BitVec n) k sampleBound)
           zfeat
           q))
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hq_lt : q < 1 - (2 ^ (2 * r + 4 * k + slack + 1) : ℝ≥0∞)⁻¹) :
     n ≤ 2 * r + 2 * k + slack := by
   rcases h with ⟨h⟩
@@ -221,9 +221,9 @@ can support the bounded-sample plug-in-majority recovery packet once the
 sample bound is large enough for surjectivity. -/
 theorem kpolyCoverage_anchor_boundedSamplePluginMajorityActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv_of_two_mul_extractorWidth_add_two_mul_k_add_slack_lt_visibleWidth
     {n k r sampleBound slack : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hgap : 2 * r + 2 * k + slack < n)
     (hq_lt : q < 1 - (2 ^ (2 * r + 4 * k + slack + 1) : ℝ≥0∞)⁻¹) :
     ¬ ∃ zfeat : BitVec n → BitVec r,

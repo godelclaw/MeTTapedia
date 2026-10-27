@@ -20,12 +20,12 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_sparse_threshol
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             Z k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+            (Fintype.card (ExactVisiblePostSwitchData Z k))
             (exactVisibleRuleDecode (Z := Z) (k := k)))
           zfeat) := by
   exact
@@ -36,13 +36,13 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_sp
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty
           (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               Z k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+              (Fintype.card (ExactVisiblePostSwitchData Z k))
               (exactVisibleRuleDecode (Z := Z) (k := k)))
             zfeat) := by
   exact
@@ -51,8 +51,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_sp
 
 theorem kpoly_anchor_surjective_actual_local_lightest_point_exact_decoder_fallback_regression
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (zfeat : Z → BitVec r)
     (h :
       Nonempty
@@ -60,7 +60,7 @@ theorem kpoly_anchor_surjective_actual_local_lightest_point_exact_decoder_fallba
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             Z k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+            (Fintype.card (ExactVisiblePostSwitchData Z k))
             (exactVisibleRuleDecode (Z := Z) (k := k)))
           zfeat
           q)) :
@@ -69,7 +69,7 @@ theorem kpoly_anchor_surjective_actual_local_lightest_point_exact_decoder_fallba
     kpolyCoverage_anchor_surjectiveActualLocal_one_sub_apply_lightestPoint_le_of_nonempty_recovery
       (T := boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k)))
       (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode
         (Z := Z) (k := k) (sampleBound := sampleBound))
@@ -78,8 +78,8 @@ theorem kpoly_anchor_surjective_actual_local_lightest_point_exact_decoder_fallba
 
 theorem kpoly_anchor_surjective_actual_local_no_extractor_lightest_point_exact_decoder_fallback_regression
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (q : ℝ≥0∞)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ ∃ zfeat : Z → BitVec r,
@@ -88,7 +88,7 @@ theorem kpoly_anchor_surjective_actual_local_no_extractor_lightest_point_exact_d
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               Z k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+              (Fintype.card (ExactVisiblePostSwitchData Z k))
               (exactVisibleRuleDecode (Z := Z) (k := k)))
             zfeat
             q) := by
@@ -98,7 +98,7 @@ theorem kpoly_anchor_surjective_actual_local_no_extractor_lightest_point_exact_d
       (μ := μ)
       (T := boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k)))
       (q := q)
       (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode
@@ -107,8 +107,8 @@ theorem kpoly_anchor_surjective_actual_local_no_extractor_lightest_point_exact_d
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_lightest_point_exact_decoder_regression
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (q : ℝ≥0∞)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ ∃ zfeat : Z → BitVec r,
@@ -117,7 +117,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_li
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               Z k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+              (Fintype.card (ExactVisiblePostSwitchData Z k))
               (exactVisibleRuleDecode (Z := Z) (k := k)))
             zfeat
             q) := by
@@ -127,8 +127,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_li
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_visible_width_threshold_exact_decoder_regression
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -136,7 +136,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_visible_width_t
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec n) k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
             (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
           zfeat
           q)) :
@@ -148,8 +148,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_visible_width_t
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_lightest_point_threshold_exact_decoder_regression
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (zfeat : Z → BitVec r)
     (h :
       Nonempty
@@ -157,7 +157,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_lightest_point_
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             Z k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+            (Fintype.card (ExactVisiblePostSwitchData Z k))
             (exactVisibleRuleDecode (Z := Z) (k := k)))
           zfeat
           q)) :
@@ -169,8 +169,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_lightest_point_
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_visible_width_obstruction_exact_decoder_regression
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ Nonempty
@@ -178,7 +178,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_visible_width_o
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec n) k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
             (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
           zfeat
           q) := by
@@ -189,8 +189,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_visible_width_o
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_visible_width_exact_decoder_regression
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
@@ -199,7 +199,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_vi
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               (BitVec n) k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+              (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
               (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
             zfeat
             q) := by
@@ -209,8 +209,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_vi
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_joint_recovery_threshold_exact_decoder_regression
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -218,7 +218,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_joint_recovery_
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec n) k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
             (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
           zfeat
           q)) :
@@ -231,8 +231,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_joint_recovery_
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_joint_obstruction_exact_decoder_regression
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (hbad : 2 * r + 2 * k + 1 < n ∨ q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty
@@ -240,7 +240,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_joint_obstructi
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec n) k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
             (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
           zfeat
           q) := by
@@ -251,8 +251,8 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_joint_obstructi
 
 theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_joint_obstruction_exact_decoder_regression
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hbad : 2 * r + 2 * k + 1 < n ∨ q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
@@ -261,7 +261,7 @@ theorem kpoly_anchor_bounded_sample_majority_bit_fallback_family_no_extractor_jo
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               (BitVec n) k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+              (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
               (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
             zfeat
             q) := by

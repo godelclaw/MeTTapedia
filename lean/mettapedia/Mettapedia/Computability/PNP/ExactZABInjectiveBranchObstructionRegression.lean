@@ -13,7 +13,7 @@ namespace Mettapedia.Computability.PNP.ExactZABInjectiveBranchObstructionRegress
 
 theorem exactZABDecisionListERMFamily_small_extractor_regression
     (zfeat : BitVec 2 → BitVec 2)
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 2) 0) Bool) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := BitVec 2) (r := 2) (k := 0) zfeat samples).predict := by
@@ -25,7 +25,7 @@ theorem exactZABDecisionListERMFamily_small_extractor_regression
 theorem sharedExactZABAffineFeatureERMFamily_small_feature_count_regression
     (zfeat : BitVec 2 → BitVec 2)
     {features : Fin 1 → AffineColumnCode (2 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 2) 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABAffineFeatureERMFamily
           (Z := BitVec 2) (p := 1) (r := 2) (k := 0) zfeat features samples).predict := by
@@ -37,7 +37,7 @@ theorem sharedExactZABAffineFeatureERMFamily_small_feature_count_regression
 theorem sharedExactZABAffineDecisionListERMFamily_small_combiner_regression
     (zfeat : BitVec 2 → BitVec 2)
     {features : Fin 2 → AffineColumnCode (2 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 2) 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
           (Z := BitVec 2) (p := 2) (r := 2) (k := 0) zfeat features samples).predict := by

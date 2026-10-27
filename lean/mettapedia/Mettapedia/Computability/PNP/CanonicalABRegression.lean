@@ -18,7 +18,7 @@ section
 variable {Index : Type*}
 
 theorem canonical_ab_decision_list_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -28,7 +28,7 @@ theorem canonical_ab_decision_list_small_width_regression
   exact h.not_surjective_predict_of_two_le (by norm_num)
 
 theorem canonical_ab_raw_erm_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -38,7 +38,7 @@ theorem canonical_ab_raw_erm_small_width_regression
   exact h.not_surjective_predict_of_two_le (by norm_num)
 
 theorem canonical_ab_route_small_width_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool) :
     ¬ Function.Surjective
         (canonicalABDecisionListERMFamily
           (Z := BitVec 2) (k := 1) samples).predict := by

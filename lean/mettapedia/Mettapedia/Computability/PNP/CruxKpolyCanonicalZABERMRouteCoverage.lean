@@ -23,7 +23,7 @@ finite-image presentations, the bundled clocked finite-learning payload at the
 same budget, and the usual strict-budget non-surjectivity consequence. -/
 def CanonicalZABERMRouteCoverage : Prop :=
   ∀ {Z : Type*} [Fintype Z] {r k clock : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index} {q : ℝ≥0∞},
       CanonicalZABERMRecoveryData
@@ -34,7 +34,7 @@ def CanonicalZABERMRouteCoverage : Prop :=
         G.FiniteIndexRepresentativeCover (2 ^ (r + 2 * k + 1)) ∧
         G.FinitePredictorQuotient (2 ^ (r + 2 * k + 1)) ∧
         ClockedKpolyFiniteLearningPayload G (r + 2 * k + 1) clock ∧
-        (r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+        (r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k) →
           ¬ Function.Surjective G.predict)
 
 @[simp] theorem canonicalZABERMRouteCoverage :

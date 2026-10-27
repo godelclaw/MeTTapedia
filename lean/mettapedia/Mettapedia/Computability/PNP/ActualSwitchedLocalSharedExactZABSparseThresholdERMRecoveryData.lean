@@ -35,7 +35,7 @@ also supplies a uniform bad-code agreement bound. -/
 structure SharedExactZABSparseThresholdERMRecoveryData
     [Fintype Z]
     {r : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (q : ℝ≥0∞) where
@@ -57,7 +57,7 @@ structure SharedExactZABSparseThresholdERMRecoveryData
 namespace SharedExactZABSparseThresholdERMRecoveryData
 
 variable [Fintype Z] {T : ActualSwitchedLocalInterface Z k Index Block} {r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- Forget the actual-local wrapper and recover the exact-visible shared
@@ -143,7 +143,7 @@ theorem clockedKpolyFiniteLearningPayload
 theorem surfaceCard_le_of_surjective_predict
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 * allAffinePointBlockFeatureCount (r + (k + k)) := by
   exact h.exactVisibleRecoveryData.surfaceCard_le_of_surjective_predict hsurj
 
@@ -151,7 +151,7 @@ theorem not_surjective_predict_of_lt_surfaceCard
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective T.predictorFamily.predict := by
   exact h.exactVisibleRecoveryData.not_surjective_predict_of_lt_surfaceCard hs
 
@@ -178,7 +178,7 @@ end SharedExactZABSparseThresholdERMRecoveryData
 section Obstruction
 
 variable [Fintype Z] {T : ActualSwitchedLocalInterface Z k Index Block} {r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_not_injective_zfeat
@@ -213,7 +213,7 @@ section BitVec
 
 variable [Fintype (BitVec n)]
 variable {n k r : ℕ} {T : ActualSwitchedLocalInterface (BitVec n) k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {zfeat : BitVec n → BitVec r} {q : ℝ≥0∞}
 
 theorem SharedExactZABSparseThresholdERMRecoveryData.not_surjective_predict_of_width_lt

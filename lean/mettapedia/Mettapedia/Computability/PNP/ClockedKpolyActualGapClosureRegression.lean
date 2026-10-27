@@ -14,7 +14,7 @@ universe u v
 theorem exact_zab_erm_payload_regression
     {Z : Type v} [Fintype Z] {r k clock : ℕ} {Index : Type u}
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (exactZABDecisionListERMFamily
         (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples)
@@ -27,7 +27,7 @@ theorem exact_zab_erm_payload_regression
 theorem bitvec_zab_erm_payload_regression
     {r k clock : ℕ} {Index : Type u} [Fintype (BitVec r)]
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (bitVecZABDecisionListERMFamily
         (r := r) (k := k) (Index := Index) samples)
@@ -39,7 +39,7 @@ theorem bitvec_zab_erm_payload_regression
 theorem equality_to_bitvec_erm_payload_regression
     {r k clock : ℕ} {Index : Type u} [Fintype (BitVec r)]
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     (hG :
       G =
@@ -52,7 +52,7 @@ theorem equality_to_bitvec_erm_payload_regression
 
 theorem recovery_data_payload_regression
     {r k clock : ℕ} {Index : Type u} [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData
@@ -62,7 +62,7 @@ theorem recovery_data_payload_regression
 
 theorem full_family_not_finite_cover_regression
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (fullExactVisibleRuleFamily Z k).FinitePredictorCover (2 ^ s) := by
   exact
     fullExactVisibleRuleFamily_not_finitePredictorCover_of_lt_surfaceCard
@@ -70,7 +70,7 @@ theorem full_family_not_finite_cover_regression
 
 theorem current_interface_not_forall_payload_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index),
         ClockedKpolyFiniteLearningPayload G s clock) := by
   exact

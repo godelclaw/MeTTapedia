@@ -35,7 +35,7 @@ theorem kpolyCoverage_anchor_fieldedSwitchingOnlyClockedKpolyFiniteLearningBridg
 clocked payload is refuted below the exact-visible surface threshold. -/
 theorem kpolyCoverage_anchor_not_productBoundOnlyClockedKpolyFiniteLearningBridge_nil_of_lt_surfaceCard
     {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock
         ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) :=
@@ -46,7 +46,7 @@ theorem kpolyCoverage_anchor_not_productBoundOnlyClockedKpolyFiniteLearningBridg
 full clocked payload is refuted below the exact-visible surface threshold. -/
 theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyClockedKpolyFiniteLearningBridge_nil_of_lt_surfaceCard
     {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock
         ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) :=
@@ -58,7 +58,7 @@ the full clocked payload is also refuted below the exact-visible surface
 threshold. -/
 theorem kpolyCoverage_anchor_not_productBoundOnlyClockedKpolyFiniteLearningBridge_boolPair_one_step_of_lt_surfaceCard
     {Z : Type*} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
         (Bool × Bool) Z k s clock
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -71,7 +71,7 @@ bridge to the full clocked payload is also refuted below the exact-visible
 surface threshold. -/
 theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyClockedKpolyFiniteLearningBridge_boolPair_one_step_of_lt_surfaceCard
     {Z : Type*} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
         (Bool × Bool) Z k s clock
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -88,7 +88,7 @@ theorem kpolyCoverage_anchor_not_productBoundOnlyClockedKpolyFiniteLearningBridg
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock hist items :=
   not_productBoundOnlyClockedKpolyFiniteLearningBridge_of_true_productBound_of_surjective_predict_of_lt_predictorCard
@@ -103,7 +103,7 @@ theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyClockedKpolyFiniteLearningB
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock hist items :=
   not_fieldedSwitchingOnlyClockedKpolyFiniteLearningBridge_of_true_fieldedSwitching_of_surjective_predict_of_lt_predictorCard

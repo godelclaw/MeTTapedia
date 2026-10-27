@@ -28,7 +28,7 @@ variable {zfeat : Z → BitVec r}
 variable {G : ExactVisibleSwitchedFamily Z k Index}
 
 theorem exact_zab_erm_family_finite_predictor_cover_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FinitePredictorCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -36,7 +36,7 @@ theorem exact_zab_erm_family_finite_predictor_cover_regression
     (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem exact_zab_erm_family_finite_representative_cover_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FiniteIndexRepresentativeCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -44,7 +44,7 @@ theorem exact_zab_erm_family_finite_representative_cover_regression
     (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem exact_zab_erm_family_finite_predictor_quotient_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FinitePredictorQuotient
       (2 ^ (r + 2 * k + 1)) := by
@@ -53,7 +53,7 @@ theorem exact_zab_erm_family_finite_predictor_quotient_regression
 
 theorem exact_zab_erm_recovery_finite_predictor_cover_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       ExactZABERMRecoveryData
@@ -63,7 +63,7 @@ theorem exact_zab_erm_recovery_finite_predictor_cover_regression
 
 theorem exact_zab_erm_recovery_finite_representative_cover_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       ExactZABERMRecoveryData
@@ -73,7 +73,7 @@ theorem exact_zab_erm_recovery_finite_representative_cover_regression
 
 theorem exact_zab_erm_recovery_finite_predictor_quotient_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       ExactZABERMRecoveryData
@@ -86,7 +86,7 @@ end FiniteImageObjects
 variable {Index : Type*}
 
 theorem exact_zab_affine_feature_erm_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -98,7 +98,7 @@ theorem exact_zab_affine_feature_erm_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem exact_zab_sparse_threshold_erm_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -110,7 +110,7 @@ theorem exact_zab_sparse_threshold_erm_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem exact_zab_affine_decision_list_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -122,7 +122,7 @@ theorem exact_zab_affine_decision_list_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem exact_zab_raw_decision_list_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -134,7 +134,7 @@ theorem exact_zab_raw_decision_list_small_width_regression
   exact h.not_surjective_predict_of_le_of_two_le (by norm_num) (by norm_num)
 
 theorem exact_zab_raw_erm_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}

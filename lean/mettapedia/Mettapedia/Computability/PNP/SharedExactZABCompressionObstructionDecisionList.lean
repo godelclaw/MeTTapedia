@@ -88,7 +88,7 @@ theorem SharedExactZABDecisionListTargetData.not_surjective_predict_of_le_of_two
 /-- The same contradiction applies to the recovery wrapper, since it already
 packages the same exact compression target. -/
 theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
@@ -104,7 +104,7 @@ theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_budget_
 /-- And likewise under the natural width hypothesis `p ≤ n + 2k` with
 `2 ≤ n + 2k`. -/
 theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_le_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}

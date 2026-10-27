@@ -18,7 +18,7 @@ theorem not_productBoundExactVisibleCompressionBridge_of_true_productBound_of_su
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (V13FieldedProductBoundFrom Ω hist items →
         ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s) := by
   intro hbridge
@@ -36,7 +36,7 @@ theorem not_fieldedSwitchingExactVisibleCompressionBridge_of_true_fieldedSwitchi
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (V13FieldSwitchingInstantiatedFrom hist items →
         ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s) := by
   intro hbridge
@@ -54,7 +54,7 @@ theorem not_productBoundSemanticFiniteImageBridge_of_true_productBound_of_surjec
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundSemanticFiniteImageBridge Ω Z k s hist items G := by
   intro hbridge
   exact
@@ -71,7 +71,7 @@ theorem not_fieldedSwitchingSemanticFiniteImageBridge_of_true_fieldedSwitching_o
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingSemanticFiniteImageBridge Ω Z k s hist items G := by
   intro hbridge
   exact
@@ -87,7 +87,7 @@ theorem not_productBoundOnlyExactVisibleCompressionBridge_of_true_productBound_o
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge Ω Z k s hist items := by
   intro hbridge
   exact
@@ -104,7 +104,7 @@ theorem not_fieldedSwitchingOnlyExactVisibleCompressionBridge_of_true_fieldedSwi
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge Ω Z k s hist items := by
   intro hbridge
   exact
@@ -117,7 +117,7 @@ visible compression theorem.  The product fact is true, but the full visible
 Boolean family still needs the full truth-table budget. -/
 theorem not_productBoundOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
     {Ω : Type u} [Fintype Ω] {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
   intro hbridge
@@ -145,7 +145,7 @@ visible compression.  The certificate is true but has no information about the
 predictor-family image. -/
 theorem not_fieldedSwitchingOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
     {Ω : Type u} [Fintype Ω] {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
   intro hbridge
@@ -170,7 +170,7 @@ force below-surface exact-visible compression without a semantic image theorem
 for the predictor family. -/
 theorem not_productBoundOnlyExactVisibleCompressionBridge_boolPair_one_step_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -208,7 +208,7 @@ below-surface exact-visible compression unless it is connected to a concrete
 small predictor image. -/
 theorem not_fieldedSwitchingOnlyExactVisibleCompressionBridge_boolPair_one_step_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))

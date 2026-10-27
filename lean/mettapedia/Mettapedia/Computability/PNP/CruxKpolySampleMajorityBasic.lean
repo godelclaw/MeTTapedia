@@ -17,7 +17,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajority_surjective_iff
     (Z : Type v) (k sampleBound : ℕ) [Fintype Z] :
     Function.Surjective
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound :=
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_surjective_iff
     Z k sampleBound
 
@@ -26,9 +26,9 @@ plug-in majority is false on at most `sampleBound` exact-visible inputs. -/
 theorem kpolyCoverage_anchor_boundedSampleMajority_falseSupport_card_le_sampleBound
     {Z : Type v} [Fintype Z] {k sampleBound : ℕ}
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.falseSupport
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict
           sample u)).card ≤ sampleBound :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_falseSupport_card_le_sampleBound
@@ -54,9 +54,9 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithDefault_nondefaultSupport_
     {Z : Type v} [Fintype Z] {k sampleBound : ℕ}
     (default : Bool)
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.nondefaultSupport default
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict sample u)).card ≤ sampleBound :=
   boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_nondefaultSupport_card_le_sampleBound
@@ -83,7 +83,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithDefault_surjective_iff
     Function.Surjective
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound :=
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound :=
   boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_surjective_iff
     default Z k sampleBound
 

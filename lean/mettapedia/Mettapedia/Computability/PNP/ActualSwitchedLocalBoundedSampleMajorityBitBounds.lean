@@ -21,16 +21,16 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 ^ fallbackBits *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card := by
+          (ExactVisiblePostSwitchData Z k) sampleBound).card := by
   classical
   have hlower :
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
         Fintype.card (ULift.{v} (BitCode fallbackBits)) *
           (PluginSampleMajority.smallSubsets
-            (ExactVisiblePostSwitchSurface Z k) sampleBound).card :=
+            (ExactVisiblePostSwitchData Z k) sampleBound).card :=
     boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_boolClassifierSpace_card_le_code_mul_smallSubsets_card_of_surjective
       (FallbackIndex := ULift.{v} (BitCode fallbackBits))
       (Z := Z) (k := k) (sampleBound := sampleBound)
@@ -44,7 +44,7 @@ irrelevant at this full-radius endpoint. -/
 theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_surjective_of_surfaceCard_le_sampleBound
     {Z : Type v} {k sampleBound fallbackBits : ℕ} [Fintype Z]
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
     Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
@@ -64,8 +64,8 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (hcard :
       2 ^ fallbackBits *
           (PluginSampleMajority.smallSubsets
-            (ExactVisiblePostSwitchSurface Z k) sampleBound).card <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+            (ExactVisiblePostSwitchData Z k) sampleBound).card <
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
@@ -87,10 +87,10 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 ^ fallbackBits *
         ∑ i ∈ Finset.range (sampleBound + 1),
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i := by
+          (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i := by
   classical
   simpa [PluginSampleMajority.card_smallSubsets_eq_sum_range_choose] using
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_boolClassifierSpace_card_le_bitCode_mul_smallSubsets_card_of_surjective
@@ -106,8 +106,8 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (hcard :
       2 ^ fallbackBits *
           (∑ i ∈ Finset.range (sampleBound + 1),
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+            (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) <
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
@@ -127,13 +127,13 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (henvelope :
       (∑ i ∈ Finset.range (sampleBound + 1),
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+        (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
         2 ^ overheadBits)
     (hsurj :
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       fallbackBits + overheadBits := by
   classical
   have hbinom :=
@@ -143,12 +143,12 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
   have hprod :
       2 ^ fallbackBits *
           (∑ i ∈ Finset.range (sampleBound + 1),
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
         2 ^ (fallbackBits + overheadBits) := by
     calc
       2 ^ fallbackBits *
           (∑ i ∈ Finset.range (sampleBound + 1),
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
           2 ^ fallbackBits * 2 ^ overheadBits :=
         Nat.mul_le_mul_left (2 ^ fallbackBits) henvelope
       _ = 2 ^ (fallbackBits + overheadBits) := by
@@ -162,11 +162,11 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (henvelope :
       (∑ i ∈ Finset.range (sampleBound + 1),
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+        (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
         2 ^ overheadBits)
     (hbits :
       fallbackBits + overheadBits <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
@@ -178,12 +178,12 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
   have hprod :
       2 ^ fallbackBits *
           (∑ i ∈ Finset.range (sampleBound + 1),
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
         2 ^ (fallbackBits + overheadBits) := by
     calc
       2 ^ fallbackBits *
           (∑ i ∈ Finset.range (sampleBound + 1),
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
           2 ^ fallbackBits * 2 ^ overheadBits :=
         Nat.mul_le_mul_left (2 ^ fallbackBits) henvelope
       _ = 2 ^ (fallbackBits + overheadBits) := by
@@ -197,7 +197,7 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
     (fallback : BitCode 0 → ExactVisibleRule Z k)
     (hbound :
-      sampleBound < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      sampleBound < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound 0 fallback).predictorFamily.predict := by
@@ -208,7 +208,7 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       (fallbackBits := 0) fallback
   simpa using
     PluginSampleMajority.sum_range_choose_lt_twoPow_of_lt
-      (n := Fintype.card (ExactVisiblePostSwitchSurface Z k))
+      (n := Fintype.card (ExactVisiblePostSwitchData Z k))
       (radius := sampleBound) hbound
 
 /-- Exact zero-fallback boundary: with no fallback bits, the bit-coded
@@ -220,13 +220,13 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound 0 fallback).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound := by
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound := by
   classical
   constructor
   · intro hsurj
     by_contra hnot
     have hlt :
-        sampleBound < Fintype.card (ExactVisiblePostSwitchSurface Z k) :=
+        sampleBound < Fintype.card (ExactVisiblePostSwitchData Z k) :=
       Nat.lt_of_not_ge hnot
     exact
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_surjective_zeroFallbackBits_of_sampleBound_lt_surfaceCard
@@ -248,10 +248,10 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 ^ fallbackBits *
         ((sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound) := by
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound) := by
   classical
   have hbinom :=
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_boolClassifierSpace_card_le_bitCode_mul_sum_choose_of_surjective
@@ -259,11 +259,11 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       (fallbackBits := fallbackBits) fallback hsurj
   have hsum :
       (∑ i ∈ Finset.range (sampleBound + 1),
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+        (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
         (sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound :=
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound :=
     PluginSampleMajority.sum_range_choose_le_succ_mul_succ_pow
-      (Fintype.card (ExactVisiblePostSwitchSurface Z k)) sampleBound
+      (Fintype.card (ExactVisiblePostSwitchData Z k)) sampleBound
   exact hbinom.trans (Nat.mul_le_mul_left (2 ^ fallbackBits) hsum)
 
 /-- If even the coarse polynomial fallback-bit envelope is still below the full
@@ -275,8 +275,8 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (hcard :
       2 ^ fallbackBits *
           ((sampleBound + 1) *
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+            (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound) <
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
@@ -287,11 +287,11 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       (fallbackBits := fallbackBits) fallback
   have hsum :
       (∑ i ∈ Finset.range (sampleBound + 1),
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k)).choose i) ≤
+        (Fintype.card (ExactVisiblePostSwitchData Z k)).choose i) ≤
         (sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound :=
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound :=
     PluginSampleMajority.sum_range_choose_le_succ_mul_succ_pow
-      (Fintype.card (ExactVisiblePostSwitchSurface Z k)) sampleBound
+      (Fintype.card (ExactVisiblePostSwitchData Z k)) sampleBound
   exact (Nat.mul_le_mul_left (2 ^ fallbackBits) hsum).trans_lt hcard
 
 /-- If the coarse polynomial sparse-override envelope fits into
@@ -302,13 +302,13 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (henvelope :
       (sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound ≤
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound ≤
         2 ^ overheadBits)
     (hsurj :
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       fallbackBits + overheadBits := by
   classical
   have hpoly :=
@@ -318,12 +318,12 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
   have hprod :
       2 ^ fallbackBits *
           ((sampleBound + 1) *
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound) ≤
         2 ^ (fallbackBits + overheadBits) := by
     calc
       2 ^ fallbackBits *
           ((sampleBound + 1) *
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound) ≤
           2 ^ fallbackBits * 2 ^ overheadBits :=
         Nat.mul_le_mul_left (2 ^ fallbackBits) henvelope
       _ = 2 ^ (fallbackBits + overheadBits) := by
@@ -339,11 +339,11 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (henvelope :
       (sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound ≤
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound ≤
         2 ^ overheadBits)
     (hbits :
       fallbackBits + overheadBits <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
@@ -355,12 +355,12 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
   have hprod :
       2 ^ fallbackBits *
           ((sampleBound + 1) *
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound) ≤
         2 ^ (fallbackBits + overheadBits) := by
     calc
       2 ^ fallbackBits *
           ((sampleBound + 1) *
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound) ≤
+            (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound) ≤
           2 ^ fallbackBits * 2 ^ overheadBits :=
         Nat.mul_le_mul_left (2 ^ fallbackBits) henvelope
       _ = 2 ^ (fallbackBits + overheadBits) := by
@@ -375,21 +375,21 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hradius : sampleBound + 1 ≤ 2 ^ radiusBits)
     (hbase :
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1 ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) + 1 ≤
         2 ^ baseBits)
     (hsurj :
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       fallbackBits + radiusBits + baseBits * sampleBound := by
   classical
   have henvelope :
       (sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound ≤
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound ≤
         2 ^ (radiusBits + baseBits * sampleBound) :=
     PluginSampleMajority.succ_mul_succ_pow_le_twoPow_add_mul
-      (n := Fintype.card (ExactVisiblePostSwitchSurface Z k))
+      (n := Fintype.card (ExactVisiblePostSwitchData Z k))
       (radius := sampleBound) hradius hbase
   have htotal :=
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_fallbackBits_add_overheadBits_ge_surfaceCard_of_polynomialEnvelope_le_twoPow_surjective
@@ -406,21 +406,21 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hradius : sampleBound + 1 ≤ 2 ^ radiusBits)
     (hbase :
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1 ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) + 1 ≤
         2 ^ baseBits)
     (hbits :
       fallbackBits + radiusBits + baseBits * sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict := by
   classical
   have henvelope :
       (sampleBound + 1) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1) ^ sampleBound ≤
+          (Fintype.card (ExactVisiblePostSwitchData Z k) + 1) ^ sampleBound ≤
         2 ^ (radiusBits + baseBits * sampleBound) :=
     PluginSampleMajority.succ_mul_succ_pow_le_twoPow_add_mul
-      (n := Fintype.card (ExactVisiblePostSwitchSurface Z k))
+      (n := Fintype.card (ExactVisiblePostSwitchData Z k))
       (radius := sampleBound) hradius hbase
   apply
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_surjective_of_polynomialEnvelope_le_twoPow_and_fallbackBits_add_overheadBits_lt_surfaceCard
@@ -438,13 +438,13 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hradius : sampleBound ≤ 2 ^ radiusBits)
     (hbase :
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1 ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) + 1 ≤
         2 ^ baseBits)
     (hsurj :
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       fallbackBits + (radiusBits + 1) + baseBits * sampleBound := by
   exact
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_fallbackBits_add_radiusBits_add_baseBits_mul_sampleBound_ge_surfaceCard_of_envelopeFactors_le_twoPow_surjective
@@ -462,11 +462,11 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hradius : sampleBound ≤ 2 ^ radiusBits)
     (hbase :
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) + 1 ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) + 1 ≤
         2 ^ baseBits)
     (hbits :
       fallbackBits + (radiusBits + 1) + baseBits * sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict :=
@@ -486,13 +486,13 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hradius : sampleBound ≤ 2 ^ radiusBits)
     (hbase :
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤
         2 ^ baseBits)
     (hsurj :
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k sampleBound fallbackBits fallback).predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       fallbackBits + (radiusBits + 1) + (baseBits + 1) * sampleBound := by
   exact
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_fallbackBits_add_radiusBits_add_baseBits_mul_sampleBound_ge_surfaceCard_of_envelopeFactors_le_twoPow_surjective
@@ -510,11 +510,11 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hradius : sampleBound ≤ 2 ^ radiusBits)
     (hbase :
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤
         2 ^ baseBits)
     (hbits :
       fallbackBits + (radiusBits + 1) + (baseBits + 1) * sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound fallbackBits fallback).predictorFamily.predict :=
@@ -536,10 +536,10 @@ theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInter
       Function.Surjective
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
           Z k 0 fallbackBits fallback).predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ fallbackBits := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ fallbackBits := by
   classical
   have hpow :
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
         2 ^ fallbackBits :=
     by
       simpa using
@@ -554,7 +554,7 @@ expressive. -/
 theorem boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_surjective_zeroSample_of_fallbackBits_lt_surfaceCard
     {Z : Type v} {k fallbackBits : ℕ} [Fintype Z]
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (hbits : fallbackBits < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbits : fallbackBits < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k 0 fallbackBits fallback).predictorFamily.predict := by

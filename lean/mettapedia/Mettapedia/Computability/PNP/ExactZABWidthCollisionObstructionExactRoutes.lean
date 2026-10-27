@@ -14,7 +14,7 @@ variable {n p r k : ℕ} {Index : Type*}
 
 theorem exactZABDecisionListERMFamily_not_surjective_of_width_lt
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hwidth : r < n) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
@@ -27,7 +27,7 @@ theorem exactZABDecisionListERMFamily_not_surjective_of_width_lt
 
 theorem exactZABAffineFeatureERMFamily_not_surjective_of_width_lt
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hwidth : r < n) :
     ¬ Function.Surjective
         (exactZABAffineFeatureERMFamily
@@ -40,7 +40,7 @@ theorem exactZABAffineFeatureERMFamily_not_surjective_of_width_lt
 
 theorem exactZABSparseThresholdAffineERMFamily_not_surjective_of_width_lt
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hwidth : r < n) :
     ¬ Function.Surjective
         (exactZABSparseThresholdAffineERMFamily

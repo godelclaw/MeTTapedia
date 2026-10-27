@@ -42,7 +42,7 @@ theorem ExactZABAffineFeatureTargetData.not_surjective_predict_of_budget_lt
     h.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABAffineFeatureRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -54,7 +54,7 @@ theorem ExactZABAffineFeatureRecoveryData.bitVecSurfaceCard_le_of_surjective_pre
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABAffineFeatureRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -67,7 +67,7 @@ theorem ExactZABAffineFeatureRecoveryData.not_surjective_predict_of_budget_lt
 
 theorem exactZABAffineFeatureERMFamily_bitVecSurfaceCard_le_of_surjective_predict
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (exactZABAffineFeatureERMFamily
@@ -80,7 +80,7 @@ theorem exactZABAffineFeatureERMFamily_bitVecSurfaceCard_le_of_surjective_predic
 
 theorem exactZABAffineFeatureERMFamily_not_surjective_of_budget_lt
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : p * ((r + (k + k)) + 1) + 2 ^ p < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (exactZABAffineFeatureERMFamily
@@ -91,7 +91,7 @@ theorem exactZABAffineFeatureERMFamily_not_surjective_of_budget_lt
       (n := n) (p := p) (r := r) (k := k) (Index := Index) zfeat samples hsurj
 
 theorem ExactZABAffineFeatureERMRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -103,7 +103,7 @@ theorem ExactZABAffineFeatureERMRecoveryData.bitVecSurfaceCard_le_of_surjective_
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}

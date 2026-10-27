@@ -25,7 +25,7 @@ theorem abVisible_surfaceCard_le_of_realizedBySharedExactABAffineFeatureFamily_o
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedBySharedExactABAffineFeatureFamily
       (Z := Z) (r := r) (k := k) features G) :
-    Fintype.card (ABVisibleSurface k) ≤ 2 ^ r := by
+    Fintype.card (ABVisibleState k) ≤ 2 ^ r := by
   exact
     abVisible_surfaceCard_le_of_exactVisibleCompressionTarget_of_factorsThrough
       (Z := Z) (k := k) (s := 2 ^ r) hfactor hsurj
@@ -39,7 +39,7 @@ theorem not_realizedBySharedExactABAffineFeatureFamily_of_factorsThrough_ab_and_
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (hs : 2 ^ r < Fintype.card (ABVisibleSurface k))
+    (hs : 2 ^ r < Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedBySharedExactABAffineFeatureFamily
@@ -63,7 +63,7 @@ theorem not_realizedBySharedExactABAffineFeatureFamily_of_factorsThrough_ab_and_
   exact
     not_realizedBySharedExactABAffineFeatureFamily_of_factorsThrough_ab_and_surjective_predict_of_lt_surfaceCard
       (Z := Z) (r := r) (k := k)
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
       hfactor hsurj
 
 /-- If an exact family factors through a fully expressive raw `(a,b)` family,
@@ -78,7 +78,7 @@ theorem abVisible_surfaceCard_le_of_realizedBySharedExactABSparseThresholdAffine
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedBySharedExactABSparseThresholdAffineFamily
       (Z := Z) (r := r) (k := k) features G) :
-    Fintype.card (ABVisibleSurface k) ≤ 2 * r := by
+    Fintype.card (ABVisibleState k) ≤ 2 * r := by
   exact
     abVisible_surfaceCard_le_of_exactVisibleCompressionTarget_of_factorsThrough
       (Z := Z) (k := k) (s := 2 * r) hfactor hsurj
@@ -92,7 +92,7 @@ theorem not_realizedBySharedExactABSparseThresholdAffineFamily_of_factorsThrough
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (hs : 2 * r < Fintype.card (ABVisibleSurface k))
+    (hs : 2 * r < Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedBySharedExactABSparseThresholdAffineFamily
@@ -117,7 +117,7 @@ theorem not_realizedBySharedExactABSparseThresholdAffineFamily_of_factorsThrough
   exact
     not_realizedBySharedExactABSparseThresholdAffineFamily_of_factorsThrough_ab_and_surjective_predict_of_lt_surfaceCard
       (Z := Z) (r := r) (k := k)
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
       hfactor hsurj
 
 /-- If an exact family factors through a fully expressive raw `(a,b)` family,
@@ -132,7 +132,7 @@ theorem abVisible_surfaceCard_le_of_realizedBySharedExactABAffineDecisionListFam
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedBySharedExactABAffineDecisionListFamily
       (Z := Z) (r := r) (k := k) features G) :
-    Fintype.card (ABVisibleSurface k) ≤ r + 1 := by
+    Fintype.card (ABVisibleState k) ≤ r + 1 := by
   exact
     abVisible_surfaceCard_le_of_exactVisibleCompressionTarget_of_factorsThrough
       (Z := Z) (k := k) (s := r + 1) hfactor hsurj
@@ -146,7 +146,7 @@ theorem not_realizedBySharedExactABAffineDecisionListFamily_of_factorsThrough_ab
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (hs : r + 1 < Fintype.card (ABVisibleSurface k))
+    (hs : r + 1 < Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedBySharedExactABAffineDecisionListFamily
@@ -171,7 +171,7 @@ theorem not_realizedBySharedExactABAffineDecisionListFamily_of_factorsThrough_ab
   exact
     not_realizedBySharedExactABAffineDecisionListFamily_of_factorsThrough_ab_and_surjective_predict_of_lt_surfaceCard
       (Z := Z) (r := r) (k := k)
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
       hfactor hsurj
 
 /-- Exact-pullback partial-image form for shared affine features: any
@@ -182,7 +182,7 @@ theorem probeCard_le_of_realizedBySharedExactABAffineFeatureFamily_of_factorsThr
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -208,7 +208,7 @@ theorem not_realizedBySharedExactABAffineFeatureFamily_of_factorsThrough_ab_and_
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 ^ r) < Fintype.card Probe)
@@ -226,7 +226,7 @@ theorem probeCard_le_of_realizedBySharedExactABSparseThresholdAffineFamily_of_fa
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -252,7 +252,7 @@ theorem not_realizedBySharedExactABSparseThresholdAffineFamily_of_factorsThrough
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 * r) < Fintype.card Probe)
@@ -270,7 +270,7 @@ theorem probeCard_le_of_realizedBySharedExactABAffineDecisionListFamily_of_facto
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -296,7 +296,7 @@ theorem not_realizedBySharedExactABAffineDecisionListFamily_of_factorsThrough_ab
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (r + 1) < Fintype.card Probe)

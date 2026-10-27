@@ -27,7 +27,7 @@ theorem kpoly_anchor_exact_visible_compression_target_iff_finitePredictorCover_r
 theorem kpoly_anchor_clocked_realization_iff_finitePredictorCover_regression
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       G.FinitePredictorCover (2 ^ s) := by
   exact kpolyCoverage_anchor_clockedRealization_iff_finitePredictorCover
@@ -56,7 +56,7 @@ theorem kpoly_anchor_exact_visible_compression_target_iff_finitePredictorQuotien
 theorem kpoly_anchor_clocked_realization_iff_finitePredictorQuotient_regression
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       G.FinitePredictorQuotient (2 ^ s) := by
   exact kpolyCoverage_anchor_clockedRealization_iff_finitePredictorQuotient
@@ -71,7 +71,7 @@ theorem kpoly_anchor_exact_visible_compression_target_iff_finiteIndexRepresentat
 theorem kpoly_anchor_clocked_realization_iff_finiteIndexRepresentativeCover_regression
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       G.FiniteIndexRepresentativeCover (2 ^ s) := by
   exact kpolyCoverage_anchor_clockedRealization_iff_finiteIndexRepresentativeCover
@@ -79,7 +79,7 @@ theorem kpoly_anchor_clocked_realization_iff_finiteIndexRepresentativeCover_regr
 theorem kpoly_anchor_not_clocked_realization_iff_not_finiteIndexRepresentativeCover_regression
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ¬ G.FiniteIndexRepresentativeCover (2 ^ s) := by
   exact
@@ -88,7 +88,7 @@ theorem kpoly_anchor_not_clocked_realization_iff_not_finiteIndexRepresentativeCo
 theorem kpoly_anchor_not_clocked_realization_iff_not_finitePredictorQuotient_regression
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ¬ G.FinitePredictorQuotient (2 ^ s) := by
   exact

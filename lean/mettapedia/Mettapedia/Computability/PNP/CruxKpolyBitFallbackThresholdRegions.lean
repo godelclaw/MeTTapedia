@@ -19,7 +19,7 @@ realized predictors in a manuscript-facing sparse-threshold recovery packet
 already have agreement mass at most `q`. -/
 theorem kpolyCoverage_anchor_actualLocal_agreementMass_le_of_nonempty_recovery_of_predict_ne
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (h :
@@ -38,7 +38,7 @@ manuscript-facing sparse-threshold recovery packet on that actual-local
 endpoint. -/
 theorem kpolyCoverage_anchor_actualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_agreementMass_of_predict_ne
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
     (i j : Index)
@@ -68,8 +68,8 @@ lightest-point threshold.  The fallback-side repairs are only concrete
 specializations of this surjective actual-local barrier. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_one_sub_apply_lightestPoint_le_of_nonempty_recovery
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (zfeat : Z → BitVec r)
@@ -87,7 +87,7 @@ finite visible region to have total mass at most `q`.  This strengthens the
 single-lightest-point barrier to arbitrary proper regions. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_regionMass_le_of_nonempty_recovery_of_exists_not_mem
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (zfeat : Z → BitVec r)
@@ -95,8 +95,8 @@ theorem kpolyCoverage_anchor_surjectiveActualLocal_regionMass_le_of_nonempty_rec
       Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ T zfeat q))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) :
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) :
     region.sum (fun x => μ x) ≤ q := by
   rcases h with ⟨h⟩
   exact h.regionMass_le_of_surjective_predict_of_exists_not_mem hsurj region hout
@@ -106,12 +106,12 @@ mass above `q`, no extractor at all can support the manuscript-facing sparse-
 threshold recovery packet on a surjective actual-local endpoint. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_exists_not_mem_of_lt_regionMass
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty
@@ -134,14 +134,14 @@ trace space on that region. -/
 theorem kpolyCoverage_anchor_actualLocal_predictorCard_le_two_pow_regionCard_of_nonempty_recovery_of_injective_predict_of_lt_regionMass
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
     [Fintype Index]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (h :
       Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ T zfeat q))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x))
     (hinj : Function.Injective T.predictorFamily.predict) :
     Fintype.card Index ≤ 2 ^ region.card := by
@@ -158,10 +158,10 @@ endpoint. -/
 theorem kpolyCoverage_anchor_actualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_regionCard_of_injective_predict_of_lt_regionMass
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
     [Fintype Index]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hinj : Function.Injective T.predictorFamily.predict)
     (hmass : q < region.sum (fun x => μ x))
     (hcard : 2 ^ region.card < Fintype.card Index) :

@@ -168,7 +168,7 @@ variable {Z : Type*} {k s clock : ℕ} {Index : Type*}
 variable {G : ExactVisibleSwitchedFamily Z k Index}
 
 local instance exactVisiblePostSwitchSurfaceNonempty [Nonempty Z] :
-    Nonempty (ExactVisiblePostSwitchSurface Z k) :=
+    Nonempty (ExactVisiblePostSwitchData Z k) :=
   ⟨⟨Classical.choice ‹Nonempty Z›, zeroVec, zeroVec⟩⟩
 
 /-- Any exact visible compression target can be viewed as a clocked family
@@ -177,7 +177,7 @@ theorem exactRecoveryRate_ge_one_sub_uniformMissRatio_pow_of_exactVisibleCompres
     [Fintype Z] [Nonempty Z]
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ) :
-    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchSurface Z k) ^ m ≤
+    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchData Z k) ^ m ≤
       (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
           (G := G) (s := s) clock h).exactRecoveryRate (G.predict i) m := by
   exact
@@ -190,7 +190,7 @@ theorem nondeceptiveRate_ge_one_sub_uniformMissRatio_pow_of_exactVisibleCompress
     [Fintype Z] [Nonempty Z]
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ) :
-    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchSurface Z k) ^ m ≤
+    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchData Z k) ^ m ≤
       (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
           (G := G) (s := s) clock h).nondeceptiveRate (G.predict i) m := by
   exact
@@ -203,7 +203,7 @@ theorem exactRecoveryRate_pos_of_bitBudget_uniformMissRatio_pow_lt_one_of_exactV
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ)
     (hlt :
-      (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchSurface Z k) ^ m < 1) :
+      (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchData Z k) ^ m < 1) :
     0 <
       (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
           (G := G) (s := s) clock h).exactRecoveryRate (G.predict i) m := by
@@ -218,7 +218,7 @@ theorem nondeceptiveRate_pos_of_bitBudget_uniformMissRatio_pow_lt_one_of_exactVi
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ)
     (hlt :
-      (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchSurface Z k) ^ m < 1) :
+      (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchData Z k) ^ m < 1) :
     0 <
       (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
           (G := G) (s := s) clock h).nondeceptiveRate (G.predict i) m := by
@@ -233,9 +233,9 @@ theorem exists_nondeceptiveSample_of_bitBudget_bound_lt_of_exactVisibleCompressi
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ)
     (hbound :
-      2 ^ s * (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
-    ∃ sample : PointSample (ExactVisiblePostSwitchSurface Z k) m,
+      2 ^ s * (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
+    ∃ sample : PointSample (ExactVisiblePostSwitchData Z k) m,
       ¬ EncodedFamily.IsDeceptiveSample
           (BitEncodedClassifierFamily.toEncodedFamily
             (ClockedBitCodeFamily.toBitEncodedClassifierFamily
@@ -253,9 +253,9 @@ theorem exists_sample_empiricalRiskPredictor_eq_target_of_bitBudget_bound_lt_of_
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ)
     (hbound :
-      2 ^ s * (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
-    ∃ sample : PointSample (ExactVisiblePostSwitchSurface Z k) m,
+      2 ^ s * (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
+    ∃ sample : PointSample (ExactVisiblePostSwitchData Z k) m,
       ClockedBitCodeFamily.empiricalRiskPredictor
           (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
             (G := G) (s := s) clock h)

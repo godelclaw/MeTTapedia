@@ -34,15 +34,15 @@ variable {Z : Type*} [Fintype Z] {r k m : ℕ}
 point-block sparse-threshold counting gap already forces the sample size to
 exceed the point-block bit budget. -/
 theorem sparseThresholdPointBlockBudget_lt_sampleSize_of_two_le_surfaceCard
-    (hcard : 2 ≤ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hcard : 2 ≤ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     2 * allAffinePointBlockFeatureCount (r + (k + k)) < m := by
   exact
     BitEncodedClassifierFamily.lt_sampleSize_of_two_le_card_of_bitBudget_bound_lt
-      (Input := ExactVisiblePostSwitchSurface Z k)
+      (Input := ExactVisiblePostSwitchData Z k)
       (s := 2 * allAffinePointBlockFeatureCount (r + (k + k)))
       (m := m)
       hcard hbound
@@ -56,7 +56,7 @@ variable {n r k m : ℕ}
 /-- Any nontrivial exact visible `BitVec` surface has at least two points. -/
 theorem two_le_card_exactVisiblePostSwitchSurface_bitVec_of_width_pos
     (hvis : 0 < n + (k + k)) :
-    2 ≤ Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+    2 ≤ Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
   rw [card_exactVisiblePostSwitchSurface_bitVec]
   calc
     2 = 2 ^ 1 := by norm_num
@@ -86,8 +86,8 @@ theorem sparseThresholdPointBlockBudgetPow_lt_sampleSize_of_gap_bitVec
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ m) :
     2 ^ (2 * (r + (k + k)) + 1) < m := by
   have hlt :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) < m :=
@@ -126,8 +126,8 @@ theorem visibleWidthBudget_lt_sampleSize_of_nonempty_sharedExactZABSparseThresho
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ m) :
     2 ^ (2 * (n + (k + k)) + 1) < m := by
   have hnr : n ≤ r := by
     by_contra hnr
@@ -161,8 +161,8 @@ theorem fullRuleActualSwitchedLocalInterface_visibleWidthBudget_lt_sampleSize_of
     (_hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ m) :
     2 ^ (2 * (n + (k + k)) + 1) < m := by
   exact
     visibleWidthBudget_lt_sampleSize_of_nonempty_sharedExactZABSparseThresholdERMData_of_surjective_predict

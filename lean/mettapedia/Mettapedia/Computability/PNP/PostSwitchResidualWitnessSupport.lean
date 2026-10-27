@@ -11,11 +11,11 @@ section
 variable {Z : Type*}
 
 def activeOrbitSupport (z0 : Z) :=
-  {u : ExactVisiblePostSwitchSurface Z 1 //
+  {u : ExactVisiblePostSwitchData Z 1 //
     u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0}
 
 noncomputable def activeOrbitSupportEquivBool (z0 : Z) :
-    {u : ExactVisiblePostSwitchSurface Z 1 //
+    {u : ExactVisiblePostSwitchData Z 1 //
       u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0} ≃ Bool := by
   classical
   refine
@@ -50,20 +50,20 @@ theorem sliceMass_activeOrbitSupport [Fintype Z] (z0 : Z) :
       classical
       exact
         sliceMass
-            (fun u : ExactVisiblePostSwitchSurface Z 1 =>
+            (fun u : ExactVisiblePostSwitchData Z 1 =>
               u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0)
             (activeOrbitWeight z0)
           = 2) := by
   classical
   unfold sliceMass
   calc
-    (∑ u : {u : ExactVisiblePostSwitchSurface Z 1 //
+    (∑ u : {u : ExactVisiblePostSwitchData Z 1 //
         u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0},
         activeOrbitWeight z0 u.1)
         = ∑ b : Bool, 1 := by
             exact Fintype.sum_equiv
               (activeOrbitSupportEquivBool z0)
-              (fun u : {u : ExactVisiblePostSwitchSurface Z 1 //
+              (fun u : {u : ExactVisiblePostSwitchData Z 1 //
                 u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0} =>
                 activeOrbitWeight z0 u.1)
                   (fun _ : Bool => 1)
@@ -78,7 +78,7 @@ theorem outsideMass_activeOrbitSupport [Fintype Z] (z0 : Z) :
       classical
       exact
         outsideMass
-            (fun u : ExactVisiblePostSwitchSurface Z 1 =>
+            (fun u : ExactVisiblePostSwitchData Z 1 =>
               u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0)
             (activeOrbitWeight z0)
           = 0) := by
@@ -93,14 +93,14 @@ theorem weightedTotalMass_activeOrbitWeight (z0 : Z) [Fintype Z] :
   classical
   have hsplit :=
     weightedTotalMass_eq_slice_add_outside
-      (p := fun u : ExactVisiblePostSwitchSurface Z 1 =>
+      (p := fun u : ExactVisiblePostSwitchData Z 1 =>
         u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0)
       (w := activeOrbitWeight z0)
   simpa [sliceMass_activeOrbitSupport (Z := Z) z0,
     outsideMass_activeOrbitSupport (Z := Z) z0] using hsplit
 
 theorem activeOrbitSide_ne_of_positiveWeight
-    (z0 : Z) (u : ExactVisiblePostSwitchSurface Z 1)
+    (z0 : Z) (u : ExactVisiblePostSwitchData Z 1)
     (hu : 0 < activeOrbitWeight z0 u) :
     (tiInputMap u).b ≠ u.b := by
   classical

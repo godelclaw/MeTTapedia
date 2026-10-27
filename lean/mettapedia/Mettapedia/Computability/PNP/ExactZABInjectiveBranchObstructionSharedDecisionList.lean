@@ -16,7 +16,7 @@ variable {n p r k : ℕ} {Index : Type*}
 theorem sharedExactZABAffineDecisionListERMFamily_combinerWidthLowerBound_of_surjective_predict
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
@@ -35,7 +35,7 @@ theorem sharedExactZABAffineDecisionListERMFamily_combinerWidthLowerBound_of_sur
 theorem sharedExactZABAffineDecisionListERMFamily_not_surjective_of_combinerWidth_lt_truthTableGap
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hgap : p < 2 ^ (n + 2 * k) - 1) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily

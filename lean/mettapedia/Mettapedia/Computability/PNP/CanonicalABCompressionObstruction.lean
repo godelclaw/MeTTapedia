@@ -80,7 +80,7 @@ theorem CanonicalABDecisionListCandidateData.not_surjective_predict_of_two_le
 /-- The same contradiction applies to the canonical recovery wrapper, since it
 already packages the same exact compression target. -/
 theorem CanonicalABDecisionListRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -92,7 +92,7 @@ theorem CanonicalABDecisionListRecoveryData.not_surjective_predict_of_budget_lt
 
 /-- Likewise under the natural width hypothesis `2 ≤ n + 2k`. -/
 theorem CanonicalABDecisionListRecoveryData.not_surjective_predict_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -105,7 +105,7 @@ theorem CanonicalABDecisionListRecoveryData.not_surjective_predict_of_two_le
 /-- The same exact-surface lower bound for the named canonical raw `(a, b)` ERM
 family wrapper itself. -/
 theorem canonicalABDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_predict
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (canonicalABDecisionListERMFamily
@@ -119,7 +119,7 @@ theorem canonicalABDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_pred
 /-- Therefore the named canonical raw `(a, b)` ERM family cannot be surjective
 once its budget sits below the full exact-surface threshold. -/
 theorem canonicalABDecisionListERMFamily_not_surjective_of_budget_lt
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : 2 * k + 1 < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (canonicalABDecisionListERMFamily
@@ -132,7 +132,7 @@ theorem canonicalABDecisionListERMFamily_not_surjective_of_budget_lt
 /-- In particular, the canonical raw `(a, b)` ERM family itself cannot be
 surjective once the full exact visible width `n + 2k` is at least `2`. -/
 theorem canonicalABDecisionListERMFamily_not_surjective_of_two_le
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hwidth : 2 ≤ n + 2 * k) :
     ¬ Function.Surjective
         (canonicalABDecisionListERMFamily
@@ -146,7 +146,7 @@ theorem canonicalABDecisionListERMFamily_not_surjective_of_two_le
 /-- The final canonical raw `(a, b)` ERM recovery interface inherits the same
 budget-threshold obstruction. -/
 theorem CanonicalABERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -158,7 +158,7 @@ theorem CanonicalABERMRecoveryData.not_surjective_predict_of_budget_lt
 
 /-- And likewise once the full exact visible width `n + 2k` is at least `2`. -/
 theorem CanonicalABERMRecoveryData.not_surjective_predict_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :

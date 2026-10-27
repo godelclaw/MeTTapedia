@@ -32,8 +32,8 @@ theorem nonempty_sharedExactZABSparseThresholdERMData_of_injective_zfeat
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     Nonempty
       (SharedExactZABSparseThresholdERMData
         T
@@ -44,7 +44,7 @@ theorem nonempty_sharedExactZABSparseThresholdERMData_of_injective_zfeat
       (Z := Z) (r := r) (k := k) (m := m)
       zfeat hinj hwidth hbound with
     ⟨fullSamples, hfull⟩
-  let samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool :=
+  let samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool :=
     fun i => fullSamples (T.predictorFamily.predict i)
   refine ⟨{ samples := samples, exact_family := ?_ }⟩
   cases T with
@@ -128,8 +128,8 @@ theorem fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresh
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     Nonempty
       (SharedExactZABSparseThresholdERMData
         (fullRuleActualSwitchedLocalInterface Z k)
@@ -147,8 +147,8 @@ theorem fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresh
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     Nonempty
       (SharedExactZABSparseThresholdERMData
         (fullRuleActualSwitchedLocalInterface Z k)
@@ -178,8 +178,8 @@ theorem fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresh
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
+          (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
     Nonempty
       (SharedExactZABSparseThresholdERMData
         (fullRuleActualSwitchedLocalInterface Z k)

@@ -17,29 +17,29 @@ variable {Z : Type*}
 def oneBitVec : BitVec 1 := fun _ => true
 
 /-- The supported exact post-switch input with side bit `false`. -/
-def activeOrbitInputFalse (z0 : Z) : ExactVisiblePostSwitchSurface Z 1 :=
+def activeOrbitInputFalse (z0 : Z) : ExactVisiblePostSwitchData Z 1 :=
   ⟨z0, oneBitVec, zeroVec⟩
 
 /-- The supported exact post-switch input with side bit `true`. -/
-def activeOrbitInputTrue (z0 : Z) : ExactVisiblePostSwitchSurface Z 1 :=
+def activeOrbitInputTrue (z0 : Z) : ExactVisiblePostSwitchData Z 1 :=
   ⟨z0, oneBitVec, oneBitVec⟩
 
 /-- The invariant-base plus side-channel feature used by the witness route. -/
-def activeOrbitFeatures (u : ExactVisiblePostSwitchSurface Z 1) :
-    InvariantPostSwitchSurface Z 1 × BitVec 1 :=
+def activeOrbitFeatures (u : ExactVisiblePostSwitchData Z 1) :
+    InvariantPostSwitchData Z 1 × BitVec 1 :=
   (invariantVisibleData u, u.b)
 
 /-- The target bit is the retained one-bit side channel itself. -/
-def activeOrbitTarget (u : ExactVisiblePostSwitchSurface Z 1) : Bool :=
+def activeOrbitTarget (u : ExactVisiblePostSwitchData Z 1) : Bool :=
   u.b 0
 
 /-- The classifier simply reads that retained side bit. -/
 def activeOrbitClassifier :
-    InvariantPostSwitchSurface Z 1 × BitVec 1 → Bool :=
+    InvariantPostSwitchData Z 1 × BitVec 1 → Bool :=
   fun t => t.2 0
 
 /-- Weight one on the chosen active two-point orbit, and zero elsewhere. -/
-noncomputable def activeOrbitWeight (z0 : Z) (u : ExactVisiblePostSwitchSurface Z 1) : ℕ := by
+noncomputable def activeOrbitWeight (z0 : Z) (u : ExactVisiblePostSwitchData Z 1) : ℕ := by
   classical
   exact if u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0 then 1 else 0
 
@@ -58,7 +58,7 @@ noncomputable def activeOrbitWeight (z0 : Z) (u : ExactVisiblePostSwitchSurface 
 theorem activeOrbitInputFalse_ne_inputTrue (z0 : Z) :
     activeOrbitInputFalse z0 ≠ activeOrbitInputTrue z0 := by
   intro h
-  have h0 := congrArg (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b 0) h
+  have h0 := congrArg (fun u : ExactVisiblePostSwitchData Z 1 => u.b 0) h
   simp at h0
 
 @[simp] theorem tiInputMap_activeOrbitInputFalse (z0 : Z) :
@@ -79,7 +79,7 @@ theorem activeOrbitInputFalse_ne_inputTrue (z0 : Z) :
   classical
   simp [activeOrbitWeight]
 
-theorem activeOrbitWeight_tiInputMap (z0 : Z) (u : ExactVisiblePostSwitchSurface Z 1) :
+theorem activeOrbitWeight_tiInputMap (z0 : Z) (u : ExactVisiblePostSwitchData Z 1) :
     activeOrbitWeight z0 (tiInputMap u) = activeOrbitWeight z0 u := by
   classical
   by_cases h : u = activeOrbitInputFalse z0 ∨ u = activeOrbitInputTrue z0
@@ -99,7 +99,7 @@ theorem activeOrbitWeight_tiInputMap (z0 : Z) (u : ExactVisiblePostSwitchSurface
     simp [activeOrbitWeight, h, hti]
 
 theorem activeOrbitTarget_flip_of_positiveWeight
-    (z0 : Z) (u : ExactVisiblePostSwitchSurface Z 1)
+    (z0 : Z) (u : ExactVisiblePostSwitchData Z 1)
     (hu : 0 < activeOrbitWeight z0 u) :
     activeOrbitTarget (tiInputMap u) = !(activeOrbitTarget u) := by
   classical
@@ -112,7 +112,7 @@ theorem activeOrbitTarget_flip_of_positiveWeight
   rcases hsupp with rfl | rfl <;> simp [activeOrbitTarget]
 
 theorem activeOrbitCorrect_of_positiveWeight
-    (z0 : Z) (u : ExactVisiblePostSwitchSurface Z 1)
+    (z0 : Z) (u : ExactVisiblePostSwitchData Z 1)
     (hu : 0 < activeOrbitWeight z0 u) :
     Correct activeOrbitFeatures activeOrbitTarget activeOrbitClassifier u := by
   classical
@@ -125,7 +125,7 @@ theorem activeOrbitCorrect_of_positiveWeight
   rcases hsupp with rfl | rfl <;> rfl
 
 theorem activeOrbitWeight_eq_zero_of_not_correct
-    (z0 : Z) (u : ExactVisiblePostSwitchSurface Z 1)
+    (z0 : Z) (u : ExactVisiblePostSwitchData Z 1)
     (hu : ¬ Correct activeOrbitFeatures activeOrbitTarget activeOrbitClassifier u) :
     activeOrbitWeight z0 u = 0 := by
   by_cases hpos : 0 < activeOrbitWeight z0 u

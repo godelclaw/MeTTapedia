@@ -20,13 +20,13 @@ theorem exists_pos_mass_disagreement_of_abVisibleInvariant_predict_boolZProjecti
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ∃ x, μ x ≠ 0 ∧ G.predict i x ≠ boolZProjectionRule (k := k) x := by
-  let u : ExactVisiblePostSwitchSurface Bool k := ⟨false, default, default⟩
-  let v : ExactVisiblePostSwitchSurface Bool k := ⟨true, default, default⟩
+  let u : ExactVisiblePostSwitchData Bool k := ⟨false, default, default⟩
+  let v : ExactVisiblePostSwitchData Bool k := ⟨true, default, default⟩
   refine
     exists_pos_mass_disagreement_of_abVisibleInvariant_predict_of_abFiberSeparation
       (Z := Bool) (k := k) (G := G) hinv
@@ -43,7 +43,7 @@ theorem exists_pos_mass_disagreement_of_factorsThrough_abVisibleData_predict_boo
     {G : ExactVisibleSwitchedFamily Bool k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -60,7 +60,7 @@ theorem agreementMass_lt_one_of_abVisibleInvariant_predict_boolZProjectionRule
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -79,7 +79,7 @@ theorem agreementMass_lt_one_of_factorsThrough_abVisibleData_predict_boolZProjec
     {G : ExactVisibleSwitchedFamily Bool k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -97,7 +97,7 @@ theorem not_exists_agreementMass_eq_one_boolZProjectionRule_of_abVisibleInvarian
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := k)) (G.predict i) = 1 := by
@@ -115,7 +115,7 @@ theorem not_exists_agreementMass_eq_one_boolZProjectionRule_of_factorsThrough_ab
     {G : ExactVisibleSwitchedFamily Bool k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := k))

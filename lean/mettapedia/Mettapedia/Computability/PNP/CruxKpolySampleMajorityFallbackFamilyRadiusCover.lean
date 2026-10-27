@@ -81,7 +81,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_surjective_
     [Fintype FallbackIndex] [Nonempty FallbackIndex] [Fintype Z]
     {k sampleBound : ℕ}
     (fallback : FallbackIndex → ExactVisibleRule Z k)
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
     Function.Surjective
       (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
         FallbackIndex Z k sampleBound fallback).predictorFamily.predict :=
@@ -100,7 +100,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_finitePredi
         FallbackIndex Z k sampleBound fallback).predictorFamily.FinitePredictorCover
       (Fintype.card FallbackIndex *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card) :=
+          (ExactVisiblePostSwitchData Z k) sampleBound).card) :=
   boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_finitePredictorCover
     (Z := Z) (k := k) (sampleBound := sampleBound) fallback
 
@@ -114,8 +114,8 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_not_surject
     (hcard :
       Fintype.card FallbackIndex *
           (PluginSampleMajority.smallSubsets
-            (ExactVisiblePostSwitchSurface Z k) sampleBound).card <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+            (ExactVisiblePostSwitchData Z k) sampleBound).card <
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
         FallbackIndex Z k sampleBound fallback).predictorFamily.predict :=
@@ -133,10 +133,10 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_boolClassif
       Function.Surjective
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       Fintype.card FallbackIndex *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card :=
+          (ExactVisiblePostSwitchData Z k) sampleBound).card :=
   boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_boolClassifierSpace_card_le_code_mul_smallSubsets_card_of_surjective
     (Z := Z) (k := k) (sampleBound := sampleBound) fallback hsurj
 

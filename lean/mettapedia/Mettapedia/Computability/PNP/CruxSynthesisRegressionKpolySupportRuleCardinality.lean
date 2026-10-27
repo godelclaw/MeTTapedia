@@ -13,9 +13,9 @@ universe u v w z
 
 theorem kpoly_anchor_support_full_rule_no_observed_rule_injective_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict := by
   exact
@@ -24,9 +24,9 @@ theorem kpoly_anchor_support_full_rule_no_observed_rule_injective_regression
 
 theorem kpoly_anchor_support_full_rule_distinct_rules_same_output_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ∃ rule₀ rule₁ : ExactVisibleRule Z k,
       rule₀ ≠ rule₁ ∧
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -39,9 +39,9 @@ theorem kpoly_anchor_support_full_rule_distinct_rules_same_output_regression
 
 theorem kpoly_anchor_support_full_rule_no_exact_decoder_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ decode : (Block → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -53,10 +53,10 @@ theorem kpoly_anchor_support_full_rule_no_exact_decoder_regression
 
 theorem kpoly_anchor_support_full_rule_exists_unobservable_eval_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode

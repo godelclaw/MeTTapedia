@@ -14,7 +14,7 @@ open scoped ENNReal
 
 universe u v w z
 
-local instance : Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+local instance : Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 private theorem three_quarters_lt_seven_eighths_actualSparseRecoveryInjectiveBridge :
@@ -34,7 +34,7 @@ theorem kpoly_anchor_surjective_actual_local_recovery_uniform_cardinality_thresh
           (fullRuleActualSwitchedLocalInterface (BitVec 1) 1)
           idBitVec1ActualSparseRecoveryCardinalityBridge
           q)) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 1) 1) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData (BitVec 1) 1) : ℝ≥0∞)⁻¹ ≤ q := by
   exact
     kpolyCoverage_anchor_surjectiveActualLocal_one_sub_inv_card_le_of_nonempty_recovery
       (k := 1)
@@ -90,7 +90,7 @@ theorem kpoly_anchor_actual_local_injective_recovery_uniform_cardinality_thresho
           constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjectiveBridge
           idBitVec1ActualSparseRecoveryCardinalityBridge
           q)) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 1) 1) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData (BitVec 1) 1) : ℝ≥0∞)⁻¹ ≤ q := by
   exact
     kpolyCoverage_anchor_actualLocal_one_sub_inv_card_le_of_nonempty_recovery_of_injective_zfeat
       (k := 1)

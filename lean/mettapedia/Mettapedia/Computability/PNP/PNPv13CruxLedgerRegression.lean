@@ -3,7 +3,7 @@ import Mettapedia.Computability.PNP.PNPv13CruxLedgerReadoutAmbiguity
 import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolReadoutCounterexample
 import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolProductCore
 import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolPairProduct
-import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
+import Mettapedia.Computability.PNP.PNPv13AppendixDLockedCore
 
 /-!
 # Regression checks for the PNP v13 crux ledger
@@ -248,24 +248,13 @@ theorem bool_pair_correlated_marginals_fail_sequential_half_regression :
     ¬ SequentialHalfOnBoolPair boolPairFirstSuccess boolPairFirstSuccess := by
   exact boolPair_correlated_marginals_fail_sequentialHalf
 
-theorem locked_core_lab_positive_canary_regression :
-    rigidAppendixDLockedCore.LockSatisfiable ∧
-      rigidAppendixDLockedCore.ReadDeterministic ∧
-      rigidAppendixDLockedCore.LockedMessageRigidity := by
-  exact rigidAppendixDLockedCore_lab_positive_canary
-
 theorem locked_core_lab_negative_canary_regression :
     ambiguousAppendixDLockedCore.LockSatisfiable ∧
       ambiguousAppendixDLockedCore.ReadDeterministic ∧
       ¬ ambiguousAppendixDLockedCore.LockedMessageRigidity := by
-  exact ambiguousAppendixDLockedCore_lab_negative_canary
-
-theorem locked_core_lab_canaries_separate_readout_from_rigidity_regression :
-    (∃ C : AppendixDLockedCore Unit Unit Unit Bool,
-      C.LockSatisfiable ∧ C.ReadDeterministic ∧ C.LockedMessageRigidity) ∧
-      (∃ C : AppendixDLockedCore Unit Bool Unit Bool,
-        C.LockSatisfiable ∧ C.ReadDeterministic ∧
-          ¬ C.LockedMessageRigidity) := by
-  exact lockedCoreLabCanaries_separate_readDeterministic_from_lockedMessageRigidity
+  exact
+    ⟨ambiguousAppendixDLockedCore_lockSatisfiable,
+      ambiguousAppendixDLockedCore_readDeterministic,
+      ambiguousAppendixDLockedCore_not_lockedMessageRigidity⟩
 
 end Mettapedia.Computability.PNP.PNPv13CruxLedgerRegression

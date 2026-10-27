@@ -17,7 +17,7 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 structure SharedABAffineFeatureRecoveryData
     [Inhabited Z] [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   features : Fin r → AffineColumnCode (k + k)
@@ -35,7 +35,7 @@ structure SharedABAffineFeatureRecoveryData
 
 structure SharedABSparseThresholdRecoveryData
     [Inhabited Z] [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   features : Fin r → AffineColumnCode (k + k)

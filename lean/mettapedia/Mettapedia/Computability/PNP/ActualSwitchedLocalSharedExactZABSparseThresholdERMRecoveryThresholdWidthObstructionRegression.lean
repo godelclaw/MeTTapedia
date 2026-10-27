@@ -9,11 +9,11 @@ open scoped ENNReal
 def idBitVec1ActualSparseRecoveryThresholdWidth : BitVec 1 → BitVec 1 := fun x => x
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k1NonemptyThresholdWidth :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def bitVec1k1UniformMeasureActualSparseRecoveryThresholdWidth :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   PMF.uniformOfFintype _
 
 private theorem half_lt_one_sub_pow_inv_of_two_lt_pow {p : ℕ}

@@ -21,7 +21,7 @@ family wrapper itself. -/
 theorem sharedExactZABAffineDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_predict
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
@@ -39,7 +39,7 @@ its linear budget sits below the full exact-surface threshold. -/
 theorem sharedExactZABAffineDecisionListERMFamily_not_surjective_of_budget_lt
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : p + 1 < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
@@ -57,7 +57,7 @@ least `2`. -/
 theorem sharedExactZABAffineDecisionListERMFamily_not_surjective_of_le_of_two_le
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hfeat : p ≤ n + 2 * k)
     (hwidth : 2 ≤ n + 2 * k) :
     ¬ Function.Surjective
@@ -74,7 +74,7 @@ theorem sharedExactZABAffineDecisionListERMFamily_not_surjective_of_le_of_two_le
 /-- The final shared-basis exact ERM interface inherits the same
 budget-threshold obstruction. -/
 theorem SharedExactZABERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -88,7 +88,7 @@ theorem SharedExactZABERMRecoveryData.not_surjective_predict_of_budget_lt
 /-- And likewise under the natural width hypotheses `p ≤ n + 2k` and
 `2 ≤ n + 2k`. -/
 theorem SharedExactZABERMRecoveryData.not_surjective_predict_of_le_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}

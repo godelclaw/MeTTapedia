@@ -51,7 +51,7 @@ def rightBits {k : ℕ} (x : BitVec (k + k)) : BitVec k :=
   fun i => x (Fin.natAdd k i)
 
 def fiberPoint {Z : Type*} {k : ℕ} (z : Z) (x : BitVec (k + k)) :
-    ExactVisiblePostSwitchSurface Z k :=
+    ExactVisiblePostSwitchData Z k :=
   ⟨z, leftBits x, rightBits x⟩
 
 @[simp] theorem append_leftBits_rightBits {k : ℕ} (x : BitVec (k + k)) :
@@ -237,7 +237,7 @@ theorem not_injective_exactZABAffineDecisionListSignature_of_pos
       Fin.append (fiberPoint z0 x).a (fiberPoint z0 x).b =
         Fin.append (fiberPoint z0 y).a (fiberPoint z0 y).b := by
     simpa using congrArg
-      (fun u : ExactVisiblePostSwitchSurface Z k => Fin.append u.a u.b) huv
+      (fun u : ExactVisiblePostSwitchData Z k => Fin.append u.a u.b) huv
   simpa [fiberPoint, append_leftBits_rightBits] using hab
 
 theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABAffineDecisionListFamily_of_pos
@@ -279,7 +279,7 @@ theorem SharedExactZABDecisionListTargetData.not_surjective_predict_of_pos
 theorem SharedExactZABDecisionListRecoveryData.not_surjective_predict_of_pos
     {Z : Type*} [Fintype Z] [Nonempty Z]
     {p r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {features : Fin p → AffineColumnCode (r + (k + k))}
     {G : ExactVisibleSwitchedFamily Z k Index}

@@ -75,7 +75,7 @@ theorem SharedExactZABDecisionListTargetData.surfaceCard_le_of_surjective_predic
       SharedExactZABDecisionListTargetData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) zfeat features G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ p + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ p + 1 := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := p + 1) (Index := Index) hsurj
@@ -89,7 +89,7 @@ theorem SharedExactZABDecisionListTargetData.not_surjective_predict_of_lt_surfac
     (h :
       SharedExactZABDecisionListTargetData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) zfeat features G)
-    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)

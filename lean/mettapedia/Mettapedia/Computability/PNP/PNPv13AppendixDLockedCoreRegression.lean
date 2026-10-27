@@ -25,6 +25,29 @@ theorem appendixD_lock_satisfiable_and_rigid_gives_locked_message_regression
   exact C.exists_lockedMessageSpec_of_lockSatisfiable_of_lockedMessageRigidity
     hsat hrigid hY
 
+theorem appendixD_witness_existence_and_public_lock_coverage_give_D7_regression
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Witness : Public → Type y}
+    (D : AppendixDWitnessData
+      PublicLock Quotient LockAux Message Public Witness)
+    (hwit : D.WitnessExistsOnSupport)
+    (hcover : D.PublicLockCoveredBySupportedInstances) :
+    D.core.LockSatisfiable := by
+  exact
+    D.core_lockSatisfiable_of_witnessExistsOnSupport_of_publicLockCovered
+      hwit hcover
+
+theorem appendixI_public_lock_coverage_gives_D7_regression
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public → Type y} {Witness : Public → Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (hcover : D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances) :
+    D.core.LockSatisfiable := by
+  exact D.core_lockSatisfiable_of_publicLockCovered hcover
+
 theorem appendixD_rigidity_implies_witness_promise_regression
     {PublicLock : Type u} {Quotient : Type v}
     {LockAux : Type w} {Message : Type z}

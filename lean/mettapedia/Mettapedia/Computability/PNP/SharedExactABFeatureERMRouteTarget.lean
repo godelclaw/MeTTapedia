@@ -17,7 +17,7 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 def sharedExactABAffineFeatureERMTargetData
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     SharedABAffineFeatureTargetData
       (Z := Z) (r := r) (k := k) (Index := Index)
       (sharedExactABAffineFeatureERMFamily
@@ -33,7 +33,7 @@ def sharedExactABAffineFeatureERMTargetData
 def sharedExactABSparseThresholdAffineERMTargetData
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     SharedABSparseThresholdTargetData
       (Z := Z) (r := r) (k := k) (Index := Index)
       (sharedExactABSparseThresholdAffineERMFamily
@@ -49,7 +49,7 @@ def sharedExactABSparseThresholdAffineERMTargetData
 theorem sharedExactABAffineFeatureERMCompressionTarget
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (sharedExactABAffineFeatureERMFamily
@@ -62,7 +62,7 @@ theorem sharedExactABAffineFeatureERMCompressionTarget
 theorem sharedExactABSparseThresholdAffineERMCompressionTarget
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (sharedExactABSparseThresholdAffineERMFamily
@@ -75,12 +75,12 @@ theorem sharedExactABSparseThresholdAffineERMCompressionTarget
 theorem sharedExactABAffineFeatureERMFamily_surfaceCard_le_of_surjective_predict
     [Inhabited Z] [Fintype Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactABAffineFeatureERMFamily
           (Z := Z) (r := r) (k := k) features samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 ^ r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 ^ r := by
   exact
     (sharedExactABAffineFeatureERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) features samples).surfaceCard_le_of_surjective_predict
@@ -89,12 +89,12 @@ theorem sharedExactABAffineFeatureERMFamily_surfaceCard_le_of_surjective_predict
 theorem sharedExactABSparseThresholdAffineERMFamily_surfaceCard_le_of_surjective_predict
     [Inhabited Z] [Fintype Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactABSparseThresholdAffineERMFamily
           (Z := Z) (r := r) (k := k) features samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * r := by
   exact
     (sharedExactABSparseThresholdAffineERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) features samples).surfaceCard_le_of_surjective_predict
@@ -103,8 +103,8 @@ theorem sharedExactABSparseThresholdAffineERMFamily_surfaceCard_le_of_surjective
 theorem sharedExactABAffineFeatureERMFamily_not_surjective_of_lt_surfaceCard
     [Inhabited Z] [Fintype Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : 2 ^ r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : 2 ^ r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (sharedExactABAffineFeatureERMFamily
           (Z := Z) (r := r) (k := k) features samples).predict := by
@@ -116,8 +116,8 @@ theorem sharedExactABAffineFeatureERMFamily_not_surjective_of_lt_surfaceCard
 theorem sharedExactABSparseThresholdAffineERMFamily_not_surjective_of_lt_surfaceCard
     [Inhabited Z] [Fintype Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : 2 * r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : 2 * r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (sharedExactABSparseThresholdAffineERMFamily
           (Z := Z) (r := r) (k := k) features samples).predict := by

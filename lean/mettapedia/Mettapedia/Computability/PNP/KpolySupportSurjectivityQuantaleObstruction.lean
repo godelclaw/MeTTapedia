@@ -26,7 +26,7 @@ variable {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k s clock : 
 failure of below-surface full-rule cover, clocked payload, exact decoding,
 missed-point querying, and uniform support-section transfer. -/
 def KpolyObservedSupportBoundary
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) (s clock : ℕ) : Prop :=
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) (s clock : ℕ) : Prop :=
   (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FinitePredictorCover
       (2 ^ Fintype.card Block) ∧
     ¬ (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -38,36 +38,36 @@ def KpolyObservedSupportBoundary
         decode
             ((supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule) =
           rule) ∧
-    (∃ u₀ : ExactVisiblePostSwitchSurface Z k,
+    (∃ u₀ : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
               ((supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule) =
             rule u₀) ∧
-    ¬ ∃ sec : ExactVisiblePostSwitchSurface Z k → Block,
+    ¬ ∃ sec : ExactVisiblePostSwitchData Z k → Block,
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec
 
 /-- Positive boundary for a repair: a uniform support section transfers the
 observed cover and clocked payload, but it also forces the support cardinality
 to cover the whole exact-visible surface. -/
 def KpolySupportSurjectiveTransfer
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) (clock : ℕ) : Prop :=
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) (clock : ℕ) : Prop :=
   (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
       (2 ^ Fintype.card Block) ∧
     ClockedKpolyFiniteLearningPayload
       (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily
       (Fintype.card Block) clock ∧
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ Fintype.card Block ∧
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ Fintype.card Block ∧
     Function.Surjective visibleOf
 
 /-- Below the exact-visible surface size, the finite observed image is not
 enough; exact full-rule recovery and weakness transfer need a support-surjective
 repair. -/
 theorem kpolySupportSurjectivity_observedSupport_boundary_packet
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k))
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     KpolyObservedSupportBoundary visibleOf s clock := by
   have hobs :=
     kpolyCoverage_anchor_supportFullRule_observedSmall_and_not_exactVisibleCover
@@ -87,8 +87,8 @@ theorem kpolySupportSurjectivity_observedSupport_boundary_packet
 /-- A support-surjective repair genuinely transfers observed finite cover and
 clocked payload, and the same hypothesis records the cardinality floor it pays. -/
 theorem kpolySupportSurjectivity_positive_transfer_packet
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).HasUniformVisibleSection sec) :
     KpolySupportSurjectiveTransfer visibleOf clock := by
@@ -116,8 +116,8 @@ variable {Z : Type v} {Block : Type v} {k : ℕ}
 /-- Exact point-query decoding from observed traces is equivalent to
 surjectivity of the support/query map. -/
 theorem kpolySupportSurjectivity_allPointQueries_iff_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
-    (∀ u₀ : ExactVisiblePostSwitchSurface Z k,
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
+    (∀ u₀ : ExactVisiblePostSwitchData Z k,
       ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -213,10 +213,10 @@ weakness/advantage route unless supported side information resolves the pairs. -
 theorem kpolySupportSurjectivityQuantale_obstruction_packet
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block]
     {k s clock : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hcard :
-      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchSurface Z k))
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+      Fintype.card Block < Fintype.card (ExactVisiblePostSwitchData Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k))
     {α Base Side : Type u} [Fintype α]
     (σ : α → α) (base : α → Base) (side : α → Side)
     (y : α → Bool) (w : α → ℕ) (h : Base × Side → Bool)

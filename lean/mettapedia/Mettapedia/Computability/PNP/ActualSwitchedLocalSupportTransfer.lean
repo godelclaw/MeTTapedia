@@ -29,14 +29,14 @@ the missing reachability hypothesis needed to transfer an observed-output
 compression theorem to the full exact-visible local-rule family. -/
 def HasUniformVisibleSection
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    (sec : ExactVisiblePostSwitchSurface Z k → Block) : Prop :=
+    (sec : ExactVisiblePostSwitchData Z k → Block) : Prop :=
   ∀ i u, T.visibleInput i (sec u) = u
 
 /-- With a uniform visible section, the exact-visible predictor family is the
 pullback of the actually observed block-output family. -/
 theorem predictorFamily_factorsThrough_outputFamily_of_uniformVisibleSection
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block}
+    {sec : ExactVisiblePostSwitchData Z k → Block}
     (hsec : T.HasUniformVisibleSection sec) :
     T.predictorFamily.FactorsThrough sec T.outputFamily := by
   intro i u
@@ -51,7 +51,7 @@ theorem predictorFamily_factorsThrough_outputFamily_of_uniformVisibleSection
 predictor family once the uniform visible section is supplied. -/
 theorem predictorFamily_finitePredictorCover_of_outputFamily_finitePredictorCover
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block} {N : ℕ}
+    {sec : ExactVisiblePostSwitchData Z k → Block} {N : ℕ}
     (hsec : T.HasUniformVisibleSection sec)
     (hcover : T.outputFamily.FinitePredictorCover N) :
     T.predictorFamily.FinitePredictorCover N := by
@@ -64,7 +64,7 @@ theorem predictorFamily_finitePredictorCover_of_outputFamily_finitePredictorCove
 /-- The same transfer stated as an exact bit-budget theorem. -/
 theorem predictorFamily_hasBitBudget_of_outputFamily_hasBitBudget
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block} {s : ℕ}
+    {sec : ExactVisiblePostSwitchData Z k → Block} {s : ℕ}
     (hsec : T.HasUniformVisibleSection sec)
     (hbudget : T.outputFamily.HasBitBudget s) :
     T.predictorFamily.HasBitBudget s := by
@@ -80,7 +80,7 @@ hypothesis. -/
 theorem clockedKpolyFiniteLearningPayload_of_outputFamily_hasBitBudget
     [Fintype Z]
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    {sec : ExactVisiblePostSwitchSurface Z k → Block} {s clock : ℕ}
+    {sec : ExactVisiblePostSwitchData Z k → Block} {s clock : ℕ}
     (hsec : T.HasUniformVisibleSection sec)
     (hbudget : T.outputFamily.HasBitBudget s) :
     ClockedKpolyFiniteLearningPayload T.predictorFamily s clock := by

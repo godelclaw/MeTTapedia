@@ -18,7 +18,7 @@ variable {n p r k : ℕ} {Index : Type*}
 theorem sharedExactZABAffineFeatureERMFamily_featureCountLowerBound_of_surjective_predict
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactZABAffineFeatureERMFamily
@@ -35,7 +35,7 @@ theorem sharedExactZABAffineFeatureERMFamily_featureCountLowerBound_of_surjectiv
 theorem sharedExactZABAffineFeatureERMFamily_not_surjective_of_featureCount_lt_visibleWidth
     (zfeat : BitVec n → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hfeat : p < n + 2 * k) :
     ¬ Function.Surjective
         (sharedExactZABAffineFeatureERMFamily

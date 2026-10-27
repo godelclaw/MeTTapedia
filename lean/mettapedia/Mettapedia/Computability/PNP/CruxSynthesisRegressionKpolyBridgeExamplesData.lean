@@ -32,30 +32,30 @@ def oneBitVec1ActualSparseRecoveryBridge : BitVec 1 := fun _ => true
 def fin3ToBitVec0ActualSparseRecoveryPayloadBridge : Fin 3 → BitVec 0 := fun _ => zeroVec
 
 noncomputable def fin3ZeroVisiblePointActualSparseRecoveryPayloadBridge :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 :=
+    ExactVisiblePostSwitchData (Fin 3) 0 :=
   ⟨0, zeroVec, zeroVec⟩
 
 noncomputable def fin3OneVisiblePointActualSparseRecoveryPayloadBridge :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 :=
+    ExactVisiblePostSwitchData (Fin 3) 0 :=
   ⟨1, zeroVec, zeroVec⟩
 
 noncomputable def fin3TwoVisiblePointActualSparseRecoveryPayloadBridge :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 :=
+    ExactVisiblePostSwitchData (Fin 3) 0 :=
   ⟨2, zeroVec, zeroVec⟩
 
 noncomputable def fin3PureMeasureActualSparseRecoveryPayloadBridge :
-    PMF (ExactVisiblePostSwitchSurface (Fin 3) 0) :=
+    PMF (ExactVisiblePostSwitchData (Fin 3) 0) :=
   PMF.pure fin3ZeroVisiblePointActualSparseRecoveryPayloadBridge
 
 theorem fullRuleActualSwitchedLocalInterface_lt_predictorCard_fin3k0r0_payload_bridge_regression :
     2 ^ (2 * allAffinePointBlockFeatureCount (0 + (0 + 0))) <
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface (Fin 3) 0) := by
-  rw [card_exactVisiblePostSwitchSurface (Z := Fin 3) (k := 0)]
+      2 ^ Fintype.card (ExactVisiblePostSwitchData (Fin 3) 0) := by
+  rw [card_exactVisiblePostSwitchDataDomain (Z := Fin 3) (k := 0)]
   norm_num [allAffinePointBlockFeatureCount_eq]
 
 def fin5ProbeFamilyActualSparseRecoveryPayloadBridge
     (p : Fin 5) :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 → Bool :=
+    ExactVisiblePostSwitchData (Fin 3) 0 → Bool :=
   match p.1 with
   | 0 => fun _ => false
   | 1 => fun u => decide (u.z = 0)
@@ -76,7 +76,7 @@ def fin5ProbeActualSwitchedLocalInterfaceActualSparseRecoveryPayloadBridge :
       (Fin 3)
       0
       (Fin 5)
-      (ExactVisiblePostSwitchSurface (Fin 3) 0) where
+      (ExactVisiblePostSwitchData (Fin 3) 0) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
@@ -112,7 +112,7 @@ theorem fin5ProbeActualSwitchedLocalInterfaceActualSparseRecoveryPayloadBridge_a
     fin5ProbeFamilyActualSparseRecoveryPayloadBridge]
 
 def exactVisiblePostSwitchSurfaceFin30EquivActualSparseRecoveryHeavyRegionTraceBridge :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 ≃ Fin 3 where
+    ExactVisiblePostSwitchData (Fin 3) 0 ≃ Fin 3 where
   toFun u := u.z
   invFun z := ⟨z, zeroVec, zeroVec⟩
   left_inv := by
@@ -129,27 +129,27 @@ def exactVisiblePostSwitchSurfaceFin30EquivActualSparseRecoveryHeavyRegionTraceB
     rfl
 
 noncomputable def fin3ZeroOneHalfMeasureActualSparseRecoveryHeavyRegionTraceBridge :
-    PMF (ExactVisiblePostSwitchSurface (Fin 3) 0) :=
+    PMF (ExactVisiblePostSwitchData (Fin 3) 0) :=
   PMF.ofFintype
     (fun u => if u.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
     (by
       classical
       have hsum :
-          ∑ a : ExactVisiblePostSwitchSurface (Fin 3) 0,
+          ∑ a : ExactVisiblePostSwitchData (Fin 3) 0,
               (if a.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
             =
           ∑ b : Fin 3, (if b = 2 then 0 else (2 : ℝ≥0∞)⁻¹) := by
         simpa using
           (Fintype.sum_equiv
             exactVisiblePostSwitchSurfaceFin30EquivActualSparseRecoveryHeavyRegionTraceBridge
-            (fun u : ExactVisiblePostSwitchSurface (Fin 3) 0 =>
+            (fun u : ExactVisiblePostSwitchData (Fin 3) 0 =>
               if u.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
             (fun b : Fin 3 => if b = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
             (by
               intro b
               rfl))
       calc
-        ∑ a : ExactVisiblePostSwitchSurface (Fin 3) 0,
+        ∑ a : ExactVisiblePostSwitchData (Fin 3) 0,
             (if a.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
           =
             ∑ b : Fin 3, (if b = 2 then 0 else (2 : ℝ≥0∞)⁻¹) := hsum
@@ -158,7 +158,7 @@ noncomputable def fin3ZeroOneHalfMeasureActualSparseRecoveryHeavyRegionTraceBrid
           simpa [two_mul] using ENNReal.inv_two_add_inv_two)
 
 noncomputable def fin3ZeroOneRegionActualSparseRecoveryHeavyRegionTraceBridge :
-    Finset (ExactVisiblePostSwitchSurface (Fin 3) 0) :=
+    Finset (ExactVisiblePostSwitchData (Fin 3) 0) :=
   by
     classical
     exact
@@ -190,11 +190,11 @@ theorem fin3ZeroOneRegionActualSparseRecoveryHeavyRegionTraceBridge_mass_eq_one 
 def idBitVec1ActualSparseRecoveryCardinalityBridge : BitVec 1 → BitVec 1 := fun x => x
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k1NonemptyBridge :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def bitVec1k1UniformMeasureActualSparseRecoveryCardinalityBridge :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   PMF.uniformOfFintype _
 
 def constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjectiveBridge :
@@ -202,7 +202,7 @@ def constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjective
       (BitVec 1)
       1
       Unit
-      (ExactVisiblePostSwitchSurface (BitVec 1) 1) where
+      (ExactVisiblePostSwitchData (BitVec 1) 1) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
@@ -222,25 +222,26 @@ theorem constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjec
   simp [constFalseActualSwitchedLocalInterfaceBitVec1k1ActualSparseRecoveryInjectiveBridge] at h
 
 noncomputable def bitVec1k0ZeroVisiblePointActualSparseRecoveryRegionBridge :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨zeroVec, zeroVec, zeroVec⟩
 
 noncomputable def bitVec1k0OneVisiblePointActualSparseRecoveryRegionBridge :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨oneBitVec1ActualSparseRecoveryBridge, zeroVec, zeroVec⟩
 
 noncomputable def bitVec1k0PureMeasureActualSparseRecoveryRegionBridge :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   PMF.pure bitVec1k0ZeroVisiblePointActualSparseRecoveryRegionBridge
 
 noncomputable def bitVec1k0HeavyRegionActualSparseRecoveryRegionBridge :
-    Finset (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Finset (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   {bitVec1k0ZeroVisiblePointActualSparseRecoveryRegionBridge}
 
 noncomputable local instance exactVisiblePostSwitchSurfaceBitVec1k0DecidableEqBridge :
-    DecidableEq (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    DecidableEq (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   Classical.decEq _
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem bitVec1k0HeavyRegionActualSparseRecoveryRegionBridge_filter_card :
     ({x ∈ bitVec1k0HeavyRegionActualSparseRecoveryRegionBridge
         | x = bitVec1k0ZeroVisiblePointActualSparseRecoveryRegionBridge}).card = 1 := by
@@ -256,11 +257,11 @@ def zeroBitVec3ToBitVec1ActualSparseRecoveryThresholdVisibleBudgetBridge :
     BitVec 3 → BitVec 1 := fun _ => zeroVec
 
 local instance exactVisiblePostSwitchSurfaceBitVec3k0NonemptyThresholdVisibleBudgetBridge :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 3) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 3) 0) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def bitVec3k0UniformMeasureActualSparseRecoveryThresholdVisibleBudgetBridge :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 3) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 3) 0) :=
   PMF.uniformOfFintype _
 
 end Mettapedia.Computability.PNP.CruxSynthesisRegression

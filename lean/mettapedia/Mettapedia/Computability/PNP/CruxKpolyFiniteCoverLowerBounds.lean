@@ -54,7 +54,7 @@ theorem kpolyCoverage_anchor_clockedFiniteLearningPayload_card_le_of_surjective_
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hsurj : Function.Surjective G.predict)
     (hpayload : ClockedKpolyFiniteLearningPayload G s clock) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 ^ s := by
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 ^ s := by
   exact
     kpolyCoverage_anchor_finitePredictorCover_card_le_of_surjective_predict hsurj
       ((kpolyCoverage_anchor_clockedFiniteLearningPayload_iff_finitePredictorCover).1 hpayload)
@@ -105,7 +105,7 @@ realized probe cardinality. -/
 theorem kpolyCoverage_anchor_clockedFiniteLearningPayload_card_le_of_injective_realization
     {Probe Z : Type*} [Fintype Probe] [Fintype Z] {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, G.predict i = target p)
     (hpayload : ClockedKpolyFiniteLearningPayload G s clock) :

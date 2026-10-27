@@ -18,7 +18,7 @@ theorem regression_pluginMajority_surjective (Z : Type v) (k : ℕ) :
 
 theorem regression_pluginMajority_no_small_cover
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (pluginMajorityActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) :=
   pluginMajorityActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
@@ -26,7 +26,7 @@ theorem regression_pluginMajority_no_small_cover
 
 theorem regression_pluginMajority_no_payload
     {Z : Type v} {k s clock : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock :=
   pluginMajorityActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
@@ -35,7 +35,7 @@ theorem regression_pluginMajority_no_payload
 theorem regression_pluginMajority_no_zabDecisionListData
     {Z : Type v} {k r : ℕ} [Fintype Z]
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginMajorityActualSwitchedLocalInterface Z k) zfeat) :=

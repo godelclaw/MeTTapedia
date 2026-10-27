@@ -35,6 +35,7 @@ def v13RealLinearAdaptiveRowsRegression_constantObserver :
     cases b
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearAdaptiveRowsRegression_empty_correct_eq_incorrect :
     Fintype.card
         (V13RealLinearAdaptiveBranchCorrect

@@ -31,7 +31,7 @@ namespace ActualSwitchedLocalInterface
 section FullRule
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 namespace SharedExactZABSparseThresholdERMRecoveryData
@@ -48,8 +48,8 @@ theorem regionMass_le_of_lt_surfaceCard
         (fullRuleActualSwitchedLocalInterface Z k)
         zfeat
         q)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hcard : region.card < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hcard : region.card < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     region.sum (fun x => μ x) ≤ q := by
   classical
   letI : Fintype (ExactVisibleRule Z k) := by
@@ -82,15 +82,15 @@ theorem regionMass_le_of_exists_not_mem
         (fullRuleActualSwitchedLocalInterface Z k)
         zfeat
         q)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) :
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) :
     region.sum (fun x => μ x) ≤ q := by
   apply h.regionMass_le_of_lt_surfaceCard region
   rcases hout with ⟨x₀, hx₀⟩
-  have hne : region ≠ (Finset.univ : Finset (ExactVisiblePostSwitchSurface Z k)) := by
+  have hne : region ≠ (Finset.univ : Finset (ExactVisiblePostSwitchData Z k)) := by
     intro hEq
     exact hx₀ (by simp [hEq])
-  have hssub : region ⊂ (Finset.univ : Finset (ExactVisiblePostSwitchSurface Z k)) :=
+  have hssub : region ⊂ (Finset.univ : Finset (ExactVisiblePostSwitchData Z k)) :=
     Finset.ssubset_univ_iff.mpr hne
   simpa using Finset.card_lt_card hssub
 
@@ -101,8 +101,8 @@ finite visible region of mass above `q` and smaller cardinality than the whole
 exact visible surface already refutes sparse-threshold recovery. -/
 theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_regionCard_of_lt_regionMass
     (zfeat : Z → BitVec r)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hcard : region.card < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hcard : region.card < Fintype.card (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
@@ -118,8 +118,8 @@ proper finite visible region carries mass above `q`. This closes the earlier
 heavy-region loophole without any injective-branch assumption on `zfeat`. -/
 theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_exists_not_mem_of_lt_regionMass
     (zfeat : Z → BitVec r)
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
-    (hout : ∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region)
+    (region : Finset (ExactVisiblePostSwitchData Z k))
+    (hout : ∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region)
     (hmass : q < region.sum (fun x => μ x)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData

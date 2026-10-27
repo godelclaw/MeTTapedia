@@ -29,7 +29,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- Recovery data already forces every injectively realized finite probe family
@@ -37,7 +37,7 @@ to fit inside the current point-block predictor-quotient budget. -/
 theorem SharedExactZABSparseThresholdERMRecoveryData.card_le_pointBlockQuotientBudget_of_injective_realization
     {Probe : Type*} [Fintype Probe]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p) :
     Fintype.card Probe ≤
@@ -71,7 +71,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_r
     {Probe : Type*} [Fintype Probe]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p)
     (hs :
@@ -90,7 +90,7 @@ support the manuscript-facing recovery packet. -/
 theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_injective_realization_of_pointBlockQuotientBudget_lt_card
     {Probe : Type*} [Fintype Probe]
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p)
     (hs :

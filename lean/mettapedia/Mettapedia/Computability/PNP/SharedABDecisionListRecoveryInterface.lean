@@ -18,7 +18,7 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 structure SharedABDecisionListRecoveryData
     [Inhabited Z]
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (features : Fin r → AffineColumnCode (k + k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞)
@@ -40,7 +40,7 @@ section
 variable [Inhabited Z] [Fintype Z]
 
 def SharedABDecisionListRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -55,7 +55,7 @@ def SharedABDecisionListRecoveryData.targetData
   realized := h.realized
 
 theorem SharedABDecisionListRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -67,7 +67,7 @@ theorem SharedABDecisionListRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem SharedABDecisionListRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -76,11 +76,11 @@ theorem SharedABDecisionListRecoveryData.surfaceCard_le_of_surjective_predict
         (Z := Z) (r := r) (k := k) (Index := Index)
         μ features G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -88,12 +88,12 @@ theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_lt_surfaceCar
       SharedABDecisionListRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index)
         μ features G q)
-    (hs : r + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem SharedABDecisionListRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

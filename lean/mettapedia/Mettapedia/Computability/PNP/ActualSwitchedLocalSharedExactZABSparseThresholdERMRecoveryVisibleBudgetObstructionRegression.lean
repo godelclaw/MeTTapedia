@@ -11,19 +11,19 @@ def idBitVec1ActualSparseRecoveryVisibleBudget : BitVec 1 → BitVec 1 := fun x 
 def constBitVec0ActualSparseRecoveryVisibleBudget : BitVec 2 → BitVec 0 := fun _ i => Fin.elim0 i
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k0NonemptyActualSparseRecoveryVisibleBudget :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 local instance exactVisiblePostSwitchSurfaceBitVec2k0NonemptyActualSparseRecoveryVisibleBudget :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 2) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 2) 0) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def bitVec1k0UniformMeasureActualSparseRecoveryVisibleBudget :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   PMF.uniformOfFintype _
 
 noncomputable def bitVec2k0UniformMeasureActualSparseRecoveryVisibleBudget :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 2) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 2) 0) :=
   PMF.uniformOfFintype _
 
 theorem fullRuleActualSwitchedLocalInterface_sharedExactZABSparseThresholdERMRecoveryData_visibleWidth_le_bitVec1k0r1_regression

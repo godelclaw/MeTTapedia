@@ -45,7 +45,11 @@ structure GaugeBufferedLockedInterface
   gaugeBound : Nat
   singleMessage :
     ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1
-  hiddenGaugeProduct :
+  /-- Legacy universal-truth predicate.  Despite its former name, this is not
+  Hypothesis 4.17's conditional hidden-gauge product law.  Manuscript-facing
+  work must instead use `V13HiddenGaugeProductFrontier` together with
+  `V13FiniteGaugeGroupAction`. -/
+  gaugePredicateTotal :
     ∀ gamma omega, semantics.gaugeSat gamma omega
   noPublicTargetTags :
     PairNeutral oppositeSupport neutralSkeleton ∧
@@ -200,7 +204,7 @@ def toyLockedInterface :
   singleMessage := by
     intro w0 w1 h
     exact h
-  hiddenGaugeProduct := by
+  gaugePredicateTotal := by
     intro gamma omega
     cases gamma
     trivial
@@ -251,7 +255,7 @@ theorem toyLockedInterface_jointly_inhabits_all_nine :
           toyLockedInterface.target) := by
   exact
     ⟨toyLockedInterface.singleMessage,
-      toyLockedInterface.hiddenGaugeProduct,
+      toyLockedInterface.gaugePredicateTotal,
       toyLockedInterface.noPublicTargetTags,
       toyLockedInterface.atomCompleteness,
       toyLockedInterface.gaugeFaithfulness,

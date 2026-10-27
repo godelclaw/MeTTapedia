@@ -16,7 +16,7 @@ section UniformVisibleSection
 
 variable {Z : Type v} {Block Index : Type*} {k N s clock : ℕ}
 variable (T : ActualSwitchedLocalInterface Z k Index Block)
-variable {sec : ExactVisiblePostSwitchSurface Z k → Block}
+variable {sec : ExactVisiblePostSwitchData Z k → Block}
 
 theorem regression_uniformVisibleSection_factorsThrough_outputFamily
     (hsec : T.HasUniformVisibleSection sec) :

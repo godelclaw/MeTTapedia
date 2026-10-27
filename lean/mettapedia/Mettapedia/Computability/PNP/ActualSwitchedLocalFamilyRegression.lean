@@ -20,7 +20,7 @@ variable {Index : Type u} {Block : Type w}
 theorem regression_actualSwitchedLocal_exactZAB_payload
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hT :
       T.predictorFamily =
         exactZABDecisionListERMFamily
@@ -33,7 +33,7 @@ theorem regression_actualSwitchedLocal_exactZAB_payload
 theorem regression_actualSwitchedLocal_bitVecZAB_payload
     [Fintype (BitVec r)]
     (T : ActualSwitchedLocalInterface (BitVec r) k Index Block)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     (hT :
       T.predictorFamily =
         bitVecZABDecisionListERMFamily
@@ -50,7 +50,7 @@ section LocalityOnlyObstruction
 variable {Z : Type v} [Fintype Z] {k s clock : ℕ}
 
 theorem regression_fullRuleActualSwitchedLocal_no_cover
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (fullRuleActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
   exact
@@ -58,7 +58,7 @@ theorem regression_fullRuleActualSwitchedLocal_no_cover
       (Z := Z) (k := k) (s := s) hs
 
 theorem regression_actualSwitchedLocal_not_forall_payload
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} {Block : Type v}
         (T : ActualSwitchedLocalInterface Z k Index Block),
         ClockedKpolyFiniteLearningPayload T.predictorFamily s clock) := by

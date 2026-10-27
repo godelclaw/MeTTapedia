@@ -121,8 +121,8 @@ theorem kpolyCoverage_anchor_clockedFiniteLearningPayload_card_le_of_factorsThro
     {Index View : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : IndexedPredictorFamily Index View}
-    {view : ExactVisiblePostSwitchSurface Z k → View}
-    {sec : View → ExactVisiblePostSwitchSurface Z k}
+    {view : ExactVisiblePostSwitchData Z k → View}
+    {sec : View → ExactVisiblePostSwitchData Z k}
     (target : Probe → View → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
@@ -143,8 +143,8 @@ theorem kpolyCoverage_anchor_not_clockedFiniteLearningPayload_of_factorsThrough_
     {Index View : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : IndexedPredictorFamily Index View}
-    {view : ExactVisiblePostSwitchSurface Z k → View}
-    {sec : View → ExactVisiblePostSwitchSurface Z k}
+    {view : ExactVisiblePostSwitchData Z k → View}
+    {sec : View → ExactVisiblePostSwitchData Z k}
     (target : Probe → View → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)

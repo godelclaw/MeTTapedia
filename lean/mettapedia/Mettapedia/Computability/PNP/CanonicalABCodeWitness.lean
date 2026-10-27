@@ -74,7 +74,7 @@ theorem canonicalABCodeFamily_surfaceCard_le_of_surjective_predict
     (hsurj :
       Function.Surjective
         (canonicalABCodeFamily (Z := Z) (k := k) codes).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * k + 1 := by
   exact
     CanonicalABDecisionListCandidateData.surfaceCard_le_of_surjective_predict
       (canonicalABDecisionListCandidateData_of_codes
@@ -84,7 +84,7 @@ theorem canonicalABCodeFamily_surfaceCard_le_of_surjective_predict
 theorem canonicalABCodeFamily_not_surjective_of_lt_surfaceCard
     [Fintype Z]
     (codes : Index → SharedAffineDecisionListCode (k + k))
-    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (canonicalABCodeFamily (Z := Z) (k := k) codes).predict := by
   exact

@@ -19,8 +19,8 @@ same recovery witness must satisfy both the unconditional half-width ceiling
 and the intrinsic lightest-point threshold together. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_visibleWidth_and_lightestPoint_threshold_of_nonempty_recovery
     {n k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (zfeat : BitVec n → BitVec r)
@@ -44,8 +44,8 @@ lightest-point threshold already rules out the manuscript-facing sparse-
 threshold recovery packet. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_visibleWidth_gap_or_lt_one_sub_apply_lightestPoint
     {n k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
     (q : ℝ≥0∞)
     (hsurj : Function.Surjective T.predictorFamily.predict)
@@ -84,8 +84,8 @@ extractor at all can support the manuscript-facing sparse-threshold recovery
 packet on a surjective actual-local endpoint. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_apply_lightestPoint
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
     (hsurj : Function.Surjective T.predictorFamily.predict)

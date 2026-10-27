@@ -8,29 +8,29 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 def bool0FalseVisiblePointActualSparseRecoveryConcentration :
-    ExactVisiblePostSwitchSurface Bool 0 :=
+    ExactVisiblePostSwitchData Bool 0 :=
   ⟨false, fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
 
 def bool0TrueVisiblePointActualSparseRecoveryConcentration :
-    ExactVisiblePostSwitchSurface Bool 0 :=
+    ExactVisiblePostSwitchData Bool 0 :=
   ⟨true, fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
 
 noncomputable def bool0UniformMeasureActualSparseRecoveryConcentration :
-    PMF (ExactVisiblePostSwitchSurface Bool 0) :=
+    PMF (ExactVisiblePostSwitchData Bool 0) :=
   PMF.ofFintype
     (fun _ => (2 : ℝ≥0∞)⁻¹)
     (by
       classical
       have hsum :
-          ∑ a : ExactVisiblePostSwitchSurface Bool 0, (2 : ℝ≥0∞)⁻¹
+          ∑ a : ExactVisiblePostSwitchData Bool 0, (2 : ℝ≥0∞)⁻¹
             = ∑ b : Bool, (2 : ℝ≥0∞)⁻¹ := by
         simpa using
           (Fintype.sum_equiv exactVisiblePostSwitchSurfaceBool0EquivActualSparse
-            (fun _ : ExactVisiblePostSwitchSurface Bool 0 => (2 : ℝ≥0∞)⁻¹)
+            (fun _ : ExactVisiblePostSwitchData Bool 0 => (2 : ℝ≥0∞)⁻¹)
             (fun _ : Bool => (2 : ℝ≥0∞)⁻¹)
             (by intro b; rfl))
       calc
-        ∑ a : ExactVisiblePostSwitchSurface Bool 0, (2 : ℝ≥0∞)⁻¹
+        ∑ a : ExactVisiblePostSwitchData Bool 0, (2 : ℝ≥0∞)⁻¹
             = ∑ b : Bool, (2 : ℝ≥0∞)⁻¹ := hsum
         _ = 1 := by
           simpa [two_mul] using ENNReal.inv_two_add_inv_two)

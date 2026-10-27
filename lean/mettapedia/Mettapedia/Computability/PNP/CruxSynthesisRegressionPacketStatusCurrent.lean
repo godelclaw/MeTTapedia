@@ -42,13 +42,13 @@ theorem current_pnp_strongest_honest_status_regression :
       currentPNPLocalCruxPacket.covers .clockedFiniteUniformKernel ∧
       (∀ {r k clock : ℕ} {Index : Type u} [Fintype (BitVec r)]
         (samples :
-          Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool),
+          Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool),
         ClockedKpolyFiniteLearningPayload
           (bitVecZABDecisionListERMFamily
             (r := r) (k := k) (Index := Index) samples)
           (r + 2 * k + 1) clock) ∧
       (∀ {Z : Type v} [Fintype Z] {k s clock : ℕ}
-        (_ : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+        (_ : s < Fintype.card (ExactVisiblePostSwitchData Z k)),
         ¬ (∀ {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index),
           ClockedKpolyFiniteLearningPayload G s clock)) ∧
       ¬ currentPNPLocalCruxPacket.covers .kpolyCompressionBridge ∧

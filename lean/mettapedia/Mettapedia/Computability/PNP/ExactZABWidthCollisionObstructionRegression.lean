@@ -14,7 +14,7 @@ namespace Mettapedia.Computability.PNP.ExactZABWidthCollisionObstructionRegressi
 def zeroExtractor : BitVec 1 → BitVec 0 := fun _ i => Fin.elim0 i
 
 theorem exactZABDecisionListERMFamily_zeroExtractor_regression
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 1) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 1) 0) Bool) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := BitVec 1) (r := 0) (k := 0) zeroExtractor samples).predict := by
@@ -24,7 +24,7 @@ theorem exactZABDecisionListERMFamily_zeroExtractor_regression
       zeroExtractor samples (by decide)
 
 theorem exactZABAffineFeatureERMFamily_zeroExtractor_regression
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 1) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 1) 0) Bool) :
     ¬ Function.Surjective
         (exactZABAffineFeatureERMFamily
           (Z := BitVec 1) (p := 1) (r := 0) (k := 0) zeroExtractor samples).predict := by
@@ -34,7 +34,7 @@ theorem exactZABAffineFeatureERMFamily_zeroExtractor_regression
       zeroExtractor samples (by decide)
 
 theorem exactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 1) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 1) 0) Bool) :
     ¬ Function.Surjective
         (exactZABSparseThresholdAffineERMFamily
           (Z := BitVec 1) (p := 1) (r := 0) (k := 0) zeroExtractor samples).predict := by
@@ -45,7 +45,7 @@ theorem exactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
 
 theorem sharedExactZABAffineFeatureERMFamily_zeroExtractor_regression
     {features : Fin 1 → AffineColumnCode (0 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 1) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 1) 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABAffineFeatureERMFamily
           (Z := BitVec 1) (p := 1) (r := 0) (k := 0) zeroExtractor features samples).predict := by
@@ -56,7 +56,7 @@ theorem sharedExactZABAffineFeatureERMFamily_zeroExtractor_regression
 
 theorem sharedExactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
     {features : Fin 1 → AffineColumnCode (0 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 1) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 1) 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABSparseThresholdAffineERMFamily
           (Z := BitVec 1) (p := 1) (r := 0) (k := 0) zeroExtractor features samples).predict := by
@@ -67,7 +67,7 @@ theorem sharedExactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
 
 theorem sharedExactZABAffineDecisionListERMFamily_zeroExtractor_regression
     {features : Fin 1 → AffineColumnCode (0 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface (BitVec 1) 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData (BitVec 1) 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
           (Z := BitVec 1) (p := 1) (r := 0) (k := 0) zeroExtractor features samples).predict := by

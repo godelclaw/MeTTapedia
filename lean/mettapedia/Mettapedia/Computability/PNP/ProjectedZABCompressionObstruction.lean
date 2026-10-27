@@ -25,7 +25,7 @@ variable {n r k : ℕ} {Index : Type*}
 /-- A projected exact `(z, a, b)` ERM route on `BitVec n` still has to pay the
 full exact visible surface cardinality `2^(n + 2k)` if it were surjective. -/
 theorem projectedZABERMFamily_bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -42,7 +42,7 @@ theorem projectedZABERMFamily_bitVecSurfaceCard_le_of_surjective_predict
 wrapper itself. -/
 theorem projectedZABDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_predict
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (projectedZABDecisionListERMFamily
@@ -59,7 +59,7 @@ theorem projectedZABDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_pre
 `BitVec n` truth-table threshold, then surjectivity onto the full exact rule
 class is impossible. -/
 theorem ProjectedZABERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -76,7 +76,7 @@ theorem ProjectedZABERMRecoveryData.not_surjective_predict_of_budget_lt
 known to fall below the full `BitVec n` truth-table threshold. -/
 theorem projectedZABDecisionListERMFamily_not_surjective_of_budget_lt
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : r + 2 * k + 1 < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (projectedZABDecisionListERMFamily
@@ -102,7 +102,7 @@ theorem projectedZABDecisionListBudget_lt_bitVecTruthTable_of_le_of_two_le
 /-- Hence a projected exact `(z, a, b)` ERM route cannot be surjective once
 `r ≤ n` and the full raw visible width `n + 2k` is at least `2`. -/
 theorem ProjectedZABERMRecoveryData.not_surjective_predict_of_le_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -120,7 +120,7 @@ theorem ProjectedZABERMRecoveryData.not_surjective_predict_of_le_of_two_le
 same natural width hypotheses `r ≤ n` and `2 ≤ n + 2k`. -/
 theorem projectedZABDecisionListERMFamily_not_surjective_of_le_of_two_le
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hproj : r ≤ n)
     (hwidth : 2 ≤ n + 2 * k) :
     ¬ Function.Surjective

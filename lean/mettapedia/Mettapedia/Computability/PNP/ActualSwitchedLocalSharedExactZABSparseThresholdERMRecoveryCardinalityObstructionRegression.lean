@@ -9,11 +9,11 @@ open scoped ENNReal
 def idBitVec1ActualSparseRecoveryCardinality : BitVec 1 → BitVec 1 := fun x => x
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k1Nonempty :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def bitVec1k1UniformMeasureActualSparseRecoveryCardinality :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   PMF.uniformOfFintype _
 
 theorem fullRuleActualSwitchedLocalInterface_sharedExactZABSparseThresholdERMRecoveryData_one_sub_pow_inv_bitVec1k1_uniform_regression

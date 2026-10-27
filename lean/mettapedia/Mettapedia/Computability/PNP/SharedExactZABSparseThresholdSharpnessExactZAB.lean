@@ -12,10 +12,11 @@ section ExactZAB
 
 variable {n k : ℕ}
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem sharedExactZABSparseThresholdAffinePredict_id_allAffinePointBlockFeatures_eq_raw
     (code : SharedSparseThresholdCode
       (allAffinePointBlockFeatureCount (n + (k + k))))
-    (u : ExactVisiblePostSwitchSurface (BitVec n) k) :
+    (u : ExactVisiblePostSwitchData (BitVec n) k) :
     sharedExactZABSparseThresholdAffinePredict
         (Z := BitVec n)
         (p := allAffinePointBlockFeatureCount (n + (k + k)))
@@ -37,7 +38,7 @@ theorem fullExactVisibleRuleFamily_realizedBySharedExactZABSparseThresholdAffine
       (fun z => z)
       (allAffinePointBlockFeatures (n + (k + k)))
       (fullExactVisibleRuleFamily (BitVec n) k) := by
-  let e : ExactVisiblePostSwitchSurface (BitVec n) k ≃ BitVec (n + (k + k)) :=
+  let e : ExactVisiblePostSwitchData (BitVec n) k ≃ BitVec (n + (k + k)) :=
     Equiv.ofBijective
       (bitVecZABVisibleData (r := n) (k := k))
       (bitVecZABVisibleData_bijective (n := n) (k := k))

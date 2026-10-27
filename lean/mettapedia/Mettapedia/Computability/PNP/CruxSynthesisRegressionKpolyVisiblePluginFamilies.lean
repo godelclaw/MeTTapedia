@@ -19,7 +19,7 @@ theorem kpoly_anchor_plugin_lookup_surjective_regression
 
 theorem kpoly_anchor_plugin_lookup_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginLookupActualSwitchedLocalInterface Z k).predictorFamily s clock := by
   exact
@@ -29,7 +29,7 @@ theorem kpoly_anchor_plugin_lookup_no_clocked_payload_regression
 theorem kpoly_anchor_plugin_lookup_no_zab_data_regression
     {Z : Type v} [Fintype Z] {k r : ℕ}
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginLookupActualSwitchedLocalInterface Z k) zfeat) := by
@@ -45,7 +45,7 @@ theorem kpoly_anchor_plugin_majority_surjective_regression
 
 theorem kpoly_anchor_plugin_majority_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock := by
   exact
@@ -55,7 +55,7 @@ theorem kpoly_anchor_plugin_majority_no_clocked_payload_regression
 theorem kpoly_anchor_plugin_majority_no_zab_data_regression
     {Z : Type v} [Fintype Z] {k r : ℕ}
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginMajorityActualSwitchedLocalInterface Z k) zfeat) := by
@@ -71,7 +71,7 @@ theorem kpoly_anchor_plugin_sample_majority_surjective_regression
 
 theorem kpoly_anchor_plugin_sample_majority_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock := by
   exact
@@ -81,7 +81,7 @@ theorem kpoly_anchor_plugin_sample_majority_no_clocked_payload_regression
 theorem kpoly_anchor_plugin_sample_majority_no_zab_data_regression
     {Z : Type v} [Fintype Z] {k r : ℕ}
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k) zfeat) := by

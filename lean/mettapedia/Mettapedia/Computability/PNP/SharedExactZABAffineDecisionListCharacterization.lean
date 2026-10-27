@@ -32,13 +32,13 @@ variable {Z : Type*} {S : Type*} {p r k : ℕ}
 /-- A rule is signature-invariant if it depends only on one fixed signature
 map on the exact visible surface. -/
 def ExactVisibleSignatureInvariantRule
-    (signature : ExactVisiblePostSwitchSurface Z k → S)
+    (signature : ExactVisiblePostSwitchData Z k → S)
     (rule : ExactVisibleRule Z k) : Prop :=
   ∀ u v, signature u = signature v → rule u = rule v
 
 theorem not_surjective_predict_of_all_exactVisibleSignatureInvariant
     {Index : Type*}
-    {signature : ExactVisiblePostSwitchSurface Z k → S}
+    {signature : ExactVisiblePostSwitchData Z k → S}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv :
       ∀ i, ExactVisibleSignatureInvariantRule
@@ -67,7 +67,7 @@ shared feature, if any. -/
 noncomputable def exactZABAffineDecisionListSignature
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k))) :
-    ExactVisiblePostSwitchSurface Z k → Option (Fin p) :=
+    ExactVisiblePostSwitchData Z k → Option (Fin p) :=
   fun u =>
     firstActiveFeature?
       (exactZABAffineFeatureSummary

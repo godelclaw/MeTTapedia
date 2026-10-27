@@ -18,9 +18,9 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_disagreemen
     (fallback : FallbackIndex → ExactVisibleRule Z k)
     (index :
       BoundedSampleFallbackFamilyIndex
-        FallbackIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+        FallbackIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.disagreementSupport (fallback index.1)
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict index u)).card ≤
         sampleBound :=
@@ -130,10 +130,10 @@ family. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallbackFamily_zeroSample_exists_clockedExactVisibleRealization_iff_fallbackFamily
     {FallbackIndex : Type v} {Z : Type v} {k s clock : ℕ}
     (fallback : FallbackIndex → ExactVisibleRule Z k) :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k 0 fallback).predictorFamily.RealizedByClockedBitFamily F) ↔
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (FallbackZeroSampleImage.fallbackFamily fallback).RealizedByClockedBitFamily F := by
   simpa [FallbackZeroSampleImage.zeroSampleWrapperFamily] using
     (FallbackZeroSampleImage.exists_clockedExactVisibleRealization_iff_fallbackFamily

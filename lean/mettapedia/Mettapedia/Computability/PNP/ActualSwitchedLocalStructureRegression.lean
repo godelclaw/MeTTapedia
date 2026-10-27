@@ -57,7 +57,7 @@ theorem regression_actualSwitchedLocal_zab_payload
 theorem regression_actualSwitchedLocal_exactZAB_ERM_eq_to_zab_cover
     {T : ActualSwitchedLocalInterface Z k Index Block}
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hT :
       T.predictorFamily =
         exactZABDecisionListERMFamily
@@ -72,7 +72,7 @@ theorem regression_actualSwitchedLocal_exactZAB_ERM_eq_to_bitCode_payload
     [Fintype Z]
     {T : ActualSwitchedLocalInterface Z k Index Block}
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hT :
       T.predictorFamily =
         exactZABDecisionListERMFamily
@@ -94,7 +94,7 @@ variable {Index : Type u} {Block : Type w}
 theorem regression_actualSwitchedLocal_bitVecZAB_ERM_eq_to_zab_cover
     {T : ActualSwitchedLocalInterface (BitVec r) k Index Block}
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     (hT :
       T.predictorFamily =
         bitVecZABDecisionListERMFamily
@@ -109,7 +109,7 @@ theorem regression_actualSwitchedLocal_bitVecZAB_ERM_eq_to_bitCode_payload
     [Fintype (BitVec r)]
     {T : ActualSwitchedLocalInterface (BitVec r) k Index Block}
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     (hT :
       T.predictorFamily =
         bitVecZABDecisionListERMFamily
@@ -128,7 +128,7 @@ section FullRuleExclusions
 variable {Z : Type v} [Fintype Z] {r k s : ℕ}
 
 theorem regression_fullRuleActualSwitchedLocal_not_bitCodeData
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (fullRuleActualSwitchedLocalInterface Z k) s) := by
@@ -138,7 +138,7 @@ theorem regression_fullRuleActualSwitchedLocal_not_bitCodeData
 
 theorem regression_fullRuleActualSwitchedLocal_not_zabDecisionListData
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (fullRuleActualSwitchedLocalInterface Z k) zfeat) := by

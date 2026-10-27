@@ -19,7 +19,7 @@ theorem kpolyCoverage_anchor_actualSwitchedLocal_zabDecisionList_visibleCardGapL
     {zfeat : Z → BitVec r}
     (h : ActualSwitchedLocalInterface.ZABDecisionListData T zfeat)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) - (2 * k + 1) ≤ r :=
+    Fintype.card (ExactVisiblePostSwitchData Z k) - (2 * k + 1) ≤ r :=
   h.visibleCardGapLowerBound_of_surjective_predict hsurj
 
 /-- Route-coverage anchor: equivalently, a surjective actual-local family
@@ -29,7 +29,7 @@ theorem kpolyCoverage_anchor_actualSwitchedLocal_not_nonempty_zabDecisionListDat
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (hgap : r < Fintype.card (ExactVisiblePostSwitchSurface Z k) - (2 * k + 1)) :
+    (hgap : r < Fintype.card (ExactVisiblePostSwitchData Z k) - (2 * k + 1)) :
     ¬ Nonempty (ActualSwitchedLocalInterface.ZABDecisionListData T zfeat) :=
   ActualSwitchedLocalInterface.not_nonempty_zabDecisionListData_of_surjective_predict_of_lt_visibleCardGap
     (T := T) zfeat hsurj hgap

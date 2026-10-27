@@ -17,7 +17,7 @@ noncomputable instance instFintypeExactVisibleRule
     (Z : Type v) (k : ℕ) [Fintype Z] :
     Fintype (ExactVisibleRule Z k) := by
   classical
-  unfold ExactVisibleRule ExactVisiblePostSwitchSurface
+  unfold ExactVisibleRule ExactVisiblePostSwitchData
   infer_instance
 
 namespace PluginSampleMajority

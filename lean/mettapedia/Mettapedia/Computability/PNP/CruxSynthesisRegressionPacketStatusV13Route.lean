@@ -21,14 +21,14 @@ theorem canonical_zab_erm_route_coverage_regression :
 
 theorem canonical_zab_erm_route_clocked_payload_and_strict_budget_regression
     {Z : Type v} [Fintype Z] {r k clock : ℕ} {Index : Type u}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index} {q : ℝ≥0∞}
     (h :
   CanonicalZABERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ zfeat G q) :
     ClockedKpolyFiniteLearningPayload G (r + 2 * k + 1) clock ∧
-      (r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+      (r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k) →
         ¬ Function.Surjective G.predict) := by
   rcases
       canonicalZABERMRouteCoverage

@@ -47,7 +47,7 @@ theorem payload_iff_finitePredictorCover_regression
 theorem not_payload_of_surjective_predict_of_lt_predictorCard_regression
     {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index : Type u}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ ClockedKpolyFiniteLearningPayload G s clock :=
   not_clockedKpolyFiniteLearningPayload_of_surjective_predict_of_lt_predictorCard
@@ -57,7 +57,7 @@ theorem not_payload_of_injective_realization_of_lt_card_regression
     {Probe Z : Type*} [Fintype Probe] [Fintype Z]
     {k s clock : ℕ} {Index : Type u}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, G.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe) :

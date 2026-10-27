@@ -6,24 +6,24 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 def bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨zeroVec, zeroVec, zeroVec⟩
 
 def bitVec1OneVisiblePointActualSparseRecoveryHeavyRegion :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨fun _ => true, zeroVec, zeroVec⟩
 
 def idBitVec1ActualSparseRecoveryHeavyRegion : BitVec 1 → BitVec 1 := fun x => x
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k0NonemptyActualSparseRecoveryHeavyRegion :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ⟨bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion⟩
 
 noncomputable def bitVec1BoundedSampleMajorityActualSparseRecoveryHeavyRegion :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface (BitVec 1) 0 0
 
 noncomputable local instance exactVisiblePostSwitchSurfaceBitVec1k0DecidableEqActualSparseRecoveryHeavyRegion :
-    DecidableEq (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    DecidableEq (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   Classical.decEq _
 
 theorem bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion_ne :
@@ -36,7 +36,7 @@ theorem bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion_ne :
     bitVec1OneVisiblePointActualSparseRecoveryHeavyRegion, zeroVec] at hbit
 
 noncomputable def bitVec1SkewSupportActualSparseRecoveryHeavyRegion :
-    Multiset (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Multiset (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ({bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion} : Multiset _) +
     {bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion} +
     {bitVec1ZeroVisiblePointActualSparseRecoveryHeavyRegion} +
@@ -44,7 +44,7 @@ noncomputable def bitVec1SkewSupportActualSparseRecoveryHeavyRegion :
     {bitVec1OneVisiblePointActualSparseRecoveryHeavyRegion}
 
 noncomputable def bitVec1SkewMeasureActualSparseRecoveryHeavyRegion :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   PMF.ofMultiset bitVec1SkewSupportActualSparseRecoveryHeavyRegion (by
     simp [bitVec1SkewSupportActualSparseRecoveryHeavyRegion])
 
@@ -109,11 +109,11 @@ private theorem three_quarters_lt_four_fifths_actualSparseRecoveryHeavyRegion :
   exact ENNReal.div_lt_div_right (by norm_num) (by simp) (by norm_num)
 
 theorem exists_heavyProperRegion_iff_exists_lt_one_sub_apply_bitVec1_skew_three_quarters_regression :
-    (∃ region : Finset (ExactVisiblePostSwitchSurface (BitVec 1) 0),
-        (∃ x₀ : ExactVisiblePostSwitchSurface (BitVec 1) 0, x₀ ∉ region) ∧
+    (∃ region : Finset (ExactVisiblePostSwitchData (BitVec 1) 0),
+        (∃ x₀ : ExactVisiblePostSwitchData (BitVec 1) 0, x₀ ∉ region) ∧
           (3 : ℝ≥0∞) / 4 <
             region.sum (fun x => bitVec1SkewMeasureActualSparseRecoveryHeavyRegion x)) ↔
-      ∃ y : ExactVisiblePostSwitchSurface (BitVec 1) 0,
+      ∃ y : ExactVisiblePostSwitchData (BitVec 1) 0,
         (3 : ℝ≥0∞) / 4 <
           1 - bitVec1SkewMeasureActualSparseRecoveryHeavyRegion y := by
   exact
@@ -123,8 +123,8 @@ theorem exists_heavyProperRegion_iff_exists_lt_one_sub_apply_bitVec1_skew_three_
       (q := (3 : ℝ≥0∞) / 4)
 
 theorem exists_heavyProperRegion_iff_lt_one_sub_apply_lightestPoint_bitVec1_skew_three_quarters_regression :
-    (∃ region : Finset (ExactVisiblePostSwitchSurface (BitVec 1) 0),
-        (∃ x₀ : ExactVisiblePostSwitchSurface (BitVec 1) 0, x₀ ∉ region) ∧
+    (∃ region : Finset (ExactVisiblePostSwitchData (BitVec 1) 0),
+        (∃ x₀ : ExactVisiblePostSwitchData (BitVec 1) 0, x₀ ∉ region) ∧
           (3 : ℝ≥0∞) / 4 <
             region.sum (fun x => bitVec1SkewMeasureActualSparseRecoveryHeavyRegion x)) ↔
       (3 : ℝ≥0∞) / 4 <
@@ -137,8 +137,8 @@ theorem exists_heavyProperRegion_iff_lt_one_sub_apply_lightestPoint_bitVec1_skew
       (q := (3 : ℝ≥0∞) / 4)
 
 theorem allProperRegionMass_le_iff_one_sub_apply_lightestPoint_le_bitVec1_skew_three_quarters_regression :
-    (∀ region : Finset (ExactVisiblePostSwitchSurface (BitVec 1) 0),
-        (∃ x₀ : ExactVisiblePostSwitchSurface (BitVec 1) 0, x₀ ∉ region) →
+    (∀ region : Finset (ExactVisiblePostSwitchData (BitVec 1) 0),
+        (∃ x₀ : ExactVisiblePostSwitchData (BitVec 1) 0, x₀ ∉ region) →
           region.sum (fun x => bitVec1SkewMeasureActualSparseRecoveryHeavyRegion x) ≤
             (3 : ℝ≥0∞) / 4) ↔
       1 - bitVec1SkewMeasureActualSparseRecoveryHeavyRegion
@@ -190,8 +190,8 @@ private theorem three_quarters_lt_lightestPoint_complement_actualSparseRecoveryH
       hthreshold
 
 theorem not_allProperRegionMass_le_bitVec1_skew_three_quarters_regression :
-    ¬ ∀ region : Finset (ExactVisiblePostSwitchSurface (BitVec 1) 0),
-        (∃ x₀ : ExactVisiblePostSwitchSurface (BitVec 1) 0, x₀ ∉ region) →
+    ¬ ∀ region : Finset (ExactVisiblePostSwitchData (BitVec 1) 0),
+        (∃ x₀ : ExactVisiblePostSwitchData (BitVec 1) 0, x₀ ∉ region) →
           region.sum (fun x => bitVec1SkewMeasureActualSparseRecoveryHeavyRegion x) ≤
             (3 : ℝ≥0∞) / 4 := by
   intro hregion

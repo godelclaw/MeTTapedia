@@ -35,7 +35,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 namespace SharedExactZABSparseThresholdERMRecoveryData
@@ -44,10 +44,10 @@ namespace SharedExactZABSparseThresholdERMRecoveryData
 sparse-threshold recovery packet forces `q` to be at least the complement of
 the uniform point mass. -/
 theorem one_sub_inv_card_le_of_surjective_predict
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹ ≤ q := by
   obtain ⟨y, hy⟩ := PMF.exists_apply_le_inv_card μ
   exact le_trans
     (tsub_le_tsub_left hy 1)
@@ -58,12 +58,12 @@ end SharedExactZABSparseThresholdERMRecoveryData
 /-- Therefore no surjective actual-local sparse-threshold recovery packet can
 exist below the uniform-complement threshold `1 - |surface|⁻¹`. -/
 theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_predict_of_lt_one_sub_inv_card
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hq_lt :
-      q < 1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹) :
+      q < 1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rintro ⟨h⟩
   exact not_lt_of_ge (h.one_sub_inv_card_le_of_surjective_predict hsurj) hq_lt
@@ -72,11 +72,11 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
 manuscript-facing endpoint once the sample bound is large enough for
 surjectivity. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_inv_card
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     {sampleBound : ℕ}
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (hq_lt :
-      q < 1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹) :
+      q < 1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
           μ
@@ -95,10 +95,10 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
 /-- In particular, the full-rule actual-local endpoint is impossible below the
 same uniform-complement threshold. -/
 theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_inv_card
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     {zfeat : Z → BitVec r}
     (hq_lt :
-      q < 1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹) :
+      q < 1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
           μ
@@ -116,14 +116,14 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
 /-- Equivalently, any nonempty full-rule actual-local sparse-threshold recovery
 packet forces `q` above the uniform-complement threshold. -/
 theorem one_sub_inv_card_le_of_nonempty_fullRuleActualSwitchedLocalInterface_sharedExactZABSparseThresholdERMRecoveryData
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     {zfeat : Z → BitVec r}
     (h : SharedExactZABSparseThresholdERMRecoveryData
       μ
       (fullRuleActualSwitchedLocalInterface Z k)
       zfeat
       q) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹ ≤ q := by
   exact
     h.one_sub_inv_card_le_of_surjective_predict
       (fullRuleActualSwitchedLocalInterface_surjective Z k)
@@ -133,11 +133,11 @@ end Abstract
 section BitVec
 
 variable {n k r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {q : ℝ≥0∞} {zfeat : BitVec n → BitVec r}
 
 local instance exactVisiblePostSwitchSurfaceNonemptyBitVec :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec n) k) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 /-- On the full-rule `BitVec n` endpoint, the recovery threshold must be at
