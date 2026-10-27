@@ -111,21 +111,20 @@ theorem either_step_iff (relEnv : RelationEnv) (language : LanguageDef) {label :
     (own : label.isContext = false) {source target : Pattern} :
     (eitherStructure relEnv language).step source label target ↔
       IsState source ∧ IsState target ∧ ∃ presentation, ObjectEquivalent relEnv language .syntax source presentation ∧
-        IsState presentation ∧ ∃ contractum,
-          (readingStructure relEnv language (fun _ => presentation) id).step source label contractum ∧
+        IsState presentation ∧ ∃ contractum, IsState contractum ∧ ∃ witness,
+          StepValid relEnv language presentation witness contractum ∧ label.admits witness = true ∧
             ObjectEquivalent relEnv language .syntax contractum target := by
   constructor
   · rintro ⟨sourceState, targetState, redex, contractum, witness, placed, redexState, valid, contractumState, after,
       admits⟩
     rw [placed_iff own] at placed
     rw [StepLabel.base_of_isContext own] at admits
-    exact ⟨sourceState, targetState, redex, placed, redexState, contractum,
-      ⟨sourceState, contractumState, witness, contractum, valid, admits, rfl⟩, after⟩
-  · rintro ⟨sourceState, targetState, presentation, presents, presentationState, contractum,
-      ⟨-, contractumState, witness, reached, valid, admits, same⟩, after⟩
-    subst same
-    refine ⟨sourceState, targetState, presentation, reached, witness, (placed_iff own).mpr presents, presentationState,
-      valid, contractumState, after, ?_⟩
+    exact ⟨sourceState, targetState, redex, placed, redexState, contractum, contractumState, witness, valid, admits,
+      after⟩
+  · rintro ⟨sourceState, targetState, presentation, presents, presentationState, contractum, contractumState, witness,
+      valid, admits, after⟩
+    refine ⟨sourceState, targetState, presentation, contractum, witness, (placed_iff own).mpr presents,
+      presentationState, valid, contractumState, after, ?_⟩
     rw [StepLabel.base_of_isContext own]
     exact admits
 
@@ -133,8 +132,9 @@ theorem either_step_iff (relEnv : RelationEnv) (language : LanguageDef) {label :
 taken to canonical targets. -/
 theorem consume_step_iff (relEnv : RelationEnv) (language : LanguageDef) {label : StepLabel} {source target : Pattern} :
     (consumeStructure relEnv language).step source label target ↔
-      IsState source ∧ IsState target ∧ ∃ witness contractum, StepValid relEnv language source witness contractum ∧
-        label.admits witness = true ∧ BagForms.sortBags contractum = target :=
+      IsState source ∧ IsState target ∧ ∃ witness contractum,
+        StepValid relEnv language source witness contractum (.presented (presentedOf id BagForms.sortBags)) ∧
+          label.admits witness = true ∧ BagForms.sortBags contractum = target :=
   Iff.rfl
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic.DeclaredReadings

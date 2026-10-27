@@ -20,7 +20,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Engine (RelationEnv)
 open Mettapedia.OSLF.MeTTaIL.ReferenceStep
 open Mettapedia.OSLF.MeTTaIL.CanonicalBags (arrange arrange_mem)
-open Mettapedia.GSLT.LanguageDef.WellSorted (HasType FreeTypeContext isObjectPattern)
+open Mettapedia.GSLT.LanguageDef.WellSorted (HasType FreeTypeContext isObjectPattern isObjectPatternList)
 open Mettapedia.GSLT.LanguageDef.BagNormalForm (elementsHaveType_iff isObjectPatternList_iff)
 
 variable {relEnv : RelationEnv} {language : LanguageDef} {carrier : GrammarRule} {sort : String}
@@ -459,7 +459,7 @@ theorem closed_match_object {pattern : Pattern} (holds : Hereditary language sor
     have canonicalMembers := member_canonical canonical
     change MatchRel (.collection .hashSet values none) term bindings at matched
     cases matched with
-    | @collection _ _ _ terms rest _ _ bag =>
+    | @collection _ _ _ terms _ rest _ bag =>
       have parts : rest.isNone = true ∧ isObjectPatternList terms = true := by
         simpa [IsObject, isObjectPattern] using termObject
       have noRest : rest = none := Option.isNone_iff_eq_none.mp parts.1
