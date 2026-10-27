@@ -41,6 +41,8 @@ import Mettapedia.Machines.NativeStoreTransactions
 import Mettapedia.Machines.NativeStoreScopes
 import Mettapedia.Machines.NativeStoreResources
 import Mettapedia.Machines.NativeDiskIndex
+import Mettapedia.Machines.NativeProviderIndex
+import Mettapedia.Machines.NativeStoreMaximum
 
 /-!
 # Abstract-machine foundations
