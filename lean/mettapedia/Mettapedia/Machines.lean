@@ -47,6 +47,7 @@ import Mettapedia.Machines.NativeScalarText
 import Mettapedia.Machines.NativeProviderConstraints
 import Mettapedia.Machines.NativeProviderDomain
 import Mettapedia.Machines.NativeProviderAdmission
+import Mettapedia.Machines.NativeProviderPolicy
 
 /-!
 # Abstract-machine foundations

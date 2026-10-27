@@ -1037,3 +1037,4 @@ import Mettapedia.Machines.NativeStoreTransactions
 import Mettapedia.Machines.NativeStoreScopes
 import Mettapedia.Machines.NativeProviderDomain
 import Mettapedia.Machines.NativeProviderAdmission
+import Mettapedia.Machines.NativeProviderPolicy
