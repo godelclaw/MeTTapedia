@@ -838,10 +838,12 @@ run_cmd do
     `Mettapedia.Languages.ProcessCalculi.MORK.cMatchSourceFactorsMork.eq_1,
     `Mettapedia.Languages.ProcessCalculi.MORK.cMatchSourceFactorsMork.eq_2,
     `Mettapedia.Languages.ProcessCalculi.MORK.cMatchSourceFactorsMork.eq_def,
-    `Mettapedia.Languages.ProcessCalculi.MORK.cRuleScopedSourceWorkQueueStep.eq_1,
-    `Mettapedia.Languages.ProcessCalculi.MORK.cRuleScopedSourceWorkQueueStep.eq_2,
     `Mettapedia.Languages.ProcessCalculi.MORK.decodeSupportedSourceExec.eq_1,
     `Mettapedia.Languages.ProcessCalculi.MORK.extractSupportedSourceExecFact.eq_1,
+    `Mettapedia.GSLT.Logic.ProgrammableSpaceMM2EvidenceMaterial.consumeOrigins_factors_receipt,
+    `Mettapedia.GSLT.Logic.ProgrammableSpaceMM2EvidenceMaterial.ActualJoin.conclusion_support_cannot_recover_origin_continuation,
+    `Mettapedia.GSLT.Logic.ProgrammableSpaceMM2EvidenceMaterial.ActualJoin.consume_actual_origins,
+    `Mettapedia.GSLT.Logic.ProgrammableSpaceMM2EvidenceMaterial.consumeOrigins_factors_batch,
     `Mettapedia.Languages.ProcessCalculi.MORK.stageRuleScopedSink.eq_1]
   let runtimeEndpoints : Array (Name × Name) := #[
     (`Mettapedia.GSLT.Core.ProgrammableSpaceInference.iterate._unsafe_rec, `Mettapedia.GSLT.Core.ProgrammableSpaceInference.iterate),
@@ -948,8 +950,8 @@ run_cmd do
     unless observedClassical.contains endpoint do throwError "stale Choice endpoint {endpoint}"
   for endpoint in runtimeEndpoints do
     unless observedRuntime.contains endpoint do throwError "stale runtime endpoint {endpoint}"
-  unless modules.size == 46 && totalSafe == 2574 && totalTheorems == 1324 &&
-      totalPrivate == 228 && totalCompiler == 1661 && observedRuntime.size == 15 &&
-      observedClassical.size == 771 do
+  unless modules.size == 46 && totalSafe == 2576 && totalTheorems == 1324 &&
+      totalPrivate == 225 && totalCompiler == 1660 && observedRuntime.size == 15 &&
+      observedClassical.size == 773 do
     throwError "owned declaration inventory changed"
   logInfo m!"PASS SAFE {totalSafe}; THEOREMS {totalTheorems}; PRIVATE {totalPrivate}; RUNTIME {observedRuntime.size}; COMPILER_ONLY {totalCompiler}; CHOICE {observedClassical.size}; CHOICE_FREE {totalSafe-observedClassical.size}; NO OWNED AXIOMS OR ADMISSIONS"
