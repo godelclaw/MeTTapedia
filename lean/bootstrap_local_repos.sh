@@ -100,8 +100,8 @@ clone_or_sync_repo "standalone/mm-lean4" "lean-upgrade/tauceti-lean__standalone_
   "e031768460d5c1053c5e0d540b10560a9618fae3" "lean-upgrade/tauceti-lean__standalone__mm-lean4" \
   "git@github.com:zariuq/mm-lean4.git" \
   "https://github.com/digama0/mm-lean4.git"
-clone_or_sync_repo "standalone/ks-foundations-of-inference" "lean-upgrade/tauceti-lean__standalone__ks-foundations-of-inference" \
-  "47cd19d04da6543e078890bdcfbfdd385d57554b" "lean-upgrade/tauceti-lean__standalone__ks-foundations-of-inference" \
+clone_or_sync_repo "standalone/ks-foundations-of-inference" "main" \
+  "c19eba7d5e0b57d66f13687ed40f58863e1950e5" "main" \
   "git@github.com:zariuq/ks-foundations-of-inference.git"
 
 clone_or_sync_repo "externals/TauCeti" "lean-upgrade/4.33.1" \
