@@ -43,6 +43,7 @@ import Mettapedia.Machines.NativeStoreResources
 import Mettapedia.Machines.NativeDiskIndex
 import Mettapedia.Machines.NativeProviderIndex
 import Mettapedia.Machines.NativeStoreMaximum
+import Mettapedia.Machines.NativeScalarText
 
 /-!
 # Abstract-machine foundations
