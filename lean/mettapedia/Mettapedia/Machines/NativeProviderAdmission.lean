@@ -127,6 +127,31 @@ theorem earlier_report_cannot_erase_deadline (current earlier : Int) (old : earl
   simp only [extend]
   omega
 
+structure RequestTerms (Request Process : Type) where
+  profile : Profile
+  mode : String
+  maximum : Nat
+  request : Request
+  observedAt : Int
+  process : Process
+
+/-- Clocks, process incarnations and a later claimant do not redefine the
+original logical request. Re-admission returns evidence, not a new send right.
+The native boundary normalizes integer representation for `maximum`. -/
+def requestKey {Request Process : Type} (terms : RequestTerms Request Process) :
+    Profile × String × Nat × Request :=
+  (terms.profile, terms.mode, terms.maximum, terms.request)
+
+theorem refreshed_observations_keep_request_identity {Request Process : Type}
+    (terms : RequestTerms Request Process) (now : Int) (process : Process) :
+    requestKey { terms with observedAt := now, process := process } = requestKey terms := rfl
+
+theorem changed_maximum_changes_request_identity {Request Process : Type}
+    (terms : RequestTerms Request Process) (first second : Nat) (different : first ≠ second) :
+    requestKey { terms with maximum := first } ≠ requestKey { terms with maximum := second } := by
+  intro equal
+  exact different (congrArg (fun key : Profile × String × Nat × Request => key.2.2.1) equal)
+
 /-- The trace is replayed against the actual MeTTa deadline function. Large
 timestamps separate exact integer comparisons from binary64 rounding. -/
 def traceCases : List (Profile × Int × Option Int × Nat) :=
