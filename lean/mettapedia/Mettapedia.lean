@@ -1035,3 +1035,4 @@ import Mettapedia.Protocols
 import Mettapedia.Machines.SpaceServiceChecks
 import Mettapedia.Machines.NativeStoreTransactions
 import Mettapedia.Machines.NativeStoreScopes
+import Mettapedia.Machines.NativeProviderDomain
