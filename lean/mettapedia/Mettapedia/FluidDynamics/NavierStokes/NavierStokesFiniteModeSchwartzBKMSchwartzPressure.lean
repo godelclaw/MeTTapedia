@@ -42,7 +42,7 @@ theorem twoModeSchwartzDivergenceFreeInitialVelocity_finiteTimeWitness_of_moment
             (a 0) (b 0) f g hfDiv hgDiv).1 : NSInitialVelocity) T,
         W.velocity = twoModeSchwartzVelocity a b f g ∧
           W.pressure = (fun s : NSTime => fun y : NSSpace => q s y) := by
-  simpa [twoModeSchwartzDivergenceFreeInitialVelocity, twoModeSchwartzInitialVelocity] using
+  exact
     (show ∃ W :
         ExplicitFiniteTimeRegularityWitness ν
           (twoModeSchwartzInitialVelocity (a 0) (b 0) f g) T,
@@ -52,20 +52,20 @@ theorem twoModeSchwartzDivergenceFreeInitialVelocity_finiteTimeWitness_of_moment
           (ν := ν) (T := T)
           (u₀ := twoModeSchwartzInitialVelocity (a 0) (b 0) f g)
           a (deriv a) b (deriv b) f g A B q
-          (by simpa [twoModeSchwartzVelocity] using
+          (by exact
             smoothSpaceTimeVelocity_twoModeSchwartzVelocity ha hb f g)
           hp
-          (by simpa [twoModeSchwartzVelocity] using
+          (by exact
             MatchesInitialVelocity_twoModeSchwartzVelocity a b f g)
           hν haBound hbBound
           (hasDerivAt_deriv_of_contDiff ha)
           (hasDerivAt_deriv_of_contDiff hb)
           (by
             intro t x
-            simpa [twoModeSchwartzVelocity] using heq t x)
+            exact heq t x)
           (by
             intro t x
-            simpa [twoModeSchwartzVelocity] using
+            exact
               spatialDivergence_twoModeSchwartzVelocity_zero a b f g hfDiv hgDiv t x),
         rfl, rfl⟩)
 
@@ -169,7 +169,7 @@ theorem twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPre
       smoothSpaceTimePressure
         (fun s : NSTime => fun y : NSSpace =>
           (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
+    exact
       (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
   have hPremise :=
     twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPremise_of_explicitClosure_schwartzPressureSlice
@@ -228,7 +228,7 @@ theorem twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPre
       smoothSpaceTimePressure
         (fun s : NSTime => fun y : NSSpace =>
           (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
+    exact
       (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
   have hPremise :=
     twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPremise_of_explicitClosure_schwartzPressureSlice
@@ -291,7 +291,7 @@ theorem twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPre
       smoothSpaceTimePressure
         (fun s : NSTime => fun y : NSSpace =>
           (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
+    exact
       (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
   have hWitness :
       ∃ W :
@@ -392,12 +392,12 @@ theorem twoModeSchwartzDivergenceFreeInitialVelocity_exhibits_BKMContinuationPre
     have hvel : W.velocity = (zeroFiniteTimeRegularityWitness ν T).velocity := by
       simpa [zeroFiniteTimeRegularityWitness] using hWzero
     have hpress : W.pressure = (zeroFiniteTimeRegularityWitness ν T).pressure := by
-      simpa [zeroFiniteTimeRegularityWitness] using hWpress
+      exact hWpress
     cases W
     cases hvel
     cases hpress
     simp [zeroFiniteTimeRegularityWitness]
-    constructor <;> rfl
+    constructor
   exact ⟨W, hWcanon, hWzero, hWpress, hEnv, hInt⟩
 
 /-- Time-only pressure-gauge audit for the equal-amplitude anti-profile branch.

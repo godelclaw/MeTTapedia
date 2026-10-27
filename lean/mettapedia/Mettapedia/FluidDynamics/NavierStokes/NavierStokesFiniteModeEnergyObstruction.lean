@@ -89,7 +89,8 @@ theorem finiteInitialKineticEnergy_finiteModeLinearMatrixTimeVelocity_initial_if
         ext j
         rw [finiteModeLinearMatrixTimeVelocity_apply]
         simp [hAzero]
-      simpa [hfield] using finiteInitialKineticEnergy_zero
+      rw [hfield]
+      exact finiteInitialKineticEnergy_zero
     · have hfield :
           (fun x : NSSpace => finiteModeLinearMatrixTimeVelocity A g 0 x) =
             (0 : NSInitialVelocity) := by
@@ -97,7 +98,8 @@ theorem finiteInitialKineticEnergy_finiteModeLinearMatrixTimeVelocity_initial_if
         ext j
         rw [finiteModeLinearMatrixTimeVelocity_apply]
         simp [hg0]
-      simpa [hfield] using finiteInitialKineticEnergy_zero
+      rw [hfield]
+      exact finiteInitialKineticEnergy_zero
 
 /-- On nonnegative slabs, finite-time witness nonemptiness for a matrix-linear
 initial slice is exact: the witness type is inhabited precisely when the
@@ -125,8 +127,8 @@ theorem nonempty_ExplicitFiniteTimeRegularityWitness_finiteModeLinearMatrixTimeV
       rcases hdegenerate with hAzero | hg0
       · simp [hAzero]
       · simp [hg0]
-    simpa [hfield] using
-      (Nonempty.intro (zeroFiniteTimeRegularityWitness ν T))
+    rw [hfield]
+    exact Nonempty.intro (zeroFiniteTimeRegularityWitness ν T)
 
 /-- Exact finite-time energy boundary for the matrix-linear finite-mode
 velocity: on a slab `0 ≤ t ≤ T`, bounded kinetic energy holds precisely in the

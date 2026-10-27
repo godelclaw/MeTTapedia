@@ -311,13 +311,7 @@ theorem WeightedObservable.windowedColeHopfHeatMaskedShiftKernel_liveBaseCoeffSu
       |(L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
           (ι := ι) (X := X)
           selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).vorticity t y|) = a := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.windowedColeHopfHeatMaskedShiftKernel_liveBaseCoeffSum_mul_one_add_abs_eq_saturatedCoeff_of_topDownBridge_via_shiftKernel
         (ι := ι) (X := X) (κ := κ)
         selector mask s hs seedCoeff liveCoeff a c ν hc hν
@@ -391,13 +385,7 @@ theorem WeightedObservable.not_exists_windowedColeHopfHeatMaskedShiftKernelTopDo
           L.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le
             (ι := ι) (X := X)
             selector a c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x := by
-  simpa [WeightedObservable.windowedColeHopfHeatShiftKernelInitialSlice_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSaturatedCandidate_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le,
-      WeightedObservable.windowedColeHopfHeatSharedPackage_of_componentwise_abs_le,
-      WeightedObservable.geometricColeHopfHeatApproximation_of_componentwise_abs_le]
-    using
+  exact
       (L.not_exists_windowedColeHopfHeatMaskedShiftKernelTopDownBridge_eq_saturatedCandidate_of_abs_ne_abs_with_zero_shifted_witnesses_via_shiftKernel
         (ι := ι) (X := X) (κ := κ)
         selector mask s seedCoeff liveCoeff a c ν ha hc hν
