@@ -65,6 +65,18 @@ import Mettapedia.GraphTheory.EdgeColoring.Tables
 import Mettapedia.GraphTheory.EdgeColoring.IncompletableTrail
 import Mettapedia.GraphTheory.OddDegree
 import Mettapedia.GraphTheory.Metric
+import Mettapedia.GraphTheory.Bipartite
+import Mettapedia.GraphTheory.MaxCut
+import Mettapedia.GraphTheory.PathsCycles
+import Mettapedia.GraphTheory.Connectivity
+import Mettapedia.GraphTheory.Trees
+import Mettapedia.GraphTheory.Minors
+import Mettapedia.GraphTheory.Euler
+import Mettapedia.GraphTheory.Infinite
+import Mettapedia.GraphTheory.Ramsey
+import Mettapedia.GraphTheory.Matching
+import Mettapedia.GraphTheory.Mycielski
+import Mettapedia.GraphTheory.GreedyColoring
 
 -- Combinatorics
 import Mettapedia.Combinatorics
@@ -75,6 +87,7 @@ import Mettapedia.GroupTheory
 -- Probability Theory
 import Mettapedia.ProbabilityTheory.Basic
 import Mettapedia.ProbabilityTheory.MarkovChain
+import Mettapedia.ProbabilityTheory.NormalNumbers.Borel
 import Mettapedia.Algorithms.Retrieval
 import Mettapedia.ProbabilityTheory.Moments
 import Mettapedia.ProbabilityTheory.Exchangeability
