@@ -290,13 +290,10 @@ theorem dkLanguage_terms_plain : ∀ rule ∈ (dkLanguage names rules).terms,
   exact noCollection ⟨parameterName, kind, elementType,
     ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2⟩
 
-theorem dkLanguage_equations : (dkLanguage names rules).equations = [] := rfl
-
-/-- No parameter of a `dkLanguage` constructor mentions a collection. -/
-private theorem dkLanguage_params_plain (kind : OSLF.MeTTaIL.Syntax.CollType) :
-    ∀ rule ∈ (dkLanguage names rules).terms, ∀ parameter ∈ rule.params,
-      parameter.typeExpr.mentionsCollection kind = false := by
-  intro rule member
+private theorem dkLanguage_collection_parameters_absent :
+    ∀ rule ∈ (dkLanguage names rules).terms, ∀ kind : OSLF.MeTTaIL.Syntax.CollType,
+      rule.params.all (fun parameter => !parameter.typeExpr.mentionsCollection kind) = true := by
+  intro rule member kind
   rcases List.mem_append.mp member with lf | named
   · rw [lfLanguageDef_terms] at lf
     simp only [lfTermRules, List.mem_cons, List.not_mem_nil, or_false] at lf
@@ -306,14 +303,16 @@ private theorem dkLanguage_params_plain (kind : OSLF.MeTTaIL.Syntax.CollType) :
   · obtain ⟨symbol, _, rfl⟩ := List.mem_map.mp named
     simp [nameRule]
 
-/-- So no bag or set law is typed in `dkLanguage`. -/
-private theorem dkLanguage_not_collectionTyped {rule : GrammarRule}
+private theorem dk_not_collectionTypedAt {rule : GrammarRule}
     {kind : OSLF.MeTTaIL.Syntax.CollType} {elements : List Pattern}
-    (member : rule ∈ (dkLanguage names rules).terms)
+    (authored : rule ∈ (dkLanguage names rules).terms)
     (typed : CollectionTypedAt (dkLanguage names rules) rule kind elements) : False := by
-  obtain ⟨parameter, inRule, mentioned⟩ := typed.mentions
-  rw [dkLanguage_params_plain kind rule member parameter inRule] at mentioned
-  cases mentioned
+  obtain ⟨parameter, member, mentions⟩ := typed.mentions
+  have absent := List.all_eq_true.mp (dkLanguage_collection_parameters_absent rule authored kind) parameter member
+  rw [mentions] at absent
+  cases absent
+
+theorem dkLanguage_equations : (dkLanguage names rules).equations = [] := rfl
 
 /-- **`dkLanguage` has no equation step.** -/
 theorem dk_not_equationContextStep {left right : Pattern} :
@@ -324,9 +323,9 @@ theorem dk_not_equationContextStep {left right : Pattern} :
     | forward member _ _ _ => rw [dkLanguage_equations] at member; cases member
     | reverse member _ _ _ => rw [dkLanguage_equations] at member; cases member
   · cases derived with
-    | bagPerm member typed _ => exact dkLanguage_not_collectionTyped member typed
-    | setPerm member typed _ => exact dkLanguage_not_collectionTyped member typed
-    | setDedup member typed => exact dkLanguage_not_collectionTyped member typed
+    | bagPerm authored typed _ => exact dk_not_collectionTypedAt authored typed
+    | setPerm authored typed _ => exact dk_not_collectionTypedAt authored typed
+    | setDedup authored typed => exact dk_not_collectionTypedAt authored typed
     | flatten algebra _ _ =>
         have none := (dkLanguage_terms_plain _ algebra.authored).1
         rw [algebra.declared] at none

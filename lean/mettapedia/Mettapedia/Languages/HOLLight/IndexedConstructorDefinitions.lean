@@ -3,6 +3,8 @@ import Mettapedia.Logic.HOL.ImpredicativeConnectives
 import Mettapedia.Languages.HOLLight.PrimitiveTransport
 import Mettapedia.Languages.OpenTheory.ReverseTranslation
 import Mettapedia.Languages.HOLLight.ExportReplay
+import Mettapedia.Languages.HOLLight.ExactFormulaReadback
+import Mettapedia.Logic.HOL.RecursiveSpacePredicate
 
 /-!
 # Source definitions for constructor-index programs
@@ -15,6 +17,7 @@ These definitions concern index functions, not a complete native datatype.
 -/
 
 set_option autoImplicit false
+set_option backward.isDefEq.respectTransparency false
 
 namespace Mettapedia.Languages.HOLLight.IndexedConstructorDefinitions
 
@@ -22,6 +25,7 @@ open Mettapedia.Logic Mettapedia.Languages.OpenTheory
 open Mettapedia.GSLT.LanguageDef.IndexedInductiveHOLTerms
 open ReverseTranslation ProofExecution
 local infixr:60 " ⇒ " => HOL.Ty.arr
+universe w
 
 def source {type : HOL.Ty AtomicTy} (program : HOL.ClosedTerm Symbol type) : SourceTerm :=
   (PrimitiveTransport.checkedSource
@@ -69,7 +73,80 @@ def define? (policy : AxiomPolicy) [DecidablePred policy] (state : Registered.St
     (origin : Origin) (name : Name) (body : SourceTerm) : Option Registered.State :=
   Registered.apply policy state (command state origin name body)
 
+/-! ## Installed guard meanings -/
+
+structure GuardIndices where
+  shape : Nat
+  active : Nat
+  edge : Nat
+
+/-- Exact cached defining equations, not assumed semantic guard laws. -/
+structure GuardReadings (state : Registered.State) (signature : HOL.RecursiveSpacePredicate.Signature Symbol)
+    (shape : HOL.ClosedTerm Symbol (signature.number ⇒ signature.payload ⇒ .prop))
+    (active : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ .prop))
+    (edge : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop)) where
+  shapeEquation : ExactFormulaReadback.ReadMeaning state
+    (.eq shape (HOL.ImpredicativeConnectives.expand signature.validShape))
+  activeEquation : ExactFormulaReadback.ReadMeaning state
+    (.eq active (HOL.ImpredicativeConnectives.expand signature.active))
+  edgeEquation : ExactFormulaReadback.ReadMeaning state
+    (.eq edge (HOL.ImpredicativeConnectives.expand signature.validEdge))
+
+def readGuards? (state : Registered.State) (indices : GuardIndices)
+    (signature : HOL.RecursiveSpacePredicate.Signature Symbol)
+    (shape : HOL.ClosedTerm Symbol (signature.number ⇒ signature.payload ⇒ .prop))
+    (active : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ .prop))
+    (edge : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop)) :
+    Option (GuardReadings state signature shape active edge) := do
+  let shapeEquation ← ExactFormulaReadback.readEquation? state indices.shape shape signature.validShape
+  let activeEquation ← ExactFormulaReadback.readEquation? state indices.active active signature.active
+  let edgeEquation ← ExactFormulaReadback.readEquation? state indices.edge edge signature.validEdge
+  return ⟨shapeEquation, activeEquation, edgeEquation⟩
+
+theorem GuardReadings.operator_denote {initial : DefinitionAdapters.TheoryContext} {policy : AxiomPolicy}
+    {state : Registered.State} (frame : RegisteredReplayModels.Frame.{w} initial policy state.context state.cache)
+    (other : TypeFamilySemantics.OperatorFamilies.{w}) (assignment : TypeFamilySemantics.Assignment.{w})
+    {signature : HOL.RecursiveSpacePredicate.Signature Symbol}
+    {shape : HOL.ClosedTerm Symbol (signature.number ⇒ signature.payload ⇒ .prop)}
+    {active : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ .prop)}
+    {edge : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop)}
+    (readings : GuardReadings state signature shape active edge) :
+    HOL.RecursiveSpacePredicate.Signature.denotes (frame.model other assignment)
+      (signature.withGuards shape active edge).operator =
+      HOL.RecursiveSpacePredicate.Signature.denotes (frame.model other assignment) signature.operator :=
+  signature.withGuards_operator_denote (frame.model other assignment) (frame.model_fullDomains other assignment)
+    shape active edge
+    (by simpa only [HOL.RecursiveSpacePredicate.Signature.denote_closed] using
+      ExactFormulaReadback.readEquation_denote frame other assignment shape signature.validShape readings.shapeEquation)
+    (by simpa only [HOL.RecursiveSpacePredicate.Signature.denote_closed] using
+      ExactFormulaReadback.readEquation_denote frame other assignment active signature.active readings.activeEquation)
+    (by simpa only [HOL.RecursiveSpacePredicate.Signature.denote_closed] using
+      ExactFormulaReadback.readEquation_denote frame other assignment edge signature.validEdge readings.edgeEquation)
+
+theorem GuardReadings.least_denote {initial : DefinitionAdapters.TheoryContext} {policy : AxiomPolicy}
+    {state : Registered.State} (frame : RegisteredReplayModels.Frame.{w} initial policy state.context state.cache)
+    (other : TypeFamilySemantics.OperatorFamilies.{w}) (assignment : TypeFamilySemantics.Assignment.{w})
+    {signature : HOL.RecursiveSpacePredicate.Signature Symbol}
+    {shape : HOL.ClosedTerm Symbol (signature.number ⇒ signature.payload ⇒ .prop)}
+    {active : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ .prop)}
+    {edge : HOL.ClosedTerm Symbol (signature.payload ⇒ signature.number ⇒ signature.space ⇒ .prop)}
+    (readings : GuardReadings state signature shape active edge) :
+    HOL.RecursiveSpacePredicate.Signature.denotes (frame.model other assignment)
+      (HOL.PredicateFixedPoint.least (signature.withGuards shape active edge).operator) =
+      HOL.RecursiveSpacePredicate.Signature.denotes (frame.model other assignment)
+        (HOL.PredicateFixedPoint.least signature.operator) :=
+  signature.withGuards_least_denote (frame.model other assignment) (frame.model_fullDomains other assignment)
+    shape active edge
+    (by simpa only [HOL.RecursiveSpacePredicate.Signature.denote_closed] using
+      ExactFormulaReadback.readEquation_denote frame other assignment shape signature.validShape readings.shapeEquation)
+    (by simpa only [HOL.RecursiveSpacePredicate.Signature.denote_closed] using
+      ExactFormulaReadback.readEquation_denote frame other assignment active signature.active readings.activeEquation)
+    (by simpa only [HOL.RecursiveSpacePredicate.Signature.denote_closed] using
+      ExactFormulaReadback.readEquation_denote frame other assignment edge signature.validEdge readings.edgeEquation)
+
 #print axioms vectorResultSource_generated
 #print axioms vectorChildSource_generated
+#print axioms GuardReadings.operator_denote
+#print axioms GuardReadings.least_denote
 
 end Mettapedia.Languages.HOLLight.IndexedConstructorDefinitions

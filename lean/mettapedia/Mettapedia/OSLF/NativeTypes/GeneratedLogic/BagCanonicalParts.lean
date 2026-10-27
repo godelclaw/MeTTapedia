@@ -228,7 +228,7 @@ variable {relEnv : RelationEnv}
 
 /-- **A collection whose elements' canonical forms are elements of an admitted canonical collection is admitted.** -/
 theorem domain_part {kind : CollType} {elements part : List Pattern} (noSet : kind ≠ .hashSet)
-    (canonical : Canonical relEnv language sortBags (domain language))
+    (canonical : CanonicalDetermined relEnv language sortBags (domain language))
     (admitted : domain language (.collection kind elements none) = true)
     (canonElements : canon (.collection kind elements none) = .collection kind elements none)
     (inside : ∀ element ∈ part, canon element ∈ elements) : domain language (.collection kind part none) = true := by
@@ -246,6 +246,7 @@ def parts (noEquations : language.equations = []) (noAlgebra : language.hasAlgeb
   complete := by
     intro state kind first second admitted canonState split
     have canonical := canonical (relEnv := relEnv) noEquations noAlgebra
+    have determinedForms := canonicalDetermined (relEnv := relEnv) noEquations noAlgebra
     obtain ⟨-, left, right, equivalent, rfl, rfl⟩ := split
     have same := canonical.same admitted equivalent
     rw [canonState, sortBags_eq, canon_collection] at same
@@ -254,9 +255,9 @@ def parts (noEquations : language.equations = []) (noAlgebra : language.hasAlgeb
     rw [sortBags_eq] at canonState
     have inside : ∀ element ∈ left ++ right, canon element ∈ arrange kind ((left ++ right).map canon) :=
       fun element member => (mem_arrange noSet).mpr (List.mem_map_of_mem member)
-    refine ⟨domain_part noSet canonical admitted canonState fun element member =>
+    refine ⟨domain_part noSet determinedForms admitted canonState fun element member =>
         inside element (List.mem_append_left _ member),
-      domain_part noSet canonical admitted canonState fun element member =>
+      domain_part noSet determinedForms admitted canonState fun element member =>
         inside element (List.mem_append_right _ member), ?_⟩
     cases kind with
     | vec =>
@@ -273,6 +274,7 @@ def parts (noEquations : language.equations = []) (noAlgebra : language.hasAlgeb
   sound := by
     intro state kind pair admitted canonState member
     have canonical := canonical (relEnv := relEnv) noEquations noAlgebra
+    have determinedForms := canonicalDetermined (relEnv := relEnv) noEquations noAlgebra
     obtain ⟨elements, rfl, left, right, perm, ordered, rfl⟩ := mem_bagSplits member
     have noSet := noSet_of_domain admitted
     rw [sortBags_eq] at canonState
@@ -285,18 +287,19 @@ def parts (noEquations : language.equations = []) (noAlgebra : language.hasAlgeb
       | hashBag => rw [canon_collection, canon_collection, arrange_bag, arrange_bag, sortLex_eq_of_perm (perm.map canon)]
       | hashSet => exact absurd rfl noSet
     have admittedBoth : domain language (.collection kind (left ++ right) none) = true := by
-      rw [← canonical.determined, canonEq, canonical.determined]
+      rw [← determinedForms.determined, canonEq, determinedForms.determined]
       exact admitted
     exact ⟨.collection kind left none, .collection kind right none,
       ⟨canonical.object admitted, left, right, (canonical.equivalent_iff admitted admittedBoth).mpr canonEq.symm, rfl,
         rfl⟩,
-      domain_part noSet canonical admitted canonState fun element member =>
+      domain_part noSet determinedForms admitted canonState fun element member =>
         inside element (List.mem_append_left _ member),
-      domain_part noSet canonical admitted canonState fun element member =>
+      domain_part noSet determinedForms admitted canonState fun element member =>
         inside element (List.mem_append_right _ member), rfl, rfl⟩
   empty_iff := by
     intro state kind admitted canonState
     have canonical := canonical (relEnv := relEnv) noEquations noAlgebra
+    have determinedForms := canonicalDetermined (relEnv := relEnv) noEquations noAlgebra
     rw [isEmptyCollection_iff]
     constructor
     · rintro rfl

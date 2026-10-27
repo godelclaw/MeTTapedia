@@ -90,7 +90,7 @@ inductive Kind where
 abbrev Label := Kind × String
 
 inductive Decl where
-  | sort (name : String)
+  | sort (declaration : TypeDecl)
   | term (rule : GrammarRule)
   | equation (row : Equation)
   | rewrite (row : RewriteRule)
@@ -303,7 +303,7 @@ def renameContext (context : List (String × TypeExpr)) : List (String × TypeEx
   context.map fun entry => (entry.1, renameType old new entry.2)
 
 def renameDecl : Decl → Decl
-  | .sort name => .sort (renameName old new name)
+  | .sort declaration => .sort { declaration with name := renameName old new declaration.name }
   | .term rule => .term { rule with category := renameName old new rule.category,
                                     params := rule.params.map (renameParam old new) }
   | .equation row => .equation { row with typeContext := renameContext old new row.typeContext,
@@ -539,11 +539,19 @@ def recheck (items : List Item) : Except Error (List Item) :=
 
 def newItem (inst : Nat) (kind : Kind) (name : String) (body : Decl) : Item := ⟨⟨inst, name⟩, (kind, name), body⟩
 
-def exportRow (value : Value) (row : Export) : Except Error Value := do
-  unless value.entries.any (·.label == (.sort, row.sort)) do throw (.renameMissing row.sort)
+/-- An export row. A theory's exports are the sorts of the language it exports: a sort it has not declared is declared
+by its export, as the module algebra's `Exports` builder declares the exported categories. Renaming on export needs
+the sort to rename. -/
+def exportRow (inst : Nat) (value : Value) (row : Export) : Except Error Value := do
   match row.renamed with
-  | none => pure { value with exports := value.exports ++ [row.sort] }
+  | none =>
+      if value.entries.any (·.label == (.sort, row.sort)) then
+        pure { value with exports := value.exports ++ [row.sort] }
+      else
+        let entries ← joinEntries value.entries [newItem inst .sort row.sort (.sort (TypeDecl.plain row.sort))]
+        pure { value with entries, exports := value.exports ++ [row.sort] }
   | some target =>
+      unless value.entries.any (·.label == (.sort, row.sort)) do throw (.renameMissing row.sort)
       let entries ← recheck (value.entries.map (renameItem row.sort target))
       pure { value with entries, exports := value.exports.map (renameName row.sort target) ++ [target] }
 
@@ -568,14 +576,15 @@ def nullaries (value : Value) : List String :=
     | _ => none
 
 def applyBlock (inst : Nat) (value : Value) : Block → Except Error Value
-  | .types sorts => add (sorts.map fun sort => newItem inst .sort sort (.sort sort))
+  | .types declarations =>
+    add (declarations.map fun declaration => newItem inst .sort declaration.name (.sort declaration))
   | .terms rules => add (rules.map fun rule => newItem inst .term rule.label (.term rule))
   | .equations rows => add (rows.map fun row =>
       let label := s!"{row.name}@{inst}"
       ⟨⟨inst, row.name⟩, (.equation, label), .equation (Equation.resolveNullary (nullaries value) { row with name := label })⟩)
   | .rewrites rows => add (rows.map fun row =>
       newItem inst .rewrite row.name (.rewrite (RewriteRule.resolveNullary (nullaries value) row)))
-  | .exports rows => rows.foldlM exportRow value
+  | .exports rows => rows.foldlM (exportRow inst) value
   | .replacements rows => rows.foldlM replaceRow value
   | .inductives _ => .error .requiresIndexedAdmission
 where
@@ -813,7 +822,7 @@ def declareAlgebras (language : LanguageDef) (binaryLabels : List String := []) 
 def flattenRaw (name : String) (value : Value) : LanguageDef where
   name := name
   types := value.entries.filterMap fun item => match item.body with
-    | .sort sort => some (TypeDecl.plain sort) | _ => none
+    | .sort declaration => some declaration | _ => none
   terms := value.entries.filterMap fun item => match item.body with
     | .term rule => some rule | _ => none
   equations := value.entries.filterMap fun item => match item.body with
@@ -863,11 +872,31 @@ def binaryCollectionLabels (value : Value) : List String :=
       | _ => none
     else none
 
+/-- The categories of labelled BNF whose terms are tokens. -/
+def tokenCategories : List String := ["Ident", "Integer", "Double", "String", "Char"]
+
+/-- The base sorts a type mentions. -/
+def baseSorts : TypeExpr → List String
+  | .base name => [name]
+  | .arrow domain codomain => baseSorts domain ++ baseSorts codomain
+  | .multiBinder body => baseSorts body
+  | .collection _ element => baseSorts element
+
+/-- **The sorts a language's constructors use and nothing declares**, in order of first use: each constructor's
+category, then the sorts of its parameters. They are declared as the runtime's module reader declares them: with the
+abstract syntax, and the token categories of labelled BNF with raw token carriers. -/
+def implicitSorts (language : LanguageDef) : List TypeDecl :=
+  let used := language.terms.flatMap fun rule => rule.category :: rule.params.flatMap (baseSorts ·.typeExpr)
+  (used.eraseDups.filter fun sort => !language.types.any (·.name == sort)).map fun sort =>
+    ⟨sort, if tokenCategories.contains sort then .tokenRaw else .ast⟩
+
 /-- A value as a `LanguageDef`, its declarations in order, with collection
-algebras declared only after carrier representations have been protected. -/
+algebras declared only after carrier representations have been protected, and the sorts its constructors use and
+nothing declares declared after the declared ones. -/
 def flatten (name : String) (value : Value) : LanguageDef :=
   let binaryLabels := binaryCollectionLabels value
-  declareAlgebras (retainSharedCollectionLabels (flattenRaw name value) binaryLabels) binaryLabels
+  let language := declareAlgebras (retainSharedCollectionLabels (flattenRaw name value) binaryLabels) binaryLabels
+  { language with «types» := language.types ++ implicitSorts language }
 
 /-- The value of applying a theory to arguments, within a module. -/
 def applyTheory (library : List (String × Module)) (module : Module) (path : Path) (args : List Expr) :
@@ -881,6 +910,12 @@ def applyTheory (library : List (String × Module)) (module : Module) (path : Pa
 def elaborate (library : List (String × Module)) (module : Module) : Except Error LanguageDef := do
   let some (path, args) := module.entry | throw .noEntry
   let (name, value) ← applyTheory library module path args
+  pure (flatten name value)
+
+/-- **The language of one theory of a module**, applied to no arguments: how a module that declares theories and no
+entry is read, as CeTTa's core modules are. -/
+def elaborateTheory (library : List (String × Module)) (module : Module) (path : Path) : Except Error LanguageDef := do
+  let (name, value) ← applyTheory library module path []
   pure (flatten name value)
 
 end Mettapedia.GSLT.LanguageDef.ModuleSource

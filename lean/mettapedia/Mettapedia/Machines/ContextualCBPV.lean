@@ -453,6 +453,256 @@ theorem sliced_source_purse_conserved
     (fun before after advanced => semantic_purse_conserved sem before after advanced)
     physicalSteps before
 
+namespace EpisodeAccounting
+
+/-- The episode's finite purse, independent of a worker's physical allowance.
+The bound below relates the natural account to the native word operations. -/
+structure Purse where
+  remaining : Nat
+  spent : Nat
+  deriving DecidableEq, Repr
+
+def grant (request parent : Option Nat) : Option Nat :=
+  match request, parent with
+  | none, none => none
+  | some requested, none => some requested
+  | none, some available => some available
+  | some requested, some available => some (min requested available)
+
+theorem grant_le_parent (request : Option Nat) (available credit : Nat)
+    (issued : grant request (some available) = some credit) : credit ≤ available := by
+  cases request with
+  | none =>
+      simp only [grant, Option.some.injEq] at issued
+      omega
+  | some requested =>
+      simp only [grant, Option.some.injEq] at issued
+      rw [← issued]
+      exact Nat.min_le_right _ _
+
+theorem grant_le_request (parent : Option Nat) (requested credit : Nat)
+    (issued : grant (some requested) parent = some credit) : credit ≤ requested := by
+  cases parent with
+  | none =>
+      simp only [grant, Option.some.injEq] at issued
+      omega
+  | some available =>
+      simp only [grant, Option.some.injEq] at issued
+      rw [← issued]
+      exact Nat.min_le_left _ _
+
+theorem grant_unbounded (request parent : Option Nat) :
+    grant request parent = none ↔ request = none ∧ parent = none := by
+  cases request <;> cases parent <;> simp [grant]
+
+/-- Native admission reads both the immediate request and the current
+borrowed purse. An unbounded request cannot erase inherited finite credit. -/
+def allowsUnmetered (request inherited : Option Nat) (noDiagnostic : Bool) : Bool :=
+  request.isNone && inherited.isNone && noDiagnostic
+
+theorem unmetered_iff_unbounded_grant (request inherited : Option Nat)
+    (noDiagnostic : Bool) :
+    allowsUnmetered request inherited noDiagnostic = true ↔
+      grant request inherited = none ∧ noDiagnostic = true := by
+  cases request <;> cases inherited <;> simp [allowsUnmetered, grant]
+
+theorem finite_grant_refuses_unmetered (request inherited : Option Nat)
+    (noDiagnostic : Bool) (credit : Nat)
+    (bounded : grant request inherited = some credit) :
+    allowsUnmetered request inherited noDiagnostic = false := by
+  cases request <;> cases inherited <;> simp_all [grant, allowsUnmetered]
+
+theorem inherited_zero_is_not_unbounded :
+    allowsUnmetered none (some 0) true = false ∧
+      allowsUnmetered none none true = true := by decide
+
+/-- Independent natural-number accounting for one admitted source charge. -/
+def debit (cost : Nat) (before : Purse) : Option Purse :=
+  if cost ≤ before.remaining then
+    some ⟨before.remaining - cost, before.spent + cost⟩
+  else none
+
+/-- Native word debit with explicit cost, atomic refusal and guarded addition.
+This also admits an administrative zero debit at an empty purse. -/
+def nativeDebit (maximum cost : Nat) (before : Purse) : Option Purse :=
+  if before.remaining < cost then none
+  else some ⟨before.remaining - cost,
+    if maximum - cost < before.spent then maximum else before.spent + cost⟩
+
+theorem native_debit_refines (maximum cost : Nat) (before : Purse)
+    (inRange : before.spent + before.remaining ≤ maximum) :
+    nativeDebit maximum cost before = debit cost before := by
+  by_cases enough : cost ≤ before.remaining
+  · have notEmpty : ¬ before.remaining < cost := by omega
+    have noOverflow : ¬ maximum - cost < before.spent := by omega
+    simp [nativeDebit, debit, enough, notEmpty, noOverflow]
+  · have insufficient : before.remaining < cost := by omega
+    simp [nativeDebit, debit, enough, insufficient]
+
+theorem zero_debit_is_admin (maximum : Nat) (before : Purse)
+    (inRange : before.spent + before.remaining ≤ maximum) :
+    nativeDebit maximum 0 before = some before := by
+  rw [native_debit_refines maximum 0 before inRange]
+  simp [debit]
+
+theorem overdraw_preserves_pending_charge (maximum cost : Nat) (before : Purse)
+    (insufficient : before.remaining < cost) :
+    nativeDebit maximum cost before = none := by
+  simp [nativeDebit, insufficient]
+
+/-- The native episode's unit debit: test zero first and saturate its word
+counter. Reachable finite purses cannot hit saturation on an admitted step. -/
+def nativeTick (maximum : Nat) (before : Purse) : Option Purse :=
+  if before.remaining = 0 then none
+  else some ⟨before.remaining - 1,
+    if before.spent = maximum then before.spent else before.spent + 1⟩
+
+theorem native_tick_refines (maximum : Nat) (before : Purse)
+    (inRange : before.spent + before.remaining ≤ maximum) :
+    nativeTick maximum before = debit 1 before := by
+  by_cases empty : before.remaining = 0
+  · simp [nativeTick, debit, empty]
+  · have enough : 1 ≤ before.remaining := by omega
+    have room : before.spent ≠ maximum := by omega
+    simp [nativeTick, debit, empty, enough, room]
+
+theorem debit_conserves (cost : Nat) (before after : Purse)
+    (paid : debit cost before = some after) :
+    after.spent + after.remaining = before.spent + before.remaining := by
+  unfold debit at paid
+  split at paid
+  · cases paid
+    simp only
+    omega
+  · contradiction
+
+/-- Only performed work is settled. Unused child credit was never debited
+from the paused parent and therefore needs no refund. -/
+def settle (parent child : Purse) : Purse :=
+  ⟨parent.remaining - child.spent, parent.spent + child.spent⟩
+
+/-- The native close uses guarded word addition and truncated subtraction. -/
+def nativeSettle (maximum : Nat) (parent child : Purse) : Purse :=
+  ⟨if child.spent ≥ parent.remaining then 0 else parent.remaining - child.spent,
+    if parent.spent > maximum - child.spent then maximum else parent.spent + child.spent⟩
+
+theorem native_settle_refines (maximum : Nat) (parent child : Purse)
+    (inRange : parent.spent + parent.remaining ≤ maximum)
+    (borrowed : child.spent ≤ parent.remaining) :
+    nativeSettle maximum parent child = settle parent child := by
+  have room : ¬parent.spent > maximum - child.spent := by omega
+  by_cases exhausted : child.spent ≥ parent.remaining
+  · have empty : parent.remaining - child.spent = 0 := by omega
+    simp [nativeSettle, settle, room, exhausted, empty]
+  · simp [nativeSettle, settle, room, exhausted]
+
+theorem settle_conserves (parent child : Purse)
+    (borrowed : child.spent ≤ parent.remaining) :
+    (settle parent child).spent + (settle parent child).remaining =
+      parent.spent + parent.remaining := by
+  simp only [settle]
+  omega
+
+theorem settle_add (parent first later : Purse) :
+    settle (settle parent first) later =
+      settle parent ⟨0, first.spent + later.spent⟩ := by
+  simp [settle, Nat.sub_sub, Nat.add_assoc]
+
+structure Loan where
+  parent : Purse
+  child : Purse
+  linked : Bool
+  deriving DecidableEq, Repr
+
+def close (maximum : Nat) (loan : Loan) : Loan :=
+  if loan.linked then
+    {loan with parent := nativeSettle maximum loan.parent loan.child, linked := false}
+  else loan
+
+theorem close_once (maximum : Nat) (loan : Loan) :
+    close maximum (close maximum loan) = close maximum loan := by
+  rcases loan with ⟨parent, child, linked⟩
+  cases linked <;> rfl
+
+/-- Join explicit native word debit to the full contextual source step.
+The charge is read from the retained computation before its transition. -/
+def nativeChargedStep
+    (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (maximum : Nat) (before : Metered (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker)) :
+    Option (Metered (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker)) :=
+  (nativeDebit maximum (ContextualCBPV.debit before.state.focus.control)
+      ⟨before.remaining, before.state.spent⟩).bind fun paid =>
+    (advance sem before.state).map fun next =>
+      ⟨{next with
+        spent := paid.spent
+        sourceTrace := match origin before.state.focus.control with
+          | some occurrence => before.state.sourceTrace ++ [occurrence]
+          | none => before.state.sourceTrace}, paid.remaining⟩
+
+theorem charged_step_refines
+    (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (maximum : Nat) (before : Metered (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (inRange : before.state.spent + before.remaining ≤ maximum) :
+    nativeChargedStep sem maximum before = meteredStep sem before := by
+  unfold nativeChargedStep
+  rw [native_debit_refines maximum _ _ inRange]
+  by_cases enough : ContextualCBPV.debit before.state.focus.control ≤ before.remaining
+  · simp [debit, enough, meteredStep, step, Option.map_map, Function.comp_def]
+  · simp [debit, enough, meteredStep]
+
+/-- Independently implement the unit source step through the native ledger,
+then update the complete contextual machine. This is a word-accounting join;
+assigning native source charges and pointer ownership remain obligations. -/
+def nativeUnitStep
+    (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (maximum : Nat) (before : Metered (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker)) :
+    Option (Metered (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker)) :=
+  (nativeTick maximum ⟨before.remaining, before.state.spent⟩).bind fun paid =>
+    (advance sem before.state).map fun next =>
+      ⟨{next with
+        spent := paid.spent
+        sourceTrace := match origin before.state.focus.control with
+          | some occurrence => before.state.sourceTrace ++ [occurrence]
+          | none => before.state.sourceTrace}, paid.remaining⟩
+
+theorem unit_step_refines
+    (sem : KernelSemantics (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (maximum : Nat) (before : Metered (Value := Value) (Call := Call) (Effect := Effect)
+      (Fault := Fault) (Delay := Delay) (Suspension := Suspension)
+      (Context := Context) (World := World) (Worker := Worker))
+    (unitCharge : ContextualCBPV.debit before.state.focus.control = 1)
+    (inRange : before.state.spent + before.remaining ≤ maximum) :
+    nativeUnitStep sem maximum before = meteredStep sem before := by
+  unfold nativeUnitStep
+  rw [native_tick_refines maximum _ inRange]
+  by_cases enough : 1 ≤ before.remaining
+  · simp [debit, enough, meteredStep, unitCharge, step, Option.map_map, Function.comp_def]
+  · simp [debit, enough, meteredStep, unitCharge]
+
+theorem unused_credit_is_not_spent :
+    nativeSettle (2 ^ 64 - 1) ⟨8, 0⟩ ⟨5, 3⟩ = ⟨5, 3⟩ ∧
+      nativeSettle (2 ^ 64 - 1) ⟨8, 0⟩ ⟨5, 3⟩ ≠ ⟨0, 8⟩ := by decide
+
+end EpisodeAccounting
+
 /-- Moving an administrative sequence across a source charge preserves the
 exact world, continuation, alternatives and debit after the two transitions.
 The charge remains present on both sides. -/
@@ -620,6 +870,26 @@ def semantics : Semantics Datum Unit Nat Nat Unit Nat Nat Nat
 
 def run (context : Nat) (code : TestCode) :=
   ((core semantics 0 context).runSlice 40 (initial 0 context code)).1
+
+def meteredRun (budget : Nat) (code : TestCode) :=
+  ((meteredCore semantics 0 4 budget).runSlice 40
+    ⟨initial 0 4 code, budget⟩).1
+
+/-- Dropping an internal source charge can commit a native effect before the
+source computation has enough credit to reach it. -/
+theorem erasing_charge_exposes_early_effect :
+    (meteredRun 1 (.source 7 1 (.source 8 1 (.native 1)))).state.world = 0 ∧
+      (meteredRun 1 (.source 7 1 (.native 1))).state.world = 1 := by decide
+
+/-- Equal complete answers do not license erasing an internal charge. The
+source pays both occurrences before performing and publishing the effect. -/
+theorem complete_answers_do_not_determine_budgeted_prefixes :
+    (run 4 (.source 7 1 (.source 8 1 (.native 1)))).published =
+      (run 4 (.source 7 1 (.native 1))).published ∧
+    (meteredRun 2 (.source 7 1 (.source 8 1 (.native 1)))).state.world = 1 ∧
+    (meteredRun 2 (.source 7 1 (.source 8 1 (.native 1)))).state.spent = 2 ∧
+    (meteredRun 2 (.source 7 1 (.source 8 1 (.native 1)))).state.sourceTrace = [7, 8] := by
+  decide
 
 theorem failed_native_keeps_effect :
     (run 4 (.native 0)).world = 1 ∧
@@ -830,6 +1100,9 @@ end WorkerControls
 
 end Mettapedia.Machines.ContextualCBPV
 
+#print axioms Mettapedia.Machines.ContextualCBPV.Controls.erasing_charge_exposes_early_effect
+#print axioms Mettapedia.Machines.ContextualCBPV.Controls.complete_answers_do_not_determine_budgeted_prefixes
+
 #print axioms Mettapedia.Machines.ContextualCBPV.retainOutside_suffix
 #print axioms Mettapedia.Machines.ContextualCBPV.scope_entry
 #print axioms Mettapedia.Machines.ContextualCBPV.commit_keeps_outside
@@ -881,3 +1154,29 @@ end Mettapedia.Machines.ContextualCBPV
 #print axioms Mettapedia.Machines.ContextualCBPV.return_packet_resume
 #print axioms Mettapedia.Machines.ContextualCBPV.charged_return_packet
 #print axioms Mettapedia.Machines.ContextualCBPV.return_packet_keeps_residual
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.grant_le_parent
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.grant_le_request
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.grant_unbounded
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.native_tick_refines
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.debit_conserves
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.native_settle_refines
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.settle_conserves
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.settle_add
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.close_once
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.unit_step_refines
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.unused_credit_is_not_spent
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.native_debit_refines
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.zero_debit_is_admin
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.overdraw_preserves_pending_charge
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.charged_step_refines
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.unmetered_iff_unbounded_grant
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.finite_grant_refuses_unmetered
+
+#print axioms Mettapedia.Machines.ContextualCBPV.EpisodeAccounting.inherited_zero_is_not_unbounded

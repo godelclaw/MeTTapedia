@@ -27,7 +27,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Engine (RelationEnv)
 open Mettapedia.OSLF.MeTTaIL.ReferenceStep
 open Mettapedia.GSLT.LanguageDef.WellSorted
-  (isObjectPattern checkOpenPatternWellSorted checkOpenPatternWellSorted_complete FreeTypeContext)
+  (isObjectPattern FreeTypeContext)
 
 /-- The splits of a list: every way to write it as a front and a back. -/
 def listSplits {α : Type} (list : List α) : List (List α × List α) :=
@@ -104,8 +104,10 @@ def closedMorphism (free : language.isEquationFree = true) (closed : closedRegio
     BoundedMorphism (exploration relEnv language fuel region).native (referenceStructure relEnv language) where
   toHom := explorationHom relEnv language fuel region
   stepBack := by
-    intro source label target' step
+    intro source label target' own step
     obtain ⟨sourceState, targetState, redex, contractum, witness, before, -, valid, -, after, admitted⟩ := step
+    rw [placed_iff own] at before
+    replace admitted := StepLabel.admits_of_base own admitted
     rw [objectEquivalent_iff_eq_of_isEquationFree free] at before after
     subst before after
     obtain ⟨listed, successors⟩ := (closed_at closed source).1 (isStateBool_of_isState sourceState)
@@ -205,7 +207,7 @@ def closedMorphism (free : language.isEquationFree = true) (closed : closedRegio
     subst equivalent
     show (_ && _) = true
     simp only [Bool.and_eq_true]
-    exact ⟨object, checkOpenPatternWellSorted_complete wellSorted⟩
+    exact ⟨object, checkCarrierTyped_eq_true_iff.mpr wellSorted⟩
   namedBack := by
     intro element term isNamed
     obtain ⟨object, equivalent⟩ := isNamed
@@ -213,9 +215,14 @@ def closedMorphism (free : language.isEquationFree = true) (closed : closedRegio
     show (_ && _) = true
     simp only [Bool.and_eq_true, beq_iff_eq]
     exact ⟨object, equivalent⟩
+  inRelationBack := by
+    intro element relation isIn
+    show (_ && _) = true
+    simp only [Bool.and_eq_true]
+    exact (inRelation_iff_of_isEquationFree free).mp isIn
   sameIff := by
     intro first second
-    change decide (first = second) = true ↔ ObjectEquivalent relEnv language region[first] region[second]
+    change decide (first = second) = true ↔ ObjectEquivalent relEnv language .syntax region[first] region[second]
     rw [objectEquivalent_iff_eq_of_isEquationFree free, decide_eq_true_iff]
     constructor
     · rintro rfl
@@ -277,11 +284,13 @@ theorem grow_zero (term : Pattern) (rounds : ℕ) :
   simp only [Fin.getElem_fin]
   simp [same]
 
-/-- **A verdict from a closed region is exact.** -/
+/-- **A verdict from a closed region is exact**, in every reading of the equations, which are none. -/
 theorem decideFrom_sound (free : language.isEquationFree = true) {formula : Formula 0} (forward : formula.forward = true)
-    {term : Pattern} {rounds : ℕ} {verdict : Bool}
-    (decided : decideFrom relEnv language fuel formula term rounds = some verdict) :
-    (verdict = true ↔ (referenceStructure relEnv language).sat Env.closed formula term) := by
+    {term : Pattern} {rounds : ℕ} {verdict : Bool} {reading : LanguageReading}
+    (decided : decideFrom relEnv language fuel formula term rounds = some verdict)
+    (reference : reading.rules = .reference := by rfl) :
+    (verdict = true ↔ (referenceStructure relEnv language reading).sat Env.closed formula term) := by
+  rw [referenceStructure_eq_of_isEquationFree free reading, reference]
   unfold decideFrom at decided
   split at decided
   · rename_i closed

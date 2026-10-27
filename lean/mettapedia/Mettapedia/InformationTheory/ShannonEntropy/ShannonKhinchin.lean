@@ -1,3 +1,4 @@
+import InformationTheory.ShannonEntropy.ShannonKhinchin
 import Mettapedia.InformationTheory.Basic
 import Mettapedia.InformationTheory.ShannonEntropy.Properties
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
@@ -80,6 +81,40 @@ structure ShannonKhinchinEntropy where
       (p.nonneg 0) (p.nonneg 1) h)
   /-- Normalization: H(1/2, 1/2) = 1 -/
   normalization : H binaryUniform = 1
+
+/-- Transfer the supplied entropy function and its axiom witnesses to the canonical record. -/
+def ShannonKhinchinEntropy.toStandalone (E : ShannonKhinchinEntropy) :
+    _root_.InformationTheory.ShannonKhinchinEntropy where
+  H := E.H
+  continuity := E.continuity
+  symmetry := E.symmetry
+  maximality := E.maximality
+  expansibility := E.expansibility
+  strong_additivity := E.strong_additivity
+  normalization := E.normalization
+
+def ShannonKhinchinEntropy.ofStandalone (E : _root_.InformationTheory.ShannonKhinchinEntropy) :
+    ShannonKhinchinEntropy where
+  H := E.H
+  continuity := E.continuity
+  symmetry := E.symmetry
+  maximality := E.maximality
+  expansibility := E.expansibility
+  strong_additivity := E.strong_additivity
+  normalization := E.normalization
+
+/-- No entropy value or axiom witness is lost by the interpretation. -/
+def ShannonKhinchinEntropy.equivStandalone :
+    ShannonKhinchinEntropy ≃ _root_.InformationTheory.ShannonKhinchinEntropy where
+  toFun := ShannonKhinchinEntropy.toStandalone
+  invFun := ShannonKhinchinEntropy.ofStandalone
+  left_inv E := by cases E; rfl
+  right_inv E := by cases E; rfl
+
+@[simp] theorem ShannonKhinchinEntropy.toStandalone_H (E : ShannonKhinchinEntropy)
+    {n : ℕ} (p : ProbVec n) : E.toStandalone.H p = E.H p := rfl
+@[simp] theorem ShannonKhinchinEntropy.ofStandalone_H (E : _root_.InformationTheory.ShannonKhinchinEntropy)
+    {n : ℕ} (p : ProbVec n) : (ShannonKhinchinEntropy.ofStandalone E).H p = E.H p := rfl
 
 /-! ## Shannon Entropy Satisfies Shannon-Khinchin Axioms -/
 
@@ -176,11 +211,10 @@ theorem sk_F1_eq_zero (E : ShannonKhinchinEntropy) :
   simpa [h_exp] using this
 
 /-!
-The Shannon–Khinchin uniqueness theorem is intentionally postponed in this file.
-
-We currently use the `Shannon1948.lean` development as the primary “historical”
-uniqueness path, and keep this file focused on the axiom interface plus
-verification that `shannonEntropyNormalized` satisfies it.
+This file supplies the axiom record and the Shannon example. `Equivalence.lean`
+relates the supplied entropy function to the Faddeev record, whose canonical
+uniqueness theorem then applies. `Shannon1948.lean` gives a separate historical
+derivation in MeTTapedia.
 -/
 /-- Shannon-Khinchin entropy restricted to binary distributions is continuous.
     This follows from the full continuity axiom SK1. -/
@@ -200,13 +234,7 @@ theorem shannonKhinchin_continuous_binary (E : ShannonKhinchinEntropy) :
 
 /-- Shannon-Khinchin entropy is symmetric (invariant under permutation).
 
-This follows from the S-K axioms via the uniqueness theorem:
-After uniqueness, E.H = shannonEntropyNormalized which is symmetric.
-
-Alternatively, it can be derived directly from the axioms using:
-1. Maximality: uniform distribution maximizes
-2. Expansibility + Strong Additivity: entropy depends only on multiset of probabilities
--/
+Permutation invariance is an explicit field of this axiom record. -/
 theorem shannonKhinchin_symmetry (E : ShannonKhinchinEntropy) (p : ProbVec n) (σ : Equiv.Perm (Fin n)) :
     E.H (permute σ p) = E.H p := by
   simpa using E.symmetry p σ

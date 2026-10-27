@@ -39,6 +39,7 @@ def ofSteps {Carrier : Type} [DecidableEq Carrier] (elements : List Carrier) (co
   named _ _ := false
   same first second := decide (first = second)
   apply inner _ := inner
+  inRelation _ _ := false
 
 def goalType : TypeExpr := .base "Goal"
 
@@ -82,7 +83,7 @@ theorem deadEnd_misses_goal : ¬ deadEnd.native.sat Env.closed reachesGoal 0 :=
 /-! ## A certificate decided by evaluation -/
 
 /-- The two-element abstraction of `tiny`: whether a rule can fire at the root. Only terms that may
-fire step; every shape, type and name is allowed. -/
+fire step; every shape, type, name and relation is allowed. -/
 def fireFinite : FiniteStructure Bool where
   elements := [false, true]
   complete := by decide
@@ -98,6 +99,7 @@ def fireFinite : FiniteStructure Bool where
   named _ _ := true
   same first second := decide (first = second)
   apply inner _ := inner
+  inRelation _ _ := true
 
 /-- The abstraction is a homomorphism from `tiny`'s structure. -/
 def fireFiniteHom : Hom Tiny fireFinite.native where
@@ -112,6 +114,7 @@ def fireFiniteHom : Hom Tiny fireFinite.native where
   bound := fun _ => rfl
   typed := fun _ => rfl
   named := fun _ => rfl
+  inRelation := fun _ => rfl
 
 /-- **The evaluator decides the certificate's verdict**: "cannot fire" is stuck. -/
 theorem cannot_fire_stuck : fireFinite.check (.necessarily .any .bot) false = true := by decide

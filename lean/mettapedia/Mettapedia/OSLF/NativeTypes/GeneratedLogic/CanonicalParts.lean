@@ -45,8 +45,9 @@ def behaviouralParts : {n : ℕ} → Formula n → Bool
   | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right =>
     behaviouralParts left && behaviouralParts right
   | _, .mu inner | _, .nu inner => behaviouralParts inner
-  | _, .possibly _ formula | _, .necessarily _ formula => behaviouralParts formula
-  | _, .atLeast _ .forward _ formula | _, .allButFewer _ .forward _ formula => behaviouralParts formula
+  | _, .possibly label formula | _, .necessarily label formula => !label.isContext && behaviouralParts formula
+  | _, .atLeast _ .forward label formula | _, .allButFewer _ .forward label formula =>
+    !label.isContext && behaviouralParts formula
   | _, _ => false
 
 /-- Every behavioural formula is one with parts. -/
@@ -59,10 +60,11 @@ theorem behaviouralParts_of_behaviouralForward : ∀ {n : ℕ} (formula : Formul
       behaviouralParts_of_behaviouralForward right behavioural.2, Bool.and_self]
   | _, .mu inner, behavioural | _, .nu inner, behavioural =>
     behaviouralParts_of_behaviouralForward inner behavioural
-  | _, .possibly _ formula, behavioural | _, .necessarily _ formula, behavioural =>
-    behaviouralParts_of_behaviouralForward formula behavioural
-  | _, .atLeast _ .forward _ formula, behavioural | _, .allButFewer _ .forward _ formula, behavioural =>
-    behaviouralParts_of_behaviouralForward formula behavioural
+  | _, .possibly _ formula, behavioural | _, .necessarily _ formula, behavioural
+  | _, .atLeast _ .forward _ formula, behavioural | _, .allButFewer _ .forward _ formula, behavioural => by
+    simp only [behaviouralForward, Bool.and_eq_true] at behavioural
+    simp only [behaviouralParts, behavioural.1, behaviouralParts_of_behaviouralForward formula behavioural.2,
+      Bool.and_self]
   | _, .sometimeBefore _ _, behavioural | _, .alwaysBefore _ _, behavioural
   | _, .atLeast _ .backward _ _, behavioural | _, .allButFewer _ .backward _ _, behavioural
   | _, .built _ _, behavioural | _, .everyBuilt _ _, behavioural | _, .split _ _ _, behavioural
@@ -132,24 +134,28 @@ theorem sat_iff : ∀ {n : ℕ} (formula : Formula n), formula.behaviouralParts 
       exact ⟨morphism.map ⁻¹' invariant, member, fun other otherMember =>
         (sat_iff inner fragment (related.extend morphism.toStepMorphism invariant) other).mpr (preserved _ otherMember)⟩
   | _, .possibly _ formula, fragment, _, _, related, element => by
+    simp only [Formula.behaviouralParts, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at fragment
     constructor
     · rintro ⟨next, step, holds⟩
-      exact ⟨morphism.map next, morphism.step step, (sat_iff formula fragment related next).mp holds⟩
+      exact ⟨morphism.map next, morphism.step fragment.1 step, (sat_iff formula fragment.2 related next).mp holds⟩
     · rintro ⟨next', step', holds'⟩
-      obtain ⟨next, step, rfl⟩ := morphism.stepBack step'
-      exact ⟨next, step, (sat_iff formula fragment related next).mpr holds'⟩
+      obtain ⟨next, step, rfl⟩ := morphism.stepBack fragment.1 step'
+      exact ⟨next, step, (sat_iff formula fragment.2 related next).mpr holds'⟩
   | _, .necessarily _ formula, fragment, _, _, related, element => by
+    simp only [Formula.behaviouralParts, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at fragment
     constructor
     · intro every next' step'
-      obtain ⟨next, step, rfl⟩ := morphism.stepBack step'
-      exact (sat_iff formula fragment related next).mp (every next step)
+      obtain ⟨next, step, rfl⟩ := morphism.stepBack fragment.1 step'
+      exact (sat_iff formula fragment.2 related next).mp (every next step)
     · intro every next step
-      exact (sat_iff formula fragment related next).mpr (every _ (morphism.step step))
-  | _, .atLeast _ .forward _ formula, fragment, _, _, related, _ =>
-    morphism.toStepMorphism.atLeast_steps_iff fun other => sat_iff formula fragment related other
-  | _, .allButFewer _ .forward _ formula, fragment, _, _, related, _ =>
-    not_congr (morphism.toStepMorphism.atLeast_steps_iff fun other =>
-      not_congr (sat_iff formula fragment related other))
+      exact (sat_iff formula fragment.2 related next).mpr (every _ (morphism.step fragment.1 step))
+  | _, .atLeast _ .forward _ formula, fragment, _, _, related, _ => by
+    simp only [Formula.behaviouralParts, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at fragment
+    exact morphism.toStepMorphism.atLeast_steps_iff fragment.1 fun other => sat_iff formula fragment.2 related other
+  | _, .allButFewer _ .forward _ formula, fragment, _, _, related, _ => by
+    simp only [Formula.behaviouralParts, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at fragment
+    exact not_congr (morphism.toStepMorphism.atLeast_steps_iff fragment.1 fun other =>
+      not_congr (sat_iff formula fragment.2 related other))
   | _, .split _ left right, fragment, _, _, related, element => by
     simp only [Formula.behaviouralParts, Bool.and_eq_true] at fragment
     constructor
@@ -201,64 +207,66 @@ variable (relEnv : RelationEnv) (language : LanguageDef) (fuel : ℕ) (canon : P
 
 /-- **The parts of canonical collections, listed**: at each admitted canonical term, its splits of each kind up to
 canonical form, complete and sound for the language's splits, with admitted parts; and a test of emptiness. -/
-structure PartsListing where
+structure PartsListing (reading : LanguageReading := .syntax) where
   splits : Pattern → CollType → List (Pattern × Pattern)
   empty : Pattern → CollType → Bool
   complete : ∀ {state kind first second}, domain state = true → canon state = state →
-    (referenceStructure relEnv language).split state kind first second →
+    (referenceStructure relEnv language reading).split state kind first second →
       domain first = true ∧ domain second = true ∧ (canon first, canon second) ∈ splits state kind
   sound : ∀ {state kind pair}, domain state = true → canon state = state → pair ∈ splits state kind →
-    ∃ first second, (referenceStructure relEnv language).split state kind first second ∧ domain first = true ∧
+    ∃ first second, (referenceStructure relEnv language reading).split state kind first second ∧ domain first = true ∧
       domain second = true ∧ canon first = pair.1 ∧ canon second = pair.2
   empty_iff : ∀ {state kind}, domain state = true → canon state = state →
-    (empty state kind = true ↔ (referenceStructure relEnv language).empty state kind)
+    (empty state kind = true ↔ (referenceStructure relEnv language reading).empty state kind)
 
 /-- **The canonical structure with parts**: canonical terms, their steps, and the canonical forms of the parts of
 their splits. -/
-def canonicalPartsStructure : NativeStructure Pattern :=
-  { canonicalStructure relEnv language canon domain with
+def canonicalPartsStructure (reading : LanguageReading := .syntax) : NativeStructure Pattern :=
+  { canonicalStructure relEnv language canon domain reading with
     split := fun element kind first second => ∃ first₀ second₀,
-      (referenceStructure relEnv language).split element kind first₀ second₀ ∧ domain first₀ = true ∧
+      (referenceStructure relEnv language reading).split element kind first₀ second₀ ∧ domain first₀ = true ∧
         domain second₀ = true ∧ canon first₀ = first ∧ canon second₀ = second
-    empty := fun element kind => (referenceStructure relEnv language).empty element kind }
+    empty := fun element kind => (referenceStructure relEnv language reading).empty element kind }
 
 /-! ## What a term reaches by steps and parts -/
 
-/-- A step, or a passage from a collection to a part of one of its splits. -/
-def PartStep (source target : Pattern) : Prop :=
-  (∃ label, (referenceStructure relEnv language).step source label target) ∨
-    ∃ kind other, (referenceStructure relEnv language).split source kind target other ∨
-      (referenceStructure relEnv language).split source kind other target
+/-- A step of the term's own, or a passage from a collection to a part of one of its splits. -/
+def PartStep (reading : LanguageReading) (source target : Pattern) : Prop :=
+  (∃ label, label.isContext = false ∧ (referenceStructure relEnv language reading).step source label target) ∨
+    ∃ kind other, (referenceStructure relEnv language reading).split source kind target other ∨
+      (referenceStructure relEnv language reading).split source kind other target
 
 /-- The terms a term reaches by steps and parts. -/
-def PartsReached (start : Pattern) : Pattern → Prop :=
-  Relation.ReflTransGen (PartStep relEnv language) start
+def PartsReached (reading : LanguageReading) (start : Pattern) : Pattern → Prop :=
+  Relation.ReflTransGen (PartStep relEnv language reading) start
 
 /-- **The part of the language's structure a term reaches by steps and parts.** -/
-def partsReachableStructure (start : Pattern) : NativeStructure {term // PartsReached relEnv language start term} where
-  step source label target := (referenceStructure relEnv language).step source.val label target.val
+def partsReachableStructure (reading : LanguageReading) (start : Pattern) :
+    NativeStructure {term // PartsReached relEnv language reading start term} where
+  step source label target := (referenceStructure relEnv language reading).step source.val label target.val
   built _ _ _ := False
-  split element kind first second := (referenceStructure relEnv language).split element.val kind first.val second.val
-  empty element kind := (referenceStructure relEnv language).empty element.val kind
+  split element kind first second := (referenceStructure relEnv language reading).split element.val kind first.val second.val
+  empty element kind := (referenceStructure relEnv language reading).empty element.val kind
   single _ _ _ := False
   body _ _ := False
   multiBody _ _ _ := False
   bound _ _ := False
   typed _ _ := False
-  named element term := (referenceStructure relEnv language).named element.val term
-  same first second := (referenceStructure relEnv language).same first.val second.val
+  named element term := (referenceStructure relEnv language reading).named element.val term
+  same first second := (referenceStructure relEnv language reading).same first.val second.val
   apply inner _ := inner
+  inRelation element relation := (referenceStructure relEnv language reading).inRelation element.val relation
 
-variable {relEnv language fuel canon domain presentations}
+variable {relEnv language fuel canon domain presentations} {reading : LanguageReading}
 
 /-- **The part a term reaches by steps and parts sits inside the language's structure.** -/
 def partsReachableMorphism (start : Pattern) :
-    PartsMorphism (partsReachableStructure relEnv language start) (referenceStructure relEnv language) where
+    PartsMorphism (partsReachableStructure relEnv language reading start) (referenceStructure relEnv language reading) where
   map := Subtype.val
-  step step := step
+  step _ step := step
   stepBack := by
-    intro source label target step
-    exact ⟨⟨target, source.2.tail (Or.inl ⟨label, step⟩)⟩, step, rfl⟩
+    intro source label target own step
+    exact ⟨⟨target, source.2.tail (Or.inl ⟨label, own, step⟩)⟩, step, rfl⟩
   sameIff _ _ := Iff.rfl
   namedIff _ _ := Iff.rfl
   split split := split
@@ -270,23 +278,23 @@ def partsReachableMorphism (start : Pattern) :
 
 /-- **Taking canonical forms is a parts morphism** from the part a term reaches by steps and parts onto the
 canonical structure with parts, when everything reached is admitted. -/
-def canonPartsMorphism (canonical : Canonical relEnv language canon domain) {start : Pattern}
-    (admitted : ∀ term, PartsReached relEnv language start term → domain term = true) :
-    PartsMorphism (partsReachableStructure relEnv language start) (canonicalPartsStructure relEnv language canon domain)
-    where
+def canonPartsMorphism (canonical : Canonical relEnv language canon domain reading) {start : Pattern}
+    (admitted : ∀ term, PartsReached relEnv language reading start term → domain term = true) :
+    PartsMorphism (partsReachableStructure relEnv language reading start)
+      (canonicalPartsStructure relEnv language canon domain reading) where
   map term := canon term.val
   step := by
-    intro source label target step
-    have saturated := referenceStructure_saturated relEnv language
+    intro source label target _ step
+    have saturated := referenceStructure_saturated relEnv language reading
     exact ⟨saturated.stepTarget (canonical.indistinct (admitted _ target.2))
         (saturated.stepSource (canonical.indistinct (admitted _ source.2)) step),
       canonical.admitted_canon (admitted _ target.2), canonical.idempotent (admitted _ target.2)⟩
   stepBack := by
-    intro source label target' step
-    have saturated := referenceStructure_saturated relEnv language
-    have original : (referenceStructure relEnv language).step source.val label target' :=
+    intro source label target' own step
+    have saturated := referenceStructure_saturated relEnv language reading
+    have original : (referenceStructure relEnv language reading).step source.val label target' :=
       saturated.stepSource (saturated.equivalence.symm (canonical.indistinct (admitted _ source.2))) step.1
-    exact ⟨⟨target', source.2.tail (Or.inl ⟨label, original⟩)⟩, original, step.2.2⟩
+    exact ⟨⟨target', source.2.tail (Or.inl ⟨label, own, original⟩)⟩, original, step.2.2⟩
   sameIff first second := canonical.equivalent_iff (admitted _ first.2) (admitted _ second.2)
   namedIff element term := by
     constructor
@@ -299,37 +307,37 @@ def canonPartsMorphism (canonical : Canonical relEnv language canon domain) {sta
         (canonical.equivalent_iff (admitted _ element.2) termAdmitted).mpr same.symm⟩
   split := by
     intro element kind first second split
-    have saturated := referenceStructure_saturated relEnv language
+    have saturated := referenceStructure_saturated relEnv language reading
     exact ⟨first.val, second.val, saturated.split (canonical.indistinct (admitted _ element.2)) split,
       admitted _ first.2, admitted _ second.2, rfl, rfl⟩
   splitBack := by
     intro element kind first' second' split
     obtain ⟨first, second, split, -, -, rfl, rfl⟩ := split
-    have saturated := referenceStructure_saturated relEnv language
-    have original : (referenceStructure relEnv language).split element.val kind first second :=
+    have saturated := referenceStructure_saturated relEnv language reading
+    have original : (referenceStructure relEnv language reading).split element.val kind first second :=
       saturated.split (saturated.equivalence.symm (canonical.indistinct (admitted _ element.2))) split
     exact ⟨⟨first, element.2.tail (Or.inr ⟨kind, second, Or.inl original⟩)⟩,
       ⟨second, element.2.tail (Or.inr ⟨kind, first, Or.inr original⟩)⟩, original, rfl, rfl⟩
   emptyIff element kind := by
-    have saturated := referenceStructure_saturated relEnv language
+    have saturated := referenceStructure_saturated relEnv language reading
     exact ⟨saturated.empty (canonical.indistinct (admitted _ element.2)),
       saturated.empty (saturated.equivalence.symm (canonical.indistinct (admitted _ element.2)))⟩
 
 /-! ## Closed parts regions -/
 
-variable (relEnv language fuel canon domain presentations) (listing : PartsListing relEnv language canon domain)
+variable (relEnv language fuel canon domain presentations) (listing : PartsListing relEnv language canon domain reading)
   (region : List Pattern)
 
 /-- **A closed parts region**: a closed canonical region that holds the listed parts of each of its terms. -/
 def partsRegion : Bool :=
-  canonicalRegion relEnv language fuel canon domain presentations region &&
+  canonicalRegion relEnv language fuel canon domain presentations region reading.rules &&
     region.all fun term => collKinds.all fun kind =>
       (listing.splits term kind).all fun pair => decide (pair.1 ∈ region) && decide (pair.2 ∈ region)
 
 /-- **The parts region as a finite structure**: the canonical region's steps and names, the listed splits and the
 emptiness test. -/
 def partsExploration : FiniteStructure (Fin region.length) :=
-  { canonicalExploration relEnv language fuel canon domain presentations region with
+  { canonicalExploration relEnv language fuel canon domain presentations region reading.rules with
     split := fun element kind first second =>
       (listing.splits region[element] kind).any fun pair => pair.1 == region[first] && pair.2 == region[second]
     empty := fun element kind => listing.empty region[element] kind }
@@ -337,18 +345,18 @@ def partsExploration : FiniteStructure (Fin region.length) :=
 variable {relEnv language fuel canon domain presentations listing region}
 
 theorem partsRegion_parts (closed : partsRegion relEnv language fuel canon domain presentations listing region = true) :
-    canonicalRegion relEnv language fuel canon domain presentations region = true ∧
+    canonicalRegion relEnv language fuel canon domain presentations region reading.rules = true ∧
       ∀ term ∈ region, ∀ kind, ∀ pair ∈ listing.splits term kind, pair.1 ∈ region ∧ pair.2 ∈ region := by
   simp only [partsRegion, Bool.and_eq_true, List.all_eq_true, decide_eq_true_eq] at closed
   exact ⟨closed.1, fun term member kind pair listed => closed.2 term member kind (mem_collKinds kind) pair listed⟩
 
 /-- **A closed parts region's inclusion is a parts morphism**, given canonical forms, coherence and a listing of
 parts. -/
-def partsRegionMorphism (canonical : Canonical relEnv language canon domain)
-    (coherent : Coherent relEnv language fuel canon domain presentations)
+def partsRegionMorphism (canonical : Canonical relEnv language canon domain reading)
+    (coherent : Coherent relEnv language fuel canon domain presentations reading)
     (closed : partsRegion relEnv language fuel canon domain presentations listing region = true) :
     PartsMorphism (partsExploration relEnv language fuel canon domain presentations listing region).native
-      (canonicalPartsStructure relEnv language canon domain) where
+      (canonicalPartsStructure relEnv language canon domain reading) where
   toStepMorphism :=
     let regionSide := regionMorphism canonical coherent (partsRegion_parts closed).1
     ⟨regionSide.map, regionSide.step, regionSide.stepBack, regionSide.sameIff, regionSide.namedIff⟩
@@ -385,21 +393,22 @@ def partsRegionMorphism (canonical : Canonical relEnv language canon domain)
 
 /-- **Everything an admitted term reaches by steps and parts is admitted**, with its canonical form in a closed parts
 region that lists the term's. -/
-theorem partsReached_admitted (canonical : Canonical relEnv language canon domain)
-    (coherent : CoherentPlain relEnv language fuel canon domain presentations)
+theorem partsReached_admitted (canonical : Canonical relEnv language canon domain reading)
+    (coherent : CoherentPlain relEnv language fuel canon domain presentations reading)
     (closed : partsRegion relEnv language fuel canon domain presentations listing region = true) {start : Pattern}
     (admitted : domain start = true) (listed : canon start ∈ region) :
-    ∀ {term}, PartsReached relEnv language start term → domain term = true ∧ canon term ∈ region := by
+    ∀ {term}, PartsReached relEnv language reading start term → domain term = true ∧ canon term ∈ region := by
   intro term reached
-  have saturated := referenceStructure_saturated relEnv language
+  have saturated := referenceStructure_saturated relEnv language reading
   obtain ⟨canonicalClosed, partsListed⟩ := partsRegion_parts closed
   induction reached with
   | refl => exact ⟨admitted, listed⟩
   | tail _ partStep previous =>
     obtain ⟨sourceAdmitted, sourceListed⟩ := previous
-    rcases partStep with ⟨label, sourceState, targetState, redex, contractum, witness, before, redexState, valid,
+    rcases partStep with ⟨label, own, sourceState, targetState, redex, contractum, witness, before, redexState, valid,
       contractumState, after, admits⟩ | ⟨kind, other, split⟩
-    · obtain ⟨-, members⟩ := canonicalRegion_parts canonicalClosed
+    · rw [placed_iff own] at before
+      obtain ⟨-, members⟩ := canonicalRegion_parts canonicalClosed
       obtain ⟨-, canonSource, listing'⟩ := members _ sourceListed
       have canonState := canonical.state sourceAdmitted sourceState
       obtain ⟨-, complete, successors⟩ := listing' (isStateBool_of_isState canonState)
@@ -408,9 +417,9 @@ theorem partsReached_admitted (canonical : Canonical relEnv language canon domai
           (ObjectEquivalent.equivalence.trans (ObjectEquivalent.equivalence.symm (canonical.equivalent sourceAdmitted))
             before) redexState valid
       have entryListed := successors entry member
-      have contractumAdmitted : domain contractum = true := by
-        rw [← canonical.determined, ← sameCanon]
-        exact (members _ entryListed).1
+      have contractumAdmitted : domain contractum = true :=
+        canonical.stepsAdmitted (canonical.invariant sourceAdmitted before) redexState valid
+          (sameCanon ▸ (members _ entryListed).1)
       refine ⟨canonical.invariant contractumAdmitted after, ?_⟩
       rw [← canonical.same contractumAdmitted after, ← sameCanon]
       exact entryListed
@@ -426,25 +435,26 @@ theorem partsReached_admitted (canonical : Canonical relEnv language canon domai
 
 /-- **A closed parts region decides every behavioural formula with parts** at the admitted terms whose canonical
 forms it lists, both ways. -/
-theorem parts_check_iff (canonical : Canonical relEnv language canon domain)
-    (coherent : Coherent relEnv language fuel canon domain presentations)
+theorem parts_check_iff (canonical : Canonical relEnv language canon domain reading)
+    (coherent : Coherent relEnv language fuel canon domain presentations reading)
     (closed : partsRegion relEnv language fuel canon domain presentations listing region = true) {formula : Formula 0}
     (fragment : formula.behaviouralParts = true) {index : Fin region.length} {term : Pattern}
     (admitted : domain term = true) (listed : canon term = region[index]) :
     (partsExploration relEnv language fuel canon domain presentations listing region).check formula index = true ↔
-      (referenceStructure relEnv language).sat Env.closed formula term := by
-  have allAdmitted : ∀ other, PartsReached relEnv language term other → domain other = true := fun _ reached =>
+      (referenceStructure relEnv language reading).sat Env.closed formula term := by
+  have allAdmitted : ∀ other, PartsReached relEnv language reading term other → domain other = true := fun _ reached =>
     (partsReached_admitted canonical coherent.plain closed admitted (listed ▸ List.getElem_mem index.2) reached).1
   have regionSide := (partsRegionMorphism canonical coherent closed).sat_iff formula fragment
     (StepMorphism.envPreimage_closed _) index
   have canonSide := (canonPartsMorphism canonical allAdmitted).sat_iff formula fragment
     (StepMorphism.envPreimage_closed _) ⟨term, Relation.ReflTransGen.refl⟩
-  have reachSide := (partsReachableMorphism (relEnv := relEnv) (language := language) term).sat_iff formula fragment
+  have reachSide := (partsReachableMorphism (relEnv := relEnv) (language := language) (reading := reading)
+    term).sat_iff formula fragment
     (StepMorphism.envPreimage_closed _) ⟨term, Relation.ReflTransGen.refl⟩
   rw [FiniteStructure.check_iff]
   refine regionSide.trans (Iff.trans ?_ (canonSide.symm.trans reachSide))
-  show (canonicalPartsStructure relEnv language canon domain).sat Env.closed formula region[index] ↔
-    (canonicalPartsStructure relEnv language canon domain).sat Env.closed formula (canon term)
+  show (canonicalPartsStructure relEnv language canon domain reading).sat Env.closed formula region[index] ↔
+    (canonicalPartsStructure relEnv language canon domain reading).sat Env.closed formula (canon term)
   rw [listed]
 
 /-! ## Growing a parts region -/
@@ -454,7 +464,7 @@ variable (relEnv language fuel canon presentations listing)
 /-- What a term adds to a parts region: the canonical forms of its listed successors when it is a state, and the
 listed parts of its splits. -/
 abbrev nextParts (term : Pattern) : List Pattern :=
-  nextCanonical relEnv language fuel canon presentations term ++
+  nextCanonical relEnv language fuel canon presentations term reading.rules ++
     collKinds.flatMap fun kind => (listing.splits term kind).flatMap fun pair => [pair.1, pair.2]
 
 /-- Grow a parts region from a term, the term's canonical form first. -/
@@ -487,7 +497,7 @@ variable (domain)
 /-- **Decide a behavioural formula with parts at a term modulo the equations**: the exact verdict when the grown
 parts region closes, nothing otherwise. -/
 def decideParts (formula : Formula 0) (term : Pattern) (rounds : ℕ) : Option Bool :=
-  if partsRegion relEnv language fuel canon domain presentations listing
+  if domain term && partsRegion relEnv language fuel canon domain presentations listing
     (growParts relEnv language fuel canon presentations listing term rounds) then
     some ((partsExploration relEnv language fuel canon domain presentations listing
       (growParts relEnv language fuel canon presentations listing term rounds)).check
@@ -505,21 +515,19 @@ theorem growParts_zero (term : Pattern) (rounds : ℕ) :
   simp [same]
 
 /-- **A verdict from a closed parts region is exact.** -/
-theorem decideParts_sound (canonical : Canonical relEnv language canon domain)
-    (coherent : Coherent relEnv language fuel canon domain presentations)
+theorem decideParts_sound (canonical : Canonical relEnv language canon domain reading)
+    (coherent : Coherent relEnv language fuel canon domain presentations reading)
     {formula : Formula 0} (fragment : formula.behaviouralParts = true) {term : Pattern} {rounds : ℕ}
     {verdict : Bool}
     (decided : decideParts relEnv language fuel canon domain presentations listing formula term rounds = some verdict) :
-    (verdict = true ↔ (referenceStructure relEnv language).sat Env.closed formula term) := by
+    (verdict = true ↔ (referenceStructure relEnv language reading).sat Env.closed formula term) := by
   unfold decideParts at decided
   split at decided
-  · rename_i closed
+  · rename_i checked
+    obtain ⟨admitted, closed⟩ := Bool.and_eq_true_iff.mp checked
     cases decided
     have listed := growParts_zero (relEnv := relEnv) (language := language) (fuel := fuel) (canon := canon)
       (presentations := presentations) (listing := listing) term rounds
-    have admitted : domain term = true := by
-      rw [← canonical.determined, ← listed]
-      exact ((canonicalRegion_parts (partsRegion_parts closed).1).2 _ (List.getElem_mem _)).1
     exact parts_check_iff canonical coherent closed fragment admitted listed.symm
   · cases decided
 

@@ -478,6 +478,7 @@ private theorem derivedInstance_canonicalize_eq
     {left right : Pattern}
     (derived : DerivedInstance binderOccurrenceLanguage left right) :
     canonicalize presentation left = canonicalize presentation right := by
+  have noSets : binderOccurrenceLanguage.usesCollection .hashSet = false := by decide
   have noAlgebra {rule : GrammarRule} {kind : CollType}
       {algebra : CollectionAlgebra}
       (declaration : AlgebraRule binderOccurrenceLanguage rule kind algebra) :
@@ -493,9 +494,13 @@ private theorem derivedInstance_canonicalize_eq
   | bagPerm _ _ permutation =>
       exact canonicalize_parallel_permutation presentation permutation
   | setPerm declaration typed _ =>
-      exact absurd (usesCollection_eq_true_of_collectionTypedAt declaration typed) (by decide)
+      have usesSets := usesCollection_eq_true_of_collectionTypedAt declaration typed
+      rw [noSets] at usesSets
+      cases usesSets
   | setDedup declaration typed =>
-      exact absurd (usesCollection_eq_true_of_collectionTypedAt declaration typed) (by decide)
+      have usesSets := usesCollection_eq_true_of_collectionTypedAt declaration typed
+      rw [noSets] at usesSets
+      cases usesSets
   | flatten declaration _ _ => exact (noAlgebra declaration).elim
   | singleton declaration _ _ => exact (noAlgebra declaration).elim
   | unitElim declaration _ _ => exact (noAlgebra declaration).elim

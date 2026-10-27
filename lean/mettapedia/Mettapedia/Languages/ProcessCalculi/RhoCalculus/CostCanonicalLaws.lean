@@ -2452,48 +2452,6 @@ private theorem rho_costWholeLanguage_usesCollection_hashSet :
   refine ⟨source, List.any_eq_false.mpr fun c _ => ?_⟩
   exact List.any_eq_false.mp source c.1 c.2
 
-/-- No generated rho constructor can declare a set carrier.  Bare collection
-declarations in either Cost colour reflect to the sole bare source
-constructor, rho parallel composition, whose carrier is a bag. -/
-private theorem rho_costCollectionCarrierRule_hashSet_false
-    {rule : GrammarRule}
-    (carrier : EquationSemantics.CollectionCarrierRule
-      rhoCIGSLT.costWholeLanguage rule .hashSet) : False := by
-  obtain ⟨parameterName, elementType, parameterShape⟩ := carrier.selfSorted
-  have bare : UsesBareCollection rule :=
-    ⟨parameterName, .hashSet, elementType,
-      (GrammarRule.bareParams_cons_iff _ _ _).mpr
-        ⟨rho_costWholeLanguage_representation_bare rule carrier.authored, parameterShape⟩⟩
-  have coreMembership : rule ∈ rhoCIGSLT.costCoreLanguage.terms := by
-    simpa only [rhoCIGSLT.costWholeLanguage_terms] using carrier.authored
-  obtain ⟨constructor, materializes⟩ :=
-    rhoCIGSLT.exists_declaredCostConstructor_of_mem rule coreMembership
-  have materializedBare : UsesBareCollection
-      (rhoCIGSLT.materializeDeclaredCostConstructor constructor) := by
-    rw [materializes]
-    exact bare
-  obtain ⟨color, role⟩ :=
-    rhoCIGSLT.exists_static_role_of_materialize_usesBareCollection constructor
-      materializedBare
-  let preimage := costStaticConstructorPreimage rhoCIGSLT color constructor role
-  obtain ⟨sourceParameterName, sourceCollectionType, sourceElementType,
-      sourceShape⟩ := preimage.usesBareCollection_iff.mp materializedBare
-  have sourceRuleEquality : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
-    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2
-      ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2
-  have mappedShape := preimage.parametersMap
-  rw [materializes, parameterShape,
-    ((GrammarRule.bareParams_cons_iff _ _ _).mp sourceShape).2] at mappedShape
-  have collectionTypeEquality : sourceCollectionType = .hashSet := by
-    have shape : sourceParameterName = parameterName ∧
-        sourceCollectionType = .hashSet ∧
-        mapTypeExpr (color.symbols rhoCIGSLT) sourceElementType = elementType := by
-      simpa [mapTermParam, mapTypeExpr] using mappedShape.symm
-    exact shape.2.1
-  subst sourceCollectionType
-  rw [sourceRuleEquality] at sourceShape
-  simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
-    TypeExpr.baseType] at sourceShape
 
 section DerivedAlgebra
 
@@ -2568,11 +2526,11 @@ theorem rho_costDerivedGenerator_canonicalize_eq
   cases witness with
   | bagPerm rule elements elements' _ _ permutation =>
       exact canonicalize_parallel_permutation _ permutation
-  | setPerm rule elements elements' carrier receipt _ =>
-      exact absurd (EquationSemantics.usesCollection_eq_true_of_collectionTypedAt carrier receipt.erase)
+  | setPerm rule elements elements' member receipt _ =>
+      exact absurd (EquationSemantics.usesCollection_eq_true_of_collectionTypedAt member receipt.erase)
         (by rw [rho_costWholeLanguage_usesCollection_hashSet]; decide)
-  | setDedup rule element elements carrier receipt =>
-      exact absurd (EquationSemantics.usesCollection_eq_true_of_collectionTypedAt carrier receipt.erase)
+  | setDedup rule element elements member receipt =>
+      exact absurd (EquationSemantics.usesCollection_eq_true_of_collectionTypedAt member receipt.erase)
         (by rw [rho_costWholeLanguage_usesCollection_hashSet]; decide)
   | flatten rule kind algebra pre inner post algebraRule _ _ =>
       obtain ⟨rfl, _⟩ := rho_costAlgebraRule_shape algebraRule

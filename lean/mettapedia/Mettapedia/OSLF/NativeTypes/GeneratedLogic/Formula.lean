@@ -19,6 +19,8 @@ A language generates its native types from its own theory, closed under logic:
   the language identifies terms, modulo its equations, so two steps to the same term count once;
 - the language's types give typing formers and quantifiers over the terms of a type (`typed`,
   `someOf`, `everyOf`), and its terms give singleton types (`is`);
+- the language's declared relations give atoms: a term holds a unary relation when a query of the
+  relation at the term succeeds (`inRelation`). Observations a language declares are such relations;
 - logic adds conjunction and disjunction, and least and greatest fixed points.
 
 Formulas are in negation normal form: every former comes with its De Morgan dual as a former of its own
@@ -43,7 +45,29 @@ inductive StepLabel where
   /-- The steps of the rule at this index with a premise step that has the label: steps at the site
   that rule's congruence provides. -/
   | under (index : ℕ) (label : StepLabel)
+  /-- The steps, with the label, of the term placed in a context: a pattern whose metavariable `hole` the term
+  instantiates. A context-labelled transition in the sense of reactive systems: the term needs the context to step. -/
+  | context (hole : String) (context : Pattern) (label : StepLabel)
   deriving DecidableEq, Repr
+
+/-- Whether a label places the term in a context before it steps. -/
+@[simp] def StepLabel.isContext : StepLabel → Bool
+  | .context _ _ _ => true
+  | _ => false
+
+/-- **The label of the step the placed term takes**: the label inside the contexts. -/
+def StepLabel.base : StepLabel → StepLabel
+  | .context _ _ label => label.base
+  | .any => .any
+  | .rule index => .rule index
+  | .under index label => .under index label
+
+theorem StepLabel.base_of_isContext {label : StepLabel} (own : label.isContext = false) : label.base = label := by
+  cases label with
+  | context => cases own
+  | any => rfl
+  | rule => rfl
+  | under => rfl
 
 /-- Which way steps are taken: from the term, or into it. -/
 inductive Direction where
@@ -124,12 +148,18 @@ inductive Formula : ℕ → Type where
   | someOf {n : ℕ} : TypeExpr → Formula n → Formula n
   /-- Every term of the type satisfies the formula. -/
   | everyOf {n : ℕ} : TypeExpr → Formula n → Formula n
+  /-- The term is in the language's declared relation: a query of the relation at the term succeeds. -/
+  | inRelation {n : ℕ} : String → Formula n
+  /-- The term is not in the declared relation. -/
+  | notInRelation {n : ℕ} : String → Formula n
 
 /-- A list of formulas, the arguments of a structural former. -/
 inductive Formulas : ℕ → Type where
   | nil {n : ℕ} : Formulas n
   | cons {n : ℕ} : Formula n → Formulas n → Formulas n
 end
+
+deriving instance DecidableEq for Formula, Formulas
 
 namespace Formula
 
@@ -171,6 +201,8 @@ def dual : {n : ℕ} → Formula n → Formula n
   | _, .mapsSome argument result => .mapsAll (dual argument) (dual result)
   | _, .someOf type formula => .everyOf type (dual formula)
   | _, .everyOf type formula => .someOf type (dual formula)
+  | _, .inRelation relation => .notInRelation relation
+  | _, .notInRelation relation => .inRelation relation
 
 /-- The duals of a list of formulas. -/
 def dualList : {n : ℕ} → Formulas n → Formulas n
@@ -182,7 +214,7 @@ mutual
 /-- **The dual is an involution.** -/
 theorem dual_dual : ∀ {n : ℕ} (formula : Formula n), dual (dual formula) = formula
   | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _
-  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ => rfl
+  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ | _, .inRelation _ | _, .notInRelation _ => rfl
   | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right
   | _, .mapsAll left right | _, .mapsSome left right => by
     simp only [dual, dual_dual left, dual_dual right]
@@ -211,6 +243,27 @@ def atMost {n : ℕ} (count : ℕ) (direction : Direction) (label : StepLabel) (
 def exactlyOne {n : ℕ} (direction : Direction) (label : StepLabel) : Formula n :=
   .and (.atLeast 1 direction label .top) (atMost 1 direction label .top)
 
+
+mutual
+/-- **The formulas without context labels**: every step label in them is the term's own. -/
+def contextFree : {n : ℕ} → Formula n → Bool
+  | _, .possibly label formula | _, .necessarily label formula | _, .sometimeBefore label formula
+  | _, .alwaysBefore label formula | _, .atLeast _ _ label formula | _, .allButFewer _ _ label formula =>
+    !label.isContext && contextFree formula
+  | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right
+  | _, .mapsAll left right | _, .mapsSome left right => contextFree left && contextFree right
+  | _, .mu inner | _, .nu inner | _, .single _ inner | _, .everySingle _ inner | _, .body inner
+  | _, .everyBody inner | _, .multiBody _ inner | _, .everyMultiBody _ inner | _, .someOf _ inner
+  | _, .everyOf _ inner => contextFree inner
+  | _, .built _ arguments | _, .everyBuilt _ arguments => contextFreeList arguments
+  | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _ | _, .typed _
+  | _, .untyped _ | _, .is _ | _, .isNot _ | _, .inRelation _ | _, .notInRelation _ => true
+
+/-- Every formula of the list is without context labels. -/
+def contextFreeList : {n : ℕ} → Formulas n → Bool
+  | _, .nil => true
+  | _, .cons formula formulas => contextFree formula && contextFreeList formulas
+end
 end Formula
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic

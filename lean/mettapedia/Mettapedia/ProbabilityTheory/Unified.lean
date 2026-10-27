@@ -1,67 +1,16 @@
-/-
-# Unified Framework: The Hypercube of Uncertainty Theories
-
-This module connects all probability/uncertainty frameworks into a single
-hypercube structure, showing how different axiom choices lead to different theories.
-
-## The Three-Dimensional Hypercube
-
-```
-                    Non-commutativity
-                         ↑
-                         │
-    Quantum Prob.        │         Quantum + Imprecise
-         ●───────────────│─────────────────●
-        /│               │                /│
-       / │               │               / │
-      /  │               │              /  │
-     ●───│───────────────│─────────────●   │
-     │   │               │             │   │
-     │   │               │             │   │
-     │   ●───────────────│─────────────│───●
-     │  / Cox/K&S        │         D-S │  /
-     │ /  (classical)    │   (imprecise)│ /
-     │/                  │             │/
-     ●───────────────────┼─────────────●──────→ Additivity
-   Precise              │            Imprecise
-                        │
-                        ↓
-              Commutativity Axis (into page)
-```
-
-## Vertices of the Hypercube
-
-| Vertex | Additive | Commutative | Classical? | Theory |
-|--------|----------|-------------|------------|--------|
-| 000 | Yes | Yes | Yes | **Kolmogorov probability** |
-| 001 | Yes | No | No | **Quantum probability** |
-| 010 | No | Yes | Yes | **D-S / Imprecise probability** |
-| 011 | No | No | No | **Quantum imprecise** (exotic) |
-
-## Edges (Refinement Relations)
-
-- Kolmogorov → D-S: Drop additivity
-- Kolmogorov → Quantum: Drop commutativity
-- D-S → K&S: Add separation axiom (gets additivity back!)
-- K&S → Kolmogorov: Same (K&S derives Kolmogorov)
-
-## Key Insight
-
-The K&S representation theorem shows that **under certain axioms**,
-you MUST have additivity and commutativity. This collapses the
-imprecise vertex back to the classical vertex!
-
-Cox's theorem does the same from a different starting point.
-
-## References
-
-- Stay & Wells, "Generating Hypercubes of Type Systems"
-- This work, connecting probability foundations
--/
-
-import Mettapedia.ProbabilityTheory.Cox
+import ProbabilityTheory.Cox
+import Mettapedia.ProbabilityTheory.Cox.Regraduation
 import Mettapedia.ProbabilityTheory.ImpreciseProbability
 -- Note: BeliefFunctions and QuantumProbability imported separately
+
+/-!
+# Labels for uncertainty frameworks
+
+This module records a finite taxonomy of declared axiom flags. Equality of
+labels proves agreement of those flags, not equivalence of theories or a
+probability-representation theorem. Concrete Cox regraduation and ordered
+combination are imported separately, with their actual hypotheses.
+-/
 
 namespace Mettapedia.ProbabilityTheory.Unified
 
@@ -198,19 +147,18 @@ def refines (v₁ v₂ : HypercubeVertex) : Bool :=
    (v₁.precise && !v₂.precise))
 
 /-!
-## §4: The Key Theorems (Existence Assertions)
+## Label computations
 
-Each major theorem establishes that certain axiom combinations
-force you to a specific vertex.
+These computations unfold the declared labels; they establish no semantic existence result.
 -/
 
-/-- Cox's theorem: plausibility axioms + continuity → Kolmogorov vertex. -/
-theorem cox_forces_kolmogorov :
+/-- The authored Cox label has the same flags as the Kolmogorov label. -/
+theorem cox_label_eq_kolmogorov_label :
     toVertex coxAxioms = toVertex kolmogorovAxioms := by
   rfl
 
-/-- K&S representation: lattice axioms → Kolmogorov vertex. -/
-theorem ks_forces_kolmogorov :
+/-- The authored K&S label has the same flags as the Kolmogorov label. -/
+theorem ks_label_eq_kolmogorov_label :
     toVertex knuthSkillingAxioms = toVertex kolmogorovAxioms := by
   rfl
 
@@ -225,28 +173,11 @@ theorem quantum_at_noncomm_vertex :
   rfl
 
 /-!
-## §5: Collapse Theorems
-
-These theorems show when additional axioms collapse a weaker theory to a stronger one.
+## Reading the flags
 -/
 
-/- TODO: Collapse theorem for a convergent family of interval models.
-
-The intended content here is a bridge from:
-- an imprecise/credal semantics (PartialOrder / interval-valued representation),
-- plus explicit coherence and convergence hypotheses that make all bounds meet,
-to a point-valued additive representation.
-
-This should eventually be backed by the concrete Lean results in:
-- `KnuthSkilling/Core/TotalityImprecision.lean` for the weaker order-separation facts,
-- `Mettapedia/ProbabilityTheory/Hypercube/ThetaSemantics.lean` for families of completions,
-- and the K&S representation pipeline for additive scalar representations.
-
-We intentionally do not leave a placeholder theorem of type `True`.
--/
-
-/-- Commutativity assumption collapses quantum to classical. -/
-theorem commutativity_collapses_quantum :
+/-- Fixing two flags determines the corresponding part of a vertex. -/
+theorem vertex_eq_of_axis_values :
     ∀ (v : HypercubeVertex),
       v.additive = true → v.commutative = true →
       v = ⟨true, true, v.precise⟩ := by
@@ -254,37 +185,15 @@ theorem commutativity_collapses_quantum :
   cases v
   simp_all
 
-/-!
-## §6: The Fundamental Questions
-
-The hypercube raises key questions about the foundations of probability:
-
-1. **Is K&S correct?** Does the lattice structure really force additivity?
-   - The globalization step (`RepresentationGlobalization`) is now formalized
-   - If yes, K&S provides the most minimal axiom set
-
-2. **Is Cox complete?** Does Cox need continuity, or can it be weakened?
-   - Dupré-Tipler showed continuity isn't essential
-   - But some regularity is needed
-
-3. **What's at the exotic vertices?**
-   - Quantum-imprecise probability exists in quantum foundations
-   - Non-commutative belief functions?
-
-4. **Are the collapse theorems tight?**
-   - Can we find models that DON'T collapse?
-   - This would show the axioms are necessary, not just sufficient
--/
-
-/-- Placeholder for future work: characterize all 8 vertices. -/
-def vertexTheory : HypercubeVertex → Type
-  | ⟨true, true, true⟩ => Unit  -- Kolmogorov (well-understood)
-  | ⟨true, true, false⟩ => Empty  -- Degenerate (additivity + imprecision → contradiction)
-  | ⟨true, false, true⟩ => Unit  -- Quantum (well-understood)
-  | ⟨true, false, false⟩ => Unit  -- Quantum imprecise (active research)
-  | ⟨false, true, true⟩ => Empty  -- Degenerate
-  | ⟨false, true, false⟩ => Unit  -- Walley/D-S (well-understood)
-  | ⟨false, false, true⟩ => Unit  -- Exotic
-  | ⟨false, false, false⟩ => Unit  -- Most general
+/-- Toy markers attached to labels, not carriers or models of the theories. -/
+def toyVertexMarker : HypercubeVertex → Type
+  | ⟨true, true, true⟩ => Unit
+  | ⟨true, true, false⟩ => Empty
+  | ⟨true, false, true⟩ => Unit
+  | ⟨true, false, false⟩ => Unit
+  | ⟨false, true, true⟩ => Empty
+  | ⟨false, true, false⟩ => Unit
+  | ⟨false, false, true⟩ => Unit
+  | ⟨false, false, false⟩ => Unit
 
 end Mettapedia.ProbabilityTheory.Unified

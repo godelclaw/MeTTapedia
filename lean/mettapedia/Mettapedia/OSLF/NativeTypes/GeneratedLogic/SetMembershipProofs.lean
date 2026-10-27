@@ -1182,7 +1182,9 @@ def upwardMono : ∀ {Δ : List (Term Symbol Γ .prop)} {n : ℕ} (formula : For
         (Proof.lift (σ := setTy) (Proof.newest (Δ := Δ) (emptyFormula large))))
     exact .impE (noMemberAt emptyHere (.var .vz)) (subsetAt subHere (.var .vz) (Proof.newest _))
   | Δ, _, .possibly label inner, _, regional, env, small, large, sub, proof => by
-    have regionalInner : inner.regional = true := regional
+    have regionalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at regional
+      exact regional.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.possibly label inner) small env = existentialInline (σ := setTy) (conjunctionFormula
         (member (.var .vz) (weaken small)) (nativeFormula inner (.var .vz) (underElement env))) by
@@ -1553,7 +1555,9 @@ def proveNative (region : Region) (parts : PartsClosed region.sets) (classical :
           (presenterIndex chosen chosenHereditary holds (chosenFound term holds inside member)).2 described)
   | _, .possibly label inner, modal, Γ, Δ, laws, env, sets, decision, agree, know, term, holds, inside, holdsAt, x,
       coreX, described => by
-    have modalInner : inner.regionalWith classical = true := modal
+    have modalInner : inner.regionalWith classical = true := by
+      simp only [Formula.regionalWith, Bool.and_eq_true] at modal
+      exact modal.2
     have labelled : memberLabel label := by
       obtain ⟨_, ⟨found, _⟩, _⟩ := holdsAt
       exact found
@@ -1582,7 +1586,9 @@ def proveNative (region : Region) (parts : PartsClosed region.sets) (classical :
       (describesSomeOfTerm (((((laws.lift setTy).prepend _).prepend _).prepend _)).toHasLaws memberHolds (Proof.newest _))
   | _, .necessarily label inner, modal, Γ, Δ, laws, env, sets, decision, agree, know, term, holds, inside, holdsAt, x,
       coreX, described => by
-    have modalInner : inner.regionalWith classical = true := modal
+    have modalInner : inner.regionalWith classical = true := by
+      simp only [Formula.regionalWith, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.necessarily label inner) x env = .all (σ := setTy) (.imp (member (.var .vz) (weaken x))
         (nativeFormula inner (.var .vz) (underElement env))) by simp only [nativeFormula, if_pos labelled]]
@@ -1632,7 +1638,9 @@ def proveNative (region : Region) (parts : PartsClosed region.sets) (classical :
     refuteTypedSome type laws term holds holdsAt x described
   | _, .atLeast count .forward label inner, modal, Γ, Δ, laws, env, sets, decision, agree, know, term, holds, inside,
       holdsAt, x, coreX, described => by
-    have modalInner : inner.regionalWith classical = true := modal
+    have modalInner : inner.regionalWith classical = true := by
+      simp only [Formula.regionalWith, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.atLeast count .forward label inner) x env =
         countWith (fun {_} y env => nativeFormula inner y env) count x env by simp only [nativeFormula, if_pos labelled]]
@@ -1657,7 +1665,9 @@ def proveNative (region : Region) (parts : PartsClosed region.sets) (classical :
       exact truthIntro
   | _, .allButFewer count .forward label inner, modal, Γ, Δ, laws, env, sets, decision, agree, know, term, holds,
       inside, holdsAt, x, coreX, described => by
-    have modalInner : inner.regionalWith classical = true := modal
+    have modalInner : inner.regionalWith classical = true := by
+      simp only [Formula.regionalWith, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.allButFewer count .forward label inner) x env =
         negCore (countWith (fun {_} y env => negCore (nativeFormula inner y env)) count x env) by
@@ -2119,7 +2129,9 @@ def refuteNative (region : Region) (parts : PartsClosed region.sets) :
     exact .impE (useRefuses refusal (describesSomeUnder (described.prepend _) predTy _)) (conjunctionRight (Proof.newest _))
   | _, .possibly label inner, modal, Γ, Δ, laws, env, sets, decision, agree, refuse, term, holds, inside, fails, x, _,
       described => by
-    have modalInner : inner.regional = true := modal
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.possibly label inner) x env = existentialInline (σ := setTy) (conjunctionFormula
         (member (.var .vz) (weaken x)) (nativeFormula inner (.var .vz) (underElement env))) by
@@ -2138,7 +2150,9 @@ def refuteNative (region : Region) (parts : PartsClosed region.sets) :
       exact .impI (Proof.newest _)
   | _, .necessarily label inner, modal, Γ, Δ, laws, env, sets, decision, agree, refuse, term, holds, inside, fails, x,
       _, described => by
-    have modalInner : inner.regional = true := modal
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · have notAll : (membersOf term).all (decideOn region.terms inner decision) = false := by
         have rejected := (decideOn_iff_regional region (.necessarily label inner) modal (Or.inr parts) agree term holds inside).not.mpr fails
@@ -2210,7 +2224,9 @@ def refuteNative (region : Region) (parts : PartsClosed region.sets) :
     exact .impI (.impE (Proof.newest _) (proveTypedSome type term holds typed x (described.prepend _)))
   | _, .atLeast count .forward label inner, modal, Γ, Δ, laws, env, sets, decision, agree, refuse, term, holds, inside,
       fails, x, coreX, described => by
-    have modalInner : inner.regional = true := modal
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.atLeast count .forward label inner) x env =
         countWith (fun {_} y env => nativeFormula inner y env) count x env by simp only [nativeFormula, if_pos labelled]]
@@ -2237,7 +2253,9 @@ def refuteNative (region : Region) (parts : PartsClosed region.sets) :
       exact .impI (Proof.newest _)
   | _, .allButFewer count .forward label inner, modal, Γ, Δ, laws, env, sets, decision, agree, refuse, term, holds,
       inside, fails, x, coreX, described => by
-    have modalInner : inner.regional = true := modal
+    have modalInner : inner.regional = true := by
+      simp only [Formula.regional, Bool.and_eq_true] at modal
+      exact modal.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show nativeFormula (.allButFewer count .forward label inner) x env =
         negCore (countWith (fun {_} y env => negCore (nativeFormula inner y env)) count x env) by

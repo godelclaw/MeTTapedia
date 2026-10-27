@@ -54,8 +54,10 @@ canonical-assignment transport. `RecursiveCollectionHandoff.matchingInterpretati
 uses allocation evidence and an explicit repeated-body comparison. Its
 source controls derive the conditional child at both singleton and duplicate
 set presentations. The native matching component realizes its `Matches`
-judgment; the full retained premise machine is not yet qualified for that interpretation,
-and the admission restrictions remain in force.
+judgment. `GeneralPremiseExecution` realizes the full retained premise machine
+for finite providers and represented free-name footprints, preserving partial
+states, ordered histories and resumption under the selected interpretation.
+This execution certificate leaves the admission restrictions in force.
 
 `MatchingExecution` now parameterizes the existing retained query, root and
 child-target frames. Its ordinary instance keeps the structural representation.
@@ -63,9 +65,19 @@ The canonical collection instance retains its normalized request with the
 allocation machine. `canonical_firing_iff` preserves the entire firing payload
 across equivalent sources in that interpretation, including all premise forms.
 Native request normalization, initialization, transition, completion, readout
-and input comparison realize this matching service. These primitive bridges
-do not wire the whole interpreted premise machine into emission or establish
-agreement with the existing presented GSLT's ordinary primitive receipts.
+and input comparison realize this matching service. The shared query, root
+and child-target frames use it throughout recursive premise execution,
+including finite quantified bodies. Agreement with the existing presented
+GSLT's primitive receipts and selection by public admission remain separate
+source-profile obligations.
+
+`UniformDirectedProfile` in `GeneralReferenceAgreement` checks the actual complete
+rule/specification table at its declared root carriers. Its mutual inverse
+derives eligibility for every finite literal reference witness, including
+directed children and finite quantified bodies. Input schemas retain the
+proved first-order literal boundary; output schemas may be recursive
+binder-free collections. This source coverage does not establish settlement,
+nonzero scoped-step transport or the declared equational boundary policy.
 
 `ReferenceStep` now indexes its existing source family by an explicit internal
 boundary policy. The presentation policy preserves the original witnesses,
@@ -248,7 +260,7 @@ def status : Capability → Status
   | .retainedInterpretedFrames => .derived
   | .canonicalInterpretedRootCoherence => .derived
   | .nativeCanonicalMatchingService => .certificate
-  | .nativeInterpretedPremises => .unsupported
+  | .nativeInterpretedPremises => .certificate
   | .interpretedPresentedAgreement => .unsupported
   | .generalPremiseCanonicalTransport => .unsupported
   | .declaredDerivationObservation => .unsupported

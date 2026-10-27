@@ -42,6 +42,7 @@ def chains {size : ℕ} (edge : Fin size → Fin size → Bool) (named : Fin siz
   named element term := named element && term == nilTerm
   same first second := decide (first = second)
   apply inner _ := inner
+  inRelation _ _ := false
 
 /-! ## Bisimilar but distinct -/
 

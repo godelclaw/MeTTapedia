@@ -71,6 +71,7 @@ def groundParts (lang : GroundSetLanguage language carrier sort) :
   complete := by
     intro state kind first second admitted canonState split
     have canonical := canonical (relEnv := relEnv) lang
+    have determinedForms := canonicalDetermined (relEnv := relEnv) lang
     obtain ⟨-, left, right, equivalent, rfl, rfl⟩ := split
     have same := canonical.same admitted equivalent
     obtain ⟨values, rfl, atoms⟩ := atomSet_iff.mp admitted
@@ -83,7 +84,7 @@ def groundParts (lang : GroundSetLanguage language carrier sort) :
     have partAdmitted : ∀ part : List Pattern, (∀ value ∈ part, value ∈ left ++ right) →
         atomSet language sort (.collection .hashSet part none) = true := by
       intro part inside
-      rw [← canonical.determined, BagForms.sortBags_eq, canon_collection]
+      rw [← determinedForms.determined, BagForms.sortBags_eq, canon_collection]
       refine atomSet_of_sub atoms fun value member => ?_
       obtain ⟨original, member', rfl⟩ := List.mem_map.mp ((arrange_mem value).mp member)
       exact inValues original (inside original member')
@@ -119,6 +120,7 @@ def groundParts (lang : GroundSetLanguage language carrier sort) :
   sound := by
     intro state kind pair admitted canonState member
     have canonical := canonical (relEnv := relEnv) lang
+    have determinedForms := canonicalDetermined (relEnv := relEnv) lang
     obtain ⟨values, rfl, rfl, parts, inside, rfl⟩ := mem_coveringSplits member
     obtain ⟨values', same, atoms⟩ := atomSet_iff.mp admitted
     simp only [set, Pattern.collection.injEq, true_and, and_true] at same
@@ -131,7 +133,7 @@ def groundParts (lang : GroundSetLanguage language carrier sort) :
       rw [List.mem_append]
       exact ⟨fun found => found.elim (leftSub value) (rightSub value), covered value⟩
     have admittedBoth : atomSet language sort (.collection .hashSet (parts.1 ++ parts.2) none) = true := by
-      rw [← canonical.determined, canonEq, canonical.determined]
+      rw [← determinedForms.determined, canonEq, determinedForms.determined]
       exact admitted
     exact ⟨.collection .hashSet parts.1 none, .collection .hashSet parts.2 none,
       ⟨canonical.object admitted, parts.1, parts.2, (canonical.equivalent_iff admitted admittedBoth).mpr canonEq.symm,
@@ -140,6 +142,7 @@ def groundParts (lang : GroundSetLanguage language carrier sort) :
   empty_iff := by
     intro state kind admitted canonState
     have canonical := canonical (relEnv := relEnv) lang
+    have determinedForms := canonicalDetermined (relEnv := relEnv) lang
     rw [isEmptyCollection_iff]
     constructor
     · rintro rfl
@@ -180,6 +183,7 @@ def hereditaryParts (lang : HereditaryLanguage language carrier) :
   complete := by
     intro state kind first second admitted canonState split
     have canonical := hereditary_canonical (relEnv := relEnv) lang
+    have determinedForms := hereditary_canonicalDetermined (relEnv := relEnv) lang
     obtain ⟨-, left, right, equivalent, rfl, rfl⟩ := split
     have same := canonical.same admitted equivalent
     rcases ((hereditary_iff _).mp admitted).cases with ⟨label, rfl, -⟩ | ⟨values, rfl, inside⟩
@@ -194,7 +198,7 @@ def hereditaryParts (lang : HereditaryLanguage language carrier) :
     have partAdmitted : ∀ part : List Pattern, (∀ value ∈ part, value ∈ left ++ right) →
         hereditary language carrier.category (.collection .hashSet part none) = true := by
       intro part within
-      rw [← canonical.determined, BagForms.sortBags_eq, canon_collection]
+      rw [← determinedForms.determined, BagForms.sortBags_eq, canon_collection]
       refine hereditary_of_sub inside fun value member => ?_
       obtain ⟨original, member', rfl⟩ := List.mem_map.mp ((arrange_mem value).mp member)
       exact inValues original (within original member')
@@ -230,6 +234,7 @@ def hereditaryParts (lang : HereditaryLanguage language carrier) :
   sound := by
     intro state kind pair admitted canonState member
     have canonical := hereditary_canonical (relEnv := relEnv) lang
+    have determinedForms := hereditary_canonicalDetermined (relEnv := relEnv) lang
     obtain ⟨values, rfl, rfl, parts, inside, rfl⟩ := mem_coveringSplits member
     have members : ∀ value ∈ values, Hereditary language carrier.category value :=
       hereditary_set_iff.mp ((hereditary_iff _).mp admitted)
@@ -242,7 +247,7 @@ def hereditaryParts (lang : HereditaryLanguage language carrier) :
       exact ⟨fun found => found.elim (leftSub value) (rightSub value), covered value⟩
     have admittedBoth :
         hereditary language carrier.category (.collection .hashSet (parts.1 ++ parts.2) none) = true := by
-      rw [← canonical.determined, canonEq, canonical.determined]
+      rw [← determinedForms.determined, canonEq, determinedForms.determined]
       exact admitted
     exact ⟨.collection .hashSet parts.1 none, .collection .hashSet parts.2 none,
       ⟨canonical.object admitted, parts.1, parts.2, (canonical.equivalent_iff admitted admittedBoth).mpr canonEq.symm,
@@ -251,6 +256,7 @@ def hereditaryParts (lang : HereditaryLanguage language carrier) :
   empty_iff := by
     intro state kind admitted canonState
     have canonical := hereditary_canonical (relEnv := relEnv) lang
+    have determinedForms := hereditary_canonicalDetermined (relEnv := relEnv) lang
     rw [isEmptyCollection_iff]
     constructor
     · rintro rfl

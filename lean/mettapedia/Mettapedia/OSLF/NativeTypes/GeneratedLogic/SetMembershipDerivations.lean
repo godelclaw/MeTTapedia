@@ -385,22 +385,6 @@ theorem hf_members {term : Pattern} (holds : IsHF term) : ∀ value ∈ membersO
   obtain ⟨values, rfl, inside⟩ := hf_set holds
   exact inside
 
-mutual
-/-- The height of a set term: one more than its members'. -/
-def height : Pattern → ℕ
-  | .collection _ values _ => heightList values + 1
-  | .bvar _ | .fvar _ | .apply _ _ | .lambda _ _ | .multiLambda _ _ _ | .subst _ _ => 0
-
-/-- The greatest height in a list. -/
-def heightList : List Pattern → ℕ
-  | [] => 0
-  | value :: values => max (height value) (heightList values)
-end
-
-theorem height_le_heightList : ∀ {values : List Pattern} {value : Pattern}, value ∈ values → height value ≤ heightList values
-  | _ :: _, _, .head _ => le_max_left _ _
-  | _ :: _, _, .tail _ member => (height_le_heightList member).trans (le_max_right _ _)
-
 theorem height_member {term : Pattern} (index : Fin (membersOf term).length) :
     height ((membersOf term).get index) < height term := by
   cases term with

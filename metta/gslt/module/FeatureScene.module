@@ -1,0 +1,45 @@
+Module FeatureScene {
+  Theory Core() {
+    Empty Exports { Shape; Colour; Object; Scene; }
+    Terms {
+      Circle . Shape ::= "circle";
+      Square . Shape ::= "square";
+      Black . Colour ::= "black";
+      White . Colour ::= "white";
+      Object . Object ::= "object" "(" Shape "," Colour ")";
+      Pair . Scene ::= "[" Object "," Object "]";
+      ShapeOf . Shape ::= "shape" "(" Object ")";
+      ColourOf . Colour ::= "colour" "(" Object ")";
+      LeftOf . Object ::= "left" "(" Scene ")";
+      RightOf . Object ::= "right" "(" Scene ")";
+    }
+    Rewrites {
+      ShapeProjection: (ShapeOf (Object shape colour)) ~> shape;
+      ColourProjection: (ColourOf (Object shape colour)) ~> colour;
+      LeftProjection: (LeftOf (Pair left right)) ~> left;
+      RightProjection: (RightOf (Pair left right)) ~> right;
+      InObjectShape: let source ~> target in (Object source colour) ~> (Object target colour);
+      InObjectColour: let source ~> target in (Object shape source) ~> (Object shape target);
+      InPairLeft: let source ~> target in (Pair source right) ~> (Pair target right);
+      InPairRight: let source ~> target in (Pair left source) ~> (Pair left target);
+      InShape: let source ~> target in (ShapeOf source) ~> (ShapeOf target);
+      InColour: let source ~> target in (ColourOf source) ~> (ColourOf target);
+      InLeft: let source ~> target in (LeftOf source) ~> (LeftOf target);
+      InRight: let source ~> target in (RightOf source) ~> (RightOf target);
+    }
+  }
+  Theory Glyphs() {
+    Core() Terms {
+      BlackCircle . Object ::= "●";
+      WhiteCircle . Object ::= "○";
+      WhiteSquare . Object ::= "□";
+      BlackSquare . Object ::= "■";
+    } Rewrites {
+      BlackCircleMeaning: (BlackCircle) ~> (Object (Circle) (Black));
+      WhiteCircleMeaning: (WhiteCircle) ~> (Object (Circle) (White));
+      WhiteSquareMeaning: (WhiteSquare) ~> (Object (Square) (White));
+      BlackSquareMeaning: (BlackSquare) ~> (Object (Square) (Black));
+    }
+  }
+  theory Glyphs()
+}

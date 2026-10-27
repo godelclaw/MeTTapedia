@@ -54,6 +54,7 @@ import Mettapedia.Languages.HOLLight.SourceProfileModelsControls
 import Mettapedia.Languages.HOLLight.ExactFormulaReadbackControls
 import Mettapedia.Languages.HOLLight.RetainedAssemblyControls
 import Mettapedia.Languages.HOLLight.IndexedConstructorDefinitionControls
+import Mettapedia.Languages.HOLLight.RecursiveSpaceTypeInstantiationControls
 import Mettapedia.Logic.HOL.PredicateFixedPointControls
 import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerGuestControls
 import Mettapedia.GSLT.LanguageDef.IndexedPositiveContainerUniverseControls
@@ -345,6 +346,7 @@ def checks : List (String × Bool) :=
     Mettapedia.Languages.HOLLight.ExactFormulaReadback.Controls.verdicts ++
     Mettapedia.Languages.HOLLight.RetainedAssemblyControls.verdicts ++
     Mettapedia.Languages.HOLLight.IndexedConstructorDefinitions.Controls.verdicts ++
+    Mettapedia.Languages.HOLLight.RecursiveSpaceTypeInstantiation.Controls.verdicts ++
     Mettapedia.GSLT.LanguageDef.PositiveInductiveVectorTreeGuest.ResultFold.verdicts ++
     [("ordered inductive traversal retains complete payloads",
       Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedContainerTraversal.Controls.modelChecks),

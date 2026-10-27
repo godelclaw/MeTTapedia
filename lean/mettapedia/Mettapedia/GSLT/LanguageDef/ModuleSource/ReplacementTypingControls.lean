@@ -78,7 +78,7 @@ theorem changed_collection_result_refused :
 /-- Explicit sort export still renames the declaration and its parameter
 sorts together. It does not pass through constructor replacement. -/
 theorem explicit_sort_export_remains_available :
-    (exportRow value ⟨"A", some "RenamedA"⟩).toOption.map
+    (exportRow 0 value ⟨"A", some "RenamedA"⟩).toOption.map
       (fun changed => ((flattenRaw "Renamed" changed).terms.find? (·.label == "K")).map
         (fun rule => (rule.category, rule.params))) =
       some (some ("RenamedA", [.simple "x" (.base "RenamedA"), .simple "y" b])) := by decide +kernel

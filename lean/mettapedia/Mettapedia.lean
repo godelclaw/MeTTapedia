@@ -220,6 +220,7 @@ import Mettapedia.Logic.Relation.NormalFormDecision
 import Mettapedia.Logic.Relation.CommutativeTerms
 import Mettapedia.Logic.Relation.SchematicPresentation
 import Mettapedia.Logic.WorldModel
+import Mettapedia.Logic.EvidenceKinds
 import Mettapedia.Logic.MarkovLogicIndividuationBridge
 import Mettapedia.Logic.MarkovLogicLocalQueryApproximation
 import Mettapedia.Logic.GunkyMereology
@@ -410,6 +411,7 @@ import Mettapedia.GSLT.LanguageDef.HOLFullDomainTheory
 import Mettapedia.Languages.Megalodon.PreambleFragmentVertical
 import Mettapedia.Languages.Megalodon.PreambleDependencyRestriction
 import Mettapedia.Languages.Megalodon.ReductionBubbleElaboration
+import Mettapedia.Languages.Megalodon.DirectedSearchGradedCheck
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.TowerTheoryNode
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativeRegularity
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.DeclarationFormation

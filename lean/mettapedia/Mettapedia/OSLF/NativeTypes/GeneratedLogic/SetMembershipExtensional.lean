@@ -44,6 +44,15 @@ def memberLabel : StepLabel → Prop
   | .any => True
   | .rule index => index = 0
   | .under _ _ => False
+  | .context _ _ _ => False
+
+/-- The labels of the membership language's steps are its own. -/
+theorem memberLabel_own {label : StepLabel} (labelled : memberLabel label) : label.isContext = false := by
+  cases label with
+  | context => exact labelled.elim
+  | any => rfl
+  | rule => rfl
+  | under => rfl
 
 instance : DecidablePred memberLabel := fun label => by
   cases label <;> unfold memberLabel <;> infer_instance
@@ -72,22 +81,23 @@ theorem admits_iff {initial : Bindings} (label : StepLabel) :
   | under index label =>
     show ((0 == index) && (premiseStepsList []).any label.admits) = true ↔ False
     simp only [premiseStepsList, List.any_nil, Bool.and_false, Bool.false_eq_true]
+  | context => exact iff_of_false Bool.false_ne_true id
 
-/-- **A step has a label exactly when the label admits the one rule.** -/
-theorem step_label_iff {first second : Pattern} {label : StepLabel} :
+/-- **A step with a label of the term's own has it exactly when the label admits the one rule.** -/
+theorem step_label_iff {first second : Pattern} {label : StepLabel} (own : label.isContext = false) :
     (referenceStructure relEnv membership).step first label second ↔
       memberLabel label ∧ (referenceStructure relEnv membership).step first .any second := by
   constructor
   · rintro ⟨firstState, secondState, redex, contractum, witness, before, redexState, valid, contractumState, after,
       admitted⟩
     obtain ⟨initial, rfl⟩ := witness_of_valid valid
-    exact ⟨(admits_iff label).mp admitted, firstState, secondState, redex, contractum, _, before, redexState, valid,
-      contractumState, after, rfl⟩
+    exact ⟨(admits_iff label).mp (StepLabel.admits_of_base own admitted), firstState, secondState, redex, contractum, _,
+      (placed_iff rfl).mpr ((placed_iff own).mp before), redexState, valid, contractumState, after, rfl⟩
   · rintro ⟨labelled, firstState, secondState, redex, contractum, witness, before, redexState, valid, contractumState,
       after, -⟩
     obtain ⟨initial, rfl⟩ := witness_of_valid valid
-    exact ⟨firstState, secondState, redex, contractum, _, before, redexState, valid, contractumState, after,
-      (admits_iff label).mpr labelled⟩
+    exact ⟨firstState, secondState, redex, contractum, _, (placed_iff own).mpr ((placed_iff rfl).mp before), redexState,
+      valid, contractumState, after, StepLabel.base_admits ((admits_iff label).mpr labelled)⟩
 
 /-! ## Hereditary terms -/
 
@@ -109,7 +119,7 @@ theorem hf_collection {kind : CollType} {elements : List Pattern} {rest : Option
 
 /-- Equivalence keeps a term hereditary. -/
 theorem hf_of_equivalent {first second : Pattern} (holds : IsHF first)
-    (equivalent : ObjectEquivalent relEnv membership first second) : IsHF second :=
+    (equivalent : ObjectEquivalent relEnv membership .syntax first second) : IsHF second :=
   (hereditary_iff _).mp ((hereditary_canonical (relEnv := relEnv) membership_hereditary).invariant
     ((hereditary_iff _).mpr holds) equivalent)
 
@@ -220,14 +230,15 @@ theorem hasType_iff {term : Pattern} (holds : IsHF term) :
 theorem typed_iff {term : Pattern} (holds : IsHF term) (type : TypeExpr) :
     (referenceStructure relEnv membership).typed term type ↔ SetTyped (zfOf term) type := by
   constructor
-  · rintro ⟨-, representative, equivalent, wellSorted, -⟩
+  · rintro ⟨-, representative, equivalent, typedRepresentative⟩
+    have wellSorted := (wellSorted_of_carrierTyped (by decide) typedRepresentative).1
     have representativeHolds := hf_of_equivalent holds equivalent
     rw [(membership_equivalent holds representativeHolds).mp equivalent]
     exact (hasType_iff representativeHolds type).mp wellSorted
   · intro typed
     have state := hf_state holds
     exact ⟨state.2, term, Relation.EqvGen.refl _,
-      ⟨(hasType_iff holds type).mpr typed, hf_binderMetadata holds, state.2, state.1⟩⟩
+      carrierTyped_of_wellSorted ⟨(hasType_iff holds type).mpr typed, hf_binderMetadata holds, state.2, state.1⟩⟩
 
 /-! ## The ZF sets as a native structure -/
 
@@ -247,11 +258,12 @@ def extensional : NativeStructure ZFSet.{0} where
   named whole term := IsHF term ∧ whole = zfOf term
   same first second := first = second
   apply inner _ := inner
+  inRelation _ _ := False
 
 /-- **The hereditary terms are generated**: what one steps to, splits into and has as members is hereditary, and
 it is no constructor term, abstraction or bound variable. -/
 theorem hereditary_generated : Membership.Generated IsHF where
-  step holds step := step_hereditary holds (step_label_iff.mp step).2
+  step own holds step := step_hereditary holds ((step_label_iff own).mp step).2
   built holds built := (hf_not_apply (hf_of_equivalent holds built.2)).elim
   split holds split := by
     obtain ⟨-, left, right, equivalent, rfl, rfl⟩ := split
@@ -277,8 +289,8 @@ abbrev HFNative := NativeStructure.restrict hereditary_generated
 /-- **Denotation is a bounded morphism** from the hereditary terms to the ZF sets. -/
 def toZF : BoundedMorphism HFNative extensional where
   map term := zfOf term.1
-  step {source _ target} step := by
-    obtain ⟨labelled, step⟩ := step_label_iff.mp step
+  step {source _ target} own step := by
+    obtain ⟨labelled, step⟩ := (step_label_iff own).mp step
     exact ⟨labelled, (member_step_iff source.2 target.2).mp step⟩
   built built := (hf_not_apply (hf_of_equivalent (Subtype.prop _) built.2)).elim
   split {element _ first second} split := by
@@ -314,14 +326,15 @@ def toZF : BoundedMorphism HFNative extensional where
     obtain ⟨-, equivalent⟩ := named
     have termHolds := hf_of_equivalent element.2 equivalent
     exact ⟨termHolds, (membership_equivalent element.2 termHolds).mp equivalent⟩
-  stepBack {source label target'} step := by
+  inRelation isIn := not_inRelation_empty isIn
+  stepBack {source label target'} own step := by
     obtain ⟨labelled, member⟩ := step
     obtain ⟨values, same, inside⟩ := hf_set source.2
     have member' : target' ∈ zfOfList values := by
       rw [← zfOf_set, ← same]
       exact member
     obtain ⟨value, valueMember, rfl⟩ := mem_zfOfList.mp member'
-    refine ⟨⟨value, inside value valueMember⟩, step_label_iff.mpr ⟨labelled, ?_⟩, rfl⟩
+    refine ⟨⟨value, inside value valueMember⟩, (step_label_iff own).mpr ⟨labelled, ?_⟩, rfl⟩
     rw [member_step_iff source.2 (inside value valueMember), same, zfOf_set]
     exact mem_zfOfList.mpr ⟨value, valueMember, rfl⟩
   builtBack built := built.elim
@@ -387,6 +400,7 @@ def toZF : BoundedMorphism HFNative extensional where
   namedBack {element term} named := by
     obtain ⟨termHolds, same⟩ := named
     exact ⟨(hf_state element.2).2, (membership_equivalent element.2 termHolds).mpr same⟩
+  inRelationBack isIn := isIn.elim
   sameIff first second := membership_equivalent first.2 second.2
 
 /-- **A forward native type holds at a hereditary term exactly when it holds at the set the term denotes.** -/

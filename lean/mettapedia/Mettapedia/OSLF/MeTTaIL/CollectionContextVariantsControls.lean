@@ -22,7 +22,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.OSLF.MeTTaIL.CollectionSelection.ContextControls
 
-open Syntax GeneralTypedSites
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax GeneralTypedSites
 
 def source : LanguageDef :=
   CollectionNestedControl.language.toOption.getD
@@ -97,7 +97,7 @@ end Mettapedia.OSLF.MeTTaIL.CollectionSelection.ContextControls
 
 namespace Mettapedia.OSLF.MeTTaIL.CollectionSelection.ContextControls.SourceAgreement
 
-open Syntax DerivedContexts
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax DerivedContexts
 open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
 

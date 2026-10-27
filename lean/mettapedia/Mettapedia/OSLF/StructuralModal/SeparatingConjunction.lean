@@ -934,12 +934,21 @@ theorem leaves_fill (context : Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleCo
 
 /-- The only declared collections are sequences, and the only declared algebra
 is the sequence former's, which has no unit. -/
-private theorem no_bag_or_set_carrier {rule : GrammarRule} {kind : CollType}
+private theorem collection_kind_is_vec {rule : GrammarRule} {kind : CollType}
     {elements : List Pattern} (declaration : rule ∈ language.terms)
-    (typed : Mettapedia.GSLT.LanguageDef.WellSorted.CollectionTypedAt language rule kind elements) :
-    kind = .vec := by
+    (typed : Mettapedia.GSLT.LanguageDef.WellSorted.CollectionTypedAt
+      language rule kind elements) : kind = .vec := by
   have used := usesCollection_eq_true_of_collectionTypedAt declaration typed
-  cases kind <;> first | rfl | (revert used; decide)
+  cases kind with
+  | vec => rfl
+  | hashBag =>
+      have absent : language.usesCollection .hashBag = false := rfl
+      rw [absent] at used
+      cases used
+  | hashSet =>
+      have absent : language.usesCollection .hashSet = false := rfl
+      rw [absent] at used
+      cases used
 
 private theorem algebra_has_no_unit {rule : GrammarRule} {kind : CollType}
     {algebra : CollectionAlgebra} (declaration : AlgebraRule language rule kind algebra) :
@@ -958,9 +967,9 @@ theorem generator_leaves {base : BasePremiseEvaluator} {source target : Pattern}
   rcases generator with authored | derived
   · exact absurd authored (no_equationInstance_of_equations_eq_nil rfl _ _)
   · cases derived with
-    | bagPerm declaration typed _ => cases no_bag_or_set_carrier declaration typed
-    | setPerm declaration typed _ => cases no_bag_or_set_carrier declaration typed
-    | setDedup declaration typed => cases no_bag_or_set_carrier declaration typed
+    | bagPerm declaration typed _ => cases collection_kind_is_vec declaration typed
+    | setPerm declaration typed _ => cases collection_kind_is_vec declaration typed
+    | setDedup declaration typed => cases collection_kind_is_vec declaration typed
     | flatten _ _ _ => simp [leaves, leavesList_append, leavesList]
     | singleton _ _ _ => simp [leaves, leavesList]
     | unitElim declaration isUnit _ =>

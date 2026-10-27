@@ -75,7 +75,7 @@ theorem ask_generic_two_splits_apart_answer :
 
 /-- **The front door with the generic decider proves that `2` splits into `1` and `{1}`.** -/
 theorem ask_generic_two_splits_apart : (referenceStructure RelationEnv.empty membership).sat Env.closed splitsApart two :=
-  askWith_proved ask_generic_two_splits_apart_answer
+  askWith_proved (by rfl) ask_generic_two_splits_apart_answer
 
 theorem ask_two_no_empty_split_answer :
     askWith RelationEnv.empty [] membership 2 splitsEmpty two membershipPartsDecider none 4 (some membershipForms) =
@@ -85,6 +85,6 @@ theorem ask_two_no_empty_split_answer :
 /-- **And refutes that it splits into two empty sets.** -/
 theorem ask_generic_two_no_empty_split :
     ¬ (referenceStructure RelationEnv.empty membership).sat Env.closed splitsEmpty two :=
-  askWith_refuted ask_two_no_empty_split_answer
+  askWith_refuted (by rfl) ask_two_no_empty_split_answer
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetReadings

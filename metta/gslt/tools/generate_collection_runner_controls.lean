@@ -1416,6 +1416,10 @@ open CollectionConsumers.Controls.Observation.GraphControls
 open CollectionOccurrenceBatch CollectionCommittedObservation GeneralPremise
 open CollectionExecutionQualification.GraphObservation (logicalKeyTerm)
 
+local instance : DecidableEq RecursiveCollectionHandoff.canonicalMatchingExecution.Choice := by
+  change DecidableEq EquationalScopedReceipts.Event
+  infer_instance
+
 private def graphType : TypeExpr := .base "Graph"
 
 private def packets (run : String) : String :=
@@ -1500,7 +1504,8 @@ def control (label : String) (plan : GeneralExecutionAdmission.Plan) (source : P
        call "==" ["$reread-keys", "$keys"]]]))
 
 
-private def invarianceHelpers : String := "(: kg-producer-control:ad-keys (-> Atom Atom %Undefined%))\n(= (kg-producer-control:ad-keys $wanted $keys)\n (case $keys ((LNil LNil) ((LCons $key $rest)\n  (let* (($conclusion (gslt:occurrence-search:key-binary \"Edge\" $key))\n         ($later (kg-producer-control:ad-keys $wanted $rest)))\n   (if (== $conclusion (Some $wanted)) (LCons $key $later) $later))))))\n(: kg-producer-control:subset (-> Atom Atom %Undefined%))\n(= (kg-producer-control:subset $left $right)\n (case $left ((LNil True) ((LCons $key $rest)\n  (if (gslt:automata:member $key $right) (kg-producer-control:subset $rest $right) False)))))\n(: kg-producer-control:source-sensitive-ad (-> Atom Atom Atom Atom %Undefined%))\n(= (kg-producer-control:source-sensitive-ad $table $selected $wanted $pairs)\n (case $pairs ((LNil LNil) ((LCons $pair $rest)\n  (let* (($key (gslt:occurrence-search:key-extract $table $selected $pair))\n         ($conclusion (gslt:occurrence-search:key-binary \"Edge\" $key))\n         ($later (kg-producer-control:source-sensitive-ad $table $selected $wanted $rest)))\n   (if (== $conclusion (Some $wanted))\n    (case $pair (((CommittedOccurrence\n      (RecursiveOccurrencePublication\n       (RecursiveCollectionOrigin (RuleJob $ordinal $declaration $site) $variant $answer) $continued) $receipt)\n       (LCons (SourceSensitiveKey $site $key) $later)))) $later))))))"
+private def invarianceHelpers : String := "(: kg-producer-control:packets (-> Atom %Undefined%))\n(= (kg-producer-control:packets (RecursiveOccurrenceRun $kg-plan $kg-source (RecursiveOccurrenceState $kg-lanes (RecursiveOccurrenceBatch $kg-frames $kg-packets)) $kg-published)) $kg-packets)\n" ++
+  "(: kg-producer-control:ad-keys (-> Atom Atom %Undefined%))\n(= (kg-producer-control:ad-keys $wanted $keys)\n (case $keys ((LNil LNil) ((LCons $key $rest)\n  (let* (($conclusion (gslt:occurrence-search:key-binary \"Edge\" $key))\n         ($later (kg-producer-control:ad-keys $wanted $rest)))\n   (if (== $conclusion (Some $wanted)) (LCons $key $later) $later))))))\n(: kg-producer-control:subset (-> Atom Atom %Undefined%))\n(= (kg-producer-control:subset $left $right)\n (case $left ((LNil True) ((LCons $key $rest)\n  (if (gslt:automata:member $key $right) (kg-producer-control:subset $rest $right) False)))))\n(: kg-producer-control:source-sensitive-ad (-> Atom Atom Atom Atom %Undefined%))\n(= (kg-producer-control:source-sensitive-ad $table $selected $wanted $pairs)\n (case $pairs ((LNil LNil) ((LCons $pair $rest)\n  (let* (($key (gslt:occurrence-search:key-extract $table $selected $pair))\n         ($conclusion (gslt:occurrence-search:key-binary \"Edge\" $key))\n         ($later (kg-producer-control:source-sensitive-ad $table $selected $wanted $rest)))\n   (if (== $conclusion (Some $wanted))\n    (case $pair (((CommittedOccurrence\n      (RecursiveOccurrencePublication\n       (RecursiveCollectionOrigin (RuleJob $ordinal $declaration $site) $variant $answer) $continued) $receipt)\n       (LCons (SourceSensitiveKey $site $key) $later)))) $later))))))"
 
 def invariance : IO String := do
   let sources := [("base", twoRouteSource),
@@ -1533,7 +1538,7 @@ def invariance : IO String := do
         else quoted (InferenceCettaWire.encodePattern source)),
        ("$run-" ++ tag, call "gslt:occurrence-search:run"
          ["$names", "0", "$plan", "$source-" ++ tag, "1600"]),
-       ("$packets-" ++ tag, packets ("$run-" ++ tag)),
+       ("$packets-" ++ tag, call "kg-producer-control:packets" ["$run-" ++ tag]),
        ("$pairs-" ++ tag, call "gslt:occurrence-search:read-committed" ["$plan", "$packets-" ++ tag]),
        ("$keys-" ++ tag, call "gslt:occurrence-search:key-unique" ["$names", "$selected", "$pairs-" ++ tag]),
        ("$ad-" ++ tag, call "kg-producer-control:ad-keys" ["$wanted", "$keys-" ++ tag])]
@@ -1660,14 +1665,15 @@ open CollectionConsumers
 open CollectionConsumers.Controls.Observation.GraphControls
 
 def control (label : String) (plan : GeneralExecutionAdmission.Plan) (source : Pattern)
-    (work nodeCount edgeCount : Nat) : IO String := do
+    (work nodeCount edgeCount : Nat) (rawSeed : Bool := false) : IO String := do
   let search := CollectionOccurrenceSearch.search plan [] (.base "Graph") 0
   let names := StandardWire.planTable plan []
   let standard := Term.application "Canonical"
     [.symbol "LNil", .symbol "LNil", encodeList Term.string names]
   let backend := CompleteExecution.CollectionOccurrence.backendTerm names 0
   let planWire := CompletePlanWire.planTerm plan [] [] (.base "Graph")
-  let initial := Complete.Explore.begin search source
+  let prepared := if rawSeed then source else CanonicalBags.canon source
+  let initial := Complete.Explore.begin search prepared
   let middle := Complete.Settled.roundsUntilSettled search 3 initial
   let whole := Complete.Settled.roundsUntilSettled search work initial
   let graphEdges := Complete.Graph.edges search whole
@@ -1676,10 +1682,17 @@ def control (label : String) (plan : GeneralExecutionAdmission.Plan) (source : P
     throw (IO.userError s!"Finite explorer {label} has the wrong settled node/edge account")
   let explorerWire := CompleteExecution.SearchWire.explorerTerm
     (CollectionOccurrenceSearchExecution.runTerm []) ScopedRuleJobReadoutExecution.receiptTerm
-  pure ("!" ++ letStar
+  let frames := (whole.nodes.map fun node => node.run.state.batch.frames.length).sum
+  let publications := (whole.nodes.map fun node => (search.publication node.run).length).sum
+  let nativeInitial := if rawSeed then
+      letStar [("$raw-run", call "gslt:search:run" ["$backend", "$plan", "$source", "0"])]
+        "(Explorer 0 (LCons (ExploreNode $source LNil (LCons $source LNil) 0 $raw-run 0) LNil))"
+    else call "gslt:explore:begin" ["$backend", "$plan", "$standard", "$source"]
+  pure (CollectionRunnerControls.measurement ("explorer-" ++ label) prepared work 3
+    frames publications plan.snapshot.provider.rows.length ++ "!" ++ letStar
     [("$backend", quoted backend), ("$standard", quoted standard), ("$plan", quoted planWire),
      ("$source", quoted (InferenceCettaWire.encodePattern source)),
-     ("$initial", call "gslt:explore:begin" ["$backend", "$plan", "$standard", "$source"]),
+     ("$initial", nativeInitial),
      ("$middle", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", "3", "$initial"]),
      ("$whole", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", toString work, "$initial"]),
      ("$resumed", call "gslt:explore:rounds" ["$backend", "$plan", "$standard", toString (work - 3), "$middle"]),
@@ -1703,8 +1716,66 @@ def control (label : String) (plan : GeneralExecutionAdmission.Plan) (source : P
 
 def main : IO Unit := do
   IO.println (← control "self-cycle" reachabilityPlan (graph [edge "A" "A"]) 37 1 2)
-  IO.println (← control "closed-diamond" reachabilityPlan diamond 703 1 14)
+  -- The native entry prepares canonical seeds. The generic explorer can also
+  -- retain a raw seed alongside canonical successors from the same search.
+  IO.println (← control "closed-diamond" reachabilityPlan (CanonicalBags.canon diamond) 703 1 14)
+  IO.println (← control "raw-diamond-presentation" reachabilityPlan diamond 1406 2 28 true)
   IO.println (← control "two-route-closure" twoRoutePlan twoRouteSource 1081 2 16)
 
 end FiniteExplorerControls
 #eval FiniteExplorerControls.main
+
+namespace NativeConstructorControls
+
+open CollectionRunnerControls (call letStar)
+open NestedContinuationControls (quoted)
+open CollectionPresentationExecution.ConstructorTyping
+open CollectionPresentationExecution.ConstructorTyping.Controls
+open BagNormalForm.WithAuthoredEquations.AlgebraFocus.RecursiveView
+open InferenceCettaWire.AuthoredRule (typeTerm typingDeclarationTerm)
+
+def control (label : String) (sourceLanguage : LanguageDef)
+    (schemaBound : List TypeExpr) (focus : Focus) (head : String)
+    (schemas sources : List Pattern) (row : GrammarRule) (expected : Bool) : IO String := do
+  let parameters := { Controls.parameters with language := sourceLanguage }
+  unless Retained.constructorReady parameters schemaBound focus head schemas sources row == expected do
+    throw (IO.userError s!"Constructor readiness control {label} has the wrong source verdict")
+  let bindings :=
+    [("$sorts", quoted (PremiseOperationsExecution.RestSchema.sortsTerm parameters.language)),
+      ("$declarations", quoted (PremiseOperationsExecution.RestSchema.declarationsTerm parameters.language)),
+      ("$free", quoted (PremiseOperationsExecution.RestSchema.freeTerm [])),
+      ("$schema-free", quoted (PremiseOperationsExecution.RestSchema.freeTerm schemaContext)),
+      ("$schema-bound", quoted (encodeList typeTerm schemaBound)),
+      ("$bound", quoted (encodeList typeTerm focus.bound)),
+      ("$expected", quoted (typeTerm (focus.expected parameters.category))),
+      ("$label", quoted (.string head)),
+      ("$schemas", quoted (encodeList InferenceCettaWire.encodePattern schemas)),
+      ("$sources", quoted (encodeList InferenceCettaWire.encodePattern sources)),
+      ("$row", quoted (typingDeclarationTerm row))]
+  pure ("!" ++ letStar bindings
+    (call "println!" [call "ConstructorTypingControl" [reprStr label,
+      call "==" [call "gslt:collection-presentation:view-constructor-ready" (bindings.map (·.1)),
+        if expected then "True" else "False"]]]))
+
+def main : IO Unit := do
+  IO.println (← control "ordinary-row" language [] (focus []) "Box"
+    [.fvar "x"] [.apply "Atom" []] constructorRow true)
+  IO.println (← control "separate-bound-contexts" language [valueType] (focus [valueType]) "Box"
+    [.bvar 0] [.bvar 0] constructorRow true)
+  IO.println (← control "wrong-schema-binder-type" language [.arrow valueType valueType] (focus [valueType]) "Box"
+    [.bvar 0] [.bvar 0] constructorRow false)
+  IO.println (← control "wrong-target-binder-type" language [valueType] (focus [.arrow valueType valueType]) "Box"
+    [.bvar 0] [.bvar 0] constructorRow false)
+  IO.println (← control "schema-context-is-not-target-context" language [] (focus []) "Box"
+    [.fvar "x"] [.fvar "x"] constructorRow false)
+  IO.println (← control "wrapped-collection-with-rest" language [] (focus []) "BagBox"
+    [.collection .hashBag [] (some "rest")]
+    [.collection .hashBag [.apply "Atom" [],.apply "Atom" []] none] (bagRow .wrapped) true)
+  IO.println (← control "bare-carrier-is-not-a-wrapper" language [] (focus []) "BagBox"
+    [.collection .hashBag [] (some "rest")]
+    [.collection .hashBag [.apply "Atom" [],.apply "Atom" []] none] (bagRow .bare) false)
+  IO.println (← control "row-fit-does-not-grant-membership" undeclaredParameters.language [] (focus []) "Box"
+    [.fvar "x"] [.apply "Atom" []] constructorRow true)
+
+end NativeConstructorControls
+#eval NativeConstructorControls.main

@@ -39,7 +39,7 @@ def firstOrder : {n : ℕ} → Formula n → Bool
   | _, .mapsAll _ _ | _, .mapsSome _ _ | _, .someOf _ _ | _, .everyOf _ _ | _, .atLeast _ _ _ _
   | _, .allButFewer _ _ _ _ => false
   | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _
-  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ => true
+  | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ | _, .inRelation _ | _, .notInRelation _ => true
   | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right =>
     firstOrder left && firstOrder right
   | _, .mu inner | _, .nu inner => firstOrder inner
@@ -58,7 +58,8 @@ mutual
 theorem firstOrder_dual : ∀ {n : ℕ} (formula : Formula n), (dual formula).firstOrder = formula.firstOrder
   | _, .top | _, .bot | _, .var _ | _, .empty _ | _, .nonEmpty _ | _, .bound _ | _, .notBound _
   | _, .typed _ | _, .untyped _ | _, .is _ | _, .isNot _ | _, .mapsAll _ _ | _, .mapsSome _ _
-  | _, .someOf _ _ | _, .everyOf _ _ | _, .atLeast _ _ _ _ | _, .allButFewer _ _ _ _ => by simp [dual, firstOrder]
+  | _, .someOf _ _ | _, .everyOf _ _ | _, .atLeast _ _ _ _ | _, .allButFewer _ _ _ _
+  | _, .inRelation _ | _, .notInRelation _ => by simp [dual, firstOrder]
   | _, .and left right | _, .or left right | _, .split _ left right | _, .everySplit _ left right => by
     simp only [dual, firstOrder, firstOrder_dual left, firstOrder_dual right]
   | _, .mu inner | _, .nu inner => by simp only [dual, firstOrder, firstOrder_dual inner]
@@ -151,6 +152,7 @@ structure StructuralBisimulation (relation : Carrier → Carrier → Prop) : Pro
   bound : ∀ {first second index}, relation first second → (S.bound first index ↔ S.bound second index)
   typed : ∀ {first second type}, relation first second → (S.typed first type ↔ S.typed second type)
   named : ∀ {first second term}, relation first second → (S.named first term ↔ S.named second term)
+  inRelation : ∀ {first second name}, relation first second → (S.inRelation first name ↔ S.inRelation second name)
 
 /-- **Structural bisimilarity**: related by some structural bisimulation. -/
 def StructurallyBisimilar (first second : Carrier) : Prop :=
@@ -170,7 +172,7 @@ theorem forall₂_compose {first second : Carrier → Carrier → Prop} :
 theorem structuralBisimulation_structurallyBisimilar : S.StructuralBisimulation S.StructurallyBisimilar := by
   have pack : ∀ {relation} {a b : Carrier}, S.StructuralBisimulation relation → relation a b →
       S.StructurallyBisimilar a b := fun bisimulation related => ⟨_, bisimulation, related⟩
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rintro first second label next ⟨relation, bisimulation, related⟩ step
     obtain ⟨next', step', relatedNext⟩ := bisimulation.steps.forth related step
     exact ⟨next', step', pack bisimulation relatedNext⟩
@@ -221,13 +223,15 @@ theorem structuralBisimulation_structurallyBisimilar : S.StructuralBisimulation 
     exact bisimulation.typed related
   · rintro first second term ⟨relation, bisimulation, related⟩
     exact bisimulation.named related
+  · rintro first second name ⟨relation, bisimulation, related⟩
+    exact bisimulation.inRelation related
 
 /-- **Structural bisimilarity is an equivalence.** -/
 theorem structurallyBisimilar_equivalence : Equivalence S.StructurallyBisimilar where
   refl element := by
     refine ⟨Eq, ⟨⟨fun related step => ⟨_, related ▸ step, rfl⟩, fun related step => ⟨_, related ▸ step, rfl⟩,
       fun related step => ⟨_, related ▸ step, rfl⟩, fun related step => ⟨_, related ▸ step, rfl⟩⟩,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, rfl⟩ <;>
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, rfl⟩ <;>
     first
     | (intro first second _ parts related isBuilt; subst related
        exact ⟨parts, isBuilt, List.forall₂_same.mpr fun _ _ => rfl⟩)
@@ -238,7 +242,7 @@ theorem structurallyBisimilar_equivalence : Equivalence S.StructurallyBisimilar 
   symm := by
     rintro first second ⟨relation, bisimulation, related⟩
     refine ⟨fun left right => relation right left, ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-      ?_, ?_, ?_⟩, related⟩
+      ?_, ?_, ?_, ?_⟩, related⟩
     · intro first second label next related step
       exact bisimulation.steps.back related step
     · intro first second label next' related step
@@ -279,10 +283,12 @@ theorem structurallyBisimilar_equivalence : Equivalence S.StructurallyBisimilar 
       exact (bisimulation.typed related).symm
     · intro first second term related
       exact (bisimulation.named related).symm
+    · intro first second name related
+      exact (bisimulation.inRelation related).symm
   trans := by
     rintro first second third ⟨relation, bisimulation, related⟩ ⟨relation', bisimulation', related'⟩
     refine ⟨fun left right => ∃ middle, relation left middle ∧ relation' middle right, ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_, ?_,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, second, related, related'⟩
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, second, related, related'⟩
     · rintro first third label next ⟨middle, left, right⟩ step
       obtain ⟨next', step', relatedNext⟩ := bisimulation.steps.forth left step
       obtain ⟨next'', step'', relatedNext'⟩ := bisimulation'.steps.forth right step'
@@ -347,6 +353,8 @@ theorem structurallyBisimilar_equivalence : Equivalence S.StructurallyBisimilar 
       exact (bisimulation.typed left).trans (bisimulation'.typed right)
     · rintro first third term ⟨middle, left, right⟩
       exact (bisimulation.named left).trans (bisimulation'.named right)
+    · rintro first third name ⟨middle, left, right⟩
+      exact (bisimulation.inRelation left).trans (bisimulation'.inRelation right)
 
 /-! ## Structurally bisimilar elements satisfy the same first-order formulas -/
 
@@ -468,6 +476,10 @@ theorem sat_of_structurallyBisimilar : ∀ {n : ℕ} (formula : Formula n), form
     (S.structuralBisimulation_structurallyBisimilar.named related).mp holds
   | _, .isNot _, _, _, _, _, _, related, holds => fun isNamed =>
     holds ((S.structuralBisimulation_structurallyBisimilar.named related).mpr isNamed)
+  | _, .inRelation _, _, _, _, _, _, related, holds =>
+    (S.structuralBisimulation_structurallyBisimilar.inRelation related).mp holds
+  | _, .notInRelation _, _, _, _, _, _, related, holds => fun isIn =>
+    holds ((S.structuralBisimulation_structurallyBisimilar.inRelation related).mpr isIn)
   | _, .mapsAll _ _, firstOrder, _, _, _, _, _, _ | _, .mapsSome _ _, firstOrder, _, _, _, _, _, _
   | _, .someOf _ _, firstOrder, _, _, _, _, _, _ | _, .everyOf _ _, firstOrder, _, _, _, _, _, _ => by
     simp [Formula.firstOrder] at firstOrder
@@ -660,6 +672,7 @@ theorem structuralBisimulation_firstOrderEquivalent (finite : S.FullyImageFinite
   bound := fun {_ _ index} agree => agree (.bound index) rfl
   typed := fun {_ _ type} agree => agree (.typed type) rfl
   named := fun {_ _ term} agree => agree (.is term) rfl
+  inRelation := fun {_ _ name} agree => agree (.inRelation name) rfl
 
 /-- **First-order formulas induce structural bisimilarity**, on a structure finitely branching in every
 relation. -/

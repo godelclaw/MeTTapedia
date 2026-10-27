@@ -518,44 +518,59 @@ theorem element_transfer {pattern term : Pattern} {bindings : Bindings} (element
         exact List.mem_cons_of_mem _ listed
 
 
-/-- **A two-level set rule's match moves to the listed partners of its elements, followed by any presentation of the
-remaining members**, with like captures. -/
-theorem twoLevel_transfer : ∀ {patterns : List Pattern} {rest : Option String} {terms : List Pattern}
-    {bindings : Bindings}, MatchBagRel patterns rest .hashSet terms bindings →
-    (∀ pattern ∈ patterns, TwoLevelElement language sort width pattern) →
-    (∀ term ∈ terms, Hereditary language sort term) → (rest.toList ++ patternNamesList patterns).Nodup →
+/-- **A set rule's match moves to listed partners of its elements, followed by any presentation of the remaining
+members**, with like captures, when each element's match at a held member moves to a listed presentation of the member
+and each element captures distinct names. The new captures have a property of entries (`good`) when the elements'
+moved captures and the rest's capture of the remaining members' set have it. -/
+theorem bag_transfer_with (presentationsOf : Pattern → List Pattern) (held : Pattern → Prop)
+    (good : String × Pattern → Prop) :
+    ∀ {patterns : List Pattern} {rest : Option String}
+    {terms : List Pattern} {bindings : Bindings}, MatchBagRel patterns rest .hashSet terms bindings →
+    (∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, held term →
+      MatchRel pattern term captured → ∃ partner ∈ presentationsOf (BagForms.sortBags term), ∃ captured',
+        MatchRel pattern partner captured' ∧ BagForms.BindingsSame captured captured' ∧ ∀ entry ∈ captured', good entry) →
+    (∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, MatchRel pattern term captured →
+      (patternNames pattern).Nodup → (captured.map Prod.fst).Nodup) →
+    (∀ term ∈ terms, held term) → (rest.toList ++ patternNamesList patterns).Nodup →
     ∃ partners matched remaining : List Pattern, partners.length = patterns.length ∧
-      List.Forall₂ (fun partner term => partner ∈ memberPresentations width (BagForms.sortBags term)) partners matched ∧
+      List.Forall₂ (fun partner term => partner ∈ presentationsOf (BagForms.sortBags term)) partners matched ∧
       terms.Perm (matched ++ remaining) ∧ (rest = none → remaining = []) ∧
       ∀ extras : List Pattern, (rest = none → extras = []) →
         Same (.collection .hashSet remaining none) (.collection .hashSet extras none) →
+        (∀ name, rest = some name → good (name, .collection .hashSet extras none)) →
         ∃ bindings', MatchBagRel patterns rest .hashSet (partners ++ extras) bindings' ∧
-          BagForms.BindingsSame bindings bindings'
-  | _, _, _, _, .nilNoRest, _, _, _ =>
+          BagForms.BindingsSame bindings bindings' ∧ ∀ entry ∈ bindings', good entry
+  | _, _, _, _, .nilNoRest, _, _, _, _ =>
     ⟨[], [], [], rfl, .nil, List.Perm.refl _, fun _ => rfl,
-      fun extras noExtras _ => by rw [noExtras rfl]; exact ⟨[], .nilNoRest, .nil⟩⟩
-  | _, _, terms, _, .nilRest, _, _, _ =>
+      fun extras noExtras _ _ => by
+        rw [noExtras rfl]
+        exact ⟨[], .nilNoRest, .nil, fun _ member => absurd member List.not_mem_nil⟩⟩
+  | _, _, terms, _, .nilRest, _, _, _, _ =>
     ⟨[], [], terms, rfl, .nil, List.Perm.refl _, (fun absurdity => nomatch absurdity),
-      fun _ _ same => ⟨_, .nilRest, .cons ⟨rfl, same⟩ .nil⟩⟩
-  | pattern :: patterns, rest, terms, _, .cons _index bound head tail merged, elements, termsHold, distinct => by
+      fun _ _ same goodRest => ⟨_, .nilRest, .cons ⟨rfl, same⟩ .nil, fun entry member => by
+        rw [List.mem_singleton.mp member]
+        exact goodRest _ rfl⟩⟩
+  | pattern :: patterns, rest, terms, _, .cons _index bound head tail merged, transferOne, distinctOne, termsHold,
+      distinct => by
     rename_i headBindings tailBindings
     have shape : (rest.toList ++ patternNamesList (pattern :: patterns)).Perm
         (patternNames pattern ++ (rest.toList ++ patternNamesList patterns)) := by
       simp only [patternNamesList]
       exact List.perm_append_comm_assoc _ _ _
     obtain ⟨headNames, tailNames, apart⟩ := List.nodup_append.mp (shape.nodup_iff.mp distinct)
-    obtain ⟨partner, listed, headBindings', head', headSame⟩ :=
-      element_transfer (elements pattern List.mem_cons_self) (termsHold _ (List.getElem_mem bound)) head
+    obtain ⟨partner, listed, headBindings', head', headSame, headGood⟩ :=
+      transferOne pattern List.mem_cons_self (termsHold _ (List.getElem_mem bound)) head
     obtain ⟨partners, matched, remaining, length, partnersListed, split, noRemaining, transfer⟩ :=
-      twoLevel_transfer tail (fun other member => elements other (List.mem_cons_of_mem _ member))
+      bag_transfer_with presentationsOf held good tail (fun other member => transferOne other (List.mem_cons_of_mem _ member))
+        (fun other member => distinctOne other (List.mem_cons_of_mem _ member))
         (fun other member => termsHold other (List.mem_of_mem_eraseIdx member)) tailNames
     refine ⟨partner :: partners, terms[_index] :: matched, remaining,
       by rw [List.length_cons, length, List.length_cons], .cons listed partnersListed, ?_, noRemaining, ?_⟩
     · exact (List.getElem_cons_eraseIdx_perm bound).symm.trans (List.Perm.cons _ split)
-    · intro extras noExtras same
-      obtain ⟨tailBindings', tail', tailSame⟩ := transfer extras noExtras same
+    · intro extras noExtras same goodRest
+      obtain ⟨tailBindings', tail', tailSame, tailGood⟩ := transfer extras noExtras same goodRest
       have tailDistinct := bag_nodup tail (fun other member _ _ matched distinctOther =>
-        twoLevel_captures_distinct (elements other (List.mem_cons_of_mem _ member)) matched distinctOther) tailNames
+        distinctOne other (List.mem_cons_of_mem _ member) matched distinctOther) tailNames
       obtain ⟨result, result', mergedAgain, merged', resultSame⟩ := mergeBindings_disjoint tailBindings tailBindings'
         headBindings headBindings' headSame tailSame
         (fun a aMember b bMember same' => apart _ (captured_names head a aMember) _ (captured_names_bag tail b bMember)
@@ -563,7 +578,62 @@ theorem twoLevel_transfer : ∀ {patterns : List Pattern} {rest : Option String}
         tailDistinct
       rw [merged] at mergedAgain
       cases mergedAgain
-      exact ⟨result', .cons 0 (Nat.succ_pos _) head' (by simpa using tail') merged', resultSame⟩
+      refine ⟨result', .cons 0 (Nat.succ_pos _) head' (by simpa using tail') merged', resultSame, fun entry member => ?_⟩
+      rcases mem_of_mergeBindings _ _ merged' entry member with inHead | inTail
+      · exact headGood entry inHead
+      · exact tailGood entry inTail
+
+/-- **A set rule's match moves to listed partners of its elements, followed by any presentation of the remaining
+members**, with like captures, when each element's match moves to a listed presentation of its member and each
+element captures distinct names. The new captures have a property of values (`good`) when the elements' moved captures
+and the remaining members' set have it. -/
+theorem bag_transfer (presentationsOf : Pattern → List Pattern) (good : Pattern → Prop) :
+    ∀ {patterns : List Pattern} {rest : Option String}
+    {terms : List Pattern} {bindings : Bindings}, MatchBagRel patterns rest .hashSet terms bindings →
+    (∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, Hereditary language sort term →
+      MatchRel pattern term captured → ∃ partner ∈ presentationsOf (BagForms.sortBags term), ∃ captured',
+        MatchRel pattern partner captured' ∧ BagForms.BindingsSame captured captured' ∧
+          ∀ entry ∈ captured', good entry.2) →
+    (∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, MatchRel pattern term captured →
+      (patternNames pattern).Nodup → (captured.map Prod.fst).Nodup) →
+    (∀ term ∈ terms, Hereditary language sort term) → (rest.toList ++ patternNamesList patterns).Nodup →
+    ∃ partners matched remaining : List Pattern, partners.length = patterns.length ∧
+      List.Forall₂ (fun partner term => partner ∈ presentationsOf (BagForms.sortBags term)) partners matched ∧
+      terms.Perm (matched ++ remaining) ∧ (rest = none → remaining = []) ∧
+      ∀ extras : List Pattern, (rest = none → extras = []) →
+        Same (.collection .hashSet remaining none) (.collection .hashSet extras none) →
+        good (.collection .hashSet extras none) →
+        ∃ bindings', MatchBagRel patterns rest .hashSet (partners ++ extras) bindings' ∧
+          BagForms.BindingsSame bindings bindings' ∧ ∀ entry ∈ bindings', good entry.2 := by
+  intro patterns rest terms bindings bag transferOne distinctOne termsHold distinct
+  obtain ⟨partners, matched, remaining, length, listed, split, noRemaining, transfer⟩ :=
+    bag_transfer_with presentationsOf (Hereditary language sort) (fun entry => good entry.2) bag transferOne distinctOne
+      termsHold distinct
+  exact ⟨partners, matched, remaining, length, listed, split, noRemaining,
+    fun extras noExtras same goodRest => transfer extras noExtras same fun _ _ => goodRest⟩
+
+/-- **A two-level set rule's match moves to the listed partners of its elements, followed by any presentation of the
+remaining members**, with like captures. -/
+theorem twoLevel_transfer {patterns : List Pattern} {rest : Option String} {terms : List Pattern}
+    {bindings : Bindings} (bag : MatchBagRel patterns rest .hashSet terms bindings)
+    (elements : ∀ pattern ∈ patterns, TwoLevelElement language sort width pattern)
+    (termsHold : ∀ term ∈ terms, Hereditary language sort term) (distinct : (rest.toList ++ patternNamesList patterns).Nodup) :
+    ∃ partners matched remaining : List Pattern, partners.length = patterns.length ∧
+      List.Forall₂ (fun partner term => partner ∈ memberPresentations width (BagForms.sortBags term)) partners matched ∧
+      terms.Perm (matched ++ remaining) ∧ (rest = none → remaining = []) ∧
+      ∀ extras : List Pattern, (rest = none → extras = []) →
+        Same (.collection .hashSet remaining none) (.collection .hashSet extras none) →
+        ∃ bindings', MatchBagRel patterns rest .hashSet (partners ++ extras) bindings' ∧
+          BagForms.BindingsSame bindings bindings' :=
+  (bag_transfer (memberPresentations width) (fun _ => True) bag
+    (fun pattern member _ _ held matched => by
+      obtain ⟨partner, listed, captured', matched', same⟩ := element_transfer (elements pattern member) held matched
+      exact ⟨partner, listed, captured', matched', same, fun _ _ => trivial⟩)
+    (fun pattern member _ _ matched names => twoLevel_captures_distinct (elements pattern member) matched names)
+    termsHold distinct).imp fun _ ⟨matched, remaining, length, listed, split, noRemaining, transfer⟩ =>
+      ⟨matched, remaining, length, listed, split, noRemaining, fun extras noExtras same => by
+        obtain ⟨bindings', bag', sameBindings, -⟩ := transfer extras noExtras same trivial
+        exact ⟨bindings', bag', sameBindings⟩⟩
 
 
 /-- **A bag or set match with no rest transfers to every permutation of the subject's list**, with the same captures. -/
@@ -639,17 +709,21 @@ theorem mem_listsOf {items : List Pattern} : ∀ (members : List Pattern), (∀ 
   | head :: tail, inside => List.mem_flatMap.mpr ⟨head, inside head List.mem_cons_self,
       List.mem_map.mpr ⟨tail, mem_listsOf tail (fun other member => inside other (List.mem_cons_of_mem _ member)), rfl⟩⟩
 
-/-- The groups of a member: between one and `bound` of its listed presentations. -/
-def groupChoices (width bound : ℕ) (value : Pattern) : List (List Pattern) :=
-  (List.range bound).flatMap fun n => listsOf (memberPresentations width value) (n + 1)
+/-- **Groups of listed presentations**: between one and `bound` of them. -/
+def nestedGroups (bound : ℕ) (presentations : List Pattern) : List (List Pattern) :=
+  (List.range bound).flatMap fun n => listsOf presentations (n + 1)
 
-theorem mem_groupChoices {value : Pattern} {bound : ℕ} {group : List Pattern} (nonempty : group ≠ [])
-    (short : group.length ≤ bound) (inside : ∀ member ∈ group, member ∈ memberPresentations width value) :
-    group ∈ groupChoices width bound value := by
+theorem mem_nestedGroups {presentations group : List Pattern} {bound : ℕ} (nonempty : group ≠ [])
+    (short : group.length ≤ bound) (inside : ∀ member ∈ group, member ∈ presentations) :
+    group ∈ nestedGroups bound presentations := by
   have positive := List.length_pos_iff.mpr nonempty
   refine List.mem_flatMap.mpr ⟨group.length - 1, List.mem_range.mpr (by omega), ?_⟩
   rw [show group.length - 1 + 1 = group.length by omega]
   exact mem_listsOf group inside
+
+/-- The groups of a member: between one and `bound` of its listed presentations. -/
+def groupChoices (width bound : ℕ) (value : Pattern) : List (List Pattern) :=
+  nestedGroups bound (memberPresentations width value)
 
 /-- Concatenations of one choice from each list of choices. -/
 def chooseGroups : List (List (List Pattern)) → List (List Pattern)
@@ -750,6 +824,126 @@ structure TwoLevelSetLanguage (language : LanguageDef) (carrier : GrammarRule) (
 
 variable {relEnv : RelationEnv} {carrier : GrammarRule} {bound : ℕ}
 
+/-- **A set rule's match regrouped by classes**: when each element's match moves to a listed presentation of its
+member, a listed presentation of a canonical member presents it, and the member is listed for itself, the match moves
+to a list of groups, one for each member of the canonical form, each of between one and `bound` listed presentations
+of that member. -/
+theorem regroup (presentationsOf : Pattern → List Pattern)
+    (classOf : ∀ {value shown : Pattern}, BagForms.sortBags value = value → shown ∈ presentationsOf value →
+      BagForms.sortBags shown = value)
+    (selfListed : ∀ {value : Pattern}, BagForms.sortBags value = value → value ∈ presentationsOf value)
+    {patterns : List Pattern} {rest : Option String} {terms : List Pattern} {bindings : Bindings}
+    (bag : MatchBagRel patterns rest .hashSet terms bindings)
+    (transferOne : ∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, Hereditary language sort term →
+      MatchRel pattern term captured → ∃ partner ∈ presentationsOf (BagForms.sortBags term), ∃ captured',
+        MatchRel pattern partner captured' ∧ BagForms.BindingsSame captured captured')
+    (distinctOne : ∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, MatchRel pattern term captured →
+      (patternNames pattern).Nodup → (captured.map Prod.fst).Nodup)
+    (termsHold : ∀ term ∈ terms, Hereditary language sort term)
+    (distinct : (rest.toList ++ patternNamesList patterns).Nodup) (short : patterns.length + rest.toList.length ≤ bound) :
+    ∃ grouped ∈ chooseGroups ((arrange .hashSet (terms.map BagForms.sortBags)).map fun value =>
+        nestedGroups bound (presentationsOf value)),
+      ∃ bindings', MatchBagRel patterns rest .hashSet grouped bindings' ∧ BagForms.BindingsSame bindings bindings' := by
+  let values := arrange .hashSet (terms.map BagForms.sortBags)
+  have distinctValues : values.Nodup := List.nodup_dedup _
+  have termClass : ∀ term ∈ terms, BagForms.sortBags term ∈ values :=
+    fun term member => (arrange_mem _).mpr (List.mem_map_of_mem member)
+  have sortIdem : ∀ term : Pattern, BagForms.sortBags (BagForms.sortBags term) = BagForms.sortBags term := by
+    intro term
+    rw [BagForms.sortBags_eq_canon, canon_idempotent]
+  obtain ⟨partners, matchedTerms, remaining, length, partnersListed, split, noRemaining, transfer⟩ :=
+    bag_transfer presentationsOf (fun _ => True) bag
+      (fun pattern member _ _ held matched => by
+        obtain ⟨partner, listed, captured', matched', same⟩ := transferOne pattern member held matched
+        exact ⟨partner, listed, captured', matched', same, fun _ _ => trivial⟩)
+      distinctOne termsHold distinct
+  let extras := arrange .hashSet (remaining.map BagForms.sortBags)
+  have extrasCanonical : ∀ extra ∈ extras, BagForms.sortBags extra = extra := by
+    intro extra member
+    obtain ⟨original, -, rfl⟩ := List.mem_map.mp ((arrange_mem _).mp member)
+    exact sortIdem original
+  have extrasSame : Same (.collection .hashSet remaining none) (.collection .hashSet extras none) := by
+    change canon _ = canon _
+    rw [canon_collection, canon_collection]
+    congr 1
+    apply arrange_eq_of_presents
+    intro other
+    rw [show extras.map canon = extras from by
+      conv_rhs => rw [← List.map_id extras]
+      exact List.map_congr_left fun extra member => by
+        rw [← BagForms.sortBags_eq_canon]
+        exact extrasCanonical extra member]
+    rw [arrange_mem, ← BagForms.sortBags_eq_canon]
+  have noExtras : rest = none → extras = [] := by
+    intro none
+    simp only [extras, noRemaining none, List.map_nil]
+    rfl
+  obtain ⟨bindings', matched', sameBindings, -⟩ := transfer extras noExtras extrasSame trivial
+  have classInside : ∀ member ∈ partners ++ extras, BagForms.sortBags member ∈ values := by
+    intro member inside
+    rcases List.mem_append.mp inside with inPartners | inExtras
+    · obtain ⟨term, termMember, listed⟩ := exists_right_of_forall₂ partnersListed member inPartners
+      rw [classOf (sortIdem term) listed]
+      exact termClass term (split.symm.subset (List.mem_append_left _ termMember))
+    · obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp ((arrange_mem _).mp inExtras)
+      rw [sortIdem]
+      exact termClass original (split.symm.subset (List.mem_append_right _ originalMember))
+  let grouped := values.flatMap fun value => (partners ++ extras).filter fun member => BagForms.sortBags member == value
+  have regrouped : (partners ++ extras).Perm grouped := perm_groups BagForms.sortBags distinctValues classInside
+  obtain ⟨bindings'', matched'', sameBindings''⟩ : ∃ bindings'', MatchBagRel patterns rest .hashSet grouped bindings'' ∧
+      BagForms.BindingsSame bindings' bindings'' := by
+    cases rest with
+    | none => exact ⟨bindings', matchBagRel_perm_none matched' regrouped, bindingsSame_refl _⟩
+    | some name =>
+      have fresh : ∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, MatchRel pattern term captured →
+          ∀ entry ∈ captured, entry.1 ≠ name := by
+        intro pattern member term captured matchedPattern entry entryMember named
+        exact (List.nodup_cons.mp distinct).1 (named ▸ mem_patternNamesList member
+          (captured_names matchedPattern entry entryMember))
+      obtain ⟨-, permuted⟩ := matchBagRel_perm (by decide) matched' fresh
+      obtain ⟨bindings'', matched'', alike⟩ := permuted regrouped
+      exact ⟨bindings'', matched'', alike.imp fun _ _ entryAlike => ⟨entryAlike.1, entryAlike.2.2⟩⟩
+  refine ⟨grouped, ?_, bindings'', matched'', bindingsSame_trans sameBindings sameBindings''⟩
+  rw [show grouped = (values.map fun value => (partners ++ extras).filter fun member =>
+    BagForms.sortBags member == value).flatten from List.flatMap_def]
+  refine mem_chooseGroups ?_
+  rw [List.forall₂_map_left_iff, List.forall₂_map_right_iff]
+  refine List.forall₂_same.mpr fun value valueMember => mem_nestedGroups ?_ ?_ ?_
+  · obtain ⟨term, termMember, termIs⟩ := List.mem_map.mp ((arrange_mem _).mp valueMember)
+    rcases List.mem_append.mp (split.subset termMember) with inMatched | inRemaining
+    · obtain ⟨partner, partnerMember, listed⟩ := exists_left_of_forall₂ partnersListed term inMatched
+      refine List.ne_nil_of_mem (List.mem_filter.mpr ⟨List.mem_append_left _ partnerMember, ?_⟩)
+      rw [classOf (sortIdem term) listed, termIs]
+      exact beq_self_eq_true _
+    · have inExtras : value ∈ extras := (arrange_mem _).mpr (termIs ▸ List.mem_map_of_mem inRemaining)
+      refine List.ne_nil_of_mem (List.mem_filter.mpr ⟨List.mem_append_right _ inExtras, ?_⟩)
+      rw [extrasCanonical value inExtras]
+      exact beq_self_eq_true _
+  · rw [List.filter_append, List.length_append]
+    have partnersShort := List.length_filter_le (fun member => BagForms.sortBags member == value) partners
+    have extrasShort : (extras.filter fun member => BagForms.sortBags member == value).length ≤ rest.toList.length := by
+      cases rest with
+      | none => rw [noExtras rfl]; exact Nat.zero_le _
+      | some name =>
+        have filtered : (extras.filter fun member => BagForms.sortBags member == value) =
+            extras.filter fun member => member == value := by
+          apply List.filter_congr
+          intro member inside
+          rw [extrasCanonical member inside]
+        rw [filtered, ← List.count_eq_length_filter]
+        exact List.nodup_iff_count_le_one.mp (List.nodup_dedup _) value
+    rw [length] at partnersShort
+    omega
+  · intro member inside
+    obtain ⟨inList, isValue⟩ := List.mem_filter.mp inside
+    have sameClass : BagForms.sortBags member = value := by simpa using isValue
+    rcases List.mem_append.mp inList with inPartners | inExtras
+    · obtain ⟨term, -, listed⟩ := exists_right_of_forall₂ partnersListed member inPartners
+      rw [← sameClass, classOf (sortIdem term) listed]
+      exact listed
+    · rw [← sameClass, extrasCanonical member inExtras]
+      exact selfListed (extrasCanonical member inExtras)
+
 /-- **Coherence for two-level set languages**: a step from any presentation of a canonical hereditary set is matched,
 with the same labels and up to canonical form, by a step listed at a presentation whose members are written up to
 `bound` times, each copy canonical or with copies of its own members. -/
@@ -783,99 +977,15 @@ theorem twoLevel_coherent (lang : TwoLevelSetLanguage language carrier width bou
         rw [← redexCanon]
         exact sortBags_set_values terms
       subst stateIs
-      have distinctValues : values.Nodup := List.nodup_dedup _
-      have termClass : ∀ term ∈ terms, BagForms.sortBags term ∈ values :=
-        fun term member => (arrange_mem _).mpr (List.mem_map_of_mem member)
-      have sortIdem : ∀ term : Pattern, BagForms.sortBags (BagForms.sortBags term) = BagForms.sortBags term := by
-        intro term
-        rw [BagForms.sortBags_eq_canon, canon_idempotent]
-      obtain ⟨partners, matchedTerms, remaining, length, partnersListed, split, noRemaining, transfer⟩ :=
-        twoLevel_transfer bag elements termsHold distinct
-      let extras := arrange .hashSet (remaining.map BagForms.sortBags)
-      have extrasCanonical : ∀ extra ∈ extras, BagForms.sortBags extra = extra := by
-        intro extra member
-        obtain ⟨original, -, rfl⟩ := List.mem_map.mp ((arrange_mem _).mp member)
-        exact sortIdem original
-      have extrasSame : Same (.collection .hashSet remaining none) (.collection .hashSet extras none) := by
-        change canon _ = canon _
-        rw [canon_collection, canon_collection]
-        congr 1
-        apply arrange_eq_of_presents
-        intro other
-        rw [show extras.map canon = extras from by
-          conv_rhs => rw [← List.map_id extras]
-          exact List.map_congr_left fun extra member => by
-            rw [← BagForms.sortBags_eq_canon]
-            exact extrasCanonical extra member]
-        rw [arrange_mem, ← BagForms.sortBags_eq_canon]
-      have noExtras : rest = none → extras = [] := by
-        intro none
-        simp only [extras, noRemaining none, List.map_nil]
-        rfl
-      obtain ⟨bindings', matched', sameBindings⟩ := transfer extras noExtras extrasSame
-      have classInside : ∀ member ∈ partners ++ extras, BagForms.sortBags member ∈ values := by
-        intro member inside
-        rcases List.mem_append.mp inside with inPartners | inExtras
-        · obtain ⟨term, termMember, listed⟩ := exists_right_of_forall₂ partnersListed member inPartners
-          rw [memberPresentations_class (sortIdem term) listed]
-          exact termClass term (split.symm.subset (List.mem_append_left _ termMember))
-        · obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp ((arrange_mem _).mp inExtras)
-          rw [sortIdem]
-          exact termClass original (split.symm.subset (List.mem_append_right _ originalMember))
-      let grouped := values.flatMap fun value => (partners ++ extras).filter fun member => BagForms.sortBags member == value
-      have regroup : (partners ++ extras).Perm grouped := perm_groups BagForms.sortBags distinctValues classInside
-      obtain ⟨bindings'', matched'', sameBindings''⟩ : ∃ bindings'', MatchBagRel patterns rest .hashSet grouped bindings'' ∧
-          BagForms.BindingsSame bindings' bindings'' := by
-        cases rest with
-        | none => exact ⟨bindings', matchBagRel_perm_none matched' regroup, bindingsSame_refl _⟩
-        | some name =>
-          have fresh : ∀ pattern ∈ patterns, ∀ {term : Pattern} {captured : Bindings}, MatchRel pattern term captured →
-              ∀ entry ∈ captured, entry.1 ≠ name := by
-            intro pattern member term captured matchedPattern entry entryMember named
-            exact (List.nodup_cons.mp distinct).1 (named ▸ mem_patternNamesList member
-              (captured_names matchedPattern entry entryMember))
-          obtain ⟨-, permuted⟩ := matchBagRel_perm (by decide) matched' fresh
-          obtain ⟨bindings'', matched'', alike⟩ := permuted regroup
-          exact ⟨bindings'', matched'', alike.imp fun _ _ entryAlike => ⟨entryAlike.1, entryAlike.2.2⟩⟩
+      obtain ⟨grouped, groupedListed, bindings'', matched'', sameBindings⟩ :=
+        regroup (memberPresentations width) memberPresentations_class (fun _ => List.mem_cons_self) bag
+          (fun pattern member _ _ held matchedPattern => element_transfer (elements pattern member) held matchedPattern)
+          (fun pattern member _ _ matchedPattern names =>
+            twoLevel_captures_distinct (elements pattern member) matchedPattern names)
+          termsHold distinct (Nat.le_trans (Nat.add_le_add_left (by cases rest <;> simp) _) short)
       have shown : Pattern.collection .hashSet grouped none ∈ twoLevelPresentations width bound (set values) := by
         simp only [set, twoLevelPresentations, List.mem_map]
-        refine ⟨grouped, ?_, rfl⟩
-        rw [show grouped = (values.map fun value => (partners ++ extras).filter fun member =>
-          BagForms.sortBags member == value).flatten from List.flatMap_def]
-        refine mem_chooseGroups ?_
-        rw [List.forall₂_map_left_iff, List.forall₂_map_right_iff]
-        refine List.forall₂_same.mpr fun value valueMember => mem_groupChoices ?_ ?_ ?_
-        · obtain ⟨term, termMember, termIs⟩ := List.mem_map.mp ((arrange_mem _).mp valueMember)
-          rcases List.mem_append.mp (split.subset termMember) with inMatched | inRemaining
-          · obtain ⟨partner, partnerMember, listed⟩ := exists_left_of_forall₂ partnersListed term inMatched
-            refine List.ne_nil_of_mem (List.mem_filter.mpr ⟨List.mem_append_left _ partnerMember, ?_⟩)
-            rw [memberPresentations_class (sortIdem term) listed, termIs]
-            exact beq_self_eq_true _
-          · have inExtras : value ∈ extras := (arrange_mem _).mpr (termIs ▸ List.mem_map_of_mem inRemaining)
-            refine List.ne_nil_of_mem (List.mem_filter.mpr ⟨List.mem_append_right _ inExtras, ?_⟩)
-            rw [extrasCanonical value inExtras]
-            exact beq_self_eq_true _
-        · rw [List.filter_append, List.length_append]
-          have partnersShort := List.length_filter_le (fun member => BagForms.sortBags member == value) partners
-          have extrasShort : (extras.filter fun member => BagForms.sortBags member == value).length ≤ 1 := by
-            have filtered : (extras.filter fun member => BagForms.sortBags member == value) =
-                extras.filter fun member => member == value := by
-              apply List.filter_congr
-              intro member inside
-              rw [extrasCanonical member inside]
-            rw [filtered, ← List.count_eq_length_filter]
-            exact List.nodup_iff_count_le_one.mp (List.nodup_dedup _) value
-          rw [length] at partnersShort
-          omega
-        · intro member inside
-          obtain ⟨inList, isValue⟩ := List.mem_filter.mp inside
-          have sameClass : BagForms.sortBags member = value := by simpa using isValue
-          rcases List.mem_append.mp inList with inPartners | inExtras
-          · obtain ⟨term, -, listed⟩ := exists_right_of_forall₂ partnersListed member inPartners
-            rw [← sameClass, memberPresentations_class (sortIdem term) listed]
-            exact listed
-          · rw [← sameClass, extrasCanonical member inExtras]
-            exact List.mem_cons_self
+        exact ⟨grouped, groupedListed, rfl⟩
       have matchedFinal : bindings'' ∈ matchPatternForRule language rule (.collection .hashSet grouped none) := by
         rw [matchPatternForRule_eq_syntactic, leftIs]
         exact matchPattern_iff_matchRel.mpr (.collection (by decide) matched'')
@@ -884,7 +994,7 @@ theorem twoLevel_coherent (lang : TwoLevelSetLanguage language carrier width bou
         mem_listedAt.mpr ⟨_, shown, mem_stepsAt_of_enough (enoughAt_iff.mp complete _ shown) fired⟩,
         fun label => by cases label <;> rfl, ?_⟩
       rw [BagForms.sortBags_eq_canon]
-      exact (BagForms.applyBindingsScoped_same (captureSites rule) (bindingsSame_trans sameBindings sameBindings'') 0
+      exact (BagForms.applyBindingsScoped_same (captureSites rule) sameBindings 0
         rule.right).symm
 
 /-- **Canonical forms for a two-level set language**, for the front door. -/

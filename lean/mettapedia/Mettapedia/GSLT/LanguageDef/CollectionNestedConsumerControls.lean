@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.MeTTaIL.ReferenceStepEquations
+import Mettapedia.OSLF.Framework.GeneralReferenceAgreement
 import Mettapedia.OSLF.MeTTaIL.GeneralExecutionTotalAdmission
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledReadout
 import Mettapedia.Languages.ProcessCalculi.OrientedRho.Module
@@ -773,8 +774,7 @@ theorem any_boxed_instance_to_atomic {permitted : Bool} {items : List Pattern}
   obtain ⟨_, focusEq, boundEq, typeEq⟩ := box_site_fields site
   cases valid with
   | fill origin context bound type declaration atomic target scope typing =>
-      simpa only [focusEq, boundEq, typeEq,
-        ContextualAuthoredEquationExecution.conditionalEvidence] using atomic
+      simpa only [ContextualAuthoredEquationExecution.conditionalEvidence, focusEq, boundEq, typeEq] using atomic
 
 theorem any_boxed_instance_readout {permitted : Bool} {items : List Pattern}
     {site : TypedContextualEquationExecution.Site (environment permitted).language
@@ -791,9 +791,7 @@ theorem any_boxed_instance_readout {permitted : Bool} {items : List Pattern}
   cases valid with
   | fill origin context bound type declaration atomic target scope typing =>
       exact ⟨origin, declaration, context.trans contextEq, bound.trans boundEq,
-        type.trans typeEq, by
-          simpa only [contextEq, ContextualAuthoredEquationExecution.conditionalEvidence]
-            using target⟩
+        type.trans typeEq, by simpa only [ContextualAuthoredEquationExecution.conditionalEvidence, contextEq] using target⟩
 
 theorem atomic_source_open {permitted : Bool} {items : List Pattern}
     {atomic : ConditionalEquationExecution.Receipt}
@@ -2963,6 +2961,28 @@ local cbv_simproc cbv_eval sumSourceStringDecidable (String.decEq _ _) := fun e 
 
 
 
+private theorem source_constructor_refs_regular (label : String) (arguments : List Pattern)
+    (notZip : label ≠ "$zip") (notMap : label ≠ "$map") (notEval : label ≠ "$eval") :
+    Pattern.constructorRefs (.apply label arguments) = (label,arguments.length) :: Pattern.constructorRefsList arguments := by
+  simp only [Pattern.constructorRefs]
+  split <;> simp_all
+
+open Lean Meta in
+local cbv_simproc cbv_eval sourceRegularConstructorRefs (Pattern.constructorRefs (.apply _ _)) := fun e => do
+  let_expr Pattern.constructorRefs pattern := e | return .rfl
+  let_expr Pattern.apply label arguments := pattern | return .rfl
+  let some constructorName := Sym.getStringValue? label | return .rfl
+  if constructorName == "$zip" || constructorName == "$map" || constructorName == "$eval" then return .rfl
+  let notZip ← mkStringLitNeProof constructorName "$zip"
+  let notMap ← mkStringLitNeProof constructorName "$map"
+  let notEval ← mkStringLitNeProof constructorName "$eval"
+  let proof ← mkAppM ``source_constructor_refs_regular #[label,arguments,notZip,notMap,notEval]
+  let proofType ← inferType proof
+  let_expr Eq _ _ result := proofType | return .rfl
+  return .step (← Sym.share result) proof
+
+attribute [local cbv_opaque] String.decEq
+
 /-- The certificate reads the actual lowered sum rule. Its selected source
 is the captured element S, not the residual set or a provider output. -/
 theorem lowered_sum_source :
@@ -3231,6 +3251,329 @@ theorem canonical_bare_sum_origin_refused {trace : List EquationalScopedReceipts
 #print axioms actual_expanded_sum_reference
 #print axioms actual_quotient_sum_step
 #print axioms canonical_bare_sum_origin_refused
+
+
+
+def proc : TypeExpr := .base "Proc"
+
+/-- Only the operational fields are projected. The actual rule binding
+packet remains in the original row and is not replaced by this readout. -/
+theorem lowered_sum_fields :
+    (language.rewrites[1]?).map (fun rule =>
+      (rule.name,rule.typeContext,rule.left,rule.right,rule.premises)) =
+      some ("RSum",[("S",proc),("rest",.collection .hashSet proc),("T",proc)],
+        .collection .hashSet [.fvar "S"] (some "rest"),
+        .collection .hashSet [.fvar "T"] (some "rest"),
+        [.congruence (.fvar "S") (.fvar "T")]) := by cbv
+
+#print axioms lowered_sum_fields
+
+/-- The independent later child declaration is read at its original
+ordinal. Its original binding packet remains in the selected row. -/
+theorem lowered_div_fields :
+    (language.rewrites[2]?).map (fun rule =>
+      (rule.name,rule.typeContext,rule.left,rule.right,rule.premises)) =
+      some ("RDiv",[],Pattern.apply "PChaos" [],Pattern.apply "PChaos" [],[]) := by cbv
+
+#print axioms lowered_div_fields
+
+def declaredCollectionRoles : List (String × CollType × TypeExpr) :=
+  language.terms.filterMap fun rule =>
+    match rule.bareParams with
+    | [.simple _ (.collection kind element)] => some (rule.category,kind,element)
+    | _ => none
+
+/-- The complete actual grammar has exactly these two bare collection
+roles. Other declaration fields remain in the original grammar records. -/
+theorem declared_collection_roles : declaredCollectionRoles =
+    [("Proc",.hashBag,proc),("Proc",.hashSet,proc)] := by cbv
+
+#print axioms declared_collection_roles
+
+/-- The actual chaos declaration supplies the empty argument spine of
+the RDiv source and target. The complete source grammar remains unchanged. -/
+theorem chaos_grammar_role :
+    (language.terms.find? fun rule => rule.label == "PChaos").map
+      (fun rule => (rule.label,rule.category,rule.params,rule.bareParams)) =
+      some ("PChaos","Proc",[],[]) := by cbv
+
+#print axioms chaos_grammar_role
+
+/-- Core construction already retains its validator proof. Whether this
+actual core has any declaration is established independently. -/
+theorem language_valid : language.validate = [] := by
+  unfold language Mettapedia.Languages.ProcessCalculi.OrientedRho.core
+  generalize lowered : Mettapedia.Languages.ProcessCalculi.OrientedRho.language.toCore = result
+  cases result with
+  | error error => cbv
+  | ok core =>
+      change core.language.validate = []
+      have checked := core.core
+      simp only [CoreReduction.isCore,Bool.and_eq_true] at checked
+      exact List.isEmpty_iff.mp checked.1.1
+
+#print axioms language_valid
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open _root_.Mettapedia.OSLF.MeTTaIL.Match GeneralFirstOrderProjection
+open Mettapedia.OSLF.Framework.GeneralCanonicalAgreement QuantifiedReference
+
+attribute [local cbv_opaque] language
+
+/-- The selected actual binding packet is retained as a parameter. -/
+def sumRuleWith (binding : Option RuleBindingSpec) : RewriteRule where
+  «name» := "RSum"
+  typeContext := [("S",proc),("rest",.collection .hashSet proc),("T",proc)]
+  premises := [.congruence (.fvar "S") (.fvar "T")]
+  left := .collection .hashSet [.fvar "S"] (some "rest")
+  right := .collection .hashSet [.fvar "T"] (some "rest")
+  bindings := binding
+
+def divRuleWith (binding : Option RuleBindingSpec) : RewriteRule where
+  «name» := "RDiv"
+  typeContext := []
+  premises := []
+  left := chaos
+  right := chaos
+  bindings := binding
+
+theorem actual_sum_template : ∃ binding,language.rewrites[1]? = some (sumRuleWith binding) := by
+  obtain ⟨row,declared,shape⟩ := Option.map_eq_some_iff.mp lowered_sum_fields
+  rcases row with ⟨ruleName,context,premises,left,right,binding⟩
+  simp only [Prod.mk.injEq] at shape
+  obtain ⟨rfl,rfl,rfl,rfl,rfl⟩ := shape
+  exact ⟨binding,declared⟩
+
+theorem actual_div_template : ∃ binding,language.rewrites[2]? = some (divRuleWith binding) := by
+  obtain ⟨row,declared,shape⟩ := Option.map_eq_some_iff.mp lowered_div_fields
+  rcases row with ⟨ruleName,context,premises,left,right,binding⟩
+  simp only [Prod.mk.injEq] at shape
+  obtain ⟨rfl,rfl,rfl,rfl,rfl⟩ := shape
+  exact ⟨binding,declared⟩
+
+/-- The original consumer enumerates each actual source row's specification
+at the same ordinal. The lookup uses that real enumeration. -/
+theorem specification_of_declared {index : Nat} {rule : RewriteRule}
+    (declared : language.rewrites[index]? = some rule) :
+    GeneralPremise.specification? environment index = some (GeneralRuleBindingInference.inferredSpec rule) := by
+  have member : (rule,index) ∈ language.rewrites.zipIdx := List.mk_mem_zipIdx_iff_getElem?.mpr declared
+  have mapped : (index,GeneralRuleBindingInference.inferredSpec rule) ∈ environment.specifications :=
+    List.mem_map.mpr ⟨(rule,index),member,rfl⟩
+  cases found : environment.specifications.find? (fun entry => entry.1 == index) with
+  | none =>
+      have rejected := List.find?_eq_none.mp found _ mapped
+      exact False.elim (rejected (beq_self_eq_true _))
+  | some entry =>
+      have chosen := List.mem_of_find?_eq_some found
+      change entry ∈ language.rewrites.zipIdx.map (fun (row,ordinal) =>
+        (ordinal,GeneralRuleBindingInference.inferredSpec row)) at chosen
+      obtain ⟨⟨actual,ordinal⟩,position,rfl⟩ := List.mem_map.mp chosen
+      have sameOrdinal : ordinal = index := by simpa only [beq_iff_eq] using List.find?_some found
+      subst ordinal
+      have actualPosition := List.mk_mem_zipIdx_iff_getElem?.mp position
+      have sameRule : actual = rule := Option.some.inj (actualPosition.symm.trans declared)
+      subst actual
+      simp only [GeneralPremise.specification?,found,Option.map_some]
+
+private theorem collection_element_role {rule : GrammarRule} {parameter : String}
+    {kind : CollType} {element : TypeExpr} (member : rule ∈ language.terms)
+    (shape : rule.bareParams = [.simple parameter (.collection kind element)]) : element = proc := by
+  have present : (rule.category,kind,element) ∈ declaredCollectionRoles :=
+    List.mem_filterMap.mpr ⟨rule,member,by simp only [shape]⟩
+  rw [declared_collection_roles] at present
+  rcases List.mem_cons.mp present with first | rest
+  · exact congrArg (fun entry : String × CollType × TypeExpr => entry.2.2) first
+  · rcases List.mem_cons.mp rest with second | impossible
+    · exact congrArg (fun entry : String × CollType × TypeExpr => entry.2.2) second
+    · cases impossible
+
+theorem actual_collection_choices : CollectionChoiceDeterministic language := by
+  intro left right leftName rightName kind leftElement rightElement leftMember rightMember leftShape rightShape _
+  exact (collection_element_role leftMember leftShape).trans (collection_element_role rightMember rightShape).symm
+
+private theorem actual_set_constructor : ∃ (rule : GrammarRule) (parameter : String),
+    rule ∈ language.terms ∧ rule.bareParams = [.simple parameter (.collection .hashSet proc)] ∧
+      rule.category = "Proc" := by
+  have present : ("Proc",CollType.hashSet,proc) ∈ declaredCollectionRoles := by
+    rw [declared_collection_roles]
+    exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+  obtain ⟨rule,member,selected⟩ := List.mem_filterMap.mp present
+  split at selected <;> try cases selected
+  rename_i parameter kind element shape
+  simp only [Option.some.injEq,Prod.mk.injEq] at selected
+  obtain ⟨category,rfl,rfl⟩ := selected
+  exact ⟨rule,parameter,member,shape,category⟩
+
+private theorem set_schema_role {free : FreeTypeContext} {bound : List TypeExpr}
+    {items : List Pattern} {rest : Option String}
+    (itemsTyped : Mettapedia.GSLT.LanguageDef.RestAwareTyping.ElementsHaveType language free bound items proc)
+    (residual : Mettapedia.GSLT.LanguageDef.RestAwareTyping.RestHasType free .hashSet proc rest) :
+    Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType language free bound (.collection .hashSet items rest) proc := by
+  obtain ⟨rule,parameter,member,shape,category⟩ := actual_set_constructor
+  have typed := Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType.collectionConstructor member shape itemsTyped residual
+  simpa only [category,proc] using typed
+
+private theorem sum_schema_role {free : FreeTypeContext} {bound : List TypeExpr} {captureName rest : String}
+    (value : free captureName = some proc) (residual : free rest = some (.collection .hashSet proc)) :
+    Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType language free bound
+      (.collection .hashSet [.fvar captureName] (some rest)) proc :=
+  set_schema_role (.cons (.fvar value) (.nil bound proc)) residual
+
+private theorem chaos_schema_role (free : FreeTypeContext) (bound : List TypeExpr) :
+    Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType language free bound chaos proc := by
+  obtain ⟨rule,declared,shape⟩ := Option.map_eq_some_iff.mp chaos_grammar_role
+  have member : rule ∈ language.terms := List.mem_of_find?_eq_some declared
+  simp only [Prod.mk.injEq] at shape
+  obtain ⟨label,category,parameterRows,bare⟩ := shape
+  have ordinary : ¬ UsesBareCollection rule := by
+    rintro ⟨constructorName,kind,element,asCollection⟩
+    rw [bare] at asCollection
+    cases asCollection
+  have arguments : Mettapedia.GSLT.LanguageDef.RestAwareTyping.ArgumentsHaveTypes
+      language free bound [] rule.params := by rw [parameterRows]; exact .nil
+  have typed := Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType.constructor member ordinary arguments
+  simpa only [label,category,chaos,proc] using typed
+
+theorem sum_inverse_row {binding : Option RuleBindingSpec}
+    (declared : language.rewrites[1]? = some (sumRuleWith binding)) :
+    DirectedInverseRow (fun schema => binderFree schema = true) environment proc 1
+      (sumRuleWith binding) (GeneralRuleBindingInference.inferredSpec (sumRuleWith binding)) := by
+  refine ⟨specification_of_declared declared,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_⟩
+  · cbv
+  · cbv
+  · change (["S","rest","T"] : List String).Nodup
+    decide +kernel
+  · cbv
+  · cbv
+  · exact sum_schema_role (by cbv) (by cbv)
+  · exact sum_schema_role (by cbv) (by cbv)
+  · intro premise member
+    cases (show premise = .congruence (.fvar "S") (.fvar "T") from List.mem_singleton.mp member)
+    exact .step rfl rfl
+  · intro premise member
+    cases (show premise = .congruence (.fvar "S") (.fvar "T") from List.mem_singleton.mp member)
+    trivial
+  · cbv
+  · cbv
+  · cbv
+
+theorem div_inverse_row {binding : Option RuleBindingSpec}
+    (declared : language.rewrites[2]? = some (divRuleWith binding)) :
+    DirectedInverseRow (fun schema => binderFree schema = true) environment proc 2
+      (divRuleWith binding) (GeneralRuleBindingInference.inferredSpec (divRuleWith binding)) := by
+  refine ⟨specification_of_declared declared,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_⟩
+  · cbv
+  · cbv
+  · change ([] : List String).Nodup
+    exact .nil
+  · cbv
+  · cbv
+  · exact chaos_schema_role _ _
+  · exact chaos_schema_role _ _
+  · intro premise member; cases member
+  · intro premise member; cases member
+  · cbv
+  · cbv
+  · cbv
+
+/-- Primitive row and child-source roles establish eligibility for the
+existing authored witness; no child firing or target typing is assumed. -/
+theorem actual_expanded_sum_eligible :
+    DirectedInverseEligibility.Step (fun schema => binderFree schema = true) environment proc
+      (.rule 1 [("rest",sum []),("S",chaos)]
+        [.premiseStep (.rule 2 [] []) chaos [("T",chaos)]
+          [("T",chaos),("rest",sum []),("S",chaos)]]) := by
+  obtain ⟨sumBinding,sumDeclared⟩ := actual_sum_template
+  obtain ⟨divBinding,divDeclared⟩ := actual_div_template
+  apply DirectedInverseEligibility.Step.rule (rule := sumRuleWith sumBinding)
+    (spec := GeneralRuleBindingInference.inferredSpec (sumRuleWith sumBinding)) sumDeclared (sum_inverse_row sumDeclared)
+  apply DirectedInverseEligibility.Premises.cons
+  · apply DirectedInverseEligibility.OnePremise.step (type := proc)
+    · cbv
+    · exact .rule divDeclared (div_inverse_row divDeclared) .nil
+  · exact .nil
+
+#print axioms actual_sum_template
+#print axioms actual_div_template
+#print axioms specification_of_declared
+#print axioms actual_collection_choices
+#print axioms sum_inverse_row
+#print axioms div_inverse_row
+#print axioms actual_expanded_sum_eligible
+
+
+/-- Source typing is derived from the actual selected constructors and
+collection role, independently of the reference step's conclusion. -/
+theorem actual_expanded_source_open :
+    OpenPatternWellSorted language environment.free [] proc (sum [chaos]) := by
+  refine ⟨?_,?_,?_,?_⟩
+  · exact (set_schema_role (.cons (chaos_schema_role _ _) (.nil [] proc)) (by trivial)).forget
+  · decide +kernel
+  · decide +kernel
+  · change (sum [chaos]).isWellScopedAt 0 = true
+    decide +kernel
+
+private theorem actual_provider_closed :
+    GeneralPremise.checkProviderClosed language environment.free environment.provider = true := by rfl
+
+/-- The original authored RSum witness and its real later RDiv child now
+reconstruct one actual typed firing with complete ordered premise history. -/
+theorem actual_expanded_sum_reconstructed : ∃ trace captured completed history,
+    GeneralPremise.RootFiring environment [] proc (sum [chaos]) 1 trace captured completed history (sum [chaos]) := by
+  obtain ⟨index,initial,children,trace,captured,completed,history,same,fired⟩ :=
+    directed_root_fromReference_recursive Engine.RelationEnv.empty (ReadsProvider.empty _)
+      language_valid actual_collection_choices actual_provider_closed actual_expanded_sum_eligible
+      actual_expanded_source_open actual_expanded_sum_reference
+  have ordinal := congrArg (fun witness : ReferenceStep.Witness =>
+    match witness with | .rule actual _ _ => actual | _ => 0) same
+  change 1 = index at ordinal
+  subst index
+  exact ⟨trace,captured,completed,history,fired⟩
+
+/-- The same reconstructed source occurrence is published by the existing
+ordinary retained scheduler, with every matching and premise field intact. -/
+theorem actual_expanded_sum_retained_receipt :
+    ∃ trace captured completed history,
+      GeneralPremise.RootFiring environment [] proc (sum [chaos]) 1
+        trace captured completed history (sum [chaos]) ∧
+      ∃ answer ∈ StructuralDescent.Scheduled.receipts
+          (StructuralDescent.Scheduled.finishSource environment [] proc (sum [chaos])),
+        answer.index = 1 ∧ answer.trace = trace ∧ answer.captured = captured ∧
+        answer.completed = completed ∧ answer.history = history ∧ answer.target = sum [chaos] := by
+  obtain ⟨trace,captured,completed,history,fired⟩ := actual_expanded_sum_reconstructed
+  exact ⟨trace,captured,completed,history,fired,
+    (ordinary_complete_receipts [] proc (sum [chaos]) 1 trace captured completed history (sum [chaos])).mpr fired⟩
+
+theorem actual_sum_missing_child_refused : ¬ ReferenceStep.StepValid Engine.RelationEnv.empty language
+    (sum [chaos]) (.rule 1 [("rest",sum []),("S",chaos)] []) (sum [chaos]) := by
+  have absent : ∀ target,¬ ReferenceStep.StepValid Engine.RelationEnv.empty language
+      (sum [chaos]) (.rule 1 [("rest",sum []),("S",chaos)] []) target := by
+    intro target held
+    obtain ⟨binding,selected⟩ := actual_sum_template
+    cases held with
+    | @rule _ _ rule _ _ _ declared _ premises =>
+      have same : rule = sumRuleWith binding := Option.some.inj (declared.symm.trans selected)
+      subst rule
+      cases premises
+  exact absent _
+
+theorem actual_sum_wrong_conclusion_refused : ¬ ReferenceStep.StepValid Engine.RelationEnv.empty language
+    (sum [chaos])
+      (.rule 1 [("rest",sum []),("S",chaos)]
+        [.premiseStep (.rule 2 [] []) chaos [("T",chaos)]
+          [("T",chaos),("rest",sum []),("S",chaos)]]) (sum [zero]) := by
+  intro held
+  have wrong := (ReferenceStep.checkStep_eq_some_iff _ _ _).mpr held
+  have expected := (ReferenceStep.checkStep_eq_some_iff _ _ _).mpr actual_expanded_sum_reference
+  have same := Option.some.inj (expected.symm.trans wrong)
+  have distinct : sum [chaos] ≠ sum [zero] := by decide +kernel
+  exact distinct same
+
+#print axioms actual_expanded_source_open
+#print axioms actual_provider_closed
+#print axioms actual_expanded_sum_reconstructed
+#print axioms actual_expanded_sum_retained_receipt
+#print axioms actual_sum_missing_child_refused
+#print axioms actual_sum_wrong_conclusion_refused
 
 end Mettapedia.GSLT.LanguageDef.CollectionNestedConsumerControls.ActualSum
 

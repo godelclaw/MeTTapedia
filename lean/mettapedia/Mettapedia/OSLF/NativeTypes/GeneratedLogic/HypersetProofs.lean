@@ -76,7 +76,7 @@ def Formula.graphFragment : {n : ℕ} → Formula n → Bool
   | _, .top | _, .bot | _, .var _ => true
   | _, .and left right | _, .or left right => Formula.graphFragment left && Formula.graphFragment right
   | _, .mu inner | _, .nu inner => Formula.graphFragment inner
-  | _, .possibly _ inner | _, .necessarily _ inner => Formula.graphFragment inner
+  | _, .possibly label inner | _, .necessarily label inner => !label.isContext && Formula.graphFragment inner
   | _, _ => false
 
 /-- **A native type of the graph, about the set term `x`**: a step is an edge to some set, and the fixed points are
@@ -141,7 +141,8 @@ theorem subst_graphFormula {Γ Γ' : Ctx Unit} (θ : Subst Symbol Γ Γ') :
       Mettapedia.Logic.HOL.subst_weaken]
     rfl
   | _, .possibly label inner, fragment, x, env => by
-    simp only [Formula.graphFragment] at fragment
+    simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+    replace fragment := fragment.2
     by_cases labelled : memberLabel label
     · simp only [graphFormula, if_pos labelled, subst_existentialInline, subst_conjunctionFormula,
         subst_edgeFormula, subst_graphFormula (Subst.lift θ) inner fragment, subst_underElement,
@@ -150,7 +151,8 @@ theorem subst_graphFormula {Γ Γ' : Ctx Unit} (θ : Subst Symbol Γ Γ') :
     · simp only [graphFormula, if_neg labelled]
       rfl
   | _, .necessarily label inner, fragment, x, env => by
-    simp only [Formula.graphFragment] at fragment
+    simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+    replace fragment := fragment.2
     by_cases labelled : memberLabel label
     · simp only [graphFormula, if_pos labelled, subst, subst_edgeFormula,
         subst_graphFormula (Subst.lift θ) inner fragment, subst_underElement, Mettapedia.Logic.HOL.subst_weaken]
@@ -518,7 +520,9 @@ def proveGraph : ∀ {n : ℕ} (formula : Formula n), Formula.graphFragment form
         (Proof.cast (instantiate_someCode coding chosen x).symm ?_)
       exact someCodeIntro coding described chosen ((chosenIff node).mpr holds)
   | _, .possibly label inner, fragment, Γ, Δ, laws, env, decision, know, node, holds, x, coreX, described => by
-    have fragmentInner : Formula.graphFragment inner = true := fragment
+    have fragmentInner : Formula.graphFragment inner = true := by
+      simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+      exact fragment.2
     have found : ∃ next ∈ graphNodes graph,
         (graph.finite.step node label next && graph.finite.eval decision inner next) = true := by
       have any : (graph.finite.elements.any fun next => graph.finite.step node label next &&
@@ -539,7 +543,9 @@ def proveGraph : ∀ {n : ℕ} (formula : Formula n), Formula.graphFragment form
     · exact proveGraph inner fragmentInner laws env decision know next chosen.2 _ (isCore_witness _)
         (describesSomeOfTerm laws codeHolds (describedWitness laws _ codeHolds))
   | _, .necessarily label inner, fragment, Γ, Δ, laws, env, decision, know, node, holds, x, coreX, described => by
-    have fragmentInner : Formula.graphFragment inner = true := fragment
+    have fragmentInner : Formula.graphFragment inner = true := by
+      simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+      exact fragment.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show graphFormula coding (.necessarily label inner) x env = .all (σ := setTy)
         (.imp (edgeFormula coding (graphEdges graph) (weaken x) (.var .vz)) (graphFormula coding inner (.var .vz)
@@ -729,7 +735,9 @@ def refuteGraph : ∀ {n : ℕ} (formula : Formula n), Formula.graphFragment for
     exact .impE (useRefuses (stages _ node fails) (describesSomeUnder (described.prepend _) predTy _))
       (conjunctionRight (Proof.newest _))
   | _, .possibly label inner, fragment, Γ, Δ, laws, env, decision, refuse, node, fails, x, coreX, described => by
-    have fragmentInner : Formula.graphFragment inner = true := fragment
+    have fragmentInner : Formula.graphFragment inner = true := by
+      simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+      exact fragment.2
     refine if labelled : memberLabel label then ?_ else ?_
     · rw [show graphFormula coding (.possibly label inner) x env = existentialInline (σ := setTy) (conjunctionFormula
         (edgeFormula coding (graphEdges graph) (weaken x) (.var .vz)) (graphFormula coding inner (.var .vz)
@@ -756,7 +764,9 @@ def refuteGraph : ∀ {n : ℕ} (formula : Formula n), Formula.graphFragment for
     · rw [show graphFormula coding (.possibly label inner) x env = falsity by simp only [graphFormula, if_neg labelled]]
       exact .impI (Proof.newest _)
   | _, .necessarily label inner, fragment, Γ, Δ, laws, env, decision, refuse, node, fails, x, coreX, described => by
-    have fragmentInner : Formula.graphFragment inner = true := fragment
+    have fragmentInner : Formula.graphFragment inner = true := by
+      simp only [Formula.graphFragment, Bool.and_eq_true] at fragment
+      exact fragment.2
     have some' : ∃ next ∈ graphNodes graph,
         (graph.finite.step node label next && !graph.finite.eval decision inner next) = true := by
       have notAll : (graph.finite.elements.all fun next => !graph.finite.step node label next ||

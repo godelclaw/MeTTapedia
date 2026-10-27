@@ -77,7 +77,7 @@ def startCode (environment : Environment) (source : Source) (fuel : Nat) : Atom 
   resumeCode environment source
     (stateTerm (Scheduled.begin environment source.bound source.type source.term)) fuel
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 800000 in
 theorem readout_returns (state : Effects.State) (environment : Environment) (source : Source)
     (snapshot : Snapshot environment source) (code : Atom)
     (returns : PureReturns descentLibrary.runtime [] state code state (descentStateValue snapshot)) :

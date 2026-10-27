@@ -95,7 +95,7 @@ theorem ask_abd_part_fires_answer :
   decide +kernel
 
 /-- **The front door with the parts decider proves that a part of `{A, B, D}` fires.** -/
-theorem ask_abd_part_fires : Petri.sat Env.closed partFires abd := askWith_proved ask_abd_part_fires_answer
+theorem ask_abd_part_fires : Petri.sat Env.closed partFires abd := askWith_proved (by rfl) ask_abd_part_fires_answer
 
 theorem ask_ad_no_part_fires_answer :
     askWith RelationEnv.empty petriSignature petriCore 2 partFires ad petriPartsDecider none 2 (some petriForms) =
@@ -103,7 +103,7 @@ theorem ask_ad_no_part_fires_answer :
   decide +kernel
 
 /-- **And refutes it for `{A, D}`.** -/
-theorem ask_ad_no_part_fires : ¬ Petri.sat Env.closed partFires ad := askWith_refuted ask_ad_no_part_fires_answer
+theorem ask_ad_no_part_fires : ¬ Petri.sat Env.closed partFires ad := askWith_refuted (by rfl) ask_ad_no_part_fires_answer
 
 /-- **Without the parts decider the front door leaves the split open.** -/
 theorem ask_abd_open_without_parts :

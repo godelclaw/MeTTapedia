@@ -1,5 +1,5 @@
 import Mettapedia.InformationTheory.ShannonEntropy.Interface
-import KnuthSkilling.Information.DivergenceMathlib
+import KnuthSkilling.Information.InformationEntropyMathlib
 import Mathlib.MeasureTheory.Measure.Count
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.Integral.Lebesgue.Countable
@@ -55,8 +55,8 @@ H(p) = -Σ pᵢ log pᵢ = ∫ (-log(dμ_p/d(counting))) dμ_p
 
 Faddeev's characterization determines the finite entropy formula. The finite
 probability-measure construction identifies this formula with integration
-against counting measure. The KL bridge separately identifies the finite
-log-ratio sum with mathlib's `klDiv` under the stated support hypothesis.
+against counting measure. The extended KL bridge applies to all finite probability vectors. Its real-valued
+log-ratio identity separately retains the stated support hypothesis.
 
 -/
 
@@ -223,7 +223,8 @@ theorem shannonEntropy_as_lintegral {n : ℕ} (p : ProbVec n) :
 
 /-! ## KL Divergence: Discrete = Measure-Theoretic
 
-The discrete KL divergence equals mathlib's klDiv on the corresponding measures. -/
+Extended discrete KL equals Mathlib's KL on the corresponding measures without
+support restrictions. The real-valued identity below retains its support premise. -/
 
 /-- **KL divergence equality**: The discrete formula equals mathlib's measure-theoretic klDiv.
 
@@ -236,109 +237,28 @@ theorem klDivergence_eq_mathlib_klDiv {n : ℕ} (P Q : ProbVec n)
     (hQ_pos : ∀ i, P.1 i ≠ 0 → 0 < Q.1 i) :
     klDivergenceVec P Q hQ_pos =
       (InformationTheory.klDiv P.toFinMeasure Q.toFinMeasure).toReal := by
-  classical
-  -- Abbreviate the weight functions.
-  let w : Fin n → ℝ := fun i => P.1 i
-  let u : Fin n → ℝ := fun i => Q.1 i
+  have h := ProbDist.klDiv_toMeasureTop_eq_of_support_pos P.toProbDist Q.toProbDist hQ_pos
+  have hn := klDivergenceVec_nonneg P Q hQ_pos
+  have hreal := congrArg ENNReal.toReal h
+  change (InformationTheory.klDiv P.toFinMeasure Q.toFinMeasure).toReal =
+    (ENNReal.ofReal (klDivergenceVec P Q hQ_pos)).toReal at hreal
+  rw [ENNReal.toReal_ofReal hn] at hreal
+  exact hreal.symm
 
-  have hw : ∀ i, 0 ≤ w i := fun i => P.nonneg i
-  have hu : ∀ i, 0 ≤ u i := fun i => Q.nonneg i
-  have hSupport : ∀ i, w i ≠ 0 → 0 < u i := by
-    intro i hi
-    simpa [w, u] using hQ_pos i hi
+/-- Extended finite KL agrees without a support premise; singular pairs retain infinity. -/
+theorem klDivergenceVecTop_eq_mathlib_klDiv {n : ℕ} (P Q : ProbVec n) :
+    klDivergenceVecTop P Q = InformationTheory.klDiv P.toFinMeasure Q.toFinMeasure := by
+  simpa only [klDivergenceVecTop, ProbDist.toMeasureTop,
+    KnuthSkilling.Information.Divergence.Countable.toMeasure, ProbVec.toProbDist, ProbVec.toFinMeasure] using
+    (ProbDist.klDiv_toMeasureTop_eq_klDivergenceTop P.toProbDist Q.toProbDist).symm
 
-  have hw_sum : Summable w := by
-    classical
-    refine summable_of_hasFiniteSupport ?_
-    exact (Set.finite_univ.subset (Set.subset_univ _))
-  have hu_sum : Summable u := by
-    classical
-    refine summable_of_hasFiniteSupport ?_
-    exact (Set.finite_univ.subset (Set.subset_univ _))
-  have hSum :
-      Summable (fun i : Fin n =>
-        KnuthSkilling.Information.Divergence.atomDivergenceExt (w i)
-            (u i)) :=
-    by
-      classical
-      refine summable_of_hasFiniteSupport ?_
-      exact (Set.finite_univ.subset (Set.subset_univ _))
-
-  -- Bridge: `klDiv` of the corresponding discrete measures is the (real) divergence sum.
-  have hkl :
-      InformationTheory.klDiv P.toFinMeasure Q.toFinMeasure =
-        ENNReal.ofReal
-          (KnuthSkilling.Information.Divergence.Countable.divergenceInfCountable
-            (α := Fin n) w u) := by
-    simpa [KnuthSkilling.Information.Divergence.Countable.toMeasure,
-      ProbVec.toFinMeasure, w, u]
-      using
-        (KnuthSkilling.Information.Divergence.Countable.klDiv_toMeasure_eq_ofReal_divergenceInfCountable
-          (α := Fin n) (w := w) (u := u) hw hu hSupport hw_sum hu_sum hSum)
-
-  -- Unfold `klDivergenceVec` to the usual finite KL sum.
-  have hKLsum :
-      klDivergenceVec P Q hQ_pos = ∑ i : Fin n, w i * log (w i / u i) := by
-    simp [klDivergenceVec, ProbVec.toProbDist,
-      KnuthSkilling.Information.InformationEntropy.klDivergence, w, u]
-
-  -- On a finite type, the divergence sum collapses to KL after canceling `∑ u - ∑ w = 0`.
-  have hdiv :
-      KnuthSkilling.Information.Divergence.Countable.divergenceInfCountable
-          (α := Fin n) w u
-        = ∑ i : Fin n, w i * log (w i / u i) := by
-    -- Expand the `tsum` into a finite sum.
-    rw [KnuthSkilling.Information.Divergence.Countable.divergenceInfCountable,
-      tsum_fintype]
-    -- Rewrite each term `atomDivergenceExt` into the explicit formula.
-    have hterm : ∀ i : Fin n,
-        KnuthSkilling.Information.Divergence.atomDivergenceExt (w i)
-            (u i) =
-          u i - w i + w i * log (w i / u i) := by
-      intro i
-      by_cases hwi : w i = 0 <;>
-        simp [KnuthSkilling.Information.Divergence.atomDivergenceExt,
-          hwi]
-    have hQsum : (∑ i : Fin n, u i) = 1 := by simpa [u] using Q.sum_eq_one
-    have hPsum : (∑ i : Fin n, w i) = 1 := by simpa [w] using P.sum_eq_one
-    calc
-      (∑ i : Fin n,
-            KnuthSkilling.Information.Divergence.atomDivergenceExt
-              (w i) (u i))
-          = ∑ i : Fin n, (u i - w i + w i * log (w i / u i)) := by
-            refine Finset.sum_congr rfl ?_
-            intro i _
-            exact hterm i
-      _ = (∑ i : Fin n, (u i - w i)) + ∑ i : Fin n, w i * log (w i / u i) := by
-            -- Split the sum over `+`.
-            rw [Finset.sum_add_distrib]
-      _ = ∑ i : Fin n, w i * log (w i / u i) := by
-            have hcancel : (∑ i : Fin n, (u i - w i)) = 0 := by
-              rw [Finset.sum_sub_distrib, hQsum, hPsum]
-              simp
-            simp [hcancel]
-
-  have hdiv_eq_KL :
-      KnuthSkilling.Information.Divergence.Countable.divergenceInfCountable
-          (α := Fin n) w u
-        = klDivergenceVec P Q hQ_pos := by
-    calc
-      KnuthSkilling.Information.Divergence.Countable.divergenceInfCountable
-            (α := Fin n) w u
-          = ∑ i : Fin n, w i * log (w i / u i) := hdiv
-      _ = klDivergenceVec P Q hQ_pos := by
-          symm
-          exact hKLsum
-
-  have hdiv_nonneg :
-      0 ≤
-        KnuthSkilling.Information.Divergence.Countable.divergenceInfCountable
-          (α := Fin n) w u := by
-    simpa [hdiv_eq_KL] using (klDivergenceVec_nonneg (P := P) (Q := Q) hQ_pos)
-
-  -- Finish: rewrite `klDiv` and take `toReal`.
-  rw [hkl]
-  simpa [ENNReal.toReal_ofReal hdiv_nonneg] using hdiv_eq_KL.symm
+/-- The corrected countable extended sum is the same observation of finite probability vectors. -/
+theorem divergenceInfTop_eq_mathlib_klDiv {n : ℕ} (P Q : ProbVec n) :
+    KnuthSkilling.Information.Divergence.Countable.divergenceInfTop P.1 Q.1 =
+      InformationTheory.klDiv P.toFinMeasure Q.toFinMeasure := by
+  simpa only [KnuthSkilling.Information.Divergence.Countable.toMeasure, ProbVec.toFinMeasure] using
+    (KnuthSkilling.Information.Divergence.Countable.klDiv_toMeasure_eq_divergenceInfTop_all
+      P.1 Q.1 P.nonneg Q.nonneg (hasSum_fintype _).summable (hasSum_fintype _).summable).symm
 
 /-! ## The Complete Picture: Axioms → Measures
 
@@ -365,8 +285,9 @@ theorem axiomatic_equals_measureTheoretic {n : ℕ} (E : FaddeevEntropy) (p : Pr
 
 ```
 LEVEL 4: MEASURE-THEORETIC (Most General)
-  klDiv μ ν = ∫ klFun(dμ/dν) dν
-  Works for any absolutely continuous measures
+  Singular pairs have klDiv μ ν = ∞
+  For finite measures with μ ≪ ν: klDiv μ ν = ∫ klFun(dμ/dν) dν
+  Real finite values additionally require logarithmic integrability
        ↑
        | specialize to counting measure
        |

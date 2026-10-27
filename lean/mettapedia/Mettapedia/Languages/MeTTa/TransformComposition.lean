@@ -20,8 +20,8 @@ first, the reader sees the store after every prefix of the rows and keeps whatev
 * **They agree behind every monotone reader exactly when the sink is monotone**
   (`pipelining_safe_for_sink_iff`): a guarded count needs a barrier before anything reads it.
 
-So a stratum boundary is needed exactly at a non-monotone edge: a full read (absence, `all`, `unique`,
-a count) downstream, or a staged sink upstream.
+So a stratum boundary is needed exactly at a non-monotone edge: a predicate query (absence, `all`,
+`unique`, a count) downstream, or a staged sink upstream.
 
 ## Fusing two rule instances
 

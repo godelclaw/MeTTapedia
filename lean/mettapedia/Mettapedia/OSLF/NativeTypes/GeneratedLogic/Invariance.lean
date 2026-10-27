@@ -132,6 +132,8 @@ theorem sat_mono : ∀ {n : ℕ} (formula : Formula n) {small large : Env Carrie
   | _, .untyped _, _, _, _, _, holds => holds
   | _, .is _, _, _, _, _, holds => holds
   | _, .isNot _, _, _, _, _, holds => holds
+  | _, .inRelation _, _, _, _, _, holds => holds
+  | _, .notInRelation _, _, _, _, _, holds => holds
   | _, .mapsAll argument result, _, _, sub, _, holds => by
     obtain ⟨inner, isBody, every⟩ := holds
     exact ⟨inner, isBody, fun value => (every value).imp (sat_mono argument sub value) (sat_mono result sub _)⟩
@@ -183,6 +185,8 @@ structure Saturated (equivalent : Carrier → Carrier → Prop) : Prop where
   bound : ∀ {first second : Carrier} {index}, equivalent first second → S.bound first index → S.bound second index
   typed : ∀ {first second : Carrier} {type}, equivalent first second → S.typed first type → S.typed second type
   named : ∀ {first second : Carrier} {term}, equivalent first second → S.named first term → S.named second term
+  inRelation : ∀ {first second : Carrier} {relation},
+    equivalent first second → S.inRelation first relation → S.inRelation second relation
 
 variable {S} {equivalent : Carrier → Carrier → Prop}
 
@@ -277,6 +281,9 @@ theorem sat_congr (saturated : S.Saturated equivalent) : ∀ {n : ℕ} (formula 
   | _, .is _, _, _, _, _, related, holds => saturated.named related holds
   | _, .isNot _, _, _, _, _, related, holds => fun isNamed =>
     holds (saturated.named (saturated.equivalence.symm related) isNamed)
+  | _, .inRelation _, _, _, _, _, related, holds => saturated.inRelation related holds
+  | _, .notInRelation _, _, _, _, _, related, holds => fun isIn =>
+    holds (saturated.inRelation (saturated.equivalence.symm related) isIn)
   | _, .mapsAll _ _, _, _, _, _, related, holds => by
     obtain ⟨inner, isBody, every⟩ := holds
     exact ⟨inner, saturated.body related isBody, every⟩
@@ -296,17 +303,18 @@ open Mettapedia.OSLF.MeTTaIL.ReferenceStep
 abbrev IsClosed (pattern : Pattern) : Prop := pattern.isWellScopedAt 0 = true
 
 /-- **Terms a language's structure cannot tell apart**: the same pattern, or object terms equivalent
-modulo the equations that are both closed or both open. -/
-def Indistinct (relEnv : RelationEnv) (language : LanguageDef) (first second : Pattern) : Prop :=
+modulo the equations, in a reading, that are both closed or both open. -/
+def Indistinct (relEnv : RelationEnv) (language : LanguageDef) (reading : LanguageReading) (first second : Pattern) :
+    Prop :=
   first = second ∨
     (IsObject first ∧ IsObject second ∧ (IsClosed first ↔ IsClosed second) ∧
-      ObjectEquivalent relEnv language first second)
+      ObjectEquivalent relEnv language reading first second)
 
 namespace Indistinct
 
-variable {relEnv : RelationEnv} {language : LanguageDef}
+variable {relEnv : RelationEnv} {language : LanguageDef} {reading : LanguageReading}
 
-theorem equivalence : Equivalence (Indistinct relEnv language) where
+theorem equivalence : Equivalence (Indistinct relEnv language reading) where
   refl _ := Or.inl rfl
   symm := by
     rintro first second (rfl | ⟨firstObject, secondObject, closed, equivalent⟩)
@@ -320,19 +328,19 @@ theorem equivalence : Equivalence (Indistinct relEnv language) where
       · exact Or.inr ⟨firstObject, thirdObject, closed.trans closed',
           ObjectEquivalent.equivalence.trans equivalent equivalent'⟩
 
-theorem objectEquivalent {first second : Pattern} (related : Indistinct relEnv language first second) :
-    ObjectEquivalent relEnv language first second := by
+theorem objectEquivalent {first second : Pattern} (related : Indistinct relEnv language reading first second) :
+    ObjectEquivalent relEnv language reading first second := by
   rcases related with rfl | ⟨-, -, -, equivalent⟩
   · exact Relation.EqvGen.refl _
   · exact equivalent
 
-theorem object {first second : Pattern} (related : Indistinct relEnv language first second)
+theorem object {first second : Pattern} (related : Indistinct relEnv language reading first second)
     (object : IsObject first) : IsObject second := by
   rcases related with rfl | ⟨-, secondObject, -, -⟩
   · exact object
   · exact secondObject
 
-theorem state {first second : Pattern} (related : Indistinct relEnv language first second)
+theorem state {first second : Pattern} (related : Indistinct relEnv language reading first second)
     (state : IsState first) : IsState second := by
   rcases related with rfl | ⟨-, secondObject, closed, -⟩
   · exact state
@@ -340,20 +348,22 @@ theorem state {first second : Pattern} (related : Indistinct relEnv language fir
 
 /-- Equivalent states are indistinct. -/
 theorem of_states {first second : Pattern} (firstState : IsState first) (secondState : IsState second)
-    (equivalent : ObjectEquivalent relEnv language first second) : Indistinct relEnv language first second :=
+    (equivalent : ObjectEquivalent relEnv language reading first second) :
+    Indistinct relEnv language reading first second :=
   Or.inr ⟨firstState.2, secondState.2, iff_of_true firstState.1 secondState.1, equivalent⟩
 
 end Indistinct
 
 /-- **A language's structure reads every term modulo its equations.** -/
-theorem referenceStructure_saturated (relEnv : RelationEnv) (language : LanguageDef) :
-    (referenceStructure relEnv language).Saturated (Indistinct relEnv language) := by
-  have equivalence : Equivalence (ObjectEquivalent relEnv language) := ObjectEquivalent.equivalence
-  refine ⟨Indistinct.equivalence, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+theorem referenceStructure_saturated (relEnv : RelationEnv) (language : LanguageDef)
+    (reading : LanguageReading := .syntax) :
+    (referenceStructure relEnv language reading).Saturated (Indistinct relEnv language reading) := by
+  have equivalence : Equivalence (ObjectEquivalent relEnv language reading) := ObjectEquivalent.equivalence
+  refine ⟨Indistinct.equivalence, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rintro first second label next related
       ⟨firstState, nextState, redex, contractum, witness, before, redexState, valid, contractumState, after, admits⟩
     exact ⟨related.state firstState, nextState, redex, contractum, witness,
-      equivalence.trans (equivalence.symm related.objectEquivalent) before, redexState, valid, contractumState, after,
+      before.of_equivalent (equivalence.symm related.objectEquivalent), redexState, valid, contractumState, after,
       admits⟩
   · rintro previous label first second related
       ⟨previousState, firstState, redex, contractum, witness, before, redexState, valid, contractumState, after, admits⟩
@@ -379,23 +389,26 @@ theorem referenceStructure_saturated (relEnv : RelationEnv) (language : Language
       equivalence.trans (equivalence.symm related.objectEquivalent) isRepresentative, isTyped⟩
   · rintro first second term related ⟨object, isNamed⟩
     exact ⟨related.object object, equivalence.trans (equivalence.symm related.objectEquivalent) isNamed⟩
+  · rintro first second relation related ⟨object, representative, isRepresentative, inTuples⟩
+    exact ⟨related.object object, representative,
+      equivalence.trans (equivalence.symm related.objectEquivalent) isRepresentative, inTuples⟩
 
 /-- **Formulas hold alike at terms the structure cannot tell apart.** -/
 theorem sat_respects_indistinct (relEnv : RelationEnv) (language : LanguageDef) (formula : Formula 0)
-    {first second : Pattern} (related : Indistinct relEnv language first second) :
-    (referenceStructure relEnv language).sat Env.closed formula first ↔
-      (referenceStructure relEnv language).sat Env.closed formula second := by
-  have saturated := referenceStructure_saturated relEnv language
+    {reading : LanguageReading} {first second : Pattern} (related : Indistinct relEnv language reading first second) :
+    (referenceStructure relEnv language reading).sat Env.closed formula first ↔
+      (referenceStructure relEnv language reading).sat Env.closed formula second := by
+  have saturated := referenceStructure_saturated relEnv language reading
   exact ⟨NativeStructure.sat_congr saturated formula (Env.respects_closed _) related,
     NativeStructure.sat_congr saturated formula (Env.respects_closed _) (saturated.equivalence.symm related)⟩
 
 /-- **A closed generated formula is a native type of the language modulo its equations**: it holds alike
 at equivalent states. -/
 theorem sat_respects_equivalent (relEnv : RelationEnv) (language : LanguageDef) (formula : Formula 0)
-    {first second : Pattern} (firstState : IsState first) (secondState : IsState second)
-    (equivalent : ObjectEquivalent relEnv language first second) :
-    (referenceStructure relEnv language).sat Env.closed formula first ↔
-      (referenceStructure relEnv language).sat Env.closed formula second :=
+    {reading : LanguageReading} {first second : Pattern} (firstState : IsState first) (secondState : IsState second)
+    (equivalent : ObjectEquivalent relEnv language reading first second) :
+    (referenceStructure relEnv language reading).sat Env.closed formula first ↔
+      (referenceStructure relEnv language reading).sat Env.closed formula second :=
   sat_respects_indistinct relEnv language formula (Indistinct.of_states firstState secondState equivalent)
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic

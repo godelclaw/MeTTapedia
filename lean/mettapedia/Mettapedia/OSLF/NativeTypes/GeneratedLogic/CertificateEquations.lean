@@ -249,23 +249,32 @@ def equationCheck (equation : Equation) : Bool :=
       eval certificate.model (tableValuation certificate.model certificate.elements table) [] equation.left ==
         eval certificate.model (tableValuation certificate.model certificate.elements table) [] equation.right
 
-/-- **The model respects the language's equations**: set joins are idempotent when the language has sets,
-every declared algebra's laws hold, and every authored equation holds. -/
-def equationsValid (language : LanguageDef) : Bool :=
+/-- **The model respects the language's collection laws**: set joins are idempotent when the language has sets, and
+every declared algebra's laws hold. -/
+def collectionLawsValid (language : LanguageDef) : Bool :=
   (!language.usesCollection .hashSet || setIdempotent certificate) &&
   (language.terms.all fun rule =>
     match rule.algebra?, rule.params with
     | some algebra, [.simple _ (.collection kind _)] => algebraLaws certificate kind algebra
-    | _, _ => true) &&
-  language.equations.all (equationCheck certificate)
+    | _, _ => true)
+
+/-- **The model respects the language's equations**: its collection laws, and every authored equation holds. -/
+def equationsValid (language : LanguageDef) : Bool :=
+  collectionLawsValid certificate language && language.equations.all (equationCheck certificate)
 
 end Certificate
 
-/-- **The model respects the language's equations**: equivalent object terms have one value. -/
-def RespectsEquations [DecidableEq A] (certificate : Certificate A) (relEnv : RelationEnv) (language : LanguageDef) :
-    Prop :=
-  ∀ first second, ObjectEquivalent relEnv language first second →
+/-- **The model respects the language's equations**, in a reading: equivalent object terms have one value. -/
+def RespectsEquations [DecidableEq A] (certificate : Certificate A) (relEnv : RelationEnv) (language : LanguageDef)
+    (reading : LanguageReading := .syntax) : Prop :=
+  ∀ first second, ObjectEquivalent relEnv language reading first second →
     value certificate.model first = value certificate.model second
+
+/-- **A model respecting the syntax theory respects every reading**, each being contained in it. -/
+theorem RespectsEquations.reading [DecidableEq A] {certificate : Certificate A} {relEnv : RelationEnv}
+    {language : LanguageDef} (respects : RespectsEquations certificate relEnv language) (reading : LanguageReading) :
+    RespectsEquations certificate relEnv language reading :=
+  fun first second equivalent => respects first second equivalent.toSyntax
 
 /-! ## Each generator keeps the value -/
 
@@ -273,18 +282,31 @@ namespace Certificate
 
 variable [DecidableEq A] {certificate : Certificate A} {language : LanguageDef}
 
+theorem collectionLawsValid_parts (checked : collectionLawsValid certificate language = true) :
+    (language.usesCollection .hashSet = true → setIdempotent certificate = true) ∧
+    (∀ rule ∈ language.terms, ∀ algebra kind name element, rule.algebra? = some algebra →
+      rule.params = [.simple name (.collection kind element)] → algebraLaws certificate kind algebra = true) := by
+  simp only [collectionLawsValid, Bool.and_eq_true, Bool.or_eq_true, Bool.not_eq_true', List.all_eq_true] at checked
+  obtain ⟨sets, algebras⟩ := checked
+  refine ⟨fun uses => sets.resolve_left (by rw [uses]; decide), fun rule member algebra kind name element declared
+    params => ?_⟩
+  have := algebras rule member
+  rw [declared, params] at this
+  exact this
+
+theorem equationsValid_collectionLaws (checked : equationsValid certificate language = true) :
+    collectionLawsValid certificate language = true := by
+  simp only [equationsValid, Bool.and_eq_true] at checked
+  exact checked.1
+
 theorem equationsValid_parts (checked : equationsValid certificate language = true) :
     (language.usesCollection .hashSet = true → setIdempotent certificate = true) ∧
     (∀ rule ∈ language.terms, ∀ algebra kind name element, rule.algebra? = some algebra →
       rule.params = [.simple name (.collection kind element)] → algebraLaws certificate kind algebra = true) ∧
     (∀ equation ∈ language.equations, equationCheck certificate equation = true) := by
-  simp only [equationsValid, Bool.and_eq_true, Bool.or_eq_true, Bool.not_eq_true', List.all_eq_true] at checked
-  obtain ⟨⟨sets, algebras⟩, authored⟩ := checked
-  refine ⟨fun uses => sets.resolve_left (by rw [uses]; decide), fun rule member algebra kind name element declared
-    params => ?_, authored⟩
-  have := algebras rule member
-  rw [declared, params] at this
-  exact this
+  obtain ⟨sets, algebras⟩ := collectionLawsValid_parts (equationsValid_collectionLaws checked)
+  simp only [equationsValid, Bool.and_eq_true, List.all_eq_true] at checked
+  exact ⟨sets, algebras, checked.2⟩
 
 theorem setIdempotent_spec (checked : setIdempotent certificate = true) (first rest : A) :
     certificate.model.collectionJoin .hashSet first (certificate.model.collectionJoin .hashSet first rest) =
@@ -315,13 +337,13 @@ theorem algebraLaws_unit {kind : CollType} {algebra : CollectionAlgebra} {unit :
 
 /-- **The derived collection laws keep the value** at every environment. -/
 theorem derived_eval_eq (contextual : certificate.contextualValid language = true)
-    (equations : equationsValid certificate language = true) {source target : Pattern}
+    (laws : collectionLawsValid certificate language = true) {source target : Pattern}
     (derived : DerivedInstance language source target) (outer : List A) :
     eval certificate.model (stateValuation certificate.model) outer source =
       eval certificate.model (stateValuation certificate.model) outer target := by
   have commutes := Mettapedia.OSLF.Framework.FiniteModels.Certificate.preorder_commutes
     (Mettapedia.OSLF.Framework.FiniteModels.Certificate.contextual_preorder contextual)
-  obtain ⟨sets, algebras, -⟩ := equationsValid_parts equations
+  obtain ⟨sets, algebras⟩ := collectionLawsValid_parts laws
   cases derived with
   | bagPerm declaration _ perm =>
     rw [eval_collection, eval_collection]
@@ -475,7 +497,7 @@ theorem respectsEquations_of_equationsValid [DecidableEq A] {certificate : Certi
           eval certificate.model (stateValuation certificate.model) outer contractum := by
         rcases generator with authored | derived
         · exact Certificate.authored_eval_eq contextual equations authored (object_of_fill context firstObject)
-        · exact Certificate.derived_eval_eq contextual equations derived
+        · exact Certificate.derived_eval_eq contextual (Certificate.equationsValid_collectionLaws equations) derived
       exact eval_fill_congr certificate.model (stateValuation certificate.model) same context []
   | refl => rfl
   | symm _ _ _ previous => exact previous.symm

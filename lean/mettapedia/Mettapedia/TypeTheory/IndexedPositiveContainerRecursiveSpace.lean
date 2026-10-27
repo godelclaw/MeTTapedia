@@ -34,6 +34,38 @@ theorem code_padding_iff (ordered : registry.OrderedFinitary)
       (Code.orderedPositions ordered code shape).length ≤ slot :=
   SlotEncoding.finite_decoded_iff (Code.orderedPositionEquiv ordered code shape).symm slot
 
+theorem code_active_iff (ordered : registry.OrderedFinitary)
+    (code : Code I registry parameters context) {environment : Env I.Value context} {index : I.Index}
+    (shape : Code.Shape code environment index) (slot : Nat) :
+    (∃ position, ((codePresentation ordered code).coding shape).decode slot = some position) ↔
+      slot < (Code.orderedPositions ordered code shape).length := by
+  have absent := code_padding_iff ordered code shape slot
+  constructor
+  · rintro ⟨position, decoded⟩
+    by_contra outside
+    have missing := absent.mpr (Nat.le_of_not_gt outside)
+    rw [missing] at decoded
+    cases decoded
+  · intro inside
+    cases decoded : ((codePresentation ordered code).coding shape).decode slot with
+    | none =>
+        have outside := absent.mp decoded
+        omega
+    | some position => exact ⟨position, rfl⟩
+
+set_option backward.isDefEq.respectTransparency false in
+theorem vector_ordered_length (length : Nat) :
+    (Code.orderedPositions VectorControl.orderedFinitary VectorControl.code (VectorControl.shapeAt length)).length = length := by
+  rw [Code.orderedPositions_length]
+  let := Code.positionFintype VectorControl.orderedFinitary.toFinitary VectorControl.code (VectorControl.shapeAt length)
+  exact (Fintype.card_congr (VectorControl.positionEquiv length)).trans (Fintype.card_fin length)
+
+set_option backward.isDefEq.respectTransparency false in
+theorem vector_active_iff (length slot : Nat) :
+    (∃ position, ((codePresentation VectorControl.orderedFinitary VectorControl.code).coding
+      (VectorControl.shapeAt length)).decode slot = some position) ↔ slot < length := by
+  rw [code_active_iff, vector_ordered_length]
+
 theorem code_position_order (ordered : registry.OrderedFinitary)
     (code : Code I registry parameters context) {environment : Env I.Value context} {index : I.Index}
     (shape : Code.Shape code environment index) (slot : Fin (Code.orderedPositions ordered code shape).length) :

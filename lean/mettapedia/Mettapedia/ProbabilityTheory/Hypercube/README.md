@@ -49,18 +49,12 @@ In this setting:
 See:
 - `Mettapedia/PLN/Evidence/BinaryEvidence.lean` (evidence counts, Heyting/Frame structure, `toStrength`)
 
-### Practical Takeaway
+### Interpretation requirements
 
-When you choose a reasoning calculus, you are choosing (often implicitly) what structure you
-assume about the domain:
-
-- Domains with **total comparability** support **precise point-valued** probability (and hence the
-  usual Bayes/product/sum calculus).
-- Domains with **incomparability** naturally lead to **imprecise / interval** semantics (credal
-  sets) or **evidence-valued** semantics (PLN-style), rather than point probabilities.
-
-This is exactly what the `orderAxis` / `precision` axes in `Basic.lean` are for: they make the
-"domain gate" explicit and machine-checkable.
+Total comparability is necessary for an order-reflecting scalar embedding into
+the reals. It is insufficient for a probability calculus. Partial orders can
+support families of scalar views, interval observations or evidence-valued
+readouts; the preservation laws must be proved for the chosen interpretation.
 
 ## Primary References
 
@@ -142,12 +136,25 @@ The **master probability hypercube**:
 Note: this file classifies Dempster–Shafer/quantum/etc as vertices, but it does *not* implement
 full belief-function combination rules; those belong in separate developments.
 
-#### `KnuthSkilling.lean` + `KnuthSkilling/` (slice modules)
-K&S-focused modules that situate the Appendix A development inside the master hypercube:
-- `KnuthSkilling/Connection.lean`: conceptual bridge to the master `ProbabilityVertex` view
-- `KnuthSkilling/Neighbors.lean`: local neighbor analysis around the `knuthSkilling` vertex
-- `KnuthSkilling/Proofs.lean`: small fully-checked “shape lemmas” (toy derivation graph)
-- `KnuthSkilling/Theory.lean`: K&S-centered theory notes (interval/ℚ/ℝ viewpoints)
+#### `KnuthSkilling.lean` + `KnuthSkilling/`
+
+The canonical representation implementation lives in the standalone
+`KnuthSkilling.*` package. This slice connects it to local observations:
+
+- `Connection.lean`: dependency and interpretation boundaries.
+- `Neighbors.lean`: nonempty calibrated families give point envelopes; an
+  uncalibrated two-scale family and the empty family are separating controls.
+- `Proofs.lean`: conditional commutativity, shrinking intervals and an explicitly
+  authored toy diagram whose edges do not implement model translations.
+- `Theory.lean`: interval arithmetic, finite rational models, normalized event
+  bounds and refinement. Precision alone does not imply additivity.
+- `SequentialSemantics.lean`: standard monoid-homomorphism execution interface,
+  supplied by `Common/OrderedCombination.lean`.
+
+Cox's local `Cox/Regraduation.lean` uses the actual conjunction on `(0,1]` to
+connect multiplicative scales with those additive representations. Certainty
+normalization allows positive powers; an interior calibration fixes the scale.
+Completeness alone does not force point values or a probability-measure model.
 
 #### `Taxonomy.lean` (17 KB)
 **Weakness / generality ordering** for the full hypercube:

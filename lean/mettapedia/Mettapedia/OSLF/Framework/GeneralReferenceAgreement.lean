@@ -13,8 +13,9 @@ Three agreements compose:
 - on an aligned language the least contextual relation is the reference relation
   (`ReferenceStep.contextualStep_iff_step`).
 
-The directed forward bridge also supports recursively binder-free collection schemas, while its
-reverse typing reconstruction remains restricted to the proved first-order profile.
+The directed bridges also support recursively binder-free collection schemas. Primitive caller-role
+and finite-rest certificates support literal inverse reconstruction; a checked uniform carrier
+profile derives eligibility for every valid finite witness in its declared source domain.
 
 So on a first-order profile whose rules are aligned, the general typed semantics is the reference
 relation (`FirstOrderProfile.general_step_iff_reference`). With equations, the canonical operational
@@ -2590,6 +2591,473 @@ theorem directed_step_toReference {Schema : Pattern → Prop} [BinderFreeSyntax 
 #print axioms directed_premise_toReference
 #print axioms directed_elements_toReference
 
+/-- Primitive source-row obligations at one caller fibre. No target typing,
+completed continuation or child/root firing is stored in this certificate. -/
+structure DirectedInverseRow (Schema : Pattern → Prop) (environment : GeneralPremise.Environment)
+    (type : TypeExpr) (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec) : Prop where
+  specified : GeneralPremise.specification? environment index = some spec
+  admitted : admittedFor rule spec = true
+  zero : GeneralPremise.checkZeroDependencies spec = true
+  unique : (rule.typeContext.map Prod.fst).Nodup
+  left : Schema rule.left
+  right : Schema rule.right
+  leftTyped : Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType environment.language
+    (FreeTypeContext.ofList rule.typeContext) [] rule.left type
+  rightTyped : Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType environment.language
+    (FreeTypeContext.ofList rule.typeContext) [] rule.right type
+  premises : ∀ premise ∈ rule.premises,DirectedValidationWith Schema premise
+  inputs : ∀ premise ∈ rule.premises,FirstOrderQueryInputs environment.provider premise
+  flow : GeneralPremise.rulePremisesAdmitted environment.language environment.provider rule spec = true
+  static : (GeneralPremise.Static.premisesFlow environment.language environment.provider rule spec 0
+    (GeneralPremise.Static.initialRefinement rule) rule.premises).supported = true
+  rests : GeneralPremise.namesAvailable
+    (GeneralPremise.Static.premisesFlow environment.language environment.provider rule spec 0
+      (GeneralPremise.Static.initialRefinement rule) rule.premises).refinement.finite
+    (GeneralPremise.restCaptureNames rule.right) = true
+
+namespace DirectedInverseEligibility
+
+mutual
+/-- Source witness eligibility records the actual visited rows and their
+caller roles. The full language and original witness are unchanged. A
+separate profile theorem must establish eligibility for its source domain. -/
+inductive Step (Schema : Pattern → Prop) (environment : GeneralPremise.Environment) :
+    TypeExpr → ReferenceStep.Witness → Prop where
+  | rule {type : TypeExpr} {index : Nat} {rule : RewriteRule} {spec : RuleBindingSpec}
+      {initial : Bindings} {witnesses : List ReferenceStep.Witness}
+      (declared : environment.language.rewrites[index]? = some rule)
+      (row : DirectedInverseRow Schema environment type index rule spec)
+      (premises : Premises Schema environment rule spec 0 rule.premises witnesses) :
+      Step Schema environment type (.rule index initial witnesses)
+
+inductive Premises (Schema : Pattern → Prop) (environment : GeneralPremise.Environment) :
+    RewriteRule → RuleBindingSpec → Nat → List Premise → List ReferenceStep.Witness → Prop where
+  | nil {rule : RewriteRule} {spec : RuleBindingSpec} {index : Nat} :
+      Premises Schema environment rule spec index [] []
+  | cons {rule : RewriteRule} {spec : RuleBindingSpec} {index : Nat} {premise : Premise}
+      {premises : List Premise} {witness : ReferenceStep.Witness} {witnesses : List ReferenceStep.Witness}
+      (head : OnePremise Schema environment rule spec index 0 premise witness)
+      (tail : Premises Schema environment rule spec (index + 1) premises witnesses) :
+      Premises Schema environment rule spec index (premise :: premises) (witness :: witnesses)
+
+inductive OnePremise (Schema : Pattern → Prop) (environment : GeneralPremise.Environment) :
+    RewriteRule → RuleBindingSpec → Nat → Nat → Premise → ReferenceStep.Witness → Prop where
+  | base {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat} {premise : Premise}
+      {result : Bindings} : OnePremise Schema environment rule spec index depth premise (.base result)
+  | step {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat}
+      {source target : Pattern} {type : TypeExpr} {child : ReferenceStep.Witness}
+      {candidate : Pattern} {matched result : Bindings}
+      (typedSource : GeneralPremise.sourceType? environment.language rule source = some type)
+      (childEligible : Step Schema environment type child) :
+      OnePremise Schema environment rule spec index depth (.congruence source target)
+        (.premiseStep child candidate matched result)
+  | quantified {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat}
+      {collection parameter : String} {body : Premise} {witnesses : List ReferenceStep.Witness}
+      (elements : Elements Schema environment rule spec index (depth + 1) body witnesses) :
+      OnePremise Schema environment rule spec index depth (.forAll collection parameter body) (.forAll witnesses)
+
+inductive Elements (Schema : Pattern → Prop) (environment : GeneralPremise.Environment) :
+    RewriteRule → RuleBindingSpec → Nat → Nat → Premise → List ReferenceStep.Witness → Prop where
+  | nil {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat} {body : Premise} :
+      Elements Schema environment rule spec index depth body []
+  | cons {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat} {body : Premise}
+      {witness : ReferenceStep.Witness} {witnesses : List ReferenceStep.Witness}
+      (head : OnePremise Schema environment rule spec index depth body witness)
+      (tail : Elements Schema environment rule spec index depth body witnesses) :
+      Elements Schema environment rule spec index depth body (witness :: witnesses)
+end
+
+end DirectedInverseEligibility
+
+mutual
+/-- Independent reference rule witnesses reconstruct actual typed roots.
+The witness's original rule ordinal is retained, and target typing is earned
+from the declared rule and reconstructed completed bindings. -/
+theorem directed_root_fromReference_recursive_with_bindings {Schema : Pattern → Prop} [BinderFreeSyntax Schema]
+    {environment : GeneralPremise.Environment} (relEnv : Engine.RelationEnv)
+    (reads : ReadsProvider relEnv environment.provider)
+    (valid : environment.language.validate = [])
+    (choices : CollectionChoiceDeterministic environment.language)
+    (providerClosed : GeneralPremise.checkProviderClosed environment.language environment.free environment.provider = true)
+    {source target : Pattern} {witness : ReferenceStep.Witness}
+    {bound : List TypeExpr} {type : TypeExpr}
+    (eligible : DirectedInverseEligibility.Step Schema environment type witness)
+    (sourceTyped : OpenPatternWellSorted environment.language environment.free bound type source)
+    (step : ReferenceStep.StepValid relEnv environment.language source witness target) :
+    ∃ index initial witnesses trace captured completed history,
+      witness = .rule index initial witnesses ∧
+      GeneralPremise.RootFiring environment bound type source index trace captured completed history target ∧
+      ∃ (rule : RewriteRule) (spec : RuleBindingSpec) (referenceFinal : Bindings),
+        environment.language.rewrites[index]? = some rule ∧
+        GeneralPremise.specification? environment index = some spec ∧
+        BindingAgreement rule.left.freeFvarNames captured initial ∧
+        ReferenceStep.PremisesValid relEnv environment.language (ReferenceStep.captureSites rule)
+          initial rule.premises witnesses referenceFinal ∧
+        BindingAgreement (GeneralPremise.premisesFlow environment.language environment.provider
+          rule spec rule.left.freeFvarNames rule.premises).available completed referenceFinal :=
+  match step with
+  | .rule (index := index) (rule := rule) (initial := initial) (final := final) declared matched premises => by
+      cases eligible with
+      | @rule _ _ actualRule spec _ _ actualDeclared row eligiblePremises =>
+        have sameRule := Option.some.inj (actualDeclared.symm.trans declared)
+        subst actualRule
+        rw [ReflectiveCanonical.matchPatternForRule_eq_syntactic] at matched
+        have rawMatched : MatchRel rule.left source initial := matchPattern_sound matched
+        have rawTyped := matching_recursive_captures_typed valid choices (BinderFreeSyntax.binderFree row.left)
+          rawMatched row.leftTyped sourceTyped
+        have rawUnique := matchRel_unique_names rawMatched
+        have dependencies : ∀ name ∈ rule.left.freeFvarNames,dependencies? spec name = some [] := by
+          intro name member
+          obtain ⟨body,found⟩ := raw_matching_defined_recursive rawMatched name member
+          obtain ⟨expected,declared,_⟩ := rawTyped (name,body) (raw_lookup_member found)
+          exact dependencies_empty_of_admitted row.admitted row.zero declared
+        have rawCompatible : Compatible initial initial :=
+          fun entry member => bindings_lookup_of_mem rawUnique member
+        obtain ⟨captured,matching,compatible⟩ := binderFree_scoped_of_matchRel_admitted (initial := []) row.admitted
+          (BinderFreeSyntax.binderFree row.left) (NameCoherent.left rule) dependencies rawMatched rawCompatible
+          sourceTyped.2.2.2 sourceTyped.2.2.1 (by intro _ member; cases member)
+        have capturedTyped : GeneralPremise.TypedAssignment environment ⟨index,rule,spec,bound,0,0⟩ captured :=
+          compatible.typed_admitted rawTyped row.admitted row.zero
+        have capturedCanonical := GeneralPremise.matching_canonicalValues GeneralPremise.CanonicalValues.empty
+          sourceTyped.2.1 matching
+        have facts : GeneralPremise.Static.InputFacts environment ⟨index,rule,spec,bound,0,0⟩
+            (GeneralPremise.Static.initialRefinement rule) captured :=
+          ⟨capturedTyped,capturedCanonical,GeneralPremise.Static.initialRefinement_holds matching⟩
+        have capturedUnique := (matching_unique_names_recursive matching (by simp)).1
+        have captures : BindingAgreement rule.left.freeFvarNames captured initial :=
+          bindingAgreement_of_scopedCompatible compatible capturedUnique rawUnique
+            (GeneralPremise.matching_bound_names matching)
+            (fun name member => (raw_matching_names_recursive rawMatched name).mp member)
+        have flow := row.flow
+        simp only [GeneralPremise.rulePremisesAdmitted,Bool.and_eq_true] at flow
+        obtain ⟨completed,history,sourcePremises,completedReadback⟩ :=
+          directed_premises_fromReference_recursive relEnv reads valid choices providerClosed
+            (ReferenceStep.captureSites rule) row.premises
+            (fun _ _ selected => by simpa using selected) rfl row.admitted row.zero row.inputs row.unique
+            facts captures flow.1 row.static eligiblePremises premises
+        have completedFacts := facts.afterPremises rfl sourcePremises
+        have rhsBound : GeneralPremise.BoundNames completed rule.right.freeFvarNames := by
+          intro name member
+          exact bindingAgreement_available completedReadback name
+            (GeneralPremise.namesAvailable_sound _ _ flow.2 name member)
+        have rhsFinite : GeneralPremise.FiniteCaptureNames completed (GeneralPremise.restCaptureNames rule.right) :=
+          fun name member => completedFacts.represented.2.1 name
+            (GeneralPremise.namesAvailable_sound _ _ row.rests name member)
+        obtain ⟨actualTarget,read,targetOpen⟩ := binderFree_instantiation_total_open
+          (operation := ScopedReflectiveExecution.binderOperation environment.reflection rule)
+          row.admitted row.zero completedFacts.typed completedFacts.canonical (BinderFreeSyntax.binderFree row.right)
+          (NameCoherent.right rule) row.rightTyped rhsBound rhsFinite
+        have readback := binderFree_instantiation_readout (BinderFreeSyntax.binderFree row.right)
+          (completedFacts.typed.rootValues row.zero) read
+        have sameBindings : applyBindings (ordinary completed) rule.right = applyBindings final rule.right :=
+          applyBindings_eq_of_lookup_agreement _ (fun name _ =>
+            (ordinary_lookup completed name).trans (completedReadback.lookups name))
+        have scopedReadback : Match.applyBindingsScoped (ReferenceStep.captureSites rule) final 0 rule.right =
+            applyBindings final rule.right :=
+          ReferenceStep.applyBindingsScoped_eq_applyBindings_of_notDeeper _ _ _ _
+            (binderFree_notDeeper _ (BinderFreeSyntax.binderFree row.right))
+        have endpoint : actualTarget = Match.applyBindingsScoped (ReferenceStep.captureSites rule) final 0 rule.right :=
+          readback.symm.trans (sameBindings.trans scopedReadback.symm)
+        obtain ⟨trace,traced⟩ := GeneralScopedMatchMachine.matches_trace matching
+        exact ⟨_,initial,_,trace,captured,completed,history,rfl,
+          .fire declared row.specified row.admitted sourceTyped traced capturedTyped sourcePremises
+            (read.trans (congrArg some endpoint)) (endpoint ▸ targetOpen),
+          rule,spec,final,declared,row.specified,captures,premises,completedReadback⟩
+ termination_by sizeOf witness
+ decreasing_by all_goals simp_wf
+
+/-- Original reference premise lists reconstruct ordered actual histories
+and complete binding readback, with the original rule occurrences. -/
+theorem directed_premises_fromReference_recursive {Schema : Pattern → Prop} [BinderFreeSyntax Schema]
+    {environment : GeneralPremise.Environment} (relEnv : Engine.RelationEnv)
+    (reads : ReadsProvider relEnv environment.provider)
+    (valid : environment.language.validate = [])
+    (choices : CollectionChoiceDeterministic environment.language)
+    (providerClosed : GeneralPremise.checkProviderClosed environment.language environment.free environment.provider = true)
+    {context : GeneralPremise.Context} {premises : List Premise} {initial : Assignment} {available : List String}
+    {refinement : GeneralPremise.Static.Refinement} {bindings result : Bindings}
+    {witnesses : List ReferenceStep.Witness} (sites : Pattern)
+    (shapes : ∀ premise ∈ premises,DirectedValidationWith Schema premise)
+    (locations : ∀ offset premise,premises[offset]? = some premise →
+      context.rule.premises[context.premiseIndex + offset]? = some premise)
+    (depthZero : context.quantifierDepth = 0)
+    (admitted : admittedFor context.rule context.spec = true)
+    (zero : GeneralPremise.checkZeroDependencies context.spec = true)
+    (inputShapes : ∀ premise ∈ premises,FirstOrderQueryInputs environment.provider premise)
+    (contextUnique : (context.rule.typeContext.map Prod.fst).Nodup)
+    (facts : GeneralPremise.Static.InputFacts environment context refinement initial)
+    (agreement : BindingAgreement available initial bindings)
+    (ordinarySupported : (GeneralPremise.premisesFlow environment.language environment.provider
+      context.rule context.spec available premises).supported = true)
+    (staticSupported : (GeneralPremise.Static.premisesFlow environment.language environment.provider
+      context.rule context.spec context.premiseIndex refinement premises).supported = true)
+    (eligible : DirectedInverseEligibility.Premises Schema environment context.rule context.spec
+      context.premiseIndex premises witnesses)
+    (held : ReferenceStep.PremisesValid relEnv environment.language sites bindings premises witnesses result) :
+    ∃ final history,GeneralPremise.PremisesHold environment context premises initial final history ∧
+      BindingAgreement (GeneralPremise.premisesFlow environment.language environment.provider
+        context.rule context.spec available premises).available final result :=
+  match held with
+  | .nil _ => ⟨initial,[],.nil,agreement⟩
+  | .cons (premise := premise) (premises := premises) (witness := witness) head tail => by
+      cases eligible with
+      | cons eligibleHead eligibleTail =>
+        have headEligibility : DirectedInverseEligibility.OnePremise Schema environment context.rule context.spec
+            context.premiseIndex context.quantifierDepth premise witness := by
+          simpa only [depthZero] using eligibleHead
+        simp only [GeneralPremise.premisesFlow,Bool.and_eq_true] at ordinarySupported
+        simp only [GeneralPremise.Static.premisesFlow,Bool.and_eq_true] at staticSupported
+        have here : context.rule.premises[context.premiseIndex]? = some premise := by
+          simpa only [Nat.add_zero] using locations 0 premise rfl
+        have located : Located context premise := by
+          simp only [Located,here,depthZero,Option.bind_some,quantifiedBody?]
+        have headStatic : (GeneralPremise.Static.premiseFlow environment.language environment.provider
+            context.rule context.spec context.premiseIndex context.quantifierDepth refinement premise).supported = true :=
+          by simpa only [depthZero] using staticSupported.1
+        obtain ⟨middle,event,sourceHead,next⟩ := directed_premise_fromReference_recursive relEnv reads valid choices providerClosed
+          (shapes premise (List.mem_cons_self ..)) sites admitted zero
+          (inputShapes premise (List.mem_cons_self ..)) contextUnique facts agreement located
+          ordinarySupported.1 headStatic headEligibility head
+        have tailLocations : ∀ offset later,premises[offset]? = some later →
+            context.next.rule.premises[context.next.premiseIndex + offset]? = some later := by
+          intro offset later selected
+          simpa only [GeneralPremise.Context.next,Nat.add_assoc,Nat.add_comm 1 offset]
+            using locations (offset + 1) later selected
+        have after := facts.afterPremise sourceHead
+        have nextFacts : GeneralPremise.Static.InputFacts environment context.next
+            (GeneralPremise.Static.premiseFlow environment.language environment.provider context.rule context.spec
+              context.premiseIndex 0 refinement premise).refinement middle :=
+          ⟨after.typed,after.canonical,by simpa only [depthZero] using after.represented⟩
+        obtain ⟨final,history,sourceTail,completed⟩ := directed_premises_fromReference_recursive relEnv reads valid choices providerClosed
+          (context := context.next) sites (fun later member => shapes later (List.mem_cons_of_mem _ member))
+          tailLocations rfl admitted zero (fun later member => inputShapes later (List.mem_cons_of_mem _ member)) contextUnique nextFacts next ordinarySupported.2 staticSupported.2 eligibleTail tail
+        exact ⟨final,event::history,.cons sourceHead sourceTail,completed⟩
+ termination_by sizeOf witnesses
+ decreasing_by all_goals simp_wf; all_goals omega
+
+/-- Literal directed source premises reconstruct their actual retained
+children. Local quantifier depths and typed source endpoints are derived. -/
+theorem directed_premise_fromReference_recursive {Schema : Pattern → Prop} [BinderFreeSyntax Schema]
+    {environment : GeneralPremise.Environment} (relEnv : Engine.RelationEnv)
+    (reads : ReadsProvider relEnv environment.provider)
+    (valid : environment.language.validate = [])
+    (choices : CollectionChoiceDeterministic environment.language)
+    (providerClosed : GeneralPremise.checkProviderClosed environment.language environment.free environment.provider = true)
+    {premise : Premise} (shape : DirectedValidationWith Schema premise) (sites : Pattern)
+    {context : GeneralPremise.Context} {initial : Assignment} {available : List String}
+    {refinement : GeneralPremise.Static.Refinement} {bindings result : Bindings} {witness : ReferenceStep.Witness}
+    (admitted : admittedFor context.rule context.spec = true)
+    (zero : GeneralPremise.checkZeroDependencies context.spec = true)
+    (inputShapes : FirstOrderQueryInputs environment.provider premise)
+    (contextUnique : (context.rule.typeContext.map Prod.fst).Nodup)
+    (facts : GeneralPremise.Static.InputFacts environment context refinement initial)
+    (agreement : BindingAgreement available initial bindings)
+    (located : Located context premise)
+    (ordinarySupported : (GeneralPremise.premiseFlow environment.language environment.provider
+      context.rule context.spec available premise).supported = true)
+    (staticSupported : (GeneralPremise.Static.premiseFlow environment.language environment.provider
+      context.rule context.spec context.premiseIndex context.quantifierDepth refinement premise).supported = true)
+    (eligible : DirectedInverseEligibility.OnePremise Schema environment context.rule context.spec
+      context.premiseIndex context.quantifierDepth premise witness)
+    (held : ReferenceStep.PremiseValid relEnv environment.language sites bindings premise witness result) :
+    ∃ final event,GeneralPremise.PremiseHolds environment context premise initial final event ∧
+      BindingAgreement (GeneralPremise.premiseFlow environment.language environment.provider
+        context.rule context.spec available premise).available final result :=
+  match held with
+  | .base isBase member => by
+      cases shape with
+      | query distinct schemas =>
+          exact validation_fromReference_bindings_recursive (fun _ shape => BinderFreeSyntax.binderFree shape)
+            relEnv reads valid choices providerClosed
+            (.query distinct schemas) sites admitted zero inputShapes contextUnique facts agreement located
+            ordinarySupported staticSupported (.base isBase member)
+      | freshness termShape =>
+          exact validation_fromReference_bindings_recursive (fun _ shape => BinderFreeSyntax.binderFree shape)
+            relEnv reads valid choices providerClosed
+            (.freshness termShape) sites admitted zero inputShapes contextUnique facts agreement located
+            ordinarySupported staticSupported (.base isBase member)
+      | step _ _ => simp [ReferenceStep.isBase] at isBase
+      | quantified _ => simp [ReferenceStep.isBase] at isBase
+  | .step (source := source) (target := target) (candidate := candidate) endpoints child matched merged => by
+      obtain ⟨samePremise,sourceShape,targetShape⟩ := shape.step_shape endpoints
+      have stepLocated : Located context (.congruence source target) := samePremise ▸ located
+      have stepStatic : (GeneralPremise.Static.premiseFlow environment.language environment.provider
+          context.rule context.spec context.premiseIndex context.quantifierDepth refinement
+          (.congruence source target)).supported = true := samePremise ▸ staticSupported
+      have stepEligibility : DirectedInverseEligibility.OnePremise Schema environment context.rule context.spec
+          context.premiseIndex context.quantifierDepth (.congruence source target) _ := samePremise ▸ eligible
+      cases stepEligibility with
+      | @step _ _ _ _ _ _ childType _ _ _ _ sourceFound childEligible =>
+        have checked := ordinarySupported
+        rw [samePremise] at checked
+        simp only [GeneralPremise.premiseFlow,sourceFound,Bool.and_eq_true] at checked
+        have targetRole := schemaValuesChecked_restAware
+          (show binderFreeList [source,target] = true by
+            simp only [binderFreeList,BinderFreeSyntax.binderFree sourceShape,
+              BinderFreeSyntax.binderFree targetShape,Bool.and_true]) checked.2
+        obtain ⟨_,targetTyped⟩ :
+            Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType environment.language
+              (FreeTypeContext.ofList context.rule.typeContext) [] source childType ∧
+            Mettapedia.GSLT.LanguageDef.RestAwareTyping.HasType environment.language
+              (FreeTypeContext.ofList context.rule.typeContext) [] target childType := by
+          cases targetRole with
+          | cons sourceTyped tail => cases tail with | cons targetTyped _ => exact ⟨sourceTyped,targetTyped⟩
+        have projection := stepStatic
+        simp only [GeneralPremise.Static.premiseFlow,sourceFound,Bool.and_eq_true] at projection
+        have sourceBound : GeneralPremise.BoundNames initial source.freeFvarNames :=
+          fun name member => facts.represented.1 name (GeneralPremise.namesAvailable_sound _ _ projection.2 name member)
+        obtain ⟨actualSource,instantiated⟩ := GeneralPremise.checkRootProjectionSchema_sound
+          (operation := Substitution.instantiateBVar) (depth := 0) projection.1.2
+          (facts.typed.rootValues zero) sourceBound
+        have scopedInstantiation : instantiateAt? context.rule context.spec context.bound.length
+            (context.site 0) [] 0 initial source = some actualSource := instantiated
+        have sourceRead := binderFree_instantiation_readout (BinderFreeSyntax.binderFree sourceShape)
+          (facts.typed.rootValues zero) instantiated
+        have rawSource : applyBindings bindings source = actualSource :=
+          (applyBindings_eq_of_lookup_agreement _ (fun name _ =>
+            (agreement.lookups name).symm.trans (ordinary_lookup initial name).symm)).trans sourceRead
+        have referenceSource : Match.applyBindingsScoped sites bindings
+            (ReferenceStep.stepDepth sites premise) source = actualSource :=
+          (congrArg (fun current => Match.applyBindingsScoped sites bindings
+            (ReferenceStep.stepDepth sites current) source) samePremise).trans
+              ((binderFree_step_readback sites bindings (target := target)
+                (BinderFreeSyntax.binderFree sourceShape)).trans rawSource)
+        have childTyped := GeneralPremise.Static.step_source_typed facts zero stepStatic sourceFound scopedInstantiation
+        have referenceTyped : OpenPatternWellSorted environment.language environment.free context.bound
+            childType (Match.applyBindingsScoped sites bindings
+              (ReferenceStep.stepDepth sites premise) source) := referenceSource.symm ▸ childTyped
+        obtain ⟨childIndex,childInitial,childWitnesses,childTrace,childCaptured,childCompleted,childHistory,
+          _,childFired,_⟩ := directed_root_fromReference_recursive_with_bindings relEnv reads valid choices providerClosed
+            childEligible referenceTyped child
+        have candidateTyped : OpenPatternWellSorted environment.language environment.free context.bound childType candidate := by
+          cases childFired with
+          | fire _ _ _ _ _ _ _ _ sorted => exact sorted
+        obtain ⟨final,targetTrace,targetMatched,finalTyped,next⟩ := step_target_fromReference_recursive valid choices
+          admitted zero (BinderFreeSyntax.binderFree targetShape) stepLocated.step_target facts.typed facts.canonical agreement
+          targetTyped candidateTyped matched merged
+        rw [referenceSource] at childFired
+        have interpreted : GeneralPremise.PremiseHolds environment context (.congruence source target)
+            initial final _ := .step sourceFound scopedInstantiation childFired targetMatched finalTyped
+        exact ⟨final,_,samePremise.symm ▸ interpreted,by simpa only [samePremise,GeneralPremise.premiseFlow] using next⟩
+  | .forAll (collection := collection) (parameter := parameter) (body := body)
+      (kind := kind) (elements := elements) selected bodies => by
+      cases shape with
+      | quantified bodyShape =>
+          cases eligible with
+          | quantified eligibleElements =>
+            have read : GeneralPremise.finiteCollection? context.bound.length initial collection =
+                some (kind,elements) := by
+              rw [finiteCollection_readout (facts.typed.rootValues zero),ordinary_lookup,agreement.lookups,selected]
+              rfl
+            simp only [GeneralPremise.Static.premiseFlow,Bool.and_eq_true] at staticSupported
+            split at staticSupported <;> try simp at staticSupported
+            rename_i declaredKind elementType parameterType collectionDeclared parameterDeclared
+            have typeSame := staticSupported.1.2.1
+            subst parameterType
+            have parameterDependencies := staticSupported.1.2.2
+            have localStatic := staticSupported.2
+            have localOrdinary : (GeneralPremise.premiseFlow environment.language environment.provider
+                context.rule context.spec (parameter::available) body).supported = true := by
+              have parts := ordinarySupported
+              simp only [GeneralPremise.premiseFlow,Bool.and_eq_true] at parts
+              exact parts.2
+            obtain ⟨elementsTyped,objects⟩ := GeneralPremise.finiteCollection_elements_typed
+              facts.typed zero collectionDeclared read
+            have canonical := GeneralPremise.finiteCollection?_canonical facts.canonical read
+            obtain ⟨events,sourceElements⟩ := directed_elements_fromReference_recursive relEnv reads valid choices providerClosed bodyShape sites
+              admitted zero inputShapes contextUnique facts agreement located.quantified parameterDeclared parameterDependencies
+              localOrdinary localStatic elementsTyped objects canonical eligibleElements bodies
+            exact ⟨initial,_,.quantified read sourceElements,agreement⟩
+ termination_by sizeOf witness
+ decreasing_by all_goals simp_wf; all_goals omega
+
+/-- Reference bodies reconstruct local typed continuations without exporting
+local output bindings to another element or to the enclosing rule. -/
+theorem directed_elements_fromReference_recursive {Schema : Pattern → Prop} [BinderFreeSyntax Schema]
+    {environment : GeneralPremise.Environment} (relEnv : Engine.RelationEnv)
+    (reads : ReadsProvider relEnv environment.provider)
+    (valid : environment.language.validate = [])
+    (choices : CollectionChoiceDeterministic environment.language)
+    (providerClosed : GeneralPremise.checkProviderClosed environment.language environment.free environment.provider = true)
+    {context : GeneralPremise.Context} {body : Premise} {parameter : String} {items : List Pattern}
+    {initial : Assignment} {available : List String} {bindings : Bindings}
+    {refinement : GeneralPremise.Static.Refinement} {proofs : List ReferenceStep.Witness}
+    {elementType : TypeExpr} {ordinal : Nat}
+    (shape : DirectedValidationWith Schema body) (sites : Pattern)
+    (admitted : admittedFor context.rule context.spec = true)
+    (zero : GeneralPremise.checkZeroDependencies context.spec = true)
+    (inputShapes : FirstOrderQueryInputs environment.provider body)
+    (contextUnique : (context.rule.typeContext.map Prod.fst).Nodup)
+    (facts : GeneralPremise.Static.InputFacts environment context refinement initial)
+    (agreement : BindingAgreement available initial bindings)
+    (located : Located context.quantified body)
+    (parameterDeclared : GeneralPremise.lookupRuleType? context.rule parameter = some elementType)
+    (parameterDependencies : dependencies? context.spec parameter = some [])
+    (ordinarySupported : (GeneralPremise.premiseFlow environment.language environment.provider
+      context.rule context.spec (parameter::available) body).supported = true)
+    (staticSupported : (GeneralPremise.Static.premiseFlow environment.language environment.provider context.rule
+      context.spec context.premiseIndex (context.quantifierDepth + 1)
+      (GeneralPremise.Static.localRefinement refinement parameter) body).supported = true)
+    (elementsTyped : ElementsHaveType environment.language environment.free context.bound items elementType)
+    (objects : isObjectPatternList items = true) (canonical : Pattern.hasCanonicalBinderMetadataList items = true)
+    (eligible : DirectedInverseEligibility.Elements Schema environment context.rule context.spec
+      context.premiseIndex (context.quantifierDepth + 1) body proofs)
+    (held : ReferenceStep.ForAllValid relEnv environment.language sites bindings parameter body items proofs) :
+    ∃ events,GeneralPremise.QuantifiedElements environment context parameter body ordinal items initial initial events :=
+  match held with
+  | .nil => ⟨[],.nil⟩
+  | .cons bodyValid tail => by
+      cases eligible with
+      | cons eligibleHead eligibleTail =>
+        cases elementsTyped with
+        | cons elementTyped tailTyped =>
+            simp only [isObjectPatternList,Bool.and_eq_true] at objects
+            simp only [Pattern.hasCanonicalBinderMetadataList,Bool.and_eq_true] at canonical
+            have localTyped := facts.typed.bindParameter parameterDeclared parameterDependencies elementTyped objects.1
+            have localFacts : GeneralPremise.Static.InputFacts environment context.quantified
+                (GeneralPremise.Static.localRefinement refinement parameter)
+                (GeneralPremise.bindParameter parameter (GeneralPremise.localValue context.bound _) initial) :=
+              ⟨localTyped,facts.canonical.bindParameter parameter canonical.1,
+                facts.represented.bindParameter parameter _⟩
+            obtain ⟨localFinal,event,sourceBody,_⟩ := directed_premise_fromReference_recursive relEnv reads valid choices providerClosed
+              (context := context.quantified) shape sites admitted zero inputShapes contextUnique localFacts
+              (bindingAgreement_bindParameter agreement parameter context.bound _) located ordinarySupported staticSupported
+              eligibleHead bodyValid
+            obtain ⟨events,sourceTail⟩ := directed_elements_fromReference_recursive relEnv reads valid choices providerClosed (ordinal := ordinal + 1)
+              shape sites admitted zero inputShapes contextUnique facts agreement located parameterDeclared parameterDependencies
+              ordinarySupported staticSupported tailTyped objects.2 canonical.2 eligibleTail tail
+            exact ⟨(ordinal,_,[event])::events,.cons localTyped sourceBody sourceTail⟩
+ termination_by sizeOf proofs
+ decreasing_by all_goals simp_wf; all_goals omega
+end
+
+/-- The original root inverse remains the projection of the same recursive
+construction, retaining its original public statement. -/
+theorem directed_root_fromReference_recursive {Schema : Pattern → Prop} [BinderFreeSyntax Schema]
+    {environment : GeneralPremise.Environment} (relEnv : Engine.RelationEnv)
+    (reads : ReadsProvider relEnv environment.provider)
+    (valid : environment.language.validate = [])
+    (choices : CollectionChoiceDeterministic environment.language)
+    (providerClosed : GeneralPremise.checkProviderClosed environment.language environment.free environment.provider = true)
+    {source target : Pattern} {witness : ReferenceStep.Witness}
+    {bound : List TypeExpr} {type : TypeExpr}
+    (eligible : DirectedInverseEligibility.Step Schema environment type witness)
+    (sourceTyped : OpenPatternWellSorted environment.language environment.free bound type source)
+    (step : ReferenceStep.StepValid relEnv environment.language source witness target) :
+    ∃ index initial witnesses trace captured completed history,
+      witness = .rule index initial witnesses ∧
+      GeneralPremise.RootFiring environment bound type source index trace captured completed history target := by
+  obtain ⟨index,initial,witnesses,trace,captured,completed,history,witnessRead,fired,_⟩ :=
+    directed_root_fromReference_recursive_with_bindings relEnv reads valid choices providerClosed
+      eligible sourceTyped step
+  exact ⟨index,initial,witnesses,trace,captured,completed,history,witnessRead,fired⟩
+
+#print axioms directed_root_fromReference_recursive_with_bindings
+#print axioms directed_root_fromReference_recursive
+#print axioms directed_premises_fromReference_recursive
+#print axioms directed_premise_fromReference_recursive
+#print axioms directed_elements_fromReference_recursive
+
 mutual
 /-- Independent reference rule witnesses reconstruct actual typed roots.
 The witness's original rule ordinal is retained, and target typing is earned
@@ -3156,4 +3624,312 @@ theorem directed_step_iff_declaredModulo_of_isEquationFree {environment : Genera
 #print axioms directed_step_iff_declaredModulo_of_isEquationFree
 
 #print axioms DirectedValidation.step_shape
+end Mettapedia.OSLF.Framework.GeneralCanonicalAgreement.QuantifiedReference
+
+
+namespace Mettapedia.OSLF.Framework.GeneralCanonicalAgreement.QuantifiedReference
+open _root_.Mettapedia.OSLF.MeTTaIL
+open _root_.Mettapedia.OSLF.MeTTaIL.Syntax Match MatchSpec RuleBinding ScopedRuleMatching GeneralFirstOrderProjection
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- Only source-schema child types are inspected here. Quantification does
+not change the declared rule type of a child projection. -/
+def UniformChildTypes (environment : GeneralPremise.Environment) (carriers : List TypeExpr)
+    (rule : RewriteRule) (premise : Premise) : Prop :=
+  ∀ source ∈ GeneralPremise.stepSources premise, ∃ type ∈ carriers,
+    GeneralPremise.sourceType? environment.language rule source = some type
+
+/-- A proof-side literal root profile. Every authored row has a schema
+role at every listed carrier; this is stronger than arbitrary many-sorted
+coverage. Capture and provider argument sorts remain unrestricted. -/
+structure UniformDirectedProfile (Schema : Pattern → Prop) (environment : GeneralPremise.Environment)
+    (carriers : List TypeExpr) : Prop where
+  nonempty : carriers ≠ []
+  valid : environment.language.validate = []
+  choices : CollectionChoiceDeterministic environment.language
+  providerClosed : GeneralPremise.checkProviderClosed environment.language environment.free environment.provider = true
+  noDynamic : environment.provider.dynamicRelations = []
+  rows : ∀ {type : TypeExpr}, type ∈ carriers → ∀ {index : Nat} {rule : RewriteRule}, environment.language.rewrites[index]? = some rule →
+    ∃ spec, DirectedInverseRow Schema environment type index rule spec
+  children : ∀ {index : Nat} {rule : RewriteRule}, environment.language.rewrites[index]? = some rule →
+    ∀ premise ∈ rule.premises, UniformChildTypes environment carriers rule premise
+
+/-- The literal query boundary checks inputs independently of recursive
+output schemas. All actual modes and positions must be present. -/
+def checkUniformLiteralInputs : List Pattern → List RelationArgMode → Bool
+  | [], [] => true
+  | schema :: schemas, mode :: modes =>
+      (match mode with | .input => checkFirstOrder schema | .output => true) &&
+        checkUniformLiteralInputs schemas modes
+  | _, _ => false
+
+theorem checkUniformLiteralInputs_sound {schemas : List Pattern} {modes : List RelationArgMode}
+    (checked : checkUniformLiteralInputs schemas modes = true) :
+    ∀ (position : Nat) (schema : Pattern), schemas[position]? = some schema → modes[position]? = some .input → FirstOrder schema := by
+  induction schemas generalizing modes with
+  | nil => intro position schema selected _; simp at selected
+  | cons schema schemas ih =>
+      cases modes with
+      | nil => simp [checkUniformLiteralInputs] at checked
+      | cons mode modes =>
+          simp only [checkUniformLiteralInputs, Bool.and_eq_true] at checked
+          intro position actual selected input
+          cases position with
+          | zero =>
+              simp only [List.getElem?_cons_zero, Option.some.injEq] at selected input
+              subst actual
+              subst mode
+              exact checkFirstOrder_sound checked.1
+          | succ position => exact ih checked.2 position actual selected input
+
+/-- All premise forms are inspected in one recursive check. Nonzero scoped
+premises and the separate builtin equality boundary are not admitted here. -/
+def checkUniformDirectedPremise (environment : GeneralPremise.Environment)
+    (carriers : List TypeExpr) (rule : RewriteRule) : Premise → Bool
+  | .freshness condition => binderFree condition.term
+  | .congruence source target =>
+      binderFree source && binderFree target &&
+        match GeneralPremise.sourceType? environment.language rule source with
+        | none => false
+        | some type => carriers.contains type
+  | .scopedStep _ => false
+  | .relationQuery relation arguments =>
+      decide (relation ≠ "eq") && arguments.all binderFree &&
+        match GeneralPremise.signature? environment.provider relation arguments.length with
+        | none => false
+        | some signature => checkUniformLiteralInputs arguments signature.modes
+  | .forAll _ _ body => checkUniformDirectedPremise environment carriers rule body
+
+theorem checkUniformDirectedPremise_sound {environment : GeneralPremise.Environment}
+    {carriers : List TypeExpr} {rule : RewriteRule} {premise : Premise}
+    (checked : checkUniformDirectedPremise environment carriers rule premise = true) :
+    DirectedValidationWith (fun schema => binderFree schema = true) premise ∧
+      FirstOrderQueryInputs environment.provider premise ∧ UniformChildTypes environment carriers rule premise := by
+  induction premise with
+  | freshness condition =>
+      exact ⟨.freshness checked, trivial, by intro source member; cases member⟩
+  | congruence source target =>
+      simp only [checkUniformDirectedPremise, Bool.and_eq_true] at checked
+      cases found : GeneralPremise.sourceType? environment.language rule source with
+      | none => simp [found] at checked
+      | some type =>
+          have member : type ∈ carriers := List.contains_iff_mem.mp (by simpa only [found] using checked.2)
+          refine ⟨.step checked.1.1 checked.1.2, trivial, ?_⟩
+          intro actual present
+          have same : actual = source := List.mem_singleton.mp present
+          subst actual
+          exact ⟨type, member, found⟩
+  | scopedStep step => simp [checkUniformDirectedPremise] at checked
+  | relationQuery relation arguments =>
+      simp only [checkUniformDirectedPremise, Bool.and_eq_true, decide_eq_true_eq] at checked
+      refine ⟨.query checked.1.1 (List.all_eq_true.mp checked.1.2), ?_, ?_⟩
+      · intro signature found position schema selected input
+        exact checkUniformLiteralInputs_sound
+          (show checkUniformLiteralInputs arguments signature.modes = true from by
+            simpa only [found] using checked.2) position schema selected input
+      · intro source member
+        cases member
+  | forAll collection parameter body ih =>
+      obtain ⟨shape, inputs, children⟩ := ih checked
+      exact ⟨.quantified shape, inputs, children⟩
+
+/-- Every actual row/specification is checked once. Side roles are then
+checked at each requested carrier, with finite-rest flow kept explicit. -/
+def checkUniformDirectedRow (environment : GeneralPremise.Environment)
+    (carriers : List TypeExpr) (entry : RewriteRule × Nat) : Bool :=
+  let rule := entry.1
+  match GeneralPremise.specification? environment entry.2 with
+  | none => false
+  | some spec =>
+      let flow := GeneralPremise.Static.premisesFlow environment.language environment.provider rule spec 0
+        (GeneralPremise.Static.initialRefinement rule) rule.premises
+      admittedFor rule spec && GeneralPremise.checkZeroDependencies spec &&
+        decide (rule.typeContext.map Prod.fst).Nodup && binderFree rule.left && binderFree rule.right &&
+        carriers.all (fun type =>
+          GeneralPremise.SchemaTyping.checkSchemaType
+            (GeneralPremise.SchemaTyping.declaredDomains environment.language rule []) environment.language
+            (FreeTypeContext.ofList rule.typeContext) [] rule.left type &&
+          GeneralPremise.SchemaTyping.checkSchemaType
+            (GeneralPremise.SchemaTyping.declaredDomains environment.language rule []) environment.language
+            (FreeTypeContext.ofList rule.typeContext) [] rule.right type) &&
+        rule.premises.all (checkUniformDirectedPremise environment carriers rule) &&
+        GeneralPremise.rulePremisesAdmitted environment.language environment.provider rule spec &&
+        flow.supported && GeneralPremise.namesAvailable flow.refinement.finite
+          (GeneralPremise.restCaptureNames rule.right)
+
+theorem checkUniformDirectedRow_sound {environment : GeneralPremise.Environment}
+    {carriers : List TypeExpr} {index : Nat} {rule : RewriteRule}
+    (checked : checkUniformDirectedRow environment carriers (rule,index) = true) :
+    (∃ spec, ∀ type ∈ carriers, DirectedInverseRow (fun schema => binderFree schema = true)
+      environment type index rule spec) ∧
+      (∀ premise ∈ rule.premises, UniformChildTypes environment carriers rule premise) := by
+  cases found : GeneralPremise.specification? environment index with
+  | none => simp [checkUniformDirectedRow, found] at checked
+  | some spec =>
+      simp only [checkUniformDirectedRow, found, Bool.and_eq_true, decide_eq_true_eq] at checked
+      obtain ⟨⟨⟨⟨⟨⟨⟨⟨⟨admitted,zero⟩,unique⟩,left⟩,right⟩,roles⟩,premises⟩,flow⟩,static⟩,rests⟩ := checked
+      have premiseFacts := fun premise member => checkUniformDirectedPremise_sound
+        (List.all_eq_true.mp premises premise member)
+      refine ⟨⟨spec, ?_⟩, fun premise member => (premiseFacts premise member).2.2⟩
+      intro type member
+      have selected := Bool.and_eq_true_iff.mp (List.all_eq_true.mp roles type member)
+      exact ⟨found,admitted,zero,unique,left,right,
+        binderFree_schema_restAware left selected.1, binderFree_schema_restAware right selected.2,
+        fun premise member => (premiseFacts premise member).1,
+        fun premise member => (premiseFacts premise member).2.1,flow,static,rests⟩
+
+/-- This check supplies proof-side source eligibility only. It does not
+select an execution backend or discharge general plan admission. -/
+def checkUniformDirectedProfile (environment : GeneralPremise.Environment) (carriers : List TypeExpr) : Bool :=
+  !carriers.isEmpty && environment.language.validate.isEmpty &&
+    Mettapedia.GSLT.LanguageDef.WellSorted.collectionChoiceCheck environment.language.terms &&
+    GeneralPremise.checkProviderClosed environment.language environment.free environment.provider &&
+    environment.provider.dynamicRelations.isEmpty &&
+    environment.language.rewrites.zipIdx.all (checkUniformDirectedRow environment carriers)
+
+theorem UniformDirectedProfile.of_check {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (checked : checkUniformDirectedProfile environment carriers = true) :
+    UniformDirectedProfile (fun schema => binderFree schema = true) environment carriers := by
+  simp only [checkUniformDirectedProfile, Bool.and_eq_true, Bool.not_eq_true', List.isEmpty_iff] at checked
+  obtain ⟨⟨⟨⟨⟨nonempty,valid⟩,choices⟩,closed⟩,noDynamic⟩,rows⟩ := checked
+  have rowFacts := fun {index : Nat} {rule : RewriteRule} (declared : environment.language.rewrites[index]? = some rule) =>
+    checkUniformDirectedRow_sound (List.all_eq_true.mp rows (rule,index)
+      (List.mk_mem_zipIdx_iff_getElem?.mpr declared))
+  refine ⟨?_,valid,collectionChoiceDeterministic_of_check choices,closed,noDynamic,?_,?_⟩
+  · intro same
+    subst carriers
+    simp at nonempty
+  · intro type member index rule declared
+    obtain ⟨spec,roles⟩ := (rowFacts declared).1
+    exact ⟨spec,roles type member⟩
+  · intro index rule declared
+    exact (rowFacts declared).2
+
+#print axioms checkUniformLiteralInputs_sound
+#print axioms checkUniformDirectedPremise_sound
+#print axioms checkUniformDirectedRow_sound
+#print axioms UniformDirectedProfile.of_check
+
+mutual
+/-- Eligibility is derived uniformly from the actual independent source
+witness. No child firing, target typing or completed continuation is input. -/
+theorem UniformDirectedProfile.step_eligible {Schema : Pattern → Prop}
+    {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (profile : UniformDirectedProfile Schema environment carriers)
+    {relEnv : Engine.RelationEnv} {type : TypeExpr} (member : type ∈ carriers)
+    {source target : Pattern} {witness : ReferenceStep.Witness}
+    (valid : ReferenceStep.StepValid relEnv environment.language source witness target) :
+    DirectedInverseEligibility.Step Schema environment type witness :=
+  match valid with
+  | .rule declared _ premises => by
+      obtain ⟨spec,row⟩ := profile.rows member declared
+      exact .rule declared row
+        (profile.premises_eligible row.premises (profile.children declared) premises)
+termination_by sizeOf witness
+decreasing_by all_goals simp_wf
+
+theorem UniformDirectedProfile.premises_eligible {Schema : Pattern → Prop}
+    {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (profile : UniformDirectedProfile Schema environment carriers)
+    {relEnv : Engine.RelationEnv} {rule : RewriteRule} {spec : RuleBindingSpec} {index : Nat}
+    {sites : Pattern} {initial final : Bindings} {premises : List Premise} {witnesses : List ReferenceStep.Witness}
+    (shapes : ∀ premise ∈ premises, DirectedValidationWith Schema premise)
+    (children : ∀ premise ∈ premises, UniformChildTypes environment carriers rule premise)
+    (valid : ReferenceStep.PremisesValid relEnv environment.language sites initial premises witnesses final) :
+    DirectedInverseEligibility.Premises Schema environment rule spec index premises witnesses :=
+  match valid with
+  | .nil _ => .nil
+  | .cons head tail => .cons
+      (profile.premise_eligible (shapes _ (List.mem_cons_self ..))
+        (children _ (List.mem_cons_self ..)) head)
+      (profile.premises_eligible (fun premise present => shapes premise (List.mem_cons_of_mem _ present))
+        (fun premise present => children premise (List.mem_cons_of_mem _ present)) tail)
+termination_by sizeOf witnesses
+decreasing_by all_goals simp_wf; all_goals omega
+
+theorem UniformDirectedProfile.premise_eligible {Schema : Pattern → Prop}
+    {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (profile : UniformDirectedProfile Schema environment carriers)
+    {relEnv : Engine.RelationEnv} {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat}
+    {sites : Pattern} {initial final : Bindings} {premise : Premise} {witness : ReferenceStep.Witness}
+    (shape : DirectedValidationWith Schema premise)
+    (children : UniformChildTypes environment carriers rule premise)
+    (valid : ReferenceStep.PremiseValid relEnv environment.language sites initial premise witness final) :
+    DirectedInverseEligibility.OnePremise Schema environment rule spec index depth premise witness :=
+  match valid with
+  | .base _ _ => .base
+  | .step (source := source) (target := target) (candidate := candidate) (matched := matched) (result := result) endpoints child _ _ => by
+      obtain ⟨same,_,_⟩ := shape.step_shape endpoints
+      have present : source ∈ GeneralPremise.stepSources premise := by
+        rw [same]
+        exact List.mem_cons_self ..
+      obtain ⟨type,member,found⟩ := children source present
+      have reconstructed := DirectedInverseEligibility.OnePremise.step
+        (rule := rule) (spec := spec) (index := index) (depth := depth)
+        (source := source) (target := target) (candidate := candidate) (matched := matched) (result := result)
+        found (profile.step_eligible member child)
+      exact same.symm ▸ reconstructed
+  | .forAll _ bodies => by
+      cases shape with
+      | quantified bodyShape =>
+          exact .quantified (profile.elements_eligible bodyShape children bodies)
+termination_by sizeOf witness
+decreasing_by all_goals simp_wf; all_goals omega
+
+theorem UniformDirectedProfile.elements_eligible {Schema : Pattern → Prop}
+    {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (profile : UniformDirectedProfile Schema environment carriers)
+    {relEnv : Engine.RelationEnv} {rule : RewriteRule} {spec : RuleBindingSpec} {index depth : Nat}
+    {sites : Pattern} {initial : Bindings} {parameter : String} {body : Premise}
+    {elements : List Pattern} {witnesses : List ReferenceStep.Witness}
+    (shape : DirectedValidationWith Schema body)
+    (children : UniformChildTypes environment carriers rule body)
+    (valid : ReferenceStep.ForAllValid relEnv environment.language sites initial parameter body elements witnesses) :
+    DirectedInverseEligibility.Elements Schema environment rule spec index depth body witnesses :=
+  match valid with
+  | .nil => .nil
+  | .cons head tail => .cons (profile.premise_eligible shape children head)
+      (profile.elements_eligible shape children tail)
+termination_by sizeOf witnesses
+decreasing_by all_goals simp_wf; all_goals omega
+end
+
+/-- The existing forward readout consumes the same checked actual rows. -/
+theorem UniformDirectedProfile.forward {Schema : Pattern → Prop}
+    {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (profile : UniformDirectedProfile Schema environment carriers)
+    {type : TypeExpr} (member : type ∈ carriers) : DirectedForwardProfile Schema environment := by
+  refine ⟨profile.noDynamic,?_⟩
+  intro index rule declared
+  obtain ⟨spec,row⟩ := profile.rows member declared
+  exact ⟨⟨spec,row.specified,row.zero,row.flow⟩,row.left,row.right,row.premises⟩
+
+/-- All valid literal source witnesses at a checked carrier reconstruct
+through the shared inverse. This is a root relation, without contextual or
+equational closure and without additional admission authority. -/
+theorem UniformDirectedProfile.roots_iff_reference {Schema : Pattern → Prop} [BinderFreeSyntax Schema]
+    {environment : GeneralPremise.Environment} {carriers : List TypeExpr}
+    (profile : UniformDirectedProfile Schema environment carriers)
+    (relEnv : Engine.RelationEnv) (reads : ReadsProvider relEnv environment.provider)
+    {bound : List TypeExpr} {type : TypeExpr} (member : type ∈ carriers)
+    {source target : Pattern}
+    (sourceTyped : OpenPatternWellSorted environment.language environment.free bound type source) :
+    (∃ index trace captured completed history,
+      GeneralPremise.RootFiring environment bound type source index trace captured completed history target) ↔
+      ReferenceStep.Step relEnv environment.language source target := by
+  constructor
+  · exact directed_step_toReference_of_forward (profile.forward member) relEnv reads
+  · rintro ⟨witness,valid⟩
+    obtain ⟨index,initial,witnesses,trace,captured,completed,history,_,fired⟩ :=
+      directed_root_fromReference_recursive relEnv reads profile.valid profile.choices profile.providerClosed
+        (profile.step_eligible member valid) sourceTyped valid
+    exact ⟨index,trace,captured,completed,history,fired⟩
+
+#print axioms UniformDirectedProfile.step_eligible
+#print axioms UniformDirectedProfile.premises_eligible
+#print axioms UniformDirectedProfile.premise_eligible
+#print axioms UniformDirectedProfile.elements_eligible
+#print axioms UniformDirectedProfile.forward
+#print axioms UniformDirectedProfile.roots_iff_reference
+
 end Mettapedia.OSLF.Framework.GeneralCanonicalAgreement.QuantifiedReference

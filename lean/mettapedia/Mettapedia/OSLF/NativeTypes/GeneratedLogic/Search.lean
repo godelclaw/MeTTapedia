@@ -1,6 +1,7 @@
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.Certificates
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ClosedExploration
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.CanonicalRegions
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.BackwardReach
 import Mettapedia.OSLF.Framework.FiniteModelSearch
 import Mettapedia.Machines.LevinSearch
 
@@ -365,13 +366,15 @@ end CertificateCandidate
 /-- **Evidence** about a formula at a term: a candidate certificate, which maps the language onto a finite
 structure; the region the term reaches in some rounds, which sits inside the language; a closed region
 grown in some rounds, which decides forward formulas exactly in an equation-free language; a closed
-canonical region, which decides behavioural formulas exactly modulo the equations; or a certified decider the
-language provides (`Decider`), exact where it answers. -/
+canonical region, which decides behavioural formulas exactly modulo the equations; a backward search from named
+goals, which decides reaching them in a first-order language; or a certified decider the language provides
+(`Decider`), exact where it answers. -/
 inductive Evidence where
   | certificate (candidate : CertificateCandidate)
   | exploration (rounds : ℕ)
   | closedRegion (rounds : ℕ)
   | canonicalRegion (rounds : ℕ)
+  | backward (rounds : ℕ)
   | decided
   deriving DecidableEq, Repr
 
@@ -395,38 +398,43 @@ def refutesBy (candidate : CertificateCandidate) : Bool :=
 
 /-- Whether evidence establishes the formula at the term, given canonical forms or none. -/
 def Evidence.establishes (forms : Option (CanonicalForms relEnv language fuel)) : Evidence → Bool
-  | .certificate candidate => provesBy signature language formula term candidate
-  | .exploration rounds => exploresFrom relEnv language fuel formula term rounds
-  | .closedRegion rounds => language.isEquationFree && formula.forward &&
+  | .certificate candidate => formsReference forms && provesBy signature language formula term candidate
+  | .exploration rounds => formsReference forms && exploresFrom relEnv language fuel formula term rounds
+  | .closedRegion rounds => formsReference forms && language.isEquationFree && formula.forward &&
       decideFrom relEnv language fuel formula term rounds == some true
   | .canonicalRegion rounds => match forms with
     | some forms => formula.behaviouralIn forms.labels &&
-        decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds ==
+        decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds
+          forms.reading.rules ==
           some true
     | none => false
+  | .backward rounds => formsReference forms && backwardEstablishes language formula term rounds
   | .decided => false
 
 /-- Whether evidence refutes the formula at the term, given canonical forms or none. -/
 def Evidence.refutes (forms : Option (CanonicalForms relEnv language fuel)) : Evidence → Bool
-  | .certificate candidate => refutesBy signature language formula term candidate
-  | .exploration rounds => exploresAgainstFrom relEnv language fuel formula term rounds
-  | .closedRegion rounds => language.isEquationFree && formula.forward &&
+  | .certificate candidate => formsReference forms && refutesBy signature language formula term candidate
+  | .exploration rounds => formsReference forms && exploresAgainstFrom relEnv language fuel formula term rounds
+  | .closedRegion rounds => formsReference forms && language.isEquationFree && formula.forward &&
       decideFrom relEnv language fuel formula term rounds == some false
   | .canonicalRegion rounds => match forms with
     | some forms => formula.behaviouralIn forms.labels &&
-        decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds ==
+        decideCanonical relEnv language fuel forms.canon forms.domain forms.presentations formula term rounds
+          forms.reading.rules ==
           some false
     | none => false
+  | .backward rounds => formsReference forms && backwardRefutes language formula term rounds
   | .decided => false
 
 /-- The evidence `ask` weighs: the hint, the region the term reaches, a closed region grown from the term,
-a closed canonical region grown from it, and what Levin search finds for a proof and for a refutation. -/
+a closed canonical region grown from it, what Levin search finds for a proof and for a refutation, and a backward
+search from the goals the formula names. -/
 def gathered (hint : Option CertificateCandidate) (rounds : ℕ) : List Evidence :=
   hint.toList.map .certificate ++ [.exploration rounds, .closedRegion rounds, .canonicalRegion rounds] ++
     (explain CertificateCandidate.decode CertificateCandidate.cost (provesBy signature language formula term)
       rounds).toList.map (.certificate ·.1) ++
     (explain CertificateCandidate.decode CertificateCandidate.cost (refutesBy signature language formula term)
-      rounds).toList.map (.certificate ·.1)
+      rounds).toList.map (.certificate ·.1) ++ [.backward rounds]
 
 /-- **Ask** whether a formula holds at a term: the first gathered evidence that establishes it, or else
 the first that refutes it, or an open answer. Canonical forms, when given, read the language modulo its
@@ -444,66 +452,100 @@ def ask (hint : Option CertificateCandidate) (rounds : ℕ) (forms : Option (Can
 
 variable {relEnv signature language fuel formula term}
 
-/-- **Evidence that establishes holds.** -/
-theorem Evidence.establishes_sound {forms : Option (CanonicalForms relEnv language fuel)} {evidence : Evidence}
+/-- **Evidence that establishes holds**, in every reading the canonical forms are for. -/
+theorem Evidence.establishes_sound {forms : Option (CanonicalForms relEnv language fuel)} {reading : LanguageReading}
+    (compatible : FormsFor forms reading) {evidence : Evidence}
     (checked : evidence.establishes relEnv signature language fuel formula term forms = true) :
-    (referenceStructure relEnv language).sat Env.closed formula term := by
+    (referenceStructure relEnv language reading).sat Env.closed formula term := by
   cases evidence with
-  | certificate candidate => exact proves_sound checked
-  | exploration rounds => exact exploresFrom_sound checked
+  | certificate candidate =>
+    simp only [Evidence.establishes, Bool.and_eq_true] at checked
+    exact proves_sound checked.2 (reference_of_formsFor compatible checked.1)
+  | exploration rounds =>
+    simp only [Evidence.establishes, Bool.and_eq_true] at checked
+    exact exploresFrom_sound checked.2 (reference_of_formsFor compatible checked.1)
   | closedRegion rounds =>
     simp only [Evidence.establishes, Bool.and_eq_true, beq_iff_eq] at checked
-    exact (decideFrom_sound checked.1.1 checked.1.2 checked.2).mp rfl
+    exact (decideFrom_sound checked.1.1.2 checked.1.2 checked.2 (reference_of_formsFor compatible checked.1.1.1)).mp
+      rfl
   | canonicalRegion rounds =>
     cases forms with
     | none => cases checked
     | some forms =>
       simp only [Evidence.establishes, Bool.and_eq_true, beq_iff_eq] at checked
+      rw [← show forms.reading = reading from compatible]
       exact (decideCanonical_sound_on forms.canonical forms.coherent checked.1 checked.2).mp rfl
+  | backward rounds =>
+    simp only [Evidence.establishes, Bool.and_eq_true] at checked
+    exact backwardEstablishes_sound checked.2 (reference_of_formsFor compatible checked.1)
   | decided => cases checked
 
-/-- **Evidence that refutes fails.** -/
-theorem Evidence.refutes_sound {forms : Option (CanonicalForms relEnv language fuel)} {evidence : Evidence}
+/-- **Evidence that refutes fails**, in every reading the canonical forms are for. -/
+theorem Evidence.refutes_sound {forms : Option (CanonicalForms relEnv language fuel)} {reading : LanguageReading}
+    (compatible : FormsFor forms reading) {evidence : Evidence}
     (checked : evidence.refutes relEnv signature language fuel formula term forms = true) :
-    ¬ (referenceStructure relEnv language).sat Env.closed formula term := by
+    ¬ (referenceStructure relEnv language reading).sat Env.closed formula term := by
   cases evidence with
-  | certificate candidate => exact GeneratedLogic.refutes_sound checked
-  | exploration rounds => exact exploresAgainstFrom_sound checked
+  | certificate candidate =>
+    simp only [Evidence.refutes, Bool.and_eq_true] at checked
+    exact GeneratedLogic.refutes_sound checked.2 (reference_of_formsFor compatible checked.1)
+  | exploration rounds =>
+    simp only [Evidence.refutes, Bool.and_eq_true] at checked
+    exact exploresAgainstFrom_sound checked.2 (reference_of_formsFor compatible checked.1)
   | closedRegion rounds =>
     simp only [Evidence.refutes, Bool.and_eq_true, beq_iff_eq] at checked
-    exact fun holds => Bool.false_ne_true ((decideFrom_sound checked.1.1 checked.1.2 checked.2).mpr holds)
+    exact fun holds => Bool.false_ne_true ((decideFrom_sound checked.1.1.2 checked.1.2 checked.2
+      (reference_of_formsFor compatible checked.1.1.1)).mpr holds)
   | canonicalRegion rounds =>
     cases forms with
     | none => cases checked
     | some forms =>
       simp only [Evidence.refutes, Bool.and_eq_true, beq_iff_eq] at checked
+      rw [← show forms.reading = reading from compatible]
       exact fun holds =>
         Bool.false_ne_true ((decideCanonical_sound_on forms.canonical forms.coherent checked.1 checked.2).mpr holds)
+  | backward rounds =>
+    simp only [Evidence.refutes, Bool.and_eq_true] at checked
+    exact backwardRefutes_sound checked.2 (reference_of_formsFor compatible checked.1)
   | decided => cases checked
 
-/-- **A proved answer holds.** -/
-theorem ask_proved {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
-    {evidence : Evidence} (answered : ask relEnv signature language fuel formula term hint rounds forms = .proved evidence) :
-    (referenceStructure relEnv language).sat Env.closed formula term := by
+/-- **A proved answer holds**, in every reading the canonical forms are for: without them, in every reading. -/
+theorem ask_proved_in {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
+    {reading : LanguageReading} (compatible : FormsFor forms reading) {evidence : Evidence}
+    (answered : ask relEnv signature language fuel formula term hint rounds forms = .proved evidence) :
+    (referenceStructure relEnv language reading).sat Env.closed formula term := by
   unfold ask at answered
   split at answered
   · rename_i found
     cases answered
-    exact Evidence.establishes_sound (List.find?_some found)
+    exact Evidence.establishes_sound compatible (List.find?_some found)
   · split at answered <;> cases answered
 
-/-- **A refuted answer fails.** -/
-theorem ask_refuted {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
+/-- **A refuted answer fails**, in every reading the canonical forms are for: without them, in every reading. -/
+theorem ask_refuted_in {hint : Option CertificateCandidate} {rounds : ℕ}
+    {forms : Option (CanonicalForms relEnv language fuel)} {reading : LanguageReading} (compatible : FormsFor forms reading)
     {evidence : Evidence} (answered : ask relEnv signature language fuel formula term hint rounds forms = .refuted evidence) :
-    ¬ (referenceStructure relEnv language).sat Env.closed formula term := by
+    ¬ (referenceStructure relEnv language reading).sat Env.closed formula term := by
   unfold ask at answered
   split at answered
   · cases answered
   · split at answered
     · rename_i found
       cases answered
-      exact Evidence.refutes_sound (List.find?_some found)
+      exact Evidence.refutes_sound compatible (List.find?_some found)
     · cases answered
+
+/-- **A proved answer holds** in the reading of the canonical forms, the syntax theory without them. -/
+theorem ask_proved {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
+    {evidence : Evidence} (answered : ask relEnv signature language fuel formula term hint rounds forms = .proved evidence) :
+    (referenceStructure relEnv language (formsReading forms)).sat Env.closed formula term :=
+  ask_proved_in (formsFor_formsReading forms) answered
+
+/-- **A refuted answer fails** in the reading of the canonical forms, the syntax theory without them. -/
+theorem ask_refuted {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
+    {evidence : Evidence} (answered : ask relEnv signature language fuel formula term hint rounds forms = .refuted evidence) :
+    ¬ (referenceStructure relEnv language (formsReading forms)).sat Env.closed formula term :=
+  ask_refuted_in (formsFor_formsReading forms) answered
 
 /-- **An open answer bounds every explanation**: every candidate that proves or refutes the formula at the
 term has `ℓ + ⌈log₂ t⌉ + 1 > rounds` for its code. -/
@@ -511,7 +553,8 @@ theorem ask_open {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Op
     (answered : ask relEnv signature language fuel formula term hint rounds forms = .unknown rounds)
     (candidate : CertificateCandidate)
     (decides : provesBy signature language formula term candidate = true ∨
-      refutesBy signature language formula term candidate = true) :
+      refutesBy signature language formula term candidate = true)
+    (reference : formsReference forms = true := by rfl) :
     rounds < Codes.codeLength candidate.encode + Nat.clog 2 candidate.cost + 1 := by
   unfold ask at answered
   split at answered
@@ -529,7 +572,7 @@ theorem ask_open {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Op
           have member : Evidence.certificate answer.1 ∈ gathered signature language formula term hint rounds := by
             simp [gathered, found]
           have rejected := List.find?_eq_none.mp noProof _ member
-          simp [Evidence.establishes, answer.2] at rejected
+          simp [Evidence.establishes, answer.2, reference] at rejected
       have noRefutationSearch : explain CertificateCandidate.decode CertificateCandidate.cost
           (refutesBy signature language formula term) rounds = none := by
         cases found : explain CertificateCandidate.decode CertificateCandidate.cost
@@ -539,7 +582,7 @@ theorem ask_open {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Op
           have member : Evidence.certificate answer.1 ∈ gathered signature language formula term hint rounds := by
             simp [gathered, found]
           have rejected := List.find?_eq_none.mp noRefutation _ member
-          simp [Evidence.refutes, answer.2] at rejected
+          simp [Evidence.refutes, answer.2, reference] at rejected
       rcases decides with proving | refuting
       · exact exhausted_bound _ _ _ noProofSearch (CertificateCandidate.decode_encode candidate) proving
       · exact exhausted_bound _ _ _ noRefutationSearch (CertificateCandidate.decode_encode candidate) refuting
@@ -549,10 +592,11 @@ at the term, enough rounds answer. -/
 theorem ask_complete (hint : Option CertificateCandidate) (forms : Option (CanonicalForms relEnv language fuel))
     {candidate : CertificateCandidate}
     (decides : provesBy signature language formula term candidate = true ∨
-      refutesBy signature language formula term candidate = true) :
+      refutesBy signature language formula term candidate = true)
+    (reference : formsReference forms = true := by rfl) :
     ∃ rounds, ∀ more, rounds ≤ more → ask relEnv signature language fuel formula term hint more forms ≠ .unknown more := by
   refine ⟨Codes.codeLength candidate.encode + Nat.clog 2 candidate.cost + 1, fun more enough answered => ?_⟩
-  have := ask_open answered candidate decides
+  have := ask_open answered candidate decides reference
   omega
 
 /-! ## Certified deciders -/
@@ -560,42 +604,45 @@ theorem ask_complete (hint : Option CertificateCandidate) (forms : Option (Canon
 /-- **A certified decider** for a language: a decision procedure on some formulas and terms, exact in the
 language's reference structure wherever it answers. A language whose canonical regions do not reach a former (the
 parts of a set, for splits) can supply one built on its own semantics. -/
-structure Decider (relEnv : RelationEnv) (language : LanguageDef) where
+structure Decider (relEnv : RelationEnv) (language : LanguageDef) (reading : LanguageReading := .syntax) where
   decide : Formula 0 → Pattern → Option Bool
   exact : ∀ {formula : Formula 0} {term : Pattern} {answer : Bool}, decide formula term = some answer →
-    ((referenceStructure relEnv language).sat Env.closed formula term ↔ answer = true)
+    ((referenceStructure relEnv language reading).sat Env.closed formula term ↔ answer = true)
 
 variable (relEnv signature language fuel formula term) in
 /-- **Ask, with a certified decider**: the decider's answer when it gives one, and otherwise `ask`. -/
-def askWith (decider : Decider relEnv language) (hint : Option CertificateCandidate) (rounds : ℕ)
+def askWith {reading : LanguageReading} (decider : Decider relEnv language reading) (hint : Option CertificateCandidate)
+    (rounds : ℕ)
     (forms : Option (CanonicalForms relEnv language fuel) := none) : Answer :=
   match decider.decide formula term with
   | some true => .proved .decided
   | some false => .refuted .decided
   | none => ask relEnv signature language fuel formula term hint rounds forms
 
-/-- **A proved answer holds**, with a certified decider. -/
-theorem askWith_proved {decider : Decider relEnv language} {hint : Option CertificateCandidate} {rounds : ℕ}
-    {forms : Option (CanonicalForms relEnv language fuel)} {evidence : Evidence}
+/-- **A proved answer holds**, with a certified decider, in its reading when the canonical forms are for it too. -/
+theorem askWith_proved {reading : LanguageReading} {decider : Decider relEnv language reading}
+    {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
+    (compatible : FormsFor forms reading) {evidence : Evidence}
     (answered : askWith relEnv signature language fuel formula term decider hint rounds forms = .proved evidence) :
-    (referenceStructure relEnv language).sat Env.closed formula term := by
+    (referenceStructure relEnv language reading).sat Env.closed formula term := by
   unfold askWith at answered
   split at answered
   · rename_i decided
     exact (decider.exact decided).mpr rfl
   · cases answered
-  · exact ask_proved answered
+  · exact ask_proved_in compatible answered
 
-/-- **A refuted answer fails**, with a certified decider. -/
-theorem askWith_refuted {decider : Decider relEnv language} {hint : Option CertificateCandidate} {rounds : ℕ}
-    {forms : Option (CanonicalForms relEnv language fuel)} {evidence : Evidence}
+/-- **A refuted answer fails**, with a certified decider, in its reading when the canonical forms are for it too. -/
+theorem askWith_refuted {reading : LanguageReading} {decider : Decider relEnv language reading}
+    {hint : Option CertificateCandidate} {rounds : ℕ} {forms : Option (CanonicalForms relEnv language fuel)}
+    (compatible : FormsFor forms reading) {evidence : Evidence}
     (answered : askWith relEnv signature language fuel formula term decider hint rounds forms = .refuted evidence) :
-    ¬ (referenceStructure relEnv language).sat Env.closed formula term := by
+    ¬ (referenceStructure relEnv language reading).sat Env.closed formula term := by
   unfold askWith at answered
   split at answered
   · cases answered
   · rename_i decided
     exact fun holds => Bool.false_ne_true ((decider.exact decided).mp holds)
-  · exact ask_refuted answered
+  · exact ask_refuted_in compatible answered
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic

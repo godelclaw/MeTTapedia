@@ -11,7 +11,7 @@ theory able to define them, a set theory for instance, states the native types a
 
 - **The definitions** (`Relations`): one term of the signature for each relation of a native structure, at a
   chosen type of elements: the steps of each label, each constructor at each arity, each collection kind's splits,
-  emptiness and singletons, bodies, multi-bodies, bound variables, types, named terms, identity, and the application
+  emptiness and singletons, bodies, multi-bodies, bound variables, types, named terms, declared relations, identity, and the application
   of a body to an argument.
 - **The translation** (`translate`) uses the logic's own connectives and quantifiers. A least fixed point is the
   intersection of the predicates closed under its body, and a greatest fixed point the union of those its body
@@ -65,6 +65,8 @@ structure Relations (K : Ty B → Type v) (elem : Ty B) where
   typed : TypeExpr → {Γ : Ctx B} → Term K Γ (elem ⇒ .prop)
   /-- The element is the one the term names. -/
   named : Pattern → {Γ : Ctx B} → Term K Γ (elem ⇒ .prop)
+  /-- The element is in the declared relation. -/
+  inRelation : String → {Γ : Ctx B} → Term K Γ (elem ⇒ .prop)
   /-- A body applied to an argument. -/
   apply : {Γ : Ctx B} → Term K Γ (elem ⇒ elem ⇒ elem)
   /-- The two elements are the same element. -/
@@ -201,6 +203,8 @@ def translate : {n : ℕ} → Formula n → Term K (context elem n) (predicate e
   | _, .untyped type => .lam (.not (holding (rels.typed type)))
   | _, .is term => .lam (holding (rels.named term))
   | _, .isNot term => .lam (.not (holding (rels.named term)))
+  | _, .inRelation relation => .lam (holding (rels.inRelation relation))
+  | _, .notInRelation relation => .lam (.not (holding (rels.inRelation relation)))
   | _, .mapsAll argument result =>
     .lam (.ex (σ := elem) (.and (related rels.body) (.all (σ := elem)
       (.or (.app (weaken₃ (translate argument)) (.var .vz)) (.app (weaken₃ (translate result)) (applying rels.apply))))))
@@ -266,6 +270,8 @@ structure Interprets (M : HenkinModel.{u, v, w} B K) (e : Carrier ≃ Ty.denote 
     (M.denote (rels.typed type) valuation (e whole)).down ↔ S.typed whole type
   named : ∀ {Γ : Ctx B} (valuation : M.Valuation Γ) (term : Pattern) (whole : Carrier),
     (M.denote (rels.named term) valuation (e whole)).down ↔ S.named whole term
+  inRelation : ∀ {Γ : Ctx B} (valuation : M.Valuation Γ) (relation : String) (whole : Carrier),
+    (M.denote (rels.inRelation relation) valuation (e whole)).down ↔ S.inRelation whole relation
   apply : ∀ {Γ : Ctx B} (valuation : M.Valuation Γ) (inner argument : Carrier),
     M.denote rels.apply valuation (e inner) (e argument) = e (S.apply inner argument)
   same : ∀ {Γ : Ctx B} (valuation : M.Valuation Γ) (first second : Carrier),
@@ -619,6 +625,8 @@ theorem denote_translate (full : M.FullDomains) (interprets : Interprets M e rel
   | _, .untyped type, _, _, _, point => not_congr (interprets.typed _ type point)
   | _, .is term, _, _, _, point => interprets.named _ term point
   | _, .isNot term, _, _, _, point => not_congr (interprets.named _ term point)
+  | _, .inRelation relation, _, _, _, point => interprets.inRelation _ relation point
+  | _, .notInRelation relation, _, _, _, point => not_congr (interprets.inRelation _ relation point)
   | _, .mapsAll argument result, env, valuation, agrees, point => by
     change (∃ x, M.adm elem x ∧
       (M.denote (related rels.body) (M.extend (M.extend valuation (e point)) x)).down ∧

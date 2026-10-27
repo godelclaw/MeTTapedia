@@ -654,19 +654,30 @@ private def publication (held : List Result) : Except Reason (List Result) →
   | .ok rows => (held ++ rows).map Event.publish
   | .error _ => []
 
+private def publicationWith (finish : List Result → List Result) (held : List Result) :
+    Except Reason (List Result) → List (Event Effect Result)
+  | .ok rows => (finish (held ++ rows)).map Event.publish
+  | .error _ => []
+
 private def status : Except Reason (List Result) → Except Reason Unit
   | .ok _ => .ok ()
   | .error reason => .error reason
 
 /-- The worker stores values while effects execute. Only an exhausted producer
 switches to publication; an entered fault retires the unpublished buffer. -/
-def lower (held : List Result) : List (Component Effect Result Reason) →
+def lowerWith (finish : List Result → List Result) (held : List Result) :
+    List (Component Effect Result Reason) →
     Program (Except Reason Unit) (Event Effect Result)
-  | [] => emitAll (held.map Event.publish) (.done (.ok ()))
+  | [] => emitAll ((finish held).map Event.publish) (.done (.ok ()))
   | first :: rest => emitAll (first.effects.map Event.effect)
       (match first.outcome with
        | .error reason => .done (.error reason)
-       | .ok rows => lower (held ++ rows) rest)
+       | .ok rows => lowerWith finish (held ++ rows) rest)
+
+/-- Ordinary completed frontiers publish every retained occurrence. A
+collection specializes the same driver with one aggregate result. -/
+def lower (held : List Result) (components : List (Component Effect Result Reason)) :=
+  lowerWith id held components
 
 private theorem emitAll_runs {next : Program (Except Reason Unit) (Event Effect Result)}
     {events : List (Event Effect Result)} {result : Except Reason Unit}
@@ -676,26 +687,35 @@ private theorem emitAll_runs {next : Program (Except Reason Unit) (Event Effect 
   | nil => exact tail
   | cons _ _ ih => exact .emit ih
 
-theorem lower_runs (components : List (Component Effect Result Reason)) (held : List Result) :
-    Runs (lower held components)
-      ((reference components).1 ++ publication held (reference components).2)
+theorem lowerWith_runs (finish : List Result → List Result)
+    (components : List (Component Effect Result Reason)) (held : List Result) :
+    Runs (lowerWith finish held components)
+      ((reference components).1 ++ publicationWith finish held (reference components).2)
       (status (reference components).2) := by
   induction components generalizing held with
   | nil =>
-      simpa [lower, reference, publication, status] using
-        emitAll_runs (Reason := Reason) (held.map Event.publish) Runs.done
+      simpa [lowerWith, reference, publicationWith, status] using
+        emitAll_runs (Reason := Reason) ((finish held).map Event.publish) Runs.done
   | cons first rest ih =>
       rcases first with ⟨effects, outcome⟩
       cases outcome with
       | error reason =>
-          simpa [lower, reference, publication, status] using
+          simpa [lowerWith, reference, publicationWith, status] using
             emitAll_runs (Result := Result) (effects.map Event.effect)
               (Runs.done (value := Except.error reason))
       | ok rows =>
           cases result : (reference rest).2 <;>
-            simpa [lower, reference, prepend, publication, status, result,
+            simpa [lowerWith, reference, prepend, publicationWith, status, result,
               List.append_assoc] using
               emitAll_runs (effects.map Event.effect) (ih (held ++ rows))
+
+theorem lower_runs (components : List (Component Effect Result Reason)) (held : List Result) :
+    Runs (lower held components)
+      ((reference components).1 ++ publication held (reference components).2)
+      (status (reference components).2) := by
+  have exactRun := lowerWith_runs (Effect := Effect) id components held
+  cases outcome : (reference components).2 <;>
+    simpa [lower, publicationWith, publication, outcome] using exactRun
 
 /-- Joins the independent batch specification to the same explicit driver as
 owned sequencing. Effects precede all caller publications, including duplicates. -/
@@ -704,6 +724,20 @@ theorem driver_refines (components : List (Component Effect Result Reason)) :
       ((reference components).1 ++ publication [] (reference components).2,
         ⟨.done (status (reference components).2), []⟩) :=
   advance_refines_runs (lower_runs components [])
+
+/-- Result shaping happens only after the complete producer succeeds.
+The same owned driver can publish a frontier or one reified collection. -/
+theorem driverWith_refines (finish : List Result → List Result)
+    (components : List (Component Effect Result Reason)) :
+    ∃ allowance, advance allowance ⟨lowerWith finish [] components, []⟩ =
+      ((reference components).1 ++
+        (match (reference components).2 with
+         | .ok rows => (finish rows).map Event.publish
+         | .error _ => []),
+        ⟨.done ((reference components).2.map (fun _ => ())), []⟩) := by
+  have exactRun := advance_refines_runs (lowerWith_runs finish components [])
+  cases outcome : (reference components).2 <;>
+    simpa [publicationWith, status, outcome, Except.map] using exactRun
 
 theorem effects_before_duplicate_publications :
     ∃ allowance, advance allowance
@@ -843,3 +877,5 @@ end Mettapedia.Machines.OwnedBind
 #print axioms Mettapedia.Machines.OwnedBind.NativeCompletion.effects_before_duplicate_publications
 #print axioms Mettapedia.Machines.OwnedBind.NativeCompletion.later_fault_discards_unpublished_prefix
 #print axioms Mettapedia.Machines.OwnedBind.NativeCompletion.interleaving_is_observable
+#print axioms Mettapedia.Machines.OwnedBind.NativeCompletion.lowerWith_runs
+#print axioms Mettapedia.Machines.OwnedBind.NativeCompletion.driverWith_refines

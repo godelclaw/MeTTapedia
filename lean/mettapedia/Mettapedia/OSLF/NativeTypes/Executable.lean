@@ -164,6 +164,34 @@ private theorem authorize_success {adapter : Adapter} {supplied expected : Snaps
     · cases success
   · cases success
 
+private theorem authorize_expected (adapter : Adapter) (expected : Snapshot) (fragment : LanguageFragment)
+    (earned : Installed) : authorize adapter expected expected fragment fragment earned = .ok earned := by
+  unfold authorize
+  rw [if_pos rfl, if_pos rfl]
+
+/-- **The scoped λ request installs its earned profile.** -/
+theorem generate_scopedLambda (configuration : Mettapedia.OSLF.NativeTypes.Instances.Lambda.Driver.Configuration)
+    (context : Ctx LambdaContextualRung.sig) :
+    generate (.scopedLambda Mettapedia.OSLF.NativeTypes.Instances.Lambda.Generated.snapshot
+      (Mettapedia.OSLF.NativeTypes.Instances.Lambda.Driver.fragment configuration) configuration context) =
+      .ok (Mettapedia.OSLF.NativeTypes.Runtime.Profiles.lambda configuration context) :=
+  authorize_expected _ _ _ _
+
+/-- **The canonical ρ request installs its earned profile.** -/
+theorem generate_canonicalRho (configuration : Mettapedia.OSLF.NativeTypes.Instances.Rho.Driver.Configuration) :
+    generate (.canonicalRho Mettapedia.OSLF.NativeTypes.Instances.Rho.DriverSource.snapshot
+      Mettapedia.OSLF.NativeTypes.Instances.Rho.DriverSource.fragment configuration) =
+      .ok (Mettapedia.OSLF.NativeTypes.Runtime.Profiles.rho configuration) :=
+  authorize_expected _ _ _ _
+
+/-- **The original machine request installs the machine's own driver.** -/
+theorem generate_originalMachine (configuration : Mettapedia.OSLF.NativeTypes.Instances.Partrec.Driver.Configuration)
+    (bound : List TypeExpr) :
+    generate (.originalMachine Mettapedia.OSLF.NativeTypes.Instances.Partrec.Backend.snapshot
+      Mettapedia.OSLF.NativeTypes.Instances.Partrec.Generated.fragment configuration bound) =
+      .ok (Mettapedia.OSLF.NativeTypes.Runtime.Local.partrec configuration bound) :=
+  authorize_expected _ _ _ _
+
 theorem generate_success_inputs {request : Request} {output : Installed}
     (success : generate request = .ok output) :
     output.native.generated.snapshot = request.selectedSnapshot ∧

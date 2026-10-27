@@ -2,7 +2,7 @@ import Mettapedia.PLN.WorldModel.TerminalMeasureWorldModel
 import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.BinEvNat
 import KnuthSkilling.Counterexamples.SigmaAdditivityNecessity
-import KnuthSkilling.Bridges.ValuationAlgebra
+import Mettapedia.ProbabilityTheory.BayesianNetworks.KSValuation
 
 /-!
 # The KS-Evidence-Measure Triangle
@@ -61,10 +61,10 @@ and are intentionally not claimed here.
 ## References
 
 - Knuth & Skilling, "Foundations of Inference" (2012)
-- KS formalization: 126,102 lines, 1,923 theorems, ~11 sorry (experimental only)
+- KS uses its declared external foundation; application bridges use the maintained local carriers.
 - WM-PLN book, Ch 4 (Evidence Carriers), Ch 19 (Future: Measure-Theoretic Grounding)
-- `ProbabilityTheory/KnuthSkilling/Bridges/ValuationAlgebra.lean` — factor graph bridge
-- `ProbabilityTheory/KnuthSkilling/Counterexamples/SigmaAdditivityNecessity.lean`
+- `ProbabilityTheory/BayesianNetworks/KSValuation.lean` — factor graph bridge
+- `KnuthSkilling/Counterexamples/SigmaAdditivityNecessity.lean`
 
 0 sorry.
 -/
@@ -232,7 +232,7 @@ extraction commutes with revision. In factor-graph terms, this says
 variable elimination on the evidence factor graph commutes with
 evidence aggregation.
 
-The valuation algebra bridge (KS/Bridges/ValuationAlgebra.lean, 187 lines)
+The valuation algebra bridge (ProbabilityTheory/BayesianNetworks/KSValuation.lean)
 connects these formally. For the current bridge, the evidence-counting layer
 behaves like a valuation algebra where:
 - Variables = queries
@@ -247,7 +247,7 @@ The `extract_add` law IS the valuation algebra combination law. -/
 -- regraded factor graphs is correct (ve_correct_regrade, ksVE_correct).
 -- The WM `extract_add` law IS the valuation algebra combination law.
 -- Both imported from KnuthSkilling/Bridges/ValuationAlgebra.lean:
-example := @KnuthSkilling.Bridges.ValuationAlgebra.ve_correct_regrade
-example := @KnuthSkilling.Bridges.ValuationAlgebra.ksVE_correct
+example := @Mettapedia.ProbabilityTheory.BayesianNetworks.KSValuation.ve_correct_regrade
+example := @Mettapedia.ProbabilityTheory.BayesianNetworks.KSValuation.ksVE_correct
 
 end Mettapedia.PLN.Evidence.KSEvidenceMeasureBridge

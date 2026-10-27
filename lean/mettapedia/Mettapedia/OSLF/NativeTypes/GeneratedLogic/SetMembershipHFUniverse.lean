@@ -133,7 +133,7 @@ theorem isHFSet_iff_mem_vonNeumann (z : ZFSet.{0}) : IsHFSet z ↔ z ∈ ZFSet.v
 /-- **The hereditarily finite sets are closed** under members, parts and the members of one-element sets. -/
 theorem hfSets_generated : extensional.Generated IsHFSet where
   step := by
-    rintro _ _ _ ⟨term, holds, rfl⟩ ⟨-, member⟩
+    rintro _ _ _ _ ⟨term, holds, rfl⟩ ⟨-, member⟩
     exact isHFSet_of_member holds member
   built _ built := built.elim
   split := by
@@ -153,7 +153,7 @@ abbrev HFSets := NativeStructure.restrict hfSets_generated
 /-- **Denotation is an exact morphism** from the hereditary terms onto the hereditarily finite sets. -/
 def toHFSets : ExactMorphism HFNative HFSets where
   map term := ⟨zfOf term.1, term.1, term.2, rfl⟩
-  step stepped := toZF.step stepped
+  step own stepped := toZF.step own stepped
   built built := toZF.built built |>.elim
   split split := toZF.split split
   empty empty := toZF.empty empty
@@ -163,8 +163,9 @@ def toHFSets : ExactMorphism HFNative HFSets where
   bound bound := toZF.bound bound
   typed typed := toZF.typed typed
   named named := toZF.named named
-  stepBack {_ _ target'} step := by
-    obtain ⟨target, stepped, same⟩ := toZF.stepBack step
+  inRelation isIn := toZF.inRelation isIn
+  stepBack {_ _ target'} own step := by
+    obtain ⟨target, stepped, same⟩ := toZF.stepBack own step
     exact ⟨target, stepped, Subtype.ext same⟩
   builtBack built := built.elim
   splitBack {_ _ first' second'} split := by
@@ -179,14 +180,15 @@ def toHFSets : ExactMorphism HFNative HFSets where
   boundBack bound := toZF.boundBack bound
   typedBack typed := toZF.typedBack typed
   namedBack named := toZF.namedBack named
+  inRelationBack isIn := toZF.inRelationBack isIn
   sameIff first second := toZF.sameIff first second
   surjective := by
     rintro ⟨_, term, holds, rfl⟩
     exact ⟨⟨term, holds⟩, rfl⟩
-  previousBack {source' label target} step := by
+  previousBack {source' label target} own step := by
     obtain ⟨labelled, member⟩ := step
     obtain ⟨term, holds, same⟩ := source'.2
-    refine ⟨⟨term, holds⟩, step_label_iff.mpr ⟨labelled, (member_step_iff holds target.2).mpr ?_⟩,
+    refine ⟨⟨term, holds⟩, (step_label_iff own).mpr ⟨labelled, (member_step_iff holds target.2).mpr ?_⟩,
       Subtype.ext same⟩
     rw [same]
     exact member
@@ -196,10 +198,10 @@ def toHFSets : ExactMorphism HFNative HFSets where
 
 /-- **Every native type of a hereditary term, read among the hereditary terms, is the same native type of its set,
 read among the hereditarily finite sets**, past modalities, counting of predecessors and quantifiers over a type
-included. -/
-theorem sat_iff_hfSets (formula : Formula 0) (term : {term // IsHF term}) :
+included, for the term's own steps: no context labels. -/
+theorem sat_iff_hfSets (formula : Formula 0) (free : formula.contextFree = true) (term : {term // IsHF term}) :
     HFNative.sat Env.closed formula term ↔ HFSets.sat Env.closed formula (toHFSets.map term) :=
-  toHFSets.sat_iff formula (fun index => index.elim0) term
+  toHFSets.sat_iff formula free (fun index => index.elim0) term
 
 /-! ## Past modalities and quantifiers over a type -/
 
@@ -209,7 +211,7 @@ theorem zero_hf : IsHF zero := (hereditary_iff _).mp (by decide)
 
 /-- **`3` contains `2`**: a past modality, read among the hereditary terms. -/
 theorem three_contains_two : HFNative.sat Env.closed (.sometimeBefore .any (.is three)) ⟨two, two_hf⟩ := by
-  refine (sat_iff_hfSets _ ⟨two, two_hf⟩).mpr ⟨⟨zfOf three, three, three_holds, rfl⟩, ⟨trivial, ?_⟩, three_holds, rfl⟩
+  refine (sat_iff_hfSets _ rfl ⟨two, two_hf⟩).mpr ⟨⟨zfOf three, three, three_holds, rfl⟩, ⟨trivial, ?_⟩, three_holds, rfl⟩
   change zfOf two ∈ zfOf (set [zero, one, two])
   rw [zfOf_set]
   exact mem_zfOfList.mpr ⟨two, by simp, rfl⟩
@@ -217,7 +219,7 @@ theorem three_contains_two : HFNative.sat Env.closed (.sometimeBefore .any (.is 
 /-- **Nothing empty contains a set.** -/
 theorem nothing_empty_contains : ¬ HFNative.sat Env.closed (.sometimeBefore .any (.empty .hashSet)) ⟨zero, zero_hf⟩ := by
   intro holds
-  obtain ⟨previous, ⟨-, member⟩, -, isEmpty⟩ := (sat_iff_hfSets _ ⟨zero, zero_hf⟩).mp holds
+  obtain ⟨previous, ⟨-, member⟩, -, isEmpty⟩ := (sat_iff_hfSets _ rfl ⟨zero, zero_hf⟩).mp holds
   change zfOf zero ∈ previous.1 at member
   rw [show previous.1 = ∅ from isEmpty] at member
   exact ZFSet.notMem_empty _ member
@@ -225,7 +227,7 @@ theorem nothing_empty_contains : ¬ HFNative.sat Env.closed (.sometimeBefore .an
 /-- **Every hereditarily finite set is well founded**: a quantifier over the type, with a least fixed point inside. -/
 theorem every_hf_wellFounded :
     HFNative.sat Env.closed (.everyOf (.base "Set") (.mu (.necessarily .any (.var 0)))) ⟨zero, zero_hf⟩ := by
-  refine (sat_iff_hfSets _ ⟨zero, zero_hf⟩).mpr fun witness _ closed isClosed => ?_
+  refine (sat_iff_hfSets _ rfl ⟨zero, zero_hf⟩).mpr fun witness _ closed isClosed => ?_
   suffices all : ∀ z : ZFSet.{0}, ∀ holds : IsHFSet z, (⟨z, holds⟩ : {z // IsHFSet z}) ∈ closed from
     all witness.1 witness.2
   intro z

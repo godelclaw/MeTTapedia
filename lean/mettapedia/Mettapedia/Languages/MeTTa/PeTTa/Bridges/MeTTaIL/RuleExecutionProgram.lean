@@ -260,7 +260,7 @@ private def interpretedRecursiveCollectionSource : ProgramQuotation.QuotedProgra
 
 private def interpretedCollectionPresentationSource : ProgramQuotation.QuotedProgram :=
   petta_source_file% "../../../../../../../../metta/gslt/lib/gslt_collection_presentation.metta"
-    sha256 "b20a814bc1b9baa86a6778e8fdff9c459ff27d272743bd48c5ddf25993bdba91"
+    sha256 "01c97faf6f6a8aa54f5af704c39cbce46166a1f076de29fef855861b47929a0b"
 
 private def interpretedCollectionHandoffSource : ProgramQuotation.QuotedProgram :=
   petta_source_file% "../../../../../../../../metta/gslt/lib/gslt_collection_handoff.metta"
@@ -350,7 +350,7 @@ def interpretedPremiseProgram : Program :=
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 4000000 in
 theorem interpretedPremiseProgram_equation_count :
-    interpretedPremiseProgram.equations.length = 559 := by decide +kernel
+    interpretedPremiseProgram.equations.length = 566 := by decide +kernel
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 4000000 in

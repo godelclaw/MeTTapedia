@@ -261,7 +261,7 @@ theorem shannonEntropy_eq_ks_shannonEntropy {n : ℕ} (p : ProbVec n) :
 open KnuthSkilling.Information.InformationEntropy in
 /-- The InformationTheory uniform distribution matches K&S uniform distribution. -/
 theorem uniformDist_eq_ks_uniformDist (n : ℕ) (hn : 0 < n) :
-    (uniformDist n hn).toProbDist =
+    ProbVec.toProbDist (uniformDist n hn) =
       KnuthSkilling.Information.InformationEntropy.uniformDist n hn :=
     by
   apply KnuthSkilling.Information.InformationEntropy.ProbDist.ext
@@ -311,9 +311,9 @@ theorem shannonEntropy_via_klDivergence {n : ℕ} (P : ProbVec n) (hn : 0 < n) :
   -- The goal: KS.shannonEntropy P.toProbDist = log n - klDivergenceVec ...
   -- h says: KS.klDivergence P.toProbDist (KS.uniformDist n hn) ... = log n - KS.shannonEntropy P.toProbDist
   -- So KS.shannonEntropy = log n - KS.klDivergence
-  -- And klDivergenceVec unfolds to KS.klDivergence P.toProbDist (uniformDist n hn).toProbDist
+  -- And klDivergenceVec unfolds to KS.klDivergence P.toProbDist ProbVec.toProbDist (uniformDist n hn)
   -- which equals KS.klDivergence P.toProbDist (KS.uniformDist n hn) by uniformDist_eq_ks_uniformDist
-  have heq : (uniformDist n hn).toProbDist =
+  have heq : ProbVec.toProbDist (uniformDist n hn) =
       KnuthSkilling.Information.InformationEntropy.uniformDist n hn :=
     uniformDist_eq_ks_uniformDist n hn
   simp only [klDivergenceVec, heq]

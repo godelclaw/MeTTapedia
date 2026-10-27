@@ -9,14 +9,15 @@ import Mathlib.Data.Fintype.Prod
 `Access` distinguishes a shared read right from an exclusive consume right.  A
 store that only grows needs two finer rights: **appending**, a write that only
 adds, and **monotone reading**, a read whose conclusions survive additions (a
-presence test, as opposed to an absence test, a count or a snapshot of the whole
-store).  A right is a read mode and a write mode (`Rights`); rights combine by
-taking the larger mode of each kind.
+presence test, as opposed to a predicate query: an absence test, a count or a
+snapshot of the whole store, whose answer depends on everything the store holds).
+A right is a read mode and a write mode (`Rights`); rights combine by taking the
+larger mode of each kind.
 
 ## The rights are rely–guarantee claims
 
 Over a preordered store, a right reifies to a rely–guarantee claim
-(`toClaim`): a full reader relies on no change, a monotone reader on changes that
+(`toClaim`): a predicate reader relies on no change, a monotone reader on changes that
 only grow the store, a full writer on no change by others; an appender
 guarantees growth, a full writer guarantees nothing.  Reification is a
 homomorphism (`toClaim_add`), and **two rights coexist exactly when their claims
@@ -29,14 +30,15 @@ appending and monotone reading occupy.
 
 * **Appenders coexist with appenders and with monotone readers**
   (`Controls.appenders_coexist`): neither needs to coordinate with the other.
-* **An appender does not coexist with a full reader** (`Controls.appender_full_reader_conflict`):
-  an absence test or a count is invalidated by an addition.
+* **An appender does not coexist with a predicate reader**
+  (`Controls.appender_predicate_reader_conflict`): an absence test or a count is
+  invalidated by an addition.
 * **A full writer is exclusive** (`full_writer_exclusive`).
-* **Upgrading a monotone read to a full read is not frame preserving**
+* **Upgrading a monotone read to a predicate query is not frame preserving**
   (`Controls.monotone_read_not_upgraded`): reading absence is a stronger right
   than reading presence.
-* `Access` embeds: none, read and consume are no rights, a full read, and a full
-  read with a full write (`ofAccess`, `separate_ofAccess_iff`).
+* `Access` embeds: none, read and consume are no rights, the predicate read mode,
+  and the predicate read mode with a full write (`ofAccess`, `separate_ofAccess_iff`).
 
 ## Presence-only rules hold append rights
 
@@ -49,7 +51,7 @@ condition of the CALM theorem.
 
 What remains outside: appends that must also keep a key unique, respect a quota,
 or be received by a consuming reader are not appends in this sense; the first two
-read the store fully, and a consuming receive writes it fully.
+make predicate queries of the store, and a consuming receive writes it fully.
 -/
 
 set_option autoImplicit false
@@ -64,11 +66,13 @@ universe u
 
 /-! ## The rights -/
 
-/-- How a party reads the store. -/
+/-- How a party reads the store: not at all, monotonically (presence tests, whose conclusions
+survive additions), or by predicate queries (absence tests, counts and snapshots, whose answers
+depend on everything the store holds). -/
 inductive ReadMode where
   | none
   | monotone
-  | full
+  | predicate
   deriving DecidableEq, Repr
 
 /-- How a party writes the store. -/
@@ -85,7 +89,7 @@ structure Rights where
   deriving DecidableEq, Repr
 
 instance : Fintype ReadMode :=
-  ⟨{.none, .monotone, .full}, fun mode => by cases mode <;> simp⟩
+  ⟨{.none, .monotone, .predicate}, fun mode => by cases mode <;> simp⟩
 
 instance : Fintype WriteMode :=
   ⟨{.none, .append, .full}, fun mode => by cases mode <;> simp⟩
@@ -106,7 +110,7 @@ def join : ReadMode → ReadMode → ReadMode
   | none, other => other
   | monotone, none => monotone
   | monotone, other => other
-  | full, _ => full
+  | predicate, _ => predicate
 
 end ReadMode
 
@@ -131,7 +135,7 @@ instance : Add Rights := ⟨fun first second => ⟨first.read.join second.read, 
 def tolerates (first second : Rights) : Bool :=
   match first.write with
   | .none => true
-  | .append => second.read != .full && second.write != .full
+  | .append => second.read != .predicate && second.write != .full
   | .full => second.read == .none && second.write != .full
 
 /-- Two rights coexist when each tolerates what the other writes. -/
@@ -168,8 +172,8 @@ instance (first second : Rights) : Decidable (first ## second) :=
 /-- A monotone reader and appender. -/
 def appender : Rights := ⟨.monotone, .append⟩
 
-/-- A full reader. -/
-def fullReader : Rights := ⟨.full, .none⟩
+/-- A predicate reader: it may make predicate queries of the store. -/
+def predicateReader : Rights := ⟨.predicate, .none⟩
 
 /-- A monotone reader. -/
 def monotoneReader : Rights := ⟨.monotone, .none⟩
@@ -194,7 +198,7 @@ variable {S : Type u} [Preorder S]
 def ReadMode.rely : ReadMode → S → S → Prop
   | .none => fun _ _ => True
   | .monotone => fun before after => before ≤ after
-  | .full => fun before after => after = before
+  | .predicate => fun before after => after = before
 
 /-- What a write mode relies on: a full writer owns the store. -/
 def WriteMode.rely : WriteMode → S → S → Prop
@@ -284,8 +288,8 @@ end Claims
 /-- Read and consume as rights. -/
 def ofAccess : Mettapedia.GSLT.Contracts.Access → Rights
   | .none => 0
-  | .read => ⟨.full, .none⟩
-  | .consume => ⟨.full, .full⟩
+  | .read => ⟨.predicate, .none⟩
+  | .consume => ⟨.predicate, .full⟩
 
 theorem separate_ofAccess_iff (first second : Mettapedia.GSLT.Contracts.Access) :
     ofAccess first ## ofAccess second ↔ first ## second := by
@@ -320,24 +324,24 @@ theorem appenders_coexist : appender ## appender := by decide
 /-- An appender coexists with a monotone reader. -/
 theorem appender_monotoneReader_coexist : appender ## monotoneReader := by decide
 
-/-- **An appender does not coexist with a full reader.** -/
-theorem appender_full_reader_conflict : ¬ appender ## fullReader := by decide
+/-- **An appender does not coexist with a predicate reader.** -/
+theorem appender_predicate_reader_conflict : ¬ appender ## predicateReader := by decide
 
-/-- **Upgrading a monotone read to a full read breaks an appender's frame.** -/
-theorem monotone_read_not_upgraded : ¬ FrameUpdate monotoneReader fullReader := by
+/-- **Upgrading a monotone read to a predicate query breaks an appender's frame.** -/
+theorem monotone_read_not_upgraded : ¬ FrameUpdate monotoneReader predicateReader := by
   intro update
-  exact (by decide : ¬ fullReader ## appender) (update appender (by decide))
+  exact (by decide : ¬ predicateReader ## appender) (update appender (by decide))
 
-/-- Weakening a full read to a monotone read preserves every frame. -/
-theorem full_read_weakens : FrameUpdate fullReader monotoneReader := by
+/-- Weakening a predicate query to a monotone read preserves every frame. -/
+theorem predicate_query_weakens : FrameUpdate predicateReader monotoneReader := by
   intro other
   revert other
   decide
 
-/-- On a store of sets, the claims of an appender and of a full reader do not
+/-- On a store of sets, the claims of an appender and of a predicate reader do not
 coexist: adding an element invalidates the reader. -/
-theorem appender_full_reader_claims_conflict :
-    ¬ RGClaim.Coexist (toClaim appender : RGClaim (Set ℕ)) (toClaim fullReader) := by
+theorem appender_predicate_reader_claims_conflict :
+    ¬ RGClaim.Coexist (toClaim appender : RGClaim (Set ℕ)) (toClaim predicateReader) := by
   rintro ⟨forward, -⟩
   have relied := forward ∅ {0} (Set.empty_subset _)
   have unchanged : ({0} : Set ℕ) = ∅ := relied.1

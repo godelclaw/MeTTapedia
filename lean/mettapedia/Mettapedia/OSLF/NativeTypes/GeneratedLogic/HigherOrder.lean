@@ -9,8 +9,8 @@ relations, built from equality, abstraction and application.
 
 - **The signature** (`Symbol`): a constant for each relation of a native structure. These are the steps
   of each label, each constructor at each arity, each collection kind's splits, emptiness and singletons,
-  bodies, multi-bodies, bound variables, types and named terms, and the application of a body to an
-  argument. Constructors are relations, since modulo equations an element has many presentations.
+  bodies, multi-bodies, bound variables, types, named terms and declared relations, and the application
+  of a body to an argument. Constructors are relations, since modulo equations an element has many presentations.
 - **The model** (`presentation`): a native structure is a presentation of the OSLF basis, with the span
   of all its steps. Its standard model interprets each constant as the relation it names.
 - **The translation** (`translate`): each former becomes its defining formula. A least fixed point
@@ -125,6 +125,8 @@ inductive Symbol : Ty (Base Unit) → Type where
   | typed (type : TypeExpr) : Symbol (element ⇒ .prop)
   /-- The element is the one the term names. -/
   | named (term : Pattern) : Symbol (element ⇒ .prop)
+  /-- The element is in the declared relation. -/
+  | inRelation (relation : String) : Symbol (element ⇒ .prop)
   /-- A body applied to an argument. -/
   | apply : Symbol (element ⇒ element ⇒ element)
   /-- The two elements are the same element. -/
@@ -178,6 +180,7 @@ def interpret : {type : Ty (Base Unit)} → Symbol type → Value Carrier Edge t
   | _, .bound index => fun whole => ULift.up (S.bound (ULift.down whole) index)
   | _, .typed type => fun whole => ULift.up (S.typed (ULift.down whole) type)
   | _, .named term => fun whole => ULift.up (S.named (ULift.down whole) term)
+  | _, .inRelation relation => fun whole => ULift.up (S.inRelation (ULift.down whole) relation)
   | _, .apply => fun inner argument => ULift.up (S.apply (ULift.down inner) (ULift.down argument))
   | _, .same => fun first second => ULift.up (S.same (ULift.down first) (ULift.down second))
 
@@ -318,6 +321,8 @@ def translate : {n : ℕ} → Formula n → Term Constant (context n) predicate
   | _, .untyped type => .lam (neg (holding (.typed type)))
   | _, .is term => .lam (holding (.named term))
   | _, .isNot term => .lam (neg (holding (.named term)))
+  | _, .inRelation relation => .lam (holding (.inRelation relation))
+  | _, .notInRelation relation => .lam (neg (holding (.inRelation relation)))
   | _, .mapsAll argument result =>
     .lam (ex (conj (related .body)
       (all (disj (.app (weaken₃ (translate argument)) (.var .vz)) (.app (weaken₃ (translate result)) applying)))))
@@ -739,6 +744,12 @@ theorem denote_translate : ∀ {n : ℕ} (formula : Formula n) {env : Env Carrie
       ((standardModel S).extend (σ := element) valuation (ULift.up point))).down ↔ _
     rw [denote_neg _ (full S)]
     exact Iff.rfl
+  | _, .inRelation _, _, _, _, _ => Iff.rfl
+  | _, .notInRelation relation, _, valuation, _, point => by
+    change ((standardModel S).denote (neg (holding (.inRelation relation)))
+      ((standardModel S).extend (σ := element) valuation (ULift.up point))).down ↔ _
+    rw [denote_neg _ (full S)]
+    exact Iff.rfl
   | _, .mapsAll argument result, env, valuation, agrees, point => by
     change ((standardModel S).denote (ex (conj (related .body)
       (all (disj (.app (weaken₃ (translate argument)) (.var .vz)) (.app (weaken₃ (translate result)) applying)))))
@@ -946,8 +957,8 @@ theorem basisOnly_translate : ∀ {n : ℕ} (formula : Formula n), BasisOnly (tr
   | _, .everySplit _ left right => by
     simp [translate, splitting, BasisOnly, basisOnly_all, basisOnly_imp, basisOnly_disj, basisOnly_translate left,
       basisOnly_translate right]
-  | _, .empty _ | _, .bound _ | _, .typed _ | _, .is _ => rfl
-  | _, .nonEmpty _ | _, .notBound _ | _, .untyped _ | _, .isNot _ => by
+  | _, .empty _ | _, .bound _ | _, .typed _ | _, .is _ | _, .inRelation _ => rfl
+  | _, .nonEmpty _ | _, .notBound _ | _, .untyped _ | _, .isNot _ | _, .notInRelation _ => by
     simp [translate, holding, BasisOnly, basisOnly_neg]
   | _, .mapsAll argument result => by
     simp [translate, related, applying, BasisOnly, basisOnly_ex, basisOnly_conj, basisOnly_all, basisOnly_disj,
@@ -1103,7 +1114,8 @@ theorem usesOnly_countTerm : ∀ (count : ℕ) {Γ : Ctx (Base Unit)} (holds : T
 
 /-- **The relations a language provides**: steps of its rules and sites, its constructors at their
 arities, the collection kinds it uses, bodies and application when it has binders, multi-bodies when it
-has multi-binders, its types, and its closed well-sorted terms. -/
+has multi-binders, its types, its closed well-sorted terms, and every relation, which the relation environment
+interprets. -/
 def Provides (language : LanguageDef) : {type : Ty (Base Unit)} → Symbol type → Prop
   | _, .step label => LabelOf language label
   | _, .built constructor arity => HasConstructor language constructor arity
@@ -1115,6 +1127,7 @@ def Provides (language : LanguageDef) : {type : Ty (Base Unit)} → Symbol type 
   | _, .bound _ => HasBinder language ∨ HasMultiBinder language
   | _, .typed type => DeclaresType language type
   | _, .named term => ∃ type, OpenPatternWellSorted language FreeTypeContext.empty [] type term
+  | _, .inRelation _ => True
   | _, .apply => HasBinder language
   | _, .same => True
 
@@ -1163,6 +1176,8 @@ theorem usesOnly_translate (language : LanguageDef) : ∀ {n : ℕ} (formula : F
   | _, .bound _, generated | _, .notBound _, generated | _, .typed _, generated | _, .untyped _, generated
   | _, .is _, generated | _, .isNot _, generated => by
     simpa [translate, holding, UsesOnly, Provides, GeneratedBy] using generated
+  | _, .inRelation _, _ | _, .notInRelation _, _ => by
+    simp [translate, holding, UsesOnly, Provides]
   | _, .mapsAll argument result, generated | _, .mapsSome argument result, generated => by
     simp [translate, related, applying, UsesOnly, Provides, generated.1,
       usesOnly_translate language argument generated.2.1, usesOnly_translate language result generated.2.2]

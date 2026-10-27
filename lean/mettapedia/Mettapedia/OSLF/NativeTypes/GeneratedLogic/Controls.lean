@@ -41,7 +41,7 @@ open Mettapedia.OSLF.MeTTaIL.Engine (RelationEnv)
 open Mettapedia.OSLF.MeTTaIL.ReferenceStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts (OneHoleContext)
 open Mettapedia.GSLT.LanguageDef.WellSorted
-  (checkOpenPatternWellSorted_sound checkOpenPatternWellSorted_complete FreeTypeContext UsesBareCollection
+  (checkOpenPatternWellSorted_sound FreeTypeContext UsesBareCollection
     isObjectPattern isObjectPatternList)
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
   (DerivedInstance CollectionCarrierRule usesCollection_eq_true_of_collectionTypedAt
@@ -93,7 +93,7 @@ abbrev TinyComm : NativeStructure Pattern := referenceStructure RelationEnv.empt
 theorem tiny_equationFree : tiny.isEquationFree = true := by decide
 
 theorem tiny_equivalent {first second : Pattern} :
-    ObjectEquivalent RelationEnv.empty tiny first second ↔ first = second :=
+    ObjectEquivalent RelationEnv.empty tiny .syntax first second ↔ first = second :=
   objectEquivalent_iff_eq_of_isEquationFree tiny_equationFree
 
 /-- A listed step between states, whose witness the label admits, is a step of the structure. -/
@@ -102,21 +102,22 @@ theorem step_of_listed {relEnv : RelationEnv} {language : LanguageDef} {fuel : �
     (listed : ∃ entry ∈ stepsAt relEnv language fuel source, entry.2 = target ∧ label.admits entry.1 = true) :
     (referenceStructure relEnv language).step source label target := by
   obtain ⟨⟨witness, result⟩, member, rfl, admitted⟩ := listed
-  exact ⟨sourceState, targetState, source, result, witness, Relation.EqvGen.refl _, sourceState,
-    stepValid_of_mem_stepsAt relEnv language member, targetState, Relation.EqvGen.refl _, admitted⟩
+  exact ⟨sourceState, targetState, source, result, witness, placed_self admitted _, sourceState,
+    stepValid_of_mem_stepsAt relEnv language member, targetState, Relation.EqvGen.refl _, StepLabel.base_admits admitted⟩
 
-/-- In `tiny`, a step is a valid witness between states that the label admits. -/
-theorem tiny_step {source target : Pattern} {label : StepLabel} :
+/-- In `tiny`, a step with a label of the term's own is a valid witness between states that the label admits. -/
+theorem tiny_step {source target : Pattern} {label : StepLabel} (own : label.isContext = false) :
     Tiny.step source label target ↔ IsState source ∧ IsState target ∧
       ∃ witness, StepValid RelationEnv.empty tiny source witness target ∧ label.admits witness = true := by
   constructor
   · rintro ⟨sourceState, targetState, redex, contractum, witness, before, -, valid, -, after, admitted⟩
-    rw [tiny_equivalent] at before after
+    rw [placed_iff own, tiny_equivalent] at before
+    rw [tiny_equivalent] at after
     subst before after
-    exact ⟨sourceState, targetState, witness, valid, admitted⟩
+    exact ⟨sourceState, targetState, witness, valid, StepLabel.admits_of_base own admitted⟩
   · rintro ⟨sourceState, targetState, witness, valid, admitted⟩
-    exact ⟨sourceState, targetState, source, target, witness, Relation.EqvGen.refl _, sourceState, valid, targetState,
-      Relation.EqvGen.refl _, admitted⟩
+    exact ⟨sourceState, targetState, source, target, witness, placed_self admitted _, sourceState, valid, targetState,
+      Relation.EqvGen.refl _, StepLabel.base_admits admitted⟩
 
 /-- No step starts where no rule matches. -/
 theorem no_stepValid_of_unmatched {source target : Pattern} {witness : Witness}
@@ -201,7 +202,7 @@ theorem fires_under_congruence :
 /-- `Out` does not fire at the root of `Par (Out Nil) Nil`. -/
 theorem not_fires_at_root : ¬ Tiny.sat Env.closed (.possibly (.rule 0) .top) (par (out nilTerm) nilTerm) := by
   rintro ⟨next, step, -⟩
-  obtain ⟨-, -, witness, valid, admitted⟩ := tiny_step.mp step
+  obtain ⟨-, -, witness, valid, admitted⟩ := (tiny_step rfl).mp step
   cases witness with
   | rule index initial witnesses =>
     simp only [StepLabel.admits, ruleOf, beq_iff_eq, Option.some.injEq] at admitted
@@ -213,7 +214,7 @@ theorem not_fires_at_root : ¬ Tiny.sat Env.closed (.possibly (.rule 0) .top) (p
 theorem not_under_congruence_twice :
     ¬ Tiny.sat Env.closed (.possibly (.under 1 (.rule 1)) .top) (par (out nilTerm) nilTerm) := by
   rintro ⟨next, step, -⟩
-  obtain ⟨-, -, witness, valid, admitted⟩ := tiny_step.mp step
+  obtain ⟨-, -, witness, valid, admitted⟩ := (tiny_step rfl).mp step
   cases witness with
   | rule index initial witnesses =>
     simp only [StepLabel.admits, Bool.and_eq_true, beq_iff_eq, List.any_eq_true] at admitted
@@ -265,7 +266,7 @@ theorem state_predecessor :
 /-- Without the equation, `Par Nil (Out Nil)` is stuck: the congruence covers the left component. -/
 theorem right_component_stuck : ¬ Tiny.sat Env.closed (.possibly .any .top) (par nilTerm (out nilTerm)) := by
   rintro ⟨next, step, -⟩
-  obtain ⟨-, -, witness, valid, -⟩ := tiny_step.mp step
+  obtain ⟨-, -, witness, valid, -⟩ := (tiny_step rfl).mp step
   cases witness with
   | rule index initial witnesses =>
     match index, valid with
@@ -278,7 +279,7 @@ theorem right_component_stuck : ¬ Tiny.sat Env.closed (.possibly .any .top) (pa
 
 /-- `Par Nil (Out Nil) = Par (Out Nil) Nil` by commutativity. -/
 theorem commuted_equivalent :
-    ObjectEquivalent RelationEnv.empty tinyComm (par nilTerm (out nilTerm)) (par (out nilTerm) nilTerm) := by
+    ObjectEquivalent RelationEnv.empty tinyComm .syntax (par nilTerm (out nilTerm)) (par (out nilTerm) nilTerm) := by
   have authored : AuthoredEquation RelationEnv.empty tinyComm (par nilTerm (out nilTerm))
       (Mettapedia.OSLF.MeTTaIL.Match.applyBindingsScoped (captureSitesOf parComm.left parComm.premises)
         [("q", out nilTerm), ("p", nilTerm)] 0 parComm.right) :=
@@ -331,7 +332,7 @@ theorem tiny_tells_commuted_apart :
 /-! ## Types -/
 
 theorem nil_typed : Tiny.sat Env.closed (.typed proc) nilTerm :=
-  ⟨by decide, nilTerm, Relation.EqvGen.refl _, checkOpenPatternWellSorted_sound (by decide +kernel)⟩
+  ⟨by decide, nilTerm, Relation.EqvGen.refl _, checkCarrierTyped_eq_true_iff.mp (by decide +kernel)⟩
 
 /-- **An open body has no type**: the body of `λx. x` is the bound variable. -/
 theorem open_body_untyped : Tiny.sat Env.closed (.body (.untyped proc)) (.lambda none (.bvar 0)) := by
@@ -339,18 +340,18 @@ theorem open_body_untyped : Tiny.sat Env.closed (.body (.untyped proc)) (.lambda
   rintro ⟨-, representative, isRepresentative, wellSorted⟩
   rw [tiny_equivalent] at isRepresentative
   subst isRepresentative
-  exact absurd (checkOpenPatternWellSorted_complete wellSorted) (by decide +kernel)
+  exact absurd (checkCarrierTyped_eq_true_iff.mpr wellSorted) (by decide +kernel)
 
 /-- **Some `Proc` term fires.** -/
 theorem some_proc_fires : Tiny.sat Env.closed (.someOf proc (.possibly (.rule 0) .top)) nilTerm :=
-  ⟨out nilTerm, ⟨by decide, out nilTerm, Relation.EqvGen.refl _, checkOpenPatternWellSorted_sound (by decide +kernel)⟩,
+  ⟨out nilTerm, ⟨by decide, out nilTerm, Relation.EqvGen.refl _, checkCarrierTyped_eq_true_iff.mp (by decide +kernel)⟩,
     nilTerm, step_of_listed (fuel := 1) (by decide) (by decide) (by decide +kernel), trivial⟩
 
 /-- **Not every `Proc` term steps**: `Nil` does not. -/
 theorem not_every_proc_steps : ¬ Tiny.sat Env.closed (.everyOf proc (.possibly .any .top)) nilTerm := by
   intro every
   obtain ⟨next, step, -⟩ := every nilTerm nil_typed
-  obtain ⟨-, -, witness, valid, -⟩ := tiny_step.mp step
+  obtain ⟨-, -, witness, valid, -⟩ := (tiny_step rfl).mp step
   exact nil_stuck valid
 
 /-! ## Hom types -/
@@ -370,7 +371,7 @@ theorem maps_to_out :
       rw [apply_out]
       show isObjectPattern (.apply "Out" [value]) = true
       simpa [isObjectPattern, isObjectPatternList] using object
-    · change ObjectEquivalent RelationEnv.empty tiny
+    · change ObjectEquivalent RelationEnv.empty tiny .syntax
         (Mettapedia.OSLF.MeTTaIL.Substitution.instantiateBVar value (out (.bvar 0))) (.apply "Out" [value])
       rw [apply_out]
       exact Relation.EqvGen.refl _
@@ -384,7 +385,7 @@ theorem not_maps_to_nil :
   cases isBody
   rcases every nilTerm with untyped | ⟨-, isNil⟩
   · exact untyped nil_typed
-  · change ObjectEquivalent RelationEnv.empty tiny
+  · change ObjectEquivalent RelationEnv.empty tiny .syntax
       (Mettapedia.OSLF.MeTTaIL.Substitution.instantiateBVar nilTerm (out (.bvar 0))) nilTerm at isNil
     rw [apply_out, tiny_equivalent] at isNil
     simp [out, nilTerm] at isNil
@@ -397,7 +398,7 @@ def mayFire : Pattern → Bool
   | _ => false
 
 /-- **A two-element abstraction of `tiny`**: whether a rule can fire at the root. Only such terms step;
-every shape, type and name is allowed. -/
+every shape, type, name and relation is allowed. -/
 def fireAbstraction : NativeStructure Bool where
   step source _ _ := source = true
   built _ _ _ := True
@@ -411,6 +412,7 @@ def fireAbstraction : NativeStructure Bool where
   named _ _ := True
   same first second := first = second
   apply inner _ := inner
+  inRelation _ _ := True
 
 theorem label_of_mem_matchPattern {label : String} {arguments : List Pattern} {source : Pattern}
     {bindings : Bindings} (member : bindings ∈ matchPattern (.apply label arguments) source) :
@@ -424,9 +426,9 @@ theorem label_of_mem_matchPattern {label : String} {arguments : List Pattern} {s
     · simp [same] at member
   | _ => simp [matchPattern] at member
 
-theorem mayFire_of_step {source target : Pattern} {label : StepLabel} (step : Tiny.step source label target) :
-    mayFire source = true := by
-  obtain ⟨-, -, witness, valid, -⟩ := tiny_step.mp step
+theorem mayFire_of_step {source target : Pattern} {label : StepLabel} (own : label.isContext = false)
+    (step : Tiny.step source label target) : mayFire source = true := by
+  obtain ⟨-, -, witness, valid, -⟩ := (tiny_step own).mp step
   cases valid with
   | @rule _ index rule _ _ _ found matched _ =>
     rw [matchPatternForRule_eq_syntactic] at matched
@@ -456,6 +458,7 @@ def fireHom : Hom Tiny fireAbstraction where
   bound := fun _ => trivial
   typed := fun _ => trivial
   named := fun _ => trivial
+  inRelation := fun _ => trivial
 
 /-- **The certificate**: every term whose root is neither `Out` nor `Par` is stuck. -/
 theorem stuck_of_not_mayFire {term : Pattern} (cannot : mayFire term = false) :
@@ -504,7 +507,7 @@ theorem soup_splits : Soup.sat Env.closed (oneEach atomA atomB) (soup [atomA, at
 
 /-- **By the bag law, `{A, B}` also splits into `{B}` and `{A}`.** -/
 theorem soup_splits_commuted : Soup.sat Env.closed (oneEach atomB atomA) (soup [atomA, atomB]) := by
-  have permuted : ObjectEquivalent RelationEnv.empty soupLanguage (soup [atomA, atomB]) (soup [atomB, atomA]) :=
+  have permuted : ObjectEquivalent RelationEnv.empty soupLanguage .syntax (soup [atomA, atomB]) (soup [atomB, atomA]) :=
     Relation.EqvGen.rel _ _ ⟨by decide, by decide, EquationStep.inContext .hole (Or.inr
       (DerivedInstance.bagPerm_of_sorted (category := soupRule.category)
         ⟨FreeTypeContext.empty, [], (checkOpenPatternWellSorted_sound (by decide +kernel)).1⟩

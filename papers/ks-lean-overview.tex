@@ -776,7 +776,7 @@ The grid construction has \textbf{parametric versions} that could work without i
 \item \texttt{mu\_param F r base}: Grid valuation with explicit base element instead of \texttt{ident}
 \item \texttt{kGrid\_param F base}: Grid set using \texttt{mu\_param}
 \item \texttt{mu\_pnat}, \texttt{kGrid\_pnat}: Truly identity-free using $\mathbb{N}^+$ iteration (no 0 exponents)
-\item \texttt{RepresentationGlobalizationAnchor}: Class for representations normalizing to an arbitrary anchor
+\item \texttt{RepresentationResult.calibrate\_anchor}: a supplied additive embedding can be calibrated to one at a positive anchor; \texttt{zero\_anchor\_globalization\_impossible} rules out zero without identity or separation assumptions
 \end{itemize}
 
 Currently, the globalization instance uses identity:
@@ -2823,7 +2823,7 @@ $\mathrm{eventProb}(P, A \cup B)=\mathrm{eventProb}(P, A)+\mathrm{eventProb}(P, 
   firstline=55,
   lastline=82,
   firstnumber=55
-]{../KnuthSkilling/Examples/CoinDie.lean}
+]{../lean/standalone/ks-foundations-of-inference/KnuthSkilling/Examples/CoinDie.lean}
 
 \subsection*{2. 7-element lattice modeling caution}
 \addcontentsline{toc}{subsection}{Appendix: Examples: 7-element lattice}

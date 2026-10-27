@@ -421,9 +421,10 @@ def _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.modal : {n : ℕ} 
   | _, .untyped _ => true
   | _, .and left right | _, .or left right => Formula.modal left && Formula.modal right
   | _, .mu inner | _, .nu inner => Formula.modal inner
-  | _, .possibly _ inner | _, .necessarily _ inner => Formula.modal inner
+  | _, .possibly label inner | _, .necessarily label inner => !label.isContext && Formula.modal inner
   | _, .single _ inner | _, .everySingle _ inner => Formula.modal inner
-  | _, .atLeast _ .forward _ inner | _, .allButFewer _ .forward _ inner => Formula.modal inner
+  | _, .atLeast _ .forward label inner | _, .allButFewer _ .forward label inner =>
+    !label.isContext && Formula.modal inner
   | _, _ => false
 
 /-- A modal formula is forward. -/
@@ -438,13 +439,11 @@ theorem _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.forward_of_mod
   | _, .mu inner, modal | _, .nu inner, modal => by
     simp only [Formula.modal] at modal
     simp only [Formula.forward, Formula.forward_of_modal inner modal]
-  | _, .possibly _ inner, modal | _, .necessarily _ inner, modal => by
-    simp only [Formula.modal] at modal
-    simp only [Formula.forward, Formula.forward_of_modal inner modal]
-  | _, .single _ inner, modal | _, .everySingle _ inner, modal => by
-    simp only [Formula.modal] at modal
-    simp only [Formula.forward, Formula.forward_of_modal inner modal]
+  | _, .possibly _ inner, modal | _, .necessarily _ inner, modal
   | _, .atLeast _ .forward _ inner, modal | _, .allButFewer _ .forward _ inner, modal => by
+    simp only [Formula.modal, Bool.and_eq_true] at modal
+    simp only [Formula.forward, modal.1, Formula.forward_of_modal inner modal.2, Bool.and_self]
+  | _, .single _ inner, modal | _, .everySingle _ inner, modal => by
     simp only [Formula.modal] at modal
     simp only [Formula.forward, Formula.forward_of_modal inner modal]
   | _, .sometimeBefore _ _, modal | _, .alwaysBefore _ _, modal | _, .atLeast _ .backward _ _, modal | _, .allButFewer _ .backward _ _, modal | _, .built _ _, modal | _, .everyBuilt _ _, modal | _, .split _ _ _, modal | _, .everySplit _ _ _, modal | _, .body _, modal | _, .everyBody _, modal | _, .multiBody _ _, modal | _, .everyMultiBody _ _, modal | _, .bound _, modal | _, .notBound _, modal | _, .mapsAll _ _, modal | _, .mapsSome _ _, modal | _, .someOf _ _, modal | _, .everyOf _ _, modal => absurd modal Bool.false_ne_true
@@ -459,9 +458,10 @@ def _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.regional : {n : �
   | _, .and left right | _, .or left right => Formula.regional left && Formula.regional right
   | _, .split _ left right | _, .everySplit _ left right => Formula.regional left && Formula.regional right
   | _, .mu inner | _, .nu inner => Formula.regional inner
-  | _, .possibly _ inner | _, .necessarily _ inner => Formula.regional inner
+  | _, .possibly label inner | _, .necessarily label inner => !label.isContext && Formula.regional inner
   | _, .single _ inner | _, .everySingle _ inner => Formula.regional inner
-  | _, .atLeast _ .forward _ inner | _, .allButFewer _ .forward _ inner => Formula.regional inner
+  | _, .atLeast _ .forward label inner | _, .allButFewer _ .forward label inner =>
+    !label.isContext && Formula.regional inner
   | _, _ => false
 
 /-- A modal formula is regional. -/
@@ -473,9 +473,12 @@ theorem _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.regional_of_mo
     simp only [Formula.modal, Bool.and_eq_true] at modal
     simp only [Formula.regional, Formula.regional_of_modal left modal.1, Formula.regional_of_modal right modal.2,
       Bool.and_self]
-  | _, .mu inner, modal | _, .nu inner, modal | _, .possibly _ inner, modal | _, .necessarily _ inner, modal
-  | _, .single _ inner, modal | _, .everySingle _ inner, modal | _, .atLeast _ .forward _ inner, modal
-  | _, .allButFewer _ .forward _ inner, modal => Formula.regional_of_modal inner modal
+  | _, .mu inner, modal | _, .nu inner, modal | _, .single _ inner, modal | _, .everySingle _ inner, modal =>
+    Formula.regional_of_modal inner modal
+  | _, .possibly _ inner, modal | _, .necessarily _ inner, modal | _, .atLeast _ .forward _ inner, modal
+  | _, .allButFewer _ .forward _ inner, modal => by
+    simp only [Formula.modal, Bool.and_eq_true] at modal
+    simp only [Formula.regional, modal.1, Formula.regional_of_modal inner modal.2, Bool.and_self]
   | _, .sometimeBefore _ _, modal | _, .alwaysBefore _ _, modal | _, .atLeast _ .backward _ _, modal
   | _, .allButFewer _ .backward _ _, modal | _, .built _ _, modal | _, .everyBuilt _ _, modal
   | _, .split _ _ _, modal | _, .everySplit _ _ _, modal | _, .body _, modal | _, .everyBody _, modal
@@ -505,9 +508,10 @@ def _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.regionalWith (clas
     (classical || (Formula.upwardShape left && Formula.upwardShape right)) && Formula.regionalWith classical left &&
       Formula.regionalWith classical right
   | _, .mu inner | _, .nu inner => Formula.regionalWith classical inner
-  | _, .possibly _ inner | _, .necessarily _ inner => Formula.regionalWith classical inner
+  | _, .possibly label inner | _, .necessarily label inner => !label.isContext && Formula.regionalWith classical inner
   | _, .single _ inner | _, .everySingle _ inner => Formula.regionalWith classical inner
-  | _, .atLeast _ .forward _ inner | _, .allButFewer _ .forward _ inner => Formula.regionalWith classical inner
+  | _, .atLeast _ .forward label inner | _, .allButFewer _ .forward label inner =>
+    !label.isContext && Formula.regionalWith classical inner
   | _, _ => false
 
 /-- A formula of a profile's regional fragment is regional. -/
@@ -523,10 +527,13 @@ theorem _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.regional_of_re
     simp only [Formula.regionalWith, Bool.and_eq_true] at fragment
     simp only [Formula.regional, Formula.regional_of_regionalWith left fragment.1.2,
       Formula.regional_of_regionalWith right fragment.2, Bool.and_self]
-  | _, .mu inner, fragment | _, .nu inner, fragment | _, .possibly _ inner, fragment
-  | _, .necessarily _ inner, fragment | _, .single _ inner, fragment | _, .everySingle _ inner, fragment
-  | _, .atLeast _ .forward _ inner, fragment | _, .allButFewer _ .forward _ inner, fragment =>
-    Formula.regional_of_regionalWith (classical := classical) inner fragment
+  | _, .mu inner, fragment | _, .nu inner, fragment | _, .single _ inner, fragment
+  | _, .everySingle _ inner, fragment => Formula.regional_of_regionalWith (classical := classical) inner fragment
+  | _, .possibly _ inner, fragment | _, .necessarily _ inner, fragment
+  | _, .atLeast _ .forward _ inner, fragment | _, .allButFewer _ .forward _ inner, fragment => by
+    simp only [Formula.regionalWith, Bool.and_eq_true] at fragment
+    simp only [Formula.regional, fragment.1, Formula.regional_of_regionalWith (classical := classical) inner fragment.2,
+      Bool.and_self]
   | _, .sometimeBefore _ _, fragment | _, .alwaysBefore _ _, fragment | _, .atLeast _ .backward _ _, fragment
   | _, .allButFewer _ .backward _ _, fragment | _, .built _ _, fragment | _, .everyBuilt _ _, fragment
   | _, .body _, fragment | _, .everyBody _, fragment | _, .multiBody _ _, fragment
@@ -544,10 +551,12 @@ theorem _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.regionalWith_t
     simp only [Formula.regional, Bool.and_eq_true] at regional
     simp only [Formula.regionalWith, Formula.regionalWith_true left regional.1,
       Formula.regionalWith_true right regional.2, Bool.and_self, Bool.true_or]
-  | _, .mu inner, regional | _, .nu inner, regional | _, .possibly _ inner, regional
-  | _, .necessarily _ inner, regional | _, .single _ inner, regional | _, .everySingle _ inner, regional
-  | _, .atLeast _ .forward _ inner, regional | _, .allButFewer _ .forward _ inner, regional =>
-    Formula.regionalWith_true inner regional
+  | _, .mu inner, regional | _, .nu inner, regional | _, .single _ inner, regional
+  | _, .everySingle _ inner, regional => Formula.regionalWith_true inner regional
+  | _, .possibly _ inner, regional | _, .necessarily _ inner, regional
+  | _, .atLeast _ .forward _ inner, regional | _, .allButFewer _ .forward _ inner, regional => by
+    simp only [Formula.regional, Bool.and_eq_true] at regional
+    simp only [Formula.regionalWith, regional.1, Formula.regionalWith_true inner regional.2, Bool.and_self]
   | _, .sometimeBefore _ _, regional | _, .alwaysBefore _ _, regional | _, .atLeast _ .backward _ _, regional
   | _, .allButFewer _ .backward _ _, regional | _, .built _ _, regional | _, .everyBuilt _ _, regional
   | _, .body _, regional | _, .everyBody _, regional | _, .multiBody _ _, regional
@@ -564,9 +573,13 @@ theorem _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.regionalWith_o
     simp only [Formula.modal, Bool.and_eq_true] at modal
     simp only [Formula.regionalWith, Formula.regionalWith_of_modal left modal.1,
       Formula.regionalWith_of_modal right modal.2, Bool.and_self]
-  | _, .mu inner, modal | _, .nu inner, modal | _, .possibly _ inner, modal | _, .necessarily _ inner, modal
-  | _, .single _ inner, modal | _, .everySingle _ inner, modal | _, .atLeast _ .forward _ inner, modal
-  | _, .allButFewer _ .forward _ inner, modal => Formula.regionalWith_of_modal (classical := classical) inner modal
+  | _, .mu inner, modal | _, .nu inner, modal | _, .single _ inner, modal | _, .everySingle _ inner, modal =>
+    Formula.regionalWith_of_modal (classical := classical) inner modal
+  | _, .possibly _ inner, modal | _, .necessarily _ inner, modal | _, .atLeast _ .forward _ inner, modal
+  | _, .allButFewer _ .forward _ inner, modal => by
+    simp only [Formula.modal, Bool.and_eq_true] at modal
+    simp only [Formula.regionalWith, modal.1, Formula.regionalWith_of_modal (classical := classical) inner modal.2,
+      Bool.and_self]
   | _, .sometimeBefore _ _, modal | _, .alwaysBefore _ _, modal | _, .atLeast _ .backward _ _, modal
   | _, .allButFewer _ .backward _ _, modal | _, .built _ _, modal | _, .everyBuilt _ _, modal
   | _, .split _ _ _, modal | _, .everySplit _ _ _, modal | _, .body _, modal | _, .everyBody _, modal
@@ -584,11 +597,14 @@ theorem _root_.Mettapedia.OSLF.NativeTypes.GeneratedLogic.Formula.forward_of_reg
     simp only [Formula.regional, Bool.and_eq_true] at regional
     simp only [Formula.forward, Formula.forward_of_regional left regional.1,
       Formula.forward_of_regional right regional.2, Bool.and_self]
-  | _, .mu inner, regional | _, .nu inner, regional | _, .possibly _ inner, regional
-  | _, .necessarily _ inner, regional | _, .single _ inner, regional | _, .everySingle _ inner, regional
-  | _, .atLeast _ .forward _ inner, regional | _, .allButFewer _ .forward _ inner, regional => by
+  | _, .mu inner, regional | _, .nu inner, regional | _, .single _ inner, regional
+  | _, .everySingle _ inner, regional => by
     simp only [Formula.regional] at regional
     simp only [Formula.forward, Formula.forward_of_regional inner regional]
+  | _, .possibly _ inner, regional | _, .necessarily _ inner, regional
+  | _, .atLeast _ .forward _ inner, regional | _, .allButFewer _ .forward _ inner, regional => by
+    simp only [Formula.regional, Bool.and_eq_true] at regional
+    simp only [Formula.forward, regional.1, Formula.forward_of_regional inner regional.2, Bool.and_self]
   | _, .sometimeBefore _ _, regional | _, .alwaysBefore _ _, regional | _, .atLeast _ .backward _ _, regional
   | _, .allButFewer _ .backward _ _, regional | _, .built _ _, regional | _, .everyBuilt _ _, regional
   | _, .body _, regional | _, .everyBody _, regional | _, .multiBody _ _, regional
@@ -748,7 +764,8 @@ theorem subst_nativeFormula_regional {Γ Γ' : Ctx Unit} (θ : Subst Symbol Γ �
       Mettapedia.Logic.HOL.subst_weaken]
     rfl
   | _, .possibly label inner, modal, x, env => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     unfold nativeFormula
     split_ifs
     · simp only [subst_existentialInline, subst_conjunctionFormula, subst, member, Mettapedia.Logic.HOL.subst_weaken,
@@ -756,7 +773,8 @@ theorem subst_nativeFormula_regional {Γ Γ' : Ctx Unit} (θ : Subst Symbol Γ �
       rfl
     · rfl
   | _, .necessarily label inner, modal, x, env => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     unfold nativeFormula
     split_ifs
     · simp only [subst, member, Mettapedia.Logic.HOL.subst_weaken, subst_nativeFormula_regional (Subst.lift θ) inner modal,
@@ -804,14 +822,16 @@ theorem subst_nativeFormula_regional {Γ Γ' : Ctx Unit} (θ : Subst Symbol Γ �
       rfl
     · rfl
   | _, .atLeast count .forward label inner, modal, x, env => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     unfold nativeFormula
     split_ifs
     · exact subst_countWith (fun θ' y env' => subst_nativeFormula_regional θ' inner modal y env') count θ x env
     · rfl
     · rfl
   | _, .allButFewer count .forward label inner, modal, x, env => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     unfold nativeFormula
     split_ifs
     · exact congrArg negCore (subst_countWith (fun θ' y env' => by
@@ -1035,7 +1055,8 @@ theorem denote_nativeFormula_regional : ∀ {n : ℕ} (formula : Formula n), for
           (envAgrees_underFixedPoint valuation agrees (fun w => ULift.up (w ∈ invariant)) z)).mpr (preserved z member),
         inside⟩
   | _, .possibly label inner, modal, _, valuation, x, env, sets, agrees => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     by_cases labelled : memberLabel label
     · simp only [nativeFormula, if_pos labelled]
       rw [denote_existentialInline]
@@ -1048,7 +1069,8 @@ theorem denote_nativeFormula_regional : ∀ {n : ℕ} (formula : Formula n), for
     · simp only [nativeFormula, if_neg labelled]
       exact (denote_falsity valuation).trans (iff_of_false id fun ⟨_, ⟨found, _⟩, _⟩ => labelled found)
   | _, .necessarily label inner, modal, _, valuation, x, env, sets, agrees => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     by_cases labelled : memberLabel label
     · simp only [nativeFormula, if_pos labelled]
       change (∀ z : ZFSet.{0}, True → (model.denote (member (.var .vz) (weaken x)) (model.extend (σ := setTy) valuation z)).down →
@@ -1159,7 +1181,8 @@ theorem denote_nativeFormula_regional : ∀ {n : ℕ} (formula : Formula n), for
     · simp only [nativeFormula, if_neg set]
       exact iff_of_true (denote_truth valuation) fun _ found => (set found.1).elim
   | _, .atLeast count .forward label inner, modal, _, valuation, x, env, sets, agrees => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     change _ ↔ extensional.AtLeast count fun other =>
       (memberLabel label ∧ other ∈ setValue x valuation) ∧ extensional.sat sets inner other
     by_cases labelled : memberLabel label
@@ -1174,7 +1197,8 @@ theorem denote_nativeFormula_regional : ∀ {n : ℕ} (formula : Formula n), for
       · exact iff_of_true (denote_truth valuation) zero
       · exact (denote_falsity valuation).trans (iff_of_false id zero)
   | _, .allButFewer count .forward label inner, modal, _, valuation, x, env, sets, agrees => by
-    simp only [Formula.regional] at modal
+    simp only [Formula.regional, Bool.and_eq_true] at modal
+    replace modal := modal.2
     change _ ↔ ¬ extensional.AtLeast count fun other =>
       (memberLabel label ∧ other ∈ setValue x valuation) ∧ ¬ extensional.sat sets inner other
     by_cases labelled : memberLabel label

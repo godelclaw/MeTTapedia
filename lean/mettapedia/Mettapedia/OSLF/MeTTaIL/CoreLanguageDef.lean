@@ -519,6 +519,18 @@ def reduceRule (language : LanguageDef) (rule : AuthoredRule) : Except Failure C
                   ⟨target, .premise index depth 1, [], binding.names⟩],
                 [(target, {binding with name := target})])
         | none => throw (.unsupportedPremise rule.name index)
+    | .congruence source target =>
+        -- An evaluation premise: the instance of a pattern steps to a pattern. Metavariables the target
+        -- introduces take their bindings from the rule's typing at their sites, as a query's outputs do.
+        let source := unwrap bare (betaNormal (etaLong language expanded source))
+        let target := unwrap bare (betaNormal (etaLong language expanded target))
+        let sourceSites := sites (.premise index depth 0) [] [] source
+        let targetSites := sites (.premise index depth 1) [] [] target
+        let hints := targetSites.filterMap fun site =>
+          if (lookupKnown site.name).isSome then none
+          else (bindingAt language rule.typeContext bound authoredPremises (resolve [] target) site).map
+            fun binding => (site.name, binding)
+        pure (.congruence (resolve [] source) (resolve [] target), sourceSites ++ targetSites, hints)
     | .freshness condition =>
         pure (.freshness ⟨condition.varName, resolve [] condition.term⟩,
           sites (.premise index depth 0) [] [] condition.term, [])

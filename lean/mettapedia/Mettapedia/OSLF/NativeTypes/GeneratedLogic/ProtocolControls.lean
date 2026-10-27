@@ -26,9 +26,9 @@ value, and neither language has an equation, so closed regions decide their form
   table to an unevaluated application does not step. Runs of a protocol, events applied one after another,
   need a congruence rule for the state argument.
 - **The Lean reader** reads the modules' rule rows (`Label . Category ::= items;`), with positional
-  parameters named as the runtime names them (`rule_rows`). It does not declare sorts from an `Exports`
-  block, so it refuses these modules there (`lean_reader_refuses_exports`), where the runtime's reader
-  declares them.
+  parameters named as the runtime names them (`rule_rows`). A theory's exports are the sorts of the language
+  it exports, so an exported sort no `Types` block declares is declared by its export, as the runtime's reader
+  declares it. The Lean reader therefore reads both modules to the languages above, field for field.
 -/
 
 set_option autoImplicit false
@@ -330,9 +330,17 @@ theorem rule_rows : (core RuleRows.language).terms = ruleRows := by cbv
 #module_file "../../../../../../metta/gslt/module/godelclaw/RetryWake.module"
 #module_file "../../../../../../metta/gslt/module/godelclaw/StreamEvents.module"
 
-/-- **The Lean reader refuses the modules at their exports**: it declares sorts only in a `Types` block. -/
-theorem lean_reader_refuses_exports :
-    GodelClawRetryWake.language.toOption.isNone ∧ StreamEvents.language.toOption.isNone := by
-  cbv
+/-- The read language has the runtime reader's sorts, constructors, equations and rewrites. -/
+def readsAs (loaded : Except Mettapedia.GSLT.LanguageDef.ModuleSource.Error LanguageDef) (expected : LanguageDef) :
+    Bool :=
+  match loaded with
+  | .ok language =>
+    decide (language.types = expected.types) && decide (language.terms = expected.terms) &&
+      decide (language.equations = expected.equations) && decide (language.rewrites = expected.rewrites)
+  | .error _ => false
+
+/- **The Lean reader reads both modules as the runtime's reader does**: their exports declare the sorts. -/
+#guard readsAs GodelClawRetryWake.language retryWake
+#guard readsAs StreamEvents.language streamEvents
 
 end Mettapedia.OSLF.NativeTypes.GeneratedLogic.ProtocolControls

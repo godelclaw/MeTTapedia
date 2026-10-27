@@ -1111,12 +1111,7 @@ private theorem closed_block_540 :
   decide +kernel
 private theorem closed_suffix_560 :
     (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 560).all closedRow = true := by
-  have gone : RuleExecutionProgram.interpretedPremiseProgram.equations.drop 560 = [] := by
-    apply List.drop_eq_nil_iff.mpr
-    rw [RuleExecutionProgram.interpretedPremiseProgram_equation_count]
-    omega
-  rw [gone]
-  rfl
+  decide +kernel
 private theorem closed_suffix_540 :
     (RuleExecutionProgram.interpretedPremiseProgram.equations.drop 540).all closedRow = true := by
   apply all_split _ _ 20 closed_block_540
@@ -1242,9 +1237,9 @@ theorem transport_lower {caller : Mettapedia.Languages.ProcessCalculi.MORK.Subst
   transport lower_closed lower_agreement within returned
 
 
-theorem runtime_equation_count : runtime.equations.length = 572 := by decide +kernel
+theorem runtime_equation_count : runtime.equations.length = 579 := by decide +kernel
 
-theorem runtime_declaration_count : runtime.declarations.length = 572 := by decide +kernel
+theorem runtime_declaration_count : runtime.declarations.length = 579 := by decide +kernel
 
 theorem observer_heads_not_lower :
     (occurrenceSource.program.equations.drop 12).all (fun row => !lowerHeads row.head) = true := by

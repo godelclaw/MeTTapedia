@@ -28,6 +28,7 @@ open Lean Elab Command Term Meta
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 
+declare_syntax_cat moduleSortRow
 declare_syntax_cat moduleExport
 declare_syntax_cat moduleReplacement
 declare_syntax_cat moduleEquation
@@ -66,8 +67,13 @@ scoped syntax "if" sepBy1(langDefPremise, ",") "then" langDefPattern "==" langDe
 
 scoped syntax ident ":" langDefPattern "~>" langDefPattern ";" : moduleRewrite
 scoped syntax ident ":" "if" sepBy1(langDefPremise, ",") "then" langDefPattern "~>" langDefPattern ";" : moduleRewrite
+scoped syntax langDefRewriteDecl : moduleRewrite
+scoped syntax langDefEquationDecl : moduleEquation
 
-scoped syntax "Types" "{" (ident ";")* "}" : moduleBlock
+scoped syntax ident ";" : moduleSortRow
+scoped syntax ident "=" ident ";" : moduleSortRow
+
+scoped syntax "Types" "{" moduleSortRow* "}" : moduleBlock
 scoped syntax "Exports" "{" moduleExport* "}" : moduleBlock
 scoped syntax "Terms" "{" langDefTermDecl* "}" : moduleBlock
 scoped syntax "Replacements" "{" moduleReplacement* "}" : moduleBlock
@@ -128,6 +134,7 @@ private def equationRow : TSyntax `moduleEquation → Expand (TSyntax `langDefEq
       let label ← nextEquation
       `(langDefEquationDecl| $label:ident . $[$premises.getElems:langDefPremise],* |-
           $left:langDefPattern = $right:langDefPattern ;)
+  | `(moduleEquation| $row:langDefEquationDecl) => pure row
   | other => Macro.throwErrorAt other "unsupported equation"
 
 private def rewriteRow : TSyntax `moduleRewrite → MacroM (TSyntax `langDefRewriteDecl)
@@ -136,7 +143,25 @@ private def rewriteRow : TSyntax `moduleRewrite → MacroM (TSyntax `langDefRewr
   | `(moduleRewrite| $label:ident : if $premises:langDefPremise,* then $left:langDefPattern ~> $right:langDefPattern ;) =>
       `(langDefRewriteDecl| $label:ident . $[$premises.getElems:langDefPremise],* |-
           $left:langDefPattern ~> $right:langDefPattern ;)
+  | `(moduleRewrite| $row:langDefRewriteDecl) => pure row
   | other => Macro.throwErrorAt other "unsupported rewrite"
+
+/-- A type row: a sort of the abstract syntax, or a sort with a carrier. The builtin carriers are named as
+CeTTa's core names them (`String`, `Int`, `Bool`), the token carriers as `languageDef!` names them. -/
+private def sortRow : TSyntax `moduleSortRow → MacroM Term
+  | `(moduleSortRow| $sort:ident ;) => `(TypeDecl.mk $(str sort.getId.toString) CarrierKind.ast)
+  | `(moduleSortRow| $sort:ident = $carrier:ident ;) => do
+      let kind ← match carrier.getId.toString with
+        | "String" => `(CarrierKind.builtinString)
+        | "Int" => `(CarrierKind.builtinInt)
+        | "Bool" => `(CarrierKind.builtinBool)
+        | "label" => `(CarrierKind.tokenLabel)
+        | "raw" => `(CarrierKind.tokenRaw)
+        | "proofTok" => `(CarrierKind.tokenProof)
+        | "path" => `(CarrierKind.tokenPath)
+        | other => Macro.throwErrorAt carrier s!"the carrier `{other}` needs an explicit interpretation"
+      `(TypeDecl.mk $(str sort.getId.toString) $kind)
+  | other => Macro.throwErrorAt other "unsupported type row"
 
 private def exportRow : TSyntax `moduleExport → MacroM Term
   | `(moduleExport| $sort:ident ;) => `(ModuleSource.mkExport $(str sort.getId.toString) none)
@@ -184,9 +209,9 @@ private def inductiveFamily : TSyntax `moduleInductiveFamily → MacroM Term
 private def blockTerm : TSyntax `moduleBlock → Expand Term
   | `(moduleBlock| Inductives { $families:moduleInductiveFamily* }) => do
       `(Block.inductives $(← listTerm (← families.mapM fun family => (inductiveFamily family : MacroM _))))
-  | `(moduleBlock| Types { $[$sorts:ident ;]* }) => do
-      let names ← listTerm (sorts.map fun sort => str sort.getId.toString)
-      `(Block.types $names)
+  | `(moduleBlock| Types { $rows:moduleSortRow* }) => do
+      let declarations ← listTerm (← rows.mapM fun row => (sortRow row : MacroM _))
+      `(Block.types $declarations)
   | `(moduleBlock| Exports { $rows:moduleExport* }) => do
       let rows ← listTerm (← rows.mapM fun row => (exportRow row : MacroM _))
       `(Block.exports $rows)

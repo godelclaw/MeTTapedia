@@ -13,42 +13,16 @@ import Mathlib.Data.Rat.Defs
 import Mathlib.Data.Int.Order.Basic
 
 /-!
-# Knuth–Skilling Slice: Deep Theory of Nearby Probability Vertices
+# Interval arithmetic, finite models and refinement
 
-This file provides a comprehensive formalization of the most interesting vertices
-in the **K&S-centered slice** of the full probability hypercube.
+Interval bounds, finite rational distributions and tropical operations are
+separate concrete constructions. Nested bounded intervals share a point;
+vanishing width makes that point unique. Neither completeness nor a diagram
+label establishes countable additivity or a full probability-measure model.
 
-1. **V₁₁: Imprecise Probability** (ℚ-compatible, robust inference)
-2. **V₈: Discrete Probability** (ℤ-like, exact finite computation)
-3. **V₁₅: Classical Probability** (ℝ, full measure theory)
-4. **Refinement Paths**: How vertices relate via completion/restriction
-5. **Collapse Theorems**: Which vertices are equivalent
-
-## The Hypercube Structure
-
-This file reuses the “4-way slice parameters” from `...Hypercube.KnuthSkilling.Neighbors`.
-They are not additional axes of `ProbabilityVertex`; rather, they are proof-relevant assumptions
-controlling which representation theorems apply to the K&S value scale.
-
-The 4 parameters generate 16 cases:
-- **Commutativity**: x ⊕ y = y ⊕ x (derivable from KSSeparation)
-- **Completeness**: Dedekind complete (sSup exists)
-- **KSSeparation**: Rational witnesses exist
-- **Density**: DenselyOrdered
-
-## Main Results
-
-1. **IntervalProb**: Full theory of interval-valued probability
-2. **CredalSet**: Convex sets of probability measures
-3. **DiscreteProb**: ℤ-based exact probability
-4. **RefinementTheorem**: How imprecise → classical via completeness
-5. **CollapseTheorems**: Which vertices are equivalent
-
-## References
-
-- Walley, P. (1991). "Statistical Reasoning with Imprecise Probabilities"
-- Augustin et al. (2014). "Introduction to Imprecise Probabilities"
-- Knuth & Skilling, "Foundations of Inference" Appendix A
+`EventBounds` deliberately asserts only pointwise bounds and normalization.
+Its precise readouts need additional additive laws. The capability table is
+an explicitly authored toy classification, not a theorem about implementability.
 -/
 
 set_option autoImplicit false
@@ -61,13 +35,6 @@ open Classical
 open _root_.KnuthSkilling
 open _root_.KnuthSkilling.KnuthSkillingAlgebra
 open _root_.KnuthSkilling.KnuthSkillingAlgebraBase
-
-/-!
-## §1: V₁₁ - Imprecise Probability (The "Honest" Theory)
-
-This is arguably the most important vertex for practical inference.
-It admits that we don't know exact probabilities, giving interval bounds instead.
--/
 
 section ImpreciseProbability
 
@@ -149,10 +116,10 @@ theorem complement_complement (p : IntervalProb) :
     p.complement.complement = p := by
   simp [complement]
 
-/-- Dempster-Shafer belief function (lower probability) -/
+/-- Lower endpoint; this alone supplies no belief-function laws. -/
 def belief (p : IntervalProb) : ℝ := p.lower
 
-/-- Dempster-Shafer plausibility function (upper probability) -/
+/-- Upper endpoint. -/
 def plausibility (p : IntervalProb) : ℝ := p.upper
 
 theorem belief_le_plausibility (p : IntervalProb) : p.belief ≤ p.plausibility :=
@@ -206,9 +173,8 @@ noncomputable def condition (pAB pB : IntervalProb) (hB_pos : 0 < pB.lower)
 
 end IntervalProb
 
-/-- A credal set is a convex set of probability distributions.
-    We represent it by its lower and upper probability functions. -/
-structure CredalSet (Ω : Type*) where
+/-- Normalized pointwise event bounds, without coherence or additivity assumptions. -/
+structure EventBounds (Ω : Type*) where
   /-- Lower probability function -/
   P_lower : Set Ω → ℝ
   /-- Upper probability function -/
@@ -224,9 +190,9 @@ structure CredalSet (Ω : Type*) where
   /-- Full set has probability 1 -/
   full_one : P_lower Set.univ = 1 ∧ P_upper Set.univ = 1
 
-namespace CredalSet
+namespace EventBounds
 
-variable {Ω : Type*} (C : CredalSet Ω)
+variable {Ω : Type*} (C : EventBounds Ω)
 
 /-- The interval probability of an event -/
 def prob (A : Set Ω) : IntervalProb where
@@ -236,35 +202,61 @@ def prob (A : Set Ω) : IntervalProb where
   nonneg := C.nonneg A
   le_one := C.le_one A
 
-/-- A credal set is precise iff lower = upper everywhere -/
+/-- Pointwise precision identifies lower and upper readouts. -/
 def isPrecise : Prop := ∀ A, C.P_lower A = C.P_upper A
 
 /-- Duality: P_upper(A) = 1 - P_lower(Aᶜ) (conjugacy) -/
-structure Conjugate (C : CredalSet Ω) : Prop where
+structure Conjugate (C : EventBounds Ω) : Prop where
   conj : ∀ A, C.P_upper A = 1 - C.P_lower Aᶜ
 
 /-- Super-additivity of lower probability (for disjoint sets) -/
-structure SuperAdditive (C : CredalSet Ω) : Prop where
+structure SuperAdditive (C : EventBounds Ω) : Prop where
   superadd : ∀ A B, Disjoint A B → C.P_lower A + C.P_lower B ≤ C.P_lower (A ∪ B)
 
 /-- Sub-additivity of upper probability (for disjoint sets) -/
-structure SubAdditive (C : CredalSet Ω) : Prop where
+structure SubAdditive (C : EventBounds Ω) : Prop where
   subadd : ∀ A B, Disjoint A B → C.P_upper (A ∪ B) ≤ C.P_upper A + C.P_upper B
 
-end CredalSet
+end EventBounds
 
-/-- Key theorem: Precise credal sets are exactly classical probability measures -/
-theorem precise_credal_is_classical {Ω : Type*} (C : CredalSet Ω) (hprec : C.isPrecise) :
-    ∀ A, C.P_lower A = C.P_upper A := hprec
+/-- Precision plus both finite additive inequalities yields finite additivity. -/
+theorem precise_bounds_additive {Ω : Type*} (C : EventBounds Ω) (hp : C.isPrecise)
+    (hl : C.SuperAdditive) (hu : C.SubAdditive) (A B : Set Ω) (hd : Disjoint A B) :
+    C.P_lower (A ∪ B) = C.P_lower A + C.P_lower B := by
+  have h := hu.subadd A B hd
+  rw [← hp (A ∪ B), ← hp A, ← hp B] at h
+  exact le_antisymm h (hl.superadd A B hd)
+
+/-- A normalized precise readout can still fail finite additivity. -/
+noncomputable def nonadditiveBounds : EventBounds Bool where
+  P_lower A := if A = Set.univ then 1 else 0
+  P_upper A := if A = Set.univ then 1 else 0
+  valid _ := le_refl _
+  nonneg A := by split_ifs <;> norm_num
+  le_one A := by split_ifs <;> norm_num
+  empty_zero := ⟨if_neg Set.empty_ne_univ, if_neg Set.empty_ne_univ⟩
+  full_one := ⟨if_pos rfl, if_pos rfl⟩
+
+theorem nonadditiveBounds_precise : nonadditiveBounds.isPrecise := fun _ => rfl
+
+theorem nonadditiveBounds_not_additive :
+    nonadditiveBounds.P_lower ({false} ∪ {true}) ≠
+      nonadditiveBounds.P_lower {false} + nonadditiveBounds.P_lower {true} := by
+  have hf : ({false} : Set Bool) ≠ Set.univ := by
+    intro h; have ht : true ∈ ({false} : Set Bool) := h ▸ Set.mem_univ true
+    simp at ht
+  have ht : ({true} : Set Bool) ≠ Set.univ := by
+    intro h; have hf : false ∈ ({true} : Set Bool) := h ▸ Set.mem_univ false
+    simp at hf
+  have hall : ({false} ∪ {true} : Set Bool) = Set.univ := by
+    ext b; cases b <;> simp
+  change (if ({false} ∪ {true} : Set Bool) = Set.univ then (1 : ℝ) else 0) ≠
+    (if ({false} : Set Bool) = Set.univ then 1 else 0) +
+      (if ({true} : Set Bool) = Set.univ then 1 else 0)
+  rw [hall, if_pos rfl, if_neg hf, if_neg ht]
+  norm_num
 
 end ImpreciseProbability
-
-/-!
-## §2: V₈ - Discrete Probability (Exact Finite Computation)
-
-This vertex represents probability over finite/countable spaces with
-exact rational or integer-valued computations. No limits, no completeness needed.
--/
 
 section DiscreteProbability
 
@@ -330,40 +322,6 @@ theorem mul_one (x : IntegerKSAlgebra) : mul x one = x := by
 end IntegerKSAlgebra
 
 end DiscreteProbability
-
-/-!
-## §3: ℚ>0 as a Model (Documentation)
-
-The positive rationals ℚ>0 satisfy the “sandwich separation” axioms (`KSSeparation` plus dense order)
-but are NOT Dedekind complete. This proves completeness is independent.
-
-**Key insight**: ℚ>0 is a concrete example showing that:
-- Commutativity (derived from KSSeparation)
-- Archimedean property
-- Density
-- Strict separation
-
-...are all achievable WITHOUT completeness.
-
-The supremum of {x ∈ ℚ : x² < 2} does not exist in ℚ (it would be √2).
-This shows that completeness is a genuinely independent axiom.
--/
-
-/- TODO: ℚ>0 model (independence of completeness).
-
-This section should eventually contain a concrete Lean development showing:
-- ℚ>0 satisfies the relevant K&S separation/density-style axioms, but
-- ℚ>0 is not Dedekind complete (e.g. the √2 cut).
-
-We keep this as prose for now (no placeholder theorem of type `True`).
--/
-
-/-!
-## §4: The Refinement Path V₁₁ → V₁₅
-
-This section formalizes how imprecise probability (interval-valued, V₁₁)
-collapses to classical probability (point-valued, V₁₅) via Dedekind completeness.
--/
 
 section RefinementPath
 
@@ -476,13 +434,6 @@ theorem refinement_unique (S : ShrinkingIntervals) (p q : ℝ)
 
 end RefinementPath
 
-/-!
-## §5: Collapse Theorems - Which Vertices Are Equivalent?
-
-This section proves several collapse theorems showing when different
-combinations of axioms lead to equivalent theories.
--/
-
 section CollapseTheorems
 
 /-- Theorem: KSSeparation implies commutativity.
@@ -514,32 +465,22 @@ theorem noncomm_no_real_rep (α : Type*) [KnuthSkillingAlgebra α]
     (Θ : α → ℝ) (hΘ_additive : ∀ x y, Θ (op x y) = Θ x + Θ y)
     (hΘ_reflects : ∀ x y, Θ x < Θ y ↔ x < y) :
     ∀ x y : α, op x y = op y x := by
-  intro x y
-  -- Θ(x ⊕ y) = Θ(x) + Θ(y) = Θ(y) + Θ(x) = Θ(y ⊕ x)
-  have h1 : Θ (op x y) = Θ x + Θ y := hΘ_additive x y
-  have h2 : Θ (op y x) = Θ y + Θ x := hΘ_additive y x
-  have h3 : Θ x + Θ y = Θ y + Θ x := add_comm (Θ x) (Θ y)
-  have h4 : Θ (op x y) = Θ (op y x) := by linarith
-  -- Since Θ reflects order, Θ(a) = Θ(b) implies a = b
-  by_contra hne
-  cases (lt_or_gt_of_ne hne) with
-  | inl hlt =>
-    have : Θ (op x y) < Θ (op y x) := hΘ_reflects (op x y) (op y x) |>.mpr hlt
-    linarith
-  | inr hgt =>
-    have : Θ (op y x) < Θ (op x y) := hΘ_reflects (op y x) (op x y) |>.mpr hgt
-    linarith
+  have horder : ∀ x y, x ≤ y ↔ Θ x ≤ Θ y := by
+    intro x y
+    simpa only [not_lt] using (not_congr (hΘ_reflects y x)).symm
+  exact Mettapedia.ProbabilityTheory.OrderedCombination.commutative_of_representation
+    ⟨Θ, horder, hΘ_additive⟩
 
-/-- The inference hierarchy: what operations are possible at each level -/
-inductive InferenceCapability
+/-- Authored capability labels, without implementation evidence. -/
+inductive ToyCapability
   | Combine     -- Can only combine (no conditioning, no expectations)
   | Finite      -- Can do finite sums, exact discrete probability
   | Bounded     -- Can compute interval bounds (robust inference)
   | Full        -- Full measure theory, integration, limits
   deriving DecidableEq, Repr
 
-/-- Assign inference capabilities to hypercube vertices -/
-def vertexCapability (v : Fin 16) : InferenceCapability :=
+/-- A toy lookup table, not a classification theorem. -/
+def toyVertexCapability (v : Fin 16) : ToyCapability :=
   match v.val with
   | 0 => .Combine   -- Free monoid (non-comm)
   | 1 => .Combine   -- Dense free monoid
@@ -559,23 +500,16 @@ def vertexCapability (v : Fin 16) : InferenceCapability :=
   | 15 => .Full     -- Classical K&S (ℝ)
   | _ => .Combine   -- Unreachable for Fin 16
 
-/-- V₁₅ (classical) has full capabilities -/
-theorem classical_has_full_capability : vertexCapability ⟨15, by omega⟩ = .Full := rfl
+/-- Evaluate the toy table at vertex 15. -/
+theorem toy_vertex15_label : toyVertexCapability ⟨15, by omega⟩ = .Full := rfl
 
-/-- V₁₁ (imprecise) has bounded inference -/
-theorem imprecise_has_bounded : vertexCapability ⟨11, by omega⟩ = .Bounded := rfl
+/-- Evaluate the toy table at vertex 11. -/
+theorem toy_vertex11_label : toyVertexCapability ⟨11, by omega⟩ = .Bounded := rfl
 
-/-- V₈ (discrete) has finite inference -/
-theorem discrete_has_finite : vertexCapability ⟨8, by omega⟩ = .Finite := rfl
+/-- Evaluate the toy table at vertex 8. -/
+theorem toy_vertex8_label : toyVertexCapability ⟨8, by omega⟩ = .Finite := rfl
 
 end CollapseTheorems
-
-/-!
-## §6: Tropical Probability (The Min-Plus Semiring)
-
-An interesting alternative vertex: replace (ℝ, +, ×) with (ℝ ∪ {∞}, min, +).
-This gives "cost-based" reasoning where we track minimum costs rather than probabilities.
--/
 
 section TropicalProbability
 
@@ -631,101 +565,12 @@ structure TropicalCost where
     | .infinity => True
     | .finite c => 0 ≤ c
 
-/- Operations on tropical costs (documented, proofs omitted for simplicity):
-
-- **combine**: Independent events have costs that add (like multiplying probabilities)
-- **best**: Choosing between alternatives picks the minimum cost (like max probability)
-
-These satisfy the tropical semiring axioms (with nonnegativity). -/
-/- TODO: tropical semiring laws for the documented operations (`min`/`+`).
-
-If we keep tropical probability as a real development, this should become a proper `Semiring`
-structure with proofs.
--/
-
 end TropicalReal
-
-/- Tropical probability interpretation:
-    - Events have "costs" (negative log-probabilities)
-    - Combining independent events: add costs (= multiply probabilities)
-    - Choosing best alternative: minimum cost (= maximum probability)
-
-   This is the Viterbi algorithm's foundation! -/
-/- TODO: Viterbi interpretation.
-
-Formalize the connection between tropical "cost" semantics and max-product / Viterbi decoding.
--/
 
 end TropicalProbability
 
-/-!
-## §7: Quantum Probability (Non-Commutative Vertices V₄, V₅)
-
-The non-commutative vertices (0-7) suggest connections to quantum mechanics.
-In quantum probability:
-- Events don't commute (position and momentum observables)
-- Order of measurement matters
-- No classical ℝ-representation exists
-
-This section documents the conceptual connection.
--/
-
 section QuantumConnection
 
-/- Non-commutative algebras model quantum-like phenomena. -/
-/- TODO: noncommutative vertices vs quantum structures.
-
-This should eventually become a concrete model/theorem showing a noncommutative probability-like
-structure inhabits the noncommutative hypercube vertices.
--/
-
-/- Properties of quantum probability systems:
-    1. Non-commutative: AB ≠ BA for observables A, B
-    2. Context-dependent: measurement order matters
-    3. No joint distribution: incompatible observables
-    4. Interference: probability amplitudes can cancel
-
-    These correspond to vertices V₀-V₇ in the hypercube.
-    KSSeparation is INCOMPATIBLE with non-commutativity,
-   so these vertices cannot support standard probability. -/
-/- TODO: concrete quantum probability model.
-
-Add at least one precise statement/model witnessing the listed quantum properties.
--/
-
 end QuantumConnection
-
-/-!
-## §8: Summary - The Probability Theory Landscape
-
-The K&S hypercube reveals a rich landscape of probability theories:
-
-| Vertex | Properties | Theory | Use Case |
-|--------|------------|--------|----------|
-| V₀-V₇ | Non-comm | No probability | Quantum mechanics |
-| V₈ | Comm, discrete | Counting | Combinatorics |
-| V₉ | Comm, dense | ℚ-like | Constructive math |
-| V₁₁ | Sep, dense | Imprecise | AI safety, robust stats |
-| V₁₃ | Complete, dense | Almost classical | - |
-| V₁₅ | Sep, complete, dense | Classical | Standard statistics |
-
-**Key philosophical insights**:
-
-1. **Commutativity is derived**: KSSeparation forces x ⊕ y = y ⊕ x
-2. **Completeness is independent**: ℚ satisfies all other axioms
-3. **Imprecise is natural**: V₁₁ needs no completeness assumption
-4. **Classical is special**: V₁₅ requires BOTH separation AND completeness
-
-The "default" probability theory should arguably be V₁₁ (imprecise),
-not V₁₅ (classical), because it makes fewer foundational assumptions.
--/
-
-/- TODO: Structured "probability landscape" summary lemma.
-
-If we decide to keep this as a formal statement, it should be expressed in terms of the project’s
-actual hypercube definitions (vertices + reachability/collapse results).
-
-For now, keep it as prose (no placeholder theorem of type `True`).
--/
 
 end Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling.Theory

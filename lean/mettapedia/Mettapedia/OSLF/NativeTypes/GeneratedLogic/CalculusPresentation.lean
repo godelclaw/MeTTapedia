@@ -683,9 +683,11 @@ theorem stack_state {goals : List Pattern} (proper : ∀ goal ∈ goals, ProperG
 
 /-- A step of the presentation's structure from a proper goal stack. -/
 theorem reference_step {goals : List Pattern} (proper : ∀ goal ∈ goals, ProperGoal goal) {label : StepLabel}
-    {element : Pattern} (step : (referenceStructure relEnv (presentation definition.1)).step (stack goals) label element) :
+    (own : label.isContext = false) {element : Pattern}
+    (step : (referenceStructure relEnv (presentation definition.1)).step (stack goals) label element) :
     ∃ goals', element = stack goals' ∧ StackStep relEnv definition goals goals' ∧ ∀ goal ∈ goals', ProperGoal goal := by
   obtain ⟨_, _, redex, contractum, witness, before, _, valid, _, after, _⟩ := step
+  rw [placed_iff own] at before
   rw [objectEquivalent_iff_eq_of_isEquationFree (presentation_equationFree definition.1)] at before after
   subst before
   subst after
@@ -723,7 +725,7 @@ theorem reaches_of_path {goals : List Pattern} (proper : ∀ goal ∈ goals, Pro
   | refl => exact ⟨goals, rfl, .refl, proper⟩
   | tail _ step ih =>
     obtain ⟨middle, rfl, reaches, properMiddle⟩ := ih
-    obtain ⟨last, rfl, stackStep, properLast⟩ := reference_step properMiddle step
+    obtain ⟨last, rfl, stackStep, properLast⟩ := reference_step properMiddle rfl step
     exact ⟨last, rfl, .tail reaches stackStep, properLast⟩
 
 /-- **"Some run reaches the empty stack" is reaching it by steps of the presentation**, from a proper goal

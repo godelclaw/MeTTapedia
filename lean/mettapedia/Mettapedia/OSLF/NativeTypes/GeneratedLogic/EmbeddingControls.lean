@@ -125,6 +125,7 @@ def counter : NativeStructure (Fin 3) where
   named _ _ := False
   same first second := first = second
   apply inner _ := inner
+  inRelation _ _ := False
 
 theorem counter_steps :
     counter.sat Env.closed (ofMu traversal true (.diamond .future .tt)) 0 :=

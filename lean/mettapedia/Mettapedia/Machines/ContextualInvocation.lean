@@ -623,6 +623,107 @@ end Contextual
 
 end ArgumentWorklist
 
+namespace InvocationLayout
+
+/-- A dialect-admitted native body and its exact strict argument arity.
+Source callability, live held-argument declarations and result policy are
+separate judgments; this descriptor grants none of them. -/
+structure Descriptor where
+  body : Nat
+  arity : Nat
+  deriving DecidableEq, Repr
+
+structure Plan where
+  body : Nat
+  first : Nat
+  last : Nat
+  deriving DecidableEq, Repr
+
+/-- Coordinates exclude the wrapper head. Arity is checked before reading. -/
+def elaborate (descriptor : Descriptor) (arity : Nat) : Option Plan :=
+  if arity = descriptor.arity then some ⟨descriptor.body, 0, arity⟩ else none
+
+/-- Independent source interpretation destructures the written call. -/
+def reference {Operand : Type} (descriptor : Descriptor) :
+    List Operand → Option (Nat × List Operand)
+  | [] => none
+  | _ :: arguments => if arguments.length = descriptor.arity
+      then some (descriptor.body, arguments) else none
+
+/-- The executable range reader sees an array including its wrapper head. -/
+def read {Operand : Type} (plan : Plan) (fields : Array Operand) :
+    Option (Nat × List Operand) :=
+  if plan.first ≤ plan.last ∧ plan.last + 1 = fields.size then
+    some (plan.body, (fields.extract (plan.first + 1) (plan.last + 1)).toList)
+  else none
+
+theorem read_elaborate {Operand : Type} (descriptor : Descriptor)
+    (wrapper : Operand) (arguments : List Operand) :
+    ((elaborate descriptor arguments.length).bind
+      (fun plan => read plan (wrapper :: arguments).toArray)) =
+      reference descriptor (wrapper :: arguments) := by
+  by_cases arity : arguments.length = descriptor.arity
+  · simp [elaborate, arity, read, reference, List.extract_eq_take_drop]
+  · simp [elaborate, arity, reference]
+
+theorem refusal_reads_no_fields (descriptor : Descriptor) (arity : Nat)
+    (different : arity ≠ descriptor.arity) : elaborate descriptor arity = none := by
+  simp [elaborate, different]
+
+/-- The cached layout was compiled for the stored head and arity. Rewriting
+one of those coordinates requires fresh elaboration, including fresh refusal. -/
+def select {Head : Type} [DecidableEq Head] (descriptors : Head → Descriptor)
+    (stored current : Head) (storedArity currentArity : Nat) : Option Plan :=
+  if stored = current ∧ storedArity = currentArity
+  then elaborate (descriptors stored) storedArity
+  else elaborate (descriptors current) currentArity
+
+theorem selection_refines {Head : Type} [DecidableEq Head]
+    (descriptors : Head → Descriptor) (stored current : Head)
+    (storedArity currentArity : Nat) :
+    select descriptors stored current storedArity currentArity =
+      elaborate (descriptors current) currentArity := by
+  by_cases same : stored = current ∧ storedArity = currentArity
+  · rcases same with ⟨rfl, rfl⟩
+    simp [select]
+  · simp [select, same]
+
+/-- The independent source reader and array range reader feed the same body
+and lexical operands to the reverse worklist. Older pending work is retained. -/
+theorem worklist_refines {Scope Operand : Type} (descriptor : Descriptor)
+    (wrapper : Operand) (arguments : List Operand)
+    (slot : Operand → ArgumentWorklist.Operand Scope) (strict : Bool)
+    (older : List (ArgumentWorklist.Goal Scope Nat)) :
+    (((elaborate descriptor arguments.length).bind
+      (fun plan => read plan (wrapper :: arguments).toArray)).map
+        (fun (body, args) => ArgumentWorklist.lower strict (args.map slot) body older)) =
+      (reference descriptor (wrapper :: arguments)).map
+        (fun (body, args) => ArgumentWorklist.source strict (args.map slot) body older) := by
+  rw [read_elaborate]
+  cases reference descriptor (wrapper :: arguments) with
+  | none => rfl
+  | some request =>
+      simp only [Option.map_some]
+      exact congrArg some
+        (ArgumentWorklist.lowering_refines strict (request.2.map slot) request.1 older)
+
+/-- Reusing a layout after a same-arity head rewrite can select the wrong
+native body; validating arity alone is insufficient. -/
+theorem stale_head_changes_body :
+    let descriptors : Bool → Descriptor := fun head => ⟨if head then 3 else 7, 1⟩
+    let fields := #[0, 9]
+    ((elaborate (descriptors true) 1).bind (fun plan => read plan fields)) ≠
+      ((select descriptors true false 1 1).bind (fun plan => read plan fields)) := by decide
+
+theorem head_is_not_an_argument :
+    read ⟨3, 0, 1⟩ #[99, 7] = some (3, [7]) ∧
+      read ⟨3, 0, 1⟩ #[99, 7] ≠ some (3, [99]) := by decide
+
+theorem duplicate_operands_are_preserved :
+    read ⟨3, 0, 2⟩ #[99, 7, 7] = some (3, [7, 7]) := by decide
+
+end InvocationLayout
+
 namespace Preparation
 
 inductive Step where
@@ -1010,3 +1111,17 @@ end Mettapedia.Machines.ContextualInvocation
 #print axioms Mettapedia.Machines.ContextualInvocation.Preparation.contextual_refines
 #print axioms Mettapedia.Machines.ContextualInvocation.Preparation.dependent_order
 #print axioms Mettapedia.Machines.ContextualInvocation.Preparation.result_check_is_after_body
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.read_elaborate
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.refusal_reads_no_fields
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.selection_refines
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.worklist_refines
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.stale_head_changes_body
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.head_is_not_an_argument
+
+#print axioms Mettapedia.Machines.ContextualInvocation.InvocationLayout.duplicate_operands_are_preserved

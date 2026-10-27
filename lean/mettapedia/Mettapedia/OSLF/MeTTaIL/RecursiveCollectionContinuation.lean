@@ -1,3 +1,4 @@
+import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledEquations
 import Mettapedia.OSLF.MeTTaIL.RecursiveCollectionHandoff
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFrontier
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFootprint
@@ -806,4 +807,94 @@ theorem Canonical.run_ready (request : Request) (seed : Canonical.Seed request) 
 #print axioms Canonical.start_names_covered
 #print axioms Canonical.start_ready
 #print axioms Canonical.run_ready
+end Mettapedia.OSLF.MeTTaIL.RecursiveCollectionContinuation
+
+
+namespace Mettapedia.OSLF.MeTTaIL.RecursiveCollectionContinuation
+
+open Syntax RuleBinding ScopedRuleMatching GeneralPremise StructuralDescent.Scheduled
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- Empty premises leave only the actual reduct projection and target check.
+A primitive projection certificate rules out the target-projection obligation;
+no target typing, completed outcome or root firing is supplied. -/
+theorem unconditional_withSeed_complete (matcher : MatchingExecution) (request : Request)
+    (seed : RootSeed matcher request)
+    (empty : request.rule.premises = [])
+    (projection : TypedAssignment request.environment request.context (matcher.assignment seed.answer) →
+      ∃ target, reductWith? (ScopedReflectiveExecution.binderOperation
+        request.environment.reflection request.rule) request.rule request.spec request.bound.length
+        (matcher.assignment seed.answer) = some target) :
+    (StructuralDescent.Scheduled.run request.environment request.goal 3 (startWithSeed matcher request seed)).agenda = [] ∧
+      (StructuralDescent.Scheduled.run request.environment request.goal 3 (startWithSeed matcher request seed)).unresolved = [] := by
+  rcases request with ⟨environment,depth,bound,type,source,index,rule,spec,answer,prepared,
+    declared,specified,admitted,sorted,matching⟩
+  rcases rule with ⟨ruleName,typeContext,premises,left,right,bindings⟩
+  change premises = [] at empty
+  cases empty
+  let request : Request := ⟨environment,depth,bound,type,source,index,
+    ⟨ruleName,typeContext,[],left,right,bindings⟩,spec,answer,prepared,
+    declared,specified,admitted,sorted,matching⟩
+  by_cases captures : checkTypedAssignment request.environment request.context
+      (matcher.assignment seed.answer) = true
+  · obtain ⟨target, built⟩ := projection (checkTypedAssignment_sound captures)
+    by_cases checked : checkOpenPatternWellSorted request.environment.language
+        request.environment.free request.bound request.type target = true
+    · have delivery := delivered_rootBody_sorted (matcher := matcher)
+        (outer := request.goal) request.declared request.specified request.admitted request.sourceTyped
+        seed.valid (checkTypedAssignment_sound captures) (.nil) (.done request.goal) built checked
+      simp only [request, Request.context] at captures delivery
+      simp only [startWithSeed, expansionWithSeed, continueRootAnswer, captures, ↓reduceDIte,
+        StructuralDescent.Scheduled.run, Scheduler.run, Scheduler.tick,
+        expand, evaluate, delivery, delivered_done, List.append_nil, List.nil_append]
+      constructor <;> trivial
+    · have unchecked : checkOpenPatternWellSorted request.environment.language
+          request.environment.free request.bound request.type target = false := Bool.eq_false_iff.mpr checked
+      have delivery := delivered_rootBody_unsorted (matcher := matcher)
+        (outer := request.goal) request.declared request.specified request.admitted request.sourceTyped
+        seed.valid (checkTypedAssignment_sound captures) (.nil) (.done request.goal) built unchecked
+      simp only [request, Request.context] at captures delivery
+      simp only [startWithSeed, expansionWithSeed, continueRootAnswer, captures, ↓reduceDIte,
+        StructuralDescent.Scheduled.run, Scheduler.run, Scheduler.tick,
+        expand, evaluate, delivery, List.append_nil]
+      constructor <;> trivial
+
+  · simp only [request, Request.context] at captures
+    simp only [startWithSeed, expansionWithSeed, continueRootAnswer, captures,
+      StructuralDescent.Scheduled.run, Scheduler.run, Scheduler.tick]
+    exact ⟨rfl,rfl⟩
+
+
+theorem unconditional_complete (request : Request)
+    (empty : request.rule.premises = [])
+    (projection : TypedAssignment request.environment request.context request.prepared.ordinary.assignment →
+      ∃ target, reductWith? (ScopedReflectiveExecution.binderOperation
+        request.environment.reflection request.rule) request.rule request.spec request.bound.length
+        request.prepared.ordinary.assignment = some target) :
+    (run request 3 (start request)).agenda = [] ∧
+      (run request 3 (start request)).unresolved = [] := by
+  exact unconditional_withSeed_complete MatchingExecution.ordinary request (ordinarySeed request) empty projection
+
+/-- The same operational proof keeps the original canonical allocation seed
+and its full EqEvent history; no ordinary trace is synthesized. -/
+theorem canonical_unconditional_complete (request : Request) (seed : Canonical.Seed request)
+    (empty : request.rule.premises = [])
+    (projection : TypedAssignment request.environment request.context request.prepared.ordinary.assignment →
+      ∃ target, reductWith? (ScopedReflectiveExecution.binderOperation
+        request.environment.reflection request.rule) request.rule request.spec request.bound.length
+        request.prepared.ordinary.assignment = some target) :
+    (Canonical.run request 3 (Canonical.start request seed)).agenda = [] ∧
+      (Canonical.run request 3 (Canonical.start request seed)).unresolved = [] := by
+  apply unconditional_withSeed_complete RecursiveCollectionHandoff.canonicalMatchingExecution request
+    (canonicalSeed request seed) empty
+  intro typed
+  have captured := (canonicalSeed request seed).captured
+  obtain ⟨target,read⟩ := projection (by simpa only [captured] using typed)
+  exact ⟨target, by simpa only [captured] using read⟩
+
+#print axioms unconditional_withSeed_complete
+#print axioms canonical_unconditional_complete
+
+#print axioms unconditional_complete
+
 end Mettapedia.OSLF.MeTTaIL.RecursiveCollectionContinuation

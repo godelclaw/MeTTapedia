@@ -13,38 +13,16 @@ import Mathlib.Topology.Instances.RealVectorSpace
 import Mathlib.Topology.Order.Basic
 import Mettapedia.ProbabilityTheory.Cox.Basic
 
+import KnuthSkilling.Multiplicative.FunctionalEquation
+
 /-!
-# Cox's Theorem Requires Continuity: A Formal Counterexample
+# Algebraic nonuniqueness and the order boundary
 
-This file proves that Cox's theorem genuinely requires the continuity axiom.
-Without continuity, the functional equation has pathological solutions that
-are NOT equivalent to the standard product rule.
-
-## Main Results
-
-1. `discontinuousAdditive_exists`: There exists a discontinuous additive function ℝ → ℝ
-   (classical result, Hamel 1905 - constructed here from a ℚ-basis)
-2. `cox_underdetermined_without_continuity`: Without continuity, Cox's axioms admit
-   multiple non-equivalent solutions
-
-## Mathematical Background
-
-Cauchy's functional equation f(x + y) = f(x) + f(y) has:
-- Continuous solutions: only f(x) = cx (linear)
-- Discontinuous solutions: pathological functions built from Hamel bases
-
-The discontinuous solutions are constructed by:
-1. Choosing a Hamel basis H for ℝ as a ℚ-vector space (requires Choice)
-2. Defining f arbitrarily on H, then extending ℚ-linearly
-3. If f is not ℝ-linear on H, the extension is discontinuous
-
-Reference: https://en.wikipedia.org/wiki/Cauchy's_functional_equation
-
-## Comparison with SD Counterexample
-
-This is analogous to our SD (semidirect product) counterexample for K&S:
-- SD shows K&S basic axioms don't imply commutativity → need Separation
-- Hamel functions show Cox basic axioms don't determine F uniquely → need Continuity
+Hamel-basis additive maps can be discontinuous; strict monotonicity rules them
+out. The independently constructed swap operations below are associative and
+unital, but omit range and monotonicity as well as continuity. They do not
+isolate continuity as a necessary Cox hypothesis. Their explicit range and
+order failures make that boundary observable.
 -/
 
 namespace Mettapedia.ProbabilityTheory.Cox.DiscontinuousCounterexample
@@ -55,51 +33,27 @@ open scoped Topology
 
 noncomputable section
 
-/-!
-## Part 1: Discontinuous Additive Functions Exist
+/-- Continuous additive maps are linear, using the canonical Cauchy theorem. -/
+theorem continuous_additive_is_linear (f : ℝ →+ ℝ) (hc : Continuous f) :
+    ∃ c : ℝ, ∀ x, f x = c * x :=
+  KnuthSkilling.Multiplicative.continuous_additive_eq_mul f (map_add f) hc
 
-We construct the classical result (Hamel, 1905) that discontinuous
-additive functions exist. The full construction requires:
-1. ℝ is a ℚ-vector space (Module ℚ ℝ)
-2. Existence of a Hamel basis (requires Axiom of Choice)
-3. Extending a non-ℝ-linear function on the basis
--/
-
-/-- A function is additive (satisfies Cauchy's functional equation) -/
-def IsAdditive (f : ℝ → ℝ) : Prop := ∀ x y, f (x + y) = f x + f y
-
-/-- Continuous additive functions are linear: f(x) = c·x for some c.
-    This is a standard result from real analysis. -/
-theorem continuous_additive_is_linear (f : ℝ → ℝ) (hf : IsAdditive f) (hc : Continuous f) :
-    ∃ c : ℝ, ∀ x, f x = c * x := by
-  -- The standard proof uses:
-  -- 1. f(qx) = q·f(x) for rational q (from additivity)
-  -- 2. Continuity extends this to all reals
-  -- 3. So f(x) = f(1)·x
-  have hf0 : f 0 = 0 := by
-    have h0 : f 0 = f 0 + f 0 := by
-      simpa using hf 0 0
-    have h0' : 0 = f 0 := by
-      have h0'' : f 0 + 0 = f 0 + f 0 := by
-        simpa using h0
-      exact add_left_cancel h0''
-    simpa using h0'.symm
-  let f_add : ℝ →+ ℝ :=
-    { toFun := f
-      map_zero' := hf0
-      map_add' := by
-        intro x y
-        exact hf x y }
-  have hf_cont : Continuous f_add := by
-    simpa using! hc
-  refine ⟨f 1, ?_⟩
-  intro x
-  have hsmul :
-      f_add (x • (1 : ℝ)) = x • f_add 1 :=
-    map_real_smul (f := f_add) hf_cont x 1
-  have hsmul' : f x = x * f 1 := by
-    simpa [f_add, smul_eq_mul, mul_comm, mul_left_comm, mul_assoc] using hsmul
-  simpa [mul_comm] using hsmul'
+/-- Strict monotonicity already rules out discontinuous additive maps. -/
+theorem discontinuous_additive_not_strictMono (f : ℝ →+ ℝ) (hdisc : ¬Continuous f) :
+    ¬StrictMono f := by
+  intro hmono
+  obtain ⟨c, _, hc⟩ :=
+    KnuthSkilling.Multiplicative.AdditiveOnPos.exists_mul_const_of_add_of_pos f
+      (fun _ _ => map_add f _ _) (fun hu => by simpa using hmono hu)
+  have hlinear : ∀ x, f x = c * x := by
+    intro x
+    rcases lt_trichotomy 0 x with hx | hx | hx
+    · exact hc hx
+    · subst x; simp
+    · have h := hc (neg_pos.mpr hx)
+      rw [map_neg] at h
+      linarith
+  exact hdisc ((continuous_const.mul continuous_id).congr (fun x => (hlinear x).symm))
 
 /-- **Hamel (1905)**: There exist discontinuous additive functions.
 
@@ -110,7 +64,7 @@ We give a concrete construction using a ℚ-basis of ℝ. The key idea:
    and all other basis elements to `0`.
 4. Then `f` is additive but not of the form `c·x`, hence not continuous.
 -/
-theorem discontinuousAdditive_exists : ∃ f : ℝ → ℝ, IsAdditive f ∧ ¬Continuous f := by
+theorem discontinuousAdditive_exists : ∃ f : ℝ →+ ℝ, ¬Continuous f := by
   classical
   let s : Set ℝ := {(1 : ℝ), Real.sqrt 2}
   have hlin : LinearIndepOn ℚ id s := by
@@ -135,11 +89,7 @@ theorem discontinuousAdditive_exists : ∃ f : ℝ → ℝ, IsAdditive f ∧ ¬C
     exact (irrational_sqrt_two.ne_rat (1 : ℚ)) (by simpa using h'.symm)
   let g : hlin.extend (Set.subset_univ s) → ℝ := fun x => if x = x2 then 1 else 0
   let fLin : ℝ →ₗ[ℚ] ℝ := B.constr ℚ g
-  let f : ℝ → ℝ := fun x => fLin x
-  have hf_add : IsAdditive f := by
-    intro x y
-    change fLin (x + y) = fLin x + fLin y
-    exact map_add fLin x y
+  let f : ℝ →+ ℝ := fLin.toAddMonoidHom
   have hf1 : f 1 = 0 := by
     have hfx1 : f 1 = g x1 := by
       simpa [f, fLin, B, x1] using
@@ -156,7 +106,7 @@ theorem discontinuousAdditive_exists : ∃ f : ℝ → ℝ, IsAdditive f ∧ ¬C
     simpa [hgx2] using hfx2
   have hnot : ¬Continuous f := by
     intro hcont
-    obtain ⟨c, hc⟩ := continuous_additive_is_linear f hf_add hcont
+    obtain ⟨c, hc⟩ := continuous_additive_is_linear f hcont
     have hc1 : f 1 = c := by simpa using hc 1
     have hc0 : c = 0 := by simpa [hf1] using hc1.symm
     have hfs : f (Real.sqrt 2) = 0 := by
@@ -166,23 +116,10 @@ theorem discontinuousAdditive_exists : ∃ f : ℝ → ℝ, IsAdditive f ∧ ¬C
       rw [hf2] at hfs'
       exact hfs'
     exact one_ne_zero this
-  exact ⟨f, hf_add, hnot⟩
+  exact ⟨f, hnot⟩
 
-/-!
-## Part 2: Cox Without Continuity is Underdetermined
-
-If F : ℝ → ℝ → ℝ satisfies:
-- Associativity: F(F(x,y), z) = F(x, F(y,z))
-- Identity: F(1,y) = y, F(x,1) = x
-
-Then F(x,y) = φ⁻¹(φ(x) + φ(y)) for some additive φ.
-
-Without continuity, φ can be any of the uncountably many discontinuous
-additive functions, giving uncountably many non-equivalent solutions.
--/
-
-/-- A conjunction rule (without continuity requirement) -/
-structure ConjunctionRuleNoCont where
+/-- Associativity and identity only; no probability range or order is asserted. -/
+structure AssociativeUnitalRule where
   F : ℝ → ℝ → ℝ
   F_assoc : ∀ x y z, F (F x y) z = F x (F y z)
   F_one_left : ∀ y, F 1 y = y
@@ -192,7 +129,7 @@ structure ConjunctionRuleNoCont where
 def standardF : ℝ → ℝ → ℝ := fun x y => x * y
 
 /-- Standard product satisfies the axioms -/
-def standardConjunctionRule : ConjunctionRuleNoCont where
+def standardUnitalRule : AssociativeUnitalRule where
   F := standardF
   F_assoc := fun x y z => by simp [standardF, mul_assoc]
   F_one_left := fun y => by simp [standardF]
@@ -322,141 +259,50 @@ private lemma swapF_discontinuous (b : ℝ) (hb : 1 < b) :
     simpa [hg0] using hb1ne
   exact (hg0ne hg0eq).elim
 
-/-- Given a discontinuous additive φ, we can construct a non-standard
-    conjunction rule that is NOT equivalent to multiplication. -/
-theorem nonstandard_conjunction_exists :
-    ∃ (C : ConjunctionRuleNoCont), ¬Continuous (Function.uncurry C.F) ∧
-      C.F ≠ standardF := by
-  classical
-  let C : ConjunctionRuleNoCont :=
-    { F := swapF 2
-      F_assoc := swapF_assoc 2
-      F_one_left := swapF_one_left 2 (by norm_num)
-      F_one_right := swapF_one_right 2 (by norm_num) }
-  have hdisc : ¬Continuous (Function.uncurry C.F) := by
-    simpa [C] using swapF_discontinuous 2 (by norm_num)
-  have hneq : C.F ≠ standardF := by
-    intro h
-    have hval := congrArg (fun F => F 0 2) h
-    have hleft : C.F 0 2 = (1 : ℝ) := by
-      have h10 : (1 : ℝ) ≠ 0 := by norm_num
-      have h12 : (1 : ℝ) ≠ 2 := by norm_num
-      have hswap1 : Equiv.swap (0 : ℝ) 2 (1 : ℝ) = (1 : ℝ) := by
-        simpa using (Equiv.swap_apply_of_ne_of_ne (a := 0) (b := 2) h10 h12)
-      calc
-        C.F 0 2 = Equiv.swap (0 : ℝ) 2 (2 - 1) := by
-          simp [C, swapF, Equiv.swap_apply_left, Equiv.swap_apply_right]
-        _ = Equiv.swap (0 : ℝ) 2 (1 : ℝ) := by norm_num
-        _ = (1 : ℝ) := hswap1
-    have hright : standardF 0 2 = (0 : ℝ) := by simp [standardF]
-    have hval' : C.F 0 2 = standardF 0 2 := by
-      change (fun F => F 0 2) C.F = (fun F => F 0 2) standardF
-      exact hval
-    have hcontra : (1 : ℝ) = 0 := by
-      have hval'' := hval'
-      rw [hleft, hright] at hval''
-      exact hval''
-    exact one_ne_zero hcontra
-  exact ⟨C, hdisc, hneq⟩
+/-- Transport the unital operation `x + y - 1` through a swap bijection. -/
+private def swapRule (b : ℝ) (hb : b ≠ 1) : AssociativeUnitalRule where
+  F := swapF b
+  F_assoc := swapF_assoc b
+  F_one_left := swapF_one_left b hb
+  F_one_right := swapF_one_right b hb
 
-/-- Main theorem: Cox's axioms without continuity admit multiple
-    non-equivalent solutions, proving continuity is essential. -/
-theorem cox_underdetermined_without_continuity :
-    ∃ (C₁ C₂ : ConjunctionRuleNoCont),
-      ¬Continuous (Function.uncurry C₁.F) ∧
-      ¬Continuous (Function.uncurry C₂.F) ∧
-      C₁.F ≠ C₂.F := by
-  classical
-  let C₁ : ConjunctionRuleNoCont :=
-    { F := swapF 2
-      F_assoc := swapF_assoc 2
-      F_one_left := swapF_one_left 2 (by norm_num)
-      F_one_right := swapF_one_right 2 (by norm_num) }
-  let C₂ : ConjunctionRuleNoCont :=
-    { F := swapF 3
-      F_assoc := swapF_assoc 3
-      F_one_left := swapF_one_left 3 (by norm_num)
-      F_one_right := swapF_one_right 3 (by norm_num) }
-  have hdisc₁ : ¬Continuous (Function.uncurry C₁.F) := by
-    simpa [C₁] using swapF_discontinuous 2 (by norm_num)
-  have hdisc₂ : ¬Continuous (Function.uncurry C₂.F) := by
-    simpa [C₂] using swapF_discontinuous 3 (by norm_num)
-  have hneq : C₁.F ≠ C₂.F := by
-    intro h
-    have hval := congrArg (fun F => F 0 2) h
-    have hleft : C₁.F 0 2 = (1 : ℝ) := by
-      have h10 : (1 : ℝ) ≠ 0 := by norm_num
-      have h12 : (1 : ℝ) ≠ 2 := by norm_num
-      have hswap1 : Equiv.swap (0 : ℝ) 2 (1 : ℝ) = (1 : ℝ) := by
-        simpa using (Equiv.swap_apply_of_ne_of_ne (a := 0) (b := 2) h10 h12)
-      calc
-        C₁.F 0 2 = Equiv.swap (0 : ℝ) 2 (2 - 1) := by
-          simp [C₁, swapF, Equiv.swap_apply_left, Equiv.swap_apply_right]
-        _ = Equiv.swap (0 : ℝ) 2 (1 : ℝ) := by norm_num
-        _ = (1 : ℝ) := hswap1
-    have hright : C₂.F 0 2 = (4 : ℝ) := by
-      have hswap2 : Equiv.swap (0 : ℝ) 3 (2 : ℝ) = (2 : ℝ) := by
-        have h20 : (2 : ℝ) ≠ 0 := by norm_num
-        have h23 : (2 : ℝ) ≠ 3 := by norm_num
-        simpa using (Equiv.swap_apply_of_ne_of_ne (a := 0) (b := 3) h20 h23)
-      have hswap4 : Equiv.swap (0 : ℝ) 3 (4 : ℝ) = (4 : ℝ) := by
-        have h40 : (4 : ℝ) ≠ 0 := by norm_num
-        have h43 : (4 : ℝ) ≠ 3 := by norm_num
-        simpa using (Equiv.swap_apply_of_ne_of_ne (a := 0) (b := 3) h40 h43)
-      calc
-        C₂.F 0 2 = Equiv.swap (0 : ℝ) 3 (3 + 2 - 1) := by
-          simp [C₂, swapF, Equiv.swap_apply_left, hswap2]
-        _ = Equiv.swap (0 : ℝ) 3 (4 : ℝ) := by norm_num
-        _ = (4 : ℝ) := hswap4
-    have hval' : C₁.F 0 2 = C₂.F 0 2 := by
-      change (fun F => F 0 2) C₁.F = (fun F => F 0 2) C₂.F
-      exact hval
-    have hcontra : (1 : ℝ) = 4 := by
-      have hval'' := hval'
-      rw [hleft, hright] at hval''
-      exact hval''
-    exact by linarith [hcontra]
-  exact ⟨C₁, C₂, hdisc₁, hdisc₂, hneq⟩
+/-- An associative unital rule can be discontinuous and different from multiplication. -/
+theorem nonstandard_unital_rule_exists :
+    ∃ C : AssociativeUnitalRule, ¬Continuous (Function.uncurry C.F) ∧ C.F ≠ standardF := by
+  refine ⟨swapRule 2 (by norm_num), swapF_discontinuous 2 (by norm_num), ?_⟩
+  intro h
+  have hv := congrArg (fun F => F 0 2) h
+  norm_num [swapRule, swapF, standardF, Equiv.swap_apply_def] at hv
 
-/-!
-## Part 3: The Philosophical Point
+/-- Pure associativity and identity admit distinct discontinuous operations. -/
+theorem associative_unital_nonuniqueness :
+    ∃ C₁ C₂ : AssociativeUnitalRule,
+      ¬Continuous (Function.uncurry C₁.F) ∧ ¬Continuous (Function.uncurry C₂.F) ∧ C₁.F ≠ C₂.F := by
+  refine ⟨swapRule 2 (by norm_num), swapRule 3 (by norm_num),
+    swapF_discontinuous 2 (by norm_num), swapF_discontinuous 3 (by norm_num), ?_⟩
+  intro h
+  have hv := congrArg (fun F => F 0 2) h
+  norm_num [swapRule, swapF, Equiv.swap_apply_def] at hv
 
-Without continuity:
-- Cox's axioms have UNCOUNTABLY many solutions (one for each Hamel basis choice)
-- None of these is "the" probability product rule
-- Continuity is what singles out F(x,y) = x·y as the unique solution
+/-- This example fails the Cox probability-range hypothesis on valid inputs. -/
+theorem swap_violates_range : swapF 2 (1 / 2) (1 / 2) > 1 := by
+  norm_num [swapF, Equiv.swap_apply_def]
 
-This is analogous to how K&S's separation axiom is needed to rule out
-the semidirect product counterexample SD.
-
-| Axiom System | Without Extra Axiom | With Extra Axiom |
-|--------------|---------------------|------------------|
-| K&S          | SD counterexample   | Separation → ℝ₊  |
-| Cox          | Hamel pathologies   | Continuity → x·y |
--/
+/-- It also fails strict monotonicity on valid inputs, independently of continuity. -/
+theorem swap_violates_order :
+    ¬StrictMonoOn (fun x => swapF 2 x (1 / 2)) (Set.Ioc 0 1) := by
+  intro h
+  have hv := h (by norm_num : (1 / 2 : ℝ) ∈ Set.Ioc 0 1)
+    (by norm_num : (1 : ℝ) ∈ Set.Ioc 0 1) (by norm_num)
+  norm_num [swapF, Equiv.swap_apply_def] at hv
 
 /-- The graph of any discontinuous additive function is dense in ℝ² -/
-theorem discontinuousAdditive_graph_dense (f : ℝ → ℝ)
-    (hf : IsAdditive f) (hdisc : ¬Continuous f) :
+theorem discontinuousAdditive_graph_dense (f : ℝ →+ ℝ) (hdisc : ¬Continuous f) :
     Dense {p : ℝ × ℝ | p.2 = f p.1} := by
   classical
-  have hf0 : f 0 = 0 := by
-    have h0 : f 0 = f 0 + f 0 := by
-      simpa using hf 0 0
-    have h0' : 0 = f 0 := by
-      have h0'' : f 0 + 0 = f 0 + f 0 := by
-        simpa using h0
-      exact add_left_cancel h0''
-    simpa using h0'.symm
-  let f_add : ℝ →+ ℝ :=
-    { toFun := f
-      map_zero' := hf0
-      map_add' := by
-        intro x y
-        exact hf x y }
   have hf_rat : ∀ q : ℚ, ∀ x, f (q • x) = q • f x := by
     intro q x
-    simpa [f_add] using (map_rat_smul (f := f_add) q x)
+    exact map_rat_smul f q x
   have hf_rat_mul : ∀ q : ℚ, ∀ x, f ((q : ℝ) * x) = (q : ℝ) * f x := by
     intro q x
     have hcast_x : (q : ℝ) * x = q • x := by
@@ -471,7 +317,7 @@ theorem discontinuousAdditive_graph_dense (f : ℝ → ℝ)
         simp [hcast_fx]
   have hx0 : ∃ x, f x ≠ f 1 * x := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hcont : Continuous f := by
       have hfun : f = fun x => f 1 * x := funext h
       refine hfun ▸ (continuous_const.mul continuous_id)
@@ -524,7 +370,7 @@ theorem discontinuousAdditive_graph_dense (f : ℝ → ℝ)
             simp [h1, h2]
       _ = f ((q.1 : ℝ) + (q.2 : ℝ) * x0) := by
             symm
-            simpa using hf (q.1 : ℝ) ((q.2 : ℝ) * x0)
+            exact map_add f (q.1 : ℝ) ((q.2 : ℝ) * x0)
   exact Dense.mono hsubset hDense
 
 end

@@ -210,7 +210,7 @@ theorem equivalent_iff_zfOf (lang : HereditaryLanguage language carrier)
     (pure : ∀ label, ¬ AtomOf language carrier.category label) {first second : Pattern}
     (firstHolds : Hereditary language carrier.category first)
     (secondHolds : Hereditary language carrier.category second) :
-    ObjectEquivalent relEnv language first second ↔ zfOf first = zfOf second := by
+    ObjectEquivalent relEnv language .syntax first second ↔ zfOf first = zfOf second := by
   have canonical := hereditary_canonical (relEnv := relEnv) lang
   rw [canonical.equivalent_iff ((hereditary_iff _).mpr firstHolds) ((hereditary_iff _).mpr secondHolds)]
   constructor
@@ -226,7 +226,7 @@ abbrev Membership := referenceStructure RelationEnv.empty membership
 
 theorem membership_equivalent {first second : Pattern} (firstHolds : Hereditary membership hfRule.category first)
     (secondHolds : Hereditary membership hfRule.category second) :
-    ObjectEquivalent relEnv membership first second ↔ zfOf first = zfOf second :=
+    ObjectEquivalent relEnv membership .syntax first second ↔ zfOf first = zfOf second :=
   equivalent_iff_zfOf membership_hereditary membership_pure firstHolds secondHolds
 
 /-- **A hereditary term steps to another exactly when the second denotes a member of the first.** -/

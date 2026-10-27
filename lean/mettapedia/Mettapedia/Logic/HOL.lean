@@ -39,6 +39,7 @@ import Mettapedia.Logic.HOL.ProofSyntaxModuloStructural
 import Mettapedia.Logic.HOL.ProofSyntaxModuloKripke
 import Mettapedia.Logic.HOL.ProofSyntaxModuloConservativity
 import Mettapedia.Logic.HOL.ImpredicativeProofModulo
+import Mettapedia.Logic.HOL.ImpredicativeKripke
 import Mettapedia.Logic.HOL.PublishedFacts
 import Mettapedia.Logic.HOL.HornConsequence
 import Mettapedia.Logic.HOL.Embedding.InferenceRuleInstances
@@ -85,6 +86,8 @@ import Mettapedia.Logic.HOL.TermModel.PreModelWrapper
 import Mettapedia.Logic.HOL.TermModel.Fundamental
 import Mettapedia.Logic.HOL.TermModel.HenkinCompleteness
 import Mettapedia.Logic.HOL.Semantics.KripkeFrameModel
+import Mettapedia.Logic.HOL.Semantics.ProofSyntaxModuloKripkeHenkin
+import Mettapedia.Logic.HOL.Semantics.ImpredicativeKripkeHenkin
 import Mettapedia.Logic.HOL.PropositionalSlice
 
 /-!
@@ -119,12 +122,19 @@ Completeness (Henkin 1950 for the theory of types — sorry-free, axiom-clean):
 Kripke models and the propositional slice:
 - `Semantics.KripkeFrameModel.model`: every preordered set of worlds, with carriers and
   admissible constants, gives a Kripke-Henkin general model, with impredicative
-  quantification over all admissible values.
+  quantification over all admissible values. Equality of base elements may grow along the
+  worlds, and admissible functions respect it.
+- `Semantics.ProofSyntaxModuloKripkeHenkin`, `Semantics.ImpredicativeKripkeHenkin`: proofs
+  modulo conversion are sound for Kripke-Henkin general models, and the impredicative
+  connectives mean conjunction, disjunction, falsity and existence there.
 - `PropositionalSlice`: on propositional formulas, the EM-free calculus proves exactly the
   intuitionistic tautologies and is complete for Kripke-Henkin general models
   (`provable_iff_int`, `provable_iff_kripkeHenkin`); with the excluded-middle schema it proves
   exactly the classical tautologies and is complete for extensional Henkin models
   (`provable_em_iff_cl`, `provable_em_iff_henkin`).
+- `ProofSyntaxModuloKripke`, `ImpredicativeKripke`: proofs modulo conversion are sound for
+  Kripke models whose propositions are all upward-closed sets, and the impredicative
+  connectives mean conjunction, disjunction, falsity and existence there.
 
 Legacy `WorldModelCompleteness.lean` (hypothesis-parameterised) is retained but is not
 the active completeness interface.

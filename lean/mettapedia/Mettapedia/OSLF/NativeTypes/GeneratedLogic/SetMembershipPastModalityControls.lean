@@ -30,19 +30,19 @@ def emptySet : Formula 0 := .necessarily .any .bot
 
 /-- **Some set containing `0` has a member with a member.** -/
 theorem zero_in_deep_set : HFNative.sat Env.closed (.sometimeBefore .any deep) ⟨zero, zero_hf⟩ :=
-  (decideSometimeBefore_iff rfl zero_hf).mp (by decide +kernel)
+  (decideSometimeBefore_iff rfl rfl zero_hf).mp (by decide +kernel)
 
 /-- **No set containing `0` is empty.** -/
 theorem no_empty_container : ¬ HFNative.sat Env.closed (.sometimeBefore .any emptySet) ⟨zero, zero_hf⟩ :=
-  fun holds => absurd ((decideSometimeBefore_iff rfl zero_hf).mpr holds) (by decide +kernel)
+  fun holds => absurd ((decideSometimeBefore_iff rfl rfl zero_hf).mpr holds) (by decide +kernel)
 
 /-- **Every set containing `0` has a member.** -/
 theorem every_container_inhabited : HFNative.sat Env.closed (.alwaysBefore .any inhabited) ⟨zero, zero_hf⟩ :=
-  (decideAlwaysBefore_iff rfl zero_hf).mp (by decide +kernel)
+  (decideAlwaysBefore_iff rfl rfl zero_hf).mp (by decide +kernel)
 
 /-- **Not every set containing `0` has a member with a member.** -/
 theorem not_every_container_deep : ¬ HFNative.sat Env.closed (.alwaysBefore .any deep) ⟨zero, zero_hf⟩ :=
-  fun holds => absurd ((decideAlwaysBefore_iff rfl zero_hf).mpr holds) (by decide +kernel)
+  fun holds => absurd ((decideAlwaysBefore_iff rfl rfl zero_hf).mpr holds) (by decide +kernel)
 
 /-- **Some set has a member and only empty members**: `{0}`. -/
 theorem some_set_of_empty_members :

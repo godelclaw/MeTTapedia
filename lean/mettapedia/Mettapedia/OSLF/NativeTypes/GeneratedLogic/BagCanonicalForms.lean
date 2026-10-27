@@ -243,7 +243,7 @@ variable {relEnv : RelationEnv}
 /-- **An admitted term is equivalent to its canonical form**: each element is replaced by its canonical
 form inside its context, and each bag is then sorted by one bag law, read from the sorted side. -/
 theorem equivalent_canon : ∀ term : Pattern, isObjectPattern term = true → setFree term = true →
-    bagsSorted language (canon term) = true → ObjectEquivalent relEnv language term (canon term)
+    bagsSorted language (canon term) = true → ObjectEquivalent relEnv language .syntax term (canon term)
   | .bvar _, _, _, _ => by rw [canon]; exact Relation.EqvGen.refl _
   | .fvar _, _, _, _ => by rw [canon]; exact Relation.EqvGen.refl _
   | .apply label arguments, object, free, sorted => by
@@ -252,7 +252,7 @@ theorem equivalent_canon : ∀ term : Pattern, isObjectPattern term = true → s
     have frees := setFreeList_iff.mp free
     have sorteds := (bagsSortedList_iff _).mp sorted
     have each : ∀ argument ∈ arguments,
-        IsObject argument ∧ ObjectEquivalent relEnv language argument (canon argument) := fun argument member =>
+        IsObject argument ∧ ObjectEquivalent relEnv language .syntax argument (canon argument) := fun argument member =>
       have : sizeOf argument < sizeOf (Pattern.apply label arguments) := by
         have := List.sizeOf_lt_of_mem member; simp only [Pattern.apply.sizeOf_spec]; omega
       ⟨objects argument member, equivalent_canon argument (objects argument member) (frees argument member)
@@ -287,7 +287,7 @@ theorem equivalent_canon : ∀ term : Pattern, isObjectPattern term = true → s
         · exact (bagsSortedList_iff _).mp sorted.2 _ inArranged
         · exact (bagsSortedList_iff _).mp sorted _ inArranged
       have each : ∀ element ∈ elements,
-          IsObject element ∧ ObjectEquivalent relEnv language element (canon element) := fun element member =>
+          IsObject element ∧ ObjectEquivalent relEnv language .syntax element (canon element) := fun element member =>
         have : sizeOf element < sizeOf (Pattern.collection kind elements none) := by
           have := List.sizeOf_lt_of_mem member; simp only [Pattern.collection.sizeOf_spec]; omega
         ⟨objects element member, equivalent_canon element (objects element member) (frees element member)
@@ -311,7 +311,7 @@ theorem equivalent_canon : ∀ term : Pattern, isObjectPattern term = true → s
           intro pattern member
           obtain ⟨element, inside, rfl⟩ := List.mem_map.mp member
           exact (canon_object element).trans (objects element inside)
-        have step : ObjectStep relEnv language (.collection .hashBag (sortLex (elements.map canon)) none)
+        have step : ObjectStep relEnv language .syntax (.collection .hashBag (sortLex (elements.map canon)) none)
             (.collection .hashBag (elements.map canon) none) :=
           ⟨collectionObject _ fun pattern member => mappedObject pattern ((sortLex_perm _).subset member),
             collectionObject _ mappedObject,
@@ -358,7 +358,7 @@ theorem generator_bagStep (noEquations : language.equations = []) (noAlgebra : l
 /-- **Equivalent terms have the same canonical form.** -/
 theorem canon_eq_of_equivalent (noEquations : language.equations = [])
     (noAlgebra : language.hasAlgebraDeclarations = false) {first second : Pattern}
-    (equivalent : ObjectEquivalent relEnv language first second) : canon first = canon second := by
+    (equivalent : ObjectEquivalent relEnv language .syntax first second) : canon first = canon second := by
   induction equivalent with
   | rel _ _ step =>
     obtain ⟨_, _, step⟩ := step
@@ -369,9 +369,10 @@ theorem canon_eq_of_equivalent (noEquations : language.equations = [])
   | symm _ _ _ ih => exact ih.symm
   | trans _ _ _ _ _ first second => exact first.trans second
 
-/-- **Sorting every bag gives canonical forms on the domain.** -/
-theorem canonical (noEquations : language.equations = []) (noAlgebra : language.hasAlgebraDeclarations = false) :
-    Canonical relEnv language sortBags (domain language) := by
+/-- **Sorting every bag gives canonical forms on the domain**, which is read off them. -/
+theorem canonicalDetermined (noEquations : language.equations = [])
+    (noAlgebra : language.hasAlgebraDeclarations = false) :
+    CanonicalDetermined relEnv language sortBags (domain language) := by
   rw [sortBags_eq_canon]
   exact {
     object := fun admitted => by
@@ -384,6 +385,11 @@ theorem canonical (noEquations : language.equations = []) (noAlgebra : language.
         admitted.2
     same := fun _ equivalent => canon_eq_of_equivalent noEquations noAlgebra equivalent
     closed := fun _ => canon_wellScoped _ 0 }
+
+/-- **Sorting every bag gives canonical forms on the domain.** -/
+theorem canonical (noEquations : language.equations = []) (noAlgebra : language.hasAlgebraDeclarations = false) :
+    Canonical relEnv language sortBags (domain language) :=
+  (canonicalDetermined noEquations noAlgebra).canonical
 
 /-! ## Matching commutes with sorting -/
 

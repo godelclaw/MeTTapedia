@@ -439,14 +439,14 @@ theorem step_of_equationContextStep (noEquations : language.equations = []) {bas
     · exact .inContext context (Or.inr derived)
 
 theorem equationEquiv_of_objectEquivalent (noEquations : language.equations = []) (base : BasePremiseEvaluator)
-    {first second : Pattern} (equivalent : ObjectEquivalent relEnv language first second) :
+    {first second : Pattern} (equivalent : ObjectEquivalent relEnv language .syntax first second) :
     EquationEquiv base language first second :=
   Relation.EqvGen.mono (fun _ _ step => equationContextStep_of_step noEquations base step.2.2) _ _ equivalent
 
 /-- **The laws relate closed terms of the sort only to closed terms of the sort**, in one sort. -/
 theorem admissible_iff_of_equivalent (laws : BareBagTheory language bag unit)
     (sorted : singleSorted language bag = true) {first second : Pattern}
-    (equivalent : ObjectEquivalent relEnv language first second) :
+    (equivalent : ObjectEquivalent relEnv language .syntax first second) :
     Admissible language FreeTypeContext.empty [] (.base bag.category) first ↔
       Admissible language FreeTypeContext.empty [] (.base bag.category) second := by
   induction equivalent with
@@ -460,7 +460,7 @@ theorem admissible_iff_of_equivalent (laws : BareBagTheory language bag unit)
 theorem objectEquivalent_of_path (laws : BareBagTheory language bag unit) {base : BasePremiseEvaluator}
     {source target : Pattern} (path : Path base language source target)
     (admissible : Admissible language FreeTypeContext.empty [] (.base bag.category) source) :
-    ObjectEquivalent relEnv language source target := by
+    ObjectEquivalent relEnv language .syntax source target := by
   induction path with
   | refl => exact Relation.EqvGen.refl _
   | tail before step previous =>
@@ -499,9 +499,10 @@ theorem normalForm_admissible (laws : BareBagTheory language bag unit) {term : P
     Admissible language FreeTypeContext.empty [] (.base bag.category) (normalForm unit term) :=
   path_admissible laws (path_normalForm laws defaultBasePremises term admissible rfl) admissible rfl
 
-/-- **The bag normal form gives canonical forms** on closed terms of the bag's sort, in one sort. -/
-theorem canonical (laws : BareBagTheory language bag unit) (sorted : singleSorted language bag = true) :
-    Canonical relEnv language (canon language bag unit) (domain language bag) where
+/-- **The bag normal form gives canonical forms** on closed terms of the bag's sort, in one sort, whose domain is
+read off them. -/
+theorem canonicalDetermined (laws : BareBagTheory language bag unit) (sorted : singleSorted language bag = true) :
+    CanonicalDetermined relEnv language (canon language bag unit) (domain language bag) where
   object admitted := (domain_iff.mp admitted).object
   determined term := by
     unfold canon
@@ -527,6 +528,11 @@ theorem canonical (laws : BareBagTheory language bag unit) (sorted : singleSorte
     have after := (normalForm_admissible laws (domain_iff.mp admitted)).typed.isWellScopedAt
     simp only [List.length_nil] at before after
     rw [before, after]
+
+/-- **The bag normal form gives canonical forms** on closed terms of the bag's sort, in one sort. -/
+theorem canonical (laws : BareBagTheory language bag unit) (sorted : singleSorted language bag = true) :
+    Canonical relEnv language (canon language bag unit) (domain language bag) :=
+  (canonicalDetermined laws sorted).canonical
 
 /-! ## The normal form respects substitution -/
 
