@@ -21,6 +21,9 @@ open scoped Laplacian
 
 
 section FiniteModeReconstructionRegression
+
+/-- Regression: the matrix-linear reconstruction has component formula
+`u_j(t,x)=t Σ_k A_{jk}x_k`. -/
 theorem finiteModeLinearMatrix_reconstructedVelocity_apply_regression
     (A : Fin 3 → Fin 3 → ℝ) (t : NSTime) (x : NSSpace) (j : Fin 3) :
     finiteModeReconstructedVelocity

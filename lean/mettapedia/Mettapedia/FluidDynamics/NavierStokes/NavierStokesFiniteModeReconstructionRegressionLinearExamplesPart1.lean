@@ -523,8 +523,6 @@ theorem finiteModeSymmetricShear_reconstructed_velocityAffineQuadraticPressure_m
   finiteModeSymmetricShear_reconstructed_velocityAffineQuadraticPressure_momentum_incompressible_exists
     ν ε α
 
-/-- Regression: the matrix-linear reconstruction has component formula
-
 end FiniteModeReconstructionRegression
 end NavierStokes
 end FluidDynamics
