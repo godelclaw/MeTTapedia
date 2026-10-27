@@ -7,6 +7,7 @@ The active frontier contains only current transport claims, not the archive.
 Capacity and an interactive reserve describe transport resources. They are
 not work, token or retry quotas. The source implementation's arbitrary
 identifier-length and capacity ceilings are not part of this native model.
+A zero reserve means that no slots are reserved for interactive work.
 
 Owner/transport identity, complete scoped observations, durable publication
 and the external executor are separate contracts. In particular, registering
@@ -162,6 +163,275 @@ theorem death_before_intent_is_unsent : recover .reserved .exited = .releaseUnse
 theorem death_after_intent_is_unknown (transport : String) :
     recover (.intent transport) .exited = .preserveUnknown := rfl
 
+/-! A terminal resource observation is independent of process death. These
+pure transitions describe captured, well-formed application facts. Storage
+publication, transport authentication and usage merging remain their own
+contracts; this model neither stops a transport nor authorizes a send. -/
+
+inductive LeasePhase where
+  | active | completed | failed | unknown
+  deriving DecidableEq, Repr
+
+structure Lease where
+  owner : String
+  phase : LeasePhase
+  deriving DecidableEq, Repr
+
+inductive EndReason where
+  | unsent | failed | unknown | completed
+  deriving DecidableEq, Repr
+
+inductive ResourceStage where
+  | reserved | dispatched (transport : String) | ended (reason : EndReason)
+  deriving DecidableEq, Repr
+
+structure Intent where
+  owner : String
+  process : String
+  transport : String
+  deriving DecidableEq, Repr
+
+structure TerminalFocus where
+  claim : Claim
+  stage : ResourceStage
+  lease : Option Lease
+  answer : Option String
+  intent : Option Intent
+  attempt : Option String
+  frontier : List Claim
+  index : Option Claim
+  deriving DecidableEq, Repr
+
+inductive Closure where
+  | running | unavailable | failed (transport : String) | unknown (transport : String)
+  deriving DecidableEq, Repr
+
+inductive EndCommand where
+  | abandon | close (observation : Closure)
+  deriving DecidableEq, Repr
+
+def endLease (owner : String) (lease : Option Lease) (answer : Option String)
+    (phase : LeasePhase) : Option Lease :=
+  match lease, answer with
+  | some ⟨who, .active⟩, none => if who == owner then some ⟨owner, phase⟩ else lease
+  | _, _ => lease
+
+def releaseResource (state : TerminalFocus) (reason : EndReason) (phase : LeasePhase) : TerminalFocus :=
+  { state with
+    stage := .ended reason
+    frontier := retire state.frontier state.claim.call
+    index := none
+    lease := endLease state.claim.owner state.lease state.answer phase }
+
+def validClaim (claim : Claim) : Bool :=
+  !claim.call.isEmpty && !claim.owner.isEmpty && !claim.process.isEmpty &&
+    match claim.activity with
+    | .exclusive => true
+    | .named name _ => !name.isEmpty
+
+def validFrontier : List Claim → Bool
+  | [] => true
+  | claim :: rest => validClaim claim && !rest.any (conflicting claim) && validFrontier rest
+
+def aligned (state : TerminalFocus) : Bool :=
+  validFrontier state.frontier &&
+    state.frontier.find? (fun c => c.call == state.claim.call) == some state.claim &&
+    state.index == some state.claim
+
+def registered (state : TerminalFocus) (transport : String) : Bool :=
+  state.intent == some ⟨state.claim.owner, state.claim.process, transport⟩ &&
+    state.attempt == some transport
+
+/-- First resource-release projection. `none` means no first release, not a
+particular public refusal code or absence of a separate usage update. -/
+def terminate (state : TerminalFocus) (owner process : String) (command : EndCommand) :
+    Option TerminalFocus :=
+  if owner != state.claim.owner || process != state.claim.process then none else
+  match command, state.stage with
+  | .abandon, .reserved =>
+    if aligned state && state.intent.isNone && state.attempt.isNone && state.answer.isNone then
+      some (releaseResource state .unsent .failed) else none
+  | .close (.failed transport), .dispatched physical =>
+    if physical == transport && registered state transport && aligned state then
+      some (releaseResource state .failed .failed) else none
+  | .close (.unknown transport), .dispatched physical =>
+    if physical == transport && registered state transport && aligned state then
+      some (releaseResource state .unknown .unknown) else none
+  | _, _ => none
+
+theorem release_preserves_the_answer (state : TerminalFocus) (reason : EndReason) (phase : LeasePhase) :
+    (releaseResource state reason phase).answer = state.answer := rfl
+
+theorem release_preserves_dispatch_and_attempt (state : TerminalFocus) (reason : EndReason)
+    (phase : LeasePhase) :
+    ((releaseResource state reason phase).intent, (releaseResource state reason phase).attempt) =
+      (state.intent, state.attempt) := rfl
+
+theorem release_clears_the_matching_index (state : TerminalFocus) (reason : EndReason) (phase : LeasePhase) :
+    (releaseResource state reason phase).index = none := rfl
+
+theorem released_frontier_has_no_call (state : TerminalFocus) (reason : EndReason)
+    (phase : LeasePhase) (claim : Claim)
+    (member : claim ∈ (releaseResource state reason phase).frontier) :
+    claim.call ≠ state.claim.call := a_released_call_is_absent _ _ _ member
+
+theorem release_keeps_other_resources (state : TerminalFocus) (reason : EndReason)
+    (phase : LeasePhase) (claim : Claim) (other : claim.call ≠ state.claim.call) :
+    claim ∈ (releaseResource state reason phase).frontier ↔ claim ∈ state.frontier :=
+  release_preserves_unrelated_claims _ _ _ other
+
+theorem another_owners_lease_is_preserved (owner who : String) (old next : LeasePhase)
+    (answer : Option String) (different : who ≠ owner) :
+    endLease owner (some ⟨who, old⟩) answer next = some ⟨who, old⟩ := by
+  cases old <;> cases answer <;> simp [endLease, different]
+
+theorem an_existing_answer_keeps_the_lease (owner answer : String) (lease : Option Lease)
+    (phase : LeasePhase) : endLease owner lease (some answer) phase = lease := by
+  cases lease with
+  | none => rfl
+  | some lease => cases lease with | mk who old => cases old <;> rfl
+
+theorem wrong_resource_owner_is_refused (state : TerminalFocus) (owner process : String)
+    (command : EndCommand) (different : owner ≠ state.claim.owner) :
+    terminate state owner process command = none := by simp [terminate, different]
+
+theorem wrong_process_incarnation_is_refused (state : TerminalFocus) (owner process : String)
+    (command : EndCommand) (different : process ≠ state.claim.process) :
+    terminate state owner process command = none := by simp [terminate, different]
+
+theorem running_transport_is_not_closed (state : TerminalFocus) (owner process : String) :
+    terminate state owner process (.close .running) = none := by
+  simp only [terminate]
+  split <;> rfl
+
+theorem unavailable_transport_is_not_closed (state : TerminalFocus) (owner process : String) :
+    terminate state owner process (.close .unavailable) = none := by
+  simp only [terminate]
+  split <;> rfl
+
+theorem reserved_abandonment_needs_no_death (state : TerminalFocus)
+    (reserved : state.stage = .reserved) (ready : aligned state = true)
+    (noIntent : state.intent = none) (noAttempt : state.attempt = none)
+    (noAnswer : state.answer = none) :
+    terminate state state.claim.owner state.claim.process .abandon =
+      some (releaseResource state .unsent .failed) := by
+  simp [terminate, reserved, ready, noIntent, noAttempt, noAnswer]
+
+theorem registered_closed_transport_can_release (state : TerminalFocus) (transport : String)
+    (dispatched : state.stage = .dispatched transport) (ready : aligned state = true)
+    (sameIntent : registered state transport = true) :
+    terminate state state.claim.owner state.claim.process (.close (.failed transport)) =
+      some (releaseResource state .failed .failed) := by
+  simp [terminate, dispatched, ready, sameIntent]
+
+theorem unknown_closure_can_release_without_a_false_answer (state : TerminalFocus) (transport : String)
+    (dispatched : state.stage = .dispatched transport) (ready : aligned state = true)
+    (sameIntent : registered state transport = true) :
+    terminate state state.claim.owner state.claim.process (.close (.unknown transport)) =
+      some (releaseResource state .unknown .unknown) := by
+  simp [terminate, dispatched, ready, sameIntent]
+
+theorem resource_release_never_returns_to_reserved (state : TerminalFocus) (reason : EndReason)
+    (phase : LeasePhase) : (releaseResource state reason phase).stage ≠ .reserved := by
+  simp [releaseResource]
+
+theorem releasing_twice_does_not_remove_more_resources (state : TerminalFocus)
+    (first second : EndReason) (p q : LeasePhase) :
+    (releaseResource (releaseResource state first p) second q).frontier =
+      (releaseResource state first p).frontier := by
+  simp [releaseResource, retire, List.filter_filter]
+
+theorem an_ended_resource_has_no_second_first_release (state : TerminalFocus)
+    (reason : EndReason) (phase : LeasePhase) (owner process : String) (command : EndCommand) :
+    terminate (releaseResource state reason phase) owner process command = none := by
+  cases command with
+  | abandon => simp [terminate, releaseResource]
+  | close observation => cases observation <;> simp [terminate, releaseResource]
+
+theorem an_existing_intent_prevents_unsent_abandonment (state : TerminalFocus)
+    (intent : Intent) (present : state.intent = some intent) (owner process : String) :
+    terminate state owner process .abandon = none := by
+  unfold terminate
+  split
+  · rfl
+  · cases state.stage <;> simp [present]
+
+theorem a_terminal_lease_is_preserved (owner who : String) (old next : LeasePhase)
+    (answer : Option String) (terminal : old ≠ .active) :
+    endLease owner (some ⟨who, old⟩) answer next = some ⟨who, old⟩ := by
+  cases old <;> cases answer <;> simp_all [endLease]
+
+structure TerminalInput where
+  stage : Nat
+  lease : Nat
+  answer : Bool
+  intent : Nat
+  owner : Bool
+  process : Bool
+  command : Nat
+  indexed : Bool
+  deriving Repr
+
+def terminalInputState (input : TerminalInput) : TerminalFocus :=
+  let claim : Claim := ⟨"call", "owner", "process", .named "A" .interactive⟩
+  let other : Claim := ⟨"other-call", "owner", "process", .named "B" .interactive⟩
+  { claim
+    stage := match input.stage with
+      | 0 => .reserved | 1 => .dispatched "transport" | 2 => .ended .unsent
+      | 3 => .ended .failed | 4 => .ended .unknown | _ => .ended .completed
+    lease := match input.lease with
+      | 0 => some ⟨"owner", .active⟩ | 1 => some ⟨"successor", .active⟩
+      | 2 => some ⟨"owner", .completed⟩ | 3 => some ⟨"owner", .failed⟩
+      | 4 => some ⟨"owner", .unknown⟩ | _ => none
+    answer := if input.answer then some "transport" else none
+    intent := match input.intent with
+      | 0 => none | 1 => some ⟨"owner", "process", "transport"⟩
+      | 2 => some ⟨"owner", "process", "different"⟩
+      | _ => some ⟨"owner", "other-process", "transport"⟩
+    attempt := if input.intent == 0 then none else some "transport"
+    frontier := if input.stage < 2 then [claim, other] else [other]
+    index := if input.stage < 2 && input.indexed then some claim else none }
+
+def terminalInputCommand (code : Nat) : EndCommand :=
+  match code with
+  | 0 => .abandon | 1 => .close (.failed "transport") | 2 => .close (.unknown "transport")
+  | 3 => .close .running | _ => .close .unavailable
+
+def terminalProjection (state : TerminalFocus) : String :=
+  String.intercalate ","
+    [toString (match state.stage with
+      | .reserved => 0 | .dispatched _ => 1 | .ended .unsent => 2
+      | .ended .failed => 3 | .ended .unknown => 4 | .ended .completed => 5),
+     toString (match state.lease with
+      | some ⟨"owner", .active⟩ => 0 | some ⟨_, .active⟩ => 1
+      | some ⟨_, .completed⟩ => 2 | some ⟨_, .failed⟩ => 3
+      | some ⟨_, .unknown⟩ => 4 | none => 5),
+     if state.frontier.any (fun c => c.call == "call") then "1" else "0",
+     if state.index.isSome then "1" else "0"]
+
+def terminalCases : List TerminalInput :=
+  let ordinary := [0, 1].flatMap fun stage => (List.range 6).flatMap fun lease =>
+    [false, true].flatMap fun answer => (List.range 5).map fun command =>
+      TerminalInput.mk stage lease answer (if stage == 0 then 0 else 1) true true command true
+  let separated := (List.range 4).flatMap fun intent => [false, true].flatMap fun owner =>
+    [false, true].flatMap fun process => [false, true].flatMap fun indexed =>
+      [0, 1, 2].map fun command => TerminalInput.mk 1 0 false intent owner process command indexed
+  let ended := [2, 3, 4, 5].flatMap fun stage => [0, 1, 2].map fun command =>
+    TerminalInput.mk stage 0 false (if stage == 2 then 0 else 1) true true command true
+  ordinary ++ separated ++ ended
+
+def terminalInputs : String := "NATIVE_TERMINAL_INPUTS " ++ String.intercalate " "
+  (terminalCases.map fun input => String.intercalate ","
+    [toString input.stage, toString input.lease, if input.answer then "1" else "0",
+     toString input.intent, if input.owner then "1" else "0", if input.process then "1" else "0",
+     toString input.command, if input.indexed then "1" else "0"])
+
+def terminalTrace : String := "NATIVE_TERMINAL_STATES " ++ String.intercalate " "
+  (terminalCases.map fun input =>
+    let state := terminalInputState input
+    terminalProjection ((terminate state (if input.owner then "owner" else "stranger")
+      (if input.process then "process" else "other-process") (terminalInputCommand input.command)).getD state))
+
 def traceCases : List (Policy × List Claim × Claim) :=
   let i := fun call activity => Claim.mk call "owner" "process" activity
   let policy : Policy := ⟨2, 1⟩
@@ -213,3 +483,5 @@ end Mettapedia.Machines.NativeProviderClaims
 #eval IO.println Mettapedia.Machines.NativeProviderClaims.traceInputs
 #eval IO.println Mettapedia.Machines.NativeProviderClaims.recoveryInputs
 #eval IO.println Mettapedia.Machines.NativeProviderClaims.recoveryTrace
+#eval IO.println Mettapedia.Machines.NativeProviderClaims.terminalInputs
+#eval IO.println Mettapedia.Machines.NativeProviderClaims.terminalTrace
