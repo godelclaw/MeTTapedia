@@ -201,7 +201,7 @@ theorem ae_tendsto_imp_prob_tendsto {X : ℕ → Ω → ℝ} {Y : Ω → ℝ}
     simp only [mem_setOf_eq, Real.dist_eq] at hω ⊢
     exact le_of_lt hω
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hTIM' ?_ ?_
-  · intro n; exact zero_le _
+  · intro n; exact zero_le
   · exact hsub
 
 /-- Theorem 5.2(i): Convergence with probability 1 iff P[|Xₙ - X| ≥ ε i.o.] = 0
@@ -453,7 +453,7 @@ theorem existence_independent_sequence
     ∃ (Ω' : Type) (_ : MeasurableSpace Ω') (P : Measure Ω') (_ : IsProbabilityMeasure P)
       (X : ℕ → Ω' → ℝ),
       (∀ n, Measurable (X n)) ∧
-      (∀ n m, n ≠ m → IndepFun (X n) (X m) P) ∧
+      iIndepFun X P ∧
       ∀ n, P.map (X n) = (_distributions n).toMeasure := by
   -- Kolmogorov's construction: take the infinite product probability space.
   let Ω' : Type := ℕ → ℝ
@@ -464,8 +464,7 @@ theorem existence_independent_sequence
     simpa using iIndepFun_infinitePi (Ω := fun _ : ℕ => ℝ) (𝓧 := fun _ : ℕ => ℝ)
       (P := μs) (X := fun _ : ℕ => id) (fun _ => measurable_id)
   refine ⟨Ω', inferInstance, MeasureTheory.Measure.infinitePi μs, inferInstance,
-    (fun n ω => ω n), (fun n => measurable_pi_apply n),
-    (fun n m hnm => hjoint.indepFun hnm), ?_⟩
+    (fun n ω => ω n), (fun n => measurable_pi_apply n), hjoint, ?_⟩
   intro n
   exact MeasureTheory.Measure.infinitePi_map_eval μs n
 

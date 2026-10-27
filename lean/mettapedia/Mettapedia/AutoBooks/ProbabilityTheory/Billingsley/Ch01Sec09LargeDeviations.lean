@@ -13,25 +13,17 @@ import Mathlib.Probability.Moments.IntegrableExpMul
 import Mathlib.Probability.Moments.SubGaussian
 
 /-!
-# Billingsley Chapter 1, Section 9: Large Deviations and the Law of the Iterated Logarithm
+# Billingsley Chapter 1, Section 9: Large Deviations
 
-This file formalizes Section 9 of Billingsley's "Probability and Measure" (3rd Edition),
-which covers large deviation estimates and the law of the iterated logarithm.
-
-## Main concepts
-
-* Moment generating function: M(t) = E[e^{tX}]
-* Cumulant generating function: log M(t)
-* Large deviation bounds
-* Cramér's theorem (large deviations for sums)
-* Law of the iterated logarithm (LIL)
+Moment and cumulant generating functions from Section 9 of Billingsley's "Probability
+and Measure" (3rd Edition), with Hoeffding's inequality.
 
 ## Main theorems
 
-* Chernoff bound: P[Sₙ ≥ na] ≤ e^{-nI(a)} for appropriate rate function I
-* Law of the iterated logarithm:
-  limsup Sₙ / √(2n log log n) = σ a.s.
-  liminf Sₙ / √(2n log log n) = -σ a.s.
+* `moment_from_mgf`: moments are the derivatives of the moment generating function at 0
+* `first_cumulant_is_mean`, `second_cumulant_is_variance`
+* `bernoulli_variance_from_mgf`: Example 9.1
+* `hoeffding_inequality`: P[Sₙ - E[Sₙ] ≥ t] ≤ exp(-2t²/Σᵢ(bᵢ-aᵢ)²) for independent bounded summands
 
 ## References
 
@@ -123,52 +115,6 @@ theorem second_cumulant_is_variance (X : Ω → ℝ)
   rw [h_deriv_cgf, h_mgf_zero, div_one]
   simp
 
-/-! ## Large Deviation Bounds -/
-
-/-- The rate function (Legendre transform of cumulant generating function). -/
-def rateFunction (X : Ω → ℝ) (a : ℝ) : ℝ :=
-  ⨆ (t : ℝ), t * a - cumulantGeneratingFunction μ X t
-
-/-- Cramér-Chernoff bound: P[Sₙ/n ≥ a] ≤ e^{-n·I(a)}.
-This is the basic large deviation upper bound. -/
-theorem cramer_chernoff_bound {X : ℕ → Ω → ℝ}
-    (_h_iid : ∀ n, μ.map (X n) = μ.map (X 0))
-    (_h_indep : ∀ i j, i ≠ j → IndepFun (X i) (X j) μ)
-    (_h_int : ∀ t, Integrable (fun ω => Real.exp (t * X 0 ω)) μ)
-    (a : ℝ) (_ha : a > ∫ ω, X 0 ω ∂μ) :
-    ∀ n, (μ {ω | (∑ i ∈ Finset.range n, X i ω) / n ≥ a}).toReal ≤
-      Real.exp (-(n : ℝ) * rateFunction μ (X 0) a) := by
-  sorry
-
-/-! ## The Law of the Iterated Logarithm -/
-
-/-- The normalizing sequence for LIL: √(2n log log n). -/
-def lilNormalizer (n : ℕ) : ℝ :=
-  Real.sqrt (2 * n * Real.log (Real.log n))
-
-/-- Law of the Iterated Logarithm (upper bound):
-limsup Sₙ / √(2n log log n) = σ almost surely.
-This is one of the deepest results in classical probability. -/
-theorem law_of_iterated_logarithm_upper {X : ℕ → Ω → ℝ}
-    (_h_iid : ∀ n, μ.map (X n) = μ.map (X 0))
-    (_h_indep : ∀ i j, i ≠ j → IndepFun (X i) (X j) μ)
-    (_h_mean_zero : ∫ ω, X 0 ω ∂μ = 0)
-    (_h_var : ∫ ω, (X 0 ω)^2 ∂μ = 1) :
-    ∀ᵐ ω ∂μ, ∀ ε > 0, ∃ᶠ n in Filter.atTop,
-      (∑ i ∈ Finset.range n, X i ω) / lilNormalizer n > 1 - ε := by
-  sorry
-
-/-- Law of the Iterated Logarithm (lower bound):
-liminf Sₙ / √(2n log log n) = -σ almost surely. -/
-theorem law_of_iterated_logarithm_lower {X : ℕ → Ω → ℝ}
-    (_h_iid : ∀ n, μ.map (X n) = μ.map (X 0))
-    (_h_indep : ∀ i j, i ≠ j → IndepFun (X i) (X j) μ)
-    (_h_mean_zero : ∫ ω, X 0 ω ∂μ = 0)
-    (_h_var : ∫ ω, (X 0 ω)^2 ∂μ = 1) :
-    ∀ᵐ ω ∂μ, ∀ ε > 0, ∃ᶠ n in Filter.atTop,
-      (∑ i ∈ Finset.range n, X i ω) / lilNormalizer n < -1 + ε := by
-  sorry
-
 /-! ## Example 9.1: Bernoulli MGF -/
 
 /-- MGF for Bernoulli(p): M(t) = pe^t + (1-p). -/
@@ -222,7 +168,7 @@ theorem hoeffding_inequality {X : ℕ → Ω → ℝ} (n : ℕ)
   have h_indep_Y : ProbabilityTheory.iIndepFun Y μ := by
     have := h_indep.comp (g := fun i x => x - ∫ ω', X i ω' ∂μ)
       (fun _ => (measurable_id.sub_const _))
-    simpa [Y] using this
+    exact this
   -- Rewrite the sum and apply mathlib's Hoeffding for joint-independent sub-gaussian.
   have h_set_eq : {ω | (∑ i ∈ Finset.range n, X i ω) -
         (∑ i ∈ Finset.range n, ∫ ω', X i ω' ∂μ) ≥ t}
@@ -251,20 +197,6 @@ theorem hoeffding_inequality {X : ℕ → Ω → ℝ} (n : ℕ)
   · simp [hs]
   · congr 1
     field_simp
-
-/-! ## Rate of Convergence in Strong Law -/
-
-/-- The strong law gives convergence but not rate.
-LIL shows: Sₙ/n - m = O(√(log log n / n)) a.s. -/
-theorem strong_law_rate {X : ℕ → Ω → ℝ}
-    (_h_iid : ∀ n, μ.map (X n) = μ.map (X 0))
-    (_h_indep : ∀ i j, i ≠ j → IndepFun (X i) (X j) μ)
-    (m : ℝ) (_hm : ∫ ω, X 0 ω ∂μ = m)
-    (σ : ℝ) (_hσ : 0 < σ) (_hσ_var : ∫ ω, (X 0 ω - m)^2 ∂μ = σ^2) :
-    ∀ᵐ ω ∂μ, ∃ C > 0, ∀ᶠ n in Filter.atTop,
-      |(∑ i ∈ Finset.range n, X i ω) / n - m| ≤
-        C * σ * Real.sqrt (Real.log (Real.log n) / n) := by
-  sorry
 
 end Mettapedia.AutoBooks.Billingsley.Ch01Sec09
 

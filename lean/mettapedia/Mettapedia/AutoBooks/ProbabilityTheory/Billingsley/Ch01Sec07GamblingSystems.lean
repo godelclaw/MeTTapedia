@@ -11,24 +11,17 @@ import Mathlib.Probability.Independence.Basic
 /-!
 # Billingsley Chapter 1, Section 7: Gambling Systems
 
-This file formalizes Section 7 of Billingsley's "Probability and Measure" (3rd Edition),
-which covers gambling systems, the gambler's ruin problem, and optimal stopping.
-
-## Main concepts
-
-* Gambler's ruin: probability of reaching goal c from initial capital a
-* Fair, favorable, and subfair games
-* Stopping times
-* Martingales (preview)
-* Optimal betting strategies
+The closed forms of the gambler's-ruin problem in Section 7 of Billingsley's
+"Probability and Measure" (3rd Edition).
 
 ## Main theorems
 
-* Formula (7.7): Probability of success s_c(a)
+* Formula (7.7): the success probability s_c(a)
   - s_c(a) = (ρ^a - 1)/(ρ^c - 1) if p ≠ q, where ρ = q/p
   - s_c(a) = a/c if p = q = 1/2
-* The gambler either reaches goal or ruins with probability 1
-* Properties of stopping times
+* `probSuccess_recursion` and `probSuccess_boundary`: the closed form solves the
+  difference equation s_c(a) = p s_c(a+1) + q s_c(a-1) with s_c(0) = 0 and s_c(c) = 1
+* `success_plus_ruin_eq_one`: the closed forms of success and ruin sum to 1
 
 ## References
 
@@ -42,17 +35,7 @@ open scoped ENNReal NNReal
 
 namespace Mettapedia.AutoBooks.Billingsley.Ch01Sec07
 
-variable {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-
 /-! ## The Gambler's Ruin Problem -/
-
-/-- Random walk: Sₙ = X₁ + ⋯ + Xₙ where Xᵢ ∈ {-1, +1}. -/
-def randomWalk (X : ℕ → Ω → ℤ) (n : ℕ) : Ω → ℤ :=
-  fun ω => ∑ i ∈ Finset.range n, X i ω
-
-/-- Gambler's fortune: a + Sₙ where a is initial capital. -/
-def fortune (X : ℕ → Ω → ℤ) (a : ℕ) (n : ℕ) : Ω → ℤ :=
-  fun ω => (a : ℤ) + randomWalk X n ω
 
 /-- The odds against the gambler: ρ = q/p where q = 1-p. -/
 def oddsAgainst (p : ℝ) : ℝ := (1 - p) / p
@@ -70,7 +53,7 @@ def probRuin (p : ℝ) (a c : ℕ) : ℝ :=
   if oddsAgainst p = 1 then ((c : ℝ) - a) / c
   else ((oddsAgainst p)^c - (oddsAgainst p)^a) / ((oddsAgainst p)^c - 1)
 
-/-- Success + Ruin = 1: the game terminates with probability 1. -/
+/-- The closed forms of success and ruin sum to 1. -/
 theorem success_plus_ruin_eq_one (p : ℝ) (_hp : 0 < p ∧ p < 1) (a c : ℕ)
     (_ha : 0 < a) (hac : a < c) :
     probSuccess p a c + probRuin p a c = 1 := by
@@ -201,49 +184,6 @@ theorem fair_game_success_prob (a c : ℕ) (_hac : a ≤ c) (_hc : 0 < c) :
   -- oddsAgainst (1/2) = (1 - 1/2) / (1/2) = 1
   have h : (1 - (1:ℝ)/2) / (1/2) = 1 := by norm_num
   simp only [h, ↓reduceIte]
-
-/-! ## Stopping Times -/
-
-/-- A stopping time T is a random variable such that {T ≤ n} ∈ ℱₙ for all n.
-For simple random variables, this means {T = n} depends only on X₁,...,Xₙ. -/
-def IsStoppingTime (T : Ω → ℕ) (_X : ℕ → Ω → ℝ) : Prop :=
-  ∀ n, MeasurableSet {ω | T ω ≤ n}
-
-/-- Hitting time of level b exists (i.e., level b is reached). -/
-def hitsLevel (X : ℕ → Ω → ℤ) (a : ℕ) (b : ℤ) (ω : Ω) : Prop :=
-  ∃ n, fortune X a n ω = b
-
-/-! ## Bold Play Strategy
-
-In a subfair game, "bold play" (betting everything or as much as needed)
-maximizes the probability of reaching the goal.
--/
-
-/-- Bold play: bet min(fortune, c - fortune) at each round. -/
-def boldPlayBet (a c : ℕ) : ℕ → ℕ :=
-  fun f => min f (c - f)
-
-/-- In subfair games, bold play maximizes probability of success. -/
-theorem bold_play_optimal {p : ℝ} (_hp : IsSubfairGame p) (a c : ℕ)
-    (_ha : 0 < a) (_hac : a < c) :
-    ∀ (_strategy : ℕ → ℕ),
-      probSuccess p a c ≤ probSuccess p a c := by
-  -- Bold play achieves the maximum; the inequality is equality for bold play
-  intro _
-  rfl
-
-/-! ## Expected Duration of Play -/
-
-/-- Expected number of plays until game terminates. -/
-def expectedDuration (p : ℝ) (a c : ℕ) : ℝ :=
-  if p = 1/2 then (a : ℝ) * ((c : ℝ) - a)
-  else (a / (1 - 2*p)) - (c / (1 - 2*p)) * probSuccess p a c
-
-/-- For fair games, expected duration is a(c-a). -/
-theorem fair_game_expected_duration (a c : ℕ) (_hac : a ≤ c) :
-    expectedDuration (1/2) a c = (a : ℝ) * ((c : ℝ) - a) := by
-  unfold expectedDuration
-  simp
 
 end Mettapedia.AutoBooks.Billingsley.Ch01Sec07
 

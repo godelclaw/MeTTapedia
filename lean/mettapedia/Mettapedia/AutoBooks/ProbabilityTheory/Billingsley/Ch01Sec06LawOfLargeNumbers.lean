@@ -11,6 +11,7 @@ import Mathlib.Probability.Independence.Basic
 import Mathlib.Probability.IdentDistrib
 import Mathlib.Probability.Moments.Variance
 import Mathlib.Probability.StrongLaw
+import Mathlib.Analysis.SpecialFunctions.Bernstein
 
 /-!
 # Billingsley Chapter 1, Section 6: The Law of Large Numbers
@@ -65,21 +66,6 @@ def partialAverage (X : ℕ → Ω → ℝ) (n : ℕ) : Ω → ℝ :=
 /-- Identically distributed: all Xₙ have the same distribution. -/
 def IdenticallyDistributed (X : ℕ → Ω → ℝ) : Prop :=
   ∀ n m, μ.map (X n) = μ.map (X m)
-
-/-- Fourth moment bound for sums of i.i.d. mean-zero random variables.
-Billingsley's (6.2): E[Sₙ⁴] ≤ Kn² where K depends on σ² and δ⁴. -/
-theorem fourth_moment_bound {X : ℕ → Ω → ℝ}
-    (_h_meas : ∀ n, Measurable (X n))
-    (_h_indep : ∀ i j, i ≠ j → IndepFun (X i) (X j) μ)
-    (_h_zero_mean : ∀ n, ∫ ω, X n ω ∂μ = 0)
-    (sigma2 : ℝ) (_hσ : ∀ n, ∫ ω, (X n ω)^2 ∂μ = sigma2)
-    (delta4 : ℝ) (_hδ : ∀ n, ∫ ω, (X n ω)^4 ∂μ = delta4) :
-    ∀ n, ∫ ω, (partialSum X n ω)^4 ∂μ ≤ (delta4 + 3 * sigma2^2) * (n : ℝ)^2 := by
-  intro _n
-  -- E[Sₙ⁴] = ΣE[XₐXᵦXᵧXᵨ]
-  -- By independence and E[Xᵢ] = 0, only terms with no singleton index survive
-  -- These are: E[Xᵢ⁴] (n terms) and E[Xᵢ²Xⱼ²] for i≠j (3n(n-1) terms)
-  sorry
 
 /-- Theorem 6.1: Strong Law of Large Numbers.
 If Xₙ are i.i.d. with E[Xₙ] = m and finite fourth moment, then
@@ -229,7 +215,7 @@ theorem weak_law_of_large_numbers {X : ℕ → Ω → ℝ}
     filter_upwards [Filter.eventually_ge_atTop 1] with n hn using hCheb_n n hn
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le'
     tendsto_const_nhds hub_tendsto
-    (Filter.Eventually.of_forall (fun _ => zero_le _)) htail
+    (Filter.Eventually.of_forall (fun _ => by simp)) htail
 
 /-! ## Example 6.1: Bernoulli Trials
 
@@ -341,26 +327,16 @@ theorem bernoulli_strong_law {X : ℕ → Ω → ℝ} {p : ℝ}
 
 /-! ## Theorem 6.2: Bernstein's Approximation Theorem
 
-Bernstein polynomials provide a constructive proof of Weierstrass approximation.
+Bernstein polynomials provide a constructive proof of Weierstrass approximation. Mathlib
+states it for continuous functions on the unit interval, with
+`bernsteinApproximation n f x = ∑ k, bernstein n k x • f (k / n)`.
 -/
 
-/-- Bernstein polynomial: Bₙ(f)(x) = Σₖ f(k/n) C(n,k) xᵏ(1-x)^(n-k) -/
-def bernsteinPolynomial (f : ℝ → ℝ) (n : ℕ) (x : ℝ) : ℝ :=
-  ∑ k ∈ Finset.range (n + 1), f (k / n) * (n.choose k : ℝ) * x^k * (1 - x)^(n - k)
-
-/-- Theorem 6.2: Bernstein polynomials approximate continuous functions uniformly.
-If f is continuous on [0,1], then Bₙ(f) → f uniformly. -/
-theorem bernstein_approximation {f : ℝ → ℝ}
-    (hf_cont : ContinuousOn f (Set.Icc 0 1)) :
-    Filter.Tendsto (fun n => ⨆ x ∈ Set.Icc 0 1, |f x - bernsteinPolynomial f n x|)
-      Filter.atTop (nhds 0) := by
-  -- The proof uses probability:
-  -- Let Xᵢ be i.i.d. Bernoulli(x), then E[f(Sₙ/n)] = Bₙ(f)(x)
-  -- By weak law, Sₙ/n → x in probability
-  -- By continuity, f(Sₙ/n) → f(x) in probability
-  -- Hence E[f(Sₙ/n)] → f(x)
-  -- Uniform convergence follows from uniform continuity of f on [0,1]
-  sorry
+/-- Theorem 6.2: the Bernstein polynomials of a continuous function on `[0, 1]` converge
+to it uniformly (Mathlib's `bernsteinApproximation_uniform`). -/
+theorem bernstein_approximation (f : C(unitInterval, ℝ)) :
+    Filter.Tendsto (fun n => bernsteinApproximation n f) Filter.atTop (nhds f) :=
+  bernsteinApproximation_uniform f
 
 /-! ## Variance of Partial Sums -/
 
@@ -395,7 +371,7 @@ theorem variance_sum_independent {X : ℕ → Ω → ℝ} (n : ℕ)
     -- Y i = (fun x => x - c_i) ∘ X i where c_i = ∫ X i
     have h : ((fun x => x - ∫ ω', X i ω' ∂μ) ∘ X i) ⟂ᵢ[μ] ((fun x => x - ∫ ω', X j ω' ∂μ) ∘ X j) :=
       (h_indep i j hij).comp (measurable_id.sub measurable_const) (measurable_id.sub measurable_const)
-    convert h using 1
+    exact h
   -- Sₙ - E[Sₙ] = ∑ᵢ Yᵢ
   have hSum_centered : ∀ ω, partialSum X n ω - ∫ ω', partialSum X n ω' ∂μ =
       ∑ i ∈ Finset.range n, Y i ω := by

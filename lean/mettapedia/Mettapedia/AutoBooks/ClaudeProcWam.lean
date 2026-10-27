@@ -41,4 +41,3 @@ Formalization of operational semantics and machine models for logic programming.
 
 import Mettapedia.AutoBooks.ClaudeProcWam.WAM
 import Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi
-import Mettapedia.AutoBooks.ClaudeProcWam.Governance

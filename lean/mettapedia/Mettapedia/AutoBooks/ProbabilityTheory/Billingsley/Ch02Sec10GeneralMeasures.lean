@@ -182,9 +182,8 @@ theorem restrictToSet_apply (μ : Measure Ω) {A B : Set Ω} (hB : MeasurableSet
 def countingMeasure : Measure Ω := Measure.count
 
 theorem countingMeasure_apply_finite [MeasurableSingletonClass Ω] {A : Set Ω}
-    (hA : A.Finite) : countingMeasure (Ω := Ω) A = A.toFinset.card := by
-  classical
-  simp [countingMeasure, Measure.count_apply_finite _ hA]
+    (hA : A.Finite) : countingMeasure (Ω := Ω) A = hA.toFinset.card :=
+  Measure.count_apply_finite _ hA
 
 /-! ## Problem 10.1: conditions (i) and (iii) plus some finite value imply (ii). -/
 

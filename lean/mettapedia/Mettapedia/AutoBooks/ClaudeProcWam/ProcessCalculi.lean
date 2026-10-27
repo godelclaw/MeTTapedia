@@ -18,6 +18,4 @@ Session-typed process calculi and propositions-as-sessions.
 - Bellin & Scott (1994): On the π-Calculus and Linear Logic
 -/
 
-import Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PiCalculus
 import Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.SessionTypes
-import Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions

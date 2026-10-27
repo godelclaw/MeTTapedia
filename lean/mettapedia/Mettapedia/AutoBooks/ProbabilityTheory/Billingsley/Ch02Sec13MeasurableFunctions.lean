@@ -7,7 +7,7 @@ import Mathlib.MeasureTheory.MeasurableSpace.Basic
 import Mathlib.MeasureTheory.MeasurableSpace.Defs
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.MeasureTheory.Function.SimpleFunc
-import Mathlib.Topology.Instances.Real.Defs
+import Mathlib.Topology.Instances.Real.Lemmas
 
 /-!
 # Billingsley Chapter 2, Section 13: Measurable Functions and Mappings
@@ -95,30 +95,30 @@ theorem measurable_comp_tuple {k : ℕ}
 functions is measurable. -/
 theorem measurable_iSup {ι : Type*} [Countable ι] {f : ι → Ω → ℝ}
     (hf : ∀ i, Measurable (f i)) : Measurable (fun ω => ⨆ i, f i ω) :=
-  measurable_iSup hf
+  Measurable.iSup hf
 
 /-- **Theorem 13.4 (i)**: the `inf` of a countable family of measurable real-valued
 functions is measurable. -/
 theorem measurable_iInf {ι : Type*} [Countable ι] {f : ι → Ω → ℝ}
     (hf : ∀ i, Measurable (f i)) : Measurable (fun ω => ⨅ i, f i ω) :=
-  measurable_iInf hf
+  Measurable.iInf hf
 
 /-- **Theorem 13.4 (ii)**: the pointwise limit (when it exists everywhere) of a sequence
 of measurable functions is measurable. We state this via `limsup`. -/
 theorem measurable_limsup {f : ℕ → Ω → ℝ} (hf : ∀ n, Measurable (f n)) :
     Measurable (fun ω => Filter.limsup (fun n => f n ω) Filter.atTop) :=
-  measurable_limsup hf
+  Measurable.limsup hf
 
 /-- Dual form using `liminf`. -/
 theorem measurable_liminf {f : ℕ → Ω → ℝ} (hf : ∀ n, Measurable (f n)) :
     Measurable (fun ω => Filter.liminf (fun n => f n ω) Filter.atTop) :=
-  measurable_liminf hf
+  Measurable.liminf hf
 
 /-! ## Simple functions (Billingsley (13.3), Theorem 13.5) -/
 
 /-- Simple real functions: a finite linear combination of characteristic functions of a
 measurable partition. In mathlib this is `MeasureTheory.SimpleFunc`. -/
-example (Ω : Type*) [MeasurableSpace Ω] : Type := MeasureTheory.SimpleFunc Ω ℝ
+example (Ω : Type) [MeasurableSpace Ω] : Type := MeasureTheory.SimpleFunc Ω ℝ
 
 /-- **Theorem 13.5** (Billingsley): for every measurable `f : Ω → [0, ∞)` there is a
 nondecreasing sequence of measurable simple functions converging pointwise to `f`. -/

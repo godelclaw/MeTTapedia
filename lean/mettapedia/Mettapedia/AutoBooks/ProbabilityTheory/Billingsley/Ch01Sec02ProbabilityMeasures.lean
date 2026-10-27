@@ -93,7 +93,7 @@ theorem probability_axioms (Ω : Type*) [MeasurableSpace Ω] (μ : Measure Ω)
       (∀ i j, i ≠ j → Disjoint (f i) (f j)) →
       μ (⋃ n, f n) = ∑' n, μ (f n)) := by
   refine ⟨hμ.measure_univ, ?_, ?_⟩
-  · intro s _; exact zero_le _
+  · intro s _; exact zero_le
   · intro f hf_meas hf_disj
     exact measure_iUnion hf_disj hf_meas
 
