@@ -7,6 +7,8 @@ This is the typed application contract, independent of SQL representation.
 `Focus` is the captured projection for one call and one selected attempt. The
 implementation obtains it from explicit native facts, including absent facts;
 the store's scoped-transaction contract validates those reads at publication.
+The selected attempt is an ownership token. Usage and answer evidence belong
+to its registered transport submission, which survives an ownership handoff.
 
 The MeTTa implementation is `provider_domain_cetta.metta`, over
 `knowledge_store_cetta.metta`. A receipt stores the original command and answer
@@ -88,6 +90,7 @@ inductive Phase where
 structure Focus where
   registered : Bool := true
   observedAttempt : String := "attempt"
+  observedTransport : String := "transport"
   submitted : Bool := true
   lease : Option (String × Phase) := some ("attempt", .active)
   usage : Option Usage := none
@@ -109,6 +112,13 @@ theorem staging_preserves_authority (state : Focus) (incoming : Usage) :
   · exact ⟨rfl, rfl⟩
   · split <;> exact ⟨rfl, rfl⟩
 
+theorem staging_preserves_transport (state : Focus) (incoming : Usage) :
+    (stageUsage state incoming).1.observedTransport = state.observedTransport := by
+  unfold stageUsage
+  split
+  · rfl
+  · split <;> rfl
+
 theorem staging_retains_a_usage_fact (state : Focus) (incoming : Usage) :
     (stageUsage state incoming).1.usage.isSome = true := by
   unfold stageUsage
@@ -120,7 +130,7 @@ theorem staging_retains_a_usage_fact (state : Focus) (incoming : Usage) :
 
 theorem repeated_usage_keeps_the_same_tally (state : Focus) (usage : Usage)
     (recorded : state.usage = some usage) : stageUsage state usage = (state, .accepted) := by
-  rcases state with ⟨registered, attempt, submitted, lease, old, answer⟩
+  rcases state with ⟨registered, attempt, transport, submitted, lease, old, answer⟩
   simp_all [stageUsage, usage_idempotent]
 
 inductive Command where
@@ -150,7 +160,7 @@ structure Decision where
   deriving DecidableEq, Repr
 
 def publishAnswer (staged : Focus) (attempt reference : String) : Focus :=
-  { staged with lease := some (attempt, .completed), answer := some (attempt, reference) }
+  { staged with lease := some (attempt, .completed), answer := some (staged.observedTransport, reference) }
 
 def ownedCompletion (original staged : Focus) (attempt reference : String)
     (usage : UsageStatus) : Decision :=
@@ -159,10 +169,9 @@ def ownedCompletion (original staged : Focus) (attempt reference : String)
     if original.lease = some (attempt, .completed) then
       ⟨original, .refused .completedAnswerMissing⟩
     else ⟨publishAnswer staged attempt reference, .completed usage⟩
-  | some (owner, previous) =>
-    if owner = attempt ∧ previous = reference then
-      if original.lease = some (attempt, .completed) then ⟨staged, .alreadyCompleted usage⟩
-      else ⟨publishAnswer staged attempt reference, .completed usage⟩
+  | some (transport, previous) =>
+    if transport = staged.observedTransport ∧ previous = reference then
+      ⟨publishAnswer staged attempt reference, .alreadyCompleted usage⟩
     else ⟨staged, .answerConflict usage⟩
 
 def eligible (state : Focus) (attempt : String) : Prop :=
@@ -211,34 +220,44 @@ theorem completed_decision_has_matching_evidence (original staged : Focus)
     (completed : (ownedCompletion original staged attempt reference usage).outcome =
       .completed finalUsage) :
     (ownedCompletion original staged attempt reference usage).next.lease = some (attempt, .completed) ∧
-    (ownedCompletion original staged attempt reference usage).next.answer = some (attempt, reference) := by
+    (ownedCompletion original staged attempt reference usage).next.answer = some (staged.observedTransport, reference) := by
   cases answer : staged.answer with
   | none =>
     by_cases previous : original.lease = some (attempt, .completed)
     · simp [ownedCompletion, answer, previous] at completed
     · simp [ownedCompletion, answer, previous, publishAnswer]
   | some pair =>
-    rcases pair with ⟨owner, previous⟩
-    by_cases same : owner = attempt ∧ previous = reference
-    · by_cases previous : original.lease = some (attempt, .completed)
-      · simp [ownedCompletion, answer, same, previous] at completed
-      · simp [ownedCompletion, answer, same, previous, publishAnswer]
+    rcases pair with ⟨transport, previous⟩
+    by_cases same : transport = staged.observedTransport ∧ previous = reference
+    · simp [ownedCompletion, answer, same] at completed
+    · simp [ownedCompletion, answer, same] at completed
+
+theorem a_first_completion_requires_an_absent_answer (original staged : Focus)
+    (attempt reference : String) (usage finalUsage : UsageStatus)
+    (completed : (ownedCompletion original staged attempt reference usage).outcome =
+      .completed finalUsage) : staged.answer = none := by
+  cases answer : staged.answer with
+  | none => rfl
+  | some pair =>
+    rcases pair with ⟨transport, previous⟩
+    by_cases same : transport = staged.observedTransport ∧ previous = reference
+    · simp [ownedCompletion, answer, same] at completed
     · simp [ownedCompletion, answer, same] at completed
 
 theorem usage_conflict_does_not_erase_a_received_answer (state : Focus)
     (attempt reference : String) (usage : Usage)
     (active : state.lease = some (attempt, .active)) (noAnswer : state.answer = none) :
     (ownedCompletion state (stageUsage state usage).1 attempt reference .conflict).next.answer =
-      some (attempt, reference) := by
+      some (state.observedTransport, reference) := by
   have unchanged := (staging_preserves_authority state usage).2
-  simp [ownedCompletion, unchanged, noAnswer, active, publishAnswer]
+  simp [ownedCompletion, unchanged, noAnswer, active, publishAnswer, staging_preserves_transport]
 
 theorem successful_plan_has_matching_evidence (state : Focus)
     (attempt reference source : String) (incoming : Usage) (finalUsage : UsageStatus)
     (completed : (plan state (.finish attempt reference incoming source)).outcome =
       .completed finalUsage) :
     (plan state (.finish attempt reference incoming source)).next.lease = some (attempt, .completed) ∧
-    (plan state (.finish attempt reference incoming source)).next.answer = some (attempt, reference) := by
+    (plan state (.finish attempt reference incoming source)).next.answer = some (state.observedTransport, reference) := by
   cases registered : state.registered with
   | false => simp [plan, registered] at completed
   | true =>
@@ -253,22 +272,23 @@ theorem successful_plan_has_matching_evidence (state : Focus)
                 (stageUsage state incoming).2 := by
             simp [plan, registered, Command.attempt, submitted, owner]
           rw [reduction] at completed ⊢
-          exact completed_decision_has_matching_evidence state (stageUsage state incoming).1
-            state.observedAttempt reference (stageUsage state incoming).2 finalUsage completed
+          simpa [staging_preserves_transport] using
+            completed_decision_has_matching_evidence state (stageUsage state incoming).1
+              state.observedAttempt reference (stageUsage state incoming).2 finalUsage completed
         · simp [plan, registered, Command.attempt, submitted, owner] at completed
     · simp [plan, registered, Command.attempt, selected] at completed
 
 theorem a_completed_answer_is_not_a_new_completion (state : Focus)
     (attempt reference source : String) (incoming : Usage)
     (registered : state.registered = true) (selected : attempt = state.observedAttempt)
-    (submitted : state.submitted = true) (lease : state.lease = some (attempt, .completed))
-    (answer : state.answer = some (attempt, reference)) :
+    (submitted : state.submitted = true) (owner : eligible state attempt)
+    (answer : state.answer = some (state.observedTransport, reference)) :
     (plan state (.finish attempt reference incoming source)).outcome =
       .alreadyCompleted (stageUsage state incoming).2 := by
   subst attempt
-  have owner : eligible state state.observedAttempt := Or.inr lease
   have unchanged := (staging_preserves_authority state incoming).2
-  simp [plan, registered, Command.attempt, submitted, owner, ownedCompletion, unchanged, answer, lease]
+  simp [plan, registered, Command.attempt, submitted, owner, ownedCompletion, unchanged, answer,
+    staging_preserves_transport]
 
 structure Receipt where
   command : Command
@@ -406,9 +426,13 @@ def stale := execute staleState 1 finishCommand
 def conflictingState : Ledger := { initial with focus := { initial.focus with usage := some usage101 } }
 def conflictCompletion := execute conflictingState 1 finishCommand
 def otherAnswer := execute first.ledger 4 (.finish "attempt" "another-answer" usage100)
-def changedAfterCompletion : Ledger := { first.ledger with focus := staleState.focus }
+def changedAfterCompletion : Ledger := { first.ledger with focus :=
+  { first.ledger.focus with lease := some ("other", .active) } }
 def replay := execute changedAfterCompletion 1 finishCommand
 def alreadyCompleted := execute first.ledger 8 finishCommand
+def transferred : Ledger := { first.ledger with focus :=
+  { first.ledger.focus with observedAttempt := "second-owner", lease := some ("second-owner", .active) } }
+def transferCompletion := execute transferred 9 (.finish "second-owner" "answer" usage100)
 
 def usageLabel : UsageStatus → String
   | .accepted => "accepted"
@@ -426,8 +450,33 @@ def replyLabel : Reply → String
   | .collision => "collision"
 
 def trace : String := "NATIVE_PROVIDER_TRACE " ++ String.intercalate " "
-  ([first, second, third, stale, conflictCompletion, otherAnswer, replay, alreadyCompleted].map fun event => replyLabel event.reply)
+  ([first, second, third, stale, conflictCompletion, otherAnswer, replay, alreadyCompleted,
+    transferCompletion].map fun event => replyLabel event.reply)
+
+def counterLabel : Counter → String
+  | .unknown => "?"
+  | .known count => toString count
+def phaseLabel : Phase → String
+  | .active => "active"
+  | .completed => "completed"
+  | .unknown => "unknown"
+  | .failed => "failed"
+def focusLabel (state : Focus) : String :=
+  let lease := match state.lease with
+    | none => "absent"
+    | some (owner, phase) => owner ++ ":" ++ phaseLabel phase
+  let usage := match state.usage with
+    | none => "absent"
+    | some counts => String.intercalate "," ([counts.input, counts.output, counts.cached, counts.written].map counterLabel)
+  let answer := match state.answer with
+    | none => "absent"
+    | some (transport, reference) => transport ++ ":" ++ reference
+  lease ++ "|" ++ usage ++ "|" ++ answer
+def stateTrace : String := "NATIVE_PROVIDER_STATES " ++ String.intercalate " "
+  ([first, second, third, stale, conflictCompletion, otherAnswer, replay, alreadyCompleted,
+    transferCompletion].map fun event => focusLabel event.ledger.focus)
 
 end Mettapedia.Machines.NativeProviderDomain
 
 #eval IO.println Mettapedia.Machines.NativeProviderDomain.trace
+#eval IO.println Mettapedia.Machines.NativeProviderDomain.stateTrace
