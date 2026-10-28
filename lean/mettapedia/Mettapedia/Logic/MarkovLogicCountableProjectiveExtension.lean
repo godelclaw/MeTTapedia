@@ -10,7 +10,7 @@ This module implements the high-confidence bridge from arbitrary projective
 families over a countable atom type to the prefix-indexed families over `ℕ`
 that Mathlib's Ionescu-Tulcea/projective-limit machinery expects.
 
-The council-backed strategy is:
+The agreed strategy is:
 
 1. reindex finite-dimensional marginals along an enumeration `ℕ ≃ Atom`,
 2. package the reindexed family as prefix measures on `Iic n`,
@@ -100,13 +100,13 @@ theorem prefixFamily_projective
         ((MeasurableEquiv.piCongrLeft
           (fun i : Ib ↦ Bool)
           (prefixEquiv e b)).symm) by
-        simp [prefixFamily, Ib, BoolCoord, NatBoolCoord]]
+        simp [prefixFamily, Ib, NatBoolCoord]]
   rw [show prefixFamily e P a =
       (P Ia).map
         ((MeasurableEquiv.piCongrLeft
           (fun i : Ia ↦ Bool)
           (prefixEquiv e a)).symm) by
-        simp [prefixFamily, Ia, BoolCoord, NatBoolCoord]]
+        simp [prefixFamily, Ia, NatBoolCoord]]
   have hcomp :
       (Preorder.frestrictLe₂ (π := NatBoolCoord) hab) ∘
           ⇑((MeasurableEquiv.piCongrLeft

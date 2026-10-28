@@ -90,7 +90,7 @@ theorem exists_stageProbabilityFamily_tendsto_subseq_of_equiv
       ∃ φ : ℕ → ℕ,
         StrictMono φ ∧
           Tendsto (fun n => stageProbabilityFamily E M ξ (φ n)) atTop (𝓝 P) := by
-  letI : Countable Atom := (Equiv.countable_iff e).1 inferInstance
+  let : Countable Atom := (Equiv.countable_iff e).1 inferInstance
   exact exists_stageProbabilityFamily_tendsto_subseq
     (E := E) (M := M) (ξ := ξ)
 
