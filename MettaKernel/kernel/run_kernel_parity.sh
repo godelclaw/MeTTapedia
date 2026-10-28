@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-AIHUB="${AIHUB:-$(cd "$(dirname "$0")/../../.." && pwd)}"
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CETTA="${CETTA:-$AIHUB/hyperon/CeTTa/cetta}"
-PETTA="${PETTA:-$AIHUB/hyperon/PeTTa/run.sh}"
+REPO_ROOT="$(cd "$ROOT/../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
+PETTA="${PETTA:-$REPO_ROOT/lean/externals/PeTTa/run.sh}"
 RUN_TIMEOUT_SECONDS="${RUN_TIMEOUT_SECONDS:-240}"
 LOGDIR="$ROOT/parity_logs"
 mkdir -p "$LOGDIR"
