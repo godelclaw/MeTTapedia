@@ -398,7 +398,7 @@ open MeTTailCore.EvalIR in
   else "FAIL: projected memo for fib(5) missing"
 
 -- ── Value-key discipline: round-trip theorem ────────────────────────────
--- Council: Carneiro/Buzzard — pure round-trip, prevents syntax-keyed memo bug.
+-- Design rationale: — pure round-trip, prevents syntax-keyed memo bug.
 
 /-- evalNodeToValue? is a left inverse of EvalValue.toNode. -/
 theorem evalNodeToValue?_toNode (v : EvalValue) :
