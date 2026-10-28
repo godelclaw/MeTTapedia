@@ -1118,7 +1118,7 @@ def oslfReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderOSLFHeading .build)
 
   , .codeBlock "bash"
-      ("cd Mettapedia/lean/mettapedia\n" ++
+      ("cd lean/mettapedia\n" ++
        "lake build Mettapedia.OSLF.CoreMain\n" ++
        "lake build Mettapedia.OSLF.Main")
 
@@ -1169,42 +1169,42 @@ Key GF-generated sentences verified against expected output.
 theorem anchor_oslf_turns :
     renderOSLFClaim .oslfTurnsRewriteSystemsIntoInterface =
       "OSLF turns operational rewrite systems into a logical/type-theoretic interface" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_oslf_is_construction :
     renderOSLFClaim .oslfIsConstruction =
       "OSLF is a construction" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_takes_rewrite :
     renderOSLFClaim .takesRewriteSystemWithPremises =
       "It takes a rewrite system with premises" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_not_parser :
     renderOSLFClaim .isNotParserOrStandard =
       "It isn't a parser or a concrete syntax standard" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_coremain_recommended :
     renderOSLFClaim .coreMainIsRecommendedTarget =
       "`CoreMain` is the recommended target for core OSLF/GSLT validation" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_core_derive :
     renderOSLFClaim .coreDerivePath =
       "This is the core \"derive a type system from operational semantics\" path" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_outcome :
     renderOSLFClaim .outcomeIsReusableInterface =
       "The outcome is a reusable logical interface on top of operational semantics" := by
-  native_decide
+  decide +kernel
 
 theorem anchor_not_proof :
     renderOSLFClaim .isNotProofOfAllProperties =
       "It isn't a proof of \"all desired properties\"" := by
-  native_decide
+  decide +kernel
 
 -- Parse-back infrastructure
 def allOSLFClaims : List OSLFClaim :=
@@ -1286,16 +1286,20 @@ def selectedStructuredOSLFLines : List String :=
 def oslfHardAuditPasses : Bool :=
   oslfReadmeBlocks.all (blockPassesHardAuditWith parseOSLFClaimLine? parseOSLFHeadingLine?)
 
+set_option maxRecDepth 20000 in
+set_option maxHeartbeats 2000000 in
 theorem oslf_hard_audit :
     oslfHardAuditPasses = true := by
-  native_decide
+  simp only [oslfHardAuditPasses, oslfReadmeBlocks, List.all_cons, List.all_nil, Bool.and_eq_true, and_true]
+  repeat' constructor
+  all_goals decide +kernel
 
 def oslfHeadingImageCheck : Bool :=
   headingRenderImageCheck parseOSLFHeadingLine? renderOSLFHeading oslfReadmeBlocks
 
 theorem oslf_heading_images :
     oslfHeadingImageCheck = true := by
-  native_decide
+  decide +kernel
 
 theorem oslf_heading_image_witness
     {lvl : Nat} {txt : String}

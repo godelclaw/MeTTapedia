@@ -26,16 +26,36 @@ partial def renderSynExpr : SynExpr → String
   | .infix lhs op rhs =>
       renderSynExpr lhs ++ " " ++ op ++ " " ++ renderSynExpr rhs
 
-partial def synExprWellFormed : SynExpr → Bool
-  | .ident n => n != ""
-  | .quoted t => t != ""
-  | .call fn args => fn != "" && !args.isEmpty && args.all synExprWellFormed
-  | .seq items sep => !items.isEmpty && sep != "" && items.all synExprWellFormed
-  | .infix lhs op rhs => op != "" && synExprWellFormed lhs && synExprWellFormed rhs
+mutual
+  def synExprWellFormed : SynExpr → Bool
+    | .ident n => n != ""
+    | .quoted t => t != ""
+    | .call fn args => fn != "" && !args.isEmpty && synExprsWellFormed args
+    | .seq items sep => !items.isEmpty && sep != "" && synExprsWellFormed items
+    | .infix lhs op rhs => op != "" && synExprWellFormed lhs && synExprWellFormed rhs
+
+  private def synExprsWellFormed : List SynExpr → Bool
+    | [] => true
+    | item :: items => synExprWellFormed item && synExprsWellFormed items
+end
+
+private theorem synExprsWellFormed_eq_all (items : List SynExpr) :
+    synExprsWellFormed items = items.all synExprWellFormed := by
+  induction items with
+  | nil => rfl
+  | cons item items ih => simp only [synExprsWellFormed, List.all_cons, ih]
+
+theorem synExprWellFormed_call (fn : String) (args : List SynExpr) :
+    synExprWellFormed (.call fn args) = (fn != "" && !args.isEmpty && args.all synExprWellFormed) := by
+  rw [synExprWellFormed, synExprsWellFormed_eq_all]
+
+theorem synExprWellFormed_seq (items : List SynExpr) (sep : String) :
+    synExprWellFormed (.seq items sep) = (!items.isEmpty && sep != "" && items.all synExprWellFormed) := by
+  rw [synExprWellFormed, synExprsWellFormed_eq_all]
 
 theorem synExpr_empty_quoted_forbidden :
     synExprWellFormed (.quoted "") = false := by
-  native_decide
+  decide +kernel
 
 /-- Typed API item for documentation lists. -/
 structure ApiItem where
