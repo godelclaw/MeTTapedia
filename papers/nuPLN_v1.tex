@@ -1210,12 +1210,12 @@ derive the Markov mixture representation.
 \end{enumerate}
 
 This cleanup removes redundant aliases and keeps a single theorem route.
-\textbf{Status (April 2026):} The formalization is now \emph{complete}
-with 0~sorry across 23,899~lines.  The crown theorem
-\texttt{startRestrictedRowKernelData\_directingRowKernel} establishes
-that the canonical directing kernel (from the i.i.d.\ de~Finetti
-machinery) satisfies the start-restricted row-kernel data conditions,
-closing the derivation gap.  No ad-hoc assumptions remain.
+The canonical theorem \texttt{startRestrictedRowKernelData\_directingRowKernel}
+is proved under Markov exchangeability, a compatible path-measure extension,
+strong recurrence, and exchangeability of each row process. These hypotheses
+are explicit in the Lean statement; this theorem alone does not establish
+an assumption-free Markov mixture representation. See
+\texttt{MarkovDeFinettiFiberEventBridge.lean} for the construction and its premises.
 
 What this adds over the existing binary $\nuPLN$ chain is a genuine
 Markov-memory layer.  The theorem

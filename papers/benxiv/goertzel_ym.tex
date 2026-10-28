@@ -1,0 +1,1863 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+  literate=
+    {ℝ}{{$\mathbb{R}$}}1
+    {ℕ}{{$\mathbb{N}$}}1
+    {ℤ}{{$\mathbb{Z}$}}1
+    {λ}{{$\lambda$}}1
+    {ε}{{$\varepsilon$}}1
+    {Δ}{{$\Delta$}}1
+    {κ}{{$\kappa$}}1
+    {≤}{{$\leq$}}1
+    {≥}{{$\geq$}}1
+    {≠}{{$\neq$}}1
+    {∧}{{$\wedge$}}1
+    {∨}{{$\vee$}}1
+    {¬}{{$\neg$}}1
+    {→}{{$\rightarrow$}}1
+    {↦}{{$\mapsto$}}1
+    {∃}{{$\exists$}}1
+    {∀}{{$\forall$}}1
+    {∈}{{$\in$}}1
+    {·}{{$\cdot$}}1
+    {²}{{$^2$}}1
+    {₀}{{$_0$}}1
+    {₁}{{$_1$}}1
+    {₂}{{$_2$}}1
+    {₃}{{$_3$}}1
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1,
+}
+\lstset{style=lean}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\SUN}{\mathrm{SU}(N)}
+\newcommand{\Lirr}{\lambda_{\mathrm{irr}}}
+\newcommand{\dmax}{d_{\max}}
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\Pleq}{P_{\leq \dmax}}
+
+\title{A Machine-Checked Audit of the Extended-Extraction\\
+RG Contraction in the Wilson-Lattice / OS Route\\
+to a 4D Yang--Mills Mass Gap}
+\author{The MeTTapedia formalization effort}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Ben Goertzel's manuscript \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap,
+Polymer Expansion, OS Reconstruction} (v14) proposes to construct a continuum
+$\SUN$ Yang--Mills theory from Wilson lattice gauge theory via a multiscale
+renormalization-group (RG) bootstrap, a Koteck\'y--Preiss (KP) polymer expansion,
+exponential clustering, and Osterwalder--Schrader (OS) reconstruction. Its
+technical keystone is an \emph{extended-extraction} contraction
+$\Lambda=C_1\Lirr<1$, with advertised constant near $2224$ and
+$\Lirr=2^{-13}$ at block factor $2$ and extraction depth $16$.
+
+The scalar bootstrap arithmetic is exact, but the advertised Wilson recursion
+constant is \emph{not derived in v14 as written}. The main-text factor product
+is $33152$ at $b=2$; Appendix~O's different proposed factorization is
+$11088/5$ when its extraction factor is $2$. A sign-only repair of the printed
+extraction series is insufficient once the displayed multivariate
+multiplicities are retained.
+
+We construct a concrete finite Wilson-polynomial realization on actual
+group-valued link fields. In its explicit coefficient-majorant norm,
+canonical-dimension truncation is gauge invariant and has operator constant
+$1$. This does not transfer from v14's range-only specification of
+$P_{\mathrm{ext}}$: a skew projection onto the same low-coordinate range has
+arbitrarily large coefficient norm. We prove the correct transfer theorem from
+explicit basis and dual-jet matrices with their column-sum conditioning bounds,
+but v14 does not provide those data for the dimension-$16$ action sector. A
+direct source reconciliation shows that they cannot be reconstructed uniquely
+from the present text: Appendix~F.4 uses equations of motion to identify the
+operator space, while Appendix~O.9 explicitly retains EOM operators in an
+off-shell basis; neither section supplies lattice Wilson representatives or a
+quotient basis, and Appendix~I's explicit dual jets stop at the distinct
+dimension-$4$ observable sector.
+Likewise, regrouping connected families by union support has norm $1$; the
+factor $14$ is exactly a \emph{local rooted branching count}
+$2(2\cdot4-1)$, not a bound on the total contacts of two extended polymers.
+The fluctuation big-$O$ and weighted cumulant-generation estimates also require
+quantitative proofs on the actual Wilson RG map.
+
+A third machine-checked round works on the exact $\mathrm{SU}(2)$, $b=2$
+Wilson block with normalized Haar measure and decides the extraction stage
+from three sides. (i)~Representative-wise hard truncation is not well-defined
+on the actual trace-word quotient: for the centered trace words
+$a=2-\Tr(U)$ and $b=2-\Tr(U^2)$, Cayley--Hamilton forces $a^3b-4a^4+a^5=0$
+with monomial canonical dimensions $16$, $16$, $20$; truncation at $16$
+deletes only $a^5$, and the truncated expression evaluates to $-32$ on the
+holonomy $\mathrm{diag}(i,-i)$ while the exact expression vanishes
+identically. (ii)~Two corrected constructions nevertheless carry exact
+norm-below-two extractors --- the full associated-graded jet chart
+($131071/65536<2$) and the one-plaquette trace quotient ($31/16<2$); with
+Appendix~O's other factors kept unchanged, the resulting conditional constant
+$90832203/40960\approx2217.6$ closes the two-source bootstrap at depth $16$
+and fails at depth $15$. (iii)~Neither survivor transfers to v14's canonical
+$(F,D)$ operator space: a dimension-$18$ scalar descendant has radial degree
+only $6$ (resp.\ $3$), so both extractors retain it, and the dimension-$6$
+descendant $\partial^2\Tr(F^2)$ is zero in the manuscript's
+integration-by-parts quotient yet has a nonzero gauge-invariant realization
+on an explicit three-plaquette block. The transfer socket required before any
+Wilson-RG intertwiner is therefore uninhabited as written, under both the
+on-shell and off-shell relation policies.
+
+A fourth machine-checked round tests the replacement census against the exact
+symmetry of the finite-spacing lattice. On an explicit $\mathrm{SU}(2)$ Cartan
+link chart, the sum of squared normalized Wilson potentials over the six
+coordinate plaquettes is gauge invariant and has canonical dimension $8$.
+Its exact fourth jet is $6\sum_{\mu<\nu}F_{\mu\nu}^{4}$. A rational orthogonal
+rotation changes the corresponding quartic from $1$ to $337/625$. Thus the
+observable is hypercubic-invariant but not $O(4)$-invariant. Every span of
+Appendix~O.9.3's Lorentz-scalar contractions remains $O(4)$-invariant, so it
+cannot be complete for actual lattice Wilson observables. This obstruction
+closes the off-shell, on-shell EOM, Bianchi/IBP, trace, Cayley--Hamilton, and
+postponed-IBP variants of the same Lorentz-only target. It does not rule out a
+finite coordinate system: it forces either a genuinely hypercubic census at
+finite lattice spacing or a separately proved continuum/Symanzik projection
+with a quantitatively controlled Lorentz-breaking remainder.
+
+A fifth machine-checked round begins the hypercubic branch. On the unpadded
+derivative-free Cartan quartic carrier, all $126$ monomials are classified by
+signed $H(4)$ orbit certificates. Exactly four admissible orbit basis
+functions remain; evaluation at their representatives gives four duals and
+the identity conditioning matrix, and every hypercubic-covariant rational
+quartic coefficient function is reconstructed from them. The exact Wilson
+fourth jet has coordinate vector $(6,0,0,0)$ in this basis. The subspace of
+curvature observables invariant under every $O(4)$ transformation is proper,
+and the pure-fourth Wilson polynomial is a nonzero class in the corresponding
+Lorentz-breaking quotient. The attempted dimension-$16$
+extension then reaches a different terminal obstruction: its
+fixed-width raw carrier retains inactive padding as part of equality. Two
+distinct encodings with zero active fields and derivatives have identical
+active syntax. Any basis faithful to active syntax must give them equal rows,
+whereas the proposed exact census requires a right inverse and hence distinct
+identity-matrix rows. Lean proves that no invertible exact census on this
+padded carrier can have every basis column padding-invariant. The next
+finite-spacing construction must use an unpadded dependent syntax or an
+explicit padding quotient before relation rows and dimension-$16$ duals are
+meaningful.
+
+\textsc{Ours:} the unpadded dimension-$16$ replacement is now constructed
+and connected by an explicit equivalence to the exact-dimension subtype of
+the active $(F,D)$ syntax. Its raw carrier has
+$23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$ elements. Character averaging
+over all $384$ signed coordinate permutations gives rank-$16$ invariant
+tensor multiplicities $22{,}379{,}179$ (scalar) and $22{,}368{,}256$
+(pseudoscalar); after the exact
+$5{,}361{,}612{,}271{,}200$ trace/derivative layouts are included, the raw
+invariant coefficient spaces have dimensions
+$119{,}988{,}480{,}745{,}781{,}344{,}800$ and
+$119{,}929{,}915{,}854{,}943{,}027{,}200$. These are exact raw-carrier
+dimensions before antisymmetry, Bianchi, EOM, integration by parts, trace,
+or Cayley--Hamilton rows, not a physical operator basis. After the exact
+derivative-localization, field-strength antisymmetry, and field-label
+quotients, ordinary permutation conjugacy classes give a second exact
+character calculation: the resulting finite local-word orbit carrier has
+scalar and pseudoscalar $H(4)$ invariant multiplicities
+$246{,}136{,}792$ and $246{,}121{,}092$. The proof identifies every
+permutation-partition fiber with its ordinary conjugacy class and cancels its
+class cardinality against the centralizer factor, so no representative or
+padding convention enters these values. They still precede Bianchi, EOM,
+IBP, commutator, tracelessness, and matrix trace relations and are not a
+physical operator basis. On the separately
+complete derivative-free Cartan octic sector, $1287$ monomials reduce to
+$17$ signed-orbit coordinates with exact duals and identity conditioning.
+The actual Wilson eighth jet occupies only the pure-octic coordinate, with
+Symanzik coefficient $-a^{12}/20160$. For bounded constant Cartan curvature,
+the normalized Wilson density differs from its $O(4)$-invariant quadratic
+term by at most $(5/8)a^4M^4$ and converges to that term as $a\to0$. The
+two-block boundary-cochain lift retains extraction constant $1$; carrying the
+three still-conditional analytic factors gives budget $5544/5$, whose
+two-source arithmetic closes first at depth $15$. This is a quantitative
+tree-level constant-Cartan restoration theorem, not an interacting
+Symanzik theorem or a constructive continuum limit.
+
+Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
+recursion. The support recurrence, two-marked glue identity, stopping-scale
+polymer estimates, Wilson reflection positivity, and continuum/OS construction
+remain route-specific open inputs. The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
+and $Q_8$ gaps checked in Lean are real but Clay-irrelevant
+(single-link, strong-coupling, finite). The Yang--Mills mass gap remains open;
+we make no claim about it.
+\end{abstract}
+
+\section{The problem and Ben Goertzel's route}
+
+\subsection{The Millennium problem and the lattice strategy}
+
+Fix the gauge group $G = \SUN$ with $N \geq 2$ and let $\mathbb{R}^4$ be
+Euclidean space. The Yang--Mills mass-gap problem asks for the construction of a
+nontrivial continuum quantum Yang--Mills theory on $\mathbb{R}^4$ with gauge
+group $G$, satisfying the Wightman / Osterwalder--Schrader axioms, whose
+reconstructed Hamiltonian has a unique vacuum and a strictly positive spectral
+gap on the orthocomplement of the vacuum.
+
+Goertzel's v14 manuscript follows Wilson's lattice regularization. One
+discretizes $\mathbb{R}^4$ as a hypercubic lattice $a\mathbb{Z}^4$ with spacing
+$a>0$, with link variables $U_{x,\mu}\in G$ on oriented nearest-neighbor links.
+The plaquette variable is the parallel transporter around an elementary square,
+\[
+  U_{x,\mu\nu} \;=\; U_{x,\mu}\,U_{x+a e_\mu,\nu}\,U_{x+a e_\nu,\mu}^{-1}\,U_{x,\nu}^{-1},
+  \qquad 1 \leq \mu < \nu \leq 4,
+\]
+and the Wilson action penalizes deviation of plaquettes from the identity,
+\[
+  S_{\Lambda,a}(U) \;=\; \beta \sum_{p\subset\Lambda} V(U_p),
+  \qquad \beta = \frac{2N}{g^2},
+  \qquad V(U) := 1 - \tfrac{1}{N}\mathrm{Re}\,\Tr(U) \in [0,2].
+\]
+Weak coupling is $\beta \gg 1$. The strategy is: (Step 1) start from the
+well-defined finite-dimensional lattice integral; (Step 2) run a multiscale RG
+bootstrap controlling the effective theory across all scales; (Step 3)
+establish exponential clustering at a fixed physical scale $\ell_*$ via a KP
+polymer expansion; (Step 4) transfer clustering from the coarse scale back to
+the fine scale with a glue / back-propagation lemma; (Step 5) reconstruct the
+continuum Hilbert space, vacuum, and Hamiltonian by OS, with the clustering rate
+becoming the spectral gap; (Step 6) verify nontriviality through a nonzero
+third cumulant of the action density.
+
+\subsection{The continuum-limit obstruction and extended extraction}
+
+In any RG scheme one must show that the ``irrelevant'' sector (operators of
+canonical dimension $>4$) contracts at each step:
+\[
+  \| K^{\mathrm{irr}}_{j+1}\| \;\leq\; \Lambda\, \|K^{\mathrm{irr}}_{j}\| + (\text{source terms}),
+  \qquad \Lambda < 1.
+\]
+The manuscript identifies a sharp obstruction in the \emph{naive} scheme, where
+one extracts only the relevant and marginal operators of dimension $\leq 4$.
+Under rescaling, a dimension-$d$ operator scales by $b^{4-d}$, so the leading
+irrelevant operators (dimension $6$) contract by $b^{-2} = 0.25$ for $b=2$. But
+the RG step also recombines polymers, contributing a combinatorial constant
+$C_1$. The manuscript advertises the working bound $C_1 \leq 2224$ for $b=2$;
+if that value were established, the naive gain would be
+\[
+  \Lambda_{\mathrm{naive}} \;=\; 2224\, b^{-2} \;=\; 2224 \times 0.25 \;=\; 556 \;>\; 1,
+\]
+an \emph{expanding} map: initial smallness would grow like $556^{J}$ over
+$J\sim|\log a_0|$ steps and diverge as $a_0\to 0$.
+
+The proposed resolution is \emph{extended extraction}. Instead of extracting
+only dimension $\leq 4$ operators, one extracts all gauge-invariant local
+operators up to canonical dimension $\dmax = 16$ (for $b=2$). The irrelevant
+sector then begins at dimension $\dmax+1 = 17$ and contracts by
+\[
+  \Lirr \;=\; b^{\,4-(\dmax+1)} \;=\; b^{\,3-\dmax} \;=\; 2^{-13} \;\approx\; 1.2\times 10^{-4}.
+\]
+With the same advertised value, the proposed contraction factor becomes
+\[
+  \boxed{\;\Lambda \;=\; C_1\,\Lirr \;\leq\; 2224 \cdot 2^{-13} \;\approx\; 0.27 \;<\; 1.\;}
+\]
+The manuscript presents this as genuine contraction ``with substantial slack.''
+The audit below verifies this arithmetic only \emph{conditional on the supplied
+constant}; it refutes the available derivations of that constant as written.
+The price is tracking a finite-dimensional vector of higher couplings
+$\vec g_j = (g_j^{(4)},g_j^{(6)},\dots,g_j^{(\dmax)})$ rather than the single
+gauge coupling; the manuscript argues these are perturbatively small and do not
+affect the universal one-loop beta-function coefficient
+$b_0 = 11/(3\cdot 16\pi^2)$, which is determined entirely by local ultraviolet
+information.
+
+\subsection{The recombination constant and the extraction-projection norm}
+
+Appendix~O proposes the factorization
+\[
+  C_1 \;\leq\; C_{\mathrm{fluct}} \cdot C_{\mathrm{cumulant}} \cdot C_{\mathrm{recomb}} \cdot C_{\mathrm{extract}}
+  \;\leq\; 1.65 \times 3b^4 \times 14 \times 2,
+\]
+which at $b=2$ equals $11088/5=2217.6$, rather than exactly $2224$.
+Appendix~F.5 displays a different factor product which equals $33152$ at
+$b=2$; the two ledgers are inconsistent. The last Appendix-O factor
+$C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$ is the operator norm of the
+extraction projection onto the finite-dimensional space of operators of
+dimension $\leq \dmax$. The manuscript bounds it (its Computation~O.7(d)) by
+\[
+  \|\Pleq\|_{\mathrm{op}} \;\leq\; \sum_{d=0}^{\dmax} \binom{\#\mathrm{indices}}{d}\,(r_1/r_0)^{-d}
+  \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
+\]
+and asserts $\|\Pleq\|_{\mathrm{op}} \leq 2$ for $r_1/r_0 = 1/2$ and $\dmax=16$.
+The literal negative exponent grows, but changing only its sign does not turn
+the displayed multivariate sum into a one-dimensional geometric series. More
+fundamentally, v14 specifies $P_{\mathrm{ext}}$ by its range and does not give
+the dimension-$16$ invariant basis, dual jets, or conditioning estimates needed
+to determine its operator norm. We return to the proved realization and the
+transfer obstruction in \S\ref{sec:honest}.
+
+\section{What we formalized}
+
+The formalization lives in the Lean namespace
+\texttt{Mettapedia.QuantumTheory.YangMills}. We summarize the four checked
+components: the contraction predicate, the knife-edge arithmetic, the finite
+strong-coupling gaps with their finite OS reconstruction, and the
+continuum-open gating. All theorem and definition names below are reproduced
+verbatim from the corresponding modules.
+
+\subsection{The extended-extraction contraction predicate}
+
+The module \texttt{Mettapedia.QuantumTheory.YangMills.RGBootstrap} models the
+route's contraction obligation as a predicate over a recombination constant
+$C$, block factor $b$, and extraction depth $\dmax$. The irrelevant scaling
+factor is $b^{3-\dmax}$ (an integer power, since the useful cases have
+$\dmax>3$), and a contraction is a nonnegative constant whose product with the
+irrelevant scale is below $1$.
+
+\begin{lstlisting}
+/-- Irrelevant scaling factor `b^(3-dmax)` used by the extended-extraction
+discussion.  The exponent is an integer because the useful cases have
+`dmax > 3`. -/
+def irrelevantScale (b dmax : ℕ) : ℝ :=
+  (b : ℝ) ^ (3 - (dmax : ℤ))
+
+/-- The route-level contraction audit for a combinatorial constant and an
+irrelevant scaling factor. -/
+def HasRGContraction (C scale : ℝ) : Prop :=
+  0 ≤ C ∧ 0 ≤ scale ∧ C * scale < 1
+
+/-- The extended-extraction audit specialized to `λ = b^(3-dmax)`. -/
+def HasExtendedExtractionContraction (C : ℝ) (b dmax : ℕ) : Prop :=
+  HasRGContraction C (irrelevantScale b dmax)
+\end{lstlisting}
+
+A threshold lemma in the same module records the exact content of the predicate:
+for $b>0$ and $\dmax\geq 3$, the contraction \texttt{HasExtendedExtractionContraction
+C b dmax} holds if and only if $0 \leq C < b^{\dmax-3}$. Thus the entire
+arithmetic content of the route is the comparison of $C$ with the threshold
+$b^{\dmax-3}$.
+
+\subsection{The knife-edge arithmetic}
+
+The module machine-checks that the advertised constant contracts at $\dmax=16$
+and that the exact one-step gain is $2224\cdot 2^{-13} = 139/512 < 1/3$:
+
+\begin{lstlisting}
+/-- The advertised numerical slack: `2224 * 2^-13 < 1`. -/
+theorem rgContraction_2224_two_sixteen :
+    HasExtendedExtractionContraction 2224 2 16 := by
+  refine ⟨by norm_num, by rw [irrelevantScale_two_sixteen]; norm_num, ?_⟩
+  rw [irrelevantScale_two_sixteen]
+  norm_num
+
+/-- Exact advertised one-step gain for the extended-extraction constants. -/
+theorem rgGain_2224_two_sixteen_eq :
+    (2224 : ℝ) * irrelevantScale 2 16 = (139 : ℝ) / 512 := by
+  rw [irrelevantScale_two_sixteen]
+  norm_num
+\end{lstlisting}
+
+Crucially, the same constant does \emph{not} contract at the nearest even
+extraction depth below the advertised one. At $\dmax=14$ the threshold is
+$2^{11}=2048<2224$, so the contraction is arithmetically false; the module
+proves that any contraction at $\dmax=14$ would force $C<2048$, and hence that
+$2224$ fails:
+
+\begin{lstlisting}
+/-- Any contraction proof at `dmax = 14` must improve the linear recombination
+constant below `2048`.  The manuscript's advertised bound `2224` is therefore
+insufficient for this lower extraction depth. -/
+theorem rgContraction_two_fourteen_forces_constant_lt_2048
+    {C : ℝ} (h : HasExtendedExtractionContraction C 2 14) :
+    C < 2048 := by
+  have hprod : C * irrelevantScale 2 14 < 1 := h.2.2
+  rw [irrelevantScale_two_fourteen] at hprod
+  nlinarith
+
+/-- Same-constant blocker at the nearest even extraction depth below `16`. -/
+theorem not_rgContraction_2224_two_fourteen :
+    ¬ HasExtendedExtractionContraction 2224 2 14 := by
+  intro h
+  have hC : (2224 : ℝ) < 2048 :=
+    rgContraction_two_fourteen_forces_constant_lt_2048 h
+  norm_num at hC
+\end{lstlisting}
+
+This is the knife edge: the choice $\dmax=16$ is exactly what makes the
+advertised constant contract, and the manuscript's own table shows
+$\dmax\in\{10,12,14\}$ all fail against $C_1\leq 2224$ while $\dmax=16$ succeeds.
+The module \texttt{Mettapedia.QuantumTheory.YangMills.RGCrux} packages this into
+a route-level statement: a mass-gap route that keeps the advertised constant
+$2224$ but uses an even extraction depth strictly below $16$ cannot exist, since
+the required contraction is arithmetically false before any OS / clustering
+layer is reached.
+
+\begin{lstlisting}
+/-- Same-constant lower-extraction certificate in the manuscript's even
+canonical-dimension shape: the cutoff is strictly below `16`, is even, and uses
+the same advertised recombination bound `2224`. -/
+def SameConstantEvenBelowSixteenRGCertificate (dmax : ℕ) : Prop :=
+  dmax < 16 ∧ Even dmax ∧ HasExtendedExtractionContraction 2224 2 dmax
+
+/-- No same-constant RG certificate exists for an even manuscript-shape cutoff
+strictly below `16`. -/
+theorem not_sameConstantEvenBelowSixteenRGCertificate
+    {dmax : ℕ} :
+    ¬ SameConstantEvenBelowSixteenRGCertificate dmax := by
+  intro hcert
+  have hdmax : dmax ≤ 14 :=
+    even_lt_sixteen_le_fourteen hcert.1 hcert.2.1
+  exact (not_rgContraction_2224_two_of_dmax_le_fourteen hdmax) hcert.2.2
+\end{lstlisting}
+
+A strengthened companion theorem,
+\texttt{not\_atLeast2048EvenBelowSixteenRGCertificate}, shows that any even
+lower-extraction repair below $\dmax=16$ would need a genuinely sharper constant
+($C<2048$), not merely the advertised one. We stress that this is an honest
+delimiter of the arithmetic surface, not a refutation of the route: at the raw
+natural number $\dmax=15$ the same constant \emph{does} contract
+($2^{12}=4096>2224$), and the module records this explicitly so that the
+obstruction is read precisely as an even canonical-dimension statement matching
+the manuscript's dimensions $4,6,\dots,\dmax$.
+
+\subsection{Finite strong-coupling spectral gaps and finite OS reconstruction}
+
+The module \texttt{Mettapedia.QuantumTheory.YangMills.FiniteOSReconstruction}
+formalizes the finite algebraic core of OS reconstruction: a reflection-positive
+finite kernel induces a positive pairing on observables, and a transfer operator
+that is self-adjoint for that pairing descends to the pairing quotient and
+remains self-adjoint there. On this base, the modules
+\texttt{Z2StrongCouplingGap} and \texttt{Z3StrongCouplingGap} build explicit
+finite single-link abelian lattice gauge models. For $\mathbb{Z}_2$, the
+one-link heat-kernel transfer at heat time $1$ has eigenvalues $1$ and
+$\exp(-1)$, so the dimensionless gap is $-\log(\exp(-1)/1)=1$:
+
+\begin{lstlisting}
+theorem z2StrongCouplingGap_eq_one :
+    z2StrongCouplingGap = 1 := by
+  simp [z2StrongCouplingGap, z2StrongCouplingLambdaTwo,
+    z2StrongCouplingLambdaOne, z2StrongCouplingRatio, Real.log_exp]
+
+/-- End-to-end finite lattice theorem: the explicit `Z₂` strong-coupling model is
+nontrivial, reflection positive, has an OS transfer operator, and has
+dimensionless transfer gap at least `1`. -/
+theorem z2StrongCoupling_latticeYangMills_massGap_landmark :
+    ∃ _ : Z2StrongCouplingGapCanary,
+      (∃ x y : Z2OneLinkConfig, x ≠ y) ∧
+        OSReflectionPositive z2StrongCouplingKernel ∧
+        z2StrongCouplingGap = 1 ∧
+        (1 : ℝ) ≤ z2StrongCouplingGap ∧
+        0 < z2StrongCouplingGap := by
+  exact
+    ⟨z2StrongCouplingPositiveCanary,
+      z2OneLinkConfig_nontrivial,
+      z2StrongCouplingKernel_reflectionPositive,
+      z2StrongCouplingGap_eq_one,
+      z2StrongCouplingGap_lower_bound_one,
+      z2StrongCouplingGap_positive⟩
+\end{lstlisting}
+
+The $\mathbb{Z}_3$ module proves the analogous landmark with two mean-zero
+transfer eigenvectors and the same unit gap. These theorems are unconditional
+and non-vacuous: they exhibit genuine reflection positivity, a genuine finite OS
+transfer reconstruction, and a strictly positive spectral gap. They are also
+kept rigorously separate from any continuum claim. Each module carries an
+explicit scaling diagnostic showing that a finite gap need not survive a naive
+continuum schedule. For the heat-time schedule $t(a)=a^2$, the \emph{physical}
+gap (dimensionless gap divided by lattice spacing) closes as $a\to0$:
+
+\begin{lstlisting}
+/-- A concrete gap-closing schedule for the finite model under the heat-time
+scaling `t(a)=a²`: the physical gap can be made smaller than any positive
+threshold by taking the lattice spacing small enough. -/
+theorem z2QuadraticHeatTime_physicalGap_closes :
+    ∀ ε : ℝ, 0 < ε →
+      ∃ a : ℝ,
+        0 < a ∧ a < ε ∧
+          z2HeatTimePhysicalGap a (a ^ 2) < ε := by
+  intro ε hε
+  refine ⟨ε / 2, by linarith, by linarith, ?_⟩
+  have hne : ε / 2 ≠ 0 := by linarith
+  rw [z2QuadraticHeatTime_physicalGap_eq hne]
+  linarith
+\end{lstlisting}
+
+\subsection{The continuum endpoint is gated open}
+
+The module \texttt{Mettapedia.QuantumTheory.YangMills.ProofState} records a
+status ledger over the route's nodes. The finite RG / extraction surfaces are
+marked \texttt{checked} or \texttt{refuted} as appropriate, but the continuum
+mass-gap endpoint carries an explicit \texttt{openGoal} status, gated behind a
+constructive-QFT promotion barrier (continuum measure, Euclidean covariance,
+reflection positivity, OS reconstruction, and Hamiltonian mass-gap transfer ---
+none of which is represented for the RG / extraction route, which supplies only
+a finite ledger):
+
+\begin{lstlisting}
+/-- The final mass-gap endpoint remains an open goal in this lane. -/
+def yangMillsMassGapEndpointNode : YangMillsProofNode where
+  id := "yang-mills.mass-gap-endpoint"
+  status := .openGoal
+  truthValue := ⟨0, 95⟩
+  evidence := "currentYangMillsMassGapEndpoint_blockedByConstructiveGate blocks promotion from the audited RG/extraction surfaces to a continuum mass-gap endpoint ..."
+  nextObligation := "Connect the RG and extraction surfaces to a genuine continuum mass-gap statement only after the constructive-QFT gate, OS/Hamiltonian transfer dependency packet, challenge-world interface packet, and mass-gap promotion gate clear."
+
+theorem yangMillsMassGapEndpointNode_open :
+    yangMillsMassGapEndpointNode.status = .openGoal := by
+  rfl
+\end{lstlisting}
+
+A companion theorem \texttt{currentYangMillsMassGapEndpoint\_blockedByConstructiveGate}
+records that the endpoint is open, the constructive checks are all unrepresented,
+and the only supplied interface is the finite RG / extraction ledger. In short,
+the formalization does not overclaim: nothing in it asserts a continuum mass gap.
+
+\section{Honest status and scope}\label{sec:honest}
+
+This lane is, by construction, conservative; we now state precisely what is and
+is not established.
+
+\paragraph{The contraction constant is an input, not a conclusion.}
+Every arithmetic theorem above takes the recombination constant as a
+\emph{given real number}. The predicate \texttt{HasExtendedExtractionContraction
+C b dmax} is a statement about $C$, $b$, $\dmax$ alone; the checked facts
+\texttt{rgContraction\_2224\_two\_sixteen} and
+\texttt{not\_rgContraction\_2224\_two\_fourteen} verify the comparison
+$C \lessgtr b^{\dmax-3}$ for the specific value $C=2224$. Nothing in the
+formalization derives that $2224$ (or any $O(1)\cdot b^4$ bound) is the correct
+value of the manuscript's recombination constant. The Lean ledger is therefore
+faithful to the route's bookkeeping but agnostic about the route's hardest
+analytic claim.
+
+\paragraph{The extraction projection: realization succeeds, range-only transfer
+fails.}
+The sign-only repair is insufficient: even with positive exponent, the displayed
+binomial/multivariate multiplicities make the corrected finite sum exceed $2$
+once at least two coordinates are present. We therefore constructed the natural
+finite polynomial realization rather than treating the omission as a verdict.
+For a finite Wilson block of actual group-valued links, plaquette holonomies,
+and a conjugation-invariant Wilson potential, finite polynomials in the
+plaquette coordinates are gauge invariant. In the explicitly defined weighted
+coefficient-majorant norm, canonical-dimension truncation has operator constant
+$1$ (module \texttt{WilsonBlockMajorant}).
+
+This is our realization of the manuscript's extraction idea, not an attribution
+to v14. It cannot be transferred to v14's $P_{\mathrm{ext}}$ from the specified
+range alone: \texttt{projectionRangeSpecification\_does\_not\_imply\_bound\_two}
+constructs an idempotent skew projection onto the same low-coordinate range
+that violates the bound $2$. The positive transfer theorem
+\texttt{coefficientL1\_basisJetProjection\_le} shows exactly what would suffice:
+explicit basis and dual-jet matrices whose coefficient-column bounds multiply.
+The construction attempt is certified in
+\texttt{Dimension16WilsonExtractionCertificate}: F.4's on-shell relation
+policy and O.9's off-shell policy disagree already on the displayed
+dimension-$6$ divergence-square operator; the exact block quotient, lattice
+representatives, finite basis, dimension-$16$ dual jets, biorthogonality, and
+conditioning matrices are not supplied. Appendix~I's explicit jets concern
+the separate observable projection $P^{\mathrm{obs}}_{\leq4}$. Hence the
+extraction component is not a standing erratum repair, and $C_1$ is not derived.
+
+\paragraph{Hard truncation does not descend to the actual trace-word quotient.}
+The third round replaces schematic carriers by the exact object: the
+$\mathrm{SU}(2)$, $b=2$ Wilson block with normalized Haar measure --- $81$
+vertices, $216$ positive links of which $8$ are internal, $216$ plaquettes,
+an internal spanning tree with $7$ co-tree links, exact boundary-plus-co-tree
+coordinates, the gauge action, the normalized Wilson potential, and the
+fixed-boundary product-Haar reference integral with its logarithmic effective
+block action (modules \texttt{SU2WilsonBlockPilot},
+\texttt{SU2MajorantRepairDecision}). On this object the question ``is
+canonical-dimension truncation even well-defined on the gauge-invariant
+quotient?'' has a negative, intrinsic answer. For any $U\in\mathrm{SU}(2)$
+the Cayley--Hamilton identity gives $\Tr(U^2)=\Tr(U)^2-2$; writing
+$a=2-\Tr(U)$ and $b=2-\Tr(U^2)$ (each of canonical dimension $4$), the exact
+relation $b=4a-a^2$ yields
+\[
+  a^3b-4a^4+a^5 \;=\; 0,
+\]
+whose three monomials have construction-derived canonical dimensions $16$,
+$16$, $20$. Truncation through dimension $16$ deletes only $a^5$; on the
+explicit holonomy $\mathrm{diag}(i,-i)$ the truncated expression evaluates to
+$-32$, while the exact left-hand side vanishes on every field. Hence the
+semantic kernel is not stable under representative-wise hard truncation, no
+function on the evaluated trace-word quotient agrees with that truncation,
+and the corresponding descended extraction certificate is uninhabited
+(module \texttt{SU2CayleyHamiltonTruncationObstruction}). The witness uses
+only the Cayley--Hamilton relation --- no equations-of-motion quotient and no
+boundary-extension convention --- so it applies to both of v14's relation
+policies, and it refutes any uniform-in-$N$ architecture that requires
+representative-wise hard truncation of redundant Wilson trace words.
+
+\paragraph{Corrected constructions do carry norm-below-two extractors.}
+Truncation is, of course, definable on a \emph{chosen basis}, and the third
+round constructs the two natural repairs exactly. The full associated-graded
+jet chart on the gauge-fixed block ($7$ co-tree links, $3$ Lie coordinates
+each, hence $21$ coordinates) carries the symmetric-monomial basis of jets
+through total degree $16$, with identity jet matrix and biorthogonal
+coefficient duals; radial Taylor extraction at radius ratio $1/2$ has the
+exact operator constant
+$\sum_{d=0}^{16}2^{-d}=131071/65536<2$
+(modules \texttt{SU2AssociatedGradedExtraction},
+\texttt{SU2AssociatedGradedExtractionDecision}). Independently, the evaluated
+one-plaquette trace algebra is exactly a one-variable polynomial algebra: the
+normal-form theorem $b=4a-a^2$ (proved semantically complete via an infinite
+Cayley-rotation family) gives the basis $1,a,a^2,a^3,a^4$ through dimension
+$16$, with extraction constant $\sum_{d=0}^{4}2^{-d}=31/16<2$ (module
+\texttt{SU2IndependentTraceBasis}). Keeping Appendix~O's other factors
+unchanged, the associated-graded constant yields the conditional ledger value
+\[
+  C_{\mathrm{proposed}}
+  \;=\; \tfrac{90832203}{40960} \;\approx\; 2217.583 \;<\; 2224,
+\]
+whose two-source gain at depth $16$ is
+$90832203/335544320\approx0.2707<1/3$, while depth $15$ does not close. This
+is conditional bookkeeping: the fluctuation, cumulant, and recombination
+factors remain unproved on the actual map. Two exact theorems keep these
+constructions honestly separated from v14's object: the full graded chart has
+dimension $12{,}875{,}774{,}670$ and admits no linear equivalence onto any
+coordinate space of dimension at most $1851$, so the manuscript's schematic
+count requires a genuine invariant quotient that v14 does not construct; and
+the radial norm used here is a precise repair, not provably the manuscript's
+intended multivariate norm.
+
+\paragraph{Neither survivor transfers to the canonical $(F,D)$ space.}
+The transfer question is then decided negatively by two independent
+machine-checked obstructions (module \texttt{V14FDQuotientTransferNoGo},
+headline \texttt{v14\_fullFD\_quotientTransfer\_noGo}). \emph{Derivative
+blindness:} v14 counts canonical dimension as $2\cdot\#F+\#D$ (its O.9.1),
+but radial degree on either chart is blind to derivative factors. The scalar
+descendant $(\partial^2)^3[(\Tr F^2)^3]$ has canonical dimension $18$ yet
+radial degree $6$ on the associated-graded chart and $3$ on the trace chart,
+so both norm-below-two extractors \emph{fix} it --- and an explicit two-cell
+zero-boundary sixth-difference witness evaluates to $-6$, so the retained
+operator is nonzero. Both survivors therefore fail to implement the
+dimension-$\leq16$ projection of F.4.2, independently of the choice of
+quotient basis (\texttt{not\_associatedRadialImplementsCanonicalCutoff},
+\texttt{not\_independentRadialImplementsCanonicalCutoff}).
+\emph{Integration-by-parts/block incompatibility:} v14's local norm (F.3)
+lives on ordinary functions on a finite block retaining boundary data, while
+both relation branches identify integrated total derivatives with zero. The
+dimension-$6$ descendant $\partial^2\Tr(F^2)$ is gauge invariant and
+evaluates to $1$ on an explicit three-plaquette block field (a purely
+quadratic associated-grade witness gives the same value, so higher Taylor
+terms are not the cause). An ordinary block-functional realization would have
+to send one quotient class to both the zero function and a nonzero boundary
+descendant; the faithful transfer sockets --- exact-Wilson, pure
+associated-graded, and every RG-compatible extension --- are therefore
+uninhabited under both relation policies. Consequently no corrected recursion
+constant propagates from the constructions above into the bootstrap. The
+obstruction is structural rather than informational: supplying the omitted
+dimension-$16$ coordinates or conditioning matrices cannot make either
+extractor into the canonical $(F,D)$ projection. A viable replacement needs a
+derivative-aware filtration whose truncation provably agrees with
+$2\cdot\#F+\#D$, together with a boundary-aware complex that retains
+total-derivative descendants on each block as boundary cochains and imposes
+integration by parts only at global recombination; constructing exactly that
+replacement is the current object of this formalization.
+
+\paragraph{The actual-lattice census cannot be Lorentz-only.}
+The derivative-aware boundary-cochain repair makes the filtration and local
+boundary bookkeeping explicit, but a further obstruction appears before its
+coordinate basis or dual jets can be supplied. Appendix~O.9.3 enumerates only
+Lorentz-invariant complete contractions. The exact finite-spacing Wilson
+lattice has only hypercubic symmetry, and the module
+\texttt{SU2LatticeFDCensusNoGo} supplies a gauge-invariant canonical-dimension
+$8$ observable whose fourth Cartan jet is
+\[
+  6\bigl(F_{01}^{4}+F_{02}^{4}+F_{03}^{4}
+      +F_{12}^{4}+F_{13}^{4}+F_{23}^{4}\bigr).
+\]
+An explicit rational orthogonal rotation changes its normalized quartic value
+from $1$ to $337/625$. Hence no finite span of the $O(4)$-invariant O.9.3 jets
+contains it. The necessary spanning core, the O.9.2 off-shell certificate, and
+the F.4.3 on-shell certificate are all formally uninhabited. The witness is
+derivative-free, so changing EOM, Bianchi, integration-by-parts, trace,
+Cayley--Hamilton, or boundary-cochain reduction policies cannot repair this
+same-target symmetry mismatch. The result is already an $N=2$ counterexample
+to an architecture asserted uniformly for $\mathrm{SU}(N)$. It is not a no-go
+for a hypercubic-complete basis or for a controlled continuum projection.
+
+\paragraph{The first hypercubic census succeeds at quartic order and refutes
+its padded extension.}
+The unpadded carrier of degree-four monomials in the six oriented two-form
+components has cardinality $126$. Exact signed-orbit certificates divide it
+into four admissible $H(4)$ orbit types --- a pure fourth power, adjacent
+squares, opposite squares, and a rectangle product --- plus monomials killed
+by negative stabilizers. Four signed orbit indicators obey the full
+hypercubic covariance law, their representative evaluations form the
+$4\times4$ identity, and they reconstruct every invariant rational
+coefficient function. This is a complete result for the derivative-free
+Cartan quartic restriction, not for the noncommutative $(F,D)$ quotient.
+The actual gauge-invariant Wilson observable has exact fourth derivative equal
+to the polynomial realization of coordinate vector $(6,0,0,0)$. Moreover, the
+curvature observables invariant under every orthogonal spacetime matrix form a
+proper linear subspace, and this pure-fourth polynomial defines a nonzero
+class in the quotient by that subspace. Thus the Lorentz-breaking artifact is a
+coordinate-level theorem, not merely an external rotation counterexample.
+
+The fixed-width full carrier cannot supply that extension faithfully.
+Inactive field and derivative slots are mathematically padding but remain
+part of raw equality. The module
+\texttt{V14HypercubicFDCensusPaddingNoGo} constructs two distinct encodings
+of the empty active syntax and proves
+\texttt{faithful\_dimension16\_exactCensus\_uninhabited}: if every basis
+column ignores inactive padding, the two basis rows coincide; the required
+right inverse instead makes them two different rows of the identity matrix.
+This obstruction precedes Bianchi, EOM, integration-by-parts, trace, and
+Cayley--Hamilton reduction. It does not show that an $H(4)$ basis cannot
+exist. It shows that the next construction must first replace the raw carrier
+by an unpadded/dependent syntax or quotient padding explicitly.
+
+\paragraph{Our unpadded raw character census is exact through dimension
+$16$.}
+\textsc{Ours.} The replacement uses dependent active field and derivative
+slots, so no inactive coordinate enters equality. An explicit equivalence
+identifies its canonical-dimension-$16$ subtype with a separated presentation
+consisting of an active trace/derivative layout and a rank-$16$ spacetime-axis
+assignment; it commutes with the literal hypercubic action and preserves the
+product of all active tensor signs. The induced linear equivalence identifies
+the scalar and pseudoscalar covariance submodules on the original syntax with
+the counted invariant fibers. The exact layout multiplicity is
+$5{,}361{,}612{,}271{,}200$, and the complete raw carrier has
+$23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$ elements.
+
+The standard signed four-vector representation of the literal $384$-element
+hypercubic group is constructed over $\mathbb{Q}$. Reynolds-character
+averaging, with all $24\times16$ group elements replayed by kernel-checked
+certificate blocks, gives the scalar multiplicities
+\[
+ (1,0,1,0,4,0,31,0,379,0,5611,0,87979,0,
+   1400491,0,22379179)
+\]
+and pseudoscalar multiplicities
+\[
+ (0,0,0,0,1,0,20,0,336,0,5440,0,87296,0,
+   1397760,0,22368256)
+\]
+at tensor ranks $0$ through $16$. Since the layout coordinate is inert under
+$H(4)$, the rank-$16$ values imply exact raw invariant-space dimensions
+$119{,}988{,}480{,}745{,}781{,}344{,}800$ and
+$119{,}929{,}915{,}854{,}943{,}027{,}200$. No relation is manufactured by
+the count: field antisymmetry, Bianchi, EOM, integration by parts, trace, and
+Cayley--Hamilton remain explicit quotient rows. Thus this theorem completes
+the genuine raw-carrier census, but not the noncommutative physical operator
+basis or its dual chart.
+
+\paragraph{Our first syntactic quotient removes derivative labels exactly.}
+\textsc{Ours.} The active derivative slots in the raw carrier are labeled,
+whereas an operator depends only on the ordered derivative word.  Interpreting
+\texttt{derivativeOrder} explicitly as the map from ordered positions to
+active labels separates every raw derivative presentation into a label
+permutation and the owner--axis datum at each ordered position.  Equality of
+the latter data is proved equivalent to a unique relabeling of the active
+derivative slots.  Consequently the actual quotient of the original exact
+dimension-$16$ subtype is linearly represented by ordered derivative words;
+no canonical representative is assumed.
+
+This alpha quotient commutes with the literal $H(4)$ action and preserves the
+product of all active tensor signs.  Before any physical identity is imposed,
+the layout multiplicity falls from $5{,}361{,}612{,}271{,}200$ to
+$5{,}030{,}751$, and the corresponding carrier has exactly
+$21{,}606{,}911{,}019{,}319{,}296$ elements
+(\texttt{HypercubicDimension16AlphaReduction}).  Field-label alpha
+equivalence and the standard field antisymmetry, Bianchi, EOM, integration by
+parts, covariant-derivative commutator, trace, and $\mathrm{SU}(2)$
+Cayley--Hamilton identities remain to be imposed.  The commutator identity is
+listed separately because $[D_\mu,D_\nu]X=[F_{\mu\nu},X]$ is necessary to
+identify noncommuting derivative words and is not supplied by Bianchi or
+integration by parts.
+
+\paragraph{Our initial relation rows are equivariant on the same free
+module.}
+\textsc{Ours.} The signed hypercubic action is extended linearly from the
+alpha-reduced basis, with the complete active tensor sign attached to each
+basis vector.  Three sparse row families are constructed on this module:
+uniform field-label renaming, swaps of adjacent ordered derivative positions
+owned by different field factors, and
+\(F_{\mu\nu}+F_{\nu\mu}=0\).  Each family is proved to intertwine exactly with
+the signed $H(4)$ action
+(\texttt{HypercubicDimension16RelationEquivariance}).  The derivative-shuffle
+site carries explicit adjacency and different-owner conditions.  The
+adjacency condition prevents a nonlocal transposition from reversing hidden
+same-owner derivatives.  Positions owned by the same field are never
+identified by a shuffle, since their exchange requires the curvature term in
+the covariant-derivative commutator.  These are
+equivariance and sparsity theorems; their joint rank has not yet been inferred
+from the row labels.
+
+\paragraph{Our Bianchi and on-shell EOM rows respect derivative order.}
+\textsc{Ours.} Ordered derivative positions are read from outermost to
+innermost.  A derivative is eligible for Bianchi or EOM reduction only when it
+is innermost among the positions owned by its field factor.  The predicate is
+preserved by $H(4)$.  On such a context the three-term row
+\[
+ D_aF_{bc}+D_bF_{ca}+D_cF_{ab}
+\]
+and the contracted on-shell row
+\[
+ \sum_{\mu=1}^{4}D_\mu F_{\mu\nu}
+\]
+are constructed explicitly and proved equivariant for the same signed action
+(\texttt{HypercubicDimension16DifferentialRelations}).  The EOM rows belong
+only to the on-shell policy.  The innermost condition is essential: moving
+either identity through deeper derivatives without curvature commutators
+would change the represented operator.  No rank or completeness claim is
+deduced merely from these formulas.
+
+\paragraph{Our integration-by-parts row is an integrated action identity.}
+\textsc{Ours.} A globally outermost derivative position is chosen and its
+owner is varied over every field factor.  The sum of those basis rows is the
+product-rule expansion of an integrated total covariant derivative and is
+proved equivariant under the signed $H(4)$ action.  The outermost condition is
+preserved by the action and is compatible with the different-owner shuffle
+rows.  This is an action-sector integration-by-parts relation; it is not
+asserted as pointwise vanishing of a local derivative.
+
+The same module supplies the elementary traceless-letter row: a fixed point
+of the trace permutation represents a one-letter trace and is killed because
+every covariantly differentiated field strength is $\mathfrak{su}(2)$-valued
+and traceless.  Disjoint cycles already encode cyclic words without a chosen
+starting point or ordering of trace factors, while uniform field-label alpha
+rows identify conjugate labeled presentations
+(\texttt{HypercubicDimension16IBPTraceRelations}).  Higher
+$\mathrm{SU}(2)$ trace identities remain separate.
+
+\paragraph{Our covariant-derivative commutator is an exact cross-sector
+row.}
+\textsc{Ours.} A site consists of two consecutive positions in the ordered
+derivative word of a single field letter; derivatives belonging to other
+field letters may occur between them in the global word.  The construction
+removes precisely those two positions while retaining the relative order of
+their complement, adds a curvature letter with the two derivative axes, and
+inserts it immediately before or after the selected field in the same trace
+cycle.  The resulting four-term row is
+\[
+ D_aD_bX-D_bD_aX-F_{ab}X+XF_{ab}=0.
+\]
+Both curvature insertions have the same canonical dimension as the two
+derivative terms.  The trace-cycle insertion equations, dimension identity,
+complement-order embedding, active tensor sign, and signed $H(4)$
+intertwining law are proved exactly
+(\texttt{HypercubicDimension16CovariantCommutator}).  Thus no same-field
+derivative swap is imposed without its curvature commutator.  This theorem
+constructs the relation operator; it does not infer its rank or the rank of
+the combined quotient.  The higher $\mathrm{SU}(2)$ trace identities are
+supplied next as independent row schemas.
+
+A literal seven-field, two-derivative instance proves that this
+cross-sector coupling survives both exact contextual normalization and
+simultaneous field relabeling.  Its two eight-field curvature insertions are
+identified by independent fixed-width witnesses with two distinct entries of
+the checked positive orbit chart.  The eight-field part of the corresponding
+physical-relation column is exactly
+\[
+  -e_{10513}+e_{10515},
+\]
+and its signed Reynolds average is nonzero by off-diagonal orbit separation
+and the nonzero diagonal coefficient theorem.  Hence the descended physical
+relation operator is not block diagonal in field count: the derivative-free
+eight-field trace quotient cannot replace the joint dimension-sixteen
+physical quotient without the incoming commutator block
+(\texttt{HypercubicDimension16CovariantCompressionWall}).
+
+\paragraph{Our $\mathrm{SU}(2)$ trace rows include genuine multitrace
+rewiring.}
+\textsc{Ours.} For traceless $2\times2$ matrices the polarized
+Cayley--Hamilton identity
+\[
+ AB+BA=\Tr(AB)I
+\]
+is proved over an arbitrary commutative ring, together with its trace-context
+form
+\[
+ \Tr(UABV)+\Tr(UBAV)=\Tr(AB)\Tr(UV).
+\]
+On the finite carrier, the right-hand side is constructed by splitting the
+adjacent $A,B$ letters into a two-cycle and reconnecting the remaining trace
+word.  The three changed permutation edges are proved explicitly.
+
+Adjacent splitting alone does not visibly generate identities which join
+several trace cycles.  Accordingly, for every injection of three cut labels
+we also construct the standard six-term fundamental $2\times2$ trace row
+\[
+ \Tr A\Tr B\Tr C-\Tr(AB)\Tr C-\Tr(AC)\Tr B-\Tr(BC)\Tr A
+ +\Tr(ABC)+\Tr(ACB)=0.
+\]
+The identity is proved by matrix evaluation, while its carrier realization is
+the signed sum over the identity, three transpositions, and two three-cycles
+acting on the selected outgoing trace edges.  Thus its terms honestly join
+and split cyclic and multitrace layouts.  Both row families preserve every
+axis assignment and active tensor sign and are signed-$H(4)$ equivariant
+(\texttt{HypercubicDimension16SU2TraceRelations}).  These are relation and
+equivariance theorems; no joint rank or quotient conditioning is inferred
+from the schemas alone.
+
+\paragraph{Our sparse trace-rank replay is kernel checked, and its rational
+row arithmetic has an exact semantics.}
+\textsc{Ours.} A bounded exact enumeration on the genuine eight-field scalar
+orbit carrier selects $11{,}556$ integer trace-relation rows against the
+$11{,}654$ orbit coordinates, leaving $98$ candidate free columns.  The
+selected rows contain $25{,}379$ nonzero integer entries.  Exact elimination
+produces $27{,}568$ nonzero rational entries, uses only $675$ reductions by
+previous pivots in total, and uses at most $25$ such reductions for any one
+row.  The rational replay is split into forty-five $256$-row certificates and
+one $36$-row certificate.  Lean's kernel checks every reduction and every
+normalized row using explicit numerator--denominator arithmetic; no dense
+matrix is materialized and no evaluator axiom is used.
+
+An independent semantic layer now interprets every valid integer pair
+$(n,d)$ as $n/d\in\mathbb Q$.  It proves that exact zero tests and
+cross-multiplication equality are sound, that sparse insertion and
+cancellation denote vector addition, that the complete fold used for a
+scaled row subtraction denotes the corresponding subtraction in the
+rational coordinate module, and that pivot normalization denotes inverse
+scalar multiplication.  Validity is preserved by every one of these
+operations under the explicit nonzero-denominator hypotheses
+(\texttt{HypercubicDimension16TraceRankSemantics}).
+
+The forty-six checked ranges are now assembled into one typed witness for
+every selected row.  The normalized rows have pairwise distinct maximal
+pivots and are therefore linearly independent.  Strong induction through the
+exact replay proves that every normalized row lies in the span of the selected
+raw rows.  Since both indexed families have $11{,}556$ members, the selected
+raw rows themselves are linearly independent over $\mathbb Q$, and their
+rational span has finrank exactly $11{,}556$
+(\texttt{HypercubicDimension16TraceRankTheorem}).
+
+We also reran the sparse elimination independently modulo the two primes
+$1{,}000{,}000{,}007$ and $1{,}000{,}000{,}009$.  Each bounded run examined
+$5{,}455{,}784$ generated candidate rows and produced $11{,}556$ pivots with
+$27{,}568$ nonzero normalized-basis entries.  The prime-specific coefficients
+and reduction traces are stored separately in canonical increasing-support
+order.  Lean proves that both moduli are prime and distinct, checks the stored
+basis and trace shapes, and replays every one of the $11{,}556$ selected
+integer rows in forty-six chunks at each prime
+(\texttt{HypercubicDimension16TraceRankModularCertificate}).  These two
+prime-field replays are independent arithmetic audits.  The exact
+$\mathbb Q$ theorem above remains the semantic rank result, and the modular
+checks do not by themselves certify exhaustive generation of the physical
+relation operator.
+
+The independently defined target does not use the encoded coordinate table.
+On the genuine eight-field field-relabel orbit module, we
+take the span of the literal signed-orbit rows $v-hv$.  This span is proved to
+be exactly the kernel of the Reynolds projector: the forward inclusion uses
+right invariance of the group average, while the reverse inclusion writes
+$v-Pv$ as the average of the rows $v-hv$.  Consequently the signed
+coinvariant quotient is linearly equivalent to the previously constructed
+Reynolds-invariant subspace and has finrank exactly $11{,}654$
+(\texttt{HypercubicDimension16SignedOrbitCoinvariants}).  The encoded orbit
+chart is proved below to coordinatize this independently defined standard
+quotient; it does not define the quotient by its own table.
+
+We also constructed independent one-way invariants for the encoded chart.
+For each field label the first records the eight successive oriented-plane
+colors around the literal trace permutation, together with all eight
+return-to-start bits, as a base-twelve rooted code.  Both the sorted multiset
+of the eight codes and the standard symmetric polynomial
+\[
+  \prod_{f=1}^{8}(1+c_f)
+\]
+are proved invariant under simultaneous field relabeling before they are
+descended to the genuine orbit carrier.  Reflections do not change the plane
+transport, so minimization requires only the $24$ unsigned coordinate
+permutations; the resulting minimum is proved invariant under the full
+literal hypercubic group
+(\texttt{HypercubicDimension16TraceOrbitSignature}).  Distinct minima
+therefore certify distinct genuine carrier orbits, but no converse or
+completeness property is assumed.
+
+The fixed-width payload contains $11{,}654$ product-signature minima, all
+distinct.  It stores the values in representative order and strictly sorted
+order together with mutually inverse rank tables.  The kernel replay is
+partitioned into $182$ ranges of $64$ representatives and one final range of
+$6$; each range recomputes all $24$ unsigned images directly from the checked
+trace permutation and plane colors.  The global certificate separately checks
+the rank inverse and the sorted table in eleven $1024$-entry blocks and one
+$390$-entry tail; the same bounded replay checks all $11{,}653$ adjacent
+strict inequalities before using the one-way orbit theorem
+(\texttt{HypercubicDimension16TraceOrbitProductSignatureCertificate}).
+Exhaustivity of the chart remains a separate obligation.
+
+For the stabilizer sign, an even coarser standard invariant suffices.  The six
+plane multiplicities are defined on the labeled carrier, proved invariant
+under field relabeling, and descended to the genuine orbit carrier.  Exact
+enumeration gives $32{,}940$ unsigned plane-histogram stabilizer pairs and no
+negative tensor sign; every representative also has even incidence at each
+coordinate axis.  The two-form tensor sign factors exactly into its unsigned
+permutation part and its pure-reflection part.  Accordingly, the bounded
+certificate checks the $16$ pure reflections and the $24$ unsigned
+plane-histogram implications separately for each representative; the
+factorization then supplies all $384$ signed elements.  This tests only a
+necessary condition for an actual stabilizer and assumes completeness of
+neither the plane histogram, the rooted code, nor the product signature
+(\texttt{HypercubicDimension16TraceOrbitPlaneHistogram},
+\texttt{HypercubicDimension16TraceOrbitHistogramSignCertificate}).
+
+For each decoded target, take the Reynolds average of its standard coordinate
+vector.  Pairwise orbit separation makes the evaluation matrix of these
+vectors diagonal, and positive stabilizers make every diagonal entry a
+strictly positive rational number.  The $11{,}654$ Reynolds vectors are
+therefore linearly independent.  Their cardinality equals the independently
+proved finrank $11{,}654$ of the invariant subspace, so they form a basis;
+transport through the Reynolds equivalence gives a basis of the standard
+signed coinvariant quotient
+(\texttt{HypercubicDimension16TraceOrbitBasis}).  This proves that the chart
+coordinatizes the independently defined quotient rather than defining it by
+enumeration.
+
+Every selected raw row is now proved to have support inside the finite
+$11{,}654$-coordinate ambient module.  Restriction to that module preserves
+linear independence, so rank--nullity gives dimension $98$ for the quotient by
+the selected-row span.  The $11{,}556$ normalized rows together with the $98$
+certified free coordinate vectors form a basis of the ambient module.  Their
+free images form a basis of the selected-row quotient, and the corresponding
+$98\times98$ analysis matrix is exactly the identity
+(\texttt{HypercubicDimension16TraceFiniteQuotient}).
+
+Every selected encoded row is also identified with an actual Reynolds image
+of a literal standard trace row.  The certificate decodes the stored source
+term, field relabeling, hypercubic transport, tensor sign, and integer
+coefficient of each nonzero coordinate.  Thirty ranges of $256$ witnesses
+cover the $7680$ one-letter traceless rows; sixty ranges of $64$ witnesses and
+one range of $36$ cover the $3876$ six-term fundamental rows.  A separate
+finite coefficient replay is proved equal to the corresponding semantic
+finitely supported vectors, so the checked payload cannot introduce a new
+relation by its encoding.  Consequently the $11{,}556$-dimensional selected
+span is a subspace of the genuine standard trace-relation span
+(\texttt{HypercubicDimension16PhysicalTraceWitnessBridge}).
+
+Independently of that finite selection, the genuine eight-field orbit module
+carries the three literal standard $\mathrm{SU}(2)$ trace schemas:
+one-letter tracelessness, the polarized Cayley--Hamilton anticommutator row,
+and the six-term fundamental $2\times2$ trace row.  Their signed $H(4)$
+intertwining law is proved before any rank computation.  Each of the $98$
+rational plane-matrix assignments is kernel-checked to be traceless, and
+ordinary product-of-traces evaluation annihilates every row in all three
+families, including after arbitrary hypercubic transport
+(\texttt{HypercubicDimension16FieldEightPhysicalTrace},
+\texttt{HypercubicDimension16PhysicalTraceEvaluationInvariant}).  Their
+full $98\times98$ evaluation matrix is checked together with an
+exact rational inverse.  The resulting $98$ annihilation functionals are
+independent on the certified free classes, giving the opposite rank
+inequality to the selected-row inclusion.  Therefore the complete literal
+standard trace-relation submodule has finrank $11{,}556$, its derivative-free
+eight-field quotient has finrank exactly $98$, and the certified free classes
+form an honest quotient basis
+(\texttt{HypercubicDimension16PhysicalTraceEvaluationCertificate},
+\texttt{HypercubicDimension16PhysicalTraceQuotient}).
+
+The genuine $384$-element Reynolds normalization makes the public evaluation
+matrix equal to the stored unsigned matrix divided by $24$.  Its exact dual
+is consequently $24$ times the stored inverse.  These duals are proved
+biorthogonal to the $98$ free classes and reconstruct every quotient vector.
+The sharp coefficient-sup analysis constant is
+\[
+  \frac{14739388451343}{30664304},
+\]
+attained by row $30$
+(\texttt{HypercubicDimension16PhysicalTracePublicConditioning}).  If the
+previously isolated fluctuation, cumulant, and recombination hypotheses are
+transported unchanged to this evaluation-sup norm, the conditioned ledger is
+\[
+  \frac{928581472434609}{1742290}.
+\]
+At block factor two its least linear contraction depth is $32$, and its least
+two-source closing depth is $34$
+(\texttt{HypercubicDimension16TraceEvaluationBootstrap}).  This last
+arithmetic is conditional and concerns only the derivative-free trace
+sector; it supplies neither the derivative-coupled joint quotient nor an
+interacting Wilson-RG estimate.
+
+\paragraph{Our quantitative restoration theorem is tree-level and
+constant-Cartan.}
+\textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
+monomials and exactly $17$ signed $H(4)$ orbit coordinates. Representative
+evaluation supplies exact duals and the identity conditioning matrix, hence
+analysis and synthesis both have coefficient-sup factor one. For the actual
+$\mathrm{SU}(2)$ Cartan link field, the normalized Wilson eighth jet is
+\[
+  -2a^{12}\sum_{\mu<\nu}F_{\mu\nu}^{8},
+\]
+so division by $8!$ leaves only the pure-octic coordinate, equal to
+$-a^{12}/20160$. If $|F_{\mu\nu}|\leq M$ and
+$|a^2F_{\mu\nu}|\leq1$, the actual six-plaquette density obeys
+\[
+ \left|\mathcal W_a(F)-\sum_{\mu<\nu}F_{\mu\nu}^{2}\right|
+ \leq \frac58 a^4M^4,
+\]
+and therefore converges to the $O(4)$-invariant quadratic density along every
+eventually positive lattice-spacing net tending to zero. The corresponding
+two-block rotation error is at most $(5/2)a^4M^4$.
+
+The $17$ coordinates lift to the postponed-integration-by-parts boundary
+complex; shared-boundary coboundaries cancel under global recombination, and
+the degree-zero quotient retains rank $17$. The newly derived extraction
+factor is exactly one. Keeping the fluctuation, cumulant, and recombination
+bounds as explicit hypotheses gives the conditional recursion budget
+$5544/5$; the two-source bootstrap then closes at depth $15$ and fails at
+every depth at most $14$. None of these statements constructs an interacting
+continuum measure, proves uniform Symanzik estimates for quantum
+correlators, verifies Osterwalder--Schrader reconstruction, or proves a mass
+gap.
+
+\paragraph{The finite gaps are real but Clay-irrelevant.}
+The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
+they are abelian, single-link, strong-coupling, and finite. They exemplify the
+finite OS-reconstruction mechanism; they are not lattice approximations to a
+continuum $\SUN$ theory, and the accompanying scaling diagnostics show that the
+physical gap can close under a naive continuum schedule. They establish the
+machinery, not the target.
+
+\paragraph{The continuum mass gap is correctly open.}
+The continuum endpoint is gated \texttt{openGoal} with no claimed support, and
+the constructive-QFT prerequisites are all marked unrepresented. The
+formalization makes no claim, in either direction, about the existence of a
+continuum Yang--Mills mass gap.
+
+\section{What remains, exactly}\label{sec:remains}
+
+\subsection*{Machine-checked since the first version of this report}
+
+A second formalization round closed several items that the first version listed
+as open, and sharpened others into theorems:
+
+\begin{itemize}
+  \item \textbf{The two-source bootstrap threshold.} Linear contraction
+    ($\Lambda<1$) is \emph{not} sufficient for the manuscript's bootstrap; the
+    scalar induction closes iff $a = C\,b^{\,3-\dmax} \leq 1/3$
+    (\texttt{scalar\_bootstrap\_two\_sources}). At $C=2224$, $b=2$: depth $14$
+    fails even linear contraction, depth $15$ contracts linearly but the
+    bootstrap \emph{fails}
+    (\texttt{not\_twoSourceBootstrapSlack\_2224\_two\_fifteen}), depth $16$
+    closes. The true reason for $\dmax=16$ is the $1/3$ threshold, not parity of
+    the depth --- and the threshold is \emph{dynamical}: an explicit nonlinear
+    toy orbit realizes the recursion with equality and exits the
+    $\varepsilon^{*}$-ball in one step at depth 15
+    (\texttt{toyRG\_ball\_escape\_two\_fifteen},
+    \texttt{benToyRGBootstrapRealization}).
+  \item \textbf{The extraction realization and transfer obstruction.} The
+    manuscript's literal displayed sum is $\geq 3$ for every
+    $n\geq 1$ and never $\leq 2$
+    (\texttt{three\_le\_literalExtractionOperatorSum},
+    \texttt{not\_literalExtractionOperatorSum\_le\_two}). On an explicit
+    finite Wilson-block polynomial algebra, coefficient-majorant truncation is
+    norm one and gauge invariant (\texttt{WilsonBlockMajorant}). A matrix
+    column-sum theorem transfers through explicit basis and dual jets; v14 does
+    not provide these for $P_{\mathrm{ext}}\leq16$, and a skew-projection
+    counterexample proves that no bound follows from the range alone
+    (\texttt{ExtendedExtractionTransfer}). The source-certificate audit further
+    proves that F.4 and O.9 select different EOM relation policies and records
+    the absent lattice representatives, quotient basis, dimension-$16$ jets,
+    biorthogonality, and conditioning rows
+    (\texttt{Dimension16WilsonExtractionCertificate}).
+  \item \textbf{The support-growth dichotomy.} The two collar-growth statements
+    the manuscript makes are inequivalent, and both branches are now tight
+    theorems: a coarsen-then-thicken recurrence $r_{j+1}\leq r_j/b + A$ yields
+    the uniform bound $r_0/b^{J} + Ab/(b-1)$, while a thicken-only recurrence
+    $r_{j+1}\leq r_j + A$ yields exactly $r_0 + AJ$
+    (\texttt{support\_growth\_dichotomy}).
+  \item \textbf{Gap $\Leftrightarrow$ clustering, finite class.} Reflection
+    positivity, self-adjointness, and a $q$-contraction on the vacuum
+    complement give exponential decay of truncated two-point functions at rate
+    $-\log q$ (\texttt{abs\_truncatedTwoPoint\_le\_exp}); conversely, RP plus
+    per-vector moment decay $\langle v, T^{n}v\rangle \leq C_v q^{n}$ on a
+    dense subset gives the gap
+    (\texttt{eigenvalue\_abs\_le\_of\_moment\_decay}) --- note the
+    \emph{per-vector} constants: only the rate must be uniform, which weakens
+    what the manuscript's Assumptions K.7/M.5 need to supply. A regression
+    records that an additive $t$-independent tail defeats the conclusion
+    (\texttt{moment\_decay\_additive\_defeat}), so large-field remainders must
+    decay, not merely be small.
+  \item \textbf{A non-abelian instance.} The quaternion group
+    $Q_8\subset SU(2)$ single-link model: machine-checked non-commutativity
+    ($ij=k\neq -k=ji$), reflection positivity, spectral gap carried by the
+    four-dimensional spin isotypic component, and clustering; together with the
+    $\mathbb{Z}_2$ instance this discharges the lattice-side inputs
+    (\texttt{massGap}, \texttt{reflectionPositive}, \texttt{clustering}) of the
+    finite continuum-gate conditional
+    (\texttt{z2\_continuumMassGap\_of\_reconstructionMachine}).
+\end{itemize}
+
+\subsection*{Machine-checked in the third round}
+
+A third round moved from schematic carriers to the exact $\mathrm{SU}(2)$,
+$b=2$ Wilson block (\S\ref{sec:honest}) and decided the extraction stage on
+it:
+
+\begin{itemize}
+  \item \textbf{Hard truncation refuted intrinsically.} The Cayley--Hamilton
+    relation $a^3b-4a^4+a^5=0$, with monomial dimensions $(16,16,20)$ and the
+    explicit $-32$ evaluation, proves representative-wise canonical truncation
+    is not well-defined on the evaluated trace-word quotient
+    (\texttt{SU2CayleyHamiltonTruncationObstruction}).
+  \item \textbf{Exact norm-below-two extractors constructed.} The
+    $21$-coordinate associated-graded jet chart has extraction constant
+    $131071/65536$ and the one-plaquette trace quotient has $31/16$, both
+    certified with explicit bases, identity jet matrices, and biorthogonal
+    duals; the conditional ledger value $90832203/40960\approx2217.6$ closes
+    the two-source bootstrap at depth $16$ and fails at depth $15$
+    (\texttt{SU2AssociatedGradedExtraction},
+    \texttt{SU2IndependentTraceBasis}).
+  \item \textbf{A certified dimension separation.} The full graded chart has
+    dimension $12{,}875{,}774{,}670$ and admits no linear equivalence onto any
+    space of dimension $\leq1851$, so v14's schematic operator count requires
+    an invariant quotient the manuscript does not construct
+    (\texttt{SU2AssociatedGradedExtractionDecision}).
+  \item \textbf{The $(F,D)$ transfer socket is uninhabited as written.} The
+    dimension-$18$/radial-degree-$6$ descendant and the
+    integration-by-parts/block witness $\partial^2\Tr(F^2)$ jointly refute the
+    faithful transfer sockets for both relation policies and all
+    RG-compatible extensions
+    (\texttt{v14\_fullFD\_quotientTransfer\_noGo}).
+\end{itemize}
+
+\subsection*{Machine-checked in the fourth round}
+
+A fourth round constructed the derivative-aware boundary-cochain scaffold and
+then decided whether its dimension-$16$ coordinate socket could be filled by
+the manuscript's Lorentz-only operator census:
+
+\begin{itemize}
+  \item \textbf{The repaired filtration and boundary bookkeeping are
+    mechanical.} The canonical-dimension filtration, boundary-aware cochain
+    coordinates, coefficient projection, and conditional scalar bootstrap are
+    machine-checked. Their analytic Wilson-RG factors remain explicit inputs.
+  \item \textbf{The actual-lattice O.9 census is refuted at dimension $8$.}
+    The exact $\mathrm{SU}(2)$ Wilson observable, Cartan chart, fourth-jet
+    calculation, and rational rotation witness prove that the hypercubic
+    quartic jet is not Lorentz invariant
+    (\texttt{SU2LatticeFDCensusNoGo}).
+  \item \textbf{Both relation branches and six same-target variants are
+    closed.} Neither the off-shell O.9.2 policy nor the on-shell F.4.3 policy
+    admits a complete Lorentz-only certificate. EOM, Bianchi/IBP,
+    cyclic/multitrace, $\mathrm{SU}(2)$ Cayley--Hamilton, and postponed-IBP
+    variants share the same uninhabited spanning core.
+  \item \textbf{The live fork is explicit.} One must either enumerate an
+    $H(4)$-complete finite-spacing basis and rederive its duals and constants,
+    or prove a Symanzik/continuum projection with quantitative decay of the
+    Lorentz-breaking artifact coordinates. No numerical factor transfers
+    automatically from the refuted census.
+\end{itemize}
+
+\subsection*{Machine-checked in the fifth round}
+
+The first branch of the live fork was pursued directly:
+
+\begin{itemize}
+  \item \textbf{The exact hypercubic group and finite raw syntax are
+    mechanical.} Signed coordinate permutations form a concrete group of
+    order $384$. The raw surface records field and derivative indices, trace
+    cycles, derivative ownership/order, canonical dimension through $16$,
+    scalar/pseudoscalar characters, and separate relation-family labels. A
+    label still supplies no relation row by itself
+    (\texttt{V14HypercubicFDCensus}).
+  \item \textbf{The unpadded dimension-$8$ quartic census is complete.}
+    The $126$ Cartan quartic monomials have checked signed-orbit certificates.
+    Four surviving orbit functions form a basis, representative evaluation
+    supplies exact duals, and the conditioning matrix is the identity
+    (\texttt{V14HypercubicQuarticCensusCertificate},
+    \texttt{V14HypercubicQuarticBasis}).
+  \item \textbf{The actual Wilson and artifact coordinates are certified.}
+    The Wilson fourth jet is exactly coordinate vector $(6,0,0,0)$. The
+    $O(4)$-invariant function subspace is proper, and the pure-fourth
+    polynomial is nonzero in its quotient
+    (\texttt{V14HypercubicQuarticWilsonBridge}).
+  \item \textbf{The padded dimension-$16$ extension is refuted.} Two distinct
+    fixed-width encodings of the empty active syntax differ only in inactive
+    padding. Any active-syntax-faithful basis gives them equal rows, which is
+    incompatible with the right-inverse identity required by
+    \texttt{ExactCensusCertificate}
+    (\texttt{V14HypercubicFDCensusPaddingNoGo}).
+  \item \textbf{The corrected carrier is specified without padding.} The
+    obstruction identifies finite unpadded/dependent $(F,D)$ syntax, or a
+    checked padding quotient, as the required carrier on which the $H(4)$
+    action and relation rows must descend. No dimension-$8$ constant transfers
+    automatically. The unpadded construction and its raw character census are
+    supplied in the results below; the relation quotient remains separate.
+\end{itemize}
+
+\subsection*{Machine-checked on the unpadded dimension-$16$ carrier}
+
+All constructions in this subsection are ours and are independent of any
+claim that the manuscript already contains the needed census.
+
+\begin{itemize}
+  \item \textbf{The counted carrier is the actual active syntax.} Exact
+    dimension-$16$ shapes are classified by $f\in\{0,\ldots,8\}$ with
+    $d=16-2f$. A checked equivalence identifies the corresponding subtype of
+    the unpadded raw $(F,D)$ syntax with the separated layout--rank-$16$
+    tensor presentation, preserves the literal action and tensor sign, and
+    induces a linear equivalence on the covariance submodules. Its exact
+    cardinality is
+    $23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$
+    (\texttt{HypercubicUnpaddedFDSyntax},
+    \texttt{HypercubicRawFDDimension16Census}).
+  \item \textbf{Derivative-label alpha equivalence is quotiented exactly.}
+    The raw derivative order is separated into a disposable active-label
+    permutation and the owner--axis word indexed by ordered positions.
+    Equality of ordered words is equivalent to a unique relabeling; the
+    quotient of the original exact carrier is explicitly equivalent to the
+    reduced carrier, equivariant under $H(4)$, and tensor-sign preserving.
+    Its exact layout and carrier counts are $5{,}030{,}751$ and
+    $21{,}606{,}911{,}019{,}319{,}296$
+    (\texttt{HypercubicDimension16AlphaReduction}).
+  \item \textbf{The first sparse relation operators are equivariant.}
+    Uniform field-label renaming, adjacent different-owner derivative
+    shuffles, and
+    field-strength antisymmetry are explicit rational rows on the same free
+    module.  Their signed $H(4)$ intertwining laws are proved before any rank
+    claim; same-owner derivative swaps are excluded
+    (\texttt{HypercubicDimension16RelationEquivariance}).
+  \item \textbf{The standard rows form one equivariant physical-relation
+    operator.} Our off-shell policy combines antisymmetry, innermost Bianchi,
+    globally outermost integrated IBP, traceless one-cycles, the covariant
+    commutator, and the two ordinary $\mathrm{SU}(2)$ Cayley--Hamilton trace
+    consequences; our on-shell policy additionally enables innermost EOM.
+    The signed source and target actions are rational $H(4)$
+    representations, the joint operator intertwines them, and its image is
+    invariant.  The same statements hold after the exact
+    antisymmetry/derivative-localization quotient.  This is an equivariance
+    and assembly theorem, not yet a physical-rank claim
+    (\texttt{HypercubicDimension16PhysicalRelationOperator}).
+  \item \textbf{The physical-relation operator reaches the genuine
+    field-label orbit carrier.} Our ordinary simultaneous field-permutation
+    quotient of the oriented local carrier is lifted to a rational linear
+    map.  Explicit simultaneous-renaming difference rows span exactly its
+    kernel, and the induced quotient is linearly equivalent to the orbit
+    module.  Its signed $H(4)$ action is a representation, the quotient map
+    intertwines the contextual and orbit actions, and composing it with the
+    joint physical-relation operator leaves an invariant image.  Thus the
+    operator target is now the same literal finite orbit carrier whose
+    character was counted above; no sectorwise rank or conditioning is
+    inferred here
+    (\texttt{HypercubicDimension16PhysicalOrbitOperator}).
+  \item \textbf{The descended operator has an exact sparse field-sector
+    band.} Our source-field function is defined on every standard relation
+    generator.  Every raw row is supported in that field sector, except that
+    the two curvature-insertion terms of the covariant commutator lie in the
+    successor sector.  Explicit rational field filters commute with both the
+    contextual normalization and the simultaneous field-relabel quotient.
+    Consequently each column of the physical operator on the genuine orbit
+    carrier is supported in its source sector and, when present, its immediate
+    successor.  This is a block upper-bidiagonal incidence theorem, not a rank
+    or conditioning result
+    (\texttt{HypercubicDimension16PhysicalRelationBlocks}).
+  \item \textbf{The honest eight-field scalar invariant space has dimension
+    $11{,}654$.} Our signed permutation representation is defined directly on
+    genuine simultaneous-field-relabel orbits.  Its $384$-term Reynolds
+    average is proved to be the projector onto the fixed subspace, and the
+    trace of each action is the literal signed fixed-orbit character.  The
+    exact conjugacy-compression identity therefore gives scalar invariant
+    finrank $11{,}654$ in the $(f,d)=(8,0)$ sector, without choosing orbit
+    representatives or inserting a padded carrier
+    (\texttt{HypercubicDimension16PhysicalInvariantSpace}).
+  \item \textbf{Bianchi and EOM preserve noncommuting derivative order.}
+    The cyclic Bianchi row and the contracted on-shell EOM row are supplied
+    only at an innermost derivative of the selected field word.  Their signed
+    $H(4)$ intertwining laws are checked, and EOM remains disabled in the
+    off-shell policy
+    (\texttt{HypercubicDimension16DifferentialRelations}).
+  \item \textbf{Integrated IBP and traceless one-cycles are explicit.}
+    The total-derivative product-rule row is supplied at a globally outermost
+    derivative position, and a one-cycle of the trace permutation is killed
+    by tracelessness.  Both row families are signed-$H(4)$ equivariant
+    (\texttt{HypercubicDimension16IBPTraceRelations}).
+  \item \textbf{The covariant-derivative commutator crosses sectors
+    honestly.} Two consecutive derivatives of one field word are removed in
+    complement order, an $F_{ab}$ letter is inserted on either side of that
+    field in its trace cycle, and the four-term commutator row preserves
+    canonical dimension and active tensor sign.  Its signed-$H(4)$
+    intertwining law is checked.  For an explicit seven-field,
+    two-derivative column, the two successor terms occupy distinct checked
+    orbit coordinates, its exact eight-field component is nonzero, and its
+    Reynolds projection remains nonzero.  Thus the physical operator is
+    provably not block diagonal in field count
+    (\texttt{HypercubicDimension16CovariantCommutator},
+    \texttt{HypercubicDimension16CovariantCompressionWall}).
+  \item \textbf{The $\mathrm{SU}(2)$ trace identities rewire the actual trace
+    permutation.} The traceless anticommutator row splits an adjacent pair
+    into a two-cycle and reconnects its context.  The six-term fundamental
+    $2\times2$ trace row additionally joins and splits distinct cycles through
+    three selected edges.  Both semantic matrix identities and both signed
+    $H(4)$ intertwining laws are checked
+    (\texttt{HypercubicDimension16SU2TraceRelations}).
+  \item \textbf{The derivative-free eight-field standard trace quotient is
+    complete.} The independently checked orbit chart has $11{,}654$
+    coordinates.  A literal $11{,}556$-row standard trace subfamily is
+    linearly independent, while $98$ ordinary traceless-matrix evaluations
+    annihilate every standard trace row and have an exact rational inverse on
+    the free classes.  Hence the complete standard trace submodule has
+    finrank $11{,}556$ and its quotient has finrank $98$.  The free classes
+    form a basis with explicit public duals.  In genuine Reynolds
+    normalization the sharp row-$\ell^1$ dual constant is
+    $14739388451343/30664304$, attained at row $30$.  This is the
+    derivative-free trace quotient, not the derivative-coupled joint physical
+    quotient
+    (\texttt{HypercubicDimension16PhysicalTraceQuotient},
+    \texttt{HypercubicDimension16PhysicalTracePublicConditioning}).
+  \item \textbf{The first honest cycle-index compression target remains
+    enormous.} For our explicitly defined cycle-index expression---oriented
+    two-form letters, one ordered local derivative word per field, and
+    simultaneous unlabeled field/trace-cycle data---the eight field sectors
+    have identity specialization $47{,}231{,}161{,}854$.  Its scalar and
+    pseudoscalar $H(4)$ Reynolds values are
+    $246{,}136{,}792$ and $246{,}121{,}092$.  The literal $384$-element action
+    variable is reduced to fourteen power-trace classes only after a checked
+    axis-recurrence/group-power bridge, all traces through exponent $16$,
+    determinant parity, class assignments and multiplicities, the
+    cycle-letter recursion, and the final Reynolds-average equality.  These
+    numbers impose none of Bianchi, EOM, IBP, the covariant commutator, or the
+    matrix trace identities.  A concrete finite labeled carrier now contains
+    exactly a trace permutation and, on each field label, an oriented
+    two-form plus a finite ordered derivative-axis word of the prescribed
+    total degree.  Genuine field-relabel and $H(4)$ actions on this carrier
+    commute; the tensor-sign cocycle is field-relabel invariant, descends to
+    the orbit quotient, and retains its group law.  The remaining gap is a
+    character theorem identifying that orbit carrier with the displayed
+    cycle-index expression.  For the derivative part, stable projection of a
+    global owner--axis word to one ordered axis word per owner is now
+    surjective with a canonical owner-by-owner right inverse; its semantic
+    quotient is exactly the finite local-word family, commutes with field
+    relabeling and $H(4)$, and every already-defined adjacent different-owner
+    shuffle row lies in its kernel.  A head-matching induction now proves the
+    converse without counting: if two tagged global words have the same
+    owner-local words, the head occurrence can be moved left through only
+    different-owner entries, after which the proof recurses.  Consequently
+    the equivalence closure of the literal adjacent generators is exactly the
+    semantic kernel, and the generated quotient is equivalent to the finite
+    local-word family.  This result is now also linearized over the rationals:
+    the kernel of the free-module localization map is exactly the span of the
+    literal two-term adjacent-shuffle rows, and its quotient is linearly
+    equivalent to the free module on local-word families.  At the single
+    field-strength-letter level, the
+    ordered-pair space now has an explicit $16=6+10$ linear decomposition:
+    the six coordinates are the oriented two-planes, while four diagonal and
+    six symmetric coordinates synthesize exactly the span of the literal
+    $F_{ab}+F_{ba}$ rows.  Hence the normalization kernel is precisely that
+    row span, the quotient is the six-plane space, and the normalization
+    intertwines the signed $H(4)$ actions.  More generally, for every finite
+    family of field slots the product normalization has kernel exactly the
+    span of the literal slotwise antisymmetry rows, with an explicit quotient
+    equivalence to oriented-plane assignments.  The antisymmetry and linear
+    shuffle theorems are now assembled while retaining the actual trace
+    layout and then lifted through the dependent dimension-$16$ union.  On
+    that exact carrier, the combined kernel is precisely the span of the
+    already-defined position-indexed antisymmetry and adjacent-shuffle rows;
+    its quotient is the free module on trace layouts, oriented-plane
+    assignments, and owner-local derivative words.  The combined map also
+    intertwines the literal signed $H(4)$ actions.  That exact fixed-sector
+    target is now explicitly equivalent to the finite labeled local-word
+    carrier: finite derivative functions and owner-local lists are related by
+    inverse maps, the trace permutation and oriented planes are preserved,
+    and the equivalence intertwines field relabeling and the signed $H(4)$
+    action, including its tensor sign.  It therefore descends to an explicit
+    equivalence of the genuine field-label orbit quotients.  The remaining
+    character is now defined independently as the tensor-sign-weighted sum
+    over fixed points of the literal $H(4)$ action on that orbit carrier.  A
+    general weighted twisted Burnside theorem, proved by transporter counting
+    and orbit--stabilizer, specializes here to show that the labeled twisted
+    fixed-point numerator is exactly $f!$ times this actual orbit character.
+    The first local factor of the remaining finite cycle theorem is also
+    separated semantically: the signed fixed-point sum on one exact local
+    field letter (one oriented plane and an ordered derivative word of length
+    $k$) is proved to be
+    $\chi_{\Lambda^2V}(h^r)\chi_V(h^r)^k$ for a relabeling cycle of length
+    $r$.  The exact derivative-degree convolution is now separated as well.
+    Our dependent cycle-seed carrier chooses one exact local letter for each
+    relabeling cycle, lets a cycle of length $r$ act by $h^r$, and enforces
+    $\sum r k=d$ through exact residual-degree fibers.  Its direct signed
+    fixed-point sum is proved equal to the recursive partition derivative
+    character.  The literal one-cycle fixed equation is now bridged as well:
+    for every positive $r$, a family of actual local letters satisfying the
+    one-step relabeling/$h$ equation is explicitly equivalent to one seed
+    fixed by $h^r$, and the product of its $r$ one-step tensor signs is proved
+    to be the tensor sign of $h^r$ on that seed.  These literal families are
+    now assembled over every positive cycle list in a second dependent
+    carrier: zero-length cycles are uninhabited, exact residual derivative
+    degree is retained, and its complete signed weight sum is proved equal to
+    both the cycle-seed character and the recursive partition character.  Our
+    concrete disjoint-cycle carrier takes the recursive sum of the finite
+    blocks displayed by that list and rotates each block by one step.  Its
+    literal fixed-decoration subtype is explicitly equivalent to the
+    budget-stable dependent carrier, with exact preservation of the full
+    tensor-sign product.  Consequently its signed fixed-decoration character
+    is exactly the recursive partition character.  The conjugacy step is now
+    closed as well.  The displayed positive partitions through eight fields
+    are proved to be exactly the standard integer partitions; each has a
+    concrete disjoint-cycle representative with the advertised cycle
+    partition.  The fiber of the standard partition map on actual field
+    permutations is explicitly equivalent to the corresponding ordinary
+    conjugacy class.  The decoration character and centralizer cardinality
+    are constant on that fiber, and the standard class-cardinality times
+    centralizer-cardinality identity cancels the field factorial over
+    $\mathbb Q$.  Hence the actual signed orbit character equals the recursive
+    cycle-partition character for every $H(4)$ element and every nonempty
+    field sector through eight.  The scalar and pseudoscalar values
+    $246{,}136{,}792$ and $246{,}121{,}092$ are therefore exact invariant
+    dimensions of this intermediate quotient.  They impose none of the
+    remaining physical relations and are neither a physical-basis count nor a
+    compression wall
+    (\texttt{HypercubicDimension16CompressionCensus},
+    \texttt{HypercubicDimension16CompressionReplayCertificate},
+    \texttt{HypercubicDimension16CompressionSectorCertificate},
+    \texttt{HypercubicDimension16CompressionSemanticBridge},
+    \texttt{HypercubicDimension16LocalWordCarrier},
+    \texttt{HypercubicDimension16ShuffleQuotient},
+    \texttt{HypercubicDimension16ShuffleLinearQuotient},
+    \texttt{HypercubicDimension16AntisymmetryQuotient},
+    \texttt{HypercubicDimension16ContextualQuotient},
+    \texttt{HypercubicDimension16OrbitCarrierBridge},
+    \texttt{WeightedOrbitBurnside},
+    \texttt{HypercubicDimension16OrbitCharacter},
+    \texttt{HypercubicDimension16LocalLetterCharacter},
+    \texttt{HypercubicDimension16CycleSeedCharacter},
+    \texttt{HypercubicDimension16CycleFamilyCharacter},
+    \texttt{HypercubicDimension16FixedCycleFamilyCarrier},
+    \texttt{HypercubicDimension16CycleBlockDecoration},
+    \texttt{HypercubicDimension16PermutationDecorationTransport},
+    \texttt{HypercubicDimension16PermutationFixedSector},
+    \texttt{HypercubicDimension16PermutationConjugacy},
+    \texttt{HypercubicDimension16PartitionRepresentatives},
+    \texttt{HypercubicDimension16ConjugacyCompression}).
+  \item \textbf{The complete raw $H(4)$ character multiplicities are
+    certified.} The standard signed-axis representation, all $384$ trace and
+    determinant values, Reynolds projector, and rank-$0$--$16$ character
+    averages are checked. At rank $16$ the scalar and pseudoscalar tensor
+    multiplicities are $22{,}379{,}179$ and $22{,}368{,}256$; multiplication
+    by the exact active-layout count gives the raw invariant-space dimensions
+    displayed above (\texttt{HypercubicRawFDCharacterCensus},
+    \texttt{HypercubicRawFDCharacterCertificate}).
+  \item \textbf{The Cartan octic chart has exact conditioning.} The $1287$
+    derivative-free monomials split into $17$ surviving signed orbits and
+    negative-stabilizer orbits. The orbit indicators, representative duals,
+    reconstruction theorem, and $17\times17$ identity matrix are certified
+    (\texttt{HypercubicDimension16CartanCensus},
+    \texttt{HypercubicDimension16CartanCertificate},
+    \texttt{HypercubicDimension16CartanBasis}).
+  \item \textbf{The Wilson coefficient and classical restoration rate are
+    derived on that chart.} Only the pure-octic coordinate is populated, with
+    coefficient $-a^{12}/20160$. The actual Cartan link observable converges
+    to its quadratic $O(4)$-invariant density with the explicit uniform bound
+    $(5/8)a^4M^4$
+    (\texttt{HypercubicWilsonSymanzikRestoration}).
+  \item \textbf{Boundary recombination retains factor one.} The $17$
+    coordinates define a rank-$17$ degree-zero boundary-cochain quotient;
+    shared-boundary currents cancel exactly. Under the three named analytic
+    bounds, the resulting budget is $5544/5$ and the least closing depth is
+    $15$ (\texttt{HypercubicDimension16BoundarySymanzik}).
+  \item \textbf{The frontier is explicit.} The raw character theorem imposes
+    none of the physical relation rows.  The derivative-label alpha quotient
+    removes one purely syntactic redundancy.  Field-label alpha, adjacent
+    different-owner derivative shuffle, and antisymmetry rows are now
+    equivariant.  Innermost Bianchi and on-shell EOM rows are also equivariant,
+    and globally outermost integrated IBP plus traceless one-cycle rows are
+    equivariant.  The cross-sector covariant-commutator, traceless
+    anticommutator, and fundamental multitrace rows are now also equivariant.
+    The cycle-index census supplies a literal-group evaluation of its formal
+    expression.  Its local-word data, commuting actions, orbit quotient, and
+    sign descent now have a concrete finite realization.  The
+    global-to-local derivative map is now an equivariant surjection, and a
+    direct head-matching theorem identifies the full semantic kernel with the
+    equivalence closure of the literal adjacent different-owner generators.
+    On free rational modules, those same literal rows span exactly the kernel
+    of localization.
+    The single-letter field-antisymmetry quotient is now exact and signed
+    $H(4)$-equivariant.  Its product lift over every finite family of field
+    slots is also exact: the literal slotwise rows span the full kernel.
+    Its equivariant assembly with the trace context and derivative-shuffle
+    quotient is now exact on the dependent dimension-$16$ carrier, where the
+    pre-existing position-indexed rows span the full combined kernel.  The
+    resulting fixed-sector target is now explicitly equivalent to the finite
+    labeled local-word carrier, compatibly with field relabeling, the signed
+    $H(4)$ action, and tensor sign; this equivalence descends to the genuine
+    field-label orbit quotients.  The signed fixed-point character of that
+    quotient is now defined directly, and a weighted Burnside theorem
+    identifies its factorial multiple with the labeled twisted fixed-point
+    sum.  The local cycle character and its exact derivative-degree
+    convolution are now realized by a dependent cycle-seed carrier and proved
+    equal to the recursive partition character.  On one positive cycle, the
+    literal family fixed by the relabeling/$h$ equation is now explicitly
+    equivalent to the powered fixed seed with exact preservation of the full
+    tensor-sign product.  A dependent positive-cycle-list carrier now performs
+    the full assembly with exact residual derivative degree, and its signed
+    sum is exactly the recursive partition character.  The carrier is now
+    realized literally as decorations on a recursive disjoint union of finite
+    blocks under blockwise rotation; the explicit equivalence preserves the
+    full signed weight, so its fixed-decoration character is the same
+    partition character.  Canonical block representatives now realize every
+    standard integer partition through eight fields, each actual relabeling
+    permutation is conjugate to its selected representative, and the exact
+    partition-fiber equivalence reduces the Burnside sum to ordinary
+    conjugacy classes.  Class cardinality cancels centralizer cardinality and
+    the field factorial, proving equality of the actual orbit character and
+    the cycle-index expression in every sector.
+    The standard rows are now assembled into a single policy-indexed linear
+    operator, before and after the exact contextual quotient.  Both actions
+    are genuine rational $H(4)$ representations, the operator is equivariant,
+    and its range is invariant.  The normalized operator now descends
+    exactly and equivariantly to the genuine field-label orbit carrier: the
+    literal simultaneous-renaming rows are its full kernel and its range is
+    again invariant.  The raw rows are now proved source/successor supported,
+    and exact field filters commute through both normalizations, so the
+    descended operator is block upper-bidiagonal by field count.  On the
+    genuine eight-field, zero-derivative orbit module, the signed Reynolds
+    projector and literal character bridge now prove that the scalar
+    invariant target has dimension $11{,}654$.  Ordinary two-by-two
+    matrix-index contraction is now proved invariant under simultaneous
+    field relabeling and therefore descends to the genuine orbit carrier.
+    On the implemented pre-quotient sparse module, the singleton traceless
+    rows, adjacent anticommutator rows, and all six rewires of every
+    fundamental trace row are proved to lie in the kernel of this ordinary
+    matrix semantics.  The anticommutator proof uses polarized
+    Cayley--Hamilton entrywise; the fundamental proof is the vanishing
+    alternating $3\times3$ minor with only two matrix-index columns.  The
+    checked $98\times98$ evaluation inverse supplies the matching lower
+    bound, so the complete derivative-free standard trace submodule has
+    finrank $11{,}556$ and its quotient has finrank $98$, with explicit exact
+    dual conditioning.  This does not close the joint physical quotient: a
+    certified seven-field commutator column has a nonzero eight-field
+    successor component and nonzero Reynolds image, so the field sectors
+    cannot be quotiented independently.  The remaining finite problem is the
+    joint rank and conditioning after Bianchi, EOM, IBP, commutator, and trace
+    rows are assembled across all sectors.  The
+    quantitative restoration theorem is restricted to bounded constant
+    Cartan curvature and is not a uniform interacting Symanzik theorem.
+    Constructive Yang--Mills additionally requires a continuum measure, OS
+    reconstruction, and a positive spectral gap.
+\end{itemize}
+
+\subsection*{The remaining inputs}
+
+With the arithmetic and structural skeleton closed, the route now rests on the
+following inputs --- listed with their exact status in v14, since these are
+three different situations.
+
+\begin{enumerate}
+  \item \textbf{Derive the extraction/recombination constant on the actual map.}
+    \emph{Status: not derived.} Appendix~F.5's displayed factors equal $33152$
+    at $b=2$; Appendix~O's different factors with
+    $C_{\mathrm{extract}}=2$ equal $11088/5$. The fluctuation big-$O$ constant,
+    weighted cumulant-generation estimate, rooted tree-graph factor, and
+    basis/dual-jet conditioning are not proved on the actual map. Regrouping
+    connected families by union has norm one; the factor $14$ is the local
+    rooted branching count, not a total-contact bound. The third round
+    sharpened what a derivation must overcome: representative-wise truncation
+    is refuted intrinsically, exact norm-below-two extractors exist on the
+    corrected charts, and the transfer of any such extractor to the canonical
+    $(F,D)$ space is refuted by the derivative-blindness and
+    integration-by-parts/block obstructions. Our derivative-aware boundary
+    complex and unpadded raw carrier now repair those two representational
+    defects. The complete raw character census determines the invariant-space
+    dimensions; on the genuine eight-field orbit module the corresponding
+    scalar invariant dimension is now exactly $11{,}654$, and the Cartan
+    octic restriction supplies exact duals and factor-one conditioning.
+    The complete derivative-free eight-field standard trace quotient is
+    separately proved to have dimension $98$, with exact evaluation duals and
+    their sharp conditioning constant.  Equivariant sparse maps for
+    antisymmetry, Bianchi,
+    on-shell EOM, integrated-by-parts, the covariant-derivative commutator,
+    tracelessness, and the fundamental $2\times2$ trace identity are now
+    constructed on that carrier.  Ordinary two-by-two matrix semantics now
+    annihilates the implemented traceless, adjacent-anticommutator, and
+    fundamental trace rows exactly, and the inverse evaluation certificate
+    proves completeness of their derivative-free quotient.  A nonzero
+    seven-to-eight commutator block proves that this result cannot be promoted
+    by treating field sectors independently.  \emph{What settles it:} certify
+    the joint cross-sector rank and a dual basis after all standard rows are
+    assembled, without replacing the relations by a desired answer; and
+    extend the classical
+    constant-Cartan $O(a^4)$ estimate to uniform interacting Wilson
+    observables. Then prove the weighted Wilson
+    cumulant/tree estimate and Wilson-RG intertwining law on that same object.
+    The resulting actual constant can then be checked against
+    $C\,b^{\,3-\dmax}\leq1/3$.
+  \item \textbf{Which support recurrence the glue satisfies.}
+    \emph{Status: v14 asserts both branches of a now-proven dichotomy in
+    different places.} \emph{What settles it:} one paragraph identifying the
+    recurrence. If coarsen-then-thicken, the uniform bound is already a
+    theorem; if thicken-only, the $O(J)$ growth breaks uniform tree decay and
+    the step needs a new argument.
+  \item \textbf{The two-marked correlation identity.}
+    \emph{Status: missing.} The glue / back-propagation step requires a
+    \emph{two}-marked transport identity of the shape
+    $\langle A;\tau B\rangle_{\mu_0} = \langle QA;\tau' QB\rangle_{\mu_J}$;
+    v14 states the one-marked pushforward duality, and the two-marked version
+    does not follow from it (conditional expectations do not factor).
+    \emph{What settles it:} state it precisely and prove it, or carry it as an
+    explicit named assumption; once stated, its formalization is immediate.
+  \item \textbf{KP convergence at the stopping scale and Wilson-measure
+    reflection positivity.} \emph{Status: abstract results are classical; the
+    route-specific instantiation is open.} One must construct the actual
+    stopping-scale Wilson activities in the same norm, prove the KP criterion
+    uniformly, and verify reflection and boundary-limit compatibility for the
+    same Wilson family and RG kernels.
+  \item \textbf{The real RG map satisfies the recursion.}
+    \emph{Status: the central claimed content of v14's RG analysis; not
+    independently verified here.} Everything above shows the surrounding
+    machine is consistent and sharp; whether the actual Yang--Mills RG map, with
+    its actual constants, satisfies the two-source recursion inside the
+    $1/3$-threshold is the mathematical core of the route --- the one input
+    that is neither bookkeeping, nor a clarification, nor classical.
+\end{enumerate}
+
+Items (1), (2), (3), and (5) contain route-specific mathematics. The classical
+theorem statements in item (4) do not discharge their Wilson instantiation.
+The actual RG recursion and constructive-QFT promotion remain open, and the
+Yang--Mills mass gap remains open.
+
+\paragraph{Lean modules.}
+The results reported here are in
+\texttt{Mettapedia.QuantumTheory.YangMills.RGBootstrap} (the contraction
+predicate and knife-edge arithmetic),
+\texttt{Mettapedia.QuantumTheory.YangMills.RGCrux} (the even lower-extraction
+route obstruction),
+\texttt{Mettapedia.QuantumTheory.YangMills.FiniteOSReconstruction},
+\texttt{Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGap}, and
+\texttt{Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap} (the finite OS
+reconstruction and strong-coupling gaps), and
+\texttt{Mettapedia.QuantumTheory.YangMills.ProofState} (the continuum-open
+gating); and, from the second round,
+\texttt{RGBootstrapSlack} (two-source bootstrap and depth trichotomy),
+\texttt{ExtractionMajorant} (displayed-sum audit and generic majorant model),
+\texttt{WilsonBlockMajorant} (the concrete finite Wilson-polynomial realization),
+\texttt{ExtendedExtractionTransfer} (the range-only obstruction and explicit
+basis/dual-jet transfer theorem),
+\texttt{Dimension16WilsonExtractionCertificate} (the F.4/O.9 relation-policy
+mismatch, checked source transfer table, and obstructed as-written coordinate
+certificate),
+\texttt{WilsonPolymerRecombination} (norm-one union regrouping, the total-contact
+counterexample, and the rooted interpretation of $14$),
+\texttt{WilsonExtractionRecombinationConstant} (the two ledger calculations,
+analytic-factor obstructions, and conditional depth arithmetic),
+\texttt{SupportGrowth} (the recurrence dichotomy),
+\texttt{TransferGapClustering} and \texttt{Z2TransferClustering}
+(gap $\Leftrightarrow$ clustering and the discharged finite continuum gate),
+\texttt{ToyRGMap} (the dynamical realization and depth-15 escape), and
+\texttt{Q8StrongCouplingGap} / \texttt{Q8TransferClustering} (the non-abelian
+instance); and, from the third round,
+\texttt{SU2WilsonBlockPilot} (the exact $\mathrm{SU}(2)$ block, tree gauge,
+co-tree coordinates, and fixed-boundary Haar reference integral),
+\texttt{SU2CayleyHamiltonTruncationObstruction} (the intrinsic non-descent
+witness), \texttt{SU2MajorantRepairDecision} (the sealed truncation-repair
+decision), \texttt{SU2AssociatedGradedExtraction} /
+\texttt{SU2AssociatedGradedExtractionDecision} (the graded jet basis, its
+exact extraction constant, and the dimension separation from the schematic
+count), \texttt{SU2IndependentTraceBasis} (the one-plaquette normal form and
+its extraction constant), and \texttt{V14FDQuotientTransferNoGo} (the
+derivative-blindness and integration-by-parts/block obstructions and the
+uninhabited transfer sockets); and, from the fourth round,
+\texttt{V14BoundaryCochainComplex}, \texttt{V14BoundaryCochainExtraction}, and
+\texttt{V14BoundaryCochainBootstrap} (the derivative-aware boundary-cochain
+scaffold and its conditional arithmetic), together with
+\texttt{SU2LatticeFDCensusNoGo} (the exact hypercubic quartic witness and the
+off-shell/on-shell Lorentz-census no-go); and, from the fifth round,
+\texttt{V14HypercubicFDCensus} (the signed $H(4)$ action and finite raw
+surface), \texttt{V14HypercubicQuarticCensusCertificate} and
+\texttt{V14HypercubicQuarticBasis} (the complete unpadded Cartan quartic
+census, duals, and identity conditioning),
+\texttt{V14HypercubicQuarticWilsonBridge} (the exact Wilson coordinate vector
+and nonzero $O(4)$-artifact quotient class), and
+\texttt{V14HypercubicFDCensusPaddingNoGo} (the uninhabited faithful padded
+dimension-$16$ exact census); and, from our unpadded dimension-$16$
+construction, \texttt{HypercubicUnpaddedFDSyntax} (active dependent syntax),
+\texttt{HypercubicDimension16CartanCensus},
+\texttt{HypercubicDimension16CartanCertificate}, and
+\texttt{HypercubicDimension16CartanBasis} (the $1287$-monomial Cartan octic
+census, $17$ orbit coordinates, duals, and identity conditioning),
+\texttt{HypercubicWilsonSymanzikRestoration} and
+\texttt{HypercubicDimension16BoundarySymanzik} (the actual Wilson coordinate,
+classical $O(a^4)$ restoration bound, boundary lift, factor-one extraction,
+and conditional depth arithmetic), and
+\texttt{HypercubicRawFDCharacterCensus},
+\texttt{HypercubicRawFDCharacterCertificate}, and
+\texttt{HypercubicRawFDDimension16Census} (the complete raw $H(4)$ character
+certificate and exact active-carrier counts), together with
+\texttt{HypercubicDimension16CompressionCensus},
+\texttt{HypercubicDimension16CompressionReplayCertificate},
+\texttt{HypercubicDimension16CompressionSectorCertificate}, and
+\texttt{HypercubicDimension16CompressionSemanticBridge} (the fourteen-class
+cycle-index target, literal-group replay, exact Reynolds values, and
+class-average semantic bridge), together with
+\texttt{HypercubicDimension16ContextualQuotient} and
+\texttt{HypercubicDimension16OrbitCarrierBridge} (the exact contextual
+relation quotient and its equivariant identification with the finite
+field-label orbit carrier),
+\texttt{HypercubicDimension16PhysicalRelationOperator} (the off-shell/on-shell
+joint standard-relation operator, its rational $H(4)$ intertwining law, and
+its invariant range before and after contextual normalization), and
+\texttt{HypercubicDimension16PhysicalOrbitOperator} (the ordinary field-label
+quotient map, exact identification of its kernel with the explicit renaming
+rows, its signed $H(4)$ representation and intertwining law, and the descended
+physical-relation operator with invariant range), and
+\texttt{HypercubicDimension16PhysicalRelationBlocks} (the exact
+source/successor field-sector support and its descent through both quotient
+maps), and \texttt{HypercubicDimension16CovariantCompressionWall} (the
+explicit nonzero seven-to-eight commutator block and the resulting
+field-count block-diagonal obstruction),
+\texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
+contraction, field-relabel descent, and exact kernel theorems for the three
+implemented trace-relation families),
+\texttt{HypercubicDimension16SignedOrbitCoinvariants},
+\texttt{HypercubicDimension16TraceOrbitBasis}, and
+\texttt{HypercubicDimension16TraceRankTheorem} (the independently defined
+signed quotient, its checked orbit basis, and exact sparse row rank),
+\texttt{HypercubicDimension16PhysicalTraceWitnessBridge},
+\texttt{HypercubicDimension16PhysicalTraceEvaluationCertificate}, and
+\texttt{HypercubicDimension16PhysicalTraceEvaluationReynolds} (literal-row
+semantics, the exact $98\times98$ inverse, and genuine Reynolds
+normalization), and
+\texttt{HypercubicDimension16PhysicalTraceQuotient},
+\texttt{HypercubicDimension16PhysicalTracePublicConditioning}, and
+\texttt{HypercubicDimension16TraceEvaluationBootstrap} (the complete
+derivative-free standard trace quotient, exact public duals, sharp
+conditioning, and conditional depth arithmetic), and
+\texttt{WeightedOrbitBurnside} with
+\texttt{HypercubicDimension16OrbitCharacter} (the general weighted quotient
+identity and its specialization to the actual signed orbit character),
+together with \texttt{HypercubicDimension16LocalLetterCharacter} and
+\texttt{HypercubicDimension16CycleSeedCharacter} (the exact local cycle
+factor and its dependent derivative-degree convolution), and
+\texttt{HypercubicDimension16CycleFamilyCharacter} (the one-cycle fixed-family
+equivalence and exact tensor-sign product), together with
+\texttt{HypercubicDimension16FixedCycleFamilyCarrier} (the dependent
+positive-cycle-list assembly and exact residual-degree character), and
+\texttt{HypercubicDimension16CycleBlockDecoration} (the concrete disjoint-cycle
+permutation, fixed-decoration equivalence, and signed character identity),
+together with \texttt{HypercubicDimension16PermutationDecorationTransport},
+\texttt{HypercubicDimension16PermutationFixedSector},
+\texttt{HypercubicDimension16PermutationConjugacy},
+\texttt{HypercubicDimension16PartitionRepresentatives}, and
+\texttt{HypercubicDimension16ConjugacyCompression} (transport to arbitrary
+field permutations, exact partition representatives, conjugacy-fiber
+regrouping, factorial cancellation, and equality with the actual orbit
+character) --- all
+in the same namespace,
+all axiom-guarded
+to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
+no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
+\emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
+Reconstruction} (v14); constructions explicitly labeled ours are independent
+formal repairs or tests, not claims about content already present in that
+manuscript.
+
+\end{document}
