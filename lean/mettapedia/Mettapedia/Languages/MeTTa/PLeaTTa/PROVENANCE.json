@@ -1,0 +1,1530 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/godelclaw/LeaTTa",
+  "revision": "ff1cd945890571905d1e8083d52b84a2df0205b4",
+  "license": "Apache-2.0",
+  "namespace": "Mettapedia.Languages.MeTTa.PLeaTTa",
+  "compatibility_target": "PeTTa 6b7f52f064bdbc82fabd0a0998404121fb01d52e",
+  "source_profile": "Owned historical PeTTa/LeaTTa source profile; independent of the evolving external interpreter",
+  "files": [
+    {
+      "source": "PLeaTTa/Builtins.lean",
+      "source_sha256": "aaf449537ac987ff9d8c9270c0516e09276cf01ec6821ccc407a994dd629243e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Builtins",
+      "initial_sha256": "98ee691babe8d25eacf85c581e7bd9b4624f597d0d5e1118ff04b70ade3986b8"
+    },
+    {
+      "source": "PLeaTTa/Chain.lean",
+      "source_sha256": "c4560d0de6f6a173d569a03ecc0c0ab27a24eb8836526de22aceb3ddbf6ec851",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Chain",
+      "initial_sha256": "b3e254659af61be273b853d54d6a0e42da25517573c8c36cef5f43def844d656"
+    },
+    {
+      "source": "PLeaTTa/Compile.lean",
+      "source_sha256": "66f6290ee41d47686e0df1a567f4b749bb00a27e3cafbd5a6b5bcae03f508690",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Compile",
+      "initial_sha256": "7fd671e188de06999ef3efdffcbf732f80b3afb7739e03fc64d8e6267bdd54ca"
+    },
+    {
+      "source": "PLeaTTa/CompilerFreshnessRegression.lean",
+      "source_sha256": "a2fc17e8f0eff268a63c503057e375fb6a8009433fba262c8ef2391c866c7b59",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.CompilerFreshnessRegression",
+      "initial_sha256": "2f167b6aa58118ba997dd46509705fe788bdb81b7317ee1a896f7ba0cbcec81d"
+    },
+    {
+      "source": "PLeaTTa/CompilerSuperposeRegression.lean",
+      "source_sha256": "0c9f439c7cb00731cb82259ffb239729558b3718165557a91ef3115108ff1b58",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.CompilerSuperposeRegression",
+      "initial_sha256": "e428f3af7bb4eebadd1b1fd492418e282f51bb06092740a4bedb67ec3b12f160"
+    },
+    {
+      "source": "PLeaTTa/HostMachine.lean",
+      "source_sha256": "7d57ecce702d71c048044263a7489be741922b879dcc005d16ae5942201fcc4e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostMachine",
+      "initial_sha256": "2555d83fc7d9617a45932baca19f4c0e8f6f820e20d6dd14fa41111fbb4c70ed"
+    },
+    {
+      "source": "PLeaTTa/HostProtocol.lean",
+      "source_sha256": "c8304782cb58458cb254878c8d19c7af3aaae622104dd892f8ead687e644d881",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostProtocol",
+      "initial_sha256": "999822b6f46f0a6e3269aff740cfeaf08c661cd528a76db0cc51114a5c7c9695"
+    },
+    {
+      "source": "PLeaTTa/HostProvenance.lean",
+      "source_sha256": "f7150cb8fdfe9b149b0d72fed825c8dd4f56fdf57262c18a7e50ecadb983e682",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostProvenance",
+      "initial_sha256": "ee8ff9f3bb8146fb948f0c4168716d177893827c1f710fb466ef2f60bf333e56"
+    },
+    {
+      "source": "PLeaTTa/HostProvenanceRegression.lean",
+      "source_sha256": "5c603b890740342f4ecf33b430777466e744ea857273f934f5c904a32541d6c0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostProvenanceRegression",
+      "initial_sha256": "741a46d6468ae70a85e5f8cd468354ff53507b73f8bd63d9396edbec63cca52d"
+    },
+    {
+      "source": "PLeaTTa/HostRegression.lean",
+      "source_sha256": "cf2176dbfbd171a96001bf3dad692ce71c33d33bfb3abf45d9cb648b1be73c8d",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostRegression",
+      "initial_sha256": "00ebba54f811e6c3e58b12ae34a39ebf8e3628b333e7a095c1f05d4ba9c24b36"
+    },
+    {
+      "source": "PLeaTTa/HostReplay.lean",
+      "source_sha256": "7a9f780cb88de266f48c06e5b7f4a86c1cfd94ca6c3208cdcd4855fe317e99e2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostReplay",
+      "initial_sha256": "05f13268e5ba65805690d0aaf1b7b28d9295405ac682f2f185eb61eef82dee55"
+    },
+    {
+      "source": "PLeaTTa/HostRunner.lean",
+      "source_sha256": "a440532c5ebd3cf1d98097b8f8d0323c8f1710487fc0ffe61a51dd4b8c56405b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.HostRunner",
+      "initial_sha256": "149955456649e3cfe06e828f687b396e02dbd10aab94cbe2f9e0e0cbb2fd95a1"
+    },
+    {
+      "source": "PLeaTTa/Machine.lean",
+      "source_sha256": "fbea5457517feed4c273bd35d50973ab0693c8f70bf20485ae34bd755f2f3537",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Machine",
+      "initial_sha256": "5f46d6418cc2b215608dee052dc25d97d26bca4f10bc66bf2488bbd5f1e024d4"
+    },
+    {
+      "source": "PLeaTTa/OrderedIndex.lean",
+      "source_sha256": "81e6ddf2a50d72f4d5b1f7ed65c72ebdcb0ac20ec2b3097dcea5e03ae4f44846",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.OrderedIndex",
+      "initial_sha256": "1b7c4035ce1aa7bd32888f0ffc9f5aeb051a29b2c80354ac140325b8f834f5be"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/OpenOrdered.lean",
+      "source_sha256": "457482cb64e0062f3183c8251e01aae86ec3454e5f8b3b5bcc7a7bcc658dd161",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.OpenOrdered",
+      "initial_sha256": "272604811de76e62b10a5d5ae8a13c504d3a9eeb6ea6db5d7574dd8facde45c9"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/OpenSubstitution.lean",
+      "source_sha256": "e681abc3cdcf851f4d1ff970a81ba892e079d7037a5a68a74359925fd58c7a56",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.OpenSubstitution",
+      "initial_sha256": "6155eff72553067a96ec318100dd4f4b094bbaf929076af5d7649d179008666c"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologCopy.lean",
+      "source_sha256": "4a20d2617c3c6afb80004766ee5571339aaea9620cf591d570d0d86c6f0c74aa",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologCopy",
+      "initial_sha256": "721f4905e9c1105312490ad2400bbe4505d96433acc8d29765b8ab02f619f00d"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologCore.lean",
+      "source_sha256": "341a288728f4385dfc59b5f9f7f1167a662e89149fb0173c9e49282f155421f0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologCore",
+      "initial_sha256": "77daba7c24ca76ba01e96f02dee567aec38cdf0111622e3753060e75edddb340"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologDatabaseActions.lean",
+      "source_sha256": "2ad5c367883aba510713e470cb9cfc96e98ceb541a3551449ddf9ddb6a0f1524",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologDatabaseActions",
+      "initial_sha256": "d8b00d060b9ab282e8578a9b67f8664ae4f98f3bdbf828ef6aef3935b2a179ed"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologGoalSemantics.lean",
+      "source_sha256": "52ee55ef20935a2714ed2a7630e4451ad856b5b0a8e954d7edb576f2512fc662",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologGoalSemantics",
+      "initial_sha256": "afa378f381b08a3939e189372028611083f318b7e6f4ed9645754f0bcd8198db"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologMgu.lean",
+      "source_sha256": "75985862b874d7b9d5e686555f8058e00b08bb648777f29880d5dd54b1f17f6c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologMgu",
+      "initial_sha256": "2553ccbf3fd5c9d17131956a6ebe518c2d7e77eabc91872118bd4ec507574a54"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologResolver.lean",
+      "source_sha256": "0d3dd78bc114ca5b312df88871b218dc3b43b7310a4f66cf8bd925e03e6fd92d",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologResolver",
+      "initial_sha256": "184e7f284d0a8102211816fe65e781ce8f555cddd8314dc316a95c12a5d1fc30"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologSemantics.lean",
+      "source_sha256": "c8829e2c8e05210d3c73bf43060ecc344612f5079e3e82a7166073cdfd123721",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologSemantics",
+      "initial_sha256": "cf52440bd3f489b3a470dd6c999ccdefac7188d7f4dcc8d7007e0b7937f5abac"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologTermAlgebra.lean",
+      "source_sha256": "097d4a6de90562f6f2aa0730b5d479f506391e38cec6cf598045f7f95fc13eae",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologTermAlgebra",
+      "initial_sha256": "b2919774ae6cbb7a9456bcb3553351a0aa87d66a50a9cc7eaeb931b18d2f68c2"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/PrologTraceSemantics.lean",
+      "source_sha256": "5775b6a9f6b12e6719846d47bf46fb8a4259c9be3ab0b14a98871c807a87c0ef",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.PrologTraceSemantics",
+      "initial_sha256": "c169cc8eb24e67ad17b3c479b3813130061079048530dac2f012e76442d564ae"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/Reader.lean",
+      "source_sha256": "f1b2e19f8d7ad335be0a974aa293d891f6a69aec904aa37312919e2de732df7a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.Reader",
+      "initial_sha256": "4dbb73abf0a20b7fa3ccc1dd4cba7976fb92f147779e484ba20a48923ee9ff91"
+    },
+    {
+      "source": "PLeaTTa/PeTTaSpec/TypedSharedResult.lean",
+      "source_sha256": "db51248b07448fe7f48fdacad455245bbf005fa51d48f51ae94e8915b07f0ece",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaSpec.TypedSharedResult",
+      "initial_sha256": "3277f2fdd9016a568b967f0aa969569ce8b5b972668164226bf52106dbf21845"
+    },
+    {
+      "source": "PLeaTTa/PeTTaUnification.lean",
+      "source_sha256": "d3c48f8ec538324c56602d6c0187bf8dcdaa4fc73393598f607d23e69420000d",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PeTTaUnification",
+      "initial_sha256": "2b12af391dceef57183d0047a7ebcfb7c1e004d5b607083663f2b0dd74e11687"
+    },
+    {
+      "source": "PLeaTTa/PersistentSubst.lean",
+      "source_sha256": "05fbb0a452f6320f1bf9ca1c462336b2adcfb585fd5cdbe2b47472ef24fb0740",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PersistentSubst",
+      "initial_sha256": "685573a8efe161c9842d9af1f455c76ab3784ee0f73004d0166d0dca867f2b57"
+    },
+    {
+      "source": "PLeaTTa/PersistentSubstCore.lean",
+      "source_sha256": "6f98d959082d6244d780198ccfc981ac886e29788268ea495422cda7b76e28d8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PersistentSubstCore",
+      "initial_sha256": "0306e29d1a6b3cb71d00c0a911d1fa9187076c04657792a49dfca2be68476edd"
+    },
+    {
+      "source": "PLeaTTa/PrologFloat.lean",
+      "source_sha256": "fe6049d6964b4999d456de847ba3fad751d60d3a5aee7a761b88ec2268038236",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PrologFloat",
+      "initial_sha256": "b03cf6e19b8a36d3d8b1e1332294b99bc37f5cbc291f51e7a1671ae55a0c851e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/AxiomAudit.lean",
+      "source_sha256": "7ac9b857120db86b6c4b21b2147916f4c0e92a5c0af32bf4d10073a6df6591bf",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.AxiomAudit",
+      "initial_sha256": "b1ea031c96a33b90ead015cf4208d936b28560536c2d9c64eb621bf3aad9a453"
+    },
+    {
+      "source": "PLeaTTa/Proofs/BarrierCache.lean",
+      "source_sha256": "e0f8978efdbf04e1fb52346aaab11710e48da0df4e8c51acafec648004b7d4d7",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.BarrierCache",
+      "initial_sha256": "7a8520c1e2ffbd9223493a62cff35e3bc4c166bee439815308b0ca912a819419"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerAdequacy.lean",
+      "source_sha256": "9b53e75bd9ec46bc4a8be9d57ad630abe49882a10f50b8346cc84a73467675ca",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerAdequacy",
+      "initial_sha256": "c72684ba7c5bbb17fcc0714f2b9403159f51074681fae023646ae87da10e9d14"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerAliasFinalizationAdequacy.lean",
+      "source_sha256": "ca8fae523625888240fa71f936f56f9d0bd91d466feedf9668e31850c854604a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerAliasFinalizationAdequacy",
+      "initial_sha256": "93662c0fe8818b891bec5df588983f4211a1f333dbebab904e0b558915f64c25"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerCounter.lean",
+      "source_sha256": "756cc63ceb24538de0508b2ed03983304198e053cc36d0a620e0ad4b27500140",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerCounter",
+      "initial_sha256": "d257b3380492eef6d0c120b89364eb44a08f96d8896a93eb356b143180d53bbe"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerDesugaring.lean",
+      "source_sha256": "e2bc32c42f6eadcd9724174bc14bc79b804f3f0d7b7a7a8c33a98e5b7d460f46",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerDesugaring",
+      "initial_sha256": "e462eb1a7222b0e64b29473a328d9a1812844fd82042ca40581db13051143435"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerFinalization.lean",
+      "source_sha256": "f83975b8881f1784eb7091c689de3b1cb33ba375932d65dd1eba3bfcb6fc0ef2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerFinalization",
+      "initial_sha256": "034e94b3ae3fd5582d41e93827754c91332a70bbd0f0b5c8dd251c319a5862a7"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerFreshness.lean",
+      "source_sha256": "2304f33987c056e744013689e83301004e0bd9ea83646a1575d7fb51cedb3766",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerFreshness",
+      "initial_sha256": "8ad10492479927eedeec0da5d83b929720d2af3c6e1f4aae7bd53ddec4516bc3"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerFuel.lean",
+      "source_sha256": "31f3fa2c7fef36d95dca12e07c736a16c19eda42772aa6f71e638bdcc69ff9dd",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerFuel",
+      "initial_sha256": "e3fc02eed51e91dd3d0d6756c0d4209012ee1da150399c1718e085deae98c771"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerGeneratedNames.lean",
+      "source_sha256": "ac417fcb382291059d5b70149df621e251f6219de92b81f1f19363b6543a7e99",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerGeneratedNames",
+      "initial_sha256": "2d2a69a4ea225c2025f66a2ca17b36ec29853cef7902e2c9808d293700676d5c"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerGoalSubstitutionAdequacy.lean",
+      "source_sha256": "530955da799cfa23b5416690fd1b6308a45f97c7ec44687bd5a55521ae82b8f8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerGoalSubstitutionAdequacy",
+      "initial_sha256": "89de52d34d21b042eca4e66c577edd664324ed797ae001fecf6405b4037f83c5"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerProgramDesugaring.lean",
+      "source_sha256": "9360eea7d2a39e413a04afbba7b9792b67bd07e076e0792abea5ec83c57e4ae7",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerProgramDesugaring",
+      "initial_sha256": "f0a1815476bf6a835271e40549f455c8833250090c7d9597f23be6ff4df88271"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerSubstitutionAdequacy.lean",
+      "source_sha256": "69217ed6c75132c76781ff47c29b213c37d9a40a80ad3a0cdaf2fe22d0cf3b2f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerSubstitutionAdequacy",
+      "initial_sha256": "b90046a5dc17454229bd266a6b7003de20697b018870fce16c5a36385fa68099"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerTranslationSupportAdequacy.lean",
+      "source_sha256": "96243bfa88601971fcc6187ab72a002409dd8bd4e6b914f4133b1dcdf69e07a8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerTranslationSupportAdequacy",
+      "initial_sha256": "1b0e116fbdda107e0e489ee47a80d967d956b8e77f042670aa1fd9d045e80c9b"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerTypeCollectionAdequacy.lean",
+      "source_sha256": "f7a2c78773410a23cc967464beb1be1f8e8be04b29583bf3dd6b06b551e0f9b0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerTypeCollectionAdequacy",
+      "initial_sha256": "f8f566471997b0fc71e229c17eeca09b3fef6d54072f08d25c5f6ccbba88338b"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerTypeFreshening.lean",
+      "source_sha256": "5de3c4bc52ec9f258c71256ed849da59fc26350e0850e1e3753c2fc610a044eb",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerTypeFreshening",
+      "initial_sha256": "ceeae7dc98f59a0d8e7a4dddb80bda6c7e8901901bbd137c3ea29c2d9a389cde"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerTypedBranchAdequacy.lean",
+      "source_sha256": "085ae6547ace02d9e01ee67854014a3b07571ec3887aa7398e26f884e769d073",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerTypedBranchAdequacy",
+      "initial_sha256": "d1d10411a10a0f53508260a4e04cb01f5d4021abfbf7113d1090dcc65eb6b2da"
+    },
+    {
+      "source": "PLeaTTa/Proofs/CompilerTypedSharedResultAdequacy.lean",
+      "source_sha256": "21e485df5561d67ba54fb3ae37144800bd2e6a29afb922e2e89a41063b5ef608",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.CompilerTypedSharedResultAdequacy",
+      "initial_sha256": "a796361340117d7168f6506599cc7a0ab68e8b03d3a7122d24ec0c29c2dc65c0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/DemandDrivenCallStep.lean",
+      "source_sha256": "7820e368d5d3bf38fbc5e97152e562ff0ff499dc878c71338f37e92de1039011",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.DemandDrivenCallStep",
+      "initial_sha256": "c115949207bf4b858167390e3731b671099f7e139e45e94704e3bc1881ccc7a1"
+    },
+    {
+      "source": "PLeaTTa/Proofs/DemandDrivenStep.lean",
+      "source_sha256": "0a6f1db418e4ff2155aee99c67a6df752716abcddc8495f33e93d5517147cd85",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.DemandDrivenStep",
+      "initial_sha256": "e1b363279f02d591c0eb92449771d13693d11589cceaa3264dd260582df15256"
+    },
+    {
+      "source": "PLeaTTa/Proofs/FindallCopy.lean",
+      "source_sha256": "b639e585e62bad480e909d9950dc6ba3e9b11f560e0333cb3cc1b4a32ebb303c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.FindallCopy",
+      "initial_sha256": "63bf8c1c1c22ebc9ee2e06a466441474d84079ee2ef674d5efbd7be7e301cf70"
+    },
+    {
+      "source": "PLeaTTa/Proofs/HostProvenance.lean",
+      "source_sha256": "a3c9696d505c39f6477b7c8f65145d5d4622c7418ef964b8344f937e74ebfdf0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.HostProvenance",
+      "initial_sha256": "266661b94ff5d7c80ba5cb149c5196e7357551c58a21cc753be0496dc20786a7"
+    },
+    {
+      "source": "PLeaTTa/Proofs/ObservationAgreement.lean",
+      "source_sha256": "efa508dbf614819ebdf07a3597fcffc3d1d726282b7bd5351cc66972b772aa80",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.ObservationAgreement",
+      "initial_sha256": "e6b981de39ae30e45ef6598bba054408f07cd801ab6f4d87afdc2c1962a7ccee"
+    },
+    {
+      "source": "PLeaTTa/Proofs/OpenBindingAgreement.lean",
+      "source_sha256": "dee94d2bf28f3411e3e277e64060b64595629d9a269a8bd74659ef9b1b8a85d5",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.OpenBindingAgreement",
+      "initial_sha256": "123df72a826732d4f2ccf7e8293686601b0b6627d92842c54d50ee62b7c4cb48"
+    },
+    {
+      "source": "PLeaTTa/Proofs/OpenOrderedStep.lean",
+      "source_sha256": "dc7ba3c80f7d149eeaea4647ce3d50621037f7a29869723c7aaaf9ef1fd42fdd",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.OpenOrderedStep",
+      "initial_sha256": "f662a7fb82e48a0f216b044a576f1b40125135143213408973ccaa16ef5e7b9d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PettaClawHistory.lean",
+      "source_sha256": "44ca277e99a56b5af5b7d560dc12a15ba6f77a5f1a3f3280ae234470727cbbb4",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PettaClawHistory",
+      "initial_sha256": "b635bf703d82d9eb8ea43aae16154bd0026decdf5f43298c1fe9167271035480"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PredicateAdequacy.lean",
+      "source_sha256": "1bc5d39989cafd5343473740819cb23e23c196fa49105807ee167641bc9a3f5c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PredicateAdequacy",
+      "initial_sha256": "08099f0b1c5174eed4d47505bcdb258fadd46278c2c094799ba2df26ddd83c68"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologActivatedProductStepBridge.lean",
+      "source_sha256": "e04eb31e2b4b2285ce016283897714698d053afc9ec65472a240cc5d8ac3e016",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologActivatedProductStepBridge",
+      "initial_sha256": "f1d8eb170989d289132ae540c3c9e9a55b4f00a41b83d7f74c8904a0da6b7439"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologActivationBridge.lean",
+      "source_sha256": "bbc257eed5c7ec385e61b39485a406c0ae2fe0eb83bce56945171eef6d46c139",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologActivationBridge",
+      "initial_sha256": "2eea0e9a5a15377d8ad691fab55ce0b990e405f502f20de18de25656a1606121"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologActivationFailureBridge.lean",
+      "source_sha256": "c404eb26222e012a80a27ab840018741689957e5bdc43933a10c2764d99e7bb4",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologActivationFailureBridge",
+      "initial_sha256": "61ea92d64e3a0ae78b65aced7005b44f50ba0eb39be0354a11046b68161518cb"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologActivationMacro.lean",
+      "source_sha256": "12497d35c7eb551c0b8348b9cc477cdb0f9415998056630784347c103abe1995",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologActivationMacro",
+      "initial_sha256": "cd34012e207ca1c003208443504c6c82ab03dbea4a4d1fff8128a300b8621d3d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologActivationUnifierBridge.lean",
+      "source_sha256": "1278b8a89a51e45e1e4cebeb94bfe0facb4cd0b084532a826e6f1b27e3e8324b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologActivationUnifierBridge",
+      "initial_sha256": "d12bb33e5aca58c390122355077720d00ba0d257a5182b168e9b28d7e010cf45"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologActiveControlContextBridge.lean",
+      "source_sha256": "4273cf7aa2fe708c93ce367e049f77f3b9878d59a77791277d1a5ac893b06e12",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologActiveControlContextBridge",
+      "initial_sha256": "fa5e81fd136a3fcf1ab29fb23df03fd9a3f02245aa712f2e482d15b016508a0a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAlphaFreshFrontierBridge.lean",
+      "source_sha256": "744018204743b84f6c3661c90abb153088349462729274b8521d1033ca832309",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAlphaFreshFrontierBridge",
+      "initial_sha256": "ca134e5dc974bb6a2a4d3fd3b700fbc4d71984f9e0c82b8b1069310e6e5ff415"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAltBankCharacterization.lean",
+      "source_sha256": "d221bf9a88935becc7e22b2580fed15bee7761b656312dbdac783260669824b6",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAltBankCharacterization",
+      "initial_sha256": "1a92121154d60c2093bdcdb962188c7db1f9320c8c6d3eb704e68cca9622eced"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerOriginBridge.lean",
+      "source_sha256": "91c8849f1d8add7cc453909aec313e0fbefce28df42455c6100b48988a861304",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerOriginBridge",
+      "initial_sha256": "4ea302b4f7baa9af851742109dc5b21a3e2e42d3c7e6a729a3470bb1439866cd"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerPullClassificationBridge.lean",
+      "source_sha256": "416817d5fab76a0ff8ed08307713824528872bdebc167abbd371e3959ed1df6c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerPullClassificationBridge",
+      "initial_sha256": "49e92efae8472645ab609752197f8a0fcebbf9adbead0e6bc9c462bca7f86409"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerResourceBridge.lean",
+      "source_sha256": "9a099e7998269b6e9a2118becc4600a523f22a5b80d88072ebd48f5a6a4edfbb",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerResourceBridge",
+      "initial_sha256": "24474e85fc30593927a7689e6895b8d0cb8ed522293eb500afa9121c4b957d3a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerSelectedHeadOffsetBridge.lean",
+      "source_sha256": "952fc8cec3f61b4f2ad8ec647b0682f8d6ffcba7760bad760770e3a9253dfd7c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerSelectedHeadOffsetBridge",
+      "initial_sha256": "4ac298d6ec48395ad4f9bce916231105721ed539f1b8fb6c590dc4d18fb6e578"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerSourceCatchupBridge.lean",
+      "source_sha256": "76478ef33dab8c88bb9d6b2250f0cbc4992642452f60deb3d062a1412085904f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerSourceCatchupBridge",
+      "initial_sha256": "b19e082f37e1116dbbfe3779771e6fe9f584ca46bbbdd57c03c67857ff7faaf5"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerValueBridge.lean",
+      "source_sha256": "3d14fcd6a1b2da159dacc3ed6b1f25fec34b8cae4cf9eaaaab3af3a964efa904",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerValueBridge",
+      "initial_sha256": "34b84f4a16becb16d37876158edbd30eb5c2c72e5a4335e2eed807ddfee4217a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologAnswerVisibilityBridge.lean",
+      "source_sha256": "b64d4d65b5cc7f82c4eb5cd20b1ee6fd25c56599a1413d493d94a676e5363028",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerVisibilityBridge",
+      "initial_sha256": "e5d82f4ab2b4371598c2b85d21b5cf2f4a3e7e45519e39fd8cfc31f1ee9e4c2d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologBodyFailureBacktrackingBridge.lean",
+      "source_sha256": "3e3d67e01d9c696c413e01441ff1316fff0be054a17acc7e386a7270107a3a0b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBodyFailureBacktrackingBridge",
+      "initial_sha256": "57e1e6fdc01298fdb77b04e947a1f1ccf822e56fa209dedbede813afdba86c49"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologBodyFailureExhaustedResourceTransitionBridge.lean",
+      "source_sha256": "68b39e17a92883501933916e66617861fb423ca5b2878d8d049dc811a44d7ec0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBodyFailureExhaustedResourceTransitionBridge",
+      "initial_sha256": "be1062a308fae49bc30a28272ad54d5a59e13b6f6fb5e1a04a0731a1b08dbe43"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologBodyFailureOuterResourceActivationBridge.lean",
+      "source_sha256": "d142fd27a1c03cfb0ccb22a96f86549549a7bd5c5826314d1eec44f851a32639",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBodyFailureOuterResourceActivationBridge",
+      "initial_sha256": "25b01c685bea9c6351a4e286ea55f8cce6cf1671815be45f43eb4c1036d410db"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologBodyFailureOuterResourceCatchupBridge.lean",
+      "source_sha256": "e1339384f68ed51b5648dc02d514b3208593a24ff10db80f618f8d228f9cce52",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBodyFailureOuterResourceCatchupBridge",
+      "initial_sha256": "52f564905e1dfb885e91a92f21fe5c5dc9ff00ba80b0015caeb26b97fe1f358c"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologBodyFailureResourceTransitionBridge.lean",
+      "source_sha256": "82deae45c4611bbc279265810d25442bb1a07d1822aea5e80b4e9cc214d5dd7f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBodyFailureResourceTransitionBridge",
+      "initial_sha256": "451b47c5a5a088dd0f1596d0e08bfa776654dd9bec29e4f6abff3c3c8306c5da"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologBooleanAliasSafety.lean",
+      "source_sha256": "1109ed781d59a8cd9edfaa5eb28fb7bbe04d4a62450f0441710bef5f0952b764",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBooleanAliasSafety",
+      "initial_sha256": "66cddb9f9062c327d4cdcd094e981d5cd5b883eacaaf4b4831edf0b7eacc11ce"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCallEntryBridge.lean",
+      "source_sha256": "a071a0eb0e4d701594e831bce851ed37880923357f553be67b9fa55070d0f145",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCallEntryBridge",
+      "initial_sha256": "8816b1d2c616ef71373a78e9c1b17287d64d13525bc3399e3f7d6fa46cf9f062"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCallPayloadBridge.lean",
+      "source_sha256": "a8d365797ec543a7c5e9c4a7d598a8c72c342993dacc2f1177111b5b44d6588f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCallPayloadBridge",
+      "initial_sha256": "80c3c019f33bb9f84953ca42eccb34d2885705253152a203fda6fcf0ca495ed2"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCallStepBridge.lean",
+      "source_sha256": "647970eb0c5e35320c2a04643c1919cceff0c52806b822c3956a2118b12fbdc6",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCallStepBridge",
+      "initial_sha256": "0ed3e1e44cc43ba0f176b3b0ff9782f9df064b68c3b47861b692a132b3166db1"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCanonicalMguSimulation.lean",
+      "source_sha256": "17d3aab5cef94f0369f45511b31740f50d5130ba0f1d6d183792b41a003b2c58",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCanonicalMguSimulation",
+      "initial_sha256": "8f95573346a4441b2a820f5f935927faf29e856b28b5a933e2cbda306e2210b6"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCanonicalRuntimeReading.lean",
+      "source_sha256": "7cbd8ac694054c411ffea86a4f2e7a0e69695794eb22ffebe9174a93c9b8004f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCanonicalRuntimeReading",
+      "initial_sha256": "50889dff742571f672eac55cb740fe9123144896be20373d44ba2fb08504a4e2"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCollectionBoundedProductBridge.lean",
+      "source_sha256": "9c956f5fed676dff6526f2b7394e6b45bd977eff74954f6eb231b49215e7b7d1",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCollectionBoundedProductBridge",
+      "initial_sha256": "23aeac42fcb40bd7072a0ce5ad2a28c08bed876bee8128ff54e795809073e329"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCommittedScheduledFirstLiveRegression.lean",
+      "source_sha256": "327565f03521d9b333b22947ecb7dd711d006e30a4120b29a9a945a365f35b2b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCommittedScheduledFirstLiveRegression",
+      "initial_sha256": "81c6ea75711878decbeb7f938c21b8d49105d02c6c881dcdf971d70464d75e66"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCommittedScheduledOuterCatchupBridge.lean",
+      "source_sha256": "f2eb6f8794482be76af053164315ccd84738f1967d16580387effc204b6c4333",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCommittedScheduledOuterCatchupBridge",
+      "initial_sha256": "4a336bd134f91d0f5bc03beb7d9130307deccf0e250ff7fda19a7aad759c21b4"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCommittedScheduledOuterCatchupRegression.lean",
+      "source_sha256": "f82bd6ecd02d39598a3c9da28b6f71c84e14931f6e3012a40ca60f15280f3cb6",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCommittedScheduledOuterCatchupRegression",
+      "initial_sha256": "1849fa0309d9a2ccff992e3385c3490016cb8dbe23df35f6ce66d5e00cd76afa"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCommittedScheduledOuterTraceRegression.lean",
+      "source_sha256": "ba8005392f487b9785b50642fd6feb5c6b73db865651cf6920bc41179bccdec8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCommittedScheduledOuterTraceRegression",
+      "initial_sha256": "35f44fc40b51dd193b48c3551e5baf03053ee7eec5c8f55f2d6cdcb7f2df465d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCommittedScheduledTerminalBridge.lean",
+      "source_sha256": "89bd49d13681505a75a6cda1a6df4f9f39fec30a9996e2afd4afc5c4ec3baa2d",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCommittedScheduledTerminalBridge",
+      "initial_sha256": "623eb330300d366b258d17277db6ce8ed87e57713816fcb27c1038601708a018"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologControlSegmentSpineBridge.lean",
+      "source_sha256": "2e94819147c180436179a6c2cf5c93469da7bdf0b3b12c3ddf8d54dca38a3fa3",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologControlSegmentSpineBridge",
+      "initial_sha256": "f78790b9629deb641a649bcae308d6a34122c0ccb0b97b8f9e9f351f1204c16c"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCoreAdequacy.lean",
+      "source_sha256": "aa6f07615009f38dc2658263b2de17ae4fad53707174455ff96b4b9f4a8f7a97",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCoreAdequacy",
+      "initial_sha256": "8ac6d22c614ea58101326514792cdb31b1f9220c7654eba3c0e17a01b3ebf164"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionAdministrativeTransitionBridge.lean",
+      "source_sha256": "9e442defd5c9a6cd7be1232772336d714b5d0e80888ea2b530bc3e626c98f9ad",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionAdministrativeTransitionBridge",
+      "initial_sha256": "15ea855b96b26e32eaa426d9b135478dc1592f94c473f57725a9daa0d5a33408"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionAssertionFailureTransitionBridge.lean",
+      "source_sha256": "9ef4a88dfc16051ea1249da703b40ff1233d0b04b48f3cc9edda7f080f49fae6",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionAssertionFailureTransitionBridge",
+      "initial_sha256": "11ccce1d562a3780de5226772bd77e4efb86e6ddf04e2138907f42eecd9e3dc2"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionAssertionTransitionBridge.lean",
+      "source_sha256": "f83292959101a1bb000be45b3cb734a988d30a349818acc96bb5484c5aed44e5",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionAssertionTransitionBridge",
+      "initial_sha256": "6b6d6503b1d5aa0204ea7c6d82bfcb84a80c94894be01a5981d5045bdce5df4d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionExhaustedPayloadCatchupBridge.lean",
+      "source_sha256": "1d3d96ed574ceae3d0695f25e1a49e625108f8c878029d35afc07a14a36d5393",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionExhaustedPayloadCatchupBridge",
+      "initial_sha256": "0ec641170342db9bb633b8f3382855aa79c889c05c46392c457bc90c0863aa3f"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionFailurePayloadTransitionBridge.lean",
+      "source_sha256": "a050173eccd7ac676c0cc33a0aa4409b150109404ce13b1d082a560b21acab2f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionFailurePayloadTransitionBridge",
+      "initial_sha256": "7b3ff092b903899cd489979ac7bb0ee1acb4df924493542f3698e17eea9e3958"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionPayloadBridge.lean",
+      "source_sha256": "e59493a7dc0708c0a6f34efdf329a4affe7284f10b3f017e3b591857ce43e09e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionPayloadBridge",
+      "initial_sha256": "dd4c563ffe9ccecd512486dd553eca64b64867ea9231731f0cad942eb6d682d0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionPayloadTransitionBridge.lean",
+      "source_sha256": "1e1fd02f84d42da6eb1dc8f81c5173288a53e44749b3d44d062940080def2201",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionPayloadTransitionBridge",
+      "initial_sha256": "8d5679f337c6743ef65d53daa12312f812db4db864fdf435a6c74302a7e79fab"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionPostFailureActivationBridge.lean",
+      "source_sha256": "4f5931bcf27210fae1860bc407640791201449635dd51513322387a696f102b2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionPostFailureActivationBridge",
+      "initial_sha256": "f4cd61ee76d58ae1940b930a417ace7cc51791a4db095b64ea5b133d4975927f"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCurrentSessionUnifyTransitionBridge.lean",
+      "source_sha256": "f808ec979d5e752f0940ac949632aca2dbb0529de7eb7c81a73b5618a8420f34",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionUnifyTransitionBridge",
+      "initial_sha256": "fd7120941f359c84c03ecffbd0708fa3f980af4b9ec2b09b165c65c0e6c874dc"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologCursorAlternativeBridge.lean",
+      "source_sha256": "493b7769168e4708ce0980861d5f7245451229ca8d4f027dbcd7c728834b1085",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCursorAlternativeBridge",
+      "initial_sha256": "15db3a6eb27e5d8182897ad082d0da508f749cd8770a5f0b612aa86a41679230"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologDatabaseActionStepBridge.lean",
+      "source_sha256": "6792d23045868eb9fb9fdc3256d4aaf5d2b0a7dbc327cd7f07e357b4d9260ade",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologDatabaseActionStepBridge",
+      "initial_sha256": "3c68af65d48181976fcaa1625520658e91a4d7add66191c27f90ca6596a2e9d3"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologDisjunctionStepBridge.lean",
+      "source_sha256": "dd7f1ef55b0d72929902076a5f4466ff8c09e9a6591d8b477a227fc35dbafdc0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologDisjunctionStepBridge",
+      "initial_sha256": "d70380857db8e616b30e1bc0607ccdc3ed622b77eac6ad503c8ebbbafb5af19b"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFailureRebasePrefixBridge.lean",
+      "source_sha256": "12818e06db2102cae067497169abbadbab3e2d8f5fe947f06bf22bd8acadeea3",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFailureRebasePrefixBridge",
+      "initial_sha256": "d6632558aea90e5982cd5cd5b3c9dfe9b935822c1bde7bdeae261ca3330db02d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFailureRebaseRegression.lean",
+      "source_sha256": "7b92b48654cb7b605318b62907e05267af683171cd2bc9b851d6333c311bebca",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFailureRebaseRegression",
+      "initial_sha256": "2a69311a78c402ea987892586509d531eaa325d336449b9241e461ec7d160ae7"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallAnswerBridge.lean",
+      "source_sha256": "88c35d40344c0cfa7807cfa6a945476f697135e2b16631652b958bf789b28bdb",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallAnswerBridge",
+      "initial_sha256": "0b47e2ce4a203c398be0d96fbead81710b1fcbd3a5f7e226784bfc0d693504f8"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallAnswerExitBridge.lean",
+      "source_sha256": "44991e8caf4c3edc6e6a0f13646b9b2bc04f42470cc50f9dc27c3b4ae7b67a92",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallAnswerExitBridge",
+      "initial_sha256": "e7a2d7feff345a847b9516bb60851ca7ea7d0bb188f93fa4f959b717329d867d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallAnswerResourceBridge.lean",
+      "source_sha256": "002bc472bc6067d8d750929658bc335897e4677a45dc1fbf150db0834bbd2379",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallAnswerResourceBridge",
+      "initial_sha256": "84d348282c55714ef89a998670ea686e8910bf266a1adb55b1e6e53f526fc432"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallBagAlphaBridge.lean",
+      "source_sha256": "2273c854f7c3f3b319ae4e610062e0fe15351aa18817619acbd2675ad5a6ddc8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallBagAlphaBridge",
+      "initial_sha256": "aa1df477be5d99cfd9d3aab99678aa65b612e9d9ae2a5ae11b2696306a6bc0fd"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallClosedBankBridge.lean",
+      "source_sha256": "95fca4dbf982e897dd497a07f6ec9f0a15bdb940576520ef9800b3da7764d3be",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallClosedBankBridge",
+      "initial_sha256": "94fd3edbcf4f2e20aa15efcb66f0ddb6436b1aac6fd39ce0565e4097c8310d4d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallClosedBankUnifyBridge.lean",
+      "source_sha256": "c1780723b59c724f8406aa4b94ba80bd1a747a9e8f07d9dc4d7687c315669a74",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallClosedBankUnifyBridge",
+      "initial_sha256": "b99f3a7e1f73ef9d9db7148b2eac73e404379b668750a26786c9aa187dc75d09"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallCopyBridge.lean",
+      "source_sha256": "16915ab81ab3e82e91625c583bfdae0b39bf125434e54ff450028be629d43b89",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallCopyBridge",
+      "initial_sha256": "3e98f9c654e3d73f96bc2ab2a058b4cc798b77e9d09c5f49fe3623756fcc0d84"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallDisjunctionBridge.lean",
+      "source_sha256": "700c6d2d47e2c247686b9bf489b8108fbe014b54431bfa46a6552f8a610eaea7",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallDisjunctionBridge",
+      "initial_sha256": "598adc259bda9fb5cd7b1ff5314092e41452fb8e122a72d493aa9a602d376900"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallDisjunctionExitBridge.lean",
+      "source_sha256": "1755b65690db9feca67634917ba6a053f1fbb8d51dea282aba7278eb3b3e3862",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallDisjunctionExitBridge",
+      "initial_sha256": "c34a044145e46902916c870ccf05b2e96b4c638476f2b439b5844f092e1b6f18"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallEntryBridge.lean",
+      "source_sha256": "7a870f13242d2401fc8a5b8b66ee4dd7ac7369901177421a9d86b81e910bd5c8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallEntryBridge",
+      "initial_sha256": "8c6f856ca1f3fb72ba472119a1f7df8fdcf612da95bf4d79849c15f9eccfa835"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallExitBridge.lean",
+      "source_sha256": "ff1d0ccf555d8152c57215620e11c3bc455528391c03269620ebd7b5291fc5ca",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallExitBridge",
+      "initial_sha256": "63170091ccdf7725feea547b3aaf8d664e11a4eacaea7325e2bf3197c081b327"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallExitPayloadBridge.lean",
+      "source_sha256": "06a6a6c9a6ca42d14566a068cff4bf0622a116becb5757aaec3abb0d8cbd30e9",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallExitPayloadBridge",
+      "initial_sha256": "56f95102deb7bb673d98f86ecd6bab4198ac1023807f7b873ba0c9a4b8f3d216"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallFrameZipperBridge.lean",
+      "source_sha256": "d7cea43eba3eebc5b3777c4546c2ccf5a357cc8dcb0c8b2e02ac4572f1116cf9",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallFrameZipperBridge",
+      "initial_sha256": "00c3ed75f3607df6f0d0025ef3c0e72a36563c54d203e7760f4c5d547db0677b"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallLocalLiveCatchupBridge.lean",
+      "source_sha256": "bea4284d2d25a9426110d9457d147ae3a6a9ad7e33f0490e886dcde3723ae199",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallLocalLiveCatchupBridge",
+      "initial_sha256": "ecdaeccf629355ed1bac805c97da868684dc5fdb670ceb4ebb0ae82f56454a2a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallResidualVariantBridge.lean",
+      "source_sha256": "05e0c445d2c0bef0899a6c9a836928906bed99be2de3ebb53b633cec6bf53273",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallResidualVariantBridge",
+      "initial_sha256": "a30d0ede854bd1ae869fb64a6da7c651759f86a9df55f5a226edc7c9ec29bba3"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallTailForestBridge.lean",
+      "source_sha256": "9abe6f323a5f93b9dcd7509215fd7813f0ea772d4e43eb1f71ea99e8d4ecf35f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallTailForestBridge",
+      "initial_sha256": "ea90ef393d43fdf6286562cf4c59b5fcadf1ad1c8c10720630888d720bc8a9aa"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologFindallVariantExitPayloadBridge.lean",
+      "source_sha256": "8dea8cf4739ae58d171525b7b615b5185591c242d4b3d80fdcb19f261a27c3bd",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallVariantExitPayloadBridge",
+      "initial_sha256": "bd2ef0569a308f334d7f09287608c4b0f20ae0d01b8e388de0f9f3d5348dc5af"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologGoalAlpha.lean",
+      "source_sha256": "156ad552ade102fe1225854d2014281ac2996d388373f00d40de5285e70af283",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologGoalAlpha",
+      "initial_sha256": "359e6f2631ee2d2c9c397d3e94a1f78220d73f15ea0425a7b9ce0c859b3a9037"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologGoalControlCarryBridge.lean",
+      "source_sha256": "a8fb494d4ac4b93987846ea8934eeacf4d1b46b8cd43273b74b22be73a01d23a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologGoalControlCarryBridge",
+      "initial_sha256": "1d80b94704006a8b673c78599fe54e56e14ae6472d4db042755bc6fed37ccaaf"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologGoalMguVariant.lean",
+      "source_sha256": "10a09b2499412603d9055284d3d72e234f754b251bb31433e58f6891b7e54945",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologGoalMguVariant",
+      "initial_sha256": "2c2f0dd079cdd9548b19cc5bf557a3089ac1d9af46d3291f2c7434fbe6638319"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologGoalTermForestBridge.lean",
+      "source_sha256": "2fc72df57bcbe68a1731935513681ac1b8907359afa6022e1e643178b396532e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologGoalTermForestBridge",
+      "initial_sha256": "244b887746a285704ab824b4f2bcec83812c356772d2f9c7dacba8173d7560c2"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologHeadFailureContinuationBridge.lean",
+      "source_sha256": "05df19b9bfb2699bf343332eeb7ede8c60a2481a7ff401c49989dc62e87867b2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologHeadFailureContinuationBridge",
+      "initial_sha256": "5bfd634edc9b8e7ab04f7421aaac178f9c1546b19623b2b911bdac7647330536"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologHeterogeneousPrefixBridge.lean",
+      "source_sha256": "b8c745c00da10f62bd726c352ae8da83164aa7b90bc387e0728fb786f3e69424",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologHeterogeneousPrefixBridge",
+      "initial_sha256": "6f6a97f2fce0b098da663e6255acc43aa1774f6ff53412885ec81f324a94eb6a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologHeterogeneousPrefixRegression.lean",
+      "source_sha256": "4c97b468e2e10864e9959695d19ed5e11d5b6f493c216601585dc9b887a838ad",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologHeterogeneousPrefixRegression",
+      "initial_sha256": "2158efab20c9c70f3bdd3b6373f0bdb170a308a099f013151c53bdf7dc186ccc"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMaterializedGlobalPrefixBridge.lean",
+      "source_sha256": "4d801c249777194dccd8d82ad9bb4beb0c7be6fd6ae13873d8bb734a7837b5f4",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMaterializedGlobalPrefixBridge",
+      "initial_sha256": "1fd441769abc69b476369073f22f3a160ad544571ac5f39a00f74d37f60c5615"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMaterializedOperandRegression.lean",
+      "source_sha256": "69782923098984ae1c9164577bb9fdacf4094032d3cc87932c03c499b82109cf",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMaterializedOperandRegression",
+      "initial_sha256": "d8846c8a5074caf9f22ce66bbe6cbe3a972cab813a823db9eb3e7b130b3a8b44"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguBridge.lean",
+      "source_sha256": "aec52320d7d6f7968332df2229143de92e75a2b1c28ea57a42fb123a060cce1c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguBridge",
+      "initial_sha256": "f36ec7c75be1cd9e38985b60123f3decbe2c3c1c5e335c31f1378cbb1d1ba71e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguComposition.lean",
+      "source_sha256": "4e084f350b7d06e71a139523f25595654abfb2e9faa79880851a9506b264d0fc",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguComposition",
+      "initial_sha256": "58480a9a5c9c90468105b61bf3db1fb4741e9dfcfd054e65fd13ca415775bc79"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguDirectSimulation.lean",
+      "source_sha256": "906af3616125c3e508b421b378f787e0cd657d0e28a3fc50cca9bbee2d5db024",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguDirectSimulation",
+      "initial_sha256": "186589e57a8389e043e75b76ba5eb9072dfa96ebfd08968e1d06d095e127fae6"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguExecutableOpenFactor.lean",
+      "source_sha256": "4a929f61f030b8470b57a85e7ae8d853b81a701b28baf4c2e14518f6df69981f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguExecutableOpenFactor",
+      "initial_sha256": "6c66c351640b750ce8b9e98bafc2a214632b711d7d9fc418888d40e8ce72357a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguFramedOpenFactor.lean",
+      "source_sha256": "1057f4048a3ec22332a3c260870da372665949f4a2d3393f827492f705ce1a32",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguFramedOpenFactor",
+      "initial_sha256": "d46181486fe55ea918e90f61fa53901446cb6ae44e1c599a56d317ba849739e8"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguOpenAgreement.lean",
+      "source_sha256": "96dc651ca9bb6318fc0e873e1a1a3a7f2e706df5cf8605e4c7ecba69dfd81018",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguOpenAgreement",
+      "initial_sha256": "6dfcd1e97396c261f012cd5562f580428284a39b24d64f0b6f2876806951120c"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguTopology.lean",
+      "source_sha256": "1606de5ada4ec7d56b7ba8248016241d065ed1a32fcfd151ae2f74ed1abe5af2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguTopology",
+      "initial_sha256": "35218ed7b58f03731a0ee15d3e6c4fa9f2ff71c4c50819d465f04a1792f6a7ce"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguValuation.lean",
+      "source_sha256": "a198334b16393bfb4c6f8c9316870fd205710317bb2452d68e4826168c6cf7e5",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguValuation",
+      "initial_sha256": "746a102cb02a1a69668191c1907d977989466a2bc76f9686d06b7ec6f387b94e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguVariant.lean",
+      "source_sha256": "c21759b32ad0cde51188b7dfe9797ac302f01dca9fd83d2f741ae3c34ce6afae",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguVariant",
+      "initial_sha256": "7441817d9cbd7c4147c10906b01c9d8f79160174ee47c379a867927041145dda"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologMguVariantRenaming.lean",
+      "source_sha256": "4473398fe972baaec82fc9f818c5da401987b492f18d4d96fc112d992f372db2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologMguVariantRenaming",
+      "initial_sha256": "f92dcef83a91cd846816c61a3888067dd84d67a241d123cb89427ca3e57e3046"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologNestedCallChainBridge.lean",
+      "source_sha256": "f6f37f6c1b5a0b7ce005fc6a11d5eec9a86a19c5a8d593a0a09a5ba98d4c53df",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedCallChainBridge",
+      "initial_sha256": "aef1925dd007f87df5029a95920a2a46850b952cfa890d77abe698a3e60307c5"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologNestedCallEntryPayloadBridge.lean",
+      "source_sha256": "28c734458c5078287db39f509fc592609e45524df8bb38116794c10a4d100c8e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedCallEntryPayloadBridge",
+      "initial_sha256": "2e1f5206de9760fcd4db054353f048fa46fcdf83a8b9581faab8b19b437bb0c9"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologNestedCallPrefixInductionBridge.lean",
+      "source_sha256": "ce05e8658529a7edc3f8dc7e649f4a4a567d4d32cf6d15712d61b1bc8f8078ab",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedCallPrefixInductionBridge",
+      "initial_sha256": "b67fff5bfb8aaa21afec584b543929102fc9aa81a46a9c924b7713857570e99a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologNestedCallReadyBridge.lean",
+      "source_sha256": "9f877309df19f94d1b04685f5afb4dc5fb60c91a98129a6df54388451363505a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedCallReadyBridge",
+      "initial_sha256": "035b042b813a2a2d555817002472ee1f404267913be3bc12a9658cbab8bc11b5"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologNestedCallReadyRegression.lean",
+      "source_sha256": "db1259f9bde206b0dcee7ec339ed0c9f77376fc7904da28ac6eaf2f2a4a0d670",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedCallReadyRegression",
+      "initial_sha256": "6b1903c33565467199235cbe19a955407889a5abb029480dc12410109455347f"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologNestedRetainedPayloadBridge.lean",
+      "source_sha256": "eb566b69d490ea9ae52e5c9deb0424ae69820da74502a36f24ce39e290100005",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedRetainedPayloadBridge",
+      "initial_sha256": "f8ccc4dcda332b33322d723839984cc85c8bfc80a3a2401860c55e3ffde84700"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologOrdinaryStepBridge.lean",
+      "source_sha256": "be5b14d5463e01204ff90192554ed2c17eb992e33e0ecbdfb7d1e384576a1f5f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologOrdinaryStepBridge",
+      "initial_sha256": "01e37196231f829b873ffb595a4a6eba5d252b1c6b061ffa21533a9ea8984e46"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPartialCompoundProvenanceRegression.lean",
+      "source_sha256": "d177a790699eeaf2e2db0c2b398afbf6d16794a13674762ac994b1b34de01d56",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPartialCompoundProvenanceRegression",
+      "initial_sha256": "751c374c21760d2949d2d4abb24a0c703797b8c6440b2ea00152202ecc446386"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeActivePayloadBridge.lean",
+      "source_sha256": "3392851a35dca3d8bc399dc5ccf85793585adfaa81331d78d14eba3cb4358196",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeActivePayloadBridge",
+      "initial_sha256": "d0e65059de59f0fb26cfdaeb859b120bb6e1f15021c76ae05d0ceb8c87d2503e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeCommittedPayloadBridge.lean",
+      "source_sha256": "1185846e68da2357c307494a1c453cbb83b57835fafcc1ef1ec2b9059de4d0f8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeCommittedPayloadBridge",
+      "initial_sha256": "1aa4c8c130715018cccc7842c2c904aad4e991ff204904be2cc005ee7fcd9269"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeCommittedScheduledPayloadBridge.lean",
+      "source_sha256": "8da6cce504619bf87e6b5783f4dc99fe8073497c900a660d0d561efff3563b81",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeCommittedScheduledPayloadBridge",
+      "initial_sha256": "e093b90524e50611567a3e2183b3dbfb661b55de0fe3a80ffc12982f7a0d54e1"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeCommittedUnifyTransitionBridge.lean",
+      "source_sha256": "6a4a11aa4b4139ee7f5f3f1e0d00929b3827c5b8d215ecaaf2472e0f2a91d90f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeCommittedUnifyTransitionBridge",
+      "initial_sha256": "75e759eeb8a4daaf69d61482000c92bc2a6ed4e2ae8ed3adabffcd7c525a0ff0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeScheduledPayloadBridge.lean",
+      "source_sha256": "7da29b7f1a37e9f539223d1e2b5c4a2073d5878e141c37188b84a280f7366ec5",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeScheduledPayloadBridge",
+      "initial_sha256": "900a0707961679ab23ad0ab979c173104e49e8c119910684ac861dffc41848d2"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeScheduledRejectionCatchupBridge.lean",
+      "source_sha256": "9fa0714e08db10f54c9b86b824fed6085f9eb927076deda6549dc0129c5f3ead",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeScheduledRejectionCatchupBridge",
+      "initial_sha256": "5de5f0ee874ebe7177764fb3bf18b3e99f3faf1e1192a61c2a1dabe2137b809f"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeScheduledRejectionCatchupRegression.lean",
+      "source_sha256": "3dfa605c077fbded29e0c2616f076777317df3dbd3000f04b9ec4f0a4f9c2b6c",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeScheduledRejectionCatchupRegression",
+      "initial_sha256": "186cabae6febffb04a10c2d8a44e475a0fb5d613f0b731bbb12969386b461ae9"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeScheduledRejectionPullBridge.lean",
+      "source_sha256": "540be42347f58e5f9f851a421155f474d76b9c06f9927926a7762dc513186a15",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeScheduledRejectionPullBridge",
+      "initial_sha256": "8e53af54470fb185446e7781cadbf611aa1aa999a8d709d37dc6ccaa62abd100"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPersistentFreeScheduledRejectionPullRegression.lean",
+      "source_sha256": "05c38ed42bf797af03312d9a92825a056fb45f3b43fb8d3d59ae3730668dbf55",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeScheduledRejectionPullRegression",
+      "initial_sha256": "836dc5d7a7985c948beeba772cbe155d9f562d2a771255d07493e4d35c09edb4"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPrefilterBridge.lean",
+      "source_sha256": "2c1d6dd1f82d7d627719c1771afc57e0e6b7ce8d7b01fff32f12986bc01f68fa",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPrefilterBridge",
+      "initial_sha256": "28e58802169a8f15402f359214824d844d49471d01f45e0a1d8e8914255516d0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPrefilterCallBridge.lean",
+      "source_sha256": "1dadb4cb45bf708653b8e1ace6e878bc14a4a4cdaeadeeeacebc2e42c5acbf62",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPrefilterCallBridge",
+      "initial_sha256": "05afde4d36a6f8075d60152028b180c2fe19e9a14ff8aa5108184645e3b3447a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologPrefilterScanBridge.lean",
+      "source_sha256": "33c111cc6efbbbd117e64c11e2c07fe12cedf5d05018468f0614bb8d02a9eba0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPrefilterScanBridge",
+      "initial_sha256": "1cc7a1d2f7f91b700399cf59275e8ae87a869d10be54515caf90347c125ed1cd"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologProductActiveControlEmbeddingBridge.lean",
+      "source_sha256": "b7e0e7a87ad745d90f7e433d1f6aa077acbbaaa48b6f1283c2a7f7a7282bbf34",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologProductActiveControlEmbeddingBridge",
+      "initial_sha256": "ceec63b1f751a82e7c5a763e1bd3debadcc3b43f635ca7366c81aee862832584"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologProductResourceContextBridge.lean",
+      "source_sha256": "6081072f7fdd6afb1cd1adfbf76f812d6b1eeb629eb3b0e1f0448a65d49943ba",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologProductResourceContextBridge",
+      "initial_sha256": "7cc38577134314756fe9b26897e6d1753d032deeafbfdd1ef68f872201284628"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologProductResourceTransitionBridge.lean",
+      "source_sha256": "d4dda16ff55ffd7e9394b4bde627ce6c06871ef65006a313f7a8433e2bf74b30",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologProductResourceTransitionBridge",
+      "initial_sha256": "5ec1d692c4c0b9933ef50c72778aa695518dfb4fe67c441c5631292bfac04983"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologProductSchedulingBridge.lean",
+      "source_sha256": "cd514c14b5a33b965b1c85eea1e1eb4331884235ff6c1c311ff1db87f94912fd",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologProductSchedulingBridge",
+      "initial_sha256": "4347f445398557a77684dbde08c46f40a7cc34528d40476165e246af012e651a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRecursiveCallPayloadBridge.lean",
+      "source_sha256": "145da101fab4e1fa928846e87ad872f848f640196bcb6322586fb7a60bf54a1e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRecursiveCallPayloadBridge",
+      "initial_sha256": "f42fc61f8b8d8a19d1df3afd6deefaaa30d69934ec5b6fbde6ccc6674f6e6c32"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRepresentativeActivationBridge.lean",
+      "source_sha256": "eac87106fc2b6238ed5b76a69aaf812c1f72e055fe6a544b7809703c3dc298e3",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRepresentativeActivationBridge",
+      "initial_sha256": "757a1079ce27752e9e9e34b636e47df4f1d4af2c03add72b08d693d81e55ddfd"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRepresentativeCallFrontierBridge.lean",
+      "source_sha256": "8ae09aaddb37b7d342e61fbc84770213d702484b5d36b8c6db89a5f485e894de",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRepresentativeCallFrontierBridge",
+      "initial_sha256": "56854a38acf0b263a9466f9e1d6b3b292f0f0f3e94e5ea34db830ae0079f05f0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRepresentativeCallPrefilterBridge.lean",
+      "source_sha256": "bf27ea0b82f334cc885d2b129746d1ce7ce31802275108e83f9ea0e6542bffbe",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRepresentativeCallPrefilterBridge",
+      "initial_sha256": "62a34fcbce9ec08c1f630518f1bd44d4762d26c2c62eb77f1c62582ad8d27f5a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRepresentativeProductActivationBridge.lean",
+      "source_sha256": "895f152067dbc3c8a7c5cd90fe6d8636d9828ed3f9b63f20a24a08c8e47616ab",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRepresentativeProductActivationBridge",
+      "initial_sha256": "9d671abe113da6ec10755745284c7218251ea87ae1a2e94a4316ea1104749e1e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRepresentativeStepActivationBridge.lean",
+      "source_sha256": "3ff9f56f0474babc19339ffa995142fbef064ef9f0484e55fa4ddd20ccdb669a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRepresentativeStepActivationBridge",
+      "initial_sha256": "19a887272c9379dd7f544bb117ca5a663cd0dc7a73fe25b3f5e2cb5463058729"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRepresentativeTaskActivationBridge.lean",
+      "source_sha256": "c92037e2320ac2ed47fbb60c15a9dfd2929735bde9179179b97d3269c4c2e4c0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRepresentativeTaskActivationBridge",
+      "initial_sha256": "c143aaa22374b73839d01cf9e1b7e8f0fe19752f34a2b9060039c6c4b3414864"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologResidualForestBridge.lean",
+      "source_sha256": "4802cdaaed30a62efc3c285e74c844d71bfe295942894e885836d7f72249fa0e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologResidualForestBridge",
+      "initial_sha256": "f16111a0e5dbbd8981f8cc8b97b77b9777620da4d53fd1dd1311f4bc30e08713"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologResolverReadinessBridge.lean",
+      "source_sha256": "fc259ab3e50cf60598097b9ae5df435d84c3d21524fd7706e633947315339a3b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologResolverReadinessBridge",
+      "initial_sha256": "36fc14dedcc2a4eb073c46a6bd94a6aec5e4d5f5ad86e2ee8d8f100bfdb8f526"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetainedCursorOwnershipBridge.lean",
+      "source_sha256": "377e6480ec6f72935ad171399cc601fb0b29846fe0e35a7332e5475aaa40d6fb",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetainedCursorOwnershipBridge",
+      "initial_sha256": "51922c17272cd1205b6d349c9737b435adcc2cb73687d09eaa04817bff42681b"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetainedPayloadActivationBridge.lean",
+      "source_sha256": "3055cf747306d9abe04d1d6ee3453bc4a42ec169b9cd1f14d73572a32704f8cd",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetainedPayloadActivationBridge",
+      "initial_sha256": "7435306530e0e26e3bd5743242bb6a286bfdf5fdba279bc61a2adb828aa39236"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetainedPayloadCatchupBridge.lean",
+      "source_sha256": "e188a487b01aaa833384a2051409ee978ac3473da983c75152e1214f1e5b9135",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetainedPayloadCatchupBridge",
+      "initial_sha256": "564f50331d4c88fc3a1c1539c7d19d5feeb33ac6237e85c39c9db182a52a9b63"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetainedPayloadSnapshotBridge.lean",
+      "source_sha256": "7e5a91b0519d5f1bf881bab8a5d9528456711bd3b241155c8fa523d577519098",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetainedPayloadSnapshotBridge",
+      "initial_sha256": "0b72b94db51f37ee61939354de2ef00b64eb58940d1d827d9dfca619837fd7f5"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetractEncodingBridge.lean",
+      "source_sha256": "8d926f2ae48cb60c06d8e03a605269d63c2cab4bd38f16b995ab93eff4f797b1",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetractEncodingBridge",
+      "initial_sha256": "d397af83b475b7792dcb5a78e48145cc3a7efd6f49cf8b1b35ceabed5f163ccd"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetractOpenFactor.lean",
+      "source_sha256": "915fe629fcf530f8729e76a3fa4aaf60d489a71dd1ad52585063cfb2e726d619",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetractOpenFactor",
+      "initial_sha256": "3814016bf912e34d622af2a5f40a65638e31487b1ce1cbe6859588d5e34c1b3a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetractOpenFactorRegression.lean",
+      "source_sha256": "90625383e315dec156d2e2dfcc4cc2c784257e824e2f6ad2f500bef43d884c48",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetractOpenFactorRegression",
+      "initial_sha256": "5e45cba6a626a4c7d481f1bc10a509396d4394d5d5a0935afcd7528110367699"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetractRegression.lean",
+      "source_sha256": "da5f27761597e2e90bb2c393bf48b1be150942c15d248f1302c4bfaa1f499d36",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetractRegression",
+      "initial_sha256": "7e3cedc005636577c066cf429759e30344ee4647f1d3987e0194c05f6ad0a0ff"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetractScanBridge.lean",
+      "source_sha256": "717faeafd848e481ba5d377bd1cd7775cf363074addd88be63e17ff0c8556636",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetractScanBridge",
+      "initial_sha256": "919d34ca810bc8d4c17cfb2ce239519274c415fc245b8af6e1935b89f059db0d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRetractScanRegression.lean",
+      "source_sha256": "5fb4b2ba466c54a06f10eea0bfca9d80a2b880b27b9b25c86be108c639f85038",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetractScanRegression",
+      "initial_sha256": "50a3b7084a275f0d048ab247358d15f8c6e8dff52d1457ad619e7c5b4d540fad"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRootCallReadyBridge.lean",
+      "source_sha256": "b7c2c240b78195e7ff6c2eff4a41d5a17b7ff336ad80aac243f3a27f6accc265",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootCallReadyBridge",
+      "initial_sha256": "d9b7f28da5ffbe2113e6e1f3d61eb2a31483a0d3c519ff76966e2f5a911832fc"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRootClosedAnswerBridge.lean",
+      "source_sha256": "985522988b888722ba52067a455a117b3e2699329dda4f3feff3b2a857e59c13",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootClosedAnswerBridge",
+      "initial_sha256": "05cff44f95a5aac322398c4588e49ca57e96ccefa2ba2b1fdcc35c67d0fc9c84"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRootClosedLocalLiveBridge.lean",
+      "source_sha256": "04c4d24237c2e0f10ca71f4618865d769460c780fbb2b61d9d5779fd529b680f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootClosedLocalLiveBridge",
+      "initial_sha256": "3206c62095f408ec36085a9d6d2dcfaa5f0f2a64a190c91b4cf2a52cce58a4d3"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRootClosedLocalLiveRegression.lean",
+      "source_sha256": "7d8eaf49cc17afb12e23f661e29584bb8ad3eb2522bc2e049fda35a9cbf90132",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootClosedLocalLiveRegression",
+      "initial_sha256": "0003bff285cda3e375f43e8d5dcd8ea0f1ba12472767403ac46034cf5693b2fa"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRootRejectedPrefixRegression.lean",
+      "source_sha256": "f1395f755293a31889003560d03dd5d3d336a15bb3667a0c120d742a4eb8742e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootRejectedPrefixRegression",
+      "initial_sha256": "37df75ea350a0494a7b6f1c6c6aa7249d9e7a1efb81f362e7bbf7917f2a5e171"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRootScheduledSelectionBridge.lean",
+      "source_sha256": "f4693411332c76c2edbf134bd3de4d9ade559ad956e559da1693ba3b5b6ac3b1",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootScheduledSelectionBridge",
+      "initial_sha256": "995de99ce6a795cd0252776e58804185756f80d8f308a07f2da0c4ad7c3624c7"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologRuntimeDecode.lean",
+      "source_sha256": "7773008970292b61924bc2a59ae5aca91b6c6f2df653160462383d5df43bd217",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRuntimeDecode",
+      "initial_sha256": "02d8b50ab282e7c91e225bd45686d701da1a706fa451df25bf6de538f9aae2df"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledAnswerPropagationBridge.lean",
+      "source_sha256": "b6f9a51bae9cba1223923d4b8789e4c45ccb23775df83ec12c82c3d86a2c1e59",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledAnswerPropagationBridge",
+      "initial_sha256": "b5fba4f1e8c5089fa1aac28e81d2b73872085e9b4b6082302d8466ceddcea1d4"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledAnswerValueBridge.lean",
+      "source_sha256": "98ebc8ab14674a38fe0b7226eb179298eb8bd4db7964efe236753a9e840cc7c8",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledAnswerValueBridge",
+      "initial_sha256": "5a54ab69528776617a6f28f70a15e90d9cf06c2800f90266c533fc787bbc7706"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledHistoryBuildBridge.lean",
+      "source_sha256": "361c2a46b86fbe3f733f663c92aff63ec2f49ca32afe0aef933445400c65dab4",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledHistoryBuildBridge",
+      "initial_sha256": "efd8e881334649ef9caaca330c205ac015eef494b0f1f82a61ca8042da22250d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadLandingBridge.lean",
+      "source_sha256": "32b39d2bbfb1a829edd4ac9b08644a51a52bb9d489d89eb1acd72cf2459dee47",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadLandingBridge",
+      "initial_sha256": "85037ba405239a5bb81b3c029ca4c85f1ca15ace4039a029ffafbaf9ac477c07"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadLandingRegression.lean",
+      "source_sha256": "e20adacfe3b603ce09b89196ba4a041541016172b1a6d69236ca9078f5157d66",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadLandingRegression",
+      "initial_sha256": "40fefaae3f6e2c1223c85b0b14ed917d33ad31264d0367d4d978f4e2179aaeb0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadOpenConfBridge.lean",
+      "source_sha256": "d15b875b3fcc91eff56377145b4030f7b2612a788493b379fe2ca039a7dbba90",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadOpenConfBridge",
+      "initial_sha256": "80f7326bc5a348336f14504576e4b20a55fabb594b69c9d1ee006c151d298607"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadOpenConfRegression.lean",
+      "source_sha256": "b21e2ba8f1cd29c71c393d1453b7ab8543b28b45eb928e754afa6960ac03723e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadOpenConfRegression",
+      "initial_sha256": "63758b3269988e6650f0058a7a7d4328776c508504e262ae4755bc04272c3c4e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadPathBridge.lean",
+      "source_sha256": "50b30d53939e6e789fc5a4ce557070c5b141c83382d8a288206f60a86e1990f0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadPathBridge",
+      "initial_sha256": "7a644843cde873dd82ac93e56b48f1d6bff3df905e4cfa4dfd59cd9c401698d3"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadPathRegression.lean",
+      "source_sha256": "3885e24c2fdc62dd0aba1619986f91bfd8f4dbba9d119d9f795ca6982abfc2de",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadPathRegression",
+      "initial_sha256": "f70f072b84656ee20f9607f2a4537f11fc65b49525c30592f46262dc18b98a41"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadPostHeadBridge.lean",
+      "source_sha256": "6e5720bcb731113144a872a7f6aff7b2ea85dce89d16edd3a750a575d045623f",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadPostHeadBridge",
+      "initial_sha256": "ccc91879f3d4d8873dbe9c46d68815fd498261eb35fe41a4fab4b9c17524bb2a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadPostHeadRegression.lean",
+      "source_sha256": "92825dc628e05583deec062b737f2c8f413f6ef3da7971a761beb030d6ed119e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadPostHeadRegression",
+      "initial_sha256": "f00fe8d7913f3a4b84f43ce1aa44391808709cefaae62170eebdd7488c1320bb"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadRejectionBridge.lean",
+      "source_sha256": "f896abc0ad4ca86f645f9a21961913b77523ee8ab9f9b9dc19d48b82ddeb3b9a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadRejectionBridge",
+      "initial_sha256": "81e06b30bf426897ebb9a373b84eb5fe63b3eee6e527ff0280b467bbc98ab6b5"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadRejectionRegression.lean",
+      "source_sha256": "26f280879afc4772a2cf4ce68635fc10708697860a5aa69449d6b82ac4903128",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadRejectionRegression",
+      "initial_sha256": "8c3700e20b1ca44ca49ac107641643dc2d933eeba0d50838c7469b2d830e57d0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadResumeBridge.lean",
+      "source_sha256": "3bfd3c95b62db0f9f52ae8c95f4d61d22b50808bde79f1701f8619be18e09876",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadResumeBridge",
+      "initial_sha256": "9eb4d574e98419dbadfecb123edf4e3c34345e07e1ddbdb51075ee45b4f4959b"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadResumeRegression.lean",
+      "source_sha256": "212a17a794ff61fa2613ec10ee395fb93bd27f012f711a01ad4948ae1ddb50d5",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadResumeRegression",
+      "initial_sha256": "d29cfdc264b255eb021ffadffd5637ad1dceb8a1d5ff4b9ea1a5d8fe5253268c"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadSuccessBridge.lean",
+      "source_sha256": "25fde4bd498eb048de1e3a3825c7d90e735bc2f826ca0699a7abde42aa313863",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessBridge",
+      "initial_sha256": "092bb8f9bec8aed7836c6d6197dacc30254c8a019c3428a70f4e496d5c9a673a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadSuccessCarrierBridge.lean",
+      "source_sha256": "79b0e40af04c58ceba7bbf9ded5f5e30f132e397f4739c74c5550b6c314879c5",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessCarrierBridge",
+      "initial_sha256": "216965a757583ddd517aacfca7a3512242304846633453416a619b95531464bb"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledPayloadSuccessRegression.lean",
+      "source_sha256": "61518573238ec0cc859ccb50a94c72515833e613ea1830ff79acdeeb90c50f43",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessRegression",
+      "initial_sha256": "997377835b71b000db5277b00316d918d7671f4c1d2ed036896cc25580820dc4"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledRejectionReachabilityRegression.lean",
+      "source_sha256": "433922377ceff44cfb95cd711389cf7b23f2b35caa370edd68c4b8512e556dc1",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledRejectionReachabilityRegression",
+      "initial_sha256": "2ef1f9465ac7e5bb4487376dd236398b56ae25e0bb3d5145a7e3c75b21139f1e"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologScheduledSuccessPrefixBridge.lean",
+      "source_sha256": "20bbb7dbf20bfc372c600524ec4b895d7efdb7f4d82aabbe6d185769d82b2f23",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledSuccessPrefixBridge",
+      "initial_sha256": "052154f7e9e54e39378dd41c56b8e48ae99672448986c752dd3502829df66137"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologSegmentedProductStepBridge.lean",
+      "source_sha256": "ec582349d0d40ee2c608cc21a779d83d2d8dd22f39ba6e272787c90f988c0e98",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologSegmentedProductStepBridge",
+      "initial_sha256": "504b0b9d41ee630b49a8ca4d198dcbe9f44c9f7a3022c083aaf99a2ba964a479"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologSequentialMgu.lean",
+      "source_sha256": "f61d8d53327f92bd70274c853e7c63b764c609952c1e358ff6141468a998bca3",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologSequentialMgu",
+      "initial_sha256": "4fae6aefc43c94d872e352245c15443423c75eb8ff1f8c1f23604b09ecf8d709"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologSourceProductContextBridge.lean",
+      "source_sha256": "1d3bef23dea6e7ca776ad4337f0d6bc9ef63fb6047045d7f7d3959b3e6056dc7",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologSourceProductContextBridge",
+      "initial_sha256": "455eb8f4cbcd7680fed5a1136be425b9b8379cac453d7e91df1f0cfc8c241e9d"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologSpinedSourceActivationBridge.lean",
+      "source_sha256": "8a4139bb667a4ef3b9fefa255af485ce8105c4feab794146440f9662aea6395e",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologSpinedSourceActivationBridge",
+      "initial_sha256": "a8c8325e59a29d781470524a719893a279a94b7dd96da58499996c28922ea73a"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologStateBridge.lean",
+      "source_sha256": "9a9a874552c2147fd5f805d4a65632142d6d5c51a131a9e965e2b9ca81bf727d",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologStateBridge",
+      "initial_sha256": "acc0d618a738070f73fba4c56e0591d89eb618d194e184e7e4a00314cc9b1ea0"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologSupportedCallFrontierBridge.lean",
+      "source_sha256": "004044c50237b91f47a14bd1e07acb59b032d61889478a18b2aa928653dfaa3d",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologSupportedCallFrontierBridge",
+      "initial_sha256": "64a21bd780ff24a1e1facf82eda3527245c09d31f12574f3aa7ebcba8f149071"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologSupportedCursorAlternativeBridge.lean",
+      "source_sha256": "5178dde5532085aab1874a77368bb3955da406f9c92d3473d6b40ac7ec91305a",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologSupportedCursorAlternativeBridge",
+      "initial_sha256": "39fab35b13501974c22df6e76629795a78b3fa552479008813fce5becfcb03f6"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologTaskContinuationBridge.lean",
+      "source_sha256": "f095c054a4853edab7797acf4915bec262016413e9cdbbb47bef8ebda3ac97f4",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologTaskContinuationBridge",
+      "initial_sha256": "1abeb8ef9a7e5ebb9cb1092d49a80ac2e226b85e9e94b5ab494128ac1d26bbae"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologUnboundNestedCallRegression.lean",
+      "source_sha256": "629137a7ce3b4097672d22f5a1cb8703349c53288ac57d2ce163b91d1440d2e7",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologUnboundNestedCallRegression",
+      "initial_sha256": "801c390679f783e5cd4860dec1128a49373baaadd5d069f2f68d3a76dee01a35"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologUnboundPublicAnswerRegression.lean",
+      "source_sha256": "15602bc0d990d64b83a3f5e7f1526833f7569313a990c81bde4ea7c29d596b75",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologUnboundPublicAnswerRegression",
+      "initial_sha256": "c5fcf9c691b3da375410ebd2144ed25ea8aee8d83660b1c736e8ebb494063264"
+    },
+    {
+      "source": "PLeaTTa/Proofs/Reachability.lean",
+      "source_sha256": "1e1d67f3ff42847ba7177570afbcdb088e4dce2c8e98e2ac8913eeb22c155516",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.Reachability",
+      "initial_sha256": "14656f353d7182081dfa1a4317ff8a7f14948f747a2a7b58e649c20902f938c1"
+    },
+    {
+      "source": "PLeaTTa/Proofs/ReaderAdequacy.lean",
+      "source_sha256": "d78e5456fee2d04cd5503ffd177f77bce95a3ee176f9e8d93b4564c6dfb44529",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.ReaderAdequacy",
+      "initial_sha256": "ed6ac3449fdcfa74621743a1a26e7544ad02e859624e382afbff45b457ca20f4"
+    },
+    {
+      "source": "PLeaTTa/Proofs/ResolutionCounter.lean",
+      "source_sha256": "d112e37c34d4f19d6159ce18e9abe579dec5be84b2c2d6a15af57ce59f763183",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.ResolutionCounter",
+      "initial_sha256": "73a52a85eb7f2100e72f33d44bbe0cafc12c80af5e4deba46a8b10c3fcbb87d6"
+    },
+    {
+      "source": "PLeaTTa/Proofs/Simulation.lean",
+      "source_sha256": "528634f32bce0f5345bbe8cc631de6834de93146b7686dddf9d94fe6d17e7216",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.Simulation",
+      "initial_sha256": "4da471df39ebd7c05413e0f41805c768a0865ecd74c2aba36375ca5f4a85d813"
+    },
+    {
+      "source": "PLeaTTa/Proofs/Specialize.lean",
+      "source_sha256": "ab25bc4ceb84f676a4bc7bce1d52e5143d2eeca79eee23c75981c72269e983dd",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.Specialize",
+      "initial_sha256": "3d148b5378098c3b7a4a084982dd521003ac7caf7738a8c2fdcdaabeff7436ef"
+    },
+    {
+      "source": "PLeaTTa/Proofs/StepCases.lean",
+      "source_sha256": "7e76d2a36a8b318aa6923665f774231026dfea04c3254a16fbf8d4f16ae0e933",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.StepCases",
+      "initial_sha256": "24625e8556b1947080d4140964c640505c68448e04709ae24818f2370068c834"
+    },
+    {
+      "source": "PLeaTTa/Proofs/Unification.lean",
+      "source_sha256": "4a60cf4c00e706a518a20fb188b1d6614ae2f1484ddfdcd602367303aac39733",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.Unification",
+      "initial_sha256": "2e01b54ef9b4374a6afaf8a9484040fb07949c43103a28fb5770cd2d2d4fddd8"
+    },
+    {
+      "source": "PLeaTTa/PythonWorker.lean",
+      "source_sha256": "740ce517f0553961a4cafb5cb0e26c9a7bbe05f1a1db0e3d0ca786ec4f4fade0",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.PythonWorker",
+      "initial_sha256": "9388ce5c38474c444459acf31c2f9ae90a5d499d37634525a6119458e3888828"
+    },
+    {
+      "source": "PLeaTTa/Regression.lean",
+      "source_sha256": "7223c6d695cf9137dbcd8ce7367c6be8d193ca6028d24be6a69f0a54e28f541b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Regression",
+      "initial_sha256": "c0e59fd937e4905f02c08a62fbe01d45f41f106a561c88f64fbb1c57c0d83953"
+    },
+    {
+      "source": "PLeaTTa/RuntimeImports.lean",
+      "source_sha256": "09dc019ad190a0a6e3e70f5a2d93e497ca8020124ee118fec446e0ed532f4101",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.RuntimeImports",
+      "initial_sha256": "946979abd6fbe80fed1de6d41fa0d627981d8b8d0a62b91910c3726f1abc2ef0"
+    },
+    {
+      "source": "PLeaTTa/RuntimeImportsRegression.lean",
+      "source_sha256": "f497540d77e751dde929a65b6e26b3f16a882c8c6193dae2e3b6a0f28e55d1de",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.RuntimeImportsRegression",
+      "initial_sha256": "b985fa63386bcf0de18ac4e7eb09d24dca2eb95b4d25899f55e63b4b211ed099"
+    },
+    {
+      "source": "PLeaTTa/Semantics.lean",
+      "source_sha256": "7f868973b29ecca22355b080cba483cc72e0da22d1d461fa517a685fc316ccec",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Semantics",
+      "initial_sha256": "5ecd591e5edce41fc9f2c749a94bdb15d99f71b8436fe01587bcc3cccff351ad"
+    },
+    {
+      "source": "PLeaTTa/Specialize.lean",
+      "source_sha256": "421fccc4612f0267bfddcc102e78db30636a493e8ef2636d6af8f74672ae5da9",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Specialize",
+      "initial_sha256": "dbf7a28a6fc73270be0187d955d8db22bb0c4a3ad741b3b3ae8cef922a1b9738"
+    },
+    {
+      "source": "PLeaTTa/SubstEngine.lean",
+      "source_sha256": "0a124144383a294bf2c15e6050c298a0ddbefc13c008724ebd852d444a6cd7b2",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.SubstEngine",
+      "initial_sha256": "3a706eec25b64f06a896460a1e2b16f55c062c78fdcef2df68d52c4bec329102"
+    },
+    {
+      "source": "PLeaTTa/SubstMachine.lean",
+      "source_sha256": "9185c77c89737ee9bfac0df771808cc0c8b58bfc35d660ee6c1907851763bc80",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.SubstMachine",
+      "initial_sha256": "5198bec8916c4643bc4964a486778f339e821d6b197c2d9a66a8a1c6931809ae"
+    },
+    {
+      "source": "PLeaTTa/Types.lean",
+      "source_sha256": "23ccd8dcb676082e51a4edf326bced28719edb491c0467ca3a46a6f165e1668b",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Types",
+      "initial_sha256": "27e5282280d2cee17c2d3b15ff79ec3e56aee8c107d099cfbe8c618a75d5ea13"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologIndexedAltBankSpike.lean",
+      "source_sha256": "be3f0fa89a055acc0f2e4b93c2f603fe44ffd9ba73265f49dd4ce2b60d06bb41",
+      "revision": "ffef4cb695f40affb2b1bfe31e77d4bb355922e9",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.IndexedAlternativeBank",
+      "initial_sha256": "b99f55549a6f8b7ac3858ceb53b9342e8995ae651e47277d8cabedcc48517044"
+    },
+    {
+      "source": "PLeaTTa/Proofs/PrologOccurrenceIndexedOwnershipSpike.lean",
+      "source_sha256": "b238eb4ff561a802befc0e5c565ce311da7348e9b8bb65aac50cbdc8bdb2e56e",
+      "revision": "020dbdf5635498a141076b44554bc52c54b601af",
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.OccurrenceIndexedOwnership",
+      "initial_sha256": "ccc1136e06377c1c30e0f865ab4af8742ebbba38a69872fada18c827c12fb272"
+    }
+  ],
+  "profile_files": [
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Alpha",
+      "source": "MettaHyperonFull/Core/Alpha.lean",
+      "source_sha256": "bdfb6262af8c072ed7211abb78b9639ae5cd24ca3f9103bcaa62e0feafcea847"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom",
+      "source": "MettaHyperonFull/Core/Atom.lean",
+      "source_sha256": "3c63afc807bce50cb8c14fa7ecdd2767680ae3b7b87dea20fc791953fab544f8"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Bindings",
+      "source": "MettaHyperonFull/Core/Bindings.lean",
+      "source_sha256": "140a3d9fd853da6e25b6ac09e8fea8d7a8ac0cac11d802ec1a95c55e2a02b0fb"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Builtins",
+      "source": "MettaHyperonFull/Core/Builtins.lean",
+      "source_sha256": "a12c7974f7d1cbf38ae69f8918579f2869707489f6e0f45f54092f8f5ea16730"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.FreeVars",
+      "source": "MettaHyperonFull/Core/FreeVars.lean",
+      "source_sha256": "a536c2d409b6b036f5af6c92eec82deb9410b9d6b890944b33d94483f39e9916"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Grounding",
+      "source": "MettaHyperonFull/Core/Grounding.lean",
+      "source_sha256": "b6e60da23f27e8d3688f0f35750914fcea2bee9294568d16632d23db39876536"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Matching",
+      "source": "MettaHyperonFull/Core/Matching.lean",
+      "source_sha256": "e83d2c18e8e46b92d2a0cae6bbfaca0f1a0b8b9e04d51e89a02e87634316d417"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Pretty",
+      "source": "MettaHyperonFull/Core/Pretty.lean",
+      "source_sha256": "7ab3ce26925148318588eba385bd95eec6d52a28dbeaf6591139bd10537c666a"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Space",
+      "source": "MettaHyperonFull/Core/Space.lean",
+      "source_sha256": "3f5d33eb53447300654057936695cfe889367f4e5cd7c1f5f657fb4ceabe2ed7"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Substitution",
+      "source": "MettaHyperonFull/Core/Substitution.lean",
+      "source_sha256": "c49c00066047f9a2d671e044b00b6fb12788fcc82639ac0a1735da5e8ea3476b"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Types",
+      "source": "MettaHyperonFull/Core/Types.lean",
+      "source_sha256": "ac73a90056f0e4de8d8f922ea162cfc622307e7eec876e688213def03ddc6b6f"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Unification",
+      "source": "MettaHyperonFull/Core/Unification.lean",
+      "source_sha256": "d1120907fe95440871dbb7a2e4036f3f36b5d51a3a2f2b61b9542a3482cd6d87"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Proofs.Basic",
+      "source": "MettaHyperonFull/Proofs/Basic.lean",
+      "source_sha256": "5e57a1a0edb013969ef8885c761bc1303d03e20bff5c9bdcaeb16f58a9f1c287"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Proofs.Substitution",
+      "source": "MettaHyperonFull/Proofs/Substitution.lean",
+      "source_sha256": "993f0639f662b6735a9680225408167b5faacc06b60f4400df7fd744184595c5"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PLeaTTa.Source.Reader",
+      "source": "MettaHyperonFull/Runtime/Parser.lean",
+      "source_sha256": "d4715e346a3d61271ac7085524103c44b51247a54268d8c9aacaebd4e50962ac"
+    }
+  ]
+}
