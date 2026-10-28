@@ -135,7 +135,7 @@ def out4 (G : NormativeCode) (A : Set PropFormula) : Set PropFormula :=
 theorem Cn_mono (A B : Set PropFormula) (h : A ⊆ B) : Cn A ⊆ Cn B := by
   intro φ hφ
   unfold Cn at hφ ⊢
-  simp only [Set.mem_setOf_eq] at hφ ⊢
+  simp only [Set.mem_ofPred_eq] at hφ ⊢
   intro v hv
   apply hφ
   intro ψ hψ
@@ -145,7 +145,7 @@ theorem Cn_mono (A B : Set PropFormula) (h : A ⊆ B) : Cn A ⊆ Cn B := by
 theorem sub_Cn (A : Set PropFormula) : A ⊆ Cn A := by
   intro φ hφ
   unfold Cn
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   intro v hv
   exact hv φ hφ
 
@@ -168,7 +168,7 @@ theorem out3Aux_mono_step (G : NormativeCode) (A : Set PropFormula) (n : Nat) :
     have h1 : triggeredOutputs G (out3Aux G A m) ⊆ triggeredOutputs G (out3Aux G A (m + 1)) := by
       intro ψ hψ
       unfold triggeredOutputs at hψ ⊢
-      simp only [Set.mem_setOf_eq] at hψ ⊢
+      simp only [Set.mem_ofPred_eq] at hψ ⊢
       obtain ⟨norm, hnorm, hin, hout⟩ := hψ
       exact ⟨norm, hnorm, ih hin, hout⟩
     have h2 : out3Aux G A m ⊆ out3Aux G A (m + 1) := ih
@@ -229,7 +229,7 @@ theorem out4Aux_mono_step (G : NormativeCode) (A : Set PropFormula) (n : Nat) :
     have h1 : triggeredOutputs G (out4Aux G A m) ⊆ triggeredOutputs G (out4Aux G A (m + 1)) := by
       intro ψ hψ
       unfold triggeredOutputs at hψ ⊢
-      simp only [Set.mem_setOf_eq] at hψ ⊢
+      simp only [Set.mem_ofPred_eq] at hψ ⊢
       obtain ⟨norm, hnorm, hin, hout⟩ := hψ
       exact ⟨norm, hnorm, ih hin, hout⟩
     have h2 : out4Aux G A m ⊆ out4Aux G A (m + 1) := ih
@@ -285,7 +285,7 @@ theorem out1_sub_out2 (G : NormativeCode) (A : Set PropFormula) :
   unfold out1 at hφ
   unfold out2
   unfold Cn at hφ ⊢
-  simp only [Set.mem_setOf_eq] at hφ ⊢
+  simp only [Set.mem_ofPred_eq] at hφ ⊢
   intro v hv
   apply hφ
   intro ψ hψ
@@ -312,13 +312,13 @@ theorem out1_mono_code (G G' : NormativeCode) (A : Set PropFormula)
   unfold out1 at hφ ⊢
   unfold Cn at hφ ⊢
   unfold triggeredOutputs at hφ ⊢
-  simp only [Set.mem_setOf_eq] at hφ ⊢
+  simp only [Set.mem_ofPred_eq] at hφ ⊢
   intro v hv
   apply hφ
   intro ψ hψ
-  simp only [Set.mem_setOf_eq] at hψ
+  simp only [Set.mem_ofPred_eq] at hψ
   apply hv
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   obtain ⟨n, hn, hin, hout⟩ := hψ
   exact ⟨n, hGG' hn, hin, hout⟩
 
@@ -329,14 +329,14 @@ theorem out1_mono_input (G : NormativeCode) (A A' : Set PropFormula)
   unfold out1 at hφ ⊢
   unfold Cn at hφ ⊢
   unfold triggeredOutputs at hφ ⊢
-  simp only [Set.mem_setOf_eq] at hφ ⊢
+  simp only [Set.mem_ofPred_eq] at hφ ⊢
   intro v hv
   apply hφ
   intro ψ hψ
-  simp only [Set.mem_setOf_eq] at hψ
+  simp only [Set.mem_ofPred_eq] at hψ
   obtain ⟨n, hn, hin, hout⟩ := hψ
   apply hv
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   refine ⟨n, hn, ?_, hout⟩
   -- Need to show n.input ∈ Cn A', i.e., LogicalConsequence A' n.input
   -- We have hin : n.input ∈ Cn A, i.e., LogicalConsequence A n.input
