@@ -2,19 +2,12 @@ import Mettapedia.Coalgebra.CoherentFiniteViewSystem
 import Mettapedia.TypeTheory.GuardedTimeModeTheory
 
 /-!
-# Guarded time and coherent finite observations
+# Guarded coherence and global observations
 
-A depth-indexed finite-view system is a set-valued presheaf on the revision
-mode theory: a modality from a later revision to an available earlier revision
-acts by restricting observations.  Its coherent towers are exactly the global
-sections of that presheaf.
-
-For the natural-number revision category, compatibility with the canonical
-one-tick guard already implies compatibility with every past-revision
-modality.  Thus the local guarded law and the global inverse-limit law carry
-the same information.  This connects guarded recursion to finite observation
-without selecting a term calculus, equality discipline, or runtime demand
-policy.
+Finite-view restriction is a set-valued presheaf over revision time; coherent
+towers are its global sections. Compatibility with each one-tick guard generates
+compatibility with every earlier revision. This is a law of observations, with
+no assumed term calculus or runtime demand policy.
 -/
 
 set_option autoImplicit false
@@ -71,10 +64,11 @@ end ModePresheaf
 
 /-! ## Finite-view systems are presheaves over revision time -/
 
+variable (system : FiniteViewSystem.{u})
+
 /-- Restriction of finite observations is the presheaf action of guarded
 revision modalities. -/
-def revisionPresheaf
-    (system : FiniteViewSystem.{u}) :
+def revisionPresheaf :
     ModePresheaf.{u} revisionModes where
   Carrier := system.View
   restrict := fun modality => system.restrict modality.down
@@ -85,8 +79,7 @@ def revisionPresheaf
 
 /-- A coherent finite-view tower is exactly a global section of its revision
 presheaf. -/
-def towerGlobalSectionEquiv
-    (system : FiniteViewSystem.{u}) :
+def towerGlobalSectionEquiv :
     system.Tower ≃ (revisionPresheaf system).GlobalSection where
   toFun := fun tower =>
     { value := tower.view
@@ -94,14 +87,8 @@ def towerGlobalSectionEquiv
   invFun := fun global =>
     { view := global.value
       coherent := fun bounded => global.natural ⟨bounded⟩ }
-  left_inv := by
-    intro tower
-    apply FiniteViewSystem.Tower.ext
-    rfl
-  right_inv := by
-    intro global
-    apply ModePresheaf.GlobalSection.ext
-    rfl
+  left_inv _ := FiniteViewSystem.Tower.ext _ rfl
+  right_inv _ := ModePresheaf.GlobalSection.ext _ rfl
 
 /-! ## One-tick coherence generates all coherence -/
 
@@ -113,9 +100,10 @@ def GuardCoherent (system : FiniteViewSystem.{u})
     (revisionPresheaf system).restrict (guard depth) (views (depth + 1)) =
       views depth
 
+variable {system}
+
 /-- Every globally coherent tower satisfies the local one-tick law. -/
-theorem tower_guardCoherent
-    {system : FiniteViewSystem.{u}} (tower : system.Tower) :
+theorem tower_guardCoherent (tower : system.Tower) :
     GuardCoherent system tower.view := by
   intro depth
   exact tower.coherent (Nat.le_succ depth)
@@ -123,7 +111,6 @@ theorem tower_guardCoherent
 /-- Compatibility with the one-tick guard entails compatibility with every
 past-revision modality. -/
 theorem coherent_of_guard
-    {system : FiniteViewSystem.{u}}
     (views : (depth : Nat) → system.View depth)
     (guarded : GuardCoherent system views)
     {earlier later : Nat} (bounded : earlier ≤ later) :
@@ -132,47 +119,29 @@ theorem coherent_of_guard
   | base =>
       exact system.restrict_refl earlier (views earlier)
   | succ later bounded inductionHypothesis =>
-      have oneTick :
-          system.restrict (Nat.le_succ later) (views (later + 1)) =
-            views later := by
-        exact guarded later
-      calc
-        system.restrict (Nat.le.step bounded) (views (later + 1)) =
-            system.restrict bounded
-              (system.restrict (Nat.le_succ later) (views (later + 1))) := by
-                exact
-                  (system.restrict_trans bounded (Nat.le_succ later)
-                    (views (later + 1))).symm
-        _ = system.restrict bounded (views later) := by
-              rw [oneTick]
-        _ = views earlier := inductionHypothesis
+      exact (system.restrict_trans bounded (Nat.le_succ later) _).symm.trans
+        ((congrArg (system.restrict bounded) (guarded later)).trans inductionHypothesis)
 
 /-- A locally guarded family therefore determines a global coherent tower. -/
 def towerOfGuardCoherent
-    {system : FiniteViewSystem.{u}}
     (views : (depth : Nat) → system.View depth)
     (guarded : GuardCoherent system views) : system.Tower where
   view := views
   coherent := coherent_of_guard views guarded
 
+variable (system)
+
 /-- Global inverse-limit coherence and local one-tick guarded coherence are
 equivalent data. -/
-def towerGuardCoherentEquiv
-    (system : FiniteViewSystem.{u}) :
+def towerGuardCoherentEquiv :
     system.Tower ≃
       { views : (depth : Nat) → system.View depth //
         GuardCoherent system views } where
   toFun := fun tower => ⟨tower.view, tower_guardCoherent tower⟩
   invFun := fun guarded =>
     towerOfGuardCoherent guarded.1 guarded.2
-  left_inv := by
-    intro tower
-    apply FiniteViewSystem.Tower.ext
-    rfl
-  right_inv := by
-    intro guarded
-    apply Subtype.ext
-    rfl
+  left_inv _ := FiniteViewSystem.Tower.ext _ rfl
+  right_inv _ := Subtype.ext rfl
 
 /-! ## Stream canaries -/
 
@@ -197,12 +166,5 @@ theorem incoherentBooleanViews_not_guardCoherent :
   exact
     Mettapedia.Coalgebra.CoherentPrefixTower.Tower.incoherentBooleanViews_violate_restriction
       atOne
-
-#print axioms ModePresheaf.GlobalSection.ext
-#print axioms towerGlobalSectionEquiv
-#print axioms coherent_of_guard
-#print axioms towerGuardCoherentEquiv
-#print axioms streamPrefixes_guardCoherent
-#print axioms incoherentBooleanViews_not_guardCoherent
 
 end Mettapedia.Coalgebra.GuardedFiniteViewSystem

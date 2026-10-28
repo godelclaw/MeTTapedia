@@ -9,8 +9,8 @@
       "FourColor.IntegrationCore"
     ]
   },
-  "fresh_check_definition": "Successful Lean elaboration, matching current source and direct import object digests. Recovered LP/Prolog/PLeaTTa and interface checks treat warnings as errors; the historical coloring curriculum records cosmetic warnings and separately checks admission dependencies.",
-  "fresh_checked_module_count": 1634,
+  "fresh_check_definition": "Successful Lean elaboration, matching current source and direct import object digests. Changed maintained libraries use warnings as errors. Per-receipt flags identify unchanged ancillary sources checked with ordinary cosmetic warnings; admission warnings remain fatal.",
+  "fresh_checked_module_count": 1645,
   "fresh_checked_modules": [
     {
       "module": "FourColor",
@@ -1504,35 +1504,204 @@
     {
       "module": "Mettapedia.Coalgebra",
       "source": "lean/mettapedia/Mettapedia/Coalgebra.lean",
-      "source_sha256": "98efc01460c6077af8b583c3efa84628ffc811931ee75a3c3838537b573cf5ee",
-      "object_sha256": "f3c216ed93a377371af529c3bfa9690c0eb0d231b94503e196e5f2972dab0601",
+      "source_sha256": "3a3035449db04f7297e3dbcf1885f56d8e8979f8888358dc3e2193c5f6de4b6c",
+      "object_sha256": "eaba221b8f9ffa601179fbfe4c0f3fc5a786f2da9e1188fdd26d98a22a967d7c",
       "warnings_as_errors": true,
       "direct_import_object_sha256": {
-        "Mettapedia.Coalgebra.StreamFinality": "ce0d47a094aefc2e9885e215e3d8dc423e55a4bf043c1b671dfde77191320670",
-        "Mettapedia.Coalgebra.StreamGSLT": "3ae417b72252f258dba0b3da1f0e047a623d1e0cfcef64c1cacaabb9c9e90e26",
-        "Mettapedia.Coalgebra.FiniteViewObserver": "0b2d77884fb333011a03308d7dd2585933894e06f0302d9a53c14f957bf96d4d",
-        "Mettapedia.Coalgebra.CoherentPrefixTower": "cbc4df187aa0ce5a0e0f197715bb4c1beb1b32edef366960ca5630a85483b8e7",
-        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "b9b259c5d0d4f529fcfeb586993821943afdf9ae9677015870a7111e21a24922",
-        "Mettapedia.Coalgebra.ComputationalTrinity": "cd0be6d828e98c48dae18ff26cfe1b7ede2a55c4a6eb0b8d06e1c52ae37e114a",
-        "Mettapedia.Coalgebra.FiniteViewComputationalTrinity": "474368a0bfda3a87bee6786dbe9c1578bacfe099b2d35f2470a241afff2b184e",
-        "Mettapedia.Coalgebra.GuardedFinality": "87bbaa0554fdbda2948f05b1662525602e2cdc008f95dfe212e8d9361419f050",
-        "Mettapedia.Coalgebra.GuardedFiniteViewSystem": "05b60ecec42d079842244217314db4dd0bdbcd2579604479398e2243ca9e4daa",
-        "Mettapedia.Coalgebra.InitialFinal.WellFounded": "768bd6b0141e6bdecba2aa9539cac1829622bbb0a465e646be3a72bb49e7b0fd",
-        "Mettapedia.Coalgebra.InitialFinal.Recursive": "47baa494df0c2e85062aa24239498d481bae41f246f36cea4f71503444f72352",
-        "Mettapedia.Coalgebra.InitialFinal.QPFMeet": "2cfb30f665d8451479af638594303996f25646fb565b94b9f62c257d617a37ab",
-        "Mettapedia.Coalgebra.InitialFinal.Instances": "48fc5f47814925703344a7d96174e48fd0c801280aaad9841399dfedf3bd8026",
-        "Mettapedia.Coalgebra.InitialFinal.Controls": "50522d24f2315af46b4d5b7743166714a0f59ce6777e4904600a3a5c2f7ca4d9"
+        "Lean.Util.CollectAxioms": "toolchain:Lean.Util.CollectAxioms",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.Coalgebra.StreamGSLT": "2fa05ce2cf43dd799dec6ae7fee646cd167dfa47040623f1e4f15e0170b8684e",
+        "Mettapedia.Coalgebra.FiniteViewObserver": "7848a21ea4a2e7a7140daac225b31cda270b91fbf72c2f6390a1e5770cbb7d03",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.Coalgebra.GrowingPrefixTower": "b3a5da23afa7cf896f9a46678bfe9e54dcb51093d7660008c627bb08ef0d240e",
+        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+        "Mettapedia.Coalgebra.ComputationalTrinity": "00f0505506d84c60170d1d23bed9d4aed3c6785e99625e5be0dd535d0db0fd95",
+        "Mettapedia.Coalgebra.FiniteViewComputationalTrinity": "3995fd87d38be59b6f515a13af27e2a1ee3abf0a01214aaf023274f3312aa068",
+        "Mettapedia.Coalgebra.GuardedFinality": "2c57c32b1f0210f599712b929a7f59103cfeff705f9f535585245b7c182efcaf",
+        "Mettapedia.Coalgebra.GuardedFiniteViewSystem": "4d8e073935d622402d72b26c43ead6b52bbdeec87d4b99873ac80c39b65e00b7",
+        "Mettapedia.Coalgebra.InitialFinal.WellFounded": "647f7c227051398f043cb953517b18a5660de00898b8fca28ff8b44dadb7e422",
+        "Mettapedia.Coalgebra.InitialFinal.Recursive": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+        "Mettapedia.Coalgebra.InitialFinal.QPFMeet": "adc3bc3a5e31f70d1eac9bc5e687bc7038b8f39eea32526c8941553ebc4d72a2",
+        "Mettapedia.Coalgebra.InitialFinal.Instances": "39212702d52ee518546205ee863ff5badd5cffe04ceff6976ed1026578b7c554",
+        "Mettapedia.Coalgebra.InitialFinal.Controls": "278db16819a8daaff536e12d8e506bbfd51881bbb203ea6ab670c02ddca4d28c"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.CoherentFiniteViewSystem",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/CoherentFiniteViewSystem.lean",
+      "source_sha256": "c972942c50077db7bb6badbdb8f91213bea27fe1710d6bca9af13c14f4566b98",
+      "object_sha256": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.CoherentPrefixTower",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/CoherentPrefixTower.lean",
+      "source_sha256": "6ed8351008bdddf02acc4edbfbf4357e0749731181e24f299b30097891907d12",
+      "object_sha256": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.ComputationalTrinity",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/ComputationalTrinity.lean",
+      "source_sha256": "f1739548e7f50726fc0d00144eb0762912630fa4d19e5a9f7779c07543767e4d",
+      "object_sha256": "00f0505506d84c60170d1d23bed9d4aed3c6785e99625e5be0dd535d0db0fd95",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.FiniteViewComputationalTrinity": "3995fd87d38be59b6f515a13af27e2a1ee3abf0a01214aaf023274f3312aa068",
+        "Mettapedia.Coalgebra.StreamGSLT": "2fa05ce2cf43dd799dec6ae7fee646cd167dfa47040623f1e4f15e0170b8684e"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewComputationalTrinity.lean",
+      "source_sha256": "5cf75de9a19af89b121bcb7092eebb660cb86427c543315e4ecbe9a972304a17",
+      "object_sha256": "3995fd87d38be59b6f515a13af27e2a1ee3abf0a01214aaf023274f3312aa068",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mathlib.CategoryTheory.Discrete.Basic": "e5950024a0c60730a95343903e55ee4aef43cbb71e0fe4544e40ec46bd19b222",
+        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+        "Mettapedia.Computability.ComputationalTrinity": "5de82503eb409bdca826d3bab4ae37456c4e49263092134ae56176984cea6895"
       }
     },
     {
       "module": "Mettapedia.Coalgebra.FiniteViewObserver",
       "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewObserver.lean",
-      "source_sha256": "41b272cc34dd3fda55fd991064ba3c92659aee1ce15f1f0a4b7b5c78b8741b36",
-      "object_sha256": "0b2d77884fb333011a03308d7dd2585933894e06f0302d9a53c14f957bf96d4d",
+      "source_sha256": "7667c34810c830dcc214352085fedb8feaa2a7fd4cf4286a8ea0070a8d62ca09",
+      "object_sha256": "7848a21ea4a2e7a7140daac225b31cda270b91fbf72c2f6390a1e5770cbb7d03",
       "warnings_as_errors": true,
       "direct_import_object_sha256": {
-        "Mettapedia.Coalgebra.StreamFinality": "ce0d47a094aefc2e9885e215e3d8dc423e55a4bf043c1b671dfde77191320670",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
         "Mettapedia.GSLT.Dynamics.ObserverRelativeTransformationCrown": "2798689e1d6a5ba4174f5e08ddbcfdbbf16f3b87b3a8025d817e7efd694fd9bd"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.FiniteViewSystem",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewSystem.lean",
+      "source_sha256": "a31e59dff566dc4b484e885b80e4473730298cc3a4211f41295e240217c61cd6",
+      "object_sha256": "e4a4fa8903e0b2fc2b0a66bc8c90cbf9679023b8f14ec4294dcdf3d76fed71a0",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mathlib.Data.Fin.Basic": "34b1bcdadb5857ba6fcf2bb50711283a85087c45f37504b6c0ad48c1741b3db6",
+        "Mathlib.Logic.Equiv.Defs": "7fa81de85972e99c9ad6e1f6165265a7c941b7af66371b39a7fc2b3a0fb19074"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.GrowingPrefixTower",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GrowingPrefixTower.lean",
+      "source_sha256": "b1a6e41e038664c09ad8c05225fb2c2fa38bb7366169c848bbd260dbdee18de0",
+      "object_sha256": "b3a5da23afa7cf896f9a46678bfe9e54dcb51093d7660008c627bb08ef0d240e",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.GuardedFinality",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GuardedFinality.lean",
+      "source_sha256": "a7dea713e39cf5562438201ca7fe23088b93efc13f0ad4d9d91e586fde09d12e",
+      "object_sha256": "2c57c32b1f0210f599712b929a7f59103cfeff705f9f535585245b7c182efcaf",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.TypeTheory.GuardedTimeModeTheory": "d86b6b0df2f91e3d6bd8b7545f58a913d16b9f0a3928fcc1223c114c068b896f"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.GuardedFiniteViewSystem",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GuardedFiniteViewSystem.lean",
+      "source_sha256": "2aa1c69f657281b354de6a57de1ffc09103fee9e6ef1035e679dee6298f24c03",
+      "object_sha256": "4d8e073935d622402d72b26c43ead6b52bbdeec87d4b99873ac80c39b65e00b7",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+        "Mettapedia.TypeTheory.GuardedTimeModeTheory": "d86b6b0df2f91e3d6bd8b7545f58a913d16b9f0a3928fcc1223c114c068b896f"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.Controls",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/Controls.lean",
+      "source_sha256": "40506f41e2e43d9f5be423bbefecd9afa8d004fb92d0e87fb191dfde98e3dba0",
+      "object_sha256": "278db16819a8daaff536e12d8e506bbfd51881bbb203ea6ab670c02ddca4d28c",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.Recursive": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+        "Mathlib.Data.QPF.Univariate.Basic": "5743bdeb401229954f4c23ea225401095a6fc2adc51cfca06c3addf934a30edd"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.Instances",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/Instances.lean",
+      "source_sha256": "c6114b6a40b0ea81dca26779b7df6c986eb78cae8a03dc449bbdb93e78aeb23e",
+      "object_sha256": "39212702d52ee518546205ee863ff5badd5cffe04ceff6976ed1026578b7c554",
+      "warnings_as_errors": false,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.QPFMeet": "adc3bc3a5e31f70d1eac9bc5e687bc7038b8f39eea32526c8941553ebc4d72a2",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.GSLT.Core.NonFactorization": "4aba1efd2b5ab2ee18889adf3ff55d74bbc8a1882a897acd941b7c1dd7d8fd58",
+        "Mettapedia.GSLT.Poly.CollectionLanguage": "fe8325b2ed0cea8f796bfedba08a9b0d8b6867a697cdea168b277f86fb963bdd"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.QPFMeet",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/QPFMeet.lean",
+      "source_sha256": "c39d3d2f7e66ecb0f5dd94907900dca2f06948fc777214d92117df8cf897842c",
+      "object_sha256": "adc3bc3a5e31f70d1eac9bc5e687bc7038b8f39eea32526c8941553ebc4d72a2",
+      "warnings_as_errors": false,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.Recursive": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+        "Mettapedia.GSLT.Core.NonFactorization": "4aba1efd2b5ab2ee18889adf3ff55d74bbc8a1882a897acd941b7c1dd7d8fd58",
+        "Mettapedia.GSLT.Logic.Views": "59f8a4a257aab17925b82fff971f923d949193223b2a1dd4de552df252aba6bc",
+        "Mathlib.Data.QPF.Univariate.Basic": "5743bdeb401229954f4c23ea225401095a6fc2adc51cfca06c3addf934a30edd"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.Recursive",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/Recursive.lean",
+      "source_sha256": "c768d7b1927b8503afe8b14d39421db06c455110daea6c561a55909dd4be3915",
+      "object_sha256": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.WellFounded": "647f7c227051398f043cb953517b18a5660de00898b8fca28ff8b44dadb7e422"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.WellFounded",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/WellFounded.lean",
+      "source_sha256": "d8b3f587ab28311ce0867ab80047aa73f9d1702ccb503c6545cd20232137f670",
+      "object_sha256": "647f7c227051398f043cb953517b18a5660de00898b8fca28ff8b44dadb7e422",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mathlib.CategoryTheory.Endofunctor.Algebra": "3995e32bf5b262e66ee8487533bee80aebd26f9f283c389b4c868b3b854d07dd",
+        "Mathlib.CategoryTheory.Limits.Preserves.Basic": "ee9fc867ba2f22a7200d26960801c2863cae2bb8fe9ef355e2a8af224f57ee3d",
+        "Mathlib.CategoryTheory.Limits.Types.Pullbacks": "618dcf716216bb34d465d74ada06c73cb04dc9d01c80282480cbf20ec480a61d",
+        "Mathlib.Data.Set.Lattice": "7e6ba9934472d5bd1212d2f0017235b8572800d11ab20bb368c3f660432b1492"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.StreamFinality",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/StreamFinality.lean",
+      "source_sha256": "4f54d23f5fa3056b3d464862d7c890e61f979409e64c4aa53a63c3f3f678e68c",
+      "object_sha256": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.FiniteViewSystem": "e4a4fa8903e0b2fc2b0a66bc8c90cbf9679023b8f14ec4294dcdf3d76fed71a0"
+      }
+    },
+    {
+      "module": "Mettapedia.Coalgebra.StreamGSLT",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/StreamGSLT.lean",
+      "source_sha256": "09b73616d0b330441df2d2ddc5d545e2fb3ae0170e9ece9bf73e0cf3350c6e22",
+      "object_sha256": "2fa05ce2cf43dd799dec6ae7fee646cd167dfa47040623f1e4f15e0170b8684e",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.GSLT.Core.GSLT": "c9375dcf1c5a3f7e67538812a2974c53b325ceaa18365c6d6ee014420ad54e8c"
       }
     },
     {
@@ -2412,21 +2581,6 @@
       "direct_import_object_sha256": {
         "Mettapedia.CognitiveArchitecture.Consciousness.Valence": "8f9aac035d032ac5de1cc06eb03de5b8d52e6b17bf5c840f2f86ffe8591f6dc9",
         "Mettapedia.CognitiveArchitecture.ProtectedMindAgentWave": "39cca6a000d78ca48b0e35af94c258bf5e570cb6d5e479bc639b4fa3ac9f36e9"
-      }
-    },
-    {
-      "module": "Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators",
-      "source": "lean/mettapedia/Mettapedia/CognitiveArchitecture/Consciousness/ArchitecturalIndicators.lean",
-      "source_sha256": "3608740e8f5d01b44302b1d1da920b15595a0c04e5e5bb9d899354fe869401ae",
-      "object_sha256": "98a126b27072fcfe72d30ed8c595add88c5b4de28d2842194e46a03c191df527",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.CognitiveArchitecture.Agent.WorldState": "35f3b80142eb8d21704c4def9d7496c592aa7af21543b90853ceee144f60516a",
-        "Mettapedia.GSLT.Core.PredicateInvariance": "d33341c892d93d60c80fcdf4ba28fd0eab981ad5ecee5878a4165fcc63481592",
-        "Mettapedia.GSLT.Logic.PrivilegedView": "15ed508840d992a3e1217370d42d7703200b742c337292162c492a56f72e0c08",
-        "Mettapedia.GSLT.Logic.ObserverRefinement": "13031243ff7e4ced0145f0a9a5a91f0954a5d968751fe26036baf071cf03e3e4",
-        "Mettapedia.Logic.DisplayedAnytimeEvidence": "91799c2b6679ffd031a05278de168512a40d45ffd0123c70b81d7203f5ddc9fe",
-        "Mettapedia.OSLF.Framework.HennessyMilnerNativeTypes": "ba0551b04f0f2bffddcfdbc86f0d365e7eb0f2d7b6163f1cbd1f106167e7876a"
       }
     },
     {
@@ -5110,18 +5264,6 @@
       }
     },
     {
-      "module": "Mettapedia.GSLT.Contracts.DependencyClaims",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Contracts/DependencyClaims.lean",
-      "source_sha256": "31181fa5ce71d159a1b99b5af873a952baa04d6b008a2851a02caecaa68aac5a",
-      "object_sha256": "d0b2aa880c100de25557078b1ddf05e7ea46be5a766466602dfc95b5086ad1d0",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Contracts.RelyGuaranteeClaims": "46f8884952b1e094df9894968948d22b9fe069bd09f80d735172fef8a35ae0ac",
-        "Mettapedia.Machines.ReadOnlyQuery": "314769eb59599808c03c81f992165304240009c3f0c40229328f44ba87fe627e",
-        "Mathlib.Logic.Relation": "2bae14c2e79db87e79cbb7975004d15351b394d2347e8f869dd334044783577e"
-      }
-    },
-    {
       "module": "Mettapedia.GSLT.Contracts.ReifiedActions",
       "source": "lean/mettapedia/Mettapedia/GSLT/Contracts/ReifiedActions.lean",
       "source_sha256": "773da46849efc76d70962c5cb6dfa8f89bc1a25b92c8a4859b55c0404e7aee2a",
@@ -5570,71 +5712,6 @@
       }
     },
     {
-      "module": "Mettapedia.GSLT.Distinction",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction.lean",
-      "source_sha256": "6beddaf1d90888e05bdfbc25a08776eece9fb0f0ba2b2192da4369da8652c1ca",
-      "object_sha256": "cec1e725f3aa048cecf0c95ac3fb9954b226cfea8a2c1e66d2bf0b484d1b6a60",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Distinction.BehaviouralMetric": "6d0ddcdec9920b8634aadcae600ea4f40977343fbd88568270608390c84fb958",
-        "Mettapedia.GSLT.Distinction.BehaviouralMetricControls": "da86abd0f5db9d05bb9e19eef7213c5783c90cd25d88770ca13c73f18a8c411e",
-        "Mettapedia.GSLT.Distinction.GradedCongruence": "09388c178701d7a40e0863fab2b108091b219b8e5d573cf90388b7724dc48bca",
-        "Mettapedia.GSLT.Distinction.PathInference": "becb364171b322c24c7422cedc67f062a6c55c90d74f2a12d9bac620ed1cfd05",
-        "Mettapedia.GSLT.Distinction.HistoryGrammar": "edd21f592b00dc7bed7cbbebe775438ab34e3fa1653401e211c3adcd6283f16d",
-        "Mettapedia.GSLT.Distinction.RouteGrades": "fa0e03561d7cfccebcbe522403a9ec7bff484d7ac71ac5ac1802b8172d602042",
-        "Mettapedia.GSLT.Distinction.DemandStrategies": "67142176702269747cde39b33781949c5208e2013de900887da30bf8e6ee8ba3",
-        "Mettapedia.GSLT.Distinction.Dictionary": "e6a63125f28ccdd019ed45881c7866dd4de0d3dc5e9cac9376fc6316f23c665a",
-        "Mettapedia.GSLT.Distinction.Isometry": "35f65cda899957a0bab0c9c855e4bd00ffc8e1814d1ccadbb637711b04d6febe",
-        "Mettapedia.GSLT.Distinction.RelationalIsometry": "86f011e34ba10caa2e3eb80af7d9dd9bc20b10deade32658652e3223b7aa080a",
-        "Mettapedia.GSLT.Logic.HennessyMilnerEnumerationMetric": "3f35a577d6d39ce54eac439ca3d217d2de5bdc29e6249604a075cf9b5496f34a",
-        "Mettapedia.GSLT.Logic.EnumerationMetricControls": "5927b88cc9baed53f900be726ac28583f785fb2f26766921d4b423962973b627",
-        "Mettapedia.GSLT.Distinction.IsometryControls": "3a70983646dc2178f5c8674d2bed383ccf10c590e4a2938344f0db9501ecb2a0",
-        "Mettapedia.GSLT.Distinction.BlockTransport": "7685c903b324e10b7995580fbe896d4eb41932bcfc24e5bc79cd8b866299f496",
-        "Mettapedia.GSLT.Distinction.BlockTransportControls": "488d0e29d05eb9ca776ca876620a5742642d7336160682eb9573579d3760e667",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocks": "81e2bfc88d02fe08ffb09318513bd7f7035ce22d9a2d2839e399b3ccbd379c84",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocksControls": "be978b21c8341b4a3cd222aed74bb371b310ebee958f11611fe43b5c06508a52",
-        "Mettapedia.GSLT.Distinction.OrderedSimulation": "f83d44cf8726ad46483b3bc746b5e2f7750446a19f559898fbbdf65235b70ece",
-        "Mettapedia.GSLT.Distinction.RelocationRelation": "9ce8ea8ac540892fe87bf8ca3697b5e67ffd1c51a41c67a2f1ddfbc5b89053cb",
-        "Mettapedia.GSLT.Distinction.RelocationRelationControls": "8ff56d5e84951cab886934f9d122795c4c4d1ac26d196ae2579b754c42c8fbc7",
-        "Mettapedia.GSLT.Distinction.CausalGluing": "1e9fc8f8fb7ec13441f8b2ed85cca2e771740c60b290b26c6dac5c90b4e8e039",
-        "Mettapedia.GSLT.Distinction.CausalGluingControls": "6832f1a4d469a7c307d7cc48d175cc63a8dd0d1be58efa919e7c1af5a8942827",
-        "Mettapedia.GSLT.Distinction.HistoryIndependence": "a2966ce267757aacd791eaecc8b7af3b4e45f1cfec10211bad9d8c9e3646fd90",
-        "Mettapedia.GSLT.Distinction.SpanTransport": "dbc1a72d8515603e44014ac375b953caaea2b937b46fb20196ec2d934329f5d2",
-        "Mettapedia.GSLT.Distinction.SpanTransportControls": "2224b8a5983770c547b8f1c2f6f3fe20cbadefb2893e121191d54c8ab502cc2e",
-        "Mettapedia.GSLT.Distinction.MaterializationObserver": "ee553d05617d5860c66e6a3cfe67f3fe09ce10e39ffd6fdc27edba1a9b458b55",
-        "Mettapedia.GSLT.Distinction.Consolidation": "9eb96ee73847ab3ce630ba1663ac6f7d81569bb0f61b4ca3387b524bf6ca1c6a",
-        "Mettapedia.GSLT.Distinction.DependentComposition": "a3eebe7b948155335f56bea41fd4ae503786e7f641b0eb11360e17e0e76fdffa",
-        "Mettapedia.GSLT.Distinction.DependentCompositionIdentity": "68543f6885de17e69e315c6240b8b0b4300729bc4b4e9b5f48bf7e021213571c",
-        "Mettapedia.GSLT.Distinction.DependentCompositionControls": "7fe8bf884c3ebc91404a10900f45a2d3d96573cec5be82a579163ba682530112",
-        "Mettapedia.GSLT.Distinction.SimulationComposition": "23ec225e03d161f46c105cd681c600b9a66e0d1f2737dae92092ee6b064eb79c",
-        "Mettapedia.GSLT.Distinction.SimulationCompositionControls": "9f98fc96559fbf62f2178496b6d9ef18d1c8692cb76d5ccf08996c79f1ba3be7",
-        "Mettapedia.GSLT.Distinction.OrderedSimulationSpans": "c08de4fc93898d0e33945604e5a5ab089cca78e416986393fc57be23349a0642",
-        "Mettapedia.GSLT.Distinction.OrderedSimulationSpansControls": "a6cb199f2c6b5c3f0af70bca3a8cf0432b9cd8232fca063693a3d950866d2629",
-        "Mettapedia.GSLT.Distinction.OrderedAdministration": "a75093633bd5f0096df4651c8c6a76839bb6c00fe0f0e6c34c992bacd9684e10",
-        "Mettapedia.GSLT.Distinction.OrderedAdministrationControls": "b6f5801742e170bb4e6e5debea9fb21a4ae14cd4927cc2fa43fe1922650cfaf0",
-        "Mettapedia.GSLT.Distinction.FrontierObservation": "f1b287125008a739d91ca86b1eb61c1013594eb5f9253dd3afcd3f2ce777e1d1",
-        "Mettapedia.GSLT.Distinction.ActionCommutation": "cf3aeb7764cd877f07be207d879bb41f686dc068086d87ade2a3d951e2b62b37",
-        "Mettapedia.GSLT.Distinction.RunOutcomes": "8e5fc4909842969af16797412503aad85830cf4a4fc16645fbe4194afe153e35",
-        "Mettapedia.GSLT.Distinction.StatusObservers": "217f5f7ce26b1b28b632320424b8fff27bd932efe42f9cb6c650d4254ec8524f",
-        "Mettapedia.GSLT.Distinction.HistoryObserver": "150453a47bf13b8740f6095c14be77dd228f409229a7857cdaa9b0c9da6e7166",
-        "Mettapedia.GSLT.Distinction.HistoryObserverControls": "015f61282a1014969427db3d4c7f6c0d916674affc1d0aada07aa4389f491c9a",
-        "Mettapedia.GSLT.Distinction.HistoryTwoSidedObserver": "1b94c7821b78db7c5f933464add2f76e2e55db51404d8a6409d780b706833493",
-        "Mettapedia.GSLT.Distinction.Probabilistic": "127d89e0be59c98b57fb408458129d1aff55e72640667dabe302716e1f079b42",
-        "Mettapedia.GSLT.Distinction.HistoryCoverage": "da416b1c096957e2fc5a86b674de368b0b15b334570102ef16423563d4c38763",
-        "Mettapedia.GSLT.Distinction.HistoryContextualReadout": "67fdc27a0c1f849eec783fa0009242339da73822388b646908fb80acfe53780e",
-        "Mettapedia.GSLT.Distinction.HistoryCappedStage": "de2334fa457a3ae81e06e45c40def52415503dc0fa8b2ac4b9e928f965854aec",
-        "Mettapedia.GSLT.Distinction.HistoryCoverageControls": "f63087ab425652e42ccb06cc884ddb3e854014d8a2f26ec239e7ac83dd44d1bc",
-        "Mettapedia.GSLT.Distinction.HistoryContextCategory": "d6a0c7b66cf2efde0cbfac837020c3703e5f9b47f2710cfb1b8713d6cbe1e7fe",
-        "Mettapedia.GSLT.Distinction.HistoryContextTwoSided": "064bce2204d0e5fbc6c7edb102a867b1330161aa6fc67169ac02d5c49b5a051f",
-        "Mettapedia.GSLT.Distinction.HistoryContextCost": "7f7a85ec6b359efaace2eda8476ab57a52274e04a1710f76c46e5e5705068fce",
-        "Mettapedia.GSLT.Distinction.HistoryCoverageProfiles": "f38d79ea5e22ee8679afb4ea337014efa083597b55a514b715c827e28fe64bb9",
-        "Mettapedia.GSLT.Distinction.HistoryContextControls": "75490f2d9fae22da2a2ecadd42181fa9ed92f161e1fcdfa617e3b0f220694c3e",
-        "Mettapedia.GSLT.Distinction.HistoryContextHostProfile": "663828fe6fbeff32ed259a0d094c73136542b06bc6f4120714cf82d2f89b10b7",
-        "Mettapedia.GSLT.Distinction.DemandStrategiesControls": "af0f25940c1c5b8a925097f65eb72b9ff57488ec715a563495f5c008011bdf1e",
-        "Mettapedia.GSLT.Distinction.OptionGraph": "40328da47f28ce3aa73d0cb1e012a37acf4ee18bfdedf17bff6dcbc0f795cdd5"
-      }
-    },
-    {
       "module": "Mettapedia.GSLT.Distinction.ActionCommutation",
       "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/ActionCommutation.lean",
       "source_sha256": "fe7dc368490ab99bf56715f167a1612a1f6e932f8262b9a5abae0326c1a98be7",
@@ -5682,33 +5759,6 @@
         "Mettapedia.GSLT.Distinction.CausalGluing": "1e9fc8f8fb7ec13441f8b2ed85cca2e771740c60b290b26c6dac5c90b4e8e039",
         "Mettapedia.GSLT.Dynamics.MemoizationObserver": "40aeeb35a538a599d01f6002ef00e2984f4ac71abb9c92937c85b2bcfdbf9f96",
         "Mettapedia.GSLT.Core.NonFactorization": "4aba1efd2b5ab2ee18889adf3ff55d74bbc8a1882a897acd941b7c1dd7d8fd58"
-      }
-    },
-    {
-      "module": "Mettapedia.GSLT.Distinction.Dictionary",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/Dictionary.lean",
-      "source_sha256": "704a7e26d431f03f9eb7d3c05082f3fa19c0f23bcb45a19bc3a78690c5f99489",
-      "object_sha256": "e6a63125f28ccdd019ed45881c7866dd4de0d3dc5e9cac9376fc6316f23c665a",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Distinction.GradedCongruence": "09388c178701d7a40e0863fab2b108091b219b8e5d573cf90388b7724dc48bca",
-        "Mettapedia.GSLT.Logic.PrivilegedView": "15ed508840d992a3e1217370d42d7703200b742c337292162c492a56f72e0c08",
-        "Mettapedia.GSLT.Dynamics.MemoizationObserver": "40aeeb35a538a599d01f6002ef00e2984f4ac71abb9c92937c85b2bcfdbf9f96",
-        "Mettapedia.GSLT.Dynamics.CacheCoherence": "edb13e00f78a920995a550c16cb72218bb9af051642efd72f294836cde909ee4",
-        "Mettapedia.GSLT.Dynamics.OrderedDemand": "bbeb220fad25bd342e9ff2c9ecfb620588ef282e75306e99aa41c46b0b445628",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocksControls": "be978b21c8341b4a3cd222aed74bb371b310ebee958f11611fe43b5c06508a52"
-      }
-    },
-    {
-      "module": "Mettapedia.GSLT.Distinction.OrderedAdministration",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/OrderedAdministration.lean",
-      "source_sha256": "2d278790e3eca54e25ebed05b21c3cd508e8ecde7751fc8ab9379bc2a2eaa68c",
-      "object_sha256": "a75093633bd5f0096df4651c8c6a76839bb6c00fe0f0e6c34c992bacd9684e10",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Distinction.OrderedSimulation": "f83d44cf8726ad46483b3bc746b5e2f7750446a19f559898fbbdf65235b70ece",
-        "Mettapedia.GSLT.Distinction.OrderedSimulationSpans": "c08de4fc93898d0e33945604e5a5ab089cca78e416986393fc57be23349a0642",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocks": "81e2bfc88d02fe08ffb09318513bd7f7035ce22d9a2d2839e399b3ccbd379c84"
       }
     },
     {
@@ -5818,40 +5868,15 @@
       }
     },
     {
-      "module": "Mettapedia.GSLT.Distinction.ProductionLicencesControls",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/ProductionLicencesControls.lean",
-      "source_sha256": "402ffc6c4e9f6d7930d0d56d8cee761f11c5b2f8b45f5a4069ea32f131091c78",
-      "object_sha256": "e7e43aa8b5753294d2ba27077b114c4822238fb4c2c1040b60965f0e008e38f7",
+      "module": "Mettapedia.GSLT.Distinction.ProductiveBlocks",
+      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/ProductiveBlocks.lean",
+      "source_sha256": "670da38cf090b2b09075e5fa1a3a12e629be43781678df0c75df83537c12cc22",
+      "object_sha256": "fc7e35006c6bff488f0013f10656a97554bf93b3f2c9f368a1f021e93fef82b1",
       "warnings_as_errors": true,
       "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Distinction.ProductionLicences": "788a756a9787a2c478d6f93152be594b2a88a105698339a1af226e15dbac3ee1",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocks": "81e2bfc88d02fe08ffb09318513bd7f7035ce22d9a2d2839e399b3ccbd379c84",
-        "Mettapedia.GSLT.Dynamics.WeightedResumptionControls": "c8de5d4da65fc0874910ef78636cb06f49b4cfd9dd8709a012b501790761cab6",
-        "Mathlib.Algebra.Tropical.Basic": "69406ceeb5f22f56de51ffaea2b34ef1a5092e8a53a5453acb68ba90fb6eb20e",
-        "Mathlib.Data.ZMod.Defs": "1dacb606eca3b8b3938c75e295f301de91cf9b1fe15923e485b342003229b61f"
-      }
-    },
-    {
-      "module": "Mettapedia.GSLT.Distinction.RelocationRelationControls",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/RelocationRelationControls.lean",
-      "source_sha256": "ad8eef9c3dde76064db531fe6c49ec449f6d250cc2575aeb741c78a3851da6f1",
-      "object_sha256": "8ff56d5e84951cab886934f9d122795c4c4d1ac26d196ae2579b754c42c8fbc7",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Distinction.RelocationRelation": "9ce8ea8ac540892fe87bf8ca3697b5e67ffd1c51a41c67a2f1ddfbc5b89053cb",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocks": "81e2bfc88d02fe08ffb09318513bd7f7035ce22d9a2d2839e399b3ccbd379c84",
-        "Mettapedia.GSLT.Dynamics.CacheCoherence": "edb13e00f78a920995a550c16cb72218bb9af051642efd72f294836cde909ee4"
-      }
-    },
-    {
-      "module": "Mettapedia.GSLT.Distinction.RunOutcomes",
-      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/RunOutcomes.lean",
-      "source_sha256": "277c5bdf4d4092ccb78160d648fdecaf900a77c2f448308c705ec791dae0d678",
-      "object_sha256": "8e5fc4909842969af16797412503aad85830cf4a4fc16645fbe4194afe153e35",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.Distinction.ProductiveBlocks": "81e2bfc88d02fe08ffb09318513bd7f7035ce22d9a2d2839e399b3ccbd379c84",
-        "Mettapedia.GSLT.Dynamics.CacheCoherenceContract": "a171d214c834ab18061320b919b4b1b9b330c224db3aabfbe2c9d9505231d3fe"
+        "Mettapedia.GSLT.Distinction.BlockTransport": "7685c903b324e10b7995580fbe896d4eb41932bcfc24e5bc79cd8b866299f496",
+        "Mettapedia.GSLT.Dynamics.OrderedDemand": "bbeb220fad25bd342e9ff2c9ecfb620588ef282e75306e99aa41c46b0b445628",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
       }
     },
     {
@@ -9139,23 +9164,6 @@
       }
     },
     {
-      "module": "Mettapedia.GSLT.LanguageDef.OperationCostProtocol",
-      "source": "lean/mettapedia/Mettapedia/GSLT/LanguageDef/OperationCostProtocol.lean",
-      "source_sha256": "78f5ae23da4fdd9303ce9591e835520a5f64f847fea7df01ad51239cebdcd25d",
-      "object_sha256": "6b3b4c724a1e42f6f07cc9fd414c49f0e792df811f7cd004dcd3b58029bea01d",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.GSLT.LanguageDef.OperationContracts": "e510683202daa4cac4df8f2d47f7eaa8df8571450c63a57be75913b5ce362658",
-        "Mettapedia.Machines.NativeCostLedger": "7b9045688e66c53f23bbaa103d60dc09e3078bf0ed4623e9e53228c246b34b76",
-        "Mettapedia.Machines.Cursor.Protocol": "61ac12565f1e19e6ff2aae85b0c8c7c05c231ebae694a5c8d36741eb92e53ba4",
-        "Mettapedia.Machines.ReadOnlyQuery": "314769eb59599808c03c81f992165304240009c3f0c40229328f44ba87fe627e",
-        "Mettapedia.Machines.ReadyQueue": "7b29fef3b6988862f3b229d53db4502f36fc629c35e5e9dac015bad5dca8aa7e",
-        "Mettapedia.Machines.ValidatedCommit": "daeb408b2b4f952dea391221b54f5f0db46dd1a2a2c3ae741020d44816371cee",
-        "Mettapedia.GSLT.Contracts.IndexedAuthority": "ae8039e044a7d07490d0bc3d1dd064d4896b4d5755abaa6a81b3f92b5209edc1",
-        "Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone": "73a4a0e115532e78c7697880098c88522dd9586bb2409fda3a41d0f5a0bb8ef9"
-      }
-    },
-    {
       "module": "Mettapedia.GSLT.LanguageDef.OptimizationAdmission",
       "source": "lean/mettapedia/Mettapedia/GSLT/LanguageDef/OptimizationAdmission.lean",
       "source_sha256": "5b446c2a4ed014a860c52ade058827f7d4bd061f3a9570d1655e0ee148aa376c",
@@ -9395,6 +9403,21 @@
       }
     },
     {
+      "module": "Mettapedia.GSLT.Logic.PrivilegedView",
+      "source": "lean/mettapedia/Mettapedia/GSLT/Logic/PrivilegedView.lean",
+      "source_sha256": "5f50763ba4fb89ecb2b5585b158520a80728c8fd2f7d3b146bfb4e64ee22bec7",
+      "object_sha256": "44191acce262a039a36a0ad0f871bb2a951ec07e835a071c1d15179d56584487",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.GSLT.Logic.Views": "59f8a4a257aab17925b82fff971f923d949193223b2a1dd4de552df252aba6bc",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.TypeTheory.MaterialSets.Hypersets.Finality": "3348e93f225a6a1b8da9c534c572fc6d4e34cfdf9230ada47c51b0a901c712ae",
+        "Mathlib.Computability.MyhillNerode": "e8e7d37ab42076e9542a5b467906884d2e799148873b4ba94995a0e24a4a58ba",
+        "Mettapedia.GSLT.Core.StepFree": "0da0c0cac231ebda0e89712b13a638622f3ad60708d7241bbd4dcb2d540c4d7b",
+        "Mettapedia.GSLT.Logic.SaturatedRelativeBisimilarity": "952969075547ea49f1d35fa0a50f94ae2c000f94d0e055e73b90e030507ca434"
+      }
+    },
+    {
       "module": "Mettapedia.GSLT.ReproducibleBuild",
       "source": "lean/mettapedia/Mettapedia/GSLT/ReproducibleBuild.lean",
       "source_sha256": "f23b5ea2b3e3b8aa28d098be15048d97a81a546bb701972a4f8892184bae10b1",
@@ -9612,6 +9635,18 @@
       }
     },
     {
+      "module": "Mettapedia.Languages.HOLLight.IncrementalExecution",
+      "source": "lean/mettapedia/Mettapedia/Languages/HOLLight/IncrementalExecution.lean",
+      "source_sha256": "1b50e9772a225ee48937b4beda8f3f35f22802abc52d58dc50f7c5003f7bac8a",
+      "object_sha256": "6de1f179177618b538350f197872820bc80a6d8fcd3813ae01cbd963e0ea18b3",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Languages.HOLLight.ExportCodec": "14528019cf43cd90de3e2881390f3bb905f38c2d6fd58832d1ac4c848d5c67df",
+        "Mathlib.Logic.Function.Iterate": "627d3f9270c3354b692fd85582f41162f2414620f2e856ef0c6e85aa754a6c8c",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      }
+    },
+    {
       "module": "Mettapedia.Languages.MM0.ServiceInferenceCache",
       "source": "lean/mettapedia/Mettapedia/Languages/MM0/ServiceInferenceCache.lean",
       "source_sha256": "88170baa9bc681de72147719997c868648dcae3015060eb2c650b0752052c18d",
@@ -9679,27 +9714,6 @@
       "warnings_as_errors": true,
       "direct_import_object_sha256": {
         "Mettapedia.Languages.MeTTa.HE.SpaceQuerySupport": "fe1b55b9d82e720d4556e308b4428c3a722fb2fc5ec8340d638cfcfe15cc8907"
-      }
-    },
-    {
-      "module": "Mettapedia.Languages.MeTTa.HE.CeTTaRuntimeContracts",
-      "source": "lean/mettapedia/Mettapedia/Languages/MeTTa/HE/CeTTaRuntimeContracts.lean",
-      "source_sha256": "030ece24d90c956a382b6179a19637da6056a1ad4a25d58dd5c8665ef6ef2335",
-      "object_sha256": "73ef56cb65ff92dd43fc65be320703f44130fde6e846b087758f965a64084763",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal": "d6617fa87089f0f8a30f705bae5a06f663b35fbdb21404803e74152ea35f333b",
-        "Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness": "2c414728584605c1b37f7a6238189b1b37f7735f18ee593dd195b1878eaf766e",
-        "Mettapedia.GSLT.LanguageDef.NativeOpsCStatement": "0c2797061404dbf1ba95bf2e76a5aad34c38af7ebc8a9955fe9b1fe96bfce9ec",
-        "Mettapedia.GSLT.LanguageDef.NativeOpsCLexSegments": "47a4bc2dac63d37cd1dd2588c83766645390c188472ec1bc727b417bf172beaa",
-        "Mettapedia.GSLT.Distinction.ProductiveBlocks": "81e2bfc88d02fe08ffb09318513bd7f7035ce22d9a2d2839e399b3ccbd379c84",
-        "Mettapedia.Languages.MeTTa.HE.IncrementalTableSemantics": "a1ad9b1ae933c56a1894a360696d01780534e65f2721e65bab500e372910b33c",
-        "Mettapedia.Languages.MeTTa.HE.BridgeMatrix": "2b71df5f192c2ab1656dd39c494bdfbaa2a0de06b2eb256c335b6ab2098f18a6",
-        "Mettapedia.Machines.CMemory.EffectStatements": "c8cf817ce28b449079ddea44b0b1d7907dca2f51f811c1cdc1f45bba172c3a54",
-        "Mettapedia.Machines.CMemory.Tactic": "af5cd63213c8937e3f108da6b2f1ffa36476604d2d367bde2362e5b3de278cbc",
-        "Mettapedia.Machines.CMemory.Array": "e909ad69d3f37d85b089810e3ba83279b7d1873a4390db35db957cc5381d575c",
-        "Mettapedia.Machines.CMemory.ProductiveBlocks": "c02bc77bb235d3ea669e8cb6d0aec520be6ac484a621145328724fb92a496f0e",
-        "Mettapedia.Machines.LinkedScopeStack": "817521016d1bd93dd22377e93042f583596bfe7d9384e46dccfeab0421e877f6"
       }
     },
     {
@@ -12915,6 +12929,18 @@
       }
     },
     {
+      "module": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramResumptionExecution",
+      "source": "lean/mettapedia/Mettapedia/Languages/MeTTa/PeTTa/Bridges/MeTTaIL/GeneralProgramResumptionExecution.lean",
+      "source_sha256": "6124c7882938258f0c1a424446efbb9ea9b68dfe03c0bb3b255f4c317fb45430",
+      "object_sha256": "a4e124e237771955194bc45642c0b96b34594b01b6c864c2c7d38298b58465a3",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution": "68ec0b24d0072f7ca4852a09ff4f148cca453cdb947fd889cb10381290f57fe2",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.Machines.ExecutionHistoryReadout": "9b3c85f1a1435647714cbe0b7edb4fe2604a3b58484d2c8098368d75fc90293e"
+      }
+    },
+    {
       "module": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralScopedMatchExecution",
       "source": "lean/mettapedia/Mettapedia/Languages/MeTTa/PeTTa/Bridges/MeTTaIL/GeneralScopedMatchExecution.lean",
       "source_sha256": "3d554df967f9f7f8338e62e50c4ed140f3723d68abea47009057c676e3366923",
@@ -15164,26 +15190,6 @@
       }
     },
     {
-      "module": "Mettapedia.Machines.Cursor.ReadOnlyQuery",
-      "source": "lean/mettapedia/Mettapedia/Machines/Cursor/ReadOnlyQuery.lean",
-      "source_sha256": "8bb5b3d29b75b6183cc2126b4b467e007e82ea739ba70f722c57bd92cdd39a63",
-      "object_sha256": "9b1c0c5afa56918ce65835584f3ddea3de51002938618df8c9c67a7058de5ade",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.Machines.Cursor.Protocol": "61ac12565f1e19e6ff2aae85b0c8c7c05c231ebae694a5c8d36741eb92e53ba4",
-        "Mettapedia.Machines.Cursor.FairObservation": "e4188f900d7622551a067bc860e146b6a10b644091caa9b61e42cf1c3f0a84a8",
-        "Mettapedia.Machines.ReadOnlyQuery": "314769eb59599808c03c81f992165304240009c3f0c40229328f44ba87fe627e",
-        "Mettapedia.Machines.ResourceOwnership": "f6d6671a368ac3013fedb671841d2b2ecd46e6d78e4ff7bb9e0c40df047477cd",
-        "Mettapedia.Machines.RevisionDependencySet": "caeb82261ee4389a33f537704d4931497ee48a7084800bf298b1e6c7b85ed7ef",
-        "Mettapedia.Machines.OrderedDependencyStore": "58fe7ebc6129f0e6e30054271d10be992e2438bf77804a00cc19dab18048d4ca",
-        "Mettapedia.GSLT.Contracts.IndexedAuthority": "ae8039e044a7d07490d0bc3d1dd064d4896b4d5755abaa6a81b3f92b5209edc1",
-        "Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone": "73a4a0e115532e78c7697880098c88522dd9586bb2409fda3a41d0f5a0bb8ef9",
-        "Mettapedia.GSLT.Contracts.ReifiedActions": "bdd8206013c7e32fadbb7b7116b6640d5c69805d8812ac5be4684f5103a9920d",
-        "Mettapedia.Machines.BranchLocalNeed.CacheLaws": "438687629a293e5ee36c45744c784c7d6efa6ffcf009dc1e80585851702187e9",
-        "Mettapedia.Languages.MeTTa.MetavariableFrameStore": "646f2a9523a19cc89e1f1aba2418e85ea474994907c957baea120178116110b3"
-      }
-    },
-    {
       "module": "Mettapedia.Machines.Cursor.RelationalAmortized",
       "source": "lean/mettapedia/Mettapedia/Machines/Cursor/RelationalAmortized.lean",
       "source_sha256": "00b77a32a9fd7ff58b2150dee359ffbaaebc2bfaf45c7d3123c2240fbbc36357",
@@ -15388,18 +15394,28 @@
       }
     },
     {
-      "module": "Mettapedia.Machines.RevisionDependencySet",
-      "source": "lean/mettapedia/Mettapedia/Machines/RevisionDependencySet.lean",
-      "source_sha256": "0b17e47aacd376d7c65cf30cfa9e5ff16f3bc93b751dafc00b0c7109aae8c9cf",
-      "object_sha256": "caeb82261ee4389a33f537704d4931497ee48a7084800bf298b1e6c7b85ed7ef",
+      "module": "Mettapedia.Machines.OwnedPullDriver",
+      "source": "lean/mettapedia/Mettapedia/Machines/OwnedPullDriver.lean",
+      "source_sha256": "4cf651c781cc4f6864dd21dca1a450c3398500c9f70992da64420b0b60d9d8c0",
+      "object_sha256": "ae1efda7738f7bc9f4c0f11743ae17d24cac259810f9b7c48fbf0ba89488ed0b",
       "warnings_as_errors": true,
       "direct_import_object_sha256": {
-        "Mettapedia.Machines.RevisionedOccurrenceStore": "65b413017f3695636e555333659db71084281248545d03d8362f15685509de1a",
-        "Mettapedia.Machines.BindingPublication": "5df05a1889ba43b9bda897383084472da8ab574b650ef2235fa578c7283c75c7",
-        "Mettapedia.Machines.ReadOnlyQuery": "314769eb59599808c03c81f992165304240009c3f0c40229328f44ba87fe627e",
-        "Mathlib.Data.Finset.Image": "00f3aaf04410e076a8a36cbfda6dd11c9090a84d5a96cca26e07a825dd78f23a",
-        "Mettapedia.Machines.LinkedScopeStack": "817521016d1bd93dd22377e93042f583596bfe7d9384e46dccfeab0421e877f6",
-        "Mettapedia.Machines.Cursor.OwnedLifecycle": "e2351ca4f68e562f95dc465b02e63ac2da46383f041b03e827066a6af96a5f38"
+        "Mathlib.Data.List.Basic": "00f5a80ef6a4cd8a42e07c2092291d14322ef488dc187cf0e80642f97975cc8e",
+        "Mathlib.Data.List.Perm.Basic": "a8a167ce99e3fafc6f24c890d21547766f19d1911940a64567b93181da7a7b94",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      }
+    },
+    {
+      "module": "Mettapedia.Machines.ReadOnlyQuery",
+      "source": "lean/mettapedia/Mettapedia/Machines/ReadOnlyQuery.lean",
+      "source_sha256": "3feca1fcfdedddf3406825a8c048661810d4339cf55ddfed028c6b874ac81278",
+      "object_sha256": "7fce697bc612729e2f77b8a9d3a57b9dde0abbe9ad570cf4dc41f0577a880bc8",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mathlib.Data.List.Basic": "00f5a80ef6a4cd8a42e07c2092291d14322ef488dc187cf0e80642f97975cc8e",
+        "Mathlib.Logic.Function.Basic": "6c1123df309faa83a09f692349f6a6ea6028350d66097261c096a49f773e99c0",
+        "Mettapedia.Logic.ArrayInvariants.UpdateTrace": "b8a9d028514ecf9ba4cb63f074dd1b6f0de82c56c39712e3227a1807d75224cf",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
       }
     },
     {
@@ -17015,25 +17031,6 @@
       "direct_import_object_sha256": {
         "Mettapedia.OSLF.MeTTaIL.CollectionLoggedSearch": "e3c47f80af2de959985281c1d351fc43b26a3d30c5793f8c12fc2e5c956f533a",
         "Mettapedia.OSLF.MeTTaIL.Complete.Graph": "245835e5e5a985c5ba4ed78550f242665cc01f5475c6521c646d7f42fbfe226a"
-      }
-    },
-    {
-      "module": "Mettapedia.OSLF.MeTTaIL.CollectionMatcherBackend",
-      "source": "lean/mettapedia/Mettapedia/OSLF/MeTTaIL/CollectionMatcherBackend.lean",
-      "source_sha256": "bd897a83f742c9680e257fb484698697d3cd82c8cb5cb733e4b3aa94a74a8b3f",
-      "object_sha256": "4f2adfad8fd474bff8aeff16eb61dce17f6e4d6c1d9a35b976b4cc8a59b459ea",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.OSLF.MeTTaIL.CollectionExecutionAdmission": "ec7a063375143c1451de89c91e71e1e481adc9d86e03f3fca046c0e5cbda9271",
-        "Mettapedia.OSLF.MeTTaIL.CollectionMatcherCompatibility": "eb0ae02ea51af46bdb0b8f1b09f1fe8645a0f034fe6b65ebea6e4acd08496647",
-        "Mettapedia.OSLF.MeTTaIL.CollectionPlanMachine": "8132758571e58ff176f28fc0d19a420b831158ccaf61abb666ea2d73f897516f",
-        "Mettapedia.OSLF.MeTTaIL.CollectionLoggedSearch": "e3c47f80af2de959985281c1d351fc43b26a3d30c5793f8c12fc2e5c956f533a",
-        "Mettapedia.OSLF.MeTTaIL.CanonicalTyping": "2222ac18907037b3dea7d8e40299667c8a2558ba5eca5a9ea068d154733119f0",
-        "Mettapedia.OSLF.MeTTaIL.StructuralDescentExecution": "4014a73d3ed162a16f21ff207cd0945a6adf28f8e5ab7af7dfc2ad23a24eb733",
-        "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledExecution": "035f4a7a88d158b3eb2b72c376688eed67f0887beb4990738ab5357c947b8dd4",
-        "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFrontier": "782bcfde7956ab0833be60eaf302dc0d6bae197cce4b6980a9a52e482d011b2f",
-        "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFootprint": "60f5bd8f67925125b8ca7bbd16ab477884448cd65c70ec46db46533dbe215226",
-        "Mettapedia.OSLF.MeTTaIL.Complete.DeepRoot": "525783aa671ce5c0f97045dea5f258c63cbc99f15158d96e8eebb46f10256858"
       }
     },
     {
@@ -18655,20 +18652,6 @@
       }
     },
     {
-      "module": "Mettapedia.OSLF.MeTTaIL.RecursiveCollectionHandoff",
-      "source": "lean/mettapedia/Mettapedia/OSLF/MeTTaIL/RecursiveCollectionHandoff.lean",
-      "source_sha256": "7e7c1d618841af731a7df10282b393692c32c9ee8ac48293c056c2004f4ad569",
-      "object_sha256": "67ede428b46d3d7f82bb1fe4608de68aeca5d481fba91a577ceb93aeb47c1f07",
-      "warnings_as_errors": true,
-      "direct_import_object_sha256": {
-        "Mettapedia.OSLF.MeTTaIL.GeneralPremiseQueryCorrectness": "09a817c6dde5af7a49bf86fc5b380e0faf5f0cb34e49310ebba8a7f3f9fd2dda",
-        "Mettapedia.OSLF.MeTTaIL.RecursiveCollectionNames": "d5d5cf6d22f0b834eeba5709c8dfa859fc376fafc0802101fff1c6d329f8b3ad",
-        "Mettapedia.OSLF.MeTTaIL.RecursiveCollectionPresentationProofs": "48423b8ab75eb7efb9f288eddc1e7634f67da4021053e56d213746fc9148ab0b",
-        "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledExecution": "035f4a7a88d158b3eb2b72c376688eed67f0887beb4990738ab5357c947b8dd4",
-        "Mettapedia.OSLF.MeTTaIL.CanonicalTyping": "2222ac18907037b3dea7d8e40299667c8a2558ba5eca5a9ea068d154733119f0"
-      }
-    },
-    {
       "module": "Mettapedia.OSLF.MeTTaIL.RecursiveCollectionPresentation",
       "source": "lean/mettapedia/Mettapedia/OSLF/MeTTaIL/RecursiveCollectionPresentation.lean",
       "source_sha256": "8034afeb2d84c183194fff50d00ab128f1f76b389cf446c700d33b3b607b5163",
@@ -18744,6 +18727,20 @@
       "direct_import_object_sha256": {
         "Mettapedia.OSLF.MeTTaIL.StructuralDescentCoverage": "00c4962e76f81bd6553566a3bbd782e963a6bddcd81aafc3031554be0a739529",
         "Mettapedia.OSLF.MeTTaIL.GeneralPlanEnvironment": "15f369658f3ca5f9199d0c56bc53c141ef4402cf1b2d502f789a33d41b340899"
+      }
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledExecution",
+      "source": "lean/mettapedia/Mettapedia/OSLF/MeTTaIL/StructuralDescentScheduledExecution.lean",
+      "source_sha256": "297a5003865aa9bb08ecd0282463158f570d86e81e406a08206e04afea49f3b6",
+      "object_sha256": "81b8fddf619727444d4abbac000fdb42ba2d0725a2db64420fe2a94fe3a6bd66",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFrames": "9442f15cc899253bb233b6a04a887dd9fac1e08412a81c7a1e4b2667b0acf2c2",
+        "Mettapedia.OSLF.MeTTaIL.GeneralPremiseQuery": "e182d4a83aeff02746c7c2cb0eaa646dee7b528bf32efe3f1b27f68018ff8800",
+        "Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachineCorrectness": "5ef399bb2c4b8a7b7373a23f40ce4cbaa67d78ef9a8e05cabeee983222a52e0f",
+        "Mettapedia.OSLF.MeTTaIL.GeneralPremiseFiniteWork": "fb6f659caff9c3062dfff643ae7627ff4355583e271a034afc5821d6c27bd986",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
       }
     },
     {
@@ -20529,6 +20526,18 @@
       }
     },
     {
+      "module": "Mettapedia.Sequences.OEIS.Kolakoski",
+      "source": "lean/mettapedia/Mettapedia/Sequences/OEIS/Kolakoski.lean",
+      "source_sha256": "9c9de38f41aa7b0fd8ca0c6ab6034dbbe7c7b746c2f9a5062d796fc1d54bd0ef",
+      "object_sha256": "51e710633cd0860ae02d811e536943325f4f649e3ea4c32b2a3ba1b161954ed0",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mathlib.Tactic": "f46e5ff43dc05c52d7d7b04275e3dd261f0190f4a7bae51d699d97914ff64feb",
+        "Mettapedia.Sequences.OEIS.Basic": "65fb3b077990b50f92c5b4f1984abb2008c8d46f6fd126b54827da07a0411215",
+        "Mettapedia.Coalgebra.GrowingPrefixTower": "b3a5da23afa7cf896f9a46678bfe9e54dcb51093d7660008c627bb08ef0d240e"
+      }
+    },
+    {
       "module": "Mettapedia.Tools.NamespaceExports",
       "source": "lean/mettapedia/Mettapedia/Tools/NamespaceExports.lean",
       "source_sha256": "b130cb752d95729f2c1fb2f1106bff76b825c4bfcf2104c24fbf9604e4d70a5c",
@@ -20744,6 +20753,29 @@
         "Mettapedia.TypeTheory.ScwfQuotient": "0c946425563d96c6f4258901608451ff4302574b8291849124fcaabaa1b91da3",
         "Mettapedia.TypeTheory.ContextualProductComparison": "01454144fa8f7c60edfcec207ec1f31b193ab03887def8a9114bd9556406a958",
         "Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.ConversionDecision": "d59594cd48f868ac78c5d5e527b73a6e39c292167436a2227ad3b7b3288a8bed"
+      }
+    },
+    {
+      "module": "Mettapedia.TypeTheory.CertificateGSLTCoherentRunObservation",
+      "source": "lean/mettapedia/Mettapedia/TypeTheory/CertificateGSLTCoherentRunObservation.lean",
+      "source_sha256": "23d047690e7bef586586857c4fc09a3731eb918352f534e371d98e3928570efe",
+      "object_sha256": "166e37466810a38aaacaa50760b37ff8220a5d568371f6ea9fbbc9faaa40b1d1",
+      "warnings_as_errors": true,
+      "direct_import_object_sha256": {
+        "Mettapedia.TypeTheory.CertificateGSLTFiniteSearchAcceleration": "e3502f10e445aa701cfd56b738e37dfa9b0a1a46d10ddf3cb43f43508f18656d",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      }
+    },
+    {
+      "module": "Mettapedia.TypeTheory.InfinitaryProofAndObservationBoundary",
+      "source": "lean/mettapedia/Mettapedia/TypeTheory/InfinitaryProofAndObservationBoundary.lean",
+      "source_sha256": "ab5a4d0739bfc2233a25bae181c17cca95a70eb2ae97fd9306ec4c5c77af754b",
+      "object_sha256": "8c044b7a3b9c874576552cac26482a5457eb4546011833634cd05f91a5bdd0e9",
+      "warnings_as_errors": false,
+      "direct_import_object_sha256": {
+        "Mettapedia.Logic.FinitaryRuleSystem.DirectedUnion": "0c248ef8413e98111b926a02f90ba6fd8ae2e4feb9ad08d837672c4ed77b336b",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitary": "92e1ded2af7491db19395893b8282b1ab5ffb3b4ba29185ec7914eb665ea0534"
       }
     },
     {
@@ -22723,6 +22755,8 @@
     "FourColor.IntegrationCore"
   ],
   "documentation_index_modules_without_current_receipts": [
+    "Mettapedia.GSLT.LanguageDef.OperationCostProtocol",
+    "Mettapedia.Machines.RevisionDependencySet",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseQueryExecution",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseMatchingExecution",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseExecution",
@@ -22734,11 +22768,13 @@
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution.Program",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution.Traversal",
+    "Mettapedia.GSLT.Distinction.OrderedAdministration",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution",
-    "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramResumptionExecution",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerExecution",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerPartrec",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerEmission",
+    "Mettapedia.OSLF.MeTTaIL.RecursiveCollectionHandoff",
+    "Mettapedia.OSLF.MeTTaIL.CollectionMatcherBackend",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RunnerSource",
     "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteEmission",
@@ -22977,6 +23013,13 @@
     "Mettapedia.OSLF.Framework.PaperClaimTracker",
     "Mettapedia.OSLF.Framework.PaperParityCanaries",
     "Mettapedia.OSLF.SpecIndex"
+  ],
+  "qualification_followups": [
+    {
+      "area": "Coalgebra finite observations",
+      "record": "artifacts/coalgebra-tower-refinement-20261028/validation.json",
+      "baseline_revision": "45cde8262434811c63c527c7d89200775cc7e8dd"
+    }
   ],
   "timed_out_dependency_rechecks": [
     {

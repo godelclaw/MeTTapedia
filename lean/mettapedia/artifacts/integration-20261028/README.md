@@ -70,6 +70,11 @@ left additional timeouts and modules without current source/import receipts.
 `validation.json` lists that remaining scope explicitly; the four generated
 documentation audits have current passing receipts.
 
+The coherent-tower refinement has a separate
+[`validation record`](../coalgebra-tower-refinement-20261028/validation.json).
+It checks the 211 original public contracts, original operator semantics and
+downstream consumers while sharing the generic and stream tower carrier.
+
 The maintained Lake targets are `LogicProgrammingTheory`, `PLeaTTaTheory`,
 `AttentionEconomyTheory` and `FourColorCore`. They share the package's existing
 build directory. The 231 upstream research Lean files remain separate from

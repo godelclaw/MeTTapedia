@@ -1,21 +1,11 @@
 import Mettapedia.Coalgebra.StreamFinality
 
 /-!
-# Coherent towers of finite stream observations
+# Coherent prefix towers and resumable trajectories
 
-A raw family containing one prefix at every depth may be incoherent: its
-longer views need not restrict to its shorter views.  The semantic object
-determined by finite observation is therefore the subtype of coherent towers,
-not the unrestricted dependent function space.
-
-Streams and coherent prefix towers are equivalent.  This sharpens the
-finite-view result: every fixed component is lossy, but the compatible tower
-of all components retains exactly the stream and neither more nor less.
-
-A resumable trajectory additionally relates those observations to an explicit
-finite runner.  Its state may retain several answers, outstanding obligations,
-or effect receipts: the trajectory law does not prescribe a scheduler or a
-shape for the retained state.
+Compatible finite prefixes determine exactly one stream. The tower uses the
+general inverse-system carrier. A resumable trajectory additionally supplies
+a runner and an exact continuation law: coherence alone is not execution.
 -/
 
 set_option autoImplicit false
@@ -26,23 +16,29 @@ open Mettapedia.Coalgebra.StreamFinality
 
 universe uLabel
 
-/-- One prefix at every depth, compatible with every restriction map. -/
-structure Tower (Label : Type uLabel) where
-  view : (depth : Nat) → Prefix Label depth
-  coherent : ∀ {earlier later : Nat} (bounded : earlier ≤ later),
-    restrictPrefix bounded (view later) = view earlier
+/-- The general coherent tower specialized to finite stream prefixes. -/
+abbrev Tower (Label : Type uLabel) :=
+  (CoherentFiniteViewSystem.streamPrefixSystem Label).Tower
 
 namespace Tower
 
 variable {Label : Type uLabel}
 
+-- Preserve the original constructor and projection names for callers.
+@[match_pattern] abbrev mk :=
+  @CoherentFiniteViewSystem.FiniteViewSystem.Tower.mk
+    (CoherentFiniteViewSystem.streamPrefixSystem Label)
+
+abbrev view (tower : Tower Label) :=
+  CoherentFiniteViewSystem.FiniteViewSystem.Tower.view tower
+
+abbrev coherent (tower : Tower Label) {earlier later : Nat} (bounded : earlier ≤ later) :=
+  CoherentFiniteViewSystem.FiniteViewSystem.Tower.coherent tower bounded
+
 @[ext]
 theorem ext {first second : Tower Label}
-    (views : first.view = second.view) : first = second := by
-  cases first
-  cases second
-  cases views
-  rfl
+    (views : first.view = second.view) : first = second :=
+  CoherentFiniteViewSystem.FiniteViewSystem.Tower.ext _ views
 
 /-- Every stream determines its compatible tower of finite views. -/
 def ofStream (stream : Stream Label) : Tower Label where
@@ -58,9 +54,7 @@ def toStream (tower : Tower Label) : Stream Label :=
 
 @[simp]
 theorem toStream_ofStream (stream : Stream Label) :
-    toStream (ofStream stream) = stream := by
-  funext index
-  rfl
+    toStream (ofStream stream) = stream := rfl
 
 @[simp]
 theorem ofStream_toStream (tower : Tower Label) :
@@ -120,15 +114,6 @@ theorem no_tower_has_incoherentBooleanViews :
   rw [← views]
   exact tower.coherent (show 1 ≤ 2 by decide)
 
-/-! ## Axiom audit -/
-
-#print axioms Tower.ext
-#print axioms toStream_ofStream
-#print axioms ofStream_toStream
-#print axioms streamEquiv
-#print axioms incoherentBooleanViews_violate_restriction
-#print axioms no_tower_has_incoherentBooleanViews
-
 end Tower
 
 /-! ## Resumable trajectories of an explicit finite runner -/
@@ -178,10 +163,7 @@ theorem canonical_observation (run : Nat → State → State) (start : State)
 termination or a bound on the number of answers produced per tick. -/
 theorem observation_eq_run (trajectory : ResumableTrajectory run start)
     (fuel : Nat) : trajectory.observation fuel = run fuel start := by
-  calc
-    trajectory.observation fuel = run fuel (trajectory.observation 0) := by
-      simpa using trajectory.resume 0 fuel
-    _ = run fuel start := by rw [trajectory.at_zero]
+  simpa only [Nat.zero_add, trajectory.at_zero] using trajectory.resume 0 fuel
 
 theorem unique (first second : ResumableTrajectory run start) :
     first = second := by
@@ -271,10 +253,8 @@ theorem reconstructed_resume (trajectory : ResumableTrajectory run start)
   simpa only [toStream_coherentTower] using trajectory.resume first extra
 
 theorem coherentTower_injective :
-    Function.Injective (@coherentTower State run start) := by
-  intro first second towers
-  apply ext
-  exact Tower.ofStream_injective towers
+    Function.Injective (@coherentTower State run start) :=
+  fun _ _ towers => ext (Tower.ofStream_injective towers)
 
 /-! ## Controls -/
 
@@ -302,21 +282,6 @@ theorem constant_counter_not_resumable (start : Nat) :
   exact Nat.ne_add_one start resumed
 
 end Canary
-
-/-! ## Axiom audit -/
-
-#print axioms observation_eq_run
-#print axioms unique
-#print axioms eq_canonical
-#print axioms resumeFrom
-#print axioms observer_prefix_after_resume
-#print axioms observation_constant_after_settlement
-#print axioms invariant
-#print axioms toStream_coherentTower
-#print axioms reconstructed_resume
-#print axioms coherentTower_injective
-#print axioms Canary.counter_resume_from_retained_state
-#print axioms Canary.constant_counter_not_resumable
 
 end ResumableTrajectory
 

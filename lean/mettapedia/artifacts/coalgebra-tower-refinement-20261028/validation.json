@@ -1,0 +1,1377 @@
+{
+  "schema_version": 1,
+  "baseline_revision": "45cde8262434811c63c527c7d89200775cc7e8dd",
+  "toolchain": "leanprover/lean4:v4.33.1",
+  "line_budget": {
+    "baseline": 2237,
+    "current_core": 1966,
+    "shared_umbrella_additions": 19,
+    "charged_total": 1985,
+    "maximum": 2013,
+    "net_reduction_percent": 11.27,
+    "baseline_code": 1524,
+    "charged_code": 1329,
+    "code_reduction_percent": 12.8,
+    "diagnostic_adjusted_baseline_code": 1467,
+    "diagnostic_adjusted_current_code": 1314,
+    "diagnostic_adjusted_reduction_percent": 10.43
+  },
+  "representation": {
+    "canonical_carrier": "CoherentFiniteViewSystem.FiniteViewSystem.Tower",
+    "stream_tower": "An abbreviation specialized to streamPrefixSystem; old constructor and projection names retained, including constructor patterns.",
+    "compiler_generated_names": "Recursors belong to the canonical tower type; all 211 original source-declared public contracts are checked under their existing names.",
+    "old_tower_reconstruction": "The old record and its construction/reconstruction maps agree under the explicit view-preserving equivalence in the reference fixture."
+  },
+  "new_theory": [
+    "Restriction-compatible levelwise maps lift to coherent tower maps.",
+    "Componentwise injectivity implies injectivity of the lifted tower map.",
+    "Behavior observation recoding commutes with passage to towers.",
+    "A natural constant map can erase stream behavior; naturality alone does not preserve faithfulness."
+  ],
+  "interpretation_preservation": {
+    "original_operator_definitions": 13,
+    "original_tower_record_reencoding": true,
+    "original_comparison_maps": 3,
+    "reference_fixture": "ReferenceSemantics"
+  },
+  "proof_guard": {
+    "declarations": 508,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "source": "lean/mettapedia/Mettapedia/Coalgebra.lean"
+  },
+  "checks": {
+    "strict_core_modules": 11,
+    "regression_modules": 16,
+    "public_contracts": 211,
+    "all_recorded_sources_and_direct_imports_current": true
+  },
+  "source_checks": [
+    {
+      "module": "Mettapedia.Coalgebra.FiniteViewSystem",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewSystem.lean",
+      "source_sha256": "a31e59dff566dc4b484e885b80e4473730298cc3a4211f41295e240217c61cd6",
+      "direct_import_object_sha256": {
+        "Mathlib.Data.Fin.Basic": "34b1bcdadb5857ba6fcf2bb50711283a85087c45f37504b6c0ad48c1741b3db6",
+        "Mathlib.Logic.Equiv.Defs": "7fa81de85972e99c9ad6e1f6165265a7c941b7af66371b39a7fc2b3a0fb19074"
+      },
+      "object_sha256": "e4a4fa8903e0b2fc2b0a66bc8c90cbf9679023b8f14ec4294dcdf3d76fed71a0",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.StreamFinality",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/StreamFinality.lean",
+      "source_sha256": "4f54d23f5fa3056b3d464862d7c890e61f979409e64c4aa53a63c3f3f678e68c",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.FiniteViewSystem": "e4a4fa8903e0b2fc2b0a66bc8c90cbf9679023b8f14ec4294dcdf3d76fed71a0"
+      },
+      "object_sha256": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.CoherentPrefixTower",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/CoherentPrefixTower.lean",
+      "source_sha256": "6ed8351008bdddf02acc4edbfbf4357e0749731181e24f299b30097891907d12",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512"
+      },
+      "object_sha256": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.FiniteViewObserver",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewObserver.lean",
+      "source_sha256": "7667c34810c830dcc214352085fedb8feaa2a7fd4cf4286a8ea0070a8d62ca09",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.GSLT.Dynamics.ObserverRelativeTransformationCrown": "2798689e1d6a5ba4174f5e08ddbcfdbbf16f3b87b3a8025d817e7efd694fd9bd"
+      },
+      "object_sha256": "7848a21ea4a2e7a7140daac225b31cda270b91fbf72c2f6390a1e5770cbb7d03",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.StreamGSLT",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/StreamGSLT.lean",
+      "source_sha256": "09b73616d0b330441df2d2ddc5d545e2fb3ae0170e9ece9bf73e0cf3350c6e22",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.GSLT.Core.GSLT": "c9375dcf1c5a3f7e67538812a2974c53b325ceaa18365c6d6ee014420ad54e8c"
+      },
+      "object_sha256": "2fa05ce2cf43dd799dec6ae7fee646cd167dfa47040623f1e4f15e0170b8684e",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.CoherentFiniteViewSystem",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/CoherentFiniteViewSystem.lean",
+      "source_sha256": "c972942c50077db7bb6badbdb8f91213bea27fe1710d6bca9af13c14f4566b98",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.GrowingPrefixTower",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GrowingPrefixTower.lean",
+      "source_sha256": "b1a6e41e038664c09ad8c05225fb2c2fa38bb7366169c848bbd260dbdee18de0",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "b3a5da23afa7cf896f9a46678bfe9e54dcb51093d7660008c627bb08ef0d240e",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.GuardedFinality",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GuardedFinality.lean",
+      "source_sha256": "a7dea713e39cf5562438201ca7fe23088b93efc13f0ad4d9d91e586fde09d12e",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.TypeTheory.GuardedTimeModeTheory": "d86b6b0df2f91e3d6bd8b7545f58a913d16b9f0a3928fcc1223c114c068b896f"
+      },
+      "object_sha256": "2c57c32b1f0210f599712b929a7f59103cfeff705f9f535585245b7c182efcaf",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewComputationalTrinity.lean",
+      "source_sha256": "5cf75de9a19af89b121bcb7092eebb660cb86427c543315e4ecbe9a972304a17",
+      "direct_import_object_sha256": {
+        "Mathlib.CategoryTheory.Discrete.Basic": "e5950024a0c60730a95343903e55ee4aef43cbb71e0fe4544e40ec46bd19b222",
+        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+        "Mettapedia.Computability.ComputationalTrinity": "5de82503eb409bdca826d3bab4ae37456c4e49263092134ae56176984cea6895"
+      },
+      "object_sha256": "3995fd87d38be59b6f515a13af27e2a1ee3abf0a01214aaf023274f3312aa068",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.GuardedFiniteViewSystem",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GuardedFiniteViewSystem.lean",
+      "source_sha256": "2aa1c69f657281b354de6a57de1ffc09103fee9e6ef1035e679dee6298f24c03",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+        "Mettapedia.TypeTheory.GuardedTimeModeTheory": "d86b6b0df2f91e3d6bd8b7545f58a913d16b9f0a3928fcc1223c114c068b896f"
+      },
+      "object_sha256": "4d8e073935d622402d72b26c43ead6b52bbdeec87d4b99873ac80c39b65e00b7",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.ComputationalTrinity",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/ComputationalTrinity.lean",
+      "source_sha256": "f1739548e7f50726fc0d00144eb0762912630fa4d19e5a9f7779c07543767e4d",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.FiniteViewComputationalTrinity": "3995fd87d38be59b6f515a13af27e2a1ee3abf0a01214aaf023274f3312aa068",
+        "Mettapedia.Coalgebra.StreamGSLT": "2fa05ce2cf43dd799dec6ae7fee646cd167dfa47040623f1e4f15e0170b8684e"
+      },
+      "object_sha256": "00f0505506d84c60170d1d23bed9d4aed3c6785e99625e5be0dd535d0db0fd95",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.WellFounded",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/WellFounded.lean",
+      "source_sha256": "d8b3f587ab28311ce0867ab80047aa73f9d1702ccb503c6545cd20232137f670",
+      "direct_import_object_sha256": {
+        "Mathlib.CategoryTheory.Endofunctor.Algebra": "3995e32bf5b262e66ee8487533bee80aebd26f9f283c389b4c868b3b854d07dd",
+        "Mathlib.CategoryTheory.Limits.Preserves.Basic": "ee9fc867ba2f22a7200d26960801c2863cae2bb8fe9ef355e2a8af224f57ee3d",
+        "Mathlib.CategoryTheory.Limits.Types.Pullbacks": "618dcf716216bb34d465d74ada06c73cb04dc9d01c80282480cbf20ec480a61d",
+        "Mathlib.Data.Set.Lattice": "7e6ba9934472d5bd1212d2f0017235b8572800d11ab20bb368c3f660432b1492"
+      },
+      "object_sha256": "647f7c227051398f043cb953517b18a5660de00898b8fca28ff8b44dadb7e422",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.GSLT.Distinction.ProductiveBlocks",
+      "source": "lean/mettapedia/Mettapedia/GSLT/Distinction/ProductiveBlocks.lean",
+      "source_sha256": "670da38cf090b2b09075e5fa1a3a12e629be43781678df0c75df83537c12cc22",
+      "direct_import_object_sha256": {
+        "Mettapedia.GSLT.Distinction.BlockTransport": "7685c903b324e10b7995580fbe896d4eb41932bcfc24e5bc79cd8b866299f496",
+        "Mettapedia.GSLT.Dynamics.OrderedDemand": "bbeb220fad25bd342e9ff2c9ecfb620588ef282e75306e99aa41c46b0b445628",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "fc7e35006c6bff488f0013f10656a97554bf93b3f2c9f368a1f021e93fef82b1",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.GSLT.Logic.PrivilegedView",
+      "source": "lean/mettapedia/Mettapedia/GSLT/Logic/PrivilegedView.lean",
+      "source_sha256": "5f50763ba4fb89ecb2b5585b158520a80728c8fd2f7d3b146bfb4e64ee22bec7",
+      "direct_import_object_sha256": {
+        "Mettapedia.GSLT.Logic.Views": "59f8a4a257aab17925b82fff971f923d949193223b2a1dd4de552df252aba6bc",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.TypeTheory.MaterialSets.Hypersets.Finality": "3348e93f225a6a1b8da9c534c572fc6d4e34cfdf9230ada47c51b0a901c712ae",
+        "Mathlib.Computability.MyhillNerode": "e8e7d37ab42076e9542a5b467906884d2e799148873b4ba94995a0e24a4a58ba",
+        "Mettapedia.GSLT.Core.StepFree": "0da0c0cac231ebda0e89712b13a638622f3ad60708d7241bbd4dcb2d540c4d7b",
+        "Mettapedia.GSLT.Logic.SaturatedRelativeBisimilarity": "952969075547ea49f1d35fa0a50f94ae2c000f94d0e055e73b90e030507ca434"
+      },
+      "object_sha256": "44191acce262a039a36a0ad0f871bb2a951ec07e835a071c1d15179d56584487",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Languages.HOLLight.IncrementalExecution",
+      "source": "lean/mettapedia/Mettapedia/Languages/HOLLight/IncrementalExecution.lean",
+      "source_sha256": "1b50e9772a225ee48937b4beda8f3f35f22802abc52d58dc50f7c5003f7bac8a",
+      "direct_import_object_sha256": {
+        "Mettapedia.Languages.HOLLight.ExportCodec": "14528019cf43cd90de3e2881390f3bb905f38c2d6fd58832d1ac4c848d5c67df",
+        "Mathlib.Logic.Function.Iterate": "627d3f9270c3354b692fd85582f41162f2414620f2e856ef0c6e85aa754a6c8c",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "6de1f179177618b538350f197872820bc80a6d8fcd3813ae01cbd963e0ea18b3",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramResumptionExecution",
+      "source": "lean/mettapedia/Mettapedia/Languages/MeTTa/PeTTa/Bridges/MeTTaIL/GeneralProgramResumptionExecution.lean",
+      "source_sha256": "6124c7882938258f0c1a424446efbb9ea9b68dfe03c0bb3b255f4c317fb45430",
+      "direct_import_object_sha256": {
+        "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution": "68ec0b24d0072f7ca4852a09ff4f148cca453cdb947fd889cb10381290f57fe2",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.Machines.ExecutionHistoryReadout": "9b3c85f1a1435647714cbe0b7edb4fe2604a3b58484d2c8098368d75fc90293e"
+      },
+      "object_sha256": "a4e124e237771955194bc45642c0b96b34594b01b6c864c2c7d38298b58465a3",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Machines.OwnedPullDriver",
+      "source": "lean/mettapedia/Mettapedia/Machines/OwnedPullDriver.lean",
+      "source_sha256": "4cf651c781cc4f6864dd21dca1a450c3398500c9f70992da64420b0b60d9d8c0",
+      "direct_import_object_sha256": {
+        "Mathlib.Data.List.Basic": "00f5a80ef6a4cd8a42e07c2092291d14322ef488dc187cf0e80642f97975cc8e",
+        "Mathlib.Data.List.Perm.Basic": "a8a167ce99e3fafc6f24c890d21547766f19d1911940a64567b93181da7a7b94",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "ae1efda7738f7bc9f4c0f11743ae17d24cac259810f9b7c48fbf0ba89488ed0b",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Machines.ReadOnlyQuery",
+      "source": "lean/mettapedia/Mettapedia/Machines/ReadOnlyQuery.lean",
+      "source_sha256": "3feca1fcfdedddf3406825a8c048661810d4339cf55ddfed028c6b874ac81278",
+      "direct_import_object_sha256": {
+        "Mathlib.Data.List.Basic": "00f5a80ef6a4cd8a42e07c2092291d14322ef488dc187cf0e80642f97975cc8e",
+        "Mathlib.Logic.Function.Basic": "6c1123df309faa83a09f692349f6a6ea6028350d66097261c096a49f773e99c0",
+        "Mettapedia.Logic.ArrayInvariants.UpdateTrace": "b8a9d028514ecf9ba4cb63f074dd1b6f0de82c56c39712e3227a1807d75224cf",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "7fce697bc612729e2f77b8a9d3a57b9dde0abbe9ad570cf4dc41f0577a880bc8",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledExecution",
+      "source": "lean/mettapedia/Mettapedia/OSLF/MeTTaIL/StructuralDescentScheduledExecution.lean",
+      "source_sha256": "297a5003865aa9bb08ecd0282463158f570d86e81e406a08206e04afea49f3b6",
+      "direct_import_object_sha256": {
+        "Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFrames": "9442f15cc899253bb233b6a04a887dd9fac1e08412a81c7a1e4b2667b0acf2c2",
+        "Mettapedia.OSLF.MeTTaIL.GeneralPremiseQuery": "e182d4a83aeff02746c7c2cb0eaa646dee7b528bf32efe3f1b27f68018ff8800",
+        "Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachineCorrectness": "5ef399bb2c4b8a7b7373a23f40ce4cbaa67d78ef9a8e05cabeee983222a52e0f",
+        "Mettapedia.OSLF.MeTTaIL.GeneralPremiseFiniteWork": "fb6f659caff9c3062dfff643ae7627ff4355583e271a034afc5821d6c27bd986",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "81b8fddf619727444d4abbac000fdb42ba2d0725a2db64420fe2a94fe3a6bd66",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Sequences.OEIS.Kolakoski",
+      "source": "lean/mettapedia/Mettapedia/Sequences/OEIS/Kolakoski.lean",
+      "source_sha256": "9c9de38f41aa7b0fd8ca0c6ab6034dbbe7c7b746c2f9a5062d796fc1d54bd0ef",
+      "direct_import_object_sha256": {
+        "Mathlib.Tactic": "f46e5ff43dc05c52d7d7b04275e3dd261f0190f4a7bae51d699d97914ff64feb",
+        "Mettapedia.Sequences.OEIS.Basic": "65fb3b077990b50f92c5b4f1984abb2008c8d46f6fd126b54827da07a0411215",
+        "Mettapedia.Coalgebra.GrowingPrefixTower": "b3a5da23afa7cf896f9a46678bfe9e54dcb51093d7660008c627bb08ef0d240e"
+      },
+      "object_sha256": "51e710633cd0860ae02d811e536943325f4f649e3ea4c32b2a3ba1b161954ed0",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.TypeTheory.CertificateGSLTCoherentRunObservation",
+      "source": "lean/mettapedia/Mettapedia/TypeTheory/CertificateGSLTCoherentRunObservation.lean",
+      "source_sha256": "23d047690e7bef586586857c4fc09a3731eb918352f534e371d98e3928570efe",
+      "direct_import_object_sha256": {
+        "Mettapedia.TypeTheory.CertificateGSLTFiniteSearchAcceleration": "e3502f10e445aa701cfd56b738e37dfa9b0a1a46d10ddf3cb43f43508f18656d",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39"
+      },
+      "object_sha256": "166e37466810a38aaacaa50760b37ff8220a5d568371f6ea9fbbc9faaa40b1d1",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.TypeTheory.InfinitaryProofAndObservationBoundary",
+      "source": "lean/mettapedia/Mettapedia/TypeTheory/InfinitaryProofAndObservationBoundary.lean",
+      "source_sha256": "ab5a4d0739bfc2233a25bae181c17cca95a70eb2ae97fd9306ec4c5c77af754b",
+      "direct_import_object_sha256": {
+        "Mettapedia.Logic.FinitaryRuleSystem.DirectedUnion": "0c248ef8413e98111b926a02f90ba6fd8ae2e4feb9ad08d837672c4ed77b336b",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitary": "92e1ded2af7491db19395893b8282b1ab5ffb3b4ba29185ec7914eb665ea0534"
+      },
+      "object_sha256": "8c044b7a3b9c874576552cac26482a5457eb4546011833634cd05f91a5bdd0e9",
+      "warnings_as_errors": false,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.Recursive",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/Recursive.lean",
+      "source_sha256": "c768d7b1927b8503afe8b14d39421db06c455110daea6c561a55909dd4be3915",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.WellFounded": "647f7c227051398f043cb953517b18a5660de00898b8fca28ff8b44dadb7e422"
+      },
+      "object_sha256": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.Controls",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/Controls.lean",
+      "source_sha256": "40506f41e2e43d9f5be423bbefecd9afa8d004fb92d0e87fb191dfde98e3dba0",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.Recursive": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+        "Mathlib.Data.QPF.Univariate.Basic": "5743bdeb401229954f4c23ea225401095a6fc2adc51cfca06c3addf934a30edd"
+      },
+      "object_sha256": "278db16819a8daaff536e12d8e506bbfd51881bbb203ea6ab670c02ddca4d28c",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.QPFMeet",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/QPFMeet.lean",
+      "source_sha256": "c39d3d2f7e66ecb0f5dd94907900dca2f06948fc777214d92117df8cf897842c",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.Recursive": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+        "Mettapedia.GSLT.Core.NonFactorization": "4aba1efd2b5ab2ee18889adf3ff55d74bbc8a1882a897acd941b7c1dd7d8fd58",
+        "Mettapedia.GSLT.Logic.Views": "59f8a4a257aab17925b82fff971f923d949193223b2a1dd4de552df252aba6bc",
+        "Mathlib.Data.QPF.Univariate.Basic": "5743bdeb401229954f4c23ea225401095a6fc2adc51cfca06c3addf934a30edd"
+      },
+      "object_sha256": "adc3bc3a5e31f70d1eac9bc5e687bc7038b8f39eea32526c8941553ebc4d72a2",
+      "warnings_as_errors": false,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra.InitialFinal.Instances",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/InitialFinal/Instances.lean",
+      "source_sha256": "c6114b6a40b0ea81dca26779b7df6c986eb78cae8a03dc449bbdb93e78aeb23e",
+      "direct_import_object_sha256": {
+        "Mettapedia.Coalgebra.InitialFinal.QPFMeet": "adc3bc3a5e31f70d1eac9bc5e687bc7038b8f39eea32526c8941553ebc4d72a2",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.GSLT.Core.NonFactorization": "4aba1efd2b5ab2ee18889adf3ff55d74bbc8a1882a897acd941b7c1dd7d8fd58",
+        "Mettapedia.GSLT.Poly.CollectionLanguage": "fe8325b2ed0cea8f796bfedba08a9b0d8b6867a697cdea168b277f86fb963bdd"
+      },
+      "object_sha256": "39212702d52ee518546205ee863ff5badd5cffe04ceff6976ed1026578b7c554",
+      "warnings_as_errors": false,
+      "admission_warning": false,
+      "status": "pass"
+    },
+    {
+      "module": "Mettapedia.Coalgebra",
+      "source": "lean/mettapedia/Mettapedia/Coalgebra.lean",
+      "source_sha256": "3a3035449db04f7297e3dbcf1885f56d8e8979f8888358dc3e2193c5f6de4b6c",
+      "direct_import_object_sha256": {
+        "Lean.Util.CollectAxioms": "toolchain:Lean.Util.CollectAxioms",
+        "Mettapedia.Coalgebra.StreamFinality": "48107cd46eacbbbee8d9a67a08d2845263a502f37a5486b282311b405c39f512",
+        "Mettapedia.Coalgebra.StreamGSLT": "2fa05ce2cf43dd799dec6ae7fee646cd167dfa47040623f1e4f15e0170b8684e",
+        "Mettapedia.Coalgebra.FiniteViewObserver": "7848a21ea4a2e7a7140daac225b31cda270b91fbf72c2f6390a1e5770cbb7d03",
+        "Mettapedia.Coalgebra.CoherentPrefixTower": "6f17067abb3ddfbfc89a3c126229e982c845d161e4b92c24081f4102440f1a39",
+        "Mettapedia.Coalgebra.GrowingPrefixTower": "b3a5da23afa7cf896f9a46678bfe9e54dcb51093d7660008c627bb08ef0d240e",
+        "Mettapedia.Coalgebra.CoherentFiniteViewSystem": "8128c8f947b7a442cf82cb94c6386eed4abdffe34baea4397f6f706c28d20e3f",
+        "Mettapedia.Coalgebra.ComputationalTrinity": "00f0505506d84c60170d1d23bed9d4aed3c6785e99625e5be0dd535d0db0fd95",
+        "Mettapedia.Coalgebra.FiniteViewComputationalTrinity": "3995fd87d38be59b6f515a13af27e2a1ee3abf0a01214aaf023274f3312aa068",
+        "Mettapedia.Coalgebra.GuardedFinality": "2c57c32b1f0210f599712b929a7f59103cfeff705f9f535585245b7c182efcaf",
+        "Mettapedia.Coalgebra.GuardedFiniteViewSystem": "4d8e073935d622402d72b26c43ead6b52bbdeec87d4b99873ac80c39b65e00b7",
+        "Mettapedia.Coalgebra.InitialFinal.WellFounded": "647f7c227051398f043cb953517b18a5660de00898b8fca28ff8b44dadb7e422",
+        "Mettapedia.Coalgebra.InitialFinal.Recursive": "aca547803dd89073387d3cfe1a4b4cbf0101090797de12e3d90e685a68431c7c",
+        "Mettapedia.Coalgebra.InitialFinal.QPFMeet": "adc3bc3a5e31f70d1eac9bc5e687bc7038b8f39eea32526c8941553ebc4d72a2",
+        "Mettapedia.Coalgebra.InitialFinal.Instances": "39212702d52ee518546205ee863ff5badd5cffe04ceff6976ed1026578b7c554",
+        "Mettapedia.Coalgebra.InitialFinal.Controls": "278db16819a8daaff536e12d8e506bbfd51881bbb203ea6ab670c02ddca4d28c"
+      },
+      "object_sha256": "eaba221b8f9ffa601179fbfe4c0f3fc5a786f2da9e1188fdd26d98a22a967d7c",
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "status": "pass"
+    }
+  ],
+  "public_contracts": [
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finiteObserver_not_injective",
+      "original_type_sha256": "709bd54e9a9c62824181a6bfd4804245682808c7ec03dc92728a2d102aeb1b60"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.ExactTrinityWitness",
+      "original_type_sha256": "78f2298229bf07171234c6b659d6f1faecb97849f230caf95f5395f43869e27d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.BehaviorallyComplete",
+      "original_type_sha256": "27c4b82620f31162c8df391b60565ad5e6d37c6802c16cb072848baaaf62416b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.ExactBehaviorWitness",
+      "original_type_sha256": "7c8d005ed40c01cfa1823a9bf2b60ce93e0e70f72af94f3fda08ab6069f89230"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.comparison_loses_iff_behavior_collision",
+      "original_type_sha256": "5579844e954b8937325475aad817490ab74804cbdd2c4d5dc253ac940b4aa09d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.revisionPresheaf",
+      "original_type_sha256": "bc6c2417224aaa66bfa762bd0b0c19a0c44a3444f357d963175f9fddcd133f04"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.towerOfGuardCoherent",
+      "original_type_sha256": "98d588cb314c479b77e2f0b8cffe6f0620038ed7b43c6d02d47ca6defc945ad4"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.incoherentBooleanViews_not_guardCoherent",
+      "original_type_sha256": "4ba40e9a077d6ce0f4bd9e4aa9adc7120276d980d1cdac3316357dd6234336ce"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finitePairFamily_has_finite_resolution",
+      "original_type_sha256": "60a176aa461a784faeb137ab22b71e0ed86f87186ad1c2e9dd4099e06b26ef5f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.canonical_observation",
+      "original_type_sha256": "99086186bf4f568114335c0b9d58ac86056b14ecbd4f061c86f656693564faeb"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.unfold_zero",
+      "original_type_sha256": "bb454da2c3bd2f4aecdce3c2711a56b5ed4ff82a39eef4d8badc079b2e1cbbfb"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.stateToTower",
+      "original_type_sha256": "e54390dd3036ed86eb06052c678ac89b1e5e5a650694c22c06c39b07a3a7affc"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.stateToTower",
+      "original_type_sha256": "043e0f8ef54d09c21d1ea6ec59c9e038b367551b30cdac20def3c0d9f38482e5"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.faithful_comparison_need_not_be_exact",
+      "original_type_sha256": "dacb1ff100dd357308da4351c2b15ea9ba0412cf4a790b539a0df5d868c91845"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.tail_unfold",
+      "original_type_sha256": "20016d75b799dc24226badc9ab9eb3f42bc4ff60a9e633bdea03ebd95026811d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Hom.comp",
+      "original_type_sha256": "3cc6ae09d2fa45251b8a6eceb930cd8b6ad0a50b8a1f14f2b5de5f2ae9c8cdad"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.incoherentBooleanViews_violate_restriction",
+      "original_type_sha256": "076244c274ac7e29296dcf1dae2d132d1f841247ee3e7c6469e0d04b49658984"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.towerGuardCoherentEquiv",
+      "original_type_sha256": "a8a223cf6501fae344acd03f4472d6de0b5dcd04f36906dc71b39c5e1df03ef8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.incoherentBooleanViews",
+      "original_type_sha256": "68059635642d056a5d1b955c42603989bbb323febd3de225eee56f9c0c60c6b3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofStream_toStream",
+      "original_type_sha256": "0713cc790c7b7357607847ec5031adc5bce51fbf26d89eb6a9cda70817157a82"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finitePairFamily_not_identity_invariant",
+      "original_type_sha256": "717b507a991f7c15a49bbec8e3b186e8168d3f6fee1a32daaae2edbb650f445f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.ExactTrinityWitness.toExact",
+      "original_type_sha256": "9e66ac8ccd7f26249e59efee63301fc53eb39458546f43db2c34633ddbfd3375"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.constantBehavior",
+      "original_type_sha256": "1a227c4b51977202049755426b1270c67f4ba4ece949e2ed6f7724cb80ac4dfd"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.canonical",
+      "original_type_sha256": "0045a4d931548cc82904d13ef8f5d6740f2c01d59dd9ae94cc9c93dd651bce0a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.faithful_incomplete_comparison_not_exact",
+      "original_type_sha256": "147a80ae5843ddc0c297ea990ebc4b7b6754c3a96549a97fcf7ddc53bf843837"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.drop",
+      "original_type_sha256": "de2416983edff70a3d2d8ac51431e69011b2937850880fd6c157fe750c42b3d0"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.step_iff_tail_semantics",
+      "original_type_sha256": "6c456ebf06080f2017bb877592a6e677e9e00c3dcafcdfd5bc4cf51a9d940e0f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.overwrite_does_not_preserve_completeTower",
+      "original_type_sha256": "e479a5f6116a1eaac91b82c4fd4e309c91a7b1d14171592cb0ad27f0c9191db2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.BehaviorallyExact",
+      "original_type_sha256": "27c4b82620f31162c8df391b60565ad5e6d37c6802c16cb072848baaaf62416b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.behaviorFace",
+      "original_type_sha256": "e079dfc7126d35fdf7d05c512f1133ad6f8a2a7e7d9e9977e6fe7bcea4d70a19"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation.Faithful",
+      "original_type_sha256": "c693fe3505ec0084b5780d230b16c38806bf10b9a485ea1d5da74ae18a785f6c"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.exactBehaviorWitnessOfBehaviorallyExact",
+      "original_type_sha256": "25f1dff56786146ef7ae5d345f5a7d95ca60947fe9f95e7b824f9073b60c36de"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofStream",
+      "original_type_sha256": "4b273acb6e03f9c610b8ea49cae7a27850ec9ac1890fb35b0e62a75d6a89b45e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.restrictPrefix",
+      "original_type_sha256": "e4354e3d18dc75145377b533c2656f4b76399fce8c9a85492b5627ccf71da8c2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.unfold_streamCoalgebra_eq_id",
+      "original_type_sha256": "de8c23b472640c88d1b128ffd14125037e397473e4262170cd9556a984cfcb03"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.streamFinal",
+      "original_type_sha256": "09be71fe5d07a9a43d1017cbca43ed28f26ad278b0b715aee9a207e7b3a82501"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower",
+      "original_type_sha256": "3c0fe4914b03c7147e55cf004e90562cfd99061a329b6da3c1a0417944c8badd"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.allPrefixes_injective",
+      "original_type_sha256": "b7f7eda3ea1fc007a760106dbdfd986c06d385b08cc6bd60be2ddce8d6b62e7e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finiteObserver",
+      "original_type_sha256": "29da808736ce643133bb9e0aca0373ed1ad8c3d4d01e6d9e49a4b11b463555be"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.guarded_and_direct_finality_agree",
+      "original_type_sha256": "1749c600641c5c8e8385c73cab8aadd284e9b6bc92af3d5346b8cf6a1614a11d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.toStream_ofStream",
+      "original_type_sha256": "e7a777486f742d8db5123d5231505d81051d02cf7f99ddd956df8554728b1730"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.finiteView",
+      "original_type_sha256": "3453a8808afdb13ce4adc052ab53fbfff9b42c0832a5595fbf49ec30c067a4bd"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.completeTowerObserver_injective",
+      "original_type_sha256": "1e5fd0f7c96c51b1d7592855a1abb07355bb1e4cac758890e2ab826a73996564"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.not_nonzeroRevision_zero",
+      "original_type_sha256": "0bb0849b2fc66bb95a2eb1f145b0c40c5d07f7bec0e65e45f752380559b79f12"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.constant_ne_changedAt",
+      "original_type_sha256": "a1e593ac7b380f590e58fd12241251ff1d498f8a67a1f557e651f1323652e1eb"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.ModePresheaf",
+      "original_type_sha256": "eaf0d65c9feca91d040b7a15a598144611793d53e33f66117de4bc9566e3b9b8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.faithfulness_completeness_independent",
+      "original_type_sha256": "08dd33712edab6c945484536f6e7641e5d3c2310a5d4fecbe6c3b7d6aed5ff03"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.constantBool_faithful",
+      "original_type_sha256": "ca7a262be67f0b22cada3b59143ea3223dbff1ddd30b984ee9613b3a5ea9427e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.toStream_surjective",
+      "original_type_sha256": "4720266e9506db345cbe1205c957d73d1af04483930cc37fb143eab935d8dfc4"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.constantBehavior_injective",
+      "original_type_sha256": "3de966cb08f3d763242828a4a11663d176692b9c84b0617a13a9a5571082e125"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.streamCoalgebra",
+      "original_type_sha256": "6e46c603d58d9eebc11c194e68164cecebd7035f739c1d0ff425ebd1e3247b88"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.carrier_iso_does_not_certify_map",
+      "original_type_sha256": "17b2639a5d659f04851b9533de263d78778d164477b79af37d8bea546f459776"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.ModePresheaf.GlobalSection",
+      "original_type_sha256": "cc1e2abd8d83c751c56bbb3f99a9940468870ef1c346a6baa6d813d8adf322c1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.toStream",
+      "original_type_sha256": "356af54bf4f48a10ce09038bf8a6417a8d44eb5e1d47ccb4bcb9c9953df577d1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.streamEquiv",
+      "original_type_sha256": "25a9e47b170d687564d2c1e7cdbbd88fc9187aba4b8272abbac24a6603eb6125"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.IsFinal",
+      "original_type_sha256": "1eee48b4ab4966f9e805af81b7e3cc4c553b49a20aba5cc78e89393b0fb3b4b4"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.semantic_tail_without_operational_step",
+      "original_type_sha256": "2a27c6defc048dbf48b14393f5f6fceb7256180021ed6ef2e22ddbf9eb994b4e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Coalgebra",
+      "original_type_sha256": "c50a2cc7231718b190e0ff65f26f3372a113eacbd136b3d919e5bdf94fb0362f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.fixed_view_lossy_complete_tower_exact",
+      "original_type_sha256": "4f44f0401573b03c921c781dadd56809dd7b04e31e6ccbbb73b9a734d64b6403"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.ExactTrinityWitness.stateBehavior_bijective",
+      "original_type_sha256": "f4b942e9480b0e9915016453d9228db226c0887106cd5727489ff4ce69e2d4d5"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.constantBool_not_complete",
+      "original_type_sha256": "71a84927078e9db47c4913143531f90b96fe168088e2a7dcf9c408a7b9361261"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.ext",
+      "original_type_sha256": "9a0b2f1982bbbed28f941b7ab428520f7764bb9561915663ca812fc867c0405f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.PrefixEqual",
+      "original_type_sha256": "642eb30d31527d3d235c8c2e2f8381ef94388dd71c21b932fa9dbfa78fb705d2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.constantIso_bijective",
+      "original_type_sha256": "c2dca01ca83e216e1f2099a3ad9908a9084fbe7a0840efff5949d4c9f6efb37d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Canary.every_fixed_boolean_prefix_is_lossy",
+      "original_type_sha256": "433602e8c56f5685146222f0006fd62ba74c3b4ee3b3f83fc571f3b3389839ac"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.FiniteViewSystem.Tower.ext",
+      "original_type_sha256": "95d7e9b3e7a6d6f59d4ded33457ea20daa21f76cc81cb4472134f9f2f2605223"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Stream",
+      "original_type_sha256": "3c0fe4914b03c7147e55cf004e90562cfd99061a329b6da3c1a0417944c8badd"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.FiniteViewSystem.Tower",
+      "original_type_sha256": "0eeed321fcd87538d3efaaf91bfc513cc86829d9d2845cd7df77bbbf5f7f9fcf"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.taggedStream_not_faithful",
+      "original_type_sha256": "c79f13461138037baf49aac7c7051cfaa26e9f797e95be00d2709677d24e60ab"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Context",
+      "original_type_sha256": "b16ac105c4e75fe2f85d5156895af9deb6e9dccd922c58a2af077dca0c17c9c3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.no_tower_has_incoherentBooleanViews",
+      "original_type_sha256": "213faf78ade28bf78a913c20317a7a74b6cf8ffddbeb45e05bea27b01be9efa6"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Prefix",
+      "original_type_sha256": "7a8be01e1b18a743f24d1d478b3adfb979c3a5990acde4673b9743fe733f2898"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.changedAt",
+      "original_type_sha256": "0aa5023bbec83b1fa104513e2cb861f5fd669db013e2e868193ab4766bb5adf5"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.stateGSLT_step_iff",
+      "original_type_sha256": "c2bc533e49520ad2fb7f2f24a7b3c170fa81d9cc7666a2c23be7db5696f17e20"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation.toTower",
+      "original_type_sha256": "57e2a103d3fbb6c5def1c3bfccf339e7aea124d9a19c82b2ea9f44ab1952d66b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.lookup_eq",
+      "original_type_sha256": "fadfbdfe9381c567dd38441b9c903e64b19607a908fcbd8abf9bd839c85d9ec7"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.finiteView_constant_changedAt",
+      "original_type_sha256": "e969ba72f1e0b4b4f801016cc6fb66ae64b63685c1e3ff6dc96d73a0eff24eec"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.complete_unfaithful_comparison_loses",
+      "original_type_sha256": "29f55c3cb4515cbdc2ea1f15cb04d0dbf43bcab9bc6c7b606c9c7253933d9700"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Canary.finite_views_lossy_tower_faithful",
+      "original_type_sha256": "2cd02de737d19dde812ea358e364ce4f58416833b05408641baded43f79db280"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.GuardCoherent",
+      "original_type_sha256": "7467659b90b2fb20df7f2fb5c029f313ef6f353556866fdef3b38c44caa5cb01"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.tower_guardCoherent",
+      "original_type_sha256": "6349fb9dda156d8253c27874879631a7fb7e596a402c3bf8863a4e82e401aa2a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.exactBehaviorWitness_nonempty_iff",
+      "original_type_sha256": "21cbeaf037190e7cd8d00d11289174700aa825f6152a7ce6f978f6406cba3a4c"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.coherent_of_guard",
+      "original_type_sha256": "822ea41a93b184087b01f0121663f384acbe4adf2808ac51c5884ab1d0ffd5a8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Canary.complete_boolean_prefix_tower_is_faithful",
+      "original_type_sha256": "7b3b0abad5499ba9bc1063a5bd91abdcf6e887b958a1a2cd33bf55f0347c9b53"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.observableBoolean_step_exact",
+      "original_type_sha256": "10289799573520a8be0ef097c8b45579e6627a558e57b8ae9ff4fd5c3c7c170b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.unfold_constantBool",
+      "original_type_sha256": "3f92808afd95abe5513df1f5356d8b83c4b9cf46c372ff593b53253d94e1eb5b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finiteObserver_postcompose",
+      "original_type_sha256": "d9e5cf34e6cd7df81d7cb3efde1563bce31269e810a7afb1f3ebe82a64b07fde"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.coherentTower",
+      "original_type_sha256": "e54ddd39dd9a45b374baf36edcfa729482d41c52d6598783503a1f13529622b8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.resumeFrom",
+      "original_type_sha256": "d02f628f8f310b6d9c6ce39d1b46ddd2b7142ea6debed9fbaafc11e058d6c709"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ext",
+      "original_type_sha256": "a15c910292494e697de857b9e6f65dc94e3b922fcfd075a9fbc19ee277edf445"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.prefix_of_le",
+      "original_type_sha256": "cbb614cf6aa7872a6a51662ed9167ff80ef73df238161ac3d576ca018cdcddb1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.advance",
+      "original_type_sha256": "13beae921f836bd7f07f4525116a227b89dfca4b6d0ec3d3681b3e79644af640"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.Canary.counter_resume_from_retained_state",
+      "original_type_sha256": "2a58f037f2847e5c24809aee0740508b6b8bedb56df476ddd3a96a3f11bb1402"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.stateFace",
+      "original_type_sha256": "1ce20ec001202dc014198804a4e02489c7c023b4bf7843401f12f53205f09795"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.comparison",
+      "original_type_sha256": "4d7b88964fdae64bab792c277f7bbe42b8c98cba225c762a67e2d53c739a98df"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.booleanObservation",
+      "original_type_sha256": "35dea3c1d0270cbcd6b4055624d8a4344c423935177bc857ca8e3bdda9dafbd8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.Canary.counterTrajectory",
+      "original_type_sha256": "d8e940f00b5259e1bdb53dccc315fd69abdde4674bf8d07daff11fce1e82ce6b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.collapsedBoolean",
+      "original_type_sha256": "dd7cce7142e62182cf0d5c478d919cdc63117f5208cf187c3109af227cf0f497"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.overwritePreservesFinite",
+      "original_type_sha256": "2c207f7fe1adc932666aa06b1b4855e30eeff6f3067422b611562088c2e72709"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.reconstructed_resume",
+      "original_type_sha256": "d2253f0f9f65989294f0d96c6f73022d5a71cd567372186b368a90feb043dac2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation.exact_iff_faithful_and_complete",
+      "original_type_sha256": "2a6960398ef566284c208d45d9d85f0c9a9672a45b4f95799a6cb4b6b1934fe1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finitePairFamily",
+      "original_type_sha256": "4b17e30eb00d475fba9d238e9aa623475fd593750087d428db7049d55291361f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finitePairFamily_covered",
+      "original_type_sha256": "9765876817bc04ec81b265a9fbe1a31772365ef2145eff8608b1e76571a6c2eb"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.behaviorToTower",
+      "original_type_sha256": "13d8b59285547b64d3150e6586c996a98621458358aa0df8ab5c32611a0dac2f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.hom_to_stream_eq_unfold_guarded",
+      "original_type_sha256": "459e5d4e3987240b2ecbf76888768741d6ba814616a0d0bf148c953e8dcd8389"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.collapsedBoolean_behaviors_equal",
+      "original_type_sha256": "cb222d7f5512fe4ab1a7de1aaa6b951bbf0839dbcacb33284f45746e41bc7f15"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.streamObservation",
+      "original_type_sha256": "139d91f21db2bf247e3b95c1487e9f9cc694a2203913a323cf4b512d6b3e169d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.relation_after_resume",
+      "original_type_sha256": "cc0c995f7ba4d2563e2dffe9059bda75aa88821125e4ff7f9d9ee04e09174e0a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.stateGSLT",
+      "original_type_sha256": "419a5dae4d756d4314fed824f23b0486089304bf59e47945b01e70fe07aa8599"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofGrowingLists",
+      "original_type_sha256": "f767625ff5e916515ac580d87f850ed1b4a00323f10316bd50e262fd399854c3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.streamTowerEquiv",
+      "original_type_sha256": "d6a6ad3d0b0a3c584c9b86332132e9dcbf2cd8ddd3901a530bfcd8834c562d1f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.exactTrinityWitnessOfBijective",
+      "original_type_sha256": "4f06c775939b8375469a05ba74bc70cfdcc05282087cc604018eff2de8af8db1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.streamPrefixSystem",
+      "original_type_sha256": "9290ffda9bfce79fd592b94853ad9dad1c165fc08c88724b34442aebe50d726b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.multiStep_preserves_stream_semantics",
+      "original_type_sha256": "24fcde5ebd0370736af443b48e154e13b8db8b7b021230e94990ca2a3722d2e0"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.completeTowerObserver",
+      "original_type_sha256": "db9d49c9e809e83cb587161a4aa97c32386684ff2b06258a490b765c60f8e1ad"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.multiStep_advance",
+      "original_type_sha256": "390efda2779062046c9d541cb9e44fbd030b94197d1120a277b60e2e3b1fc09d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.ModePresheaf.GlobalSection.ext",
+      "original_type_sha256": "e3bb31c1fd35dd174fb0bb30f65fcd760ef6ac95cf9686cbe85628056a2ceb57"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.observer_prefix_after_resume",
+      "original_type_sha256": "0ea877d67a3cb0ec30d7a68d788a051d21af9f24d0ef2573ed41729d837a63d2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.towerGlobalSectionEquiv",
+      "original_type_sha256": "bb0712198e40d85c31b26be484f410136d36c0eb33c0411ed7d8c5cd480204f1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.taggedStreamCoalgebra",
+      "original_type_sha256": "064c90fe611f69ff3af34502b5a2588d6956201234184e9bea96f37bc9df602b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.head_unfold",
+      "original_type_sha256": "5584961c0256faa819e660a0232524d4608c3f26065d2d407d298c17872b7128"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Hom",
+      "original_type_sha256": "3a7bd4205d40fe6b6604e3ea00e8309e03560832c70cb2f72c41cf2581be6fa1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.nonzeroRevision",
+      "original_type_sha256": "cbf6a1178224771e455244a03ee8c61f3404ba5adde2dba5aeb3740fbd556dd8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation.Exact",
+      "original_type_sha256": "c693fe3505ec0084b5780d230b16c38806bf10b9a485ea1d5da74ae18a785f6c"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.IsFinal.unique",
+      "original_type_sha256": "ab6ec7f0362c1b447abb3dc981a5921f992ba85640565ef0d1034162fd9c652e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.later_does_not_imply_now",
+      "original_type_sha256": "6b6d1807e122dc108851311ba445b8d1d38ca7f53f7ad5c4c04cdb0e4f296e3e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation.Complete",
+      "original_type_sha256": "c693fe3505ec0084b5780d230b16c38806bf10b9a485ea1d5da74ae18a785f6c"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.comparison_loses_iff_composite_collision",
+      "original_type_sha256": "15178834cb6307eb5afd03f76ccb7e7bf67169b44ec928eaaf2bfb0f74dda89d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation.equivalenceOfExact",
+      "original_type_sha256": "b0190ac0d062b4f3a813034c3edd1ca33f7507bea5dd3283c73d84dcca20724e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofGrowingLists_read",
+      "original_type_sha256": "fd4a73392cf4c3da787194bb95e9dfee7fa04d4b3e88a26fdbce8ffa79526a93"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.stateToBehavior",
+      "original_type_sha256": "ed2d0227c79f569c99e9ed0912421398cd225a6051bd8c00547f44c8792b0f2f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.unfold",
+      "original_type_sha256": "82ad9709fb7fdfb33556892dc1911568e028452d745e368926384f2afff227bc"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.constantBoolCoalgebra",
+      "original_type_sha256": "064c90fe611f69ff3af34502b5a2588d6956201234184e9bea96f37bc9df602b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.stateGSLT_equiv_iff",
+      "original_type_sha256": "5131e0d00adeb7436edb0d0fcf2c220bbd8efbb1874663c0ec8b36dce65b4e0b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.unfoldAt",
+      "original_type_sha256": "d0a6c7da141152f467321430e5d53cf9d853e36e14669cb10e9e49f481174f85"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.stateToBehavior",
+      "original_type_sha256": "6c4ddeaa930c7117b8d3e941d6fef3d2f5e4ce9a91fdd7f66ee4e36f969779ea"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.toStream_coherentTower",
+      "original_type_sha256": "4b6c389f48c48c2c2aa7e73ad9b834f959c10d81c8d08aab5a3ace7b5e6f2c16"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory",
+      "original_type_sha256": "f71ec8412f16e3dd15c1c9f5ebf429e27fca0551f3b0693a6adeb9a30168af11"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Hom.id",
+      "original_type_sha256": "02be8c0d3b16e39e5c9814317830b7ca0a7ea08001fb9ee056604c5725127e53"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.exactTrinityWitness_transport_iff",
+      "original_type_sha256": "e23d3aaa2afaea734a9b2f4abfdc4b81413625f57e0f06db1f7156bf530ec97d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.towerFace",
+      "original_type_sha256": "e0d875d95aa76e8261792af034fa1f8c1c8591abc3418d6f476ec1519eafd2ab"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofStream_surjective",
+      "original_type_sha256": "738e15c187d2cb43ed8c620172e55b55b8fe300f5a436539d415cd213496b5f6"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.taggedBehavior",
+      "original_type_sha256": "41df7f9ed613cbc544505aac73346d4fd2e134ea9866b8caa342648049522401"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.eq_canonical",
+      "original_type_sha256": "f2510d7b843bee49494439eda68fed01cbd82e639e470efe584143c591228856"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.ExactTrinityWitness.behaviorTower_exact",
+      "original_type_sha256": "2f2089a2ccf8c2a0326857f6400abd64520271ec3ed8931abbe4e98531be0e75"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.unfold_advance",
+      "original_type_sha256": "4a8b9badec2b0eccc5e33e66ba8f4b0805aa7954e2f138644af7e1ca82f04e27"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.all_prefixes_agree",
+      "original_type_sha256": "78e740be9b30f987ba34dce42a89b65e82c1c32a9c7a825b56dd033cd4456b93"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.multiStep_iff_advance",
+      "original_type_sha256": "0519b73a21dae682a29ec9ec3d6a6cf2dd347f6dfd57e37d18703e54996f3560"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.stateFace",
+      "original_type_sha256": "e079dfc7126d35fdf7d05c512f1133ad6f8a2a7e7d9e9977e6fe7bcea4d70a19"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.allPrefixes",
+      "original_type_sha256": "c0b0b4d1a1da4fb27a1049e29d3e560340178cb918ae15a243aba04745e1ae8f"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.hom_to_stream_eq_unfold",
+      "original_type_sha256": "5969cca06aa07cac1247920f8bb4153faa4e7f3b432691f900de06db80f357a3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.ExactBehaviorWitness.behaviorallyExact",
+      "original_type_sha256": "db3da270c2eeece65ff37eb582fd82fc67587fb28b473bf7e4aae76529d7129e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.earlier_prefixes_need_not_include_current",
+      "original_type_sha256": "8111c1887839cd4c6575c91a11f1873dd19745f13555ed898e4029fbe99b945a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.constantBehavior_not_surjective",
+      "original_type_sha256": "70db7a88768d3f681df775f329691650c57f73faff806ec912e24cfb404238ed"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.later_nonzeroRevision_zero",
+      "original_type_sha256": "fcba168e45092a44de6f234321f86bef08663bad61c94d20b90ae89bc40aefa7"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.comparison_maps_agree",
+      "original_type_sha256": "1f91f7486dabeb98dc6717a70a80ade29c784dc2b3e7ce46f84f08ca833f7d5e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.head",
+      "original_type_sha256": "877b224fc786a2eb173a1367055e97cf048e4595c64203bb454e152e2262e1cd"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finitePairFamily_has_no_identity_resolution",
+      "original_type_sha256": "669ea792f956bc4ee8ddb39a404ce6b9f13a698b64cbfcc9c57afe28240ced74"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.observableBoolean",
+      "original_type_sha256": "064c90fe611f69ff3af34502b5a2588d6956201234184e9bea96f37bc9df602b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.observableBoolean_faithful",
+      "original_type_sha256": "93b97913e5fe7b65f5d7941380ceb815a7b0a1a1054d35c68ca2e3c850f9d6ff"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.Canary.constant_counter_not_resumable",
+      "original_type_sha256": "665406cb2bfcc5f5981de7710880b079b7c2cc5412f489e2a21d055c93cff7df"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.coherentTower_injective",
+      "original_type_sha256": "f83b90910b9b6858a8e228203cbbd4d9d486340551307a5e3567cb72c4afb0e2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.taggedBehavior_surjective",
+      "original_type_sha256": "0172900724e1ec1ff2e55ce6d7b29b7f55a7c56d0f702f3144284ff66edb4882"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.constant",
+      "original_type_sha256": "71ed5af46a03c2bb4f2a7d8d899aa590fccf76d539a3965def0383a32c859444"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.finiteView_not_injective",
+      "original_type_sha256": "173438d93d7d72772c993e3bf5680a60435bb0886de37beb0d3119974cd2e06c"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.unique",
+      "original_type_sha256": "4ee21cdd82834d1b7ba1bc2e6ecf1a4508b9276a7bb57c6c875e4ad97f2446b3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.taggedProjectionHom",
+      "original_type_sha256": "f31fe89bc8b1bda2c49b63a77fb7310c632c1312de054b189f95c8fe719312c5"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.Hom.ext",
+      "original_type_sha256": "29d4145f65af2fa696fc97d84439c7bc75a25b6c1ecb3bb5dacc7903cdaae3e0"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.comparison",
+      "original_type_sha256": "cd9281e10b223eb1fa772383fbff702d150192dcc2978d5794ee40429d89f0e8"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.Canary.counterRun",
+      "original_type_sha256": "17f828c0761a02d0a8b1dff41cabbf24a2edb7c2295812a41d23a8388f1bd541"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finite_selection_is_observer_relative",
+      "original_type_sha256": "a7c5cca88efbaa3e4651b7a22ab915a6a49a7e592eb5aa6c9c9005826542a652"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.observation_constant_after_settlement",
+      "original_type_sha256": "657232f3c8a043af15a5b0f523397719120a639ccfc702c956deaedf231252cf"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.streamObservation_exact",
+      "original_type_sha256": "ca201535573beb505edf050b789f5cac4509dabf13a531122316c33f03d914e0"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.behaviorTowerIso_hom",
+      "original_type_sha256": "87e8bbe9cea72c545f12873276d4e92be74f71c4ea48e8d27847453baf1c17ea"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofGrowingLists_word",
+      "original_type_sha256": "d97d9ad3e1463624a2c6e4d0da2dc001ed3f0f6b09942b397b0cd9293dc9ee30"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.faithful_not_loses",
+      "original_type_sha256": "28e6bd7680512fde55855b916320103a3e77ee2835c51167c623c0148efaa23e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.exactStreamTrinity",
+      "original_type_sha256": "40ab1c4fa32297002580e6c56ba696e2ebee2e68b4ac697bc46775be579f1d08"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.behaviorFace",
+      "original_type_sha256": "a13b159f6a9d6586fc5650d920618d8f5178108a1bfb891629ddcc92f2900d96"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.multiStep_target_eq_advance",
+      "original_type_sha256": "9198eb4e17c8761926450e086e4e8378c0dccb5b009e068fade63c0b6d622102"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.prefixAgreement_step",
+      "original_type_sha256": "38ab478b08d94c6ccf88215eda9f83caaa3bc8caa1ed8dec08e4973ad7628c50"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.ofStream_injective",
+      "original_type_sha256": "009cf1afecd6ed442605bb7e0b70228276c4de8e04e9a818507ff0199fcf713a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.unfold_succ",
+      "original_type_sha256": "db6d4fed5c985c159335544b7945e14818fd30815741b291aa7fc7c9d66d7d1a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFinality.PrefixAgreement",
+      "original_type_sha256": "60c98b49e609aa76e9771504c5380a13e6a849a794c1287635f993d53c49cb3e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.Canary.collapsedBoolean_not_faithful",
+      "original_type_sha256": "e87bc410f82bb6229a1af0144aef844c9e5dbd710f04fd230c18754fb212f52e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.restrictPrefix_finiteView",
+      "original_type_sha256": "f171d50c159f1001079203821daf47cbea8299c7bc1848a412d50081296478b1"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Context",
+      "original_type_sha256": "b16ac105c4e75fe2f85d5156895af9deb6e9dccd922c58a2af077dca0c17c9c3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.taggedStream_complete",
+      "original_type_sha256": "a1a42c57946862a208db477b16fbb71a5b5ea890a16e81b082a4e5d286d453d7"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.exactTrinityWitness_nonempty_iff",
+      "original_type_sha256": "6092ee4ee64d24ed5bdbd17b1d1883d1efc6ab0f70829db2bba9c91485c07ed0"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.FiniteViewSystem",
+      "original_type_sha256": "ef20dabaa6893e7cda25f526415a7347c9025e70f12c0df8c0480c6388576024"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.behaviorallyExact_iff_faithful_and_complete",
+      "original_type_sha256": "19981a79efe41aa3cdff464e77cfec3cc624792ab175a817cdecad9e0d0f6373"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.overwriteAt",
+      "original_type_sha256": "1fd8f76e5a2c6feb11075d96d03ff8bdac66e73926f5784bdeaf657115ccea1d"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.unfoldHom",
+      "original_type_sha256": "b6f297eb46e262e378e0287a3df7cc570d5e5393af3de8d9c11089b014fe8c0b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.invariant",
+      "original_type_sha256": "a8deeef809fa1694d841bcdce0b561329793badaeeca9ed0ce41cea53768c07e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.observation_eq_run",
+      "original_type_sha256": "faf198cd9c9bc197716f2cb37b04f317437ddb2093c024b68b155f132d8e4dc2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.GuardedFiniteViewSystem.streamPrefixes_guardCoherent",
+      "original_type_sha256": "70cd01f0a47d203e7a73492e5c6db01463ac1c34c25c95e268f7335af188bc25"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.BehaviorallyFaithful",
+      "original_type_sha256": "78f43033e43458cc7ecc6a8ee5b623b1721f7cbf7821366c8a96191b8829c910"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.ExactBehaviorWitness.exactTrinity_programLogic_agrees",
+      "original_type_sha256": "418c251dfe3c88e7979abccfdc255402eae3ea875838746d5e013b4ada6897b3"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamFinality.tail",
+      "original_type_sha256": "313101c78f47f317a879fae67f07aae0bd7a17ce5b52873618005be837ea0418"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.StreamGSLT.multiStep_iff_finiteTail_semantics",
+      "original_type_sha256": "8bd3ed47c63fd4921f24c2bfc7f2f33218650f0bfee4164033d77c79bdad044a"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.BehaviorObservation",
+      "original_type_sha256": "7dbe86b30edf73be2d18a409d4567565bb47f3a745262b86f117a89c88e43b8e"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.unfold_taggedStream",
+      "original_type_sha256": "769b8b508596e646fbb46544ee046859989f7f8e07c965ada3c464e118386c46"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.behaviorTowerIso",
+      "original_type_sha256": "065038f1648e739580437dd0d5efb808b306d97b128e67a7eae886cbcae0040b"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewComputationalTrinity.Canary.taggedBehavior_not_injective",
+      "original_type_sha256": "3fbf9bcb81cf601ad9b4d2aa7eef873f67d89ee3999ed73c558bd94ceaf3f9f2"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.towerFace",
+      "original_type_sha256": "a13b159f6a9d6586fc5650d920618d8f5178108a1bfb891629ddcc92f2900d96"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.Canary.streamCoalgebra_exact",
+      "original_type_sha256": "af903065f492f3da5aaaf37232eda526280eb736c474816740ab8eaf5baeb498"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentFiniteViewSystem.streamTowerEquiv_toTower",
+      "original_type_sha256": "1e807dfd5a71e6d8dd7d344512c658a99d6a2cdda541ec5976b43ded0c08106c"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.ExactBehaviorWitness.exactTrinity",
+      "original_type_sha256": "29331d85df4ed0c09d128c90c60fd0bf203e732dd3ea80739379a5d32440f3f9"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.ComputationalTrinity.behaviorToTower",
+      "original_type_sha256": "c68597a164085f9ee301bb88201a61a35ba4d9bd024d2f0b833908ba5ed8e118"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.Tower.toStream_injective",
+      "original_type_sha256": "816c208b388f682822c8c0b983c24c1ed30393fc22591bd3002fad32e00431dc"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.FiniteViewObserver.finitePairFamily_finite_invariant",
+      "original_type_sha256": "bc05b1d2b74cae55e9f05771666e1fa77d6fd18b472591feb2b7150f55816081"
+    },
+    {
+      "name": "Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.resumeFrom_observation",
+      "original_type_sha256": "00e86927548bc620d350d2c2a8720123b23d5f01c4005429a2f206c9eee9892e"
+    }
+  ],
+  "verification_fixtures": [
+    {
+      "name": "OldContracts",
+      "sha256": "bb7aff63ab08f87719845293636137c62a4f9f7eba5b9310aa27706f00aa76a0",
+      "status": "pass"
+    },
+    {
+      "name": "Controls",
+      "sha256": "3da5e06156556fc8c2e628cb3c5d27f108ac6bb583226b60c8f468149a72c30a",
+      "status": "pass"
+    },
+    {
+      "name": "ReferenceSemantics",
+      "sha256": "707bd937b3e9343d818f0d08882e623af48b98a067a9c4ea82edcc805f39e650",
+      "status": "pass"
+    }
+  ],
+  "source_boundaries": [
+    "The InitialFinal sources are unchanged.",
+    "All core and changed aggregate sources use warnings as errors. Per-module flags distinguish unchanged ancillary regressions with inherited cosmetic warnings; admission warnings remain fatal.",
+    "External imported artifacts are reused with recorded identities; this tranche does not claim a whole-library rebuild."
+  ],
+  "current_source_inventory": [
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/CoherentFiniteViewSystem.lean",
+      "sha256": "c972942c50077db7bb6badbdb8f91213bea27fe1710d6bca9af13c14f4566b98",
+      "lines": 53
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/CoherentPrefixTower.lean",
+      "sha256": "6ed8351008bdddf02acc4edbfbf4357e0749731181e24f299b30097891907d12",
+      "lines": 288
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/ComputationalTrinity.lean",
+      "sha256": "f1739548e7f50726fc0d00144eb0762912630fa4d19e5a9f7779c07543767e4d",
+      "lines": 257
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewComputationalTrinity.lean",
+      "sha256": "5cf75de9a19af89b121bcb7092eebb660cb86427c543315e4ecbe9a972304a17",
+      "lines": 258
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewObserver.lean",
+      "sha256": "7667c34810c830dcc214352085fedb8feaa2a7fd4cf4286a8ea0070a8d62ca09",
+      "lines": 156
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/FiniteViewSystem.lean",
+      "sha256": "a31e59dff566dc4b484e885b80e4473730298cc3a4211f41295e240217c61cd6",
+      "lines": 141
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GrowingPrefixTower.lean",
+      "sha256": "b1a6e41e038664c09ad8c05225fb2c2fa38bb7366169c848bbd260dbdee18de0",
+      "lines": 46
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GuardedFinality.lean",
+      "sha256": "a7dea713e39cf5562438201ca7fe23088b93efc13f0ad4d9d91e586fde09d12e",
+      "lines": 121
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/GuardedFiniteViewSystem.lean",
+      "sha256": "2aa1c69f657281b354de6a57de1ffc09103fee9e6ef1035e679dee6298f24c03",
+      "lines": 170
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/StreamFinality.lean",
+      "sha256": "4f54d23f5fa3056b3d464862d7c890e61f979409e64c4aa53a63c3f3f678e68c",
+      "lines": 280
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/Coalgebra/StreamGSLT.lean",
+      "sha256": "09b73616d0b330441df2d2ddc5d545e2fb3ae0170e9ece9bf73e0cf3350c6e22",
+      "lines": 196
+    }
+  ],
+  "whole_library_build_claimed": false,
+  "verification_fixture_footprint": {
+    "OldContracts": 2285,
+    "ReferenceSemantics": 173,
+    "Controls": 45
+  },
+  "integration_validation_receipts": {
+    "newly_pending_index_modules": [
+      "Mettapedia.GSLT.Distinction.OrderedAdministration",
+      "Mettapedia.GSLT.LanguageDef.OperationCostProtocol",
+      "Mettapedia.Machines.RevisionDependencySet",
+      "Mettapedia.OSLF.MeTTaIL.CollectionMatcherBackend",
+      "Mettapedia.OSLF.MeTTaIL.RecursiveCollectionHandoff"
+    ],
+    "definition": "Previous receipts whose direct imported objects changed are conservatively retired until replayed; this is not a new source-error claim."
+  }
+}
