@@ -9,7 +9,6 @@ namespace Mettapedia.Ethics
 
 universe u
 
-/-- A choice point is a set of alternative action formulas. -/
 abbrev ChoicePoint (World : Type u) : Type u :=
   Set (Formula World)
 
@@ -65,5 +64,19 @@ theorem utilitarianMoralDilemma_iff_virtueTargetMoralDilemma {World : Type u}
   · intro h φ hφ
     have hv : (virtueTargetSemanticsOfUtility World semU).targets .Vicious φ w := h φ hφ
     simpa [virtueTargetSemanticsOfUtility, virtueAspectToMoralValue] using hv
+
+theorem virtueTargetMoralDilemma_iff_valueMoralDilemma {World : Type u}
+    (semT : VirtueTargetSemantics World) (semV : ValueSemantics World)
+    (h_align : ∀ a φ w, semT.targets a φ w ↔ semV.morally (virtueAspectToMoralValue a) φ w)
+    (w : World) (cp : ChoicePoint World) :
+    VirtueTargetMoralDilemma semT w cp ↔
+      ValueMoralDilemma semV w cp := by
+  constructor
+  · intro h φ hφ
+    have ht : semT.targets .Vicious φ w := h φ hφ
+    simpa [virtueAspectToMoralValue] using (h_align .Vicious φ w).1 ht
+  · intro h φ hφ
+    have hv : semV.morally .MorallyBad φ w := h φ hφ
+    simpa [virtueAspectToMoralValue] using (h_align .Vicious φ w).2 hv
 
 end Mettapedia.Ethics
