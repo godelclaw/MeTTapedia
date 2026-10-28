@@ -61,6 +61,29 @@ input_dir primeMotivationSources where
 
 @[default_target] lean_lib Mettapedia
 
+/-- Maintained logic-programming theory and executable graph-runtime modules. -/
+lean_lib LogicProgrammingTheory where
+  roots := #[`Mettapedia.Logic.LP, `Mettapedia.Logic.Prolog]
+  globs := #[Glob.one `Mettapedia.Logic.LP, Glob.one `Mettapedia.Logic.Prolog,
+    Glob.submodules `Mettapedia.Logic.LP,
+    Glob.submodules `Mettapedia.Logic.Prolog]
+
+/-- The versioned PeTTa model, its independent specifications and local proofs. -/
+lean_lib PLeaTTaTheory where
+  roots := #[`Mettapedia.Languages.MeTTa.PLeaTTa]
+  globs := #[Glob.one `Mettapedia.Languages.MeTTa.PLeaTTa,
+    Glob.submodules `Mettapedia.Languages.MeTTa.PLeaTTa]
+
+/-- The standalone attention-budget models use this package's existing cache. -/
+lean_lib AttentionEconomyTheory where
+  srcDir := "../pettaclaw"
+  roots := #[`StiMass, `StiFloor, `StiFloorDecay]
+
+/-- Checked coloring algebra and completion boundary in the companion source tree. -/
+lean_lib FourColorCore where
+  srcDir := "../fourcolor"
+  roots := #[`FourColor.IntegrationCore]
+
 /- The exact maintained roots of the compositional abstract-machine
 qualification. This target is deliberately narrower than the aggregate library
 and does not pull optional implementation studies into the AM proof boundary. -/
@@ -100,8 +123,14 @@ meta if leattaIntegrationEnabled then
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaFresheningCorrespondence,
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaPatternExecution,
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaProgramEnvironment,
+    `Mettapedia.GSLT.LanguageDef.LFCheckerSim,
     `Mettapedia.GSLT.LanguageDef.LFEngineProbe,
+    `Mettapedia.GSLT.LanguageDef.LFEngineReduce,
     `Mettapedia.GSLT.LanguageDef.MIEvalEncoding,
+    `Mettapedia.GSLT.LanguageDef.MIEvalHostingEmitter,
+    `Mettapedia.GSLT.LanguageDef.MIEvalHostingRevEmitter,
+    `Mettapedia.GSLT.ReproducibleBuild.LeaTTaReplayInstance,
+    `Mettapedia.Languages.MM0.Presentation.ScopedServiceCorrespondence,
     `Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.LeaTTaDIndGEvaluator,
     `Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge,
     `Mettapedia.Languages.MeTTa.HE.EquationScopeControls,
@@ -150,13 +179,21 @@ lean_lib PrimeMotivationQuotation where
   needs := #[`@/primeMotivationSources]
 
 input_dir holLightMeTTaSources where
-  path := "../../../hyperon/cetta-prime-2.0-draft-20260910/lib/hol_light"
+  path := "../../metta/hol_light"
   text := true
   filter := .extension "metta"
 
 lean_lib HOLLightMeTTaQuotation where
   roots := #[`Mettapedia.Languages.HOLLight.MeTTa.Program]
   needs := #[`@/holLightMeTTaSources]
+
+input_file pettaBoundCallsSource where
+  path := "../../metta/fixtures/petta_bound_calls.metta"
+  text := false
+
+lean_lib PeTTaBoundCallQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.BoundCallControls]
+  needs := #[`@/pettaBoundCallsSource]
 
 -- The GSLT execution library lives beside these proofs in `metta/gslt/lib`.
 -- Every quoted file is an input of the module that quotes it.

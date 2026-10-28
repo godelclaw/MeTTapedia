@@ -1,0 +1,1750 @@
+diff --git a/Exchangeability/Contractability.lean b/Exchangeability/Contractability.lean
+index b2811c8a..32a995b5 100644
+--- a/Exchangeability/Contractability.lean
++++ b/Exchangeability/Contractability.lean
+@@ -322,8 +322,8 @@ lemma exists_perm_extending_strictMono {m n : ℕ} (k : Fin m → ℕ)
+   have hι_mem : ∀ i : Fin m, p (ι i) := fun i => i.isLt
+   let kFin : Fin m → Fin n := fun i => ⟨k i, hk_bound i⟩
+   have hk_mem : ∀ i : Fin m, q (kFin i) := fun i => ⟨i, rfl⟩
+-  haveI : DecidablePred p := fun x => inferInstance
+-  haveI : DecidablePred q := fun x => inferInstance
++  have : DecidablePred p := fun x => inferInstance
++  have : DecidablePred q := fun x => inferInstance
+   -- Equivalence between the first `m` coordinates and `Fin m`.
+   let e_dom : {x : Fin n // p x} ≃ Fin m :=
+     { toFun := fun x => ⟨x.1.val, x.2⟩
+diff --git a/Exchangeability/Core.lean b/Exchangeability/Core.lean
+index 9810d9a3..28df5fae 100644
+--- a/Exchangeability/Core.lean
++++ b/Exchangeability/Core.lean
+@@ -179,7 +179,7 @@ lemma prefixCylinder_inter {m n : ℕ} {S : Set (Fin m → α)} {T : Set (Fin n
+         (extendSet (α:=α) (Nat.le_max_left _ _) S ∩
+           extendSet (α:=α) (Nat.le_max_right _ _) T) := by
+   ext x
+-  simp only [Set.mem_inter_iff, mem_prefixCylinder, extendSet, Set.mem_setOf_eq, takePrefix_prefixProj]
++  simp only [Set.mem_inter_iff, mem_prefixCylinder, extendSet, Set.mem_ofPred_eq, takePrefix_prefixProj]
+ 
+ end Extend
+ 
+@@ -375,7 +375,7 @@ lemma measurable_reindex {π : Equiv.Perm ℕ} :
+     Measurable (reindex (α:=α) π) :=
+   measurable_pi_lambda _ (fun i => measurable_pi_apply (π i))
+ 
+-attribute [measurability] measurable_prefixProj takePrefix_measurable measurable_reindex
++attribute [fun_prop] measurable_prefixProj takePrefix_measurable measurable_reindex
+ 
+ /--
+ The path law (or joint distribution) of a stochastic process.
+@@ -691,12 +691,12 @@ theorem exchangeable_iff_fullyExchangeable {μ : Measure Ω}
+     have hμX_univ : μX Set.univ = 1 := by
+       simp [μX, pathLaw, Measure.map_apply_of_aemeasurable,
+         (measurable_pi_lambda _ (fun i => hX i)).aemeasurable, hμ_univ]
+-    haveI : IsProbabilityMeasure μX := ⟨by simpa using hμX_univ⟩
++    have : IsProbabilityMeasure μX := ⟨by simpa using hμX_univ⟩
+     have hμXπ_univ :
+         Measure.map (reindex (α:=α) π) μX Set.univ = 1 := by
+       simp [Measure.map_apply_of_aemeasurable,
+         (measurable_reindex (α:=α) (π:=π)).aemeasurable, hμX_univ]
+-    haveI : IsProbabilityMeasure (Measure.map (reindex (α:=α) π) μX) :=
++    have : IsProbabilityMeasure (Measure.map (reindex (α:=α) π) μX) :=
+       ⟨by simpa using hμXπ_univ⟩
+ 
+     -- Apply helper: finite marginals are equal
+diff --git a/Exchangeability/DeFinetti/BridgeProperty.lean b/Exchangeability/DeFinetti/BridgeProperty.lean
+index f8ed7b0f..1184a7e8 100644
+--- a/Exchangeability/DeFinetti/BridgeProperty.lean
++++ b/Exchangeability/DeFinetti/BridgeProperty.lean
+@@ -113,7 +113,7 @@ lemma measure_eq_implies_lintegral_prod_eq
+       simp only [hprod, Pi.one_apply]
+     · -- ω is not in some preimage, so at least one factor is 0
+       rw [indicator_of_notMem h]
+-      rw [hpre_mem] at h; push_neg at h
++      rw [hpre_mem] at h; push Not at h
+       obtain ⟨i, hi⟩ := h
+       rw [Finset.prod_eq_zero (i := i) (hi := Finset.mem_univ i)]
+       simp only [indicator_of_notMem hi, ENNReal.ofReal_zero]
+@@ -157,7 +157,7 @@ lemma indicator_product_bridge_strictMono
+     ∫⁻ ω, ∏ i : Fin m,
+         ENNReal.ofReal ((B i).indicator (fun _ => (1 : ℝ)) (X (k i) ω)) ∂μ
+       = ∫⁻ ω, ∏ i : Fin m, ν ω (B i) ∂μ := by
+-  haveI : ∀ ω, IsProbabilityMeasure (ν ω) := hν_prob
++  have : ∀ ω, IsProbabilityMeasure (ν ω) := hν_prob
+   -- Use finite_product_formula to get measure equality
+   have h_measure_eq := finite_product_formula X hX hX_meas ν hν_prob hν_meas hν_law m k hk
+   -- Convert to integral form
+diff --git a/Exchangeability/DeFinetti/CommonEnding.lean b/Exchangeability/DeFinetti/CommonEnding.lean
+index f65a21c2..97942449 100644
+--- a/Exchangeability/DeFinetti/CommonEnding.lean
++++ b/Exchangeability/DeFinetti/CommonEnding.lean
+@@ -95,6 +95,7 @@ Note: Formalizing tail σ-algebra equality with shift-invariant σ-field is futu
+ 
+ /-- The **invariant σ-field** ℐ consists of all measurable shift-invariant sets.
+ Following FMP 10.2, this forms a σ-field. -/
++@[instance_reducible]
+ def invariantSigmaField (α : Type*) [MeasurableSpace α] : MeasurableSpace (ℕ → α) :=
+   MeasurableSpace.comap shift inferInstance
+ 
+@@ -113,6 +114,7 @@ defined as `⨅ n, comap (shift^n) inferInstance`.
+ 
+ For exchangeable sequences, this equals the shift-invariant σ-field
+ (to be proven using FMP 10.3-10.4). -/
++@[instance_reducible]
+ def tailSigmaAlgebra (α : Type*) [MeasurableSpace α] : MeasurableSpace (ℕ → α) :=
+   Exchangeability.Tail.tailShift α
+ 
+@@ -168,7 +170,7 @@ lemma prod_eq_zero_iff {ι : Type*} [Fintype ι] {f : ι → ENNReal} :
+   constructor
+   · intro h
+     by_contra h_all_nonzero
+-    push_neg at h_all_nonzero
++    push Not at h_all_nonzero
+     have : ∀ i, f i ≠ 0 := h_all_nonzero
+     have prod_ne_zero : ∏ i, f i ≠ 0 := Finset.prod_ne_zero_iff.mpr fun i _ => this i
+     exact prod_ne_zero h
+@@ -338,7 +340,7 @@ private lemma product_measure_on_rectangle {Ω α : Type*} [MeasurableSpace α]
+     (B : Fin m → Set α) (ω : Ω) :
+     ∏ i : Fin m, ν ω (B i)
+       = (Measure.pi fun _i : Fin m => ν ω) {x : Fin m → α | ∀ i, x i ∈ B i} := by
+-  haveI : IsProbabilityMeasure (ν ω) := hν_prob ω
++  have : IsProbabilityMeasure (ν ω) := hν_prob ω
+   have set_eq : {x : Fin m → α | ∀ i, x i ∈ B i} = Set.univ.pi fun i => B i := by
+     ext x; simp [Set.pi]
+   rw [set_eq, Measure.pi_pi]
+diff --git a/Exchangeability/DeFinetti/L2Helpers.lean b/Exchangeability/DeFinetti/L2Helpers.lean
+index 84134c65..f59e82a7 100644
+--- a/Exchangeability/DeFinetti/L2Helpers.lean
++++ b/Exchangeability/DeFinetti/L2Helpers.lean
+@@ -599,11 +599,11 @@ lemma integral_sq_weighted_sum_eq_double_sum {μ : Measure Ω}
+           intro i _; apply Finset.sum_congr rfl
+           intro j _; ring
+     _ = ∑ i, ∑ j, ∫ ω, (c i * c j) * (η i ω * η j ω) ∂μ := by
+-          rw [integral_finset_sum _ (fun i _ => ?_)]
++          rw [integral_finsetSum _ (fun i _ => ?_)]
+           congr 1; ext i
+-          rw [integral_finset_sum _ (fun j _ => ?_)]
++          rw [integral_finsetSum _ (fun j _ => ?_)]
+           · exact (h_integrable i j).const_mul (c i * c j)
+-          · exact integrable_finset_sum _ (fun j _ => (h_integrable i j).const_mul _)
++          · exact integrable_finsetSum _ (fun j _ => (h_integrable i j).const_mul _)
+     _ = ∑ i, ∑ j, c i * c j * ∫ ω, η i ω * η j ω ∂μ := by
+           congr 1; ext i; congr 1; ext j
+           rw [integral_const_mul]
+@@ -694,7 +694,7 @@ lemma l2_bound_from_steps {n : ℕ} {c p q : Fin n → ℝ} (σSq ρ : ℝ)
+     · obtain ⟨j0⟩ := h
+       calc (0 : ℝ) ≤ |c j0| := abs_nonneg _
+         _ ≤ ⨆ j, |c j| := le_ciSup hbdd j0
+-    · haveI : IsEmpty (Fin n) := not_nonempty_iff.mp h
++    · have : IsEmpty (Fin n) := not_nonempty_iff.mp h
+       have : (Set.range fun j : Fin n => |c j|) = ∅ := by
+         ext x; simp only [Set.mem_range, Set.mem_empty_iff_false, iff_false]
+         rintro ⟨j, _⟩; exact IsEmpty.false j
+diff --git a/Exchangeability/DeFinetti/MartingaleHelpers.lean b/Exchangeability/DeFinetti/MartingaleHelpers.lean
+index ee62cebc..49c3c8ee 100644
+--- a/Exchangeability/DeFinetti/MartingaleHelpers.lean
++++ b/Exchangeability/DeFinetti/MartingaleHelpers.lean
+@@ -80,7 +80,7 @@ omit [MeasurableSpace β] in
+ lemma shiftSeq_apply {d : ℕ} (f : ℕ → β) (n : ℕ) :
+     shiftSeq d f n = f (n + d) := rfl
+ 
+-@[measurability]
++@[fun_prop]
+ lemma measurable_shiftSeq {d : ℕ} :
+     Measurable (shiftSeq (β:=β) d) :=
+   measurable_pi_lambda _ (fun n => measurable_pi_apply (n + d))
+@@ -130,7 +130,7 @@ lemma orderEmbOfFin_surj {s : Finset ℕ} {x : ℕ} (hx : x ∈ s) :
+     intro i j hij
+     exact h_inj (Subtype.ext_iff.mp hij)
+   -- Injective function between finite types of equal cardinality is surjective
+-  haveI : Fintype s := Finset.fintypeCoeSort s
++  have : Fintype s := Finset.fintypeCoeSort s
+   have hcard : Fintype.card (Fin s.card) = Fintype.card s := by simp
+   have hf_bij : Function.Bijective f := by
+     rw [Fintype.bijective_iff_injective_and_card]
+@@ -156,7 +156,7 @@ lemma strictMono_fin_cases
+     cases j using Fin.cases with
+     | zero =>
+       have hijNat := hij
+-      simp [Fin.lt_def] at hijNat
++      simp at hijNat
+     | succ j =>
+       have hij' : i < j := (Fin.succ_lt_succ_iff).1 hij
+       simpa using hf hij'
+diff --git a/Exchangeability/DeFinetti/ViaL2/AlphaConvergence.lean b/Exchangeability/DeFinetti/ViaL2/AlphaConvergence.lean
+index f496f616..7cefad5a 100644
+--- a/Exchangeability/DeFinetti/ViaL2/AlphaConvergence.lean
++++ b/Exchangeability/DeFinetti/ViaL2/AlphaConvergence.lean
+@@ -148,7 +148,7 @@ lemma alphaIic_ae_eq_alphaIicCE
+             _ ≤ alpha ω - A n m ω := by linarith
+             _ ≤ |A n m ω - alpha ω| := by rw [abs_sub_comm]; exact le_abs_self _
+         · -- alpha ∈ [0,1], so clipping does nothing
+-          push_neg at halpha halpha1
++          push Not at halpha halpha1
+           rw [min_comm, min_eq_left halpha1, max_eq_right halpha]
+ 
+     -- Prove integrability of A n m
+@@ -202,7 +202,7 @@ lemma alphaIic_ae_eq_alphaIicCE
+               norm_num
+             · by_cases h1 : 1 ≤ alpha ω
+               · rw [min_eq_left h1, max_eq_right (by linarith : 0 ≤ (1:ℝ)), abs_of_nonneg (by linarith : 0 ≤ (1:ℝ))]
+-              · push_neg at h h1
++              · push Not at h h1
+                 rw [min_eq_right (le_of_lt h1), max_eq_right (le_of_lt h)]
+                 exact abs_of_pos h |>.trans_le (le_of_lt h1)
+           · exact (hA_int.sub halpha_int).abs
+@@ -746,7 +746,7 @@ lemma alphaIicCE_L1_tendsto_zero_atBot
+   -- Set up the tail σ-algebra Fact instance (needed for condExp)
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+ 
+   -- For each n, alphaIicCE (-(n:ℝ)) = μ[(indIic (-(n:ℝ))) ∘ X 0 | tailSigma]
+   have h_def : ∀ n, alphaIicCE X hX_contract hX_meas hX_L2 (-(n : ℝ))
+@@ -847,7 +847,7 @@ lemma alphaIicCE_L1_tendsto_one_atTop
+   -- Set up the tail σ-algebra Fact instance (needed for condExp)
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+ 
+   -- Step 1: Show ∫ |(indIic (n:ℝ)) ∘ X 0 - 1| → 0
+   -- Integral of |indicator - 1| = μ(X 0 > n) → 0 by continuity
+diff --git a/Exchangeability/DeFinetti/ViaL2/AlphaIicCE.lean b/Exchangeability/DeFinetti/ViaL2/AlphaIicCE.lean
+index 2d2171f4..c084dd97 100644
+--- a/Exchangeability/DeFinetti/ViaL2/AlphaIicCE.lean
++++ b/Exchangeability/DeFinetti/ViaL2/AlphaIicCE.lean
+@@ -112,7 +112,7 @@ lemma alphaIicCE_mono
+   -- Set up tail σ-algebra infrastructure
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+ 
+   -- Show indIic s ≤ indIic t pointwise
+   have h_ind_mono : (indIic s) ∘ (X 0) ≤ᵐ[μ] (indIic t) ∘ (X 0) := by
+@@ -157,7 +157,7 @@ lemma alphaIicCE_nonneg_le_one
+   -- Set up tail σ-algebra infrastructure
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+ 
+   -- Nonnegativity: 0 ≤ indIic t ∘ X 0 implies 0 ≤ condExp
+   have h₀ : 0 ≤ᵐ[μ] alphaIicCE X hX_contract hX_meas hX_L2 t := by
+@@ -282,8 +282,8 @@ lemma alphaIicCE_right_continuous_at
+   -- Set up tail σ-algebra infrastructure
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI h_fact : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+-  haveI h_sf : SigmaFinite (μ.trim hm_le) :=
++  have h_fact : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have h_sf : SigmaFinite (μ.trim hm_le) :=
+     Exchangeability.Probability.sigmaFinite_trim μ hm_le
+ 
+   -- Step 1: Get decreasing rational sequence u_n → t with u_n > t
+@@ -333,7 +333,7 @@ lemma alphaIicCE_right_continuous_at
+       simp only [h_ev, ↓reduceIte, hxt]
+       exact tendsto_const_nhds
+     · -- X 0 ω > t, so eventually X 0 ω > u_n (since u_n → t)
+-      push_neg at hxt
++      push Not at hxt
+       simp only [Set.indicator_apply, Set.mem_Iic, not_le.mpr hxt, ↓reduceIte]
+       -- u_n → t and X 0 ω > t, so eventually u_n < X 0 ω
+       have h_ev : ∀ᶠ n in Filter.atTop, (u n : ℝ) < X 0 ω := by
+@@ -514,7 +514,7 @@ lemma alphaIicCE_iInf_rat_gt_eq
+   -- Set up tail σ-algebra infrastructure
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+ 
+   -- Use ae_all_iff to reduce to proving for each rational q
+   rw [ae_all_iff]
+@@ -658,7 +658,7 @@ lemma alphaIicCE_iInf_rat_gt_eq
+     -- because Set.Ioi q ⊆ {r : ℚ // (q : ℝ) < r} (they're actually equal)
+ 
+     -- Nonempty instances for the infima
+-    haveI : Nonempty { r : ℚ // (q : ℝ) < r } :=
++    have : Nonempty { r : ℚ // (q : ℝ) < r } :=
+       ⟨⟨q + 1, by simp [Rat.cast_add, Rat.cast_one]⟩⟩
+ 
+     calc ⨅ r : Set.Ioi q, alphaIicCE X hX_contract hX_meas hX_L2 (r : ℝ) ω
+diff --git a/Exchangeability/DeFinetti/ViaL2/BlockAverages.lean b/Exchangeability/DeFinetti/ViaL2/BlockAverages.lean
+index 7f63258e..a912fc8c 100644
+--- a/Exchangeability/DeFinetti/ViaL2/BlockAverages.lean
++++ b/Exchangeability/DeFinetti/ViaL2/BlockAverages.lean
+@@ -207,7 +207,7 @@ lemma contractable_covariance_structure
+         rw [hρ_def]
+         field_simp [ne_of_gt hσSq_pos]
+       · -- Case j < i: use symmetry
+-        push_neg at h_ord
++        push Not at h_ord
+         have h_ji : j < i := Nat.lt_of_le_of_ne h_ord (Ne.symm hij)
+         have h_eq_dist := contractable_map_pair (X := X) hX_contract hX_meas h_ji
+         have h_int_ji : ∫ ω, (X j ω - m) * (X i ω - m) ∂μ
+@@ -337,7 +337,7 @@ lemma contractable_covariance_structure
+     exact ⟨m, σSq, ρ, hmean, hvar, hcov, hσSq_nonneg, hρ_bd⟩
+ 
+   · -- Case: zero variance (all X_i are constant a.s.)
+-    push_neg at hσSq_pos
++    push Not at hσSq_pos
+     have hσSq_zero : σSq = 0 := le_antisymm hσSq_pos hσSq_nonneg
+ 
+     -- When variance is 0, all X_i = m almost surely
+@@ -398,7 +398,7 @@ private lemma sup_two_window_weights {k : ℕ} (hk : 0 < k)
+     rw [hp, hq]
+     simp only
+     split_ifs <;> simp [abs_neg]
+-  haveI : Nonempty (Fin (2 * k)) := ⟨⟨0, Nat.mul_pos (by decide : 0 < 2) hk⟩⟩
++  have : Nonempty (Fin (2 * k)) := ⟨⟨0, Nat.mul_pos (by decide : 0 < 2) hk⟩⟩
+   simp_rw [h_eq]
+   exact ciSup_const
+ 
+@@ -697,7 +697,7 @@ lemma l2_bound_two_windows_uniform
+   have h_sup_le :
+       (⨆ i : Fin nS, |p i - q i|) ≤ 1 / (k : ℝ) := by
+     classical
+-    haveI : Nonempty (Fin nS) := Fin.pos_iff_nonempty.mp h_nS_pos
++    have : Nonempty (Fin nS) := Fin.pos_iff_nonempty.mp h_nS_pos
+     refine ciSup_le ?_
+     intro i
+     have hmem : idx i ∈ S := h_idx_mem i
+@@ -728,7 +728,7 @@ lemma l2_bound_two_windows_uniform
+       simp [Real.norm_eq_abs]
+       exact hM (X (idx i) ω)
+     have hsub := this.sub (memLp_const mf)
+-    simp only [ξ, Y, idx, hY_def]
++    simp only [ξ, Y, idx]
+     exact hsub
+ 
+   have hξ_var : ∀ i : Fin nS, ∫ ω, (ξ i ω - mf)^2 ∂μ = (Real.sqrt σSqf) ^ 2 := by
+@@ -1302,7 +1302,7 @@ lemma l2_bound_long_vs_tail
+   -- This gives a slightly looser but still valid bound
+   have h_sup_bound : (⨆ i : Fin m, |p i - q i|) ≤ 1 / (k : ℝ) := by
+     -- Show that for all i, |p i - q i| ≤ 1/k
+-    haveI : Nonempty (Fin m) := by
++    have : Nonempty (Fin m) := by
+       apply Fin.pos_iff_nonempty.mp
+       exact Nat.lt_of_lt_of_le hk hkm
+     apply ciSup_le
+@@ -1444,8 +1444,10 @@ namespace TailSigma
+ 
+ -- Re-export the definitions for backward compatibility
+ /-- Re-export of `Tail.tailFamily` for backward compatibility. -/
++@[instance_reducible]
+ def tailFamily := @Exchangeability.Tail.tailFamily
+ /-- Re-export of `Tail.tailProcess` for backward compatibility. -/
++@[instance_reducible]
+ def tailSigma := @Exchangeability.Tail.tailProcess
+ 
+ -- Re-export the lemmas for backward compatibility
+diff --git a/Exchangeability/DeFinetti/ViaL2/CesaroConvergence.lean b/Exchangeability/DeFinetti/ViaL2/CesaroConvergence.lean
+index bc7b568f..8fb178d2 100644
+--- a/Exchangeability/DeFinetti/ViaL2/CesaroConvergence.lean
++++ b/Exchangeability/DeFinetti/ViaL2/CesaroConvergence.lean
+@@ -1206,7 +1206,7 @@ private lemma cesaro_cauchy_rho_lt
+       calc 0 < 1 := Nat.one_pos
+         _ ≤ n := hn_pos
+         _ ≤ max n n' := le_max_left n n'
+-    haveI : Nonempty (Fin m) := Fin.pos_iff_nonempty.mp hm_pos
++    have : Nonempty (Fin m) := Fin.pos_iff_nonempty.mp hm_pos
+     -- Show each |p i - q i| ≤ max(1/n, 1/n'), then take supremum
+     apply ciSup_le
+     intro i
+@@ -1221,7 +1221,7 @@ private lemma cesaro_cauchy_rho_lt
+         rw [abs_sub_comm, abs_of_nonneg (sub_nonneg_of_le h), max_eq_right h]
+         exact sub_le_self _ (inv_nonneg.mpr (Nat.cast_nonneg n))
+       · -- Case: n⁻¹ > n'⁻¹, so max = n⁻¹
+-        push_neg at h
++        push Not at h
+         rw [abs_of_nonneg (sub_nonneg_of_le (le_of_lt h)), max_eq_left (le_of_lt h)]
+         exact sub_le_self _ (inv_nonneg.mpr (Nat.cast_nonneg n'))
+     · -- Case 2: i.val < n ∧ i.val ≥ n'
+@@ -1733,7 +1733,7 @@ private lemma blockAvg_cauchy_in_L2
+       exact hε
+ 
+   · -- Degenerate case: σSq = 0 → Z is constant a.e. → blockAvg constant a.e.
+-    push_neg at hσ_pos
++    push Not at hσ_pos
+     have hσSq_zero : σSq = 0 := by
+       have hσSq_nonneg : 0 ≤ σSq := by
+         simp only [σSq]
+@@ -1942,7 +1942,7 @@ private lemma l2_limit_from_cauchy
+     exact ENNReal.toReal_lt_of_lt_ofReal (hN hm' hn')
+ 
+   -- Step 4: Extract limit from completeness
+-  haveI : CompleteSpace (Lp ℝ 2 μ) := by infer_instance
++  have : CompleteSpace (Lp ℝ 2 μ) := by infer_instance
+   obtain ⟨α_L2, h_tendsto⟩ := cauchySeq_tendsto_of_complete hCauchySeq
+ 
+   -- Step 5: Extract representative function
+@@ -2056,7 +2056,7 @@ private lemma blockAvg_shift_tendsto
+               exact Finset.sum_le_sum (fun k _ => hf_bdd (X (0 + k) ω))
+           _ = (n : ℝ)⁻¹ * n := by simp
+           _ = 1 := by field_simp [Nat.pos_iff_ne_zero.mp hn]
+-    · push_neg at hn
++    · push Not at hn
+       have : n = 0 := Nat.eq_zero_of_le_zero hn
+       subst this
+       have h_eq : blockAvg f X 0 0 = fun _ => 0 := by ext ω; simp [blockAvg]
+@@ -2482,7 +2482,7 @@ lemma cesaro_to_condexp_L2
+       exact ENNReal.toReal_lt_of_lt_ofReal (hN hm' hn')
+ 
+     -- Step 3: Extract limit from completeness
+-    haveI : CompleteSpace (Lp ℝ 2 μ) := by infer_instance
++    have : CompleteSpace (Lp ℝ 2 μ) := by infer_instance
+     obtain ⟨α_L2, h_tendsto⟩ := cauchySeq_tendsto_of_complete hCauchySeq
+ 
+     -- Step 4: Extract representative function
+@@ -2744,11 +2744,11 @@ lemma cesaro_to_condexp_L2
+       TailSigma.tailSigma_le X hX_meas
+ 
+     -- Step 2: SigmaFinite for trimmed measure (automatic for probability measures)
+-    haveI h_finite : IsFiniteMeasure (μ.trim hm) := by
++    have h_finite : IsFiniteMeasure (μ.trim hm) := by
+       constructor
+       rw [trim_measurableSet_eq hm MeasurableSet.univ]
+       exact measure_lt_top μ Set.univ
+-    haveI : SigmaFinite (μ.trim hm) := @IsFiniteMeasure.toSigmaFinite _ _ _ h_finite
++    have : SigmaFinite (μ.trim hm) := @IsFiniteMeasure.toSigmaFinite _ _ _ h_finite
+ 
+     -- Step 3: Integrability of f ∘ X 0 (bounded function on probability space)
+     have hfX0_int : Integrable (f ∘ X 0) μ := by
+@@ -2803,7 +2803,7 @@ lemma cesaro_to_condexp_L2
+           exact MeasureTheory.integral_smul _ _
+         rw [h_scalar]
+         -- Sum pullout: ∫_A (∑ ...) = ∑ ∫_A ...
+-        rw [MeasureTheory.integral_finset_sum _ (fun k _ => (hfXk_int k).integrableOn.integrable)]
++        rw [MeasureTheory.integral_finsetSum _ (fun k _ => (hfXk_int k).integrableOn.integrable)]
+         -- Apply shift invariance: ∑ ∫_A f(X k) = ∑ ∫_A f(X 0) = n * ∫_A f(X 0)
+         simp_rw [h_shift_eq]
+         rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+@@ -3050,7 +3050,7 @@ theorem tendsto_integral_indicator_Iic
+       rw [ae_iff]
+       convert h_cont using 2
+       ext ω
+-      simp only [Set.mem_setOf_eq, Set.mem_preimage, Set.mem_singleton_iff, not_not]
++      simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_singleton_iff, not_not]
+     filter_upwards [hae, h_not_eq] with ω hω_tendsto hω_neq
+     rcases lt_trichotomy (X ω) t with h_lt | h_eq | h_gt
+     · -- Case 1: X ω < t
+@@ -3294,7 +3294,7 @@ lemma cesaro_convergence_all_shifts
+     apply Integrable.sub
+     · -- Cesàro average is integrable (bounded on probability space)
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       have h_bdd : ∀ᵐ ω ∂μ, ‖f (X k ω)‖ ≤ 1 := ae_of_all μ fun ω => by
+         rw [Real.norm_eq_abs]; exact hf_bdd _
+diff --git a/Exchangeability/DeFinetti/ViaL2/DirectingMeasureCore.lean b/Exchangeability/DeFinetti/ViaL2/DirectingMeasureCore.lean
+index 5dc360b1..b4d7f383 100644
+--- a/Exchangeability/DeFinetti/ViaL2/DirectingMeasureCore.lean
++++ b/Exchangeability/DeFinetti/ViaL2/DirectingMeasureCore.lean
+@@ -130,7 +130,7 @@ lemma cdf_from_alpha_bounds
+     -- Then eventually f(s) ∈ (-ε, ε), so f(s) > -ε = f(t)/2.
+     -- But also f(s) ≤ f(t) for s ≤ t, contradicting f(s) > f(t)/2 > f(t).
+     by_contra h_neg
+-    push_neg at h_neg
++    push Not at h_neg
+     -- f(t) < 0, so ε := -f(t)/2 > 0
+     set ε := -cdf_from_alpha X hX_contract hX_meas hX_L2 ω t / 2 with hε_def
+     have hε_pos : 0 < ε := by simp [hε_def]; linarith
+@@ -163,7 +163,7 @@ lemma cdf_from_alpha_bounds
+     -- Similar argument: for any s > t, f(t) ≤ f(s) by monotonicity.
+     -- As s → +∞, f(s) → 1, so f(t) ≤ 1.
+     by_contra h_gt
+-    push_neg at h_gt
++    push Not at h_gt
+     -- f(t) > 1, so ε := (f(t) - 1)/2 > 0
+     set ε := (cdf_from_alpha X hX_contract hX_meas hX_L2 ω t - 1) / 2 with hε_def
+     have hε_pos : 0 < ε := by simp [hε_def]; linarith
+diff --git a/Exchangeability/DeFinetti/ViaL2/DirectingMeasureIntegral.lean b/Exchangeability/DeFinetti/ViaL2/DirectingMeasureIntegral.lean
+index cd5198af..49a36a5c 100644
+--- a/Exchangeability/DeFinetti/ViaL2/DirectingMeasureIntegral.lean
++++ b/Exchangeability/DeFinetti/ViaL2/DirectingMeasureIntegral.lean
+@@ -197,7 +197,7 @@ lemma directing_measure_integral_Iic_ae_eq_alphaIicCE
+       intro b hb
+       -- b ≥ alphaIicRat n for all n, so b ≥ lim alphaIicRat n = 1
+       by_contra h_not
+-      push_neg at h_not
++      push Not at h_not
+       have hε : 1 - b > 0 := by linarith
+       -- Since alphaIicRat n → 1, for large n we have alphaIicRat n > b
+       have h_nat : Tendsto (fun n : ℕ => alphaIicRat X hX_contract hX_meas hX_L2 ω (n : ℚ))
+@@ -235,7 +235,7 @@ lemma directing_measure_integral_Iic_ae_eq_alphaIicCE
+     · -- 0 is the greatest lower bound
+       intro b hb
+       by_contra h_not
+-      push_neg at h_not
++      push Not at h_not
+       have hε : b > 0 := h_not
+       -- Since alphaIicRat (-n) → 0, for large n we have alphaIicRat (-n) < b
+       have h_nat : Tendsto (fun n : ℕ => alphaIicRat X hX_contract hX_meas hX_L2 ω (-(n : ℚ)))
+@@ -451,7 +451,7 @@ lemma integral_indicator_borel_tailAEStronglyMeasurable
+           1 - ∫ x, t.indicator (fun _ => (1:ℝ)) x
+             ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+         intro ω
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         -- 1_{tᶜ} = 1 - 1_t
+         have h_ind_compl : ∀ x, tᶜ.indicator (fun _ => (1:ℝ)) x =
+             1 - t.indicator (fun _ => (1:ℝ)) x := by
+@@ -478,7 +478,7 @@ lemma integral_indicator_borel_tailAEStronglyMeasurable
+           ∑' n, ∫ x, (f n).indicator (fun _ => (1:ℝ)) x
+             ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+         intro ω
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         -- indicator of union = sum of indicators for disjoint sets
+         have h_ind_union : ∀ x, (⋃ n, f n).indicator (fun _ => (1:ℝ)) x =
+             ∑' n, (f n).indicator (fun _ => (1:ℝ)) x := by
+@@ -558,7 +558,7 @@ lemma integral_indicator_borel_tailAEStronglyMeasurable
+           (nhds (∑' n, ∫ x, (f n).indicator (fun _ => (1:ℝ)) x
+             ∂(directing_measure X hX_contract hX_meas hX_L2 ω))) := by
+         intro ω
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         -- Each term is nonnegative and bounded by 1
+         have h_nonneg : ∀ n, 0 ≤ ∫ x, (f n).indicator (fun _ => (1:ℝ)) x
+             ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+@@ -573,12 +573,12 @@ lemma integral_indicator_borel_tailAEStronglyMeasurable
+                 ∂(directing_measure X hX_contract hX_meas hX_L2 ω)
+             = ∫ x, ∑ n ∈ Finset.range N, (f n).indicator (fun _ => (1:ℝ)) x
+                 ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+-                rw [integral_finset_sum]
++                rw [integral_finsetSum]
+                 intro i _
+                 exact (integrable_const 1).indicator (hf i).1
+             _ ≤ ∫ _, 1 ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+                 apply integral_mono
+-                · apply integrable_finset_sum
++                · apply integrable_finsetSum
+                   intro i _
+                   exact (integrable_const 1).indicator (hf i).1
+                 · exact integrable_const 1
+@@ -595,7 +595,7 @@ lemma integral_indicator_borel_tailAEStronglyMeasurable
+                         rw [Set.indicator_of_notMem]
+                         exact Set.disjoint_left.mp hdisj_mn hxm
+                       · intro hm_not; exact absurd hm_mem hm_not
+-                    · push_neg at hx
++                    · push Not at hx
+                       have h_zero : ∀ n ∈ Finset.range N, (f n).indicator (fun _ => (1:ℝ)) x = 0 :=
+                         fun n hn => Set.indicator_of_notMem (hx n hn) _
+                       rw [Finset.sum_eq_zero h_zero]
+@@ -724,7 +724,7 @@ lemma integral_simpleFunc_tailAEStronglyMeasurable
+   have h_eq : ∀ ω, ∫ x, φ x ∂(directing_measure X hX_contract hX_meas hX_L2 ω) =
+       ∑ c ∈ φ.range, (directing_measure X hX_contract hX_meas hX_L2 ω).real (φ ⁻¹' {c}) • c := by
+     intro ω
+-    haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++    have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+     -- φ is integrable on any probability measure (simple functions are bounded)
+     have h_int : Integrable (⇑φ) (directing_measure X hX_contract hX_meas hX_L2 ω) :=
+       SimpleFunc.integrable_of_isFiniteMeasure φ
+@@ -756,7 +756,7 @@ lemma integral_simpleFunc_tailAEStronglyMeasurable
+           ∫ x, (φ ⁻¹' {c}).indicator 1 x
+             ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+         intro ω
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         exact (integral_indicator_one h_preimage_meas).symm
+       have h_term_aesm : @AEStronglyMeasurable Ω ℝ _ (TailSigma.tailSigma X) _
+           (fun ω => (directing_measure X hX_contract hX_meas hX_L2 ω).real (φ ⁻¹' {c})) μ := by
+@@ -834,7 +834,7 @@ lemma integral_bounded_measurable_tailAEStronglyMeasurable
+       Filter.atTop
+       (nhds (∫ x, f x ∂(directing_measure X hX_contract hX_meas hX_L2 ω))) := by
+     intro ω
+-    haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++    have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+     -- Apply DCT with bound M' (constant, hence integrable)
+     apply tendsto_integral_of_dominated_convergence (fun _ => M')
+     · intro n
+@@ -913,7 +913,7 @@ lemma setIntegral_directing_measure_indicator_Iic_eq
+   -- Set up σ-algebra facts
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI : SigmaFinite (μ.trim hm_le) := inferInstance
++  have : SigmaFinite (μ.trim hm_le) := inferInstance
+ 
+   -- Step 1: ∫ 1_{Iic t} dν(ω) =ᵐ alphaIicCE t ω
+   have h_ae := directing_measure_integral_Iic_ae_eq_alphaIicCE X hX_contract hX_meas hX_L2 t
+@@ -995,7 +995,7 @@ lemma setIntegral_directing_measure_indicator_eq
+             1 - ∫ x, t.indicator (fun _ => (1:ℝ)) x
+               ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+           intro ω
+-          haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++          have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+           have h_ind_compl : ∀ x, tᶜ.indicator (fun _ => (1:ℝ)) x =
+               1 - t.indicator (fun _ => (1:ℝ)) x := by
+             intro x
+@@ -1015,7 +1015,7 @@ lemma setIntegral_directing_measure_indicator_eq
+               |>.mono hm_le
+           · filter_upwards with ω
+             rw [Real.norm_eq_abs]
+-            haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++            have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+             calc |∫ x, t.indicator (fun _ => (1:ℝ)) x
+                 ∂(directing_measure X hX_contract hX_meas hX_L2 ω)|
+               ≤ ∫ x, |t.indicator (fun _ => (1:ℝ)) x|
+@@ -1061,7 +1061,7 @@ lemma setIntegral_directing_measure_indicator_eq
+             ∑' n, ∫ x, (f n).indicator (fun _ => (1:ℝ)) x
+               ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+           intro ω
+-          haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++          have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+           have h_ind_union : ∀ x, (⋃ n, f n).indicator (fun _ => (1:ℝ)) x =
+               ∑' n, (f n).indicator (fun _ => (1:ℝ)) x := by
+             intro x
+@@ -1116,7 +1116,7 @@ lemma setIntegral_directing_measure_indicator_eq
+               ∂(directing_measure X hX_contract hX_meas hX_L2 ω)‖ₑ =
+               (directing_measure X hX_contract hX_meas hX_L2 ω) (f i) := by
+             intro ω i
+-            haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++            have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+             have h_ind_eq : (fun x => (f i).indicator (fun _ => (1:ℝ)) x) =
+                 (f i).indicator 1 := by ext; simp [Set.indicator]
+             rw [h_ind_eq, integral_indicator_one (hf i).1, Measure.real]
+@@ -1138,7 +1138,7 @@ lemma setIntegral_directing_measure_indicator_eq
+               ≤ ∫⁻ ω in A, 1 ∂μ := by
+             apply lintegral_mono
+             intro ω
+-            haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++            have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+             calc ∑' i, (directing_measure X hX_contract hX_meas hX_L2 ω) (f i)
+               = (directing_measure X hX_contract hX_meas hX_L2 ω) (⋃ i, f i) :=
+                 (measure_iUnion hdisj (fun i => (hf i).1)).symm
+@@ -1276,7 +1276,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+     · intro n
+       filter_upwards with ω
+       rw [Real.norm_eq_abs]
+-      haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++      have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+       -- |∫ φ_n dν| ≤ M' (since |φ_n| ≤ M' and ν is prob measure)
+       calc |∫ x, φ n x ∂(directing_measure X hX_contract hX_meas hX_L2 ω)|
+         ≤ ∫ x, |φ n x| ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := abs_integral_le_integral_abs
+@@ -1291,7 +1291,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+         _ = M' := by simp [MeasureTheory.probReal_univ]
+     · filter_upwards with ω
+       -- ∫ φ_n dν(ω) → ∫ f dν(ω) by DCT on ν(ω)
+-      haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++      have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+       apply tendsto_integral_of_dominated_convergence (fun _ => M')
+       · intro n; exact (SimpleFunc.measurable (φ n)).aestronglyMeasurable
+       · exact integrable_const M'
+@@ -1330,7 +1330,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+     have h_sf_eq : ∀ ω, ∫ x, φ n x ∂(directing_measure X hX_contract hX_meas hX_L2 ω) =
+         ∑ c ∈ (φ n).range, (directing_measure X hX_contract hX_meas hX_L2 ω).real ((φ n) ⁻¹' {c}) • c := by
+       intro ω
+-      haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++      have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+       have h_int : Integrable (⇑(φ n)) (directing_measure X hX_contract hX_meas hX_L2 ω) :=
+         SimpleFunc.integrable_of_isFiniteMeasure (φ n)
+       exact SimpleFunc.integral_eq_sum (φ n) h_int
+@@ -1354,7 +1354,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+         exact (hc₀_not hc₀_mem).elim
+     -- Both sides are sums; equality term by term
+     simp_rw [h_sf_eq, h_rhs_sf_eq]
+-    rw [integral_finset_sum, integral_finset_sum]
++    rw [integral_finsetSum, integral_finsetSum]
+     · congr 1
+       ext c
+       -- Need: ∫_A ν(ω).real((φ n)⁻¹'{c}) • c dμ = ∫_A 1_{(φ n)⁻¹'{c}}(X₀) • c dμ
+@@ -1364,7 +1364,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+           ∫ x, ((φ n) ⁻¹' {c}).indicator (fun _ => (1:ℝ)) x
+             ∂(directing_measure X hX_contract hX_meas hX_L2 ω) := by
+         intro ω
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         have h_ind_eq : ((φ n) ⁻¹' {c}).indicator (fun _ => (1:ℝ)) = ((φ n) ⁻¹' {c}).indicator 1 := by
+           ext; simp [Set.indicator]
+         rw [h_ind_eq, integral_indicator_one h_preimage_meas]
+@@ -1400,7 +1400,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+       have h_eq_intind : (fun ω => (directing_measure X hX_contract hX_meas hX_L2 ω).real ((φ n) ⁻¹' {c})) =
+           (fun ω => ∫ x, ((φ n) ⁻¹' {c}).indicator 1 x ∂(directing_measure X hX_contract hX_meas hX_L2 ω)) := by
+         ext ω
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         exact (integral_indicator_one h_pm).symm
+       rw [h_eq_intind]
+       apply Integrable.mono' (integrable_const 1)
+@@ -1408,7 +1408,7 @@ lemma setIntegral_directing_measure_bounded_measurable_eq
+           ((φ n) ⁻¹' {c}) h_pm |>.mono hm_le
+       · filter_upwards with ω
+         rw [Real.norm_eq_abs]
+-        haveI hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++        have hprob := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+         rw [abs_le]
+         constructor
+         · have h := integral_indicator_one h_pm (μ := directing_measure X hX_contract hX_meas hX_L2 ω)
+@@ -1518,8 +1518,8 @@ lemma directing_measure_integral_eq_condExp
+   -- Set up the sub-σ-algebra and sigma-finiteness
+   have hm_le : TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω) :=
+     TailSigma.tailSigma_le X hX_meas
+-  haveI hm_fact : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
+-  haveI hσ : SigmaFinite (μ.trim hm_le) := inferInstance
++  have hm_fact : Fact (TailSigma.tailSigma X ≤ (inferInstance : MeasurableSpace Ω)) := ⟨hm_le⟩
++  have hσ : SigmaFinite (μ.trim hm_le) := inferInstance
+ 
+   -- Get the bound M (ensure M ≥ 0)
+   obtain ⟨M, hM⟩ := hf_bdd
+@@ -1539,7 +1539,7 @@ lemma directing_measure_integral_eq_condExp
+   -- g is bounded by M' (since ν(ω) is a probability measure)
+   have hg_bdd : ∀ ω, |g ω| ≤ M' := by
+     intro ω
+-    haveI : IsProbabilityMeasure (directing_measure X hX_contract hX_meas hX_L2 ω) :=
++    have : IsProbabilityMeasure (directing_measure X hX_contract hX_meas hX_L2 ω) :=
+       directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+     calc |g ω| = |∫ x, f x ∂(directing_measure X hX_contract hX_meas hX_L2 ω)| := rfl
+       _ ≤ ∫ x, |f x| ∂(directing_measure X hX_contract hX_meas hX_L2 ω) :=
+@@ -1655,7 +1655,7 @@ lemma directing_measure_integral_via_chain
+         apply le_antisymm _ (integral_nonneg (fun _ => abs_nonneg _))
+         -- For any ε > 0, ∫|alpha| < ε (using hα_conv with cesaro = 0)
+         by_contra h_pos
+-        push_neg at h_pos
++        push Not at h_pos
+         have hε : (0 : ℝ) < ∫ ω, |alpha ω| ∂μ := h_pos
+         obtain ⟨M_idx, hM_idx⟩ := hα_conv 0 (∫ ω, |alpha ω| ∂μ) hε
+         specialize hM_idx M_idx (le_refl _)
+diff --git a/Exchangeability/DeFinetti/ViaL2/MainConvergence.lean b/Exchangeability/DeFinetti/ViaL2/MainConvergence.lean
+index 159e8dd1..3b7500cc 100644
+--- a/Exchangeability/DeFinetti/ViaL2/MainConvergence.lean
++++ b/Exchangeability/DeFinetti/ViaL2/MainConvergence.lean
+@@ -770,7 +770,7 @@ theorem subsequence_criterion_convergence_in_probability
+   simp only [Real.dist_eq]
+   have hk_ge_K : k ≥ K := le_trans (le_max_left K (K' + 1)) hk
+   have : ω ∉ E k := hK k hk_ge_K
+-  simp only [E, Set.mem_setOf_eq, not_le] at this
++  simp only [E, Set.mem_ofPred_eq, not_le] at this
+   calc |ξ (φ k) ω - ξ_limit ω|
+       < 1 / (k + 1 : ℝ) := this
+     _ ≤ 1 / (K' + 1 : ℝ) := by
+diff --git a/Exchangeability/DeFinetti/ViaL2/MoreL2Helpers.lean b/Exchangeability/DeFinetti/ViaL2/MoreL2Helpers.lean
+index c3548543..a0794156 100644
+--- a/Exchangeability/DeFinetti/ViaL2/MoreL2Helpers.lean
++++ b/Exchangeability/DeFinetti/ViaL2/MoreL2Helpers.lean
+@@ -263,7 +263,7 @@ lemma directing_measure_measurable
+     have h_empty : ∅ ∈ G := by
+       constructor
+       · exact MeasurableSet.empty
+-      · change Measurable (fun ω => directing_measure X hX_contract hX_meas hX_L2 ω ∅)
++      ·
+         simp only [measure_empty]
+         exact measurable_const
+ 
+@@ -281,8 +281,8 @@ lemma directing_measure_measurable
+           intro ω
+           -- directing_measure ω is a measure (StieltjesFunction.measure), so measure_compl applies
+           -- Need IsFiniteMeasure instance - follows from IsProbabilityMeasure (once that's proved)
+-          haveI : IsFiniteMeasure (directing_measure X hX_contract hX_meas hX_L2 ω) := by
+-            haveI := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
++          have : IsFiniteMeasure (directing_measure X hX_contract hX_meas hX_L2 ω) := by
++            have := directing_measure_isProbabilityMeasure X hX_contract hX_meas hX_L2 ω
+             infer_instance
+           rw [measure_compl hs_meas (measure_ne_top _ s)]
+         simp_rw [h_univ_s]
+@@ -315,7 +315,7 @@ lemma directing_measure_measurable
+           exact measure_iUnion hdisj (fun n => (hf n).1)
+         simp_rw [h_union_eq]
+         -- ∑' n, ν(ω)(f n) is measurable as tsum of measurable functions
+-        exact Measurable.ennreal_tsum (fun n => (hf n).2)
++        exact Measurable.tsum (fun n => (hf n).2)
+ 
+     -- Step 3: Apply π-λ theorem (induction_on_inter)
+     -- The Borel σ-algebra on ℝ is generated by half-lines {Iic t | t ∈ ℝ}
+@@ -564,7 +564,7 @@ lemma weighted_sums_converge_L1_smul
+     -- Integrability of Cesàro averages
+     have h_avg_cf_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, (c * f (X (k.val + 1) ω))) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Mcf, hMcf⟩ := hcf_bdd
+       apply Integrable.mono' (integrable_const Mcf)
+@@ -572,7 +572,7 @@ lemma weighted_sums_converge_L1_smul
+       · filter_upwards with ω; simp only [Real.norm_eq_abs]; exact hMcf _
+     have h_avg_f_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, f (X (k.val + 1) ω)) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Mf, hMf⟩ := hf_bdd
+       apply Integrable.mono' (integrable_const Mf)
+@@ -722,7 +722,7 @@ lemma weighted_sums_converge_L1_add
+     -- Integrability of Cesàro averages
+     have h_avg_fg_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, (f + g) (X (k.val + 1) ω)) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Mfg, hMfg⟩ := hfg_bdd
+       apply Integrable.mono' (integrable_const Mfg)
+@@ -730,7 +730,7 @@ lemma weighted_sums_converge_L1_add
+       · filter_upwards with ω; simp only [Real.norm_eq_abs]; exact hMfg _
+     have h_avg_f_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, f (X (k.val + 1) ω)) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Mf, hMf⟩ := hf_bdd
+       apply Integrable.mono' (integrable_const Mf)
+@@ -738,7 +738,7 @@ lemma weighted_sums_converge_L1_add
+       · filter_upwards with ω; simp only [Real.norm_eq_abs]; exact hMf _
+     have h_avg_g_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, g (X (k.val + 1) ω)) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Mg, hMg⟩ := hg_bdd
+       apply Integrable.mono' (integrable_const Mg)
+@@ -947,7 +947,7 @@ lemma weighted_sums_converge_L1_one_sub
+     -- Integrability of Cesàro averages (bounded functions on probability space are integrable)
+     have h_avg_sub_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, (1 - f (X (k.val + 1) ω))) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Ms, hMs⟩ := hsub_bdd
+       apply Integrable.mono' (integrable_const Ms)
+@@ -958,7 +958,7 @@ lemma weighted_sums_converge_L1_one_sub
+     have h_avg_1_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ _k : Fin m, (1 : ℝ)) μ := integrable_const _
+     have h_avg_f_int : Integrable (fun ω => (1 / (m : ℝ)) * ∑ k : Fin m, f (X (k.val + 1) ω)) μ := by
+       apply Integrable.const_mul
+-      apply integrable_finset_sum
++      apply integrable_finsetSum
+       intro k _
+       obtain ⟨Mf, hMf⟩ := hf_bdd
+       apply Integrable.mono' (integrable_const Mf)
+@@ -1390,7 +1390,7 @@ lemma integral_alphaIic_eq_marginal
+       simp only [A]
+       rw [integral_const_mul]
+       congr 1
+-      rw [integral_finset_sum]
++      rw [integral_finsetSum]
+       intro k _
+       have h_meas_comp : Measurable (fun ω => ind (X (0 + k.val + 1) ω)) :=
+         ind_meas.comp (hX_meas _)
+@@ -1554,7 +1554,7 @@ lemma card_nonInjective_le (m N : ℕ) (_hN : 0 < N) :
+       constructor
+       intro ⟨φ, hφ⟩
+       simp only [Function.Injective] at hφ
+-      push_neg at hφ
++      push Not at hφ
+       obtain ⟨i, _, _, _⟩ := hφ
+       exact Fin.elim0 i
+     simp [Fintype.card_eq_zero]
+@@ -1565,7 +1565,7 @@ lemma card_nonInjective_le (m N : ℕ) (_hN : 0 < N) :
+         constructor
+         intro ⟨φ, hφ⟩
+         simp only [Function.Injective] at hφ
+-        push_neg at hφ
++        push Not at hφ
+         obtain ⟨i, j, _, hij⟩ := hφ
+         exact absurd (Subsingleton.elim i j) hij
+       simp [Fintype.card_eq_zero]
+@@ -1580,7 +1580,7 @@ lemma card_nonInjective_le (m N : ℕ) (_hN : 0 < N) :
+                    true_and, collisionPairs]
+         -- φ is not injective, so ∃ i ≠ j with φ i = φ j
+         simp only [Function.Injective] at hφ
+-        push_neg at hφ
++        push Not at hφ
+         obtain ⟨i, j, heq, hne⟩ := hφ
+         refine ⟨(i, j), ?_, heq⟩
+         exact hne
+@@ -1631,7 +1631,7 @@ lemma nonInjective_fraction_tendsto_zero (m : ℕ) :
+       constructor
+       intro ⟨φ, hφ⟩
+       simp only [Function.Injective] at hφ
+-      push_neg at hφ
++      push Not at hφ
+       obtain ⟨i, _, _, _⟩ := hφ
+       exact Fin.elim0 i
+     simp only [h, Nat.cast_zero]
+@@ -1693,7 +1693,7 @@ then ∏_i f_n(i) → ∏_i g(i) in L¹.
+ Integrating and using Fubini:
+   ∫ |∏ f - ∏ g| ≤ ∫ ∑_j |f_j - g_j| = ∑_j ∫ |f_j - g_j|
+ 
+-The RHS tends to 0 by h_conv and `tendsto_finset_sum`.
++The RHS tends to 0 by h_conv and `tendsto_finsetSum`.
+ -/
+ lemma prod_tendsto_L1_of_L1_tendsto
+     {μ : Measure Ω} [IsProbabilityMeasure μ]
+@@ -1713,7 +1713,7 @@ lemma prod_tendsto_L1_of_L1_tendsto
+   -- Step 2: Sum of L¹ norms tends to 0
+   have h_sum_tendsto : Tendsto (fun n => ∑ i : Fin m, ∫ ω, |f n i ω - g i ω| ∂μ) atTop (𝓝 0) := by
+     rw [show (0 : ℝ) = ∑ _i : Fin m, (0 : ℝ) by simp]
+-    apply tendsto_finset_sum
++    apply tendsto_finsetSum
+     intro i _
+     exact h_conv i
+ 
+@@ -1741,14 +1741,14 @@ lemma prod_tendsto_L1_of_L1_tendsto
+         ≤ ∫ ω, ∑ i : Fin m, |f n i ω - g i ω| ∂μ := by
+       apply integral_mono_of_nonneg
+       · exact ae_of_all μ (fun ω => abs_nonneg _)
+-      · apply integrable_finset_sum
++      · apply integrable_finsetSum
+         intro i _
+         exact h_diff_int n i
+       · exact ae_of_all μ (h_pointwise n)
+     calc ∫ ω, |∏ i : Fin m, f n i ω - ∏ i : Fin m, g i ω| ∂μ
+         ≤ ∫ ω, ∑ i : Fin m, |f n i ω - g i ω| ∂μ := h_int_bound
+       _ = ∑ i : Fin m, ∫ ω, |f n i ω - g i ω| ∂μ := by
+-          rw [integral_finset_sum]
++          rw [integral_finsetSum]
+           intro i _
+           exact h_diff_int n i
+   · exact h_sum_tendsto
+diff --git a/Exchangeability/DeFinetti/ViaMartingale.lean b/Exchangeability/DeFinetti/ViaMartingale.lean
+index 04f779b9..9c051cf3 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale.lean
+@@ -250,12 +250,7 @@ lemma ae_bound_condexp_of_ae_bound
+     {g : Ω → ℝ} {C : ℝ}
+     (hgC : ∀ᵐ ω ∂μ, |g ω| ≤ C) :
+   ∀ᵐ ω ∂μ, |μ[g | m] ω| ≤ C := by
+-  by_cases hC : 0 ≤ C
+-  · exact MeasureTheory.ae_bdd_condExp_of_ae_bdd (R := ⟨C, hC⟩) hgC
+-  · -- C < 0 contradicts |g ω| ≤ C since |g ω| ≥ 0
+-    push_neg at hC
+-    filter_upwards [hgC] with ω hω
+-    linarith [abs_nonneg (g ω)]
++  exact MeasureTheory.ae_bdd_abs_condExp_of_ae_bdd_abs hgC
+ 
+ /-- **Adjointness for bounded `g` (L∞–L¹)**:
+ If `g` is essentially bounded and `ξ ∈ L¹(μ)`, then
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/Factorization.lean b/Exchangeability/DeFinetti/ViaMartingale/Factorization.lean
+index c66c61a8..cb73cce0 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/Factorization.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/Factorization.lean
+@@ -419,7 +419,7 @@ lemma tail_factorization_from_future
+                   μ[Set.indicator (C i) (fun _ => (1 : ℝ)) ∘ (X 0) | tailSigma X] ω)) := by
+     -- Product of tendsto gives tendsto of product (finitely many factors)
+     filter_upwards [ae_all_iff.mpr h_rev] with ω hω
+-    exact tendsto_finset_prod _ (fun i _ => hω i)
++    exact tendsto_finsetProd _ (fun i _ => hω i)
+ 
+   -- Both LHS and RHS converge, and they're equal at each finite level for large m
+   -- Therefore their limits are equal
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/FiniteCylinders.lean b/Exchangeability/DeFinetti/ViaMartingale/FiniteCylinders.lean
+index 3ad39a7a..c929b9f0 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/FiniteCylinders.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/FiniteCylinders.lean
+@@ -45,6 +45,7 @@ open MartingaleHelpers
+ /-- **Finite future σ-algebra.**
+ 
+ Approximates the infinite future σ(X_{m+1}, X_{m+2}, ...) by finite truncation. -/
++@[instance_reducible]
+ def finFutureSigma (X : ℕ → Ω → α) (m k : ℕ) : MeasurableSpace Ω :=
+   MeasurableSpace.comap (fun ω => fun i : Fin k => X (m + 1 + i.val) ω) inferInstance
+ 
+@@ -147,7 +148,7 @@ lemma contractable_finite_cylinder_measure
+   have lhs_eq : {ω | (∀ i, X i.val ω ∈ A i) ∧ X r ω ∈ B ∧ (∀ j, X (m + 1 + j.val) ω ∈ C j)}
+       = (fun ω => fun i => X (idx i) ω) ⁻¹' S := by
+     ext ω
+-    simp only [Set.mem_setOf_eq, Set.mem_preimage, S]
++    simp only [Set.mem_ofPred_eq, Set.mem_preimage, S]
+     constructor
+     · intro ⟨hA, hB, hC⟩
+       refine ⟨?_, ?_, ?_⟩
+@@ -216,7 +217,7 @@ lemma contractable_finite_cylinder_measure
+         (⋂ i : Fin r, {f | f ⟨i.val, by omega⟩ ∈ A i}) ∩
+         {f | f ⟨r, by omega⟩ ∈ B} ∩
+         (⋂ j : Fin k, {f | f ⟨r + 1 + j.val, by omega⟩ ∈ C j}) := by
+-      ext f; simp only [S, Set.mem_iInter, Set.mem_inter_iff, Set.mem_setOf]; tauto
++      ext f; simp only [S, Set.mem_iInter, Set.mem_inter_iff, Set.mem_ofPred]; tauto
+ 
+     rw [h_decomp]
+     exact .inter (.inter (.iInter fun i => measurable_pi_apply (Fin.mk i.val (by omega)) (hA i))
+@@ -269,14 +270,14 @@ lemma contractable_triple_pushforward
+           =
+         {ω | (∀ i : Fin r, X i.val ω ∈ A i) ∧ X r ω ∈ B ∧
+               (∀ j : Fin k, X (m + 1 + j.val) ω ∈ C j)} := by
+-      ext ω; simp [Z_r, Y_future, Set.mem_setOf_eq]
++      ext ω; simp [Z_r, Y_future]
+     have h_pre_tail :
+         (fun ω => (Z_r ω, X r ω, Y_tail ω)) ⁻¹'
+           ((Set.univ.pi A) ×ˢ B ×ˢ (Set.univ.pi C))
+           =
+         {ω | (∀ i : Fin r, X i.val ω ∈ A i) ∧ X r ω ∈ B ∧
+               (∀ j : Fin k, X (r + 1 + j.val) ω ∈ C j)} := by
+-      ext ω; simp [Z_r, Y_tail, Set.mem_setOf_eq]
++      ext ω; simp [Z_r, Y_tail]
+     -- Apply the finite cylinder equality.
+     have h_cyl :=
+       contractable_finite_cylinder_measure
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/FiniteProduct.lean b/Exchangeability/DeFinetti/ViaMartingale/FiniteProduct.lean
+index cbe89895..97f989bf 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/FiniteProduct.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/FiniteProduct.lean
+@@ -196,7 +196,7 @@ lemma finite_product_formula_id
+   -- Characterization: Rectangles = {S | ∃ B, ...} (used multiple times below)
+   have Rectangles_def : Rectangles = {S : Set (Fin m → α) | ∃ (B : Fin m → Set α),
+       (∀ i, MeasurableSet (B i)) ∧ S = {x | ∀ i, x i ∈ B i}} := by
+-    ext S; simp only [Rectangles, Set.mem_setOf_eq]
++    ext S; simp only [Rectangles, Set.mem_ofPred_eq]
+     constructor <;> (intro ⟨B, hB, hS⟩; refine ⟨B, hB, ?_⟩; rw [hS]; ext x; simp)
+ 
+   -- 1) Rectangles form a π-system and generate the Π σ-algebra
+@@ -336,7 +336,7 @@ lemma finite_product_formula_id
+       (Measure.map (fun ω => fun i : Fin m => X i ω) μ) Set.univ
+         = (μ.bind (fun ω => Measure.pi fun _ : Fin m => ν ω)) Set.univ := by
+     -- both are probabilities
+-    haveI : IsProbabilityMeasure (Measure.map (fun ω => fun i : Fin m => X i ω) μ) := by
++    have : IsProbabilityMeasure (Measure.map (fun ω => fun i : Fin m => X i ω) μ) := by
+       constructor
+       have hme : Measurable (fun ω => fun i : Fin m => X i ω) := by
+         fun_prop
+@@ -344,7 +344,7 @@ lemma finite_product_formula_id
+       have : (fun ω => fun i : Fin m => X i ω) ⁻¹' Set.univ = Set.univ := Set.preimage_univ
+       rw [this]
+       exact measure_univ
+-    haveI : IsProbabilityMeasure (μ.bind (fun ω => Measure.pi fun _ : Fin m => ν ω)) := by
++    have : IsProbabilityMeasure (μ.bind (fun ω => Measure.pi fun _ : Fin m => ν ω)) := by
+       constructor
+       -- Need to show: (μ.bind (fun ω => Measure.pi fun _ : Fin m => ν ω)) Set.univ = 1
+       -- Strategy: bind of constant 1 over probability measure μ equals 1
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/FutureFiltration.lean b/Exchangeability/DeFinetti/ViaMartingale/FutureFiltration.lean
+index 34af705d..d7f0218d 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/FutureFiltration.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/FutureFiltration.lean
+@@ -55,6 +55,7 @@ lemma futureFiltration_antitone (X : ℕ → Ω → α) :
+   revFiltration_antitone X (Nat.succ_le_succ hmn)
+ 
+ /-- Tail σ-algebra via the future filtration. (Additive alias.) -/
++@[instance_reducible]
+ def tailSigmaFuture (X : ℕ → Ω → α) : MeasurableSpace Ω :=
+   ⨅ m, futureFiltration X m
+ 
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/FutureRectangles.lean b/Exchangeability/DeFinetti/ViaMartingale/FutureRectangles.lean
+index 88af37ba..c5e967e2 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/FutureRectangles.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/FutureRectangles.lean
+@@ -166,7 +166,7 @@ lemma contractable_dist_eq_on_rectangles_future
+   -- Show the sets are equal modulo arithmetic (m + 1 + i = m + (i + 1))
+   have hset_eq (j : ℕ) : {ω | X j ω ∈ B ∧ ∀ i : Fin r, X (m + 1 + i.1) ω ∈ C i}
+                        = {ω | X j ω ∈ B ∧ ∀ i : Fin r, X (m + (i.1 + 1)) ω ∈ C i} := by
+-    simp only [Set.setOf_and]; congr 1; ext ω; simp only [Set.mem_setOf]
++    simp only [Set.ofPred_and]; congr 1; ext ω; simp only [Set.mem_ofPred]
+     exact forall_congr' fun i => by rw [show m + 1 + i.1 = m + (i.1 + 1) by omega]
+   -- Apply Measure.map_apply with measurability of ψ₁ and ψ₂
+   rw [Measure.map_apply ((hX_meas m).prodMk (measurable_shiftRV hX_meas)) hrect,
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/IndicatorAlgebra.lean b/Exchangeability/DeFinetti/ViaMartingale/IndicatorAlgebra.lean
+index 5ec12cc6..b5b2f6f7 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/IndicatorAlgebra.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/IndicatorAlgebra.lean
+@@ -76,7 +76,7 @@ lemma indProd_integrable [MeasurableSpace Ω] [MeasurableSpace α]
+   exact Integrable.indicator (integrable_const 1) (firstRCylinder_measurable_ambient X r C hX hC)
+ 
+ /-- indProd is strongly measurable when coordinates and sets are measurable. -/
+-@[measurability, fun_prop]
++@[fun_prop, fun_prop]
+ lemma indProd_stronglyMeasurable [MeasurableSpace Ω] [MeasurableSpace α]
+     (X : ℕ → Ω → α) (r : ℕ) (C : Fin r → Set α)
+     (hX : ∀ n, Measurable (X n)) (hC : ∀ i, MeasurableSet (C i)) :
+@@ -99,7 +99,7 @@ lemma indProd_univ (X : ℕ → Ω → α) (r : ℕ) :
+     indProd X r (fun _ => Set.univ) = fun _ => 1 := funext fun _ => by simp [indProd, Set.indicator]
+ 
+ /-- indProd is measurable when coordinates are measurable. -/
+-@[measurability, fun_prop]
++@[fun_prop, fun_prop]
+ lemma indProd_measurable [MeasurableSpace Ω] [MeasurableSpace α]
+     (X : ℕ → Ω → α) (r : ℕ) (C : Fin r → Set α)
+     (hX : ∀ n, Measurable (X n)) (hC : ∀ i, MeasurableSet (C i)) :
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/KallenbergChain.lean b/Exchangeability/DeFinetti/ViaMartingale/KallenbergChain.lean
+index 2779e71f..baefcb62 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/KallenbergChain.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/KallenbergChain.lean
+@@ -81,7 +81,7 @@ lemma projectPairSeq_embedPairSeq (p : α × (ℕ → α)) : projectPairSeq (emb
+   rcases p with ⟨a, f⟩
+   simp only [projectPairSeq, embedPairSeq]
+ 
+-@[measurability]
++@[fun_prop]
+ lemma embedPairSeq_measurable : Measurable (embedPairSeq : α × (ℕ → α) → ℕ → α) := by
+   rw [measurable_pi_iff]
+   intro n
+@@ -89,7 +89,7 @@ lemma embedPairSeq_measurable : Measurable (embedPairSeq : α × (ℕ → α) 
+   | zero => exact measurable_fst
+   | succ k => exact (measurable_pi_apply k).comp measurable_snd
+ 
+-@[measurability]
++@[fun_prop]
+ lemma projectPairSeq_measurable : Measurable (projectPairSeq : (ℕ → α) → α × (ℕ → α)) :=
+   Measurable.prod (measurable_pi_apply 0)
+     (measurable_pi_iff.mpr fun n => measurable_pi_apply (n + 1))
+@@ -146,9 +146,9 @@ lemma pair_law_shift_eq_of_contractable
+   -- Both reindexed sequences have the same distribution by contractability
+   -- (π-system uniqueness on finite marginals)
+   have h_seq_eq : Measure.map seqM μ = Measure.map seqN μ := by
+-    haveI : IsProbabilityMeasure (Measure.map seqM μ) :=
++    have : IsProbabilityMeasure (Measure.map seqM μ) :=
+       Measure.isProbabilityMeasure_map hSeqM_meas.aemeasurable
+-    haveI : IsProbabilityMeasure (Measure.map seqN μ) :=
++    have : IsProbabilityMeasure (Measure.map seqN μ) :=
+       Measure.isProbabilityMeasure_map hSeqN_meas.aemeasurable
+     apply Exchangeability.measure_eq_of_fin_marginals_eq_prob
+     intro r S _hS
+@@ -221,7 +221,7 @@ lemma condExp_indicator_revFiltration_eq_self_of_eq
+     have hIdent : @Measurable Ω (ℕ → α) (revFiltration X m) _ (shiftRV X m) := measurable_iff_comap_le.mpr le_rfl
+     exact (measurable_pi_apply 0).comp hIdent
+   have hm_le := revFiltration_le X hX m
+-  haveI : SigmaFinite (μ.trim hm_le) := inferInstance
++  have : SigmaFinite (μ.trim hm_le) := inferInstance
+   exact Filter.EventuallyEq.of_eq <| condExp_of_stronglyMeasurable hm_le
+     (f := Set.indicator (X m ⁻¹' B) (fun _ => (1 : ℝ)))
+     (measurable_const.indicator (hXm_meas hB)).stronglyMeasurable
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/LocalInfrastructure.lean b/Exchangeability/DeFinetti/ViaMartingale/LocalInfrastructure.lean
+index 708c3954..ec1f1ff5 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/LocalInfrastructure.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/LocalInfrastructure.lean
+@@ -95,7 +95,7 @@ lemma integrable_of_bounded_on_prob
+     rw [Real.norm_eq_abs] at hx
+     rwa [abs_le] at hx
+   · -- If C < 0, then ‖h‖ ≤ C < 0 a.e. contradicts ‖h‖ ≥ 0
+-    push_neg at hC
++    push Not at hC
+     apply MeasureTheory.Integrable.of_mem_Icc 0 0 hmeas.aemeasurable
+     filter_upwards [hB] with x hx
+     rw [Set.mem_Icc]
+@@ -106,7 +106,7 @@ lemma integrable_of_bounded_on_prob
+ 
+ /-- If `|f| ≤ C` a.e., then `|E[f | m]| ≤ C` a.e.
+ 
+-This is essentially `MeasureTheory.ae_bdd_condExp_of_ae_bdd` from mathlib,
++This is essentially `MeasureTheory.ae_bdd_abs_condExp_of_ae_bdd_abs` from mathlib,
+ re-exported here for convenience with a slightly different signature.
+ 
+ Mathlib already proves this result for ℝ≥0 bounds. -/
+@@ -119,7 +119,7 @@ lemma ae_norm_condExp_le_of_bound
+   -- Convert to ℝ≥0 and apply mathlib's existing lemma
+   have hC_nn : (C.toNNReal : ℝ) = C := Real.coe_toNNReal _ hC0
+   rw [← hC_nn] at hbound ⊢
+-  exact MeasureTheory.ae_bdd_condExp_of_ae_bdd hbound
++  exact MeasureTheory.ae_bdd_abs_condExp_of_ae_bdd_abs hbound
+ 
+ /-- Indicator functions `Set.indicator S (1 : _ → ℝ)` are bounded by 1 in norm. -/
+ lemma norm_indicator_one_le {α : Type*} (S : Set α) (x : α) :
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/PairLawEquality.lean b/Exchangeability/DeFinetti/ViaMartingale/PairLawEquality.lean
+index ba0e8065..0fb29efc 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/PairLawEquality.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/PairLawEquality.lean
+@@ -257,8 +257,8 @@ lemma pair_law_eq_of_contractable [IsProbabilityMeasure μ]
+       (fun i j hij => phi0_strictMono r m hr hij) (fun i j hij => phi1_strictMono r m hr hij))
+ 
+   -- Measures on ℕ → α are equal by π-system uniqueness (need probability instances)
+-  haveI : IsProbabilityMeasure (Measure.map seq0 μ) := Measure.isProbabilityMeasure_map hseq0_meas.aemeasurable
+-  haveI : IsProbabilityMeasure (Measure.map seq1 μ) := Measure.isProbabilityMeasure_map hseq1_meas.aemeasurable
++  have : IsProbabilityMeasure (Measure.map seq0 μ) := Measure.isProbabilityMeasure_map hseq0_meas.aemeasurable
++  have : IsProbabilityMeasure (Measure.map seq1 μ) := Measure.isProbabilityMeasure_map hseq1_meas.aemeasurable
+   have h_seq_eq : Measure.map seq0 μ = Measure.map seq1 μ :=
+     Exchangeability.measure_eq_of_fin_marginals_eq_prob (α := α) h_marginals
+ 
+@@ -512,9 +512,9 @@ lemma condExp_Xr_indicator_eq_of_contractable
+     -- σ-algebra relationships
+     have hmW_le : mW ≤ _ := measurable_iff_comap_le.mp hW_meas
+     have hmW'_le : mW' ≤ _ := measurable_iff_comap_le.mp hW'_meas
+-    haveI hσW : SigmaFinite (μ.trim hmW_le) :=
++    have hσW : SigmaFinite (μ.trim hmW_le) :=
+       (inferInstance : IsFiniteMeasure (μ.trim hmW_le)).toSigmaFinite
+-    haveI hσW' : SigmaFinite (μ.trim hmW'_le) :=
++    have hσW' : SigmaFinite (μ.trim hmW'_le) :=
+       (inferInstance : IsFiniteMeasure (μ.trim hmW'_le)).toSigmaFinite
+ 
+     -- Integrability of indicators
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/RevFiltration.lean b/Exchangeability/DeFinetti/ViaMartingale/RevFiltration.lean
+index 55310389..47b3859d 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/RevFiltration.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/RevFiltration.lean
+@@ -58,6 +58,7 @@ lemma revFiltration_le (X : ℕ → Ω → α) (hX : ∀ n, Measurable (X n)) (m
+ /-! ### Tail σ-Algebra -/
+ 
+ /-- The tail σ-algebra for a process X: ⋂ₙ σ(Xₙ, Xₙ₊₁, ...). -/
++@[instance_reducible]
+ def tailSigma (X : ℕ → Ω → α) : MeasurableSpace Ω :=
+   ⨅ m, revFiltration X m
+ 
+diff --git a/Exchangeability/DeFinetti/ViaMartingale/ShiftOperations.lean b/Exchangeability/DeFinetti/ViaMartingale/ShiftOperations.lean
+index 9adefd1b..56ab4882 100644
+--- a/Exchangeability/DeFinetti/ViaMartingale/ShiftOperations.lean
++++ b/Exchangeability/DeFinetti/ViaMartingale/ShiftOperations.lean
+@@ -113,7 +113,7 @@ lemma comap_le_comap_consRV (x : Ω → α) (t : Ω → ℕ → α) :
+ 
+ variable {X : ℕ → Ω → α}
+ 
+-@[measurability, fun_prop]
++@[fun_prop, fun_prop]
+ lemma measurable_shiftRV (hX : ∀ n, Measurable (X n)) {m : ℕ} :
+     Measurable (shiftRV X m) := by
+   classical
+diff --git a/Exchangeability/PathSpace/CylinderHelpers.lean b/Exchangeability/PathSpace/CylinderHelpers.lean
+index f884e75f..5de3af9a 100644
+--- a/Exchangeability/PathSpace/CylinderHelpers.lean
++++ b/Exchangeability/PathSpace/CylinderHelpers.lean
+@@ -56,7 +56,7 @@ lemma tailCylinder_measurable {r : ℕ} {C : Fin r → Set α}
+     (hC : ∀ i, MeasurableSet (C i)) :
+     MeasurableSet (tailCylinder (α:=α) r C) := by
+   classical
+-  simp only [tailCylinder, Set.setOf_forall]
++  simp only [tailCylinder, Set.ofPred_forall]
+   exact MeasurableSet.iInter fun i => by
+     have : (fun f : ℕ → α => f (i.val + 1)) ⁻¹' C i = {f | f (i.1 + 1) ∈ C i} := by
+       ext f; simp [Set.mem_preimage]
+@@ -84,7 +84,7 @@ lemma finCylinder_measurable {r : ℕ} {C : Fin r → Set α}
+     (hC : ∀ i, MeasurableSet (C i)) :
+     MeasurableSet (finCylinder r C) := by
+   classical
+-  simp only [finCylinder, Set.setOf_forall]
++  simp only [finCylinder, Set.ofPred_forall]
+   exact MeasurableSet.iInter fun i => by
+     have : (fun f : Fin r → α => f i) ⁻¹' C i = {f | f i ∈ C i} := by
+       ext f; simp [Set.mem_preimage]
+@@ -96,7 +96,7 @@ lemma cylinder_measurable {r : ℕ} {C : Fin r → Set α}
+     (hC : ∀ i, MeasurableSet (C i)) :
+     MeasurableSet (cylinder (α:=α) r C) := by
+   classical
+-  simp only [cylinder, Set.setOf_forall]
++  simp only [cylinder, Set.ofPred_forall]
+   exact MeasurableSet.iInter fun i => by
+     have : (fun f : ℕ → α => f i.val) ⁻¹' C i = {f | f i ∈ C i} := by
+       ext f; simp [Set.mem_preimage]
+@@ -153,11 +153,11 @@ lemma firstRCylinder_measurable_ambient
+     MeasurableSet (firstRCylinder X r C) := by
+   classical
+   -- Directly as an intersection over `Fin r`.
+-  simp only [firstRCylinder, Set.setOf_forall]
++  simp only [firstRCylinder, Set.ofPred_forall]
+   exact MeasurableSet.iInter fun i => (hX i) (hC i)
+ 
+ /-- The firstRMap is measurable when all coordinates are measurable. -/
+-@[measurability]
++@[fun_prop]
+ lemma measurable_firstRMap
+     (X : ℕ → Ω → α) (r : ℕ) (hX : ∀ i, Measurable (X i)) :
+     Measurable (firstRMap X r) :=
+@@ -242,7 +242,7 @@ omit [MeasurableSpace α] in
+ @[simp] lemma drop_apply (f : ℕ → α) (n : ℕ) :
+     drop f n = f (n + 1) := rfl
+ 
+-@[measurability]
++@[fun_prop]
+ lemma measurable_drop : Measurable (drop : (ℕ → α) → (ℕ → α)) := by
+   rw [measurable_pi_iff]
+   intro n
+diff --git a/Exchangeability/PathSpace/Shift.lean b/Exchangeability/PathSpace/Shift.lean
+index 043e1ce2..5ec62e34 100644
+--- a/Exchangeability/PathSpace/Shift.lean
++++ b/Exchangeability/PathSpace/Shift.lean
+@@ -70,7 +70,7 @@ lemma shift_comp_shift : @shift α ∘ shift = fun ξ n => ξ (n + 2) := by
+ Since `(shift ξ) i = ξ (i + 1)`, this is the projection onto coordinate `(i + 1)`,
+ which is measurable by definition of the product σ-algebra.
+ -/
+-@[measurability]
++@[fun_prop]
+ lemma shift_measurable [MeasurableSpace α] : Measurable (@shift α) := by
+   -- A function to a pi type is measurable iff each component is measurable
+   rw [measurable_pi_iff]
+@@ -80,7 +80,7 @@ lemma shift_measurable [MeasurableSpace α] : Measurable (@shift α) := by
+   exact measurable_pi_apply (i + 1)
+ 
+ /-- Alternative name for `shift_measurable` (used in ergodic theory contexts). -/
+-@[measurability]
++@[fun_prop]
+ lemma measurable_shift [MeasurableSpace α] : Measurable (@shift α) := shift_measurable
+ 
+ /-- A set in the path space is **shift-invariant** if it equals its preimage under the shift.
+diff --git a/Exchangeability/Probability/CondExp.lean b/Exchangeability/Probability/CondExp.lean
+index 68f02325..5059eb3b 100644
+--- a/Exchangeability/Probability/CondExp.lean
++++ b/Exchangeability/Probability/CondExp.lean
+@@ -355,7 +355,7 @@ lemma condexp_indicator_inter_bridge
+      μ[B.indicator (fun _ => (1 : ℝ)) | m]) := by
+   classical
+   -- Install trimmed instances (IsFiniteMeasure is automatic via mathlib)
+-  haveI : SigmaFinite (μ.trim hm) := sigmaFinite_trim μ hm
++  have : SigmaFinite (μ.trim hm) := sigmaFinite_trim μ hm
+   -- Forward to the proven lemma
+   exact condExp_indicator_mul_indicator_of_condIndep hm hmF hmH hCI hA hB
+ 
+@@ -604,7 +604,7 @@ lemma condExp_mul_pullout {Ω : Type*} {m₀ : MeasurableSpace Ω} {μ : Measure
+   have hg_bound : ∀ᵐ ω ∂μ, ‖g ω‖ ≤ C := ae_of_all μ fun ω => (Real.norm_eq_abs _).le.trans (hC ω)
+ 
+   -- Provide typeclass instances explicitly (IsFiniteMeasure is automatic via mathlib)
+-  haveI : SigmaFinite (μ.trim hm) := sigmaFinite_trim μ hm
++  have : SigmaFinite (μ.trim hm) := sigmaFinite_trim μ hm
+ 
+   -- Now condExp_stronglyMeasurable_mul_of_bound can resolve instances
+   have h := condExp_stronglyMeasurable_mul_of_bound hm hg_strong hf C hg_bound
+diff --git a/Exchangeability/Probability/CondIndep/Bounded/Approximation.lean b/Exchangeability/Probability/CondIndep/Bounded/Approximation.lean
+index 4a9c7dfe..530e62b4 100644
+--- a/Exchangeability/Probability/CondIndep/Bounded/Approximation.lean
++++ b/Exchangeability/Probability/CondIndep/Bounded/Approximation.lean
+@@ -49,7 +49,7 @@ For proper L¹ convergence of conditional expectations, the mathlib approach is
+ 
+ The proof strategy is:
+ 1. **L¹ contraction**: condExp is an L¹ contraction, i.e., `eLpNorm (μ[g|m]) 1 μ ≤ eLpNorm g 1 μ`
+-   - In mathlib: `eLpNorm_one_condExp_le_eLpNorm` (in Real.lean)
++   - In mathlib: `eLpNorm_condExp_le_eLpNorm` (in Real.lean)
+ 2. **Linearity**: `μ[fn n - f | m] =ᵐ[μ] μ[fn n | m] - μ[f | m]` (by `condExp_sub`)
+ 3. **Apply contraction**: `eLpNorm (μ[fn n | m] - μ[f | m]) 1 μ ≤ eLpNorm (fn n - f) 1 μ → 0`
+ 4. **Convert norms**: The hypothesis uses lintegral of nnnorm, which equals eLpNorm with exponent 1
+@@ -201,7 +201,7 @@ lemma approx_bounded_measurable (μ : Measure α) [IsProbabilityMeasure μ]
+   · -- Case M < 0: contradiction since |f x| ≥ 0 > M always
+     -- The hypothesis hf_bdd : ∀ᵐ x ∂μ, |f x| ≤ M with M < 0 is impossible
+     -- since |f x| ≥ 0 for all x. This implies μ = 0, contradicting probability measure.
+-    push_neg at hM_nonneg
++    push Not at hM_nonneg
+     exfalso
+     have h_ae_false : ∀ᵐ x ∂μ, False := by
+       filter_upwards [hf_bdd] with x hx
+@@ -476,7 +476,7 @@ lemma integrable_condExp_mul_of_bounded
+     have h_bdd : ∀ᵐ ω ∂μ, |f ω| ≤ (M.toNNReal : ℝ) := by
+       filter_upwards [hf_bdd] with ω hω
+       rwa [Real.coe_toNNReal M hM_nn]
+-    have hbd := ae_bdd_condExp_of_ae_bdd (m := m) (R := M.toNNReal) h_bdd
++    have hbd := ae_bdd_abs_condExp_of_ae_bdd_abs (m := m) h_bdd
+     filter_upwards [hbd] with ω hω
+     rwa [Real.coe_toNNReal M hM_nn] at hω
+   -- bdd_mul (c := M) hg hf_asm hf_bdd gives Integrable (hf * hg)
+diff --git a/Exchangeability/Probability/CondIndep/Bounded/Extension.lean b/Exchangeability/Probability/CondIndep/Bounded/Extension.lean
+index 88ea00c2..b8c63b43 100644
+--- a/Exchangeability/Probability/CondIndep/Bounded/Extension.lean
++++ b/Exchangeability/Probability/CondIndep/Bounded/Extension.lean
+@@ -175,7 +175,7 @@ lemma condIndep_simpleFunc_left
+           filter_upwards [] with ω
+           rw [Real.coe_toNNReal Mφ hMφ_nn]
+           simpa using hφ_bdd (Y ω)
+-        have hbd := ae_bdd_condExp_of_ae_bdd (m := mW) (R := Mφ.toNNReal) h_bdd
++        have hbd := ae_bdd_abs_condExp_of_ae_bdd_abs (m := mW) h_bdd
+         filter_upwards [hbd] with ω hω
+         rwa [Real.coe_toNNReal Mφ hMφ_nn] at hω
+ 
+@@ -373,7 +373,7 @@ lemma condIndep_simpleFunc_left
+ 
+   -- Hypothesis 1: IntegrableOn for g on finite mW-measurable sets
+   · intro s hs hμs
+-    haveI : Fact (μ s < ∞) := ⟨hμs⟩
++    have : Fact (μ s < ∞) := ⟨hμs⟩
+     have h1 : Integrable (μ[(φ ∘ Y) | mW]) μ := integrable_condExp
+     have h2 : Integrable (μ[(ψ ∘ Z) | mW]) μ := integrable_condExp
+     have hψZ_ce_bdd : ∀ᵐ ω ∂μ, |μ[(ψ ∘ Z) | mW] ω| ≤ Mψ := by
+@@ -384,7 +384,7 @@ lemma condIndep_simpleFunc_left
+         filter_upwards [hψ_bdd] with ω hω
+         rw [Real.coe_toNNReal Mψ hMψ_nn]
+         simpa using hω
+-      have hbd := ae_bdd_condExp_of_ae_bdd (m := mW) (R := Mψ.toNNReal) h_bdd
++      have hbd := ae_bdd_abs_condExp_of_ae_bdd_abs (m := mW) h_bdd
+       filter_upwards [hbd] with ω hω
+       rwa [Real.coe_toNNReal Mψ hMψ_nn] at hω
+     have hprod : Integrable (μ[(φ ∘ Y) | mW] * μ[(ψ ∘ Z) | mW]) μ := by
+@@ -565,7 +565,7 @@ lemma condIndep_bddMeas_extend_left
+           filter_upwards [hψ_bdd] with ω hω
+           rw [Real.coe_toNNReal Mψ hMψ_nn]
+           simpa using hω
+-        have hbd := ae_bdd_condExp_of_ae_bdd (m := mW) (R := Mψ.toNNReal) h_bdd
++        have hbd := ae_bdd_abs_condExp_of_ae_bdd_abs (m := mW) h_bdd
+         filter_upwards [hbd] with ω hω
+         rwa [Real.coe_toNNReal Mψ hMψ_nn] at hω
+ 
+@@ -777,7 +777,7 @@ lemma condIndep_bddMeas_extend_left
+ 
+   -- Hypothesis 1: IntegrableOn for g on finite mW-measurable sets
+   · intro s hs hμs
+-    haveI : Fact (μ s < ∞) := ⟨hμs⟩
++    have : Fact (μ s < ∞) := ⟨hμs⟩
+     -- Conditional expectations are integrable
+     have h1 : Integrable (μ[(φ ∘ Y) | mW]) μ := integrable_condExp
+     have h2 : Integrable (μ[(ψ ∘ Z) | mW]) μ := integrable_condExp
+@@ -793,7 +793,7 @@ lemma condIndep_bddMeas_extend_left
+           filter_upwards [hφ_bdd] with ω hω
+           rw [Real.coe_toNNReal Mφ hMφ_nn]
+           simpa using hω
+-        have hbd := ae_bdd_condExp_of_ae_bdd (m := mW) (R := Mφ.toNNReal) h_bdd
++        have hbd := ae_bdd_abs_condExp_of_ae_bdd_abs (m := mW) h_bdd
+         filter_upwards [hbd] with ω hω
+         rwa [Real.coe_toNNReal Mφ hMφ_nn] at hω
+       -- Apply Integrable.bdd_mul: g integrable, f ae strongly measurable and bounded
+diff --git a/Exchangeability/Probability/CondIndep/Bounded/Projection.lean b/Exchangeability/Probability/CondIndep/Bounded/Projection.lean
+index 0fe2935c..4a204e0f 100644
+--- a/Exchangeability/Probability/CondIndep/Bounded/Projection.lean
++++ b/Exchangeability/Probability/CondIndep/Bounded/Projection.lean
+@@ -110,7 +110,7 @@ lemma condExp_project_of_condIndep (μ : Measure Ω) [IsProbabilityMeasure μ]
+       · intro ⟨t, ht_mem, ht_eq⟩
+         -- t ∈ image2 (· ×ˢ ·) ... means ∃ B C, t = B ×ˢ C
+         -- ht_mem : t ∈ image2 (·×ˢ·) {B | MeasurableSet B} {C | MeasurableSet C}
+-        simp only [Set.mem_image2, Set.mem_setOf_eq] at ht_mem
++        simp only [Set.mem_image2, Set.mem_ofPred_eq] at ht_mem
+         obtain ⟨B, hB, C, hC, rfl⟩ := ht_mem
+         use B, C, hB, hC
+         -- Need: (Z,W)⁻¹(B ×ˢ C) = Z⁻¹B ∩ W⁻¹C
+@@ -119,7 +119,7 @@ lemma condExp_project_of_condIndep (μ : Measure Ω) [IsProbabilityMeasure μ]
+         simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_prod]
+       · intro ⟨B, C, hB, hC, hs_eq⟩
+         -- s = Z⁻¹B ∩ W⁻¹C, need to show it's in the preimage image
+-        simp only [Set.mem_image, Set.mem_image2, Set.mem_setOf_eq]
++        simp only [Set.mem_image, Set.mem_image2, Set.mem_ofPred_eq]
+         use B ×ˢ C
+         refine ⟨⟨B, hB, C, hC, rfl⟩, ?_⟩
+         rw [hs_eq]
+diff --git a/Exchangeability/Probability/CondIndep/KallenbergIndicator.lean b/Exchangeability/Probability/CondIndep/KallenbergIndicator.lean
+index 54384de8..dcc187a3 100644
+--- a/Exchangeability/Probability/CondIndep/KallenbergIndicator.lean
++++ b/Exchangeability/Probability/CondIndep/KallenbergIndicator.lean
+@@ -96,7 +96,7 @@ lemma condIndep_indicator_of_dropInfoY
+     exact hS_meas.preimage (hZ.prodMk hW)
+ 
+   -- SigmaFinite instance for trim (needed for condExp lemmas)
+-  haveI hσZW : SigmaFinite (μ.trim hmZW_le) := sigmaFinite_trim_of_le μ hmZW_le
++  have hσZW : SigmaFinite (μ.trim hmZW_le) := sigmaFinite_trim_of_le μ hmZW_le
+ 
+   -- Integrability of indicators (bounded by 1)
+   have hIndA_int : Integrable indA μ := (integrable_const 1).indicator (hA.preimage hY)
+diff --git a/Exchangeability/Probability/InfiniteProduct.lean b/Exchangeability/Probability/InfiniteProduct.lean
+index 582ebfba..59301088 100644
+--- a/Exchangeability/Probability/InfiniteProduct.lean
++++ b/Exchangeability/Probability/InfiniteProduct.lean
+@@ -223,7 +223,7 @@ lemma cylinder_fintype {n : ℕ} :
+     _ = iidProduct ν (Set.pi (Finset.range n) fun i : ℕ => if h : i < n then s ⟨i, h⟩ else Set.univ) := by
+         congr 1
+         ext f
+-        simp only [Set.mem_setOf_eq, Set.mem_pi]
++        simp only [Set.mem_ofPred_eq, Set.mem_pi]
+         constructor
+         · intro hf i (hi : i ∈ Finset.range n)
+           have hi' : i < n := Finset.mem_range.mp hi
+diff --git a/Exchangeability/Probability/Martingale/Crossings.lean b/Exchangeability/Probability/Martingale/Crossings.lean
+index dba19cd3..3ab829d8 100644
+--- a/Exchangeability/Probability/Martingale/Crossings.lean
++++ b/Exchangeability/Probability/Martingale/Crossings.lean
+@@ -117,7 +117,7 @@ lemma hitting_congr {Ω β : Type*} {u v : ℕ → Ω → β} {s : Set β} {n m
+     simp only [if_pos hex, if_pos hex']
+     congr 1
+     ext k
+-    simp only [Set.mem_inter_iff, Set.mem_setOf_eq]
++    simp only [Set.mem_inter_iff, Set.mem_ofPred_eq]
+     constructor
+     · intro ⟨hk_Icc, hk_mem⟩
+       refine ⟨hk_Icc, ?_⟩
+@@ -164,7 +164,7 @@ lemma upcrossingsBefore_congr {Ω : Type*} {a b : ℝ} {f g : ℕ → Ω → ℝ
+   simp only [upcrossingsBefore]
+   congr 1
+   ext k
+-  simp only [Set.mem_setOf_eq]
++  simp only [Set.mem_ofPred_eq]
+   rw [upperCrossingTime_congr h]
+ 
+ /-- Index is bounded by completion time when upperCrossingTime < N.
+@@ -218,13 +218,13 @@ lemma upBefore_le_downBefore_rev_succ
+   by_cases hemp : {n | upperCrossingTime a b X N n ω < N}.Nonempty
+   · have hbdd1 : BddAbove {n | upperCrossingTime a b X N n ω < N} := by
+       use N
+-      simp only [mem_upperBounds, Set.mem_setOf_eq]
++      simp only [mem_upperBounds, Set.mem_ofPred_eq]
+       intro n hn
+       exact Nat.le_of_lt (upperCrossingTime_lt_imp_index_lt hab hn)
+ 
+     have hbdd2 : BddAbove {n | upperCrossingTime (-b) (-a) (negProcess (revProcess X N)) (N+1) n ω < N+1} := by
+       use N + 1
+-      simp only [mem_upperBounds, Set.mem_setOf_eq]
++      simp only [mem_upperBounds, Set.mem_ofPred_eq]
+       intro n hn
+       have h_neg : -b < -a := by linarith
+       exact Nat.le_of_lt (upperCrossingTime_lt_imp_index_lt h_neg hn)
+@@ -232,7 +232,7 @@ lemma upBefore_le_downBefore_rev_succ
+     have hsub : {n | upperCrossingTime a b X N n ω < N} ⊆
+                 {n | upperCrossingTime (-b) (-a) (negProcess (revProcess X N)) (N+1) n ω < N+1} := by
+       intro n hn
+-      simp only [Set.mem_setOf_eq] at hn ⊢
++      simp only [Set.mem_ofPred_eq] at hn ⊢
+       -- With horizon N+1, the bijection works: crossings completing at time N are now counted
+       -- since N < N+1. The proof follows the same structure as upBefore_le_downBefore_rev
+       -- but the boundary issue is resolved.
+@@ -282,7 +282,7 @@ lemma upcrossings_bdd_uniform
+   have hL1_bdd : ∀ N n, eLpNorm (revCEFinite (μ := μ) f 𝔽 N n) 1 μ ≤ eLpNorm f 1 μ := by
+     intro N n
+     simp only [revCEFinite]
+-    exact eLpNorm_one_condExp_le_eLpNorm f
++    exact eLpNorm_condExp_le_eLpNorm f le_rfl
+ 
+   -- For each N, revCEFinite is a martingale, hence a submartingale
+   have h_submart : ∀ N, Submartingale (fun n => revCEFinite (μ := μ) f 𝔽 N n)
+@@ -380,7 +380,7 @@ lemma condExp_exists_ae_limit_antitone
+ 
+   -- First, extract the L¹ bound
+   have hL1_bdd : ∀ n, eLpNorm (μ[f | 𝔽 n]) 1 μ ≤ eLpNorm f 1 μ :=
+-    fun n => eLpNorm_one_condExp_le_eLpNorm _
++    fun n => eLpNorm_condExp_le_eLpNorm _ le_rfl
+ 
+   -- Extract finite L¹ bound
+   have hf_memLp : MemLp f 1 μ := memLp_one_iff_integrable.2 hf
+@@ -895,7 +895,7 @@ lemma ae_limit_is_condexp_iInf
+         exact (condExp_sub hXlimint integrable_condExp F_inf).symm
+       -- contraction: ‖μ[g|F]‖₁ ≤ ‖g‖₁
+       rw [eLpNorm_congr_ae hsub]
+-      exact eLpNorm_one_condExp_le_eLpNorm _
++      exact eLpNorm_condExp_le_eLpNorm _ le_rfl
+ 
+     -- Combine: triangle + zero + contraction
+     calc eLpNorm (μ[Xlim | F_inf] - Y) 1 μ
+diff --git a/Exchangeability/Probability/Martingale/Reverse.lean b/Exchangeability/Probability/Martingale/Reverse.lean
+index b832ed8c..92d7fee9 100644
+--- a/Exchangeability/Probability/Martingale/Reverse.lean
++++ b/Exchangeability/Probability/Martingale/Reverse.lean
+@@ -89,6 +89,6 @@ This is a standard property: `‖μ[f | m]‖₁ ≤ ‖f‖₁`. -/
+ lemma eLpNorm_one_condExp_le_of_integrable
+     {m : MeasurableSpace Ω} (f : Ω → ℝ) (_hf : Integrable f μ) :
+     eLpNorm (μ[f | m]) 1 μ ≤ eLpNorm f 1 μ :=
+-  eLpNorm_one_condExp_le_eLpNorm f
++  eLpNorm_condExp_le_eLpNorm f le_rfl
+ 
+ end Exchangeability.Probability
+diff --git a/Exchangeability/Probability/MartingaleExtras.lean b/Exchangeability/Probability/MartingaleExtras.lean
+index 447363cb..e6dc68e1 100644
+--- a/Exchangeability/Probability/MartingaleExtras.lean
++++ b/Exchangeability/Probability/MartingaleExtras.lean
+@@ -73,7 +73,7 @@ lemma revCE_L1_bdd
+     ∀ n, eLpNorm (revCE μ F f n) 1 μ ≤ eLpNorm f 1 μ := by
+   intro n
+   simp only [revCE]
+-  exact eLpNorm_one_condExp_le_eLpNorm f
++  exact eLpNorm_condExp_le_eLpNorm f le_rfl
+ 
+ /-! ## de la Vallée-Poussin Infrastructure -/
+ 
+diff --git a/Exchangeability/Probability/MeasureKernels.lean b/Exchangeability/Probability/MeasureKernels.lean
+index 47bb3cc6..4ff1ca20 100644
+--- a/Exchangeability/Probability/MeasureKernels.lean
++++ b/Exchangeability/Probability/MeasureKernels.lean
+@@ -87,7 +87,7 @@ lemma rectangles_isPiSystem {m : ℕ} {α : Type*} [MeasurableSpace α] :
+   · intro i
+     exact (hB₁_meas i).inter (hB₂_meas i)
+   · ext x
+-    simp only [Set.mem_inter_iff, Set.mem_setOf_eq]
++    simp only [Set.mem_inter_iff, Set.mem_ofPred_eq]
+     constructor
+     · intro ⟨h₁, h₂⟩ i
+       exact ⟨h₁ i, h₂ i⟩
+@@ -128,7 +128,7 @@ lemma rectangles_generate_pi_sigma {m : ℕ} {α : Type*} [MeasurableSpace α] :
+       · exact fun i _ => hB_meas i
+       · rw [univ_pi_eq_setOf_forall]; exact hS.symm
+     · intro ⟨B, hB_mem, hS⟩
+-      simp only [Set.mem_pi, Set.mem_univ, Set.mem_setOf_eq] at hB_mem hS
++      simp only [Set.mem_pi, Set.mem_univ, Set.mem_ofPred_eq] at hB_mem hS
+       use B
+       constructor
+       · exact fun i => hB_mem i (Set.mem_univ i)
+@@ -198,7 +198,7 @@ lemma measurable_measure_pi {Ω α : Type*} [MeasurableSpace Ω] [MeasurableSpac
+   have hκ_prob : ∀ ω, IsProbabilityMeasure (κ ω) := by
+     intro ω
+     classical
+-    haveI : ∀ _ : Fin m, IsProbabilityMeasure (ν ω) := fun _ => hν_prob ω
++    have : ∀ _ : Fin m, IsProbabilityMeasure (ν ω) := fun _ => hν_prob ω
+     simp only [κ]
+     infer_instance
+ 
+diff --git a/Exchangeability/Probability/SigmaAlgebraHelpers.lean b/Exchangeability/Probability/SigmaAlgebraHelpers.lean
+index 37f3a55a..10385718 100644
+--- a/Exchangeability/Probability/SigmaAlgebraHelpers.lean
++++ b/Exchangeability/Probability/SigmaAlgebraHelpers.lean
+@@ -88,7 +88,7 @@ lemma aestronglyMeasurable_iInf_antitone
+       intro n
+       have h_le_N : m (n + N) ≤ m N := h_anti (Nat.le_add_left N n)
+       exact Measurable.mono (hg_meas (n + N)) h_le_N le_rfl
+-    haveI : MeasurableSpace α := m N
++    have : MeasurableSpace α := m N
+     exact Measurable.liminf hg_meas_shifted
+ 
+   -- Now conclude Measurable[⨅ N, m N] h
+@@ -114,7 +114,7 @@ lemma aestronglyMeasurable_iInf_antitone
+ 
+   -- Step 5: Convert Measurable to StronglyMeasurable (for ℝ)
+   have h_sm : @MeasureTheory.StronglyMeasurable α ℝ _ (⨅ N, m N) h := by
+-    haveI : MeasurableSpace α := ⨅ N, m N
++    have : MeasurableSpace α := ⨅ N, m N
+     exact h_meas.stronglyMeasurable
+ 
+   -- Step 6: Conclude AEStronglyMeasurable
+@@ -139,7 +139,7 @@ lemma aestronglyMeasurable_sub_of_tendsto_ae
+   let h := fun x => Filter.atTop.limsup (fun n => f n x)
+   -- h is Measurable[m] by Measurable.limsup
+   have h_meas : @Measurable α ℝ m _ h := by
+-    haveI : MeasurableSpace α := m
++    have : MeasurableSpace α := m
+     exact Measurable.limsup hf_meas
+   -- h = g a.e. because on the convergence set, limsup = lim = g
+   have h_ae_eq : h =ᵐ[μ] g := by
+@@ -147,7 +147,7 @@ lemma aestronglyMeasurable_sub_of_tendsto_ae
+     exact Filter.Tendsto.limsup_eq hx
+   -- Convert Measurable[m] h to StronglyMeasurable[m] h (for ℝ)
+   have h_sm : @MeasureTheory.StronglyMeasurable α ℝ _ m h := by
+-    haveI : MeasurableSpace α := m
++    have : MeasurableSpace α := m
+     exact h_meas.stronglyMeasurable
+   -- Conclude AEStronglyMeasurable[m] g using h as witness
+   exact ⟨h, h_sm, h_ae_eq.symm⟩
+diff --git a/Exchangeability/Probability/TimeReversalCrossing.lean b/Exchangeability/Probability/TimeReversalCrossing.lean
+index 75fb2dd2..c0a7d50f 100644
+--- a/Exchangeability/Probability/TimeReversalCrossing.lean
++++ b/Exchangeability/Probability/TimeReversalCrossing.lean
+@@ -59,7 +59,7 @@ private lemma lowerCrossingTime_lt_upperCrossingTime_succ' {Ω : Type*} {a b : 
+   have h_le : lowerCrossingTime a b f N n ω ≤ upperCrossingTime a b f N (n+1) ω :=
+     lowerCrossingTime_le_upperCrossingTime_succ
+   by_contra hge
+-  push_neg at hge
++  push Not at hge
+   have h_eq : lowerCrossingTime a b f N n ω = upperCrossingTime a b f N (n+1) ω :=
+     le_antisymm h_le hge
+   have h_neq' : lowerCrossingTime a b f N n ω ≠ N := h_eq ▸ h_neq
+diff --git a/Exchangeability/Probability/TripleLawDropInfo/DropInfo.lean b/Exchangeability/Probability/TripleLawDropInfo/DropInfo.lean
+index a3358deb..453f9c70 100644
+--- a/Exchangeability/Probability/TripleLawDropInfo/DropInfo.lean
++++ b/Exchangeability/Probability/TripleLawDropInfo/DropInfo.lean
+@@ -90,9 +90,9 @@ lemma condExp_indicator_eq_of_law_eq_of_comap_le
+   -- σ-algebra relationships
+   have hmW_le : mW ≤ _ := measurable_iff_comap_le.mp hW
+   have hmW'_le : mW' ≤ _ := measurable_iff_comap_le.mp hW'
+-  haveI hσW : SigmaFinite (μ.trim hmW_le) :=
++  have hσW : SigmaFinite (μ.trim hmW_le) :=
+     (inferInstance : IsFiniteMeasure (μ.trim hmW_le)).toSigmaFinite
+-  haveI hσW' : SigmaFinite (μ.trim hmW'_le) :=
++  have hσW' : SigmaFinite (μ.trim hmW'_le) :=
+     (inferInstance : IsFiniteMeasure (μ.trim hmW'_le)).toSigmaFinite
+ 
+   -- Integrability of indicator
+diff --git a/Exchangeability/Tail/CondExpShiftInvariance.lean b/Exchangeability/Tail/CondExpShiftInvariance.lean
+index 7fa4279c..2b08a524 100644
+--- a/Exchangeability/Tail/CondExpShiftInvariance.lean
++++ b/Exchangeability/Tail/CondExpShiftInvariance.lean
+@@ -87,10 +87,10 @@ lemma condExp_shift_eq_condExp
+         have hS : MeasurableSet S := measurable_pi_apply 0 hs
+         have h_preimage_n1 : X (n + 1) ⁻¹' s = (fun ω (i : Fin 1) => X ((n + 1) + i.val) ω) ⁻¹' S := by
+           ext ω
+-          simp only [Set.mem_preimage, Set.mem_setOf_eq, S, Fin.val_zero, add_zero]
++          simp only [Set.mem_preimage, Set.mem_ofPred_eq, S, Fin.val_zero, add_zero]
+         have h_preimage_0 : X 0 ⁻¹' s = (fun ω (i : Fin 1) => X i.val ω) ⁻¹' S := by
+           ext ω
+-          simp only [Set.mem_preimage, Set.mem_setOf_eq, S, Fin.val_zero]
++          simp only [Set.mem_preimage, Set.mem_ofPred_eq, S, Fin.val_zero]
+         have h_meas_n1 : Measurable (fun ω (i : Fin 1) => X ((n + 1) + i.val) ω) :=
+           measurable_pi_lambda _ (fun i => hX_meas ((n + 1) + i.val))
+         have h_meas_0 : Measurable (fun ω (i : Fin 1) => X i.val ω) :=
+@@ -121,11 +121,11 @@ lemma condExp_shift_eq_condExp
+       exact (hX_meas k).comap_le)
+ 
+     -- σ-finiteness of trimmed measure (automatic for probability measures)
+-    haveI h_finite : IsFiniteMeasure (μ.trim h_le) := by
++    have h_finite : IsFiniteMeasure (μ.trim h_le) := by
+       constructor
+       rw [trim_measurableSet_eq h_le MeasurableSet.univ]
+       exact measure_lt_top μ Set.univ
+-    haveI : SigmaFinite (μ.trim h_le) := @IsFiniteMeasure.toSigmaFinite _ _ _ h_finite
++    have : SigmaFinite (μ.trim h_le) := @IsFiniteMeasure.toSigmaFinite _ _ _ h_finite
+ 
+     -- Use ae_eq_condExp_of_forall_setIntegral_eq
+     apply ae_eq_condExp_of_forall_setIntegral_eq h_le hf_int
+diff --git a/Exchangeability/Tail/ShiftInvariantMeasure.lean b/Exchangeability/Tail/ShiftInvariantMeasure.lean
+index a97edf6a..94afa61c 100644
+--- a/Exchangeability/Tail/ShiftInvariantMeasure.lean
++++ b/Exchangeability/Tail/ShiftInvariantMeasure.lean
+@@ -87,8 +87,8 @@ lemma tailSigma_shift_invariant_for_contractable
+     measurable_pi_lambda _ (fun i => hX_meas (1 + i))
+   have h_meas_orig : Measurable (fun ω i => X i ω) :=
+     measurable_pi_lambda _ hX_meas
+-  haveI : IsProbabilityMeasure ν₁ := Measure.isProbabilityMeasure_map h_meas_shifted.aemeasurable
+-  haveI : IsProbabilityMeasure ν₂ := Measure.isProbabilityMeasure_map h_meas_orig.aemeasurable
++  have : IsProbabilityMeasure ν₁ := Measure.isProbabilityMeasure_map h_meas_shifted.aemeasurable
++  have : IsProbabilityMeasure ν₂ := Measure.isProbabilityMeasure_map h_meas_orig.aemeasurable
+ 
+   -- Apply finite marginals theorem
+   apply Exchangeability.measure_eq_of_fin_marginals_eq_prob (α := α)
+@@ -215,7 +215,7 @@ private lemma setIntegral_cylinder_eq
+ 
+   have hS_σ : ∀ ω, ((fun i : Fin (M + 2) => X (σ ⟨i.val + 1, by omega⟩) ω) ∈ S) ↔ ω ∈ C' := by
+     intro ω
+-    simp only [Set.mem_setOf_eq, C']
++    simp only [Set.mem_ofPred_eq, C']
+     have hfun : (fun i : Fin (M + 2) => X (σ ⟨i.val + 1, by omega⟩) ω)
+         = fun i : Fin (M + 2) => X (N + i.val) ω := by
+       funext i; rw [hσ_tail i]
+@@ -223,7 +223,7 @@ private lemma setIntegral_cylinder_eq
+ 
+   have hS_τ : ∀ ω, ((fun i : Fin (M + 2) => X (τ ⟨i.val + 1, by omega⟩) ω) ∈ S) ↔ ω ∈ C' := by
+     intro ω
+-    simp only [Set.mem_setOf_eq, C']
++    simp only [Set.mem_ofPred_eq, C']
+     have hfun : (fun i : Fin (M + 2) => X (τ ⟨i.val + 1, by omega⟩) ω)
+         = fun i : Fin (M + 2) => X (N + i.val) ω := by
+       funext i; rw [hτ_tail i]
+@@ -346,10 +346,10 @@ lemma setIntegral_comp_shift_eq
+       rw [Measure.map_apply (hX_meas (k + 1)) hs, Measure.map_apply (hX_meas 0) hs]
+       have h_pre_k1 : X (k + 1) ⁻¹' s = (fun ω (i : Fin 1) => X ((k + 1) + i.val) ω) ⁻¹' S := by
+         ext ω
+-        simp only [Set.mem_preimage, Set.mem_setOf_eq, S, Fin.val_zero, add_zero]
++        simp only [Set.mem_preimage, Set.mem_ofPred_eq, S, Fin.val_zero, add_zero]
+       have h_pre_0 : X 0 ⁻¹' s = (fun ω (i : Fin 1) => X i.val ω) ⁻¹' S := by
+         ext ω
+-        simp only [Set.mem_preimage, Set.mem_setOf_eq, S, Fin.val_zero]
++        simp only [Set.mem_preimage, Set.mem_ofPred_eq, S, Fin.val_zero]
+       rw [h_pre_k1, h_pre_0]
+       have h_eq := congrFun (congrArg (·.toOuterMeasure) h1) S
+       simp only [Measure.coe_toOuterMeasure] at h_eq
+@@ -551,7 +551,7 @@ lemma setIntegral_comp_shift_eq
+         have hS_eq : S = ⋂ i : Fin d, (fun y => y i) ⁻¹'
+             Tj (indices.get ⟨i.val, by rw [h_len]; exact i.isLt⟩) (h_indices_mem i) := by
+           ext y
+-          simp only [S, Set.mem_iInter, Set.mem_preimage, Set.mem_setOf_eq]
++          simp only [S, Set.mem_iInter, Set.mem_preimage, Set.mem_ofPred_eq]
+         rw [hS_eq]
+         apply MeasurableSet.iInter
+         intro i
+@@ -571,7 +571,7 @@ lemma setIntegral_comp_shift_eq
+         intro ω
+         constructor
+         · intro hω
+-          simp only [S, Set.mem_setOf_eq]
++          simp only [S, Set.mem_ofPred_eq]
+           intro i
+           have h_idx_mem := h_indices_mem i
+           have hω_ft := (Set.mem_iInter.mp (Set.mem_iInter.mp hω
+@@ -586,7 +586,7 @@ lemma setIntegral_comp_shift_eq
+           obtain ⟨i, hi_eq⟩ := h_indices_surj j hj
+           rw [(hTj j hj).2]
+           simp only [Set.mem_preimage]
+-          simp only [S, Set.mem_setOf_eq] at hS_mem
++          simp only [S, Set.mem_ofPred_eq] at hS_mem
+           subst hi_eq
+           have h := hS_mem i
+           simp only [hσ_succ] at h
+diff --git a/Exchangeability/Tail/TailSigma.lean b/Exchangeability/Tail/TailSigma.lean
+index 9a3721da..c5c3ac19 100644
+--- a/Exchangeability/Tail/TailSigma.lean
++++ b/Exchangeability/Tail/TailSigma.lean
+@@ -53,10 +53,12 @@ end NatIndexArithmetic
+ /-! ### Process-Relative Tail -/
+ 
+ /-- The `n`-th reverse (future) σ-algebra generated by the tails of `X`. -/
++@[instance_reducible]
+ def tailFamily (X : ℕ → Ω → α) (n : ℕ) : MeasurableSpace Ω :=
+   iSup (fun k : ℕ => MeasurableSpace.comap (fun ω => X (n + k) ω) inferInstance)
+ 
+ /-- Tail σ-algebra of a process `X : ℕ → Ω → α`. -/
++@[instance_reducible]
+ def tailProcess (X : ℕ → Ω → α) : MeasurableSpace Ω :=
+   iInf (tailFamily X)
+ 
+@@ -85,6 +87,7 @@ lemma tailProcess_le_tailFamily (X : ℕ → Ω → α) (n : ℕ) :
+ /-! ### Path-Space Tail -/
+ 
+ /-- Tail σ-algebra on path space `(ℕ → α)` defined via one-sided shifts. -/
++@[instance_reducible]
+ def tailShift (α : Type*) [MeasurableSpace α] : MeasurableSpace (ℕ → α) :=
+   iInf (fun n : ℕ =>
+     MeasurableSpace.comap
+@@ -320,7 +323,7 @@ lemma tailProcess_eq_comap_path_of_surjective
+         (MeasurableSpace.comap (fun ω k => ω (n + k)) inferInstance)) := by
+     congr 1; funext n; exact tailFamily_eq_comap_sample_path_shift X n
+   rw [step1]
+-  haveI : Nonempty ℕ := ⟨0⟩
++  have : Nonempty ℕ := ⟨0⟩
+   exact iInf_comap_eq_comap_iInf_of_surjective (α := Ω) (β := (ℕ → α)) hΦ
+     (fun n => MeasurableSpace.comap (fun ω k => ω (n + k)) inferInstance)
+ 

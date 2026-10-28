@@ -1,0 +1,13 @@
+diff --git a/Metamath/DeclarativeSpec.lean b/Metamath/DeclarativeSpec.lean
+index cbbc603..44cc8f2 100644
+--- a/Metamath/DeclarativeSpec.lean
++++ b/Metamath/DeclarativeSpec.lean
+@@ -608,7 +608,7 @@ theorem HH_cons {axs Γ σ c f hyps}
+ class Typed (axs : outParam _) (c : outParam CN) (e : Expr) where
+   type Γ : Provable axs Γ (c, e)
+ 
+-def Expr.ty (e) {axs c} [Typed axs c e] {Γ} : Provable axs Γ (c, e) := Typed.type Γ
++theorem Expr.ty (e) {axs c} [Typed axs c e] {Γ} : Provable axs Γ (c, e) := Typed.type Γ
+ 
+ -- Mario Carneiro's `Demo` section is in `Metamath/DeclarativeSpecDemo.lean`.
+ 

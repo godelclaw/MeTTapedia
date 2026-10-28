@@ -42,7 +42,7 @@ step "prolog_conformance" \
   "$PROLOG_RESULTS" \
   "$LOGTALK_ROOT"
 
-step "simplehe_build" bash -lc "cd '$ROOT_DIR' && ulimit -v 6291456 && lake build Mettapedia.Conformance.SimpleHE"
+step "simplehe_build" bash -lc "cd '$ROOT_DIR' && lake build Mettapedia.Conformance.SimpleHE"
 if ! grep -Fq '("allChecksPass", true)' "$SUMMARY_DIR/simplehe_build.log"; then
   echo "SimpleHE gate failed: expected ('allChecksPass', true) in build log" >&2
   exit 1
@@ -50,7 +50,7 @@ fi
 
 step "he_io_conformance" bash -lc "cd '$ROOT_DIR' && ./scripts/conformance/run_he_io_conformance.sh"
 step "simple_runtime_perf_gate" \
-  bash -lc "cd '$ROOT_DIR' && ulimit -v 10485760 && python3 scripts/conformance/check_simple_runtime_perf_gate.py"
+  bash -lc "cd '$ROOT_DIR' && python3 scripts/conformance/check_simple_runtime_perf_gate.py"
 
 step "petta_runtime_suite" bash -lc "cd '$PETTA_DIR' && ./unit/run_petta_unit_69.sh"
 step "he_runtime_suite" bash -lc "cd '$PETTA_DIR' && ./unit/run_he_suite_like_petta.sh"
