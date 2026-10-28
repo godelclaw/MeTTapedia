@@ -1,4 +1,5 @@
 import Mettapedia.Logic.LP.Semantics
+import Mettapedia.Logic.LP.StandardizeApart
 
 /-!
 # Logic Programming Kernel: SLD Resolution
@@ -20,8 +21,13 @@ compound terms including nested function symbol applications.
 - `SLDTree_sound` — soundness: if there is a refutation with computed answer θ,
   then every goal atom, grounded via θ and any further grounding, is in the
   least Herbrand model (Lloyd's Soundness Theorem, FLP Theorem 3.1).
-- Variable freshening is not formalized; the standard "standardized apart"
-  convention is assumed at each resolution step.
+- `SLDTree` leaves variable freshening as an informal convention, which makes
+  derivations collide whenever a clause shares variable names with the query
+  or with another activation.  `SLDScopedTree` repairs this: each resolution
+  step names its source clause *and* an explicit activation scope, the clause
+  is renamed by `Clause.atScope` as part of the step, and scopes strictly
+  increase along the derivation — so standardization apart is structural, not
+  assumed.  `SLDScopedTree_sound` grounds it in the same least Herbrand model.
 
 ## References
 
@@ -186,5 +192,165 @@ theorem SLDTree_clause {σ : LPSignature} (prog : Program σ)
     (hbody : SLDTree prog (θ.applyAtoms (c.body ++ [])) θ') :
     SLDTree prog [c.head] (θ' ∘ₛ θ) := by
   exact SLDTree.cons c.head [] c θ θ' hc (by rfl) (by simpa using hbody)
+
+/-! ## Section 5: Standardized-apart SLD
+
+The repair of the freshening gap.  Ground terms and atoms mention no
+variables, so a scoped ground atom reindexes to a base ground atom by the
+structural identity `unscope`; soundness of the scoped judgment then lands in
+the *same* least Herbrand model as the base judgment. -/
+
+/-- Reindex a scoped ground term to the base signature.  Structurally the
+identity: ground terms mention no variables. -/
+def GroundTerm.unscope {σ : LPSignature} : GroundTerm σ.scoped → GroundTerm σ
+  | .const c => .const c
+  | .app f ts => .app f (fun i => (ts i).unscope)
+
+/-- Reindex a scoped ground atom to the base signature. -/
+def GroundAtom.unscope {σ : LPSignature} (a : GroundAtom σ.scoped) :
+    GroundAtom σ where
+  symbol := a.symbol
+  args := fun i => (a.args i).unscope
+
+/-- Restrict a scoped grounding to one activation scope, as a base
+grounding of that activation's clause variables. -/
+def Grounding.baseAt {σ : LPSignature} (scope : Nat)
+    (g : Grounding σ.scoped) : Grounding σ :=
+  fun v => (g ⟨scope, v⟩).unscope
+
+/-- Grounding a scoped copy of a term is grounding the term by the
+scope-restricted base grounding. -/
+theorem Grounding.unscope_groundTerm_atScope {σ : LPSignature}
+    (g : Grounding σ.scoped) (scope : Nat) (t : Term σ) :
+    (g.groundTerm (t.atScope scope)).unscope =
+      (g.baseAt scope).groundTerm t := by
+  induction t with
+  | var v => rfl
+  | const c => rfl
+  | app f ts ih =>
+      simp only [Term.atScope, Term.renameVars, Grounding.groundTerm,
+        GroundTerm.unscope]
+      congr 1
+      funext i
+      exact ih i
+
+/-- Grounding a scoped copy of an atom is grounding the atom by the
+scope-restricted base grounding. -/
+theorem Grounding.unscope_groundAtom_atScope {σ : LPSignature}
+    (g : Grounding σ.scoped) (scope : Nat) (a : Atom σ) :
+    (g.groundAtom (a.atScope scope)).unscope =
+      (g.baseAt scope).groundAtom a := by
+  show GroundAtom.mk _ _ = GroundAtom.mk _ _
+  congr 1
+  funext i
+  exact g.unscope_groundTerm_atScope scope (a.args i)
+
+/-- Standardized-apart SLD refutation (big-step, leftmost selection).
+
+`SLDScopedTree prog scope goals θ` derives the scoped goal list `goals` with
+computed answer `θ`, where every clause activation happens at an explicit
+scope and scopes strictly increase along the derivation.  A caller whose
+query variables live at scopes below the starting scope therefore gets
+structural standardization apart: no activation can collide with the query or
+with any other activation, by the type of `ScopedVar` alone.  This mirrors
+the runtime's `nextScope` discipline exactly, including scope gaps. -/
+inductive SLDScopedTree {σ : LPSignature} (prog : Program σ) :
+    Nat → List (Atom σ.scoped) → Subst σ.scoped → Prop where
+  /-- Empty goal list: refutation found with the identity answer. -/
+  | nil (scope : Nat) : SLDScopedTree prog scope [] (Subst.id σ.scoped)
+  /-- Resolve the leftmost goal against the `scope`-renamed copy of a program
+  clause; continue at any strictly larger scope. -/
+  | cons (scope next : Nat) (a : Atom σ.scoped) (goals : List (Atom σ.scoped))
+      (c : Clause σ) (θ θ' : Subst σ.scoped)
+      (hfresh : scope < next)
+      (hc : c ∈ prog)
+      (hunif : θ.applyAtom a = θ.applyAtom (c.head.atScope scope))
+      (hrest : SLDScopedTree prog next
+        (θ.applyAtoms ((c.body.map (Atom.atScope scope)) ++ goals)) θ') :
+      SLDScopedTree prog scope (a :: goals) (θ' ∘ₛ θ)
+
+/-- **Soundness of standardized-apart SLD**: a scoped refutation grounds
+every goal, via `unscope`, into the least Herbrand model of the base
+knowledge base.  Freshness is not needed for soundness — it is carried for
+completeness and for runtime refinement — so no hypothesis beyond the
+derivation itself is required. -/
+theorem SLDScopedTree_sound {σ : LPSignature} (kb : KnowledgeBase σ)
+    (scope : Nat) (goals : List (Atom σ.scoped)) (θ : Subst σ.scoped)
+    (h : SLDScopedTree kb.prog scope goals θ) :
+    ∀ g : Grounding σ.scoped, ∀ a ∈ goals,
+      ((g.compSubst θ).groundAtom a).unscope ∈ leastHerbrandModel kb := by
+  induction h with
+  | nil => intro _ _ ha; simp at ha
+  | cons scope next a goals c θ θ' hfresh hc hunif _ ih =>
+      intro g a' ha'
+      simp only [List.mem_cons] at ha'
+      rw [ground_comp_eq]
+      rcases ha' with rfl | ha'
+      · -- Selected atom: transport along the unifier, then along `atScope`,
+        -- and close with the clause rule of the least model.
+        rw [hunif, ← ground_comp_eq, Grounding.unscope_groundAtom_atScope]
+        apply leastHerbrandModel_clause kb c hc
+        intro b hb
+        rw [← Grounding.unscope_groundAtom_atScope, ground_comp_eq]
+        exact ih g (θ.applyAtom (b.atScope scope))
+          (List.mem_map.mpr ⟨b.atScope scope,
+            List.mem_append_left _ (List.mem_map.mpr ⟨b, hb, rfl⟩), rfl⟩)
+      · exact ih g (θ.applyAtom a')
+          (List.mem_map.mpr ⟨a', List.mem_append_right _ ha', rfl⟩)
+
+/-! ### Freshening witness
+
+`p(a) :- q(X).  q(b).  ?- p(X).` — the query variable and the clause-body
+variable share one source name.  `SLDScopedTree` derives the query because
+the activation renames the clause copy apart; the unscoped `SLDTree` fails
+on exactly this program (the executable counterexample suite keeps that
+failure red).  This witness keeps the repair non-vacuous. -/
+
+private inductive FreshC | a | b deriving DecidableEq
+private inductive FreshR | p | q deriving DecidableEq
+
+private def freshSig : LPSignature where
+  constants := FreshC
+  vars := Unit
+  relationSymbols := FreshR
+  relationArity := fun _ => 1
+  functionSymbols := Empty
+  functionArity := fun f => nomatch f
+
+private def freshAtom (r : FreshR) (t : Term freshSig) : Atom freshSig where
+  symbol := r
+  args := fun _ => t
+
+private def freshProg : Program freshSig :=
+  [ { head := freshAtom .p (.const .a), body := [freshAtom .q (.var ())] },
+    { head := freshAtom .q (.const .b), body := [] } ]
+
+/-- First unifier: send the scope-0 query variable to `a`, leave the scope-1
+activation variable alone. -/
+private def freshTheta1 : Subst freshSig.scoped :=
+  fun v => match v.scope with
+    | 0 => .const .a
+    | _ + 1 => .var v
+
+/-- Second unifier: send the scope-1 activation variable to `b`. -/
+private def freshTheta2 : Subst freshSig.scoped :=
+  fun v => match v.scope with
+    | 1 => .const .b
+    | _ => .var v
+
+example : ∃ θ, SLDScopedTree freshProg 1
+    [(freshAtom .p (.var ())).atScope 0] θ := by
+  have step2 : SLDScopedTree freshProg 2
+      (freshTheta1.applyAtoms
+        (([freshAtom .q (.var ())].map (Atom.atScope 1)) ++ []))
+      (Subst.id _ ∘ₛ freshTheta2) :=
+    .cons 2 3 _ []
+      { head := freshAtom .q (.const .b), body := [] }
+      freshTheta2 (Subst.id _) (by omega)
+      (List.mem_cons_of_mem _ (List.mem_cons_self ..)) rfl (.nil 3)
+  exact ⟨_, .cons 1 2 _ []
+    { head := freshAtom .p (.const .a), body := [freshAtom .q (.var ())] }
+    freshTheta1 (Subst.id _ ∘ₛ freshTheta2) (by omega)
+    (List.mem_cons_self ..) rfl step2⟩
 
 end Mettapedia.Logic.LP
