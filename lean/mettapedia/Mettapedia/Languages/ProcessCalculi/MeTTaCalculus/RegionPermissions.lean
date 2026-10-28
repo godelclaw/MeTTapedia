@@ -85,5 +85,10 @@ rules that keep closed requirements (`GrantLineage.refines`, `not_refines_of_esc
 live usage comes from a root (`usage_from_root`). The core over-approximates the service's
 non-delegable grants (`Controls.core_spreads_nondelegable`).
 The evaluator's effect gate is a dynamic flag whose soundness is a global invariant over its entry
-points (`gate_sound`, `install_creates_authority`).
+points (`gate_sound`, `install_creates_authority`). Its combined flag cannot recover whether a
+refusal belongs to the observation or its caller (`boundary_decision_not_from_combined`). For a
+finite closed authority graph, distinct denying owners cannot be replaced by one owner identity
+(`refusingOwners_not_singleton`); closed carriers agree on the graph's refusals
+(`refusingGraph_independent`), while several denying scopes may share one owner
+(`Controls.branching_shared_owner_control`). These are semantic models, not native graph transport.
 -/

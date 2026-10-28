@@ -865,6 +865,47 @@ theorem regionIndex_wakes :
     () ∈ (rNext unlessLockedProc (regionIndex label) asleep (.env lockTaker)).awake :=
   Or.inr ⟨Set.mem_univ _, 1, by simp [lockTaker], rfl⟩
 
+/-- A stale guard check cannot justify parking after an intervening commit,
+    even with the region index. Rechecking rejects the sleep; applying that
+    unallowed sleep anyway leaves an enabled firing asleep and breaks the
+    wake invariant. This is a model control, not an implementation of the
+    registration/parking protocol. -/
+theorem stale_check_after_unlock_loses_wakeup :
+    let after := rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)
+    let slept := rNext unlessLockedProc (regionIndex label) after (.sleep ())
+    rAllowed label unlessLockedProc onlyUnlock lockedStart (.sleep ()) ∧
+      rAllowed label unlessLockedProc onlyUnlock lockedStart (.env lockTaker) ∧
+      ¬ rAllowed label unlessLockedProc onlyUnlock after (.sleep ()) ∧
+      Guard label (unlessLockedProc ()) slept.store slept.born ∧
+      () ∉ slept.awake ∧ ¬ WakeInv label unlessLockedProc slept := by
+  dsimp only
+  have before : rAllowed label unlessLockedProc onlyUnlock lockedStart (.sleep ()) :=
+    ⟨Set.mem_univ _, not_guard_locked⟩
+  have committed : rAllowed label unlessLockedProc onlyUnlock lockedStart (.env lockTaker) :=
+    ⟨rfl, lockTaker_enabled_locked, by decide⟩
+  have ready : Guard label (unlessLockedProc ())
+      (rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)).store
+      (rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)).born := by
+    simpa [rNext, lockedStart] using guard_unlocked
+  have rejected : ¬ rAllowed label unlessLockedProc onlyUnlock
+      (rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)) (.sleep ()) :=
+    fun h => h.2 ready
+  have stillReady : Guard label (unlessLockedProc ())
+      (rNext unlessLockedProc (regionIndex label)
+        (rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)) (.sleep ())).store
+      (rNext unlessLockedProc (regionIndex label)
+        (rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)) (.sleep ())).born := by
+    simpa [rNext] using ready
+  have asleep : () ∉ (rNext unlessLockedProc (regionIndex label)
+      (rNext unlessLockedProc (regionIndex label) lockedStart (.env lockTaker)) (.sleep ())).awake := by
+    simp [rNext]
+  refine ⟨before, committed, rejected, stillReady, asleep, ?_⟩
+  intro inv
+  apply asleep
+  apply inv.awake_of_guard ()
+  · simp [rNext, lockedStart]
+  · exact stillReady
+
 end LostWakeup
 
 /-! ### Matching, fireable rows, regions, positive rows -/

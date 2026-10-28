@@ -186,6 +186,43 @@ theorem changed_child_rejects_bind [DecidableEq Value] (first second : Key → V
   rw [checkReads_bind, childChanged]
   exact Bool.and_false _
 
+/-- Continue from a previously obtained observation. Only the answer-selected
+suffix runs; the old reads remain dependencies and are not sampled again.
+This construction concerns read-only queries, not hidden effects in `pure`. -/
+def Observation.extend (cached : Observation Key Value Answer)
+    (store : Key → Value) (next : Answer → Program Key Value Other) :
+    Observation Key Value Other :=
+  let suffix := run store (next cached.answer)
+  ⟨suffix.answer, cached.reads ++ suffix.reads⟩
+
+/-- Reusing a validated cached prefix has the same complete observation as
+the independently interpreted sequential query in the current store. -/
+theorem extend_eq_run_bind_of_valid [DecidableEq Value]
+    (before after : Key → Value) (program : Program Key Value Answer)
+    (next : Answer → Program Key Value Other)
+    (valid : checkReads after (run before program).reads = true) :
+    (run before program).extend after next = run after (bind program next) := by
+  have unchanged := run_eq_of_agrees before after program ((checkReads_iff _ _).mp valid)
+  rw [← unchanged, run_bind]
+  rfl
+
+/-- New work cannot replace the old certificate by its own fresh reads. -/
+theorem checkReads_extend [DecidableEq Value] (store : Key → Value)
+    (cached : Observation Key Value Answer) (next : Answer → Program Key Value Other) :
+    checkReads store (cached.extend store next).reads =
+      (checkReads store cached.reads && checkReads store (run store (next cached.answer)).reads) :=
+  checkReads_append store _ _
+
+/-- A changed cached read refuses the combined result even when the suffix
+has just read the new value. -/
+theorem changed_cached_read_refuses_extend [DecidableEq Value]
+    (store : Key → Value) (cached : Observation Key Value Answer)
+    (next : Answer → Program Key Value Other)
+    (changed : checkReads store cached.reads = false) :
+    checkReads store (cached.extend store next).reads = false := by
+  rw [checkReads_extend, changed]
+  rfl
+
 def map (f : Answer → Other) (program : Program Key Value Answer) :
     Program Key Value Other := bind program fun answer => .pure (f answer)
 
@@ -660,6 +697,27 @@ theorem snapshot_advance_differs_from_validated_fresh :
       (run seenBefore seenQuery).answer = 0 ∧
       (run seenAfter seenQuery).answer = 1 ∧
       (run seenAfter paused.2).answer ≠ (run seenAfter seenQuery).answer := by
+  decide
+
+/-- A cached empty lookup remains a dependency when a later read sees the
+new value. Keeping only that later read would fabricate validation. -/
+theorem newer_read_does_not_rebase_cached :
+    let current : Nat → List Nat := fun key => if key = 0 then [4] else []
+    let cached := run absentBefore positiveQuery
+    let combined := cached.extend current fun _ => positiveQuery
+    combined.answer = [4] ∧
+      combined.reads = [(0, []), (0, [4])] ∧
+      checkReads current combined.reads = false ∧
+      checkReads current (run current positiveQuery).reads = true := by
+  decide
+
+/-- An unchanged cached prefix and the new suffix retain both complete
+ordered readouts, including repeated payloads. -/
+theorem cached_then_query_retains_both :
+    let combined := (run originalMatches (matchesAt 0)).extend originalMatches
+      fun _ => matchesAt 1
+    combined.answer = [7, 7] ∧ combined.reads = [(0, [3]), (1, [7, 7])] ∧
+      checkReads originalMatches combined.reads = true := by
   decide
 
 end Controls

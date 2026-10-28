@@ -1,4 +1,4 @@
-import Mettapedia.ProbabilityTheory.HigherOrderProbability.Basic
+import Mettapedia.ProbabilityTheory.HigherOrderProbability.LatentReuse
 import Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti
 import Mettapedia.ProbabilityTheory.FiniteMeasureSupport
 import Exchangeability.Core
@@ -56,31 +56,15 @@ def mixingMeasureTheta (M : BernoulliMixture) : Measure Theta :=
 
 instance mixingMeasureTheta_isProbability (M : BernoulliMixture) :
     IsProbabilityMeasure (mixingMeasureTheta M) := by
-  classical
   have : IsProbabilityMeasure M.mixingMeasure := M.isProbability
-  -- Evaluate on `univ` by rewriting `comap` along the subtype coercion.
-  have hIcc :
-      mixingMeasureTheta M Set.univ = M.mixingMeasure (Set.Icc (0 : ℝ) 1) := by
-    -- `comap_subtype_coe_apply` identifies the pullback with the image set.
-    have hcomap :
-        (mixingMeasureTheta M) Set.univ =
-          M.mixingMeasure (Subtype.val '' (Set.univ : Set (Set.Icc (0 : ℝ) 1))) :=
-      comap_subtype_coe_apply (s := Set.Icc (0 : ℝ) 1) measurableSet_Icc
-        (μ := M.mixingMeasure) (t := (Set.univ : Set (Set.Icc (0 : ℝ) 1)))
-    rw [hcomap]
-    congr 1
-    rw [Subtype.coe_image_univ]
-  -- Since `M.mixingMeasure` is a probability measure supported on `Icc 0 1`,
-  -- the measure of `Icc 0 1` is `1`.
-  have hIcc_one : M.mixingMeasure (Set.Icc (0 : ℝ) 1) = 1 := by
-    have hIcc_eq_univ : M.mixingMeasure (Set.Icc (0 : ℝ) 1) = M.mixingMeasure Set.univ := by
-      simpa using
-        (MeasureTheory.measure_of_measure_compl_eq_zero (μ := M.mixingMeasure) (s := Set.Icc (0 : ℝ) 1)
-          M.support_unit)
-    simpa [measure_univ] using hIcc_eq_univ
-  -- Finish.
-  refine ⟨?_⟩
-  simp [hIcc, hIcc_one]
+  refine (MeasurableEmbedding.subtype_coe measurableSet_Icc).isProbabilityMeasure_comap ?_
+  simpa only [Subtype.range_val, ae_iff, Set.compl_def] using M.support_unit
+
+private theorem map_mixingMeasureTheta (M : BernoulliMixture) :
+    (mixingMeasureTheta M).map (Subtype.val : Theta → ℝ) = M.mixingMeasure := by
+  rw [mixingMeasureTheta, (MeasurableEmbedding.subtype_coe measurableSet_Icc).map_comap]
+  rw [Subtype.range_val]
+  exact Measure.restrict_eq_self_of_ae_mem (by simpa only [ae_iff, Set.compl_def] using M.support_unit)
 
 /-- If two Bernoulli mixtures induce the same pulled-back measure on
 `Theta = [0,1]`, then their original mixing measures on `ℝ` are equal. -/
@@ -88,67 +72,7 @@ theorem mixingMeasure_eq_of_mixingMeasureTheta_eq
     (M1 M2 : BernoulliMixture)
     (hΘ : mixingMeasureTheta M1 = mixingMeasureTheta M2) :
     M1.mixingMeasure = M2.mixingMeasure := by
-  ext t ht
-  have hμ1_diff0 : M1.mixingMeasure (t \ Set.Icc (0 : ℝ) 1) = 0 := by
-    refine le_antisymm ?_ (zero_le)
-    calc
-      M1.mixingMeasure (t \ Set.Icc (0 : ℝ) 1) ≤ M1.mixingMeasure (Set.Icc (0 : ℝ) 1)ᶜ := by
-        refine measure_mono ?_
-        intro x hx
-        exact hx.2
-      _ = 0 := M1.support_unit
-  have hμ2_diff0 : M2.mixingMeasure (t \ Set.Icc (0 : ℝ) 1) = 0 := by
-    refine le_antisymm ?_ (zero_le)
-    calc
-      M2.mixingMeasure (t \ Set.Icc (0 : ℝ) 1) ≤ M2.mixingMeasure (Set.Icc (0 : ℝ) 1)ᶜ := by
-        refine measure_mono ?_
-        intro x hx
-        exact hx.2
-      _ = 0 := M2.support_unit
-  have hμ1_inter : M1.mixingMeasure t = M1.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) := by
-    have hsplit :
-        M1.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) +
-          M1.mixingMeasure (t \ Set.Icc (0 : ℝ) 1) =
-        M1.mixingMeasure t :=
-      measure_inter_add_sdiff t measurableSet_Icc
-    simpa [hμ1_diff0] using hsplit.symm
-  have hμ2_inter : M2.mixingMeasure t = M2.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) := by
-    have hsplit :
-        M2.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) +
-          M2.mixingMeasure (t \ Set.Icc (0 : ℝ) 1) =
-        M2.mixingMeasure t :=
-      measure_inter_add_sdiff t measurableSet_Icc
-    simpa [hμ2_diff0] using hsplit.symm
-  have hμ1_comap :
-      M1.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) =
-        mixingMeasureTheta M1 ((Subtype.val) ⁻¹' t) := by
-    symm
-    calc
-      mixingMeasureTheta M1 ((Subtype.val) ⁻¹' t)
-          = M1.mixingMeasure ((Subtype.val) '' (((Subtype.val) ⁻¹' t) : Set Theta)) := by
-              simpa [mixingMeasureTheta, Theta, measurableSet_Icc] using
-                (comap_subtype_coe_apply (s := Set.Icc (0 : ℝ) 1) measurableSet_Icc
-                  (μ := M1.mixingMeasure) (t := ((Subtype.val) ⁻¹' t)))
-      _ = M1.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) := by
-            simp [Set.image_preimage_eq_inter_range, Set.Icc]
-  have hμ2_comap :
-      M2.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) =
-        mixingMeasureTheta M2 ((Subtype.val) ⁻¹' t) := by
-    symm
-    calc
-      mixingMeasureTheta M2 ((Subtype.val) ⁻¹' t)
-          = M2.mixingMeasure ((Subtype.val) '' (((Subtype.val) ⁻¹' t) : Set Theta)) := by
-              simpa [mixingMeasureTheta, Theta, measurableSet_Icc] using
-                (comap_subtype_coe_apply (s := Set.Icc (0 : ℝ) 1) measurableSet_Icc
-                  (μ := M2.mixingMeasure) (t := ((Subtype.val) ⁻¹' t)))
-      _ = M2.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) := by
-            simp [Set.image_preimage_eq_inter_range, Set.Icc]
-  calc
-    M1.mixingMeasure t = M1.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) := hμ1_inter
-    _ = mixingMeasureTheta M1 ((Subtype.val) ⁻¹' t) := hμ1_comap
-    _ = mixingMeasureTheta M2 ((Subtype.val) ⁻¹' t) := by simp [hΘ]
-    _ = M2.mixingMeasure (t ∩ Set.Icc (0 : ℝ) 1) := hμ2_comap.symm
-    _ = M2.mixingMeasure t := hμ2_inter.symm
+  rw [← map_mixingMeasureTheta M1, hΘ, map_mixingMeasureTheta]
 
 /-- A Bernoulli mixture is determined by its pulled-back mixing measure on
 `Theta = [0,1]`. -/
@@ -186,6 +110,15 @@ private lemma bernoulliPMF_nonneg (θ : Theta) (b : Bool) :
   | true =>
       simpa [bernoulliPMF] using theta_nonneg (θ := θ)
 
+private lemma bernoulliProduct_bounds (θ : Theta) (xs : Fin n → Bool) :
+    bernoulliProductPMF (θ : ℝ) xs ∈ Set.Icc 0 1 := by
+  unfold bernoulliProductPMF
+  refine ⟨Finset.prod_nonneg (fun i _ => bernoulliPMF_nonneg θ (xs i)),
+    Finset.prod_le_one (fun i _ => bernoulliPMF_nonneg θ (xs i)) ?_⟩
+  intro i _
+  cases xs i <;> simp only [bernoulliPMF, Bool.false_eq_true, ↓reduceIte] <;>
+    linarith [θ.2.1, θ.2.2]
+
 /-- The `ENNReal` weight of a word `xs` under a parameter `θ`. -/
 def weight (θ : Theta) (xs : Fin n → Bool) : ℝ≥0∞ :=
   ENNReal.ofReal (bernoulliProductPMF (θ : ℝ) xs)
@@ -210,86 +143,20 @@ private lemma weight_cons (θ : Theta) (b : Bool) (xs : Fin n → Bool) :
 
 private lemma ofReal_bernoulliPMF_add (θ : Theta) :
     ENNReal.ofReal (bernoulliPMF (θ : ℝ) true) + ENNReal.ofReal (bernoulliPMF (θ : ℝ) false) = 1 := by
-  have hθ : 0 ≤ (θ : ℝ) := theta_nonneg θ
-  have h1θ : 0 ≤ 1 - (θ : ℝ) := one_sub_theta_nonneg θ
-  -- `bernoulliPMF θ true = θ`, `bernoulliPMF θ false = 1-θ`.
-  have hsum : (θ : ℝ) + (1 - (θ : ℝ)) = (1 : ℝ) := by ring
-  have : ENNReal.ofReal (θ : ℝ) + ENNReal.ofReal (1 - (θ : ℝ)) = 1 := by
-    -- Rewrite the sum as `ofReal (θ + (1-θ))` and use `hsum`.
-    calc
-      ENNReal.ofReal (θ : ℝ) + ENNReal.ofReal (1 - (θ : ℝ))
-          = ENNReal.ofReal ((θ : ℝ) + (1 - (θ : ℝ))) := by
-              simpa using (ENNReal.ofReal_add hθ h1θ).symm
-      _ = 1 := by simp [hsum]
-  simpa [bernoulliPMF] using this
+  rw [← ENNReal.ofReal_add (bernoulliPMF_nonneg θ true) (bernoulliPMF_nonneg θ false)]
+  simp [bernoulliPMF]
 
-private lemma sum_weight_eq_one : ∀ (n : ℕ) (θ : Theta), (∑ xs : Fin n → Bool, weight (n := n) θ xs) = 1
-  | 0, θ => by
-      classical
-      -- Only one word on `Fin 0`.
-      simp [weight, bernoulliProductPMF]
-  | Nat.succ n, θ => by
-      classical
-      -- Rewrite the sum over words using `Fin.consEquiv` (head bit + tail).
-      -- `Fin.consEquiv` has type `Bool × (Fin n → Bool) ≃ (Fin (n+1) → Bool)`.
-      have hs :
-          (∑ xs : Fin (n + 1) → Bool, weight (n := n + 1) θ xs) =
-            ∑ p : Bool × (Fin n → Bool), weight (n := n + 1) θ (Fin.cons p.1 p.2) := by
-        -- Sum over an equivalence.
-        simpa using
-          (Fintype.sum_equiv (Fin.consEquiv (n := n) (α := fun _ : Fin (n + 1) => Bool))
-              (fun p : Bool × (Fin n → Bool) => weight (n := n + 1) θ (Fin.cons p.1 p.2))
-              (fun xs : Fin (n + 1) → Bool => weight (n := n + 1) θ xs)
-              (fun _p => rfl)).symm
-      -- Now split the product sum into head/tail.
-      rw [hs]
-      -- Turn the sum over pairs into an iterated sum.
-      simp only [Fintype.sum_prod_type]
-      -- Use the multiplicative factorization `weight_cons`.
-      have htrue :
-          (∑ xs : Fin n → Bool, weight (n := n + 1) θ (Fin.cons true xs)) =
-            ENNReal.ofReal (bernoulliPMF (θ : ℝ) true) * (∑ xs : Fin n → Bool, weight (n := n) θ xs) := by
-        -- Factor out the constant multiplier.
-        have :
-            (∑ xs : Fin n → Bool,
-                ENNReal.ofReal (bernoulliPMF (θ : ℝ) true) * weight (n := n) θ xs) =
-              ENNReal.ofReal (bernoulliPMF (θ : ℝ) true) * (∑ xs : Fin n → Bool, weight (n := n) θ xs) := by
-          -- `∑ xs, ...` is a `Finset.univ` sum; use `Finset.mul_sum`.
-          simpa using
-            (Finset.mul_sum (s := (Finset.univ : Finset (Fin n → Bool)))
-              (f := fun xs : Fin n → Bool => weight (n := n) θ xs)
-              (a := ENNReal.ofReal (bernoulliPMF (θ : ℝ) true))).symm
-        simp [weight_cons, this]
-      have hfalse :
-          (∑ xs : Fin n → Bool, weight (n := n + 1) θ (Fin.cons false xs)) =
-            ENNReal.ofReal (bernoulliPMF (θ : ℝ) false) * (∑ xs : Fin n → Bool, weight (n := n) θ xs) := by
-        have :
-            (∑ xs : Fin n → Bool,
-                ENNReal.ofReal (bernoulliPMF (θ : ℝ) false) * weight (n := n) θ xs) =
-              ENNReal.ofReal (bernoulliPMF (θ : ℝ) false) * (∑ xs : Fin n → Bool, weight (n := n) θ xs) := by
-          simpa using
-            (Finset.mul_sum (s := (Finset.univ : Finset (Fin n → Bool)))
-              (f := fun xs : Fin n → Bool => weight (n := n) θ xs)
-              (a := ENNReal.ofReal (bernoulliPMF (θ : ℝ) false))).symm
-        simp [weight_cons, this]
-      -- Finish using the induction hypothesis and `ofReal_bernoulliPMF_add`.
-      have ih : (∑ xs : Fin n → Bool, weight (n := n) θ xs) = 1 := sum_weight_eq_one n θ
-      -- Combine the two branches (true/false head bit).
-      calc
-        (∑ b : Bool, ∑ xs : Fin n → Bool, weight (n := n + 1) θ (Fin.cons b xs))
-            = (∑ xs : Fin n → Bool, weight (n := n + 1) θ (Fin.cons true xs)) +
-                (∑ xs : Fin n → Bool, weight (n := n + 1) θ (Fin.cons false xs)) := by
-                  -- `Bool` sum is two terms.
-                  simp
-        _ = (ENNReal.ofReal (bernoulliPMF (θ : ℝ) true) +
-              ENNReal.ofReal (bernoulliPMF (θ : ℝ) false)) * (∑ xs : Fin n → Bool, weight (n := n) θ xs) := by
-              -- Factor out the shared suffix-weight sum.
-              simpa [htrue, hfalse] using
-                (add_mul (ENNReal.ofReal (bernoulliPMF (θ : ℝ) true))
-                    (ENNReal.ofReal (bernoulliPMF (θ : ℝ) false))
-                    (∑ xs : Fin n → Bool, weight (n := n) θ xs)).symm
-        _ = 1 := by
-              simp [ofReal_bernoulliPMF_add (θ := θ), ih]
+private lemma sum_weight_eq_one (n : ℕ) (θ : Theta) :
+    (∑ xs : Fin n → Bool, weight (n := n) θ xs) = 1 := by
+  classical
+  have hweight (xs : Fin n → Bool) :
+      weight θ xs = ∏ i, ENNReal.ofReal (bernoulliPMF (θ : ℝ) (xs i)) :=
+    ENNReal.ofReal_prod_of_nonneg (fun i _ => bernoulliPMF_nonneg θ (xs i))
+  have hnorm : (∑ b : Bool, ENNReal.ofReal (bernoulliPMF (θ : ℝ) b)) = 1 := by
+    simpa [Fintype.sum_bool, add_comm] using ofReal_bernoulliPMF_add θ
+  simp_rw [hweight]
+  rw [← Fintype.prod_sum (fun _ : Fin n => fun b : Bool => ENNReal.ofReal (bernoulliPMF (θ : ℝ) b))]
+  simp only [hnorm, Finset.prod_const_one]
 
 /-- The `PMF` on `Fin n → Bool` induced by `theta`. -/
 def pmf (θ : Theta) : PMF (Fin n → Bool) :=
@@ -427,53 +294,22 @@ theorem pmf_toMeasure_map_takePrefix_eq (θ : Theta) {m n : ℕ} (hmn : m ≤ n)
 
 private lemma measurable_weight (xs : Fin n → Bool) :
     Measurable fun θ : Theta => weight (n := n) θ xs := by
-  -- `bernoulliProductPMF` is a finite product of measurable functions.
-  -- We use the closed form `θ^k * (1-θ)^(n-k)` for measurability.
-  have hmeas : Measurable fun t : ℝ => bernoulliProductPMF t xs := by
-    -- Use `bernoulliProductPMF_eq_power` and measurability of `pow` and subtraction.
-    have : Measurable fun t : ℝ =>
-        t ^ (countTrue xs) * (1 - t) ^ (countFalse xs) := by
-      have hm1 : Measurable fun t : ℝ => t ^ (countTrue xs) := by
-        simpa using (measurable_id.pow_const (countTrue xs))
-      have hm2 : Measurable fun t : ℝ => (1 - t) ^ (countFalse xs) := by
-        have : Measurable fun t : ℝ => 1 - t := measurable_const.sub measurable_id
-        exact this.pow_const (countFalse xs)
-      exact hm1.mul hm2
-    simpa [bernoulliProductPMF_eq_power] using this
-  -- Restrict to the subtype and apply `ENNReal.measurable_ofReal`.
-  simpa [weight, Function.comp_def] using
-    (ENNReal.measurable_ofReal.comp (hmeas.comp measurable_subtype_coe))
+  unfold weight bernoulliProductPMF
+  refine ENNReal.measurable_ofReal.comp (Finset.measurable_prod _ fun i _ => ?_)
+  cases xs i <;> simp only [bernoulliPMF, Bool.false_eq_true, ↓reduceIte]
+  · exact measurable_const.sub measurable_subtype_coe
+  · exact measurable_subtype_coe
 
 private lemma measurable_pmf_toMeasure_apply (s : Set (Fin n → Bool)) :
     Measurable fun θ : Theta => (pmf (n := n) θ).toMeasure s := by
   classical
-  -- On a fintype, `PMF.toMeasure` is computed by a finite sum.
-  have hrewrite :
-      (fun θ : Theta => (pmf (n := n) θ).toMeasure s) =
-        fun θ : Theta => ∑ x : Fin n → Bool, (if x ∈ s then weight (n := n) θ x else 0) := by
+  have h : (fun θ : Theta => (pmf (n := n) θ).toMeasure s) =
+      fun θ => ∑ xs, if xs ∈ s then weight θ xs else 0 := by
     funext θ
-    -- Rewrite `toMeasure s` as a `Fintype` sum of indicators.
-    simp [PMF.toMeasure_apply_fintype, pmf_apply, weight, Set.indicator]
-  -- Use measurability of finite sums.
-  have hmeasTerm :
-      ∀ x : Fin n → Bool, Measurable fun θ : Theta =>
-        (if x ∈ s then weight (n := n) θ x else 0) := by
-    intro x
-    by_cases hx : x ∈ s
-    · simp [hx, measurable_weight (n := n) (xs := x)]
-    · simp [hx]
-  -- Finish with the rewrite.
-  classical
-  -- Use `Finset.measurable_fun_sum` (from mathlib's measurability lemmas).
-  have hsum :
-      Measurable (fun θ : Theta =>
-        ∑ x : Fin n → Bool, (if x ∈ s then weight (n := n) θ x else 0)) := by
-    simpa using
-      (Finset.measurable_fun_sum (s := (Finset.univ : Finset (Fin n → Bool)))
-        (f := fun x : Fin n → Bool => fun θ : Theta => (if x ∈ s then weight (n := n) θ x else 0))
-        (fun x _hx => hmeasTerm x))
-  rw [hrewrite]
-  exact hsum
+    simp [PMF.toMeasure_apply_fintype, pmf_apply, Set.indicator]
+  rw [h]
+  refine Finset.measurable_fun_sum _ fun xs _ => ?_
+  by_cases hx : xs ∈ s <;> simp [hx, measurable_weight]
 
 /-- The Bernoulli product kernel on `Theta` at horizon `n`. -/
 def kernel (n : ℕ) : ProbabilityTheory.Kernel Theta (Fin n → Bool) :=
@@ -547,77 +383,17 @@ theorem flatten_apply_singleton (M : BernoulliMixture) (n : ℕ) (xs : Fin n →
     simpa [mixingMeasureTheta, hs] using
       (MeasureTheory.lintegral_subtype_comap (μ := M.mixingMeasure) (s := Set.Icc (0 : ℝ) 1) hs
         (f := fun t : ℝ => ENNReal.ofReal (bernoulliProductPMF t xs)))
-  -- Convert the set-lintegral of `ENNReal.ofReal` to `ENNReal.ofReal` of the Bochner integral.
+  have : IsProbabilityMeasure M.mixingMeasure := M.isProbability
   have hcont : Continuous fun t : ℝ => bernoulliProductPMF t xs := by
-    -- Use the closed form and continuity of `pow`.
-    have h1 : Continuous fun t : ℝ => t ^ (countTrue xs) := by
-      simpa using (continuous_pow (countTrue xs))
-    have h2 : Continuous fun t : ℝ => (1 - t) ^ (countFalse xs) := by
-      have hsub : Continuous fun t : ℝ => 1 - t := continuous_const.sub continuous_id
-      exact (continuous_pow (countFalse xs)).comp hsub
-    have hmul : Continuous fun t : ℝ => t ^ (countTrue xs) * (1 - t) ^ (countFalse xs) :=
-      h1.mul h2
-    simpa [bernoulliProductPMF_eq_power] using hmul
-  have hint :
-      Integrable (fun t : ℝ => bernoulliProductPMF t xs)
-        (M.mixingMeasure.restrict (Set.Icc (0 : ℝ) 1)) := by
-    -- On a finite measure, a measurable function bounded by a constant is integrable.
-    have : IsProbabilityMeasure M.mixingMeasure := M.isProbability
-    have hs_finite : M.mixingMeasure (Set.Icc (0 : ℝ) 1) ≠ ∞ := by
-      have hle : M.mixingMeasure (Set.Icc (0 : ℝ) 1) ≤ M.mixingMeasure Set.univ :=
-        measure_mono (Set.subset_univ _)
-      have huniv : M.mixingMeasure Set.univ = 1 := by
-        simp
-      -- `μ(Icc) ≤ 1 < ∞`.
-      exact ne_of_lt (lt_of_le_of_lt (hle.trans_eq huniv) (by simp))
-    have hmeas :
-        AEStronglyMeasurable (fun t : ℝ => bernoulliProductPMF t xs) M.mixingMeasure :=
-      hcont.measurable.aestronglyMeasurable
-    have hbound :
-        ∀ᵐ t ∂(M.mixingMeasure.restrict (Set.Icc (0 : ℝ) 1)),
-          ‖bernoulliProductPMF t xs‖ ≤ (1 : ℝ) := by
-      -- On `[0,1]` each factor is in `[0,1]`, so the product is in `[0,1]`.
-      refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Icc ?_
-      intro t ht
-      have ht0 : (0 : ℝ) ≤ t := ht.1
-      have ht1 : t ≤ 1 := ht.2
-      have h1t : 0 ≤ 1 - t := sub_nonneg.2 ht1
-      have hpow1 : t ^ (countTrue xs) ≤ 1 := by
-        exact pow_le_one₀ (n := countTrue xs) ht0 ht1
-      have hpow2 : (1 - t) ^ (countFalse xs) ≤ 1 := by
-        have hle : 1 - t ≤ 1 := by linarith
-        exact pow_le_one₀ (n := countFalse xs) h1t hle
-      have hnonneg1 : 0 ≤ t ^ (countTrue xs) := pow_nonneg ht0 _
-      have hnonneg2 : 0 ≤ (1 - t) ^ (countFalse xs) := pow_nonneg h1t _
-      have hnonneg : 0 ≤ t ^ (countTrue xs) * (1 - t) ^ (countFalse xs) :=
-        mul_nonneg hnonneg1 hnonneg2
-      have hle1 : t ^ (countTrue xs) * (1 - t) ^ (countFalse xs) ≤ 1 := by
-        -- Multiply the `≤ 1` bounds.
-        have := mul_le_mul hpow1 hpow2 hnonneg2 (by linarith)
-        simpa [one_mul] using this
-      have habs : ‖t ^ (countTrue xs) * (1 - t) ^ (countFalse xs)‖ ≤ (1 : ℝ) := by
-        simpa [Real.norm_of_nonneg hnonneg] using hle1
-      simpa [bernoulliProductPMF_eq_power] using habs
-    -- Now apply the bounded-integrable lemma.
-    have hIntOn :
-        IntegrableOn (fun t : ℝ => bernoulliProductPMF t xs) (Set.Icc (0 : ℝ) 1) M.mixingMeasure :=
-      (Measure.integrableOn_of_bounded (μ := M.mixingMeasure) (s := Set.Icc (0 : ℝ) 1)
-        hs_finite hmeas (M := (1 : ℝ)) hbound)
-    simpa [IntegrableOn]
-  have hnonneg :
-      (0 : ℝ → ℝ) ≤ᵐ[(M.mixingMeasure.restrict (Set.Icc (0 : ℝ) 1))]
-        (fun t : ℝ => bernoulliProductPMF t xs) := by
-    -- On `Icc 0 1`, `bernoulliProductPMF` is nonnegative.
-    refine (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Icc ?_)
-    intro t ht
-    -- Use the closed form and nonnegativity of factors.
-    have ht0 : 0 ≤ t := ht.1
-    have ht1 : t ≤ 1 := ht.2
-    have h1t : 0 ≤ 1 - t := sub_nonneg.2 ht1
-    -- Powers of nonneg are nonneg.
-    have : 0 ≤ t ^ (countTrue xs) * (1 - t) ^ (countFalse xs) := by
-      exact mul_nonneg (pow_nonneg ht0 _) (pow_nonneg h1t _)
-    simpa [bernoulliProductPMF_eq_power] using this
+    unfold bernoulliProductPMF
+    refine continuous_finsetProd _ fun i _ => ?_
+    cases xs i <;> simp only [bernoulliPMF, Bool.false_eq_true, ↓reduceIte] <;> fun_prop
+  have hbounds : ∀ᵐ t ∂M.mixingMeasure.restrict (Set.Icc 0 1),
+      bernoulliProductPMF t xs ∈ Set.Icc 0 1 :=
+    ae_restrict_of_forall_mem measurableSet_Icc fun t ht => bernoulliProduct_bounds ⟨t, ht⟩ xs
+  have hint := (memLp_of_bounded hbounds
+    hcont.measurable.aestronglyMeasurable 1).integrable (by simp)
+  have hnonneg := hbounds.mono fun _ ht => ht.1
   have hconv :
       ∫⁻ t in Set.Icc (0 : ℝ) 1, ENNReal.ofReal (bernoulliProductPMF t xs) ∂M.mixingMeasure =
         ENNReal.ofReal (∫ t in Set.Icc (0 : ℝ) 1, bernoulliProductPMF t xs ∂M.mixingMeasure) := by
@@ -644,19 +420,9 @@ product factor is nonnegative. -/
 theorem bernoulliMixture_prob_nonneg
     (M : BernoulliMixture) (n : ℕ) (xs : Fin n → Bool) :
     0 ≤ M.prob xs := by
-  unfold BernoulliMixture.prob
-  have hnonneg :
-      (0 : ℝ → ℝ) ≤ᵐ[(M.mixingMeasure.restrict (Set.Icc (0 : ℝ) 1))]
-        (fun t : ℝ => bernoulliProductPMF t xs) := by
-    refine (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Icc ?_)
-    intro t ht
-    have ht0 : 0 ≤ t := ht.1
-    have ht1 : t ≤ 1 := ht.2
-    have h1t : 0 ≤ 1 - t := sub_nonneg.2 ht1
-    have : 0 ≤ t ^ (countTrue xs) * (1 - t) ^ (countFalse xs) := by
-      exact mul_nonneg (pow_nonneg ht0 _) (pow_nonneg h1t _)
-    simpa [bernoulliProductPMF_eq_power] using this
-  exact integral_nonneg_of_ae hnonneg
+  apply integral_nonneg_of_ae
+  exact ae_restrict_of_forall_mem measurableSet_Icc fun t ht =>
+    (bernoulliProduct_bounds ⟨t, ht⟩ xs).1
 
 /-- Bernoulli-mixture finite-prefix probabilities sum to one.  This packages
 the finite product normalization from `pmf`/`sum_weight_eq_one` through
@@ -666,34 +432,118 @@ theorem bernoulliMixture_prob_total
     (M : BernoulliMixture) (n : ℕ) :
     ∑ xs : (Fin n → Bool), M.prob xs = 1 := by
   classical
-  let ν : Measure (Fin n → Bool) := ParametrizedDistribution.flatten (pd M n)
-  have hνuniv : ν Set.univ = 1 := by
-    have : IsProbabilityMeasure ν := by
-      dsimp [ν]
-      infer_instance
-    simp
-  have hsumMass :
-      ν Set.univ = ∑ xs : (Fin n → Bool), ν ({xs} : Set (Fin n → Bool)) :=
-    finiteMeasure_univ_eq_sum_singletons ν
-  have hsumENN : ∑ xs : (Fin n → Bool), ENNReal.ofReal (M.prob xs) = 1 := by
-    calc
-      ∑ xs : (Fin n → Bool), ENNReal.ofReal (M.prob xs)
-          = ∑ xs : (Fin n → Bool), ν ({xs} : Set (Fin n → Bool)) := by
-            apply Finset.sum_congr rfl
-            intro xs _hxs
-            exact (flatten_apply_singleton M n xs).symm
-      _ = ν Set.univ := hsumMass.symm
-      _ = 1 := hνuniv
-  have hOfRealSum :
-      ENNReal.ofReal (∑ xs : (Fin n → Bool), M.prob xs) = 1 := by
-    rw [ENNReal.ofReal_sum_of_nonneg]
-    · exact hsumENN
-    · intro xs _hxs
-      exact bernoulliMixture_prob_nonneg M n xs
-  have hsumNonneg : 0 ≤ ∑ xs : (Fin n → Bool), M.prob xs := by
-    exact Finset.sum_nonneg fun xs _hxs => bernoulliMixture_prob_nonneg M n xs
-  have hReal := congrArg ENNReal.toReal hOfRealSum
-  simpa [ENNReal.toReal_ofReal hsumNonneg] using hReal
+  have hnonneg := fun xs : Fin n → Bool => bernoulliMixture_prob_nonneg M n xs
+  have hsum : (∑ xs : Fin n → Bool, ENNReal.ofReal (M.prob xs)) = 1 := by
+    simp_rw [← flatten_apply_singleton M n]
+    rw [← finiteMeasure_univ_eq_sum_singletons]
+    exact measure_univ
+  rw [← ENNReal.ofReal_sum_of_nonneg (fun xs _ => hnonneg xs)] at hsum
+  simpa [ENNReal.toReal_ofReal (Finset.sum_nonneg (fun xs _ => hnonneg xs))] using
+    congrArg ENNReal.toReal hsum
+
+/-! ## One-step observations do not determine shared-parameter executions -/
+
+open ParametrizedDistribution
+open scoped _root_.ProbabilityTheory
+
+/-- The original length-one Bernoulli kernel, observed at its only coordinate. -/
+def oneStepKernel : _root_.ProbabilityTheory.Kernel Theta Bool :=
+  (kernel 1).map (fun xs => xs 0)
+
+instance oneStepKernel_isMarkov : _root_.ProbabilityTheory.IsMarkovKernel oneStepKernel :=
+  _root_.ProbabilityTheory.Kernel.IsMarkovKernel.map _ (measurable_pi_apply 0)
+
+@[simp] theorem oneStepKernel_singleton (θ : Theta) (b : Bool) :
+    oneStepKernel θ {b} = ENNReal.ofReal (bernoulliPMF (θ : ℝ) b) := by
+  rw [oneStepKernel, _root_.ProbabilityTheory.Kernel.map_apply' _ (measurable_pi_apply 0) _
+    (measurableSet_singleton b)]
+  have hp : (fun xs : Fin 1 → Bool => xs 0) ⁻¹' {b} = {fun _ => b} := by
+    ext xs
+    exact ⟨fun h => funext fun i => (congrArg xs (Subsingleton.elim i 0)).trans h,
+      fun h => congrFun h 0⟩
+  rw [hp]
+  simp [kernel, weight, bernoulliProductPMF]
+
+def half : Theta := ⟨1 / 2, by norm_num⟩
+def zero : Theta := ⟨0, by norm_num⟩
+def one : Theta := ⟨1, by norm_num⟩
+
+/-- A fresh fair coin versus a persistent choice of a deterministic coin. -/
+def endpointMixing : Measure Theta :=
+  (1 / 2 : ℝ≥0∞) • Measure.dirac zero + (1 / 2 : ℝ≥0∞) • Measure.dirac one
+
+instance endpointMixing_isProbability : IsProbabilityMeasure endpointMixing := by
+  constructor
+  norm_num [endpointMixing, ENNReal.inv_two_add_inv_two]
+
+def coinExperiment (μ : Measure Theta) [IsProbabilityMeasure μ] :
+    ParametrizedDistribution Theta Bool := ⟨oneStepKernel, inferInstance, μ, inferInstance⟩
+
+theorem same_oneStep_marginal :
+    flatten (coinExperiment (Measure.dirac half)) = flatten (coinExperiment endpointMixing) := by
+  apply Measure.ext_of_singleton
+  intro b
+  rw [flatten_apply _ _ (measurableSet_singleton b),
+    flatten_apply _ _ (measurableSet_singleton b)]
+  simp only [coinExperiment, oneStepKernel_singleton]
+  cases b <;> norm_num [endpointMixing, lintegral_add_measure, lintegral_smul_measure,
+    lintegral_dirac', bernoulliPMF, half, zero, one, ENNReal.ofReal_div_of_pos]
+
+theorem fixed_half_shared_eq_fresh :
+    sharedPair (coinExperiment (Measure.dirac half)) =
+      freshPair (coinExperiment (Measure.dirac half)) := by
+  change (Measure.dirac half).bind (oneStepKernel ×ₖ oneStepKernel) =
+    ((Measure.dirac half).bind oneStepKernel).prod ((Measure.dirac half).bind oneStepKernel)
+  rw [Measure.dirac_bind (oneStepKernel ×ₖ oneStepKernel).measurable,
+    Measure.dirac_bind oneStepKernel.measurable, _root_.ProbabilityTheory.Kernel.prod_apply]
+
+theorem half_pair_probability :
+    freshPair (coinExperiment (Measure.dirac half)) ({true} ×ˢ {true}) = 1 / 4 := by
+  rw [freshPair_apply_prod, flatten_apply _ _ (measurableSet_singleton true)]
+  norm_num [coinExperiment, oneStepKernel_singleton, bernoulliPMF, half, lintegral_dirac', ENNReal.ofReal_div_of_pos, ← ENNReal.mul_inv]
+
+theorem endpoint_shared_true_true :
+    sharedPair (coinExperiment endpointMixing) ({true} ×ˢ {true}) = 1 / 2 := by
+  rw [sharedPair_apply_prod _ (measurableSet_singleton true) (measurableSet_singleton true)]
+  norm_num [coinExperiment, oneStepKernel_singleton, endpointMixing,
+    lintegral_add_measure, lintegral_smul_measure, lintegral_dirac', bernoulliPMF, zero, one]
+
+theorem endpoint_fresh_true_true :
+    freshPair (coinExperiment endpointMixing) ({true} ×ˢ {true}) = 1 / 4 := by
+  rw [freshPair, ← same_oneStep_marginal]
+  exact half_pair_probability
+
+theorem endpoint_shared_true_false :
+    sharedPair (coinExperiment endpointMixing) ({true} ×ˢ {false}) = 0 := by
+  rw [sharedPair_apply_prod _ (measurableSet_singleton true) (measurableSet_singleton false)]
+  norm_num [coinExperiment, oneStepKernel_singleton, endpointMixing,
+    lintegral_add_measure, lintegral_smul_measure, lintegral_dirac', bernoulliPMF, zero, one]
+
+theorem endpoint_fresh_true_false :
+    freshPair (coinExperiment endpointMixing) ({true} ×ˢ {false}) = 1 / 4 := by
+  rw [freshPair_apply_prod, ← same_oneStep_marginal,
+    flatten_apply _ _ (measurableSet_singleton true),
+    flatten_apply _ _ (measurableSet_singleton false)]
+  norm_num [coinExperiment, oneStepKernel_singleton, bernoulliPMF, half, lintegral_dirac', ENNReal.ofReal_div_of_pos, ← ENNReal.mul_inv]
+
+/-- The same marginal can come from different shared-parameter execution laws. -/
+theorem same_marginal_distinct_shared :
+    sharedPair (coinExperiment (Measure.dirac half)) ≠ sharedPair (coinExperiment endpointMixing) := by
+  intro h
+  have he := congrArg (fun ν : Measure (Bool × Bool) => ν ({true} ×ˢ {true})) h
+  rw [fixed_half_shared_eq_fresh, half_pair_probability, endpoint_shared_true_true] at he
+  norm_num at he
+
+/-- Pulling an unsupported law back to the parameter interval loses all its mass. -/
+theorem unsupported_pullback_zero :
+    (Measure.dirac (2 : ℝ)).comap (Subtype.val : Theta → ℝ) = 0 := by
+  apply (MeasurableEmbedding.subtype_coe measurableSet_Icc).map_injective
+  rw [(MeasurableEmbedding.subtype_coe measurableSet_Icc).map_comap, Measure.map_zero,
+    Subtype.range_val, restrict_dirac]
+  norm_num
+
+theorem zero_length_normalized (θ : Theta) : weight (n := 0) θ Fin.elim0 = 1 := by
+  simp [weight, bernoulliProductPMF]
 
 end DeFinettiConnection
 

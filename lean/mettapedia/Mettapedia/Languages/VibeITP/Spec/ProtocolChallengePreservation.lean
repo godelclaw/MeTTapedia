@@ -158,10 +158,11 @@ theorem closed_tracked_is_satisfied {state : State} {goal : Term} (accounted : A
   · rw [no_open_slots accounted closed slot] at pending
     cases pending
 
-theorem closed_tracked_is_derived {state : ObservedState} {goal : Term}
-    (invariant : LogicalInvariant state) (accounted : Accounting state.kernel)
+theorem closed_tracked_is_derived {D : Theory → List ExecutionObservation → Term → Prop}
+    {state : ObservedState} {goal : Term}
+    (invariant : LogicalInvariantFor D state) (accounted : Accounting state.kernel)
     (closed : state.kernel.openChallenges = 0) (tracked : Tracked state.kernel goal) :
-    DerivesWithExecution state.kernel.theory state.observations goal :=
+    D state.kernel.theory state.observations goal :=
   invariant.satisfied goal (closed_tracked_is_satisfied accounted closed tracked)
 
 end Mettapedia.Languages.VibeITP.Spec.ProtocolChallengePreservation

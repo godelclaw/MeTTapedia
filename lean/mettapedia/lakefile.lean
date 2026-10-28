@@ -61,6 +61,29 @@ input_dir primeMotivationSources where
 
 @[default_target] lean_lib Mettapedia
 
+/-- Maintained logic-programming theory and executable graph-runtime modules. -/
+lean_lib LogicProgrammingTheory where
+  roots := #[`Mettapedia.Logic.LP, `Mettapedia.Logic.Prolog]
+  globs := #[Glob.one `Mettapedia.Logic.LP, Glob.one `Mettapedia.Logic.Prolog,
+    Glob.submodules `Mettapedia.Logic.LP,
+    Glob.submodules `Mettapedia.Logic.Prolog]
+
+/-- The versioned PeTTa model, its independent specifications and local proofs. -/
+lean_lib PLeaTTaTheory where
+  roots := #[`Mettapedia.Languages.MeTTa.PLeaTTa]
+  globs := #[Glob.one `Mettapedia.Languages.MeTTa.PLeaTTa,
+    Glob.submodules `Mettapedia.Languages.MeTTa.PLeaTTa]
+
+/-- The standalone attention-budget models use this package's existing cache. -/
+lean_lib AttentionEconomyTheory where
+  srcDir := "../pettaclaw"
+  roots := #[`StiMass, `StiFloor, `StiFloorDecay]
+
+/-- Generic coloring curriculum and compositional algebra in the companion source tree. -/
+lean_lib FourColorCore where
+  srcDir := "../fourcolor"
+  roots := #[`FourColor, `FourColor.IntegrationCore]
+
 /- The exact maintained roots of the compositional abstract-machine
 qualification. This target is deliberately narrower than the aggregate library
 and does not pull optional implementation studies into the AM proof boundary. -/
@@ -100,8 +123,14 @@ meta if leattaIntegrationEnabled then
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaFresheningCorrespondence,
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaPatternExecution,
     `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaProgramEnvironment,
+    `Mettapedia.GSLT.LanguageDef.LFCheckerSim,
     `Mettapedia.GSLT.LanguageDef.LFEngineProbe,
+    `Mettapedia.GSLT.LanguageDef.LFEngineReduce,
     `Mettapedia.GSLT.LanguageDef.MIEvalEncoding,
+    `Mettapedia.GSLT.LanguageDef.MIEvalHostingEmitter,
+    `Mettapedia.GSLT.LanguageDef.MIEvalHostingRevEmitter,
+    `Mettapedia.GSLT.ReproducibleBuild.LeaTTaReplayInstance,
+    `Mettapedia.Languages.MM0.Presentation.ScopedServiceCorrespondence,
     `Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.LeaTTaDIndGEvaluator,
     `Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge,
     `Mettapedia.Languages.MeTTa.HE.EquationScopeControls,
@@ -150,13 +179,21 @@ lean_lib PrimeMotivationQuotation where
   needs := #[`@/primeMotivationSources]
 
 input_dir holLightMeTTaSources where
-  path := "../../../hyperon/cetta-prime-2.0-draft-20260910/lib/hol_light"
+  path := "../../metta/hol_light"
   text := true
   filter := .extension "metta"
 
 lean_lib HOLLightMeTTaQuotation where
   roots := #[`Mettapedia.Languages.HOLLight.MeTTa.Program]
   needs := #[`@/holLightMeTTaSources]
+
+input_file pettaBoundCallsSource where
+  path := "../../metta/fixtures/petta_bound_calls.metta"
+  text := false
+
+lean_lib PeTTaBoundCallQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.BoundCallControls]
+  needs := #[`@/pettaBoundCallsSource]
 
 -- The GSLT execution library lives beside these proofs in `metta/gslt/lib`.
 -- Every quoted file is an input of the module that quotes it.
@@ -301,14 +338,91 @@ input_file gsltModuleSource where
   path := "../../metta/gslt/lib/gslt_module.metta"
   text := false
 
-input_dir gsltSouffleDatalogModuleSources where
-  path := "../../metta/gslt/module/gold/SouffleDatalog"
-  text := true
-  filter := .extension "module"
+input_file gsltSouffleDatalogSyntaxSource where
+  path := "../../metta/gslt/module/gold/SouffleDatalog/Syntax.module"
+  text := false
+
+input_file gsltDatalogIRSource where
+  path := "../../metta/gslt/module/DatalogIR.module"
+  text := false
+
+lean_lib GSLTDatalogIRQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.DatalogIR]
+  needs := #[`@/gsltDatalogIRSource]
+
+input_file gsltDatalogIRLookupSource where
+  path := "../../metta/gslt/module/DatalogIRLookup.module"
+  text := false
+
+lean_lib GSLTDatalogIRLookupQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.DatalogIRLookup]
+  needs := #[`@/gsltDatalogIRSource, `@/gsltDatalogIRLookupSource]
+
+input_file gsltDatalogIRJoinSource where
+  path := "../../metta/gslt/module/DatalogIRJoin.module"
+  text := false
+
+lean_lib GSLTDatalogIRJoinQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.DatalogIRJoin]
+  needs := #[`@/gsltDatalogIRSource, `@/gsltDatalogIRLookupSource, `@/gsltDatalogIRJoinSource]
+
+input_file gsltDatalogIRQuerySource where
+  path := "../../metta/gslt/module/DatalogIRQuery.module"
+  text := false
+
+lean_lib GSLTDatalogIRQueryQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.DatalogIRQuery]
+  needs := #[`@/gsltDatalogIRSource, `@/gsltDatalogIRQuerySource]
+
+input_file gsltSnapshotClosureSource where
+  path := "../../metta/gslt/lib/gslt_snapshot_closure.metta"
+  text := false
+
+lean_lib GSLTSnapshotClosureQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.SnapshotClosureExecution]
+  needs := #[`@/gsltSnapshotClosureSource]
+
+input_file gsltSouffleDatalogCoreSource where
+  path := "../../metta/gslt/module/gold/SouffleDatalog/Core.module"
+  text := false
+
+input_file gsltSouffleDatalogKernelSource where
+  path := "../../metta/gslt/module/gold/SouffleDatalog/GroundKernel.module"
+  text := false
+
+input_file gsltSouffleDatalogLanguageSource where
+  path := "../../metta/gslt/module/gold/SouffleDatalog/Language.module"
+  text := false
+
+input_file gsltSouffleDatalogScalarSource where
+  path := "../../metta/gslt/module/gold/SouffleDatalog/ScalarRealization.module"
+  text := false
+
+input_file gsltSouffleDatalogProjectionSource where
+  path := "../../metta/gslt/module/gold/SouffleDatalog/ProgramProjection.module"
+  text := false
 
 lean_lib GSLTSouffleDatalogQuotation where
   roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.SouffleDatalog]
-  needs := #[`@/gsltSouffleDatalogModuleSources]
+  needs := #[`@/gsltSouffleDatalogSyntaxSource, `@/gsltSouffleDatalogCoreSource,
+    `@/gsltSouffleDatalogKernelSource, `@/gsltSouffleDatalogLanguageSource]
+
+input_file gsltRadix16ModuleSource where
+  path := "../../metta/gslt/module/Radix16.module"
+  text := false
+
+lean_lib GSLTRadix16Quotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.Radix16,
+    `Mettapedia.GSLT.LanguageDef.ModuleFormat.Radix16Scalar]
+  needs := #[`@/gsltRadix16ModuleSource]
+
+lean_lib GSLTSouffleDatalogScalarQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.SouffleDatalogScalars]
+  needs := #[`@/gsltSouffleDatalogScalarSource, `@/gsltRadix16ModuleSource]
+
+lean_lib GSLTSouffleDatalogProjectionQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleFormat.SouffleDatalogProgramProjection]
+  needs := #[`@/gsltSouffleDatalogProjectionSource]
 
 lean_lib GSLTModuleQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ModuleAssemblyExecution]

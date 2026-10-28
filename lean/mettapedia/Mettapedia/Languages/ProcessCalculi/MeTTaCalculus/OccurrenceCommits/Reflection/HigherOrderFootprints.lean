@@ -267,6 +267,13 @@ theorem complRegions_covered_from (sound : Matcher.Sound L m) {σ₀ σ : Subst 
           subst inS <;> exact region_covered_from sound keysSound grows inRegion
       · exact RegionKeys.CoveredBy.append_right
           (complRegions_covered_from sound keysSound grows inRest t inRegion)
+  | .absent query rest, r, member, t, inRegion => by
+      simp only [complRegions, List.mem_append] at member
+      rcases member with first | second
+      · exact RegionKeys.CoveredBy.append_left
+          (complRegions_covered_from sound keysSound grows first t inRegion)
+      · exact RegionKeys.CoveredBy.append_right
+          (complRegions_covered_from sound keysSound grows second t inRegion)
   | .every rest, r, member, t, inRegion =>
       complRegions_covered_from sound keysSound grows (src := rest) member t inRegion
 
@@ -294,6 +301,15 @@ theorem static_covers_from (sound : Matcher.Sound L m) {σ₀ : Subst V T}
       rw [footprintOf_cons]
       exact (within_stepRows_from sound keysSound grows inStep).add
         (static_covers_from sound keysSound (grows.trans (extends_of_mem_stepRows sound inStep)) inRest)
+  | .absent query rest, σ, x, grows, member => by
+      obtain ⟨_, y, inRest, rfl⟩ := mem_rows_absent.mp member
+      rw [footprintOf_cons, footprint_amalgam]
+      apply Within.add _ (static_covers_from sound keysSound grows inRest)
+      refine ⟨by simp [complQueries], by simp [complQueries], ?_, by simp [complQueries]⟩
+      intro r member t inRegion
+      simp only [complQueries, Multiset.mem_coe, List.mem_map] at member
+      obtain ⟨r', inRegions, rfl⟩ := member
+      exact complRegions_covered_from sound keysSound grows inRegions t inRegion
   | .every rest, σ, x, grows, member => by
       rw [rows_every, Multiset.mem_singleton] at member
       subst member

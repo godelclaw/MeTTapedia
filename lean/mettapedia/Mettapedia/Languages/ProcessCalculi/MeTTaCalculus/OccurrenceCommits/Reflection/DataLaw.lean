@@ -96,6 +96,7 @@ theorem static_makes {K : Type*} (R : RegionKeys T P K) (template : List P) :
   | .done => rfl
   | .cons s rest => by
       cases s <;> simp [SourceList.static, Source.static, static_makes R template rest]
+  | .absent query rest => by simp [SourceList.static, static_makes R template rest]
   | .every rest => by simp [SourceList.static, static_makes R template rest]
 
 variable {L : TermLayer V T P} {m : Matcher V T P} {label : O → T} {S : Finset O}

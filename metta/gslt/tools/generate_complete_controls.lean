@@ -5,6 +5,7 @@ Run from `lean/mettapedia`: `lake env lean ../../metta/gslt/tools/generate_compl
 -/
 import Mettapedia.OSLF.MeTTaIL.Complete.ClassesControls
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.StandardWire
 
 open Mettapedia.OSLF.MeTTaIL Syntax

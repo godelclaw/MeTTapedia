@@ -26,6 +26,7 @@ import Mettapedia.ProbabilityTheory.HiddenMarkovModels
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.CategoricalConnection
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.GiryMonad
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.KyburgFlattening
+import Mettapedia.ProbabilityTheory.HigherOrderProbability.LatentReuse
 import Mettapedia.ProbabilityTheory.ImpreciseProbability
 import Mettapedia.ProbabilityTheory.InformationGeometry
 import Mettapedia.ProbabilityTheory.Hypercube.Examples

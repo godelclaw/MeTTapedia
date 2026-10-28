@@ -43,6 +43,18 @@ theorem BChain.length_bound {U : ConditionalAlgorithm} {factor : ℝ}
   | nil source => simp
   | cons _ _ smaller _ _ ih => simp only [List.length_cons]; omega
 
+/-- Payload bits and one unit of strict saving per successful step are
+both paid from the original source. This bounds the complete scheme codec. -/
+theorem BChain.payload_bound {U : ConditionalAlgorithm} {factor : ℝ}
+    {source final : BinString} {features : List BinString}
+    (chain : BChain U factor source features final) :
+    (features.map List.length).sum + final.length + features.length ≤ source.length := by
+  induction chain with
+  | nil source => simp
+  | cons _ _ smaller _ _ ih =>
+      simp only [List.map_cons, List.sum_cons, List.length_cons]
+      omega
+
 /-- The input to the last step is nonempty even when its output is empty. -/
 theorem BChain.predecessor_geometric {U : ConditionalAlgorithm} {factor : ℝ}
     {source final : BinString} {features : List BinString}
@@ -80,6 +92,7 @@ theorem BChain.logarithmic_length {U : ConditionalAlgorithm} {factor : ℝ}
   linarith
 
 #print axioms BChain.residual_geometric
+#print axioms BChain.payload_bound
 #print axioms BChain.predecessor_geometric
 #print axioms BChain.logarithmic_length
 

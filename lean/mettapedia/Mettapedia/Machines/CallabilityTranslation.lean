@@ -65,6 +65,16 @@ mutual
 end
 
 mutual
+  /-- The names whose callability the source actually asks about. -/
+  def observedNames : Source Name Value → List Name
+    | .value _ => []
+    | .apply head arguments => head :: observedArgumentNames arguments
+  def observedArgumentNames : Arguments Name Value → List Name
+    | .nil => []
+    | .cons first rest => observedNames first ++ observedArgumentNames rest
+end
+
+mutual
   theorem query_compiles (available : Name → Bool) (source : Source Name Value) :
       (run available (query source)).answer = compile available source := by
     cases source with
@@ -80,6 +90,45 @@ mutual
     | cons first rest =>
         simp [queryArguments, run_bind, run, compileArguments,
           query_compiles, queryArguments_compile]
+end
+
+mutual
+  theorem query_reads (available : Name → Bool) (source : Source Name Value) :
+      (run available (query source)).reads =
+        (observedNames source).map (fun name => (name, available name)) := by
+    cases source with
+    | value payload => rfl
+    | apply head arguments =>
+        simp [query, run, run_bind, observedNames, queryArguments_reads]
+  theorem queryArguments_reads (available : Name → Bool) (arguments : Arguments Name Value) :
+      (run available (queryArguments arguments)).reads =
+        (observedArgumentNames arguments).map (fun name => (name, available name)) := by
+    cases arguments with
+    | nil => rfl
+    | cons first rest =>
+        simp [queryArguments, run_bind, run, observedArgumentNames,
+          query_reads, queryArguments_reads, List.map_append]
+end
+
+mutual
+  /-- Two translations are identical exactly when their answers agree on
+  every callability observation made by this source. -/
+  theorem compile_eq_iff_names (first second : Name → Bool) (source : Source Name Value) :
+      compile first source = compile second source ↔
+        ∀ name ∈ observedNames source, first name = second name := by
+    cases source with
+    | value payload => simp [compile, observedNames]
+    | apply head arguments =>
+        simp [compile, observedNames, compileArguments_eq_iff_names]
+  theorem compileArguments_eq_iff_names (first second : Name → Bool)
+      (arguments : Arguments Name Value) :
+      compileArguments first arguments = compileArguments second arguments ↔
+        ∀ name ∈ observedArgumentNames arguments, first name = second name := by
+    cases arguments with
+    | nil => simp [compileArguments, observedArgumentNames]
+    | cons firstArg rest =>
+        simp [compileArguments, observedArgumentNames, compile_eq_iff_names,
+          compileArguments_eq_iff_names, List.mem_append, or_imp, forall_and]
 end
 
 /-- The complete public value of a captured source translation. -/
@@ -116,6 +165,27 @@ theorem reuse_of_reads_agree (first second : Name → Bool) (source : Source Nam
   rw [← query_compiles second source]
   exact congrArg Observation.answer (run_eq_of_agrees first second (query source) agree)
 
+/-- Changes outside the names actually examined by a source preserve its
+complete translated tree. Repeated names remain repeated observations. -/
+theorem reuse_of_names_agree (first second : Name → Bool) (source : Source Name Value)
+    (agree : ∀ name ∈ observedNames source, second name = first name) :
+    compile second source = (capture first source).plan := by
+  apply reuse_of_reads_agree
+  intro read member
+  simp only [capture, query_reads, List.mem_map] at member
+  obtain ⟨name, present, rfl⟩ := member
+  exact agree name present
+
+/-- When either a wildcard or a named definition makes a head callable, the
+exact dependency is their disjunction at each observed head. -/
+theorem effective_callability_exact (wildFirst wildSecond : Bool)
+    (first second : Name → Bool) (source : Source Name Value) :
+    compile (fun name => wildFirst || first name) source =
+        compile (fun name => wildSecond || second name) source ↔
+      ∀ name ∈ observedNames source,
+        (wildFirst || first name) = (wildSecond || second name) :=
+  compile_eq_iff_names _ _ source
+
 theorem values_read_nothing (available : Name → Bool) (payload : Value) :
     (capture available (.value payload)).reads = [] := rfl
 
@@ -147,6 +217,31 @@ theorem retaining_stale_translation_changes_interpretation :
 theorem repeated_occurrences_are_read_in_order :
     (capture before (.apply 9 (.cons caller (.cons caller .nil)))).reads =
       [(9, false), (7, false), (7, false)] := rfl
+
+/-! A component revision can change even while the disjunction observed by a
+translation stays true. Conversely, equal endpoints do not describe the
+intervening history. These are different contracts. -/
+
+def switchingWitnesses : List (Bool × Bool) :=
+  [(true, true), (false, true), (true, true), (true, false)]
+
+/-- Neither underlying witness is stable, although their disjunction is
+continuously true. Requiring one fixed witness is sufficient but not exact. -/
+theorem switching_witnesses_remain_admitted :
+    switchingWitnesses.all (fun state => state.1 || state.2) = true ∧
+    switchingWitnesses.all (fun state => state.1) = false ∧
+    switchingWitnesses.all (fun state => state.2) = false := by
+  decide
+
+def effectiveABA : List (Bool × Bool) :=
+  [(false, false), (false, true), (false, false)]
+
+/-- The effective answer returns to its original value after an intervening
+change. Endpoint reuse of a pure translation does not certify that history. -/
+theorem equal_endpoints_do_not_certify_history :
+    effectiveABA.map (fun state => state.1 || state.2) = [false, true, false] ∧
+    checkReads before (capture before caller).reads = true := by
+  decide
 
 end Controls
 end Mettapedia.Machines.CallabilityTranslation

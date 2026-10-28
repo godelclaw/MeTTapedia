@@ -19,6 +19,9 @@ row once.
   suffix's linear rows (`Transversal`): one representative of each model-level row, every such row
   represented, none twice. Rows are compared modulo `E` (`RowEquiv`): `E`-equivalent
   substitutions, the same picks, made labels related by `E`.
+* Absence of a source query means that no declarative inner row exists. It keeps
+  the complete observation footprint and passes the original bindings to its
+  continuation. Nested absence uses the same rule.
 
 ## Agreement (`agreement`)
 
@@ -261,6 +264,7 @@ noncomputable def Source.semRegions : Source V T P → Subst V T → List (T →
 noncomputable def semComplRegions : SourceList V T P → Subst V T → List (T → Bool)
   | .done, _ => []
   | .cons s rest, σ => s.semRegions L σ ++ semComplRegions rest σ
+  | .absent query rest, σ => semComplRegions query σ ++ semComplRegions rest σ
   | .every rest, σ => semComplRegions rest σ
 
 /-- **A transversal** of a set of rows: its linear rows, each model-level row once. -/
@@ -276,6 +280,9 @@ noncomputable def DRow (template : List P) :
   | .done, σ, x => ∃ labels, instTemplate L σ template = some labels ∧ x = (σ, [.make labels])
   | .cons s rest, σ, x =>
       ∃ y z, DStep L label S s σ y ∧ DRow template rest y.1 z ∧ x = (z.1, y.2 :: z.2)
+  | .absent query rest, σ, x =>
+      (¬ ∃ y, DRow [] query σ y) ∧ ∃ y, DRow template rest σ y ∧
+        x = (y.1, .amalgam (complQueries label S (semComplRegions L query σ)) :: y.2)
   | .every rest, σ, x =>
       ∃ exts, Transversal L (DRow template rest σ) exts ∧
         x = (σ, [.amalgam ((exts.map fun y => footprintOf y.2).sum +
@@ -290,6 +297,7 @@ def SourceList.lets : SourceList V T P → List (Subst V T → List T)
   | .done => []
   | .cons (.letBind _ eval) rest => eval :: rest.lets
   | .cons _ rest => rest.lets
+  | .absent query rest => query.lets ++ rest.lets
   | .every rest => rest.lets
 
 end Declarative
@@ -322,6 +330,9 @@ theorem complRegions_eq_sem (sound : Matcher.Sound L m) (complete : Matcher.Comp
       simp only [complRegions, semComplRegions]
       rw [complRegions_eq_sem sound complete rest σ]
       cases s <;> simp [Source.regions, Source.semRegions, region_eq_semRegion sound complete]
+  | .absent query rest, σ => by
+      simp only [complRegions, semComplRegions,
+        complRegions_eq_sem sound complete query σ, complRegions_eq_sem sound complete rest σ]
   | .every rest, σ => complRegions_eq_sem sound complete rest σ
 
 theorem semComplRegions_congr {σ σ' : Subst V T} (same : SubstEquiv L.E σ σ') :
@@ -331,6 +342,8 @@ theorem semComplRegions_congr {σ σ' : Subst V T} (same : SubstEquiv L.E σ σ'
       simp only [semComplRegions]
       rw [semComplRegions_congr same rest]
       cases s <;> simp [Source.semRegions, semRegion_congr same]
+  | .absent query rest => by
+      simp only [semComplRegions, semComplRegions_congr same query, semComplRegions_congr same rest]
   | .every rest => semComplRegions_congr same rest
 
 end Regions
@@ -570,6 +583,9 @@ theorem extends_of_mem_rows (sound : Matcher.Sound L m) :
   | .cons s rest, σ, x, member => by
       obtain ⟨y, inStep, z, inRest, rfl⟩ := mem_rows_cons.mp member
       exact (extends_of_mem_stepRows sound inStep).trans (extends_of_mem_rows (x := z) sound inRest)
+  | .absent query rest, σ, x, member => by
+      obtain ⟨_, y, inRest, rfl⟩ := mem_rows_absent.mp member
+      exact extends_of_mem_rows (x := y) sound inRest
   | .every rest, σ, x, member => by
       rw [rows_every, Multiset.mem_singleton] at member
       subst member
@@ -642,14 +658,15 @@ theorem substEquiv_of_rows {s : Source V T P} {σ : Subst V T} {y y' : Subst V T
 /-- **Agreement.** For a sound, complete and minimal matcher, and `let` computations that respect
 the theory, the computed rows are declarative rows, every declarative row from an `E`-equivalent
 start is equivalent to a computed one, and no two computed rows are equivalent. -/
-theorem agreement (sound : Matcher.Sound L m) (complete : Matcher.Complete L m)
+theorem agreementFor (sound : Matcher.Sound L m) (complete : Matcher.Complete L m)
     (minimal : Matcher.Minimal L m) :
-    ∀ (src : SourceList V T P), (∀ eval ∈ src.lets, Respects L eval) → ∀ σ : Subst V T,
+    ∀ (src : SourceList V T P) (template : List P),
+      (∀ eval ∈ src.lets, Respects L eval) → ∀ σ : Subst V T,
       (∀ x ∈ rows L m label S template src σ, DRow L label S template src σ x) ∧
       (∀ σ', SubstEquiv L.E σ σ' → ∀ y, DRow L label S template src σ' y →
         ∃ x ∈ rows L m label S template src σ, RowEquiv L x y) ∧
       ((rows L m label S template src σ).map (Quotient.mk (rowSetoid L))).Nodup
-  | .done, _, σ => by
+  | .done, template, _, σ => by
       refine ⟨fun x member => ?_, fun σ' same y declared => ?_, ?_⟩
       · rw [rows_done] at member
         split at member
@@ -670,9 +687,9 @@ theorem agreement (sound : Matcher.Sound L m) (complete : Matcher.Complete L m)
           exact Multiset.mem_singleton_self _
       · rw [rows_done]
         split <;> simp
-  | .cons s rest, respects, σ => by
+  | .cons s rest, template, respects, σ => by
       obtain ⟨respectsS, respectsRest⟩ := lets_cons respects
-      have ih := agreement sound complete minimal rest respectsRest
+      have ih := agreementFor sound complete minimal rest template respectsRest
       refine ⟨fun x member => ?_, fun σ' same y declared => ?_, ?_⟩
       · obtain ⟨y, inStep, z, inRest, rfl⟩ := mem_rows_cons.mp member
         exact ⟨y, z, dStep_of_mem_stepRows sound complete inStep, (ih y.1).1 z inRest, rfl⟩
@@ -699,8 +716,45 @@ theorem agreement (sound : Matcher.Sound L m) (complete : Matcher.Complete L m)
           have stepEq : StepEquiv L y' y := ⟨substEquiv_of_rows sound inY' inY
             (extends_of_mem_rows sound inZ') (extends_of_mem_rows sound inZ) equiv.1, pickSame⟩
           exact (Multiset.inj_on_of_nodup_map stepNodup y' inY' y inY (Quotient.sound stepEq)).symm
-  | .every rest, respects, σ => by
-      have ih := agreement sound complete minimal rest respects
+  | .absent query rest, template, respects, σ => by
+      have queryRespects : ∀ eval ∈ query.lets, Respects L eval :=
+        fun eval member => respects eval (by simp [SourceList.lets, member])
+      have restRespects : ∀ eval ∈ rest.lets, Respects L eval :=
+        fun eval member => respects eval (by simp [SourceList.lets, member])
+      have iq := agreementFor sound complete minimal query [] queryRespects
+      have ir := agreementFor sound complete minimal rest template restRespects
+      refine ⟨fun x member => ?_, fun σ' same y declared => ?_, ?_⟩
+      · obtain ⟨empty, y, inRest, rfl⟩ := mem_rows_absent.mp member
+        refine ⟨?_, y, (ir σ).1 y inRest, ?_⟩
+        · rintro ⟨z, row⟩
+          obtain ⟨z', member, _⟩ := (iq σ).2.1 σ (SubstEquiv.refl L.equivalence σ) z row
+          simp [empty] at member
+        · rw [complRegions_eq_sem sound complete]
+      · obtain ⟨absent, y', restRow, rfl⟩ := declared
+        obtain ⟨x', inRest, equiv⟩ := (ir σ).2.1 σ' same y' restRow
+        have empty : rows L m label S [] query σ = 0 := by
+          apply Multiset.eq_zero_of_forall_notMem
+          intro z member
+          obtain ⟨z', inOther, _⟩ := (iq σ').2.1 σ (SubstEquiv.symm L.equivalence same)
+            z ((iq σ).1 z member)
+          exact absent ⟨z', (iq σ').1 z' inOther⟩
+        refine ⟨(x'.1, .amalgam (complQueries label S (complRegions m query σ)) :: x'.2),
+          mem_rows_absent.mpr ⟨empty, x', inRest, rfl⟩, equiv.1, ?_⟩
+        apply List.Forall₂.cons _ equiv.2
+        rw [complRegions_eq_sem sound complete, semComplRegions_congr same]
+        exact (pickEquiv_equivalence L).refl _
+      · simp only [rows]
+        split
+        · simp only [Multiset.map_map]
+          have restNodup := (ir σ).2.2
+          refine Multiset.Nodup.map_on (fun z inZ z' inZ' same => ?_)
+            (Multiset.Nodup.of_map _ restNodup)
+          have equiv := rowEquiv_of_mk_eq same
+          exact Multiset.inj_on_of_nodup_map restNodup z inZ z' inZ'
+            (mk_eq_of_rowEquiv ⟨equiv.1, (List.forall₂_cons.mp equiv.2).2⟩)
+        · simp
+  | .every rest, template, respects, σ => by
+      have ih := agreementFor sound complete minimal rest template respects
       have filteredNodup : ∀ τ : Subst V T,
           (((rows L m label S template rest τ).filter fun y => (footprintOf y.2).Linear).map
             (Quotient.mk (rowSetoid L))).Nodup := fun τ =>
@@ -750,6 +804,16 @@ theorem agreement (sound : Matcher.Sound L m) (complete : Matcher.Complete L m)
         exact sum_equiv_of_rel rel fun a b equiv => footprintOf_equiv equiv.2
       · rw [rows_every]
         simp
+
+/-- Source agreement for the selected output template. -/
+theorem agreement (sound : Matcher.Sound L m) (complete : Matcher.Complete L m)
+    (minimal : Matcher.Minimal L m) (src : SourceList V T P)
+    (respects : ∀ eval ∈ src.lets, Respects L eval) (σ : Subst V T) :
+    (∀ x ∈ rows L m label S template src σ, DRow L label S template src σ x) ∧
+      (∀ σ', SubstEquiv L.E σ σ' → ∀ y, DRow L label S template src σ' y →
+        ∃ x ∈ rows L m label S template src σ, RowEquiv L x y) ∧
+      ((rows L m label S template src σ).map (Quotient.mk (rowSetoid L))).Nodup :=
+  agreementFor sound complete minimal src template respects σ
 
 /-- **The `every` footprint is the declarative one**, up to the theory on what it makes: for any
 transversal of the suffix's declarative rows. -/

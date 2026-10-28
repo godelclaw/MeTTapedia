@@ -19,6 +19,8 @@ transform and a store into the ground commits of `Commits`, through a matcher (`
   bag of its labels is folded into one value, which the pattern `q` matches.
 * `let p eval` (`letBind`): a computed value matched by `p`; no footprint.
 * conjunction: sources in sequence, bindings flowing left to right (`SourceList.cons`).
+* absence of sources (`SourceList.absent`): the complete inner query has no row;
+  retain its completeness observations and continue without its local bindings.
 * `every rest`: from here on, every row fires in one commit (`SourceList.every`).
 
 ## Rows and footprints
@@ -111,6 +113,8 @@ inductive Source (V : Type uV) (T : Type uT) (P : Type uP) where
 inductive SourceList (V : Type uV) (T : Type uT) (P : Type uP) where
   | done
   | cons (s : Source V T P) (rest : SourceList V T P)
+  /-- Continue with the original bindings only if the complete inner query has no row. -/
+  | absent (query rest : SourceList V T P)
   /-- From here on, every row fires in one commit. -/
   | every (rest : SourceList V T P)
 
@@ -302,6 +306,7 @@ the substitution at its start. -/
 def complRegions (m : Matcher V T P) : SourceList V T P → Subst V T → List (T → Bool)
   | .done, _ => []
   | .cons s rest, σ => s.regions m σ ++ complRegions m rest σ
+  | .absent query rest, σ => complRegions m query σ ++ complRegions m rest σ
   | .every rest, σ => complRegions m rest σ
 
 /-- The completeness queries at a store: each completeness region, with what the store has there. -/
@@ -321,6 +326,11 @@ def rows (template : List P) : SourceList V T P → Subst V T → Multiset (Subs
   | .cons s rest, σ =>
       (stepRows m label S s σ).bind fun x =>
         (rows template rest x.1).map fun y => (y.1, x.2 :: y.2)
+  | .absent query rest, σ =>
+      if (rows [] query σ).card = 0 then
+        (rows template rest σ).map fun y =>
+          (y.1, .amalgam (complQueries label S (complRegions m query σ)) :: y.2)
+      else 0
   | .every rest, σ =>
       {(σ, [.amalgam
         ((((rows template rest σ).filter fun y => (footprintOf y.2).Linear).map
@@ -499,6 +509,23 @@ theorem mem_rows_cons {template : List P} {s : Source V T P} {rest : SourceList 
   · rintro ⟨y, inStep, z, inRest, rfl⟩
     exact ⟨y, inStep, z, inRest, rfl⟩
 
+theorem mem_rows_absent {template : List P} {query rest : SourceList V T P}
+    {σ : Subst V T} {x : Subst V T × List (Pick O T)} :
+    x ∈ rows L m label S template (.absent query rest) σ ↔
+      rows L m label S [] query σ = 0 ∧
+        ∃ y ∈ rows L m label S template rest σ,
+          x = (y.1, .amalgam (complQueries label S (complRegions m query σ)) :: y.2) := by
+  simp only [rows]
+  split
+  · rename_i empty
+    simp only [Multiset.card_eq_zero.mp empty, true_and, Multiset.mem_map]
+    constructor <;> rintro ⟨y, member, same⟩ <;> exact ⟨y, member, same.symm⟩
+  · rename_i nonempty
+    have nonzero : rows L m label S [] query σ ≠ 0 := by
+      intro empty
+      exact nonempty (by rw [empty]; rfl)
+    simp only [Multiset.notMem_zero, nonzero, false_and]
+
 /-- The footprint of an `every` row. -/
 def everyFootprint (L : TermLayer V T P) (m : Matcher V T P) (label : O → T) (S : Finset O)
     (template : List P) (rest : SourceList V T P) (σ : Subst V T) : Footprint O T :=
@@ -607,6 +634,10 @@ theorem holds_of_mem_rows {template : List P} :
       obtain ⟨y, inStep, z, inRest, rfl⟩ := mem_rows_cons.mp member
       rw [footprintOf_cons, Footprint.holds_add]
       exact ⟨holds_of_mem_stepRows inStep, holds_of_mem_rows inRest⟩
+  | .absent query rest, σ, x, member => by
+      obtain ⟨_, y, inRest, rfl⟩ := mem_rows_absent.mp member
+      rw [footprintOf_cons, footprint_amalgam, Footprint.holds_add]
+      exact ⟨complQueries_holds _, holds_of_mem_rows inRest⟩
   | .every rest, σ, x, member => by
       rw [rows_every, Multiset.mem_singleton] at member
       subst member
@@ -768,6 +799,14 @@ theorem complRegions_dominated (monotone : Matcher.RegionMonotone m) :
         exact ⟨r', by simp [complRegions, member'], sub⟩
       · obtain ⟨r', member', sub⟩ := complRegions_dominated monotone (src := rest) grows r inRest
         exact ⟨r', by simp [complRegions, member'], sub⟩
+  | .absent query rest, σ, τ, grows => by
+      intro r member
+      simp only [complRegions, List.mem_append] at member
+      rcases member with first | second
+      · obtain ⟨r', member', sub⟩ := complRegions_dominated monotone (src := query) grows r first
+        exact ⟨r', by simp [complRegions, member'], sub⟩
+      · obtain ⟨r', member', sub⟩ := complRegions_dominated monotone (src := rest) grows r second
+        exact ⟨r', by simp [complRegions, member'], sub⟩
   | .every rest, σ, τ, grows => complRegions_dominated monotone (src := rest) grows
 
 /-- **Locality**: the rows of a source list depend only on the store's occurrences inside its
@@ -792,6 +831,22 @@ theorem rows_congr (sound : Matcher.Sound L m) (monotone : Matcher.RegionMonoton
           complRegions_dominated monotone (extends_of_mem_stepRows sound member) r inRest
         exact ⟨r₀, by simp [complRegions, member₀], fun t h => sub₀ t (sub t h)⟩
       rw [restSame]
+  | .absent query rest, σ, S, S', agree => by
+      have querySame : rows L m label S [] query σ = rows L m label S' [] query σ :=
+        rows_congr sound monotone fun r' ⟨r, member, sub⟩ =>
+          agree r' ⟨r, by simp [complRegions, member], sub⟩
+      have restSame : rows L m label S template rest σ = rows L m label S' template rest σ :=
+        rows_congr sound monotone fun r' ⟨r, member, sub⟩ =>
+          agree r' ⟨r, by simp [complRegions, member], sub⟩
+      have queryFootprint : complQueries label S (complRegions m query σ) =
+          complQueries label S' (complRegions m query σ) := by
+        unfold complQueries
+        congr 2
+        apply List.map_congr_left
+        intro r member
+        rw [show regionOf label S r = regionOf label S' r from
+          agree r ⟨r, by simp [complRegions, member], fun _ h => h⟩]
+      simp only [rows, querySame, restSame, queryFootprint]
   | .every rest, σ, S, S', agree => by
       have restSame : rows L m label S template rest σ = rows L m label S' template rest σ :=
         rows_congr sound monotone agree
@@ -859,6 +914,30 @@ theorem mem_rows_iff_holds (sound : Matcher.Sound L m) (monotone : Matcher.Regio
         rw [footprintOf_cons, Footprint.holds_add] at holds
         exact mem_rows_cons.mpr ⟨y, (mem_stepRows_iff_holds inStep).mpr holds.1, z,
           (mem_rows_iff_holds sound monotone inRest).mpr holds.2, rfl⟩
+  | .absent query rest, σ, S, S', x, member => by
+      constructor
+      · exact holds_of_mem_rows
+      · intro holds
+        obtain ⟨empty, y, inRest, rfl⟩ := mem_rows_absent.mp member
+        rw [footprintOf_cons, footprint_amalgam, Footprint.holds_add] at holds
+        have agree : ∀ r ∈ complRegions m query σ, AgreeOn label S S' r := by
+          intro r member
+          have observed := holds.1.2.2 ⟨r, regionOf label S r⟩ (by
+            simp only [complQueries, Multiset.mem_coe, List.mem_map]
+            exact ⟨r, member, rfl⟩)
+          exact observed.symm
+        have querySame : rows L m label S [] query σ = rows L m label S' [] query σ :=
+          rows_congr sound monotone fun r' ⟨r, member, sub⟩ => (agree r member).of_sub sub
+        have queryFootprint : complQueries label S (complRegions m query σ) =
+            complQueries label S' (complRegions m query σ) := by
+          unfold complQueries
+          congr 2
+          apply List.map_congr_left
+          intro r member
+          rw [show regionOf label S r = regionOf label S' r from agree r member]
+        apply mem_rows_absent.mpr
+        exact ⟨by rwa [← querySame], y, (mem_rows_iff_holds sound monotone inRest).mpr holds.2,
+          by rw [queryFootprint]⟩
   | .every rest, σ, S, S', x, member => by
       constructor
       · exact holds_of_mem_rows

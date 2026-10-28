@@ -238,6 +238,64 @@ theorem derives_with_execution_observation_extension
   | litGet valid index => exact .litGet valid index
   | jit _ member guarded premise => exact .jit premise (included _ member) guarded
 
+/-- The rule closures used by the shared protocol proofs. Concrete instances
+must supply their derivations; this interface makes no denotational truth claim. -/
+class ExecutionCalculus (D : Theory → List ExecutionObservation → Term → Prop) : Prop where
+  fromBase {theory observations statement} :
+    DerivesWithExecution theory observations statement → D theory observations statement
+  modusPonens {theory observations antecedent conclusion} :
+    D theory observations (.impl antecedent conclusion) → D theory observations antecedent →
+      D theory observations conclusion
+  instantiate {theory observations source result value symbol} :
+    D theory observations source → WellFormed theory.sig value = true →
+      instantiateStatement theory.sig symbol value source = some result → D theory observations result
+  jit {theory observations safe observation} :
+    D theory observations safe → observation ∈ observations → GuardedExecution safe observation →
+      D theory observations observation.statement
+  observation_extension {theory before after statement} :
+    (∀ observation ∈ before, observation ∈ after) → D theory before statement → D theory after statement
+
+instance : ExecutionCalculus DerivesWithExecution where
+  fromBase := fun proof => proof
+  modusPonens := DerivesWithExecution.modusPonens
+  instantiate := DerivesWithExecution.instantiate
+  jit := DerivesWithExecution.jit
+  observation_extension := derives_with_execution_observation_extension
+
+namespace ExecutionCalculus
+variable {D : Theory → List ExecutionObservation → Term → Prop} [ExecutionCalculus D]
+
+theorem «axiom» {theory observations statement} (admitted : statement ∈ theory.axioms) :
+    D theory observations statement := fromBase (.axiom admitted)
+
+theorem definition {theory observations entry} (admitted : entry ∈ theory.definitions) :
+    D theory observations (definitionStatement theory.sig entry.symbol entry.fvars entry.value) :=
+  fromBase (.definition admitted)
+
+theorem litIsNat {theory observations n} (bound : n < wordBound) :
+    D theory observations (litIsNatStatement n) := fromBase (.litIsNat bound)
+
+theorem litLt {theory observations a b} (smaller : a < b) (bound : b < wordBound) :
+    D theory observations (litLtStatement a b) := fromBase (.litLt smaller bound)
+
+theorem litAdd {theory observations a b} (left : a < wordBound) (right : b < wordBound) :
+    D theory observations (litAddStatement a b) := fromBase (.litAdd left right)
+
+theorem litMul {theory observations a b} (left : a < wordBound) (right : b < wordBound) :
+    D theory observations (litMulStatement a b) := fromBase (.litMul left right)
+
+theorem litDiv {theory observations a b} (left : a < wordBound) (right : b < wordBound)
+    (nonzero : b ≠ 0) : D theory observations (litDivStatement a b) := fromBase (.litDiv left right nonzero)
+
+theorem litLength {theory observations bytes} (formed : WellFormed theory.sig (.lit bytes) = true) :
+    D theory observations (litLengthStatement bytes) := fromBase (.litLength formed)
+
+theorem litGet {theory observations bytes index} (formed : WellFormed theory.sig (.lit bytes) = true)
+    (inside : index < bytes.length) : D theory observations (litGetStatement bytes index) :=
+  fromBase (.litGet formed inside)
+
+end ExecutionCalculus
+
 /-! Guard controls are logical statements; none executes machine code. -/
 
 example : executionOutputLength? [255] = some 255 := by decide

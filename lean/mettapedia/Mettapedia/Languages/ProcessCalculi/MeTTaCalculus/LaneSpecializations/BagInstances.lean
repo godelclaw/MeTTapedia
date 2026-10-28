@@ -302,6 +302,34 @@ def chainRemove (E : T → T → Prop) [DecidableRel E] (M : Multiset T) (a : T)
   else if (M.filter (E a)).card = 1 then M - M.filter (E a)
   else M
 
+omit [DecidableEq O] in
+/-- Adding a value and then resolving the exact-first removal returns the
+    original bag. -/
+theorem chainRemove_after_add (E : T → T → Prop) [DecidableRel E]
+    (M : Multiset T) (a : T) : chainRemove E (a ::ₘ M) a = M := by
+  simp [chainRemove]
+
+omit [DecidableEq O] in
+/-- Adding after removal gives the original bag exactly when the exact value
+    was already present. -/
+theorem add_after_chainRemove_eq_iff (E : T → T → Prop) [DecidableRel E]
+    (M : Multiset T) (a : T) : a ::ₘ chainRemove E M a = M ↔ a ∈ M := by
+  constructor
+  · intro same
+    have present : a ∈ a ::ₘ chainRemove E M a := by simp
+    simpa [same] using present
+  · intro present
+    simp [chainRemove, present]
+
+omit [DecidableEq O] in
+/-- The two authored orders agree exactly when the original bag contained
+    the exact value. -/
+theorem add_remove_order_agrees_iff (E : T → T → Prop) [DecidableRel E]
+    (M : Multiset T) (a : T) :
+    a ::ₘ chainRemove E M a = chainRemove E (a ::ₘ M) a ↔ a ∈ M := by
+  rw [chainRemove_after_add]
+  exact add_after_chainRemove_eq_iff E M a
+
 /-- A removal of identical atoms only. -/
 def exactRemove (M : Multiset T) (a : T) : Multiset T := if a ∈ M then M.erase a else M
 
@@ -739,6 +767,20 @@ would remove either copy. -/
 theorem two_alpha_copies :
     chainRemove alphaEq ({px, py} : Multiset Atm) pw = {px, py} ∧
       ({px, py} : Multiset Atm).erase px ≠ {px, py} ∧ ({px, py} : Multiset Atm).erase py ≠ {px, py} := by
+  decide
+
+/-- Excluding a kept copy before resolving a legacy removal changes an
+    ambiguous alpha removal into a successful one. -/
+theorem preexclude_changes_alpha_ambiguity :
+    chainRemove alphaEq ({px, py} : Multiset Atm) pw = {px, py} ∧
+      ({px} + chainRemove alphaEq ({py} : Multiset Atm) pw) = {px} := by
+  decide
+
+/-- Even with an exact match, pre-excluding it selects a different
+    alpha-equivalent value than resolving against the full bag first. -/
+theorem preexclude_changes_exact_precedence :
+    chainRemove alphaEq ({px, py} : Multiset Atm) px = {py} ∧
+      ({px} + chainRemove alphaEq ({py} : Multiset Atm) px) = {px} := by
   decide
 
 /-- **One alpha-equal copy: the chain removes it, the identical-only removal keeps it**, so a

@@ -99,7 +99,7 @@ theorem portableText_readback :
 #guard (programData?.map (fun language => language.rewrites.length)) == some 2
 #guard (components?.map (fun language => language.rewrites.length)) == some 3
 #guard lexicalFragment.isOk
-#guard (grammar?.map (fun grammar => grammar.terms.length)) == some 101
+#guard (grammar?.map (fun grammar => grammar.terms.length)) == some 99
 #guard (lexicalLanguage?.map (fun language => language.rewrites.length)) == some 1
 #guard lexicalReply?.isSome
 #guard (lexicalReply?.map (fun reply => reply.2.classes.length)) == some 12

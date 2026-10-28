@@ -61,12 +61,11 @@ def residualSearch (code : Nat.Partrec.Code) : ConditionalAlgorithm :=
 theorem residualSearch_partrec (code : Nat.Partrec.Code) : Partrec₂ (residualSearch code) :=
   Partrec.rfindOpt (residualSearchStep_primrec code).to_comp
 
-theorem residualSearch_sound {U : ConditionalAlgorithm} {code : Nat.Partrec.Code}
+theorem residualSearchStep_sound {U : ConditionalAlgorithm} {code : Nat.Partrec.Code}
     (codeSpec : Nat.Partrec.Code.eval code = encodedConditionalAlgorithm U)
-    {feature source residual : BinString} (selected : residual ∈ residualSearch code feature source) :
+    {feature source residual : BinString} {rank : Nat}
+    (found : residualSearchStep code ((feature, source), rank) = some residual) :
     source ∈ U feature residual ∧ feature.length + residual.length < source.length := by
-  obtain ⟨rank, found⟩ := Nat.rfindOpt_spec selected
-  change residualSearchStep code ((feature, source), rank) = some residual at found
   unfold residualSearchStep at found
   cases decoded : Encodable.decode (α := BinString) rank.unpair.1 with
   | none => simp [decoded] at found
@@ -83,22 +82,35 @@ theorem residualSearch_sound {U : ConditionalAlgorithm} {code : Nat.Partrec.Code
           simpa [encodedConditionalAlgorithm] using evaluated
         exact ⟨runs, accepts.1⟩
 
-theorem residualSearch_complete {U : ConditionalAlgorithm} {code : Nat.Partrec.Code}
+theorem residualSearchStep_complete {U : ConditionalAlgorithm} {code : Nat.Partrec.Code}
     (codeSpec : Nat.Partrec.Code.eval code = encodedConditionalAlgorithm U)
     {feature source residual : BinString} (reconstructs : source ∈ U feature residual)
     (smaller : feature.length + residual.length < source.length) :
-    ∃ selected, selected ∈ residualSearch code feature source := by
+    ∃ rank, residualSearchStep code ((feature, source), rank) = some residual := by
   have evaluated : Encodable.encode source ∈
       Nat.Partrec.Code.eval code (Encodable.encode (feature, residual)) := by
     rw [codeSpec]
     simpa [encodedConditionalAlgorithm] using Part.mem_map Encodable.encode reconstructs
   obtain ⟨stage, computes⟩ := Nat.Partrec.Code.evaln_complete.mp evaluated
-  have candidate : residualSearchStep code ((feature, source), Nat.pair (Encodable.encode residual) stage) =
-      some residual := by
-    simp [residualSearchStep, smaller]
-    exact Option.mem_def.mp computes
+  refine ⟨Nat.pair (Encodable.encode residual) stage, ?_⟩
+  simp [residualSearchStep, smaller]
+  exact Option.mem_def.mp computes
+
+theorem residualSearch_sound {U : ConditionalAlgorithm} {code : Nat.Partrec.Code}
+    (codeSpec : Nat.Partrec.Code.eval code = encodedConditionalAlgorithm U)
+    {feature source residual : BinString} (selected : residual ∈ residualSearch code feature source) :
+    source ∈ U feature residual ∧ feature.length + residual.length < source.length := by
+  obtain ⟨rank, found⟩ := Nat.rfindOpt_spec selected
+  exact residualSearchStep_sound codeSpec (Option.mem_def.mp found)
+
+theorem residualSearch_complete {U : ConditionalAlgorithm} {code : Nat.Partrec.Code}
+    (codeSpec : Nat.Partrec.Code.eval code = encodedConditionalAlgorithm U)
+    {feature source residual : BinString} (reconstructs : source ∈ U feature residual)
+    (smaller : feature.length + residual.length < source.length) :
+    ∃ selected, selected ∈ residualSearch code feature source := by
+  obtain ⟨rank, candidate⟩ := residualSearchStep_complete codeSpec reconstructs smaller
   exact Part.dom_iff_mem.mp (Nat.rfindOpt_dom.mpr
-    ⟨Nat.pair (Encodable.encode residual) stage, residual, by simpa only [Option.mem_def] using candidate⟩)
+    ⟨rank, residual, by simpa only [Option.mem_def] using candidate⟩)
 
 /-- First decode a feature from its prefix description conditioned on the
 source, then search for a reconstructing residual. -/
@@ -151,6 +163,8 @@ theorem shortest_descriptive_logarithmic (U : ConditionalAlgorithm)
   omega
 
 #print axioms residualSearch_partrec
+#print axioms residualSearchStep_sound
+#print axioms residualSearchStep_complete
 #print axioms residualSearch_sound
 #print axioms residualSearch_complete
 #print axioms descriptive_map_from_feature_description

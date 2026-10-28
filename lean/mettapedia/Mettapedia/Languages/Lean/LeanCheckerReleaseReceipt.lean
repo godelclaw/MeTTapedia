@@ -38,6 +38,9 @@ inductive CheckerFamily where
   | lean4Lean
   | conLeche
   | lean4Less
+  /-- Lean-to-set-theory proof production followed by the VibeITP kernel.
+  Its host theory and binary protocol are separate release coordinates. -/
+  | vibeITP
 deriving Repr, DecidableEq, BEq
 
 /-- A mode is part of the checker identity.  In particular, con-leche's

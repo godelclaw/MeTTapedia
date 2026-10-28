@@ -341,7 +341,8 @@ theorem licensed_reduces {bound : List TypeExpr} {expected : TypeExpr} {source :
   | @authoredCollection bound rule declarationIndex parameterName kind elements index element elementType inner
       declared shape permitted typed objects selected _ ih =>
     intro _
-    obtain ⟨_, rfl, rfl⟩ := bare_rule (List.fst_mem_of_mem_zipIdx declared) shape
+    obtain ⟨_, rfl, rfl⟩ := bare_rule (List.fst_mem_of_mem_zipIdx declared)
+      ((GrammarRule.bareParams_cons_iff _ _ _).mp shape).2
     obtain ⟨focusBound, focusType, lift⟩ := ih rfl
     refine ⟨focusBound, focusType, fun localTarget step => ?_⟩
     have split : elements = elements.take index ++ element :: elements.drop (index + 1) := by

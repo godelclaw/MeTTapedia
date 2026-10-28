@@ -79,6 +79,42 @@ A4 & Consumption is not confluent & \name{MultiPremiseSteps.Controls.consumption
 A4 & Independent consuming steps commute up to product order & \name{MultiPremiseSteps.independent_commute} & PQ & proved\\
 A4 & Control: two independent consuming steps commute & \name{MultiPremiseSteps.Controls.independent_steps_commute} & PQ & proved\\
 A4 & Split/join exceeds tree-shaped single-wire-cut composition & \name{MultiPremiseSteps.process_not_polycategorical} & PQ & proved\\
+% Source-query lowering, retained execution and checked publication.
+A4 & Ordered occurrence scanner is complete & \name{Sources.Query.scanList_complete} & PCQ & proved\\
+A4 & Primitive source query agrees with source rows & \name{Sources.Query.run_step} & PCQ & proved\\
+A4 & Recursive query lowering preserves row bags & \name{Sources.Query.run_compile} & PCQ & proved\\
+A4 & Completed emptiness is declarative absence & \name{Sources.Query.run_empty_iff_no_declarative} & PCQ & proved\\
+A4 & Validated adaptive reads preserve source rows & \name{Sources.Query.validated_source_rows} & PCQ & proved\\
+A4 & Completed cursor returns source rows and reads & \name{Sources.Query.Execution.completed_rows} & PCQ & proved\\
+A4 & Compiled query completes at its read-path bound & \name{Sources.Query.Execution.execute_complete} & PCQ & proved\\
+A4 & Budget splitting retains the complete packet & \name{Sources.Query.Execution.execute_split} & PCQ & proved\\
+A4 & Completed negative query has source meaning & \name{Sources.Query.Execution.completed_absence} & PCQ & proved\\
+A4 & Completed query is sound and covers alternatives & \name{Sources.Query.Execution.completed_agreement} & PCQ & proved\\
+A4 & Validated resumption recovers current source rows & \name{Sources.Query.Execution.resumed_rows} & PCQ & proved\\
+A4 & Unfinished query is distinct from absence & \name{Sources.Query.Controls.partial_query_is_not_absence} & PCQ & proved\\
+A4 & Empty conjunction and vacuous every have rows & \name{Sources.Query.Controls.vacuous_rows_are_present} & PCQ & proved\\
+A4 & Omitted region replies violate completeness & \name{Sources.Query.Controls.omitted_region_reply_is_not_complete} & PCQ & proved\\
+A4 & Adaptive reads retain the selected binding & \name{Sources.Query.Controls.adaptive_dependency_is_bound} & PCQ & proved\\
+A4 & Absence retains its full completeness footprint & \name{Sources.Query.Controls.absence_row_retains_full_footprint} & PCQ & proved\\
+A4 & Bag agreement does not validate ordered reads & \name{Sources.Query.Controls.bag_agreement_does_not_validate_reordering} & PCQ & proved\\
+A4 & Resumption observes an unread arrival & \name{Sources.Query.Controls.resume_sees_unread_arrival} & PCQ & proved\\
+A4 & Changed performed reads retain a refused packet & \name{Sources.Query.Controls.changed_prefix_retains_refused_packet} & PCQ & proved\\
+A4 & Checked publication preserves evidence validity & \name{ProgrammableJudgmentTransforms.step_preserves_validity} & PCQ & proved\\
+A4 & Stored evidence reconstructs a source derivation & \name{ProgrammableJudgmentTransforms.stored_evidence_derivation} & PCQ & proved\\
+A4 & Retained old authority still enables old work & \name{ProgrammableJudgmentTransforms.retaining_source_keeps_old_request_enabled} & PQ & proved\\
+A4 & Unchecked refused evidence breaks store validity & \name{ProgrammableJudgmentTransforms.refused_evidence_write_breaks_validity} & PCQ & proved\\
+A4 & Untrusted service replies preserve checked intents & \name{ProgrammableJudgmentServices.program_intents_preserve} & PCQ & proved\\
+A4 & Finite initial guards characterize sequential commits & \name{CommitPrecondition.sequential_holds_iff} & PCQ & proved\\
+A4 & Guarded net update exactly composes two commits & \name{Commit.composition_exact} & PCQ & proved\\
+A4 & Independent intervening events permit guarded fusion & \name{executable_fusion_iff} & PCQ & proved\\
+A4 & Fusion does not preserve the complete event trace & \name{fusion_not_traceEq} & PCQ & proved\\
+% Nested query and correlated-reply controls.
+A4 & Matching precedes linear admission & \name{Sources.Query.Controls.nonlinear_match_is_still_a_row} & PCQ & proved\\
+A4 & Nested every filters the aggregate row & \name{Sources.Query.Controls.nested_every_filters_the_aggregate} & PCQ & proved\\
+A4 & Consumed reply identities remain refused & \name{Kernel.CorrelatedReplies.consumed_reply_stays_refused} & PCQ & proved\\
+A4 & Cancelled reply identities remain refused & \name{Kernel.CorrelatedReplies.cancelled_reply_stays_refused} & PCQ & proved\\
+A4 & Old request cannot answer the next one & \name{Kernel.CorrelatedReplies.Controls.stale_request_cannot_answer_next} & P & proved\\
+A4 & Retargeting a reply loses correlation & \name{Kernel.CorrelatedReplies.Controls.replacing_supplied_identity_accepts_wrong_reply} & P & proved\\
 C & HOL Light kernel module loads exactly & \name{HOLLight.FirstOrder.kernelModule_read} & PCQ & proved\\
 C & Loaded HOL Light module is faithful & \name{HOLLight.FirstOrder.kernelModule_faithful} & PCQ & proved\\
 C & VibeITP module loads exactly (existing) & \name{VibeITP.CheckingMachine.kernelModule_read} & PCQ & proved\\

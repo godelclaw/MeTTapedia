@@ -33,7 +33,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.Machines.Cursor.SharedOccurrenceLog
 
-universe u
+universe u v
 variable {Value : Type u} {clients : Nat}
 
 structure State (Value : Type u) (clients : Nat) where
@@ -888,6 +888,30 @@ theorem cohortAdvance_add {clients : Nat}
   exact Finset.sum_congr rfl (fun client _ =>
     cursorAdvance_add _ _ _ (left client) (right client))
 
+/-- A complete, equally ordered advice stream determines the original rows. -/
+theorem values_and_advice_reassemble {Advice : Type v} (rows : List (Value × Advice)) :
+    List.zip (rows.map Prod.fst) (rows.map Prod.snd) = rows := by
+  induction rows with
+  | nil => rfl
+  | cons row rest ih =>
+      cases row with
+      | mk value advice =>
+          exact congrArg (List.cons (value, advice)) ih
+
+/-- A value stream, its first recorded advice and a later active advice cannot
+    reconstruct every earlier advice stream: even the first equal-valued row
+    can agree while the second row carries a different advice. -/
+theorem erased_suffix_advice_not_recoverable {Advice : Type v}
+    (value : Value) (first second current : Advice) (distinct : first ≠ second)
+    (restore : List Value → Advice → Advice → List (Value × Advice)) :
+    ¬ (restore [value, value] first current = [(value, first), (value, first)] ∧
+      restore [value, value] first current = [(value, first), (value, second)]) := by
+  rintro ⟨firstRestored, secondRestored⟩
+  have rowsEqual := firstRestored.symm.trans secondRestored
+  have pairEqual : (value, first) = (value, second) :=
+    (List.cons.inj (List.cons.inj rowsEqual).2).1
+  exact distinct (congrArg Prod.snd pairEqual)
+
 namespace Controls
 
 def sample : State Nat 2 := ⟨0, [7, 7, 9], fun _ => some 0, false, 4⟩
@@ -903,6 +927,28 @@ theorem independent_delivery_keeps_the_full_log :
      let second := pull first.2 1
      (first.1, second.1, second.2.positions 0, second.2.positions 1, second.2.rows)) =
       (.answer 0 7, .answer 0 7, some 1, some 1, [7, 7, 9]) := by decide +kernel
+
+/-- Equal values may carry different per-occurrence scheduling advice. -/
+def advisedSample : State (Nat × Nat) 2 :=
+  ⟨0, [(7, 3), (7, 9)], fun _ => some 0, false, 3⟩
+
+theorem advisedSample_valid : Valid advisedSample := by
+  simp [Valid, advisedSample, pastEnd]
+
+theorem equal_values_keep_their_own_advice :
+    (let first := pull advisedSample 0
+     let second := pull first.2 0
+     (first.1, second.1, peek second.2 1)) =
+      (.answer 0 (7, 3), .answer 1 (7, 9), .answer 0 (7, 3)) := by
+  decide +kernel
+
+/-- Reattaching the first row's advice to every equal value changes the
+    second delivery, even though the projected value stream is unchanged. -/
+theorem one_advice_does_not_describe_equal_values :
+    let flattened := advisedSample.map (fun row => (row.1, 3))
+    flattened.rows.map Prod.fst = advisedSample.rows.map Prod.fst ∧
+      (pull (pull flattened 0).2 0).1 ≠ (pull (pull advisedSample 0).2 0).1 := by
+  decide +kernel
 
 /-- Two requests using one cursor compete for successive occurrences, even
 when their payloads are equal. Their requesting identities cannot be swapped. -/

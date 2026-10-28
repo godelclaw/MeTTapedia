@@ -508,6 +508,58 @@ theorem duplicate_identity_refuses :
 theorem cycle_refuses :
     (⟨[2], [⟨1, [2]⟩, ⟨2, [1]⟩]⟩ : CausalReceipt Nat).ancestors? [] 2 = none := by decide
 
+/-- Two separately transported histories can order the same two semantic
+events in opposite directions, without either event being an ancestor of its
+own physical copy. The join retains both histories. -/
+def crossedAliases : CausalReceipt Nat :=
+  ⟨[5], [⟨1, []⟩, ⟨2, [1]⟩, ⟨3, []⟩, ⟨4, [3]⟩, ⟨5, [2, 4]⟩]⟩
+
+def crossedAliasMap (id : Nat) : Nat :=
+  if id = 4 then 1 else if id = 3 then 2 else id
+
+/-- Neither alias class contains an ancestor of itself in the physical DAG. -/
+theorem crossed_aliases_are_physical_antichains :
+    ¬ Relation.TransGen crossedAliases.Direct 1 4 ∧
+    ¬ Relation.TransGen crossedAliases.Direct 4 1 ∧
+    ¬ Relation.TransGen crossedAliases.Direct 2 3 ∧
+    ¬ Relation.TransGen crossedAliases.Direct 3 2 := by
+  have a1 : crossedAliases.ancestors? [] 1 = some [1] := by decide
+  have a2 : crossedAliases.ancestors? [] 2 = some [2, 1] := by decide
+  have a3 : crossedAliases.ancestors? [] 3 = some [3] := by decide
+  have a4 : crossedAliases.ancestors? [] 4 = some [4, 3] := by decide
+  constructor
+  · intro path
+    have member := ((ancestors?_exact [] crossedAliases 4 [4, 3] a4).2.2 1).mpr (.inr path)
+    simp at member
+  constructor
+  · intro path
+    have member := ((ancestors?_exact [] crossedAliases 1 [1] a1).2.2 4).mpr (.inr path)
+    simp at member
+  constructor
+  · intro path
+    have member := ((ancestors?_exact [] crossedAliases 3 [3] a3).2.2 2).mpr (.inr path)
+    simp at member
+  · intro path
+    have member := ((ancestors?_exact [] crossedAliases 2 [2, 1] a2).2.2 3).mpr (.inr path)
+    simp at member
+
+/-- Coalescing both classes nevertheless creates a two-event cycle. Checking
+each alias class separately is insufficient for a causal quotient. -/
+theorem crossed_alias_quotient_cycle :
+    check [] crossedAliases = true ∧
+    check [] (crossedAliases.relabel crossedAliasMap) = false ∧
+    (crossedAliases.relabel crossedAliasMap).Direct 1 2 ∧
+    (crossedAliases.relabel crossedAliasMap).Direct 2 1 := by
+  constructor
+  · decide
+  constructor
+  · decide
+  constructor
+  · refine ⟨⟨2, [1]⟩, ?_, rfl, by simp⟩
+    simp [relabel, crossedAliases, crossedAliasMap]
+  · refine ⟨⟨1, [2]⟩, ?_, rfl, by simp⟩
+    simp [relabel, crossedAliases, crossedAliasMap]
+
 end AncestryControls
 
 private def independentReceipt : CausalReceipt Nat where

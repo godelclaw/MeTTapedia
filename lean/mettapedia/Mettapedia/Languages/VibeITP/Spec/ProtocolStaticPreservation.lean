@@ -8,6 +8,9 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.VibeITP.Spec.ProtocolStaticPreservation
 
+variable {D : Theory → List ExecutionObservation → Term → Prop}
+  [Mettapedia.Languages.VibeITP.Presentation.HostedCalculus D]
+
 open ProtocolExecution ProtocolInvariant ProtocolAdmission ProtocolStorage ProtocolMaintenance
 open ProtocolDefinitions ProtocolInference ProtocolSuccess
 
@@ -28,9 +31,9 @@ theorem placeChallenge_result {before after : State} {destination : Nat} {statem
   · exact (Except.ok.inj accepted).symm
 
 theorem execute_preserves {before : ObservedState} {after : State} (instruction : Instr)
-    (invariant : LogicalInvariant before) (bounded : instruction.MachineBounded)
+    (invariant : LogicalInvariantFor D before) (bounded : instruction.MachineBounded)
     (accepted : execute before.kernel instruction = some (.ok after)) :
-    LogicalInvariant ⟨after, before.observations⟩ := by
+    LogicalInvariantFor D ⟨after, before.observations⟩ := by
   cases instruction with
   | fvarNew arity destination =>
     have allocated := allocate_invariant before (SymInfo.fvarOf arity) invariant (by
@@ -117,9 +120,11 @@ theorem execute_preserves {before : ObservedState} {after : State} (instruction 
         obtain ⟨placed, placement, complete⟩ := (bind_ok_iff _ _ _).mp closedCheck
         have final : { placed with axioms := placed.axioms ++ [statement] } = after := Except.ok.inj complete
         have base := admit_axiom_invariant before statement invariant formed closed
-        have newStatement : DerivesWithExecution
+        have newStatement : D
             ({ before.kernel with axioms := before.kernel.axioms ++ [statement] } : State).theory
-            before.observations statement := .axiom (by simp [State.theory])
+            before.observations statement := ExecutionCalculus.axiom (D := D)
+              (theory := ({ before.kernel with axioms := before.kernel.axioms ++ [statement] } : State).theory)
+              (observations := before.observations) (statement := statement) (by simp [State.theory])
         have published := set_theorem_invariant _ destination statement base newStatement
         rw [placeTheorem_result placement] at final
         rw [← final]

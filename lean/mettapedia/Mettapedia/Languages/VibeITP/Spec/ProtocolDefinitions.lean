@@ -7,6 +7,9 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.VibeITP.Spec.ProtocolDefinitions
 
+variable {D : Theory → List ExecutionObservation → Term → Prop}
+  [Mettapedia.Languages.VibeITP.Presentation.HostedCalculus D]
+
 open ProtocolExecution ProtocolInvariant ProtocolAdmission ProtocolStorage ProtocolSuccess
 open Mettapedia.Languages.VibeITP.Presentation
 
@@ -19,12 +22,12 @@ theorem placeSymbol_result {before after : State} {destination : Nat} {symbol : 
   · exact (Except.ok.inj accepted).symm
 
 theorem allocate_definition_invariant (before : ObservedState) (parameters : List SymId)
-    (hints : List Nat) (value : Term) (invariant : LogicalInvariant before)
+    (hints : List Nat) (value : Term) (invariant : LogicalInvariantFor D before)
     (formed : WellFormed before.kernel.sig value = true)
     (admitted : definitionAdmissible before.kernel.sig parameters hints value = true) :
     let allocated := (before.kernel.allocate (definitionInfo before.kernel.sig parameters)).2
     let definition : Definition := ⟨.fresh before.kernel.nextFresh, parameters, value⟩
-    LogicalInvariant ⟨{ allocated with definitions := allocated.definitions ++ [definition] },
+    LogicalInvariantFor D ⟨{ allocated with definitions := allocated.definitions ++ [definition] },
       before.observations⟩ := by
   dsimp only
   have allocated := allocate_invariant before (definitionInfo before.kernel.sig parameters) invariant
@@ -35,10 +38,10 @@ theorem allocate_definition_invariant (before : ObservedState) (parameters : Lis
 
 theorem defineConst_preserved {before : ObservedState} {after : State}
     (fvarSlots hints : List Nat) (valueSlot symbolDestination theoremDestination : Nat)
-    (invariant : LogicalInvariant before)
+    (invariant : LogicalInvariantFor D before)
     (accepted : execute before.kernel (.defineConst fvarSlots hints valueSlot symbolDestination
       theoremDestination) = some (.ok after)) :
-    LogicalInvariant ⟨after, before.observations⟩ := by
+    LogicalInvariantFor D ⟨after, before.observations⟩ := by
   have run := Option.some.inj accepted
   obtain ⟨heads, _, following⟩ := (bind_ok_iff _ _ _).mp run
   obtain ⟨value, valueRead, matched⟩ := (bind_ok_iff _ _ _).mp following
@@ -56,7 +59,7 @@ theorem defineConst_preserved {before : ObservedState} {after : State}
       let allocated := (before.kernel.allocate (definitionInfo before.kernel.sig parameters)).2
       let definition : Definition := ⟨.fresh before.kernel.nextFresh, parameters, value⟩
       let admittedState : State := { allocated with definitions := allocated.definitions ++ [definition] }
-      have base : LogicalInvariant ⟨admittedState, before.observations⟩ :=
+      have base : LogicalInvariantFor D ⟨admittedState, before.observations⟩ :=
         allocate_definition_invariant before parameters hints value invariant formed admitted
       have newSymbol : (admittedState.sig (.fresh before.kernel.nextFresh)).isSome = true := by
         simp [admittedState, allocated, State.sig, State.allocate, sigOf, setSlot]
@@ -65,10 +68,12 @@ theorem defineConst_preserved {before : ObservedState} {after : State}
       have known := definitionAdmissible_parameters_known before.kernel.sig parameters hints value admitted
       have extension := allocate_sig_extension before.kernel (definitionInfo before.kernel.sig parameters)
         invariant.theory
-      have equation : DerivesWithExecution admittedState.theory before.observations
+      have equation : D admittedState.theory before.observations
           (definitionStatement before.kernel.sig (.fresh before.kernel.nextFresh) parameters value) := by
         rw [← definitionStatement_sigExt extension (.fresh before.kernel.nextFresh) parameters value known]
-        exact .definition (d := definition) (by simp [admittedState, definition, State.theory])
+        exact ExecutionCalculus.definition (D := D) (theory := admittedState.theory)
+          (observations := before.observations) (entry := definition)
+          (by simp [admittedState, definition, State.theory])
       have finalInvariant := set_theorem_invariant _ theoremDestination _ declaredInvariant equation
       rw [placeTheorem_result publication, placeSymbol_result declaration] at final
       rw [← final]

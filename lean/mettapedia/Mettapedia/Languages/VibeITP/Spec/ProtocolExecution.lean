@@ -156,17 +156,19 @@ theorem jit_preserves_challenges {before after : ObservedState}
   rw [placeTerm_result second, placeTheorem_result first]
   exact ⟨rfl, rfl, rfl⟩
 
+variable {D : Theory → List ExecutionObservation → Term → Prop} [ExecutionCalculus D]
+
 theorem jit_new_theorem_derived {before after : ObservedState}
     {source theoremDestination termDestination : Nat} {observation : ExecutionObservation}
     (stored : ∀ slot statement, before.kernel.theorems slot = some statement →
-      DerivesWithExecution before.kernel.theory before.observations statement)
+      D before.kernel.theory before.observations statement)
     (accepted : jit before source theoremDestination termDestination observation = .ok after) :
-    DerivesWithExecution after.kernel.theory after.observations observation.statement := by
+    D after.kernel.theory after.observations observation.statement := by
   obtain ⟨safe, placed, guard, _, _, ledger⟩ := jit_success_shape accepted
   obtain ⟨_, premise, guarded⟩ := (jitGuard?_iff _ _ _ _).mp guard
   rw [jit_preserves_theory accepted, ledger]
-  exact .jit
-    (derives_with_execution_observation_extension
+  exact ExecutionCalculus.jit
+    (ExecutionCalculus.observation_extension
       (fun _ member => List.mem_append_left _ member) (stored source safe premise))
     (by simp) guarded
 
@@ -189,10 +191,10 @@ theorem jit_preserves_realized {before after : ObservedState}
 theorem jit_preserves_derived_theorems {before after : ObservedState}
     {source theoremDestination termDestination : Nat} {observation : ExecutionObservation}
     (stored : ∀ slot statement, before.kernel.theorems slot = some statement →
-      DerivesWithExecution before.kernel.theory before.observations statement)
+      D before.kernel.theory before.observations statement)
     (accepted : jit before source theoremDestination termDestination observation = .ok after) :
     ∀ slot statement, after.kernel.theorems slot = some statement →
-      DerivesWithExecution after.kernel.theory after.observations statement := by
+      D after.kernel.theory after.observations statement := by
   obtain ⟨_, placed, _, first, second, ledger⟩ := jit_success_shape accepted
   intro slot statement found
   by_cases destination : slot = theoremDestination
@@ -205,7 +207,7 @@ theorem jit_preserves_derived_theorems {before after : ObservedState}
       rw [placeTerm_result second, placeTheorem_result first] at found
       simpa [setSlot, destination] using found
     rw [jit_preserves_theory accepted, ledger]
-    exact derives_with_execution_observation_extension
+    exact ExecutionCalculus.observation_extension
       (fun _ member => List.mem_append_left _ member) (stored slot statement old)
 
 theorem jit_output_wellFormed {before after : ObservedState}

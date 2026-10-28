@@ -101,6 +101,27 @@ theorem subst_rename {context middle target : Ctx Base}
     funext type index
     cases index <;> rfl
 
+theorem rename_subst {context middle target : Ctx Base}
+    (rho : Rename Base middle target) (substitution : Subst Const context middle)
+    (code : Code Const source context) :
+    (code.subst substitution).rename rho = code.subst (fun index => HOL.rename rho (substitution index)) := by
+  induction code generalizing middle target with
+  | atom _ => simp [rename, subst, HOL.rename_subst]
+  | member _ => simp [rename, subst, HOL.rename_subst]
+  | conj _ _ first second => simp [rename, subst, first, second]
+  | disj _ _ first second => simp [rename, subst, first, second]
+  | guard _ _ ih => simp [rename, subst, HOL.rename_subst, ih]
+  | all body ih =>
+      simp only [rename, subst, ih]
+      congr 2
+      funext type index
+      cases index <;> simp [Subst.lift, HOL.rename_comp, Rename.lift, Rename.weaken]
+  | ex body ih =>
+      simp only [rename, subst, ih]
+      congr 2
+      funext type index
+      cases index <;> simp [Subst.lift, HOL.rename_comp, Rename.lift, Rename.weaken]
+
 set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem subst_id {context : Ctx Base} (code : Code Const source context) :
     code.subst (fun index => Term.var index) = code := by
@@ -298,6 +319,15 @@ def operator_beta {context : Ctx Base} (code : Code Const source (source :: cont
   congr 1
   funext type index
   cases index <;> rfl
+
+@[simp] theorem operator_subst {context target : Ctx Base} (mapping : Subst Const context target)
+    (code : Code Const source (source :: context)) :
+    (code.subst (Subst.lift mapping)).operator = HOL.subst mapping code.operator := by
+  simp only [operator, HOL.subst, ← interpret_subst, rename_subst, subst_rename]
+  congr 3
+  congr 1
+  funext type index
+  cases index <;> simp [Subst.lift, HOL.rename_comp, Rename.lift, Rename.weaken]
 
 def operator_monotone {context : Ctx Base} (code : Code Const source (source :: context))
     {assumptions : List (Formula Const context)} :

@@ -93,11 +93,13 @@ def step {ε : Type} (capability : Capability ε) (state : ObservedState) :
 def Realizes {ε : Type} (capability : Capability ε) (contract : ExecutionContract) : Prop :=
   ∀ ordinal request output, capability ordinal request = .ok output → contract request output
 
-theorem jitStep_preserves {ε : Type} {capability : Capability ε}
+variable {D : Theory → List ExecutionObservation → Term → Prop}
+
+theorem jitStep_preserves [ExecutionCalculus D] {ε : Type} {capability : Capability ε}
     {before after : ObservedState} {source theoremDestination termDestination : Nat}
-    (invariant : LogicalInvariant before)
+    (invariant : LogicalInvariantFor D before)
     (accepted : jitStep capability before source theoremDestination termDestination = .ok after) :
-    LogicalInvariant after := by
+    LogicalInvariantFor D after := by
   obtain ⟨_, _, _, _, _, _, published⟩ := jitStep_success accepted
   exact jit_invariant_preserved invariant published
 
@@ -113,9 +115,9 @@ theorem jitStep_realized {ε : Type} {capability : Capability ε}
   exact jit_preserves_realized contract prior
     ⟨realizes before.observations.length request output invoked, guarded.2⟩ published
 
-theorem staticStep_preserves {ε : Type} {before after : ObservedState} {instruction : Instr}
-    (invariant : LogicalInvariant before) (bounded : instruction.MachineBounded)
-    (accepted : staticStep (ε := ε) before instruction = .ok after) : LogicalInvariant after := by
+theorem staticStep_preserves [Mettapedia.Languages.VibeITP.Presentation.HostedCalculus D] {ε : Type} {before after : ObservedState} {instruction : Instr}
+    (invariant : LogicalInvariantFor D before) (bounded : instruction.MachineBounded)
+    (accepted : staticStep (ε := ε) before instruction = .ok after) : LogicalInvariantFor D after := by
   obtain ⟨transition, ledger⟩ := staticStep_success accepted
   have preserved := ProtocolStaticPreservation.execute_preserves instruction invariant bounded transition
   rw [← ledger] at preserved
@@ -128,10 +130,10 @@ theorem staticStep_realized {ε : Type} {contract : ExecutionContract}
   obtain ⟨_, ledger⟩ := staticStep_success accepted
   simpa [RealizedLedger, ledger] using prior
 
-theorem step_preserves {ε : Type} {capability : Capability ε}
+theorem step_preserves [Mettapedia.Languages.VibeITP.Presentation.HostedCalculus D] {ε : Type} {capability : Capability ε}
     {before after : ObservedState} (instruction : Instr)
-    (invariant : LogicalInvariant before) (bounded : instruction.MachineBounded)
-    (accepted : step capability before instruction = .ok after) : LogicalInvariant after := by
+    (invariant : LogicalInvariantFor D before) (bounded : instruction.MachineBounded)
+    (accepted : step capability before instruction = .ok after) : LogicalInvariantFor D after := by
   cases instruction <;> first
     | exact jitStep_preserves invariant accepted
     | exact staticStep_preserves invariant bounded accepted

@@ -6242,3 +6242,118 @@ theorem incidence_relocation {B : Type} {W : Type} [DecidableEq B]
       simp [copy.injective.eq_iff]
 
 end Mettapedia.Machines.ResourceOwnership.OrderedObservation
+
+/-! A tracing collector can reclaim an unreachable cycle. An owner that only
+releases objects when their strong reference counts reach zero has a different
+obligation: introducing one strong edge must not close a directed path back to
+its source. These results concern an explicitly supplied strong-edge relation;
+they do not claim that a runtime's storage census enumerates that relation. -/
+
+namespace Mettapedia.Machines.ResourceOwnership.StrongEdges
+
+variable {Owner : Type}
+
+/-- Add one owning edge to the existing directed ownership relation. -/
+def add (edge : Owner → Owner → Prop) (source target : Owner) : Owner → Owner → Prop :=
+  fun x y => edge x y ∨ (x = source ∧ y = target)
+
+/-- There is no nonempty directed cycle of strong ownership. -/
+def Acyclic (edge : Owner → Owner → Prop) : Prop :=
+  ∀ x, ¬ Relation.TransGen edge x x
+
+/-- A path after adding one edge is either an old nonempty path, or passes
+from its start to the new edge and from that edge to its end using old edges.
+Repeated uses of the added edge can be removed from such a witness. -/
+theorem path_after_add {edge : Owner → Owner → Prop} {source target x y : Owner}
+    (path : Relation.TransGen (add edge source target) x y) :
+    Relation.TransGen edge x y ∨
+      (Relation.ReflTransGen edge x source ∧ Relation.ReflTransGen edge target y) := by
+  induction path with
+  | single step =>
+      rcases step with old | ⟨rfl, rfl⟩
+      · exact Or.inl (.single old)
+      · exact Or.inr ⟨.refl, .refl⟩
+  | tail previous step ih =>
+      rcases step with old | ⟨rfl, rfl⟩
+      · rcases ih with oldPath | ⟨before, after⟩
+        · exact Or.inl (oldPath.tail old)
+        · exact Or.inr ⟨before, after.tail old⟩
+      · rcases ih with oldPath | ⟨before, _⟩
+        · exact Or.inr ⟨oldPath.to_reflTransGen, .refl⟩
+        · exact Or.inr ⟨before, .refl⟩
+
+/-- On an acyclic strong-owner graph, inserting one edge preserves acyclicity
+exactly when its target cannot already reach its source. The reflexive path
+also rejects a new self-edge. -/
+theorem add_acyclic_iff {edge : Owner → Owner → Prop} {source target : Owner}
+    (acyclic : Acyclic edge) :
+    Acyclic (add edge source target) ↔
+      ¬ Relation.ReflTransGen edge target source := by
+  constructor
+  · intro safe back
+    have old : Relation.ReflTransGen (add edge source target) target source :=
+      Relation.ReflTransGen.mono (r := edge) (p := add edge source target)
+        (fun _ _ step => Or.inl step) target source back
+    exact safe target (Relation.TransGen.tail' old (Or.inr ⟨rfl, rfl⟩))
+  · intro noBack x cycle
+    rcases path_after_add cycle with oldCycle | ⟨before, after⟩
+    · exact acyclic x oldCycle
+    · exact noBack (after.trans before)
+
+namespace Controls
+
+inductive ExampleOwner where
+  | caller | control | episode | destination
+  deriving DecidableEq
+
+/-- The control owns an episode, and the episode owns an internal arena.
+The caller is an independent owner that already holds the episode. -/
+def edges : ExampleOwner → ExampleOwner → Prop
+  | .caller, .episode => True
+  | .control, .episode => True
+  | .episode, .destination => True
+  | _, _ => False
+
+def rank : ExampleOwner → Nat
+  | .caller => 3
+  | .control => 2
+  | .episode => 1
+  | .destination => 0
+
+theorem edge_decreases {x y : ExampleOwner} (step : edges x y) : rank y < rank x := by
+  cases x <;> cases y <;> simp_all [edges, rank]
+
+theorem path_nonincreasing {x y : ExampleOwner} (path : Relation.ReflTransGen edges x y) :
+    rank y ≤ rank x := by
+  induction path with
+  | refl => exact Nat.le_refl _
+  | tail _ step ih => exact Nat.le_trans (Nat.le_of_lt (edge_decreases step)) ih
+
+theorem path_decreases {x y : ExampleOwner} (path : Relation.TransGen edges x y) :
+    rank y < rank x := by
+  induction path with
+  | single step => exact edge_decreases step
+  | tail _ step ih => exact Nat.lt_trans (edge_decreases step) ih
+
+theorem edges_acyclic : Acyclic edges := by
+  intro x cycle
+  exact Nat.lt_irrefl _ (path_decreases cycle)
+
+/-- An episode-owned destination retaining a control closes a real cycle. -/
+theorem internal_destination_closes_cycle :
+    ¬ Acyclic (add edges .destination .control) := by
+  intro safe
+  have noBack := (add_acyclic_iff edges_acyclic).mp safe
+  apply noBack
+  exact .tail (.tail .refl (by simp [edges] : edges .control .episode))
+    (by simp [edges] : edges .episode .destination)
+
+/-- An independent caller can retain the same control without that back-edge. -/
+theorem independent_caller_stays_acyclic : Acyclic (add edges .caller .control) := by
+  apply (add_acyclic_iff edges_acyclic).mpr
+  intro back
+  have monotone := path_nonincreasing back
+  simp [rank] at monotone
+
+end Controls
+end Mettapedia.Machines.ResourceOwnership.StrongEdges

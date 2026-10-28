@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Deepening
 import Mettapedia.OSLF.MeTTaIL.Complete.DeepRoot
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Sizes
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
 
 /-!
 # The deepening family of a rule job

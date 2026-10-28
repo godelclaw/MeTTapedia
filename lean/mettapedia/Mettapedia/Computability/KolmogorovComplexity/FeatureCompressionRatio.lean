@@ -96,6 +96,21 @@ theorem shortest_b_descriptive_conditional {U : ConditionalAlgorithm} {factor : 
   have lower := minimal.2 program competitor
   omega
 
+/-- The actual output of a minimum ratio-restricted map retains the ratio
+of its existential witness, by determinacy of the partial interpreter. -/
+theorem shortest_b_descriptive_actual_output {U : ConditionalAlgorithm} {factor : ℝ}
+    {feature descriptive source residual : BinString}
+    (minimum : ShortestBDescriptiveMap U factor feature descriptive source)
+    (selected : residual ∈ U descriptive source) :
+    source ∈ U feature residual ∧ feature.length + residual.length < source.length ∧
+      factor * residual.length ≤ source.length ∧
+      descriptive.length = plainConditionalComplexity U residual source := by
+  obtain ⟨witness, extracts, reconstructs, smaller, ratio⟩ := minimum.1
+  have same : witness = residual := Part.mem_unique extracts selected
+  subst witness
+  exact ⟨reconstructs, smaller, ratio,
+    shortest_b_descriptive_conditional minimum selected reconstructs smaller ratio⟩
+
 theorem shortest_b_maps_conditional {U : ConditionalAlgorithm} {factor : ℝ}
     {feature descriptive source : BinString}
     (minimalFeature : ShortestBFeature U factor feature source)
@@ -179,6 +194,7 @@ theorem b_compressible_feature_bound (U : ConditionalAlgorithm)
 
 #print axioms shortest_b_feature_conditional
 #print axioms shortest_b_descriptive_conditional
+#print axioms shortest_b_descriptive_actual_output
 #print axioms singleton_b_feature
 #print axioms b_compressible_feature_bound
 
