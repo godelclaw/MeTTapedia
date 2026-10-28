@@ -5,6 +5,7 @@ import Mettapedia.Protocols.Nostr.Event
 import Mettapedia.Protocols.Nostr.Filter
 import Mettapedia.Protocols.Nostr.Relay
 import Mettapedia.Protocols.Nostr.Mailbox
+import Mettapedia.Protocols.Nostr.Archive
 import Mettapedia.Protocols.Nostr.Bridge
 import Mettapedia.Protocols.Nostr.Sealed
 import Mettapedia.Protocols.Nostr.SymbolicAuthorship
