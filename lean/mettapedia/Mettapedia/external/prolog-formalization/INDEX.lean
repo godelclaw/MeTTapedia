@@ -9,7 +9,7 @@ the ChatGPT deep-research document:
   (B) executable interpreter layer with refinement theorems
 
 Source roadmap:
-  `~/claude/literature/AI Deep Research/
+  `literature/AI Deep Research/
     Do deep research on formalizing a clean Prolog fragment compatible with SWI-Prolog in Lean 4.pdf`
 
 Existing logic-programming formalization (pattern to follow):
