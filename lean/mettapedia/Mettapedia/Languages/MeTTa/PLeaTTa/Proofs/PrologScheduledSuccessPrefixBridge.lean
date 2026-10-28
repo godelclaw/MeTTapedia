@@ -1,0 +1,2044 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledSuccessPrefixBridge
+Purpose: Add successful scheduled-head activation to the exact global
+  transition zipper, compose its literal persistent-free midpoint, and add
+  producer-derived owned assertion effects plus post-cut body exit to the
+  same global vocabulary.
+Trusted boundary: none
+Main exports:
+  RepresentativePersistentFreeActivePayloadState.afterAdministrative,
+  GlobalTransitionKind,
+  GlobalCertifiedTransition,
+  GlobalCertifiedTransition.assertion_target_exact,
+  GlobalCertifiedTransition.assertion_effectErasure,
+  GlobalCertifiedTransition.committedBodyAnswer_target_committedScheduled,
+  GlobalCertifiedPrefix,
+  GlobalCertifiedPrefix.scheduledSuccessThenAdministrative
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessCarrierBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFailureRebasePrefixBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionAssertionTransitionBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeCommittedUnifyTransitionBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledSuccessPrefixBridge
+
+open Mettapedia.Languages.MeTTa.PLeaTTa.Source (Atom Subst)
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.Canonical
+open PeTTaSpec.PrologCore.DatabaseActions
+open PeTTaSpec.PrologCore.GoalSemantics
+open PeTTaSpec.PrologCore.OpenSubstitution
+open PeTTaSpec.PrologCore.Resolver
+open DemandDrivenStep
+open PrologActivatedProductStepBridge
+open PrologAlphaFreshFrontierBridge
+open PrologBodyFailureResourceTransitionBridge
+open PrologCurrentSessionAdministrativeTransitionBridge
+open PrologCurrentSessionAssertionTransitionBridge
+open PrologCurrentSessionPayloadBridge
+open PrologControlSegmentSpineBridge
+open PrologFailureRebasePrefixBridge
+open PrologHeterogeneousPrefixBridge
+open PrologMguComposition
+open PrologNestedCallReadyBridge
+open PrologOrdinaryStepBridge
+open PrologPersistentFreeActivePayloadBridge
+open PrologPersistentFreeCommittedPayloadBridge
+open PrologPersistentFreeCommittedScheduledPayloadBridge
+open PrologPersistentFreeCommittedUnifyTransitionBridge
+open PrologPersistentFreeScheduledPayloadBridge
+open PrologProductResourceContextBridge
+open PrologProductResourceTransitionBridge
+open PrologRetainedPayloadSnapshotBridge
+open PrologRetainedPayloadSnapshotBridge.SourceControlResourcePayloadContextAgrees
+open PrologRootClosedAnswerBridge
+open PrologScheduledPayloadLandingBridge
+open PrologScheduledPayloadPostHeadBridge
+open PrologScheduledPayloadRejectionBridge
+open PrologScheduledPayloadSuccessBridge
+open PrologScheduledPayloadSuccessCarrierBridge
+open PrologSourceProductContextBridge
+open PrologStateBridge
+open PrologDatabaseActionStepBridge
+
+/-! ## Persistent-free source administration -/
+
+/-- Exactly counted compiler-erased administration through an active product
+whose predicate identity is the typed cut scope itself.  No `OpenedCall` is
+needed or fabricated. -/
+theorem administrativeSteps_activeProductContextSourceStepsAt
+    {count : Nat}
+    {beforeBody afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps : AdministrativeStepsN count beforeBody afterBody)
+    (context : ActiveProductContext)
+    (callerScope predicateScope : CutScopeId)
+    (finish : PreparedCursor) (branch : ClauseBranch)
+    (branchTail : List ClauseBranch) (current : Substitution)
+    (callerReferences : List PeTTaSpec.PrologCore.Goal)
+    (session : Session) :
+    StepsN count
+      (.running session
+        (ActiveProductContext.plug context
+          (activeSourceProductAt callerScope predicateScope finish branch
+            branchTail current beforeBody callerReferences)))
+      []
+      (.running session
+        (ActiveProductContext.plug context
+          (activeSourceProductAt callerScope predicateScope finish branch
+            branchTail current afterBody callerReferences))) := by
+  induction steps with
+  | zero goals =>
+      exact .zero _
+  | succ count before middle after head tail inductionHypothesis =>
+      have child :
+          RawStep session (.task predicateScope before current) [] .none
+            session (.running (.task predicateScope middle current)) :=
+        head.rawStep predicateScope current session
+      let frame : ActiveProductFrame :=
+        { callerScope := callerScope
+          predicateScope := predicateScope
+          retained :=
+            .clauses predicateScope (finish.advance branch branchTail)
+          callerRest := callerReferences }
+      have active :
+          RawStep session
+            (activeSourceProductAt callerScope predicateScope finish branch
+              branchTail current before callerReferences)
+            [] .none session
+            (.running
+              (activeSourceProductAt callerScope predicateScope finish branch
+                branchTail current middle callerReferences)) := by
+        simpa [frame, ActiveProductFrame.wrap, activeSourceProductAt] using
+          ActiveProductFrame.liftProgress frame child
+            (by simp [Trace.AnswerFree])
+      have lifted :
+          RawStep session
+            (ActiveProductContext.plug context
+              (activeSourceProductAt callerScope predicateScope finish branch
+                branchTail current before callerReferences))
+            [] .none session
+            (.running
+              (ActiveProductContext.plug context
+                (activeSourceProductAt callerScope predicateScope finish branch
+                  branchTail current middle callerReferences))) :=
+        ActiveProductContext.liftProgress context active
+          (by simp [Trace.AnswerFree])
+      have first :
+          Transition
+            (.running session
+              (ActiveProductContext.plug context
+                (activeSourceProductAt callerScope predicateScope finish branch
+                  branchTail current before callerReferences)))
+            []
+            (.running session
+              (ActiveProductContext.plug context
+                (activeSourceProductAt callerScope predicateScope finish branch
+                  branchTail current middle callerReferences))) :=
+        .ordinary _ [] session session
+          (.running
+            (ActiveProductContext.plug context
+              (activeSourceProductAt callerScope predicateScope finish branch
+                branchTail current middle callerReferences)))
+          lifted
+      simpa using
+        StepsN.succ count
+          (.running session
+            (ActiveProductContext.plug context
+              (activeSourceProductAt callerScope predicateScope finish branch
+                branchTail current before callerReferences)))
+          (.running session
+            (ActiveProductContext.plug context
+              (activeSourceProductAt callerScope predicateScope finish branch
+                branchTail current middle callerReferences)))
+          (.running session
+            (ActiveProductContext.plug context
+              (activeSourceProductAt callerScope predicateScope finish branch
+                branchTail current after callerReferences)))
+          [] [] first inductionHypothesis
+
+namespace RepresentativePersistentFreeActivePayloadState
+
+/-- Source focus after a compiler-erased prefix, stated directly over the
+persistent-free predicate scope. -/
+def administrativeSource
+    (state : RepresentativePersistentFreeActivePayloadState)
+    (afterBody : List PeTTaSpec.PrologCore.Goal) : Search :=
+  ActiveProductContext.plug state.carrier.index.context
+    (activeSourceProductAt state.carrier.index.callerScope
+      state.carrier.index.predicateScope state.carrier.index.finish
+      state.carrier.index.branch state.carrier.index.branchTail
+      state.carrier.index.current afterBody
+      state.carrier.index.callerReferences)
+
+/-- Compute an administrative successor for an arbitrary persistent-free
+active carrier.  This is the first ordinary producer which consumes a
+scheduled-success endpoint directly; it never reconstructs legacy
+`OpenedCall` or `PendingCall` packets. -/
+def afterAdministrative
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) : RepresentativePersistentFreeActivePayloadState :=
+  let oldAgreement := state.carrier.agreement
+  let oldReady := oldAgreement.ready
+  let oldSpinePayload := oldReady.2.2.2
+  let nextBodyPayload :=
+    taskPayload_afterAdministrativeSteps oldSpinePayload.headPayload steps
+  let nextSpinePayload :
+      TaskSpinePayloadAgrees state.carrier.index.alpha
+        state.carrier.index.support state.carrier.index.canonical
+        state.carrier.index.referenceBase state.carrier.index.current
+        state.carrier.index.runtime
+        ({ barrier := state.carrier.index.bodyBarrier
+           references := afterBody
+           executables := state.carrier.index.bodyExecutables } ::
+         { barrier := state.carrier.index.callerBarrier
+           references := state.carrier.index.callerReferences
+           executables := state.carrier.index.callerExecutables } ::
+         state.carrier.index.outer) :=
+    ⟨nextBodyPayload.data,
+      .cons nextBodyPayload.control oldSpinePayload.control.tail⟩
+  let nextReady :
+      SpinedReadyTaskRelates state.carrier.index.freshFrontier
+        state.carrier.index.alpha state.carrier.index.support
+        state.carrier.index.canonical state.carrier.index.referenceBase
+        state.carrier.index.session state.carrier.index.current
+        state.carrier.index.runtime state.carrier.index.qterm
+        ({ barrier := state.carrier.index.bodyBarrier
+           references := afterBody
+           executables := state.carrier.index.bodyExecutables } ::
+         { barrier := state.carrier.index.callerBarrier
+           references := state.carrier.index.callerReferences
+           executables := state.carrier.index.callerExecutables } ::
+         state.carrier.index.outer)
+        state.carrier.index.openConf :=
+    ⟨oldReady.1, oldReady.2.1, oldReady.2.2.1, nextSpinePayload⟩
+  let nextIndex : PersistentFreeActivePayloadIndex :=
+    { state.carrier.index with
+      bodyReferences := afterBody
+      source := administrativeSource state afterBody }
+  let nextAgreement : nextIndex.Relates state.carrier.payloadContext :=
+    { ready := nextReady
+      activeAlts := oldAgreement.activeAlts
+      actualAlts := oldAgreement.actualAlts
+      sourceShape := rfl
+      endpointsCurrent := oldAgreement.endpointsCurrent
+      activationOrdered := oldAgreement.activationOrdered
+      activationOrigins := oldAgreement.activationOrigins
+      controlOrigins := oldAgreement.controlOrigins }
+  let nextCarrier : PersistentFreeActivePayloadState :=
+    { index := nextIndex
+      payloadContext := state.carrier.payloadContext
+      agreement := nextAgreement }
+  { carrier := nextCarrier
+    representative := state.representative
+    cumulative := by
+      simpa [nextCarrier, nextIndex] using state.cumulative }
+
+@[simp] theorem afterAdministrative_sourceState
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).carrier.sourceState =
+      .running state.carrier.index.session
+        (administrativeSource state afterBody) := rfl
+
+@[simp] theorem afterAdministrative_fineState
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).carrier.fineState =
+      state.carrier.fineState := rfl
+
+@[simp] theorem afterAdministrative_session
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).carrier.index.session =
+      state.carrier.index.session := rfl
+
+@[simp] theorem afterAdministrative_openConf
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).carrier.index.openConf =
+      state.carrier.index.openConf := rfl
+
+@[simp] theorem afterAdministrative_alpha
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).carrier.index.alpha =
+      state.carrier.index.alpha := rfl
+
+@[simp] theorem afterAdministrative_representative
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).representative =
+      state.representative := rfl
+
+@[simp] theorem afterAdministrative_cellIdentities
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    (afterAdministrative state steps).carrier.cellIdentities =
+      state.carrier.cellIdentities := rfl
+
+theorem afterAdministrative_sourceSteps
+    (state : RepresentativePersistentFreeActivePayloadState)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (steps :
+      AdministrativeStepsN count state.carrier.index.bodyReferences
+        afterBody) :
+    StepsN count state.carrier.sourceState []
+      (afterAdministrative state steps).carrier.sourceState := by
+  change
+    StepsN count
+      (.running state.carrier.index.session state.carrier.index.source) []
+      (.running state.carrier.index.session
+        (administrativeSource state afterBody))
+  rw [state.carrier.agreement.sourceShape]
+  exact
+    administrativeSteps_activeProductContextSourceStepsAt steps
+      state.carrier.index.context state.carrier.index.callerScope
+      state.carrier.index.predicateScope state.carrier.index.finish
+      state.carrier.index.branch state.carrier.index.branchTail
+      state.carrier.index.current state.carrier.index.callerReferences
+      state.carrier.index.session
+
+end RepresentativePersistentFreeActivePayloadState
+
+/-! ## Exact scheduled-success transition -/
+
+/-- Public data carried by a successful scheduled transition label.  The
+allocation floors and exact target representative remain observable to
+prefix invariants after the proof-relevant producer is hidden. -/
+structure ScheduledSuccessLabel where
+  sourceCost : Nat
+  answer : Substitution
+  referenceFloor : Nat
+  executableFloor : Nat
+  targetRepresentative : TreeSubstitution
+
+namespace ScheduledSuccessLabel
+
+def of
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    (ready : RootClosedAnswerReady before)
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (partition : RootPayloadPartition before)
+    (flattened : TreeSubstitution) : ScheduledSuccessLabel :=
+  { sourceCost :=
+      before.carrier.index.outer.length + 1 +
+        postAnswerSuccessfulHeadCount ready transition partition
+    answer := before.carrier.index.current
+    referenceFloor := transition.branch.firstFresh
+    executableFloor := selection.selected.resource.counter
+    targetRepresentative :=
+      flattened ++ transition.selectedSnapshotAtFinish.residualRepresentative }
+
+end ScheduledSuccessLabel
+
+/-- Public, producer-derived identity of one persistent local assertion.
+The exact effect and logical-update generations are retained in the schedule;
+the unlabelled executable step therefore cannot silently erase which source
+mutation occurred. -/
+structure AssertionTransitionLabel where
+  operation : AssertionOperation
+  effect : LocalDatabaseEffect
+  beforeGeneration : Nat
+  afterGeneration : Nat
+
+namespace AssertionTransitionLabel
+
+def of
+    {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativeActivePayloadState)
+    (ready : RepresentativeAssertionReady gt before) :
+    AssertionTransitionLabel :=
+  { operation := ready.operation
+    effect := ready.effect
+    beforeGeneration := before.carrier.index.session.resolver.database.generation
+    afterGeneration := ready.sourceAfter.resolver.database.generation }
+
+end AssertionTransitionLabel
+
+/-- Public identity of one packet-free committed primitive-unification edge.
+The proof-relevant producer retains both residual orientations; the closed
+global label exposes only the literal target representative needed by prefix
+invariants. -/
+structure CommittedUnifyTransitionLabel where
+  targetRepresentative : TreeSubstitution
+
+namespace CommittedUnifyTransitionLabel
+
+def of
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    {left right : Term} {result : Substitution}
+    {bodyRest : List PeTTaSpec.PrologCore.Goal}
+    {bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {sourceExtension executableExtension : TreeSubstitution}
+    {generated installed : Subst}
+    (_facts :
+      RepresentativePersistentFreeCommittedUnifySuccessorFacts prog gt before
+        after left right result bodyRest bodyExecutableTail sourceExtension
+        executableExtension generated installed) :
+    CommittedUnifyTransitionLabel :=
+  { targetRepresentative := after.representative }
+
+end CommittedUnifyTransitionLabel
+
+/-- Additive global transition vocabulary.  Existing resolver transitions are
+embedded unchanged; scheduled success, packet-free committed unification, and
+their first legacy-free consumers share the vocabulary with producer-derived
+owned assertion effects. -/
+inductive GlobalTransitionKind where
+  | resolver (kind : ResolverTransitionKind)
+  | activeAdministrative (count : Nat)
+  | committedAdministrative (count : Nat)
+  | committedUnify (label : CommittedUnifyTransitionLabel)
+  | committedBodyAnswer
+  | scheduledSuccess (label : ScheduledSuccessLabel)
+  | assertion (label : AssertionTransitionLabel)
+
+namespace GlobalTransitionKind
+
+def sourceCost : GlobalTransitionKind → Nat
+  | .resolver kind => kind.sourceCost
+  | .activeAdministrative count => count
+  | .committedAdministrative count => count
+  | .committedUnify _ => 1
+  | .committedBodyAnswer => 1
+  | .scheduledSuccess label => label.sourceCost
+  | .assertion _ => 1
+
+def sourceEvents : GlobalTransitionKind → List Observation
+  | .resolver kind => kind.sourceEvents
+  | .activeAdministrative _ => []
+  | .committedAdministrative _ => []
+  | .committedUnify _ => []
+  | .committedBodyAnswer => []
+  | .scheduledSuccess label => [.answer label.answer]
+  | .assertion label => [.effect label.effect]
+
+def fineCost : GlobalTransitionKind → Nat
+  | .resolver kind => kind.fineCost
+  | .activeAdministrative _ => 0
+  | .committedAdministrative _ => 0
+  | .committedUnify _ => 1
+  | .committedBodyAnswer => 0
+  | .scheduledSuccess _ => 2
+  | .assertion _ => 1
+
+/-- Kind-indexed alpha chronology.  Scheduled success allocates above the
+selected retained occurrence's frozen floors while proving those floors are
+dominated by the current persistent high-waters. -/
+def AlphaEvolution (kind : GlobalTransitionKind)
+    (before after : ResolverPhaseState) : Prop :=
+  match kind with
+  | .resolver resolverKind => resolverKind.AlphaEvolution before after
+  | .activeAdministrative _ => after.alpha = before.alpha
+  | .committedAdministrative _ => after.alpha = before.alpha
+  | .committedUnify _ => after.alpha = before.alpha
+  | .committedBodyAnswer => after.alpha = before.alpha
+  | .scheduledSuccess label =>
+      AlphaExtendsAbove before.alpha after.alpha
+          label.referenceFloor label.executableFloor ∧
+        label.referenceFloor ≤ before.session.resolver.nextFresh ∧
+        label.executableFloor ≤ before.openConf.persistent.counter
+  | .assertion _ => after.alpha = before.alpha
+
+/-- Scheduled success fixes its literal reconstructed representative instead
+of pretending it necessarily extends the scheduled phase's current one. -/
+def RepresentativeEvolution (kind : GlobalTransitionKind)
+    (before after : ResolverPhaseState) : Prop :=
+  match kind with
+  | .resolver resolverKind =>
+      resolverKind.RepresentativeEvolution before after
+  | .activeAdministrative _ => after.representative = before.representative
+  | .committedAdministrative _ =>
+      after.representative = before.representative
+  | .committedUnify label =>
+      after.representative = label.targetRepresentative
+  | .committedBodyAnswer =>
+      after.representative = before.representative
+  | .scheduledSuccess label =>
+      after.representative = label.targetRepresentative
+  | .assertion _ => after.representative = before.representative
+
+end GlobalTransitionKind
+
+/-- Every constructor owns one independent producer package.  There is no
+generic constructor accepting separately supplied source and fine traces. -/
+inductive GlobalCertifiedTransition
+    (prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog) (gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable) :
+    GlobalTransitionKind → ResolverPhaseState → ResolverPhaseState → Type where
+  | resolver
+      {kind : ResolverTransitionKind} {before after : ResolverPhaseState}
+      (step : ResolverCertifiedTransition prog gt kind before after) :
+      GlobalCertifiedTransition prog gt (.resolver kind) before after
+  | activeAdministrative
+      (before : RepresentativePersistentFreeActivePayloadState)
+      {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+      (positive : 0 < count)
+      (steps :
+        AdministrativeStepsN count before.carrier.index.bodyReferences
+          afterBody) :
+      GlobalCertifiedTransition prog gt (.activeAdministrative count)
+        (.ordinary (.active before))
+        (.ordinary
+          (.active
+            (RepresentativePersistentFreeActivePayloadState.afterAdministrative
+              before steps)))
+  | committedAdministrative
+      (before : RepresentativePersistentFreeCommittedPayloadState)
+      {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+      (positive : 0 < count)
+      (steps :
+        AdministrativeStepsN count before.carrier.index.bodyReferences
+          afterBody) :
+      GlobalCertifiedTransition prog gt (.committedAdministrative count)
+        (.ordinary (.committed before))
+        (.ordinary
+          (.committed
+            (RepresentativePersistentFreeCommittedPayloadState.afterAdministrative
+              before steps)))
+  | committedUnify
+      {before after : RepresentativePersistentFreeCommittedPayloadState}
+      {left right : Term} {result : Substitution}
+      {bodyRest : List PeTTaSpec.PrologCore.Goal}
+      {bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+      {sourceExtension executableExtension : TreeSubstitution}
+      {generated installed : Subst}
+      (facts :
+        RepresentativePersistentFreeCommittedUnifySuccessorFacts prog gt
+          before after left right result bodyRest bodyExecutableTail
+          sourceExtension executableExtension generated installed) :
+      GlobalCertifiedTransition prog gt
+        (.committedUnify (CommittedUnifyTransitionLabel.of facts))
+        (.ordinary (.committed before))
+        (.ordinary (.committed after))
+  | committedBodyAnswer
+      (before : RepresentativePersistentFreeCommittedPayloadState)
+      (referenceEmpty : before.carrier.index.bodyReferences = [])
+      (executableEmpty : before.carrier.index.bodyExecutables = []) :
+      GlobalCertifiedTransition prog gt .committedBodyAnswer
+        (.ordinary (.committed before))
+        (.ordinary
+          (.committedScheduled
+            (RepresentativePersistentFreeCommittedPayloadState.afterBodyAnswer
+              prog gt before referenceEmpty executableEmpty)))
+  | scheduledSuccess
+      {before : RepresentativePersistentFreeScheduledPayloadState}
+      {ready : RootClosedAnswerReady before}
+      {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+      {scope : CutScopeId}
+      {transition :
+        ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+          before.carrier.index.session}
+      {partition : RootPayloadPartition before}
+      {independentResult : Substitution}
+      {nextAlpha : List (LogicVar × String)}
+      {sourceCanonical flattened : TreeSubstitution}
+      {installed : Subst}
+      (relation :
+        ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+          transition partition independentResult nextAlpha sourceCanonical
+          flattened installed)
+      (successor :
+        ScheduledSelectedHeadTransition.ScheduledSuccessfulHeadSuccessor
+          prog gt before ready selection scope transition partition
+          independentResult nextAlpha sourceCanonical flattened installed
+          relation) :
+      GlobalCertifiedTransition prog gt
+        (.scheduledSuccess
+          (ScheduledSuccessLabel.of ready transition partition flattened))
+        (.ordinary (.scheduled before))
+        (.ordinary (.active successor.after))
+  | assertion
+      (before : RepresentativeActivePayloadState)
+      (ready : RepresentativeAssertionReady gt before) :
+      GlobalCertifiedTransition prog gt
+        (.assertion (AssertionTransitionLabel.of before ready))
+        (.ordinary
+          (.active
+            (RepresentativePersistentFreeActivePayloadState.ofLegacy before)))
+        (.ordinary
+          (.active
+            (RepresentativePersistentFreeActivePayloadState.ofLegacy
+              (RepresentativeActivePayloadState.afterAssertion
+                prog gt before ready))))
+
+namespace GlobalCertifiedTransition
+
+/-- A closed administrative label always preserves the active phase.  The
+target is indexed by the actual persistent-free carrier supplied to the
+constructor, so no endpoint-compatible committed state can be substituted. -/
+theorem activeAdministrative_target_active
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {count : Nat}
+    {before : RepresentativePersistentFreeActivePayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.activeAdministrative count)
+        (.ordinary (.active before)) after) :
+    ∃ target : RepresentativePersistentFreeActivePayloadState,
+      after = .ordinary (.active target) := by
+  cases step with
+  | activeAdministrative before positive steps =>
+      exact
+        ⟨RepresentativePersistentFreeActivePayloadState.afterAdministrative
+          before steps, rfl⟩
+
+/-- The administrative label cannot launder its successor through the
+committed phase.  This is a constructor-discrimination fact, independent of
+the source and fine endpoint projections. -/
+theorem activeAdministrative_not_committed
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (count : Nat)
+    (target : RepresentativePersistentFreeCommittedPayloadState) :
+    IsEmpty
+      (GlobalCertifiedTransition prog gt (.activeAdministrative count)
+        (.ordinary (.active before)) (.ordinary (.committed target))) := by
+  constructor
+  intro step
+  obtain ⟨after, impossible⟩ := step.activeAdministrative_target_active
+  cases impossible
+
+/-- A committed administrative edge remains in the committed phase and is
+indexed by the actual packet-free successor. -/
+theorem committedAdministrative_target_committed
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {count : Nat}
+    {before : RepresentativePersistentFreeCommittedPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedAdministrative count)
+        (.ordinary (.committed before)) after) :
+    ∃ target : RepresentativePersistentFreeCommittedPayloadState,
+      after = .ordinary (.committed target) := by
+  cases step with
+  | committedAdministrative before positive steps => exact ⟨_, rfl⟩
+
+/-- Committed administration cannot be relabelled as an active successor. -/
+theorem committedAdministrative_not_active
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeCommittedPayloadState)
+    (count : Nat)
+    (target : RepresentativePersistentFreeActivePayloadState) :
+    IsEmpty
+      (GlobalCertifiedTransition prog gt (.committedAdministrative count)
+        (.ordinary (.committed before)) (.ordinary (.active target))) := by
+  constructor
+  intro step
+  obtain ⟨after, impossible⟩ := step.committedAdministrative_target_committed
+  cases impossible
+
+/-- Committed administration cannot be confused with successful body exit.
+Both edges cost one source step, zero fine steps, and emit no observation, so
+their distinct target phases are the load-bearing discriminator. -/
+theorem committedAdministrative_not_committedScheduled
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeCommittedPayloadState)
+    (count : Nat)
+    (target : RepresentativePersistentFreeCommittedScheduledPayloadState) :
+    IsEmpty
+      (GlobalCertifiedTransition prog gt (.committedAdministrative count)
+        (.ordinary (.committed before))
+        (.ordinary (.committedScheduled target))) := by
+  constructor
+  intro step
+  obtain ⟨after, impossible⟩ := step.committedAdministrative_target_committed
+  cases impossible
+
+/-- A committed primitive-unification edge remains in the committed phase and
+is indexed by the literal packet-free successor constructed by its producer. -/
+theorem committedUnify_target_committed
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before : RepresentativePersistentFreeCommittedPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) after) :
+    ∃ target : RepresentativePersistentFreeCommittedPayloadState,
+      after = .ordinary (.committed target) := by
+  cases step with
+  | committedUnify facts => exact ⟨_, rfl⟩
+
+/-- A committed primitive-unification edge cannot be relabelled as an active
+successor. -/
+theorem committedUnify_not_active
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeCommittedPayloadState)
+    (label : CommittedUnifyTransitionLabel)
+    (target : RepresentativePersistentFreeActivePayloadState) :
+    IsEmpty
+      (GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.active target))) := by
+  constructor
+  intro step
+  obtain ⟨after, impossible⟩ := step.committedUnify_target_committed
+  cases impossible
+
+/-- The public label names the literal successor representative; a compatible
+but differently oriented residual substitution cannot be substituted later. -/
+theorem committedUnify_targetRepresentative
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.committed after))) :
+    after.representative = label.targetRepresentative := by
+  cases step with
+  | committedUnify facts => rfl
+
+/-- Primitive unification consumes control but neither manufactures nor drops
+an owned payload cell. -/
+theorem committedUnify_payloadCells_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.committed after))) :
+    after.carrier.cellIdentities = before.carrier.cellIdentities := by
+  cases step with
+  | committedUnify facts => exact facts.payloadCellsExact
+
+/-- Primitive unification allocates no independent clause variables; the
+source session, including every typed allocator high-water, is literally
+unchanged. -/
+theorem committedUnify_session_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.committed after))) :
+    after.carrier.index.session = before.carrier.index.session := by
+  cases step with
+  | committedUnify facts =>
+      rw [facts.afterIndexExact]
+      rfl
+
+/-- The fine equality step also allocates nothing and changes no world state.
+This is the executable half of the no-allocation claim; it prevents the
+retained fresh-frontier certificate from becoming stale behind a counter
+bump. -/
+theorem committedUnify_persistent_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.committed after))) :
+    after.carrier.index.openConf.persistent =
+      before.carrier.index.openConf.persistent := by
+  cases step with
+  | committedUnify facts =>
+      rw [facts.afterIndexExact]
+      simp [RepresentativePersistentFreeCommittedPayloadState.unifyIndex,
+        RepresentativePersistentFreeCommittedPayloadState.unifyOpenConf]
+
+/-- Alpha equality is structural rather than an assumed weakening: primitive
+unification changes the canonical/residual substitutions but performs no
+fresh clause copy. -/
+theorem committedUnify_alpha_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.committed after))) :
+    after.carrier.index.alpha = before.carrier.index.alpha := by
+  cases step with
+  | committedUnify facts =>
+      rw [facts.afterIndexExact]
+      rfl
+
+/-- The global edge retains the local anti-stutter discriminator: its selected
+equality is consumed, so the fine endpoints are not equal. -/
+theorem committedUnify_fineState_ne
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : CommittedUnifyTransitionLabel}
+    {before after : RepresentativePersistentFreeCommittedPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt (.committedUnify label)
+        (.ordinary (.committed before)) (.ordinary (.committed after))) :
+    before.carrier.fineState ≠ after.carrier.fineState := by
+  cases step with
+  | committedUnify facts => exact facts.fineState_ne
+
+/-- A successful committed clause body enters the exhausted scheduled phase;
+it cannot be represented as another live committed body. -/
+theorem committedBodyAnswer_target_committedScheduled
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeCommittedPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt .committedBodyAnswer
+        (.ordinary (.committed before)) after) :
+    ∃ target : RepresentativePersistentFreeCommittedScheduledPayloadState,
+      after = .ordinary (.committedScheduled target) := by
+  cases step with
+  | committedBodyAnswer before referenceEmpty executableEmpty => exact ⟨_, rfl⟩
+
+/-- The successful body exit cannot be laundered into the target phase of a
+committed administrative step. -/
+theorem committedBodyAnswer_not_committed
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before target : RepresentativePersistentFreeCommittedPayloadState) :
+    IsEmpty
+      (GlobalCertifiedTransition prog gt .committedBodyAnswer
+        (.ordinary (.committed before)) (.ordinary (.committed target))) := by
+  constructor
+  intro step
+  obtain ⟨after, impossible⟩ := step.committedBodyAnswer_target_committedScheduled
+  cases impossible
+
+/-- The target source state is the caller-first choice with an exhausted
+predicate boundary, not the still-executing committed product. -/
+theorem committedBodyAnswer_target_source_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeCommittedPayloadState}
+    {after : RepresentativePersistentFreeCommittedScheduledPayloadState}
+    (step :
+      GlobalCertifiedTransition prog gt .committedBodyAnswer
+        (.ordinary (.committed before))
+        (.ordinary (.committedScheduled after))) :
+    after.carrier.sourceState =
+      .running before.carrier.index.session
+        (RepresentativePersistentFreeCommittedPayloadState.bodyAnswerSource
+          before) := by
+  cases step with
+  | committedBodyAnswer before referenceEmpty executableEmpty => rfl
+
+theorem sourceSteps
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    StepsN kind.sourceCost before.sourceState kind.sourceEvents
+      after.sourceState := by
+  cases step with
+  | resolver step =>
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents] using step.sourceSteps
+  | activeAdministrative before positive steps =>
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents, ResolverPhaseState.sourceState,
+        ProductPhaseState.sourceState] using
+        Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledSuccessPrefixBridge.RepresentativePersistentFreeActivePayloadState.afterAdministrative_sourceSteps
+          before steps
+  | committedAdministrative before positive steps =>
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents, ResolverPhaseState.sourceState,
+        ProductPhaseState.sourceState] using
+        Mettapedia.Languages.MeTTa.PLeaTTa.PrologPersistentFreeCommittedPayloadBridge.RepresentativePersistentFreeCommittedPayloadState.afterAdministrative_sourceSteps
+          before steps
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts =>
+      have sessionEq :
+          after.carrier.index.session =
+            before.carrier.index.session := by
+        rw [facts.afterIndexExact]
+        rfl
+      have one := CertifiedTransition.oneSourceStep facts.sourceStep
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents, ResolverPhaseState.sourceState,
+        ProductPhaseState.sourceState,
+        PersistentFreeCommittedPayloadState.sourceState, sessionEq] using one
+  | committedBodyAnswer before referenceEmpty executableEmpty =>
+      have one :=
+        CertifiedTransition.oneSourceStep
+          (RepresentativePersistentFreeCommittedPayloadState.afterBodyAnswer_sourceStep
+            prog gt before referenceEmpty executableEmpty)
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents, ResolverPhaseState.sourceState,
+        ProductPhaseState.sourceState,
+        PersistentFreeCommittedPayloadState.sourceState] using one
+  | scheduledSuccess relation successor =>
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents, ScheduledSuccessLabel.of,
+        ResolverPhaseState.sourceState, ProductPhaseState.sourceState] using
+        relation.fullSourceRun
+  | assertion before ready =>
+      let target :=
+        RepresentativeActivePayloadState.afterAssertion prog gt before ready
+      have raw :
+          RawStep before.carrier.index.session before.carrier.index.source
+            [.effect ready.effect] .none target.carrier.index.session
+            (.running target.carrier.index.source) := by
+        simpa [target] using
+          RepresentativeActivePayloadState.afterAssertion_sourceStep
+            prog gt before ready
+      have publicStep :
+          Transition before.carrier.sourceState [.effect ready.effect]
+            target.carrier.sourceState :=
+        .ordinary _ _ _ _ _ raw
+      have one :
+          StepsN 1 before.carrier.sourceState [.effect ready.effect]
+            target.carrier.sourceState := by
+        simpa using
+          StepsN.succ 0 before.carrier.sourceState target.carrier.sourceState
+            target.carrier.sourceState [.effect ready.effect] [] publicStep
+            (.zero _)
+      simpa [GlobalTransitionKind.sourceCost,
+        GlobalTransitionKind.sourceEvents, AssertionTransitionLabel.of,
+        ResolverPhaseState.sourceState, ProductPhaseState.sourceState,
+        target] using one
+
+/-- The answer pull and selected-head equality are two present fine steps.
+Neither is erased into the scheduled-success macro edge. -/
+theorem fineSteps
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    DemandDrivenCallStep.StepsN prog gt kind.fineCost before.fineState
+      after.fineState := by
+  cases step with
+  | resolver step =>
+      simpa [GlobalTransitionKind.fineCost] using step.fineSteps
+  | activeAdministrative before positive steps =>
+      exact .zero _
+  | committedAdministrative before positive steps =>
+      exact .zero _
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts =>
+      simpa [GlobalTransitionKind.fineCost,
+        ResolverPhaseState.fineState, ProductPhaseState.fineState,
+        PersistentFreeCommittedPayloadState.fineState] using
+        CertifiedTransition.oneFineStep facts.fineStep
+  | committedBodyAnswer before referenceEmpty executableEmpty =>
+      exact .zero _
+  | @scheduledSuccess before ready selection scope transition partition
+      independentResult nextAlpha sourceCanonical flattened installed
+      relation successor =>
+      have notLocal :
+          ¬ DemandDrivenCallStep.LocalResolveHead
+            before.carrier.index.openConf := by
+        intro localHead
+        rcases localHead with
+          ⟨predicate, args, result, rest, binding, head, _nonempty, _arity⟩
+        rw [ready.fineHead] at head
+        cases head
+      have answerOpen :
+          DemandDrivenStep.Step prog gt before.carrier.index.openConf
+            (selectedFineState before) := by
+        simpa [selectedFineState] using
+          DemandDrivenStep.answer_is_one_step prog gt
+            before.carrier.index.openConf before.carrier.index.runtime
+            ready.fineHead
+      have answerFine :
+          DemandDrivenCallStep.Step prog gt
+            (.ready before.carrier.index.openConf)
+            (.ready (selectedFineState before)) :=
+        .ordinary _ _ notLocal answerOpen
+      have resolvedFine :
+          DemandDrivenCallStep.StepsN prog gt 1
+            (.ready (selectedFineState before))
+            (.ready (successfulFineState transition installed)) := by
+        simpa using
+          DemandDrivenCallStep.StepsN.succ 0
+            (.ready (selectedFineState before))
+            (.ready (successfulFineState transition installed))
+            (.ready (successfulFineState transition installed))
+            relation.fineStep (.zero _)
+      have paired :
+          DemandDrivenCallStep.StepsN prog gt 2
+            (.ready before.carrier.index.openConf)
+            (.ready (successfulFineState transition installed)) := by
+        simpa using
+          DemandDrivenCallStep.StepsN.succ 1
+            (.ready before.carrier.index.openConf)
+            (.ready (selectedFineState before))
+            (.ready (successfulFineState transition installed))
+            answerFine resolvedFine
+      simpa [GlobalTransitionKind.fineCost,
+        ResolverPhaseState.fineState, ProductPhaseState.fineState,
+        PersistentFreeScheduledPayloadState.fineState] using paired
+  | assertion before ready =>
+      have one :=
+        CertifiedTransition.oneFineStep
+          (RepresentativeActivePayloadState.afterAssertion_fineStep
+            prog gt before ready)
+      simpa [GlobalTransitionKind.fineCost,
+        ResolverPhaseState.fineState, ProductPhaseState.fineState] using one
+
+theorem sessionHighWaters
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    SessionHighWatersExtend before.session after.session := by
+  cases step with
+  | resolver step => exact step.sessionHighWaters
+  | activeAdministrative before positive steps =>
+      exact SessionHighWatersExtend.refl _
+  | committedAdministrative before positive steps =>
+      exact SessionHighWatersExtend.refl _
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts =>
+      change
+        SessionHighWatersExtend before.carrier.index.session
+          after.carrier.index.session
+      rw [facts.afterIndexExact]
+      exact SessionHighWatersExtend.refl _
+  | committedBodyAnswer before referenceEmpty executableEmpty =>
+      exact SessionHighWatersExtend.refl _
+  | scheduledSuccess relation successor =>
+      exact SessionHighWatersExtend.refl _
+  | assertion before ready =>
+      simpa [ResolverPhaseState.session, ProductPhaseState.session] using
+        SessionHighWatersExtend.of_rawStep
+          (RepresentativeActivePayloadState.afterAssertion_sourceStep
+            prog gt before ready)
+
+theorem executableCounter_mono
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    before.openConf.persistent.counter ≤ after.openConf.persistent.counter := by
+  cases step with
+  | resolver step => exact step.executableCounter_mono
+  | activeAdministrative before positive steps => exact Nat.le_refl _
+  | committedAdministrative before positive steps => exact Nat.le_refl _
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts =>
+      change
+        before.carrier.index.openConf.persistent.counter ≤
+          after.carrier.index.openConf.persistent.counter
+      rw [facts.afterIndexExact]
+      simp [RepresentativePersistentFreeCommittedPayloadState.unifyIndex,
+        RepresentativePersistentFreeCommittedPayloadState.unifyOpenConf]
+  | committedBodyAnswer before referenceEmpty executableEmpty =>
+      exact Nat.le_refl _
+  | @scheduledSuccess before ready selection scope transition partition
+      independentResult nextAlpha sourceCanonical flattened installed
+      relation successor =>
+      change before.carrier.index.openConf.persistent.counter ≤
+        (successfulFineState transition installed).persistent.counter
+      rw [relation.finePersistent]
+      simp [selectedFineState, privateAnswerTarget_persistent]
+  | assertion before ready =>
+      change
+        before.carrier.index.openConf.persistent.counter ≤
+          (RepresentativeActivePayloadState.afterAssertion prog gt before
+            ready).carrier.index.openConf.persistent.counter
+      rw [RepresentativeActivePayloadState.afterAssertion_openConf]
+      simp [RepresentativeAssertionReady.executableAfter]
+
+theorem alphaIncluded
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    ∀ pair, pair ∈ before.alpha → pair ∈ after.alpha := by
+  cases step with
+  | resolver step => exact step.alphaIncluded
+  | activeAdministrative before positive steps =>
+      intro pair present
+      exact present
+  | committedAdministrative before positive steps =>
+      intro pair present
+      exact present
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts =>
+      intro pair present
+      change pair ∈ after.carrier.index.alpha
+      change pair ∈ before.carrier.index.alpha at present
+      rw [facts.afterIndexExact]
+      exact present
+  | committedBodyAnswer before referenceEmpty executableEmpty =>
+      intro pair present
+      exact present
+  | scheduledSuccess relation successor =>
+      exact relation.alphaIncluded
+  | assertion before ready =>
+      intro pair present
+      exact present
+
+theorem alphaEvolution
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    kind.AlphaEvolution before after := by
+  cases step with
+  | resolver step =>
+      simpa [GlobalTransitionKind.AlphaEvolution] using step.alphaEvolution
+  | activeAdministrative before positive steps => rfl
+  | committedAdministrative before positive steps => rfl
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts =>
+      change after.carrier.index.alpha = before.carrier.index.alpha
+      rw [facts.afterIndexExact]
+      rfl
+  | committedBodyAnswer before referenceEmpty executableEmpty => rfl
+  | @scheduledSuccess before ready selection scope transition partition
+      independentResult nextAlpha sourceCanonical flattened installed
+      relation successor =>
+      have endpointBounds :=
+        transition.selectedEndpointBounds
+          before.carrier.agreement.endpointsCurrent
+      have branchMember : transition.branch ∈ transition.finish.remaining := by
+        rw [transition.offset.cursorRemaining]
+        simp
+      have referenceFloor :
+          transition.branch.firstFresh ≤
+            before.carrier.index.session.resolver.nextFresh :=
+        Nat.le_trans
+          (transition.offset.cursorWellFormed.1.member_first_le_next
+            branchMember)
+          (Nat.le_trans
+            (transition.offset.cursorWellFormed.1.member_next_le_final
+              branchMember)
+            endpointBounds.1)
+      have selectedCounterLeFinal :
+          selection.selected.resource.counter ≤
+            selection.selected.resource.finalCounter := by
+        rcases transition.offset.tailOwnership with
+          ⟨_callStart, _position, tailOwnership⟩
+        rcases tailOwnership.scan with
+          ⟨_candidates, _wellFormed, _query, _substitutedArgs, _supported,
+            _arities, scan⟩
+        have scanExact := scan.counter_exact
+        have selectedSeedReserved :
+            selection.selected.resource.counter + 1 ≤
+              selection.selected.resource.finalCounter := by
+          simpa only [afterPulledHead_counter,
+            afterPulledHead_finalCounter] using
+            (show
+              (afterPulledHead selection.selected.resource
+                    selection.localTail).counter ≤
+                (afterPulledHead selection.selected.resource
+                    selection.localTail).finalCounter by
+              omega)
+        omega
+      have executableFloor :
+          selection.selected.resource.counter ≤
+            before.carrier.index.openConf.persistent.counter :=
+        Nat.le_trans selectedCounterLeFinal endpointBounds.2
+      exact ⟨relation.extensionAbove, referenceFloor, executableFloor⟩
+  | assertion before ready => rfl
+
+theorem representativeEvolution
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kind : GlobalTransitionKind} {before after : ResolverPhaseState}
+    (step : GlobalCertifiedTransition prog gt kind before after) :
+    kind.RepresentativeEvolution before after := by
+  cases step with
+  | resolver step =>
+      simpa [GlobalTransitionKind.RepresentativeEvolution] using
+        step.representativeEvolution
+  | activeAdministrative before positive steps => rfl
+  | committedAdministrative before positive steps => rfl
+  | @committedUnify before after left right result bodyRest
+      bodyExecutableTail sourceExtension executableExtension generated
+      installed facts => rfl
+  | committedBodyAnswer before referenceEmpty executableEmpty => rfl
+  | scheduledSuccess relation successor => rfl
+  | assertion before ready => rfl
+
+/-- Inverting an assertion edge recovers the one producer package which
+fixes its label and literal active successor.  Thus no caller-supplied effect
+or endpoint can inhabit the assertion constructor merely because separate
+source and fine traces happen to exist. -/
+theorem assertion_target_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : AssertionTransitionLabel}
+    {start after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.assertion label)
+        start after) :
+    ∃ before : RepresentativeActivePayloadState,
+      ∃ ready : RepresentativeAssertionReady gt before,
+        start =
+            .ordinary
+              (.active
+                (RepresentativePersistentFreeActivePayloadState.ofLegacy
+                  before)) ∧
+          label = AssertionTransitionLabel.of before ready ∧
+          after =
+            .ordinary
+              (.active
+                (RepresentativePersistentFreeActivePayloadState.ofLegacy
+                  (RepresentativeActivePayloadState.afterAssertion
+                    prog gt before ready))) := by
+  cases step with
+  | assertion before ready => exact ⟨before, ready, rfl, rfl, rfl⟩
+
+/-- An assertion edge cannot launder its persistent mutation through the
+committed phase.  The result follows from the producer-indexed target rather
+than from comparing projected source or executable endpoints. -/
+theorem assertion_not_committed
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : AssertionTransitionLabel}
+    (start : ResolverPhaseState)
+    (target : RepresentativePersistentFreeCommittedPayloadState) :
+    IsEmpty
+      (GlobalCertifiedTransition prog gt (.assertion label) start
+        (.ordinary (.committed target))) := by
+  constructor
+  intro step
+  obtain ⟨_before, _ready, _start, _label, impossible⟩ :=
+    step.assertion_target_exact
+  cases impossible
+
+/-- Every inhabited assertion label records exactly one logical-update
+generation advance.  A zero-generation stutter cannot be relabelled as a
+database mutation. -/
+theorem assertion_generation_succ
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : AssertionTransitionLabel}
+    {start after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.assertion label)
+        start after) :
+    label.afterGeneration = label.beforeGeneration + 1 := by
+  cases step with
+  | assertion before ready =>
+      change
+        (ready.operation.update
+          before.carrier.index.session.resolver.database
+          ready.referenceClause).generation =
+            before.carrier.index.session.resolver.database.generation + 1
+      exact
+        AssertionOperation.update_generation ready.operation
+          before.carrier.index.session.resolver.database ready.referenceClause
+
+/-- The unlabelled fine world action erases only the exact singleton source
+effect justified by the producer-derived database mutation certificate. -/
+theorem assertion_effectErasure
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : AssertionTransitionLabel}
+    {start after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.assertion label)
+        start after) :
+    ∃ before : RepresentativeActivePayloadState,
+      ∃ ready : RepresentativeAssertionReady gt before,
+        start =
+            .ordinary
+              (.active
+                (RepresentativePersistentFreeActivePayloadState.ofLegacy
+                  before)) ∧
+          label = AssertionTransitionLabel.of before ready ∧
+          SourceDatabaseEffectErasure [.effect label.effect]
+            before.carrier.index.session
+            (RepresentativeActivePayloadState.afterAssertion prog gt before
+              ready).carrier.index.session
+            before.carrier.index.openConf.persistent
+            (RepresentativeActivePayloadState.afterAssertion prog gt before
+              ready).carrier.index.openConf.persistent := by
+  cases step with
+  | assertion before ready =>
+      exact
+        ⟨before, ready, rfl, rfl,
+          RepresentativeActivePayloadState.afterAssertion_effectErasure
+            prog gt before ready⟩
+
+/-- Assertion is resource-neutral: it mutates persistent world state without
+moving, duplicating, or deleting any retained payload cell. -/
+theorem assertion_payloadCells_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativeActivePayloadState)
+    (ready : RepresentativeAssertionReady gt before) :
+    (RepresentativePersistentFreeActivePayloadState.ofLegacy
+        (RepresentativeActivePayloadState.afterAssertion
+          prog gt before ready)).carrier.cellIdentities =
+      (RepresentativePersistentFreeActivePayloadState.ofLegacy
+        before).carrier.cellIdentities := by
+  simp
+
+/-- Root ownership is unchanged by a persistent assertion. -/
+theorem assertion_rootClosed_iff
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativeActivePayloadState)
+    (ready : RepresentativeAssertionReady gt before) :
+    ProductPhaseState.RootClosed
+        (.active
+          (RepresentativePersistentFreeActivePayloadState.ofLegacy
+            (RepresentativeActivePayloadState.afterAssertion
+              prog gt before ready))) ↔
+      ProductPhaseState.RootClosed
+        (.active
+          (RepresentativePersistentFreeActivePayloadState.ofLegacy before)) := by
+  simp [ProductPhaseState.RootClosed, ProductPhaseState.baseAlts]
+
+/-- The closed label cannot turn a successful scheduled transition into a
+different phase. -/
+theorem scheduledSuccess_target_active
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : ScheduledSuccessLabel}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.scheduledSuccess label)
+        (.ordinary (.scheduled before)) after) :
+    ∃ target : RepresentativePersistentFreeActivePayloadState,
+      after = .ordinary (.active target) := by
+  cases step with
+  | scheduledSuccess relation successor => exact ⟨successor.after, rfl⟩
+
+/-- The successful label's source cost is fixed by its producer and is
+strictly positive; a caller cannot relabel the edge as a zero-step stutter. -/
+theorem scheduledSuccess_sourceCost_positive
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : ScheduledSuccessLabel}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.scheduledSuccess label)
+        (.ordinary (.scheduled before)) after) :
+    0 < label.sourceCost := by
+  cases step with
+  | scheduledSuccess relation successor =>
+      simp [ScheduledSuccessLabel.of]
+
+/-- The answer observation stored in the label is definitionally the
+scheduled state's current source substitution. -/
+theorem scheduledSuccess_answer_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : ScheduledSuccessLabel}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.scheduledSuccess label)
+        (.ordinary (.scheduled before)) after) :
+    label.answer = before.carrier.index.current := by
+  cases step with
+  | scheduledSuccess relation successor => rfl
+
+/-- This first successful carrier is honestly root-closed.  General
+unowned executable suffixes remain outside the transition until their
+resource relation is represented explicitly. -/
+theorem scheduledSuccess_target_rootClosed
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {label : ScheduledSuccessLabel}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {after : ResolverPhaseState}
+    (step :
+      GlobalCertifiedTransition prog gt (.scheduledSuccess label)
+        (.ordinary (.scheduled before)) after) :
+    match after with
+    | .ordinary state => state.RootClosed
+    | .postFailure _ => False := by
+  cases step with
+  | scheduledSuccess relation successor => rfl
+
+/-- The constructive Prop-level producer establishes inhabitation of the
+Type-valued successor and transition together.  The transition itself stores
+the explicit successor; `Nonempty` is not a phase field. -/
+theorem scheduledSuccess_nonempty
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    {transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session}
+    {partition : RootPayloadPartition before}
+    {independentResult : Substitution}
+    {nextAlpha : List (LogicVar × String)}
+    {sourceCanonical flattened : TreeSubstitution}
+    {installed : Subst}
+    (relation :
+      ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+        transition partition independentResult nextAlpha sourceCanonical
+        flattened installed) :
+    Nonempty
+      (Σ successor :
+          ScheduledSelectedHeadTransition.ScheduledSuccessfulHeadSuccessor
+            prog gt before ready selection scope transition partition
+            independentResult nextAlpha sourceCanonical flattened installed
+            relation,
+        GlobalCertifiedTransition prog gt
+          (.scheduledSuccess
+            (ScheduledSuccessLabel.of ready transition partition flattened))
+          (.ordinary (.scheduled before))
+          (.ordinary (.active successor.after))) := by
+  rcases
+      ScheduledSelectedHeadTransition.ScheduledSuccessfulHeadSuccessor.nonempty
+        relation with
+    ⟨successor⟩
+  exact ⟨⟨successor, .scheduledSuccess relation successor⟩⟩
+
+end GlobalCertifiedTransition
+
+/-! ## Exact global prefixes -/
+
+namespace GlobalTransitionSchedule
+
+def sourceCost : List GlobalTransitionKind → Nat
+  | [] => 0
+  | kind :: kinds => kind.sourceCost + sourceCost kinds
+
+def sourceEvents : List GlobalTransitionKind → List Observation
+  | [] => []
+  | kind :: kinds => kind.sourceEvents ++ sourceEvents kinds
+
+def fineCost : List GlobalTransitionKind → Nat
+  | [] => 0
+  | kind :: kinds => kind.fineCost + fineCost kinds
+
+@[simp] theorem sourceCost_append
+    (left right : List GlobalTransitionKind) :
+    sourceCost (left ++ right) = sourceCost left + sourceCost right := by
+  induction left with
+  | nil => simp [sourceCost]
+  | cons kind kinds ih =>
+      simp only [List.cons_append, sourceCost, ih, Nat.add_assoc]
+
+@[simp] theorem sourceEvents_append
+    (left right : List GlobalTransitionKind) :
+    sourceEvents (left ++ right) =
+      sourceEvents left ++ sourceEvents right := by
+  induction left with
+  | nil => rfl
+  | cons kind kinds ih =>
+      simp only [List.cons_append, sourceEvents, ih, List.append_assoc]
+
+@[simp] theorem fineCost_append
+    (left right : List GlobalTransitionKind) :
+    fineCost (left ++ right) = fineCost left + fineCost right := by
+  induction left with
+  | nil => simp [fineCost]
+  | cons kind kinds ih =>
+      simp only [List.cons_append, fineCost, ih, Nat.add_assoc]
+
+@[simp] theorem sourceCost_resolver_map
+    (kinds : List ResolverTransitionKind) :
+    sourceCost (kinds.map GlobalTransitionKind.resolver) =
+      ResolverTransitionSchedule.sourceCost kinds := by
+  induction kinds with
+  | nil => rfl
+  | cons kind kinds ih =>
+      simp [sourceCost, GlobalTransitionKind.sourceCost,
+        ResolverTransitionSchedule.sourceCost, ih]
+
+@[simp] theorem sourceEvents_resolver_map
+    (kinds : List ResolverTransitionKind) :
+    sourceEvents (kinds.map GlobalTransitionKind.resolver) =
+      ResolverTransitionSchedule.sourceEvents kinds := by
+  induction kinds with
+  | nil => rfl
+  | cons kind kinds ih =>
+      simp [sourceEvents, GlobalTransitionKind.sourceEvents,
+        ResolverTransitionSchedule.sourceEvents, ih]
+
+@[simp] theorem fineCost_resolver_map
+    (kinds : List ResolverTransitionKind) :
+    fineCost (kinds.map GlobalTransitionKind.resolver) =
+      ResolverTransitionSchedule.fineCost kinds := by
+  induction kinds with
+  | nil => rfl
+  | cons kind kinds ih =>
+      simp [fineCost, GlobalTransitionKind.fineCost,
+        ResolverTransitionSchedule.fineCost, ih]
+
+/-- Chronological alpha evolution retains the literal midpoint of every
+scheduled-success and ordinary transition. -/
+def AlphaEvolution :
+    List GlobalTransitionKind → ResolverPhaseState →
+      ResolverPhaseState → Prop
+  | [], before, after => after = before
+  | kind :: kinds, before, after =>
+      ∃ middle,
+        kind.AlphaEvolution before middle ∧
+          AlphaEvolution kinds middle after
+
+/-- Chronological representative evolution keeps scheduled reconstruction,
+rollback, and ordinary extension as distinct kind-indexed laws. -/
+def RepresentativeEvolution :
+    List GlobalTransitionKind → ResolverPhaseState →
+      ResolverPhaseState → Prop
+  | [], before, after => after = before
+  | kind :: kinds, before, after =>
+      ∃ middle,
+        kind.RepresentativeEvolution before middle ∧
+          RepresentativeEvolution kinds middle after
+
+end GlobalTransitionSchedule
+
+/-- Proof-relevant global finite prefix.  Every adjacent transition shares
+one literal dependent `ResolverPhaseState`; endpoint compatibility is not a
+constructor. -/
+inductive GlobalCertifiedPrefix
+    (prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog) (gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable) :
+    List GlobalTransitionKind → ResolverPhaseState →
+      ResolverPhaseState → Type where
+  | nil (state : ResolverPhaseState) :
+      GlobalCertifiedPrefix prog gt [] state state
+  | cons
+      {kind : GlobalTransitionKind}
+      {kinds : List GlobalTransitionKind}
+      {before middle after : ResolverPhaseState}
+      (head : GlobalCertifiedTransition prog gt kind before middle)
+      (tail : GlobalCertifiedPrefix prog gt kinds middle after) :
+      GlobalCertifiedPrefix prog gt (kind :: kinds) before after
+
+namespace GlobalCertifiedPrefix
+
+/-- Embed an existing failure-aware resolver prefix without changing any
+literal midpoint or schedule datum. -/
+def ofResolver
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List ResolverTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : ResolverCertifiedPrefix prog gt kinds before after) :
+    GlobalCertifiedPrefix prog gt
+      (kinds.map GlobalTransitionKind.resolver) before after :=
+  match run with
+  | .nil state => .nil state
+  | .cons head tail => .cons (.resolver head) (ofResolver tail)
+
+/-- Concatenate only at one definitionally shared dependent phase. -/
+def append
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {leftKinds rightKinds : List GlobalTransitionKind}
+    {before middle after : ResolverPhaseState}
+    (left : GlobalCertifiedPrefix prog gt leftKinds before middle)
+    (right : GlobalCertifiedPrefix prog gt rightKinds middle after) :
+    GlobalCertifiedPrefix prog gt (leftKinds ++ rightKinds) before after :=
+  match left with
+  | .nil _ => right
+  | .cons head tail => .cons head (append tail right)
+
+/-- A split returns the actual dependent midpoint as Type data. -/
+def split
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (leftKinds rightKinds : List GlobalTransitionKind)
+    {before after : ResolverPhaseState}
+    (run :
+      GlobalCertifiedPrefix prog gt (leftKinds ++ rightKinds) before after) :
+    Σ middle : ResolverPhaseState,
+      GlobalCertifiedPrefix prog gt leftKinds before middle ×
+        GlobalCertifiedPrefix prog gt rightKinds middle after := by
+  induction leftKinds generalizing before with
+  | nil => exact ⟨before, .nil before, run⟩
+  | cons kind kinds ih =>
+      cases run with
+      | cons head tail =>
+          obtain ⟨middle, left, right⟩ := ih tail
+          exact ⟨middle, .cons head left, right⟩
+
+theorem sourceSteps
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    StepsN (GlobalTransitionSchedule.sourceCost kinds) before.sourceState
+      (GlobalTransitionSchedule.sourceEvents kinds) after.sourceState := by
+  induction run with
+  | nil state => exact StepsN.zero state.sourceState
+  | cons head tail ih =>
+      simpa [GlobalTransitionSchedule.sourceCost,
+        GlobalTransitionSchedule.sourceEvents] using
+        StepsN.trans head.sourceSteps ih
+
+theorem fineSteps
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    DemandDrivenCallStep.StepsN prog gt
+      (GlobalTransitionSchedule.fineCost kinds) before.fineState
+      after.fineState := by
+  induction run with
+  | nil state => exact DemandDrivenCallStep.StepsN.zero state.fineState
+  | cons head tail ih =>
+      simpa [GlobalTransitionSchedule.fineCost] using
+        DemandDrivenCallStep.StepsN.trans head.fineSteps ih
+
+theorem sessionHighWaters
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    SessionHighWatersExtend before.session after.session := by
+  induction run with
+  | nil state => exact SessionHighWatersExtend.refl state.session
+  | cons head tail ih =>
+      exact SessionHighWatersExtend.trans head.sessionHighWaters ih
+
+theorem executableCounter_mono
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    before.openConf.persistent.counter ≤ after.openConf.persistent.counter := by
+  induction run with
+  | nil state => exact Nat.le_refl _
+  | cons head tail ih =>
+      exact Nat.le_trans head.executableCounter_mono ih
+
+theorem alphaIncluded
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    ∀ pair, pair ∈ before.alpha → pair ∈ after.alpha := by
+  induction run with
+  | nil state =>
+      intro pair present
+      exact present
+  | cons head tail ih =>
+      intro pair present
+      exact ih pair (head.alphaIncluded pair present)
+
+theorem alphaEvolution
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    GlobalTransitionSchedule.AlphaEvolution kinds before after := by
+  induction run with
+  | nil state => rfl
+  | @cons kind kinds before middle after head tail ih =>
+      exact ⟨middle, head.alphaEvolution, ih⟩
+
+theorem representativeEvolution
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    GlobalTransitionSchedule.RepresentativeEvolution kinds before after := by
+  induction run with
+  | nil state => rfl
+  | @cons kind kinds before middle after head tail ih =>
+      exact ⟨middle, head.representativeEvolution, ih⟩
+
+/-- Chronological list of literal global phase states. -/
+def states
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState} :
+    GlobalCertifiedPrefix prog gt kinds before after →
+      List ResolverPhaseState
+  | .nil state => [state]
+  | .cons _ tail => before :: states tail
+
+@[simp] theorem states_length
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List GlobalTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : GlobalCertifiedPrefix prog gt kinds before after) :
+    run.states.length = kinds.length + 1 := by
+  induction run with
+  | nil state => rfl
+  | cons head tail ih =>
+      simp only [states, List.length_cons, List.length, ih]
+
+@[simp] theorem states_ofResolver
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {kinds : List ResolverTransitionKind}
+    {before after : ResolverPhaseState}
+    (run : ResolverCertifiedPrefix prog gt kinds before after) :
+    (ofResolver run).states = run.states := by
+  induction run with
+  | nil state => rfl
+  | @cons kind kinds start middle finish head tail ih =>
+      simp only [ofResolver, states, ResolverCertifiedPrefix.states]
+      exact congrArg (start :: ·) ih
+
+/-- A native packet-free cut followed immediately by the first committed
+administrative consumer.  The literal cut successor is the dependent
+midpoint of both edges: no historical `OpenedCall`/`PendingCall` packet is
+reconstructed, and no merely endpoint-compatible committed state can be
+substituted. -/
+def activeCutThenCommittedAdministrative
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (bodyRest : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (referenceHead :
+      before.carrier.index.bodyReferences = .cut :: bodyRest)
+    (executableHead :
+      before.carrier.index.bodyExecutables =
+        .cutAt before.carrier.index.bodyBarrier :: bodyExecutableTail)
+    (coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent before.carrier.index.openConf.toConf)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (positive : 0 < count)
+    (steps : AdministrativeStepsN count bodyRest afterBody) :
+    GlobalCertifiedPrefix prog gt
+      [ .resolver
+          (.forward
+            (.cut
+              (retainedCursorTokenAt before.carrier.index.predicateScope
+                before.carrier.index.finish before.carrier.index.branch
+                before.carrier.index.branchTail))),
+        .committedAdministrative count ]
+      (.ordinary (.active before))
+      (.ordinary
+        (.committed
+          (RepresentativePersistentFreeCommittedPayloadState.afterAdministrative
+            (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+              before bodyRest bodyExecutableTail referenceHead executableHead
+              coherent)
+            steps))) :=
+  .cons
+    (.resolver
+      (.forward
+        (.cut before bodyRest bodyExecutableTail referenceHead executableHead
+          coherent)))
+    (.cons
+      (.committedAdministrative
+        (RepresentativePersistentFreeActivePayloadState.afterCut prog gt before
+          bodyRest bodyExecutableTail referenceHead executableHead coherent)
+        positive steps)
+      (.nil _))
+
+/-- The native two-edge cut prefix exposes the exact active, committed, and
+post-administrative states in chronological order. -/
+@[simp] theorem activeCutThenCommittedAdministrative_states
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (bodyRest : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (referenceHead :
+      before.carrier.index.bodyReferences = .cut :: bodyRest)
+    (executableHead :
+      before.carrier.index.bodyExecutables =
+        .cutAt before.carrier.index.bodyBarrier :: bodyExecutableTail)
+    (coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent before.carrier.index.openConf.toConf)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (positive : 0 < count)
+    (steps : AdministrativeStepsN count bodyRest afterBody) :
+    (activeCutThenCommittedAdministrative (prog := prog) (gt := gt) before
+      bodyRest bodyExecutableTail referenceHead executableHead coherent positive
+      steps).states =
+      [ .ordinary (.active before),
+        .ordinary
+          (.committed
+            (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+              before bodyRest bodyExecutableTail referenceHead executableHead
+              coherent)),
+        .ordinary
+          (.committed
+            (RepresentativePersistentFreeCommittedPayloadState.afterAdministrative
+              (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+                before bodyRest bodyExecutableTail referenceHead executableHead
+                coherent)
+              steps)) ] := rfl
+
+/-- Splitting the native cut/administration prefix after its first edge
+returns the literal packet-free committed successor, not an existentially
+reconstructed compatible state. -/
+@[simp] theorem activeCutThenCommittedAdministrative_split_middle
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (bodyRest : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (referenceHead :
+      before.carrier.index.bodyReferences = .cut :: bodyRest)
+    (executableHead :
+      before.carrier.index.bodyExecutables =
+        .cutAt before.carrier.index.bodyBarrier :: bodyExecutableTail)
+    (coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent before.carrier.index.openConf.toConf)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (positive : 0 < count)
+    (steps : AdministrativeStepsN count bodyRest afterBody) :
+    (split
+      [ .resolver
+          (.forward
+            (.cut
+              (retainedCursorTokenAt before.carrier.index.predicateScope
+                before.carrier.index.finish before.carrier.index.branch
+                before.carrier.index.branchTail))) ]
+      [.committedAdministrative count]
+      (activeCutThenCommittedAdministrative (prog := prog) (gt := gt) before
+        bodyRest bodyExecutableTail referenceHead executableHead coherent
+        positive steps)).1 =
+      .ordinary
+        (.committed
+          (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+            before bodyRest bodyExecutableTail referenceHead executableHead
+            coherent)) := rfl
+
+/-- A native packet-free cut followed immediately by one committed primitive
+unification.  The cut successor is the literal `before` index of the producer
+facts for the second edge; neither edge can rebuild it from historical call
+packets or from endpoint-compatible source/fine states. -/
+def activeCutThenCommittedUnify
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (left right : Term) (result : Substitution)
+    (bodyRest : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutableAfterCut bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (sourceExtension executableExtension : TreeSubstitution)
+    (generated installed : Subst)
+    (referenceHead :
+      before.carrier.index.bodyReferences =
+        .cut :: .unify left right :: bodyRest)
+    (executableHead :
+      before.carrier.index.bodyExecutables =
+        .cutAt before.carrier.index.bodyBarrier :: bodyExecutableAfterCut)
+    (coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent before.carrier.index.openConf.toConf)
+    (after : RepresentativePersistentFreeCommittedPayloadState)
+    (facts :
+      RepresentativePersistentFreeCommittedUnifySuccessorFacts prog gt
+        (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+          before (.unify left right :: bodyRest) bodyExecutableAfterCut
+          referenceHead executableHead coherent)
+        after left right result bodyRest bodyExecutableTail sourceExtension
+        executableExtension generated installed) :
+    GlobalCertifiedPrefix prog gt
+      [ .resolver
+          (.forward
+            (.cut
+              (retainedCursorTokenAt before.carrier.index.predicateScope
+                before.carrier.index.finish before.carrier.index.branch
+                before.carrier.index.branchTail))),
+        .committedUnify (CommittedUnifyTransitionLabel.of facts) ]
+      (.ordinary (.active before))
+      (.ordinary (.committed after)) :=
+  .cons
+    (.resolver
+      (.forward
+        (.cut before (.unify left right :: bodyRest) bodyExecutableAfterCut
+          referenceHead executableHead coherent)))
+    (.cons (.committedUnify facts) (.nil _))
+
+/-- The native cut/unification prefix exposes the exact active, committed,
+and post-unification states in chronological order. -/
+@[simp] theorem activeCutThenCommittedUnify_states
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (left right : Term) (result : Substitution)
+    (bodyRest : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutableAfterCut bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (sourceExtension executableExtension : TreeSubstitution)
+    (generated installed : Subst)
+    (referenceHead :
+      before.carrier.index.bodyReferences =
+        .cut :: .unify left right :: bodyRest)
+    (executableHead :
+      before.carrier.index.bodyExecutables =
+        .cutAt before.carrier.index.bodyBarrier :: bodyExecutableAfterCut)
+    (coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent before.carrier.index.openConf.toConf)
+    (after : RepresentativePersistentFreeCommittedPayloadState)
+    (facts :
+      RepresentativePersistentFreeCommittedUnifySuccessorFacts prog gt
+        (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+          before (.unify left right :: bodyRest) bodyExecutableAfterCut
+          referenceHead executableHead coherent)
+        after left right result bodyRest bodyExecutableTail sourceExtension
+        executableExtension generated installed) :
+    (activeCutThenCommittedUnify before left right result bodyRest
+      bodyExecutableAfterCut bodyExecutableTail sourceExtension
+      executableExtension generated installed referenceHead executableHead
+      coherent after facts).states =
+      [ .ordinary (.active before),
+        .ordinary
+          (.committed
+            (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+              before (.unify left right :: bodyRest) bodyExecutableAfterCut
+              referenceHead executableHead coherent)),
+        .ordinary (.committed after) ] := rfl
+
+/-- Splitting the native cut/unification prefix after its first edge returns
+the literal packet-free cut successor used by the unification producer. -/
+@[simp] theorem activeCutThenCommittedUnify_split_middle
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    (before : RepresentativePersistentFreeActivePayloadState)
+    (left right : Term) (result : Substitution)
+    (bodyRest : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutableAfterCut bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (sourceExtension executableExtension : TreeSubstitution)
+    (generated installed : Subst)
+    (referenceHead :
+      before.carrier.index.bodyReferences =
+        .cut :: .unify left right :: bodyRest)
+    (executableHead :
+      before.carrier.index.bodyExecutables =
+        .cutAt before.carrier.index.bodyBarrier :: bodyExecutableAfterCut)
+    (coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent before.carrier.index.openConf.toConf)
+    (after : RepresentativePersistentFreeCommittedPayloadState)
+    (facts :
+      RepresentativePersistentFreeCommittedUnifySuccessorFacts prog gt
+        (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+          before (.unify left right :: bodyRest) bodyExecutableAfterCut
+          referenceHead executableHead coherent)
+        after left right result bodyRest bodyExecutableTail sourceExtension
+        executableExtension generated installed) :
+    (split
+      [ .resolver
+          (.forward
+            (.cut
+              (retainedCursorTokenAt before.carrier.index.predicateScope
+                before.carrier.index.finish before.carrier.index.branch
+                before.carrier.index.branchTail))) ]
+      [.committedUnify (CommittedUnifyTransitionLabel.of facts)]
+      (activeCutThenCommittedUnify before left right result bodyRest
+        bodyExecutableAfterCut bodyExecutableTail sourceExtension
+        executableExtension generated installed referenceHead executableHead
+        coherent after facts)).1 =
+      .ordinary
+        (.committed
+          (RepresentativePersistentFreeActivePayloadState.afterCut prog gt
+            before (.unify left right :: bodyRest) bodyExecutableAfterCut
+            referenceHead executableHead coherent)) := rfl
+
+/-- The exact success edge followed immediately by a legacy-free ordinary
+administrative edge.  The second constructor is indexed by `successor.after`
+itself, so the success midpoint cannot be rebuilt from historical packets or
+replaced by an endpoint-compatible state. -/
+def scheduledSuccessThenAdministrative
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    {transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session}
+    {partition : RootPayloadPartition before}
+    {independentResult : Substitution}
+    {nextAlpha : List (LogicVar × String)}
+    {sourceCanonical flattened : TreeSubstitution}
+    {installed : Subst}
+    (relation :
+      ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+        transition partition independentResult nextAlpha sourceCanonical
+        flattened installed)
+    (successor :
+      ScheduledSelectedHeadTransition.ScheduledSuccessfulHeadSuccessor
+        prog gt before ready selection scope transition partition
+        independentResult nextAlpha sourceCanonical flattened installed
+        relation)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (positive : 0 < count)
+    (steps :
+      AdministrativeStepsN count
+        successor.after.carrier.index.bodyReferences afterBody) :
+    GlobalCertifiedPrefix prog gt
+      [ .scheduledSuccess
+          (ScheduledSuccessLabel.of ready transition partition flattened),
+        .activeAdministrative count ]
+      (.ordinary (.scheduled before))
+      (.ordinary
+        (.active
+          (RepresentativePersistentFreeActivePayloadState.afterAdministrative
+            successor.after steps))) :=
+  .cons (.scheduledSuccess relation successor)
+    (.cons (.activeAdministrative successor.after positive steps)
+      (.nil
+        (.ordinary
+          (.active
+            (RepresentativePersistentFreeActivePayloadState.afterAdministrative
+              successor.after steps)))))
+
+@[simp] theorem scheduledSuccessThenAdministrative_states
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    {transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session}
+    {partition : RootPayloadPartition before}
+    {independentResult : Substitution}
+    {nextAlpha : List (LogicVar × String)}
+    {sourceCanonical flattened : TreeSubstitution}
+    {installed : Subst}
+    (relation :
+      ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+        transition partition independentResult nextAlpha sourceCanonical
+        flattened installed)
+    (successor :
+      ScheduledSelectedHeadTransition.ScheduledSuccessfulHeadSuccessor
+        prog gt before ready selection scope transition partition
+        independentResult nextAlpha sourceCanonical flattened installed
+        relation)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (positive : 0 < count)
+    (steps :
+      AdministrativeStepsN count
+        successor.after.carrier.index.bodyReferences afterBody) :
+    (scheduledSuccessThenAdministrative relation successor positive
+      steps).states =
+      [ .ordinary (.scheduled before),
+        .ordinary (.active successor.after),
+        .ordinary
+          (.active
+            (RepresentativePersistentFreeActivePayloadState.afterAdministrative
+              successor.after steps)) ] := rfl
+
+/-- Splitting the two-edge run after scheduled success returns the literal
+Type-valued active successor as its dependent midpoint. -/
+@[simp] theorem scheduledSuccessThenAdministrative_split_middle
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    {transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session}
+    {partition : RootPayloadPartition before}
+    {independentResult : Substitution}
+    {nextAlpha : List (LogicVar × String)}
+    {sourceCanonical flattened : TreeSubstitution}
+    {installed : Subst}
+    (relation :
+      ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+        transition partition independentResult nextAlpha sourceCanonical
+        flattened installed)
+    (successor :
+      ScheduledSelectedHeadTransition.ScheduledSuccessfulHeadSuccessor
+        prog gt before ready selection scope transition partition
+        independentResult nextAlpha sourceCanonical flattened installed
+        relation)
+    {count : Nat} {afterBody : List PeTTaSpec.PrologCore.Goal}
+    (positive : 0 < count)
+    (steps :
+      AdministrativeStepsN count
+        successor.after.carrier.index.bodyReferences afterBody) :
+    (split
+      [.scheduledSuccess
+        (ScheduledSuccessLabel.of ready transition partition flattened)]
+      [.activeAdministrative count]
+      (scheduledSuccessThenAdministrative relation successor positive
+        steps)).1 =
+      .ordinary (.active successor.after) := rfl
+
+end GlobalCertifiedPrefix
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledSuccessPrefixBridge

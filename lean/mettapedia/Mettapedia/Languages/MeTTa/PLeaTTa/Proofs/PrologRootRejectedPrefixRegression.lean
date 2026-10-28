@@ -1,0 +1,1901 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootRejectedPrefixRegression
+Purpose: Exercise literal-root activation after two rigid source rejections,
+  with one selected occurrence and one retained sibling.
+Trusted boundary: none
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootCallReadyBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledSuccessPrefixBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologRootRejectedPrefixRegression
+
+open Mettapedia.Languages.MeTTa.PLeaTTa.Source (Atom Subst)
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.Canonical
+open PeTTaSpec.PrologCore.GoalSemantics
+open PeTTaSpec.PrologCore.OpenSubstitution
+open PeTTaSpec.PrologCore.Resolver
+open DemandDrivenStep
+open OpenBindingAgreement
+open PrologAlphaFreshFrontierBridge
+open PrologCallEntryBridge
+open PrologCallPayloadBridge
+open PrologCallStepBridge
+open PrologControlSegmentSpineBridge
+open PrologMguBridge
+open PrologMguComposition
+open PrologMguTopology
+open PrologMguVariant
+open PrologOrdinaryStepBridge
+open PrologActivationMacro
+open PrologPrefilterBridge
+open PrologPrefilterCallBridge
+open PrologPrefilterScanBridge
+open PrologRepresentativeCallFrontierBridge
+open PrologRecursiveCallPayloadBridge
+open PrologRootCallReadyBridge
+open PrologStateBridge
+open PrologSupportedCursorAlternativeBridge
+
+/-! ## Four source-ordered occurrences -/
+
+def queryTerm : Term := .integer 0
+
+def queryAtom : Atom := .gnd (.int 0)
+
+def bodyTerm : Term := .integer 9
+
+def bodyAtom : Atom := .gnd (.int 9)
+
+def firstRejectedReference : LocalClause :=
+  { predicate := "p"
+    arguments := [.integer 1]
+    body := [] }
+
+def secondRejectedReference : LocalClause :=
+  { predicate := "p"
+    arguments := [.integer 2]
+    body := [] }
+
+def selectedReference : LocalClause :=
+  { predicate := "p"
+    arguments := [queryTerm]
+    body := [.conjunction []] }
+
+def retainedReference : LocalClause :=
+  { predicate := "p"
+    arguments := [queryTerm]
+    body := [.call "retained" [bodyTerm]] }
+
+def firstRejectedExecutable : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  { params := []
+    result := .gnd (.int 1)
+    body := [] }
+
+def secondRejectedExecutable : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  { params := []
+    result := .gnd (.int 2)
+    body := [] }
+
+def selectedExecutable : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  { params := []
+    result := queryAtom
+    body := [] }
+
+def retainedExecutable : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  { params := []
+    result := queryAtom
+    body := [.call "retained" [] bodyAtom] }
+
+def firstVersion : VersionedClause :=
+  Database.empty.allocate firstRejectedReference
+
+def secondVersion : VersionedClause :=
+  (Database.empty.assertz firstRejectedReference).allocate
+    secondRejectedReference
+
+def selectedVersion : VersionedClause :=
+  ((Database.empty.assertz firstRejectedReference).assertz
+    secondRejectedReference).allocate selectedReference
+
+def retainedVersion : VersionedClause :=
+  (((Database.empty.assertz firstRejectedReference).assertz
+    secondRejectedReference).assertz selectedReference).allocate
+      retainedReference
+
+def referenceDatabase : Database :=
+  (((Database.empty.assertz firstRejectedReference).assertz
+    secondRejectedReference).assertz selectedReference).assertz
+      retainedReference
+
+def executableWorld : PWorld :=
+  ((((default : PWorld).reindexClauses.appendProgClause
+    ("p", firstRejectedExecutable)).appendProgClause
+    ("p", secondRejectedExecutable)).appendProgClause
+    ("p", selectedExecutable)).appendProgClause
+    ("p", retainedExecutable)
+
+/-! ## Empty valuation and ground payload -/
+
+private def emptyRuntimeTopological : Mettapedia.Languages.MeTTa.PLeaTTa.SubstTopological [] := by
+  refine
+    { order := []
+      nodup := by simp
+      domain := ?_
+      decreases := ?_ }
+  · intro name
+    simp [Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst.lookup]
+  · intro source value dependency lookup
+    simp [Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst.lookup] at lookup
+
+private theorem emptyTaskData :
+    TaskDataAgrees [] [] [] [] [] [] := by
+  refine
+    { alphaShared := ?_
+      canonicalWellFormed := TreeSubstitution.wellFormed_nil
+      bindingShape := rfl
+      valuation := ?_ }
+  · constructor <;> intro <;> simp_all
+  · refine
+      ⟨[], TreeSubstitutionVariants.refl [],
+        TreeSubstitutionTopological.nil, ?_,
+        ⟨emptyRuntimeTopological⟩, ?_⟩
+    · intro entry member
+      simp at member
+    · intro identity name member
+      simp at member
+
+private theorem rootControl (barrier : Nat) :
+    NormalizedAlphaGoalsAgree [] barrier
+      [.call "p" [queryTerm]] [.call "p" [] queryAtom] := by
+  exact
+    .cons
+      (.definedCall AlphaTermsAgree.nil
+        (AlphaTermAgrees.integer (alpha := []) 0))
+      .nil
+
+private theorem rootPayload (barrier : Nat) :
+    TaskPayloadAgrees [] [] barrier [] [] [] []
+      [.call "p" [queryTerm]] [.call "p" [] queryAtom] :=
+  emptyTaskData.withControl (rootControl barrier)
+
+private theorem rootPayloadSupported :
+    AlphaTermsSupported [] [] [queryTerm] := by
+  intro term member
+  simp only [List.mem_singleton] at member
+  subst term
+  simp [queryTerm, AlphaTreeSupported, Term.denote,
+    PrologMguOpenAgreement.TreeVariablesSatisfy,
+    PrologMguOpenAgreement.TreesVariablesSatisfy]
+
+-- Transparent fixture witness, unfolded by its dependent support laws.
+set_option linter.defProp false in
+private def groundBodyHeadAgrees (predicate : String) :
+    CompilerAdequacy.GoalAgrees
+      (.call predicate [bodyTerm]) (.call predicate [] bodyAtom) :=
+  .definedCall CompilerAdequacy.TermsAgree.nil
+    (CompilerAdequacy.TermAgrees.integer 9)
+
+private theorem groundBodyAgrees (predicate : String) :
+    CompilerAdequacy.GoalsAgree
+      [.call predicate [bodyTerm]] [.call predicate [] bodyAtom] :=
+  .cons (groundBodyHeadAgrees predicate) .nil
+
+private theorem groundBodyHeadSupported (predicate : String) :
+    CompilerGoalSubstitutionAdequacy.GoalAgreesSupported [] []
+      (groundBodyHeadAgrees predicate) := by
+  unfold groundBodyHeadAgrees
+  refine
+    @CompilerGoalSubstitutionAdequacy.GoalAgreesSupported.definedCall
+      [] [] predicate predicate [] bodyTerm [] bodyAtom
+      CompilerAdequacy.TermsAgree.nil
+      (CompilerAdequacy.TermAgrees.integer 9) ?_ ?_
+  · simp [CompilerGoalSubstitutionAdequacy.TermsAgreeSupported,
+      CompilerSubstitutionAdequacy.termsVariablesIn]
+  · simp [CompilerGoalSubstitutionAdequacy.TermAgreesSupported,
+      CompilerSubstitutionAdequacy.termVariablesIn, bodyTerm]
+
+private theorem groundBodySupported (predicate : String) :
+    CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      (groundBodyAgrees predicate) := by
+  exact .cons (groundBodyHeadSupported predicate) .nil
+
+private theorem firstClauseAgrees :
+    LocalClauseAgrees firstRejectedReference
+      ("p", firstRejectedExecutable) := by
+  refine
+    { predicate := rfl
+      outputLast := ?_
+      body := .nil
+      support := ?_ }
+  · exact
+      ⟨[], .integer 1, rfl, CompilerAdequacy.TermsAgree.nil,
+        CompilerAdequacy.TermAgrees.integer 1⟩
+  · intro name
+    simp [firstRejectedReference, firstRejectedExecutable,
+      LocalClause.variables, resolutionClauseVars, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars,
+      specializationGoalsVars, termsVariables, termVariables, goalsVariables]
+
+private theorem secondClauseAgrees :
+    LocalClauseAgrees secondRejectedReference
+      ("p", secondRejectedExecutable) := by
+  refine
+    { predicate := rfl
+      outputLast := ?_
+      body := .nil
+      support := ?_ }
+  · exact
+      ⟨[], .integer 2, rfl, CompilerAdequacy.TermsAgree.nil,
+        CompilerAdequacy.TermAgrees.integer 2⟩
+  · intro name
+    simp [secondRejectedReference, secondRejectedExecutable,
+      LocalClause.variables, resolutionClauseVars, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars,
+      specializationGoalsVars, termsVariables, termVariables, goalsVariables]
+
+private theorem selectedClauseAgrees :
+    LocalClauseAgrees selectedReference ("p", selectedExecutable) := by
+  refine
+    { predicate := rfl
+      outputLast := ?_
+      body := .conjunction .nil .nil
+      support := ?_ }
+  · exact
+      ⟨[], queryTerm, rfl, CompilerAdequacy.TermsAgree.nil,
+        CompilerAdequacy.TermAgrees.integer 0⟩
+  · intro name
+    simp [selectedReference, selectedExecutable, queryTerm, queryAtom,
+      LocalClause.variables, resolutionClauseVars, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars,
+      specializationGoalsVars, termsVariables,
+      termVariables, goalsVariables, goalVariables]
+
+private theorem retainedClauseAgrees :
+    LocalClauseAgrees retainedReference ("p", retainedExecutable) := by
+  refine
+    { predicate := rfl
+      outputLast := ?_
+      body := groundBodyAgrees "retained"
+      support := ?_ }
+  · exact
+      ⟨[], queryTerm, rfl, CompilerAdequacy.TermsAgree.nil,
+        CompilerAdequacy.TermAgrees.integer 0⟩
+  · intro name
+    simp [retainedReference, retainedExecutable, queryTerm, queryAtom,
+      bodyTerm, bodyAtom,
+      LocalClause.variables, resolutionClauseVars, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars,
+      specializationGoalsVars, specializationGoalVars, termsVariables,
+      termVariables, goalsVariables, goalVariables]
+
+private theorem emptyDatabaseRelatesIndexedWorld :
+    DatabaseRelatesWorld Database.empty
+      ((default : PWorld).reindexClauses) := by
+  refine
+    { reachable := DatabaseActions.DatabaseReachable.empty
+      liveClauses := ?_
+      clauseIndex := PWorld.reindexClauses_coherent _ }
+  exact .nil
+
+theorem referenceDatabase_relates_executableWorld :
+    DatabaseRelatesWorld referenceDatabase executableWorld := by
+  have first := emptyDatabaseRelatesIndexedWorld.assertz firstClauseAgrees
+  have second := first.assertz secondClauseAgrees
+  have selected := second.assertz selectedClauseAgrees
+  have retained := selected.assertz retainedClauseAgrees
+  simpa [referenceDatabase, executableWorld] using retained
+
+/-! ## Exact candidate bank and entry -/
+
+def initialSession : Session :=
+  { resolver :=
+      { database := referenceDatabase
+        nextFresh := 0 } }
+
+def initialOpenConf : OpenConf :=
+  { persistent :=
+      { world := executableWorld
+        counter := 0 }
+    control :=
+      { cur := some ([.call "p" [] queryAtom], [])
+        alts := []
+        qterm := queryAtom } }
+
+private theorem executableWorldCoherent :
+    executableWorld.ClauseIndexCoherent := by
+  have root := PWorld.reindexClauses_coherent (default : PWorld)
+  have first :=
+    PWorld.appendProgClause_coherent _ ("p", firstRejectedExecutable) root
+  have second :=
+    PWorld.appendProgClause_coherent _ ("p", secondRejectedExecutable) first
+  have selected :=
+    PWorld.appendProgClause_coherent _ ("p", selectedExecutable) second
+  have retained :=
+    PWorld.appendProgClause_coherent _ ("p", retainedExecutable) selected
+  simpa [executableWorld] using retained
+
+private theorem pResolutionCandidates :
+    executableWorld.resolutionCandidates "p" 0 =
+      [firstRejectedExecutable, secondRejectedExecutable,
+        selectedExecutable, retainedExecutable] := by
+  rw [PWorld.resolutionCandidates_eq _ _ _ executableWorldCoherent]
+  have emptyClauses : (default : PWorld).progClauses = [] := rfl
+  simp [executableWorld, PWorld.reindexClauses, PWorld.appendProgClause,
+    PWorld.clausesOf, firstRejectedExecutable, secondRejectedExecutable,
+    selectedExecutable, retainedExecutable, emptyClauses]
+
+private theorem pVisibleClauses :
+    referenceDatabase.visibleClausesAt referenceDatabase.generation "p" 1 =
+      [firstVersion, secondVersion, selectedVersion, retainedVersion] := by
+  rfl
+
+private theorem pCandidateBank :
+    SupportedCandidateBank "p"
+      (referenceDatabase.visibleClausesAt referenceDatabase.generation "p" 1)
+      (executableWorld.resolutionCandidates "p" 0) := by
+  rw [pVisibleClauses, pResolutionCandidates]
+  let firstHead : CandidateClauseAgrees "p" firstVersion
+      firstRejectedExecutable := by
+    change LocalClauseAgrees firstRejectedReference
+      ("p", firstRejectedExecutable)
+    exact firstClauseAgrees
+  let secondHead : CandidateClauseAgrees "p" secondVersion
+      secondRejectedExecutable := by
+    change LocalClauseAgrees secondRejectedReference
+      ("p", secondRejectedExecutable)
+    exact secondClauseAgrees
+  let selectedHead : CandidateClauseAgrees "p" selectedVersion
+      selectedExecutable := by
+    change LocalClauseAgrees selectedReference ("p", selectedExecutable)
+    exact selectedClauseAgrees
+  let retainedHead : CandidateClauseAgrees "p" retainedVersion
+      retainedExecutable := by
+    change LocalClauseAgrees retainedReference ("p", retainedExecutable)
+    exact retainedClauseAgrees
+  have firstEncoding : EncodingInjectiveOn firstVersion.clause.variables := by
+    simp [EncodingInjectiveOn, firstVersion, Database.allocate,
+      firstRejectedReference, LocalClause.variables, termsVariables,
+      termVariables, goalsVariables]
+  have secondEncoding : EncodingInjectiveOn secondVersion.clause.variables := by
+    simp [EncodingInjectiveOn, secondVersion, Database.allocate,
+      secondRejectedReference, LocalClause.variables, termsVariables,
+      termVariables, goalsVariables]
+  have selectedEncoding :
+      EncodingInjectiveOn selectedVersion.clause.variables := by
+    simp [EncodingInjectiveOn, selectedVersion, Database.allocate,
+      selectedReference, queryTerm, LocalClause.variables,
+      termsVariables, termVariables, goalsVariables, goalVariables]
+  have retainedEncoding :
+      EncodingInjectiveOn retainedVersion.clause.variables := by
+    simp [EncodingInjectiveOn, retainedVersion, Database.allocate,
+      retainedReference, queryTerm, bodyTerm, LocalClause.variables,
+      termsVariables, termVariables, goalsVariables, goalVariables]
+  have firstBody :
+      CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported
+        firstVersion.clause.variables firstVersion.clause.variables
+        firstHead.body := by
+    change CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      firstHead.body
+    have bodyEq : firstHead.body =
+        (CompilerAdequacy.GoalsAgree.nil :
+          CompilerAdequacy.GoalsAgree [] []) := Subsingleton.elim _ _
+    rw [bodyEq]
+    exact .nil
+  have secondBody :
+      CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported
+        secondVersion.clause.variables secondVersion.clause.variables
+        secondHead.body := by
+    change CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      secondHead.body
+    have bodyEq : secondHead.body =
+        (CompilerAdequacy.GoalsAgree.nil :
+          CompilerAdequacy.GoalsAgree [] []) := Subsingleton.elim _ _
+    rw [bodyEq]
+    exact .nil
+  have selectedBody :
+      CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported
+        selectedVersion.clause.variables selectedVersion.clause.variables
+        selectedHead.body := by
+    change CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      selectedHead.body
+    have bodyEq : selectedHead.body =
+        (CompilerAdequacy.GoalsAgree.conjunction
+          CompilerAdequacy.GoalsAgree.nil CompilerAdequacy.GoalsAgree.nil) :=
+      Subsingleton.elim _ _
+    rw [bodyEq]
+    exact .conjunction .nil .nil
+  have retainedBody :
+      CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported
+        retainedVersion.clause.variables retainedVersion.clause.variables
+        retainedHead.body := by
+    change CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      retainedHead.body
+    have bodyEq : retainedHead.body = groundBodyAgrees "retained" :=
+      Subsingleton.elim _ _
+    rw [bodyEq]
+    exact groundBodySupported "retained"
+  refine
+    ⟨List.Forall₂.cons firstHead
+      (List.Forall₂.cons secondHead
+        (List.Forall₂.cons selectedHead
+          (List.Forall₂.cons retainedHead .nil))), ?_⟩
+  exact
+    .cons (head := firstHead) firstEncoding firstBody
+      (.cons (head := secondHead) secondEncoding secondBody
+        (.cons (head := selectedHead) selectedEncoding selectedBody
+          (.cons (head := retainedHead) retainedEncoding retainedBody .nil)))
+
+private def pScan : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt × Nat :=
+  resolveAlts
+    (initialOpenConf.persistent.world.resolutionCandidates "p" 0)
+    [] [] queryAtom [] [] initialOpenConf.control.qterm
+    (barrierDepth initialOpenConf.toConf + 1)
+    initialOpenConf.toConf.counter
+
+private def pPending : DemandDrivenCallStep.PendingCall :=
+  DemandDrivenCallStep.pendingCallOf initialOpenConf pScan.1 pScan.2
+
+private theorem pEntry :
+    RepresentativeSupportedCallEntryRelates []
+      (openedFor initialSession "p" [queryTerm] []) initialOpenConf pPending
+      [] [] queryAtom [] [] queryAtom
+      (barrierDepth initialOpenConf.toConf + 1)
+      initialOpenConf.toConf.counter := by
+  have database :
+      DatabaseRelatesWorld initialSession.resolver.database
+        initialOpenConf.persistent.world := by
+    simpa [initialSession, initialOpenConf] using
+      referenceDatabase_relates_executableWorld
+  have ready : initialOpenConf.persistent.world.clauseIndexReady = true := by
+    rfl
+  have scanned :
+      resolveAlts
+          (initialOpenConf.persistent.world.resolutionCandidates "p" 0)
+          [] [] queryAtom [] [] initialOpenConf.control.qterm
+          (barrierDepth initialOpenConf.toConf + 1)
+          initialOpenConf.toConf.counter = pScan := by
+    rfl
+  have query :=
+    PrologRecursiveCallPayloadBridge.TaskPayloadAgrees.representativeNormalizedCallAgrees
+      (rootPayload (barrierDepth initialOpenConf.toConf + 1))
+      rootPayloadSupported
+      (openedFor initialSession "p" [queryTerm] []).cursor
+      (by simp [openedFor, openLocalCall, requestFor, prepareCall])
+      (by simp [openedFor, openLocalCall, requestFor, prepareCall])
+  have constructed :=
+    openedFor_pendingCallOf_representative_supported_relates
+      database ready "p" [queryTerm] [] [] [] queryAtom [] []
+      pScan.1 pScan.2 (by rfl) (by rfl)
+      (by
+        calc
+          _ = pScan := by
+            simpa only [List.length_nil, List.map_nil] using scanned
+          _ = (pScan.1, pScan.2) := (Prod.eta pScan).symm) query pCandidateBank
+  simpa [pPending, initialOpenConf] using constructed
+
+private theorem initialBelow :
+    ConfBelowResolutionCounter initialOpenConf.toConf := by
+  apply ConfBelowResolutionCounter.of_names
+  intro name member
+  simp [resolutionLiveVars, initialOpenConf, OpenConf.toConf, Control.toConf,
+    specializationGoalsVars, specializationGoalVars, resolutionSubstVars,
+    queryAtom, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars] at member
+
+private def selectedCopied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  Mettapedia.Languages.MeTTa.PLeaTTa.freshenResolutionClause [] [] queryAtom [] [] queryAtom 0 1
+    selectedExecutable
+
+private def retainedCopied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  Mettapedia.Languages.MeTTa.PLeaTTa.freshenResolutionClause [] [] queryAtom [] [] queryAtom 1 1
+    retainedExecutable
+
+private def selectedAlt : Mettapedia.Languages.MeTTa.PLeaTTa.Alt :=
+  resolutionAlt [] [] queryAtom [] [] queryAtom 1 0 selectedExecutable
+
+private def retainedAlt : Mettapedia.Languages.MeTTa.PLeaTTa.Alt :=
+  resolutionAlt [] [] queryAtom [] [] queryAtom 1 1 retainedExecutable
+
+/-- The selected administrative wrapper compiles to no executable body. -/
+theorem selectedCopied_body_empty : selectedCopied.body = [] := by
+  rfl
+
+/-- The retained matching occurrence is a real executable branch, not an
+anonymous cut marker.  The concrete goals and binding remain encapsulated. -/
+theorem retainedAlt_is_branch :
+    exists goals binding, retainedAlt = .br goals binding := by
+  exact ⟨_, _, rfl⟩
+
+private theorem pScanExact : pScan = ([selectedAlt, retainedAlt], 2) := by
+  unfold pScan
+  change
+    resolveAlts (executableWorld.resolutionCandidates "p" 0)
+        [] [] queryAtom [] [] queryAtom 1 0 =
+      ([selectedAlt, retainedAlt], 2)
+  rw [pResolutionCandidates]
+  rw [resolveAlts_eq_scanResolution]
+  have scan :
+      ResolutionScan [] [] queryAtom [] [] queryAtom 1
+        [firstRejectedExecutable, secondRejectedExecutable,
+          selectedExecutable, retainedExecutable]
+        0 [selectedAlt, retainedAlt] 2 :=
+    .skipped firstRejectedExecutable
+      [secondRejectedExecutable, selectedExecutable, retainedExecutable]
+      0 2 [selectedAlt, retainedAlt]
+      (by
+        simp [resolutionClauseRetained, queryAtom, firstRejectedExecutable,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+      (.skipped secondRejectedExecutable
+        [selectedExecutable, retainedExecutable]
+        0 2 [selectedAlt, retainedAlt]
+        (by
+          simp [resolutionClauseRetained, queryAtom,
+            secondRejectedExecutable, Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical,
+            Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+        (.retained selectedExecutable [retainedExecutable]
+          0 2 [retainedAlt]
+          (by
+            simp [resolutionClauseRetained, queryAtom, selectedExecutable,
+              Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+              Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+          (.retained retainedExecutable [] 1 2 []
+            (by
+              simp [resolutionClauseRetained, queryAtom, retainedExecutable,
+                Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+                Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+            (.nil 2))))
+  simpa [selectedAlt, retainedAlt] using scan.result_eq
+
+private theorem pScanNonempty : pPending.branches ≠ [] := by
+  rw [pPending, pScanExact]
+  exact List.cons_ne_nil _ _
+
+private def firstPrepared : ClauseBranch :=
+  preparedBranchOf referenceDatabase.generation [queryTerm] [] 0 firstVersion
+
+private def secondPrepared : ClauseBranch :=
+  preparedBranchOf referenceDatabase.generation [queryTerm] [] 0 secondVersion
+
+private def selectedPrepared : ClauseBranch :=
+  preparedBranchOf referenceDatabase.generation [queryTerm] [] 0 selectedVersion
+
+private def retainedPrepared : ClauseBranch :=
+  preparedBranchOf referenceDatabase.generation [queryTerm] [] 0 retainedVersion
+
+private theorem pOpenedRemaining :
+    (openedFor initialSession "p" [queryTerm] []).cursor.remaining =
+      [firstPrepared, secondPrepared, selectedPrepared, retainedPrepared] := by
+  rfl
+
+private theorem firstRejected :
+    ¬ ∃ result, HeadResolution firstPrepared result := by
+  have agreement :
+      NormalizedHeadAgrees firstPrepared [] queryAtom
+        firstRejectedExecutable := by
+    constructor
+    · rfl
+    · exact AlphaEquationsAgree.cons
+        (AlphaTermAgrees.integer (alpha := []) 0)
+        (AlphaTermAgrees.integer (alpha := []) 1)
+        .nil
+  have rejected :
+      resolutionClauseRetained [] queryAtom firstRejectedExecutable = false :=
+    rfl
+  exact agreement.no_headResolution_of_rejected rejected
+
+private theorem secondRejected :
+    ¬ ∃ result, HeadResolution secondPrepared result := by
+  have agreement :
+      NormalizedHeadAgrees secondPrepared [] queryAtom
+        secondRejectedExecutable := by
+    constructor
+    · rfl
+    · exact AlphaEquationsAgree.cons
+        (AlphaTermAgrees.integer (alpha := []) 0)
+        (AlphaTermAgrees.integer (alpha := []) 2)
+        .nil
+  have rejected :
+      resolutionClauseRetained [] queryAtom secondRejectedExecutable = false :=
+    rfl
+  exact agreement.no_headResolution_of_rejected rejected
+
+private theorem selectedNormalized :
+    selectedPrepared.normalizedHeadEquations = [(queryTerm, queryTerm)] := by
+  rfl
+
+private theorem retainedNormalized :
+    retainedPrepared.normalizedHeadEquations = [(queryTerm, queryTerm)] := by
+  rfl
+
+private theorem firstNormalized :
+    firstPrepared.normalizedHeadEquations =
+      [(queryTerm, (.integer 1 : Term))] := by
+  rfl
+
+private theorem secondNormalized :
+    secondPrepared.normalizedHeadEquations =
+      [(queryTerm, (.integer 2 : Term))] := by
+  rfl
+
+private theorem selectedResolves : HeadResolution selectedPrepared [] := by
+  refine ⟨[], ?_, ?_⟩
+  · refine ⟨[], ?_, rfl⟩
+    rw [selectedNormalized]
+    change OrderedTreeMgu [(Term.denote queryTerm, Term.denote queryTerm)] []
+    exact OrderedTreeMgu.cons
+      (Term.denote queryTerm) (Term.denote queryTerm) [] [] []
+      (.reflexive (Term.denote queryTerm)) OrderedTreeMgu.nil
+  · simp [selectedPrepared, preparedBranchOf]
+
+private theorem retainedResolves : HeadResolution retainedPrepared [] := by
+  refine ⟨[], ?_, ?_⟩
+  · refine ⟨[], ?_, rfl⟩
+    rw [retainedNormalized]
+    change OrderedTreeMgu [(Term.denote queryTerm, Term.denote queryTerm)] []
+    exact OrderedTreeMgu.cons
+      (Term.denote queryTerm) (Term.denote queryTerm) [] [] []
+      (.reflexive (Term.denote queryTerm)) OrderedTreeMgu.nil
+  · simp [retainedPrepared, preparedBranchOf]
+
+private theorem firstPartnerRejected
+    {cursor : PreparedCursor} {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause}
+    {tail : List ClauseBranch}
+    (context :
+      CursorCallContext cursor referenceDatabase.generation "p"
+        [queryTerm] [])
+    (remaining : cursor.remaining = firstPrepared :: tail)
+    (wellFormed : cursor.WellFormed)
+    (supported :
+      SupportedPreparedCandidateAgrees cursor.callGeneration cursor.predicate
+        cursor.arguments cursor.bindings firstPrepared clause)
+    (arity : clause.params.length = 0) :
+    resolutionClauseRetained [] queryAtom clause = false := by
+  have query : NormalizedCallAgrees [] cursor [] queryAtom := by
+    constructor
+    rw [context.arguments_eq, context.bindings_eq]
+    exact AlphaTermsAgree.cons
+      (AlphaTermAgrees.integer (alpha := []) 0) .nil
+  have head : NormalizedHeadAgrees firstPrepared [] queryAtom clause :=
+    supportedPreparedCandidate_normalizedHeadAgrees query wellFormed
+      (by rw [remaining]; simp) supported arity
+  rcases clause with ⟨params, result, body⟩
+  simp only at arity
+  have paramsNil : params = [] := List.eq_nil_of_length_eq_zero arity
+  subst params
+  have equations := head.equations
+  rw [firstNormalized] at equations
+  cases equations with
+  | cons left right tail =>
+      cases left
+      cases right
+      cases tail
+      rfl
+
+private theorem secondPartnerRejected
+    {cursor : PreparedCursor} {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause}
+    {tail : List ClauseBranch}
+    (context :
+      CursorCallContext cursor referenceDatabase.generation "p"
+        [queryTerm] [])
+    (remaining : cursor.remaining = secondPrepared :: tail)
+    (wellFormed : cursor.WellFormed)
+    (supported :
+      SupportedPreparedCandidateAgrees cursor.callGeneration cursor.predicate
+        cursor.arguments cursor.bindings secondPrepared clause)
+    (arity : clause.params.length = 0) :
+    resolutionClauseRetained [] queryAtom clause = false := by
+  have query : NormalizedCallAgrees [] cursor [] queryAtom := by
+    constructor
+    rw [context.arguments_eq, context.bindings_eq]
+    exact AlphaTermsAgree.cons
+      (AlphaTermAgrees.integer (alpha := []) 0) .nil
+  have head : NormalizedHeadAgrees secondPrepared [] queryAtom clause :=
+    supportedPreparedCandidate_normalizedHeadAgrees query wellFormed
+      (by rw [remaining]; simp) supported arity
+  rcases clause with ⟨params, result, body⟩
+  simp only at arity
+  have paramsNil : params = [] := List.eq_nil_of_length_eq_zero arity
+  subst params
+  have equations := head.equations
+  rw [secondNormalized] at equations
+  cases equations with
+  | cons left right tail =>
+      cases left
+      cases right
+      cases tail
+      rfl
+
+private theorem selectedFrontierResolves :
+    ∀ {count : Nat} {finish : PreparedCursor} {branch : ClauseBranch}
+      {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {branchTail : List ClauseBranch}
+      {clauseTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+      {copied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause},
+      RejectedPullsN count
+          (openedFor initialSession "p" [queryTerm] []).cursor finish →
+        RepresentativeRetainedCallFrontier []
+          (openedFor initialSession "p" [queryTerm] []) initialOpenConf
+          pPending finish branch clause branchTail clauseTail altTail copied
+          [] [] queryAtom [] [] queryAtom
+          (barrierDepth initialOpenConf.toConf + 1)
+          initialOpenConf.toConf.counter →
+        ∃ independentResult : Substitution,
+          HeadResolution branch independentResult ∧
+            AlphaRuntimeNamesLive [] copied.body queryAtom := by
+  intro count finish branch clause branchTail clauseTail altTail copied
+    pulls frontier
+  cases pulls with
+  | zero cursor =>
+      have shape := frontier.finishRemaining
+      rw [pOpenedRemaining] at shape
+      have branchExact : branch = firstPrepared :=
+        (List.cons.inj shape).1.symm
+      subst branch
+      have rejected :=
+        firstPartnerRejected frontier.finishContext frontier.finishRemaining
+          frontier.finishWellFormed frontier.supported (by
+            simpa using frontier.arity)
+      have retained :
+          resolutionClauseRetained [] queryAtom clause = true := by
+        simpa using frontier.retained
+      rw [retained] at rejected
+      contradiction
+  | succ count cursor entered branches finish remaining clash tail =>
+      rw [pOpenedRemaining] at remaining
+      have enteredExact : entered = firstPrepared :=
+        (List.cons.inj remaining).1.symm
+      have branchesExact :
+          branches = [secondPrepared, selectedPrepared, retainedPrepared] :=
+        (List.cons.inj remaining).2.symm
+      subst entered
+      subst branches
+      cases tail with
+      | zero advanced =>
+          have shape := frontier.finishRemaining
+          simp [PreparedCursor.advance] at shape
+          have branchExact : branch = secondPrepared :=
+            shape.1.symm
+          subst branch
+          have rejected :=
+            secondPartnerRejected frontier.finishContext
+              frontier.finishRemaining frontier.finishWellFormed
+              frontier.supported (by simpa using frontier.arity)
+          have retained :
+              resolutionClauseRetained [] queryAtom clause = true := by
+            simpa using frontier.retained
+          rw [retained] at rejected
+          contradiction
+      | succ tailCount cursor₂ entered₂ branches₂ finish₂ remaining₂ clash₂
+          tail₂ =>
+          simp [PreparedCursor.advance] at remaining₂
+          have entered₂Exact : entered₂ = secondPrepared :=
+            remaining₂.1.symm
+          have branches₂Exact :
+              branches₂ = [selectedPrepared, retainedPrepared] :=
+            remaining₂.2.symm
+          subst entered₂
+          subst branches₂
+          cases tail₂ with
+          | zero advanced₂ =>
+              have shape := frontier.finishRemaining
+              simp [PreparedCursor.advance] at shape
+              have branchExact : branch = selectedPrepared :=
+                shape.1.symm
+              subst branch
+              refine ⟨[], selectedResolves, ?_⟩
+              intro identity name member
+              simp at member
+          | succ remainingCount cursor₃ entered₃ branches₃ finish₃
+              remaining₃ clash₃ tail₃ =>
+              simp [PreparedCursor.advance] at remaining₃
+              have entered₃Exact : entered₃ = selectedPrepared :=
+                remaining₃.1.symm
+              subst entered₃
+              exact False.elim (clash₃ ⟨[], selectedResolves⟩)
+
+private theorem selectedFrontierShape
+    {count : Nat} {finish : PreparedCursor} {branch : ClauseBranch}
+    {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {branchTail : List ClauseBranch}
+    {clauseTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {copied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause}
+    (pulls :
+      RejectedPullsN count
+        (openedFor initialSession "p" [queryTerm] []).cursor finish)
+    (frontier :
+      RepresentativeRetainedCallFrontier []
+        (openedFor initialSession "p" [queryTerm] []) initialOpenConf
+        pPending finish branch clause branchTail clauseTail altTail copied
+        [] [] queryAtom [] [] queryAtom
+        (barrierDepth initialOpenConf.toConf + 1)
+        initialOpenConf.toConf.counter) :
+    count = 2 ∧ branch = selectedPrepared ∧
+      branchTail = [retainedPrepared] := by
+  obtain ⟨result, resolved, _live⟩ :=
+    selectedFrontierResolves pulls frontier
+  cases pulls with
+  | zero cursor =>
+      have shape := frontier.finishRemaining
+      rw [pOpenedRemaining] at shape
+      have branchExact : branch = firstPrepared :=
+        (List.cons.inj shape).1.symm
+      subst branch
+      exact False.elim (firstRejected ⟨result, resolved⟩)
+  | succ count cursor entered branches finish remaining clash tail =>
+      rw [pOpenedRemaining] at remaining
+      have enteredExact : entered = firstPrepared :=
+        (List.cons.inj remaining).1.symm
+      have branchesExact :
+          branches = [secondPrepared, selectedPrepared, retainedPrepared] :=
+        (List.cons.inj remaining).2.symm
+      subst entered
+      subst branches
+      cases tail with
+      | zero advanced =>
+          have shape := frontier.finishRemaining
+          simp [PreparedCursor.advance] at shape
+          have branchExact : branch = secondPrepared := shape.1.symm
+          subst branch
+          exact False.elim (secondRejected ⟨result, resolved⟩)
+      | succ tailCount cursor₂ entered₂ branches₂ finish₂ remaining₂ clash₂
+          tail₂ =>
+          simp [PreparedCursor.advance] at remaining₂
+          have entered₂Exact : entered₂ = secondPrepared :=
+            remaining₂.1.symm
+          have branches₂Exact :
+              branches₂ = [selectedPrepared, retainedPrepared] :=
+            remaining₂.2.symm
+          subst entered₂
+          subst branches₂
+          cases tail₂ with
+          | zero advanced₂ =>
+              have shape := frontier.finishRemaining
+              simp [PreparedCursor.advance] at shape
+              exact ⟨rfl, shape.1.symm, shape.2.symm⟩
+          | succ remainingCount cursor₃ entered₃ branches₃ finish₃
+              remaining₃ clash₃ tail₃ =>
+              simp [PreparedCursor.advance] at remaining₃
+              have entered₃Exact : entered₃ = selectedPrepared :=
+                remaining₃.1.symm
+              subst entered₃
+              exact False.elim (clash₃ ⟨[], selectedResolves⟩)
+
+private def rootScope : CutScopeId := 0
+
+/-- A literal root call crosses two real rigid-clash occurrences, activates
+the first matching clause, and retains the duplicate matching sibling as a
+live alternative.
+
+The independent lane pays call-entry, two rejected pulls, and activation:
+four exact transitions.  The fine executable lane prefilters the clashes and
+pays entry, pull, and activation: three exact transitions.  Both paths end in
+the same full session-related active carrier, whose retained-cursor ownership
+is part of the returned activation certificate. -/
+theorem two_rigid_rejections_then_selected_retained_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable} :
+    ∃ finish representative nextAlpha sourceCanonical flattened installed
+        after,
+      RepresentativeRootCallSuccessorFacts prog gt [] [] [] []
+        initialSession initialOpenConf rootScope "p" [queryTerm] []
+        [] queryAtom [] pScan.1 pScan.2 0
+        2 [firstPrepared, secondPrepared]
+        [firstRejectedExecutable, secondRejectedExecutable]
+        finish selectedPrepared selectedExecutable [retainedPrepared]
+        [retainedExecutable] [retainedAlt] selectedCopied [] representative
+        nextAlpha sourceCanonical flattened installed after ∧
+      finish.remaining = [selectedPrepared, retainedPrepared] ∧
+      after.carrier.index.bodyReferences = selectedReference.body ∧
+      after.carrier.index.bodyExecutables = selectedCopied.body ∧
+      PeTTaSpec.PrologCore.GoalSemantics.StepsN 4
+        (.running initialSession
+          (.task rootScope [.call "p" [queryTerm]] []))
+        [.opened (requestFor "p" [queryTerm] [])]
+        after.carrier.sourceState ∧
+      DemandDrivenCallStep.StepsN prog gt 3
+        (.ready initialOpenConf) after.carrier.fineState := by
+  have beforeSession :
+      SessionRelatesOpenConf (AlphaFreshFrontier []) ExactControlFrontiers
+        initialSession initialOpenConf := by
+    refine ⟨?_, rfl, rfl, rfl⟩
+    refine ⟨?_, ?_⟩
+    · simpa [initialSession, initialOpenConf] using
+        referenceDatabase_relates_executableWorld
+    · simpa [initialSession, initialOpenConf] using
+        (AlphaFreshFrontier.empty 0 0)
+  have preHeadPayload :
+      TaskSpinePayloadAgrees [] [] [] [] [] []
+        [{ barrier := 0
+           references := [.call "p" [queryTerm]]
+           executables := [.call "p" [] queryAtom] }] :=
+    TaskSpinePayloadAgrees.singleton (rootPayload 0)
+  have notThrow : ¬ BuiltinThrowCall "p" [queryTerm] := by
+    simp [BuiltinThrowCall]
+  have notDatabase :
+      DatabaseActions.recognizeDatabaseAction "p" [queryTerm] = none := by
+    rfl
+  obtain
+      ⟨rejects, skippedBranches, skippedClauses, finish, branch, clause,
+        branchTail, clauseTail, altTail, copied, independentResult,
+        representative, nextAlpha, sourceCanonical, flattened, installed,
+        after, facts⟩ :=
+    RepresentativeSupportedCallEntryRelates.activate_literal_root
+      (prog := prog) (gt := gt) (scope := rootScope) (callerBarrier := 0)
+      pEntry preHeadPayload rootPayloadSupported beforeSession (by rfl)
+      (by rfl) initialBelow pScanNonempty selectedFrontierResolves notThrow
+      notDatabase
+  obtain ⟨rejectsExact, branchExact, branchTailExact⟩ :=
+    selectedFrontierShape facts.pulls facts.frontier
+  subst rejects
+  subst branch
+  subst branchTail
+  have sourceShape := facts.sourceBank
+  rw [pOpenedRemaining] at sourceShape
+  have sourceAppend :
+      [firstPrepared, secondPrepared] ++
+          [selectedPrepared, retainedPrepared] =
+        skippedBranches ++ [selectedPrepared, retainedPrepared] := by
+    simpa using sourceShape
+  have skippedBranchesExact :
+      skippedBranches = [firstPrepared, secondPrepared] :=
+    (List.append_cancel_right sourceAppend).symm
+  subst skippedBranches
+  have executableShape := facts.executableBank
+  change
+    executableWorld.resolutionCandidates "p" 0 =
+      skippedClauses ++ clause :: clauseTail at executableShape
+  rw [pResolutionCandidates] at executableShape
+  have skippedClausesLength : skippedClauses.length = 2 := by
+    simpa using facts.executableSkipCount
+  have prefixShape := congrArg (List.take 2) executableShape
+  have skippedClausesExact :
+      skippedClauses = [firstRejectedExecutable, secondRejectedExecutable] := by
+    simpa [skippedClausesLength] using prefixShape.symm
+  subst skippedClauses
+  have executableAppend :
+      [firstRejectedExecutable, secondRejectedExecutable] ++
+          [selectedExecutable, retainedExecutable] =
+        [firstRejectedExecutable, secondRejectedExecutable] ++
+          (clause :: clauseTail) := by
+    simpa using executableShape
+  have executableTail := List.append_cancel_left executableAppend
+  have clauseExact : clause = selectedExecutable :=
+    (List.cons.inj executableTail).1.symm
+  have clauseTailExact : clauseTail = [retainedExecutable] :=
+    (List.cons.inj executableTail).2.symm
+  subst clause
+  subst clauseTail
+  have copiedExact : copied = selectedCopied := by
+    rw [facts.frontier.copiedExact]
+    rfl
+  subst copied
+  have tailScan :
+      ResolutionScan [] [] queryAtom [] [] queryAtom 1
+        [retainedExecutable] 1 altTail 2 := by
+    simpa [pPending, pScanExact, initialOpenConf, OpenConf.toConf,
+      Control.toConf, barrierDepth] using facts.frontier.tailScan
+  have expectedTailScan :
+      ResolutionScan [] [] queryAtom [] [] queryAtom 1
+        [retainedExecutable] 1 [retainedAlt] 2 :=
+    .retained retainedExecutable [] 1 2 []
+      (by
+        simp [resolutionClauseRetained, queryAtom, retainedExecutable,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+      (.nil 2)
+  have altTailExact : altTail = [retainedAlt] :=
+    (tailScan.deterministic expectedTailScan).1
+  subst altTail
+  have selectedResolution : HeadResolution selectedPrepared independentResult := by
+    rw [← facts.carrierCurrent]
+    exact facts.resolution
+  have independentResultExact : independentResult = [] :=
+    HeadResolution.deterministic selectedResolution selectedResolves
+  subst independentResult
+  refine
+    ⟨finish, representative, nextAlpha, sourceCanonical, flattened, installed,
+      after, ?_, facts.frontier.finishRemaining, facts.bodyReferences,
+      facts.bodyExecutables, ?_, facts.fineSteps⟩
+  · simpa [pPending, DemandDrivenCallStep.pendingCallOf] using facts
+  · simpa using facts.sourceSteps
+
+/-! ## Root-reachable cut commitment with a retained sibling -/
+
+namespace CutCommit
+
+open PrologPersistentFreeActivePayloadBridge
+open PrologPersistentFreeCommittedPayloadBridge
+open PrologPersistentFreeCommittedUnifyTransitionBridge
+open PrologScheduledSuccessPrefixBridge
+
+/-- The selected source occurrence begins with a real Prolog cut and then one
+compiler-erased administrative wrapper before a reflexive primitive
+unification. -/
+def selectedReference : LocalClause :=
+  { predicate := "cutp"
+    arguments := [queryTerm]
+    body := [.cut, .conjunction [], .unify queryTerm queryTerm] }
+
+/-- A second matching occurrence remains live until the selected occurrence
+executes its cut. -/
+def retainedReference : LocalClause :=
+  { predicate := "cutp"
+    arguments := [queryTerm]
+    body := [] }
+
+def selectedExecutable : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  { params := []
+    result := queryAtom
+    body := [.cut, .eq queryAtom queryAtom] }
+
+def retainedExecutable : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  { params := []
+    result := queryAtom
+    body := [] }
+
+def selectedVersion : VersionedClause :=
+  Database.empty.allocate selectedReference
+
+def retainedVersion : VersionedClause :=
+  (Database.empty.assertz selectedReference).allocate retainedReference
+
+def referenceDatabase : Database :=
+  (Database.empty.assertz selectedReference).assertz retainedReference
+
+def executableWorld : PWorld :=
+  (((default : PWorld).reindexClauses.appendProgClause
+    ("cutp", selectedExecutable)).appendProgClause
+    ("cutp", retainedExecutable))
+
+private theorem selectedClauseAgrees :
+    LocalClauseAgrees selectedReference ("cutp", selectedExecutable) := by
+  refine
+    { predicate := rfl
+      outputLast := ?_
+      body :=
+        .cons .cut
+          (.conjunction .nil
+            (.cons
+              (.unify (CompilerAdequacy.TermAgrees.integer 0)
+                (CompilerAdequacy.TermAgrees.integer 0))
+              .nil))
+      support := ?_ }
+  · exact
+      ⟨[], queryTerm, rfl, CompilerAdequacy.TermsAgree.nil,
+        CompilerAdequacy.TermAgrees.integer 0⟩
+  · intro name
+    simp [selectedReference, selectedExecutable, queryTerm, queryAtom,
+      LocalClause.variables, resolutionClauseVars, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars,
+      specializationGoalsVars, specializationGoalVars, termsVariables,
+      termVariables, goalsVariables, goalVariables]
+
+private theorem retainedClauseAgrees :
+    LocalClauseAgrees retainedReference ("cutp", retainedExecutable) := by
+  refine
+    { predicate := rfl
+      outputLast := ?_
+      body := .nil
+      support := ?_ }
+  · exact
+      ⟨[], queryTerm, rfl, CompilerAdequacy.TermsAgree.nil,
+        CompilerAdequacy.TermAgrees.integer 0⟩
+  · intro name
+    simp [retainedReference, retainedExecutable, queryTerm, queryAtom,
+      LocalClause.variables, resolutionClauseVars, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars,
+      specializationGoalsVars, termsVariables, termVariables, goalsVariables]
+
+theorem referenceDatabase_relates_executableWorld :
+    DatabaseRelatesWorld referenceDatabase executableWorld := by
+  have selected := emptyDatabaseRelatesIndexedWorld.assertz selectedClauseAgrees
+  have retained := selected.assertz retainedClauseAgrees
+  simpa [referenceDatabase, executableWorld] using retained
+
+def initialSession : Session :=
+  { resolver :=
+      { database := referenceDatabase
+        nextFresh := 0 } }
+
+def initialOpenConf : OpenConf :=
+  { persistent :=
+      { world := executableWorld
+        counter := 0 }
+    control :=
+      { cur := some ([.call "cutp" [] queryAtom], [])
+        alts := []
+        qterm := queryAtom } }
+
+private theorem rootControl (barrier : Nat) :
+    NormalizedAlphaGoalsAgree [] barrier
+      [.call "cutp" [queryTerm]] [.call "cutp" [] queryAtom] := by
+  exact
+    .cons
+      (.definedCall AlphaTermsAgree.nil
+        (AlphaTermAgrees.integer (alpha := []) 0))
+      .nil
+
+private theorem rootPayload (barrier : Nat) :
+    TaskPayloadAgrees [] [] barrier [] [] [] []
+      [.call "cutp" [queryTerm]] [.call "cutp" [] queryAtom] :=
+  emptyTaskData.withControl (rootControl barrier)
+
+private theorem executableWorldCoherent :
+    executableWorld.ClauseIndexCoherent := by
+  have root := PWorld.reindexClauses_coherent (default : PWorld)
+  have selected :=
+    PWorld.appendProgClause_coherent _ ("cutp", selectedExecutable) root
+  have retained :=
+    PWorld.appendProgClause_coherent _ ("cutp", retainedExecutable) selected
+  simpa [executableWorld] using retained
+
+private theorem resolutionCandidates :
+    executableWorld.resolutionCandidates "cutp" 0 =
+      [selectedExecutable, retainedExecutable] := by
+  rw [PWorld.resolutionCandidates_eq _ _ _ executableWorldCoherent]
+  have emptyClauses : (default : PWorld).progClauses = [] := rfl
+  simp [executableWorld, PWorld.reindexClauses, PWorld.appendProgClause,
+    PWorld.clausesOf, selectedExecutable, retainedExecutable, emptyClauses]
+
+private theorem visibleClauses :
+    referenceDatabase.visibleClausesAt referenceDatabase.generation "cutp" 1 =
+      [selectedVersion, retainedVersion] := by
+  rfl
+
+private theorem candidateBank :
+    SupportedCandidateBank "cutp"
+      (referenceDatabase.visibleClausesAt referenceDatabase.generation
+        "cutp" 1)
+      (executableWorld.resolutionCandidates "cutp" 0) := by
+  rw [visibleClauses, resolutionCandidates]
+  let selectedHead : CandidateClauseAgrees "cutp" selectedVersion
+      selectedExecutable := by
+    change LocalClauseAgrees selectedReference ("cutp", selectedExecutable)
+    exact selectedClauseAgrees
+  let retainedHead : CandidateClauseAgrees "cutp" retainedVersion
+      retainedExecutable := by
+    change LocalClauseAgrees retainedReference ("cutp", retainedExecutable)
+    exact retainedClauseAgrees
+  have selectedEncoding : EncodingInjectiveOn selectedVersion.clause.variables := by
+    simp [EncodingInjectiveOn, selectedVersion, Database.allocate,
+      selectedReference, queryTerm, LocalClause.variables, termsVariables,
+      termVariables, goalsVariables, goalVariables]
+  have retainedEncoding : EncodingInjectiveOn retainedVersion.clause.variables := by
+    simp [EncodingInjectiveOn, retainedVersion, Database.allocate,
+      retainedReference, queryTerm, LocalClause.variables, termsVariables,
+      termVariables, goalsVariables]
+  have selectedBody :
+      CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported
+        selectedVersion.clause.variables selectedVersion.clause.variables
+        selectedHead.body := by
+    change CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      selectedHead.body
+    let unifyAgreement :
+        CompilerAdequacy.GoalAgrees
+          (.unify queryTerm queryTerm) (.eq queryAtom queryAtom) :=
+      .unify (CompilerAdequacy.TermAgrees.integer 0)
+        (CompilerAdequacy.TermAgrees.integer 0)
+    have unifySupported :
+        CompilerGoalSubstitutionAdequacy.GoalAgreesSupported [] []
+          unifyAgreement := by
+      have agreementEq : unifyAgreement =
+          CompilerAdequacy.GoalAgrees.unify
+            (CompilerAdequacy.TermAgrees.integer 0)
+            (CompilerAdequacy.TermAgrees.integer 0) :=
+        Subsingleton.elim _ _
+      rw [agreementEq]
+      exact
+        @CompilerGoalSubstitutionAdequacy.GoalAgreesSupported.unify
+          [] [] queryTerm queryTerm queryAtom queryAtom
+          (CompilerAdequacy.TermAgrees.integer 0)
+          (CompilerAdequacy.TermAgrees.integer 0)
+          (by simp [CompilerGoalSubstitutionAdequacy.TermAgreesSupported,
+            CompilerSubstitutionAdequacy.termVariablesIn, queryTerm])
+          (by simp [CompilerGoalSubstitutionAdequacy.TermAgreesSupported,
+            CompilerSubstitutionAdequacy.termVariablesIn, queryTerm])
+    have bodyEq : selectedHead.body =
+        (CompilerAdequacy.GoalsAgree.cons CompilerAdequacy.GoalAgrees.cut
+          (CompilerAdequacy.GoalsAgree.conjunction
+            CompilerAdequacy.GoalsAgree.nil
+            (CompilerAdequacy.GoalsAgree.cons
+              unifyAgreement
+              CompilerAdequacy.GoalsAgree.nil))) := Subsingleton.elim _ _
+    rw [bodyEq]
+    exact .cons .cut (.conjunction .nil (.cons unifySupported .nil))
+  have retainedBody :
+      CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported
+        retainedVersion.clause.variables retainedVersion.clause.variables
+        retainedHead.body := by
+    change CompilerGoalSubstitutionAdequacy.GoalsAgreeSupported [] []
+      retainedHead.body
+    have bodyEq : retainedHead.body =
+        (CompilerAdequacy.GoalsAgree.nil :
+          CompilerAdequacy.GoalsAgree [] []) := Subsingleton.elim _ _
+    rw [bodyEq]
+    exact .nil
+  refine ⟨List.Forall₂.cons selectedHead
+    (List.Forall₂.cons retainedHead .nil), ?_⟩
+  exact
+    .cons (head := selectedHead) selectedEncoding selectedBody
+      (.cons (head := retainedHead) retainedEncoding retainedBody .nil)
+
+private def scan : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt × Nat :=
+  resolveAlts
+    (initialOpenConf.persistent.world.resolutionCandidates "cutp" 0)
+    [] [] queryAtom [] [] initialOpenConf.control.qterm
+    (barrierDepth initialOpenConf.toConf + 1)
+    initialOpenConf.toConf.counter
+
+private def pending : DemandDrivenCallStep.PendingCall :=
+  DemandDrivenCallStep.pendingCallOf initialOpenConf scan.1 scan.2
+
+private theorem entry :
+    RepresentativeSupportedCallEntryRelates []
+      (openedFor initialSession "cutp" [queryTerm] []) initialOpenConf pending
+      [] [] queryAtom [] [] queryAtom
+      (barrierDepth initialOpenConf.toConf + 1)
+      initialOpenConf.toConf.counter := by
+  have database :
+      DatabaseRelatesWorld initialSession.resolver.database
+        initialOpenConf.persistent.world := by
+    simpa [initialSession, initialOpenConf] using
+      referenceDatabase_relates_executableWorld
+  have ready : initialOpenConf.persistent.world.clauseIndexReady = true := rfl
+  have scanned :
+      resolveAlts
+          (initialOpenConf.persistent.world.resolutionCandidates "cutp" 0)
+          [] [] queryAtom [] [] initialOpenConf.control.qterm
+          (barrierDepth initialOpenConf.toConf + 1)
+          initialOpenConf.toConf.counter = scan := rfl
+  have query :=
+    PrologRecursiveCallPayloadBridge.TaskPayloadAgrees.representativeNormalizedCallAgrees
+      (rootPayload (barrierDepth initialOpenConf.toConf + 1))
+      rootPayloadSupported
+      (openedFor initialSession "cutp" [queryTerm] []).cursor
+      (by simp [openedFor, openLocalCall, requestFor, prepareCall])
+      (by simp [openedFor, openLocalCall, requestFor, prepareCall])
+  have constructed :=
+    openedFor_pendingCallOf_representative_supported_relates
+      database ready "cutp" [queryTerm] [] [] [] queryAtom [] []
+      scan.1 scan.2 (by rfl) (by rfl)
+      (by
+        calc
+          _ = scan := by
+            simpa only [List.length_nil, List.map_nil] using scanned
+          _ = (scan.1, scan.2) := (Prod.eta scan).symm) query candidateBank
+  simpa [pending, initialOpenConf] using constructed
+
+private theorem initialBelow :
+    ConfBelowResolutionCounter initialOpenConf.toConf := by
+  apply ConfBelowResolutionCounter.of_names
+  intro name member
+  simp [resolutionLiveVars, initialOpenConf, OpenConf.toConf, Control.toConf,
+    specializationGoalsVars, specializationGoalVars, resolutionSubstVars,
+    queryAtom, Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom.vars] at member
+
+private def selectedCopied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  Mettapedia.Languages.MeTTa.PLeaTTa.freshenResolutionClause [] [] queryAtom [] [] queryAtom 0 1
+    selectedExecutable
+
+private def retainedCopied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause :=
+  Mettapedia.Languages.MeTTa.PLeaTTa.freshenResolutionClause [] [] queryAtom [] [] queryAtom 1 1
+    retainedExecutable
+
+private def selectedAlt : Mettapedia.Languages.MeTTa.PLeaTTa.Alt :=
+  resolutionAlt [] [] queryAtom [] [] queryAtom 1 0 selectedExecutable
+
+private def retainedAlt : Mettapedia.Languages.MeTTa.PLeaTTa.Alt :=
+  resolutionAlt [] [] queryAtom [] [] queryAtom 1 1 retainedExecutable
+
+/-- The selected executable occurrence carries the exact predicate-local cut
+tag installed by root call entry. -/
+theorem selectedCopied_body_exact :
+    selectedCopied.body = [.cutAt 1, .eq queryAtom queryAtom] := by
+  simp [selectedCopied, selectedExecutable,
+    Mettapedia.Languages.MeTTa.PLeaTTa.freshenResolutionClause, Mettapedia.Languages.MeTTa.PLeaTTa.renameGoalSuffix, queryAtom,
+    Mettapedia.Languages.MeTTa.PLeaTTa.renameAtomSuffix]
+
+/-- The sibling that the cut will discard is an ordinary executable branch,
+not an anonymous delimiter marker. -/
+theorem retainedAlt_is_branch :
+    ∃ goals binding, retainedAlt = .br goals binding := by
+  exact ⟨_, _, rfl⟩
+
+private theorem scanExact : scan = ([selectedAlt, retainedAlt], 2) := by
+  unfold scan
+  change
+    resolveAlts (executableWorld.resolutionCandidates "cutp" 0)
+        [] [] queryAtom [] [] queryAtom 1 0 =
+      ([selectedAlt, retainedAlt], 2)
+  rw [resolutionCandidates, resolveAlts_eq_scanResolution]
+  have exactScan :
+      ResolutionScan [] [] queryAtom [] [] queryAtom 1
+        [selectedExecutable, retainedExecutable] 0
+        [selectedAlt, retainedAlt] 2 :=
+    .retained selectedExecutable [retainedExecutable] 0 2 _
+      (by
+        simp [resolutionClauseRetained, queryAtom, selectedExecutable,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+      (.retained retainedExecutable [] 1 2 []
+        (by
+          simp [resolutionClauseRetained, queryAtom, retainedExecutable,
+            Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+            Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+        (.nil 2))
+  simpa [selectedAlt, retainedAlt] using exactScan.result_eq
+
+private theorem scanNonempty : pending.branches ≠ [] := by
+  rw [pending, scanExact]
+  exact List.cons_ne_nil _ _
+
+private def selectedPrepared : ClauseBranch :=
+  preparedBranchOf referenceDatabase.generation [queryTerm] [] 0
+    selectedVersion
+
+private def retainedPrepared : ClauseBranch :=
+  preparedBranchOf referenceDatabase.generation [queryTerm] [] 0
+    retainedVersion
+
+private theorem openedRemaining :
+    (openedFor initialSession "cutp" [queryTerm] []).cursor.remaining =
+      [selectedPrepared, retainedPrepared] := by
+  rfl
+
+private theorem selectedNormalized :
+    selectedPrepared.normalizedHeadEquations = [(queryTerm, queryTerm)] := by
+  rfl
+
+private theorem selectedResolves : HeadResolution selectedPrepared [] := by
+  refine ⟨[], ?_, ?_⟩
+  · refine ⟨[], ?_, rfl⟩
+    rw [selectedNormalized]
+    change OrderedTreeMgu [(Term.denote queryTerm, Term.denote queryTerm)] []
+    exact OrderedTreeMgu.cons
+      (Term.denote queryTerm) (Term.denote queryTerm) [] [] []
+      (.reflexive (Term.denote queryTerm)) OrderedTreeMgu.nil
+  · simp [selectedPrepared, preparedBranchOf]
+
+private theorem selectedFrontierResolves :
+    ∀ {count : Nat} {finish : PreparedCursor} {branch : ClauseBranch}
+      {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {branchTail : List ClauseBranch}
+      {clauseTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+      {copied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause},
+      RejectedPullsN count
+          (openedFor initialSession "cutp" [queryTerm] []).cursor finish →
+        RepresentativeRetainedCallFrontier []
+          (openedFor initialSession "cutp" [queryTerm] []) initialOpenConf
+          pending finish branch clause branchTail clauseTail altTail copied
+          [] [] queryAtom [] [] queryAtom
+          (barrierDepth initialOpenConf.toConf + 1)
+          initialOpenConf.toConf.counter →
+        ∃ independentResult : Substitution,
+          HeadResolution branch independentResult ∧
+            AlphaRuntimeNamesLive [] copied.body queryAtom := by
+  intro count finish branch clause branchTail clauseTail altTail copied
+    pulls frontier
+  cases pulls with
+  | zero cursor =>
+      have shape := frontier.finishRemaining
+      rw [openedRemaining] at shape
+      have branchExact : branch = selectedPrepared :=
+        (List.cons.inj shape).1.symm
+      subst branch
+      refine ⟨[], selectedResolves, ?_⟩
+      intro identity name member
+      simp at member
+  | succ count cursor entered branches finish remaining clash tail =>
+      rw [openedRemaining] at remaining
+      have enteredExact : entered = selectedPrepared :=
+        (List.cons.inj remaining).1.symm
+      subst entered
+      exact False.elim (clash ⟨[], selectedResolves⟩)
+
+private theorem selectedFrontierShape
+    {count : Nat} {finish : PreparedCursor} {branch : ClauseBranch}
+    {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {branchTail : List ClauseBranch}
+    {clauseTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Clause} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {copied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause}
+    (pulls :
+      RejectedPullsN count
+        (openedFor initialSession "cutp" [queryTerm] []).cursor finish)
+    (frontier :
+      RepresentativeRetainedCallFrontier []
+        (openedFor initialSession "cutp" [queryTerm] []) initialOpenConf
+        pending finish branch clause branchTail clauseTail altTail copied
+        [] [] queryAtom [] [] queryAtom
+        (barrierDepth initialOpenConf.toConf + 1)
+        initialOpenConf.toConf.counter) :
+    count = 0 ∧ branch = selectedPrepared ∧
+      branchTail = [retainedPrepared] := by
+  obtain ⟨result, resolved, _live⟩ :=
+    selectedFrontierResolves pulls frontier
+  cases pulls with
+  | zero cursor =>
+      have shape := frontier.finishRemaining
+      rw [openedRemaining] at shape
+      exact ⟨rfl, (List.cons.inj shape).1.symm,
+        (List.cons.inj shape).2.symm⟩
+  | succ count cursor entered branches finish remaining clash tail =>
+      rw [openedRemaining] at remaining
+      have enteredExact : entered = selectedPrepared :=
+        (List.cons.inj remaining).1.symm
+      subst entered
+      exact False.elim (clash ⟨[], selectedResolves⟩)
+
+private def rootScope : CutScopeId := 0
+
+/-- A literal two-occurrence root program activates the first matching
+cut-headed clause while retaining the second matching occurrence as the exact
+live sibling.  Both source and fine endpoints come from the reusable root
+activation producer. -/
+theorem root_cut_selected_retained_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable} :
+    ∃ finish representative nextAlpha sourceCanonical flattened installed
+        after,
+      RepresentativeRootCallSuccessorFacts prog gt [] [] [] []
+        initialSession initialOpenConf rootScope "cutp" [queryTerm] []
+        [] queryAtom [] scan.1 scan.2 0
+        0 [] [] finish selectedPrepared selectedExecutable
+        [retainedPrepared] [retainedExecutable] [retainedAlt] selectedCopied []
+        representative nextAlpha sourceCanonical flattened installed after ∧
+      finish.remaining = [selectedPrepared, retainedPrepared] ∧
+      after.carrier.index.bodyReferences = selectedReference.body ∧
+      after.carrier.index.bodyExecutables = selectedCopied.body ∧
+      StepsN 2
+        (.running initialSession
+          (.task rootScope [.call "cutp" [queryTerm]] []))
+        [.opened (requestFor "cutp" [queryTerm] [])]
+        after.carrier.sourceState ∧
+      DemandDrivenCallStep.StepsN prog gt 3
+        (.ready initialOpenConf) after.carrier.fineState := by
+  have beforeSession :
+      SessionRelatesOpenConf (AlphaFreshFrontier []) ExactControlFrontiers
+        initialSession initialOpenConf := by
+    refine ⟨?_, rfl, rfl, rfl⟩
+    refine ⟨?_, ?_⟩
+    · simpa [initialSession, initialOpenConf] using
+        referenceDatabase_relates_executableWorld
+    · simpa [initialSession, initialOpenConf] using
+        (AlphaFreshFrontier.empty 0 0)
+  have preHeadPayload :
+      TaskSpinePayloadAgrees [] [] [] [] [] []
+        [{ barrier := 0
+           references := [.call "cutp" [queryTerm]]
+           executables := [.call "cutp" [] queryAtom] }] :=
+    TaskSpinePayloadAgrees.singleton (rootPayload 0)
+  have notThrow : ¬ BuiltinThrowCall "cutp" [queryTerm] := by
+    simp [BuiltinThrowCall]
+  have notDatabase :
+      DatabaseActions.recognizeDatabaseAction "cutp" [queryTerm] = none := rfl
+  obtain
+      ⟨rejects, skippedBranches, skippedClauses, finish, branch, clause,
+        branchTail, clauseTail, altTail, copied, independentResult,
+        representative, nextAlpha, sourceCanonical, flattened, installed,
+        after, facts⟩ :=
+    RepresentativeSupportedCallEntryRelates.activate_literal_root
+      (prog := prog) (gt := gt) (scope := rootScope) (callerBarrier := 0)
+      entry preHeadPayload rootPayloadSupported beforeSession (by rfl)
+      (by rfl) initialBelow scanNonempty selectedFrontierResolves notThrow
+      notDatabase
+  obtain ⟨rejectsExact, branchExact, branchTailExact⟩ :=
+    selectedFrontierShape facts.pulls facts.frontier
+  subst rejects
+  subst branch
+  subst branchTail
+  have skippedBranchesNil : skippedBranches = [] := by
+    apply List.eq_nil_of_length_eq_zero
+    simpa using facts.sourceSkipCount
+  subst skippedBranches
+  have skippedClausesNil : skippedClauses = [] := by
+    apply List.eq_nil_of_length_eq_zero
+    simpa using facts.executableSkipCount
+  subst skippedClauses
+  have executableShape := facts.executableBank
+  change
+    executableWorld.resolutionCandidates "cutp" 0 =
+      clause :: clauseTail at executableShape
+  rw [resolutionCandidates] at executableShape
+  have clauseExact : clause = selectedExecutable :=
+    (List.cons.inj executableShape).1.symm
+  have clauseTailExact : clauseTail = [retainedExecutable] :=
+    (List.cons.inj executableShape).2.symm
+  subst clause
+  subst clauseTail
+  have copiedExact : copied = selectedCopied := by
+    rw [facts.frontier.copiedExact]
+    rfl
+  subst copied
+  have tailScan :
+      ResolutionScan [] [] queryAtom [] [] queryAtom 1
+        [retainedExecutable] 1 altTail 2 := by
+    simpa [pending, scanExact, initialOpenConf, OpenConf.toConf,
+      Control.toConf, barrierDepth] using facts.frontier.tailScan
+  have expectedTailScan :
+      ResolutionScan [] [] queryAtom [] [] queryAtom 1
+        [retainedExecutable] 1 [retainedAlt] 2 :=
+    .retained retainedExecutable [] 1 2 []
+      (by
+        simp [resolutionClauseRetained, queryAtom, retainedExecutable,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologGroundIdentical, Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompat,
+          Mettapedia.Languages.MeTTa.PLeaTTa.prologMatchCompatList])
+      (.nil 2)
+  have altTailExact : altTail = [retainedAlt] :=
+    (tailScan.deterministic expectedTailScan).1
+  subst altTail
+  have selectedResolution :
+      HeadResolution selectedPrepared independentResult := by
+    rw [← facts.carrierCurrent]
+    exact facts.resolution
+  have independentResultExact : independentResult = [] :=
+    HeadResolution.deterministic selectedResolution selectedResolves
+  subst independentResult
+  refine
+    ⟨finish, representative, nextAlpha, sourceCanonical, flattened, installed,
+      after, ?_, facts.frontier.finishRemaining, facts.bodyReferences,
+      facts.bodyExecutables, ?_, facts.fineSteps⟩
+  · simpa [pending, DemandDrivenCallStep.pendingCallOf] using facts
+  · simpa using facts.sourceSteps
+
+/-- The administrative wrapper immediately following the selected cut costs
+one real source step and no executable step. -/
+theorem afterCutAdministrative :
+    AdministrativeStepsN 1
+      [.conjunction [], .unify queryTerm queryTerm]
+      [.unify queryTerm queryTerm] :=
+  .succ 0 _ _ _
+    (.conjunction [] [.unify queryTerm queryTerm])
+    (.zero [.unify queryTerm queryTerm])
+
+/-- Exact literal-root execution through the first continuation after cut.
+
+The source emits the root-open request and then the prune token naming the
+actual retained occurrence.  The fine machine takes the three root
+activation steps plus one cut step.  The committed successor has consumed
+the only resource cell and restored the empty root alternative bank. -/
+theorem root_cut_then_first_continuation_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable} :
+    ∃ (active : RepresentativePersistentFreeActivePayloadState)
+        (final : RepresentativePersistentFreeCommittedPayloadState),
+      active.carrier.index.bodyReferences =
+        [.cut, .conjunction [], .unify queryTerm queryTerm] ∧
+      active.carrier.index.bodyExecutables =
+        [.cutAt active.carrier.index.bodyBarrier, .eq queryAtom queryAtom] ∧
+      active.carrier.index.active.alts = [retainedAlt] ∧
+      active.carrier.index.resources = [] ∧
+      StepsN 4
+        (.running initialSession
+          (.task rootScope [.call "cutp" [queryTerm]] []))
+        [ .opened (requestFor "cutp" [queryTerm] []),
+          .pruned
+            (PrologActivatedProductStepBridge.retainedCursorTokenAt
+              active.carrier.index.predicateScope
+              active.carrier.index.finish active.carrier.index.branch
+              active.carrier.index.branchTail) ]
+        final.carrier.sourceState ∧
+      DemandDrivenCallStep.StepsN prog gt 4
+        (.ready initialOpenConf) final.carrier.fineState ∧
+      final.carrier.index.bodyReferences = [.unify queryTerm queryTerm] ∧
+      final.carrier.index.resources = [] ∧
+      final.carrier.index.openConf.control.alts = [] ∧
+      final.carrier.index.support = [] ∧
+      Nonempty
+        (GlobalCertifiedPrefix prog gt
+          [ .resolver
+              (.forward
+                (.cut
+                  (PrologActivatedProductStepBridge.retainedCursorTokenAt
+                    active.carrier.index.predicateScope
+                    active.carrier.index.finish active.carrier.index.branch
+                    active.carrier.index.branchTail))),
+            .committedAdministrative 1 ]
+          (.ordinary (.active active))
+          (.ordinary (.committed final))) := by
+  obtain
+      ⟨finish, representative, nextAlpha, sourceCanonical, flattened,
+        installed, legacy, facts, finishRemaining, bodyReferences,
+        bodyExecutables, rootSource, rootFine⟩ :=
+    root_cut_selected_retained_exact (prog := prog) (gt := gt)
+  let active := facts.toPersistentFreeActive
+  have referenceHead :
+      active.carrier.index.bodyReferences =
+        [.cut, .conjunction [], .unify queryTerm queryTerm] := by
+    change legacy.carrier.index.bodyReferences =
+      [.cut, .conjunction [], .unify queryTerm queryTerm]
+    simpa [selectedReference] using bodyReferences
+  have executableKnown :
+      active.carrier.index.bodyExecutables =
+        [.cutAt 1, .eq queryAtom queryAtom] := by
+    change legacy.carrier.index.bodyExecutables =
+      [.cutAt 1, .eq queryAtom queryAtom]
+    calc
+      legacy.carrier.index.bodyExecutables = selectedCopied.body :=
+        bodyExecutables
+      _ = [.cutAt 1, .eq queryAtom queryAtom] := selectedCopied_body_exact
+  have activeAgreement := active.carrier.agreement
+  have activeReady := activeAgreement.ready
+  rw [referenceHead] at activeReady
+  rcases activeReady with
+    ⟨_persistent, _currentControl, _queryTerm, activePayload⟩
+  have bodyPayload := activePayload.headPayload
+  rcases bodyPayload.control.cutHead with
+    ⟨executableTail, executableShape, _tailControl⟩
+  rw [executableKnown] at executableShape
+  have barrierExact : active.carrier.index.bodyBarrier = 1 := by
+    have headExact := (List.cons.inj executableShape).1
+    have same : 1 = active.carrier.index.bodyBarrier := by
+      injection headExact
+    exact same.symm
+  have executableHead :
+      active.carrier.index.bodyExecutables =
+        [.cutAt active.carrier.index.bodyBarrier,
+          .eq queryAtom queryAtom] := by
+    simpa [barrierExact] using executableKnown
+  have activeAlts : active.carrier.index.active.alts = [retainedAlt] := by
+    change legacy.carrier.index.active.alts = [retainedAlt]
+    exact facts.activeAltsExact
+  have activeResources : active.carrier.index.resources = [] := by
+    change legacy.carrier.index.resources = []
+    exact facts.resourcesEmpty
+  have activeBaseAlts : active.carrier.index.baseAlts = [] := by
+    change legacy.carrier.index.baseAlts = []
+    exact facts.baseAltsEmpty
+  have database :
+      DatabaseRelatesWorld initialSession.resolver.database
+        initialOpenConf.persistent.world := by
+    simpa [initialSession, initialOpenConf] using
+      referenceDatabase_relates_executableWorld
+  have sourceNonempty :
+      initialSession.resolver.database.visibleClausesAt
+        initialSession.resolver.database.generation "cutp" 1 ≠ [] := by
+    simp [initialSession, visibleClauses]
+  have scanned :
+      resolveAlts
+          (initialOpenConf.toConf.world.resolutionCandidates "cutp" 0)
+          [] [] queryAtom [] [] initialOpenConf.toConf.qterm
+          (barrierDepth initialOpenConf.toConf + 1)
+          initialOpenConf.toConf.counter =
+        (scan.1, scan.2) := by
+    change scan = (scan.1, scan.2)
+    exact (Prod.eta scan).symm
+  obtain ⟨_sourceEntry, fineEntry, _entryAgain⟩ :=
+    taskCall_callEnter_bank_correspondence
+      (prog := prog) (gt := gt) (session := initialSession)
+      (state := initialOpenConf) database entry.indexReady rootScope "cutp"
+      [queryTerm] [] [] [] queryAtom [] [] scan.1 scan.2 entry.entry.arity
+      (by simp [BuiltinThrowCall])
+      (by simp [DatabaseActions.recognizeDatabaseAction]) sourceNonempty
+      entry.entry.callHead scanned
+  have sealedEntry :
+      Mettapedia.Languages.MeTTa.PLeaTTa.Step prog gt initialOpenConf.toConf pending.pulled.toConf := by
+    simpa [pending] using
+      (PrologNestedCallReadyBridge.DemandDrivenCallStep.Step.ready_callPending_projects_to_sealed
+        fineEntry)
+  have initialCoherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent initialOpenConf.toConf := by
+    simp [initialOpenConf, OpenConf.toConf, Control.toConf,
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent]
+  have pulledCoherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent pending.pulled.toConf :=
+    sealedEntry.preserves_barrierCacheCoherent initialCoherent
+  have activatedCoherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent
+        (PrologRepresentativeStepActivationBridge.activatedExecutableSuccessor
+          pending selectedCopied [] initialOpenConf.control.qterm installed) :=
+    facts.activation.executableStep.preserves_barrierCacheCoherent
+      pulledCoherent
+  have activeOpenExact :
+      active.carrier.index.openConf =
+        PrologRepresentativeStepActivationBridge.activatedOpenSuccessor
+          pending selectedCopied [] initialOpenConf.control.qterm installed := by
+    have wrapped :
+        active.carrier.fineState =
+          DemandDrivenCallStep.FineConf.ready
+            (PrologRepresentativeStepActivationBridge.activatedOpenSuccessor
+              pending selectedCopied [] initialOpenConf.control.qterm
+                installed) := by
+      calc
+        active.carrier.fineState = legacy.carrier.fineState := by
+          simp [active]
+        _ = _ := facts.fineStateExact
+    change
+      DemandDrivenCallStep.FineConf.ready active.carrier.index.openConf =
+        DemandDrivenCallStep.FineConf.ready
+          (PrologRepresentativeStepActivationBridge.activatedOpenSuccessor
+            pending selectedCopied [] initialOpenConf.control.qterm installed)
+        at wrapped
+    injection wrapped
+  have coherent :
+      Mettapedia.Languages.MeTTa.PLeaTTa.BarrierCacheCoherent active.carrier.index.openConf.toConf := by
+    rw [activeOpenExact]
+    simpa only [
+      PrologRepresentativeStepActivationBridge.activatedOpenSuccessor_toConf]
+      using activatedCoherent
+  let committed :=
+    RepresentativePersistentFreeActivePayloadState.afterCut prog gt active
+      [.conjunction [], .unify queryTerm queryTerm]
+      [.eq queryAtom queryAtom] referenceHead executableHead coherent
+  let final :=
+    RepresentativePersistentFreeCommittedPayloadState.afterAdministrative
+      committed afterCutAdministrative
+  have localPrefix :=
+    GlobalCertifiedPrefix.activeCutThenCommittedAdministrative
+      (prog := prog) (gt := gt) active
+      [.conjunction [], .unify queryTerm queryTerm]
+      [.eq queryAtom queryAtom] referenceHead executableHead coherent
+      (by omega) afterCutAdministrative
+  have localSource := localPrefix.sourceSteps
+  have localFine := localPrefix.fineSteps
+  have sourceAll := rootSource.trans localSource
+  have fineAll := rootFine.trans localFine
+  refine ⟨active, final, referenceHead, executableHead, activeAlts,
+    activeResources, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa [active, committed, final, GlobalTransitionSchedule.sourceCost,
+      GlobalTransitionSchedule.sourceEvents, GlobalTransitionKind.sourceCost,
+      GlobalTransitionKind.sourceEvents,
+      PrologFailureRebasePrefixBridge.ResolverTransitionKind.sourceCost,
+      PrologFailureRebasePrefixBridge.ResolverTransitionKind.sourceEvents,
+      PrologHeterogeneousPrefixBridge.TransitionKind.sourceCost,
+      PrologHeterogeneousPrefixBridge.TransitionKind.sourceEvents,
+      PrologFailureRebasePrefixBridge.ResolverPhaseState.sourceState,
+      PrologHeterogeneousPrefixBridge.ProductPhaseState.sourceState] using sourceAll
+  · simpa [active, committed, final, GlobalTransitionSchedule.fineCost,
+      GlobalTransitionKind.fineCost,
+      PrologFailureRebasePrefixBridge.ResolverTransitionKind.fineCost,
+      PrologHeterogeneousPrefixBridge.TransitionKind.fineCost,
+      PrologFailureRebasePrefixBridge.ResolverPhaseState.fineState,
+      PrologHeterogeneousPrefixBridge.ProductPhaseState.fineState] using fineAll
+  · simp [final, committed,
+      RepresentativePersistentFreeCommittedPayloadState.afterAdministrative]
+  · change committed.carrier.index.resources = []
+    rw [show committed.carrier.index.resources =
+        (active.carrier.index.active :: active.carrier.index.resources).drop 1 from
+      RepresentativePersistentFreeActivePayloadState.afterCut_resources_exact
+        prog gt active [.conjunction [], .unify queryTerm queryTerm]
+          [.eq queryAtom queryAtom] referenceHead executableHead coherent]
+    simp [activeResources]
+  · change committed.carrier.index.openConf.control.alts = []
+    rw [show committed.carrier.index.openConf.control.alts =
+        PrologProductResourceContextBridge.flattenOwnedAlts
+          active.carrier.index.resources
+          active.carrier.index.baseAlts from
+      RepresentativePersistentFreeActivePayloadState.afterCut_alts_exact
+        prog gt active [.conjunction [], .unify queryTerm queryTerm]
+          [.eq queryAtom queryAtom] referenceHead executableHead coherent]
+    simp [activeResources, activeBaseAlts]
+  · change active.carrier.index.support = []
+    change legacy.carrier.index.support = []
+    exact facts.supportPreserved
+  · exact ⟨localPrefix⟩
+
+/-- Exact literal-root execution through cut, its compiler-erased source
+continuation, and the following reflexive primitive unification.
+
+The retained sibling is pruned by the cut before the equality runs.  The
+committed equality then contributes one real source step and one real fine
+step, consumes its executable head, and remains on the packet-free committed
+carrier.  The returned global prefix contains the literal cut successor and
+the literal unification successor as dependent midpoints. -/
+theorem root_cut_then_reflexive_unify_exact
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable} :
+    ∃ (active : RepresentativePersistentFreeActivePayloadState)
+        (before after : RepresentativePersistentFreeCommittedPayloadState)
+        (bodyExecutableTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+        (sourceExtension executableExtension : TreeSubstitution)
+        (generated installed : Subst),
+      before.carrier.index.bodyReferences =
+        [.unify queryTerm queryTerm] ∧
+      active.carrier.index.active.alts = [retainedAlt] ∧
+      RepresentativePersistentFreeCommittedUnifySuccessorFacts prog gt
+        before after queryTerm queryTerm before.carrier.index.current []
+        bodyExecutableTail sourceExtension executableExtension generated
+        installed ∧
+      StepsN 5
+        (.running initialSession
+          (.task rootScope [.call "cutp" [queryTerm]] []))
+        [ .opened (requestFor "cutp" [queryTerm] []),
+          .pruned
+            (PrologActivatedProductStepBridge.retainedCursorTokenAt
+              active.carrier.index.predicateScope
+              active.carrier.index.finish active.carrier.index.branch
+              active.carrier.index.branchTail) ]
+        after.carrier.sourceState ∧
+      DemandDrivenCallStep.StepsN prog gt 5
+        (.ready initialOpenConf) after.carrier.fineState ∧
+      before.carrier.fineState ≠ after.carrier.fineState ∧
+      after.carrier.index.bodyReferences = [] ∧
+      after.carrier.index.resources = [] ∧
+      after.carrier.index.openConf.control.alts = [] ∧
+      ∃ label : CommittedUnifyTransitionLabel,
+        Nonempty
+          (GlobalCertifiedPrefix prog gt
+            [ .resolver
+                (.forward
+                  (.cut
+                    (PrologActivatedProductStepBridge.retainedCursorTokenAt
+                      active.carrier.index.predicateScope
+                      active.carrier.index.finish active.carrier.index.branch
+                      active.carrier.index.branchTail))),
+              .committedAdministrative 1,
+              .committedUnify label ]
+            (.ordinary (.active active))
+            (.ordinary (.committed after))) := by
+  obtain
+      ⟨active, before, _activeReferenceHead, _activeExecutableHead,
+        activeAlts, _activeResources, rootSource, rootFine, beforeReference,
+        beforeResources, beforeAlts, beforeSupport, ⟨cutPrefix⟩⟩ :=
+    root_cut_then_first_continuation_exact (prog := prog) (gt := gt)
+  have leftSupported :
+      AlphaTreeSupported before.carrier.index.alpha
+        before.carrier.index.support (Term.denote queryTerm) := by
+    simp [AlphaTreeSupported, queryTerm, Term.denote,
+      PrologMguOpenAgreement.TreeVariablesSatisfy,
+      PrologMguOpenAgreement.TreesVariablesSatisfy]
+  have rightSupported :
+      AlphaTreeSupported before.carrier.index.alpha
+        before.carrier.index.support (Term.denote queryTerm) :=
+    leftSupported
+  have continuationLive :
+      ReadyUnifyContinuationLive before.carrier.index.support
+        before.carrier.index.openConf := by
+    intro executableHead rest runtime current identity name linked
+    rw [beforeSupport] at linked
+    simp at linked
+  have resolved :
+      UnifyResolution before.carrier.index.current queryTerm queryTerm
+        before.carrier.index.current := by
+    refine ⟨[], ?_, rfl⟩
+    refine ⟨[], ?_, rfl⟩
+    let tree :=
+      Term.denote (before.carrier.index.current.applyTerm queryTerm)
+    simpa [denoteEquations, tree] using
+      (OrderedTreeMgu.cons tree tree [] [] [] (.reflexive tree)
+        OrderedTreeMgu.nil)
+  obtain
+      ⟨bodyExecutableTail, sourceExtension, executableExtension, generated,
+        installed, after, facts⟩ :=
+    RepresentativePersistentFreeCommittedPayloadState.exists_afterUnifySuccessLive
+      before (prog := prog) (gt := gt) (bodyRest := []) beforeReference
+      leftSupported rightSupported continuationLive resolved
+  let edge :
+      GlobalCertifiedTransition prog gt
+        (.committedUnify (CommittedUnifyTransitionLabel.of facts))
+        (.ordinary (.committed before))
+        (.ordinary (.committed after)) :=
+    .committedUnify facts
+  have localSource := edge.sourceSteps
+  have localFine := edge.fineSteps
+  have sourceAll := rootSource.trans localSource
+  have fineAll := rootFine.trans localFine
+  have afterBody : after.carrier.index.bodyReferences = [] := by
+    rw [facts.afterIndexExact]
+    rfl
+  have afterResources : after.carrier.index.resources = [] := by
+    rw [facts.afterIndexExact]
+    exact beforeResources
+  have afterAlts : after.carrier.index.openConf.control.alts = [] := by
+    rw [facts.afterIndexExact]
+    simpa [RepresentativePersistentFreeCommittedPayloadState.unifyIndex,
+      RepresentativePersistentFreeCommittedPayloadState.unifyOpenConf] using
+      beforeAlts
+  let one :
+      GlobalCertifiedPrefix prog gt
+        [.committedUnify (CommittedUnifyTransitionLabel.of facts)]
+        (.ordinary (.committed before))
+        (.ordinary (.committed after)) :=
+    .cons edge (.nil _)
+  let full := cutPrefix.append one
+  refine
+    ⟨active, before, after, bodyExecutableTail, sourceExtension,
+      executableExtension, generated, installed, beforeReference, activeAlts,
+      facts, ?_,
+      ?_, facts.fineState_ne, afterBody, afterResources, afterAlts,
+      CommittedUnifyTransitionLabel.of facts, ?_⟩
+  · simpa [GlobalTransitionKind.sourceCost,
+      GlobalTransitionKind.sourceEvents,
+      PrologFailureRebasePrefixBridge.ResolverPhaseState.sourceState,
+      PrologHeterogeneousPrefixBridge.ProductPhaseState.sourceState] using
+      sourceAll
+  · simpa [GlobalTransitionKind.fineCost,
+      PrologFailureRebasePrefixBridge.ResolverPhaseState.fineState,
+      PrologHeterogeneousPrefixBridge.ProductPhaseState.fineState] using
+      fineAll
+  · exact ⟨by simpa [full, one] using full⟩
+
+end CutCommit
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologRootRejectedPrefixRegression

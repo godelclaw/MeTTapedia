@@ -1,0 +1,598 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionPostFailureActivationBridge
+Purpose: Reactivate the exact eagerly pulled retained head after primitive
+  failure, preserving current persistent state and the complete payload bank.
+Trusted boundary: none
+Main exports:
+  SpinedPostFailureFrontierPayloadResourceRelatesAt.activateSelectedHead
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCurrentSessionFailurePayloadTransitionBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologCurrentSessionPostFailureActivationBridge
+
+open Mettapedia.Languages.MeTTa.PLeaTTa.Source (Atom Subst)
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.Canonical
+open PeTTaSpec.PrologCore.GoalSemantics
+open PeTTaSpec.PrologCore.OpenSubstitution
+open PeTTaSpec.PrologCore.Resolver
+open DemandDrivenStep
+open Mettapedia.Languages.MeTTa.PLeaTTa.PrologAlphaFreshFrontierBridge
+open PrologActivationMacro
+open PrologBodyFailureResourceTransitionBridge
+open PrologCallPayloadBridge
+open PrologControlSegmentSpineBridge
+open PrologCurrentSessionFailurePayloadTransitionBridge
+open PrologCurrentSessionPayloadBridge
+open PrologMguBridge
+open PrologMguComposition
+open PrologOrdinaryStepBridge
+open PrologProductResourceContextBridge
+open PrologProductResourceTransitionBridge
+open PrologRecursiveCallPayloadBridge
+open PrologRepresentativeProductActivationBridge
+open PrologRetainedCursorOwnershipBridge
+open PrologRetainedPayloadActivationBridge
+open PrologRetainedPayloadSnapshotBridge
+open PrologRetainedPayloadSnapshotBridge.SourceControlResourcePayloadContextAgrees
+open PrologSourceProductContextBridge
+open PrologStateBridge
+
+/-!
+The post-failure source is stopped at an unadvanced retained cursor while the
+executable has already installed that cursor's first retained clause.  The
+payload snapshot consequently lives on the consumed resource and advanced
+cursor.  Its proof-only chronology token restores the strictly stronger
+pre-pull bounds needed by clause-head activation; current world, database,
+frames, alternatives, and allocator state always come from the actual input
+state.
+-/
+
+namespace SpinedPostFailureFrontierPayloadResourceRelatesAt
+
+/-- One exact retained-head activation closes the executable-ahead
+post-failure offset.
+
+The independent source selects the same frozen clause occurrence in one silent
+step.  The fine executable performs the already-installed full-head equality
+in one step.  Every older payload cell is alpha-extended only because its
+literal source/executable endpoints predate the selected head's two allocation
+seeds.  [SPEC metta.pl:251-256; ISO:unification] -/
+theorem activateSelectedHead
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {alpha support : List (LogicVar × String)}
+    {opened : OpenedCall} {session : Session}
+    {pending : DemandDrivenCallStep.PendingCall}
+    {bodyBarrier callerBarrier : Nat}
+    {callerReferences : List PeTTaSpec.PrologCore.Goal}
+    {callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {outer : List ControlSegment}
+    {qterm : Atom}
+    {cursor : PreparedCursor}
+    {branch : ClauseBranch} {clause : Mettapedia.Languages.MeTTa.PLeaTTa.Clause}
+    {branchTail : List ClauseBranch}
+    {copied : Mettapedia.Languages.MeTTa.PLeaTTa.Clause}
+    {resource : RetainedAlternativeSegment}
+    {remainingAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {resources : List RetainedAlternativeSegment}
+    {callerScope outerScope : CutScopeId}
+    {context : ActiveProductContext}
+    {baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {source : Search} {state : OpenConf}
+    {payloadContext :
+      PostFailurePayloadOffsetContext alpha support qterm opened cursor branch
+        branchTail bodyBarrier callerBarrier callerReferences
+        callerExecutables outer resource remainingAlts resources callerScope
+        outerScope context}
+    {independentResult : Substitution}
+    (agreement :
+      SpinedPostFailureFrontierPayloadResourceRelatesAt
+        (AlphaFreshFrontier alpha) alpha support opened session pending
+        bodyBarrier callerBarrier callerReferences callerExecutables outer
+        qterm cursor branch clause branchTail copied resource remainingAlts
+        resources callerScope outerScope context baseAlts source state
+        payloadContext)
+    (currentShared : SharedRuntimeAlpha alpha)
+    (below : ConfBelowResolutionCounter state.toConf)
+    (live :
+      AlphaRuntimeNamesLive support
+        (copied.body ++ resource.rest) resource.qterm)
+    (resolved : HeadResolution branch independentResult) :
+    let consumed :=
+      PostFailurePayloadOffsetContext.headSnapshot payloadContext
+    let restored :=
+      SelectedHeadActivationChronology.restoreSnapshot consumed
+        agreement.activationChronology agreement.core.resourceStack.offset
+    ∃ (nextAlpha : List (LogicVar × String))
+        (sourceCanonical flattened : TreeSubstitution)
+        (installed : Subst),
+      ∃ extension :
+          AlphaExtendsAbove alpha nextAlpha branch.firstFresh resource.counter,
+        ∃ nextPayloadContext :
+            ActiveProductPayloadContext nextAlpha support qterm opened cursor
+              branch branchTail bodyBarrier callerBarrier callerReferences
+              callerExecutables outer (afterPulledHead resource remainingAlts)
+              resources callerScope outerScope context,
+        RetainedCallPayloadSnapshot.RestorationDataAgrees
+            (SourceControlResourcePayloadContextAgrees.headCell
+              nextPayloadContext).snapshot restored ∧
+        SharedRuntimeAlpha nextAlpha ∧
+          (∀ pair, pair ∈ alpha → pair ∈ nextAlpha) ∧
+        SourceControlResourcePayloadContextAgrees.tail nextPayloadContext =
+          SourceControlResourcePayloadContextAgrees.extendAbove extension
+            (SourceControlResourcePayloadContextAgrees.tail payloadContext)
+            agreement.outerActivationEndpoints ∧
+        RawStep session source [] .none session
+          (.running
+            (ActiveProductContext.plug context
+              (activatedSourceProduct callerScope opened cursor branch
+                branchTail independentResult callerReferences))) ∧
+        Mettapedia.Languages.MeTTa.PLeaTTa.Step prog gt state.toConf
+          (unifySuccessor state (copied.body ++ resource.rest)
+            installed).toConf ∧
+        DemandDrivenCallStep.Step prog gt (.ready state)
+          (.ready
+            (unifySuccessor state (copied.body ++ resource.rest)
+              installed)) ∧
+        AlphaCumulativeResidualVariantAgreesOnWith
+          nextAlpha support (sourceCanonical ++ restored.canonical)
+          restored.referenceBase
+          (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+            state.control.qterm installed)
+          (flattened ++ restored.residualRepresentative) ∧
+        SpinedActiveProductPayloadResourceRelatesAt
+          (AlphaFreshFrontier nextAlpha) nextAlpha support
+          (sourceCanonical ++ restored.canonical) restored.referenceBase
+          opened session pending cursor branch branchTail remainingAlts
+          bodyBarrier callerBarrier branch.body copied.body callerReferences
+          callerExecutables outer independentResult
+          (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+            state.control.qterm installed)
+          qterm (afterPulledHead resource remainingAlts) resources callerScope
+          outerScope context baseAlts
+          (ActiveProductContext.plug context
+            (activatedSourceProduct callerScope opened cursor branch
+              branchTail independentResult callerReferences))
+          (unifySuccessor state (copied.body ++ resource.rest) installed)
+          nextPayloadContext := by
+  let consumed :=
+    PostFailurePayloadOffsetContext.headSnapshot payloadContext
+  let restored :=
+    SelectedHeadActivationChronology.restoreSnapshot consumed
+      agreement.activationChronology agreement.core.resourceStack.offset
+  have currentQuery :
+      state.control.qterm = resource.qterm :=
+    agreement.core.control.queryTerm.trans
+      agreement.core.control.resourceQuery.symm
+  have endpointComponents :=
+    SourceControlResourcePayloadContextAgrees.endpointsBelow_head
+      payloadContext agreement.endpointsCurrent
+  have cursorDominated :
+      cursor.reservedUntil ≤ session.resolver.nextFresh := by
+    simpa [PreparedCursor.advance] using endpointComponents.1
+  have resourceDominated :
+      resource.finalCounter ≤ state.persistent.counter := by
+    simpa [afterPulledHead] using endpointComponents.2.1
+  obtain
+      ⟨nextAlpha, sourceCanonical, flattened, installed,
+        nextShared, alphaIncluded, extension,
+        freshFrontier,
+        _selectedIntervalCovered, independentShape, sourceOrdered, sourceLeaf,
+        sealedStep, fineStep,
+        cumulative, bodyPayload, nextSnapshotExists, successorBelow,
+        persistentExact, framesExact, altsExact⟩ :=
+    RetainedCallPayloadSnapshot.activateSelectedHead
+      (prog := prog) (gt := gt) restored agreement.core.resourceStack.offset
+      agreement.core.control.current currentQuery currentShared
+      agreement.core.control.persistent cursorDominated resourceDominated
+      below live resolved
+  have sourceBoundary :
+      RawStep session
+        (.cutBoundary opened.scope (.clauses opened.scope cursor))
+        [] .none session
+        (.running
+          (.cutBoundary opened.scope
+            (.choice opened.scope
+              (.task opened.scope branch.body independentResult)
+              (.clauses opened.scope
+                (cursor.advance branch branchTail))))) :=
+    .cutBoundaryProgress opened.scope _ _ [] session session sourceLeaf
+  have sourceProductStep :
+      RawStep session
+        (sourceProductFrontier callerScope opened cursor callerReferences)
+        [] .none session
+        (.running
+          (activatedSourceProduct callerScope opened cursor branch branchTail
+            independentResult callerReferences)) := by
+    exact
+      .productProgress callerScope _ _ callerReferences [] .none session
+        session sourceBoundary (by simp [Trace.AnswerFree])
+  have sourceStep :
+      RawStep session source [] .none session
+        (.running
+          (ActiveProductContext.plug context
+            (activatedSourceProduct callerScope opened cursor branch branchTail
+              independentResult callerReferences))) := by
+    rw [agreement.core.sourceShape]
+    exact
+      ActiveProductContext.liftProgress context sourceProductStep
+        (by simp [Trace.AnswerFree])
+
+  let outerBefore :=
+    SourceControlResourcePayloadContextAgrees.tail payloadContext
+  let outerNext :=
+    SourceControlResourcePayloadContextAgrees.extendAbove extension outerBefore
+      agreement.outerActivationEndpoints
+  have outerNextAtSeed :
+      endpointsBelow outerNext branch.firstFresh resource.counter := by
+    simpa [outerNext, outerBefore] using
+      SourceControlResourcePayloadContextAgrees.extendAbove_endpointsBelow
+        extension outerBefore agreement.outerActivationEndpoints
+  have branchMember : branch ∈ cursor.remaining := by
+    rw [agreement.core.resourceStack.offset.cursorRemaining]
+    simp
+  have branchFirstBelowSession :
+      branch.firstFresh ≤ session.resolver.nextFresh := by
+    calc
+      branch.firstFresh ≤ branch.nextFresh :=
+        agreement.core.resourceStack.offset.cursorWellFormed.1
+          |>.member_first_le_next branchMember
+      _ ≤ cursor.reservedUntil :=
+        agreement.core.resourceStack.offset.cursorWellFormed.1
+          |>.member_next_le_final branchMember
+      _ ≤ session.resolver.nextFresh := cursorDominated
+  have seedReserved :
+      resource.counter + 1 ≤ resource.finalCounter := by
+    rcases agreement.core.resourceStack.offset.tailOwnership with
+      ⟨_callStart, _position, tailOwnership⟩
+    rcases tailOwnership.scan with
+      ⟨_candidates, _wellFormed, _query, _substitutedArgs, _supported,
+        _arities, scan⟩
+    have scanExact := scan.counter_exact
+    simpa only [afterPulledHead_counter, afterPulledHead_finalCounter] using
+      (show
+        (afterPulledHead resource remainingAlts).counter ≤
+          (afterPulledHead resource remainingAlts).finalCounter by
+        omega)
+  have resourceSeedBelowState :
+      resource.counter ≤ state.persistent.counter :=
+    Nat.le_trans (Nat.le_trans (Nat.le_succ _) seedReserved)
+      resourceDominated
+  have outerNextCurrent :
+      endpointsBelow outerNext session.resolver.nextFresh
+        state.persistent.counter :=
+    endpointsBelow_mono outerNext outerNextAtSeed branchFirstBelowSession
+      resourceSeedBelowState
+  have outerNextAtActivation :
+      endpointsBelow outerNext
+        (cursor.advance branch branchTail).reservationStart
+        (afterPulledHead resource remainingAlts).counter :=
+    endpointsBelow_mono outerNext outerNextAtSeed
+      (by
+        simpa [PreparedCursor.advance] using
+          agreement.core.resourceStack.offset.cursorWellFormed.1
+            |>.member_first_le_next branchMember)
+      (by simp [afterPulledHead])
+
+  rcases nextSnapshotExists with
+    ⟨nextSnapshot, nextSnapshotRestoration, nextSnapshotOrigin,
+      nextSnapshotActivationOrigin⟩
+  have callerAgrees :
+      ({ barrier := callerBarrier
+         references := callerReferences
+         executables := callerExecutables } :
+        ControlSegment).Agrees nextAlpha :=
+    (agreement.core.control.callerSpine.head).mono alphaIncluded
+  have activeOwnership :
+      (afterPulledHead resource remainingAlts).HasIndexedOwnershipAt nextAlpha
+        (cursor.advance branch branchTail) :=
+    agreement.core.resourceStack.offset.tailOwnership.mono alphaIncluded
+  let nextPayloadContext :
+      ActiveProductPayloadContext nextAlpha support qterm opened cursor branch
+        branchTail bodyBarrier callerBarrier callerReferences callerExecutables
+        outer (afterPulledHead resource remainingAlts) resources callerScope
+        outerScope context :=
+    .cons bodyBarrier opened.scope callerScope outerScope
+      { barrier := callerBarrier
+        references := callerReferences
+        executables := callerExecutables }
+      outer (afterPulledHead resource remainingAlts) resources
+      (cursor.advance branch branchTail) context callerAgrees
+      (by simpa [afterPulledHead] using agreement.core.control.resourceRest)
+      (by simpa [afterPulledHead] using agreement.core.control.resourceQuery)
+      (by simpa [afterPulledHead] using agreement.core.control.resourceBarrier)
+      activeOwnership nextSnapshot outerNext
+  have nextHeadOrigin :
+      (SourceControlResourcePayloadContextAgrees.headCell
+        nextPayloadContext).snapshot.controlOrigin =
+        nextSnapshot.controlOrigin := by
+    rfl
+  have nextEndpointsCurrent :
+      endpointsBelow nextPayloadContext session.resolver.nextFresh
+        (unifySuccessor state (copied.body ++ resource.rest)
+          installed).persistent.counter := by
+    simp only [nextPayloadContext, endpointsBelow]
+    rw [unifySuccessor_persistent]
+    exact
+      ⟨by simpa [PreparedCursor.advance] using endpointComponents.1,
+        by simpa [afterPulledHead] using endpointComponents.2.1,
+        outerNextCurrent⟩
+  have nextOuterActivationEndpoints :
+      endpointsBelow
+        (SourceControlResourcePayloadContextAgrees.tail nextPayloadContext)
+        (cursor.advance branch branchTail).reservationStart
+        (afterPulledHead resource remainingAlts).counter := by
+    simpa [nextPayloadContext,
+      SourceControlResourcePayloadContextAgrees.tail] using
+      outerNextAtActivation
+  have nextOuterPayloadExact :
+      SourceControlResourcePayloadContextAgrees.tail nextPayloadContext =
+        SourceControlResourcePayloadContextAgrees.extendAbove extension
+          (SourceControlResourcePayloadContextAgrees.tail payloadContext)
+          agreement.outerActivationEndpoints := by
+    rfl
+  have outerNextOrdered : ActivationOrdered outerNext := by
+    exact
+      ActivationOrdered.extendAbove extension
+        (SourceControlResourcePayloadContextAgrees.tail payloadContext)
+        agreement.outerActivationEndpoints
+        (ActivationOrdered.tail payloadContext
+          agreement.activationOrdered)
+  have nextActivationOrdered :
+      ActivationOrdered nextPayloadContext := by
+    exact ⟨outerNextAtActivation, outerNextOrdered⟩
+  have consumedActivationExtends :
+      consumed.activationOrigin.Extends session := by
+    exact
+      PostFailurePayloadOffsetContext.headSnapshot_activationExtends
+        payloadContext agreement.activationOrigins
+  have consumedCutScope :
+      consumed.activationOrigin.nextCutScope = opened.scope + 1 := by
+    exact
+      PostFailurePayloadOffsetContext.headSnapshot_activationCutScope
+        payloadContext agreement.activationOrigins
+  have restoredActivationExtends :
+      restored.activationOrigin.Extends session := by
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩
+    · simpa [restored, SelectedHeadActivationChronology.restoreSnapshot,
+        PreparedCursor.advance] using consumedActivationExtends.generation
+    · simpa [restored, SelectedHeadActivationChronology.restoreSnapshot] using
+        consumedActivationExtends.fresh
+    · simpa [restored, SelectedHeadActivationChronology.restoreSnapshot] using
+        consumedActivationExtends.cut
+    · simpa [restored, SelectedHeadActivationChronology.restoreSnapshot] using
+        consumedActivationExtends.exception
+    · simpa [restored, SelectedHeadActivationChronology.restoreSnapshot] using
+        consumedActivationExtends.collection
+  have restoredCutScope :
+      restored.activationOrigin.nextCutScope = opened.scope + 1 := by
+    simpa [restored, SelectedHeadActivationChronology.restoreSnapshot,
+      CallActivationOrigin.reindex] using consumedCutScope
+  have outerNextActivationOrigins :
+      LocalActivationOriginSpineRelates session outerNext := by
+    exact
+      (LocalActivationOriginSpineRelates.tail payloadContext
+          agreement.activationOrigins).extendAbove extension
+        (SourceControlResourcePayloadContextAgrees.tail payloadContext)
+        agreement.outerActivationEndpoints
+  have nextActivationOrigins :
+      LocalActivationOriginSpineRelates session nextPayloadContext := by
+    exact
+      ⟨by
+          rw [nextSnapshotActivationOrigin]
+          exact restoredActivationExtends,
+        by
+          rw [nextSnapshotActivationOrigin]
+          exact restoredCutScope,
+        outerNextActivationOrigins⟩
+  have consumedOrigin :
+      consumed.controlOrigin =
+        (SourceControlResourcePayloadContextAgrees.headCell
+          payloadContext).snapshot.controlOrigin := by
+    dsimp [consumed]
+    cases payloadContext
+    rfl
+  have restoredOrigin :
+      restored.controlOrigin =
+        (SourceControlResourcePayloadContextAgrees.headCell payloadContext).snapshot.controlOrigin := by
+    simpa [restored,
+      SelectedHeadActivationChronology.restoreSnapshot] using consumedOrigin
+  have nextOriginOld :
+      nextSnapshot.controlOrigin =
+        (SourceControlResourcePayloadContextAgrees.headCell payloadContext).snapshot.controlOrigin :=
+    nextSnapshotOrigin.trans restoredOrigin
+  have oldTailOrigins :=
+    LocalControlOriginSpineRelates.pop payloadContext agreement.controlOrigins
+  have outerControlNext :
+      LocalControlOriginSpineRelates baseAlts state.frames
+        (SourceControlResourcePayloadContextAgrees.headCell payloadContext).snapshot.controlOrigin.outerBarriers
+        outerNext := by
+    exact
+      oldTailOrigins.extendAbove extension
+        (SourceControlResourcePayloadContextAgrees.tail payloadContext)
+        agreement.outerActivationEndpoints baseAlts state.frames
+        (SourceControlResourcePayloadContextAgrees.headCell payloadContext).snapshot.controlOrigin.outerBarriers
+  have headOuterAlts :=
+    LocalControlOriginSpineRelates.headOuterAlts_eq payloadContext
+      agreement.controlOrigins
+  have headFrames :=
+    LocalControlOriginSpineRelates.headFrames_eq payloadContext
+      agreement.controlOrigins
+  have rebuiltOrigins :
+      LocalControlOriginSpineRelates baseAlts state.frames
+        (Mettapedia.Languages.MeTTa.PLeaTTa.pushBarrierCache
+          (SourceControlResourcePayloadContextAgrees.headCell payloadContext).snapshot.controlOrigin.outerBarriers)
+        nextPayloadContext :=
+    LocalControlOriginSpineRelates.prepend nextPayloadContext outerControlNext
+      (by rw [nextHeadOrigin, nextOriginOld]; exact headOuterAlts)
+      (by rw [nextHeadOrigin, nextOriginOld])
+      (by rw [nextHeadOrigin, nextOriginOld]; exact headFrames)
+  have installedOrigins :=
+    LocalControlOriginSpineRelates.installedBarriers_eq_push_headOuter
+      payloadContext agreement.controlOrigins
+  have originsAtState :
+      LocalControlOriginSpineRelates baseAlts state.frames
+        state.control.barriers nextPayloadContext := by
+    rw [installedOrigins]
+    exact rebuiltOrigins
+  have nextControlOrigins :
+      LocalControlOriginSpineRelates baseAlts
+        (unifySuccessor state (copied.body ++ resource.rest) installed).frames
+        (unifySuccessor state (copied.body ++ resource.rest)
+          installed).control.barriers nextPayloadContext := by
+    rw [unifySuccessor_frames, unifySuccessor_barriers]
+    exact originsAtState
+
+  have bodyPayloadAtCurrentQuery :
+      TaskPayloadAgrees nextAlpha support bodyBarrier
+        (sourceCanonical ++ restored.canonical) restored.referenceBase
+        independentResult
+        (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+          state.control.qterm installed)
+        branch.body copied.body := by
+    simpa [currentQuery, agreement.core.control.resourceBarrier] using
+      bodyPayload
+  have spinePayload :
+      TaskSpinePayloadAgrees nextAlpha support
+        (sourceCanonical ++ restored.canonical) restored.referenceBase
+        independentResult
+        (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+          state.control.qterm installed)
+        ({ barrier := bodyBarrier
+           references := branch.body
+           executables := copied.body } ::
+         { barrier := callerBarrier
+           references := callerReferences
+           executables := callerExecutables } ::
+         outer) :=
+    TaskSpinePayloadAgrees.activateLocalCall restored.payload
+      bodyPayloadAtCurrentQuery
+      (fun pair member =>
+        alphaIncluded pair (restored.alphaIncluded pair member))
+  have targetPersistent :
+      SessionRelatesPersistent (AlphaFreshFrontier nextAlpha) session
+        (unifySuccessor state (copied.body ++ resource.rest)
+          installed).persistent := by
+    constructor
+    · simpa using agreement.core.control.persistent.database
+    · simpa using freshFrontier
+  have targetCurrent :
+      (unifySuccessor state (copied.body ++ resource.rest)
+        installed).control.cur =
+          some
+            (flattenExecutables
+              ({ barrier := bodyBarrier
+                 references := branch.body
+                 executables := copied.body } ::
+               { barrier := callerBarrier
+                 references := callerReferences
+                 executables := callerExecutables } ::
+               outer),
+             Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+               state.control.qterm installed) := by
+    rw [unifySuccessor_current]
+    simp only [flattenExecutables_cons]
+    rw [agreement.core.control.resourceRest]
+  have targetQuery :
+      (unifySuccessor state (copied.body ++ resource.rest)
+        installed).control.qterm = qterm := by
+    simpa using agreement.core.control.queryTerm
+  have targetControl :
+      SpinedActiveProductRelatesAt (AlphaFreshFrontier nextAlpha) nextAlpha
+        support (sourceCanonical ++ restored.canonical)
+        restored.referenceBase opened session pending cursor branch branchTail
+        remainingAlts bodyBarrier callerBarrier branch.body copied.body
+        callerReferences callerExecutables outer independentResult
+        (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+          state.control.qterm installed)
+        qterm
+        (unifySuccessor state (copied.body ++ resource.rest) installed) := by
+    refine
+      { ready := ⟨targetPersistent, targetCurrent, targetQuery, spinePayload⟩
+        sessionAdvanced := agreement.core.control.sessionAdvanced
+        retainedAlts := ?_
+        retainedAltsZero :=
+          RetainedAlternativeSegment.HasIndexedOwnershipAt.barrierCount_zero
+            agreement.core.resourceStack.offset.tailOwnership
+        retainedBarriers := ?_
+        bodyBarrierTag := agreement.core.control.bodyBarrierTag
+        frames := ?_ }
+    · simpa using agreement.core.control.retainedAlts
+    · simpa using agreement.core.control.retainedBarriers
+    · simpa using agreement.core.control.frames
+  have targetResourceStack :
+      ActiveProductResourceStackAgrees nextAlpha qterm bodyBarrier callerBarrier
+        pending (cursor.advance branch branchTail)
+        (callerExecutables ++ flattenExecutables outer) remainingAlts
+        (afterPulledHead resource remainingAlts) outer resources callerScope
+        outerScope context baseAlts
+        (unifySuccessor state (copied.body ++ resource.rest) installed) := by
+    refine
+      { activeRest := ?_
+        activeQuery := ?_
+        activeBarrier := ?_
+        activeAlts := rfl
+        activeFinalCounter := ?_
+        activeOwnership := activeOwnership
+        outerAlignment := outerNext.alignment
+        suspendedOuterAlts :=
+          agreement.core.resourceStack.suspendedOuterAlts
+        actualAlts := ?_ }
+    · simpa [afterPulledHead] using agreement.core.control.resourceRest
+    · simpa [afterPulledHead] using agreement.core.control.resourceQuery
+    · simpa [afterPulledHead] using agreement.core.control.resourceBarrier
+    · simpa [afterPulledHead] using agreement.resourceFinalCounter
+    · simpa using agreement.core.resourceStack.actualAlts
+  have targetCore :
+      SpinedActiveProductResourceRelatesAt
+        (AlphaFreshFrontier nextAlpha) nextAlpha support
+        (sourceCanonical ++ restored.canonical) restored.referenceBase opened
+        session pending cursor branch branchTail remainingAlts bodyBarrier
+        callerBarrier branch.body copied.body callerReferences
+        callerExecutables outer independentResult
+        (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+          state.control.qterm installed)
+        qterm (afterPulledHead resource remainingAlts) resources callerScope
+        outerScope context baseAlts
+        (ActiveProductContext.plug context
+          (activatedSourceProduct callerScope opened cursor branch branchTail
+            independentResult callerReferences))
+        (unifySuccessor state (copied.body ++ resource.rest) installed) :=
+    ⟨targetControl, targetResourceStack, rfl⟩
+  have targetPayload :
+      SpinedActiveProductPayloadResourceRelatesAt
+        (AlphaFreshFrontier nextAlpha) nextAlpha support
+        (sourceCanonical ++ restored.canonical) restored.referenceBase opened
+        session pending cursor branch branchTail remainingAlts bodyBarrier
+        callerBarrier branch.body copied.body callerReferences
+        callerExecutables outer independentResult
+        (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+          state.control.qterm installed)
+        qterm (afterPulledHead resource remainingAlts) resources callerScope
+        outerScope context baseAlts
+        (ActiveProductContext.plug context
+          (activatedSourceProduct callerScope opened cursor branch branchTail
+            independentResult callerReferences))
+        (unifySuccessor state (copied.body ++ resource.rest) installed)
+        nextPayloadContext :=
+    ⟨targetCore, nextEndpointsCurrent, nextActivationOrdered,
+      nextActivationOrigins, nextControlOrigins⟩
+  have cumulativeAtStateQuery :
+      AlphaCumulativeResidualVariantAgreesOnWith
+        nextAlpha support (sourceCanonical ++ restored.canonical)
+        restored.referenceBase
+        (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor (copied.body ++ resource.rest)
+          state.control.qterm installed)
+        (flattened ++ restored.residualRepresentative) := by
+    simpa [currentQuery] using cumulative
+  exact
+    ⟨nextAlpha, sourceCanonical, flattened, installed, extension,
+      nextPayloadContext, nextSnapshotRestoration, nextShared, alphaIncluded,
+      nextOuterPayloadExact, sourceStep, sealedStep, fineStep,
+      cumulativeAtStateQuery, targetPayload⟩
+
+end SpinedPostFailureFrontierPayloadResourceRelatesAt
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologCurrentSessionPostFailureActivationBridge

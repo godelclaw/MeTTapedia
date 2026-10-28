@@ -1,0 +1,1284 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologAnswerPullClassificationBridge
+Purpose: Classify the exact executable pull landing selected by an
+  answer-origin resource zipper
+Trusted boundary: none
+Main exports: OriginPullOutcome,
+  AnswerOriginResourceAgrees.classifyPull
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologFindallAnswerResourceBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologBodyFailureOuterResourceCatchupBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologAnswerPullClassificationBridge
+
+open Mettapedia.Languages.MeTTa.PLeaTTa.Source (Subst)
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.GoalSemantics
+open Mettapedia.Languages.MeTTa.PLeaTTa.PrologAnswerOriginBridge
+open Mettapedia.Languages.MeTTa.PLeaTTa.PrologAnswerResourceBridge
+open Mettapedia.Languages.MeTTa.PLeaTTa.PrologFindallAnswerResourceBridge
+open Mettapedia.Languages.MeTTa.PLeaTTa.PrologProductResourceContextBridge
+open Mettapedia.Languages.MeTTa.PLeaTTa.PrologRetainedCursorOwnershipBridge
+
+/-!
+# Exact pull landing over an answer-origin zipper
+
+An executable answer records its value and calls `pullAux` immediately.  The
+independent source instead leaves `done` at the answer leaf and reaches the
+same alternative through later control transitions.  Before those source
+steps can be related, the executable landing must be named without confusing
+the zipper's terminal suffix with the machine's post-pull bank.
+
+The four mutually inductive relations below follow the existing mutual
+`AnswerOriginResourceAgrees` / `RightAlternativeRegionAgrees` provenance.
+A landing always names a real ordinary branch in a literal source region.
+A fall-through proves that every local region and marker was skipped and that
+the result is exactly the supplied older base.  Scheduled historical regions
+recurse through their carried origin proof, so arbitrary depth is preserved.
+-/
+
+mutual
+
+  /-- The first executable branch in one literal source right region. -/
+  inductive RightRegionLanding
+      (alpha : List (LogicVar × String)) :
+      {right : Search} →
+      {resources : List RetainedAlternativeSegment} →
+      {segment : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} →
+      (agreement :
+        RightAlternativeRegionAgrees alpha right resources segment) →
+      List Mettapedia.Languages.MeTTa.PLeaTTa.Goal → Subst → List Mettapedia.Languages.MeTTa.PLeaTTa.Alt → Prop where
+    | clauses (scope : CutScopeId)
+        (original cursor : Resolver.PreparedCursor) (position : Nat)
+        (resource : RetainedAlternativeSegment)
+        (ownership : resource.Owns alpha original cursor position)
+        (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+        (tail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (head : resource.alts = .br goals binding :: tail)
+        (pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux resource.alts =
+            some (.branch goals binding, tail)) :
+        RightRegionLanding alpha
+          (.clauses scope original cursor position resource ownership)
+          goals binding tail
+    | scheduled (callerScope : CutScopeId)
+        (callerTail : List PeTTaSpec.PrologCore.Goal)
+        {leafScope : CutScopeId} {bindings : OpenSubstitution.Substitution}
+        {head next : Search}
+        (origin : AnswerOrigin leafScope bindings head next)
+        (resources : List RetainedAlternativeSegment)
+        (nonempty : resources ≠ [])
+        (history :
+          AnswerOriginResourceAgrees alpha origin resources []
+            (flattenOwnedAlts resources []) [])
+        (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+        (tail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (inside : OriginPrefixLanding alpha history goals binding tail)
+        (pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (flattenOwnedAlts resources []) =
+            some (.branch goals binding, tail)) :
+        RightRegionLanding alpha
+          (.scheduled callerScope callerTail origin resources nonempty history)
+          goals binding tail
+    | taskChoices (support : List (LogicVar × String))
+        (scope : CutScopeId) (barrier : Nat)
+        (canonical : Canonical.TreeSubstitution)
+        (referenceBase current : OpenSubstitution.Substitution)
+        (runtime : Subst) (right : Search)
+        (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (tail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (choices :
+          TaskChoiceAlternativeRegionAgrees alpha support scope barrier
+            canonical referenceBase current runtime right
+            (.br goals runtime :: tail))
+        (pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (.br goals runtime :: tail) =
+            some (.branch goals runtime, tail)) :
+        RightRegionLanding alpha
+          (.taskChoices support scope barrier canonical referenceBase current
+            runtime right goals tail choices)
+          goals runtime tail
+
+  /-- One literal source right region contains no executable branch. -/
+  inductive RightRegionEmpty
+      (alpha : List (LogicVar × String)) :
+      {right : Search} →
+      {resources : List RetainedAlternativeSegment} →
+      {segment : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} →
+      (agreement :
+        RightAlternativeRegionAgrees alpha right resources segment) →
+      Prop where
+    | clauses (scope : CutScopeId)
+        (original cursor : Resolver.PreparedCursor) (position : Nat)
+        (resource : RetainedAlternativeSegment)
+        (ownership : resource.Owns alpha original cursor position)
+        (empty : resource.alts = [])
+        (pullNone : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux resource.alts = none) :
+        RightRegionEmpty alpha
+          (.clauses scope original cursor position resource ownership)
+    | scheduled (callerScope : CutScopeId)
+        (callerTail : List PeTTaSpec.PrologCore.Goal)
+        {leafScope : CutScopeId} {bindings : OpenSubstitution.Substitution}
+        {head next : Search}
+        (origin : AnswerOrigin leafScope bindings head next)
+        (resources : List RetainedAlternativeSegment)
+        (nonempty : resources ≠ [])
+        (history :
+          AnswerOriginResourceAgrees alpha origin resources []
+            (flattenOwnedAlts resources []) [])
+        (inside : OriginPrefixFallsThrough alpha history)
+        (pullNone :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (flattenOwnedAlts resources []) = none) :
+        RightRegionEmpty alpha
+          (.scheduled callerScope callerTail origin resources nonempty history)
+
+  /-- The first executable branch lies in a right region consumed by this
+  answer origin.  `rest` is the literal complete bank after that branch. -/
+  inductive OriginPrefixLanding
+      (alpha : List (LogicVar × String)) :
+      {leafScope : CutScopeId} →
+      {bindings : OpenSubstitution.Substitution} →
+      {source next : Search} →
+      {origin : AnswerOrigin leafScope bindings source next} →
+      {beforeResources afterResources :
+        List RetainedAlternativeSegment} →
+      {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} →
+      (agreement :
+        AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+          beforeAlts afterAlts) →
+      List Mettapedia.Languages.MeTTa.PLeaTTa.Goal → Subst → List Mettapedia.Languages.MeTTa.PLeaTTa.Alt → Prop where
+    | choiceInside (scope : CutScopeId) (right : Search)
+        {leafScope : CutScopeId}
+        {bindings : OpenSubstitution.Substitution}
+        {left next : Search}
+        (insideOrigin : AnswerOrigin leafScope bindings left next)
+        {beforeResources afterResources regionResources :
+          List RetainedAlternativeSegment}
+        {beforeAlts afterAlts regionAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+        (insideAgreement :
+          AnswerOriginResourceAgrees alpha insideOrigin beforeResources
+            (regionResources ++ afterResources) beforeAlts
+            (regionAlts ++ afterAlts))
+        (regionAgreement :
+          RightAlternativeRegionAgrees alpha right regionResources regionAlts)
+        (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+        (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (inside :
+          OriginPrefixLanding alpha insideAgreement goals binding rest)
+        (pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.branch goals binding, rest)) :
+        OriginPrefixLanding alpha
+          (.choice scope right insideOrigin insideAgreement regionAgreement)
+          goals binding rest
+    | choiceRegion (scope : CutScopeId) (right : Search)
+        {leafScope : CutScopeId}
+        {bindings : OpenSubstitution.Substitution}
+        {left next : Search}
+        (insideOrigin : AnswerOrigin leafScope bindings left next)
+        {beforeResources afterResources regionResources :
+          List RetainedAlternativeSegment}
+        {beforeAlts afterAlts regionAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+        (insideAgreement :
+          AnswerOriginResourceAgrees alpha insideOrigin beforeResources
+            (regionResources ++ afterResources) beforeAlts
+            (regionAlts ++ afterAlts))
+        (regionAgreement :
+          RightAlternativeRegionAgrees alpha right regionResources regionAlts)
+        (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+        (regionTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (insideEmpty : OriginPrefixFallsThrough alpha insideAgreement)
+        (regionLive :
+          RightRegionLanding alpha regionAgreement goals binding regionTail)
+        (pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.branch goals binding, regionTail ++ afterAlts)) :
+        OriginPrefixLanding alpha
+          (.choice scope right insideOrigin insideAgreement regionAgreement)
+          goals binding (regionTail ++ afterAlts)
+    | cutBoundary (scope : CutScopeId)
+        {leafScope : CutScopeId}
+        {bindings : OpenSubstitution.Substitution}
+        {body next : Search}
+        (insideOrigin : AnswerOrigin leafScope bindings body next)
+        {beforeResources afterResources :
+          List RetainedAlternativeSegment}
+        {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+        (insideAgreement :
+          AnswerOriginResourceAgrees alpha insideOrigin beforeResources
+            afterResources beforeAlts (.barrier :: afterAlts))
+        (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+        (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (inside :
+          OriginPrefixLanding alpha insideAgreement goals binding rest)
+        (pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.branch goals binding, rest)) :
+        OriginPrefixLanding alpha
+          (.cutBoundary scope insideOrigin insideAgreement)
+          goals binding rest
+
+  /-- Every branch and marker belonging to this origin is skipped.  The
+  executable pull from `beforeAlts` is therefore exactly the pull from the
+  older `afterAlts` base. -/
+  inductive OriginPrefixFallsThrough
+      (alpha : List (LogicVar × String)) :
+      {leafScope : CutScopeId} →
+      {bindings : OpenSubstitution.Substitution} →
+      {source next : Search} →
+      {origin : AnswerOrigin leafScope bindings source next} →
+      {beforeResources afterResources :
+        List RetainedAlternativeSegment} →
+      {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} →
+      (agreement :
+        AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+          beforeAlts afterAlts) →
+      Prop where
+    | task (leafScope : CutScopeId)
+        (bindings : OpenSubstitution.Substitution)
+        (resources : List RetainedAlternativeSegment)
+        (alts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+        (pullEq : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts) :
+        OriginPrefixFallsThrough alpha
+          (.task leafScope bindings resources alts)
+    | choice (scope : CutScopeId) (right : Search)
+        {leafScope : CutScopeId}
+        {bindings : OpenSubstitution.Substitution}
+        {left next : Search}
+        (insideOrigin : AnswerOrigin leafScope bindings left next)
+        {beforeResources afterResources regionResources :
+          List RetainedAlternativeSegment}
+        {beforeAlts afterAlts regionAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+        (insideAgreement :
+          AnswerOriginResourceAgrees alpha insideOrigin beforeResources
+            (regionResources ++ afterResources) beforeAlts
+            (regionAlts ++ afterAlts))
+        (regionAgreement :
+          RightAlternativeRegionAgrees alpha right regionResources regionAlts)
+        (insideEmpty : OriginPrefixFallsThrough alpha insideAgreement)
+        (regionEmpty : RightRegionEmpty alpha regionAgreement)
+        (pullEq :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts) :
+        OriginPrefixFallsThrough alpha
+          (.choice scope right insideOrigin insideAgreement regionAgreement)
+    | cutBoundary (scope : CutScopeId)
+        {leafScope : CutScopeId}
+        {bindings : OpenSubstitution.Substitution}
+        {body next : Search}
+        (insideOrigin : AnswerOrigin leafScope bindings body next)
+        {beforeResources afterResources :
+          List RetainedAlternativeSegment}
+        {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+        (insideAgreement :
+          AnswerOriginResourceAgrees alpha insideOrigin beforeResources
+            afterResources beforeAlts (.barrier :: afterAlts))
+        (insideEmpty : OriginPrefixFallsThrough alpha insideAgreement)
+        (pullEq :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts) :
+        OriginPrefixFallsThrough alpha
+          (.cutBoundary scope insideOrigin insideAgreement)
+
+end
+
+/-! ## Exact executable equations -/
+
+/-- A selected branch in a prefix remains first after appending an arbitrary
+older bank; the selected tail is extended by that bank literally. -/
+theorem pullAux_append_of_some
+    {front suffix : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal} {binding : Subst}
+    {tail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (selected :
+      Mettapedia.Languages.MeTTa.PLeaTTa.pullAux front = some (.branch goals binding, tail)) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (front ++ suffix) =
+      some (.branch goals binding, tail ++ suffix) := by
+  induction front with
+  | nil => simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at selected
+  | cons head rest inductionHypothesis =>
+      cases head with
+      | barrier =>
+          simpa [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using inductionHypothesis selected
+      | br branchGoals branchBinding =>
+          cases selected
+          rfl
+      | catchActive frame =>
+          simpa [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using inductionHypothesis selected
+      | catchDormant frame protectedAlts =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at selected
+      | softcutActive frame seenSuccess =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at selected
+      | softcutDormant frame protectedAlts =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at selected
+
+/-- A branch-free prefix contributes no result to `pullAux`; appending it is
+observationally identical to pulling the older suffix directly. -/
+theorem pullAux_append_of_none
+    {front suffix : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (empty : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux front = none) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (front ++ suffix) = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux suffix := by
+  induction front with
+  | nil => rfl
+  | cons head rest inductionHypothesis =>
+      cases head with
+      | barrier =>
+          simpa [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using inductionHypothesis empty
+      | br goals binding =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at empty
+      | catchActive frame =>
+          simpa [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using inductionHypothesis empty
+      | catchDormant frame protectedAlts =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at empty
+      | softcutActive frame seenSuccess =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at empty
+      | softcutDormant frame protectedAlts =>
+          simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at empty
+
+/-- A bank consisting solely of resolution branches whose pull is exhausted
+is literally empty.  The stronger branch-only premise matters now that an
+active catch delimiter is intentionally invisible to barrier counting. -/
+theorem eq_nil_of_pullAux_none_of_all_branches
+    {alts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (branchOnly :
+      ∀ alt ∈ alts,
+        ∃ goals binding, alt = Mettapedia.Languages.MeTTa.PLeaTTa.Alt.br goals binding)
+    (empty : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts = none) :
+    alts = [] := by
+  cases alts with
+  | nil => rfl
+  | cons head tail =>
+      rcases branchOnly head (by simp) with ⟨goals, binding, headEq⟩
+      subst head
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at empty
+
+/-- In a bank consisting solely of resolution branches, the branch selected
+by `pullAux` is the literal head and its returned remainder is the literal
+tail. -/
+theorem eq_cons_of_pullAux_some_of_all_branches
+    {alts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal} {binding : Subst}
+    {tail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (branchOnly :
+      ∀ alt ∈ alts,
+        ∃ branchGoals branchBinding,
+          alt = Mettapedia.Languages.MeTTa.PLeaTTa.Alt.br branchGoals branchBinding)
+    (selected :
+      Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts = some (.branch goals binding, tail)) :
+    alts = .br goals binding :: tail := by
+  cases alts with
+  | nil =>
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at selected
+  | cons head rest =>
+      rcases branchOnly head (by simp) with
+        ⟨branchGoals, branchBinding, headEq⟩
+      subst head
+      simp only [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at selected
+      cases selected
+      rfl
+
+/-- A bank consisting solely of resolution branches cannot produce a dormant
+catch-resumption target.  Unlike barrier counting, this discriminator also
+excludes dormant markers, whose barrier contribution is intentionally zero. -/
+theorem pullAux_catchResume_impossible_of_all_branches
+    {alts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} {frame : Mettapedia.Languages.MeTTa.PLeaTTa.CatchFrame}
+    {protectedAlts rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (branchOnly :
+      ∀ alt ∈ alts,
+        ∃ goals binding, alt = Mettapedia.Languages.MeTTa.PLeaTTa.Alt.br goals binding) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts ≠
+      some (.catchResume frame protectedAlts, rest) := by
+  intro resumed
+  cases alts with
+  | nil => simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at resumed
+  | cons head tail =>
+      rcases branchOnly head (by simp) with ⟨goals, binding, headEq⟩
+      subst head
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at resumed
+
+/-- A branch-only owned bank cannot expose a streaming soft-cut exhaustion
+target.  Such delimiters belong to an older ambient bank, never to a local
+clause cursor. -/
+theorem pullAux_softcutExhausted_impossible_of_all_branches
+    {alts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} {frame : Mettapedia.Languages.MeTTa.PLeaTTa.SoftcutFrame}
+    {seenSuccess : Bool} {rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (branchOnly :
+      ∀ alt ∈ alts,
+        ∃ goals binding, alt = Mettapedia.Languages.MeTTa.PLeaTTa.Alt.br goals binding) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts ≠
+      some (.softcutExhausted frame seenSuccess, rest) := by
+  intro exhausted
+  cases alts with
+  | nil => simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at exhausted
+  | cons head tail =>
+      rcases branchOnly head (by simp) with ⟨goals, binding, headEq⟩
+      subst head
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at exhausted
+
+/-- A branch-only owned bank likewise cannot resume a dormant streaming
+soft-cut delimiter. -/
+theorem pullAux_softcutResume_impossible_of_all_branches
+    {alts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt} {frame : Mettapedia.Languages.MeTTa.PLeaTTa.SoftcutFrame}
+    {protectedAlts rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (branchOnly :
+      ∀ alt ∈ alts,
+        ∃ goals binding, alt = Mettapedia.Languages.MeTTa.PLeaTTa.Alt.br goals binding) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux alts ≠
+      some (.softcutResume frame protectedAlts, rest) := by
+  intro resumed
+  cases alts with
+  | nil => simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at resumed
+  | cons head tail =>
+      rcases branchOnly head (by simp) with ⟨goals, binding, headEq⟩
+      subst head
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at resumed
+
+namespace RightRegionLanding
+
+theorem pullAux_exact
+    {alpha : List (LogicVar × String)}
+    {right : Search} {resources : List RetainedAlternativeSegment}
+    {segment : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {agreement :
+      RightAlternativeRegionAgrees alpha right resources segment}
+    {goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal} {binding : Subst}
+    {tail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (landing : RightRegionLanding alpha agreement goals binding tail) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux segment = some (.branch goals binding, tail) := by
+  cases landing with
+  | clauses _ _ _ _ _ _ _ _ _ _ pullExact => exact pullExact
+  | scheduled _ _ _ _ _ _ _ _ _ _ pullExact => exact pullExact
+  | taskChoices _ _ _ _ _ _ _ _ _ _ _ pullExact => exact pullExact
+
+end RightRegionLanding
+
+namespace RightRegionEmpty
+
+theorem pullAux_none
+    {alpha : List (LogicVar × String)}
+    {right : Search} {resources : List RetainedAlternativeSegment}
+    {segment : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {agreement :
+      RightAlternativeRegionAgrees alpha right resources segment}
+    (empty : RightRegionEmpty alpha agreement) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux segment = none := by
+  cases empty with
+  | clauses _ _ _ _ _ _ _ pullNone => exact pullNone
+  | scheduled _ _ _ _ _ _ _ pullNone => exact pullNone
+
+end RightRegionEmpty
+
+namespace OriginPrefixLanding
+
+theorem pullAux_exact
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts}
+    {goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal} {binding : Subst}
+    {rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (landing : OriginPrefixLanding alpha agreement goals binding rest) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = some (.branch goals binding, rest) := by
+  cases landing with
+  | choiceInside _ _ _ _ _ _ _ _ _ pullExact => exact pullExact
+  | choiceRegion _ _ _ _ _ _ _ _ _ _ pullExact => exact pullExact
+  | cutBoundary _ _ _ _ _ _ _ pullExact => exact pullExact
+
+end OriginPrefixLanding
+
+namespace OriginPrefixFallsThrough
+
+theorem pullAux_eq
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts}
+    (falls : OriginPrefixFallsThrough alpha agreement) :
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts := by
+  cases falls with
+  | task _ _ _ _ pullEq => exact pullEq
+  | choice _ _ _ _ _ _ _ pullEq => exact pullEq
+  | cutBoundary _ _ _ _ pullEq => exact pullEq
+
+end OriginPrefixFallsThrough
+
+namespace AnswerOriginResourceAgrees
+
+/-- If the literal successor of one exact answer origin completes in the
+next source transition, every alternative region owned by that origin must
+fall through.  A choice successor cannot satisfy the premise:
+`choiceComplete` enters its right branch rather than terminating.  Cut
+boundaries merely propagate the same completion proof inward.
+
+This is the source-driven exhaustion bridge used to justify an executable
+terminal answer-pull without assuming terminality independently. -/
+theorem fallsThrough_of_next_completed
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts)
+    {before after : Session}
+    (completed :
+      RawStep before next [.completed] .none after
+        (.terminal .completed)) :
+    OriginPrefixFallsThrough alpha agreement := by
+  exact AnswerOriginResourceAgrees.rec
+    (motive_1 := fun _ _ _ _ => True)
+    (motive_2 := fun {_} {_} {_} {next} _ _ _ _ _ originAgreement =>
+      ∀ {before after : Session},
+        RawStep before next [.completed] .none after
+          (.terminal .completed) →
+        OriginPrefixFallsThrough alpha originAgreement)
+    (by intros; trivial)
+    (by intros; trivial)
+    (by intros; trivial)
+    (by
+      intro leafScope bindings resources alts before after completed
+      exact OriginPrefixFallsThrough.task leafScope bindings resources alts rfl)
+    (by
+      intro scope right leafScope bindings left next insideOrigin
+        beforeResources afterResources regionResources beforeAlts afterAlts
+        regionAlts insideAgreement regionAgreement insideIH regionIH before
+        after completed
+      have target_ne :
+          ∀ {events signal nextAfter target},
+            RawStep before (.choice scope next right) events signal nextAfter
+              target →
+            target ≠ .terminal .completed := by
+        intro events signal nextAfter target step targetEq
+        cases step <;> cases targetEq
+      exact False.elim (target_ne completed rfl))
+    (by
+      intro scope leafScope bindings body next insideOrigin beforeResources
+        afterResources beforeAlts afterAlts insideAgreement insideIH before
+        after completed
+      cases completed with
+      | cutBoundaryComplete _ _ _ _ child =>
+          have insideFalls := insideIH child
+          exact .cutBoundary scope insideOrigin insideAgreement insideFalls (by
+            simpa [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using insideFalls.pullAux_eq))
+    agreement completed
+
+end AnswerOriginResourceAgrees
+
+/-! ## Total structural classification -/
+
+namespace AnswerOriginResourceAgrees
+
+/-- Every exact answer-origin zipper either selects the first branch in one
+of its own literal right regions or falls through exactly to its supplied
+older bank.
+
+The proof is the generated mutual recursor of the original provenance
+relations.  In particular, scheduled historical regions recurse through the
+origin proof they already carry; they are not flattened into an untyped list
+and then re-associated by equality. -/
+theorem classifyPrefix
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts) :
+    (∃ goals binding rest,
+        OriginPrefixLanding alpha agreement goals binding rest) ∨
+      OriginPrefixFallsThrough alpha agreement := by
+  exact AnswerOriginResourceAgrees.rec
+    (motive_1 := fun _ _ _ regionAgreement =>
+      (∃ goals binding tail,
+          RightRegionLanding alpha regionAgreement goals binding tail) ∨
+        RightRegionEmpty alpha regionAgreement)
+    (motive_2 := fun _ _ _ _ _ originAgreement =>
+      (∃ goals binding rest,
+          OriginPrefixLanding alpha originAgreement goals binding rest) ∨
+        OriginPrefixFallsThrough alpha originAgreement)
+    (fun scope original cursor position resource ownership => by
+      cases pullEq : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux resource.alts with
+      | none =>
+          have branchOnly :=
+            RetainedCursorAlternativeOwnership.alts_all_branches
+              ownership.scan
+          have empty := eq_nil_of_pullAux_none_of_all_branches
+            branchOnly pullEq
+          exact .inr
+            (.clauses scope original cursor position resource ownership empty
+              pullEq)
+      | some result =>
+          rcases result with ⟨target, tail⟩
+          cases target with
+          | branch goals binding =>
+              have branchOnly :=
+                RetainedCursorAlternativeOwnership.alts_all_branches
+                  ownership.scan
+              have head := eq_cons_of_pullAux_some_of_all_branches
+                branchOnly pullEq
+              exact .inl
+                ⟨goals, binding, tail,
+                  .clauses scope original cursor position resource ownership
+                    goals binding tail head pullEq⟩
+          | catchResume frame protectedAlts =>
+              exact False.elim
+                (pullAux_catchResume_impossible_of_all_branches
+                  (RetainedCursorAlternativeOwnership.alts_all_branches
+                    ownership.scan)
+                  pullEq)
+          | softcutExhausted frame seenSuccess =>
+              exact False.elim
+                (pullAux_softcutExhausted_impossible_of_all_branches
+                  (RetainedCursorAlternativeOwnership.alts_all_branches
+                    ownership.scan)
+                  pullEq)
+          | softcutResume frame protectedAlts =>
+              exact False.elim
+                (pullAux_softcutResume_impossible_of_all_branches
+                  (RetainedCursorAlternativeOwnership.alts_all_branches
+                    ownership.scan)
+                  pullEq))
+    (by
+      intro callerScope callerTail leafScope bindings head next historyOrigin
+        resources nonempty history historyIH
+      rcases historyIH with ⟨goals, binding, tail, landing⟩ | falls
+      · exact .inl
+          ⟨goals, binding, tail,
+            .scheduled callerScope callerTail historyOrigin resources nonempty
+              history goals binding tail landing landing.pullAux_exact⟩
+      · exact .inr
+          (.scheduled callerScope callerTail historyOrigin resources nonempty
+            history falls (by
+              simpa [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using falls.pullAux_eq)))
+    (by
+      intro support scope barrier canonical referenceBase current runtime right
+        goals tail choices
+      exact .inl
+        ⟨goals, runtime, tail,
+          .taskChoices support scope barrier canonical referenceBase current
+            runtime right goals tail choices rfl⟩)
+    (fun leafScope bindings resources alts =>
+      .inr (.task leafScope bindings resources alts rfl))
+    (by
+      intro scope right leafScope bindings left next insideOrigin
+        beforeResources afterResources regionResources beforeAlts afterAlts
+        regionAlts insideAgreement regionAgreement insideIH regionIH
+      rcases insideIH with ⟨goals, binding, rest, landing⟩ | insideFalls
+      · exact .inl
+          ⟨goals, binding, rest,
+            .choiceInside scope right insideOrigin insideAgreement
+              regionAgreement goals binding rest landing
+              landing.pullAux_exact⟩
+      · rcases regionIH with
+          ⟨goals, binding, regionTail, regionLanding⟩ | regionEmpty
+        · have pullExact :
+              Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+                some (.branch goals binding, regionTail ++ afterAlts) := by
+            calc
+              Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+                  Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (regionAlts ++ afterAlts) :=
+                insideFalls.pullAux_eq
+              _ = some (.branch goals binding, regionTail ++ afterAlts) :=
+                pullAux_append_of_some regionLanding.pullAux_exact
+          exact .inl
+            ⟨goals, binding, regionTail ++ afterAlts,
+              .choiceRegion scope right insideOrigin insideAgreement
+                regionAgreement goals binding regionTail insideFalls
+                regionLanding pullExact⟩
+        · have pullEq :
+              Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts := by
+            calc
+              Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+                  Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (regionAlts ++ afterAlts) :=
+                insideFalls.pullAux_eq
+              _ = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts :=
+                pullAux_append_of_none regionEmpty.pullAux_none
+          exact .inr
+            (.choice scope right insideOrigin insideAgreement regionAgreement
+              insideFalls regionEmpty pullEq))
+    (by
+      intro scope leafScope bindings body next insideOrigin beforeResources
+        afterResources beforeAlts afterAlts insideAgreement insideIH
+      rcases insideIH with ⟨goals, binding, rest, landing⟩ | falls
+      · exact .inl
+          ⟨goals, binding, rest,
+            .cutBoundary scope insideOrigin insideAgreement goals binding rest
+              landing landing.pullAux_exact⟩
+      · have pullEq :
+            Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts := by
+          calc
+            Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+                Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (.barrier :: afterAlts) :=
+              falls.pullAux_eq
+            _ = Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts := rfl
+        exact .inr
+          (.cutBoundary scope insideOrigin insideAgreement falls pullEq))
+    agreement
+
+end AnswerOriginResourceAgrees
+
+/-! ## Total answer-pull outcome -/
+
+/-- Exact landing of one eager executable answer pull relative to the source
+origin zipper.
+
+`events` is the observation trace the later source catch-up theorem must
+produce: landing on any live branch is silent, while total exhaustion lets
+exactly one completion escape.  This module classifies and fixes that trace;
+it deliberately does not yet claim the corresponding `StepsN`. -/
+inductive OriginPullOutcome
+    (alpha : List (LogicVar × String))
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts) :
+    List Observation → Prop where
+  | localLive (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+      (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+      (landing : OriginPrefixLanding alpha agreement goals binding rest) :
+      OriginPullOutcome alpha agreement []
+  | baseLive (falls : OriginPrefixFallsThrough alpha agreement)
+      (goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Subst)
+      (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+      (basePull :
+        Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts = some (.branch goals binding, rest)) :
+      OriginPullOutcome alpha agreement []
+  | baseCatchResume (falls : OriginPrefixFallsThrough alpha agreement)
+      (frame : Mettapedia.Languages.MeTTa.PLeaTTa.CatchFrame) (protectedAlts rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+      (basePull :
+        Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts =
+          some (.catchResume frame protectedAlts, rest)) :
+      OriginPullOutcome alpha agreement []
+  | baseSoftcutElse (falls : OriginPrefixFallsThrough alpha agreement)
+      (frame : Mettapedia.Languages.MeTTa.PLeaTTa.SoftcutFrame) (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+      (basePull :
+        Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts =
+          some (.softcutExhausted frame false, rest)) :
+      OriginPullOutcome alpha agreement []
+  | baseSoftcutDone (falls : OriginPrefixFallsThrough alpha agreement)
+      (frame : Mettapedia.Languages.MeTTa.PLeaTTa.SoftcutFrame) (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+      (basePull :
+        Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts =
+          some (.softcutExhausted frame true, rest)) :
+      OriginPullOutcome alpha agreement []
+  | baseSoftcutResume (falls : OriginPrefixFallsThrough alpha agreement)
+      (frame : Mettapedia.Languages.MeTTa.PLeaTTa.SoftcutFrame)
+      (protectedAlts rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+      (basePull :
+        Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts =
+          some (.softcutResume frame protectedAlts, rest)) :
+      OriginPullOutcome alpha agreement []
+  | terminal (falls : OriginPrefixFallsThrough alpha agreement)
+      (basePull : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts = none) :
+      OriginPullOutcome alpha agreement [.completed]
+
+namespace AnswerOriginResourceAgrees
+
+/-- Total classification for the real incoming alternative bank.
+
+No caller chooses the case or the branch.  The local/base split comes from
+`classifyPrefix`; only after every local region falls through is the literal
+older suffix inspected for a branch versus exhaustion. -/
+theorem classifyPull
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts) :
+    ∃ events, OriginPullOutcome alpha agreement events := by
+  rcases classifyPrefix agreement with
+    ⟨goals, binding, rest, landing⟩ | falls
+  · exact ⟨[], .localLive goals binding rest landing⟩
+  · cases baseEq : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux afterAlts with
+    | none => exact ⟨[.completed], .terminal falls baseEq⟩
+    | some result =>
+        rcases result with ⟨target, rest⟩
+        cases target with
+        | branch goals binding =>
+            exact ⟨[], .baseLive falls goals binding rest baseEq⟩
+        | catchResume frame protectedAlts =>
+            exact
+              ⟨[], .baseCatchResume falls frame protectedAlts rest baseEq⟩
+        | softcutExhausted frame seenSuccess =>
+            cases seenSuccess with
+            | false =>
+                exact ⟨[], .baseSoftcutElse falls frame rest baseEq⟩
+            | true =>
+                exact ⟨[], .baseSoftcutDone falls frame rest baseEq⟩
+        | softcutResume frame protectedAlts =>
+            exact
+              ⟨[], .baseSoftcutResume falls frame protectedAlts rest baseEq⟩
+
+end AnswerOriginResourceAgrees
+
+namespace OriginPullOutcome
+
+/-- The source classification reconstructs one exact total executable pull
+outcome at the literal incoming bank.  Completion occurs exactly for a real
+`pullAux = none`; every branch or delimiter transition is silent. -/
+theorem toPullOutcomeAgrees
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts}
+    {events : List Observation}
+    (outcome : OriginPullOutcome alpha agreement events) :
+    ∃ cur afterAlts,
+      PrologFindallAnswerResourceBridge.PullOutcomeAgrees beforeAlts cur
+          afterAlts ∧
+        ((events = [.completed] ∧ Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = none) ∨
+          (events = [] ∧ Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts ≠ none)) := by
+  cases outcome with
+  | localLive goals binding rest landing =>
+      exact
+        ⟨some (goals, binding), rest,
+          .selected (beforeAlts := beforeAlts) goals binding rest
+            landing.pullAux_exact,
+          .inr ⟨rfl, by simp [landing.pullAux_exact]⟩⟩
+  | baseLive falls goals binding rest basePull =>
+      have pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.branch goals binding, rest) :=
+        falls.pullAux_eq.trans basePull
+      exact
+        ⟨some (goals, binding), rest,
+          .selected (beforeAlts := beforeAlts) goals binding rest pullExact,
+          .inr ⟨rfl, by simp [pullExact]⟩⟩
+  | baseCatchResume falls frame protectedAlts rest basePull =>
+      have pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.catchResume frame protectedAlts, rest) :=
+        falls.pullAux_eq.trans basePull
+      exact
+        ⟨none, protectedAlts ++ .catchActive frame :: rest,
+          .catchResumed (beforeAlts := beforeAlts) frame protectedAlts rest
+            pullExact,
+          .inr ⟨rfl, by simp [pullExact]⟩⟩
+  | baseSoftcutElse falls frame rest basePull =>
+      have pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.softcutExhausted frame false, rest) :=
+        falls.pullAux_eq.trans basePull
+      exact
+        ⟨some (frame.elseGoals ++ frame.rest, frame.entry), rest,
+          .softcutElse (beforeAlts := beforeAlts) frame rest pullExact,
+          .inr ⟨rfl, by simp [pullExact]⟩⟩
+  | baseSoftcutDone falls frame rest basePull =>
+      have pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.softcutExhausted frame true, rest) :=
+        falls.pullAux_eq.trans basePull
+      exact
+        ⟨none, rest,
+          .softcutDone (beforeAlts := beforeAlts) frame rest pullExact,
+          .inr ⟨rfl, by simp [pullExact]⟩⟩
+  | baseSoftcutResume falls frame protectedAlts rest basePull =>
+      have pullExact :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts =
+            some (.softcutResume frame protectedAlts, rest) :=
+        falls.pullAux_eq.trans basePull
+      exact
+        ⟨none, protectedAlts ++ .softcutActive frame true :: rest,
+          .softcutResumed (beforeAlts := beforeAlts) frame protectedAlts rest
+            pullExact,
+          .inr ⟨rfl, by simp [pullExact]⟩⟩
+  | terminal falls basePull =>
+      have pullNone : Mettapedia.Languages.MeTTa.PLeaTTa.pullAux beforeAlts = none :=
+        falls.pullAux_eq.trans basePull
+      exact
+        ⟨none, [], .exhausted (beforeAlts := beforeAlts) pullNone,
+          .inl ⟨rfl, pullNone⟩⟩
+
+/-- The classification fixes source-observation shape independently of any
+later step-count proof. -/
+theorem events_eq_live_or_completed
+    {alpha : List (LogicVar × String)}
+    {leafScope : CutScopeId}
+    {bindings : OpenSubstitution.Substitution}
+    {source next : Search}
+    {origin : AnswerOrigin leafScope bindings source next}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {agreement :
+      AnswerOriginResourceAgrees alpha origin beforeResources afterResources
+        beforeAlts afterAlts}
+    {events : List Observation}
+    (outcome : OriginPullOutcome alpha agreement events) :
+    events = [] ∨ events = [.completed] := by
+  cases outcome <;> simp
+
+end OriginPullOutcome
+
+/-! ## Active-answer consumer and anti-vacuity witnesses -/
+
+namespace ActiveFindallAnswerResourceAgrees
+
+/-- Every resource-certified active `findall` answer exposes the exact direct
+producer origin and the pull classification for its literal incoming bank.
+
+The transparent wrappers around the collector are erased only by the existing
+`has_exactProducerResource` theorem.  The origin, resource zipper, and
+classification remain tied to the same child source and successor.  Every
+existential witness below is a projection of `answer`'s own direct producer;
+none is an independently chosen compatible producer or origin. -/
+theorem classifyOriginPull
+    {alpha : List (LogicVar × String)}
+    {before childAfter : Session} {search next : Search}
+    {cell : PrologFindallFrameZipperBridge.SourceCollectionCell}
+    {answerBindings : OpenSubstitution.Substitution}
+    {beforeResources afterResources : List RetainedAlternativeSegment}
+    {beforeAlts afterAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    (answer :
+      ActiveFindallAnswerResourceAgrees alpha before search childAfter next
+        cell answerBindings beforeResources afterResources beforeAlts
+        afterAlts) :
+    ∃ childSource childNext leafScope,
+      ∃ origin : AnswerOrigin leafScope answerBindings childSource childNext,
+        ExactAnswerProducer before childAfter childSource childNext
+            answerBindings ∧
+          ∃ agreement :
+              AnswerOriginResourceAgrees alpha origin beforeResources
+                afterResources beforeAlts afterAlts,
+            ∃ events, OriginPullOutcome alpha agreement events := by
+  rcases answer.has_exactProducerResource with
+    ⟨childSource, childNext, producer⟩
+  rcases producer.originAgreement with ⟨leafScope, origin, agreement⟩
+  rcases AnswerOriginResourceAgrees.classifyPull agreement with
+    ⟨events, outcome⟩
+  exact
+    ⟨childSource, childNext, leafScope, origin, producer.producer,
+      agreement, events, outcome⟩
+
+end ActiveFindallAnswerResourceAgrees
+
+/-- A genuinely owned resource with a live executable branch exists.  The
+ownership and head equation are projected from the ranked outer-catch-up
+witness, so no cursor well-formedness or scan result is assumed here. -/
+theorem live_owned_region_is_inhabited :
+    ∃ resource : RetainedAlternativeSegment,
+      ∃ cursor : Resolver.PreparedCursor,
+        ∃ goals binding tail,
+          resource.HasIndexedOwnershipAt
+            ([] : List (LogicVar × String)) cursor ∧
+            resource.alts = .br goals binding :: tail := by
+  obtain ⟨partition, _, _, _⟩ :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologBodyFailureOuterResourceCatchupBridge.two_crossed_then_live_partition_is_inhabited
+  exact
+    ⟨partition.first, partition.firstCursor, partition.goals,
+      partition.binding, partition.tail, partition.firstOwnership,
+      partition.firstHead⟩
+
+/-- A genuinely owned source cursor whose conservative executable scan is
+empty also exists.  Its source occurrence performs one ranked rejected pull;
+the empty bank is therefore not a fabricated empty descriptor. -/
+theorem empty_owned_region_is_inhabited :
+    ∃ resource : RetainedAlternativeSegment,
+      ∃ cursor : Resolver.PreparedCursor,
+        resource.HasIndexedOwnershipAt
+          ([] : List (LogicVar × String)) cursor ∧
+          resource.alts = [] := by
+  obtain
+      ⟨resource, _, cursor, _, _, empty, _, _, ownership, _⟩ :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologBodyFailureOuterResourceCatchupBridge.one_rejected_crossed_frame_is_inhabited
+  exact ⟨resource, cursor, ownership, empty⟩
+
+/-- The first local right region can be the selected pull landing.  The owned
+bank is concretely nonempty, and falling through to the empty base would
+contradict its exact `pullAux` result. -/
+theorem first_local_region_is_inhabited :
+    ∃ (cursor : Resolver.PreparedCursor)
+        (resource : RetainedAlternativeSegment)
+        (origin :
+          AnswerOrigin 1 ([] : OpenSubstitution.Substitution)
+            (.cutBoundary 1
+              (.choice 1 (.task 1 [] []) (.clauses 1 cursor)))
+            (.cutBoundary 1
+              (.choice 1 .done (.clauses 1 cursor))))
+        (agreement :
+          AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+            [resource] [] (resource.alts ++ [.barrier]) []),
+      resource.alts ≠ [] ∧
+        ∃ goals binding rest,
+          OriginPrefixLanding [] agreement goals binding rest ∧
+            OriginPullOutcome [] agreement [] := by
+  obtain ⟨resource, cursor, goals, binding, tail, ownership, head⟩ :=
+    live_owned_region_is_inhabited
+  let origin :
+      AnswerOrigin 1 ([] : OpenSubstitution.Substitution)
+        (.cutBoundary 1
+          (.choice 1 (.task 1 [] []) (.clauses 1 cursor)))
+        (.cutBoundary 1
+          (.choice 1 .done (.clauses 1 cursor))) :=
+    .cutBoundary 1 (.choice 1 (.clauses 1 cursor) .task)
+  have agreement :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+        [resource] [] (resource.alts ++ [.barrier]) [] := by
+    rcases ownership with ⟨callStart, position, exactOwnership⟩
+    simpa [origin] using
+      (AnswerOriginResourceAgrees.active_call_exact_at
+        (alpha := ([] : List (LogicVar × String))) 1
+        ([] : OpenSubstitution.Substitution) callStart cursor position
+        resource [] [] exactOwnership)
+  have nonempty : resource.alts ≠ [] := by
+    rw [head]
+    simp
+  refine ⟨cursor, resource, origin, agreement, nonempty, ?_⟩
+  rcases AnswerOriginResourceAgrees.classifyPrefix agreement with
+    ⟨selectedGoals, selectedBinding, rest, landing⟩ | falls
+  · exact
+      ⟨selectedGoals, selectedBinding, rest, landing,
+        .localLive selectedGoals selectedBinding rest landing⟩
+  · have selected :
+        Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (resource.alts ++ [.barrier]) =
+          some (.branch goals binding, tail ++ [.barrier]) := by
+      apply pullAux_append_of_some
+      rw [head]
+      rfl
+    have impossible := falls.pullAux_eq
+    rw [selected] at impossible
+    simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at impossible
+
+/-- The second local right region is selected after a genuine first region
+falls through.  Both ownership certificates are real; the first bank is
+empty and the second bank has a literal branch. -/
+theorem second_local_region_after_empty_is_inhabited :
+    ∃ (emptyCursor liveCursor : Resolver.PreparedCursor)
+        (emptyResource liveResource : RetainedAlternativeSegment)
+        (origin :
+          AnswerOrigin 1 ([] : OpenSubstitution.Substitution)
+            (.choice 2
+              (.choice 1 (.task 1 [] []) (.clauses 1 emptyCursor))
+              (.clauses 2 liveCursor))
+            (.choice 2
+              (.choice 1 .done (.clauses 1 emptyCursor))
+              (.clauses 2 liveCursor)))
+        (agreement :
+          AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+            [emptyResource, liveResource] []
+            (emptyResource.alts ++ liveResource.alts) []),
+      emptyResource.alts = [] ∧ liveResource.alts ≠ [] ∧
+        ∃ goals binding rest,
+          OriginPrefixLanding [] agreement goals binding rest ∧
+            OriginPullOutcome [] agreement [] := by
+  obtain ⟨emptyResource, emptyCursor, emptyOwnership, emptyHead⟩ :=
+    empty_owned_region_is_inhabited
+  obtain
+      ⟨liveResource, liveCursor, goals, binding, tail, liveOwnership,
+        liveHead⟩ := live_owned_region_is_inhabited
+  let leaf :
+      AnswerOrigin 1 ([] : OpenSubstitution.Substitution)
+        (.task 1 [] []) .done := .task
+  let innerOrigin :
+      AnswerOrigin 1 ([] : OpenSubstitution.Substitution)
+        (.choice 1 (.task 1 [] []) (.clauses 1 emptyCursor))
+        (.choice 1 .done (.clauses 1 emptyCursor)) :=
+    .choice 1 (.clauses 1 emptyCursor) leaf
+  let origin :
+      AnswerOrigin 1 ([] : OpenSubstitution.Substitution)
+        (.choice 2
+          (.choice 1 (.task 1 [] []) (.clauses 1 emptyCursor))
+          (.clauses 2 liveCursor))
+        (.choice 2
+          (.choice 1 .done (.clauses 1 emptyCursor))
+          (.clauses 2 liveCursor)) :=
+    .choice 2 (.clauses 2 liveCursor) innerOrigin
+  have leafAgreement :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) leaf
+        [emptyResource, liveResource] [emptyResource, liveResource]
+        (emptyResource.alts ++ liveResource.alts)
+        (emptyResource.alts ++ liveResource.alts) :=
+    .task 1 [] [emptyResource, liveResource]
+      (emptyResource.alts ++ liveResource.alts)
+  have emptyRegion :
+      RightAlternativeRegionAgrees ([] : List (LogicVar × String))
+        (.clauses 1 emptyCursor) [emptyResource] emptyResource.alts :=
+    by
+      rcases emptyOwnership with
+        ⟨emptyCallStart, emptyPosition, exactEmptyOwnership⟩
+      exact
+        .clauses 1 emptyCallStart emptyCursor emptyPosition emptyResource
+          exactEmptyOwnership
+  have innerAgreement :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) innerOrigin
+        [emptyResource, liveResource] [liveResource]
+        (emptyResource.alts ++ liveResource.alts) liveResource.alts := by
+    simpa [innerOrigin] using
+      (AnswerOriginResourceAgrees.choice 1 (.clauses 1 emptyCursor) leaf
+        leafAgreement emptyRegion)
+  have liveRegion :
+      RightAlternativeRegionAgrees ([] : List (LogicVar × String))
+        (.clauses 2 liveCursor) [liveResource] liveResource.alts :=
+    by
+      rcases liveOwnership with
+        ⟨liveCallStart, livePosition, exactLiveOwnership⟩
+      exact
+        .clauses 2 liveCallStart liveCursor livePosition liveResource
+          exactLiveOwnership
+  have innerAgreementForOuter :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) innerOrigin
+        [emptyResource, liveResource] ([liveResource] ++ [])
+        (emptyResource.alts ++ liveResource.alts)
+        (liveResource.alts ++ []) := by
+    simpa only [List.append_nil] using innerAgreement
+  let agreement :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+        [emptyResource, liveResource] []
+        (emptyResource.alts ++ liveResource.alts) [] :=
+      (AnswerOriginResourceAgrees.choice 2 (.clauses 2 liveCursor) innerOrigin
+        innerAgreementForOuter liveRegion)
+  have selected :
+      Mettapedia.Languages.MeTTa.PLeaTTa.pullAux (emptyResource.alts ++ liveResource.alts) =
+        some (.branch goals binding, tail) := by
+    rw [emptyHead, liveHead]
+    simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux]
+  refine
+    ⟨emptyCursor, liveCursor, emptyResource, liveResource, origin, agreement,
+      emptyHead, ?_, ?_⟩
+  · rw [liveHead]
+    simp
+  · rcases AnswerOriginResourceAgrees.classifyPrefix agreement with
+      ⟨selectedGoals, selectedBinding, rest, landing⟩ | falls
+    · exact
+        ⟨selectedGoals, selectedBinding, rest, landing,
+          .localLive selectedGoals selectedBinding rest landing⟩
+    · have impossible := falls.pullAux_eq
+      rw [selected] at impossible
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at impossible
+
+/-- The older base-bank branch is a distinct live case: a task-only origin
+consumes no local resource or alternative region. -/
+theorem base_live_is_inhabited :
+    let base : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt := [.br [] []]
+    let origin :
+        AnswerOrigin 0 ([] : OpenSubstitution.Substitution)
+          (.task 0 [] []) .done := .task
+    let agreement :
+        AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+          [] [] base base := .task 0 [] [] base
+    OriginPullOutcome [] agreement [] := by
+  dsimp only
+  exact
+    .baseLive (.task 0 [] [] [.br [] []] rfl) [] [] [] rfl
+
+/-- A marker-only older bank is exhausted rather than mistaken for an answer.
+The completion event therefore belongs to the terminal case. -/
+theorem marker_only_terminal_is_inhabited :
+    let base : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt := [.barrier, .barrier]
+    let origin :
+        AnswerOrigin 0 ([] : OpenSubstitution.Substitution)
+          (.task 0 [] []) .done := .task
+    let agreement :
+        AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+          [] [] base base := .task 0 [] [] base
+    OriginPullOutcome [] agreement [.completed] := by
+  dsimp only
+  exact
+    .terminal (.task 0 [] [] [.barrier, .barrier] rfl) rfl
+
+/-- Leading and trailing predicate markers are skipped, never returned as a
+synthetic answer.  The exact base-live result pins both the selected branch
+and the residual trailing marker. -/
+theorem barriers_are_skipped_not_selected :
+    let base : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt :=
+      [.barrier, .barrier, .br [] [], .barrier]
+    let origin :
+        AnswerOrigin 0 ([] : OpenSubstitution.Substitution)
+          (.task 0 [] []) .done := .task
+    let agreement :
+        AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+          [] [] base base := .task 0 [] [] base
+    Mettapedia.Languages.MeTTa.PLeaTTa.pullAux base = some (.branch [] [], [.barrier]) ∧
+      OriginPullOutcome [] agreement [] := by
+  dsimp only
+  exact
+    ⟨rfl,
+      .baseLive
+        (.task 0 [] [] [.barrier, .barrier, .br [] [], .barrier] rfl)
+        [] [] [.barrier] rfl⟩
+
+/-- The classifier also has a genuine depth-two scheduled inhabitant.  The
+carried historical origin owns two resources and exactly two predicate
+markers, so recursion through the scheduled case cannot be replaced by a
+singleton shortcut. -/
+theorem depth_two_scheduled_classification_is_inhabited :
+    ∃ next : Search,
+      ∃ resources : List RetainedAlternativeSegment,
+        ∃ segment : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt,
+          ∃ _region :
+              RightAlternativeRegionAgrees
+                ([] : List (LogicVar × String)) (.product 4 next []) resources
+                  segment,
+            resources.length = 2 ∧
+              Mettapedia.Languages.MeTTa.PLeaTTa.barrierCount segment = 2 ∧
+                ∃ (origin :
+                    AnswerOrigin 5 ([] : OpenSubstitution.Substitution)
+                      (.choice 5 (.task 5 [] []) (.product 4 next []))
+                      (.choice 5 .done (.product 4 next [])))
+                  (agreement :
+                    AnswerOriginResourceAgrees
+                      ([] : List (LogicVar × String)) origin resources []
+                        segment []),
+                  ∃ events, OriginPullOutcome [] agreement events := by
+  obtain ⟨next, resources, segment, resourceCount, region, markerCount⟩ :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologAnswerResourceBridge.AnswerOriginResourceAgrees.two_resource_scheduled_region_is_inhabited
+  let leaf :
+      AnswerOrigin 5 ([] : OpenSubstitution.Substitution)
+        (.task 5 [] []) .done := .task
+  let origin :
+      AnswerOrigin 5 ([] : OpenSubstitution.Substitution)
+        (.choice 5 (.task 5 [] []) (.product 4 next []))
+        (.choice 5 .done (.product 4 next [])) :=
+    .choice 5 (.product 4 next []) leaf
+  have leafAgreement :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) leaf
+        resources resources segment segment :=
+    .task 5 [] resources segment
+  have leafAgreementForOuter :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) leaf
+        resources (resources ++ []) segment (segment ++ []) := by
+    simpa only [List.append_nil] using leafAgreement
+  let agreement :
+      AnswerOriginResourceAgrees ([] : List (LogicVar × String)) origin
+        resources [] segment [] :=
+      (AnswerOriginResourceAgrees.choice 5 (.product 4 next []) leaf
+        leafAgreementForOuter region)
+  rcases AnswerOriginResourceAgrees.classifyPull agreement with
+    ⟨events, outcome⟩
+  exact
+    ⟨next, resources, segment, region, resourceCount, markerCount, origin,
+      agreement, events, outcome⟩
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologAnswerPullClassificationBridge

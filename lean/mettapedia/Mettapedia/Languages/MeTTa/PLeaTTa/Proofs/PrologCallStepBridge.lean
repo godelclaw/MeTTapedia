@@ -1,0 +1,307 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCallStepBridge
+Purpose: Relate independent local-call opening to the executable fine
+  install-before-pull phase without assuming head-unifier adequacy.
+Trusted boundary: none
+Main exports: CallEntryBankRelates,
+  taskCall_callEnter_bank_correspondence
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologCallEntryBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.DemandDrivenCallStep
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologCallStepBridge
+
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.Resolver
+open PeTTaSpec.PrologCore.GoalSemantics
+open PrologStateBridge
+open PrologCallEntryBridge
+open PrologActivationMacro
+open DemandDrivenStep
+open DemandDrivenCallStep
+
+/-!
+The independent `taskCall` transition opens and eagerly reserves a prepared
+cursor before any clause is pulled.  Sealed `Step.call_resolve` historically
+installed and pulled the executable alternative bank atomically.  The
+additive fine lane separates those actions, so its `callEnter` transition can
+now correspond to independent call opening without importing either
+unifier's correctness.
+
+`CallEntryBankRelates` is deliberately a control-and-ownership relation, not
+the complete state bisimulation.  It pins the exact database projection,
+candidate spine, scan decisions, persistent high-water endpoints, old
+continuation ownership, and nominal cut-scope advance.  Term/substitution
+payload agreement and the ranked independent reject/pull macro remain later
+obligations.
+-/
+
+/-- Exact post-entry relation before either side performs head unification.
+The independent and executable numeric fresh counters remain distinct
+currencies; `bank` carries their occurrence-level allocation evidence instead
+of asserting a false equality. -/
+structure CallEntryBankRelates
+    (opened : OpenedCall) (before : OpenConf) (pending : PendingCall)
+    (argsv args : List Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom) (res : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom)
+    (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst)
+    (qterm : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom) (barrier startCounter : Nat) : Prop where
+  outer : pending.outer = before.control
+  frames : pending.frames = before.frames
+  scopes : pending.scopes = before.scopes.afterLocalCall
+  world : pending.persistent.world = before.persistent.world
+  callHead :
+    before.toConf.cur =
+      some (Mettapedia.Languages.MeTTa.PLeaTTa.Goal.call opened.cursor.predicate args res :: rest,
+        binding)
+  substitutedArgs : argsv = args.map (Mettapedia.Languages.MeTTa.PLeaTTa.subst binding)
+  barrierExact : barrier = barrierDepth before.toConf + 1
+  startCounterExact : startCounter = before.toConf.counter
+  queryTerm : qterm = before.toConf.qterm
+  database :
+    DatabaseRelatesWorld opened.session.resolver.database
+      pending.persistent.world
+  /-- The prepared cursor is indexed by the literal call-start logical-update
+  generation.  This equality is retained separately from database/world
+  agreement so later proof-only activation origins can be projected from the
+  real call without reconstructing a historical session. -/
+  callGeneration :
+    opened.cursor.callGeneration =
+      opened.session.resolver.database.generation
+  arity : opened.cursor.arguments.length = args.length + 1
+  bank :
+    PreparedBankRelates opened.cursor argsv args res rest binding qterm
+      barrier
+      (pending.persistent.world.resolutionCandidates
+        opened.cursor.predicate args.length)
+      startCounter pending.branches pending.persistent.counter
+  sourceFresh :
+    opened.session.resolver.nextFresh = opened.cursor.reservedUntil
+  cutScopeAdvanced :
+    opened.session.nextCutScope = opened.scope + 1
+
+/-- The call-entry relation cannot be forged with two different query
+terms.  This is load-bearing for resolution freshening: the observable query
+term participates in the occupied-variable high-water. -/
+theorem CallEntryBankRelates.qterm_unique
+    {opened : OpenedCall} {before : OpenConf} {pending : PendingCall}
+    {argsv args : List Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom} {res : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom}
+    {rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal} {binding : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst}
+    {first second : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom} {barrier startCounter : Nat}
+    (one :
+      CallEntryBankRelates opened before pending argsv args res rest binding
+        first barrier startCounter)
+    (two :
+      CallEntryBankRelates opened before pending argsv args res rest binding
+        second barrier startCounter) :
+    first = second :=
+  one.queryTerm.trans two.queryTerm.symm
+
+/-- The exact executable-derived cut frontier composes with the full
+open-state relation at both pending phases.  Fresh/database agreement after
+the call opening remains an explicit premise because the two standardizers
+use different numeric currencies; no false counter equality is introduced. -/
+theorem CallEntryBankRelates.sessionRelatesInstalledAndPulled
+    {freshFrontier : FreshFrontierRelation}
+    {session : Session} {before : OpenConf} {pending : PendingCall}
+    {predicate : String} {referenceArguments : List Term}
+    {referenceBindings :
+      PeTTaSpec.PrologCore.OpenSubstitution.Substitution}
+    {argsv args : List Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom} {res : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom}
+    {rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal} {binding : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst}
+    {qterm : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom} {barrier startCounter : Nat}
+    (entry :
+      CallEntryBankRelates
+        (openedFor session predicate referenceArguments referenceBindings)
+        before pending argsv args res rest binding qterm barrier startCounter)
+    (beforeAgreement :
+      SessionRelatesOpenConf freshFrontier CutExactControlFrontiers
+        session before)
+    (persistent :
+      SessionRelatesPersistent freshFrontier
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        pending.persistent) :
+    SessionRelatesOpenConf freshFrontier CutExactControlFrontiers
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        pending.installed ∧
+      SessionRelatesOpenConf freshFrontier CutExactControlFrontiers
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        pending.pulled := by
+  have installedPersistent :
+      SessionRelatesPersistent freshFrontier
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        pending.installed.persistent := by
+    simpa [PendingCall.installed] using persistent
+  have installed :
+      SessionRelatesOpenConf freshFrontier CutExactControlFrontiers
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        pending.installed := by
+    apply SessionRelatesOpenConf.cutExact_afterLocalCall
+      beforeAgreement installedPersistent
+    simpa [openedFor] using entry.scopes
+  refine ⟨installed, ?_⟩
+  have pulledPersistent :
+      SessionRelatesPersistent freshFrontier
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        pending.pulled.persistent := by
+    simpa using persistent
+  simpa [PendingCall.pulled] using
+    installed.stepOpen pulledPersistent
+
+/-- The concrete independent opener and the concrete executable pending
+package satisfy the post-entry relation.  Rewriting by the actual
+`resolveAlts` equation preserves the complete source-ordered bank, including
+every conservative false positive. -/
+theorem openedFor_pendingCallOf_relates
+    {session : Session} {state : OpenConf}
+    (database :
+      DatabaseRelatesWorld session.resolver.database state.persistent.world)
+    (ready : state.persistent.world.clauseIndexReady = true)
+    (predicate : String)
+    (referenceArguments : List Term)
+    (referenceBindings :
+      PeTTaSpec.PrologCore.OpenSubstitution.Substitution)
+    (args : List Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom) (res : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom)
+    (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst)
+    (branches : List Alt) (finalCounter : Nat)
+    (arity : referenceArguments.length = args.length + 1)
+    (head :
+      state.toConf.cur =
+        some (Mettapedia.Languages.MeTTa.PLeaTTa.Goal.call predicate args res :: rest, binding))
+    (scanned :
+      resolveAlts
+        (state.persistent.world.resolutionCandidates predicate args.length)
+        (args.map (Mettapedia.Languages.MeTTa.PLeaTTa.subst binding)) args res rest binding
+          state.control.qterm (barrierDepth state.toConf + 1)
+          state.toConf.counter =
+        (branches, finalCounter)) :
+    CallEntryBankRelates
+      (openedFor session predicate referenceArguments referenceBindings)
+      state (pendingCallOf state branches finalCounter)
+      (args.map (Mettapedia.Languages.MeTTa.PLeaTTa.subst binding)) args res rest binding
+      state.control.qterm (barrierDepth state.toConf + 1)
+      state.toConf.counter := by
+  constructor
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · simpa [openedFor, openLocalCall, requestFor, prepareCall] using head
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · simpa [openedFor, openLocalCall, requestFor, prepareCall, pendingCallOf]
+      using database
+  · rfl
+  · simpa [openedFor, openLocalCall, requestFor, prepareCall] using arity
+  · have prepared :=
+      PrologCallEntryBridge.DatabaseRelatesWorld.prepareCall_resolveAlts
+      database ready
+        (requestFor predicate referenceArguments referenceBindings)
+        (args.map (Mettapedia.Languages.MeTTa.PLeaTTa.subst binding)) args res rest binding
+        state.control.qterm (barrierDepth state.toConf + 1)
+        state.toConf.counter arity
+    simp only [requestFor] at prepared
+    rw [scanned] at prepared
+    simpa [openedFor, openLocalCall, requestFor, prepareCall, pendingCallOf]
+      using prepared
+  · change
+      (prepareCall session.resolver
+        (requestFor predicate referenceArguments
+          referenceBindings)).2.nextFresh =
+        (prepareCall session.resolver
+          (requestFor predicate referenceArguments
+            referenceBindings)).1.reservedUntil
+    exact prepareCall_nextFresh_eq_reservedUntil session.resolver
+      (requestFor predicate referenceArguments referenceBindings)
+  · rfl
+
+/-- Exact paired call-entry transitions.  A nonempty independent call-start
+snapshot derives both sealed dispatch guards; the independent side enters its
+prepared cursor and the executable side enters the typed pending bank.  The
+statement stops before either full-head MGU, so no unifier premise is hidden
+inside call opening.
+
+[SPEC metta.pl:251-256] -/
+theorem taskCall_callEnter_bank_correspondence
+    {prog : Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {session : Session} {state : OpenConf}
+    (database :
+      DatabaseRelatesWorld session.resolver.database state.persistent.world)
+    (ready : state.persistent.world.clauseIndexReady = true)
+    (scope : CutScopeId) (predicate : String)
+    (referenceArguments : List Term)
+    (referenceRest : List PeTTaSpec.PrologCore.Goal)
+    (referenceBindings :
+      PeTTaSpec.PrologCore.OpenSubstitution.Substitution)
+    (args : List Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom) (res : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Atom)
+    (rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal) (binding : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst)
+    (branches : List Alt) (finalCounter : Nat)
+    (arity : referenceArguments.length = args.length + 1)
+    (notThrow : ¬ BuiltinThrowCall predicate referenceArguments)
+    (notDatabase :
+      DatabaseActions.recognizeDatabaseAction predicate
+        referenceArguments = none)
+    (nonempty :
+      session.resolver.database.visibleClausesAt
+        session.resolver.database.generation predicate
+          referenceArguments.length ≠ [])
+    (head :
+      state.toConf.cur =
+        some (Mettapedia.Languages.MeTTa.PLeaTTa.Goal.call predicate args res :: rest, binding))
+    (scanned :
+      resolveAlts
+        (state.toConf.world.resolutionCandidates predicate args.length)
+        (args.map (Mettapedia.Languages.MeTTa.PLeaTTa.subst binding)) args res rest binding
+          state.toConf.qterm (barrierDepth state.toConf + 1)
+          state.toConf.counter =
+        (branches, finalCounter)) :
+    RawStep session
+        (.task scope
+          (.call predicate referenceArguments :: referenceRest)
+          referenceBindings)
+        [.opened
+          (requestFor predicate referenceArguments referenceBindings)]
+        .none
+        (openedFor session predicate referenceArguments
+          referenceBindings).session
+        (.running
+          (.product scope
+            (.cutBoundary
+              (openedFor session predicate referenceArguments
+                referenceBindings).scope
+              (.clauses
+                (openedFor session predicate referenceArguments
+                  referenceBindings).scope
+                (openedFor session predicate referenceArguments
+                  referenceBindings).cursor))
+            referenceRest)) ∧
+      DemandDrivenCallStep.Step prog gt (.ready state)
+        (.callPending (pendingCallOf state branches finalCounter)) ∧
+      CallEntryBankRelates
+        (openedFor session predicate referenceArguments referenceBindings)
+        state (pendingCallOf state branches finalCounter)
+        (args.map (Mettapedia.Languages.MeTTa.PLeaTTa.subst binding)) args res rest binding
+        state.control.qterm (barrierDepth state.toConf + 1)
+        state.persistent.counter := by
+  have dispatch :=
+    PrologCallEntryBridge.DatabaseRelatesWorld.callResolve_dispatch
+      database ready predicate args.length
+      (by simpa [arity] using nonempty)
+  refine ⟨.taskCall scope predicate referenceArguments referenceRest
+      referenceBindings session notThrow notDatabase,
+    .callEnter state predicate args res rest binding branches finalCounter
+      head dispatch.1 dispatch.2 scanned, ?_⟩
+  exact openedFor_pendingCallOf_relates database ready predicate
+    referenceArguments referenceBindings args res rest binding
+    branches finalCounter arity head scanned
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologCallStepBridge
