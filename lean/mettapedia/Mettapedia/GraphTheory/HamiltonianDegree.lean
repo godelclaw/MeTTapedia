@@ -14,6 +14,7 @@ theorems for finite simple graphs.
 import Mathlib.Combinatorics.SimpleGraph.Hamiltonian
 import Mathlib.Combinatorics.SimpleGraph.DegreeSum
 import Mathlib.Combinatorics.SimpleGraph.Paths
+import Mettapedia.GraphTheory.PathsCycles
 
 set_option linter.unusedSectionVars false
 
@@ -23,26 +24,6 @@ namespace Mettapedia.GraphTheory.HamiltonianDegree
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 variable (G : SimpleGraph V) [DecidableRel G.Adj]
-
-/-! ### A path endpoint lemma -/
-
-/-- In a path of length at least two, the edge between its endpoints is not
-among the path edges. -/
-private theorem edge_endpoints_not_mem_edges
-    {u v : V} {p : G.Walk u v} (hp : p.IsPath) (hlen : 2 ≤ p.length) :
-    s(u, v) ∉ p.edges := by
-  intro member
-  have endpointIsSecond : v = p.snd := hp.eq_snd_of_mem_edges member
-  have equalVertices : p.getVert 1 = p.getVert p.length := by
-    show p.snd = p.getVert p.length
-    rw [← endpointIsSecond, p.getVert_length]
-  have injective := hp.getVert_injOn
-  exact absurd
-    (injective
-      (show (1 : ℕ) ∈ {index | index ≤ p.length} by simp; omega)
-      (show p.length ∈ {index | index ≤ p.length} by simp)
-      equalVertices)
-    (by omega)
 
 /-! ### Connectivity from minimum degree -/
 
@@ -225,7 +206,7 @@ private lemma hamilton_path_to_cycle {u v : V}
     · rw [cons_isCycle_iff]
       exact ⟨hp.reverse, by
         rw [Walk.edges_reverse]
-        exact fun h => edge_endpoints_not_mem_edges
+        exact fun h => SimpleGraph.endpoints_notMem_edges_of_isPath
           G hp (by omega) (List.mem_reverse.mp h)⟩
     · simp [Walk.length_cons, Walk.length_reverse, hp_len]; omega
   · -- Case 2: endpoints not adjacent. Rotation via pigeonhole.
