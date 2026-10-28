@@ -20,7 +20,7 @@ open scoped Classical BigOperators ENNReal
 
 namespace VariableElimination
 
-open FactorGraph
+open _root_.Mettapedia.ProbabilityTheory.BayesianNetworks.VariableElimination.FactorGraph
 
 variable {V K : Type*} [DecidableEq V]
 variable {fg : FactorGraph V K}

@@ -34,7 +34,7 @@ inductive EmpiricalFactor where
 
 instance : Fintype EmpiricalFactor where
   elems := {.joint}
-  complete x := by cases x <;> simp
+  complete x := by cases x ; simp
 
 /-- The joint factor scope for the empirical 2x2 table. -/
 def pairScope : Finset MembershipConcept :=
@@ -283,7 +283,7 @@ noncomputable def witnessMessage (c : MembershipCounts) : Bool → Nat :=
     (MessagePassing.unitVarToFactor (fg := factorGraph c))
     EmpiricalFactor.joint
     MembershipConcept.witness
-    (by simp [factorGraph, pairScope])
+    (by simp [pairScope])
 
 noncomputable def featureMessage (c : MembershipCounts) : Bool → Nat :=
   MessagePassing.factorToVarUpdate
@@ -291,7 +291,7 @@ noncomputable def featureMessage (c : MembershipCounts) : Bool → Nat :=
     (MessagePassing.unitVarToFactor (fg := factorGraph c))
     EmpiricalFactor.joint
     MembershipConcept.feature
-    (by simp [factorGraph, pairScope])
+    (by simp [pairScope])
 
 theorem witnessMessage_eq (c : MembershipCounts) :
     witnessMessage c = fun b => if b then witnessSupport c else c.neither + c.featureOnly := by
@@ -303,7 +303,7 @@ theorem witnessMessage_eq (c : MembershipCounts) :
       (f := EmpiricalFactor.joint)
       (v := MembershipConcept.witness)
       (u := MembershipConcept.feature)
-      (hv := by simp [factorGraph, pairScope])
+      (hv := by simp [pairScope])
       (hSingle := pairScope_erase_witness)
   have hsum :
       ∀ x_v : Bool,
@@ -314,9 +314,7 @@ theorem witnessMessage_eq (c : MembershipCounts) :
     refine h2.trans ?_
     refine Fintype.sum_congr _ _ ?_
     intro x_u
-    simp [MessagePassing.unitVarToFactor, factorGraph, pairPotential, rawPotential, pairScope,
-      VariableElimination.Factor.extend_apply_eq, VariableElimination.Factor.extend_apply_ne,
-      MessagePassing.singletonOtherScopeAssign]
+    simp [MessagePassing.unitVarToFactor, factorGraph, pairPotential, rawPotential, pairScope]
     rfl
   cases b with
   | false =>
@@ -336,7 +334,7 @@ theorem featureMessage_eq (c : MembershipCounts) :
       (f := EmpiricalFactor.joint)
       (v := MembershipConcept.feature)
       (u := MembershipConcept.witness)
-      (hv := by simp [factorGraph, pairScope])
+      (hv := by simp [pairScope])
       (hSingle := pairScope_erase_feature)
   have hsum :
       ∀ x_v : Bool,
@@ -347,9 +345,7 @@ theorem featureMessage_eq (c : MembershipCounts) :
     refine h2.trans ?_
     refine Fintype.sum_congr _ _ ?_
     intro x_u
-    simp [MessagePassing.unitVarToFactor, factorGraph, pairPotential, rawPotential, pairScope,
-      VariableElimination.Factor.extend_apply_eq, VariableElimination.Factor.extend_apply_ne,
-      MessagePassing.singletonOtherScopeAssign]
+    simp [MessagePassing.unitVarToFactor, factorGraph, pairPotential, rawPotential, pairScope]
     rfl
   cases b with
   | false =>
@@ -597,7 +593,7 @@ inductive CountFactor where
 
 instance : Fintype CountFactor where
   elems := {.joint}
-  complete x := by cases x <;> simp
+  complete x := by cases x ; simp
 
 /-- Total mass of the finite feature/witness count table. -/
 noncomputable def total (t : FiniteFeatureWitnessCountTable Feature Witness) : Nat :=
@@ -747,7 +743,7 @@ theorem veWeight_eq_pairWeight
     (constraints : List (Σ v : MembershipConcept, (factorGraph t).stateSpace v)) :
     veWeight t constraints = pairWeight t constraints := by
   classical
-  letI : Fintype (factorGraph t).FullConfig :=
+  let : Fintype (factorGraph t).FullConfig :=
     t.instFintypeFullConfigMembershipConceptNatFactorGraph
   have hsum :
       (∑ x : (factorGraph t).FullConfig,
@@ -842,7 +838,7 @@ theorem pairWeight_feature_witness
     · rintro ⟨rfl, rfl⟩ q hq
       rcases q with ⟨v, y⟩
       cases v <;> simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-      all_goals rcases hq with hq | hq <;> cases hq <;> rfl
+      all_goals rcases hq with hq | hq <;> cases hq ; rfl
   rw [pairWeight, Fintype.sum_prod_type]
   simp_rw [hSat]
   have hInner :
@@ -959,9 +955,7 @@ theorem witnessMessage_eq
   refine (congrArg (fun φ => φ witness) h).trans ?_
   refine Fintype.sum_congr _ _ ?_
   intro feature
-  simp [MessagePassing.unitVarToFactor, factorGraph, MembershipCounts.pairScope,
-    VariableElimination.Factor.extend_apply_eq, VariableElimination.Factor.extend_apply_ne,
-    MessagePassing.singletonOtherScopeAssign]
+  simp [MessagePassing.unitVarToFactor, factorGraph, MembershipCounts.pairScope]
   rfl
 
 theorem featureMessage_eq
@@ -981,9 +975,7 @@ theorem featureMessage_eq
   refine (congrArg (fun φ => φ feature) h).trans ?_
   refine Fintype.sum_congr _ _ ?_
   intro witness
-  simp [MessagePassing.unitVarToFactor, factorGraph, MembershipCounts.pairScope,
-    VariableElimination.Factor.extend_apply_eq, VariableElimination.Factor.extend_apply_ne,
-    MessagePassing.singletonOtherScopeAssign]
+  simp [MessagePassing.unitVarToFactor, factorGraph, MembershipCounts.pairScope]
   rfl
 
 theorem witnessMessage_value

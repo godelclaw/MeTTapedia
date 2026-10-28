@@ -49,6 +49,8 @@ open scoped BigOperators ENNReal
 
 /-! ## Factor Graph Structure -/
 
+-- The state and factor carriers intentionally have independent universe levels.
+set_option linter.checkUnivs false in
 /-- A **Factor Graph** represents a function that factors as a product of local potentials.
 
     - V: The set of variable nodes
@@ -189,9 +191,11 @@ end FactorGraph
 
 /-! ## Canonical Instantiations -/
 
+set_option linter.checkUnivs false in
 /-- Classical probabilistic factor graphs (ENNReal potentials). -/
 abbrev ProbFactorGraph (V : Type*) := FactorGraph V ℝ≥0∞
 
+set_option linter.checkUnivs false in
 /-- K&S regraduated factor graphs (real-valued plausibility scale). -/
 abbrev KSFactorGraph (V : Type*) := FactorGraph V ℝ
 
@@ -252,7 +256,7 @@ def neighbors (mrf : MarkovRandomField V) (v : V) : Set V :=
 /-- Symmetry: u is a neighbor of v iff v is a neighbor of u. -/
 theorem neighbors_symm (mrf : MarkovRandomField V) (u v : V) :
     u ∈ mrf.neighbors v ↔ v ∈ mrf.neighbors u := by
-  simp only [neighbors, Set.mem_setOf_eq]
+  simp only [neighbors, Set.mem_ofPred_eq]
   exact mrf.edges_symm v u
 
 end MarkovRandomField

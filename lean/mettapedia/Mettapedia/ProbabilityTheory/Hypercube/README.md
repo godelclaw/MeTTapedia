@@ -244,8 +244,7 @@ of why classical probability emerges from quantum probability when measuring com
 
 ```bash
 cd Mettapedia/lean/mettapedia
-export LAKE_JOBS=3
-nice -n 19 lake build Mettapedia.ProbabilityTheory.Hypercube
+export lake build Mettapedia.ProbabilityTheory.Hypercube
 ```
 
 ## Current Status

@@ -620,7 +620,7 @@ theorem totalWeight_eq_evalConst_of_scope_empty (φ : Factor fg)
   cases φ with
   | mk scope potential =>
       cases h
-      letI : Unique (FactorGraph.Assign (fg := fg) (∅ : Finset V)) := {
+      let : Unique (FactorGraph.Assign (fg := fg) (∅ : Finset V)) := {
         default := emptyAssign fg
         uniq := by
           intro x
@@ -640,7 +640,7 @@ theorem totalWeight_eq_fullConfigSum_of_scope_univ (φ : Factor fg)
   | mk scope potential =>
       cases h
       unfold totalWeight fullConfigWeightSum
-      letI : Fintype fg.FullConfig := by
+      let : Fintype fg.FullConfig := by
         dsimp [FactorGraph.FullConfig]
         infer_instance
       apply Fintype.sum_equiv (assignUnivEquivFullConfig (fg := fg))
@@ -868,7 +868,7 @@ noncomputable def veQueryWeightList
     veQueryWeightList fg fs constraints =
       weightOfConstraintsList (fg := fg) fs constraints := by
   classical
-  letI : Fintype fg.FullConfig := by
+  let : Fintype fg.FullConfig := by
     dsimp [FactorGraph.FullConfig]
     infer_instance
   let φ := combineAll (fg := fg) (veFactorList (fg := fg) fs constraints)
