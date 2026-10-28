@@ -29,8 +29,26 @@ The theorems:
   as first rendered was the event's `from_name` tag, which its author sets; the
   name the client renders now is a function of the signing key alone.
 
-Text is modelled as characters (`List Char`). Header names are constants; the
-watcher's control dispatch beyond the sender and the type is not modelled.
+Scope:
+- The reader is the one for the client's own archive: lines split at line feeds,
+  a blank line ending the headers. It is not a general RFC 5322 parser: no case
+  folding, folded headers or CRLF input.
+- The renderer is reduced. It writes `From`, `Subject` and the type, which are the
+  headers the watcher reads and the subject the sender chooses. `From` gives the
+  signing key as the address, where the client prints the registry's npub. The
+  client writes more headers. `hdrBlock_file` covers them only because every
+  header it writes is one line: sender values through `oneLine`, registry values
+  likewise, and the rest are hex, numbers or constants. That is the
+  `HeadersOk` precondition.
+- `watcher_control_sound` assumes what `no_impersonation` does: the event was
+  accepted (signed, addressed and registered), signatures are collision-free,
+  registry names are unique, and the parent's key is uncompromised. It also
+  assumes registry names are clean: nonempty, without blanks or colons. The type
+  it yields is the sealed type as the client normalizes it.
+- It is a model. It does not prove the shell script, the live relay, or behaviour
+  under a malformed registry; the client's tests check the script against it.
+
+Text is modelled as characters (`List Char`); header names are constants.
 -/
 
 set_option autoImplicit false
