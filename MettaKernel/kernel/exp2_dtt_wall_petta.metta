@@ -4,7 +4,7 @@
 ; KERN-LF-CORE, KERN-CONV-WHNF, KERN-OBJECT-SIGNATURES, KERN-DEDUKTI-DIFFERENTIAL.
 ; DIVERGES: PeTTa lexical companion and DTT-wall probe; rejected missing
 ; recursor/induction behavior is recorded rather than added.
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ; exp2_dtt_wall.metta

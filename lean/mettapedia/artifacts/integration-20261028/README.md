@@ -75,12 +75,22 @@ The coherent-tower refinement has a separate
 It checks the 211 original public contracts, original operator semantics and
 downstream consumers while sharing the generic and stream tower carrier.
 
+The [integration correction record](../integration-corrections-20261028/qualification.json)
+accounts for the independently reviewed 133-module gap: 132 source receipts
+and one comment-only historical index. Changed compatibility facades and
+aggregates invalidated by rebuilt imports are replayed separately. The LF
+PeTTa companion is regenerated from its authored source, restoring opaque
+theorems, theorem-chain admission and batch judgments. All 48 kernel parity
+rows pass with explicit CeTTa HE/extended and matching PeTTa interpreter/library
+versions. Runs with no executed assertions are rejected by the gate.
+
 The maintained Lake targets are `LogicProgrammingTheory`, `PLeaTTaTheory`,
 `AttentionEconomyTheory` and `FourColorCore`. They share the package's existing
 build directory. The 231 upstream research Lean files remain separate from
 the maintained library targets and retain their baseline bytes.
 
-Future integrations should add subject commits on upstream, preserve the full
-source histories on archive refs, and update the preservation ledger for any
-upstream deletion or changed semantic contract. Reuse the existing build cache
-and run the relevant theory targets.
+Future deliveries should prepare reviewed bulk commits against current upstream,
+preserve detailed development histories on archive refs, and resynchronize the
+fork from the resulting upstream main after integration. Update the preservation
+ledger for any changed semantic contract, reuse the existing build cache and run
+the relevant theory targets.

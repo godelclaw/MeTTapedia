@@ -24,7 +24,8 @@ src="${1:?usage: make_petta_companion.sh <input.metta> [output.metta]}"
 dir=$(cd "$(dirname "$src")" && pwd)
 base=$(basename "$src" .metta)
 out="${2:-$dir/${base}_petta_gen.metta}"
-lib_he_import=$(realpath --canonicalize-missing --relative-to="$dir" "$lib_he_path")
+# Keep the configured dependency path, including when it is a local symlink.
+lib_he_import=$(realpath --canonicalize-missing --no-symlinks --relative-to="$dir" "$lib_he_path")
 
 uses_unify=no
 grep -qE '\bunify\b' "$src" && uses_unify=yes
@@ -41,7 +42,7 @@ trap 'rm -f "$tmp"' EXIT
   # :a;...;ta loops the substitution so multi-hyphen names (decl-type-of) fully convert.
   # The pattern requires alphanumerics on BOTH sides of '-', so the arithmetic minus
   # operator "(- $k 1)" (spaces around it) is left untouched.
-  sed -E ':a; s/([A-Za-z0-9])-([A-Za-z0-9])/\1_\2/g; ta; s/\bassertEqual\b/test/g; s/(!\(import! &self kernel_binding_waist_v1)\)/\1_petta)/g; s/(!\(import! &self kernel_binding_decl_v1)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_lf_v0)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_metta_add_v0)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_metta_rev_generated_v0)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_metta_rev_v0)\)/\1_petta)/g' "$src" |
+  sed -E ':a; s/([A-Za-z0-9])-([A-Za-z0-9])/\1_\2/g; ta; s/\bassertEqual\b/test/g; s@^;([[:space:]]+)/[^[:space:]]*/cetta[[:space:]]+@;\1cetta --lang he --profile extended @; s/(!\(import! &self kernel_binding_waist_v1)\)/\1_petta)/g; s/(!\(import! &self kernel_binding_decl_v1)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_lf_v0)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_metta_add_v0)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_metta_rev_generated_v0)\)/\1_petta)/g; s/(!\(import! &self kernel_signature_metta_rev_v0)\)/\1_petta)/g' "$src" |
     awk '
       /^; petta_skip_next$/ { skip_next = 1; next }
       skip_next { skip_next = 0; next }

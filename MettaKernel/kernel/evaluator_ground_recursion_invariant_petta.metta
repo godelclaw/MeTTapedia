@@ -4,7 +4,7 @@
 ; Curriculum/oracle_cases.tsv KERN-LF-CORE, KERN-CONV-WHNF.
 ; DIVERGES: evaluator-regression oracle plus PeTTa lexical companion; not a new
 ; typing or conversion rule.
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ; evaluator_ground_recursion_invariant.metta

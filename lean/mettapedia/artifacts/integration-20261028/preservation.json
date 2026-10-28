@@ -108,6 +108,10 @@
     {
       "area": "Coalgebra finite observations",
       "decision": "Share the generic and stream tower carrier while retaining the old constructor, projections, import paths and all 211 source-declared public contracts. Thirteen original operator definitions, tower reconstruction and the three comparison maps retain their semantics. Generated recursors belong to the canonical tower type. InitialFinal sources remain unchanged."
+    },
+    {
+      "area": "LF companions and changed-source coverage",
+      "decision": "Regenerate the LF PeTTa companion from its authored source, retaining DThm, opaque theorem provenance, derived-theorem chains and batch judgments. Keep all prior parity rows and add the full addition proof fixture. Select HE/extended explicitly for authored CeTTa programs, reject unexecuted assertions, and use matching PeTTa runtime/library versions. Account for all reviewed changed-source receipt gaps and replay invalidated compatibility facades."
     }
   ],
   "proof_boundaries": {
@@ -119,7 +123,7 @@
     "coalgebra": "Restriction-compatible levelwise maps lift to coherent tower maps; naturality alone does not imply faithfulness or operational step preservation. Existing finality, exactness, continuation and independence hypotheses are retained."
   },
   "validation": {
-    "fresh_checked_source_and_direct_import_identities": 1645,
+    "fresh_checked_source_and_direct_import_identities": 1780,
     "recovered_core_checks": {
       "pass": 355
     },
@@ -131,7 +135,7 @@
       "Mettapedia.DocText.ReadmeStructuredParse": "pass",
       "Mettapedia.DocText.OSLFReadmeCompositional": "pass",
       "Mettapedia.DocText.MettapediaReadmeCompositional": "pass",
-      "Mettapedia.OSLF.SpecIndex": "not_completed"
+      "Mettapedia.OSLF.SpecIndex": "source_checked_import_closure_pending"
     },
     "documentation_index_modules_without_current_receipts": [
       "Mettapedia.GSLT.LanguageDef.OperationCostProtocol",
@@ -384,14 +388,11 @@
       "Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardExecuteStructuredCBiformTheory",
       "Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardConformanceCorpus",
       "Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardStructuredCExport",
-      "Mettapedia.Languages.MeTTa.PeTTa",
       "Mettapedia.Logic.LP.SLDAll",
       "Mettapedia.Logic.LP.SLDCompletenessKit",
       "Mettapedia.Logic.LP.SLDCompletenessCanaries",
-      "Mettapedia.Logic.LP",
       "Mettapedia.OSLF.Framework.PaperClaimTracker",
-      "Mettapedia.OSLF.Framework.PaperParityCanaries",
-      "Mettapedia.OSLF.SpecIndex"
+      "Mettapedia.OSLF.Framework.PaperParityCanaries"
     ],
     "timed_out_dependency_rechecks": [
       {
@@ -512,6 +513,18 @@
         ],
         "source": "lean/mettapedia/Mettapedia/Coalgebra.lean"
       }
+    },
+    "changed_source_corrections": {
+      "record": "artifacts/integration-corrections-20261028/qualification.json",
+      "review_inventory": {
+        "modules": 133,
+        "fresh_receipts": 132,
+        "comment_only_dispositions": 1,
+        "additional_changed_module_rechecks": 33,
+        "unresolved_review_modules": 0
+      },
+      "runtime_rows": 48,
+      "status": "pass"
     }
   },
   "recovered_source_inputs": [
@@ -559,12 +572,40 @@
       "curated_mode": "100644",
       "reason": "Incoming subject-library or portability update; source identity recorded for review"
     },
+    "MettaKernel/kernel/break_probes_petta.metta": {
+      "upstream_blob": "1b16fb238b98274407505b43c81b224a3651f41e",
+      "curated_blob": "6b78ac564f2222abd21a544f16eaaf48e338ffd3",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
+    },
     "MettaKernel/kernel/curriculum_lf_demo_petta.metta": {
       "upstream_blob": "af2ee545e5ad8f3fa6732b4d8f7609ca22190307",
       "curated_blob": "c780f1e6055b0d14242d0ae0e4114a4987a120f4",
       "upstream_mode": "100644",
       "curated_mode": "100644",
       "reason": "Reconcile reviewed upstream preservation and proof repair"
+    },
+    "MettaKernel/kernel/evaluator_ground_recursion_invariant_petta.metta": {
+      "upstream_blob": "6df9ee71962dafab5c1cf0cc64beffaf27c1d277",
+      "curated_blob": "7fd2a6b1d3b3b7a2ae95ae2000dd0c4cd61d89ff",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
+    },
+    "MettaKernel/kernel/exp2_dtt_wall_petta.metta": {
+      "upstream_blob": "b84edc95996d566fd94947f499cc8c60ce2cb7af",
+      "curated_blob": "f7c295d57ee7e7bca5e935d43ed7a0de9165532d",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
+    },
+    "MettaKernel/kernel/exp3_hotg_both_ways_petta.metta": {
+      "upstream_blob": "5354f75adc150d76c4f8993952d1d2cbf42dee71",
+      "curated_blob": "21204a350d068e487d8de84d5eecc518283ab76f",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
     },
     "MettaKernel/kernel/imp_coherence_exp1_petta.metta": {
       "upstream_blob": "f0a8b0bb17808cf2d393192668aa3dee58806676",
@@ -580,26 +621,47 @@
       "curated_mode": "100644",
       "reason": "Reconcile reviewed upstream preservation and proof repair"
     },
-    "MettaKernel/kernel/kernel_signature_lf_v0_petta.metta": {
-      "upstream_blob": "6cde40057ea1e6bf16d11248df6024915f206943",
-      "curated_blob": "26ac55bd8e98e9997b7da37bde94f2ba4915310c",
+    "MettaKernel/kernel/kernel_signature_lf_natrec_v0_petta.metta": {
+      "upstream_blob": "a77a318081ea22f93f99d1fb4fa584e6afa9c110",
+      "curated_blob": "ad7029d97867b4201357fff1431cc6a788d6d174",
       "upstream_mode": "100644",
       "curated_mode": "100644",
-      "reason": "Reconcile reviewed upstream preservation and proof repair"
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
+    },
+    "MettaKernel/kernel/kernel_signature_lf_v0_petta.metta": {
+      "upstream_blob": "6cde40057ea1e6bf16d11248df6024915f206943",
+      "curated_blob": "7ef3fb7aea92e6ec5da1895e65e077c7e6820bb6",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Regenerate from the preserved authored LF source: restore DThm, opaque theorem provenance, theorem-chain admission and batch judgments; all associated reference runtime controls pass."
+    },
+    "MettaKernel/kernel/kernel_signature_v0_petta.metta": {
+      "upstream_blob": "4fc5ae764f52a7a29a41bb145a77b4ac6bdd5782",
+      "curated_blob": "4ba69192f8cb77ee48c7bc8666e25a6803c8a0ad",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
     },
     "MettaKernel/kernel/make_petta_companion.sh": {
       "upstream_blob": "5c28efc2db60629c61c91c59cca56dfd3233e0e9",
-      "curated_blob": "dae508589c797762d55f5dbdbd21af3337eba976",
+      "curated_blob": "0d715e4c5db3e8a343371c7a8afb4fec06514d92",
       "upstream_mode": "100755",
       "curated_mode": "100755",
-      "reason": "Reconcile reviewed upstream preservation and proof repair"
+      "reason": "Preserve deterministic lexical translation and import handling; normalize machine-specific source invocation comments and regenerate the complete LF companion without losing declarations."
+    },
+    "MettaKernel/kernel/provenance_tree_v0_petta.metta": {
+      "upstream_blob": "10a8182e09914dada38b42252abb7be9584d2639",
+      "curated_blob": "103dad4693785283f6d79bae3a178ca84a92bb32",
+      "upstream_mode": "100644",
+      "curated_mode": "100644",
+      "reason": "Preserve the hand-maintained program and controls; replace machine-specific PeTTa library imports with the configured runtime/library checkout and make invocation documentation portable."
     },
     "MettaKernel/kernel/run_kernel_parity.sh": {
       "upstream_blob": "a81df10954fe21fbee4bb167031223006c3691c3",
-      "curated_blob": "f1396ad367c72167f8787c859ade3c1845ad94ea",
+      "curated_blob": "7061d4c5c70589a9038461a7e2db5be6f46d33ec",
       "upstream_mode": "100755",
       "curated_mode": "100755",
-      "reason": "Reconcile reviewed upstream preservation and proof repair"
+      "reason": "Retain all existing rows, add the full addition theorem fixture, select the authored HE profile explicitly, validate completed assertions and reject startup errors or empty selections."
     },
     "README.md": {
       "upstream_blob": "6eedb2169fd256b58f288aa9e4dd33ea138d1489",

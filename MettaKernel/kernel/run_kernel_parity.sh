@@ -9,6 +9,17 @@ RUN_TIMEOUT_SECONDS="${RUN_TIMEOUT_SECONDS:-240}"
 LOGDIR="$ROOT/parity_logs"
 mkdir -p "$LOGDIR"
 
+# Janus uses the Python version it was built against, independently of the
+# default Python executable. Reuse an available Python 3.12 shared library.
+petta_python_libdir="${PYTHON312_LIBDIR:-}"
+if [[ -z "$petta_python_libdir" ]] && command -v python3.12 >/dev/null 2>&1; then
+  petta_python_libdir=$(python3.12 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR") or "")')
+fi
+petta_environment=()
+if [[ -n "$petta_python_libdir" && -r "$petta_python_libdir/libpython3.12.so.1.0" ]]; then
+  petta_environment=(env "LD_LIBRARY_PATH=$petta_python_libdir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}")
+fi
+
 rows=(
   "LCF core|CeTTa|lcf_core.metta|trusted LCF rules; invalid MP rejects"
   "LCF core|PeTTa|lcf_core_petta.metta|same rules; PeTTa adapter names/assertions"
@@ -18,6 +29,8 @@ rows=(
   "Admitted lambda-Pi kernel|PeTTa|kernel_signature_lf_v0_petta.metta|same claims; PeTTa adapter names/assertions"
   "Generated MeTTaAdd signature|CeTTa|kernel_signature_metta_add_generated_v0.metta|Lean-rendered table-to-kernel signature equals the proof-term fixture signature; generated rules/admission/metadata omissions checked"
   "Generated MeTTaAdd signature|PeTTa|kernel_signature_metta_add_generated_v0_petta.metta|same generated signature sentinels and admission; full structural equality is CeTTa-side to avoid PeTTa whole-signature normalization blowup"
+  "MeTTaAdd proof terms|CeTTa|kernel_signature_metta_add_v0.metta|opaque derived-theorem chain, batch checking, addition witnesses and rejection controls"
+  "MeTTaAdd proof terms|PeTTa|kernel_signature_metta_add_v0_petta.metta|same theorem-chain and batch-checking controls"
   "Generated MeTTaRev signature|CeTTa|kernel_signature_metta_rev_generated_v0.metta|Lean-rendered reverse table-to-kernel signature; generated append/rev rules, generic congruence, admission, and metadata omissions checked"
   "Generated MeTTaRev signature|PeTTa|kernel_signature_metta_rev_generated_v0_petta.metta|same generated reverse signature sentinels and admission under the PeTTa lexical adapter"
   "MeTTaRev proof terms|CeTTa|kernel_signature_metta_rev_v0.metta|kernel-checked proof terms over the generated reverse signature: append [0] [1], rev [0], rev(rev [0]), EvalEq wrapper, and rejection teeth"
@@ -93,15 +106,32 @@ run_one() {
   local log_file="${file//\//__}"
   local log="$LOGDIR/${engine}_${log_file}.log"
   local status="PASS"
+  local report="$log.report.json"
 
   if [[ "$engine" == "CeTTa" ]]; then
-    timeout "$RUN_TIMEOUT_SECONDS" "$CETTA" "$src" >"$log" 2>&1
+    rm -f -- "$report"
+    # These authored kernels use HE primitives such as assertEqual and unify.
+    # CeTTa's default language is PeTTa, so select the declared profile.
+    timeout "$RUN_TIMEOUT_SECONDS" "$CETTA" --lang he --profile extended \
+      --run-contract --run-report "$report" "$src" >"$log" 2>&1
   else
-    timeout "$RUN_TIMEOUT_SECONDS" "$PETTA" "$src" >"$log" 2>&1
+    timeout "$RUN_TIMEOUT_SECONDS" "${petta_environment[@]}" "$PETTA" "$src" >"$log" 2>&1
   fi
 
   local code=$?
-  if [[ $code -ne 0 ]] || grep -q "❌" "$log" || grep -q "(Error" "$log"; then
+  if [[ $code -ne 0 ]] || grep -q "❌" "$log" || grep -q "(Error" "$log" || grep -q '^ERROR:' "$log"; then
+    status="FAIL"
+  fi
+  if [[ "$status" == "PASS" && "$engine" == "CeTTa" ]]; then
+    python3 - "$report" <<'PY' || status="FAIL"
+import json, sys
+with open(sys.argv[1]) as stream:
+    report = json.load(stream)
+assert report['contract_exit'] == 0 and report['queries_unsettled'] == 0
+assert sum(query['tests'] for query in report['queries']) > 0
+assert all(query['tests_passed'] and query['observation_complete'] for query in report['queries'])
+PY
+  elif [[ "$status" == "PASS" ]] && ! grep -q '✅' "$log"; then
     status="FAIL"
   fi
 
@@ -119,10 +149,18 @@ printf '%-30s | %-5s | %-30s | %-4s | %s\n' "claim" "engine" "file" "stat" "note
 printf '%-30s-+-%-5s-+-%-30s-+-%-4s-+-%s\n' "------------------------------" "-----" "------------------------------" "----" "-----"
 
 fails=0
+selected=0
 for row in "${rows[@]}"; do
+  if [[ -n "${PARITY_FILTER:-}" && ! "$row" =~ $PARITY_FILTER ]]; then continue; fi
   IFS='|' read -r claim engine file notes <<<"$row"
+  selected=$((selected + 1))
   run_one "$claim" "$engine" "$file" "$notes" || fails=$((fails + 1))
 done
+
+if [[ $selected -eq 0 ]]; then
+  echo "PARITY: no rows selected" >&2
+  exit 2
+fi
 
 echo
 if [[ $fails -eq 0 ]]; then

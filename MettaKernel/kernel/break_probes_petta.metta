@@ -4,7 +4,7 @@
 ; KERN-CONV-WHNF, KERN-SIG-ADMISSION.
 ; DIVERGES: PeTTa lexical companion plus accepted-bad red-team probes, not
 ; justified kernel behavior.
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ;  break_probes.metta  --  breaking the lambda_Pi_modulo kernel on the axis that
