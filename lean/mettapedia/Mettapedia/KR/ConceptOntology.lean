@@ -14,3 +14,4 @@ import Mettapedia.KR.ConceptOntology.WeakRepresentation
 import Mettapedia.KR.ConceptOntology.WMBridge
 import Mettapedia.KR.ConceptOntology.Examples
 import Mettapedia.KR.ConceptOntology.MizarBenchmark
+import Mettapedia.KR.ConceptOntology.WMFCA
