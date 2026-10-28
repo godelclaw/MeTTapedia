@@ -3,20 +3,24 @@
 A formalized-mathematics encyclopedia in Lean 4 — probability, logic, computability,
 category theory, universal AI, process calculi, and more.
 
-**Toolchain: Lean + Mathlib `v4.31.0`**, installed automatically by `elan` from `lean-toolchain`.
+The flagship package uses **Lean 4.33.1**, selected by its `lean-toolchain`.
+Mathlib's revision is pinned in `mettapedia/lake-manifest.json`. Other packages
+declare their own toolchains.
 
 ## Build
 
 From the repository root:
 
 ```bash
-bash lean/bootstrap_local_repos.sh   # clone the pinned v4.31 external deps into externals/ + standalone/
+bash lean/bootstrap_local_repos.sh   # prepare the editable external dependency checkouts
 cd lean/mettapedia
 lake exe cache get                   # download Mathlib's prebuilt oleans
-lake build                           # build the library — Foundation's v4.31.0 cache downloads automatically
+scripts/check_library_sanity.sh      # build aggregates and check freshness, sources and coverage
 ```
 
-The first build is fast: Mathlib and Foundation come from prebuilt caches, not source.
+The migration bundle in `upgrades/4.33.1/` records compatible external source
+profiles. Mathlib's cache does not guarantee a prebuilt cache for every external
+dependency.
 
 ## Layout
 
@@ -33,8 +37,7 @@ The first build is fast: Mathlib and Foundation come from prebuilt caches, not s
 
 ## Notes
 
-- **Two configs:** `lakefile.lean` (default — editable local deps from `../externals/`, used by the
-  bootstrap flow above) and `lakefile.toml` (git-pinned fallback: `lake -f lakefile.toml build` clones
-  deps from git instead of using local checkouts).
+- `mettapedia/lakefile.lean` is the flagship configuration, using editable local
+  dependencies from `externals/` and `standalone/`.
 - Build from `lean/mettapedia`. Avoid a bare `lake update` (it can bump transitive pins past the
   toolchain); use `lake update <pkg>` if you must.

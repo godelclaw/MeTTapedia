@@ -153,8 +153,6 @@ theorem algorithmicProbability_partial_properties (U : PrefixFreeMachine)
 
 /-! ## Part 8: Infinite Sequences and the Universal Semimeasure
 
-Following the "Council's Wisdom":
-
 **The Problem with Finite Strings**: The discrete algorithmic probability μ(x) over finite
 strings is useless for prediction because all conditional probabilities are zero.
 

@@ -9,9 +9,9 @@ Maps to PLN link types:
   implies → ImplicationLink
 
 Attr(X, P) is Rel(P, [X]) — same PLN EvaluationLink, unified representation.
-Council (de Paiva): "Two representations for one concept is a liability."
+Design note: "Two representations for one concept is a liability."
 
-Council: Martin-Löf (judgments), Goertzel/Geisweiller (PLN mapping),
+Design rationale: 
          de Paiva (Attr/Rel unification)
 -/
 

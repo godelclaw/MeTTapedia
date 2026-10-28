@@ -27,6 +27,7 @@ import Mettapedia.Logic.LP.Narrowing
 import Mettapedia.Logic.LP.NarrowingLift
 import Mettapedia.Logic.LP.LinearUnification
 import Mettapedia.Logic.LP.HypotheticalPropositional
+import Mettapedia.Logic.LP.Runtime
 
 /-!
 # Logic Programming Kernel

@@ -72,8 +72,8 @@ inductive MettapediaClaim where
   | contributionKeepProofsExplicit
   | contributionDocumentSources
   | contributionBuildFrequently
-  | policyUsesZariuqOrigin
-  | policyUsesActualUpstreamAndNamedGodelclawRemote
+  | policyCanonicalRepository
+  | policyNamedCollaborationRemotes
   | policyReferencesExternalRepos
   deriving Repr, DecidableEq, BEq
 
@@ -98,22 +98,22 @@ def renderMettapediaClaim : MettapediaClaim → String
       mkPresPos subj vp
   | .buildRunsFromMettapediaRoot =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      let vp := advVP (predV (regV "run")) (ppAdv from_Prep (properNameNP "Mettapedia/lean/mettapedia"))
+      let vp := advVP (predV (regV "run")) (ppAdv from_Prep (properNameNP "lean/mettapedia"))
       mkPresPos subj vp
   | .firstBuildRunsUpdateAndCache =>
       let subj := properNameNP "The first build"
       mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "lake update and lake exe cache get"))
   | .buildUsesLakeJobsThree =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "LAKE_JOBS=3 by default"))
+      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "caller-supplied build settings"))
   | .buildCapsMemoryAtSixGiB =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "a 6 GiB memory cap via ulimit -Sv 6291456"))
+      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "caller-supplied resource policy"))
   | .buildRunsNiceLakeBuild =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "nice -n 19 lake build"))
+      mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "lake build"))
   | .subprojectKnuthSkilling =>
-      let subj := properNameNP "ProbabilityTheory/KnuthSkilling"
+      let subj := properNameNP "external KnuthSkilling"
       mkPresPos subj (complV2 (mkV2 (regV "host")) (properNameNP "Knuth-Skilling Foundations of Inference proofs"))
   | .subprojectCox =>
       let subj := properNameNP "ProbabilityTheory/Cox"
@@ -165,7 +165,7 @@ def renderMettapediaClaim : MettapediaClaim → String
       let subj := linDetCN theDefArt (linAdjCN (linPositA (regA "local")) (linUseN check_N))
       mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "rg -n \"sorry\" Mettapedia/ to find proof gaps"))
   | .knuthSkillingReadmeCarriesBuildTargets =>
-      let subj := properNameNP "Mettapedia/ProbabilityTheory/KnuthSkilling/README.md"
+      let subj := properNameNP "external KnuthSkilling/Overview.lean"
       mkPresPos subj (complV2 (mkV2 (regV "contain")) (properNameNP "the Knuth-Skilling structure and build targets"))
   | .contributionKeepProofsExplicit =>
       let subj := linDetCN theDefArt (linUseN contribution_N)
@@ -176,12 +176,12 @@ def renderMettapediaClaim : MettapediaClaim → String
   | .contributionBuildFrequently =>
       let subj := linDetCN theDefArt (linUseN contribution_N)
       mkPresPos subj (complV2 (mkV2 (regV "require")) (properNameNP "frequent lake build checks"))
-  | .policyUsesZariuqOrigin =>
+  | .policyCanonicalRepository =>
       let subj := linDetCN theDefArt (linUseN policy_N)
-      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "zariuq forks as origin remotes"))
-  | .policyUsesActualUpstreamAndNamedGodelclawRemote =>
+      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "zariuq/MeTTapedia as the canonical public repository"))
+  | .policyNamedCollaborationRemotes =>
       let subj := linDetCN theDefArt (linUseN policy_N)
-      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "actual source repos as upstream remotes and godelclaw only as a separate named remote when relevant"))
+      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "named collaboration remotes with checkout-specific origin configuration"))
   | .policyReferencesExternalRepos =>
       let subj := linDetCN theDefArt (linUseN policy_N)
       mkPresPos subj (complV2 (mkV2 (regV "reference")) (properNameNP "EXTERNAL_REPOS.md for exact commands"))
@@ -219,8 +219,8 @@ def allMettapediaClaims : List MettapediaClaim :=
   , .contributionKeepProofsExplicit
   , .contributionDocumentSources
   , .contributionBuildFrequently
-  , .policyUsesZariuqOrigin
-  , .policyUsesActualUpstreamAndNamedGodelclawRemote
+  , .policyCanonicalRepository
+  , .policyNamedCollaborationRemotes
   , .policyReferencesExternalRepos
   ]
 
@@ -294,7 +294,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       ]
   , .heading 2 (renderMettapediaHeading .build)
   , .codeBlock "bash"
-      "cd Mettapedia/lean/mettapedia\nlake update && lake exe cache get\n\nexport LAKE_JOBS=3\nulimit -Sv 6291456\nnice -n 19 lake build"
+      "cd lean/mettapedia\nlake update && lake exe cache get\nlake build"
   , .claimBullets
       [ claimBullet .buildRunsFromMettapediaRoot
       , claimBullet .firstBuildRunsUpdateAndCache
@@ -303,7 +303,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       , claimBullet .buildRunsNiceLakeBuild
       ]
   , .heading 2 (renderMettapediaHeading .notableSubprojects)
-  , .fileRef "ProbabilityTheory/KnuthSkilling/" (renderMettapediaClaim .subprojectKnuthSkilling)
+  , .fileRef "external KnuthSkilling/" (renderMettapediaClaim .subprojectKnuthSkilling)
   , .fileRef "ProbabilityTheory/Cox/" (renderMettapediaClaim .subprojectCox)
   , .fileRef "InformationTheory/ShannonEntropy/" (renderMettapediaClaim .subprojectShannon)
   , .fileRef "Logic/" (renderMettapediaClaim .subprojectLogic)
@@ -321,7 +321,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       , renderMettapediaClaim .mettailBenchmarkRunsThreeRounds
       ]
   , .codeBlock "bash"
-      "cd ~/claude/hyperon/mettail-rust\n\n./scripts/roundtrip_mettaminimal.sh\n./scripts/bench_mettaminimal_roundtrip.sh"
+      "cd hyperon/mettail-rust\n\n./scripts/roundtrip_mettaminimal.sh\n./scripts/bench_mettaminimal_roundtrip.sh"
   , .claimBullets [claimBullet .mettailExporterPath]
   , .heading 2 (renderMettapediaHeading .statusAndReview)
   , .claimBullets
@@ -339,8 +339,8 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       ]
   , .heading 2 (renderMettapediaHeading .externalRepoPolicy)
   , .claimBullets
-      [ claimBullet .policyUsesZariuqOrigin
-      , claimBullet .policyUsesActualUpstreamAndNamedGodelclawRemote
+      [ claimBullet .policyCanonicalRepository
+      , claimBullet .policyNamedCollaborationRemotes
       , claimBullet .policyReferencesExternalRepos
       ]
   ]
@@ -383,14 +383,14 @@ def mettapediaHardAuditPasses : Bool :=
 
 theorem mettapedia_hard_audit :
     mettapediaHardAuditPasses = true := by
-  native_decide
+  decide +kernel
 
 def mettapediaHeadingImageCheck : Bool :=
   headingRenderImageCheck parseMettapediaHeadingLine? renderMettapediaHeading mettapediaReadmeBlocks
 
 theorem mettapedia_heading_images :
     mettapediaHeadingImageCheck = true := by
-  native_decide
+  decide +kernel
 
 theorem mettapedia_heading_image_witness
     {lvl : Nat} {txt : String}

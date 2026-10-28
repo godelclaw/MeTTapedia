@@ -36,6 +36,19 @@ import Mettapedia.Machines.IdentityPressureSchedule
 import Mettapedia.Machines.RefusalObservation
 import Mettapedia.Machines.TraceObservationBoundary
 import Mettapedia.Machines.OSLFConeBridge
+import Mettapedia.Machines.SpaceServiceChecks
+import Mettapedia.Machines.NativeStoreTransactions
+import Mettapedia.Machines.NativeStoreScopes
+import Mettapedia.Machines.NativeStoreResources
+import Mettapedia.Machines.NativeDiskIndex
+import Mettapedia.Machines.NativeProviderIndex
+import Mettapedia.Machines.NativeStoreMaximum
+import Mettapedia.Machines.NativeScalarText
+import Mettapedia.Machines.NativeProviderConstraints
+import Mettapedia.Machines.NativeProviderDomain
+import Mettapedia.Machines.NativeProviderAdmission
+import Mettapedia.Machines.NativeProviderPolicy
+import Mettapedia.Machines.NativeProviderClaims
 import Mettapedia.Machines.Kernel
 
 /-!

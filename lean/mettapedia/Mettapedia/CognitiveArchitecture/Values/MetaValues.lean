@@ -166,7 +166,7 @@ def highlyCorrigible : CorrigibilityState :=
 /-- Completely corrigible system passes any threshold -/
 theorem highlyCorrigible_is_corrigible (threshold : UnitValue) :
     isCorrigible highlyCorrigible threshold = true := by
-  simp only [isCorrigible, highlyCorrigible, UnitValue.one, decide_eq_true_eq]
+  simp only [isCorrigible, highlyCorrigible, UnitValue.one]
   change decide (1 ≥ threshold.val ∧ 1 ≥ threshold.val ∧
     1 ≥ threshold.val ∧ 1 ≥ threshold.val) = true
   exact decide_eq_true ⟨threshold.property.2, threshold.property.2,

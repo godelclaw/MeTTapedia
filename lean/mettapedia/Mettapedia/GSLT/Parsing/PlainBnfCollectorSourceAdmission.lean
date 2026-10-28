@@ -20,10 +20,10 @@ open Mettapedia.GSLT.LanguageDef.CanonicalSourceGSLT
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def discoverySyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/plain_bnf_graph_discovery_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/plain_bnf_graph_discovery_v1.metta"
 
 def indexSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/plain_bnf_graph_index_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/plain_bnf_graph_index_v1.metta"
 
 private def operatorRows : SExpr → List SExpr
   | .list [.atom "gslt-presentation-v1", _, .list (.atom "signature" :: rows), _, _] => rows

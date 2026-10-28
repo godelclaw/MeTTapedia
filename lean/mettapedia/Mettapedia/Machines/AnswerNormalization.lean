@@ -24,7 +24,6 @@ set_option autoImplicit false
 
 namespace Mettapedia.Machines.AnswerNormalization
 
-open Cursor.ListCells (Tm)
 
 /-- Symbol identities are parameters of the language interpretation. -/
 structure Vocabulary where
@@ -37,27 +36,27 @@ structure Vocabulary where
   deriving DecidableEq, Repr
 
 /-- Only the tail spine is opened here. Heads are neither interpreted nor copied. -/
-def splitSpine : Tm → List Tm × Tm
+def splitSpine : Cursor.ListCells.Tm → List Cursor.ListCells.Tm × Cursor.ListCells.Tm
   | .cell head tail =>
       let following := splitSpine tail
       (head :: following.1, following.2)
   | other => ([], other)
 
-def authoredCons (vocabulary : Vocabulary) (head tail : Tm) : Tm :=
+def authoredCons (vocabulary : Vocabulary) (head tail : Cursor.ListCells.Tm) : Cursor.ListCells.Tm :=
   .expr [.sym vocabulary.cons, head, tail]
 
-def assembleSpine (vocabulary : Vocabulary) (heads : List Tm) (tail : Tm) : Tm :=
+def assembleSpine (vocabulary : Vocabulary) (heads : List Cursor.ListCells.Tm) (tail : Cursor.ListCells.Tm) : Cursor.ListCells.Tm :=
   match tail with
   | .expr children => .expr (heads ++ children)
   | _ => heads.foldr (authoredCons vocabulary) tail
 
 /-- The one-root list-carrier operation, before any opacity decision. -/
-def shallow (vocabulary : Vocabulary) (source : Tm) : Tm :=
+def shallow (vocabulary : Vocabulary) (source : Cursor.ListCells.Tm) : Cursor.ListCells.Tm :=
   let parts := splitSpine source
   assembleSpine vocabulary parts.1 parts.2
 
 /-- These are syntax-shape tests, including the arity of suspended callables. -/
-def isOpaque (vocabulary : Vocabulary) : Tm → Bool
+def isOpaque (vocabulary : Vocabulary) : Cursor.ListCells.Tm → Bool
   | .expr (.sym head :: arguments) =>
       decide (head = vocabulary.quote) ||
       (match arguments with
@@ -72,24 +71,24 @@ def isOpaque (vocabulary : Vocabulary) : Tm → Bool
   | _ => false
 
 inductive View where
-  | keep (value : Tm)
-  | descend (children : List Tm)
+  | keep (value : Cursor.ListCells.Tm)
+  | descend (children : List Cursor.ListCells.Tm)
   deriving Repr
 
 /-- Opaque payloads have no normalization dependencies. They still contain
 physical references that a collector may have to trace. -/
-def expose (vocabulary : Vocabulary) (source : Tm) : View :=
+def expose (vocabulary : Vocabulary) (source : Cursor.ListCells.Tm) : View :=
   let value := shallow vocabulary source
   match value with
   | .expr [] => .keep value
   | .expr children => if isOpaque vocabulary value then .keep value else .descend children
   | _ => .keep value
 
-def View.reassemble : View → Tm
+def View.reassemble : View → Cursor.ListCells.Tm
   | .keep value => value
   | .descend children => .expr children
 
-theorem expose_reassembles (vocabulary : Vocabulary) (source : Tm) :
+theorem expose_reassembles (vocabulary : Vocabulary) (source : Cursor.ListCells.Tm) :
     (expose vocabulary source).reassemble = shallow vocabulary source := by
   unfold expose
   cases value : shallow vocabulary source with
@@ -101,48 +100,48 @@ theorem expose_reassembles (vocabulary : Vocabulary) (source : Tm) :
       | nil => rfl
       | cons head rest => dsimp only; split <;> rfl
 
-theorem splitSpine_of_not_cell (source : Tm) (notCell : ¬ source.IsCell) :
+theorem splitSpine_of_not_cell (source : Cursor.ListCells.Tm) (notCell : ¬ source.IsCell) :
     splitSpine source = ([], source) := by
   unfold splitSpine
   split
   · exact False.elim (notCell ⟨_, _, rfl⟩)
   · rfl
 
-theorem shallow_tagFree (vocabulary : Vocabulary) {source : Tm}
+theorem shallow_tagFree (vocabulary : Vocabulary) {source : Cursor.ListCells.Tm}
     (free : source.TagFree) : shallow vocabulary source = source := by
   rw [shallow, splitSpine_of_not_cell source free.not_isCell]
   cases source <;> rfl
 
 /-- Independent tree semantics. Exhaustion is `none`, never an unchanged value. -/
-def normalize (vocabulary : Vocabulary) : Nat → Tm → Option Tm
+def normalize (vocabulary : Vocabulary) : Nat → Cursor.ListCells.Tm → Option Cursor.ListCells.Tm
   | 0, _ => none
   | fuel + 1, source =>
       match expose vocabulary source with
       | .keep value => some value
-      | .descend children => (children.mapM (normalize vocabulary fuel)).map Tm.expr
+      | .descend children => (children.mapM (normalize vocabulary fuel)).map Cursor.ListCells.Tm.expr
 
-theorem splitSpine_cell (head tail : Tm) :
+theorem splitSpine_cell (head tail : Cursor.ListCells.Tm) :
     splitSpine (.cell head tail) =
       (head :: (splitSpine tail).1, (splitSpine tail).2) := rfl
 
-theorem shallow_closed_spine (vocabulary : Vocabulary) (heads children : List Tm) :
+theorem shallow_closed_spine (vocabulary : Vocabulary) (heads children : List Cursor.ListCells.Tm) :
     assembleSpine vocabulary heads (.expr children) = .expr (heads ++ children) := rfl
 
-theorem assembleSpine_append (vocabulary : Vocabulary) (left right : List Tm)
-    (tail : Tm) (notExpression : ∀ children, tail ≠ .expr children) :
+theorem assembleSpine_append (vocabulary : Vocabulary) (left right : List Cursor.ListCells.Tm)
+    (tail : Cursor.ListCells.Tm) (notExpression : ∀ children, tail ≠ .expr children) :
     assembleSpine vocabulary (left ++ right) tail =
       left.foldr (authoredCons vocabulary) (assembleSpine vocabulary right tail) := by
   cases tail <;> simp_all [assembleSpine, List.foldr_append]
 
-theorem normalize_keep (vocabulary : Vocabulary) (source value : Tm)
+theorem normalize_keep (vocabulary : Vocabulary) (source value : Cursor.ListCells.Tm)
     (view : expose vocabulary source = .keep value) (fuel : Nat) :
     normalize vocabulary (fuel + 1) source = some value := by
   simp [normalize, view]
 
-theorem normalize_descend (vocabulary : Vocabulary) (source : Tm) (children : List Tm)
+theorem normalize_descend (vocabulary : Vocabulary) (source : Cursor.ListCells.Tm) (children : List Cursor.ListCells.Tm)
     (view : expose vocabulary source = .descend children) (fuel : Nat) :
     normalize vocabulary (fuel + 1) source =
-      (children.mapM (normalize vocabulary fuel)).map Tm.expr := by
+      (children.mapM (normalize vocabulary fuel)).map Cursor.ListCells.Tm.expr := by
   simp [normalize, view]
 
 private theorem mapM_some_of_pointwise {A B : Type} (xs : List A)
@@ -159,7 +158,7 @@ private theorem mapM_some_of_pointwise {A B : Type} (xs : List A)
 /-- A finite graph supplies just the immediate view decomposition. Checking
 this contract does not run normalization or compare normalized results. -/
 structure ViewGraph (vocabulary : Vocabulary) where
-  source : Nat → Tm
+  source : Nat → Cursor.ListCells.Tm
   children : (i : Nat) → List (Fin i)
   keep_children : ∀ i value,
     expose vocabulary (source i) = .keep value → children i = []
@@ -171,13 +170,13 @@ namespace ViewGraph
 
 variable {vocabulary : Vocabulary}
 
-def graph (view : ViewGraph vocabulary) : DemandSummary.Graph (Option Tm) where
+def graph (view : ViewGraph vocabulary) : DemandSummary.Graph (Option Cursor.ListCells.Tm) where
   label i := match expose vocabulary (view.source i) with
     | .keep value => some value
     | .descend _ => none
   children := view.children
 
-def algebra : Option Tm → List Tm → Tm
+def algebra : Option Cursor.ListCells.Tm → List Cursor.ListCells.Tm → Cursor.ListCells.Tm
   | some value, _ => value
   | none, children => .expr children
 
@@ -229,9 +228,9 @@ theorem eager_tagFree (view : ViewGraph vocabulary) (root : Nat)
             | expr _ each => exact each
           simp only [graph, exposed, algebra]
           calc
-            Tm.expr ((view.children root).map
+            Cursor.ListCells.Tm.expr ((view.children root).map
                 (fun child => DemandSummary.eager view.graph algebra child.val)) =
-                Tm.expr ((view.children root).map (fun child => view.source child.val)) := by
+                Cursor.ListCells.Tm.expr ((view.children root).map (fun child => view.source child.val)) := by
               congr 1
               apply List.map_congr_left
               intro child member
@@ -244,13 +243,13 @@ theorem eager_tagFree (view : ViewGraph vocabulary) (root : Nat)
               exact reconstructed
 
 def run (view : ViewGraph vocabulary) (roots : List Nat)
-    (cache : DemandSummary.Cache Tm) : DemandSummary.Result (List Tm) Tm :=
+    (cache : DemandSummary.Cache Cursor.ListCells.Tm) : DemandSummary.Result (List Cursor.ListCells.Tm) Cursor.ListCells.Tm :=
   DemandSummary.sequence roots (DemandSummary.demand view.graph algebra) cache
 
 /-- One fixed resolved graph, any ordered list of roots, and one shared cache.
 Output multiplicities and order remain those of the requested roots. -/
 theorem run_valid (view : ViewGraph vocabulary) (roots : List Nat) (bound : Nat)
-    (within : ∀ root ∈ roots, root < bound) (cache : DemandSummary.Cache Tm)
+    (within : ∀ root ∈ roots, root < bound) (cache : DemandSummary.Cache Cursor.ListCells.Tm)
     (sound : DemandSummary.Sound view.graph algebra cache) :
     DemandSummary.Valid view.graph algebra cache (view.run roots cache)
       (roots.map (DemandSummary.eager view.graph algebra)) bound := by
@@ -267,7 +266,7 @@ theorem run_valid (view : ViewGraph vocabulary) (roots : List Nat) (bound : Nat)
 /-- Equality with independently executed tree normalization, including the
 fact that the chosen rank is sufficient for every root. -/
 theorem run_matches_reference (view : ViewGraph vocabulary) (roots : List Nat) (bound : Nat)
-    (within : ∀ root ∈ roots, root < bound) (cache : DemandSummary.Cache Tm)
+    (within : ∀ root ∈ roots, root < bound) (cache : DemandSummary.Cache Cursor.ListCells.Tm)
     (sound : DemandSummary.Sound view.graph algebra cache) :
     roots.mapM (fun root => normalize vocabulary bound (view.source root)) =
       some (view.run roots cache).value := by
@@ -277,13 +276,13 @@ theorem run_matches_reference (view : ViewGraph vocabulary) (roots : List Nat) (
 
 theorem run_computes_each_node_once (view : ViewGraph vocabulary)
     (roots : List Nat) (bound : Nat) (within : ∀ root ∈ roots, root < bound)
-    (cache : DemandSummary.Cache Tm) (sound : DemandSummary.Sound view.graph algebra cache) :
+    (cache : DemandSummary.Cache Cursor.ListCells.Tm) (sound : DemandSummary.Sound view.graph algebra cache) :
     (view.run roots cache).computed.Nodup :=
   (view.run_valid roots bound within cache sound).nodup
 
 theorem run_preserves_cache (view : ViewGraph vocabulary)
     (roots : List Nat) (bound : Nat) (within : ∀ root ∈ roots, root < bound)
-    (cache : DemandSummary.Cache Tm) (sound : DemandSummary.Sound view.graph algebra cache) :
+    (cache : DemandSummary.Cache Cursor.ListCells.Tm) (sound : DemandSummary.Sound view.graph algebra cache) :
     DemandSummary.Extends cache (view.run roots cache).cache :=
   (view.run_valid roots bound within cache sound).preserves
 
@@ -291,7 +290,7 @@ theorem run_preserves_cache (view : ViewGraph vocabulary)
 including duplicate child slots and requested root occurrences. Opening list
 spines and retaining opaque payload graphs are separately charged operations. -/
 theorem run_requests_le_reachable_edges (view : ViewGraph vocabulary)
-    (roots : List Nat) (cache : DemandSummary.Cache Tm)
+    (roots : List Nat) (cache : DemandSummary.Cache Cursor.ListCells.Tm)
     (sound : DemandSummary.Sound view.graph algebra cache) :
     DemandSummary.sequenceRequests roots (DemandSummary.demand view.graph algebra)
         (DemandSummary.demandRequests view.graph algebra) cache ≤
@@ -304,10 +303,10 @@ end ViewGraph
 namespace Examples
 
 def symbols : Vocabulary := ⟨0, 1, 2, 3, 4, 5⟩
-def item : Tm := .sym 10
-def wrapper : Tm := .sym 11
-def carrier : Tm := .cell item (.expr [])
-def revealedQuote : Tm := .cell (.sym symbols.quote) (.expr [carrier])
+def item : Cursor.ListCells.Tm := .sym 10
+def wrapper : Cursor.ListCells.Tm := .sym 11
+def carrier : Cursor.ListCells.Tm := .cell item (.expr [])
+def revealedQuote : Cursor.ListCells.Tm := .cell (.sym symbols.quote) (.expr [carrier])
 
 /-- Opening the outer carrier discovers quotation before interpreting its payload. -/
 theorem quotation_revealed_by_carrier :
@@ -345,7 +344,7 @@ theorem children_first_changes_quoted_payload :
 
 /-- A resolved graph with shared payloads and a carrier exposing quotation.
 The final case permits arbitrarily many layers of binary sharing. -/
-def source : Nat → Tm
+def source : Nat → Cursor.ListCells.Tm
   | 0 => item
   | 1 => wrapper
   | 2 => carrier
@@ -407,14 +406,14 @@ private theorem eager_plain :
     DemandSummary.eager view.graph ViewGraph.algebra 3 =
       .expr [wrapper, .expr [item]] := by
   have exact := view.reference_eq_eager 4 3 (by decide)
-  change some (Tm.expr [wrapper, .expr [item]]) = _ at exact
+  change some (Cursor.ListCells.Tm.expr [wrapper, .expr [item]]) = _ at exact
   exact (Option.some.inj exact).symm
 
 private theorem eager_quoted :
     DemandSummary.eager view.graph ViewGraph.algebra 4 =
       .expr [.sym symbols.quote, carrier] := by
   have exact := view.reference_eq_eager 5 4 (by decide)
-  change some (Tm.expr [.sym symbols.quote, carrier]) = _ at exact
+  change some (Cursor.ListCells.Tm.expr [.sym symbols.quote, carrier]) = _ at exact
   exact (Option.some.inj exact).symm
 
 theorem repeated_roots_preserve_occurrences :

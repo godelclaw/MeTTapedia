@@ -3,20 +3,12 @@ import Mettapedia.Coalgebra.CoherentFiniteViewSystem
 import Mettapedia.Computability.ComputationalTrinity
 
 /-!
-# Computational trinity over coherent finite-view systems
+# Computational trinity of finite observations
 
-An operational state map, a behavior type, and a coherent finite-view system
-form a commuting computational-trinity comparison without any exactness
-assumption.  A compatible exact trinity exists precisely when both maps are
-bijective:
-
-* operational states represent behaviors faithfully and completely; and
-* behaviors are represented faithfully and completely by coherent towers.
-
-The theorem is independent of streams. "Finite" means observation depth, not
-finite cardinality of each view type. Streams instantiate the interface;
-polynomial or container coalgebras need only provide
-their own behavior observation and exactness proof.
+States, behaviors and coherent views form a commuting comparison. A compatible
+exact trinity exists precisely when both supplied maps are bijective. Carrier
+isomorphisms alone do not certify those maps. Streams supply the independent
+controls; arbitrary inverse systems use the same interface.
 -/
 
 set_option autoImplicit false
@@ -36,6 +28,7 @@ private def here : Contextᵒᵖ :=
   Opposite.op (Discrete.mk PUnit.unit)
 
 variable {State Behavior : Type u} {system : FiniteViewSystem.{u}}
+  (unfold : State → Behavior) (observation : BehaviorObservation system Behavior)
 
 def stateFace (State : Type u) :
     Face.{0, 0, u} Context :=
@@ -49,27 +42,21 @@ def towerFace (system : FiniteViewSystem.{u}) :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj system.Tower
 
-def stateToBehavior
-    (unfold : State → Behavior) :
+def stateToBehavior :
     stateFace State ⟶ behaviorFace Behavior :=
   (Functor.const Contextᵒᵖ).map (↾unfold)
 
-def behaviorToTower
-    (observation : BehaviorObservation system Behavior) :
+def behaviorToTower :
     behaviorFace Behavior ⟶ towerFace system :=
   (Functor.const Contextᵒᵖ).map (↾observation.toTower)
 
-def stateToTower
-    (unfold : State → Behavior)
-    (observation : BehaviorObservation system Behavior) :
+def stateToTower :
     stateFace State ⟶ towerFace system :=
   (Functor.const Contextᵒᵖ).map (↾(observation.toTower ∘ unfold))
 
 /-- Operational states, behaviors, and coherent finite views always form a
 commuting comparison. -/
-def comparison
-    (unfold : State → Behavior)
-    (observation : BehaviorObservation system Behavior) :
+def comparison :
     Comparison.{0, 0, u} Context where
   program := stateFace State
   logic := behaviorFace Behavior
@@ -83,9 +70,7 @@ def comparison
 
 /-- Information loss in the spatial face is exactly collision of the
 composite state-to-tower map. -/
-theorem comparison_loses_iff_composite_collision
-    (unfold : State → Behavior)
-    (observation : BehaviorObservation system Behavior) :
+theorem comparison_loses_iff_composite_collision :
     (comparison unfold observation).LosesProgramInformation ↔
       ∃ left right : State,
         left ≠ right ∧
@@ -101,9 +86,7 @@ theorem comparison_loses_iff_composite_collision
 
 /-- Exactness includes agreement with the independently supplied maps; an
 unrelated isomorphism between carrier types is insufficient. -/
-structure ExactTrinityWitness
-    (unfold : State → Behavior)
-    (observation : BehaviorObservation system Behavior) where
+structure ExactTrinityWitness where
   stateBehavior : stateFace State ≅ behaviorFace Behavior
   stateBehavior_agrees : stateBehavior.hom = stateToBehavior unfold
   behaviorTower : behaviorFace Behavior ≅ towerFace system
@@ -129,14 +112,12 @@ namespace ExactTrinityWitness
 variable {unfold : State → Behavior}
   {observation : BehaviorObservation system Behavior}
 
-theorem stateBehavior_bijective
-    (witness : ExactTrinityWitness unfold observation) :
+theorem stateBehavior_bijective (witness : ExactTrinityWitness unfold observation) :
     Function.Bijective unfold :=
   constantIso_bijective unfold witness.stateBehavior
     witness.stateBehavior_agrees
 
-theorem behaviorTower_exact
-    (witness : ExactTrinityWitness unfold observation) :
+theorem behaviorTower_exact (witness : ExactTrinityWitness unfold observation) :
     observation.Exact :=
   constantIso_bijective observation.toTower witness.behaviorTower witness.behaviorTower_agrees
 
@@ -154,10 +135,7 @@ end ExactTrinityWitness
 
 /-- Bijectivity of both supplied maps constructs the compatible exact
 trinity. -/
-noncomputable def exactTrinityWitnessOfBijective
-    (unfold : State → Behavior)
-    (observation : BehaviorObservation system Behavior)
-    (stateExact : Function.Bijective unfold)
+noncomputable def exactTrinityWitnessOfBijective (stateExact : Function.Bijective unfold)
     (viewExact : observation.Exact) :
     ExactTrinityWitness unfold observation where
   stateBehavior :=
@@ -171,9 +149,7 @@ noncomputable def exactTrinityWitnessOfBijective
 
 /-- Exact computational-trinity compatibility exists exactly when the
 operational and finite-view maps are both faithful and complete. -/
-theorem exactTrinityWitness_nonempty_iff
-    (unfold : State → Behavior)
-    (observation : BehaviorObservation system Behavior) :
+theorem exactTrinityWitness_nonempty_iff :
     Nonempty (ExactTrinityWitness unfold observation) ↔
       Function.Bijective unfold ∧ observation.Exact := by
   constructor

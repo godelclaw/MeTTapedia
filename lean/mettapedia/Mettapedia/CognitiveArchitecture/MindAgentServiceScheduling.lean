@@ -259,7 +259,7 @@ def longTermServiceEconomy : Economy Actor Currency where
   shortTerm := 0
   longTerm := { balances := Finsupp.single .analyst 1 }
 
-def recurrentProviderCoverage :
+theorem recurrentProviderCoverage :
     RecurringOccurrenceCoverage longTermServiceEconomy 1 1
       serviceOwner recurrentProviderSelected where
   covers actor isProtected start := by

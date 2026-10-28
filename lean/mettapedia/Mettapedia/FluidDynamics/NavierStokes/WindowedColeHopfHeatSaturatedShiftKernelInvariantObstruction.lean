@@ -1,0 +1,15 @@
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelCandidateSigns
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelCandidateBounds
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelCandidateDichotomy
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelBridgeSigns
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelBridgeBounds
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelBridgeDichotomy
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelBridgeComponentwise
+
+/-!
+# Exactness of the Invariant Saturated Shift-Kernel Corridor
+
+Compatibility umbrella for the invariant saturated shift-kernel obstruction lane.
+The implementation is split into candidate, top-down bridge, and componentwise
+semantic layers while preserving the historical import path.
+-/

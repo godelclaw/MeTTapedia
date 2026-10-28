@@ -108,7 +108,7 @@ lemma rowKernelStepProd_le_one
                   ({b} : Set (Fin k)) *
                   rowKernelStepProd (k := k) rowKernel ω (b :: tail) := by
                     simp [rowKernelStepProd]
-            _ 
+            _
                 ≤ 1 * 1 := by
                     exact mul_le_mul' hfactor htail
             _ = 1 := by simp

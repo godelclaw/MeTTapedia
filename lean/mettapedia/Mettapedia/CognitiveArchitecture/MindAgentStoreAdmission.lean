@@ -108,7 +108,7 @@ namespace Canary
 def Allows (token occurrence : Bool) : Prop :=
   token = true ∧ occurrence = true
 
-def accepted : AdmissionWitness Allows true true where
+theorem accepted : AdmissionWitness Allows true true where
   authorized := ⟨rfl, rfl⟩
 
 /-- Positive control: an exact policy witness inhabits the capability. -/

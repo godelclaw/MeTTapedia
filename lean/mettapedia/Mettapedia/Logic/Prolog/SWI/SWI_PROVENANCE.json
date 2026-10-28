@@ -1,0 +1,1672 @@
+{
+  "schema_version": 2,
+  "target": "petta-core-plus-clpfd",
+  "policy": {
+    "canonical_runtime": "one Lean executable microstep machine",
+    "compatibility_oracle": "SWI-Prolog 10.1.9",
+    "unsupported_behavior": "structured-error",
+    "external_effects": [
+      "filesystem",
+      "process",
+      "python",
+      "thread",
+      "time",
+      "random"
+    ]
+  },
+  "dependency_inventory": {
+    "generator": "SWI library(prolog_xref)",
+    "completeness": "static-only; dynamic and generated call targets require runtime traces",
+    "source_files": [
+      "src/metta.pl",
+      "src/translator.pl",
+      "src/parser.pl",
+      "src/specializer.pl",
+      "src/filereader.pl",
+      "src/spaces.pl"
+    ],
+    "call_sites": 885,
+    "imports": 17,
+    "classifications": {
+      "defined-in-pinned-source": 98,
+      "external-or-dynamic": 12,
+      "source-accessible": 206,
+      "swi-builtin": 569
+    },
+    "unresolved_indicators": [
+      "arity/2",
+      "empty_assoc/1",
+      "get_assoc/3",
+      "library_path/1",
+      "put_assoc/4",
+      "silent/1",
+      "translated_from/2",
+      "working_dir/1"
+    ]
+  },
+  "projects": {
+    "swi-prolog": {
+      "repository": "https://github.com/SWI-Prolog/swipl-devel.git",
+      "tag": "V10.1.9",
+      "version": "10.1.9",
+      "commit": "6be143dbd030cc9ea621cde719a37f8385575453",
+      "license": "BSD-2-Clause"
+    },
+    "swi-swipy": {
+      "repository": "https://github.com/SWI-Prolog/packages-swipy.git",
+      "tag": "V10.1.9",
+      "version": "10.1.9",
+      "commit": "4ef253996f1f7ad8f9c811727473a2ed06436038",
+      "license": "BSD-2-Clause"
+    },
+    "petta": {
+      "repository": "https://github.com/trueagi-io/PeTTa.git",
+      "commit": "6b7f52f064bdbc82fabd0a0998404121fb01d52e",
+      "license": "MIT"
+    }
+  },
+  "source_files": [
+    {
+      "project": "swi-prolog",
+      "path": "LICENSE",
+      "sha256": "770594d0f4463b71f1485f00e4bc5cf4b6f667d62ef6bc9bde2fee236541992a"
+    },
+    {
+      "project": "swi-swipy",
+      "path": "LICENSE",
+      "sha256": "b778b9c3467adf72d4873bf9eb18e444da223af118b032412defbf760caa58a7"
+    },
+    {
+      "project": "swi-swipy",
+      "path": "janus/janus.pl",
+      "sha256": "9a49881887bdf62fabb8e003b2d1b435b7262282dd8e35bc139a35935584d825"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-incl.h",
+      "sha256": "3bc832a330a585a177d415dad041295df712da994baad8c7e55da580ceee969c"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-prims.c",
+      "sha256": "c97ba376a1f30a89b1b71eb41462dbdee7f97b4dc446e6fb4048bfea05280681"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-variant.c",
+      "sha256": "47fd316a3977e0957eedcf2b22779c7bc281dd370a29c0b23636016eb2a8bfea"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-termhash.c",
+      "sha256": "d16bd45ff96a87fd32c029b05f5677a1e12ac466de793d4f42559e3eef9921ef"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-hash.c",
+      "sha256": "9288132f1364486b5aee8ba7d5f339fa91034514aac0f6ea4dede3f00605ee32"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-hash.h",
+      "sha256": "2431e49b3ba54e7b2b942c01044a052f7b2781de331fa2a384f4ed25623c3674"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-gvar.c",
+      "sha256": "af85ea1b60de4e0c545b5dad9d21f771bc86425a86fea6d433fa13d788569dd6"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-list.c",
+      "sha256": "eac442f7b9f765a054048c7cce17719deec26d99996e20579e2150b7b4304a52"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-write.c",
+      "sha256": "19bbb294a2a92f84f9cc3727bca54b07261f9dc0c8e7d4f691f453f93696f1c2"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "boot/init.pl",
+      "sha256": "bc95f48bff7b19325c6a6462dbe03203b2d4df1b77ca69a68680ad6d8102ce38"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "boot/expand.pl",
+      "sha256": "6aba01dfc13defa82945fedf3f7cb9ebdeebf1373afca48b957fdf521fa4bd55"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/assoc.pl",
+      "sha256": "8cf114b4886b8841c919812cd54fb5521f5b8ced0cbfec096af251ea54f86e1d"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/readutil.pl",
+      "sha256": "6ed87b035f42ded99747d673d36951c6158885f122e65439b9fd371f36e45723"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "man/ssu.plx",
+      "sha256": "c9d78333d064592f902e1ad7a6da17a940f60b5452f362bfc7a17971b6a2bdb8"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "boot/syspred.pl",
+      "sha256": "8fe12fec547142af47975e55a75376c93caf3f58044774e1894ed6debd190298"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/os/pl-fmt.c",
+      "sha256": "4e466c4b11c2af60f323f11e23e4a9c3b8fe853410a778d6d5a7f2fa0f4be27f"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/os/pl-text.c",
+      "sha256": "21c8a76059e9b959f778b5e05857f24a316c66648312c6a07fc991b93b05b200"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/os/pl-ctype.c",
+      "sha256": "e270610212643296ad64ad010729fe8b2057bd7ef77e1531abbce966d83a8ba5"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-string.c",
+      "sha256": "dc145899926484a45ca3ea27599ec64ef5dcebbb3578ba6297f38303a7d009a0"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-arith.c",
+      "sha256": "9372c72329db7ba04cab620aed97823e3d495385f344f3362d98cf11e7299859"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-error.c",
+      "sha256": "70b6484dbbcb6f993410dfb467ad2c1d65302177a6155876890e3abb0b407b0b"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-wam.c",
+      "sha256": "0d336f01b5a8ae8f80efe81d8869a3b2e6353d62c37aa854a11c4c80feb74d21"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-vmi.c",
+      "sha256": "e696d895187b92b46f4647977000c8e64aad2de1a518ec04ba18063d0d5e36a2"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-fli.c",
+      "sha256": "975a0784bbc8bea9ae6f0d7a213fea581c186f000afbfd9dc845d0af5c02fd05"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-comp.c",
+      "sha256": "d24045b1347a45d49f9b2ae265522d9dda504d8091a155e3742231171d85d0d7"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-index.c",
+      "sha256": "f8459259c35fa55d2b382c6e6ef3255dc8ac233930ce136142663d458e9672bd"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-proc.c",
+      "sha256": "c37037a547a1cd84c5ae20588d6b99d248c06edf59f8d345576286ce8eadbc98"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-transaction.c",
+      "sha256": "904a7c107027f932d7b5545046af152b7a32b3eb9095ef66d4bdfc069cae72d1"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-copyterm.c",
+      "sha256": "ea5e6c8242257574660ebff1bf16279d21f48de43d6cf2e25ac985043c12023a"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-rec.c",
+      "sha256": "e1ba02bb58cbdf89b094ad55c3cbf1dc3704adf6891a1f13240929dfcdc1755b"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "boot/bags.pl",
+      "sha256": "366cb51892bad266acc2e1df0979ef0ae3527b5117d5733c92fbe0c672f9d56c"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "boot/dcg.pl",
+      "sha256": "1ca6250ac9022058d7fe0e44be8875358728bb0d981ec47a2fbc8ba8c7cbb133"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/dcg/basics.pl",
+      "sha256": "7beb43f3161cb3eaac4903cb7fdb3061d75b39a26934af0806ee60569c49edd8"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/lists.pl",
+      "sha256": "386f3c5f1ee00bc79103cc12628d6ad83b6141e1bf3fdbf41e7bf6b579e902ce"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/error.pl",
+      "sha256": "c405f2f07a41028dcab5e7f45d1fb1dc076793fa5c77370c5f9dfaa753a4eb78"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/apply.pl",
+      "sha256": "7d943241474dcab43688a41b43c0a446916adbe12beec69f90cc2a5937a2f576"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/pairs.pl",
+      "sha256": "4145d38d17d964f8368d4bd111ea0e9db71ca777caf550a94ac0d09a98f3dbb6"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-bag.c",
+      "sha256": "94818d9d14312c5e3776436d33f46762653dd0c04ca578827aa5417004b14182"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-read.c",
+      "sha256": "87743e349b5b986c863aa975dc1318f0d0af0220b62f1c54f1e73f77b2fb4f96"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-srcfile.c",
+      "sha256": "549d3cf25b82bda16d6cdd8e61a6a231ba3109e6170709e5a36de3e7ce78b779"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-modul.c",
+      "sha256": "4b4543ef2b6ca56708499648bdfcd678449524bda22b4b6c77c31017e6fdca98"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/clp/clpfd.pl",
+      "sha256": "53bb30c24ef37235ea7399853f2bf3d0e9cde910fbc3244409cc6f175b48bd3f"
+    },
+    {
+      "project": "petta",
+      "path": "LICENSE",
+      "sha256": "451e08f082f06f100facd2ef99f3c661155a7a433af091889d4c04e264838ce5"
+    },
+    {
+      "project": "petta",
+      "path": "src/metta.pl",
+      "sha256": "fa969eadab621b9e113529ee1d3a0f1ebe96e5d6f28aa440ba568adea49ec8bc"
+    },
+    {
+      "project": "petta",
+      "path": "src/translator.pl",
+      "sha256": "33a53e12b710b088503cf0c1cf661de42647336813162290670c8024ae175cd0"
+    },
+    {
+      "project": "petta",
+      "path": "src/parser.pl",
+      "sha256": "54d90136f61ef14c78c06809f116a4d4990572691a55ea0985a49ac937ec2088"
+    },
+    {
+      "project": "petta",
+      "path": "src/specializer.pl",
+      "sha256": "7ed841c772fec4e9a8219d2e2bba958a6a6ab5ed0863bd5d21e754b816b62b19"
+    },
+    {
+      "project": "petta",
+      "path": "src/filereader.pl",
+      "sha256": "e9a6d1cc98c133feba44153bfb1aa66d55ef5ccbe9635b72adacd683bb097286"
+    },
+    {
+      "project": "petta",
+      "path": "src/spaces.pl",
+      "sha256": "ee51a26a38c0ce017bf1a840677f0c71874e90480d8c0bdb49fb03b3f4e83dca"
+    }
+  ],
+  "semantic_components": [
+    {
+      "id": "runtime.term-graph",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c",
+        "src/pl-wam.c"
+      ],
+      "anchors": [
+        "unify_simple_ptrs",
+        "TrailEntry",
+        "Undo"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeTermRegression.lean"
+      ],
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.term-identity",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "compareStandard",
+        "compare_primitives",
+        "PRED_IMPL(\"==\", 2, equal, 0)",
+        "PRED_IMPL(\"\\\\==\", 2, nonequal, 0)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-variance",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-variant.c"
+      ],
+      "anchors": [
+        "variant",
+        "isomorphic",
+        "is_variant_ptr",
+        "PRED_IMPL(\"=@=\", 2, variant, 0)",
+        "PRED_IMPL(\"\\\\=@=\", 2, not_variant, 0)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-classification",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"string\", 1, string, 0)",
+        "PRED_IMPL(\"number\", 1, number, 0)",
+        "PRED_IMPL(\"atom\", 1, atom, 0)",
+        "PRED_IMPL(\"atomic\", 1, atomic, 0)",
+        "PRED_IMPL(\"compound\", 1, compound, 0)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-groundness",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "ph_ground",
+        "ground",
+        "PRED_IMPL(\"ground\", 1, ground, PL_FA_ISO)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.list-classification",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-list.c",
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"is_list\", 1, is_list, 0)",
+        "lengthList",
+        "skip_list"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.format",
+      "project": "swi-prolog",
+      "sources": [
+        "src/os/pl-fmt.c"
+      ],
+      "anchors": [
+        "format_impl",
+        "setupOutputRedirect",
+        "PRED_IMPL(\"format\", 3, format, META)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.read-file-to-string-capability",
+      "project": "swi-prolog",
+      "sources": [
+        "library/readutil.pl"
+      ],
+      "anchors": [
+        "read_file_to_string/3",
+        "absolute_file_name/3",
+        "setup_call_cleanup",
+        "read_string("
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean",
+        "Mettapedia/Logic/Prolog/ReaderLoadRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.memberchk-finite-list",
+      "project": "swi-prolog",
+      "sources": [
+        "boot/init.pl",
+        "library/lists.pl"
+      ],
+      "anchors": [
+        "memberchk(E, List)",
+        "Semantically equivalent to once(member(E,List))",
+        "member(El, [H|T])",
+        "member_(T, El, H)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.text-code-conversion",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c",
+        "src/pl-string.c",
+        "src/os/pl-text.c"
+      ],
+      "anchors": [
+        "x_chars",
+        "PRED_IMPL(\"atom_chars\", 2, atom_chars, PL_FA_ISO)",
+        "PRED_IMPL(\"atom_codes\", 2, atom_codes, PL_FA_ISO)",
+        "string_x",
+        "PRED_IMPL(\"string_codes\", 2, string_codes, 0)",
+        "PRED_IMPL(\"atom_string\", 2, atom_string, 0)",
+        "PRED_IMPL(\"number_codes\", 2, number_codes, PL_FA_ISO)",
+        "PL_get_text",
+        "PL_unify_text"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/ReaderNumber.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.character-type-ascii",
+      "project": "swi-prolog",
+      "sources": [
+        "src/os/pl-ctype.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"code_type\", 2, code_type, PL_FA_NONDETERMINISTIC)",
+        "ATOM_space",
+        "ATOM_digit",
+        "fiswspace",
+        "fiswdigit"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.univ",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"=..\", 2, univ, PL_FA_ISO)",
+        "lengthList",
+        "PL_domain_error(\"compound_non_zero_arity\", A1)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.integer-arithmetic",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-arith.c"
+      ],
+      "anchors": [
+        "valueExpression",
+        "compareNumbers",
+        "PRED_IMPL(\"is\", 2, is, PL_FA_ISO)",
+        "pl_ar_add",
+        "ar_minus",
+        "ar_mod"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.unification",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "unify_simple_ptrs",
+        "do_unify",
+        "unify_ptrs"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeUnification.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeUnification.lean",
+        "Mettapedia/Logic/LP/RuntimeUnificationRegression.lean"
+      ],
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.standard-order-sort",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c",
+        "src/pl-list.c",
+        "src/pl-write.c"
+      ],
+      "anchors": [
+        "compareStandard",
+        "NaN_value",
+        "PRED_IMPL(\"sort\", 2",
+        "PRED_IMPL(\"sort\", 4",
+        "keysort"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/SourceTermOrder.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/SourceTermOrderRegression.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/source_term_order_differential.lean",
+        "scripts/prolog/source_term_order_oracle.pl",
+        "scripts/prolog/run_source_term_order_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean"
+      ]
+    },
+    {
+      "id": "runtime.length-finite",
+      "project": "swi-prolog",
+      "sources": [
+        "boot/init.pl",
+        "src/pl-list.c"
+      ],
+      "anchors": [
+        "length/2",
+        "$skip_list",
+        "$length3"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.current-predicate-ground",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-proc.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"current_predicate\", 1",
+        "pl_current_predicate"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean"
+      ]
+    },
+    {
+      "id": "runtime.query",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-incl.h",
+        "src/pl-vmi.c",
+        "src/pl-wam.c"
+      ],
+      "anchors": [
+        "struct localFrame",
+        "struct choice",
+        "CHP_CLAUSE",
+        "I_CUT",
+        "shallow_backtrack",
+        "deep_backtrack",
+        "discardChoicesAfter",
+        "PL_next_solution"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryRegression.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.exceptions",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-vmi.c",
+        "src/pl-wam.c",
+        "src/pl-fli.c",
+        "src/pl-prims.c",
+        "src/pl-error.c"
+      ],
+      "anchors": [
+        "I_CATCH",
+        "B_THROW",
+        "findCatcher",
+        "PL_raise_exception",
+        "PRED_IMPL(\"throw\", 1, throw, 0)",
+        "ERR_INSTANTIATION"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeException.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeException.lean",
+        "Mettapedia/Logic/LP/RuntimeExceptionSoundness.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.findall",
+      "project": "swi-prolog",
+      "sources": [
+        "boot/bags.pl",
+        "src/pl-bag.c"
+      ],
+      "anchors": [
+        "findall_loop",
+        "add_findall_bag",
+        "compileTermToHeap_ex",
+        "collect_findall_bag"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.vm",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-vmi.c",
+        "src/pl-wam.c"
+      ],
+      "anchors": [
+        "VMI",
+        "VMH",
+        "PL_next_solution"
+      ],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.compiler",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-comp.c"
+      ],
+      "anchors": [
+        "compileBody",
+        "compileClause"
+      ],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.clause-selection",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-index.c"
+      ],
+      "anchors": [
+        "firstClause",
+        "nextClause",
+        "visibleClause"
+      ],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.dynamic-database",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-proc.c",
+        "src/pl-index.c"
+      ],
+      "anchors": [
+        "assertProcedure",
+        "retract_clause",
+        "visibleClause"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeDatabase.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/Syntax.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/ClauseReflection.lean",
+        "Mettapedia/Logic/Prolog/RuntimeClauseDecode.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeDatabase.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/ClauseReflectionAudit.lean",
+        "Mettapedia/Logic/Prolog/RuntimeClauseDecodeAudit.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
+        "Mettapedia/Logic/Prolog/ClauseReflectionRegression.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.transaction",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-transaction.c",
+        "boot/syspred.pl"
+      ],
+      "anchors": [
+        "transaction/1",
+        "PRED_IMPL(\"$transaction\"",
+        "transaction_commit",
+        "transaction_discard"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/Syntax.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-copy",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-copyterm.c",
+        "src/pl-rec.c"
+      ],
+      "anchors": [
+        "copy_term",
+        "duplicate_term",
+        "copy_term_nat"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeExceptionSoundness.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-variables",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "term_variables_loop",
+        "term_variables",
+        "term_variables2"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.numbervars",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"numbervars\", 4, numbervars, 0)",
+        "numberVars",
+        "if ( !is_acyclic(valTermRef(A1)) )"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-hash",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-termhash.c",
+        "src/pl-hash.c",
+        "src/pl-hash.h"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"term_hash\", 2, term_hash, 0)",
+        "termHashValue",
+        "CYCLE_CONST",
+        "MurmurHashAligned2",
+        "#define MURMUR_SEED"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTermHash.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.functor",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-prims.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"functor\", 3, functor, 0)",
+        "PL_unify_functor"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.nb-global",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-gvar.c"
+      ],
+      "anchors": [
+        "PRED_IMPL(\"nb_setval\", 2, nb_setval, 0)",
+        "PRED_IMPL(\"nb_getval\", 2, nb_getval, 0)",
+        "PRED_IMPL(\"nb_delete\", 1, nb_delete, 0)",
+        "setval_duplicate"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/LP/RuntimeUnificationSoundness.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/NonBacktrackableGlobalRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.clause-materialization",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-wam.c",
+        "src/pl-copyterm.c"
+      ],
+      "anchors": [
+        "PL_open_query",
+        "copy_term"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/StandardizeApart.lean",
+        "Mettapedia/Logic/LP/RuntimeMaterialize.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/StandardizeApart.lean",
+        "Mettapedia/Logic/LP/RuntimeMaterialize.lean",
+        "Mettapedia/Logic/LP/RuntimeMaterializeRegression.lean"
+      ],
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.reader",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-read.c",
+        "boot/expand.pl"
+      ],
+      "anchors": [
+        "read_term",
+        "read_term_from_stream",
+        "cond_compilation((:- if(G)), [])",
+        "cond_compilation((:- elif(G)), [])",
+        "cond_compilation((:- else), [])",
+        "cond_compilation((:- endif), [])"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderLexer.lean",
+        "Mettapedia/Logic/Prolog/ReaderNumber.lean",
+        "Mettapedia/Logic/Prolog/ReaderOperator.lean",
+        "Mettapedia/Logic/Prolog/ReaderTerm.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/ReaderLoader.lean",
+        "Mettapedia/Logic/Prolog/ReaderDirective.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditional.lean",
+        "Mettapedia/Logic/Prolog/ReaderSWIProfile.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderLexerRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderNumberRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderOperatorRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderTermRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderLoaderRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditionalRegression.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/reader_pinned_differential.lean",
+        "scripts/prolog/reader_pinned_oracle.pl",
+        "scripts/prolog/run_pinned_reader_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.source-loader",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-srcfile.c",
+        "src/pl-comp.c",
+        "boot/dcg.pl",
+        "library/dcg/basics.pl",
+        "library/lists.pl",
+        "library/error.pl"
+      ],
+      "anchors": [
+        "startReconsultFile",
+        "endReconsult",
+        "compileClause",
+        "dcg_translate_rule",
+        "dcg_body",
+        "dcg_extend"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderProgram.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCG.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditional.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnit.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitClosure.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderProgramRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderProgramAudit.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCGAudit.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditionalRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitClosureRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/pinned_spaces_runtime.lean",
+        "scripts/prolog/pinned_spaces_oracle.pl",
+        "scripts/prolog/run_pinned_spaces_runtime.sh",
+        "scripts/prolog/pinned_dcg_expansion.lean",
+        "scripts/prolog/pinned_dcg_oracle.pl",
+        "scripts/prolog/run_pinned_dcg_expansion.sh",
+        "scripts/prolog/pinned_assoc_conditional.lean",
+        "scripts/prolog/run_pinned_assoc_conditional.sh",
+        "scripts/prolog/pinned_parser_unit_closure.lean",
+        "scripts/prolog/run_pinned_parser_unit_closure.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.module-linker",
+      "project": "swi-prolog",
+      "sources": [
+        "src/pl-modul.c"
+      ],
+      "anchors": [
+        "isPublicModule",
+        "pl_import() imports the predicate",
+        "autoImport"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderModuleLink.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderModuleLinkRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderModuleLinkAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "library.apply",
+      "project": "swi-prolog",
+      "sources": [
+        "library/apply.pl"
+      ],
+      "anchors": [
+        "maplist",
+        "maplist_"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.maplist2_finite",
+      "project": "swi-prolog",
+      "sources": [
+        "library/apply.pl"
+      ],
+      "anchors": [
+        "maplist",
+        "maplist_"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.maplist3_finite",
+      "project": "swi-prolog",
+      "sources": [
+        "library/apply.pl"
+      ],
+      "anchors": [
+        "maplist",
+        "maplist_"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "library.pairs",
+      "project": "swi-prolog",
+      "sources": [
+        "library/pairs.pl"
+      ],
+      "anchors": [
+        "pairs_keys",
+        "pairs_values",
+        "map_list_to_pairs"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "library.janus",
+      "project": "swi-swipy",
+      "sources": [
+        "janus/janus.pl"
+      ],
+      "anchors": [
+        "op(200, fy, @)",
+        "op(50,  fx, #)"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "library.clpfd",
+      "project": "swi-prolog",
+      "sources": [
+        "library/clp/clpfd.pl"
+      ],
+      "anchors": [
+        "attr_unify_hook",
+        "#=",
+        "#<",
+        "#>"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "petta.compiler",
+      "project": "petta",
+      "sources": [
+        "src/translator.pl"
+      ],
+      "anchors": [
+        "translate_expr_to_conj",
+        "translate_clause"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "petta.runtime",
+      "project": "petta",
+      "sources": [
+        "src/metta.pl",
+        "src/spaces.pl",
+        "src/specializer.pl"
+      ],
+      "anchors": [
+        "eval",
+        "reduce",
+        "add_sexp",
+        "maybe_specialize_call"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "petta.reader",
+      "project": "petta",
+      "sources": [
+        "src/parser.pl",
+        "src/filereader.pl"
+      ],
+      "anchors": [
+        "sread",
+        "load_metta_file",
+        "process_metta_string"
+      ],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    }
+  ],
+  "historical_source_overlays": [
+    {
+      "id": "petta-reader-escape-fixes",
+      "project": "petta",
+      "base_commit": "6b7f52f064bdbc82fabd0a0998404121fb01d52e",
+      "description": "The archived provenance manifest hashed two locally modified PeTTa reader files. The pinned-release source hashes are recorded above; this patch preserves those historical modifications explicitly. It escapes backslashes when printing and handles escaped quotes and comment newlines when reading balanced forms.",
+      "patch": "Mettapedia/Logic/Prolog/SWI/Profiles/PeTTaReaderEscapes.patch",
+      "patch_sha256": "3ff577e048fd69efef9cd51a39127eefc33a078b961c509936f6b6047dd54580",
+      "files": [
+        {
+          "path": "src/parser.pl",
+          "base_sha256": "54d90136f61ef14c78c06809f116a4d4990572691a55ea0985a49ac937ec2088",
+          "profile_sha256": "5abc89c3e8ddd58769a4995919cd18d72d5b86224d6ed58363f25450e32cf45d"
+        },
+        {
+          "path": "src/filereader.pl",
+          "base_sha256": "e9a6d1cc98c133feba44153bfb1aa66d55ef5ccbe9635b72adacd683bb097286",
+          "profile_sha256": "954711b7cbbdf9766cf3bd3118eda0b88bcfa47a60712823f74282fd1adcfd5d"
+        }
+      ]
+    }
+  ]
+}

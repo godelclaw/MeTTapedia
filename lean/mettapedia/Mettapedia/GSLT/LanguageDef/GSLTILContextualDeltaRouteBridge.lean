@@ -362,7 +362,7 @@ def leftOnly : CommitPolicy
     (RouteCandidate collisionTheory Nat Bool ()) where
   Allows candidate := candidate.branch = [false]
 
-def leftAuthorization : AuthorizedSelection leftOnly leftSelection where
+theorem leftAuthorization : AuthorizedSelection leftOnly leftSelection where
   allowed := rfl
 
 def leftCommit : StateCommit factAlgebra display family leftOnly :=

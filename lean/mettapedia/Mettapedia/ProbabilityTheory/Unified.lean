@@ -1,7 +1,6 @@
 import ProbabilityTheory.Cox
 import Mettapedia.ProbabilityTheory.Cox.Regraduation
 import Mettapedia.ProbabilityTheory.ImpreciseProbability
-import KnuthSkilling
 -- Note: BeliefFunctions and QuantumProbability imported separately
 
 /-!

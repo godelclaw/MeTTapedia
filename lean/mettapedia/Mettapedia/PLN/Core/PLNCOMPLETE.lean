@@ -11,4 +11,3 @@ This currently aliases the curated theorem-complete PLN interface exposed by `PL
 namespace Mettapedia.PLN.Core.PLNCOMPLETE
 
 end Mettapedia.PLN.Core.PLNCOMPLETE
-

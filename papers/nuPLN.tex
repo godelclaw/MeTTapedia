@@ -443,13 +443,12 @@ the sufficient statistics are transition-count style (Fortini/Markov exchangeabi
 and the predictor-performance side is still controlled by Solomonoff-style universal
 mixture bounds.
 
-\textbf{Status (April 2026):} The Markov de~Finetti formalization is now
-\emph{complete} with zero \texttt{sorry} across 23,899 lines. The crown theorem
-\texttt{startRestrictedRowKernelData\_directingRowKernel} establishes that the
-canonical directing kernel satisfies the start-restricted row-kernel data
-conditions, closing the final gap in the derivation chain. See the companion
-paper ``Directing Measures and Markov Mixtures: Formalizing Diaconis--Freedman
-1980 in Lean~4'' for full documentation.
+The canonical theorem \texttt{startRestrictedRowKernelData\_directingRowKernel}
+is proved under Markov exchangeability, a compatible path-measure extension,
+strong recurrence, and exchangeability of each row process. These hypotheses
+are explicit in the Lean statement; this theorem alone does not establish
+an assumption-free Markov mixture representation. See
+\texttt{MarkovDeFinettiFiberEventBridge.lean} for the construction and its premises.
 
 \section{conclusion}
 

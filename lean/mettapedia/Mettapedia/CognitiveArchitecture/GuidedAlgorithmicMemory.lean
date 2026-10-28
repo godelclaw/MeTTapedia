@@ -20,6 +20,9 @@ are probabilities: ranks, code lengths, costs, and calibrated probabilities
 are different realizations of the same controller-facing interface.
 -/
 
+-- Record coordinates retain their independent universe parameters.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.CognitiveArchitecture.GuidedAlgorithmicMemory
 
 open Mettapedia.CognitiveArchitecture.ProblemSolvingMethods

@@ -221,10 +221,11 @@ theorem model_equations_readout (ambient : Nat) (allowed : List Token)
   cases interpreted with
   | fill _ context focusBound focusType _ atomic filled _ typed =>
       refine ⟨context, focusBound, focusType, ?_, targetEq ▸ typed, equation, ?_, ?_⟩
-      · rw [targetEq, filled]
-        rfl
+      · rw [targetEq]
+        exact filled
       · simpa only [declarationEq] using declared
-      · simpa only [orientationEq, EquationFrontierBinderContexts.site] using atomic
+      · simpa only [orientationEq, EquationFrontierBinderContexts.site,
+          ContextualAuthoredEquationExecution.conditionalEvidence] using atomic
 
 /-- Primitive answers carry the same whole/focus contexts and preserve the
 authored rule index and full atomic conditional receipt. -/
@@ -251,9 +252,10 @@ theorem model_firings_readout (ambient : Nat) (allowed : List Token)
   cases interpreted with
   | fill _ context focusBound focusType declaration atomic filled _ typed =>
       refine ⟨context, focusBound, focusType, ?_, targetEq ▸ typed, rule, ?_, atomic⟩
-      · rw [targetEq, filled]
-        rfl
-      · simpa only [declaration] using declared
+      · rw [targetEq]
+        exact filled
+      · rw [show receipt.ruleIndex = ruleIndex from declaration]
+        exact declared
 
 def tucked : State 1 := ⟨.tucked, 0, .permit⟩
 

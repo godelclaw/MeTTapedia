@@ -39,6 +39,9 @@ witnesses, and their GSLT applications are new.
 
 set_option autoImplicit false
 
+-- Record coordinates retain their independent universe parameters.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.GSLT.ReproducibleBuild.Legibility
 
 open Mettapedia.CognitiveArchitecture.Agent.OpenEndedContext

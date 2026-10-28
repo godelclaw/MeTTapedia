@@ -1,4 +1,4 @@
-import Mettapedia.CognitiveArchitecture.Agent.WorldState
+import Mettapedia.CognitiveArchitecture.Agent.WorldStateCore
 
 /-!
 # Goal Commitment as a Witnessed Trace Discipline
@@ -31,14 +31,14 @@ inductive DropReason where
 deriving Repr, DecidableEq
 
 /-- A discharge decision carries a reference to its supporting evidence. -/
-structure DropWitness (EvidenceRef : Type*) where
+structure DropWitness (EvidenceRef : Type _) where
   reason : DropReason
   evidence : EvidenceRef
 deriving Repr, DecidableEq
 
 /-- Per-goal commitment state.  Discharge retains its reason and evidence
 instead of silently deleting the goal. -/
-inductive Status (EvidenceRef : Type*) where
+inductive Status (EvidenceRef : Type _) where
   | inactive
   | active
   | discharged (witness : DropWitness EvidenceRef)
@@ -46,14 +46,14 @@ deriving Repr, DecidableEq
 
 /-- Events understood by the commitment layer.  There is deliberately no
 unwitnessed `drop` constructor. -/
-inductive Event (EvidenceRef : Type*) where
+inductive Event (EvidenceRef : Type _) where
   | adopt
   | discharge (witness : DropWitness EvidenceRef)
   | unrelated
 deriving Repr, DecidableEq
 
 /-- One goal-local commitment transition. -/
-def step {EvidenceRef : Type*} :
+def step {EvidenceRef : Type _} :
     Status EvidenceRef → Event EvidenceRef → Status EvidenceRef
   | _, .adopt => .active
   | .active, .discharge witness => .discharged witness
@@ -64,7 +64,7 @@ def step {EvidenceRef : Type*} :
 /-- An active commitment changes only when an explicit discharge witness is
 present. -/
 theorem active_changes_only_with_witness
-    {EvidenceRef : Type*} (event : Event EvidenceRef)
+    {EvidenceRef : Type _} (event : Event EvidenceRef)
     (changes : step (.active : Status EvidenceRef) event ≠ .active) :
     ∃ witness, event = .discharge witness ∧
       step (.active : Status EvidenceRef) event = .discharged witness := by
@@ -77,19 +77,19 @@ theorem active_changes_only_with_witness
 reason.  Re-adoption is an explicit event rather than an accidental side
 effect. -/
 theorem discharge_is_stable
-    {EvidenceRef : Type*} (first second : DropWitness EvidenceRef) :
+    {EvidenceRef : Type _} (first second : DropWitness EvidenceRef) :
     step (.discharged first) (.discharge second) = .discharged first := by
   rfl
 
 /-- Execute a chronological commitment trace. -/
-def run {EvidenceRef : Type*} :
+def run {EvidenceRef : Type _} :
     List (Event EvidenceRef) → Status EvidenceRef → Status EvidenceRef
   | [], status => status
   | event :: events, status => run events (step status event)
 
 /-- A trace without adoption or discharge cannot alter commitment state. -/
 theorem unrelated_trace_stutters
-    {EvidenceRef : Type*} (events : List (Event EvidenceRef))
+    {EvidenceRef : Type _} (events : List (Event EvidenceRef))
     (onlyUnrelated : ∀ event ∈ events, event = .unrelated)
     (status : Status EvidenceRef) :
     run events status = status := by
@@ -112,11 +112,11 @@ inductive CommitmentQuery where
   | status
 deriving Repr, DecidableEq
 
-def answer {EvidenceRef : Type*}
+def answer {EvidenceRef : Type _}
     (status : Status EvidenceRef) (_ : CommitmentQuery) : Status EvidenceRef :=
   status
 
-theorem answer_separates {EvidenceRef : Type*} :
+theorem answer_separates {EvidenceRef : Type _} :
     QuerySeparating (answer (EvidenceRef := EvidenceRef)) := by
   intro left right same
   exact same .status
@@ -124,7 +124,7 @@ theorem answer_separates {EvidenceRef : Type*} :
 /-- Any context view advertised as complete for commitment status must at
 least distinguish every distinct status, including its discharge witness. -/
 theorem commitment_complete_view_injective
-    {EvidenceRef View : Type*} {view : Status EvidenceRef → View}
+    {EvidenceRef View : Type _} {view : Status EvidenceRef → View}
     (complete : QueryComplete (answer (EvidenceRef := EvidenceRef)) view) :
     Function.Injective view :=
   queryComplete_injective answer_separates complete

@@ -184,14 +184,12 @@ theorem SDL_sound (φ : DeonticFormula) (hprov : ⊢SDL φ) : φ.valid := by
     exact htaut m
   | ax_K ψ χ =>
     unfold DeonticFormula.valid DeonticFormula.validInModel DeonticFormula.truthy
-    intro m _ w _
-    intro hOimp hOψ v hRwv
+    intro m _ w _ hOimp hOψ v hRwv
     apply hOimp v hRwv
     exact hOψ v hRwv
   | ax_D ψ =>
     unfold DeonticFormula.valid DeonticFormula.validInModel DeonticFormula.truthy
-    intro m hserial w hw
-    intro hOψ hOneg
+    intro m hserial w hw hOψ hOneg
     obtain ⟨v, hv, hRwv⟩ := hserial w hw
     have := hOψ v hRwv
     have := hOneg v hRwv

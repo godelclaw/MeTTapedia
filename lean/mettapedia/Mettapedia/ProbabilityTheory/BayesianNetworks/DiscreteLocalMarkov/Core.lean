@@ -20,6 +20,9 @@ import Mettapedia.ProbabilityTheory.BayesianNetworks.ScreeningOffFromCondIndep
 open MeasureTheory ProbabilityTheory
 open scoped Classical ENNReal
 
+-- Keep the uniform finite-network assumptions in the established public API.
+set_option linter.unusedSectionVars false
+
 namespace Mettapedia.ProbabilityTheory.BayesianNetworks.DiscreteLocalMarkov
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -51,7 +54,7 @@ theorem not_parent_of_nonDescExceptParentsSelf
     (v w : V) (hw : w ∈ bn.nonDescendantsExceptParentsAndSelf v) :
     v ∉ bn.graph.parents w := by
   have hmem := hw
-  rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hmem
+  rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_sdiff] at hmem
   have hw_nd : w ∉ bn.graph.descendants v := hmem.1
   have hw_not_pv_or_v : w ∉ bn.graph.parents v ∪ {v} := hmem.2
   have hwv : w ≠ v := by
@@ -90,7 +93,7 @@ theorem nodeProb_independent_of_nonDesc
   apply nodeProb_update_irrelevant bn cpt v w
   · exact not_parent_of_nonDescExceptParentsSelf bn v w hw
   · intro h; subst h
-    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hw
+    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_sdiff] at hw
     exact hw.2 (Set.mem_union_right _ rfl)
 
 /-! ## Joint weight factorization -/
@@ -187,11 +190,11 @@ theorem nodeProb_v_independent_of_nonDesc
     cpt.nodeProb (Function.update x w b) v = cpt.nodeProb x v := by
   have hwv : w ≠ v := by
     intro h; subst h
-    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hw
+    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_sdiff] at hw
     exact hw.2 (Set.mem_union_right _ rfl)
   have hw_not_parent : w ∉ bn.graph.parents v := by
     intro hpar
-    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hw
+    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_sdiff] at hw
     exact hw.2 (Set.mem_union_left _ hpar)
   exact nodeProb_update_irrelevant bn cpt w v hw_not_parent hwv x b
 
@@ -756,20 +759,20 @@ theorem relevantHeadFinset_eq_block_disjUnion
     have hvRel : v ∈ DSeparation.relevantVertices bn.graph X Y Z :=
       (Finset.mem_filter.mp hv).2
     by_cases hX : scopeMeetsXReachableBlock bn X Y Z v
-    · simp [relevantHeadFinset, relevantHeadXFinset, relevantHeadYFinset,
+    · simp [relevantHeadXFinset, relevantHeadYFinset,
         relevantHeadResidualFinset, relevantHeadConditioningFinset,
-        scopeOnlyConditioning, hRC, hYRC, hAll, hvRel, hX]
+        scopeOnlyConditioning, hvRel, hX]
     · by_cases hY : scopeMeetsYReachableBlock bn X Y Z v
-      · simp [relevantHeadFinset, relevantHeadXFinset, relevantHeadYFinset,
+      · simp [relevantHeadXFinset, relevantHeadYFinset,
           relevantHeadResidualFinset, relevantHeadConditioningFinset,
-          scopeOnlyConditioning, hRC, hYRC, hAll, hvRel, hX, hY]
+          scopeOnlyConditioning, hvRel, hX, hY]
       · by_cases hR : scopeMeetsResidualBlock bn X Y Z v
-        · simp [relevantHeadFinset, relevantHeadXFinset, relevantHeadYFinset,
+        · simp [relevantHeadXFinset, relevantHeadYFinset,
             relevantHeadResidualFinset, relevantHeadConditioningFinset,
-            scopeOnlyConditioning, hRC, hYRC, hAll, hvRel, hX, hY, hR]
-        · simp [relevantHeadFinset, relevantHeadXFinset, relevantHeadYFinset,
+            scopeOnlyConditioning, hvRel, hX, hY, hR]
+        · simp [relevantHeadXFinset, relevantHeadYFinset,
             relevantHeadResidualFinset, relevantHeadConditioningFinset,
-            scopeOnlyConditioning, hRC, hYRC, hAll, hvRel, hX, hY, hR]
+            scopeOnlyConditioning, hvRel, hX, hY, hR]
   · intro hv
     have hv' := hv
     simp only [Finset.mem_disjUnion, relevantHeadXFinset, relevantHeadYFinset,
@@ -938,7 +941,7 @@ theorem exists_finset_sink (D : Finset V) (hne : D.Nonempty) :
       | refl => exact DirectedGraph.reachable_refl _ _
       | step h _ ih => exact DirectedGraph.Path.step h ih
     exact this ⟨u, hu⟩ ⟨v, hv⟩ hpath
-  haveI : Nonempty ↥D := ⟨⟨hne.choose, hne.choose_spec⟩⟩
+  have : Nonempty ↥D := ⟨⟨hne.choose, hne.choose_spec⟩⟩
   obtain ⟨⟨s, hs⟩, hsink⟩ := DirectedGraph.exists_sink_of_acyclic_nonempty G' hG'_acyclic
   exact ⟨s, hs, fun w hw hedge => by
     rw [DirectedGraph.isSink_iff] at hsink
@@ -1091,7 +1094,7 @@ theorem telescoping_sum
     have hnode_eq : ∀ (xD : ∀ d : ↥D, bn.stateSpace d) (d : ↥D),
         cpt_D.nodeProb xD d = cpt.nodeProb (patchConfig bn x D xD) d.val := by
       intro xD d
-      simp only [DiscreteCPT.nodeProb, DiscreteCPT.parentAssignOfConfig]
+      simp only [DiscreteCPT.nodeProb]
       -- Both sides are cpt.cpt d.val (parent_assign) (value)
       -- The parent assignments and values are the same after unfolding
       show cpt_D.cpt d (fun u _ => xD u) (xD d) =
@@ -1271,7 +1274,7 @@ theorem sum_irrelevant_jointWeight_eq_relevantBlockProducts
       Crel *
         ∑ xI : (∀ d : ↥D, bn.stateSpace d),
           ∏ v : ↥D, cpt.nodeProb (patchConfig bn x D xI) v := by
-            simp [Finset.mul_sum, mul_assoc, mul_left_comm, mul_comm]
+            simp [Finset.mul_sum]
     _ = Crel * 1 := by
           have htel := telescoping_sum (bn := bn) (cpt := cpt) (D := D) (x := x)
           simpa using congrArg (fun t => Crel * t) htel

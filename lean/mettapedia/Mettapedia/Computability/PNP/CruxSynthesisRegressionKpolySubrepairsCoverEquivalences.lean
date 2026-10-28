@@ -1,0 +1,359 @@
+import Mettapedia.Computability.PNP.CruxKpolySubrepairCoverage
+
+/-!
+# Regression checks for PNP Kpoly subrepairs: cover, quotient, representative-index, and clocked-payload subrepair checks
+
+This module is part of the decomposed Kpoly subrepair regression ledger.
+It keeps the historical `CruxSynthesisRegression` theorem namespace while
+separating membership checks by mathematical role.
+-/
+
+namespace Mettapedia.Computability.PNP.CruxSynthesisRegression
+
+open Mettapedia.Computability.PNP
+
+universe u v w z
+
+theorem current_pnp_kpoly_surjective_actual_local_joint_recovery_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalJointRecoveryBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalJointRecoveryBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_recovery_visible_width_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryVisibleWidthBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryVisibleWidthBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_recovery_lightest_point_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryLightestPointBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryLightestPointBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_no_extractor_lightest_point_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorLightestPointBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorLightestPointBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_no_extractor_visible_width_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorVisibleWidthBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorVisibleWidthBoundary
+
+theorem current_pnp_kpoly_exact_visible_representative_cover_surjectivity_regression :
+    PNPKpolySubrepairClass.exactVisibleRepresentativeCoverSurjectivityObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleRepresentativeCoverSurjectivityObstruction
+
+theorem current_pnp_kpoly_exact_visible_predictor_quotient_surjectivity_regression :
+    PNPKpolySubrepairClass.exactVisiblePredictorQuotientSurjectivityObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisiblePredictorQuotientSurjectivityObstruction
+
+theorem current_pnp_kpoly_exact_visible_clocked_realization_surjectivity_regression :
+    PNPKpolySubrepairClass.exactVisibleClockedRealizationSurjectivityObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleClockedRealizationSurjectivityObstruction
+
+theorem current_pnp_kpoly_injective_finite_representative_index_cover_lower_bound_regression :
+    PNPKpolySubrepairClass.injectiveFiniteRepresentativeIndexCoverLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.injectiveFiniteRepresentativeIndexCoverLowerBound
+
+theorem current_pnp_kpoly_injective_finite_predictor_quotient_lower_bound_regression :
+    PNPKpolySubrepairClass.injectiveFinitePredictorQuotientLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.injectiveFinitePredictorQuotientLowerBound
+
+theorem current_pnp_kpoly_injective_finite_probe_exact_visible_compression_regression :
+    PNPKpolySubrepairClass.injectiveFiniteProbeExactVisibleCompressionObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.injectiveFiniteProbeExactVisibleCompressionObstruction
+
+theorem current_pnp_kpoly_injective_finite_probe_clocked_realization_regression :
+    PNPKpolySubrepairClass.injectiveFiniteProbeClockedRealizationObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.injectiveFiniteProbeClockedRealizationObstruction
+
+theorem current_pnp_kpoly_section_backed_injective_finite_probe_pullback_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbePullbackLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbePullbackLowerBound
+
+theorem current_pnp_kpoly_section_backed_injective_finite_probe_pullback_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbePullbackObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbePullbackObstruction
+
+theorem current_pnp_kpoly_section_backed_injective_finite_representative_index_cover_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteRepresentativeIndexCoverLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteRepresentativeIndexCoverLowerBound
+
+theorem current_pnp_kpoly_section_backed_injective_finite_representative_index_cover_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteRepresentativeIndexCoverObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteRepresentativeIndexCoverObstruction
+
+theorem current_pnp_kpoly_section_backed_injective_finite_predictor_quotient_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFinitePredictorQuotientLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFinitePredictorQuotientLowerBound
+
+theorem current_pnp_kpoly_section_backed_injective_finite_predictor_quotient_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFinitePredictorQuotientObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFinitePredictorQuotientObstruction
+
+theorem current_pnp_kpoly_finite_representative_index_cover_equivalence_regression :
+    PNPKpolySubrepairClass.finiteRepresentativeIndexCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteRepresentativeIndexCoverEquivalence
+
+theorem current_pnp_kpoly_exact_visible_compression_target_predictor_cover_equivalence_regression :
+    PNPKpolySubrepairClass.exactVisibleCompressionTargetPredictorCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleCompressionTargetPredictorCoverEquivalence
+
+theorem current_pnp_kpoly_clocked_exact_visible_realization_predictor_cover_equivalence_regression :
+    PNPKpolySubrepairClass.clockedExactVisibleRealizationPredictorCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.clockedExactVisibleRealizationPredictorCoverEquivalence
+
+theorem current_pnp_kpoly_clocked_finite_learning_payload_predictor_cover_equivalence_regression :
+    PNPKpolySubrepairClass.clockedFiniteLearningPayloadPredictorCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.clockedFiniteLearningPayloadPredictorCoverEquivalence
+
+theorem current_pnp_kpoly_clocked_finite_learning_payload_exact_visible_compression_equivalence_regression :
+    PNPKpolySubrepairClass.clockedFiniteLearningPayloadExactVisibleCompressionEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.clockedFiniteLearningPayloadExactVisibleCompressionEquivalence
+
+theorem current_pnp_kpoly_exact_visible_compression_target_predictor_quotient_equivalence_regression :
+    PNPKpolySubrepairClass.exactVisibleCompressionTargetPredictorQuotientEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleCompressionTargetPredictorQuotientEquivalence
+
+theorem current_pnp_kpoly_clocked_exact_visible_realization_predictor_quotient_equivalence_regression :
+    PNPKpolySubrepairClass.clockedExactVisibleRealizationPredictorQuotientEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.clockedExactVisibleRealizationPredictorQuotientEquivalence
+
+theorem current_pnp_kpoly_exact_visible_compression_target_representative_index_cover_equivalence_regression :
+    PNPKpolySubrepairClass.exactVisibleCompressionTargetRepresentativeIndexCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleCompressionTargetRepresentativeIndexCoverEquivalence
+
+theorem current_pnp_kpoly_clocked_exact_visible_realization_representative_index_cover_equivalence_regression :
+    PNPKpolySubrepairClass.clockedExactVisibleRealizationRepresentativeIndexCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.clockedExactVisibleRealizationRepresentativeIndexCoverEquivalence
+
+theorem current_pnp_kpoly_not_clocked_exact_visible_realization_representative_index_cover_equivalence_regression :
+    PNPKpolySubrepairClass.notClockedExactVisibleRealizationRepresentativeIndexCoverEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.notClockedExactVisibleRealizationRepresentativeIndexCoverEquivalence
+
+theorem current_pnp_kpoly_not_clocked_exact_visible_realization_predictor_quotient_equivalence_regression :
+    PNPKpolySubrepairClass.notClockedExactVisibleRealizationPredictorQuotientEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.notClockedExactVisibleRealizationPredictorQuotientEquivalence
+
+theorem current_pnp_kpoly_finite_image_cover_budget_weakening_regression :
+    PNPKpolySubrepairClass.finiteImageCoverBudgetWeakening ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteImageCoverBudgetWeakening
+
+theorem current_pnp_kpoly_finite_predictor_cover_budget_weakening_regression :
+    PNPKpolySubrepairClass.finitePredictorCoverBudgetWeakeningBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finitePredictorCoverBudgetWeakeningBoundary
+
+theorem current_pnp_kpoly_finite_representative_index_cover_budget_weakening_regression :
+    PNPKpolySubrepairClass.finiteRepresentativeIndexCoverBudgetWeakeningBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteRepresentativeIndexCoverBudgetWeakeningBoundary
+
+theorem current_pnp_kpoly_finite_predictor_quotient_budget_weakening_regression :
+    PNPKpolySubrepairClass.finitePredictorQuotientBudgetWeakeningBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finitePredictorQuotientBudgetWeakeningBoundary
+
+theorem current_pnp_kpoly_finite_image_cover_factor_transport_regression :
+    PNPKpolySubrepairClass.finiteImageCoverFactorTransport ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteImageCoverFactorTransport
+
+theorem current_pnp_kpoly_finite_predictor_cover_factor_transport_regression :
+    PNPKpolySubrepairClass.finitePredictorCoverFactorTransportBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finitePredictorCoverFactorTransportBoundary
+
+theorem current_pnp_kpoly_finite_representative_index_cover_factor_transport_regression :
+    PNPKpolySubrepairClass.finiteRepresentativeIndexCoverFactorTransportBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteRepresentativeIndexCoverFactorTransportBoundary
+
+theorem current_pnp_kpoly_finite_predictor_quotient_factor_transport_regression :
+    PNPKpolySubrepairClass.finitePredictorQuotientFactorTransportBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finitePredictorQuotientFactorTransportBoundary
+
+theorem current_pnp_kpoly_section_backed_finite_predictor_cover_surjective_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorCoverSurjectiveObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorCoverSurjectiveObstruction
+
+theorem current_pnp_kpoly_section_backed_finite_representative_index_cover_surjective_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedFiniteRepresentativeIndexCoverSurjectiveObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedFiniteRepresentativeIndexCoverSurjectiveObstruction
+
+theorem current_pnp_kpoly_section_backed_finite_predictor_quotient_surjective_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorQuotientSurjectiveObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorQuotientSurjectiveObstruction
+
+theorem current_pnp_kpoly_section_backed_finite_predictor_cover_surjective_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorCoverSurjectiveLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorCoverSurjectiveLowerBound
+
+theorem current_pnp_kpoly_section_backed_finite_representative_index_cover_surjective_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedFiniteRepresentativeIndexCoverSurjectiveLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedFiniteRepresentativeIndexCoverSurjectiveLowerBound
+
+theorem current_pnp_kpoly_section_backed_finite_predictor_quotient_surjective_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorQuotientSurjectiveLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedFinitePredictorQuotientSurjectiveLowerBound
+
+theorem current_pnp_kpoly_surjective_finite_predictor_cover_lower_bound_regression :
+    PNPKpolySubrepairClass.surjectiveFinitePredictorCoverLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveFinitePredictorCoverLowerBound
+
+theorem current_pnp_kpoly_surjective_finite_representative_index_cover_lower_bound_regression :
+    PNPKpolySubrepairClass.surjectiveFiniteRepresentativeIndexCoverLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveFiniteRepresentativeIndexCoverLowerBound
+
+theorem current_pnp_kpoly_surjective_finite_predictor_quotient_lower_bound_regression :
+    PNPKpolySubrepairClass.surjectiveFinitePredictorQuotientLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveFinitePredictorQuotientLowerBound
+
+theorem current_pnp_kpoly_finite_image_reduced_ab_pullback_obstruction_regression :
+    PNPKpolySubrepairClass.finiteImageReducedABPullbackObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteImageReducedABPullbackObstruction
+
+theorem current_pnp_kpoly_finite_image_reduced_ab_injective_probe_pullback_obstruction_regression :
+    PNPKpolySubrepairClass.finiteImageReducedABInjectiveProbePullbackObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteImageReducedABInjectiveProbePullbackObstruction
+
+theorem current_pnp_kpoly_finite_quotient_reduced_ab_pullback_obstruction_regression :
+    PNPKpolySubrepairClass.finiteQuotientReducedABPullbackObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.finiteQuotientReducedABPullbackObstruction
+
+theorem current_pnp_kpoly_exact_visible_clocked_finite_learning_payload_surjectivity_regression :
+    PNPKpolySubrepairClass.exactVisibleClockedFiniteLearningPayloadSurjectivityObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleClockedFiniteLearningPayloadSurjectivityObstruction
+
+theorem current_pnp_kpoly_injective_finite_probe_clocked_finite_learning_payload_regression :
+    PNPKpolySubrepairClass.injectiveFiniteProbeClockedFiniteLearningPayloadObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.injectiveFiniteProbeClockedFiniteLearningPayloadObstruction
+
+theorem current_pnp_kpoly_exact_visible_clocked_finite_learning_payload_surjectivity_lower_bound_regression :
+    PNPKpolySubrepairClass.exactVisibleClockedFiniteLearningPayloadSurjectivityLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactVisibleClockedFiniteLearningPayloadSurjectivityLowerBound
+
+theorem current_pnp_kpoly_injective_finite_probe_clocked_finite_learning_payload_lower_bound_regression :
+    PNPKpolySubrepairClass.injectiveFiniteProbeClockedFiniteLearningPayloadLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.injectiveFiniteProbeClockedFiniteLearningPayloadLowerBound
+
+theorem current_pnp_kpoly_section_backed_clocked_finite_learning_payload_surjective_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedClockedFiniteLearningPayloadSurjectiveLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedClockedFiniteLearningPayloadSurjectiveLowerBound
+
+theorem current_pnp_kpoly_section_backed_clocked_finite_learning_payload_surjective_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedClockedFiniteLearningPayloadSurjectiveObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedClockedFiniteLearningPayloadSurjectiveObstruction
+
+theorem current_pnp_kpoly_section_backed_injective_finite_probe_clocked_finite_learning_payload_lower_bound_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbeClockedFiniteLearningPayloadLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbeClockedFiniteLearningPayloadLowerBound
+
+theorem current_pnp_kpoly_section_backed_injective_finite_probe_clocked_finite_learning_payload_obstruction_regression :
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbeClockedFiniteLearningPayloadObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.sectionBackedInjectiveFiniteProbeClockedFiniteLearningPayloadObstruction
+
+end Mettapedia.Computability.PNP.CruxSynthesisRegression

@@ -1,0 +1,15 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionRegressionCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionRegressionPolynomial
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionRegressionObstructions
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionRegressionLocal
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionRegressionLinearExamples
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionRegressionSmoothEnergy
+
+/-!
+# Regression Tests for Finite-Mode Spatial Reconstruction
+
+Compatibility umbrella for the optional finite-mode reconstruction regression
+harness. The checks are split into core interfaces, polynomial algebra,
+obstruction examples, local momentum closure, linear examples, and smoothness /
+energy regressions.
+-/

@@ -55,7 +55,7 @@ variable {base : ValidatedCalculusLanguageDef} {dependencies : DependencySystem}
 variable {admittedRevision currentRevision : dependencies.Revision}
 
 /-- The already-proved SemanticService transport cell activated at the current revision. -/
-def activeTransport
+theorem activeTransport
     (growth : CurrentValidatedGrowth base dependencies admittedRevision
       currentRevision) :
     (admitTransportAt growth.extension dependencies admittedRevision).Active

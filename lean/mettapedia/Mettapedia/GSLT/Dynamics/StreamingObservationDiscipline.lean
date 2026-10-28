@@ -15,6 +15,9 @@ this single-pass product implements the extensional projection-and-product
 collector exactly, including partial failure.
 -/
 
+-- Record coordinates retain their independent universe parameters.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.GSLT.Dynamics
 
 universe uEvent uContainer uState uLeftEvent uRightEvent

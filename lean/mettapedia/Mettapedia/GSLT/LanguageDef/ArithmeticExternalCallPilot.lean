@@ -190,7 +190,7 @@ not the GMP, emitted-C, or CeTTa realization. -/
 def referenceExternal : ExternalCallSpec :=
   fun program a b z => z = program.fn a b
 
-def referenceExternalAdequacy : ExternalCallAdequacy referenceExternal where
+theorem referenceExternalAdequacy : ExternalCallAdequacy referenceExternal where
   complete := by intro _ _ _ _; rfl
   sound := fun h => h
 
@@ -341,7 +341,7 @@ def compileStep {external : ExternalCallSpec}
         exact two (CStep.toCall targetH)
           (CStep.callRet targetH returned)
 
-def preservesCompiledMeaning {external : ExternalCallSpec}
+theorem preservesCompiledMeaning {external : ExternalCallSpec}
     (adequate : ExternalCallAdequacy external)
     {term : ATerm} (meaningful : SourceMeaning term) :
     TargetMeaning external (compileTerm term) := by

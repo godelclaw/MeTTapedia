@@ -84,7 +84,7 @@ theorem bare_arity {sort : String} {kind : CollType} {element : String}
       cases packed with
       | mk rule _property =>
           cases rule with
-          | mk label categoryName parameters syntaxPattern evalPolicy algebra =>
+          | mk label categoryName parameters syntaxPattern evalPolicy algebra representation =>
               cases parameters with
               | nil => simp [bareCollection?] at shape
               | cons parameter parameters =>
@@ -105,6 +105,9 @@ theorem bare_arity {sort : String} {kind : CollType} {element : String}
                               | multiBinder _ => simp [bareCollection?] at shape
                               | collection _ _ => simp [bareCollection?] at shape
                               | base elementSort =>
+                                  have mode : representation = .bare := by
+                                    cases representation <;> simp_all [bareCollection?]
+                                  subst mode
                                   simp only [bareCollection?, Option.some.injEq,
                                     Prod.mk.injEq] at shape
                                   obtain ⟨kindEq, elementEq⟩ := shape
@@ -202,17 +205,29 @@ theorem bare_rule_params {rule : GrammarRule} {kind : CollType} {element : Strin
     (shape : bareCollection? rule = some (kind, element)) :
     ∃ name : String, rule.params = [.simple name (.collection kind (.base element))] := by
   have used := bareCollection_uses shape
-  rcases used with ⟨name, collectionKind, elementType, paramsEq⟩
+  rcases used with ⟨name, collectionKind, elementType, bareEq⟩
+  obtain ⟨mode, paramsEq⟩ := (GrammarRule.bareParams_cons_iff _ _ _).mp bareEq
   cases elementType with
   | base elementSort =>
       have bare : bareCollection? rule = some (collectionKind, elementSort) := by
-        simp [bareCollection?, paramsEq]
+        simp [bareCollection?, paramsEq, mode]
       simp only [shape, Option.some.injEq, Prod.mk.injEq] at bare
       obtain ⟨rfl, rfl⟩ := bare
       exact ⟨name, paramsEq⟩
   | arrow _ _ => simp [bareCollection?, paramsEq] at shape
   | multiBinder _ => simp [bareCollection?, paramsEq] at shape
   | collection _ _ => simp [bareCollection?, paramsEq] at shape
+
+/-- The same parameter as the bare-collection typing rule sees it. -/
+theorem bare_rule_bareParams {rule : GrammarRule} {kind : CollType} {element : String}
+    (shape : bareCollection? rule = some (kind, element)) :
+    ∃ name : String, rule.bareParams = [.simple name (.collection kind (.base element))] := by
+  obtain ⟨name, paramsEq⟩ := bare_rule_params shape
+  have mode : rule.collectionRepresentation = .bare := by
+    cases representation : rule.collectionRepresentation
+    · rfl
+    · simp [bareCollection?, paramsEq, representation] at shape
+  exact ⟨name, (GrammarRule.bareParams_of_bare _ mode).trans paramsEq⟩
 
 def slotFin' (parameters : List TermParam) (counts lengths : List Nat)
     (index : Fin (slotCount parameters counts lengths)) :
@@ -489,6 +504,7 @@ theorem toPattern_hasType {index : List String × String} (tree : Tree language 
           | some packed =>
               obtain ⟨kind, element⟩ := packed
               obtain ⟨parameterName, paramsEq⟩ := bare_rule_params shape
+              obtain ⟨_, bareParamsEq⟩ := bare_rule_bareParams shape
               simp only [nodeOf, shape]
               have elementsTyped :
                   ElementsHaveType language FreeTypeContext.empty (typeContext Γ)
@@ -506,7 +522,7 @@ theorem toPattern_hasType {index : List String × String} (tree : Tree language 
                   exact raw
               have typed :=
                 HasType.collectionConstructor (rule := operator.1.1) (rest := none)
-                  operator.1.2.1 paramsEq elementsTyped
+                  operator.1.2.1 bareParamsEq elementsTyped
               simpa [operator.1.2.2.2] using typed
           | none =>
               simp only [nodeOf, shape]
@@ -907,6 +923,7 @@ theorem exists_collection_tree
   cases typed with
   | collectionConstructor member paramsEq elementsTyped =>
       rename_i rule parameterName elementType
+      obtain ⟨mode, paramsEq⟩ := (GrammarRule.bareParams_cons_iff _ _ _).mp paramsEq
       obtain ⟨element, elementEq⟩ :=
         element_base_of_fragment fragment member paramsEq
       subst elementEq
@@ -928,7 +945,7 @@ theorem exists_collection_tree
       let operator : (indexedSignature language).Op rule.category :=
         ⟨⟨rule, member, fragment rule member, rfl⟩, data⟩
       have shape : bareCollection? operator.1.1 = some (kind, element) := by
-        simp [operator, bareCollection?, paramsEq]
+        simp [operator, bareCollection?, paramsEq, mode]
       have arityEq := bare_arity operator shape
       have treeLength : trees.length = elements.length := by
         simpa using congrArg List.length treesPrinted

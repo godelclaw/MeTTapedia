@@ -1,0 +1,17 @@
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRuleObserved
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRuleUniformSection
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRuleExactDecoder
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRulePropertyDecoder
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRulePointQuery
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRuleAdaptiveQuery
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRuleCardinality
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySupportRuleOneBlock
+
+/-!
+# Regression checks for PNP Kpoly support-rule anchors
+
+Compatibility umbrella for support-full-rule and one-block-full-rule Kpoly
+anchor regressions. The theorem bodies live in the semantic modules imported
+above while preserving the historical `CruxSynthesisRegression` theorem
+namespace.
+-/

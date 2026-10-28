@@ -201,7 +201,7 @@ abbrev spec : Spec Nat (List Job) Job Proposal :=
 def interveningLive : Snapshot Nat (List Job) :=
   ⟨8, [.contested]⟩
 
-def oldConflict : ¬ Matches spec oldProposal interveningLive := by
+theorem oldConflict : ¬ Matches spec oldProposal interveningLive := by
   intro current
   have revisionImpossible := current.revision_eq
   norm_num [spec, transactionSpec, oldProposal, interveningLive] at revisionImpossible

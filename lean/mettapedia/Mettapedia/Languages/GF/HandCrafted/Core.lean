@@ -8,7 +8,7 @@ Core abstractions from the Grammatical Framework:
 - Bisimulation equivalence (when trees mean the same thing)
 
 ## References
-- GF Resource Grammar Library: ~/claude/gf-rgl/
+- GF Resource Grammar Library: gf-rgl/
 - GF Tutorial: http://www.grammaticalframework.org/
 -/
 

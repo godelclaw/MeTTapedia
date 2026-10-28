@@ -8,7 +8,7 @@ namespace Mettapedia.Ethics
 
 universe u v w
 
-/-- Semantics for unmodalized formulas. -/
+/- Semantics for unmodalized formulas. -/
 def formulaSemantics (World : Type u) : Semantics (Formula World) World :=
   ⟨fun w φ => φ w⟩
 
@@ -128,6 +128,32 @@ theorem sat_structuredUtilitarian_iff_sat_structuredValue {World : Type u}
       (h_sat := sat_utilitarianToValueAtom_iff (World := World) (semU := semU))
       (m := w) (s := s))
 
+theorem entails_structuredUtilitarian_iff_entails_structuredValue {World : Type u}
+    (semU : UtilityAssignmentSemantics World)
+    (T : Theory (StructuredSentence World (StructuredUtilityAtom World)))
+    (s : StructuredSentence World (StructuredUtilityAtom World)) :
+    Entails
+        (StructuredSentence.semantics (World := World)
+          (sumSemantics (utilityAssignmentSemantics World semU) (formulaSemantics World)))
+        T s ↔
+      Entails
+        (StructuredSentence.semantics (World := World)
+          (sumSemantics
+            (valueJudgmentSemantics World (valueSemanticsOfUtility World semU))
+            (formulaSemantics World)))
+        (Theory.map (StructuredSentence.map utilitarianToValueAtom) T)
+        (StructuredSentence.map utilitarianToValueAtom s) := by
+  simpa using
+    (StructuredSentence.entails_map_iff
+      (World := World)
+      (sem₁ := sumSemantics (utilityAssignmentSemantics World semU) (formulaSemantics World))
+      (sem₂ := sumSemantics
+        (valueJudgmentSemantics World (valueSemanticsOfUtility World semU))
+        (formulaSemantics World))
+      (f := utilitarianToValueAtom)
+      (h_sat := sat_utilitarianToValueAtom_iff (World := World) (semU := semU))
+      (T := T) (s := s))
+
 abbrev StructuredVirtueTargetAtom (World : Type u) : Type (max u 1) :=
   Sum (VirtueTargetSentence World) (Formula World)
 
@@ -167,5 +193,28 @@ theorem sat_structuredVirtueTarget_iff_sat_structuredValue {World : Type u}
       (f := virtueTargetToValueAtom)
       (h_sat := sat_virtueTargetToValueAtom_iff (World := World) (semT := semT) (semV := semV) h_align)
       (m := w) (s := s))
+
+theorem entails_structuredVirtueTarget_iff_entails_structuredValue {World : Type u}
+    (semT : VirtueTargetSemantics World) (semV : ValueSemantics World)
+    (h_align : ∀ a φ w, semT.targets a φ w ↔ semV.morally (virtueAspectToMoralValue a) φ w)
+    (T : Theory (StructuredSentence World (StructuredVirtueTargetAtom World)))
+    (s : StructuredSentence World (StructuredVirtueTargetAtom World)) :
+    Entails
+        (StructuredSentence.semantics (World := World)
+          (sumSemantics (virtueTargetSemantics World semT) (formulaSemantics World)))
+        T s ↔
+      Entails
+        (StructuredSentence.semantics (World := World)
+          (sumSemantics (valueJudgmentSemantics World semV) (formulaSemantics World)))
+        (Theory.map (StructuredSentence.map virtueTargetToValueAtom) T)
+        (StructuredSentence.map virtueTargetToValueAtom s) := by
+  simpa using
+    (StructuredSentence.entails_map_iff
+      (World := World)
+      (sem₁ := sumSemantics (virtueTargetSemantics World semT) (formulaSemantics World))
+      (sem₂ := sumSemantics (valueJudgmentSemantics World semV) (formulaSemantics World))
+      (f := virtueTargetToValueAtom)
+      (h_sat := sat_virtueTargetToValueAtom_iff (World := World) (semT := semT) (semV := semV) h_align)
+      (T := T) (s := s))
 
 end Mettapedia.Ethics

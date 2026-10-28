@@ -1,0 +1,109 @@
+{
+  "status": "Full original curriculum migrated and checked; older exercise sheets remain explicitly labeled research WIP",
+  "previous_failures": [
+    {
+      "module": "FourColor.Curriculum.Actual.SevenVertexSixteenProfileThreeFourZeroStructure",
+      "exit": 1,
+      "source_sha256": "3c144e4227ea9c5f6ded515f12db80b98de4b001e2121acb62a2f441334dbff5",
+      "observed_diagnostics": [
+        "FourColor/Curriculum/Actual/SevenVertexSixteenProfileThreeFourZeroStructure.lean:81:7: error(lean.unknownIdentifier): Unknown constant `Finset.filter_card_add_filter_neg_card_eq_card`\nFourColor/Curriculum/Actual/SevenVertexSixteenProfileThreeFourZeroStructure.lean:234:10: warning: `SimpleGraph.Walk.map_isPath_of_injective` has been deprecated: Use `SimpleGraph.Walk.IsPath.map` instead\n\nNote: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.map_isPath_of_injective` to `SimpleGraph.Walk.IsPath.map x`).\nFourColor/Curriculum/Actual/SevenVertexSixteenProfileThreeFourZeroStructure.lean:360:4: warning: try 'simp' instead of 'simpa'\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`\nFourColor/Curriculum/Actual/SevenVertexSixteenProfileThreeFourZeroStructure.lean:383:6: warning: try 'simp' instead of 'simpa'\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`\nFourColor/Curriculum/Actual/SevenVertexSixteenProfileThreeFourZeroStructure.lean:403:6: warning: try 'simp' instead of 'simpa'\n"
+      ],
+      "resolution": "pass",
+      "current_source_sha256": "eecab842e8876272a82eb531232a4b6221a564adbcfa78f57e49447c4cb19ad7"
+    },
+    {
+      "module": "FourColor.Curriculum.Actual.FiveVertexCycleIso",
+      "exit": 1,
+      "source_sha256": "63587e28fa8f977af573493bd8f95fbf9b1d031af8d5f94b52f2b7779c8b785f",
+      "observed_diagnostics": [
+        "FourColor/Curriculum/Actual/FiveVertexCycleIso.lean:155:6: error: Type mismatch: After simplification, term\n  hneigh0\n has type\n  G.neighborSet x = {p.getVert 4, p.getVert 1}\nbut is expected to have type\n  G.neighborSet ((Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 0) =\n    {(Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) (-1), (Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 1}\nFourColor/Curriculum/Actual/FiveVertexCycleIso.lean:156:6: error: Type mismatch: After simplification, term\n  hneigh1\n has type\n  G.neighborSet (p.getVert 1) = {x, p.getVert 2}\nbut is expected to have type",
+        "FourColor/Curriculum/Actual/FiveVertexCycleIso.lean:156:6: error: Type mismatch: After simplification, term\n  hneigh1\n has type\n  G.neighborSet (p.getVert 1) = {x, p.getVert 2}\nbut is expected to have type\n  G.neighborSet ((Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 1) =\n    {(Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 0, (Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 2}\nFourColor/Curriculum/Actual/FiveVertexCycleIso.lean:157:6: error: Type mismatch: After simplification, term\n  hneigh2\n has type\n  @Eq (Set V) (G.neighborSet (p.getVert 2)) {p.getVert 1, p.getVert 3}\nbut is expected to have type",
+        "FourColor/Curriculum/Actual/FiveVertexCycleIso.lean:157:6: error: Type mismatch: After simplification, term\n  hneigh2\n has type\n  @Eq (Set V) (G.neighborSet (p.getVert 2)) {p.getVert 1, p.getVert 3}\nbut is expected to have type\n  @Eq (Set V) (G.neighborSet ((Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 2))\n    {(Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 1, (Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 3}\nFourColor/Curriculum/Actual/FiveVertexCycleIso.lean:158:6: error: Type mismatch: After simplification, term\n  hneigh3\n has type\n  @Eq (Set V) (G.neighborSet (p.getVert 3)) {p.getVert 2, p.getVert 4}\nbut is expected to have type",
+        "FourColor/Curriculum/Actual/FiveVertexCycleIso.lean:158:6: error: Type mismatch: After simplification, term\n  hneigh3\n has type\n  @Eq (Set V) (G.neighborSet (p.getVert 3)) {p.getVert 2, p.getVert 4}\nbut is expected to have type\n  @Eq (Set V) (G.neighborSet ((Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 3))\n    {(Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 2, (Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 4}\nFourColor/Curriculum/Actual/FiveVertexCycleIso.lean:159:6: error: Type mismatch: After simplification, term\n  hneigh4\n has type\n  G.neighborSet (p.getVert 4) = {p.getVert 3, x}\nbut is expected to have type",
+        "FourColor/Curriculum/Actual/FiveVertexCycleIso.lean:159:6: error: Type mismatch: After simplification, term\n  hneigh4\n has type\n  G.neighborSet (p.getVert 4) = {p.getVert 3, x}\nbut is expected to have type\n  G.neighborSet ((Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 4) =\n    {(Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 3, (Equiv.ofBijective (fun i => p.getVert ↑i) ⋯) 0}\nFourColor/Curriculum/Actual/FiveVertexCycleIso.lean:173:25: warning: try 'simp' instead of 'simpa'\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`\nFourColor/Curriculum/Actual/FiveVertexCycleIso.lean:174:25: warning: try 'simp' instead of 'simpa'\n",
+        "FourColor/Curriculum/Actual/FiveVertexCycleIso.lean:179:2: error: Type mismatch: After simplification, term\n  hadj_e i j\n has type\n  G.Adj (e i) (e j) ↔ SimpleGraph.Adj.{0} (SimpleGraph.cycleGraph 5) i j\nbut is expected to have type\n  G.Adj (e i) (e j) ↔ SimpleGraph.Adj.{u_1} (SimpleGraph.map (⇑e) (SimpleGraph.cycleGraph 5)) (e i) (e j)"
+      ],
+      "resolution": "pass",
+      "current_source_sha256": "02283f90301eb6c6101513b1dad2ebdeef2a084fef8ab5eaa4918254de46a080"
+    },
+    {
+      "module": "FourColor.Curriculum.Actual.SevenVertexSixteenWitness",
+      "exit": 1,
+      "source_sha256": "164f154f0a5d1ddc9a14dc7bc381a2da040fde8cfd29d0b4326034aa239c3512",
+      "observed_diagnostics": [
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:41:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨0, ⋯⟩)) = 0\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨0, ⋯⟩))) 0\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨0, ⋯⟩))).beq 0 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:41:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨1, ⋯⟩)) = 0",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:41:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨1, ⋯⟩)) = 0\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨1, ⋯⟩))) 0\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inl ((fun i => i) ⟨1, ⋯⟩))).beq 0 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨0, ⋯⟩)) = 2",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨0, ⋯⟩)) = 2\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨0, ⋯⟩))) 2\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨0, ⋯⟩))).beq 2 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨1, ⋯⟩)) = 2",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨1, ⋯⟩)) = 2\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨1, ⋯⟩))) 2\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨1, ⋯⟩))).beq 2 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨2, ⋯⟩)) = 2",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨2, ⋯⟩)) = 2\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨2, ⋯⟩))) 2\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨2, ⋯⟩))).beq 2 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨3, ⋯⟩)) = 2",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨3, ⋯⟩)) = 2\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨3, ⋯⟩))) 2\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨3, ⋯⟩))).beq 2 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨4, ⋯⟩)) = 2",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:46:18: error: Tactic `decide` failed for proposition\n  sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨4, ⋯⟩)) = 2\nbecause its `Decidable` instance\n  instDecidableEqNat (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨4, ⋯⟩))) 2\ndid not reduce to `isTrue` or `isFalse`.\n\nReduction got stuck at the `Decidable` instance\n  match h : (sevenVertexSixteenWitnessCompl.degree (Sum.inr ((fun i => i) ⟨4, ⋯⟩))).beq 2 with\n  | true => isTrue ⋯\n  | false => isFalse ⋯\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:73:6: error: Type mismatch\n  sevenVertexSixteenWitnessCompl_degree_inr i",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:73:6: error: Type mismatch\n  sevenVertexSixteenWitnessCompl_degree_inr i\nhas type\n  @SimpleGraph.degree (Fin 2 ⊕ Fin 5) sevenVertexSixteenWitnessCompl (Sum.inr i)\n      (SimpleGraph.instLocallyFiniteSumSumOfDecidableEq (Sum.inr i)) =\n    2\nbut is expected to have type\n  @SimpleGraph.degree (Fin 2 ⊕ Fin 5) sevenVertexSixteenWitnessCompl (↑⟨Sum.inr i, hx⟩)\n      (Subtype.fintype (Membership.mem (sevenVertexSixteenWitnessCompl.neighborSet ↑⟨Sum.inr i, hx⟩))) =\n    2\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:120:4: error: Type mismatch: After simplification, term\n  sevenVertexSixteenWitnessCompl_degree_inl 0",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:120:4: error: Type mismatch: After simplification, term\n  sevenVertexSixteenWitnessCompl_degree_inl 0\n has type\n  sevenVertexSixteenWitnessCompl.degree (Sum.inl 0) = 0\nbut is expected to have type\n  sevenVertexSixteenWitnessComplᶜᶜ.degree (Sum.inl 0) = 0\nFourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:121:4: error: Type mismatch: After simplification, term\n  sevenVertexSixteenWitnessCompl_degree_inl 1\n has type\n  sevenVertexSixteenWitnessCompl.degree (Sum.inl 1) = 0\nbut is expected to have type\n  sevenVertexSixteenWitnessComplᶜᶜ.degree (Sum.inl 1) = 0",
+        "FourColor/Curriculum/Actual/SevenVertexSixteenWitness.lean:121:4: error: Type mismatch: After simplification, term\n  sevenVertexSixteenWitnessCompl_degree_inl 1\n has type\n  sevenVertexSixteenWitnessCompl.degree (Sum.inl 1) = 0\nbut is expected to have type\n  sevenVertexSixteenWitnessComplᶜᶜ.degree (Sum.inl 1) = 0"
+      ],
+      "resolution": "pass",
+      "current_source_sha256": "199c5b097bb0f8abb0aac2bd9c723ba6476d8d7786095dcb09e057940db4c117"
+    }
+  ],
+  "checked_targets": [
+    "FourColor",
+    "FourColor.IntegrationCore"
+  ],
+  "failures": [],
+  "full_root_source_checks": {
+    "pass": 72
+  },
+  "admission_audit": {
+    "exit": 0,
+    "seconds": 94.45,
+    "output": "Checked coloring declarations without admissions: 1318; axiom dependencies: [propext, Classical.choice, Quot.sound]\n",
+    "imports": [
+      "FourColor",
+      "FourColor.IntegrationCore"
+    ]
+  },
+  "previous_verification_timeouts": {
+    "modules": [
+      "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseEnvironmentExecution",
+      "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedRuleInstantiationExecution",
+      "Mettapedia.Languages.MeTTa.PeTTa.ConfigurationLanguageDef"
+    ],
+    "timeout_seconds": 300
+  },
+  "dependency_rechecks": [
+    {
+      "module": "Mettapedia.Languages.MeTTa.PeTTa.ConfigurationLanguageDef",
+      "status": "pass",
+      "exit": 0,
+      "seconds": 543.95,
+      "sha256": "cfcbb2fa04ec672ae8788e03d08cb0e3b0c4b3a73600bfa56980e6dabfb97030",
+      "stable": true,
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "log": "Mettapedia.Languages.MeTTa.PeTTa.ConfigurationLanguageDef.log"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseEnvironmentExecution",
+      "status": "pass",
+      "exit": 0,
+      "seconds": 582.21,
+      "sha256": "64b91f420017456230b768d14d2285e5913a41a33880d51e9e9d8968bf7896bc",
+      "stable": true,
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "log": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralPremiseEnvironmentExecution.log"
+    },
+    {
+      "module": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedRuleInstantiationExecution",
+      "status": "pass",
+      "exit": 0,
+      "seconds": 639.89,
+      "sha256": "d9299b01ec75e727d97ea75a7c38b0932ab67c586019c32ae42e901c54a635a3",
+      "stable": true,
+      "warnings_as_errors": true,
+      "admission_warning": false,
+      "log": "Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedRuleInstantiationExecution.log"
+    }
+  ]
+}

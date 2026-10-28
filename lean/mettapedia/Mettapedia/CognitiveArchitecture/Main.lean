@@ -68,13 +68,13 @@ Unified value system extending OpenPsi/MicroPsi to handle full scope of human va
 -/
 
 import Mettapedia.CognitiveArchitecture.MetaMo.Main
-import Mettapedia.CognitiveArchitecture.Attention
-import Mettapedia.CognitiveArchitecture.Memory
 import Mettapedia.CognitiveArchitecture.Consciousness
 import Mettapedia.CognitiveArchitecture.Agent
 import Mettapedia.CognitiveArchitecture.CollectiveAgency
 import Mettapedia.CognitiveArchitecture.Agent.Bridges.PLN
 import Mettapedia.CognitiveArchitecture.AttentionEconomy
+import Mettapedia.CognitiveArchitecture.Memory
+import Mettapedia.CognitiveArchitecture.Attention
 import Mettapedia.CognitiveArchitecture.AttentionEconomyResourceControl
 import Mettapedia.CognitiveArchitecture.CognitiveSchematic
 import Mettapedia.CognitiveArchitecture.CognitiveSchematicAttentionEconomy

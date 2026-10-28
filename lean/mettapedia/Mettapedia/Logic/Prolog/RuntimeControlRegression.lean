@@ -1,0 +1,533 @@
+import Mettapedia.Logic.Prolog.RuntimeControl
+import Mettapedia.Logic.LP.RuntimeClauseEntry
+import Mettapedia.Logic.LP.RuntimeQueryRegression
+
+/-!
+# Runtime-control materialization regressions
+
+The fixture below checks two load-bearing properties at once: canonical source
+variables retain sharing in the LP heap, and source-level cut remains a typed
+control instruction rather than becoming an ordinary runtime atom.
+-/
+
+namespace Mettapedia.Logic.Prolog.RuntimeControlRegression
+
+open Mettapedia.Logic
+open LP.RuntimeTerm
+open LP.RuntimeQueryRegression
+open RuntimeControl
+
+def sharedUnifyThenCut : Goal qSig :=
+  .conj (.unify (.var .x) (.var .x)) .cut
+
+def sharedUnifyThenCutMaterializes : Bool :=
+  match materializeGoal (Memory.empty qSig) sharedUnifyThenCut with
+  | .error _ => false
+  | .ok result =>
+      match result.goals with
+      | [.unify left right, .cut] =>
+          left == right && result.memory.heap.size == 1 &&
+            result.memory.trail.size == 0
+      | _ => false
+
+/-- A typed Prolog body enters through the same head-unification mechanism as
+an LP clause.  The source query and clause are standardized into distinct
+scopes before they share one heap. -/
+def typedClauseUsesCanonicalEntry : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          match materializeClause queryResult.memory
+              (sourceClause.atScope 1) with
+          | .error _ => false
+          | .ok clauseResult =>
+              match LP.RuntimeClauseEntry.enter goal clauseResult.clause.head
+                  clauseResult.memory clauseResult.clause.body with
+              | .error _ => false
+              | .ok entered =>
+                  match entered.body,
+                      LP.RuntimeUnification.runSteps 16 entered.unifier with
+                  | [.cut], .terminal (.success _) => true
+                  | _, _ => false
+      | _ => false
+
+/-- The actual shared selected-clause transition accepts a typed Prolog
+clause.  It advances the persistent scope, enters the canonical unifier, and
+retains the typed body without acquiring any Prolog-specific search state. -/
+def typedClauseUsesSharedSelectStep : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let cursor : LP.RuntimeQuery.ClauseCursorCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            checkpoint := queryResult.memory.checkpoint
+            goal
+            clauses := [sourceClause]
+            cutDepth := 0
+            frames := []
+          }
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := { current := [], cutDepth := 0, frames := [] }
+            choices := []
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .select cursor
+          }
+          match LP.RuntimeQuery.selectStep clauseMaterializer state cursor with
+          | .terminal _ => false
+          | .databaseRequest _ _ => false
+          | .next next _ =>
+              match next.phase with
+              | .unifying attempt machine =>
+                  match attempt.body, LP.RuntimeUnification.runSteps 16 machine with
+                  | [.cut], .terminal (.success _) => next.nextScope == 2
+                  | _, _ => false
+              | _ => false
+      | _ => false
+
+/-- The shared unifier-success transition installs the typed Prolog body in
+the canonical query control state.  In particular, the transition cannot
+reinterpret `cut` as an LP atom or discard it at the control seam. -/
+def typedBodyUsesSharedUnifyingStep : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let cursor : LP.RuntimeQuery.ClauseCursorCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            checkpoint := queryResult.memory.checkpoint
+            goal
+            clauses := [sourceClause]
+            cutDepth := 0
+            frames := []
+          }
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := { current := [], cutDepth := 0, frames := [] }
+            choices := []
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .select cursor
+          }
+          match LP.RuntimeQuery.selectStep clauseMaterializer state cursor with
+          | .terminal _ => false
+          | .databaseRequest _ _ => false
+          | .next selected _ =>
+              match selected.phase with
+              | .unifying attempt machine =>
+                  match LP.RuntimeUnification.runSteps 16 machine with
+                  | .terminal (.success memory) =>
+                      match LP.RuntimeQuery.unifyingStep selected attempt
+                          (.terminal (.success memory)) with
+                      | .next installed none =>
+                          match installed.phase, installed.control.current with
+                          | .dispatch, [.cut] => installed.nextScope == 2
+                          | _, _ => false
+                      | _ => false
+                  | _ => false
+              | _ => false
+      | _ => false
+
+/-- Typed call classification transfers the real source clause list into a
+shared cursor and records the caller continuation in the canonical frame. -/
+def typedCallUsesSharedDispatch : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := {
+              current := [.call goal, .fail]
+              cutDepth := 0
+              frames := []
+            }
+            choices := []
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .dispatch
+          }
+          match step [sourceClause] state with
+          | .next next none =>
+              match next.phase with
+              | .select cursor =>
+                  match cursor.clauses, cursor.frames with
+                  | [_], [frame] =>
+                      cursor.cutDepth == 0 &&
+                        match frame.continuation with
+                        | [.fail] => true
+                        | _ => false
+                  | _, _ => false
+              | _ => false
+          | _ => false
+      | _ => false
+
+/-- A typed cut at nonzero depth keeps the caller's older cursor.  This is the
+non-degenerate pruning arm: replacing `retainBottom` with `[]` fails. -/
+def typedCutRetainsCallerChoice : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let older : LP.RuntimeQuery.ClauseCursorCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            checkpoint := queryResult.memory.checkpoint
+            goal
+            clauses := [sourceClause]
+            cutDepth := 0
+            frames := []
+          }
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := {
+              current := [.cut, .fail]
+              cutDepth := 1
+              frames := []
+            }
+            choices := [.clause older]
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .dispatch
+          }
+          match step [] state with
+          | .next next none =>
+              match next.control.current, next.choices with
+              | [.fail], [_] => true
+              | _, _ => false
+          | _ => false
+      | _ => false
+
+/-- A source conjunction containing real typed cut enters through the shared
+query opener with one checkpoint, no alternatives, and the exact flattened
+instruction order. -/
+def typedGoalUsesSharedOpenQuery : Bool :=
+  let source : Goal qSig :=
+    .conj (.call (unary .choose (.const .a))) .cut
+  match openQuery (Memory.empty qSig.scoped) 0 1 source with
+  | .error _ => false
+  | .ok state =>
+      match state.phase, state.control.current, state.choices,
+          state.control.frames with
+      | .dispatch, [.call _, .cut], [], [] =>
+          state.control.cutDepth == 0 && state.nextScope == 1
+      | _, _, _, _ => false
+
+/-- Collect typed-session answers while treating an open fuel boundary or
+runtime error as a failed regression, never as completion. -/
+def collectTyped (answerBudget : Nat) (session : Session qSig) :
+    Option (List QConst × Nat × Nat) :=
+  match answerBudget with
+  | 0 => none
+  | answerBudget + 1 =>
+      match pullSession 64 session with
+      | .open _ => none
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
+      | .terminal (.completed memory) _ =>
+          some ([], memory.heap.size, memory.trail.size)
+      | .answer answer next =>
+          match answerConstant? answer, collectTyped answerBudget next with
+          | some symbol, some (symbols, heapSize, trailSize) =>
+              some (symbol :: symbols, heapSize, trailSize)
+          | _, _ => none
+
+/-- End-to-end typed execution uses source clauses with typed cut, the shared
+opener, phase loop, cursor, graph unifier, pull loop, and cleanup.  The first
+clause commits and prunes the later `choose(b)` clause. -/
+def typedCutSessionRun : Option (List QConst × Nat × Nat) :=
+  let typedProgram : Program qSig := [
+    { head := unary .choose (.const .a), body := .cut },
+    { head := unary .choose (.const .b), body := .succeed }
+  ]
+  let query : Goal qSig := .call (unary .choose (.var .x))
+  match openEmpty typedProgram query with
+  | .error _ => none
+  | .ok session => collectTyped 3 session
+
+/-- Execute one typed source goal from an isolated empty session. -/
+def runTyped (program : Program qSig) (goal : Goal qSig) :
+    Option (List QConst × Nat × Nat) :=
+  match openEmpty program goal with
+  | .error _ => none
+  | .ok session => collectTyped 3 session
+
+/-- Inspect one uncaught typed exception after exact query cleanup. -/
+def runTypedRaised (program : Program qSig) (goal : Goal qSig) :
+    Option (QConst × Nat × Nat) :=
+  match openEmpty program goal with
+  | .error _ => none
+  | .ok session =>
+      match pullSession 256 session with
+      | .terminal (.raised packet memory) _ =>
+          match packet.term with
+          | .const symbol =>
+              some (symbol, memory.heap.size, memory.trail.size)
+          | _ => none
+      | _ => none
+
+def inlineUnifySuccess : Goal qSig :=
+  .unify (.var .x) (.const .a)
+
+def inlineUnifyFailureAfterBinding : Goal qSig :=
+  .conj (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .b))
+
+def isVarBeforeBinding : Goal qSig :=
+  .conj (.isVar (.var .x))
+    (.unify (.var .x) (.const .a))
+
+def isVarAfterBinding : Goal qSig :=
+  .conj (.unify (.var .x) (.const .a))
+    (.isVar (.var .x))
+
+/-- Left-first DFS exposes disjunct answers in source order. -/
+def disjSourceOrder : Goal qSig :=
+  .disj (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .b))
+
+/-- The failed left disjunct binds `X`; the right disjunct can observe that
+checkpoint restoration made `X` variable again before binding it to `b`. -/
+def disjRestoresBeforeRight : Goal qSig :=
+  .disj
+    (.conj (.unify (.var .x) (.const .a)) .fail)
+    (.conj (.isVar (.var .x))
+      (.unify (.var .x) (.const .b)))
+
+/-- A cut in the left disjunct removes the retained right branch. -/
+def disjCutPrunesRight : Goal qSig :=
+  .disj
+    (.conj (.unify (.var .x) (.const .a)) .cut)
+    (.unify (.var .x) (.const .b))
+
+/-- A callee-local cut removes the callee's later clause but retains the
+caller's older disjunction branch. -/
+def calleeCutRetainsCallerDisjProgram : Program qSig := [
+  {
+    head := unary .choose (.var .x)
+    body := .conj (.unify (.var .x) (.const .a)) .cut
+  },
+  {
+    head := unary .choose (.var .x)
+    body := .unify (.var .x) (.const .b)
+  }
+]
+
+def calleeCutRetainsCallerDisj : Goal qSig :=
+  .disj
+    (.call (unary .choose (.var .x)))
+    (.unify (.var .x) (.const .c))
+
+/-- Hard if commits to the condition's first answer. -/
+def hardIfFirstConditionSuccess : Goal qSig :=
+  .ifThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+/-- Failure in `Then` does not retry the condition or enter `Else`. -/
+def hardIfThenFailureDoesNotRetry : Goal qSig :=
+  .ifThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    .fail
+    (.unify (.var .x) (.const .c))
+
+def hardIfFalseUsesElse : Goal qSig :=
+  .ifThenElse .fail
+    (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .c))
+
+/-- A cut in the condition removes its inner right disjunct but preserves the
+conditional's else marker; subsequent failure therefore enters `Else`. -/
+def hardIfConditionCutPreservesElse : Goal qSig :=
+  .ifThenElse
+    (.disj
+      (.conj (.unify (.var .x) (.const .a))
+        (.conj .cut .fail))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+/-- After condition success, `Then` runs at the caller's normal cut depth, so
+its cut can prune an older surrounding disjunction. -/
+def hardIfThenCutPrunesOuterDisj : Goal qSig :=
+  .disj
+    (.ifThenElse .succeed
+      (.conj (.unify (.var .x) (.const .a)) .cut)
+      (.unify (.var .x) (.const .b)))
+    (.unify (.var .x) (.const .c))
+
+/-- Soft if keeps all condition answers and runs `Then` for each. -/
+def softIfKeepsConditionAnswers : Goal qSig :=
+  .softIfThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+/-- Failure in `Then` retries the soft condition rather than entering `Else`. -/
+def softIfThenFailureRetriesCondition : Goal qSig :=
+  .softIfThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    (.unify (.var .x) (.const .b))
+    (.unify (.var .x) (.const .c))
+
+def softIfFalseUsesElse : Goal qSig :=
+  .softIfThenElse .fail
+    (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .c))
+
+/-- A cut inside the soft condition prunes its right disjunct but preserves the
+soft else delimiter, allowing `Else` after the committed condition fails. -/
+def softIfConditionCutPreservesElse : Goal qSig :=
+  .softIfThenElse
+    (.disj
+      (.conj (.unify (.var .x) (.const .a))
+        (.conj .cut .fail))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+def softIfThenCutPrunesOuterDisj : Goal qSig :=
+  .disj
+    (.softIfThenElse .succeed
+      (.conj (.unify (.var .x) (.const .a)) .cut)
+      (.unify (.var .x) (.const .b)))
+    (.unify (.var .x) (.const .c))
+
+def onceKeepsFirstAnswer : Goal qSig :=
+  .once (.disj (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .b)))
+
+def onceFailureHasNoAnswer : Goal qSig :=
+  .once .fail
+
+/-- A cut inside `once/1` prunes its guarded alternatives but preserves the
+caller's older right branch. -/
+def onceCutPreservesCallerDisj : Goal qSig :=
+  .disj
+    (.once (.disj
+      (.conj (.unify (.var .x) (.const .a)) (.conj .cut .fail))
+      (.unify (.var .x) (.const .b))))
+    (.unify (.var .x) (.const .c))
+
+def onceThenCutPrunesCallerDisj : Goal qSig :=
+  .disj
+    (.conj (.once .succeed)
+      (.conj (.unify (.var .x) (.const .a)) .cut))
+    (.unify (.var .x) (.const .c))
+
+/-- A failed guarded goal restores its binding before the caller's alternative
+is resumed. -/
+def onceFailureRestoresCallerAlternative : Goal qSig :=
+  .disj
+    (.once (.conj (.unify (.var .x) (.const .a)) .fail))
+    (.conj (.isVar (.var .x)) (.unify (.var .x) (.const .b)))
+
+def catchFreshCatcher : Goal qSig :=
+  .catch (.throw (.const .a)) (.var .x)
+    (.unify (.var .x) (.const .a))
+
+/-- The protected binding participates in throw-time catcher selection, even
+though recovery reconstruction starts again from the catch-entry heap. -/
+def catchThrowTimeBindingRejects : Goal qSig :=
+  .catch
+    (.conj (.unify (.var .x) (.const .b)) (.throw (.const .a)))
+    (.var .x) .succeed
+
+def catchRecoveryRethrow : Goal qSig :=
+  .catch (.throw (.const .a)) (.var .x) (.throw (.const .b))
+
+def catchGuardCutRetainsCaller : Goal qSig :=
+  .disj
+    (.catch
+      (.conj (.unify (.var .x) (.const .a)) (.conj .cut .fail))
+      (.const .b) .succeed)
+    (.unify (.var .x) (.const .c))
+
+#guard sharedUnifyThenCutMaterializes
+#guard typedClauseUsesCanonicalEntry
+#guard typedClauseUsesSharedSelectStep
+#guard typedBodyUsesSharedUnifyingStep
+#guard typedCallUsesSharedDispatch
+#guard typedCutRetainsCallerChoice
+#guard typedGoalUsesSharedOpenQuery
+#guard typedCutSessionRun == some ([.a], 0, 0)
+#guard runTyped [] inlineUnifySuccess == some ([.a], 0, 0)
+#guard runTyped [] inlineUnifyFailureAfterBinding == some ([], 0, 0)
+#guard runTyped [] isVarBeforeBinding == some ([.a], 0, 0)
+#guard runTyped [] isVarAfterBinding == some ([], 0, 0)
+#guard runTyped [] disjSourceOrder == some ([.a, .b], 0, 0)
+#guard runTyped [] disjRestoresBeforeRight == some ([.b], 0, 0)
+#guard runTyped [] disjCutPrunesRight == some ([.a], 0, 0)
+#guard runTyped calleeCutRetainsCallerDisjProgram calleeCutRetainsCallerDisj ==
+  some ([.a, .c], 0, 0)
+#guard runTyped [] hardIfFirstConditionSuccess == some ([.a], 0, 0)
+#guard runTyped [] hardIfThenFailureDoesNotRetry == some ([], 0, 0)
+#guard runTyped [] hardIfFalseUsesElse == some ([.c], 0, 0)
+#guard runTyped [] hardIfConditionCutPreservesElse == some ([.c], 0, 0)
+#guard runTyped [] hardIfThenCutPrunesOuterDisj == some ([.a], 0, 0)
+#guard runTyped [] softIfKeepsConditionAnswers == some ([.a, .b], 0, 0)
+#guard runTyped [] softIfThenFailureRetriesCondition == some ([.b], 0, 0)
+#guard runTyped [] softIfFalseUsesElse == some ([.c], 0, 0)
+#guard runTyped [] softIfConditionCutPreservesElse == some ([.c], 0, 0)
+#guard runTyped [] softIfThenCutPrunesOuterDisj == some ([.a], 0, 0)
+#guard runTyped [] onceKeepsFirstAnswer == some ([.a], 0, 0)
+#guard runTyped [] onceFailureHasNoAnswer == some ([], 0, 0)
+#guard runTyped [] onceCutPreservesCallerDisj == some ([.c], 0, 0)
+#guard runTyped [] onceThenCutPrunesCallerDisj == some ([.a], 0, 0)
+#guard runTyped [] onceFailureRestoresCallerAlternative == some ([.b], 0, 0)
+#guard runTyped [] catchFreshCatcher == some ([.a], 0, 0)
+#guard runTypedRaised [] catchThrowTimeBindingRejects == some (.a, 0, 0)
+#guard runTypedRaised [] catchRecoveryRethrow == some (.b, 0, 0)
+#guard runTyped [] catchGuardCutRetainsCaller == some ([.c], 0, 0)
+
+end Mettapedia.Logic.Prolog.RuntimeControlRegression

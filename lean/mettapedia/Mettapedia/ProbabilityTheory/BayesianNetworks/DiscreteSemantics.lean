@@ -28,7 +28,7 @@ open scoped Classical BigOperators ENNReal
 
 namespace BayesianNetwork
 
-open DirectedGraph ProbabilityTheory
+open DirectedGraph _root_.ProbabilityTheory
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
@@ -159,7 +159,6 @@ lemma pmf_nonempty {α : Type*} [Fintype α] (p : PMF α) : Nonempty α := by
   by_contra h
   simp only [not_nonempty_iff] at h
   have h_sum : ∑ a : α, (p a : ℝ≥0∞) = 0 := by
-    haveI : IsEmpty α := h
     exact Finset.sum_eq_zero (fun a _ => (h.false a).elim)
   have h_one := pmf_sum_eq_one p
   rw [h_sum] at h_one
@@ -169,7 +168,7 @@ omit [Fintype V] [DecidableEq V] [(v : V) → Fintype (bn.stateSpace v)]
   [∀ (v : V), Nonempty (bn.stateSpace v)] in
 /-- A sink vertex is not a parent of any vertex. -/
 lemma sink_not_parent' (s : V) (hs : bn.graph.IsSink s) (v : V) : s ∉ bn.parents v := by
-  simp only [BayesianNetwork.parents, DirectedGraph.parents, Set.mem_setOf_eq]
+  simp only [BayesianNetwork.parents, DirectedGraph.parents, Set.mem_ofPred_eq]
   rw [DirectedGraph.isSink_iff] at hs
   exact hs v
 
@@ -240,7 +239,7 @@ private lemma jointWeight_split_sink (cpt : bn.DiscreteCPT) (s : V) (_hs : bn.gr
   -- Since {v | ¬(v ≠ s)} = {s}, this is a product over a singleton
   have h_singleton : ∀ (v : { v : V // ¬(v ≠ s) }), v.val = s := by
     intro ⟨v, hv⟩
-    push_neg at hv
+    push Not at hv
     exact hv
   -- The product over a singleton type equals the single value
   have h_unique : Unique { v : V // ¬(v ≠ s) } := by
@@ -251,7 +250,7 @@ private lemma jointWeight_split_sink (cpt : bn.DiscreteCPT) (s : V) (_hs : bn.gr
   conv_lhs =>
     arg 2; ext v
     rw [h_singleton v]
-  haveI : Unique { v : V // ¬(v ≠ s) } := h_unique
+  have : Unique { v : V // ¬(v ≠ s) } := h_unique
   rw [Fintype.prod_unique]
 
 omit [(v : V) → Fintype (bn.stateSpace v)] [∀ (v : V), Nonempty (bn.stateSpace v)] in
@@ -408,7 +407,7 @@ theorem jointWeight_sum_eq_one (cpt : bn.DiscreteCPT) :
             exact sink_not_parent' s hs v hu
           pa' ⟨u, hus⟩ (by
             simp only [bn', G', BayesianNetwork.parents, DirectedGraph.parents,
-                Set.mem_setOf_eq] at hu ⊢
+                Set.mem_ofPred_eq] at hu ⊢
             exact hu)
         cpt.cpt v pa
     }

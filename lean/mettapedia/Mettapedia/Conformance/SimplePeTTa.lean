@@ -1,6 +1,5 @@
-import Algorithms.MeTTa.PeTTa.Lowering
+import Algorithms.MeTTa.PeTTa.LegacySessionBridge
 import Algorithms.MeTTa.ProfileChecksum
-import Algorithms.MeTTa.Simple.Session
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
 import Mettapedia.OSLF.MeTTaIL.Engine
 import Mettapedia.OSLF.MeTTaIL.ContextualStep
@@ -335,9 +334,6 @@ private def runSpec (cfg : FrozenPeTTaConfig) (query : CPattern) : List CPattern
   let querySpec := coreToSpecPattern query
   let outSpec := evalSpecAux cfg cfg.maxNodes [(querySpec, 0)] []
   outSpec.map specToCorePattern
-
-private def toSession (cfg : FrozenPeTTaConfig) : Algorithms.MeTTa.Simple.Session :=
-  Algorithms.MeTTa.Simple.Session.new (toSpecBundle cfg)
 
 private def runSimple (cfg : FrozenPeTTaConfig) (query : CPattern) : List CPattern :=
   let sess := toSession cfg
@@ -1107,5 +1103,8 @@ def allChecksPass : Bool :=
 #eval ("checksumPairMatchFriends", checksumPair cfgMatchSelfFriends)
 #eval ("checksumPairMatchShared", checksumPair cfgMatchSelfShared)
 #eval ("checksumChecksPass", checksumChecksPass)
+
+#guard checksumChecksPass
+#guard allChecksPass
 
 end Mettapedia.Conformance.SimplePeTTa

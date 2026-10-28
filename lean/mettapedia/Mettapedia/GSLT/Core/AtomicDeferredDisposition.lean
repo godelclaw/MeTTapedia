@@ -428,7 +428,7 @@ def oldProposal : CapturedFamilyProposal Nat factFamily :=
 def live : Snapshot Nat (Finset Nat) :=
   ⟨8, {0}⟩
 
-def conflict : ¬ Matches
+theorem conflict : ¬ Matches
     (AtomicCertifiedBatchFamily.transactionSpec
       (Revision := Nat) (family := factFamily)) oldProposal live := by
   intro current

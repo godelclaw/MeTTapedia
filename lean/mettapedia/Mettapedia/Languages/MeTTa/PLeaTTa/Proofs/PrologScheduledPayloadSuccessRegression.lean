@@ -1,0 +1,175 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessRegression
+Purpose: Reject stuttering and hidden-head readings of the paired scheduled
+  retained-head success transition.
+Trusted boundary: none
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessCarrierBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadSuccessRegression
+
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.GoalSemantics
+open PeTTaSpec.PrologCore.OpenSubstitution
+open PeTTaSpec.PrologCore.Resolver
+open PrologActivatedProductStepBridge
+open PrologBodyFailureOuterResourceCatchupBridge
+open PrologBodyFailureResourceTransitionBridge
+open PrologHeterogeneousPrefixBridge
+open PrologPersistentFreeScheduledPayloadBridge
+open PrologRootClosedAnswerBridge
+open PrologRepresentativeProductActivationBridge
+open PrologScheduledHistoryBuildBridge
+open PrologScheduledPayloadLandingBridge
+open PrologScheduledPayloadPostHeadBridge
+open PrologScheduledPayloadRejectionBridge
+open PrologScheduledPayloadRejectionBridge.ScheduledSelectedHeadTransition
+open PrologScheduledPayloadSuccessBridge
+open PrologSourceProductContextBridge
+
+/-- Successful head activation contributes one real source transition after
+all scheduled-history, outer-resource, and internal-rejection catch-up. -/
+theorem selected_success_cost_is_strictly_additive
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (partition : RootPayloadPartition before) :
+    postAnswerSuccessfulHeadCount ready transition partition =
+        ready.result.historyBuild.cells.length +
+          (partition.rejectionSteps + partition.crossedFrames.length + 1) +
+          transition.frontier.rejectedCount + 1 ∧
+      postAnswerSuccessfulHeadCount ready transition partition ≠
+        ready.result.historyBuild.cells.length +
+          (partition.rejectionSteps + partition.crossedFrames.length + 1) +
+          transition.frontier.rejectedCount := by
+  constructor
+  · rfl
+  · simp [postAnswerSuccessfulHeadCount]
+
+/-- The executable success step cannot stutter: it removes the selected
+full-head equality from `cur` before installing the cumulative MGU. -/
+theorem successful_fine_step_is_not_stutter
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (installed : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst) :
+    successfulFineState transition installed ≠ selectedFineState before := by
+  intro equality
+  have currentEquality :=
+    congrArg (fun state : DemandDrivenStep.OpenConf => state.control.cur)
+      equality
+  have selectedCurrent :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadOpenConfBridge.ScheduledSelectedHeadTransition.fineCurrentExact
+      transition
+  have selectedCurrentAtState :
+      (selectedFineState before).control.cur =
+        some
+          (Mettapedia.Languages.MeTTa.PLeaTTa.Goal.eq
+                (.expr
+                  (selection.selected.resource.args ++
+                    [selection.selected.resource.res]))
+                (.expr
+                  (transition.copied.params ++ [transition.copied.result])) ::
+              transition.copied.body ++ selection.selected.resource.rest,
+            selection.selected.resource.binding) := by
+    simpa [selectedFineState] using selectedCurrent
+  rw [successfulFineState,
+    PrologOrdinaryStepBridge.unifySuccessor_current,
+    selectedCurrentAtState] at currentEquality
+  have goalsEquality := congrArg (fun item => item.1)
+    (Option.some.inj currentEquality)
+  have lengths := congrArg List.length goalsEquality
+  simp at lengths
+
+/-- The source success step is structurally different from the selected
+ready frontier: it installs an active left clause body and retained right
+cursor under the predicate cut boundary.  Arbitrary outer frames cannot hide
+that change. -/
+theorem successful_source_step_is_not_stutter
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (independentResult : Substitution) :
+    successfulSourceFrontier transition independentResult ≠
+      sourceFrontier transition transition.finish := by
+  intro equality
+  have inner :=
+    ActiveProductContext.plug_injective transition.postLaterContext equality
+  simp [sourceFrame, frameRetainedFrontier, activeSourceProductAt] at inner
+
+/-- Any inhabited paired result exposes genuine source and fine transitions
+and both literal endpoints reject a stuttering interpretation. -/
+theorem paired_success_exposes_both_real_steps
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    {transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session}
+    {partition : RootPayloadPartition before}
+    {independentResult : Substitution}
+    {nextAlpha : List (LogicVar × String)}
+    {sourceCanonical flattened : Canonical.TreeSubstitution}
+    {installed : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst}
+    (relation :
+      ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+        transition partition independentResult nextAlpha sourceCanonical
+        flattened installed) :
+    RawStep before.carrier.index.session
+        (sourceFrontier transition transition.finish) [] .none
+        before.carrier.index.session
+        (.running (successfulSourceFrontier transition independentResult)) ∧
+      DemandDrivenCallStep.Step prog gt (.ready (selectedFineState before))
+        (.ready (successfulFineState transition installed)) ∧
+      successfulSourceFrontier transition independentResult ≠
+        sourceFrontier transition transition.finish ∧
+      successfulFineState transition installed ≠ selectedFineState before := by
+  exact
+    ⟨relation.sourceActivation, relation.fineStep,
+      successful_source_step_is_not_stutter transition independentResult,
+      successful_fine_step_is_not_stutter transition installed⟩
+
+/-- A retained call-start cursor and a call freshly prepared from the current
+post-retraction database can have observably different clause occurrence
+views.
+
+This is the logical-update anti-vacuity guard for the persistent-free success
+carrier: current-session domination must not be strengthened to current
+database membership of every retained clause.  The old occurrence remains a
+valid backtracking resource while the new call correctly cannot see it. -/
+theorem retained_snapshot_need_not_equal_current_call_view :
+    ∃ retained current : PreparedCursor,
+      retained.callGeneration < current.callGeneration ∧
+        1 ∈ retained.remaining.map (fun branch => branch.sourceId) ∧
+        1 ∉ current.remaining.map (fun branch => branch.sourceId) := by
+  let current :=
+    (prepareCall
+      { database := Resolver.witnessAfterRetract, nextFresh := 10 }
+      Resolver.witnessRequest).1
+  refine ⟨Resolver.witnessPreparedCursor, current, ?_, ?_, ?_⟩
+  · simpa [current] using
+      Resolver.witness_prepared_nested_call_has_new_generation.2
+  · exact Resolver.witness_prepared_call_retains_retracted_clause
+  · rw [show
+        current.remaining.map (fun branch => branch.sourceId) = [0, 2] by
+          simpa [current] using
+            Resolver.witness_prepared_new_call_hides_retraction]
+    simp
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadSuccessRegression

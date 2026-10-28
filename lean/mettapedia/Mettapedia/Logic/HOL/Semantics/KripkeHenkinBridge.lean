@@ -34,4 +34,3 @@ domains: `KripkeVarying.Canonical.provable_iff_consequence`.  With constant
 domains, forcing disjunction and the existential on covers gives a complete
 Beth semantics: `provable_iff_bethConsequence_param_free`.
 -/
-

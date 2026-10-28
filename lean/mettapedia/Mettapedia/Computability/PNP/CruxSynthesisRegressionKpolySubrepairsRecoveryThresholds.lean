@@ -1,0 +1,197 @@
+import Mettapedia.Computability.PNP.CruxKpolySubrepairCoverage
+
+/-!
+# Regression checks for PNP Kpoly subrepairs: ZAB and recovery-threshold subrepair checks
+
+This module is part of the decomposed Kpoly subrepair regression ledger.
+It keeps the historical `CruxSynthesisRegression` theorem namespace while
+separating membership checks by mathematical role.
+-/
+
+namespace Mettapedia.Computability.PNP.CruxSynthesisRegression
+
+open Mettapedia.Computability.PNP
+
+universe u v w z
+
+theorem current_pnp_kpoly_exact_zab_bad_code_large_region_disagreement_regression :
+    PNPKpolySubrepairClass.exactZABBadCodeLargeRegionDisagreementBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.exactZABBadCodeLargeRegionDisagreementBoundary
+
+theorem current_pnp_kpoly_actual_local_zab_decision_list_visible_card_gap_regression :
+    PNPKpolySubrepairClass.actualLocalZABDecisionListVisibleCardGapLowerBound ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalZABDecisionListVisibleCardGapLowerBound
+
+theorem current_pnp_kpoly_actual_local_zab_decision_list_bitvec_truth_table_gap_regression :
+    PNPKpolySubrepairClass.actualLocalZABDecisionListBitVecTruthTableGapObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalZABDecisionListBitVecTruthTableGapObstruction
+
+theorem current_pnp_kpoly_surjective_actual_local_sparse_threshold_erm_visible_budget_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalSparseThresholdERMVisibleBudgetBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalSparseThresholdERMVisibleBudgetBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_sparse_threshold_erm_visible_width_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalSparseThresholdERMVisibleWidthBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalSparseThresholdERMVisibleWidthBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_no_extractor_sparse_threshold_erm_visible_width_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorSparseThresholdERMVisibleWidthBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorSparseThresholdERMVisibleWidthBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_recovery_payload_predictor_card_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryPayloadPredictorCardObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryPayloadPredictorCardObstruction
+
+theorem current_pnp_kpoly_surjective_actual_local_no_extractor_recovery_payload_predictor_card_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorRecoveryPayloadPredictorCardObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorRecoveryPayloadPredictorCardObstruction
+
+theorem current_pnp_kpoly_actual_local_recovery_payload_injective_probe_card_regression :
+    PNPKpolySubrepairClass.actualLocalRecoveryPayloadInjectiveProbeCardObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalRecoveryPayloadInjectiveProbeCardObstruction
+
+theorem current_pnp_kpoly_actual_local_no_extractor_recovery_payload_injective_probe_card_regression :
+    PNPKpolySubrepairClass.actualLocalNoExtractorRecoveryPayloadInjectiveProbeCardObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalNoExtractorRecoveryPayloadInjectiveProbeCardObstruction
+
+theorem current_pnp_kpoly_surjective_actual_local_recovery_uniform_cardinality_threshold_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryUniformCardinalityThresholdBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryUniformCardinalityThresholdBoundary
+
+theorem current_pnp_kpoly_full_rule_actual_local_recovery_bitvec_cardinality_threshold_regression :
+    PNPKpolySubrepairClass.fullRuleActualLocalRecoveryBitVecCardinalityThresholdBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.fullRuleActualLocalRecoveryBitVecCardinalityThresholdBoundary
+
+theorem current_pnp_kpoly_full_rule_actual_local_no_extractor_recovery_bitvec_cardinality_threshold_regression :
+    PNPKpolySubrepairClass.fullRuleActualLocalNoExtractorRecoveryBitVecCardinalityThresholdObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.fullRuleActualLocalNoExtractorRecoveryBitVecCardinalityThresholdObstruction
+
+theorem current_pnp_kpoly_full_rule_actual_local_recovery_threshold_width_regression :
+    PNPKpolySubrepairClass.fullRuleActualLocalRecoveryThresholdWidthBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.fullRuleActualLocalRecoveryThresholdWidthBoundary
+
+theorem current_pnp_kpoly_full_rule_actual_local_no_extractor_recovery_threshold_width_regression :
+    PNPKpolySubrepairClass.fullRuleActualLocalNoExtractorRecoveryThresholdWidthObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.fullRuleActualLocalNoExtractorRecoveryThresholdWidthObstruction
+
+theorem current_pnp_kpoly_bounded_sample_plugin_majority_actual_local_recovery_threshold_width_regression :
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalRecoveryThresholdWidthBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalRecoveryThresholdWidthBoundary
+
+theorem current_pnp_kpoly_bounded_sample_plugin_majority_actual_local_no_extractor_recovery_threshold_width_regression :
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalNoExtractorRecoveryThresholdWidthObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalNoExtractorRecoveryThresholdWidthObstruction
+
+theorem current_pnp_kpoly_actual_local_recovery_pairwise_agreement_regression :
+    PNPKpolySubrepairClass.actualLocalRecoveryPairwiseAgreementBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalRecoveryPairwiseAgreementBoundary
+
+theorem current_pnp_kpoly_actual_local_no_extractor_recovery_pairwise_agreement_regression :
+    PNPKpolySubrepairClass.actualLocalNoExtractorRecoveryPairwiseAgreementObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalNoExtractorRecoveryPairwiseAgreementObstruction
+
+theorem current_pnp_kpoly_full_rule_actual_local_recovery_threshold_visible_budget_regression :
+    PNPKpolySubrepairClass.fullRuleActualLocalRecoveryThresholdVisibleBudgetBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.fullRuleActualLocalRecoveryThresholdVisibleBudgetBoundary
+
+theorem current_pnp_kpoly_full_rule_actual_local_no_extractor_recovery_threshold_visible_budget_regression :
+    PNPKpolySubrepairClass.fullRuleActualLocalNoExtractorRecoveryThresholdVisibleBudgetObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.fullRuleActualLocalNoExtractorRecoveryThresholdVisibleBudgetObstruction
+
+theorem current_pnp_kpoly_bounded_sample_plugin_majority_actual_local_recovery_threshold_visible_budget_regression :
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalRecoveryThresholdVisibleBudgetBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalRecoveryThresholdVisibleBudgetBoundary
+
+theorem current_pnp_kpoly_bounded_sample_plugin_majority_actual_local_no_extractor_recovery_threshold_visible_budget_regression :
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalNoExtractorRecoveryThresholdVisibleBudgetObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.boundedSamplePluginMajorityActualLocalNoExtractorRecoveryThresholdVisibleBudgetObstruction
+
+theorem current_pnp_kpoly_surjective_actual_local_recovery_proper_region_mass_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryProperRegionMassBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalRecoveryProperRegionMassBoundary
+
+theorem current_pnp_kpoly_surjective_actual_local_no_extractor_recovery_proper_region_mass_regression :
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorProperRegionMassBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.surjectiveActualLocalNoExtractorProperRegionMassBoundary
+
+theorem current_pnp_kpoly_actual_local_recovery_heavy_region_trace_card_regression :
+    PNPKpolySubrepairClass.actualLocalRecoveryHeavyRegionTraceCardBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalRecoveryHeavyRegionTraceCardBoundary
+
+theorem current_pnp_kpoly_actual_local_no_extractor_recovery_heavy_region_trace_card_regression :
+    PNPKpolySubrepairClass.actualLocalNoExtractorRecoveryHeavyRegionTraceCardObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalNoExtractorRecoveryHeavyRegionTraceCardObstruction
+
+theorem current_pnp_kpoly_actual_local_injective_recovery_uniform_cardinality_threshold_regression :
+    PNPKpolySubrepairClass.actualLocalInjectiveRecoveryUniformCardinalityThresholdBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalInjectiveRecoveryUniformCardinalityThresholdBoundary
+
+theorem current_pnp_kpoly_actual_local_injective_recovery_bitvec_cardinality_threshold_regression :
+    PNPKpolySubrepairClass.actualLocalInjectiveRecoveryBitVecCardinalityThresholdBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalInjectiveRecoveryBitVecCardinalityThresholdBoundary
+
+theorem current_pnp_kpoly_actual_local_no_injective_extractor_recovery_bitvec_cardinality_threshold_regression :
+    PNPKpolySubrepairClass.actualLocalNoInjectiveExtractorRecoveryBitVecCardinalityThresholdObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalNoInjectiveExtractorRecoveryBitVecCardinalityThresholdObstruction
+
+end Mettapedia.Computability.PNP.CruxSynthesisRegression

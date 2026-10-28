@@ -1,0 +1,16 @@
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactCore
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactInjective
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactObservedLeftInverse
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactObservedInjective
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactTolerance
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactCollision
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationBias
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationTolerance
+
+/-!
+# P vs NP grassroots: finite-coin postprocessing foundations
+
+Compatibility umbrella for the finite-coin postprocessing library.  Exact
+preservation, signed-bias accounting, and approximate tolerance/defect bounds
+live in the sibling semantic modules.
+-/

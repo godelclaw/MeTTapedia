@@ -8,7 +8,6 @@ LOG_FILE="$LOG_DIR/simplehe_conformance_ci.log"
 mkdir -p "$LOG_DIR"
 
 cd "$ROOT_DIR"
-ulimit -v 6291456
 lake build Mettapedia.Conformance.SimpleHE 2>&1 | tee "$LOG_FILE"
 
 if ! grep -Fq '("allChecksPass", true)' "$LOG_FILE"; then

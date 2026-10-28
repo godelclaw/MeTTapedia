@@ -1,0 +1,23 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstructionCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressurePrimitive
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureEvaluation
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureDefect
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureClosure
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeShearAccelerationObstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeUniformAccelerationExample
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureMomentumClosure
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeRadialLinearExamples
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeLinearIncompressibleExamples
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeLinearMatrixExamples
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeLocalExistence
+
+/-!
+# Finite-mode spatial reconstruction umbrella
+
+The finite-mode reconstruction library is split by semantic layer: core
+reconstruction and pressure-gradient synthesis, polynomial pressure synthesis,
+the shear acceleration obstruction, uniform-acceleration example,
+polynomial-pressure momentum closure, radial and linear examples,
+linear-matrix examples, and local reconstructed existence. This file preserves
+the historical import path.
+-/

@@ -15,7 +15,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.Topos.ConstructivePresheaf
 
-open CategoryTheory
+open _root_.CategoryTheory
 open scoped ConstructivePresheaf
 
 universe u

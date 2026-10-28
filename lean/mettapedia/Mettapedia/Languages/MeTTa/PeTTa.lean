@@ -10,6 +10,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.FaultObservation
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationLanguageDef
 import Mettapedia.Languages.MeTTa.PeTTa.UpstreamAgreement
+import Mettapedia.Languages.MeTTa.PeTTa.PythonTextBoundary
 import Mettapedia.Languages.MeTTa.PeTTa.Eval
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataNormalizedExecution

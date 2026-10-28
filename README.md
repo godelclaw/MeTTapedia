@@ -48,15 +48,18 @@ The flagship Lean package has a focused PLN/WM-PLN curriculum and bridge map:
 ## Building the flagship Lean library
 
 ```bash
+./lean/bootstrap_local_repos.sh
 cd lean/mettapedia
 lake exe cache get   # mathlib oleans
-lake build
+scripts/check_library_sanity.sh
 ```
 
-Toolchain: Lean 4.28.0 / Mathlib v4.28.0. External Lean dependencies
-(Foundation, exchangeability, provenance, OrderedSemigroups, Metatheory,
-CertifyingDatalog, mm-lean4) are git-pinned in `lakefile.toml` and fetched
-automatically by Lake. The other Lean packages build the same way from their
+The flagship package uses Lean 4.33.1, with Mathlib pinned in
+`lean/mettapedia/lakefile.lean` and `lake-manifest.json`. Its external Lean
+dependencies use editable local checkouts prepared by the bootstrap script;
+the migration bundle records their required source profiles. See
+`lean/mettapedia/README.md` for qualification and source-coverage checks.
+The other Lean packages declare their own toolchains and build from their
 own directories.
 
 Prover toolchains for the non-Lean subtrees (Megalodon, Mizar, Isabelle,
@@ -67,7 +70,7 @@ HOL4/CakeML) are not vendored here; install them separately:
 
 ## Provenance, attribution, licensing
 
--  This MIT license applies to Mettapedia's own code. Third-party components under lean/externals/ retain their own licenses (see each subdirectory).
+-  This MIT license applies to MeTTapedia's own code. Third-party components under lean/externals/ retain their own licenses (see each subdirectory).
 - `megalodon/theory/mizar/mml/` contains original Megalodon developments whose
   statements parallel MML articles — see the README there for MML attribution.
 - `megalodon/theory/logic/GoedelGod.mg` is Chad E. Brown's Megalodon port of
@@ -75,5 +78,9 @@ HOL4/CakeML) are not vendored here; install them separately:
   in-file).
 - `lean/foet/Foet/AfpGewirth/` derives from the Fuenmayor–Benzmüller AFP
   entry.
-- Proof-gap review: search Lean proof-gap markers in any subtree; completeness
-  varies by subproject and is documented locally.
+- `cakeml/milawa-ref/`, if present locally, is a vendored reference copy of
+  Magnus O. Myreen's Milawa theorem prover (from CakeML). It carries only a
+  copyright notice and no bundled license, so it is **git-ignored and never
+  committed here**; fetch it from upstream CakeML if needed.
+- Proof-gap review: `rg -n "sorry"` in any subtree; completeness varies by
+  subproject and is documented locally.

@@ -25,7 +25,7 @@ namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNBayesNetFastRules
 
 open scoped Classical BigOperators ENNReal
 
-open MeasureTheory ProbabilityTheory Set
+open MeasureTheory _root_.Mettapedia.ProbabilityTheory Set
 
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.ProbabilityTheory.BayesianNetworks
@@ -217,7 +217,7 @@ lemma jointWeight_split_C (c : ChainBN.stateSpace Three.C) (r : Rest) :
         have hx : ¬(x.val ≠ Three.C) := x.property
         simpa using (not_not.mp hx)
       exact this
-  haveI : Unique { v : Three // ¬(v ≠ Three.C) } := h_unique
+  have : Unique { v : Three // ¬(v ≠ Three.C) } := h_unique
   have hC : (∏ v : { v : Three // ¬(v ≠ Three.C) }, nodeProb cpt (cfg c r) v.val) =
       nodeProb cpt (cfg c r) Three.C := by
     classical
@@ -1000,7 +1000,7 @@ theorem forkBN_neg_screeningOff
   have hmul := forkBN_screeningOff_mul cpt true false true
   -- Rewrite eventEq B false → (eventEq B true)ᶜ = fBᶜ
   have hBool : eventEq (bn := forkBN) Three.B false = fBᶜ := by
-    ext ω; simp only [eventEq, Set.mem_setOf_eq, Set.mem_compl_iff]
+    ext ω; simp only [eventEq, Set.mem_ofPred_eq, Set.mem_compl_iff]
     show ω Three.B = false ↔ ¬ω Three.B = true
     exact ⟨fun h => h ▸ Bool.false_ne_true, Bool.eq_false_iff.mpr⟩
   simp only [hBool] at hmul

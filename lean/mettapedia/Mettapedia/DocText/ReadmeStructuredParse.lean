@@ -198,29 +198,25 @@ theorem headingRenderImageWitness {β : Type}
       refine ⟨h, rfl, ?_⟩
       simpa [hParsed] using hPred
 
-private def isDigitStr (s : String) : Bool :=
-  !s.isEmpty && s.toList.all Char.isDigit
+private def trimmedChars (s : String) : List Char :=
+  ((s.toList.dropWhile Char.isWhitespace).reverse.dropWhile Char.isWhitespace).reverse
 
 private def isIdentChar (c : Char) : Bool :=
   c.isAlphanum || c = '_' || c = '.' || c = '-' || c = '/'
 
-private def isIdentifierAtom (s : String) : Bool :=
-  let t := s.trimAscii.toString
-  if t.isEmpty then
-    false
+private def isIdentifierAtom (chars : List Char) : Bool :=
+  let tag := chars.takeWhile (fun c => c != ' ')
+  let rest := chars.dropWhile (fun c => c != ' ')
+  if tag.isEmpty then false
   else
-    let parts := t.splitOn " "
-    match parts with
-    | [p] =>
-        p.toList.all isIdentChar &&
-          p.toList.any (fun c => c.isAlpha || c.isDigit)
-    | [tag, n] =>
-        !tag.isEmpty && tag.toList.all isIdentChar && isDigitStr n
+    match rest with
+    | [] => tag.all isIdentChar && tag.any (fun c => c.isAlpha || c.isDigit)
+    | ' ' :: digits => tag.all isIdentChar && !digits.isEmpty && digits.all Char.isDigit
     | _ => false
 
 private def isIdentifierLikeMember (s : String) : Bool :=
-  let t := s.trimAscii.toString
-  !t.contains ',' && isIdentifierAtom t
+  let chars := trimmedChars s
+  !chars.contains ',' && isIdentifierAtom chars
 
 def blockPassesHardAuditWith {α β : Type}
     (parseClaimLine? : String → Option α)
@@ -231,17 +227,17 @@ def blockPassesHardAuditWith {α β : Type}
   | .theoremItems items =>
       items.all (fun i =>
         isIdentifierLikeMember i.name &&
-        !i.file.trimAscii.isEmpty &&
+        !(trimmedChars i.file).isEmpty &&
         synExprWellFormed i.statement)
   | .apiItems items =>
       items.all (fun i =>
-        !i.path.trimAscii.isEmpty &&
+        !(trimmedChars i.path).isEmpty &&
         i.members.all isIdentifierLikeMember &&
         (match i.note with
          | none => true
          | some n => (parseClaimLine? n).isSome))
   | .syntaxItems items =>
-      items.all (fun i => !i.label.trimAscii.isEmpty && synExprWellFormed i.pattern)
+      items.all (fun i => !(trimmedChars i.label).isEmpty && synExprWellFormed i.pattern)
   | .pathItems _ => true
   | .codeBlock _ _ => true
   | .fileRef _ d => d = "" || (parseClaimLine? d).isSome

@@ -8,7 +8,7 @@ import Mettapedia.PLN.RuleFamilies.HigherOrder.PLNProbHOLPlannerBridge
 This module instantiates the abstract finite regime-mixture theorem family on
 the existing higher-order guarded benchmark payloads.
 
-The architecture follows the council-approved layering:
+The architecture follows the agreed layering:
 
 - `PLNRegimeMixtureTheorems.lean` provides the abstract finite-regime theorems,
 - `PLN/Bridges/HOL/Probabilistic/BenchmarkBridge.lean` gives the semantic `ProbHOL` view,

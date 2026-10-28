@@ -5,7 +5,7 @@
 ; KERN-OBJECT-SIGNATURES, KERN-DEDUKTI-DIFFERENTIAL.
 ; DIVERGES: PeTTa lexical companion for the pre-DIndG NatRec slice; the live
 ; indexed kernel supersedes this special recursor path.
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ; kernel_signature_lf_v0.metta

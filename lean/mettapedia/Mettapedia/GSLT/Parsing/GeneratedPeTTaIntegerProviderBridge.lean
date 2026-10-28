@@ -21,7 +21,7 @@ open GeneratedPeTTaGroundCondition (integer? condition?)
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def sourceSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/experiments/gslt2parse_foundation/presentations/shared/cetta_petta_ground_integer_relations_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/experiments/gslt2parse_foundation/presentations/shared/cetta_petta_ground_integer_relations_v1.metta"
 
 private theorem source_admitted : (decode sourceSyntax).isSome = true := by
   have one : "1".toNat? = some 1 := Nat.toNat?_repr 1

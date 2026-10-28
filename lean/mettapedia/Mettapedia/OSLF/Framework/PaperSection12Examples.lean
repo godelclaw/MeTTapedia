@@ -127,7 +127,7 @@ theorem secrecy_secret_not_external :
     secretChan ∉ externalChannels secrecyAgent secrecyEnv := by
   intro hsurf
   unfold externalChannels at hsurf
-  simp only [Set.mem_setOf, Set.mem_inter_iff] at hsurf
+  simp only [Set.mem_ofPred, Set.mem_inter_iff] at hsurf
   exact secrecy_secret_not_in_env_freeNames hsurf.1.2
 
 /-- OSLF paper §12.3 (secrecy): concrete private channel remains hidden

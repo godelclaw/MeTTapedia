@@ -1,7 +1,9 @@
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Data.Real.Basic
-import Mathlib.Tactic
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
 
 open scoped BigOperators
 
@@ -31,6 +33,29 @@ theorem gamma_smul (c : ℝ) (D : ι → ℝ) :
             intro i _
             ring
     _ = c ^ 2 * ∑ i, (D i) ^ 2 := by rw [Finset.mul_sum]
+
+theorem gamma_le_of_abs_le {D E : ι → ℝ}
+    (hDE : ∀ i, |D i| ≤ |E i|) :
+    gamma D ≤ gamma E := by
+  unfold gamma
+  refine Finset.sum_le_sum ?_
+  intro i _
+  simpa using sq_le_sq.mpr (hDE i)
+
+theorem gamma_const (c : ℝ) :
+    gamma (fun _ : ι => c) = (Fintype.card ι : ℝ) * c ^ 2 := by
+  unfold gamma
+  simp
+
+theorem gamma_le_card_mul_sq_of_abs_le (D : ι → ℝ) {M : ℝ}
+    (hM : 0 ≤ M) (hD : ∀ i, |D i| ≤ M) :
+    gamma D ≤ (Fintype.card ι : ℝ) * M ^ 2 := by
+  have hpoint : ∀ i, |D i| ≤ |(fun _ : ι => M) i| := by
+    intro i
+    simpa [abs_of_nonneg hM] using hD i
+  calc
+    gamma D ≤ gamma (fun _ : ι => M) := gamma_le_of_abs_le hpoint
+    _ = (Fintype.card ι : ℝ) * M ^ 2 := gamma_const M
 
 /-- Pointwise log-gradient comparison:
 if `F ≥ m > 0`, then replacing `DᵢF` by `DᵢF / F` costs at most a factor `1 / m²`. -/
@@ -100,12 +125,31 @@ theorem abs_frameEval_le (coeff : ι → ℝ) (frame : ι → X → ℝ) {x : X}
   rw [← habs] at hsqrt
   simpa [Real.sqrt_mul hA] using hsqrt
 
+theorem abs_frameEval_le_of_abs_le
+    (coeff : ι → ℝ) (frame : ι → X → ℝ) {x : X} {A M : ℝ}
+    (hcoeff : gamma coeff ≤ A)
+    (hM : 0 ≤ M)
+    (hframe : ∀ i, |frame i x| ≤ M) :
+    |frameEval coeff frame x| ≤
+      Real.sqrt A * Real.sqrt ((Fintype.card ι : ℝ) * M ^ 2) := by
+  exact abs_frameEval_le coeff frame hcoeff
+    (gamma_le_card_mul_sq_of_abs_le (D := fun i => frame i x) hM hframe)
+
 /-- The manuscript's vorticity estimate is exactly the preceding frame bound with `frame = curl E`. -/
 theorem abs_vorticity_le (coeff : ι → ℝ) (curlFrame : ι → X → ℝ) {x : X} {A CcurlE : ℝ}
     (hcoeff : gamma coeff ≤ A)
     (hcurl : gamma (fun i => curlFrame i x) ≤ CcurlE) :
     |frameEval coeff curlFrame x| ≤ Real.sqrt A * Real.sqrt CcurlE :=
   abs_frameEval_le coeff curlFrame hcoeff hcurl
+
+theorem abs_vorticity_le_of_componentwise_abs_le
+    (coeff : ι → ℝ) (curlFrame : ι → X → ℝ) {x : X} {A M : ℝ}
+    (hcoeff : gamma coeff ≤ A)
+    (hM : 0 ≤ M)
+    (hcurl : ∀ i, |curlFrame i x| ≤ M) :
+    |frameEval coeff curlFrame x| ≤
+      Real.sqrt A * Real.sqrt ((Fintype.card ι : ℝ) * M ^ 2) :=
+  abs_frameEval_le_of_abs_le coeff curlFrame hcoeff hM hcurl
 
 end FiniteGamma
 

@@ -1,3 +1,4 @@
+import Mettapedia.PLN.Bridges.CognitiveArchitecture
 import Mettapedia.PLN.Bridges.HOL
 import Mettapedia.PLN.Bridges.ProbabilityTheory
 import Mettapedia.PLN.Bridges.Languages
@@ -7,7 +8,6 @@ import Mettapedia.PLN.Bridges.GSLT
 import Mettapedia.PLN.Bridges.KR
 import Mettapedia.PLN.Bridges.PredictiveCoding
 import Mettapedia.PLN.Bridges.UniversalAI
-import Mettapedia.PLN.Bridges.CognitiveArchitecture
 
 /-!
 # PLN bridges

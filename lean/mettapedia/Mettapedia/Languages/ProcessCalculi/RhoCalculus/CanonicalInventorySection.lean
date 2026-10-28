@@ -50,6 +50,14 @@ theorem no_set_carrier (inventory : CanonicalInventory language) {rule : Grammar
   subst rule
   simp [rhoCalc, TypeExpr.bag] at parameters
 
+/-- No set law is typed in this inventory. -/
+theorem no_set_typed (inventory : CanonicalInventory language) {rule : GrammarRule}
+    {elements : List Pattern} (member : rule ∈ language.terms)
+    (typed : CollectionTypedAt language rule .hashSet elements) : False := by
+  have used := usesCollection_eq_true_of_collectionTypedAt member typed
+  rw [inventory.noSets] at used
+  cases used
+
 /-- The sole authored equation has no language-dependent premise evaluation. -/
 theorem equationInstance_canonicalize_eq
     (equations : ∀ equation ∈ language.equations, equation ∈ rhoCalc.equations)
@@ -117,10 +125,10 @@ theorem derivedInstance_canonicalize_eq (inventory : CanonicalInventory language
   cases derived with
   | bagPerm _ _ permutation =>
       exact canonicalize_bag_perm permutation
-  | setPerm declaration _ _ =>
-      exact False.elim (inventory.no_set_carrier declaration)
-  | setDedup declaration _ =>
-      exact False.elim (inventory.no_set_carrier declaration)
+  | setPerm declaration typed _ =>
+      exact False.elim (inventory.no_set_typed declaration typed)
+  | setDedup declaration typed =>
+      exact False.elim (inventory.no_set_typed declaration typed)
   | @flatten rule kind algebra pre inner post algebraRule _ _ =>
       obtain ⟨rfl, _, _⟩ := inventory.algebra_shape algebraRule
       have toEnd : List.Perm (pre ++ (.collection .hashBag inner none) :: post)

@@ -27,6 +27,9 @@ answer.
 
 set_option autoImplicit false
 
+-- Request coordinates retain independently chosen universe levels.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.GSLT.Dynamics.ObserverRelativeTransformationCrown
 
 open Mettapedia.Cybernetics

@@ -1,0 +1,12 @@
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySubrepairsObservedSupport
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySubrepairsActualLocalBoundedSample
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySubrepairsBitFallback
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySubrepairsCoverEquivalences
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolySubrepairsRecoveryThresholds
+
+/-!
+# Regression checks for the PNP Kpoly subrepair ledger
+
+Import-preserving hub for the decomposed Kpoly subrepair regression family.
+The declarations live in focused sibling modules by mathematical role.
+-/

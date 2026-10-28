@@ -7,7 +7,7 @@ This file demonstrates the intended architecture:
 - English output = generated through GF English morphology/syntax
   (`linPredVP`, `complV2`, `linUseCl`, agreement/tense handling)
 
-This is intentionally a small pilot over sentences from `~/claude/README.md`.
+This is intentionally a small pilot over sentences from `README.md`.
 The wording is semantically close, not byte-identical.
 -/
 

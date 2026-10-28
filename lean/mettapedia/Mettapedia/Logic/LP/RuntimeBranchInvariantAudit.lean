@@ -1,0 +1,19 @@
+import Mettapedia.Logic.LP.RuntimeBranchInvariant
+
+/-! Trusted-base audit for exact structured-branch checkpoint restoration. -/
+
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.branchStep_creates_checkpoint
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.branchStep
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.NestedLiveBranchCheckpoint.branchStep
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.NestedLiveBranchCheckpoint.backtrackStep
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.cutStep_preserves
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.cutStep_prunes
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.ifThenElseStep_creates_live_branch
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.emptyCurrentStep_hardCommit
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.emptyCurrentStep_hardCommit_retains_suffix
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.softIfThenElseStep_creates_checkpoint
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.SoftElseCheckpoint.emptyCurrentStep_softCommit
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.SoftElseCheckpoint.backtrackStep
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.BranchCheckpoint.restore_exact
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.BranchCheckpoint.advance_unifier_success
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.backtrackStep_branch_of_checkpoint

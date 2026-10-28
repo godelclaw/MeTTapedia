@@ -1677,7 +1677,7 @@ theorem plan_abstract_iterDropUnit_of_iterDropUnit
                         rhoReflectivePresentation.toReflectivePresentationDecl
                         auth_dropNeQuote (innerLevel + 1)
                     -- abstract split at the carrier position
-                    have midEq : (getElem children.abstractPatterns 
+                    have midEq : (getElem children.abstractPatterns
                         contextBefore.length kAbs) = pC.abstractPattern :=
                       (List.getElem_eq_iff kAbs).mpr pCAbs
                     have beforeUnits : ∀ b ∈ children.abstractPatterns.take

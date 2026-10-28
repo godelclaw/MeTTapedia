@@ -160,17 +160,18 @@ theorem collection_direction_lands {language : LanguageDef} {Γ : List String} {
 abbrev Tree (language : LanguageDef) :=
   IFreeM (polynomial (indexedSignature language)) (Vars (indexedSignature language))
 
-/-- The single collection parameter of a bare collection constructor. -/
+/-- The single collection parameter of a bare collection constructor. A
+wrapped constructor keeps its named application, so it has none. -/
 def bareCollection? (rule : GrammarRule) : Option (CollType × String) :=
-  match rule.params with
-  | [.simple _ (.collection kind (.base element))] => some (kind, element)
-  | _ => none
+  match rule.params, rule.collectionRepresentation with
+  | [.simple _ (.collection kind (.base element))], .bare => some (kind, element)
+  | _, _ => none
 
 theorem bareCollection_uses {rule : GrammarRule} {kind : CollType} {element : String}
     (shape : bareCollection? rule = some (kind, element)) :
     UsesBareCollection rule := by
   cases rule with
-  | mk _ _ parameters _ _ _ =>
+  | mk _ _ parameters _ _ _ representation =>
       cases parameters with
       | nil => simp [bareCollection?] at shape
       | cons parameter parameters =>
@@ -183,7 +184,9 @@ theorem bareCollection_uses {rule : GrammarRule} {kind : CollType} {element : St
                   | collection collectionKind elementType =>
                       cases elementType with
                       | base elementSort =>
-                          exact ⟨name, collectionKind, .base elementSort, rfl⟩
+                          cases representation with
+                          | bare => exact ⟨name, collectionKind, .base elementSort, rfl⟩
+                          | wrapped => simp [bareCollection?] at shape
                       | arrow _ _ => simp [bareCollection?] at shape
                       | multiBinder _ => simp [bareCollection?] at shape
                       | collection _ _ => simp [bareCollection?] at shape
@@ -198,12 +201,13 @@ theorem not_bare_of_fragment {rule : GrammarRule}
     ¬ UsesBareCollection rule := by
   intro used
   rcases used with ⟨name, collectionType, elementType, paramsShape⟩
+  obtain ⟨mode, paramsShape⟩ := (GrammarRule.bareParams_cons_iff _ _ _).mp paramsShape
   have inFragment :=
     fragment (.simple name (.collection collectionType elementType)) (by simp [paramsShape])
   cases elementType with
   | base element =>
       have bare : bareCollection? rule = some (collectionType, element) := by
-        simp [bareCollection?, paramsShape]
+        simp [bareCollection?, paramsShape, mode]
       simp [shape] at bare
   | arrow _ _ => simp [bindingDecl?, baseCollection?] at inFragment
   | multiBinder _ => simp [bindingDecl?, baseCollection?] at inFragment
@@ -255,7 +259,7 @@ theorem bare_slot_length {language : LanguageDef} {sort : String}
       cases packed with
       | mk rule _property =>
           cases rule with
-          | mk label categoryName parameters syntaxPattern evalPolicy algebra =>
+          | mk label categoryName parameters syntaxPattern evalPolicy algebra representation =>
               cases parameters with
               | nil => simp [bareCollection?] at shape
               | cons parameter parameters =>
@@ -276,6 +280,9 @@ theorem bare_slot_length {language : LanguageDef} {sort : String}
                               | multiBinder _ => simp [bareCollection?] at shape
                               | collection _ _ => simp [bareCollection?] at shape
                               | base elementSort =>
+                                  have mode : representation = .bare := by
+                                    cases representation <;> simp_all [bareCollection?]
+                                  subst mode
                                   simp only [bareCollection?, Option.some.injEq,
                                     Prod.mk.injEq] at shape
                                   obtain ⟨kindEq, elementEq⟩ := shape

@@ -195,7 +195,7 @@ namespace Canary
 
 abbrev Item := Occurrence
 
-def portfolioLocalValidity :
+theorem portfolioLocalValidity :
     portfolioClaim.controller.LocallyValid
       (auditedLabeledSystem portfolioStepAuthority foregroundAccepting)
       portfolioClaim.root :=

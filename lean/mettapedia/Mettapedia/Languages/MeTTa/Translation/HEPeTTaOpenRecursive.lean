@@ -7062,5 +7062,3 @@ theorem open_recursive_duplicate_transport [profile : FresheningProfile] :
 #print axioms open_recursive_duplicate_transport
 
 end Mettapedia.Languages.MeTTa.Translation.OpenRecursive.Controls
-
-

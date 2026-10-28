@@ -5,7 +5,7 @@ Full declension paradigms ported from GF Resource Grammar Library.
 These are the core patterns that cover most regular Czech nouns.
 
 ## Source
-Ported from: ~/claude/gf-rgl/src/czech/ResCze.gf (lines 181-296)
+Ported from: gf-rgl/src/czech/ResCze.gf (lines 181-296)
 Author: Aarne Ranta (March 2020)
 Reference: J. Naughton, Czech: an Essential Grammar, Routledge 2005
 

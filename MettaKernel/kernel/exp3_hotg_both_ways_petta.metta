@@ -4,7 +4,7 @@
 ; KERN-OBJECT-SIGNATURES, KERN-DEDUKTI-DIFFERENTIAL.
 ; DIVERGES: tiny explicit-HOTG-axiom fragment plus PeTTa lexical companion; no
 ; native Megalodon/HOTG semantics are claimed here.
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ; exp3_hotg_both_ways.metta

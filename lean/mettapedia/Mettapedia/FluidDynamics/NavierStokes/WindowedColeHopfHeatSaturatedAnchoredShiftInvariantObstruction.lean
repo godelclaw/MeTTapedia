@@ -1,0 +1,10 @@
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedAnchoredShiftInvariantFrontier
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedAnchoredShiftInvariantObstructionCore
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedAnchoredShiftInvariantObstructionBridge
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedAnchoredShiftInvariantObstructionComponentwise
+
+/-!
+# Exactness of the Anchored Spatial Invariant Saturated Corridor
+
+Compatibility import for the split anchored candidate, top-down bridge, and componentwise-bound obstruction surfaces.
+-/

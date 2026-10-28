@@ -393,12 +393,12 @@ theorem QuoteDropWithBags.settle_eq {lang : LanguageDef} (laws : QuoteDropWithBa
     | bagPerm _ _ permutation =>
         rw [settle_collection, settle_collection, if_pos ⟨rfl, rfl⟩, if_pos ⟨rfl, rfl⟩]
         exact normalizeBag_perm none (permutation.map _)
-    | setPerm declaration _ _ =>
-        have uses := usesCollection_eq_true_of_collectionCarrierRule declaration
+    | setPerm declaration typed _ =>
+        have uses := usesCollection_eq_true_of_collectionTypedAt declaration typed
         rw [laws.noSets] at uses
         cases uses
-    | setDedup declaration _ =>
-        have uses := usesCollection_eq_true_of_collectionCarrierRule declaration
+    | setDedup declaration typed =>
+        have uses := usesCollection_eq_true_of_collectionTypedAt declaration typed
         rw [laws.noSets] at uses
         cases uses
     | flatten algebraRule _ _ =>
@@ -541,9 +541,8 @@ theorem union_bag_equiv (base : BasePremiseEvaluator) {machine : Machine}
   refine Relation.EqvGen.rel _ _ ?_
   show EquationContextStep base probeWithTuring first.1 second.1
   rw [firstShape, secondShape]
-  exact EquationContextStep.inContext .hole (Or.inr (DerivedInstance.bagPerm
-    (rule := mixConstructor)
-    ⟨List.mem_append_right language.terms mixConstructor_mem, "members", .base "Soup", rfl⟩
+  exact EquationContextStep.inContext .hole (Or.inr (DerivedInstance.bagPerm_of_sorted
+    (category := mixConstructor.category)
     ⟨FreeTypeContext.empty, [], (tableWith_unionSorted holds).1⟩ (holds.trans othersHold.symm)))
 
 /-- A step of the union by a rule of the universal theory is a step of the

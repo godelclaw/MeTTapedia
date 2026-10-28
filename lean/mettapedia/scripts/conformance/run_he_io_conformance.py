@@ -119,7 +119,7 @@ def run_hyperon_case(
 
 def run_lean_case(algorithms_root: Path, case_path: Path) -> tuple[int, str, str]:
     cmd = (
-        "ulimit -v 6291456 && "
+        ""
         f"lake exe simpleMeTTa he-run --json {case_path}"
     )
     proc = subprocess.run(

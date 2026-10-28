@@ -1,3 +1,5 @@
+-- Historical teaching WIP; excluded from the maintained coloring roots.
+-- See ../../Curriculum/README.md for its validation boundary.
 /-
 # Module 1: F₂ Parity Arguments
 

@@ -420,7 +420,7 @@ theorem completed_children_do_not_charge_unused_quanta :
   · by_cases atProduct : cell = 11
     · subst cell; rfl
     · simp [kernel, OwnedPullDriver.paidKernel, SnapshotBatch.Kernel.run,
-        SnapshotBatch.Kernel.step, atSum, atProduct]
+        SnapshotBatch.Kernel.step, SnapshotBatch.Kernel.fromOwnerAction, atSum, atProduct]
 
 /-- Starting both quanta from one snapshot silently loses the first prefix.
 The kernel's disjoint-owner condition excludes this mistaken parallelization. -/

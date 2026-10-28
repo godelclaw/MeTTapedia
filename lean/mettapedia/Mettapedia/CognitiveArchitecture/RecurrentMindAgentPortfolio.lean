@@ -198,7 +198,7 @@ theorem foreground_occurrences_across_cycles_are_distinct :
 def selectedGenerated (cycle : Nat) (occurrence : Occurrence) : Prop :=
   serviceSpace.Generated heartbeatTrace cycle occurrence
 
-def generatedSelection :
+theorem generatedSelection :
     BoundedGeneratedSelection serviceSpace heartbeatTrace 1
       selectedGenerated where
   selects cycle occurrence generated :=
@@ -227,7 +227,7 @@ theorem every_role_longTermProtected (role : Role) :
     portfolioEconomy.LongTermProtected 1 role := by
   cases role <;> simp [Economy.LongTermProtected, portfolioEconomy]
 
-def portfolioTriggerCoverage :
+theorem portfolioTriggerCoverage :
     RecurringTriggerCoverage portfolioEconomy 1 1
       serviceSpace heartbeatTrace id where
   covers actor _isProtected start :=

@@ -168,7 +168,7 @@ structure MM0SyntaxMetadataProfile where
   primaryReferenceSource : String := "mm0/mm0.md (grammar section)"
   cReferenceVerifier : String := "mm0/mm0-c/verifier.c"
   rustReferenceCompiler : String := "mm0/mm0-rs/ (mm0-rs compile)"
-  sharedArtifactSchema : String := "Mettapedia/lean/mettapedia/artifacts/parser_artifact_schema.json"
+  sharedArtifactSchema : String := "lean/mettapedia/artifacts/parser_artifact_schema.json"
   notes : List String :=
     [ "The MM0 reference describes two-stage parsing: primary (.mm0 structure) + secondary (math-string notation)."
     , "The executable MMB proof-machine semantics are not defined by this metadata."

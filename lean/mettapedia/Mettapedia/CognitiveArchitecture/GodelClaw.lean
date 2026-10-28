@@ -7,3 +7,4 @@ import Mettapedia.CognitiveArchitecture.GodelClaw.MetaMoBridge
 import Mettapedia.CognitiveArchitecture.GodelClaw.EpistemicLove
 import Mettapedia.CognitiveArchitecture.GodelClaw.ToolBroker
 import Mettapedia.CognitiveArchitecture.GodelClaw.GlobalWorkspace
+import Mettapedia.CognitiveArchitecture.GodelClaw.AgentMeTTaSpace

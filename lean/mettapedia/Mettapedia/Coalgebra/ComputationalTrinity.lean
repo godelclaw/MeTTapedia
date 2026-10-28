@@ -2,17 +2,12 @@ import Mettapedia.Coalgebra.FiniteViewComputationalTrinity
 import Mettapedia.Coalgebra.StreamGSLT
 
 /-!
-# Coalgebraic behavior in the computational trinity
+# Stream specialization of the computational trinity
 
-This is the stream instance of `FiniteViewComputationalTrinity`. Final
-unfolding supplies the operational-to-behavior map; compatible prefixes give
-the view map. The existing stream GSLT supplies operational transitions.
-
-Streams and coherent prefix towers are equivalent. State identity agrees
-exactly with behavior only when unfolding is both faithful and complete.
-The witnesses below retain agreement with that unfolding, and the controls
-separate loss of operational identity from incomplete behavior coverage.
-
+Operational unfolding and coherent prefix observation supply the independently
+defined interpretation maps. Their comparison is exact when unfolding is both
+faithful and complete. The constant and tagged coalgebras separate those two
+premises, and the final stream coalgebra satisfies both.
 -/
 
 set_option autoImplicit false
@@ -28,14 +23,13 @@ open Mettapedia.Computability.ComputationalTrinity
 
 universe u
 
-variable {Label : Type u}
+variable {Label : Type u} (coalgebra : Coalgebra.{u, u} Label)
 
 abbrev Context := Discrete PUnit
 
 /-! ## The three faces and their comparison -/
 
-def stateFace
-    (coalgebra : Coalgebra.{u, u} Label) :
+def stateFace :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj coalgebra.Carrier
 
@@ -47,8 +41,7 @@ def towerFace (Label : Type u) :
     Face.{0, 0, u} Context :=
   (Functor.const Contextᵒᵖ).obj (Tower Label)
 
-def stateToBehavior
-    (coalgebra : Coalgebra.{u, u} Label) :
+def stateToBehavior :
     stateFace coalgebra ⟶ behaviorFace Label :=
   (Functor.const Contextᵒᵖ).map
     (↾(unfold coalgebra : coalgebra.Carrier → Stream Label))
@@ -58,23 +51,19 @@ def behaviorToTower (Label : Type u) :
   (Functor.const Contextᵒᵖ).map
     (↾(Tower.ofStream : Stream Label → Tower Label))
 
-def stateToTower
-    (coalgebra : Coalgebra.{u, u} Label) :
+def stateToTower :
     stateFace coalgebra ⟶ towerFace Label :=
   (Functor.const Contextᵒᵖ).map
     (↾(Tower.ofStream ∘ unfold coalgebra))
 
 /-- Operational states, final behavior, and coherent finite-view towers form
 a commuting comparison without any exactness assumption. -/
-def comparison
-    (coalgebra : Coalgebra.{u, u} Label) :
+def comparison :
     Comparison.{0, 0, u} Context :=
-  (FiniteViewComputationalTrinity.comparison
-    (unfold coalgebra) (streamObservation Label)).transportSpace
-    ((Functor.const Contextᵒᵖ).mapIso (streamTowerEquiv Label).toIso)
+  FiniteViewComputationalTrinity.comparison (unfold coalgebra) (streamObservation Label)
 
 /-- Transport recovers all three independently defined stream interpretation maps. -/
-theorem comparison_maps_agree (coalgebra : Coalgebra.{u, u} Label) :
+theorem comparison_maps_agree :
     (comparison coalgebra).programToLogic = stateToBehavior coalgebra ∧
       (comparison coalgebra).logicToSpace = behaviorToTower Label ∧
       (comparison coalgebra).programToSpace = stateToTower coalgebra :=
@@ -83,17 +72,14 @@ theorem comparison_maps_agree (coalgebra : Coalgebra.{u, u} Label) :
 /-! ## Exactness property bag -/
 
 /-- Every stream behavior is represented by some operational state. -/
-def BehaviorallyComplete
-    (coalgebra : Coalgebra.{u, u} Label) : Prop :=
+def BehaviorallyComplete : Prop :=
   Function.Surjective (unfold coalgebra)
 
 /-- Operational state identity and stream behavior coincide exactly. -/
-def BehaviorallyExact
-    (coalgebra : Coalgebra.{u, u} Label) : Prop :=
+def BehaviorallyExact : Prop :=
   Function.Bijective (unfold coalgebra)
 
-theorem behaviorallyExact_iff_faithful_and_complete
-    (coalgebra : Coalgebra.{u, u} Label) :
+theorem behaviorallyExact_iff_faithful_and_complete :
     BehaviorallyExact coalgebra ↔
       BehaviorallyFaithful coalgebra ∧ BehaviorallyComplete coalgebra :=
   Iff.rfl
@@ -112,8 +98,7 @@ theorem behaviorTowerIso_hom (Label : Type u) :
 /-- A compatible operational/behavioral isomorphism is stronger than merely
 postulating some isomorphism between the carrier types: its forward map must
 be the independently defined final unfolding. -/
-structure ExactBehaviorWitness
-    (coalgebra : Coalgebra.{u, u} Label) where
+structure ExactBehaviorWitness where
   isomorphism : stateFace coalgebra ≅ behaviorFace Label
   agrees : isomorphism.hom = stateToBehavior coalgebra
 
@@ -121,8 +106,7 @@ namespace ExactBehaviorWitness
 
 variable {coalgebra : Coalgebra.{u, u} Label}
 
-theorem behaviorallyExact
-    (witness : ExactBehaviorWitness coalgebra) :
+theorem behaviorallyExact (witness : ExactBehaviorWitness coalgebra) :
     BehaviorallyExact coalgebra :=
   FiniteViewComputationalTrinity.constantIso_bijective (unfold coalgebra)
     witness.isomorphism witness.agrees
@@ -137,8 +121,7 @@ def exactTrinity (witness : ExactBehaviorWitness coalgebra) :
   programLogic := witness.isomorphism
   logicSpace := behaviorTowerIso Label
 
-theorem exactTrinity_programLogic_agrees
-    (witness : ExactBehaviorWitness coalgebra) :
+theorem exactTrinity_programLogic_agrees (witness : ExactBehaviorWitness coalgebra) :
     witness.exactTrinity.programLogic.hom = stateToBehavior coalgebra :=
   witness.agrees
 
@@ -146,9 +129,7 @@ end ExactBehaviorWitness
 
 /-- A bijective unfolding constructs the compatible exact-behavior witness.
 The inverse is selected from the supplied surjectivity proof. -/
-noncomputable def exactBehaviorWitnessOfBehaviorallyExact
-    (coalgebra : Coalgebra.{u, u} Label)
-    (exact : BehaviorallyExact coalgebra) :
+noncomputable def exactBehaviorWitnessOfBehaviorallyExact (exact : BehaviorallyExact coalgebra) :
     ExactBehaviorWitness coalgebra := by
   let generic := FiniteViewComputationalTrinity.exactTrinityWitnessOfBijective
     (unfold coalgebra) (streamObservation Label) exact (streamObservation_exact Label)
@@ -156,8 +137,7 @@ noncomputable def exactBehaviorWitnessOfBehaviorallyExact
 
 /-- Exact operational/behavioral compatibility exists exactly when unfolding
 is bijective. -/
-theorem exactBehaviorWitness_nonempty_iff
-    (coalgebra : Coalgebra.{u, u} Label) :
+theorem exactBehaviorWitness_nonempty_iff :
     Nonempty (ExactBehaviorWitness coalgebra) ↔
       BehaviorallyExact coalgebra := by
   constructor
@@ -168,21 +148,15 @@ theorem exactBehaviorWitness_nonempty_iff
 
 /-! ## Information loss is exactly behavioral collision -/
 
-theorem comparison_loses_iff_behavior_collision
-    (coalgebra : Coalgebra.{u, u} Label) :
+theorem comparison_loses_iff_behavior_collision :
     (comparison coalgebra).LosesProgramInformation ↔
       ∃ left right : coalgebra.Carrier,
         left ≠ right ∧ unfold coalgebra left = unfold coalgebra right := by
-  exact (Comparison.transportSpace_loses_iff
-    (FiniteViewComputationalTrinity.comparison (unfold coalgebra) (streamObservation Label))
-    ((Functor.const Contextᵒᵖ).mapIso (streamTowerEquiv Label).toIso)).trans
-      ((FiniteViewComputationalTrinity.comparison_loses_iff_composite_collision
-        (unfold coalgebra) (streamObservation Label)).trans
-          (by simp only [(streamObservation_exact Label).1.eq_iff]))
+  exact (FiniteViewComputationalTrinity.comparison_loses_iff_composite_collision
+    (unfold coalgebra) (streamObservation Label)).trans
+      (by simp only [(streamObservation_exact Label).1.eq_iff])
 
-theorem faithful_not_loses
-    (coalgebra : Coalgebra.{u, u} Label)
-    (faithful : BehaviorallyFaithful coalgebra) :
+theorem faithful_not_loses (faithful : BehaviorallyFaithful coalgebra) :
     ¬ (comparison coalgebra).LosesProgramInformation := by
   rw [comparison_loses_iff_behavior_collision]
   rintro ⟨left, right, different, sameBehavior⟩
@@ -279,6 +253,5 @@ theorem faithful_comparison_need_not_be_exact :
   exact constantBool_not_complete exact.2
 
 end Canary
-
 
 end Mettapedia.Coalgebra.ComputationalTrinity

@@ -1,0 +1,13 @@
+import Mettapedia.Computability.PNP.PNPv13LinearLockCharacterization
+
+namespace Mettapedia.Computability.PNP
+
+#check linearFiberCoordinateRigid_iff_kernelFixesCoordinate
+#check not_linearFiberCoordinateRigid_of_kernelFlip
+#check linearFiberMessageRigid_iff_kernelFixesMessage
+
+#print axioms linearFiberCoordinateRigid_iff_kernelFixesCoordinate
+#print axioms not_linearFiberCoordinateRigid_of_kernelFlip
+#print axioms linearFiberMessageRigid_iff_kernelFixesMessage
+
+end Mettapedia.Computability.PNP

@@ -2,3 +2,4 @@ import Mettapedia.Algorithms.Retrieval.NativeTensorRetrieval
 import Mettapedia.Algorithms.Retrieval.RetrievalContract
 import Mettapedia.Algorithms.Retrieval.SelectorContract
 import Mettapedia.Algorithms.Retrieval.TopKSelection
+import Mettapedia.Algorithms.Retrieval.BlendedTopK

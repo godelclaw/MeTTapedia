@@ -1,0 +1,305 @@
+{
+  "upstream_revision": "798623342cec443cca29f2c37751de99628af9d6",
+  "source_path": "lean/mettapedia/Mettapedia/AutoBooks/ClaudeProcWam/ProcessCalculi/PropositionsAsSessions.lean",
+  "original_sha256": "5c322fad301182e25d15edf09da26888b026b6b86789e655b7876d7d29ea48e6",
+  "original_declarations_with_ranges": 223,
+  "retained_declarations_without_admissions": 204,
+  "withheld_claims": [
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.context_linear",
+      "statement": "∀ {Γ : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Context}\n  {p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc},\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped Γ p → Γ.linear",
+      "original_range": {
+        "start": {
+          "line": 639,
+          "column": 0
+        },
+        "end": {
+          "line": 652,
+          "column": 7
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.preservation",
+      "statement": "∀ (Γ : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Context)\n  (p p' : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped Γ p →\n    Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPReduce p p' →\n      Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped Γ p'",
+      "original_range": {
+        "start": {
+          "line": 3490,
+          "column": 0
+        },
+        "end": {
+          "line": 3854,
+          "column": 60
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.singleton_zero_aux",
+      "statement": "∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n  (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n      [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n          Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n      p →\n    False",
+      "original_range": {
+        "start": {
+          "line": 2930,
+          "column": 0
+        },
+        "end": {
+          "line": 2993,
+          "column": 9
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_singleton_bot",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n      (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n          [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.bot]\n          p",
+      "original_range": {
+        "start": {
+          "line": 2548,
+          "column": 0
+        },
+        "end": {
+          "line": 2698,
+          "column": 63
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_singleton_atomDual",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (s : String) (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n      (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n          [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n              (Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.atomDual s)]\n          p",
+      "original_range": {
+        "start": {
+          "line": 2400,
+          "column": 0
+        },
+        "end": {
+          "line": 2546,
+          "column": 65
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.singleton_atom_impossible",
+      "statement": "∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan) (τ : String)\n  (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n      [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n          (Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.atom τ)]\n      p →\n    False",
+      "original_range": {
+        "start": {
+          "line": 2995,
+          "column": 0
+        },
+        "end": {
+          "line": 3052,
+          "column": 34
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.subst_typing",
+      "statement": "∀ (Γ : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Context)\n  (y z : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n  (a : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp)\n  (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n      (Γ ++ [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign z a]) p →\n    (∀ ta ∈ Γ, ta.chan ≠ y) →\n      (∀ ta ∈ Γ, ta.chan ≠ z) →\n        Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n          (Γ ++ [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign y a]) (p.subst y z)",
+      "original_range": {
+        "start": {
+          "line": 3116,
+          "column": 0
+        },
+        "end": {
+          "line": 3488,
+          "column": 16
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_empty_context",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n [] p",
+      "original_range": {
+        "start": {
+          "line": 1460,
+          "column": 0
+        },
+        "end": {
+          "line": 1635,
+          "column": 62
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.progress",
+      "statement": "∀ (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped [] p →\n    p.isNormalForm ∨ ∃ p', Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPReduce p p'",
+      "original_range": {
+        "start": {
+          "line": 3885,
+          "column": 0
+        },
+        "end": {
+          "line": 4133,
+          "column": 63
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.singleton_zero_impossible",
+      "statement": "∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n  (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n      [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n          Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n      p →\n    False",
+      "original_range": {
+        "start": {
+          "line": 2923,
+          "column": 0
+        },
+        "end": {
+          "line": 2928,
+          "column": 43
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.freeChans_subset_context",
+      "statement": "∀ {Γ : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Context}\n  {p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc},\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped Γ p → ∀ c ∈ p.freeChans, ∃ ta ∈ Γ, ta.chan = c",
+      "original_range": {
+        "start": {
+          "line": 654,
+          "column": 0
+        },
+        "end": {
+          "line": 796,
+          "column": 52
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_singleton_zero",
+      "statement": "∀ (n : ℕ) (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n  (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n      [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n          Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n      p",
+      "original_range": {
+        "start": {
+          "line": 2700,
+          "column": 0
+        },
+        "end": {
+          "line": 2921,
+          "column": 65
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_two_elem_zero_bot",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (x y : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n      (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n          [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero,\n            Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign y\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.bot]\n          p",
+      "original_range": {
+        "start": {
+          "line": 2030,
+          "column": 0
+        },
+        "end": {
+          "line": 2255,
+          "column": 9
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.not_in_context_not_free",
+      "statement": "∀ {Γ : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Context}\n  {p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc}\n  {c : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan},\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped Γ p → (∀ ta ∈ Γ, ta.chan ≠ c) → c ∉ p.freeChans",
+      "original_range": {
+        "start": {
+          "line": 798,
+          "column": 0
+        },
+        "end": {
+          "line": 804,
+          "column": 28
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.cut_sub_reduces",
+      "statement": "∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n  (a : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp)\n  (left right : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n      [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x a] left →\n    Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n        [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x a.dual] right →\n      ((∃ y B body, left = Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc.nu y B body) ∨\n          (∃ p q, left = p.par q) ∨\n            (∃ y B body, right = Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc.nu y B body) ∨\n              ∃ p q, right = p.par q) →\n        ∃ r,\n          Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPReduce\n            (Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc.nu x a (left.par right)) r",
+      "original_range": {
+        "start": {
+          "line": 3856,
+          "column": 0
+        },
+        "end": {
+          "line": 3883,
+          "column": 7
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_two_elem_zero_one",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (x y : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n      (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n          [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero,\n            Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign y\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.one]\n          p",
+      "original_range": {
+        "start": {
+          "line": 1835,
+          "column": 0
+        },
+        "end": {
+          "line": 2028,
+          "column": 66
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_singleton_atom",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (s : String) (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n      (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n          [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n              (Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.atom s)]\n          p",
+      "original_range": {
+        "start": {
+          "line": 2257,
+          "column": 0
+        },
+        "end": {
+          "line": 2398,
+          "column": 65
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "_private.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.PropositionsAsSessions.0.Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD.no_two_elem_zero_zero",
+      "statement": "∀ (n : ℕ),\n  (∀ m < n,\n      ∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n        (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n        ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD m\n            [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n                Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n            p) →\n    ∀ (x y : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan)\n      (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n      ¬Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTypedD n\n          [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero,\n            Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign y\n              Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.zero]\n          p",
+      "original_range": {
+        "start": {
+          "line": 1637,
+          "column": 0
+        },
+        "end": {
+          "line": 1833,
+          "column": 66
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    },
+    {
+      "name": "Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped.singleton_atomDual_impossible",
+      "statement": "∀ (x : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.Chan) (τ : String)\n  (p : Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPProc),\n  Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CPTyped\n      [Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.mkAssign x\n          (Mettapedia.AutoBooks.ClaudeProcWam.ProcessCalculi.CLLProp.atomDual τ)]\n      p →\n    False",
+      "original_range": {
+        "start": {
+          "line": 3054,
+          "column": 0
+        },
+        "end": {
+          "line": 3110,
+          "column": 34
+        }
+      },
+      "reason": "Depends on Lean.sorryAx; no completed proof is retained"
+    }
+  ],
+  "checked_counterexamples": [
+    "CPTyped.context_linearity_not_forced",
+    "CPTyped.free_channel_coverage_not_forced"
+  ],
+  "verification": {
+    "retained": 204,
+    "missing": [],
+    "changed_type_hashes": [],
+    "remaining_admitted": [],
+    "warnings_as_errors": "pass"
+  }
+}

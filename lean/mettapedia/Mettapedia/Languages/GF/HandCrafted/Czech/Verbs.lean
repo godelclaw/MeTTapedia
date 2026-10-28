@@ -6,7 +6,7 @@ Covers present tense (6 person x number forms), past participles,
 infinitive, and the productive -ovat conjugation class.
 
 ## Source
-Ported from: ~/claude/gf-rgl/src/czech/ResCze.gf (lines 552-619)
+Ported from: gf-rgl/src/czech/ResCze.gf (lines 552-619)
 
 ## Verbs Implemented
 1. **copulaVerbForms** (být) - to be (irregular, with special negation)

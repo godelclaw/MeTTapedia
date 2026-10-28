@@ -1,0 +1,22 @@
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3Basic
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3LocalOperators
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3Smoothness
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3FirstOrder
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3PressureObstructions
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3Laplacian
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3Momentum
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3Vorticity
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3TransportProfiles
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3TransportDerivatives
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3TransportLaplacian
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3TransportMomentum
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3TransportVorticity
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3VorticityNorms
+
+/-!
+# Vector Calculus on `ℝ^3` for the Concrete NS Surface
+
+Compatibility umbrella for the concrete `ℝ × ℝ^3` vector-calculus layer.
+The implementation is split into semantic modules so downstream Navier-Stokes
+formalizations can import only the layer they need.
+-/

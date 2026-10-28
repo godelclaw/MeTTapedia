@@ -20,7 +20,6 @@ as part of the QED project to formalize all possible mathematical knowledge.
 -/
 
 -- Live AutoBooks interface
-import Mettapedia.AutoBooks.Codex.Henkin1950
 import Mettapedia.AutoBooks.Codex.SevenSketches
 import Mettapedia.AutoBooks.Codex.Jacobs
 import Mettapedia.AutoBooks.Codex.ModalHoTT

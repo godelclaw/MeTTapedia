@@ -1,0 +1,9 @@
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersCoinwiseProduct
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersCoinwiseSourceBounds
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersCoinwiseSourceStrict
+
+/-!
+# Finite-coin postprocessed fiber product bounds
+
+Compatibility hub for coinwise postprocessed-fiber product obstructions.
+-/

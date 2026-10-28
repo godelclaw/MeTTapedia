@@ -1,0 +1,615 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadSuccessBridge
+Purpose: Pair one successful scheduled selected-head resolution across the
+  independent source semantics and the fine executable machine.
+Trusted boundary: none
+Main exports:
+  ScheduledSuccessfulHeadRelates,
+  ScheduledSelectedHeadTransition.resolveHead
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadRejectionBridge
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRetainedPayloadActivationBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadSuccessBridge
+
+open Mettapedia.Languages.MeTTa.PLeaTTa.Source (Atom Subst)
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.Canonical
+open PeTTaSpec.PrologCore.GoalSemantics
+open PeTTaSpec.PrologCore.OpenSubstitution
+open PeTTaSpec.PrologCore.Resolver
+open DemandDrivenStep
+open PrologActivatedProductStepBridge
+open PrologAlphaFreshFrontierBridge
+open PrologBodyFailureOuterResourceCatchupBridge
+open PrologBodyFailureResourceTransitionBridge
+open PrologControlSegmentSpineBridge
+open PrologHeterogeneousPrefixBridge
+open PrologPersistentFreeScheduledPayloadBridge
+open PrologMguBridge
+open PrologMguComposition
+open PrologMguOpenAgreement
+open PrologOrdinaryStepBridge
+open PrologProductResourceContextBridge
+open PrologRetainedPayloadActivationBridge
+open PrologRetainedPayloadSnapshotBridge
+open PrologRootClosedAnswerBridge
+open PrologScheduledAnswerPropagationBridge
+open PrologScheduledHistoryBuildBridge
+open PrologScheduledPayloadLandingBridge
+open PrologScheduledPayloadOpenConfBridge
+open PrologScheduledPayloadPathBridge
+open PrologScheduledPayloadPostHeadBridge
+open PrologScheduledPayloadRejectionBridge
+open PrologScheduledPayloadRejectionBridge.ScheduledSelectedHeadTransition
+open PrologSourceProductContextBridge
+open PrologStateBridge
+
+/-!
+The scheduled answer step has already pulled one executable clause head into
+`cur`, while the independent lane still has to traverse its exact private
+history and conservative rejection prefix.  The rejection bridge closes the
+`unifyB = none` half.  This module closes the successful mirror without
+choosing another clause occurrence, another runtime state, or an
+association-list spelling of the MGU.
+-/
+
+/-- Exact number of source transitions after the answer observation and
+through successful activation of the selected retained head. -/
+def postAnswerSuccessfulHeadCount
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    (ready : RootClosedAnswerReady before)
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (partition : RootPayloadPartition before) : Nat :=
+  ready.result.historyBuild.cells.length +
+    (partition.rejectionSteps + partition.crossedFrames.length + 1) +
+    transition.frontier.rejectedCount + 1
+
+/-- Exact source focus after the selected clause head has unified.
+
+The selected clause body is the left DFS branch.  The same advanced cursor is
+the right branch at the predicate cut scope, and the selected caller tail is
+outside that cut boundary.  Every still-outer payload frame remains literal.
+-/
+def successfulSourceFrontier
+    {alpha support : List (LogicVar × String)} {qterm : Atom}
+    {currentBarrier : Nat}
+    {segments : List ControlSegment}
+    {resources : List RetainedAlternativeSegment}
+    {inner outer : CutScopeId}
+    {context : ActiveProductContext}
+    {payload :
+      SourceControlResourcePayloadContextAgrees alpha support qterm
+        currentBarrier segments resources inner context outer}
+    {source next : Search}
+    {history : ScheduledAnswerHistory alpha source next}
+    {build : ScheduledHistoryBuild history}
+    {alignment : ScheduledPayloadAlignment payload build}
+    {selection : ScheduledLocalSelection build.cells}
+    {scope : CutScopeId} {session : Session}
+    (transition :
+      ScheduledSelectedHeadTransition alignment selection scope session)
+    (independentResult : Substitution) : Search :=
+  ActiveProductContext.plug transition.postLaterContext
+    (activeSourceProductAt transition.selectedPayloadCell.nextScope
+      transition.selectedPayloadCell.currentScope transition.finish transition.branch
+      transition.branchTail independentResult transition.branch.body
+      transition.selectedPayloadCell.segment.references)
+
+/-- Exact fine successor of successful full-head unification. -/
+def successfulFineState
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (installed : Subst) : OpenConf :=
+  unifySuccessor (selectedFineState before)
+    (transition.copied.body ++ selection.selected.resource.rest) installed
+
+namespace ScheduledSelectedHeadTransition
+
+/-- Lift the local matched-clause source step through the selected predicate's
+cut boundary, caller product, and every exact older payload frame.
+
+This is the control half of successful activation.  It adds no observation
+and does not rebuild the retained cursor: `activeSourceProduct` receives the
+same `finish`, `branch`, and `branchTail` as the selected occurrence. -/
+theorem liftMatchedSourceStep
+    {alpha support : List (LogicVar × String)} {qterm : Atom}
+    {currentBarrier : Nat}
+    {segments : List ControlSegment}
+    {resources : List RetainedAlternativeSegment}
+    {inner outer : CutScopeId}
+    {context : ActiveProductContext}
+    {payload :
+      SourceControlResourcePayloadContextAgrees alpha support qterm
+        currentBarrier segments resources inner context outer}
+    {source next : Search}
+    {history : ScheduledAnswerHistory alpha source next}
+    {build : ScheduledHistoryBuild history}
+    {alignment : ScheduledPayloadAlignment payload build}
+    {selection : ScheduledLocalSelection build.cells}
+    {scope : CutScopeId} {session : Session}
+    (transition :
+      ScheduledSelectedHeadTransition alignment selection scope session)
+    {independentResult : Substitution}
+    (child :
+      RawStep session (.clauses scope transition.finish) [] .none session
+        (.running
+          (.choice scope
+            (.task scope transition.branch.body independentResult)
+            (.clauses scope
+              (transition.finish.advance transition.branch
+                transition.branchTail))))) :
+    RawStep session (sourceFrontier transition transition.finish) [] .none
+      session (.running (successfulSourceFrontier transition independentResult)) := by
+  have childAtSelected :
+      RawStep session
+        (.clauses transition.selectedPayloadCell.currentScope
+          transition.finish)
+        [] .none session
+        (.running
+          (.choice transition.selectedPayloadCell.currentScope
+            (.task transition.selectedPayloadCell.currentScope
+              transition.branch.body independentResult)
+            (.clauses transition.selectedPayloadCell.currentScope
+              (transition.finish.advance transition.branch
+                transition.branchTail)))) := by
+    simpa only [transition.sourceScopeExact] using child
+  have boundary :
+      RawStep session
+        (.cutBoundary transition.selectedPayloadCell.currentScope
+          (.clauses transition.selectedPayloadCell.currentScope
+            transition.finish))
+        [] .none session
+        (.running
+          (.cutBoundary transition.selectedPayloadCell.currentScope
+            (.choice transition.selectedPayloadCell.currentScope
+              (.task transition.selectedPayloadCell.currentScope
+                transition.branch.body independentResult)
+              (.clauses transition.selectedPayloadCell.currentScope
+                (transition.finish.advance transition.branch
+                  transition.branchTail))))) :=
+    .cutBoundaryProgress transition.selectedPayloadCell.currentScope _ _ []
+      session session childAtSelected
+  have product :
+      RawStep session
+        (frameRetainedFrontier (sourceFrame transition) transition.finish)
+        [] .none session
+        (.running
+          (activeSourceProductAt transition.selectedPayloadCell.nextScope
+            transition.selectedPayloadCell.currentScope transition.finish transition.branch
+            transition.branchTail independentResult transition.branch.body
+            transition.selectedPayloadCell.segment.references)) := by
+    simpa [frameRetainedFrontier, sourceFrame, activeSourceProductAt] using
+      (RawStep.productProgress transition.selectedPayloadCell.nextScope _ _
+        transition.selectedPayloadCell.segment.references [] .none session
+        session boundary (by simp [Trace.AnswerFree]))
+  have lifted :=
+    ActiveProductContext.liftProgress transition.postLaterContext product
+      (by simp [Trace.AnswerFree])
+  simpa [sourceFrontier, successfulSourceFrontier] using lifted
+
+end ScheduledSelectedHeadTransition
+
+/-- Full exact paired result for one selected post-answer clause whose head
+unification succeeds.
+
+The source and fine lanes consume the same scheduled payload occurrence.  A
+single source `HeadResolution` produces both the ordered canonical MGU and
+the actual executable `unifyB` result; the conclusion compares their
+denotations through one extended alpha graph rather than requiring equal
+association-list orientation. -/
+structure ScheduledSuccessfulHeadRelates
+    (prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog) (gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable)
+    (before : RepresentativePersistentFreeScheduledPayloadState)
+    (ready : RootClosedAnswerReady before)
+    (selection : ScheduledLocalSelection ready.result.historyBuild.cells)
+    (scope : CutScopeId)
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (partition : RootPayloadPartition before)
+    (independentResult : Substitution)
+    (nextAlpha : List (LogicVar × String))
+    (sourceCanonical flattened : TreeSubstitution)
+    (installed : Subst) : Prop where
+  partitionExact :
+    PrologScheduledPayloadPostHeadBridge.ScheduledSelectedHeadTransition.PartitionAgrees
+      transition partition
+  resolved : HeadResolution transition.branch independentResult
+  nextShared : SharedRuntimeAlpha nextAlpha
+  alphaIncluded :
+    ∀ pair, pair ∈ before.carrier.index.alpha → pair ∈ nextAlpha
+  extensionAbove :
+    AlphaExtendsAbove before.carrier.index.alpha nextAlpha
+      transition.branch.firstFresh selection.selected.resource.counter
+  freshFrontier :
+    AlphaFreshFrontier nextAlpha
+      before.carrier.index.session.resolver.nextFresh
+      (selectedFineState before).persistent.counter
+  selectedIntervalCovered :
+    ∀ index,
+      transition.branch.firstFresh ≤ index →
+      index < transition.branch.nextFresh →
+      AlphaCovers nextAlpha (.generated index)
+  independentShape :
+    independentResult =
+      TreeSubstitution.reify
+          (sourceCanonical ++ transition.selectedSnapshotAtFinish.canonical) ++
+        transition.selectedSnapshotAtFinish.referenceBase
+  sourceOrdered :
+    OrderedTreeMgu
+      (denoteEquations transition.branch.normalizedHeadEquations)
+      sourceCanonical
+  sourceActivation :
+    RawStep before.carrier.index.session
+      (sourceFrontier transition transition.finish) [] .none
+      before.carrier.index.session
+      (.running (successfulSourceFrontier transition independentResult))
+  postAnswerSourceRun :
+    StepsN (postAnswerSuccessfulHeadCount ready transition partition)
+      (.running before.carrier.index.session ready.result.targetNext) []
+      (.running before.carrier.index.session
+        (successfulSourceFrontier transition independentResult))
+  fullSourceRun :
+    StepsN
+      (before.carrier.index.outer.length + 1 +
+        postAnswerSuccessfulHeadCount ready transition partition)
+      before.carrier.sourceState [.answer before.carrier.index.current]
+      (.running before.carrier.index.session
+        (successfulSourceFrontier transition independentResult))
+  sealedStep :
+    Mettapedia.Languages.MeTTa.PLeaTTa.Step prog gt (selectedFineState before).toConf
+      (successfulFineState transition installed).toConf
+  fineStep :
+    DemandDrivenCallStep.Step prog gt (.ready (selectedFineState before))
+      (.ready (successfulFineState transition installed))
+  successorCumulative :
+    AlphaCumulativeResidualVariantAgreesOnWith nextAlpha
+      before.carrier.index.support
+      (sourceCanonical ++ transition.selectedSnapshotAtFinish.canonical)
+      transition.selectedSnapshotAtFinish.referenceBase
+      (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor
+        (transition.copied.body ++ selection.selected.resource.rest)
+        selection.selected.resource.qterm installed)
+      (flattened ++
+        transition.selectedSnapshotAtFinish.residualRepresentative)
+  successorTask :
+    TaskPayloadAgrees nextAlpha before.carrier.index.support
+      selection.selected.resource.barrier
+      (sourceCanonical ++ transition.selectedSnapshotAtFinish.canonical)
+      transition.selectedSnapshotAtFinish.referenceBase independentResult
+      (Mettapedia.Languages.MeTTa.PLeaTTa.trimFor
+        (transition.copied.body ++ selection.selected.resource.rest)
+        selection.selected.resource.qterm installed)
+      transition.branch.body transition.copied.body
+  nextSnapshot :
+    ∃ snapshot :
+      RetainedCallPayloadSnapshot nextAlpha before.carrier.index.support
+        (afterPulledHead selection.selected.resource selection.localTail)
+        (transition.finish.advance transition.branch transition.branchTail)
+        transition.selectedPayloadCell.segment
+        transition.selectedPayloadCell.outerSegments,
+      RetainedCallPayloadSnapshot.RestorationDataAgrees snapshot
+          transition.selectedSnapshotAtFinish ∧
+        snapshot.controlOrigin =
+          transition.selectedSnapshotAtFinish.controlOrigin ∧
+        snapshot.activationOrigin =
+          transition.selectedSnapshotAtFinish.activationOrigin
+  successorBelow :
+    ConfBelowResolutionCounter
+      (successfulFineState transition installed).toConf
+  finePersistent :
+    (successfulFineState transition installed).persistent =
+      (selectedFineState before).persistent
+  fineFrames :
+    (successfulFineState transition installed).frames =
+      (selectedFineState before).frames
+  fineScopes :
+    (successfulFineState transition installed).scopes =
+      (selectedFineState before).scopes
+  fineAlts :
+    (successfulFineState transition installed).control.alts =
+      (selectedFineState before).control.alts
+  fineBarriers :
+    (successfulFineState transition installed).control.barriers =
+      (selectedFineState before).control.barriers
+  fineAnswers :
+    (successfulFineState transition installed).control.answers =
+      (selectedFineState before).control.answers
+
+namespace ScheduledSuccessfulHeadRelates
+
+/-- A selected clause which allocates at least one independent variable
+forces a genuinely strict alpha extension.
+
+This theorem is orientation-independent: it does not inspect which side the
+ordered source MGU or executable Robinson unifier chooses as an alias.  The
+new graph covers the selected clause's complete generated interval, while
+the retained call-start allocation gap proves that interval was absent from
+the old graph.  Therefore the chronological suffix cannot be empty. -/
+theorem strictAlphaExtension_of_nonemptyInterval
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    {transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session}
+    {partition : RootPayloadPartition before}
+    {independentResult : Substitution}
+    {nextAlpha : List (LogicVar × String)}
+    {sourceCanonical flattened : TreeSubstitution}
+    {installed : Subst}
+    (relation :
+      ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+        transition partition independentResult nextAlpha sourceCanonical
+        flattened installed)
+    (allocates : transition.branch.firstFresh < transition.branch.nextFresh) :
+    ∃ suffix : List (LogicVar × String),
+      suffix ≠ [] ∧
+        nextAlpha = before.carrier.index.alpha ++ suffix ∧
+        nextAlpha ≠ before.carrier.index.alpha ∧
+        ∃ name,
+          (.generated transition.branch.firstFresh, name) ∈ suffix := by
+  have branchMember : transition.branch ∈ transition.finish.remaining := by
+    rw [transition.offset.cursorRemaining]
+    simp
+  have reservationStarts :
+      transition.finish.reservationStart ≤
+        transition.branch.firstFresh :=
+    transition.offset.cursorWellFormed.1.start_le_member_first branchMember
+  have reservationEnds :
+      transition.branch.nextFresh ≤ transition.finish.reservedUntil :=
+    transition.offset.cursorWellFormed.1.member_next_le_final branchMember
+  have oldNotCovered :
+      ¬ AlphaCovers before.carrier.index.alpha
+          (.generated transition.branch.firstFresh) := by
+    rintro ⟨name, linked⟩
+    have oldMember :
+        .generated transition.branch.firstFresh ∈
+          before.carrier.index.alpha.map Prod.fst :=
+      List.mem_map.mpr
+        ⟨(.generated transition.branch.firstFresh, name), linked, rfl⟩
+    rcases
+        transition.selectedSnapshotAtFinish.allocationGap.1
+          transition.branch.firstFresh oldMember with below | above
+    · omega
+    · omega
+  have newCovered :
+      AlphaCovers nextAlpha (.generated transition.branch.firstFresh) :=
+    relation.selectedIntervalCovered transition.branch.firstFresh
+      (Nat.le_refl _) allocates
+  have different : nextAlpha ≠ before.carrier.index.alpha := by
+    intro equality
+    apply oldNotCovered
+    simpa [equality] using newCovered
+  rcases relation.extensionAbove with
+    ⟨suffix, exactShape, generated, referenceAbove, executableAbove⟩
+  obtain ⟨selectedName, selectedMember⟩ := newCovered
+  have selectedSuffixMember :
+      (.generated transition.branch.firstFresh, selectedName) ∈ suffix := by
+    rw [exactShape] at selectedMember
+    rcases List.mem_append.mp selectedMember with oldMember | suffixMember
+    · exact False.elim (oldNotCovered ⟨selectedName, oldMember⟩)
+    · exact suffixMember
+  have suffixNonempty : suffix ≠ [] := by
+    intro suffixEmpty
+    apply different
+    simpa [suffixEmpty] using exactShape
+  exact
+    ⟨suffix, suffixNonempty, exactShape, different, selectedName,
+      selectedSuffixMember⟩
+
+end ScheduledSuccessfulHeadRelates
+
+namespace ScheduledSelectedHeadTransition
+
+/-- Resolve the exact selected post-answer head on both lanes.
+
+Only two current-state facts are supplied beyond the proof-relevant carrier:
+
+* `belowBefore` is the global executable resolution-name invariant before the
+  real answer step;
+* `live` identifies the observable alpha support retained by the exact clause
+  body and caller continuation.
+
+Alpha functionality, persistent-state agreement, both allocator bounds,
+query identity, clause occurrence, copied body, and cumulative MGU state are
+all derived from the carrier and selected payload path. -/
+theorem resolveHead
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable}
+    {before : RepresentativePersistentFreeScheduledPayloadState}
+    {ready : RootClosedAnswerReady before}
+    {selection : ScheduledLocalSelection ready.result.historyBuild.cells}
+    {scope : CutScopeId}
+    (transition :
+      ScheduledSelectedHeadTransition ready.payloadAlignment selection scope
+        before.carrier.index.session)
+    (freshFrontierExact :
+      before.carrier.index.freshFrontier =
+        AlphaFreshFrontier before.carrier.index.alpha)
+    (belowBefore :
+      ConfBelowResolutionCounter before.carrier.index.openConf.toConf)
+    (live :
+      AlphaRuntimeNamesLive before.carrier.index.support
+        (transition.copied.body ++ selection.selected.resource.rest)
+        selection.selected.resource.qterm)
+    {independentResult : Substitution}
+    (resolved : HeadResolution transition.branch independentResult) :
+    ∃ partition : RootPayloadPartition before,
+      ∃ nextAlpha sourceCanonical flattened installed,
+        ScheduledSuccessfulHeadRelates prog gt before ready selection scope
+          transition partition independentResult nextAlpha sourceCanonical
+          flattened installed := by
+  obtain ⟨partition, partitionExact⟩ :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadPostHeadBridge.ScheduledSelectedHeadTransition.partitionExact
+      transition
+  have catchup :=
+    PrologScheduledPayloadRejectionBridge.ScheduledSelectedHeadTransition.postAnswerToSelectedReady
+      transition partitionExact
+  have currentHead :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadOpenConfBridge.ScheduledSelectedHeadTransition.fineCurrentExact
+      transition
+  have currentQuery :
+      (selectedFineState before).control.qterm =
+        selection.selected.resource.qterm := by
+    calc
+      (selectedFineState before).control.qterm =
+          before.carrier.index.openConf.control.qterm := by
+        simp [selectedFineState]
+      _ = before.carrier.index.qterm :=
+        before.carrier.agreement.ready.2.2.1
+      _ = selection.selected.resource.qterm :=
+        transition.selectedResourceQueryExact.symm
+  have currentShared : SharedRuntimeAlpha before.carrier.index.alpha :=
+    before.carrier.agreement.ready.2.2.2.data.alphaShared
+  have persistentBefore :
+      SessionRelatesPersistent
+        (AlphaFreshFrontier before.carrier.index.alpha)
+        before.carrier.index.session
+        before.carrier.index.openConf.persistent := by
+    simpa only [freshFrontierExact] using
+      before.carrier.agreement.ready.1
+  have currentPersistent :
+      SessionRelatesPersistent
+        (AlphaFreshFrontier before.carrier.index.alpha)
+        before.carrier.index.session
+        (selectedFineState before).persistent := by
+    simpa [selectedFineState] using persistentBefore
+  have endpointBounds :=
+    transition.selectedEndpointBounds
+      before.carrier.agreement.endpointsCurrent
+  have cursorDominated :
+      transition.finish.reservedUntil ≤
+        before.carrier.index.session.resolver.nextFresh :=
+    endpointBounds.1
+  have resourceDominated :
+      selection.selected.resource.finalCounter ≤
+        (selectedFineState before).persistent.counter := by
+    simpa [selectedFineState] using endpointBounds.2
+  have answerSealed :
+      Mettapedia.Languages.MeTTa.PLeaTTa.Step prog gt before.carrier.index.openConf.toConf
+        (answerSuccessor before.carrier.index.openConf.toConf
+          before.carrier.index.runtime) :=
+    .answer before.carrier.index.openConf.toConf
+      before.carrier.index.runtime ready.fineHead
+  have belowAfterAnswer :=
+    answerSealed.preserves_belowResolutionCounter belowBefore
+  have belowSelected :
+      ConfBelowResolutionCounter (selectedFineState before).toConf := by
+    simpa [selectedFineState, privateAnswerTarget] using belowAfterAnswer
+  obtain
+    ⟨nextAlpha, sourceCanonical, flattened, installed,
+      nextShared, alphaIncluded, extensionAbove, freshFrontier,
+      selectedIntervalCovered, independentShape, sourceOrdered, sourceStep,
+      sealedStep, fineStep,
+      successorCumulative, successorTask, nextSnapshot, successorBelow,
+      finePersistent, fineFrames, fineAlts⟩ :=
+    RetainedCallPayloadSnapshot.activateSelectedHead
+      (prog := prog) (gt := gt) (scope := scope)
+      transition.selectedSnapshotAtFinish transition.offset currentHead
+      currentQuery currentShared currentPersistent cursorDominated
+      resourceDominated belowSelected live resolved
+  have sourceActivation :=
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadSuccessBridge.ScheduledSelectedHeadTransition.liftMatchedSourceStep
+      transition sourceStep
+  have oneSourceRun :
+      StepsN 1
+        (.running before.carrier.index.session
+          (sourceFrontier transition transition.finish)) []
+        (.running before.carrier.index.session
+          (successfulSourceFrontier transition independentResult)) := by
+    have oneTransition :
+        Transition
+          (.running before.carrier.index.session
+            (sourceFrontier transition transition.finish)) []
+          (.running before.carrier.index.session
+            (successfulSourceFrontier transition independentResult)) :=
+      .ordinary _ _ _ _ _ sourceActivation
+    simpa using
+      (StepsN.succ 0
+        (.running before.carrier.index.session
+          (sourceFrontier transition transition.finish))
+        (.running before.carrier.index.session
+          (successfulSourceFrontier transition independentResult))
+        (.running before.carrier.index.session
+          (successfulSourceFrontier transition independentResult))
+        [] [] oneTransition (.zero _))
+  have postAnswerSourceRun :
+      StepsN (postAnswerSuccessfulHeadCount ready transition partition)
+        (.running before.carrier.index.session ready.result.targetNext) []
+        (.running before.carrier.index.session
+          (successfulSourceFrontier transition independentResult)) := by
+    have combined := catchup.trans oneSourceRun
+    simpa [postAnswerSuccessfulHeadCount, Nat.add_assoc] using combined
+  have absorption := ready.sourceSteps
+  rw [← ready.result.targetSourceExact] at absorption
+  have answerTransition :
+      Transition
+        (.running before.carrier.index.session ready.result.targetSource)
+        [.answer ready.result.history.bindings]
+        (.running before.carrier.index.session ready.result.targetNext) :=
+    .ordinary _ _ _ _ _
+      (ready.result.history.sourceStep before.carrier.index.session)
+  have answerRun :
+      StepsN 1
+        (.running before.carrier.index.session ready.result.targetSource)
+        [.answer ready.result.history.bindings]
+        (.running before.carrier.index.session ready.result.targetNext) := by
+    simpa using
+      (StepsN.succ 0 _ _ _ [.answer ready.result.history.bindings] []
+        answerTransition (.zero _))
+  have fullRaw := absorption.trans (answerRun.trans postAnswerSourceRun)
+  have sourceBindingExact :
+      ready.result.history.bindings = before.carrier.index.current := by
+    simpa using ready.result.bindingsExact
+  have fullSourceRun :
+      StepsN
+        (before.carrier.index.outer.length + 1 +
+          postAnswerSuccessfulHeadCount ready transition partition)
+        before.carrier.sourceState [.answer before.carrier.index.current]
+        (.running before.carrier.index.session
+          (successfulSourceFrontier transition independentResult)) := by
+    simpa [Nat.add_assoc, sourceBindingExact] using fullRaw
+  exact
+    ⟨partition, nextAlpha, sourceCanonical, flattened, installed,
+      { partitionExact := partitionExact
+        resolved := resolved
+        nextShared := nextShared
+        alphaIncluded := alphaIncluded
+        extensionAbove := extensionAbove
+        freshFrontier := freshFrontier
+        selectedIntervalCovered := selectedIntervalCovered
+        independentShape := independentShape
+        sourceOrdered := sourceOrdered
+        sourceActivation := sourceActivation
+        postAnswerSourceRun := postAnswerSourceRun
+        fullSourceRun := fullSourceRun
+        sealedStep := sealedStep
+        fineStep := fineStep
+        successorCumulative := successorCumulative
+        successorTask := successorTask
+        nextSnapshot := nextSnapshot
+        successorBelow := successorBelow
+        finePersistent := finePersistent
+        fineFrames := fineFrames
+        fineScopes := rfl
+        fineAlts := fineAlts
+        fineBarriers := rfl
+        fineAnswers := rfl }⟩
+
+end ScheduledSelectedHeadTransition
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadSuccessBridge

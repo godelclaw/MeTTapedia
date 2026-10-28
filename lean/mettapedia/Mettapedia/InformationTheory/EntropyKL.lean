@@ -10,7 +10,7 @@ same page:
 1. **Axiomatic entropy** (Faddeev 1956, Shannon 1948, Shannon–Khinchin 1957):
    `Mettapedia/InformationTheory/ShannonEntropy/*`
 2. **Knuth–Skilling derivation** (Appendix C → divergence → entropy on `ProbDist`):
-   `Mettapedia/ProbabilityTheory/KnuthSkilling/Information/*`
+   external `KnuthSkilling/Information/*`
 3. **Bridges** between representations and between discrete and measure-theoretic KL:
    `Mettapedia/InformationTheory/ShannonEntropy/Interface.lean`
    `Mettapedia/InformationTheory/ShannonEntropy/MeasureTheoreticBridge.lean`
@@ -31,7 +31,7 @@ The finite distribution types used throughout the project are:
 - `ProbDist n` (foundations-level finite distributions), defined in
   `Mettapedia/ProbabilityTheory/Foundations/Distributions/ProbDist.lean`
   and re-exported (as a KS-facing alias) in
-  `Mettapedia/ProbabilityTheory/KnuthSkilling/Information/InformationEntropy.lean`
+  external `KnuthSkilling/Information/InformationEntropy.lean`
 
 The main equivalence glue lives in:
 
@@ -42,4 +42,3 @@ The main equivalence glue lives in:
 This file intentionally does not re-export names; it is an "import interface" with a single,
 stable path that other subprojects (Cox, Shore–Johnson, etc.) can depend on.
 -/
-

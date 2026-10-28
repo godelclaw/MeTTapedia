@@ -1,0 +1,579 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologPersistentFreeActivePayloadBridge
+Purpose: State active retained-call correspondence without retaining or
+  fabricating a historical persistent machine state.
+Trusted boundary: none
+Main exports:
+  PersistentFreeActiveProductPayloadResourceRelatesAt,
+  PersistentFreeActivePayloadState,
+  RepresentativePersistentFreeActivePayloadState
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologNestedCallReadyBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologPersistentFreeActivePayloadBridge
+
+open Mettapedia.Languages.MeTTa.PLeaTTa.Source (Atom Subst)
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.Canonical
+open PeTTaSpec.PrologCore.GoalSemantics
+open PeTTaSpec.PrologCore.OpenSubstitution
+open PeTTaSpec.PrologCore.Resolver
+open DemandDrivenStep
+open PrologActivatedProductStepBridge
+open PrologAlphaFreshFrontierBridge
+open PrologControlSegmentSpineBridge
+open PrologCurrentSessionPayloadBridge
+open PrologMguComposition
+open PrologOrdinaryStepBridge
+open PrologProductResourceContextBridge
+open PrologProductResourceTransitionBridge
+open PrologRetainedPayloadSnapshotBridge
+open PrologRetainedPayloadSnapshotBridge.SourceControlResourcePayloadContextAgrees
+open PrologSourceProductContextBridge
+open PrologStateBridge
+
+/-!
+`OpenedCall` and `PendingCall` are creation packets, not persistent resources.
+Both contain a historical persistent state.  Retaining either packet after a
+nested call, assertion, or allocator advance makes an unsound restoration
+available; pairing an older cursor with the current state instead fabricates
+an activation which never occurred.
+
+The relation below consumes only the data which remains meaningful:
+
+* the current `Session` and current `OpenConf`;
+* the predicate's typed cut scope;
+* the occurrence-indexed payload zipper, whose head snapshot already owns the
+  compact activation and control origins; and
+* the literal current source/executable resource shapes.
+
+Historical origins are therefore derived from the dependent payload head,
+never duplicated as freely chosen carrier fields.  The current domination
+facts remain recursive over that same payload value.
+-/
+
+/-- Active retained-call correspondence with no historical persistent packet.
+
+Most resource equations are already constructor fields of `payloadContext`:
+the active resource's continuation, query, barrier, cursor ownership, and the
+complete outer alignment.  The two explicit alternative equations below are
+the remaining live-machine facts. -/
+structure PersistentFreeActiveProductPayloadResourceRelatesAt
+    (freshFrontier : FreshFrontierRelation)
+    (alpha support : List (LogicVar × String))
+    (canonical : TreeSubstitution) (referenceBase : Substitution)
+    (predicateScope : CutScopeId) (session : Session)
+    (finish : PreparedCursor) (branch : ClauseBranch)
+    (branchTail : List ClauseBranch) (altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+    (bodyBarrier callerBarrier : Nat)
+    (bodyReferences : List PeTTaSpec.PrologCore.Goal)
+    (bodyExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (callerReferences : List PeTTaSpec.PrologCore.Goal)
+    (callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal)
+    (outer : List ControlSegment)
+    (current : Substitution) (runtime : Subst) (qterm : Atom)
+    (active : RetainedAlternativeSegment)
+    (resources : List RetainedAlternativeSegment)
+    (callerScope outerScope : CutScopeId)
+    (context : ActiveProductContext)
+    (baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt)
+    (source : Search) (state : OpenConf)
+    (payloadContext :
+      ActiveProductPayloadContextAt alpha support qterm predicateScope finish
+        branch branchTail bodyBarrier callerBarrier callerReferences
+        callerExecutables outer active resources callerScope outerScope
+        context) : Prop where
+  ready :
+    SpinedReadyTaskRelates freshFrontier alpha support canonical
+      referenceBase session current runtime qterm
+      ({ barrier := bodyBarrier
+         references := bodyReferences
+         executables := bodyExecutables } ::
+       { barrier := callerBarrier
+         references := callerReferences
+         executables := callerExecutables } ::
+       outer)
+      state
+  activeAlts : active.alts = altTail
+  actualAlts :
+    state.control.alts = flattenOwnedAlts (active :: resources) baseAlts
+  sourceShape :
+    source =
+      ActiveProductContext.plug context
+        (activeSourceProductAt callerScope predicateScope finish branch
+          branchTail current bodyReferences callerReferences)
+  endpointsCurrent :
+    endpointsBelow payloadContext session.resolver.nextFresh
+      state.persistent.counter
+  activationOrdered : ActivationOrdered payloadContext
+  activationOrigins :
+    LocalActivationOriginSpineRelates session payloadContext
+  controlOrigins :
+    LocalControlOriginSpineRelates baseAlts state.frames
+      state.control.barriers payloadContext
+
+namespace PersistentFreeActiveProductPayloadResourceRelatesAt
+
+/-- The exact head occurrence's historical activation is dominated by the
+current session; no historical session can be recovered from this fact. -/
+theorem activationExtends
+    {freshFrontier : FreshFrontierRelation}
+    {alpha support : List (LogicVar × String)}
+    {canonical : TreeSubstitution} {referenceBase : Substitution}
+    {predicateScope : CutScopeId} {session : Session}
+    {finish : PreparedCursor} {branch : ClauseBranch}
+    {branchTail : List ClauseBranch} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {bodyBarrier callerBarrier : Nat}
+    {bodyReferences : List PeTTaSpec.PrologCore.Goal}
+    {bodyExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {callerReferences : List PeTTaSpec.PrologCore.Goal}
+    {callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {outer : List ControlSegment}
+    {current : Substitution} {runtime : Subst} {qterm : Atom}
+    {active : RetainedAlternativeSegment}
+    {resources : List RetainedAlternativeSegment}
+    {callerScope outerScope : CutScopeId}
+    {context : ActiveProductContext} {baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {source : Search} {state : OpenConf}
+    {payloadContext :
+      ActiveProductPayloadContextAt alpha support qterm predicateScope finish
+        branch branchTail bodyBarrier callerBarrier callerReferences
+        callerExecutables outer active resources callerScope outerScope
+        context}
+    (agreement :
+      PersistentFreeActiveProductPayloadResourceRelatesAt freshFrontier alpha
+        support canonical referenceBase predicateScope session finish branch
+        branchTail altTail bodyBarrier callerBarrier bodyReferences
+        bodyExecutables callerReferences callerExecutables outer current
+        runtime qterm active resources callerScope outerScope context baseAlts
+        source state payloadContext) :
+    (headCell payloadContext).snapshot.activationOrigin.Extends session :=
+  LocalActivationOriginSpineRelates.headExtends payloadContext
+    agreement.activationOrigins
+
+/-- The historical activation's cut high-water is tied to the literal typed
+scope of this exact active occurrence. -/
+theorem activationCutScope
+    {freshFrontier : FreshFrontierRelation}
+    {alpha support : List (LogicVar × String)}
+    {canonical : TreeSubstitution} {referenceBase : Substitution}
+    {predicateScope : CutScopeId} {session : Session}
+    {finish : PreparedCursor} {branch : ClauseBranch}
+    {branchTail : List ClauseBranch} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {bodyBarrier callerBarrier : Nat}
+    {bodyReferences : List PeTTaSpec.PrologCore.Goal}
+    {bodyExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {callerReferences : List PeTTaSpec.PrologCore.Goal}
+    {callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {outer : List ControlSegment}
+    {current : Substitution} {runtime : Subst} {qterm : Atom}
+    {active : RetainedAlternativeSegment}
+    {resources : List RetainedAlternativeSegment}
+    {callerScope outerScope : CutScopeId}
+    {context : ActiveProductContext} {baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {source : Search} {state : OpenConf}
+    {payloadContext :
+      ActiveProductPayloadContextAt alpha support qterm predicateScope finish
+        branch branchTail bodyBarrier callerBarrier callerReferences
+        callerExecutables outer active resources callerScope outerScope
+        context}
+    (agreement :
+      PersistentFreeActiveProductPayloadResourceRelatesAt freshFrontier alpha
+        support canonical referenceBase predicateScope session finish branch
+        branchTail altTail bodyBarrier callerBarrier bodyReferences
+        bodyExecutables callerReferences callerExecutables outer current
+        runtime qterm active resources callerScope outerScope context baseAlts
+        source state payloadContext) :
+    (headCell payloadContext).snapshot.activationOrigin.nextCutScope =
+      predicateScope + 1 :=
+  LocalActivationOriginSpineRelates.headCutScope payloadContext
+    agreement.activationOrigins
+
+/-- Legacy current-session active relations embed without weakening any live
+state or payload fact.  The discarded packet fields are not projected into
+the target relation. -/
+theorem ofLegacy
+    {freshFrontier : FreshFrontierRelation}
+    {alpha support : List (LogicVar × String)}
+    {canonical : TreeSubstitution} {referenceBase : Substitution}
+    {opened : OpenedCall} {session : Session}
+    {pending : DemandDrivenCallStep.PendingCall}
+    {finish : PreparedCursor} {branch : ClauseBranch}
+    {branchTail : List ClauseBranch} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {bodyBarrier callerBarrier : Nat}
+    {bodyReferences : List PeTTaSpec.PrologCore.Goal}
+    {bodyExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {callerReferences : List PeTTaSpec.PrologCore.Goal}
+    {callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {outer : List ControlSegment}
+    {current : Substitution} {runtime : Subst} {qterm : Atom}
+    {active : RetainedAlternativeSegment}
+    {resources : List RetainedAlternativeSegment}
+    {callerScope outerScope : CutScopeId}
+    {context : ActiveProductContext} {baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {source : Search} {state : OpenConf}
+    {payloadContext :
+      ActiveProductPayloadContext alpha support qterm opened finish branch
+        branchTail bodyBarrier callerBarrier callerReferences
+        callerExecutables outer active resources callerScope outerScope
+        context}
+    (agreement :
+      SpinedActiveProductPayloadResourceRelatesAt freshFrontier alpha support
+        canonical referenceBase opened session pending finish branch branchTail
+        altTail bodyBarrier callerBarrier bodyReferences bodyExecutables
+        callerReferences callerExecutables outer current runtime qterm active
+        resources callerScope outerScope context baseAlts source state
+        payloadContext) :
+    PersistentFreeActiveProductPayloadResourceRelatesAt freshFrontier alpha
+      support canonical referenceBase opened.scope session finish branch
+      branchTail altTail bodyBarrier callerBarrier bodyReferences
+      bodyExecutables callerReferences callerExecutables outer current runtime
+      qterm active resources callerScope outerScope context baseAlts source
+      state payloadContext :=
+  { ready := agreement.core.control.ready
+    activeAlts := agreement.core.resourceStack.activeAlts
+    actualAlts := agreement.core.resourceStack.actualAlts
+    sourceShape := by
+      simpa [activeSourceProduct] using agreement.core.sourceShape
+    endpointsCurrent := agreement.endpointsCurrent
+    activationOrdered := agreement.activationOrdered
+    activationOrigins := agreement.activationOrigins
+    controlOrigins := agreement.controlOrigins }
+
+end PersistentFreeActiveProductPayloadResourceRelatesAt
+
+/-! ## Type-valued persistent-free carrier -/
+
+/-- All data indices of one active occurrence, retaining only current
+persistent state and the typed predicate scope. -/
+structure PersistentFreeActivePayloadIndex where
+  freshFrontier : FreshFrontierRelation
+  alpha : List (LogicVar × String)
+  support : List (LogicVar × String)
+  canonical : TreeSubstitution
+  referenceBase : Substitution
+  predicateScope : CutScopeId
+  session : Session
+  finish : PreparedCursor
+  branch : ClauseBranch
+  branchTail : List ClauseBranch
+  altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt
+  bodyBarrier : Nat
+  callerBarrier : Nat
+  bodyReferences : List PeTTaSpec.PrologCore.Goal
+  bodyExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal
+  callerReferences : List PeTTaSpec.PrologCore.Goal
+  callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal
+  outer : List ControlSegment
+  current : Substitution
+  runtime : Subst
+  qterm : Atom
+  active : RetainedAlternativeSegment
+  resources : List RetainedAlternativeSegment
+  callerScope : CutScopeId
+  outerScope : CutScopeId
+  context : ActiveProductContext
+  baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt
+  source : Search
+  openConf : OpenConf
+
+namespace PersistentFreeActivePayloadIndex
+
+abbrev PayloadContext (index : PersistentFreeActivePayloadIndex) :=
+  ActiveProductPayloadContextAt index.alpha index.support index.qterm
+    index.predicateScope index.finish index.branch index.branchTail
+    index.bodyBarrier index.callerBarrier index.callerReferences
+    index.callerExecutables index.outer index.active index.resources
+    index.callerScope index.outerScope index.context
+
+abbrev Relates (index : PersistentFreeActivePayloadIndex)
+    (payloadContext : index.PayloadContext) :=
+  PersistentFreeActiveProductPayloadResourceRelatesAt index.freshFrontier
+    index.alpha index.support index.canonical index.referenceBase
+    index.predicateScope index.session index.finish index.branch
+    index.branchTail index.altTail index.bodyBarrier index.callerBarrier
+    index.bodyReferences index.bodyExecutables index.callerReferences
+    index.callerExecutables index.outer index.current index.runtime index.qterm
+    index.active index.resources index.callerScope index.outerScope
+    index.context index.baseAlts index.source index.openConf payloadContext
+
+end PersistentFreeActivePayloadIndex
+
+/-- One exact source/fine/payload state from which no stale persistent packet
+can be projected. -/
+structure PersistentFreeActivePayloadState where
+  index : PersistentFreeActivePayloadIndex
+  payloadContext : index.PayloadContext
+  agreement : index.Relates payloadContext
+
+namespace PersistentFreeActivePayloadState
+
+/-- Package a packet-free active relation from an already derived live
+agreement, without constructing a compatibility carrier inside this
+constructor.  An upstream producer may still carry historical `OpenedCall`
+and `PendingCall` indices; those are erased once when it supplies the
+agreement at this boundary. -/
+def ofAgreement
+    {freshFrontier : FreshFrontierRelation}
+    {alpha support : List (LogicVar × String)}
+    {canonical : TreeSubstitution} {referenceBase : Substitution}
+    {predicateScope : CutScopeId} {session : Session}
+    {finish : PreparedCursor} {branch : ClauseBranch}
+    {branchTail : List ClauseBranch} {altTail : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {bodyBarrier callerBarrier : Nat}
+    {bodyReferences : List PeTTaSpec.PrologCore.Goal}
+    {bodyExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {callerReferences : List PeTTaSpec.PrologCore.Goal}
+    {callerExecutables : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal}
+    {outer : List ControlSegment}
+    {current : Substitution} {runtime : Subst} {qterm : Atom}
+    {active : RetainedAlternativeSegment}
+    {resources : List RetainedAlternativeSegment}
+    {callerScope outerScope : CutScopeId}
+    {context : ActiveProductContext} {baseAlts : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt}
+    {source : Search} {openConf : OpenConf}
+    {payloadContext :
+      ActiveProductPayloadContextAt alpha support qterm predicateScope finish
+        branch branchTail bodyBarrier callerBarrier callerReferences
+        callerExecutables outer active resources callerScope outerScope
+        context}
+    (agreement :
+      PersistentFreeActiveProductPayloadResourceRelatesAt freshFrontier alpha
+        support canonical referenceBase predicateScope session finish branch
+        branchTail altTail bodyBarrier callerBarrier bodyReferences
+        bodyExecutables callerReferences callerExecutables outer current
+        runtime qterm active resources callerScope outerScope context baseAlts
+        source openConf payloadContext) : PersistentFreeActivePayloadState :=
+  { index :=
+      { freshFrontier := freshFrontier
+        alpha := alpha
+        support := support
+        canonical := canonical
+        referenceBase := referenceBase
+        predicateScope := predicateScope
+        session := session
+        finish := finish
+        branch := branch
+        branchTail := branchTail
+        altTail := altTail
+        bodyBarrier := bodyBarrier
+        callerBarrier := callerBarrier
+        bodyReferences := bodyReferences
+        bodyExecutables := bodyExecutables
+        callerReferences := callerReferences
+        callerExecutables := callerExecutables
+        outer := outer
+        current := current
+        runtime := runtime
+        qterm := qterm
+        active := active
+        resources := resources
+        callerScope := callerScope
+        outerScope := outerScope
+        context := context
+        baseAlts := baseAlts
+        source := source
+        openConf := openConf }
+    payloadContext := payloadContext
+    agreement := agreement }
+
+def sourceState (state : PersistentFreeActivePayloadState) : State :=
+  .running state.index.session state.index.source
+
+def fineState (state : PersistentFreeActivePayloadState) :
+    DemandDrivenCallStep.FineConf :=
+  .ready state.index.openConf
+
+/-- Exact ordered runtime identity spine of the retained payload.  The
+persistent-free carrier erases only historical creation packets; it retains
+every resource, cursor, delimiter, and control-segment identity needed by the
+global transition zipper. -/
+def cellIdentities (state : PersistentFreeActivePayloadState) :
+    List PrologNestedCallChainBridge.PayloadCellIdentity :=
+  PrologNestedCallChainBridge.SourceControlResourcePayloadContextAgrees.cellIdentities
+    state.payloadContext
+
+/-- Number of retained payload cells in the persistent-free carrier. -/
+def cellCount (state : PersistentFreeActivePayloadState) : Nat :=
+  PrologCurrentSessionPayloadTransitionBridge.ActiveProductPayloadContext.cellCount
+    state.payloadContext
+
+theorem cellIdentities_length (state : PersistentFreeActivePayloadState) :
+    state.cellIdentities.length = state.cellCount :=
+  PrologNestedCallChainBridge.SourceControlResourcePayloadContextAgrees.cellIdentities_length_eq_cellCount
+    state.payloadContext
+
+/-- Runtime identity of the unique active payload cell after historical
+activation packets have been erased.  The typed predicate scope is retained
+directly in the packet-free index, so no `OpenedCall` reconstruction is
+needed. -/
+def headCell (state : PersistentFreeActivePayloadState) :
+    PrologNestedCallChainBridge.PayloadCellIdentity :=
+  { currentBarrier := state.index.bodyBarrier
+    currentScope := state.index.predicateScope
+    nextScope := state.index.callerScope
+    outerScope := state.index.outerScope
+    segment :=
+      { barrier := state.index.callerBarrier
+        references := state.index.callerReferences
+        executables := state.index.callerExecutables }
+    resource := state.index.active
+    cursor :=
+      state.index.finish.advance state.index.branch state.index.branchTail }
+
+/-- The packet-free active cell is literally the head of the runtime zipper;
+the committed successor owns the literal outer tail. -/
+theorem cellIdentities_eq_headCell_cons_outerPayload
+    (state : PersistentFreeActivePayloadState) :
+    state.cellIdentities =
+      headCell state ::
+        state.cellIdentities.tail := by
+  change
+    PrologNestedCallChainBridge.SourceControlResourcePayloadContextAgrees.cellIdentities
+          state.payloadContext =
+      headCell state ::
+        (PrologNestedCallChainBridge.SourceControlResourcePayloadContextAgrees.cellIdentities
+          state.payloadContext).tail
+  cases state.payloadContext
+  rfl
+
+/-- Erase a legacy carrier while preserving both literal machine endpoints. -/
+def ofLegacy (state : PrologNestedCallChainBridge.ActivePayloadState) :
+    PersistentFreeActivePayloadState :=
+  { index :=
+      { freshFrontier := state.index.freshFrontier
+        alpha := state.index.alpha
+        support := state.index.support
+        canonical := state.index.canonical
+        referenceBase := state.index.referenceBase
+        predicateScope := state.index.opened.scope
+        session := state.index.session
+        finish := state.index.finish
+        branch := state.index.branch
+        branchTail := state.index.branchTail
+        altTail := state.index.altTail
+        bodyBarrier := state.index.bodyBarrier
+        callerBarrier := state.index.callerBarrier
+        bodyReferences := state.index.bodyReferences
+        bodyExecutables := state.index.bodyExecutables
+        callerReferences := state.index.callerReferences
+        callerExecutables := state.index.callerExecutables
+        outer := state.index.outer
+        current := state.index.current
+        runtime := state.index.runtime
+        qterm := state.index.qterm
+        active := state.index.active
+        resources := state.index.resources
+        callerScope := state.index.callerScope
+        outerScope := state.index.outerScope
+        context := state.index.context
+        baseAlts := state.index.baseAlts
+        source := state.index.source
+        openConf := state.index.openConf }
+    payloadContext := state.payloadContext
+    agreement :=
+      PersistentFreeActiveProductPayloadResourceRelatesAt.ofLegacy
+        state.agreement }
+
+@[simp] theorem ofLegacy_sourceState
+    (state : PrologNestedCallChainBridge.ActivePayloadState) :
+    (ofLegacy state).sourceState = state.sourceState := by
+  simp [ofLegacy, sourceState,
+    PrologNestedCallChainBridge.ActivePayloadState.sourceState]
+
+@[simp] theorem ofLegacy_fineState
+    (state : PrologNestedCallChainBridge.ActivePayloadState) :
+    (ofLegacy state).fineState = state.fineState := by
+  simp [ofLegacy, fineState,
+    PrologNestedCallChainBridge.ActivePayloadState.fineState]
+
+@[simp] theorem ofLegacy_cellIdentities
+    (state : PrologNestedCallChainBridge.ActivePayloadState) :
+    (ofLegacy state).cellIdentities = state.cellIdentities := rfl
+
+@[simp] theorem ofLegacy_cellCount
+    (state : PrologNestedCallChainBridge.ActivePayloadState) :
+    (ofLegacy state).cellCount = state.cellCount := rfl
+
+end PersistentFreeActivePayloadState
+
+/-- Persistent-free active state with its exact cumulative residual
+representative. -/
+structure RepresentativePersistentFreeActivePayloadState where
+  carrier : PersistentFreeActivePayloadState
+  representative : TreeSubstitution
+  cumulative :
+    AlphaCumulativeResidualVariantAgreesOnWith carrier.index.alpha
+      carrier.index.support carrier.index.canonical carrier.index.referenceBase
+      carrier.index.runtime representative
+
+/-- Packet-free active state carrying the activation-time materialization of
+every primitive equality in its complete normalized clause body.
+
+The wrapper is intentionally separate from the compatibility carrier: legacy
+states which predate whole-body materialization cannot fabricate this field,
+while new activation producers can preserve it structurally across cut and
+compiler-erased administrative transitions. -/
+structure MaterializedRepresentativePersistentFreeActivePayloadState where
+  carrier : RepresentativePersistentFreeActivePayloadState
+  materializedUnifyGoals :
+    MaterializedUnifyGoalsAgreeWith carrier.carrier.index.alpha
+      carrier.representative carrier.carrier.index.referenceBase
+      carrier.carrier.index.runtime carrier.carrier.index.bodyBarrier
+      carrier.carrier.index.bodyReferences carrier.carrier.index.bodyExecutables
+
+namespace RepresentativePersistentFreeActivePayloadState
+
+/-- Legacy representative carriers embed without changing their source or
+fine endpoints. -/
+def ofLegacy
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    RepresentativePersistentFreeActivePayloadState :=
+  { carrier := PersistentFreeActivePayloadState.ofLegacy state.carrier
+    representative := state.representative
+    cumulative := by
+      simpa [PersistentFreeActivePayloadState.ofLegacy] using state.cumulative }
+
+@[simp] theorem ofLegacy_sourceState
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.sourceState = state.carrier.sourceState := by
+  simp [ofLegacy]
+
+@[simp] theorem ofLegacy_fineState
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.fineState = state.carrier.fineState := by
+  simp [ofLegacy]
+
+@[simp] theorem ofLegacy_session
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.index.session = state.carrier.index.session := rfl
+
+@[simp] theorem ofLegacy_openConf
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.index.openConf = state.carrier.index.openConf := rfl
+
+@[simp] theorem ofLegacy_alpha
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.index.alpha = state.carrier.index.alpha := rfl
+
+@[simp] theorem ofLegacy_baseAlts
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.index.baseAlts = state.carrier.index.baseAlts := rfl
+
+@[simp] theorem ofLegacy_cellIdentities
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.cellIdentities = state.carrier.cellIdentities := rfl
+
+@[simp] theorem ofLegacy_cellCount
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).carrier.cellCount = state.carrier.cellCount := rfl
+
+@[simp] theorem ofLegacy_representative
+    (state : PrologNestedCallReadyBridge.RepresentativeActivePayloadState) :
+    (ofLegacy state).representative = state.representative := rfl
+
+end RepresentativePersistentFreeActivePayloadState
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologPersistentFreeActivePayloadBridge

@@ -1,0 +1,151 @@
+# Prolog over the Logic Programming Kernel
+
+The engine-facing syntax is [`Goal`](Syntax.lean), parameterized by the same
+`LPSignature` used throughout `Logic.LP`. Predicate calls contain `LP.Atom`
+directly, data arguments are `LP.Term`, and a definite `LP.Program` embeds into
+the richer Prolog program clause-for-clause. The inverse projection is proved
+exact on that pure fragment. This is the representation intended for the one
+executable Prolog lane.
+
+The older `PrologGoal`/`PEnv` relation in `Core.lean` and `Eval.lean` is a
+`MeTTaIL.Pattern`-level characterization used by the ISO fixture corpus. It is
+not an executable resolver and does not replace or specify the `Logic.LP`
+runtime.
+
+The compound-term graph unifier's semantic results require finite readback.
+The query-to-scoped-SLD and least-model results retain their function-free
+hypotheses. Rational-tree execution and external SWI comparisons have separate
+boundaries; they do not establish unrestricted Prolog soundness or a complete
+SWI-Prolog port.
+
+`SWI/SWI_PROVENANCE.json` records the pinned source identities and the evidence
+for individual components. `SWI/THIRD_PARTY_NOTICES` retains the SWI BSD-2-Clause
+and PeTTa MIT notices. The archived manifest originally hashed two modified
+PeTTa reader files under the release commit. Their release digests are now
+correct, and `SWI/Profiles/PeTTaReaderEscapes.patch` preserves the historical
+escape-handling changes explicitly as a separate profile.
+
+Prolog runs a program by *searching* for a proof and *backtracking* when a branch
+fails — and one operator, the **cut** (`!`), prunes that search by committing to
+choices already made. Getting cut right (where it is "caught", what it discards) is
+the subtle heart of Prolog's control flow. The characterization relation gives
+these operators a precise semantics in Lean 4, while a separate executable
+harness differentially checks aligned fixtures against SWI-Prolog. The external
+comparison is evidence, not a Lean proof about SWI.
+
+The characterization language (`PrologGoal` in [Core.lean](Core.lean)) has 14 constructors:
+ISO control predicates (`succeed`, `fail`, `cut`), logical connectives (`conj`,
+`disj`, `ite`), determinism and negation-as-failure (`once`, `neg`), unification
+(`unify`, `notUnify`), meta-predicates (`findall`, `isVar`), and MeTTa-specific
+extensions (`spaceMatch`, `reduceCall`).
+
+The operational semantics (`PrologEval` in [Eval.lean](Eval.lean)) is an inductive
+relation implementing backtracking with cut propagation — cut is caught at
+disjunction, `once`, `findall`, and if-then-else boundaries, matching standard
+Prolog behavior.
+
+A 242-theorem fixture corpus ([FixtureCorpus.lean](FixtureCorpus.lean)) proves
+agreement with ISO Prolog on 63 ISO test IDs drawn from the Logtalk conformance
+suite. An executable harness cross-checks these against SWI-Prolog.
+
+Import via `Mettapedia.Logic.Prolog.Prolog` ([Prolog.lean](Prolog.lean)).
+
+## Build
+
+```bash
+# from lean/mettapedia
+lake build Mettapedia.Logic.Prolog.Prolog
+```
+
+## Modules
+
+| Module | What it does |
+|--------|-------------|
+| [Syntax.lean](Syntax.lean) | canonical LP-based `Goal`, control-aware `Clause`, and exact pure-Horn embedding |
+| [SourceSignature.lean](SourceSignature.lean) | concrete name/arity-indexed source signature over the canonical LP terms |
+| [ReaderLexer.lean](ReaderLexer.lean) | located SWI-shaped lexical tokens |
+| [ReaderTerm.lean](ReaderTerm.lean) | dynamic-operator parsing directly into canonical `LP.Term` |
+| [ReaderSource.lean](ReaderSource.lean) | direct classification into canonical Prolog goals and clauses |
+| [ReaderLoader.lean](ReaderLoader.lean) | sequential parsing with directive effects between terms |
+| [ReaderDirective.lean](ReaderDirective.lean) | checked read-time operator effects for directives and imports |
+| [ReaderConditional.lean](ReaderConditional.lean) | fail-closed conditional source selection before ordinary read-time effects |
+| [ReaderSWIProfile.lean](ReaderSWIProfile.lean) | fail-closed import-operator profile for the pinned PeTTa closure |
+| [RuntimeControl.lean](RuntimeControl.lean) | typed control materialization and canonical LP runtime specialization |
+| [SourceRuntime.lean](SourceRuntime.lean) | concrete source-signature services for the shared runtime, including meta-call, term inspection and standard comparison, `=../2`, integer arithmetic, exceptions, collections, and the persistent database |
+| [SourceRuntimeRegression.lean](SourceRuntimeRegression.lean) | executable source-shaped canaries for the same shared runtime path |
+| [SingleSidedRuleRegression.lean](SingleSidedRuleRegression.lean) | source-to-runtime SSU caller-protection and guard-commit canaries |
+| [RuntimeControlSoundness.lean](RuntimeControlSoundness.lean) | proves the typed runtime conserves the shared LP execution and grounds pure answers in scoped SLD and the least Herbrand model |
+| [RuntimeControlSoundnessRegression.lean](RuntimeControlSoundnessRegression.lean) | executable ordered-answer canary on the typed entrypoint plus its concrete least-model theorem specialization |
+| [PureRuntimeSoundness.lean](PureRuntimeSoundness.lean) | pure runtime answers grounded in scoped SLD and the least Herbrand model |
+| [Core.lean](Core.lean) | pattern-level `PrologGoal`, `PEnv`, and fixture helpers |
+| [Eval.lean](Eval.lean) | `PrologEval` operational semantics with cut-aware control flow |
+| [RuntimeErrorSpec.lean](RuntimeErrorSpec.lean) | ISO runtime-error boundary: maps 4 out-of-model ISO IDs to error classes |
+| [FixtureCorpus.lean](FixtureCorpus.lean) | 242 proven fixture theorems sourced from Logtalk ISO tests |
+| [Prolog.lean](Prolog.lean) | Aggregates all modules; includes architecture diagram |
+
+## Conformance
+
+The Lean theorem-level corpus is cross-checked against a real Prolog by the harness
+under [scripts/prolog](../../../scripts/prolog) (run `scripts/prolog/run_conformance.sh`).
+Per that harness's own counts:
+
+| Metric | Count |
+|--------|------:|
+| Lean fixture theorems (`FixtureCorpus.lean`) | 242 |
+| SWI-Prolog `lean_aligned` cases | 183 |
+| SWI-Prolog `iso_probe` cases | 11 |
+| Unique Logtalk ISO IDs covered | 63 |
+| Runtime-error boundary probes (`RuntimeErrorSpec.lean`) | 4 |
+
+The four runtime-error boundary cases (`\+ 3`, `\+ G`, `findall(_, G, _)`,
+`findall(_, 4, _)`) fall outside the typed `PrologGoal` AST, so they are formalized
+as theorem-level error-class declarations in [RuntimeErrorSpec.lean](RuntimeErrorSpec.lean)
+rather than executed in `PrologEval`.
+
+## SWI design provenance and self-contained boundary
+
+The canonical runtime is Lean-native and is **not** a clean-room project:
+individual mechanisms were designed while consulting pinned SWI-Prolog source
+and are checked against SWI's observable behavior.  The per-mechanism source
+anchors, implementation evidence, proof status, and differential evidence are
+hash-pinned in [SWI_PROVENANCE.json](SWI/SWI_PROVENANCE.json).  The accompanying
+[BSD-2-Clause notice](SWI/THIRD_PARTY_NOTICES) is retained for this
+source-informed work; it does not turn the Lean implementation into a second
+SWI codebase.
+
+PeTTa's own Prolog files are application inputs: parsing and executing them is
+the compatibility goal.  In contrast, a pinned-source integration canary may
+temporarily load SWI library source to expose a missing Lean-Prolog capability.
+Such a canary is evidence of the gap, not a self-contained runtime claim.
+The self-contained boundary advances only when the required library behavior is
+implemented in the canonical Lean runtime and the integration canary no longer
+needs that borrowed source.
+
+## Related
+
+- [LP kernel](../LP) — unification, SLD resolution, Herbrand semantics
+- [PeTTa layer](../../Languages/MeTTa/PeTTa) — evaluation, effects, expression compilation
+
+## Formalization status
+
+The canonical syntax and its embedding theorems are `sorry`-free. The older
+characterization files are also `sorry`-free. The characterization semantics is an
+inductive relation (`PrologEval`); the 242 fixture theorems and the 4 runtime-error
+boundary declarations are discharged constructively (many by `rfl`).
+
+**Trusted base.** There are no source-level `axiom` declarations in this directory
+(a source grep, *not* a per-theorem `#print axioms` audit — proofs built on Mathlib
+may inherit standard Mathlib axioms such as `propext`, `Quot.sound`, and
+`Classical.choice` transitively). Nothing in this directory uses `native_decide`, so
+no `.lean` file here enlarges the trusted base via compile-time evaluation. The
+SWI-Prolog cross-check is an *external* differential test (it runs a separate Prolog
+engine); it is evidence of conformance, not part of the Lean kernel guarantee.
+
+## References
+
+- John W. Lloyd, [*Foundations of Logic Programming*](https://link.springer.com/book/10.1007/978-3-642-83189-8) (Springer, 2nd ed. 1987) — the declarative/operational semantics of Horn-clause logic programming underlying Prolog.
+- ISO/IEC 13211-1:1995, [Information technology — Programming languages — Prolog — Part 1: General core](https://www.iso.org/standard/21413.html) — the ISO Prolog standard whose control predicates and error classes the fixtures target.
+- Paulo Moura, [Logtalk Prolog conformance test suite](https://github.com/LogtalkDotOrg/logtalk3/tree/master/tests/prolog) — the upstream source of the 63 ISO test IDs.
+
+---
+*Status updated 2026-08-13; the module table above is the maintained scope record.*

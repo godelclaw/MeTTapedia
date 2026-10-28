@@ -1,0 +1,46 @@
+import Mettapedia.Combinatorics.Matching.Pairing
+import Mettapedia.Combinatorics.Matching.Amplitude
+import Mettapedia.Combinatorics.Matching.Sum
+import Mettapedia.Combinatorics.Matching.Crossing
+import Mettapedia.Combinatorics.Matching.Hall
+import Mettapedia.Combinatorics.Matching.Restriction
+import Mettapedia.Combinatorics.Matching.Support
+import Mettapedia.Combinatorics.Matching.PermutationBridge
+import Mettapedia.Combinatorics.Matching.GraphBridge
+import Mettapedia.Combinatorics.Matching.Kempe
+import Mettapedia.Combinatorics.Matching.LocalCancellation
+import Mettapedia.Combinatorics.Matching.Loopless
+import Mettapedia.Combinatorics.Matching.Nonvanishing
+import Mettapedia.Combinatorics.Matching.Gauge
+import Mettapedia.Combinatorics.Matching.EdgeColoring
+import Mettapedia.Combinatorics.Matching.FourthMatching
+import Mettapedia.Combinatorics.Matching.FourthMatchingCoordinates
+import Mettapedia.Combinatorics.Matching.FourVertices
+import Mettapedia.Combinatorics.Matching.CapIncidence
+import Mettapedia.Combinatorics.Matching.BlockRank
+import Mettapedia.Combinatorics.Matching.EvenCycle
+import Mettapedia.Combinatorics.Matching.CharTwoContraction
+import Mettapedia.Combinatorics.Matching.SiteVectors
+import Mettapedia.Combinatorics.Matching.TightCut
+import Mettapedia.Combinatorics.Matching.Pfaffian
+import Mettapedia.Combinatorics.Matching.PfaffianUpdate
+import Mettapedia.Combinatorics.Matching.PfaffianContraction
+import Mettapedia.Combinatorics.Matching.Noncrossing
+
+import Mettapedia.Combinatorics.Matching.GHZ
+import Mettapedia.Combinatorics.Matching.GraphFactorization
+import Mettapedia.Combinatorics.Matching.GraphServability
+import Mettapedia.Combinatorics.Matching.ServabilityCounterexamples
+import Mettapedia.Combinatorics.Matching.TripleOrbitClassification
+import Mettapedia.Combinatorics.Matching.SixVertexPotential
+import Mettapedia.Combinatorics.Matching.SixVertexStars
+import Mettapedia.Combinatorics.Matching.SixCyclePotential
+import Mettapedia.Combinatorics.Matching.ThreePairColorProfiles
+
+/-!
+# Perfect matching foundations
+
+Graph-free and graph-backed representations of perfect matchings, weighted
+matching sums, exchange, parity, alternating matchings on cycles, and the
+noncrossing perfect matchings of a linear order with their Catalan count.
+-/

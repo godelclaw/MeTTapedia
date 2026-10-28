@@ -390,6 +390,17 @@ This layer is intentionally more general than any one guest language or checker.
 Prime DTT and native execution consume it as instances; they do not define its
 relations.
 
+[`Core/RelationalRouteSemantics.lean`](Core/RelationalRouteSemantics.lean)
+interprets routes of authored steps in this equipment. A route denotes the
+composite of its step relations; splitting it at an interface is an
+equivalence that keeps every intermediate state and witness. A witness
+transport between parallel routes extends through every serial context and
+through generated rewrite cells, and no step relation needs to be total. It is
+used by [`GraphTheory/Representation/ColoringTransport.lean`](../GraphTheory/Representation/ColoringTransport.lean),
+which lifts colorings along representation conversions, and by
+[`OSLF/MeTTaIL/PremiseRouteSemantics.lean`](../OSLF/MeTTaIL/PremiseRouteSemantics.lean),
+where route support is exactly the premise engine's result set.
+
 [`Core/ProofRelevantTranslationCategory.lean`](Core/ProofRelevantTranslationCategory.lean)
 also compares full representable probes with evidence-erasing observations.
 Swapping two actual transition occurrences changes a proof-relevant translation

@@ -1,0 +1,131 @@
+-- SPDX-License-Identifier: Apache-2.0
+
+/-
+Module: Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadLandingRegression
+Purpose: Inhabit exact payload-indexed local landing with a real retained
+  sibling selected by the executable resolver
+Trusted boundary: none
+-/
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologRootClosedLocalLiveRegression
+import Mettapedia.Languages.MeTTa.PLeaTTa.Proofs.PrologScheduledPayloadLandingBridge
+
+namespace Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadLandingRegression
+
+open PeTTaSpec.PrologCore
+open PeTTaSpec.PrologCore.GoalSemantics
+open PrologAnswerPullClassificationBridge
+open PrologHeterogeneousPrefixBridge
+open PrologProductResourceContextBridge
+open PrologPersistentFreeScheduledPayloadBridge
+open PrologRootClosedAnswerBridge
+open PrologScheduledAnswerPropagationBridge
+open PrologScheduledHistoryBuildBridge
+open PrologScheduledPayloadLandingBridge
+open PrologScheduledPayloadPathBridge
+open PrologStateBridge
+
+/-!
+# A live exact-position witness
+
+The generic landing theorem is total, so a terminal-only implementation
+could otherwise inhabit it.  This fixture starts from the actual
+source-ordered resolver run with one retained sibling.  Consequently the
+classifier must select a local branch and return a path into the literal
+history build; the same ordinal recovers the immutable payload snapshot.
+-/
+
+/-- The rejected-prefix fixture forces the Type-valued classifier's live arm.
+The selected source landing, executable pull, history occurrence, and
+immutable payload occurrence are all tied to one result rather than supplied
+as independent compatible witnesses.
+
+[SPEC metta.pl:251-256, translator.pl:320-321] -/
+theorem rejected_prefix_root_pull_selects_exact_payload_occurrence
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable} :
+  exists before : RepresentativePersistentFreeScheduledPayloadState,
+      exists ready : RootClosedAnswerReady before,
+        exists selection :
+            ScheduledLocalSelection ready.result.historyBuild.cells,
+          exists landing :
+                OriginPrefixLanding before.carrier.index.alpha
+                  ready.result.history.resourceAgreement selection.goals
+                    selection.binding selection.rest,
+              Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadLandingBridge.ScheduledPayloadAlignment.classifyPull
+                  ready.payloadAlignment =
+                  ScheduledPayloadPullOutcome.localLive selection landing /\
+                ScheduledPayloadPullOutcome.selectedPayloadPath?
+                    (Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadLandingBridge.ScheduledPayloadAlignment.classifyPull
+                      ready.payloadAlignment) =
+                  some
+                    (ready.payloadAlignment.payloadPath selection.path) /\
+                (ready.payloadAlignment.payloadPath
+                    selection.path).cell.historyCell =
+                  selection.path.cell /\
+                Mettapedia.Languages.MeTTa.PLeaTTa.pullAux
+                    before.carrier.index.openConf.control.alts =
+                  some
+                    (.branch selection.goals selection.binding,
+                      selection.rest) := by
+  obtain
+    ⟨before, ready, retainedGoals, retainedBinding, _selectedGoals,
+      _selectedBinding, _selectedTail, _count, _target, _relation, bankShape,
+      _selectedGoalsExact, _selectedBindingExact, _selectedTailExact,
+      _framesEmpty, _qtermExact⟩ :=
+    PrologRootClosedLocalLiveRegression.rejected_prefix_then_root_answer_is_genuinely_local_live
+      (prog := prog) (gt := gt)
+  generalize outcomeExact :
+    Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadLandingBridge.ScheduledPayloadAlignment.classifyPull
+      ready.payloadAlignment = outcome
+  cases outcome with
+  | localLive selection landing =>
+      refine ⟨before, ready, selection, landing,
+        outcomeExact, ?_,
+        ready.payloadAlignment.selected_history_cell_exact selection.path,
+        ?_⟩
+      · rw [outcomeExact]
+        rfl
+      · rw [ready.bankExact]
+        exact landing.pullAux_exact
+  | terminal falls =>
+      have pullNone :
+          Mettapedia.Languages.MeTTa.PLeaTTa.pullAux before.carrier.index.openConf.control.alts = none := by
+        rw [ready.bankExact]
+        simpa [ScheduledAnswerHistory.resources, Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] using
+          falls.pullAux_eq
+      rw [bankShape] at pullNone
+      simp [Mettapedia.Languages.MeTTa.PLeaTTa.pullAux] at pullNone
+
+/-- The concrete retained-sibling run also inhabits the explicit source/payload
+pull coupling: independently quantified source landing data is forced to the
+Type-valued selection's exact goals, binding, and complete residual bank. -/
+theorem rejected_prefix_source_payload_pull_coupling_is_inhabited
+    {prog : Mettapedia.Languages.MeTTa.PLeaTTa.Prog} {gt : Mettapedia.Languages.MeTTa.PLeaTTa.Source.GroundingTable} :
+  exists before : RepresentativePersistentFreeScheduledPayloadState,
+      exists ready : RootClosedAnswerReady before,
+        exists selection :
+            ScheduledLocalSelection ready.result.historyBuild.cells,
+          exists goals : List Mettapedia.Languages.MeTTa.PLeaTTa.Goal, exists binding : Mettapedia.Languages.MeTTa.PLeaTTa.Source.Subst,
+            exists rest : List Mettapedia.Languages.MeTTa.PLeaTTa.Alt,
+              exists _landing :
+                OriginPrefixLanding before.carrier.index.alpha
+                  ready.result.history.resourceAgreement goals binding rest,
+                selection.goals = goals /\
+                  selection.binding = binding /\
+                  selection.rest = rest /\
+                  selection.selected.resource.alts ≠ [] /\
+                  Mettapedia.Languages.MeTTa.PLeaTTa.pullAux
+                      before.carrier.index.openConf.control.alts =
+                    some (.branch goals binding, rest) := by
+  obtain
+    ⟨before, ready, selection, landing, _outcome, _path, _cell, pull⟩ :=
+    rejected_prefix_root_pull_selects_exact_payload_occurrence
+      (prog := prog) (gt := gt)
+  have coupled := selection.matchesOriginLanding landing
+  refine
+    ⟨before, ready, selection, selection.goals, selection.binding,
+      selection.rest, landing, coupled.1, coupled.2.1, coupled.2.2, ?_, ?_⟩
+  · rw [selection.selectedHead]
+    simp
+  · exact pull
+
+end Mettapedia.Languages.MeTTa.PLeaTTa.PrologScheduledPayloadLandingRegression

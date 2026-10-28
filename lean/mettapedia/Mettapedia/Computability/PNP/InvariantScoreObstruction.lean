@@ -1,4 +1,6 @@
-import Mathlib.Tactic
+import Init.Omega
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Data.Fintype.Card
 
 /-!
 # P vs NP crux: invariant soft scores have zero signed signal
@@ -48,14 +50,13 @@ theorem weighted_signedScore_sum_eq_zero
     simp [hτ x]
   have hflip : ∀ x : α, f (τ x) = -f x := by
     intro x
-    simp [f, hu x, hy x, hw x, targetSign_flip, mul_assoc, mul_comm]
+    simp [f, hu x, hy x, hw x, targetSign_flip]
+    exact Int.mul_neg ((w x : ℤ) * score (u x)) (targetSign (y x))
   have hneg : ∑ x : α, f x = - ∑ x : α, f x := by
     calc
       ∑ x : α, f x = ∑ x : α, f (τ x) := hsum
       _ = ∑ x : α, -f x := by
-        refine Fintype.sum_congr (fun x : α => f (τ x)) (fun x : α => -f x) ?_
-        intro x
-        exact hflip x
+        exact Finset.sum_congr rfl (fun x _ => hflip x)
       _ = - ∑ x : α, f x := by
         simp [f]
   have : ∑ x : α, f x = 0 := by

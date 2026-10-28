@@ -12,8 +12,8 @@ Despite 14 theoretical slots (7 cases × 2 numbers), most nouns use <10 distinct
 due to syncretism, demonstrating the compression paradox.
 
 ## References
-- GF Czech Resource: ~/claude/gf-rgl/src/czech/ResCze.gf
-- Grammar compression analysis: ~/claude/grammar_compression_FAIR.txt
+- GF Czech Resource: gf-rgl/src/czech/ResCze.gf
+- Grammar compression analysis: grammar_compression_FAIR.txt
 -/
 
 import Mettapedia.Languages.GF.HandCrafted.Core

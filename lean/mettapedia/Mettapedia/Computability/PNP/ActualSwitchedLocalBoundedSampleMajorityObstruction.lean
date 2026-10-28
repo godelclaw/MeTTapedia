@@ -1,0 +1,14 @@
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajoritySupport
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityCombinatorics
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityInterfaces
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityFallbackFamily
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityBitBounds
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityExactConsequences
+
+/-!
+# PNP grassroots: bounded sample size still does not force a small image
+
+Compatibility umbrella for the bounded sample-majority obstruction library.  The
+semantic layers live in the sibling `ActualSwitchedLocalBoundedSampleMajority*`
+modules.
+-/

@@ -33,22 +33,24 @@ Mettapedia/
 
 ## Toolchain
 
-- The toolchain uses Lean 4.28.0 (see lean-toolchain).
-- The toolchain uses Mathlib v4.28.0.
+- The toolchain uses Lean 4.33.1 (see `lean-toolchain`).
+- The Mathlib revision is recorded in `lake-manifest.json`.
 - The default local developer configuration is `lakefile.lean`, which uses
   local repos in `../externals/` for Foundation, exchangeability, provenance,
   OrderedSemigroups, Metatheory, CertifyingDatalog, and `mm-lean4`.
-- `lakefile.toml` stays as the git-pinned fallback. If you remove
-  `lakefile.lean`, Lake falls back to the pinned git dependency graph.
+- `../bootstrap_local_repos.sh` records published dependency revisions;
+  `../upgrades/4.33.1/externals.json` records migration source fingerprints
+  and the compatibility overlays applied to fresh checkouts.
+  Existing editable dependency checkouts can differ from those revisions and
+  must be checked when reproducing a build.
 
 ## Build
 
 ```bash
-cd lean
-./bootstrap_local_repos.sh
+./lean/bootstrap_local_repos.sh
 cd lean/mettapedia
 lake exe cache get
-lake build
+scripts/check_library_sanity.sh
 ```
 
 - `bootstrap_local_repos.sh` clones the local editable repos into
@@ -57,7 +59,28 @@ lake build
 - The build runs from `lean/mettapedia`.
 - The first build should run `lake exe cache get` to fetch mathlib oleans.
 - Prefer targeted `lake update <pkg>` over bare `lake update`; the bare form
-  can bump transitive pins (e.g. batteries) past the v4.28.0 toolchain.
+  can bump transitive dependencies beyond the pinned toolchain.
+
+### Qualification and source coverage
+
+`scripts/check_library_sanity.sh` builds the library aggregates and comparison
+entrypoints, checks their freshness with `lake --no-build build`, and checks
+tracked internal imports, source coverage and the required local dependencies'
+effective source fingerprints. `--no-build` skips compilation;
+`--coverage` checks sources only; `--list` prints the target list. A nonzero
+status means qualification is incomplete.
+
+The coverage check reads Lean import headers, including `public` and `meta`
+imports and nested comments. It reports modules outside the named roots'
+transitive import closure, separately from missing imports and build failures.
+Such modules need review: absence from an aggregate does not make a theorem
+obsolete or justify its removal. Coverage is not an axiom audit or a proof of
+build success. Separate Lake packages, such as `../krenn`, need their own builds.
+
+The complete inventory, coverage lists and current source hashes are written to
+`.lake/library-sanity-coverage.json`; set `SANITY_COVERAGE_REPORT` to choose a
+different output file. Run the tooling's regression tests with
+`python3 scripts/test_library_sanity.py`.
 
 ## Notable subprojects
 
@@ -156,7 +179,7 @@ rg -n "s[o]rry" Mettapedia/
 
 ## External repo policy
 
-- Use `zariuq` forks as `origin` remotes.
-- Use source projects as `upstream` remotes, and use `godelclaw` only as a
-  separate named remote when relevant.
+- Canonical public repository: [zariuq/MeTTapedia](https://github.com/zariuq/MeTTapedia).
+- Keep `origin` appropriate to the checkout and give collaboration forks
+  explicit remote names.
 - See `EXTERNAL_REPOS.md` for exact commands.

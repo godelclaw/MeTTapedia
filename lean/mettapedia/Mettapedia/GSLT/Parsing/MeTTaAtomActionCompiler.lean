@@ -801,7 +801,7 @@ open SourceSExprPatternInstantiation (Env instantiate? instantiateList?)
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def authoredSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/experiments/gslt2parse_foundation/presentations/compiler/parser_action_bytecode_compiler_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/experiments/gslt2parse_foundation/presentations/compiler/parser_action_bytecode_compiler_v1.metta"
 
 private def app (head : String) (arguments : List SExpr) : SExpr :=
   .list (.atom head :: arguments)

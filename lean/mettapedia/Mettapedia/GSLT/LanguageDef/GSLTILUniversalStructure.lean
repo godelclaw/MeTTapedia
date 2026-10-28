@@ -173,7 +173,7 @@ structure SelectedUniversalStructure where
 
 /-- The selected generic GSLT-IL structure, derived entirely from the authored
 syntax and its proved semantic comparisons. -/
-def selected : SelectedUniversalStructure where
+theorem selected : SelectedUniversalStructure where
   freeExtensionContractible := by
     intro program interpretation
     exact EventInterpretation.PathExtension.contractible interpretation

@@ -240,8 +240,7 @@ theorem checked_occurrence_count : forall depth,
 background-service occurrences. -/
 theorem generatedPrefix_length (depth : Nat) :
     (generatedPrefix depth).length = depth := by
-  simp [generatedPrefix, Codec.realizeRoute, checkedPrefix,
-    checked_occurrence_count]
+  simp [generatedPrefix, Codec.realizeRoute, checkedPrefix]
   exact checked_occurrence_count depth
 
 /-- Every generated prefix member is genuine authored work and is selected

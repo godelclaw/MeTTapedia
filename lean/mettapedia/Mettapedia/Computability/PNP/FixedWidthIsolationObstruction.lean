@@ -1,5 +1,8 @@
-import Mathlib
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Positivity
 
 open scoped BigOperators
 
