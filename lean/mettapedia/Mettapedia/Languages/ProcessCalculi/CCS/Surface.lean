@@ -57,8 +57,7 @@ theorem handshake_swaps :
       handshakeTerm handshakeSwappedTerm := by
   apply Relation.EqvGen.rel
   refine EquationContextStep.inContext .hole (Or.inr ?_)
-  exact DerivedInstance.bagPerm (rule := ccsParallelConstructor.1)
-    ⟨ccsParallelConstructor.2, "ps", .base "Proc", rfl⟩
+  exact DerivedInstance.bagPerm_of_sorted (category := ccsParallelConstructor.1.category)
     ⟨FreeTypeContext.empty, [], handshakeTerm.2.1⟩
     (List.Perm.swap _ _ _)
 

@@ -194,7 +194,7 @@ noncomputable def admitCompositeAtCommonCurrent
     (admitInterpretationAt semantics dependencies interpretationRevision)
     alignment
 
-noncomputable def activateComposite
+theorem activateComposite
     {base : ValidatedCalculusLanguageDef} {extension : ValidatedCalculusLanguageExtension base}
     {Meaning : Pattern → Type uMeaning}
     (semantics : SemanticExtension base extension Meaning)

@@ -116,7 +116,7 @@ structure AllocatorAdequacy (allocator : AllocatorSpec α) : Prop where
 def referenceAllocator : AllocatorSpec α :=
   fun requested returned => returned.toArray = requested
 
-def referenceAllocatorAdequacy : AllocatorAdequacy (referenceAllocator :
+theorem referenceAllocatorAdequacy : AllocatorAdequacy (referenceAllocator :
     AllocatorSpec α) where
   complete := by intro requested; simp [referenceAllocator]
   sound := fun returned => returned
@@ -220,7 +220,7 @@ def compileStep {allocator : AllocatorSpec α}
       exact two (TargetStep.request _)
         (TargetStep.returnBuffer (adequate.complete _))
 
-def preservesMeaning {allocator : AllocatorSpec α}
+theorem preservesMeaning {allocator : AllocatorSpec α}
     (adequate : AllocatorAdequacy allocator) {term : SourceTerm α}
     (meaning : SourceMeaning term) :
     TargetMeaning allocator (compileTerm term) := by

@@ -12,7 +12,7 @@ cannot be presented as an exact translation with the same revision map.
 
 namespace Mettapedia.GSLT.Dynamics.IndexedQueryRevision.Canary
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.GSLT.Dynamics.QueryRevision
 open Mettapedia.GSLT.Dynamics.IndexedQueryRevision
 open Mettapedia.GSLT.IndexedOperational
@@ -95,7 +95,9 @@ private theorem incrementStep :
   change (8 : Nat) = 7 + 1
   rfl
 
-private def incrementSemanticStep :=
+private theorem incrementSemanticStep :
+    SemanticStep (diagram.toOperational.obj 0).theory
+      (Quotient.mk _ sourceWorld7) (Quotient.mk _ sourceWorld8) :=
   revisionSemanticStep diagram 0 incrementStep
 
 /-- Positive: revise-then-extend and extend-then-revise are the two sides of

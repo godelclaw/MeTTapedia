@@ -424,7 +424,7 @@ theorem rightDelta_supported :
       networkDelta, locationOf, singletonNetwork, routeWrites, historyWrites,
       footprints] at outside ⊢
 
-def leftCertificate : CandidateFootprintCertificate
+theorem leftCertificate : CandidateFootprintCertificate
     networkAlgebra effects footprints leftCandidate where
   sound := by
     change EffectFootprinted
@@ -436,7 +436,7 @@ def leftCertificate : CandidateFootprintCertificate
       (routeWrites footprints leftCandidate.route)
       leftDelta_supported
 
-def rightCertificate : CandidateFootprintCertificate
+theorem rightCertificate : CandidateFootprintCertificate
     networkAlgebra effects footprints rightCandidate where
   sound := by
     change EffectFootprinted

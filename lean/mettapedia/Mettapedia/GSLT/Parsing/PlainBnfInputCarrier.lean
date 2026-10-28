@@ -28,7 +28,7 @@ open Mettapedia.GSLT.LanguageDef.CarrierWellSorted
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def wireSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/plain_bnf_grammar_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/plain_bnf_grammar_v1.metta"
 
 /-- The selected wire uses unescaped quoted names. Other string encodings
 are outside this decoder, not silently normalized. -/

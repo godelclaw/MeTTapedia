@@ -142,11 +142,11 @@ theorem commit_strictly_decreases_card {picked current remaining : Multiset R}
   omega
 
 @[simp] theorem commit_zero (current : Multiset R) : commit 0 current = some current := by
-  simp [commit, Multiset.zero_le]
+  simp [commit]
 
 @[simp] theorem commit_frame (picked frame : Multiset R) :
     commit picked (picked + frame) = some frame := by
-  simp [commit, Multiset.zero_le]
+  simp [commit]
 
 /-- Taking all at this snapshot leaves no match of this grounded predicate. -/
 theorem allMatches_after_commit (predicate : R → Bool) (snapshot : Multiset R) :

@@ -18,6 +18,9 @@ layer.
 
 set_option autoImplicit false
 
+-- Record coordinates retain their independent universe parameters.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.GSLT.Dynamics.TwoLanguageEvidenceObservation
 
 open Mettapedia.Evidence

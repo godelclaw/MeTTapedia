@@ -17,7 +17,7 @@ open GeneratedPeTTaEquationDispatch
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def commandChunks : List (List (Nat × Bool × SExpr)) :=
-  metta_sexpr_command_chunks_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/tests/langdef/bnf/generated/plain_bnf_typed_discovery_v1.metta"
+  metta_sexpr_command_chunks_file% petta "../../../../../metta/cetta/tests/langdef/bnf/generated/plain_bnf_typed_discovery_v1.metta"
 
 def commands : List (Nat × Bool × SExpr) := commandChunks.flatten
 

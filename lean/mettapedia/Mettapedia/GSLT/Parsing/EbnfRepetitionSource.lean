@@ -29,10 +29,10 @@ open SourceSExprPatternInstantiation (pattern patternList instantiate? instantia
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 def loweringSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/ebnf_lowering_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/ebnf_lowering_v1.metta"
 
 def projectionSyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/ebnf_derivation_projection_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/ebnf_derivation_projection_v1.metta"
 
 /-! Selection retains the concrete source occurrence. It is not a search over
 names, and it makes no admission claim about unselected source rules. -/

@@ -22,8 +22,9 @@ This umbrella collects the dependency-minimal relational core and its
 composition, certified-planning, two-sided-hosting, relational GSLT-IL, and
 OSLF operational-correspondence bridges, together with source-scoped
 trajectory replay and the theorem-backed Hatta R1--R5 profile.
-Prime DAG replay and HE derivation-local state-free execution are retained as
-separate instances of that boundary.
+Prime DAG replay is an instance of that boundary. The HE derivation-local
+state-free instance replays LeaTTa's interpreter and is built with the
+optional LeaTTa integration (`ReproducibleBuild.LeaTTaReplayInstance`).
 Recursive verifiability is proved only for current modifications carrying a
 protected map of the complete R1--R5 certificate family.
 Observer-indexed audit legibility is ordered by sufficient views and actual

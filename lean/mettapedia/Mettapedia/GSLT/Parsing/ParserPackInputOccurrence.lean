@@ -289,6 +289,10 @@ theorem CheckedOccurrence.slice_input {full fragment : InputView} {occurrence : 
     (checked : CheckedOccurrence full fragment occurrence) :
     checked.slice.input = fragment.codepoints := checked.scalarExact.symm
 
+theorem CheckedOccurrence.slice_start {full fragment : InputView} {occurrence : Occurrence}
+    (checked : CheckedOccurrence full fragment occurrence) :
+    checked.slice.start = occurrence.scalarStart := rfl
+
 theorem CheckedOccurrence.fragment_length {full fragment : InputView} {occurrence : Occurrence}
     (checked : CheckedOccurrence full fragment occurrence) :
     fragment.codepoints.length = occurrence.scalarStop - occurrence.scalarStart := by
@@ -371,7 +375,7 @@ theorem CheckedOccurrence.evaluate_catalogue {full fragment : InputView}
   have sliceReplays : ∀ row ∈ rows, Nonempty (Replays profile plan checked.slice.input row.1
       plan.lexical.startSort 0 checked.slice.input.length row.2) := by
     simpa only [checked.slice_input] using replays
-  simpa only [checked.slice_input] using
+  simpa only [checked.slice_input, checked.slice_start] using
     evaluateCatalogue_shift checked.slice actions rows sliceReplays safe
 
 /-- Apply the existing distinct-action-value policy after byte/scalar

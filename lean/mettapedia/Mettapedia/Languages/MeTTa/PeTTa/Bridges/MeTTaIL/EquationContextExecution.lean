@@ -25,7 +25,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Engine Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
 open MeTTaILFirstOrderRuleCompilation MeTTaILFirstOrderEquationCompilation
-open Eval Effects EquationContextExecutionProgram
+open Eval _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects EquationContextExecutionProgram
 open RelationPremiseExecution (providerEnv providerRowsTerm)
 
 /-- The checked local shape of equations executable by the retained names-only
@@ -2543,7 +2543,7 @@ open Mettapedia.OSLF.MeTTaIL.Engine Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.GSLT.Ultrainfinite
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
 open MeTTaILFirstOrderRuleCompilation MeTTaILFirstOrderEquationCompilation
-open Eval Effects EquationContextExecutionProgram
+open Eval _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects EquationContextExecutionProgram
 open RelationPremiseExecution (providerEnv)
 
 /-- Actual retained replay validates each independently acquired canonical

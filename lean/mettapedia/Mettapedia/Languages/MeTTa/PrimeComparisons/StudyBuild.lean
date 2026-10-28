@@ -619,9 +619,6 @@ import Mettapedia.Languages.MM0.HOLKernelEncodingReflection
 import Mettapedia.Languages.MM0.HOLKernelSetOperationInterpretation
 import Mettapedia.Languages.MM0.Kernel.ProofTheoryRestrictionControls
 import Mettapedia.Languages.MM0.HOLKernelSetOperationReadbackProofBoundary
-import Mettapedia.Languages.MM0.HOLKernelSetOperationProofReadbackControls
-import Mettapedia.Languages.MM0.HOLKernelBindingReadbackControls
-import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.SetOperationMM0ReadbackSemantics
 import Mettapedia.Languages.MM0.HOLKernelWire
 import Mettapedia.Logic.HOL.EtaConfluence
 import Mettapedia.Languages.Megalodon.HOLLightNormalizationCompletion

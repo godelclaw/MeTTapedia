@@ -79,7 +79,7 @@ def communication : Policy Store Node Unit Store Receipt where
           simp [Cause.Supported, resident]
   observe := id
 
-def compatible : evaluation.Compatible communication :=
+theorem compatible : evaluation.Compatible communication :=
   ⟨fun _store _node => Iff.rfl, fun _store => rfl⟩
 
 def combined : Policy Store Node Unit Store Receipt :=

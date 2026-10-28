@@ -10,7 +10,7 @@ This includes:
 
 ## References
 - GF Tutorial: http://www.grammaticalframework.org/
-- ResCze.gf: ~/claude/gf-rgl/src/czech/ResCze.gf (Czech resource)
+- ResCze.gf: gf-rgl/src/czech/ResCze.gf (Czech resource)
 -/
 
 import Mettapedia.Languages.GF.HandCrafted.Core

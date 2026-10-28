@@ -34,7 +34,7 @@ Key instances:
 
 ## References
 - `Engine.lean`:    `Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv`
-- PathMap MORK:     `/home/zar/claude/hyperon/MORK/`
+- PathMap MORK:     `hyperon/MORK/`
 -/
 
 namespace Mettapedia.OSLF.PathMap

@@ -187,7 +187,7 @@ def targetDenotation : SemanticInvariant targetSystem Unit where
 
 /-- The path-expanding realization preserves the independently selected
 meaning. -/
-def denotationSquare : DenotationSquare realization sourceDenotation
+theorem denotationSquare : DenotationSquare realization sourceDenotation
     targetDenotation id where
   commutes := fun _ => rfl
 

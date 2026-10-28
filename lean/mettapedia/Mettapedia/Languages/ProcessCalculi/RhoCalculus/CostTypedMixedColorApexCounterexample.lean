@@ -140,7 +140,8 @@ theorem typedApexRaw_typed :
       (rule := costBaseConstructor rhoInteractionCut rhoCalc.terms[3])
       (parameterName := "ps") (elementType := processType)
   · exact rhoCIGSLT.costBaseConstructor_mem_costWhole _ rhoRuleThree_mem
-  · simp [processType, rho_costBaseParallelConstructor_params]
+  · rw [GrammarRule.bareParams_of_bare _ rfl]
+    simp [processType, rho_costBaseParallelConstructor_params]
   · exact .cons typedApexFirstAtom_typed
       (.cons typedApexSecondAtom_typed (.nil [] _))
 

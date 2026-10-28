@@ -31,7 +31,7 @@ open SourceSExprPatternInstantiation (pattern patternList applyBindings_encode
 open scoped Mettapedia.OSLF.MeTTaIL.MeTTaSyntaxQuotation
 
 private def discoverySyntax : SExpr :=
-  metta_sexpr_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/langdef/bnf/plain_bnf_graph_discovery_v1.metta"
+  metta_sexpr_file% petta "../../../../../metta/cetta/langdef/bnf/plain_bnf_graph_discovery_v1.metta"
 
 /-- Input and output arities of the selected declaration/trie call family. -/
 def mode? : String → Option (Nat × Nat)

@@ -90,8 +90,12 @@ theorem ProjectsArguments.notBare {rule : GrammarRule}
     {children : List CanonicalTerm} {arguments : List Pattern}
     (slots : ProjectsArguments language rule.params children arguments) : ¬ UsesBareCollection rule := by
   rintro ⟨name, kind, element, shape⟩
-  rw [shape] at slots
-  cases slots
+  cases mode : rule.collectionRepresentation with
+  | bare =>
+      rw [GrammarRule.bareParams_of_bare rule mode] at shape
+      rw [shape] at slots
+      cases slots
+  | wrapped => simp [GrammarRule.bareParams, mode] at shape
 
 mutual
   theorem Projects.typed {sort : String} {source : CanonicalTerm} {term : Pattern}

@@ -467,7 +467,7 @@ The following theorems establish that PeTTa's `translator.pl` fix for `unique`
 (`[unique, Arg]` → `collapse + unique-atom + superpose`) is correct within
 PeTTa's own operational model — not by reference to HE equivalence.
 
-**Council quorum 96%**: Carneiro, Pfenning, Martin-Löf, Wielemaker, Hammer, Tang.
+The lowering is deliberately specified through PeTTa's own operational model.
 
 ### Key insight
 
@@ -522,7 +522,7 @@ theorem compileExpr_unique_iff (s : PeTTaSpace) (env : PEnv)
     this abstractly: given any dedup function `f` satisfying the contract,
     the composition `superpose ∘ f ∘ collapse` correctly implements `unique`.
 
-    **Council note (Wielemaker, 95%)**: the exact dedup function (first-
+    The exact dedup function (first-
     occurrence vs last-occurrence) doesn't matter for set-membership
     correctness — only ordering differs, and `unique` doesn't promise
     any ordering.
@@ -550,7 +550,7 @@ theorem DedupContract.mem_iff {f : List α → List α} (hf : DedupContract f)
     then the result set is exactly `{a | a ∈ L}` — same elements as collapse,
     but without duplicates.  This is the contract `unique` promises.
 
-    **Council quorum 93%**: Pfenning, Carneiro, Martin-Löf, Hammer, Wielemaker. -/
+    Only membership preservation is needed for this result. -/
 theorem unique_fix_correct {f : List Pattern → List Pattern}
     (hf : DedupContract f)
     (bodyAnswers : List Pattern)

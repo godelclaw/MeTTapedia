@@ -194,7 +194,7 @@ theorem generatedEquations_getElem? {rows : List Rewrite} {generated : List SExp
 /-- The whole independent native compiler output, including declarations,
 providers and entry wrappers. The reader preserves its physical row starts. -/
 def generatedProgram : List (Nat × SExpr) :=
-  metta_sexpr_program_file% petta "../../../../../../hyperon/cetta-prime-nik-20260811/tests/langdef/bnf/generated/plain_bnf_components_v1.metta"
+  metta_sexpr_program_file% petta "../../../../../metta/cetta/tests/langdef/bnf/generated/plain_bnf_components_v1.metta"
 
 def isWorkerEquation : SExpr → Bool
   | .list [.atom "=", .list (.atom head :: _), _] =>

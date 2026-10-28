@@ -37,7 +37,7 @@ theorem not_bare_atom (rule : GrammarRule) (empty : rule.params = []) :
     ¬ UsesBareCollection rule := by
   intro used
   rcases used with ⟨_, _, _, shape⟩
-  simp [empty] at shape
+  cases mode : rule.collectionRepresentation <;> simp [GrammarRule.bareParams, mode, empty] at shape
 
 /-- Heads of the ordered-collection polynomial: two atoms, or a length. -/
 inductive VecLabel where
