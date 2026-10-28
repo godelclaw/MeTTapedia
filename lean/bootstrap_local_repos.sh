@@ -31,7 +31,7 @@ clone_or_sync_repo() {
     return
   else
     mkdir -p "$(dirname "$dest")"
-    git clone --branch "$branch" "$origin_url" "$dest"
+    git clone --no-checkout --branch "$branch" "$origin_url" "$dest"
     cloned_now=1
     echo "cloned $rel_path"
   fi
@@ -45,9 +45,11 @@ clone_or_sync_repo() {
   fi
 
   if [ -n "$pinned_rev" ] && [ "$cloned_now" -eq 1 ]; then
-    if ! git -C "$dest" cat-file -e "${pinned_rev}^{commit}" 2>/dev/null &&
-        [ -n "$upstream_url" ]; then
-      git -C "$dest" fetch upstream "$pinned_rev"
+    if ! git -C "$dest" cat-file -e "${pinned_rev}^{commit}" 2>/dev/null; then
+      if ! git -C "$dest" fetch origin "$pinned_rev"; then
+        [ -n "$upstream_url" ] || return 1
+        git -C "$dest" fetch upstream "$pinned_rev"
+      fi
     fi
     git -C "$dest" checkout -B "$work_branch" "$pinned_rev"
     echo "pinned $rel_path -> $work_branch @ ${pinned_rev:0:12}"
@@ -98,8 +100,8 @@ clone_or_sync_repo "standalone/mm-lean4" "lean-upgrade/tauceti-lean__standalone_
   "e031768460d5c1053c5e0d540b10560a9618fae3" "lean-upgrade/tauceti-lean__standalone__mm-lean4" \
   "git@github.com:zariuq/mm-lean4.git" \
   "https://github.com/digama0/mm-lean4.git"
-clone_or_sync_repo "standalone/ks-foundations-of-inference" "lean-upgrade/tauceti-lean__standalone__ks-foundations-of-inference" \
-  "47cd19d04da6543e078890bdcfbfdd385d57554b" "lean-upgrade/tauceti-lean__standalone__ks-foundations-of-inference" \
+clone_or_sync_repo "standalone/ks-foundations-of-inference" "main" \
+  "c19eba7d5e0b57d66f13687ed40f58863e1950e5" "main" \
   "git@github.com:zariuq/ks-foundations-of-inference.git"
 
 clone_or_sync_repo "externals/TauCeti" "lean-upgrade/4.33.1" \
@@ -124,3 +126,11 @@ if [ "$with_leatta" -eq 1 ]; then
 else
   echo "skip optional LeaTTa integrations (pass --with-leatta to prepare them)"
 fi
+
+# Polynomial functors and their local CSLib dependency are ordinary inputs.
+clone_or_sync_repo "externals/cslib" "main" \
+  "98e395a701f2027a413ad24729e1a11a6c772eb4" "main-lean-4.33.1" \
+  "https://github.com/leanprover/cslib.git"
+clone_or_sync_repo "externals/PolyFun" "main" \
+  "997828ce4c04ccdc01f5f199069e26a6195ef6e7" "main-lean-4.33.1" \
+  "https://github.com/Verified-zkEVM/PolyFun.git"

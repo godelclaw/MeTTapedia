@@ -1,0 +1,434 @@
+{
+  "date": "2026-10-15",
+  "toolchain": "leanprover/lean4:v4.33.1",
+  "scope": "Finite exact-real restart, top-k utility, attention schedules, failure controls, and a packaged DLR shell bound",
+  "checks": {
+    "per_module_lake_builds": "passed",
+    "cogarch_umbrella": "passed",
+    "new_public_theorems_audited": 39,
+    "attention_memory_retrieval_audit_declarations": 118,
+    "shell_audit_declarations": 1,
+    "native_runtime_deployed": false,
+    "full_repository_build_claimed": false,
+    "warnings_as_errors_sources": [
+      "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "Mettapedia/CognitiveArchitecture/Attention/Relevance.lean",
+      "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean",
+      "Mettapedia/Logic/MarkovLogicLocalQueryApproximation.lean"
+    ],
+    "total_audited_declarations": 119
+  },
+  "source_sha256": {
+    "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean": "8c328d9583a6b021e5209475de33559d0c1e7f3f43f2bb03388138c63ba8e15b",
+    "Mettapedia/Algorithms/Retrieval/TopKSelection.lean": "e5e19f45ab83ece544e2ba3b9d30a1f6cb9db9ae3d6d04ef746a18992c9997d1",
+    "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean": "61561161f1e7553374c39a9100fcd88877f0d6918d0e0dca430ab50bd5378bf6",
+    "Mettapedia/CognitiveArchitecture/Attention/Relevance.lean": "064760c23f2c8e9319c745cb33353a0abc05d815661988b68bd37b73ec6825c8",
+    "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean": "c79d8c250ac0757c166af875c4363a54e02c5674b41eb702a9c07219a59d0bbb",
+    "Mettapedia/Logic/MarkovLogicLocalQueryApproximation.lean": "f841cb22a14d3167b3cf608c48d0a99ca17b660fe142016b7d739b62c0a3f450"
+  },
+  "theorems": [
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.l1_sub_comm",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "(x y : ι → ℝ) : l1 (x - y) = l1 (y - x)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.l1_triangle_sub",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "(x y z : ι → ℝ) :\n    l1 (x - z) ≤ l1 (x - y) + l1 (y - z)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.abs_coordinate_le_l1",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "(x : ι → ℝ) (i : ι) : |x i| ≤ l1 x",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.RestartWalk.error_le_change",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "(s x : ι → ℝ) :\n    l1 (x - W.ppr s) ≤ l1 (W.step s x - x) / W.α",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.RestartWalk.next_error_le",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "(s x : ι → ℝ) :\n    l1 (W.step s x - W.ppr s) ≤\n      (1 - W.α) / W.α * l1 (W.step s x - x)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.RestartWalk.outside_mass_le_leakage",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "(S : Finset ι) (ℓ : ℝ) (hℓ : 0 ≤ ℓ)\n    {s : ι → ℝ} (hs : ∀ i, 0 ≤ s i) (hs1 : mass s = 1)\n    (hsS : ∀ i, i ∉ S → s i = 0)\n    (hleak : ∀ j ∈ S, ∑ i ∈ Sᶜ, W.P i j ≤ ℓ) :\n    ∑ i ∈ Sᶜ, W.ppr s i ≤ (1 - W.α) * ℓ / (W.α + (1 - W.α) * ℓ)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.ProbabilityTheory.MarkovChain.Restart.RestartWalk.ppr_ge_depth",
+      "source": "Mettapedia/ProbabilityTheory/MarkovChain/Restart.lean",
+      "statement": "{s : ι → ℝ} (hs : ∀ i, 0 ≤ s i) (t : ℕ) (j : ι) :\n    W.α * (1 - W.α) ^ t * ((W.P ^ t) *ᵥ s) j ≤ W.ppr s j",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.isTopK_iff",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(a : ι → ℝ) (T : Finset ι) (k : ℕ) :\n    IsTopK a T k ↔ T.card = k ∧ ∀ i ∈ T, ∀ j ∉ T, a j ≤ a i",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_frozen",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(x y : ι → ℝ) (T : Finset ι) (e : ℝ)\n    (hmargin : ∀ i ∈ T, ∀ j ∉ T, 2 * e < x i - x j)\n    (herr : ∀ i, |x i - y i| ≤ e) :\n    ∀ i ∈ T, ∀ j ∉ T, y j < y i",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.certified_topk",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(W : RestartWalk ι) (s x : ι → ℝ) (T : Finset ι) (k : ℕ)\n    (hcard : T.card = k)\n    (hmargin : ∀ i ∈ T, ∀ j ∉ T,\n      2 * ((1 - W.α) / W.α * l1 (W.step s x - x)) < W.step s x i - W.step s x j) :\n    IsTopK (W.ppr s) T k",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_scale",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(a : ι → ℝ) (T : Finset ι) (k : ℕ) (c : ℝ) (hc : 0 < c)\n    (h : IsTopK a T k) : IsTopK (c • a) T k",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_regret_le_symmDiff",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(q a : ι → ℝ) (T O : Finset ι) (k : ℕ)\n    (hT : IsTopK a T k) (hO : O.card = k) :\n    (∑ i ∈ O, q i) - ∑ i ∈ T, q i ≤ ∑ i ∈ T ∆ O, |q i - a i|",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_regret_le_l1",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(q a : ι → ℝ) (T O : Finset ι) (k : ℕ)\n    (hT : IsTopK a T k) (hO : O.card = k) :\n    (∑ i ∈ O, q i) - ∑ i ∈ T, q i ≤ l1 (q - a)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_regret_le_l1_scaled",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(q a : ι → ℝ) (T O : Finset ι) (k : ℕ)\n    (c : ℝ) (hc : 0 < c) (hT : IsTopK a T k) (hO : O.card = k) :\n    (∑ i ∈ O, q i) - ∑ i ∈ T, q i ≤ l1 (q - c • a)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_regret_le_uniform",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(q a : ι → ℝ) (T O : Finset ι) (k : ℕ)\n    (e : ℝ) (he : 0 ≤ e) (herr : ∀ i, |q i - a i| ≤ e)\n    (hT : IsTopK a T k) (hO : O.card = k) :\n    (∑ i ∈ O, q i) - ∑ i ∈ T, q i ≤ 2 * k * e",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.calibrated_topk_optimal",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "(a : ι → ℝ) (T O : Finset ι) (k : ℕ)\n    (c : ℝ) (hc : 0 < c) (hT : IsTopK a T k) (hO : O.card = k) :\n    ∑ i ∈ O, c * a i ≤ ∑ i ∈ T, c * a i",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Algorithms.Retrieval.TopKSelection.topk_regret_le_max",
+      "source": "Mettapedia/Algorithms/Retrieval/TopKSelection.lean",
+      "statement": "[Nonempty ι] (q a : ι → ℝ) (T O : Finset ι) (k : ℕ)\n    (c : ℝ) (hc : 0 < c) (hT : IsTopK a T k) (hO : O.card = k) :\n    (∑ i ∈ O, q i) - ∑ i ∈ T, q i ≤\n      2 * k * Finset.univ.sup' Finset.univ_nonempty (fun i => |q i - c * a i|)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.Logic.MarkovLogicLocalQueryApproximation.shell_query_error",
+      "source": "Mettapedia/Logic/MarkovLogicLocalQueryApproximation.lean",
+      "statement": "(M : ClassicalInfiniteGroundMLNSpec Atom ClauseId)\n    {C : ℝ} (hC_nonneg : 0 ≤ C) (hC_lt_one : C < 1)\n    (hC_bound : ∀ Δ : Region Atom, M.finiteRegionPairwiseDobrushinConstant Δ ≤ C)\n    (μ : ProbabilityMeasure (InfiniteWorld Atom))\n    (hμ : FixedRegionCylinderDLR M.toStrictlyPositiveInfiniteGroundMLNSpec\n      (μ : Measure (InfiniteWorld Atom)))\n    (Γ : Region Atom) (q : LocalConstraintQuery Atom Γ) (n : ℕ)\n    (ξ : BoundaryCondition Atom) :\n    let ν : ProbabilityMeasure (InfiniteWorld Atom)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.lazy_transport",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(P : Kernel ι) (d : ℝ) (hd0 : 0 ≤ d) (hd1 : d ≤ 1)\n    (x : ι → ℝ) (i : ι) :\n    FiniteMassTransport.transport (lazyKernel P d hd0 hd1) x i =\n      (1-d) * x i + d * FiniteMassTransport.transport P x i",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.continuation_nonneg",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(ρ d : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hd : 0 ≤ d) :\n    0 ≤ continuation ρ d",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.continuation_lt_one",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(ρ d : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hd : 0 ≤ d) :\n    continuation ρ d < 1",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.lazy_ppr_eq_ppr",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(P : Kernel ι) (d ρ : ℝ)\n    (hd0 : 0 ≤ d) (hd1 : d ≤ 1) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (s : ι → ℝ) :\n    (restartingWalk (lazyKernel P d hd0 hd1) ρ hρ0 hρ1).ppr s =\n    (restartingWalk P (continuation ρ d)\n      (continuation_nonneg ρ d hρ0 hρ1 hd0)\n      (continuation_lt_one ρ d hρ0 hρ1 hd0)).ppr s",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.mean_hops",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(ρ d : ℝ) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1) (hd0 : 0 ≤ d) :\n    continuation ρ d / (1 - continuation ρ d) = ρ*d / (1-ρ)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.impulse_zero",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (v : ι → ℝ) : impulse W 0 v = v",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.impulse_add",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (n : ℕ) (x y : ι → ℝ) :\n    impulse W n (x+y) = impulse W n x + impulse W n y",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.impulse_succ",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (n : ℕ) (v : ι → ℝ) :\n    impulse W 1 (impulse W n v) = impulse W (n+1) v",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.sti_cycle",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (u v : ι → ℝ) :\n    W.step (W.α⁻¹ • u) v = u + impulse W 1 v",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.stimulate_spread_decay",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (raw v : ι → ℝ) :\n    impulse W 1 (v + raw) =\n      W.step (W.α⁻¹ • impulse W 1 raw) v",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.sti_unroll",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (u : ℕ → ι → ℝ) (v : ι → ℝ) (t : ℕ) :\n    stiRun W u v t = impulse W t v +\n      ∑ τ ∈ Finset.range t, impulse W (t-1-τ) (u τ)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.sti_steady_state",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(W : RestartWalk ι) (u v : ι → ℝ) (t : ℕ) :\n    l1 (stiRun W (fun _ => u) v t - W.α⁻¹ • W.ppr u) ≤\n      (1-W.α)^t * l1 (v - W.α⁻¹ • W.ppr u)",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Equilibrium.lazy_ppr_tail",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Equilibrium.lean",
+      "statement": "(P : Kernel ι) (d ρ : ℝ)\n    (hd0 : 0 ≤ d) (hd1 : d ≤ 1) (hρ0 : 0 ≤ ρ) (hρ1 : ρ < 1)\n    (s : ι → ℝ) (hs : ∀ i, 0 ≤ s i) (k : ℕ) :\n    let V := restartingWalk P (continuation ρ d)\n      (continuation_nonneg ρ d hρ0 hρ1 hd0)\n      (continuation_lt_one ρ d hρ0 hρ1 hd0)\n    ∑ i ∈ (V.reach s k)ᶜ, (restartingWalk (lazyKernel P d hd0 hd1) ρ hρ0 hρ1).ppr s i ≤\n      (continuation ρ d)^(k+1) * mass s",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Relevance.concept_shortcut",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Relevance.lean",
+      "statement": "(W : RestartWalk ι) (i C j : ι) (β w : ℝ)\n    (hβ : W.P C i = β) (hw : W.P j C = w) :\n    W.α * (1-W.α)^2 * β * w ≤ W.ppr (Pi.single i 1) j",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Relevance.spreading_regret",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Relevance.lean",
+      "statement": "(W : RestartWalk ι) (s q : ι → ℝ)\n    (hs : ∀ i, 0 ≤ s i) (hs1 : mass s = 1)\n    (c : ℝ) (hc : 0 < c) (r k : ℕ) (T O : Finset ι)\n    (hT : IsTopK ((W.step s)^[r] s) T k) (hO : O.card = k) :\n    (∑ i ∈ O, q i) - ∑ i ∈ T, q i ≤\n      l1 (q - c • W.ppr s) + 2*c*(1-W.α)^r",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.Relevance.walk_generated_needs_optimal",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/Relevance.lean",
+      "statement": "(W : RestartWalk ι) (s q : ι → ℝ)\n    (c : ℝ) (hc : 0 < c) (hq : q = c • W.ppr s)\n    (T O : Finset ι) (k : ℕ) (hT : IsTopK (W.ppr s) T k) (hO : O.card = k) :\n    ∑ i ∈ O, q i ≤ ∑ i ∈ T, q i",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.SpreadingExamples.hub_first",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean",
+      "statement": ": hubWalk.step hubSeed hubSeed = hubFirst",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.SpreadingExamples.hub_second",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean",
+      "statement": ": hubWalk.step hubSeed hubFirst = hubSecond",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.SpreadingExamples.hub_fixed",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean",
+      "statement": ": hubWalk.ppr hubSeed = hubSecond",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.SpreadingExamples.extra_round_lowers_recall",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean",
+      "statement": ":\n    IsTopK hubFirst 2 Finset.univ {a, b} ∧\n    IsTopK hubSecond 2 Finset.univ {a, h} ∧\n    (({a, b} : Finset HubNode) ∩ {b}).card = 1 ∧\n    (({a, h} : Finset HubNode) ∩ {b}).card = 0 ∧\n    hubWalk.ppr hubSeed = hubSecond",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "name": "Mettapedia.CognitiveArchitecture.Attention.SpreadingExamples.usefulness_gain_not_concave",
+      "source": "Mettapedia/CognitiveArchitecture/Attention/SpreadingExamples.lean",
+      "statement": ":\n    bridgeHits 0 = 0 ∧ bridgeHits 1 = 0 ∧ bridgeHits 2 = 0 ∧\n    bridgeHits 3 = 2 ∧\n    bridgeHits 2 - bridgeHits 1 < bridgeHits 3 - bridgeHits 2",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    }
+  ],
+  "qualification_limits": [
+    "No learned-graph usefulness or calibrated need probabilities are established.",
+    "No native floating-point correctness or live context selection is established.",
+    "The strict-gap stop need not terminate at a tie.",
+    "Calibration-dominated error is not zero remaining benefit or concavity of utility.",
+    "ECAN caller schedules are explicit hypotheses; no global runtime cycle is assumed.",
+    "The DLR shell theorem is not convergence of a loopy BP implementation.",
+    "All existing CognitiveArchitecture/GodelClaw files remain unchanged."
+  ],
+  "theory_commit": "c40e7cebf",
+  "baseline_commit": "7ebddd7ef"
+}

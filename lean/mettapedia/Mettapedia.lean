@@ -59,16 +59,41 @@ import Mettapedia.GraphTheory.Basic
 import Mettapedia.GraphTheory.Hamiltonicity
 import Mettapedia.GraphTheory.Representation
 import Mettapedia.GraphTheory.Walk
+import Mettapedia.GraphTheory.FiniteReachability
+import Mettapedia.GraphTheory.RotationSystem
+import Mettapedia.GraphTheory.EdgeColoring.Tables
+import Mettapedia.GraphTheory.EdgeColoring.IncompletableTrail
+import Mettapedia.GraphTheory.OddDegree
+import Mettapedia.GraphTheory.Metric
+import Mettapedia.GraphTheory.Bipartite
+import Mettapedia.GraphTheory.MaxCut
+import Mettapedia.GraphTheory.PathsCycles
+import Mettapedia.GraphTheory.Connectivity
+import Mettapedia.GraphTheory.Trees
+import Mettapedia.GraphTheory.Minors
+import Mettapedia.GraphTheory.Euler
+import Mettapedia.GraphTheory.Infinite
+import Mettapedia.GraphTheory.Ramsey
+import Mettapedia.GraphTheory.Matching
+import Mettapedia.GraphTheory.Mycielski
+import Mettapedia.GraphTheory.GreedyColoring
+
+-- Combinatorics
+import Mettapedia.Combinatorics
+
+-- Group Theory
+import Mettapedia.GroupTheory
 
 -- Probability Theory
 import Mettapedia.ProbabilityTheory.Basic
 import Mettapedia.ProbabilityTheory.MarkovChain
+import Mettapedia.ProbabilityTheory.NormalNumbers.Borel
 import Mettapedia.Algorithms.Retrieval
 import Mettapedia.ProbabilityTheory.Moments
 import Mettapedia.ProbabilityTheory.Exchangeability
 import Mettapedia.ProbabilityTheory.Cox
 import Mettapedia.ProbabilityTheory.ImpreciseProbability
-import KnuthSkilling
+import KnuthSkilling.Overview
 import Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling
 import Mettapedia.ProbabilityTheory.OptimalTransport
 
@@ -91,6 +116,7 @@ import Mettapedia.ProbabilityTheory.BayesianNetworks.DSeparation
 import Mettapedia.ProbabilityTheory.BayesianNetworks.MessagePassingSchedule
 import Mettapedia.ProbabilityTheory.BayesianNetworks.MessagePassingLiterature
 import Mettapedia.ProbabilityTheory.FreeProbability.NoncrossingPartitions
+import Mettapedia.ProbabilityTheory.FreeProbability.NoncrossingPairings
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.GiryMonad
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.KyburgFlattening
 import Mettapedia.ProbabilityTheory.QuantumProbability
@@ -189,6 +215,8 @@ import Mettapedia.Logic.Relation.NormalizationExamples
 import Mettapedia.Logic.Relation.PathConfluence
 import Mettapedia.Logic.Relation.PathConfluenceExamples
 import Mettapedia.Logic.Relation.DecodedPath
+import Mettapedia.Logic.Relation.FiniteReachability
+import Mettapedia.Logic.Prolog
 import Mettapedia.Logic.Relation.NormalFormDecision
 import Mettapedia.Logic.Relation.CommutativeTerms
 import Mettapedia.Logic.Relation.SchematicPresentation
@@ -196,7 +224,6 @@ import Mettapedia.Logic.WorldModel
 import Mettapedia.Logic.EvidenceKinds
 import Mettapedia.Logic.MarkovLogicIndividuationBridge
 import Mettapedia.Logic.MarkovLogicLocalQueryApproximation
-import Mettapedia.PLN.Bridges.CognitiveArchitecture
 import Mettapedia.Logic.GunkyMereology
 import Mettapedia.Logic.StoneGunkDuality
 import Mettapedia.Logic.Metaphysics
@@ -602,30 +629,26 @@ import Mettapedia.HundredProofs
 import Mettapedia.Hyperseed
 
 -- Cognitive architecture: MetaMo / OpenPsi / MicroPsi / Bridges / Values (axiom-free strands)
-import Mettapedia.CognitiveArchitecture.Main
+import Mettapedia.CognitiveArchitecture
 
 -- GodelClaw (Oruži cognitive architecture) is NOT imported here: its full
 -- transitive closure pulls in `Logic.MarkovLogic*` modules that still have genuine
 -- 4.31 proof-level breakage (a follow-up round fixes those in place and adds it).
 
--- AutoBooks / Henkin (1950): "Completeness in the Theory of Types"
-import Mettapedia.AutoBooks.Codex.Henkin1950
+-- Henkin (1950): "Completeness in the Theory of Types"
+import Mettapedia.Logic.HOL.Henkin1950
 
--- Fluid Dynamics: Navier-Stokes finite-mode / Cole-Hopf approximation layer
-import Mettapedia.FluidDynamics
+-- The Navier--Stokes research lane remains available under
+-- `Mettapedia.FluidDynamics`, but is intentionally outside the default build.
 
 -- Ethics: FOET / Gewirth PGC / value-attribution + DDLPlus governance bridges
 import Mettapedia.Ethics
 
 -- ============================================================================
 -- Computability/  (arithmetical hierarchy · Kolmogorov complexity · Hutter
--- computability · Cantor space · oracle/probabilistic machines · the
--- non-cascading PNP obstruction modules)
+-- computability · Cantor space · oracle/probabilistic machines)
 -- ============================================================================
 -- These build at Lean 4.31.  Some carry pre-existing in-place `sorry`s.
--- `PNP.SymmetrizationObstruction` formerly collided with
--- `PNP.PostSwitchInputObstruction` (both declared `abbrev …PNP.BitVec`); its local
--- abbrev is now renamed `MajBitVec`, so both co-import cleanly.
 -- `LocalityObstruction`/`AsymmetryBudgetObstruction` are repaired for the Lean
 -- 4.31 `.reducible`-transparency change (mass/benchmark wrapper `def`s marked
 -- `@[reducible]`; one projection-defeq `simpa … using` → `using!`), and the
@@ -656,28 +679,8 @@ import Mettapedia.Computability.KolmogorovComplexity.SelfDelimitingCode
 import Mettapedia.Computability.KolmogorovComplexity.Uncomputability
 import Mettapedia.Computability.ProbabilisticTM
 import Mettapedia.Computability.ProbabilisticTMRefined
-import Mettapedia.Computability.PNP.ABVisibleState
-import Mettapedia.Computability.PNP.AsymmetryBudgetObstruction
-import Mettapedia.Computability.PNP.ConditioningObstruction
-import Mettapedia.Computability.PNP.FiberNeutralityObstruction
-import Mettapedia.Computability.PNP.FixedWidthIsolationObstruction
-import Mettapedia.Computability.PNP.GlobalWeaknessObstruction
-import Mettapedia.Computability.PNP.InfinitaryHMLObstruction
-import Mettapedia.Computability.PNP.InvariantScoreObstruction
-import Mettapedia.Computability.PNP.LocalityObstruction
-import Mettapedia.Computability.PNP.OrbitNeutralityObstruction
-import Mettapedia.Computability.PNP.PairwiseCandidateBridge
-import Mettapedia.Computability.PNP.PairwiseColumnsObstruction
-import Mettapedia.Computability.PNP.PairwiseSurvivorMoments
-import Mettapedia.Computability.PNP.PostSwitchInputObstruction
-import Mettapedia.Computability.PNP.PresentMomentShattering
-import Mettapedia.Computability.PNP.ResidualSymmetryObstruction
-import Mettapedia.Computability.PNP.RhsBiasIrrelevance
-import Mettapedia.Computability.PNP.SymmetrizationObstruction
-import Mettapedia.Computability.PNP.TwoUniversalRhsIrrelevance
-import Mettapedia.Computability.PNP.VisiblePostSwitchData
-import Mettapedia.Computability.PNP.WeightAsymmetryObstruction
-import Mettapedia.Computability.PNP.WeightedFiberNeutralityObstruction
+-- The P versus NP research lane remains available under
+-- `Mettapedia.Computability.PNP`, but is intentionally outside the default build.
 
 -- ============================================================================
 -- GSLT/  (Graph-of-Synchronization-Trees: core · graph theory · logic · topos ·
@@ -1026,3 +1029,15 @@ import Mettapedia.GSLT.Poly.SortedTraversal
 import Mettapedia.GSLT.Poly.SortedSignatureControls
 import Mettapedia.GSLT.Poly.FirstOrderLanguage
 import Mettapedia.GSLT.Poly.FirstOrderLanguageControls
+
+import Mettapedia.PLN.Bridges.CognitiveArchitecture
+
+import Mettapedia.Algebra.Polynomial
+import Mettapedia.Combinatorics.Matching.GHZ.AxiomAudit
+import Mettapedia.Protocols
+import Mettapedia.Machines.SpaceServiceChecks
+import Mettapedia.Machines.NativeStoreTransactions
+import Mettapedia.Machines.NativeStoreScopes
+import Mettapedia.Machines.NativeProviderDomain
+import Mettapedia.Machines.NativeProviderAdmission
+import Mettapedia.Machines.NativeProviderPolicy
