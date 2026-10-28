@@ -64,7 +64,7 @@ theorem formed_pair_not_read :
       (.sigma (.const natName) (.const natName)) .nil JudgmentReplay.Controls.pair).isNone = true := by
   refine ⟨JudgmentReplay.Controls.pair_checked, ?_⟩
   simp [readState?, JudgmentReplay.checkContext, Checking.checkContext,
-    AnnotatedReading.read?]
+    AnnotatedReading.read?, AnnotatedPredicateReading.Reader.read?]
 
 theorem open_row_state_has_certificates :
     ∃ (contextCertificate : JudgmentReplay.ContextCertificate profile operations.parameters.length)

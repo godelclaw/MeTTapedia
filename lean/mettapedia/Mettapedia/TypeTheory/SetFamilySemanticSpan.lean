@@ -114,7 +114,7 @@ structure SemanticSpan
 
 /-- The shared semantic span is inhabited for every small-carrier standard
 HOL model. -/
-def semanticSpan
+theorem semanticSpan
     (SmallCarrier : Base → Type)
     (constantDenotation : {A : Ty Base} →
       Const A → Ty.denote.{0, 0} (liftedCarrier SmallCarrier) A) :

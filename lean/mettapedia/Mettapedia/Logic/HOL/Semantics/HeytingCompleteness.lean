@@ -25,4 +25,3 @@ Axiom audit: the soundness and canary interfaces are Choice-free, while the
 Lindenbaum completeness direction uses `Classical.choice` along with the usual
 quotient/propositional extensionality footprint.
 -/
-
