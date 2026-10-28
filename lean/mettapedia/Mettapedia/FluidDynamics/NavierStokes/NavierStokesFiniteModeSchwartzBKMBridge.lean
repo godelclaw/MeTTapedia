@@ -1,0 +1,15 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMSchwartzPressure
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMZeroVelocity
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMAffinePressureObstructions
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMZeroVelocityLocalizedPressure
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMEqualAmplitudeMomentum
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMEqualAmplitudeClassification
+
+/-!
+# Finite-Mode Bridge to the BKM Premise
+
+Compatibility umbrella for the finite-mode Schwartz bridge into the BKM premise.
+The implementation is split into semantic layers while preserving the historical
+import path for downstream finite-mode obstruction files.
+-/

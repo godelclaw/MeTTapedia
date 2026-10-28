@@ -1,0 +1,26 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBasic
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzMean
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzLinear
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzSmooth
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzScalar
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzSlice
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyInterfaces
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyIdentities
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzDissipationViscous
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzDissipationConvection
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzDissipationBounded
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzPressures
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzAffineScalar
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzInequalities
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzDivergenceFree
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyZero
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyConstantCounterexamples
+
+/-!
+# Energy Identity Reductions for Concrete Navier-Stokes
+
+Compatibility umbrella for the concrete energy-inequality lane on `ℝ × ℝ^3`.
+The implementation is split into semantic modules so downstream files can import
+only the energy layer they need while the historical import path remains valid.
+-/

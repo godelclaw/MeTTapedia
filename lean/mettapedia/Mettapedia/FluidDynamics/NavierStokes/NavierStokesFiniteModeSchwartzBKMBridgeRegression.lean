@@ -1,0 +1,15 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeRegressionZeroBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeRegressionAffineObstructions
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeRegressionSchwartzPressureSlices
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeRegressionZeroVelocityAffinePressure
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeRegressionAntiProfileClauses
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridgeRegressionFiniteTimeZeroVelocity
+
+/-!
+# Regression Tests for the Finite-Mode Schwartz BKM Bridge
+
+Compatibility umbrella for the optional finite-mode Schwartz BKM bridge
+regression harness. The checks are split into zero bridge, affine obstruction,
+Schwartz-pressure slice, zero-velocity affine pressure, antiprofile clause, and
+finite-time zero-velocity modules.
+-/

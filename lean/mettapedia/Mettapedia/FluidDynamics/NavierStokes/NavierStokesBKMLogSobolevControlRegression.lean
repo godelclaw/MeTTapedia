@@ -1,0 +1,301 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMLogSobolevControl
+
+/-!
+# Regression checks for the BKM log-Sobolev gradient-control interface
+-/
+
+set_option autoImplicit false
+
+noncomputable section
+
+namespace Mettapedia
+namespace FluidDynamics
+namespace NavierStokes
+
+open MeasureTheory
+
+namespace Regression
+
+theorem bkm_logSobolev_envelope_nonneg_regression
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    0 ≤ bkmLogSobolevGradientEnvelope C Ω H t :=
+  bkmLogSobolevGradientEnvelope_nonneg_of_nonneg hC hΩ hH
+
+theorem bkm_logSobolev_log_factor_nonneg_regression
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    0 ≤ bkmLogSobolevLogFactor Ω H t :=
+  bkmLogSobolevLogFactor_nonneg_of_nonneg hΩ hH
+
+theorem bkm_logSobolev_log_factor_le_of_bounds_regression
+    {Ω H : NSTime → ℝ} {t : NSTime} {Ωmax Hmax : ℝ}
+    (hΩ_nonneg : 0 ≤ Ω t) (hΩ_le : Ω t ≤ Ωmax)
+    (hH_nonneg : 0 ≤ H t) (hH_le : H t ≤ Hmax) :
+    bkmLogSobolevLogFactor Ω H t ≤
+      Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax) :=
+  bkmLogSobolevLogFactor_le_of_bounds
+    hΩ_nonneg hΩ_le hH_nonneg hH_le
+
+theorem bkm_logSobolev_envelope_le_of_bounds_regression
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime} {Ωmax Hmax : ℝ}
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : 0 ≤ Ω t) (hΩ_le : Ω t ≤ Ωmax)
+    (hH_nonneg : 0 ≤ H t) (hH_le : H t ≤ Hmax) :
+    bkmLogSobolevGradientEnvelope C Ω H t ≤
+      C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax)) :=
+  bkmLogSobolevGradientEnvelope_le_of_bounds
+    hC hΩ_nonneg hΩ_le hH_nonneg hH_le
+
+theorem bkm_logSobolev_envelope_le_scalarLogGrowthCoefficient_regression
+    {C : ℝ} {Ω H F : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t)
+    (hHF : H t ≤ F t) :
+    bkmLogSobolevGradientEnvelope C Ω H t ≤
+      C * (1 + Ω t) * (1 + Real.log (Real.exp (1 : ℝ) + F t)) :=
+  bkmLogSobolevGradientEnvelope_le_scalarLogGrowthCoefficient
+    hC hΩ hH hHF
+
+theorem bkm_logSobolev_envelope_le_constant_on_Ico_of_bounds_regression
+    {C T : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hΩ_le : ∀ t, 0 ≤ t → t ≤ T → Ω t ≤ Ωmax)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le : ∀ t, 0 ≤ t → t ≤ T → H t ≤ Hmax) :
+    ∀ t, t ∈ Set.Ico 0 T →
+      bkmLogSobolevGradientEnvelope C Ω H t ≤
+        C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax)) :=
+  bkmLogSobolevGradientEnvelope_le_constant_on_Ico_of_bounds
+    hC hΩ_nonneg hΩ_le hH_nonneg hH_le
+
+theorem bkm_logSobolev_envelope_dominates_affineLog_regression
+    {C C0 C1 : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
+    (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    C0 + C1 * bkmLogSobolevLogFactor Ω H t ≤
+      bkmLogSobolevGradientEnvelope C Ω H t :=
+  bkmLogSobolevGradientEnvelope_dominates_affineLog hC0 hC1 hΩ hH
+
+theorem bkm_logSobolev_pointwise_to_control_regression
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ}
+    (hC : 0 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hIneq : BKMLogSobolevPointwiseInequalityOn u T C Ω H) :
+    BKMLogSobolevGradientControlOn u T C Ω H :=
+  BKMLogSobolevGradientControlOn.of_pointwiseInequality hC hΩ hH hIneq
+
+theorem bkm_logSobolev_affine_pointwise_to_pointwise_regression
+    {u : NSVelocityField} {T C C0 C1 : ℝ} {Ω H : NSTime → ℝ}
+    (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H) :
+    BKMLogSobolevPointwiseInequalityOn u T C Ω H :=
+  BKMLogSobolevPointwiseInequalityOn.of_affinePointwiseInequality
+    hC0 hC1 hΩ hH hAffine
+
+theorem bkm_logSobolev_affine_pointwise_to_control_regression
+    {u : NSVelocityField} {T C C0 C1 : ℝ} {Ω H : NSTime → ℝ}
+    (hC : 0 ≤ C)
+    (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H) :
+    BKMLogSobolevGradientControlOn u T C Ω H :=
+  BKMLogSobolevGradientControlOn.of_affinePointwiseInequality
+    hC hC0 hC1 hΩ hH hAffine
+
+theorem bkm_logSobolev_affine_pointwise_to_control_max_regression
+    {u : NSVelocityField} {T C0 C1 : ℝ} {Ω H : NSTime → ℝ}
+    (hC0_nonneg : 0 ≤ C0) (hC1_nonneg : 0 ≤ C1)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H) :
+    BKMLogSobolevGradientControlOn u T (max C0 C1) Ω H :=
+  BKMLogSobolevGradientControlOn.of_affinePointwiseInequality_max
+    hC0_nonneg hC1_nonneg hΩ hH hAffine
+
+theorem bkm_logSobolev_control_to_gradient_envelope_regression
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ}
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H) :
+    spatialGradientOperatorEnvelopeOn u T
+      (bkmLogSobolevGradientEnvelope C Ω H) :=
+  BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn hLog
+
+theorem bkm_logSobolev_control_to_uniform_gradient_bound_of_bounds_regression
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hC : 0 ≤ C) (hΩmax : 0 ≤ Ωmax) (hHmax : 0 ≤ Hmax)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hΩ_le : ∀ t, 0 ≤ t → t ≤ T → Ω t ≤ Ωmax)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le : ∀ t, 0 ≤ t → t ≤ T → H t ≤ Hmax) :
+    uniformSpatialGradientOperatorBoundUpTo u T
+      (C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax))) :=
+  BKMLogSobolevGradientControlOn.to_uniformSpatialGradientOperatorBoundUpTo_of_bounds
+    hLog hC hΩmax hHmax hΩ_nonneg hΩ_le hH_nonneg hH_le
+
+theorem bkm_logSobolev_control_to_enstrophy_growth_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (bkmLogSobolevGradientEnvelope C Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
+    hν hBal hLog ht0 htT hStretchInt hEnstrophyInt
+
+theorem bkm_logSobolev_pointwise_to_enstrophy_growth_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hC : 0 ≤ C)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hIneq : BKMLogSobolevPointwiseInequalityOn u T C Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (bkmLogSobolevGradientEnvelope C Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_pointwiseInequality
+    hν hBal hC hΩ hH hIneq ht0 htT hStretchInt hEnstrophyInt
+
+theorem bkm_logSobolev_affine_pointwise_to_enstrophy_growth_regression
+    {ν T C0 C1 : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
+    hν hBal hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
+
+theorem bkm_logSobolev_affine_pointwise_to_stretching_integral_regression
+    {T C0 C1 : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityStretchingPowerIntegral u t ≤
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) *
+        vorticityEnstrophyAt u t :=
+  vorticityStretchingPowerIntegral_le_affineLog_enstrophyAt
+    hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
+
+theorem bkm_finite_time_witness_affine_log_enstrophy_growth_regression
+    {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hEq : concreteVorticityEquationOn ν W.velocity T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn
+      W.velocity T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hEnstrophyInt :
+      Integrable (fun x => vorticityEnstrophyDensity W.velocity t x)) :
+    vorticityEnstrophyGradientControlledAt ν W.velocity t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_affinePointwiseInequality
+    W hν hEq hVelocitySlices hVorticitySlices hInt hTime hC0 hC1 hΩ hH
+    hAffine ht0 htT hEnstrophyInt
+
+theorem bkm_finite_time_witness_velocity_schwartz_affine_log_enstrophy_growth_regression
+    {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hEq : concreteVorticityEquationOn ν W.velocity T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn
+      W.velocity T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hEnstrophyInt :
+      Integrable (fun x => vorticityEnstrophyDensity W.velocity t x)) :
+    vorticityEnstrophyGradientControlledAt ν W.velocity t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchwartz_affinePointwiseInequality
+    W hν hEq hVelocitySlices hInt hTime hC0 hC1 hΩ hH hAffine ht0 htT
+    hEnstrophyInt
+
+theorem bkm_logSobolev_material_remainder_bound_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hΩ : vorticityEnvelopeOn u T Ω)
+    {t : NSTime} {x : NSSpace} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    ‖vorticityMaterialDiffusionRemainder ν u t x‖ ≤
+      bkmLogSobolevGradientEnvelope C Ω H t * Ω t :=
+  norm_vorticityMaterialDiffusionRemainder_le_of_logSobolev_control
+    hEq hLog hΩ ht0 htT
+
+theorem bkm_logSobolev_material_power_bound_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hΩ : vorticityEnvelopeOn u T Ω)
+    {t : NSTime} {x : NSSpace} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    |vorticityMaterialDiffusionPower ν u t x| ≤
+      bkmLogSobolevGradientEnvelope C Ω H t * (Ω t * Ω t) :=
+  abs_vorticityMaterialDiffusionPower_le_of_logSobolev_control
+    hEq hLog hΩ ht0 htT
+
+theorem bkm_logSobolev_growth_estimate_closed_regression :
+    BKMLogSobolevGrowthEstimateClosed :=
+  BKMLogSobolevGrowthEstimateClosed_proved
+
+theorem bkm_logSobolev_affine_reduction_closed_regression :
+    BKMLogSobolevAffineReductionClosed :=
+  BKMLogSobolevAffineReductionClosed_proved
+
+theorem bkm_vorticity_enstrophy_logSobolev_growth_closed_regression :
+    BKMVorticityEnstrophyLogSobolevGrowthClosed :=
+  BKMVorticityEnstrophyLogSobolevGrowthClosed_proved
+
+theorem bkm_vorticity_enstrophy_affine_log_growth_closed_regression :
+    BKMVorticityEnstrophyAffineLogGrowthClosed :=
+  BKMVorticityEnstrophyAffineLogGrowthClosed_proved
+
+theorem bkm_vorticity_stretching_affine_log_integral_bound_closed_regression :
+    BKMVorticityStretchingAffineLogIntegralBoundClosed :=
+  BKMVorticityStretchingAffineLogIntegralBoundClosed_proved
+
+theorem bkm_vorticity_finite_time_witness_affine_log_growth_closed_regression :
+    BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed :=
+  BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved
+
+theorem bkm_vorticity_finite_time_witness_velocity_schwartz_affine_log_growth_closed_regression :
+    BKMVorticityFiniteTimeWitnessVelocitySchwartzAffineLogGrowthClosed :=
+  BKMVorticityFiniteTimeWitnessVelocitySchwartzAffineLogGrowthClosed_proved
+
+end Regression
+
+end NavierStokes
+end FluidDynamics
+end Mettapedia
