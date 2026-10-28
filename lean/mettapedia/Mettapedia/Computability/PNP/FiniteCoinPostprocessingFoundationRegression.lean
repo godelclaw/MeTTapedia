@@ -1,0 +1,11 @@
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationRegressionPostcompose
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationRegressionPreimageBias
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationRegressionObservedExactness
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationRegressionBoolPair
+
+/-!
+# Regression checks for finite-coin postprocessing foundations
+
+Compatibility hub preserving the historical module name while the regression surface
+lives in semantic submodules.
+-/

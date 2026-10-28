@@ -1,0 +1,10 @@
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideRegressionSourceCounts
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideRegressionSkewMaps
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideRegressionMatching
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideRegressionOutputEquiv
+
+/-!
+# Regression wrappers for postprocessed-side matching and predicate/decoder erasure
+
+Compatibility hub for the semantic regression split.
+-/

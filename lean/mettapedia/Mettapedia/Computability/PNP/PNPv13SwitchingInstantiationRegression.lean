@@ -1,0 +1,13 @@
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationRegressionPrefixConcrete
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationRegressionFieldPrefix
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationRegressionFieldedSwitching
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationRegressionAfterPrefix
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationRegressionSequential
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationRegressionBoolPair
+
+/-!
+# Regression checks for the PNP v13 switching instantiation interface
+
+Compatibility umbrella preserving the historical regression import path while
+the checks are factored into semantic regression layers.
+-/

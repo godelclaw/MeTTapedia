@@ -1,6 +1,5 @@
 import Mettapedia.Computability.PNP.OrbitNeutralityObstruction
 import Mathlib.Data.Fintype.Card
-import Mathlib.Tactic
 
 /-!
 # P vs NP crux: invariant feature fibers have exact zero margin
@@ -93,7 +92,7 @@ theorem two_mul_card_featureFiberTrue_eq_card_featureFiber
     simpa [a, FeatureFiberTrue] using
       Fintype.card_subtype_le (fun x : FeatureFiber u v => y x.1 = true)
   have hsum : Fintype.card (FeatureFiber u v) = a + a := Nat.eq_add_of_sub_eq hle hsub
-  simpa [a, two_mul, Nat.add_comm] using hsum.symm
+  simpa [a, Nat.two_mul, Nat.add_comm] using hsum.symm
 
 end
 

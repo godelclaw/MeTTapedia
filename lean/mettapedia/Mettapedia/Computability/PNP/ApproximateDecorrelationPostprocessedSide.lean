@@ -1,0 +1,17 @@
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideBalance
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideImbalance
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSidePredicates
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideDecoders
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideRanges
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideCollisions
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideSkewMaps
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideCoinEquiv
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideSkewThresholds
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideOutputEquiv
+
+/-!
+# PNP approximate decorrelation: postprocessed-side compatibility umbrella
+
+This module preserves the historical import path while the postprocessed-side
+argument is factored into semantic layers.
+-/

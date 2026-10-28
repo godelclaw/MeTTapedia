@@ -1,0 +1,14 @@
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactCore
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactInjective
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactObservedLeftInverse
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactObservedInjective
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactTolerance
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactCollision
+
+/-!
+# Finite-coin postprocessing: exact preservation
+
+Compatibility hub for exact source-erasure, fiber-balance,
+observed-injectivity, and observed-left-inverse postprocessing lemmas for
+finite-coin outputs.
+-/

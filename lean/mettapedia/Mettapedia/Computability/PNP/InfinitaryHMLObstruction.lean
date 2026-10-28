@@ -86,6 +86,32 @@ theorem not_surjective_hmlFormula_of_finite_code
   letI : Finite (HMLFormula S) := Finite.of_surjective decode hsurj
   exact not_finite (HMLFormula S)
 
+/-- Dually, the depth-`1` fragment cannot be injectively encoded into any finite
+code type when the minimal-context type is infinite. -/
+theorem not_injective_depthFragment_one_to_finite_code
+    [Infinite (MinimalContext S)]
+    {Code : Type*} [Fintype Code]
+    (encode : DepthFragment (S := S) 1 → Code) :
+    ¬ Function.Injective encode := by
+  intro hinj
+  letI : Infinite (DepthFragment (S := S) 1) :=
+    infinite_depthFragment_one_of_infinite_minimalContext (S := S)
+  letI : Finite (DepthFragment (S := S) 1) := Finite.of_injective encode hinj
+  exact not_finite (DepthFragment (S := S) 1)
+
+/-- The whole HML formula type likewise cannot be injectively encoded into a
+finite code type when minimal contexts are infinite. -/
+theorem not_injective_hmlFormula_to_finite_code
+    [Infinite (MinimalContext S)]
+    {Code : Type*} [Fintype Code]
+    (encode : HMLFormula S → Code) :
+    ¬ Function.Injective encode := by
+  intro hinj
+  letI : Infinite (HMLFormula S) :=
+    infinite_hmlFormula_of_infinite_minimalContext (S := S)
+  letI : Finite (HMLFormula S) := Finite.of_injective encode hinj
+  exact not_finite (HMLFormula S)
+
 end Abstract
 
 section Rho

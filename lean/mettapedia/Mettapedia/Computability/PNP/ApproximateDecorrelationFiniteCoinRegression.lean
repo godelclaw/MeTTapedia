@@ -1,0 +1,12 @@
+import Mettapedia.Computability.PNP.ApproximateDecorrelationFiniteCoinRegressionFiberCounts
+import Mettapedia.Computability.PNP.ApproximateDecorrelationFiniteCoinRegressionBalanceBlockers
+import Mettapedia.Computability.PNP.ApproximateDecorrelationFiniteCoinRegressionToleranceBounds
+import Mettapedia.Computability.PNP.ApproximateDecorrelationFiniteCoinRegressionBalanceThresholds
+import Mettapedia.Computability.PNP.ApproximateDecorrelationFiniteCoinRegressionZeroTolerance
+
+/-!
+# Regression wrappers for finite-coin cancellation and balance thresholds
+
+Compatibility hub preserving the historical module name while the regression surface
+lives in semantic submodules.
+-/

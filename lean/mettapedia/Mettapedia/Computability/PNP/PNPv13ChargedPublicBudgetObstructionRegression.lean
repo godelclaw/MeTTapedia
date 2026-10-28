@@ -1,0 +1,30 @@
+import Mettapedia.Computability.PNP.PNPv13ChargedPublicBudgetFiniteCertificates
+
+/-!
+# Regression checks for the v13 charged-public budget obstruction
+-/
+
+namespace Mettapedia.Computability.PNP
+
+#check V13ChargedPublicDisagreement
+#check V13FiniteCoupling.probability_eq_one_of_mass_pos_imp
+#check V13FiniteCoupling.chargedPublicDisagreement_probability_one_of_opposite_phase_marginals
+#check V13D48ChargedPublicDisagreement
+#check V13D48ChargedPublicDisagreementMass
+#check v13D48_chargedPublicDisagreementMass_eq_one
+#check V13D48ChargedPublicDisagreementTotal
+#check v13D48_chargedPublicDisagreementTotal_eq_card
+#check v13D48_chargedPublicDisagreementTotal_not_subunit
+#check V13ChargedPublicTransportCertificate.check
+#check v13ChargedPublicTransportCertificates_valid
+#check v13SharedChargedAtomCoordinateSum_eq
+
+#print axioms V13FiniteCoupling.probability_eq_one_of_mass_pos_imp
+#print axioms V13FiniteCoupling.chargedPublicDisagreement_probability_one_of_opposite_phase_marginals
+#print axioms v13D48_chargedPublicDisagreementMass_eq_one
+#print axioms v13D48_chargedPublicDisagreementTotal_eq_card
+#print axioms v13D48_chargedPublicDisagreementTotal_not_subunit
+#print axioms v13ChargedPublicTransportCertificates_valid
+#print axioms v13SharedChargedAtomCoordinateSum_eq
+
+end Mettapedia.Computability.PNP

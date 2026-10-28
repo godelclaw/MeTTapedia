@@ -1,0 +1,11 @@
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionRegressionBridgeEquivalences
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionRegressionSurjectiveCounterexamples
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionRegressionEmptyCounterexamples
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionRegressionBoolPairCounterexamples
+
+/-!
+# Regression tests for product-success/Kpoly bridge obstructions
+
+Compatibility hub preserving the historical module name while the regression surface
+lives in semantic submodules.
+-/
