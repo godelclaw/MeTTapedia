@@ -21,6 +21,9 @@ authorization broker is not a PSM registry merely because both mention named
 capabilities; a bridge must provide the evidence-preserving maps below.
 -/
 
+-- Admission and realization coordinates keep independent universe levels.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.CognitiveArchitecture.ProblemSolvingMethods
 
 universe uProblem uSolution uMethod uAdmission uRealization

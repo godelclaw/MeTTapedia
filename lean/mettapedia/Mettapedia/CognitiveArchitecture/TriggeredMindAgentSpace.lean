@@ -230,7 +230,7 @@ def serviceSpace : Space Trigger Resident where
 /-- A heartbeat trigger arrives at every cycle. -/
 def heartbeatTrace (_cycle : Nat) : Option Trigger := some ()
 
-def serviceTriggerCoverage :
+theorem serviceTriggerCoverage :
     RecurringTriggerCoverage
       Mettapedia.CognitiveArchitecture.MindAgentServiceScheduling.Canary.longTermServiceEconomy
       1 1
@@ -248,7 +248,7 @@ def serviceTriggerCoverage :
 def selectedGenerated (cycle : Nat) (occurrence : Occurrence) : Prop :=
   serviceSpace.Generated heartbeatTrace cycle occurrence
 
-def generatedSelection :
+theorem generatedSelection :
     BoundedGeneratedSelection serviceSpace heartbeatTrace 1
       selectedGenerated where
   selects cycle occurrence generated :=

@@ -92,7 +92,7 @@ theorem recurrent_attention_is_conserved_at_commit :
 
 def staleLive : Snapshot Nat (Multiset Item) := ⟨21, 0⟩
 
-def staleConflict : ¬ Matches spec proposal staleLive := by
+theorem staleConflict : ¬ Matches spec proposal staleLive := by
   intro current
   have revisionImpossible := current.revision_eq
   norm_num [staleLive, spec,
@@ -171,7 +171,7 @@ def ambientReceipt : Item :=
 def changedLive : Snapshot Nat (Multiset Item) :=
   ⟨21, {ambientReceipt}⟩
 
-def changedOldConflict : ¬ Matches spec proposal changedLive := by
+theorem changedOldConflict : ¬ Matches spec proposal changedLive := by
   intro current
   have revisionImpossible := current.revision_eq
   norm_num [changedLive, spec,
@@ -215,7 +215,7 @@ theorem retry_requires_fresh_state_indexed_certificate :
 def oldFamilyProposal : FamilyProposal :=
   ⟨⟨20, 0⟩⟩
 
-def familyConflict : ¬ Matches familySpec oldFamilyProposal changedLive := by
+theorem familyConflict : ¬ Matches familySpec oldFamilyProposal changedLive := by
   intro current
   have revisionImpossible := current.revision_eq
   norm_num [changedLive, familySpec,
