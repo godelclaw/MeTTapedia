@@ -16,6 +16,9 @@ chosen here.
 
 set_option autoImplicit false
 
+-- Evidence and value coordinates retain independently chosen universe levels.
+set_option linter.checkUnivs false
+
 namespace Mettapedia.CognitiveArchitecture.Agent.PatienthoodWellbeing
 
 open Mettapedia.Machines
