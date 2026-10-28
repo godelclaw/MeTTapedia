@@ -1,5 +1,9 @@
 import Mettapedia.CognitiveArchitecture.Memory.BitemporalClaims
+import Mettapedia.CognitiveArchitecture.Memory.ContextViews
 import Mettapedia.CognitiveArchitecture.Memory.EventSourcedMemory
 import Mettapedia.CognitiveArchitecture.Memory.HierarchicalSummary
+import Mettapedia.CognitiveArchitecture.Memory.Indexing
 import Mettapedia.CognitiveArchitecture.Memory.MemoryRefinement
+import Mettapedia.CognitiveArchitecture.Memory.PinSupersession
+import Mettapedia.CognitiveArchitecture.Memory.SourceObservations
 import Mettapedia.CognitiveArchitecture.Memory.WorkingMemory

@@ -1,6 +1,8 @@
 import Mettapedia.CognitiveArchitecture.Attention.ThreeTimescale
 import Mettapedia.CognitiveArchitecture.Attention.Spreading
+import Mettapedia.CognitiveArchitecture.Attention.RecallPulse
 import Mettapedia.CognitiveArchitecture.Attention.PremiseActivation
 import Mettapedia.CognitiveArchitecture.Attention.Equilibrium
+import Mettapedia.CognitiveArchitecture.Attention.ImportanceDiffusion
 import Mettapedia.CognitiveArchitecture.Attention.Relevance
 import Mettapedia.CognitiveArchitecture.Attention.SpreadingExamples
