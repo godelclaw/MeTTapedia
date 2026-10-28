@@ -368,4 +368,7 @@ theorem he_io_anchor_he_duplicate_multiplicity_preserved :
 #eval frontierChecks
 #eval ("frontierChecksObserved", frontierChecksObserved)
 
+#guard allChecksPass
+#guard frontierChecksObserved
+
 end Mettapedia.Conformance.SimpleHE
