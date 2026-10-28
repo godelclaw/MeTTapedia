@@ -319,13 +319,17 @@ theorem sevenVertexSixteenWitnessOn_isMinimalNonColorable
       have htarget :
           (sevenVertexSixteenWitnessOn (V := V) hcard).map e.toEmbedding =
             sevenVertexSixteenWitness := by
-        have htrans : e.symm.toEmbedding.trans e.toEmbedding = Function.Embedding.refl _ := by
+        have htrans : (e : V → WitnessV) ∘ (e.symm : WitnessV → V) = id := by
           ext x
           simp
         change (sevenVertexSixteenWitness.map e.symm.toEmbedding).map e.toEmbedding =
           sevenVertexSixteenWitness
-        rw [SimpleGraph.map_map, htrans, SimpleGraph.map_id]
-      simpa [K, htarget] using hmap
+        rw [SimpleGraph.map_map]
+        change sevenVertexSixteenWitness.map
+          ((e : V → WitnessV) ∘ (e.symm : WitnessV → V)) = sevenVertexSixteenWitness
+        rw [htrans, SimpleGraph.map_id]
+      rw [htarget] at hmap
+      exact hmap
     · intro hEq
       have hEqComap :
           K.comap e.toEmbedding = sevenVertexSixteenWitness.comap e.toEmbedding := by
@@ -341,8 +345,9 @@ theorem sevenVertexSixteenWitnessOn_isMinimalNonColorable
         calc
           H = sevenVertexSixteenWitness.comap e.toEmbedding := hcomapEq
           _ = sevenVertexSixteenWitnessOn (V := V) hcard := by
-                simpa [sevenVertexSixteenWitnessOn, e] using
-                  (SimpleGraph.map_symm (G := sevenVertexSixteenWitness) e).symm
+                change sevenVertexSixteenWitness.comap e.toEmbedding =
+                  sevenVertexSixteenWitness.map e.symm.toEmbedding
+                exact (SimpleGraph.map_symm (G := sevenVertexSixteenWitness) e).symm
       exact hHG.ne this
   have hcolK : K.Colorable 4 :=
     sevenVertexSixteenWitness_isMinimalNonColorable.colorable_of_lt hK_lt

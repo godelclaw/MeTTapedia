@@ -50,16 +50,25 @@ its explicit substantive-theory boundary.
 The validation record distinguishes newly checked source from reused compiled
 artifacts whose source and import identities were verified. The recovered
 language and interface checks use warnings as errors. The historical coloring
-curriculum retains cosmetic warnings and has unresolved Mathlib migration
-errors recorded in `validation.json`. `FourColorCore` exposes only the checked
-algebra, triangulation definitions and naive run-completion counterexample.
-Those modules receive an additional admission-dependency audit. It does not claim
-an unrestricted whole-library build. Existing incomplete legacy research is
+curriculum retains cosmetic warnings. Its graph API migration is complete:
+`FourColorCore` again includes the full original `FourColor` root, together
+with `FourColor.IntegrationCore`. The full-root source check covers 72 modules;
+the additional audit covers 1,318 coloring declarations and finds no admitted
+proof dependencies. The original three migration failures are recorded as
+resolved in `legacy-coloring-migration.json`. Older teaching sheets retain
+their explicit WIP status outside the maintained roots. These checks do not
+claim an unrestricted whole-library build. Existing incomplete legacy research is
 identified separately and is not counted as completed mathematics.
 `legacy-session-claims.json` records 19 unsupported session-calculus claims;
 all 204 original declarations independent of admitted proofs retain their
 elaborated type hashes, and the cleaned module proves two counterexamples to
 its unconstrained typing rules.
+
+The three previously timed-out PeTTa dependencies now pass. The broader
+documentation-index import closure remains unqualified: the bounded replay
+left additional timeouts and modules without current source/import receipts.
+`validation.json` lists that remaining scope explicitly; the four generated
+documentation audits have current passing receipts.
 
 The maintained Lake targets are `LogicProgrammingTheory`, `PLeaTTaTheory`,
 `AttentionEconomyTheory` and `FourColorCore`. They share the package's existing
@@ -69,4 +78,4 @@ the maintained library targets and retain their baseline bytes.
 Future integrations should add subject commits on upstream, preserve the full
 source histories on archive refs, and update the preservation ledger for any
 upstream deletion or changed semantic contract. Reuse the existing build cache
-and run the relevant theory targets with the host's resource limits.
+and run the relevant theory targets.

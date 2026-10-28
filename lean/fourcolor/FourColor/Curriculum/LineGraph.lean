@@ -1,3 +1,5 @@
+-- Historical teaching WIP; excluded from the maintained coloring roots.
+-- See ../../Curriculum/README.md for its validation boundary.
 /-
 # Module 5: Line Graph Adjacency
 

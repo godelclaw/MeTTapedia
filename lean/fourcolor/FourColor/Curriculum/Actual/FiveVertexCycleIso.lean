@@ -152,11 +152,16 @@ theorem exists_equiv_cycleGraph_five_of_card_eq_five_of_isRegularOfDegree_two
   have hneigh_e : ∀ i : Fin 5, G.neighborSet (e i) = {e (i - 1), e (i + 1)} := by
     intro i
     fin_cases i
-    · simpa [e, f, Set.pair_comm] using hneigh0
-    · simpa [e, f] using hneigh1
-    · simpa [e, f] using hneigh2
-    · simpa [e, f] using hneigh3
-    · simpa [e, f] using hneigh4
+    · change G.neighborSet (f 0) = {f 4, f 1}
+      simpa [f, Set.pair_comm] using hneigh0
+    · change G.neighborSet (f 1) = {f 0, f 2}
+      exact hneigh1
+    · change G.neighborSet (f 2) = {f 1, f 3}
+      exact hneigh2
+    · change G.neighborSet (f 3) = {f 2, f 4}
+      exact hneigh3
+    · change G.neighborSet (f 4) = {f 3, f 0}
+      exact hneigh4
   have hadj_e : ∀ i j : Fin 5, G.Adj (e i) (e j) ↔ (SimpleGraph.cycleGraph 5).Adj i j := by
     intro i j
     rw [← SimpleGraph.mem_neighborSet, hneigh_e i, ← SimpleGraph.mem_neighborSet,
@@ -176,7 +181,11 @@ theorem exists_equiv_cycleGraph_five_of_card_eq_five_of_isRegularOfDegree_two
   ext u v
   rcases e.surjective u with ⟨i, rfl⟩
   rcases e.surjective v with ⟨j, rfl⟩
-  simpa [SimpleGraph.map_adj_apply] using hadj_e i j
+  have mapped :
+      ((SimpleGraph.cycleGraph 5).map e.toEmbedding).Adj (e i) (e j) ↔
+        (SimpleGraph.cycleGraph 5).Adj i j :=
+    SimpleGraph.map_adj_apply (f := e.toEmbedding)
+  exact (hadj_e i j).trans mapped.symm
 
 /-- Isomorphism version of the five-vertex connected `2`-regular classification. -/
 theorem nonempty_iso_cycleGraph_five_of_card_eq_five_of_isRegularOfDegree_two

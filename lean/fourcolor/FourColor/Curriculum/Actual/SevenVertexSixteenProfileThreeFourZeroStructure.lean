@@ -78,7 +78,7 @@ theorem exists_partner_and_forall_degree_eq_two_on_connectedComponent_of_mem_deg
   have hs1_card_split :
       s1.card + sNot.card = Fintype.card c.supp := by
     simpa [s1, Finset.card_univ] using
-      (Finset.filter_card_add_filter_neg_card_eq_card (s := Finset.univ)
+      (Finset.card_filter_add_card_filter_not (s := Finset.univ)
         (p := fun x : c.supp => K.degree x = 1))
   have hcard_edge :
       Fintype.card c.supp ≤ K.edgeFinset.card + 1 := by

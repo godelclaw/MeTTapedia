@@ -142,8 +142,9 @@ theorem nonempty_iso_sevenVertexSixteenWitnessCompl_of_card_eq_seven_of_degree_z
     exact hv_not_mem ((SimpleGraph.mem_support (G := H)).2 ⟨u, hvu'⟩)
   have hcycle_adj (i j : Fin 5) :
       H.Adj (e i : V) (e j : V) ↔ (SimpleGraph.cycleGraph 5).Adj i j := by
-    simpa [SimpleGraph.map_adj_apply] using
-      congrArg (fun K : SimpleGraph H.support => K.Adj (e i) (e j)) hEq
+    have htransport := Iff.of_eq
+      (congrArg (fun K : SimpleGraph H.support => K.Adj (e i) (e j)) hEq)
+    exact htransport.trans (SimpleGraph.map_adj_apply (f := e.toEmbedding))
   let ef : Fin 2 ⊕ Fin 5 ≃ V := Equiv.ofBijective f ⟨hf_inj, hf_surj⟩
   refine ⟨{
     toEquiv := ef

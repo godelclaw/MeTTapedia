@@ -35,6 +35,13 @@ instance : DecidableRel sevenVertexSixteenWitness.Adj := by
   unfold sevenVertexSixteenWitness
   infer_instance
 
+-- Use the computable subtype enumerations consistently in degree formulas.
+instance : sevenVertexSixteenWitnessCompl.LocallyFinite :=
+  fun vertex => Subtype.fintype (Membership.mem (sevenVertexSixteenWitnessCompl.neighborSet vertex))
+
+instance : sevenVertexSixteenWitness.LocallyFinite :=
+  fun vertex => Subtype.fintype (Membership.mem (sevenVertexSixteenWitness.neighborSet vertex))
+
 /-- The isolated complement vertices in the concrete witness have degree `0`. -/
 theorem sevenVertexSixteenWitnessCompl_degree_inl (i : Fin 2) :
     sevenVertexSixteenWitnessCompl.degree (Sum.inl i) = 0 := by
@@ -117,8 +124,18 @@ theorem sevenVertexSixteenWitness_not_colorable_four :
     not_colorable_four_of_two_compl_degree_eq_zero_card_support_eq_five_and_induce_support_isRegularOfDegree_two
       (G := sevenVertexSixteenWitness) (u := Sum.inl 0) (v := Sum.inl 1) ?_ ?_ ?_ ?_ ?_
   · decide +kernel
-  · simpa [sevenVertexSixteenWitness] using sevenVertexSixteenWitnessCompl_degree_inl 0
-  · simpa [sevenVertexSixteenWitness] using sevenVertexSixteenWitnessCompl_degree_inl 1
+  · apply (SimpleGraph.degree_eq_zero_iff_notMem_support
+      (G := sevenVertexSixteenWitnessᶜ) (v := Sum.inl 0)).2
+    simpa only [sevenVertexSixteenWitness, compl_compl] using
+      (SimpleGraph.degree_eq_zero_iff_notMem_support
+        (G := sevenVertexSixteenWitnessCompl) (v := Sum.inl 0)).1
+        (sevenVertexSixteenWitnessCompl_degree_inl 0)
+  · apply (SimpleGraph.degree_eq_zero_iff_notMem_support
+      (G := sevenVertexSixteenWitnessᶜ) (v := Sum.inl 1)).2
+    simpa only [sevenVertexSixteenWitness, compl_compl] using
+      (SimpleGraph.degree_eq_zero_iff_notMem_support
+        (G := sevenVertexSixteenWitnessCompl) (v := Sum.inl 1)).1
+        (sevenVertexSixteenWitnessCompl_degree_inl 1)
   · simpa [sevenVertexSixteenWitness] using sevenVertexSixteenWitnessCompl_card_support
   · exact sevenVertexSixteenWitness_compl_induce_support_isRegularOfDegree_two
 

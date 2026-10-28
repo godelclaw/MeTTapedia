@@ -79,10 +79,10 @@ lean_lib AttentionEconomyTheory where
   srcDir := "../pettaclaw"
   roots := #[`StiMass, `StiFloor, `StiFloorDecay]
 
-/-- Checked coloring algebra and completion boundary in the companion source tree. -/
+/-- Generic coloring curriculum and compositional algebra in the companion source tree. -/
 lean_lib FourColorCore where
   srcDir := "../fourcolor"
-  roots := #[`FourColor.IntegrationCore]
+  roots := #[`FourColor, `FourColor.IntegrationCore]
 
 /- The exact maintained roots of the compositional abstract-machine
 qualification. This target is deliberately narrower than the aggregate library
