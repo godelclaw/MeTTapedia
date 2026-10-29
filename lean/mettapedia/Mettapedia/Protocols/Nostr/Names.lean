@@ -2,29 +2,26 @@ import Mettapedia.Protocols.Nostr.Archive
 import Mettapedia.Protocols.Injection.Terminal
 
 /-!
-# The registry names the client accepts
+# Standing by key: names decide nothing
 
-The watcher takes the first word of `From:` as the sender, and a team's rules say
-what that sender's typed mail may do: a parent's `reset` runs. `From:` carries the
-name the registry gives the signing key. `watcher_control_sound` holds when every
-name is clean (one word) and each name is given once; a JSON object gives the
-second, but nothing gave the first.
-
-The client now names a key only when the key has exactly one entry and that
-entry's name is plain: letters, digits, `.`, `_` and `-`, starting with a letter or
-a digit. It refuses mail from any other key. `checked` is the registry it then
-reads by.
+A team's rules say what a member's typed mail may do: a parent's `reset` runs.
+`team.json` names the members, and `registry.json` gives each name its key. The
+client once took the sender to be the first word of `From:`, the name the registry
+gives the signing key, shown as text. An entry's name is whatever its author wrote,
+so another entry could pass for a member. The client now takes a message's
+standing from its signing key: a member's key is the one the registry gives the
+name the team uses for it. Names stay as the registry has them.
 
 The theorems:
-- `spaced_name_reads_as_another`: without the check, mail from the key of an entry
-  named `lead x` is read by the watcher as from `lead`.
-- `printable_merges_names`: removing control characters makes `lead` and a bell
-  into `lead`, so a name cleaned for display is no identity.
-- `nameOf_checked`: the checked registry names a key exactly as the client does.
-- `checked_clean`, `checked_nodup`: its names are clean, and given once if the
-  registry's are.
-- `watcher_control_sound_checked`: control mail the watcher reads as from the
-  parent was composed by the parent, on any registry that gives each name once.
+- `spaced_name_reads_as_another`: by the first word of `From:`, mail from the key of
+  an entry named `lead x` reads as from `lead`.
+- `printable_merges_names`: a name shown cleaned is no identity: `lead` and a bell
+  is shown `lead`.
+- `control_from_parent`: control mail the client takes for the parent's is signed
+  by the key the registry gives the parent's name, and, if that key is
+  uncompromised, was composed by the parent. Nothing is assumed about names.
+- `roleOfKey_other_entry`: an entry under a name the team does not use changes no
+  one's standing, whatever its key.
 -/
 
 set_option autoImplicit false
@@ -33,22 +30,10 @@ namespace Mettapedia.Protocols.Nostr.Names
 
 open Mettapedia.Protocols.Nostr Mettapedia.Protocols.Nostr.Archive
 
-/-- A character a plain name may hold. -/
-def plainChar (c : Char) : Bool := c.isAlphanum || c == '.' || c == '_' || c == '-'
+/-! ## By name -/
 
-/-- A plain name: a letter or digit, then plain characters. -/
-def plainName (s : String) : Bool :=
-  match s.toList with
-  | [] => false
-  | c :: cs => c.isAlphanum && cs.all plainChar
-
-/-- The entries the client reads by: a plain name, and the only entry with its key. -/
-def checked (reg : Registry) : Registry :=
-  reg.filter fun m => plainName m.1 && reg.countP (·.2 == m.2) == 1
-
-/-! ## Without the check -/
-
-/-- An entry named `lead x`: the watcher reads its key's mail as from `lead`. -/
+/-- An entry named `lead x`: the watcher, reading the first word of `From:`, reads its
+key's mail as from `lead`. -/
 theorem spaced_name_reads_as_another {reg : Registry} {e : Event} {l : Letter}
     (hn : nameOf reg e.pubkey = some "lead x") :
     watcherFrom (archive reg e l) = some "lead".toList := by
@@ -64,99 +49,87 @@ theorem printable_merges_names :
     Injection.Terminal.printable ['l', 'e', 'a', 'd', Injection.Terminal.bel] = "lead".toList := by
   decide
 
-/-! ## The check -/
+/-! ## By key -/
 
-theorem plainChar_word {c : Char} (h : plainChar c = true) : ¬ c.isWhitespace ∧ c ≠ ':' := by
-  constructor
-  · intro hw
-    have : ((c = ' ' ∨ c = '\t') ∨ c = '\r') ∨ c = '\n' := by simpa [Char.isWhitespace] using hw
-    rcases this with ((rfl | rfl) | rfl) | rfl <;> exact absurd h (by decide)
-  · rintro rfl
-    exact absurd h (by decide)
+/-- A team as `team.json` gives it: its members' names. -/
+structure Team where
+  parent : Option String
+  children : List String
+  review : List String
 
-theorem plainName_clean {s : String} (h : plainName s = true) : CleanName s := by
-  unfold plainName at h
-  unfold CleanName
-  cases hs : s.toList with
-  | nil => simp [hs] at h
-  | cons c cs =>
-    rw [hs] at h
-    simp only [Bool.and_eq_true, List.all_eq_true] at h
-    refine ⟨by simp, fun x hx => ?_⟩
-    rcases List.mem_cons.mp hx with rfl | hx
-    · exact plainChar_word (by simp [plainChar, h.1])
-    · exact plainChar_word (h.2 x hx)
+/-- What a signer is to the avatar. -/
+inductive Role where
+  | parent
+  | child
+  | peer
+  | none
+  deriving DecidableEq, Repr
 
-theorem checked_sublist (reg : Registry) : (checked reg).Sublist reg := List.filter_sublist
+/-- The key the registry gives a name, as a lookup in a JSON object finds it. -/
+def keyOf (reg : Registry) (n : String) : Option PubKey := (reg.find? (·.1 = n)).map (·.2)
 
-/-- Every name the checked registry gives is clean. -/
-theorem checked_clean (reg : Registry) : ∀ m ∈ checked reg, CleanName m.1 := by
-  intro m hm
-  have := (List.mem_filter.mp hm).2
-  simp only [Bool.and_eq_true, beq_iff_eq] at this
-  exact plainName_clean this.1
+/-- The client's `role_of_key`: the signer's standing, from its key alone. -/
+def roleOfKey (reg : Registry) (team : Team) (k : PubKey) : Role :=
+  if team.parent.bind (keyOf reg) = some k then .parent
+  else if team.children.any (fun n => keyOf reg n == some k) then .child
+  else if team.review.any (fun n => keyOf reg n == some k) then .peer
+  else .none
 
-/-- It gives each name once if the registry does. -/
-theorem checked_nodup {reg : Registry} (hu : (reg.map Prod.fst).Nodup) :
-    ((checked reg).map Prod.fst).Nodup :=
-  hu.sublist ((checked_sublist reg).map _)
+theorem roleOfKey_parent {reg : Registry} {team : Team} {k : PubKey}
+    (h : roleOfKey reg team k = .parent) : team.parent.bind (keyOf reg) = some k := by
+  unfold roleOfKey at h
+  by_contra hp
+  rw [if_neg hp] at h
+  split at h
+  · cases h
+  · split at h <;> cases h
 
-/-- Two entries with the same key, in a registry where one entry has it, are one. -/
-theorem eq_of_countP_one {reg : Registry} {k : PubKey} (h : reg.countP (·.2 == k) = 1)
-    {a b : String × PubKey} (ha : a ∈ reg) (hak : a.2 = k) (hb : b ∈ reg) (hbk : b.2 = k) :
-    a = b := by
-  rw [List.countP_eq_length_filter] at h
-  obtain ⟨x, hx⟩ := List.length_eq_one_iff.mp h
-  have ha' : a ∈ reg.filter (·.2 == k) := List.mem_filter.mpr ⟨ha, by simp [hak]⟩
-  have hb' : b ∈ reg.filter (·.2 == k) := List.mem_filter.mpr ⟨hb, by simp [hbk]⟩
-  rw [hx, List.mem_singleton] at ha' hb'
-  rw [ha', hb']
+/-- **Control mail taken for the parent's is the parent's.** A message the client
+takes for the parent's is signed by the key the registry gives the parent's name;
+if that key is uncompromised, the parent composed it. Nothing is assumed about the
+registry's names. -/
+theorem control_from_parent {P : Primitives} (A : Authorship P) (cf : P.CollisionFree)
+    {reg : Registry} {team : Team} {parent : String} (hp : team.parent = some parent)
+    {e : Event} (hv : e.Valid P) (hrole : roleOfKey reg team e.pubkey = .parent)
+    (hc : ∀ k, keyOf reg parent = some k → ¬ A.compromised k) :
+    keyOf reg parent = some e.pubkey ∧ A.authored e.toUnsigned := by
+  have hk : keyOf reg parent = some e.pubkey := by
+    simpa [hp] using roleOfKey_parent hrole
+  exact ⟨hk, authentic A cf hv (hc _ hk)⟩
 
-/-- **The checked registry names a key as the client does**: by the one entry with
-that key, when its name is plain. -/
-theorem nameOf_checked (reg : Registry) (k : PubKey) (n : String) :
-    nameOf (checked reg) k = some n ↔
-      (n, k) ∈ reg ∧ plainName n = true ∧ reg.countP (·.2 == k) = 1 := by
-  constructor
-  · intro h
-    have hm := nameOf_some h
-    have hf := List.mem_filter.mp hm
-    simp only [Bool.and_eq_true, beq_iff_eq] at hf
-    exact ⟨hf.1, hf.2.1, hf.2.2⟩
-  · rintro ⟨hm, hp, hc⟩
-    have hmc : (n, k) ∈ checked reg := List.mem_filter.mpr ⟨hm, by simp [hp, hc]⟩
-    unfold nameOf
-    cases hf : (checked reg).find? (·.2 = k) with
-    | none =>
-      have := List.find?_eq_none.mp hf _ hmc
-      simp at this
+/-- The names a team uses. -/
+def Team.names (team : Team) : List String := team.parent.toList ++ team.children ++ team.review
+
+theorem keyOf_cons_other {reg : Registry} {n m : String} {k : PubKey} (h : n ≠ m) :
+    keyOf ((n, k) :: reg) m = keyOf reg m := by
+  simp [keyOf, h]
+
+theorem any_keyOf_cons {reg : Registry} {n : String} {k k' : PubKey} {l : List String}
+    (hl : n ∉ l) :
+    l.any (fun m => keyOf ((n, k) :: reg) m == some k') = l.any (fun m => keyOf reg m == some k') := by
+  induction l with
+  | nil => rfl
+  | cons m l ih =>
+    have hm : n ≠ m := fun h => hl (by simp [h])
+    have hl' : n ∉ l := fun h => hl (by simp [h])
+    simp only [List.any_cons, keyOf_cons_other hm, ih hl']
+
+/-- **Names decide nothing.** An entry under a name the team does not use changes no
+one's standing, whatever key it carries: an entry named `lead x` beside the lead's
+changes nothing. -/
+theorem roleOfKey_other_entry (reg : Registry) (team : Team) {n : String} (k k' : PubKey)
+    (hn : n ∉ team.names) :
+    roleOfKey ((n, k) :: reg) team k' = roleOfKey reg team k' := by
+  have hpar : team.parent.bind (keyOf ((n, k) :: reg)) = team.parent.bind (keyOf reg) := by
+    cases hp : team.parent with
+    | none => rfl
     | some p =>
-      have hpk : p.2 = k := by simpa using List.find?_some hf
-      have hp : p ∈ reg := (checked_sublist reg).subset (List.mem_of_find?_eq_some hf)
-      have : p = (n, k) := eq_of_countP_one hc hp hpk hm rfl
-      simp [this]
-
-/-- **Control mail from the parent is the parent's**, on any registry that gives
-each name once: the client reads by the checked registry, whose names are clean, so
-`watcher_control_sound` needs no assumption about names. -/
-theorem watcher_control_sound_checked {P : Primitives} (A : Authorship P) (cf : P.CollisionFree)
-    {opener : Opener} {reg : Registry} (hu : (reg.map Prod.fst).Nodup) {me : PubKey}
-    {e : Event} {l : Letter} (ha : accept P opener (checked reg) me e = some l)
-    {parent : String} {k : PubKey} (hk : (parent, k) ∈ reg) (hc : ¬ A.compromised k) {t : Text}
-    (hfrom : watcherFrom (archive (checked reg) e l) = some parent.toList)
-    (htype : watcherType (archive (checked reg) e l) = some t) :
-    A.authored e.toUnsigned ∧
-      ∃ s, l.type = some s ∧ t = (oneLine s.toList).dropWhile Char.isWhitespace := by
-  obtain ⟨-, -, -, n, hn⟩ := accept_some ha
-  have hmem : (n, e.pubkey) ∈ checked reg := nameOf_some hn
-  have horig : (render (checked reg) e l).originator = n := by simp [render, hn]
-  have ho : CleanName (render (checked reg) e l).originator := horig ▸ checked_clean reg _ hmem
-  have hnp : n = parent := by
-    rw [watcherFrom_archive ho, horig] at hfrom
-    exact String.toList_inj.mp (Option.some.inj hfrom)
-  subst hnp
-  have hkk : e.pubkey = k := key_unique hu ((checked_sublist reg).subset hmem) hk
-  exact watcher_control_sound A cf (checked_nodup hu) (checked_clean reg) ha (hkk ▸ hmem) hc
-    hfrom htype
+      have : n ≠ p := fun h => hn (by simp [Team.names, hp, h])
+      simp [keyOf_cons_other this]
+  have hkids := any_keyOf_cons (reg := reg) (n := n) (k := k) (k' := k') (l := team.children)
+    (fun h => hn (by simp [Team.names, h]))
+  have hrev := any_keyOf_cons (reg := reg) (n := n) (k := k) (k' := k') (l := team.review)
+    (fun h => hn (by simp [Team.names, h]))
+  simp only [roleOfKey, hpar, hkids, hrev]
 
 end Mettapedia.Protocols.Nostr.Names

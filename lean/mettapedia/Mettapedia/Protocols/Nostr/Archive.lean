@@ -45,9 +45,9 @@ Scope:
   accepted (signed, addressed and registered), signatures are collision-free,
   registry names are unique, and the parent's key is uncompromised. It also
   assumes registry names are clean: nonempty, without blanks or colons. The
-  client now reads by the entries whose names are plain and whose keys have one
-  entry, and `Names.watcher_control_sound_checked` drops that assumption. The
-  type it yields is the sealed type as the client normalizes it.
+  client no longer reads standing from names: it takes it from the signing key,
+  and `Names.control_from_parent` holds with no assumption about names. The type
+  it yields is the sealed type as the client normalizes it.
 - It is a model. It does not prove the shell script, the live relay, or behaviour
   under a malformed registry; the client's tests check the script against it.
 
