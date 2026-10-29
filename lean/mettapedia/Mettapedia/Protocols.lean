@@ -17,6 +17,7 @@ import Mettapedia.Protocols.Nostr.Archive
 import Mettapedia.Protocols.Nostr.Paging
 import Mettapedia.Protocols.Nostr.Names
 import Mettapedia.Protocols.Nostr.Display
+import Mettapedia.Protocols.Nostr.KeyView
 import Mettapedia.Protocols.Injection.Options
 import Mettapedia.Protocols.Injection.Terminal
 import Mettapedia.Protocols.Injection.Patterns
