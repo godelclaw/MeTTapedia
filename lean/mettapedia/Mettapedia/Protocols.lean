@@ -1,6 +1,7 @@
 import Mettapedia.Protocols.Mail.Message
 import Mettapedia.Protocols.Mail.Mailbox
 import Mettapedia.Protocols.Mail.AutoReply
+import Mettapedia.Protocols.Mail.Notices
 import Mettapedia.Protocols.Mail.Receipts
 import Mettapedia.Protocols.Mail.DeliveryStatus
 import Mettapedia.Protocols.Mail.Sync
