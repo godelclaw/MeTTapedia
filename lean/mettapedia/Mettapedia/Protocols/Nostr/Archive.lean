@@ -34,8 +34,9 @@ Scope:
   a blank line ending the headers. It is not a general RFC 5322 parser: no case
   folding, folded headers or CRLF input.
 - The renderer is reduced. It writes `From`, `Subject` and the type, which are the
-  headers the watcher reads and the subject the sender chooses. `From` gives the
-  signing key as the address, where the client prints the registry's npub. The
+  headers the watcher reads and the subject the sender chooses. `From` gives an
+  address that is a function of the signing key alone, as the client prints it
+  (the npub of that key; `Injection.Identity` treats a stored copy). The
   client writes more headers. `hdrBlock_file` covers them only because every
   header it writes is one line: sender values through `oneLine`, registry values
   likewise, and the rest are hex, numbers or constants. That is the
