@@ -6,6 +6,7 @@ import Mettapedia.Protocols.Nostr.Filter
 import Mettapedia.Protocols.Nostr.Relay
 import Mettapedia.Protocols.Nostr.Mailbox
 import Mettapedia.Protocols.Nostr.Archive
+import Mettapedia.Protocols.Nostr.Paging
 import Mettapedia.Protocols.Injection.Options
 import Mettapedia.Protocols.Injection.Terminal
 import Mettapedia.Protocols.Injection.Patterns
