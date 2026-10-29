@@ -23,6 +23,19 @@ The theorems:
   leaves the terminal in its ground state and shows exactly that text.
 - `printable_shows`: the sanitizer that removes C0 (but tab and line feed), DEL
   and C1 makes any text safe in that sense, and keeps every other character.
+
+A terminal reads bytes. The model's terminal acts on characters, as one does that
+decodes UTF-8 first and then acts on U+0080 to U+009F as C1; one that ignores C1
+characters is only safer, and one in 8-bit mode, which acts on raw bytes `80` to
+`9F`, finds them inside ordinary UTF-8 text and is outside this account. Arbitrary
+earlier terminal state, and text that deceives by look (bidirectional overrides,
+look-alike characters), are outside it too.
+- `oldFilter_clears`: the filter as first shipped, `tr` and one `sed` pass over
+  bytes, turns `C2 C2 9B 9B 2 J`, which is not UTF-8, into the UTF-8 of the C1
+  erase-display sequence: removing a C1 control can make one.
+- `printableBytes_shows`: decoding first (what is not UTF-8 becomes some
+  character), filtering, and writing UTF-8 gives bytes that any decoder correct
+  on UTF-8 reads as the filtered text, which the terminal shows exactly.
 -/
 
 set_option autoImplicit false
@@ -167,5 +180,60 @@ theorem printable_keeps_layout : printable ['a', '\t', 'b', '\n'] = ['a', '\t', 
 theorem printable_osc :
     printable [esc, ']', '0', ';', 'x', bel, 'h', 'i'] = [']', '0', ';', 'x', 'h', 'i'] := by
   decide
+
+/-! ## Bytes -/
+
+/-- `tr -d '\000-\010\013-\037\177'`: C0 bytes but tab and line feed, and DEL. -/
+def trBytes (b : List UInt8) : List UInt8 :=
+  b.filter fun x => !((x < 0x20 && x != 0x09 && x != 0x0a) || x == 0x7f)
+
+/-- One pass of `sed 's/\xc2[\x80-\x9f]//g'`, left to right: each match is removed
+and the text after it scanned on, never what the removal brings together. The flag
+says a `C2` is held, waiting for the next byte. -/
+def sedC1 : Bool → List UInt8 → List UInt8
+  | false, [] => []
+  | false, x :: rest => if x = 0xC2 then sedC1 true rest else x :: sedC1 false rest
+  | true, [] => [0xC2]
+  | true, y :: rest =>
+    if 0x80 ≤ y ∧ y ≤ 0x9F then sedC1 false rest
+    else if y = 0xC2 then 0xC2 :: sedC1 true rest
+    else 0xC2 :: y :: sedC1 false rest
+
+/-- The filter as first shipped, on bytes. -/
+def oldFilter (b : List UInt8) : List UInt8 := sedC1 false (trBytes b)
+
+/-- **Removing a C1 control can make one.** `C2 C2 9B 9B 2 J` is not UTF-8; the
+old filter removes the `C2 9B` inside it, and what is left is the UTF-8 of CSI,
+`2`, `J`: the erase-display sequence (`run_c1_clears`). -/
+theorem oldFilter_clears :
+    ByteArray.mk (oldFilter [0xC2, 0xC2, 0x9B, 0x9B, 0x32, 0x4A]).toArray =
+      [csi1, '2', 'J'].utf8Encode := by
+  decide
+
+/-- The filter now: the bytes are decoded (`decode` turns what is not UTF-8 into
+some character, as jq turns it into U+FFFD), filtered, and written as UTF-8. -/
+noncomputable def printableBytes (decode : ByteArray → List Char) (b : ByteArray) : ByteArray :=
+  (printable (decode b)).utf8Encode
+
+/-- What it writes is UTF-8. -/
+theorem printableBytes_valid (decode : ByteArray → List Char) (b : ByteArray) :
+    (printableBytes decode b).IsValidUTF8 :=
+  ByteArray.isValidUTF8_utf8Encode
+
+/-- **The filter's bytes are shown as text.** Whatever the input bytes, a terminal
+whose decoder reads every UTF-8 encoding back as its characters, whatever it does
+with other input, stays in its ground state and shows exactly the filtered text. -/
+theorem printableBytes_shows (decode : ByteArray → List Char) (b : ByteArray)
+    (read : ByteArray → List Char) (hread : ∀ l : List Char, read l.utf8Encode = l) :
+    run .ground (read (printableBytes decode b)) =
+      (.ground, (printable (decode b)).map .show) := by
+  rw [printableBytes, hread]
+  exact printable_shows _
+
+/-- A strict decoder, Lean's own, is such a decoder. -/
+def strictRead (b : ByteArray) : List Char := (b.utf8Decode?.map Array.toList).getD []
+
+theorem strictRead_utf8Encode (l : List Char) : strictRead l.utf8Encode = l := by
+  simp [strictRead, List.utf8Decode?_utf8Encode]
 
 end Mettapedia.Protocols.Injection.Terminal

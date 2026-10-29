@@ -17,6 +17,10 @@ The theorems:
   display agree on checked books.
 - `flagged_nil_iff`: listing the entries whose copy disagrees (what `contacts`
   does) finds none exactly when the book is checked.
+
+The encoder is abstract. The client's is the npub of the key or, when nak cannot
+encode it, the key's hex, never a mix of the two: a function of the key alone
+either way, which is all `shownDerived` asks of it.
 -/
 
 set_option autoImplicit false

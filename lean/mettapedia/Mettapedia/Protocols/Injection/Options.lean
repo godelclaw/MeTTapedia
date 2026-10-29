@@ -23,6 +23,12 @@ The theorems:
   operand it is, whatever its text.
 - `parse_injects`: without `--`, an argument that begins with `-` is an option:
   `decrypt -p KEY --sec=bunker://…` sets `--sec`.
+
+Scope. This is a contract for parsers of this kind, not a model of nak's parser
+(urfave/cli) or of every command-line parser. The prefix must be complete: every
+option in it has its value, so `--` is not taken as one. A shell keeps that true
+by quoting: an empty, unquoted `$k` in `-p $k --` is no argument at all, and `-p`
+takes the `--`; the client writes `-p "$k" --`.
 -/
 
 set_option autoImplicit false

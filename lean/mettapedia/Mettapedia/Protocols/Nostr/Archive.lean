@@ -44,8 +44,10 @@ Scope:
 - `watcher_control_sound` assumes what `no_impersonation` does: the event was
   accepted (signed, addressed and registered), signatures are collision-free,
   registry names are unique, and the parent's key is uncompromised. It also
-  assumes registry names are clean: nonempty, without blanks or colons. The type
-  it yields is the sealed type as the client normalizes it.
+  assumes registry names are clean: nonempty, without blanks or colons. The
+  client now reads by the entries whose names are plain and whose keys have one
+  entry, and `Names.watcher_control_sound_checked` drops that assumption. The
+  type it yields is the sealed type as the client normalizes it.
 - It is a model. It does not prove the shell script, the live relay, or behaviour
   under a malformed registry; the client's tests check the script against it.
 
@@ -292,10 +294,8 @@ def watcherType (t : Text) : Option Text := hdrBlock nameType t
 theorem newline_not_mem_address (k : PubKey) : '\n' ∉ address k := by
   simp [address, newline_not_mem_oneLine]
 
-theorem headersOf_ok {reg : Registry} {e : Event} {l : Letter}
-    (ho : CleanName (render reg e l).originator) : HeadersOk (headersOf reg e l) := by
-  have hnl : '\n' ∉ (render reg e l).originator.toList := fun hm =>
-    (ho.2 '\n' hm).1 (by decide)
+theorem headersOf_ok_of_line {reg : Registry} {e : Event} {l : Letter}
+    (hnl : '\n' ∉ (render reg e l).originator.toList) : HeadersOk (headersOf reg e l) := by
   intro h hh
   simp only [headersOf, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false] at hh
   rcases hh with (rfl | rfl) | ht
@@ -307,6 +307,10 @@ theorem headersOf_ok {reg : Registry} {e : Event} {l : Letter}
       simp [hl] at ht
       subst ht
       exact ⟨nameType_ok, newline_not_mem_oneLine _⟩
+
+theorem headersOf_ok {reg : Registry} {e : Event} {l : Letter}
+    (ho : CleanName (render reg e l).originator) : HeadersOk (headersOf reg e l) :=
+  headersOf_ok_of_line fun hm => (ho.2 '\n' hm).1 (by decide)
 
 /-- **The type is the sealed letter's.** Whatever the body and the subject say,
 the type the watcher reads from the file the client writes is the letter's own. -/
@@ -347,6 +351,21 @@ theorem watcherFrom_archive {reg : Registry} {e : Event} {l : Letter}
   rw [watcherFrom, archive, hdrBlock_file nameFrom_ok.1 (headersOf_ok ho), hfind]
   simp only [Option.map_some]
   rw [dropWhile_word ho.1 hws, takeWhile_word hsp]
+
+/-- The watcher reads the first word of `From:`, whatever follows it: a name that
+is not one word is read as its first. -/
+theorem watcherFrom_archive_word {reg : Registry} {e : Event} {l : Letter} {w tail : Text}
+    (hnl : '\n' ∉ (render reg e l).originator.toList)
+    (hv : (render reg e l).originator.toList ++ ' ' :: address e.pubkey = w ++ ' ' :: tail)
+    (hw : w ≠ []) (hws : ∀ c ∈ w, ¬ c.isWhitespace) :
+    watcherFrom (archive reg e l) = some w := by
+  have hsp : ∀ c ∈ w, c ≠ ' ' := fun c hc h => (hws c hc) (by rw [h]; decide)
+  have hfind : (headersOf reg e l).find? (fun h => h.1 == nameFrom) =
+      some (nameFrom, (render reg e l).originator.toList ++ ' ' :: address e.pubkey) := by
+    simp [headersOf]
+  rw [watcherFrom, archive, hdrBlock_file nameFrom_ok.1 (headersOf_ok_of_line hnl), hfind]
+  simp only [Option.map_some]
+  rw [hv, dropWhile_word hw hws, takeWhile_word hsp]
 
 /-- **Control mail from the parent is the parent's.** If the watcher reads a kept
 message as from the parent, whose key is uncompromised, and reads a type in it,
