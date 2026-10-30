@@ -34,7 +34,10 @@ Theorems:
   (`Options.Weakest.verified_weakest`).
 
 Encryption and parsing appear only as the reader's functions (`Unwrapping`). Their secrecy, and
-what the relay learns from sizes and times, are separate questions.
+what the relay learns from sizes and times, are separate questions. That a message was sealed for
+this reader, and not for another, rests on `decrypt me s.pubkey` opening only what was made for the
+reader and the seal's key, as NIP-44's conversation key does. A reader that treats rumors of
+different kinds differently, such as messages and receipts, checks `rumor.kind` itself.
 -/
 
 set_option autoImplicit false

@@ -40,8 +40,10 @@ Theorems:
   fixed rule, and meets `run_complete`'s hypotheses.
 
 Not proved here: termination (B1) with its round bound, and that each frame fits its byte limit,
-which needs the byte encoding. The responder's shortened id list is modelled by its bound
-(`idBound`), the largest that fits, not by the reference's byte count.
+which needs the byte encoding. Termination needs a lower bound on the frame limit, like the
+reference's 4096 bytes, so that an answer always writes at least one range before it cuts. The
+responder's shortened id list is modelled by its bound (`idBound`), the largest that fits, not by
+the reference's byte count.
 -/
 
 set_option autoImplicit false

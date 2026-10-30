@@ -28,6 +28,9 @@ The theorems:
     (`safe_release_le`). The mutant, which drops at the relay's acceptance, loses a message that a
     hiding relay accepted (`drop_at_ok_loses`).
 
+When receipts travel in NIP-17 gift wraps, `receipt_composed` applies to the inner seal, as
+`Nostr.GiftWrap.unwrap_authentic` gives it, and never to the wrap, whose key is nobody's.
+
 Not modelled: timing and liveness, the network between relays, and readers that read only some of
 the relays.
 -/
