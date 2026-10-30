@@ -22,6 +22,7 @@ import Mettapedia.Protocols.Injection.Options
 import Mettapedia.Protocols.Injection.Terminal
 import Mettapedia.Protocols.Injection.Patterns
 import Mettapedia.Protocols.Injection.Identity
+import Mettapedia.Protocols.Options.Weakest
 import Mettapedia.Protocols.Nostr.Bridge
 import Mettapedia.Protocols.Nostr.Sealed
 import Mettapedia.Protocols.Nostr.SymbolicAuthorship
