@@ -27,6 +27,7 @@ import Mettapedia.Protocols.Sync.Rbsr
 import Mettapedia.Protocols.Sync.Negentropy
 import Mettapedia.Protocols.Nostr.AuthorizedSync
 import Mettapedia.Protocols.Nostr.GiftWrap
+import Mettapedia.Protocols.Nostr.Delivery
 import Mettapedia.Protocols.Nostr.Bridge
 import Mettapedia.Protocols.Nostr.Sealed
 import Mettapedia.Protocols.Nostr.SymbolicAuthorship
