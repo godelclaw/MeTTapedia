@@ -111,4 +111,19 @@ theorem derives_theory_extension {source target : Theory} {allocated : Nat}
   exact derives_with_execution_theory_extension hosted extension (before := []) (after := [])
     (fun _ member => member) (static_derives_with_execution derived [])
 
+/-- A compatible proof calculus whose derivations survive admitted theory
+growth. This law is proved separately for each concrete calculus. -/
+class HostedCalculus (D : Theory → List ExecutionObservation → Term → Prop)
+    extends ExecutionCalculus D : Prop where
+  theory_extension {source target : Theory} {allocated : Nat}
+      {before after : List ExecutionObservation} {statement : Term} :
+    Hosted source allocated → TheoryExt source target →
+      (∀ observation ∈ before, observation ∈ after) →
+      D source before statement → D target after statement
+
+instance : HostedCalculus DerivesWithExecution where
+  toExecutionCalculus := inferInstance
+  theory_extension := fun hosted extension included derived =>
+    derives_with_execution_theory_extension hosted extension included derived
+
 end Mettapedia.Languages.VibeITP.Presentation

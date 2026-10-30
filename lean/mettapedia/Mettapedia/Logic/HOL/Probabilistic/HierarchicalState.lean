@@ -32,6 +32,8 @@ abbrev ParametrizedDistribution :=
 
 variable {Base : Type u} {Const : Ty Base → Type v}
 
+-- Preserve ModelSpace's separate model-carrier and index universes.
+set_option linter.checkUnivs false in
 /-- A hierarchical probabilistic HOL state consists of a base indexed model
 space together with a higher-order probability over measures on that space. -/
 structure HierarchicalState (Base : Type u) (Const : Ty Base → Type v) where

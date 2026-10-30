@@ -5,6 +5,7 @@ machine's (`OSLF/MeTTaIL/Complete`).
 Run from `lean/mettapedia`: `lake env lean ../../metta/gslt/tools/generate_complete_modules.lean`.
 -/
 import Mettapedia.OSLF.MeTTaIL.Complete.ClassesControls
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSharedOutputControls
 import Mettapedia.GSLT.LanguageDef.CollectionConsumers
 import Mettapedia.GSLT.LanguageDef.CollectionConsumerControls

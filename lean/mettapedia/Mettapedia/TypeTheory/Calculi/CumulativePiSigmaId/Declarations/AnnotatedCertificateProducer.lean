@@ -6,7 +6,9 @@ import Lean.Elab.Tactic
 # Producing finite annotated certificates from existing source proofs
 
 These elaborator commands are untrusted certificate producers. They inspect
-existing constructor proofs and emit finite rule data. The ordinary source
+existing constructor proofs and emit finite rule data. Structural proof recursion,
+projections and definitionally reflexive casts are unfolded before extraction.
+The ordinary source
 checker independently validates the result. Declared roots require explicit
 schema citations; this producer handles the surrounding derivations and
 context formation without inventing those citations.
@@ -32,21 +34,43 @@ private def codeFamily (profile : Expr) : MetaM Expr := do
   let provider ← mkAppM ``decoder #[profile]
   mkAppM ``Checking.RootDecoder.Code #[provider]
 
-private def constructor (fuel : Nat) (proof : Expr) (expected : Name) : MetaM (ConstructorVal × Array Expr) := do
+private def expose (fuel : Nat) (proof : Expr) : MetaM Expr := do
   match fuel with
   | 0 => throwError "Source proof unfolding exhausted its supplied traversal fuel"
   | fuel + 1 =>
       let value ← withTransparency .all (whnf proof)
+      if let .proj structureName index parent := value then
+        let exposed ← expose fuel parent
+        return ← expose fuel (.proj structureName index exposed)
       let .const name levels := value.getAppFn | throwError "Expected a source constructor; got {value}"
       let info ← getConstInfo name
-      if let .ctorInfo ctor := info then
-        unless ctor.induct == expected do
-          throwError "Expected a constructor of {expected}; got {name}"
-        return (ctor, value.getAppArgs)
+      if let .ctorInfo _ := info then
+        return value
+      else if let .recInfo recursor := info then
+        let arguments := value.getAppArgs
+        let major := recursor.getMajorIdx
+        unless major < arguments.size do
+          throwError "Source recursor {name} has no supplied major premise"
+        let premiseType ← withTransparency .all (whnf (← inferType arguments[major]!))
+        if premiseType.isAppOfArity ``Eq 3 then
+          let sides := premiseType.getAppArgs
+          if ← withTransparency .all (isDefEq sides[1]! sides[2]!) then
+            let reflexive ← mkEqRefl sides[1]!
+            return ← expose fuel (mkAppN value.getAppFn (arguments.set! major reflexive))
+        let premise ← expose fuel arguments[major]!
+        expose fuel (mkAppN value.getAppFn (arguments.set! major premise))
       else if let some body := info.value? (allowOpaque := true) then
-        constructor fuel (mkAppN (body.instantiateLevelParams info.levelParams levels) value.getAppArgs) expected
+        expose fuel (mkAppN (body.instantiateLevelParams info.levelParams levels) value.getAppArgs)
       else
-        throwError "Cannot expose source constructor through {name}"
+        throwError "Cannot expose source constructor through {name}: {← inferType value}"
+
+private def constructor (fuel : Nat) (proof : Expr) (expected : Name) : MetaM (ConstructorVal × Array Expr) := do
+  let value ← expose fuel proof
+  let .const name _ := value.getAppFn | throwError "Expected a source constructor; got {value}"
+  let .ctorInfo ctor ← getConstInfo name | throwError "Expected a source constructor; got {name}"
+  unless ctor.induct == expected do
+    throwError "Expected a constructor of {expected}; got {name}"
+  return (ctor, value.getAppArgs)
 
 private def derivation (fuel : Nat) (profile : Expr) (proof : Expr) : MetaM Expr := do
   match fuel with

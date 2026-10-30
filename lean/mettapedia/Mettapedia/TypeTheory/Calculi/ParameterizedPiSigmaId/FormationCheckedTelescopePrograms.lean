@@ -214,16 +214,44 @@ open StructuralConversionCode
 
 /-- Emit the existing structural conversion code for applying one closed
 telescope. Every step is beta, possibly under the remaining applications.
-No authored root code or head equation is available. -/
-def applicationCode : {n : Nat} → (context : Ctx Head n) → Sub Head n m →
-    Tm Head n → Code Head (fun _ => Empty) m
+No authored root code or head equation is used, so the code may be
+embedded in any root-code family. -/
+def applicationCodeIn {RootCode : Nat → Type} : {n : Nat} → (context : Ctx Head n) → Sub Head n m →
+    Tm Head n → Code Head RootCode m
   | _, .nil, _, term => .refl (liftClosed term)
   | _, .snoc prior _, sigma, term =>
       .trans
         (Code.mapContext (fun function => .app function (sigma 0))
           (fun step => .congAppFun step (sigma 0))
-          (applicationCode prior (fun index => sigma index.succ) (.lam term)))
+          (applicationCodeIn prior (fun index => sigma index.succ) (.lam term)))
         (.single (.betaPi (subst (liftSub (fun index => sigma index.succ)) term) (sigma 0)))
+
+theorem applicationCodeIn_checked [DecidableEq Head] {RootCode : Nat → Type}
+    (headEq : Head → Head → Prop) [DecidableRel headEq]
+    (decode : {scope : Nat} → RootCode scope → Option (Tm Head scope × Tm Head scope))
+    (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
+    (applicationCodeIn context sigma term).check headEq decode
+      (applyClosed context sigma (liftClosed (closeTerm context term)))
+      (subst sigma term) = true := by
+  induction context with
+  | nil =>
+      simpa only [applicationCodeIn, closeTerm, applyClosed, subst_empty] using
+        Code.check_refl headEq decode (liftClosed term : Tm Head m)
+  | snoc prior domain ih =>
+      have earlier := ih (sigma := fun index => sigma index.succ) (term := .lam term)
+      have underApplication := Code.check_mapContext headEq decode
+        (fun function => .app function (sigma 0)) (fun step => .congAppFun step (sigma 0))
+        (fun _ => rfl) earlier
+      have beta : Code.check headEq decode
+          (.single (.betaPi (subst (liftSub (fun index => sigma index.succ)) term) (sigma 0)))
+          (.app (.lam (subst (liftSub (fun index => sigma index.succ)) term)) (sigma 0))
+          (subst sigma term) = true := by
+        simp only [Code.check, Code.decode, StepCode.decode, subst_open, decide_true]
+      simpa only [applicationCodeIn, closeTerm, applyClosed, subst] using
+        Code.check_trans headEq decode underApplication beta
+
+def applicationCode (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
+    Code Head (fun _ => Empty) m := applicationCodeIn context sigma term
 
 abbrev noRoot : {n : Nat} → Empty → Option (Tm Head n × Tm Head n) :=
   (RootDecoder.ofEmpty (RootComputation.empty : RootComputation Head) rfl).decode
@@ -232,34 +260,56 @@ theorem applicationCode_checked [DecidableEq Head]
     (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
     (applicationCode context sigma term).check (fun _ _ => False) noRoot
       (applyClosed context sigma (liftClosed (closeTerm context term)))
-      (subst sigma term) = true := by
-  induction context with
-  | nil =>
-      simpa only [applicationCode, closeTerm, applyClosed, subst_empty] using
-        Code.check_refl (fun _ _ : Head => False) noRoot (liftClosed term : Tm Head m)
-  | snoc prior domain ih =>
-      have earlier := ih (sigma := fun index => sigma index.succ) (term := .lam term)
-      have underApplication := Code.check_mapContext (fun _ _ : Head => False) noRoot
-        (fun function => .app function (sigma 0)) (fun step => .congAppFun step (sigma 0))
-        (fun _ => rfl) earlier
-      have beta : Code.check (fun _ _ : Head => False) noRoot
-          (.single (.betaPi (subst (liftSub (fun index => sigma index.succ)) term) (sigma 0)))
-          (.app (.lam (subst (liftSub (fun index => sigma index.succ)) term)) (sigma 0))
-          (subst sigma term) = true := by
-        simp only [Code.check, Code.decode, StepCode.decode, subst_open, decide_true]
-      simpa only [applicationCode, closeTerm, applyClosed, subst] using
-        Code.check_trans (fun _ _ : Head => False) noRoot underApplication beta
+      (subst sigma term) = true :=
+  applicationCodeIn_checked (fun _ _ => False) noRoot context sigma term
 
 /-- This counts selected beta occurrences. It does not count term copying,
 decoder comparisons, or the machine instructions implementing those tasks. -/
-theorem applicationCode_stepCount
+theorem applicationCodeIn_stepCount {RootCode : Nat → Type}
     (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
-    (applicationCode context sigma term).stepCount = n := by
+    (applicationCodeIn (RootCode := RootCode) context sigma term).stepCount = n := by
   induction context with
   | nil => rfl
   | snoc prior domain ih =>
-      simp only [applicationCode, Code.stepCount, Code.stepCount_mapContext, ih]
+      simp only [applicationCodeIn, Code.stepCount, Code.stepCount_mapContext, ih]
 
+theorem applicationCode_stepCount
+    (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
+    (applicationCode context sigma term).stepCount = n :=
+  applicationCodeIn_stepCount context sigma term
+
+/-- Lift a supplied function conversion under the actual argument spine.
+Argument order is the telescope order, including repeated arguments. -/
+def applyFunctionCode {RootCode : Nat → Type} :
+    {n : Nat} → Ctx Head n → Sub Head n m → Code Head RootCode m → Code Head RootCode m
+  | _, .nil, _, code => code
+  | _, .snoc prior _, sigma, code =>
+      Code.mapContext (fun function => .app function (sigma 0))
+        (fun step => .congAppFun step (sigma 0))
+        (applyFunctionCode prior (fun index => sigma index.succ) code)
+
+theorem applyFunctionCode_checked [DecidableEq Head] {RootCode : Nat → Type}
+    (headEq : Head → Head → Prop) [DecidableRel headEq]
+    (decode : {scope : Nat} → RootCode scope → Option (Tm Head scope × Tm Head scope))
+    (context : Ctx Head n) (sigma : Sub Head n m) (code : Code Head RootCode m)
+    {first second : Tm Head m} (accepted : code.check headEq decode first second = true) :
+    (applyFunctionCode context sigma code).check headEq decode
+      (applyClosed context sigma first) (applyClosed context sigma second) = true := by
+  induction context with
+  | nil => exact accepted
+  | snoc prior domain ih =>
+      exact Code.check_mapContext headEq decode
+        (fun function => .app function (sigma 0)) (fun step => .congAppFun step (sigma 0))
+        (fun _ => rfl) (ih (fun index => sigma index.succ))
+
+theorem applyFunctionCode_stepCount {RootCode : Nat → Type}
+    (context : Ctx Head n) (sigma : Sub Head n m) (code : Code Head RootCode m) :
+    (applyFunctionCode context sigma code).stepCount = code.stepCount := by
+  induction context with
+  | nil => rfl
+  | snoc prior domain ih => simp only [applyFunctionCode, Code.stepCount_mapContext, ih]
+
+#print axioms applicationCodeIn_checked
 #print axioms applicationCode_checked
 #print axioms applicationCode_stepCount
 

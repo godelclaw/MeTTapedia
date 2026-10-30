@@ -25,9 +25,18 @@ So a stratum boundary is needed exactly at a non-monotone edge: a predicate quer
 
 ## Fusing two rule instances
 
-Two commits in sequence, where the second reads and consumes only what the first produced together with
-the store, are one commit of a fused span (`Span.fuse`): enabled exactly when the sequence is
-(`Span.fuse_enables_iff`) and reaching the same store (`Span.fuse_fire`). What the second consumes of the
+`Span.composeAlong` retains a specified counted overlap between the first output
+and the second consumption. Its enabling theorem characterizes the remaining
+input supplied by the original context. Each enabled overlap executes the two
+spans in sequence, and every enabled sequence has such an overlap.
+
+The maximal counted overlap supplies `Span.compose`, with identity and literal
+associativity laws. These laws observe bags. They do not discard or enumerate
+the finer occurrence-map witnesses of a categorical rule composition.
+
+When the second consumes only the first production, this construction is the
+previous `Span.fuse` (`Span.compose_eq_fuse`): enabled exactly when the sequence
+is (`Span.fuse_enables_iff`) and reaching the same store (`Span.fuse_fire`). What the second consumes of the
 first's production never reaches the store: with a full hand-off the fused span writes only the second's
 production (`Span.fuse_produce_of_handoff`). This is deforestation for transforms.
 
@@ -175,11 +184,15 @@ structure Span (R : Type u) where
   consume : Multiset R
   read : Multiset R
   produce : Multiset R
+  deriving DecidableEq
 
 namespace Span
 
 /-- Enabled: consumption and reads present side by side. -/
 def Enables (s : Span R) (M : Multiset R) : Prop := s.consume + s.read ≤ M
+
+instance (s : Span R) (M : Multiset R) : Decidable (s.Enables M) :=
+  inferInstanceAs (Decidable (s.consume + s.read ≤ M))
 
 /-- Commit: remove the consumption, add the production. -/
 def fire (s : Span R) (M : Multiset R) : Multiset R := M - s.consume + s.produce
@@ -231,6 +244,190 @@ theorem fuse_produce_of_handoff (s t : Span R) (handoff : t.consume = s.produce)
     (s.fuse t).produce = t.produce := by
   ext a
   simp [fuse, handoff, Multiset.count_sub]
+
+/-- A specified bag of the first production consumed by the second rule.
+This retains a choice of overlap; it does not identify different occurrence maps. -/
+def IsOverlap (s t : Span R) (overlap : Multiset R) : Prop :=
+  overlap ≤ s.produce ∧ overlap ≤ t.consume
+
+instance (s t : Span R) (overlap : Multiset R) : Decidable (s.IsOverlap t overlap) :=
+  inferInstanceAs (Decidable (overlap ≤ s.produce ∧ overlap ≤ t.consume))
+
+/-- Composition at a specified overlap. The second rule consumes its remaining
+input from the original context. Either rule may read those occurrences before
+they are consumed; the second may read the unconsumed first production. -/
+def composeAlong (s t : Span R) (overlap : Multiset R) : Span R where
+  consume := s.consume + (t.consume - overlap)
+  read := (s.read - (t.consume - overlap)) ∪ (t.read - (s.produce - overlap))
+  produce := (s.produce - overlap) + t.produce
+
+/-- The exact initial resources needed by the specified allocation of the overlap. -/
+theorem composeAlong_enables_iff (s t : Span R) (overlap M : Multiset R) :
+    (s.composeAlong t overlap).Enables M ↔
+      s.Enables M ∧
+        t.consume - overlap + (t.read - (s.produce - overlap)) ≤ M - s.consume := by
+  unfold Enables composeAlong
+  simp only
+  rw [Multiset.le_iff_count, Multiset.le_iff_count, Multiset.le_iff_count]
+  constructor
+  · intro h
+    constructor <;> intro x
+    all_goals
+      have := h x
+      simp only [Multiset.count_add, Multiset.count_union, Multiset.count_sub] at *
+      omega
+  · rintro ⟨h, k⟩ x
+    have := h x
+    have := k x
+    simp only [Multiset.count_add, Multiset.count_union, Multiset.count_sub] at *
+    omega
+
+/-- Each admitted overlap supplies the original two enabled applications. -/
+theorem composeAlong_enabled (s t : Span R) (overlap M : Multiset R)
+    (valid : s.IsOverlap t overlap) (enabled : (s.composeAlong t overlap).Enables M) :
+    s.Enables M ∧ t.Enables (s.fire M) := by
+  have conditions := (composeAlong_enables_iff s t overlap M).mp enabled
+  refine ⟨conditions.1, ?_⟩
+  rw [Enables, Multiset.le_iff_count]
+  intro x
+  have := Multiset.le_iff_count.mp conditions.2 x
+  have := Multiset.le_iff_count.mp valid.1 x
+  have := Multiset.le_iff_count.mp valid.2 x
+  simp only [fire, Multiset.count_add, Multiset.count_sub] at *
+  omega
+
+/-- Composition at an enabled overlap has exactly the sequential final bag. -/
+theorem composeAlong_fire (s t : Span R) (overlap M : Multiset R)
+    (valid : s.IsOverlap t overlap) (enabled : (s.composeAlong t overlap).Enables M) :
+    (s.composeAlong t overlap).fire M = t.fire (s.fire M) := by
+  ext x
+  have := Multiset.le_iff_count.mp valid.1 x
+  have := Multiset.le_iff_count.mp valid.2 x
+  have := Multiset.le_iff_count.mp enabled x
+  simp only [Enables, composeAlong, fire, Multiset.count_add, Multiset.count_sub,
+    Multiset.count_union] at *
+  omega
+
+/-- The maximal counted overlap is a canonical witness of existence, not an
+enumeration of the occurrence-sensitive overlaps of two rules. -/
+def compose (s t : Span R) : Span R := s.composeAlong t (s.produce ∩ t.consume)
+
+theorem maximal_isOverlap (s t : Span R) : s.IsOverlap t (s.produce ∩ t.consume) :=
+  ⟨Multiset.inter_le_left, Multiset.inter_le_right⟩
+
+/-- Counted ground spans are closed under sequential composition. -/
+theorem compose_enables_iff (s t : Span R) (M : Multiset R) :
+    (s.compose t).Enables M ↔ s.Enables M ∧ t.Enables (s.fire M) := by
+  unfold compose
+  rw [composeAlong_enables_iff]
+  constructor
+  · intro h
+    exact composeAlong_enabled s t _ M (maximal_isOverlap s t)
+      ((composeAlong_enables_iff s t _ M).mpr h)
+  · rintro ⟨h, k⟩
+    refine ⟨h, ?_⟩
+    rw [Multiset.le_iff_count]
+    intro x
+    have := Multiset.le_iff_count.mp h x
+    have := Multiset.le_iff_count.mp k x
+    simp only [Enables, fire, Multiset.count_add, Multiset.count_sub,
+      Multiset.count_inter] at *
+    omega
+
+/-- Sequential execution reflects to an explicitly retained overlap. -/
+theorem sequential_iff_exists_overlap (s t : Span R) (M : Multiset R) :
+    (s.Enables M ∧ t.Enables (s.fire M)) ↔
+      ∃ overlap, s.IsOverlap t overlap ∧ (s.composeAlong t overlap).Enables M := by
+  constructor
+  · intro h
+    exact ⟨s.produce ∩ t.consume, maximal_isOverlap s t,
+      (compose_enables_iff s t M).mpr h⟩
+  · rintro ⟨overlap, valid, enabled⟩
+    exact composeAlong_enabled s t overlap M valid enabled
+
+theorem compose_fire (s t : Span R) (M : Multiset R)
+    (enabled : (s.compose t).Enables M) :
+    (s.compose t).fire M = t.fire (s.fire M) :=
+  composeAlong_fire s t _ M (maximal_isOverlap s t) enabled
+
+/-- The previously available full-consumption handoff is the special case in
+which the maximal overlap is all of the second consumption. -/
+theorem compose_eq_fuse (s t : Span R) (handoff : t.consume ≤ s.produce) :
+    s.compose t = s.fuse t := by
+  unfold compose composeAlong fuse
+  congr 1 <;> ext x
+  all_goals
+    have := Multiset.le_iff_count.mp handoff x
+    simp only [Multiset.count_add, Multiset.count_sub, Multiset.count_union,
+      Multiset.count_inter]
+    omega
+
+/-- The empty resource span. -/
+def unit : Span R := ⟨0, 0, 0⟩
+
+theorem unit_compose (s : Span R) : unit.compose s = s := by
+  cases s with
+  | mk consumed read produced =>
+    unfold compose composeAlong unit
+    congr 1 <;> ext x
+    all_goals
+      simp only [Multiset.count_add, Multiset.count_sub, Multiset.count_union,
+        Multiset.count_inter, Multiset.count_zero]
+      omega
+
+theorem compose_unit (s : Span R) : s.compose unit = s := by
+  cases s with
+  | mk consumed read produced =>
+    unfold compose composeAlong unit
+    congr 1 <;> ext x
+    all_goals
+      simp only [Multiset.count_add, Multiset.count_sub, Multiset.count_union,
+        Multiset.count_inter, Multiset.count_zero]
+      omega
+
+/-- Consumption, production, and the enabled stores determine a counted span. -/
+theorem ext_of_enables {s t : Span R} (consumed : s.consume = t.consume)
+    (produced : s.produce = t.produce)
+    (enabled : ∀ M, s.Enables M ↔ t.Enables M) : s = t := by
+  have one := (enabled (s.consume + s.read)).mp (le_refl _)
+  have two := (enabled (t.consume + t.read)).mpr (le_refl _)
+  have read : s.read = t.read := by
+    ext x
+    have h := Multiset.le_iff_count.mp one x
+    have k := Multiset.le_iff_count.mp two x
+    simp only [consumed, Multiset.count_add] at h k
+    omega
+  cases s
+  cases t
+  cases consumed
+  cases produced
+  cases read
+  rfl
+
+/-- The canonical counted composite is associative as a span, including its
+initial read requirements. Occurrence-map multiplicity is a finer observation. -/
+theorem compose_assoc (s t r : Span R) : (s.compose t).compose r = s.compose (t.compose r) := by
+  apply ext_of_enables
+  · ext x
+    simp only [compose, composeAlong, Multiset.count_add, Multiset.count_sub,
+      Multiset.count_inter]
+    omega
+  · ext x
+    simp only [compose, composeAlong, Multiset.count_add, Multiset.count_sub,
+      Multiset.count_inter]
+    omega
+  · intro M
+    rw [compose_enables_iff (s.compose t) r M, compose_enables_iff s (t.compose r) M,
+      compose_enables_iff t r (s.fire M)]
+    constructor
+    · rintro ⟨hst, hr⟩
+      have st := (compose_enables_iff s t M).mp hst
+      refine ⟨st.1, st.2, ?_⟩
+      rwa [← compose_fire s t M hst]
+    · rintro ⟨hs, ht, hr⟩
+      have hst := (compose_enables_iff s t M).mpr ⟨hs, ht⟩
+      refine ⟨hst, ?_⟩
+      rwa [compose_fire s t M hst]
 
 end Span
 

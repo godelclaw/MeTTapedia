@@ -16,6 +16,8 @@ Neither numeric ids nor decoded records confer runtime handle authority.
 
 namespace Mettapedia.Algorithms.Compression.CompactDag
 
+universe u v
+
 open FramedTree KolmogorovComplexity
 
 inductive Record where
@@ -28,7 +30,7 @@ structure Forest where
   records : List Record
   deriving DecidableEq, Repr
 
-def gather {α : Type} (values : List α) : List Nat → Option (List α)
+def gather {α : Type u} (values : List α) : List Nat → Option (List α)
   | [] => some []
   | index :: rest => do
       let value ← values[index]?
@@ -39,12 +41,12 @@ def resolve (values : List Tree) : Record → Option Tree
   | .leaf bytes => some (.leaf bytes)
   | .node tag children => (gather values children).map (.node tag)
 
-def interpret {α : Type} (leaf : BinString → α) (node : BinString → List α → α)
+def interpret {α : Type u} (leaf : BinString → α) (node : BinString → List α → α)
     (values : List α) : Record → Option α
   | .leaf bytes => some (leaf bytes)
   | .node tag children => (gather values children).map (node tag)
 
-def fold {α : Type} (leaf : BinString → α) (node : BinString → List α → α) : Tree → α
+def fold {α : Type u} (leaf : BinString → α) (node : BinString → List α → α) : Tree → α
   | .leaf bytes => leaf bytes
   | .node tag children => node tag (children.map (fold leaf node))
 
@@ -54,7 +56,7 @@ def unfoldRecords : List Record → List Tree → Option (List Tree)
       let value ← resolve values record
       unfoldRecords rest (values ++ [value])
 
-def foldRecords {α : Type} (leaf : BinString → α) (node : BinString → List α → α) :
+def foldRecords {α : Type u} (leaf : BinString → α) (node : BinString → List α → α) :
     List Record → List α → Option (List α)
   | [], values => some values
   | record :: rest, values => do
@@ -65,12 +67,12 @@ def unfold (forest : Forest) : Option (List Tree) := do
   let values ← unfoldRecords forest.records []
   gather values forest.roots
 
-def evaluate {α : Type} (leaf : BinString → α) (node : BinString → List α → α)
+def evaluate {α : Type u} (leaf : BinString → α) (node : BinString → List α → α)
     (forest : Forest) : Option (List α) := do
   let values ← foldRecords leaf node forest.records []
   gather values forest.roots
 
-theorem gather_map {α β : Type} (f : α → β) (values : List α) (indices : List Nat) :
+theorem gather_map {α : Type u} {β : Type v} (f : α → β) (values : List α) (indices : List Nat) :
     gather (values.map f) indices = (gather values indices).map (List.map f) := by
   induction indices with
   | nil => rfl
@@ -78,7 +80,7 @@ theorem gather_map {α β : Type} (f : α → β) (values : List α) (indices : 
       simp only [gather, List.getElem?_map, ih]
       cases found : values[index]? <;> cases tail : gather values rest <;> rfl
 
-theorem interpret_resolve {α : Type} (leaf : BinString → α) (node : BinString → List α → α)
+theorem interpret_resolve {α : Type u} (leaf : BinString → α) (node : BinString → List α → α)
     (values : List Tree) (record : Record) :
     interpret leaf node (values.map (fold leaf node)) record =
       (resolve values record).map (fold leaf node) := by
@@ -89,7 +91,7 @@ theorem interpret_resolve {α : Type} (leaf : BinString → α) (node : BinStrin
 
 /-- The memoized record interpreter computes the fold of every actual
 unfolded record, including records sharing children or not selected as roots. -/
-theorem foldRecords_unfoldRecords {α : Type}
+theorem foldRecords_unfoldRecords {α : Type u}
     (leaf : BinString → α) (node : BinString → List α → α)
     (records : List Record) (values : List Tree) :
     foldRecords leaf node records (values.map (fold leaf node)) =
@@ -106,7 +108,7 @@ theorem foldRecords_unfoldRecords {α : Type}
 
 /-- Shared traversal agrees with the ordered forest's unfolded interpretation;
 root multiplicity is preserved, not silently changed into set membership. -/
-theorem evaluate_unfold {α : Type} (leaf : BinString → α) (node : BinString → List α → α)
+theorem evaluate_unfold {α : Type u} (leaf : BinString → α) (node : BinString → List α → α)
     (forest : Forest) :
     evaluate leaf node forest = (unfold forest).map (List.map (fold leaf node)) := by
   unfold evaluate unfold
@@ -130,7 +132,7 @@ theorem unfoldRecords_length (records : List Record) (before after : List Tree)
           simp only [List.length_append, List.length_cons, List.length_nil] at next ⊢
           omega
 
-theorem gather_length {α : Type} (values result : List α) (indices : List Nat)
+theorem gather_length {α : Type u} (values result : List α) (indices : List Nat)
     (found : gather values indices = some result) : result.length = indices.length := by
   induction indices generalizing result with
   | nil => cases Option.some.inj found; rfl

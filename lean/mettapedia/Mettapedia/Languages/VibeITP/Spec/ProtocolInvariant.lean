@@ -1,5 +1,5 @@
 import Mettapedia.Languages.VibeITP.Spec.ProtocolExecution
-import Mettapedia.Languages.VibeITP.Presentation.Theory
+import Mettapedia.Languages.VibeITP.Presentation.SignatureExtensionDerivation
 
 /-! Initial and observation-bearing logical invariants of the kernel protocol. -/
 
@@ -10,13 +10,13 @@ namespace Mettapedia.Languages.VibeITP.Spec.ProtocolInvariant
 open ProtocolExecution
 open Mettapedia.Languages.VibeITP.Presentation
 
-def TheoremsDerived (state : ObservedState) : Prop :=
+def TheoremsDerivedFor (D : Theory → List ExecutionObservation → Term → Prop) (state : ObservedState) : Prop :=
   ∀ slot statement, state.kernel.theorems slot = some statement →
-    DerivesWithExecution state.kernel.theory state.observations statement
+    D state.kernel.theory state.observations statement
 
-def SatisfiedDerived (state : ObservedState) : Prop :=
+def SatisfiedDerivedFor (D : Theory → List ExecutionObservation → Term → Prop) (state : ObservedState) : Prop :=
   ∀ statement ∈ state.kernel.satisfied,
-    DerivesWithExecution state.kernel.theory state.observations statement
+    D state.kernel.theory state.observations statement
 
 def TermsWellFormed (state : State) : Prop :=
   ∀ slot term, state.terms slot = some term → WellFormed state.sig term = true
@@ -25,12 +25,17 @@ def SymbolsAllocated (state : State) : Prop :=
   ∀ slot symbol, state.symbols slot = some (.sym symbol) →
     (state.sig symbol).isSome = true
 
-structure LogicalInvariant (state : ObservedState) : Prop where
+structure LogicalInvariantFor (D : Theory → List ExecutionObservation → Term → Prop) (state : ObservedState) : Prop where
   theory : Hosted state.kernel.theory state.kernel.nextFresh
   symbols : SymbolsAllocated state.kernel
   terms : TermsWellFormed state.kernel
-  theorems : TheoremsDerived state
-  satisfied : SatisfiedDerived state
+  theorems : TheoremsDerivedFor D state
+  satisfied : SatisfiedDerivedFor D state
+
+/-- The existing calculus remains the v1 specialization. -/
+abbrev TheoremsDerived := TheoremsDerivedFor DerivesWithExecution
+abbrev SatisfiedDerived := SatisfiedDerivedFor DerivesWithExecution
+abbrev LogicalInvariant := LogicalInvariantFor DerivesWithExecution
 
 def RealizedLedger (contract : ExecutionContract) (state : ObservedState) : Prop :=
   ∀ observation ∈ state.observations, observation.realized contract
@@ -75,7 +80,8 @@ theorem initial_symbols_allocated : SymbolsAllocated initialState := by
   obtain ⟨b, rfl⟩ := builtin
   rfl
 
-theorem initial_invariant : LogicalInvariant initial := by
+theorem initial_invariantFor (D : Theory → List ExecutionObservation → Term → Prop) :
+    LogicalInvariantFor D initial := by
   constructor
   · exact initial_hosted
   · exact initial_symbols_allocated
@@ -86,27 +92,31 @@ theorem initial_invariant : LogicalInvariant initial := by
   · intro statement member
     simp [initial, initialState] at member
 
+theorem initial_invariant : LogicalInvariant initial := initial_invariantFor _
+
 theorem initial_realized (contract : ExecutionContract) : RealizedLedger contract initial := by
   intro observation member
   simp [initial] at member
 
+variable {D : Theory → List ExecutionObservation → Term → Prop} [ExecutionCalculus D]
+
 theorem jit_theorems_preserved {before after : ObservedState}
     {source theoremDestination termDestination : Nat} {observation : ExecutionObservation}
-    (stored : TheoremsDerived before)
+    (stored : TheoremsDerivedFor D before)
     (accepted : jit before source theoremDestination termDestination observation = .ok after) :
-    TheoremsDerived after := jit_preserves_derived_theorems stored accepted
+    TheoremsDerivedFor D after := jit_preserves_derived_theorems stored accepted
 
 theorem jit_satisfied_preserved {before after : ObservedState}
     {source theoremDestination termDestination : Nat} {observation : ExecutionObservation}
-    (satisfied : SatisfiedDerived before)
+    (satisfied : SatisfiedDerivedFor D before)
     (accepted : jit before source theoremDestination termDestination observation = .ok after) :
-    SatisfiedDerived after := by
+    SatisfiedDerivedFor D after := by
   obtain ⟨_, _, _, _, _, ledger⟩ := jit_success_shape accepted
   intro statement member
   have previous : statement ∈ before.kernel.satisfied := by
     rwa [(jit_preserves_challenges accepted).2.1] at member
   rw [jit_preserves_theory accepted, ledger]
-  exact derives_with_execution_observation_extension
+  exact ExecutionCalculus.observation_extension
     (fun _ h => List.mem_append_left _ h) (satisfied _ previous)
 
 theorem jit_kernel_shape {before after : ObservedState}
@@ -120,9 +130,9 @@ theorem jit_kernel_shape {before after : ObservedState}
 
 theorem jit_invariant_preserved {before after : ObservedState}
     {source theoremDestination termDestination : Nat} {observation : ExecutionObservation}
-    (invariant : LogicalInvariant before)
+    (invariant : LogicalInvariantFor D before)
     (accepted : jit before source theoremDestination termDestination observation = .ok after) :
-    LogicalInvariant after := by
+    LogicalInvariantFor D after := by
   have shape := jit_kernel_shape accepted
   constructor
   · simpa [shape, State.theory, State.sig] using invariant.theory

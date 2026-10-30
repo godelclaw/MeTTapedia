@@ -5,8 +5,9 @@ import Mettapedia.Machines.Kernel.Delegation
 
 A small society of agents shares a resource (a mailbox) by passing capabilities to it. This is the
 `Delegation` core read as a coordination layer rather than as a kernel: the subjects are agents, the
-objects are the tools, mailboxes and stores they share, a grant capability is the right to hand a
-resource on, and revocation withdraws a resource along the chain it was handed down.
+objects are the tools, mailboxes and stores they share, the grant flag permits passing grant authority
+onward, and revocation withdraws a resource along the chain it was handed down. An allowed subject edge
+can still authorize a use-only copy after the resource's grant flag has been dropped.
 
 The society: the `lead` holds the mailbox with the right to pass it on and may delegate to `helperA`,
 who in turn may delegate to `helperB`. No one may delegate to `stranger`.
@@ -91,9 +92,10 @@ theorem helperB_loses_mailbox_after_revoke :
     ¬ Holds (step (run genesis delegateChain) (.revoke lead 0)) helperB (.obj mailbox) true := by
   unfold Holds; decide
 
-/-! ## A resource without grant cannot be passed on -/
+/-! ## Use-only copying cannot restore grant authority -/
 
-/-- The `lead` hands `helperA` the mailbox *without* the grant right, then `helperA` tries to pass it on. -/
+/-- The `lead` hands `helperA` a use-only mailbox capability, then `helperA` attempts to restore
+its grant flag while passing it to `helperB`. -/
 def noGrantChain : List (Op Agent Resource) :=
   [ .pass lead (.obj mailbox) false helperA,
     .pass helperA (.obj mailbox) true helperB ]

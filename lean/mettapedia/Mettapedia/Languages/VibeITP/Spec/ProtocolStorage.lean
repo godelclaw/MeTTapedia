@@ -6,6 +6,9 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.VibeITP.Spec.ProtocolStorage
 
+variable {D : Theory → List ExecutionObservation → Term → Prop}
+  [Mettapedia.Languages.VibeITP.Presentation.HostedCalculus D]
+
 open ProtocolExecution ProtocolInvariant ProtocolAdmission
 open Mettapedia.Languages.VibeITP.Presentation
 
@@ -17,9 +20,9 @@ theorem sigExt_isSome {source target : Sig} (extension : SigExt source target)
   | some info => simp [extension symbol info prior]
 
 theorem allocate_invariant (before : ObservedState) (info : SymInfo)
-    (invariant : LogicalInvariant before)
+    (invariant : LogicalInvariantFor D before)
     (newBinders : info.kind = .fvar → ∀ binder ∈ info.binders, binder = 0) :
-    LogicalInvariant ⟨(before.kernel.allocate info).2, before.observations⟩ := by
+    LogicalInvariantFor D ⟨(before.kernel.allocate info).2, before.observations⟩ := by
   have extension := allocate_sig_extension before.kernel info invariant.theory
   have theoryExtension := allocate_theory_extension before.kernel info invariant.theory
   constructor
@@ -29,19 +32,19 @@ theorem allocate_invariant (before : ObservedState) (info : SymInfo)
   · intro slot term found
     exact wellFormed_true_sigExt extension (invariant.terms slot term found)
   · intro slot statement found
-    exact derives_with_execution_theory_extension invariant.theory theoryExtension
+    exact HostedCalculus.theory_extension invariant.theory theoryExtension
       (fun _ member => member) (invariant.theorems slot statement found)
   · intro statement member
-    exact derives_with_execution_theory_extension invariant.theory theoryExtension
+    exact HostedCalculus.theory_extension invariant.theory theoryExtension
       (fun _ member => member) (invariant.satisfied statement member)
 
 theorem replace_admissions_invariant (before : ObservedState)
-    (axioms : List Term) (definitions : List Definition) (invariant : LogicalInvariant before)
+    (axioms : List Term) (definitions : List Definition) (invariant : LogicalInvariantFor D before)
     (hosted : Hosted ({ before.kernel with axioms := axioms, definitions := definitions } : State).theory
       before.kernel.nextFresh)
     (axiomsIncluded : ∀ statement ∈ before.kernel.axioms, statement ∈ axioms)
     (definitionsIncluded : ∀ definition ∈ before.kernel.definitions, definition ∈ definitions) :
-    LogicalInvariant ⟨{ before.kernel with axioms := axioms, definitions := definitions },
+    LogicalInvariantFor D ⟨{ before.kernel with axioms := axioms, definitions := definitions },
       before.observations⟩ := by
   have extension : TheoryExt before.kernel.theory
       ({ before.kernel with axioms := axioms, definitions := definitions } : State).theory :=
@@ -51,24 +54,25 @@ theorem replace_admissions_invariant (before : ObservedState)
   · exact invariant.symbols
   · exact invariant.terms
   · intro slot statement found
-    exact derives_with_execution_theory_extension invariant.theory extension
+    exact HostedCalculus.theory_extension invariant.theory extension
       (fun _ member => member) (invariant.theorems slot statement found)
   · intro statement member
-    exact derives_with_execution_theory_extension invariant.theory extension
+    exact HostedCalculus.theory_extension invariant.theory extension
       (fun _ member => member) (invariant.satisfied statement member)
 
 theorem admit_axiom_invariant (before : ObservedState) (statement : Term)
-    (invariant : LogicalInvariant before) (formed : WellFormed before.kernel.sig statement = true)
+    (invariant : LogicalInvariantFor D before) (formed : WellFormed before.kernel.sig statement = true)
     (closed : depth before.kernel.sig statement = 0) :
-    LogicalInvariant ⟨{ before.kernel with axioms := before.kernel.axioms ++ [statement] },
+    LogicalInvariantFor D ⟨{ before.kernel with axioms := before.kernel.axioms ++ [statement] },
       before.observations⟩ :=
   replace_admissions_invariant before _ _ invariant
     (admit_axiom_hosted before.kernel statement invariant.theory formed closed)
     (fun _ member => List.mem_append_left _ member) (fun _ member => member)
 
+omit [HostedCalculus D] in
 theorem set_symbol_invariant (before : ObservedState) (destination : Nat) (symbol : SymId)
-    (invariant : LogicalInvariant before) (allocated : (before.kernel.sig symbol).isSome = true) :
-    LogicalInvariant ⟨{ before.kernel with
+    (invariant : LogicalInvariantFor D before) (allocated : (before.kernel.sig symbol).isSome = true) :
+    LogicalInvariantFor D ⟨{ before.kernel with
       symbols := setSlot before.kernel.symbols destination (some (.sym symbol)) },
       before.observations⟩ := by
   constructor
@@ -84,9 +88,10 @@ theorem set_symbol_invariant (before : ObservedState) (destination : Nat) (symbo
   · exact invariant.theorems
   · exact invariant.satisfied
 
+omit [HostedCalculus D] in
 theorem set_term_invariant (before : ObservedState) (destination : Nat) (term : Term)
-    (invariant : LogicalInvariant before) (formed : WellFormed before.kernel.sig term = true) :
-    LogicalInvariant ⟨{ before.kernel with
+    (invariant : LogicalInvariantFor D before) (formed : WellFormed before.kernel.sig term = true) :
+    LogicalInvariantFor D ⟨{ before.kernel with
       terms := setSlot before.kernel.terms destination (some term) }, before.observations⟩ := by
   constructor
   · exact invariant.theory
@@ -101,10 +106,11 @@ theorem set_term_invariant (before : ObservedState) (destination : Nat) (term : 
   · exact invariant.theorems
   · exact invariant.satisfied
 
+omit [HostedCalculus D] in
 theorem set_theorem_invariant (before : ObservedState) (destination : Nat) (statement : Term)
-    (invariant : LogicalInvariant before)
-    (derived : DerivesWithExecution before.kernel.theory before.observations statement) :
-    LogicalInvariant ⟨{ before.kernel with
+    (invariant : LogicalInvariantFor D before)
+    (derived : D before.kernel.theory before.observations statement) :
+    LogicalInvariantFor D ⟨{ before.kernel with
       theorems := setSlot before.kernel.theorems destination (some statement) },
       before.observations⟩ := by
   constructor
@@ -120,11 +126,12 @@ theorem set_theorem_invariant (before : ObservedState) (destination : Nat) (stat
     · exact invariant.theorems slot value (by simpa [setSlot, newest] using found)
   · exact invariant.satisfied
 
+omit [HostedCalculus D] in
 theorem place_symbol_invariant {before : ObservedState} {after : State}
-    {destination : Nat} {symbol : SymId} (invariant : LogicalInvariant before)
+    {destination : Nat} {symbol : SymId} (invariant : LogicalInvariantFor D before)
     (allocated : (before.kernel.sig symbol).isSome = true)
     (accepted : before.kernel.placeSymbol destination (.sym symbol) = .ok after) :
-    LogicalInvariant ⟨after, before.observations⟩ := by
+    LogicalInvariantFor D ⟨after, before.observations⟩ := by
   unfold State.placeSymbol at accepted
   split at accepted
   · cases accepted
@@ -132,19 +139,21 @@ theorem place_symbol_invariant {before : ObservedState} {after : State}
     rw [← same]
     exact set_symbol_invariant before destination symbol invariant allocated
 
+omit [HostedCalculus D] in
 theorem place_term_invariant {before : ObservedState} {after : State}
-    {destination : Nat} {term : Term} (invariant : LogicalInvariant before)
+    {destination : Nat} {term : Term} (invariant : LogicalInvariantFor D before)
     (formed : WellFormed before.kernel.sig term = true)
     (accepted : before.kernel.placeTerm destination term = .ok after) :
-    LogicalInvariant ⟨after, before.observations⟩ := by
+    LogicalInvariantFor D ⟨after, before.observations⟩ := by
   rw [placeTerm_result accepted]
   exact set_term_invariant before destination term invariant formed
 
+omit [HostedCalculus D] in
 theorem place_theorem_invariant {before : ObservedState} {after : State}
-    {destination : Nat} {statement : Term} (invariant : LogicalInvariant before)
-    (derived : DerivesWithExecution before.kernel.theory before.observations statement)
+    {destination : Nat} {statement : Term} (invariant : LogicalInvariantFor D before)
+    (derived : D before.kernel.theory before.observations statement)
     (accepted : before.kernel.placeTheorem destination statement = .ok after) :
-    LogicalInvariant ⟨after, before.observations⟩ := by
+    LogicalInvariantFor D ⟨after, before.observations⟩ := by
   rw [placeTheorem_result accepted]
   exact set_theorem_invariant before destination statement invariant derived
 

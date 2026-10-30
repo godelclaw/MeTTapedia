@@ -151,12 +151,14 @@ def Source.regionKeys (R : RegionKeys T P K) : Source V T P → List K
 def SourceList.regionKeys (R : RegionKeys T P K) : SourceList V T P → List K
   | .done => []
   | .cons s rest => s.regionKeys R ++ rest.regionKeys R
+  | .absent query rest => query.regionKeys R ++ rest.regionKeys R
   | .every rest => rest.regionKeys R
 
 /-- **The static footprint of a source list and a template**, from the text alone. -/
 def SourceList.static (R : RegionKeys T P K) (template : List P) : SourceList V T P → StaticFootprint K
   | .done => ⟨[], [], [], template.flatMap R.keys⟩
   | .cons s rest => s.static R + rest.static R template
+  | .absent query rest => ⟨[], [], query.regionKeys R, []⟩ + rest.static R template
   | .every rest => rest.static R template + ⟨[], [], rest.regionKeys R, []⟩
 
 /-- The static footprint of a transform. -/
@@ -320,6 +322,13 @@ theorem complRegions_covered (sound : Matcher.Sound L m) (keysSound : R.Sound L)
         cases s <;> simp only [Source.regions, List.mem_singleton, List.not_mem_nil] at inS <;>
           subst inS <;> exact region_covered sound keysSound inRegion
       · exact RegionKeys.CoveredBy.append_right (complRegions_covered sound keysSound inRest t inRegion)
+  | .absent query rest, r, member, t, inRegion => by
+      simp only [complRegions, List.mem_append] at member
+      rcases member with first | second
+      · exact RegionKeys.CoveredBy.append_left
+          (complRegions_covered sound keysSound first t inRegion)
+      · exact RegionKeys.CoveredBy.append_right
+          (complRegions_covered sound keysSound second t inRegion)
   | .every rest, r, member, t, inRegion => complRegions_covered sound keysSound (src := rest) member t inRegion
 
 /-- **The static footprint over-approximates every dynamic footprint.** -/
@@ -345,6 +354,15 @@ theorem static_covers (sound : Matcher.Sound L m) (keysSound : R.Sound L) {S : F
       obtain ⟨y, inStep, z, inRest, rfl⟩ := mem_rows_cons.mp member
       rw [footprintOf_cons]
       exact (within_stepRows sound keysSound inStep).add (static_covers sound keysSound inRest)
+  | .absent query rest, σ, x, member => by
+      obtain ⟨_, y, inRest, rfl⟩ := mem_rows_absent.mp member
+      rw [footprintOf_cons, footprint_amalgam]
+      apply Within.add _ (static_covers sound keysSound inRest)
+      refine ⟨by simp [complQueries], by simp [complQueries], ?_, by simp [complQueries]⟩
+      intro r member t inRegion
+      simp only [complQueries, Multiset.mem_coe, List.mem_map] at member
+      obtain ⟨r', inRegions, rfl⟩ := member
+      exact complRegions_covered sound keysSound inRegions t inRegion
   | .every rest, σ, x, member => by
       rw [rows_every, Multiset.mem_singleton] at member
       subst member
@@ -471,6 +489,7 @@ def SourceList.queryFree : SourceList V T P → Bool
   | .cons (.take _) rest => rest.queryFree
   | .cons (.letBind _ _) rest => rest.queryFree
   | .cons _ _ => false
+  | .absent _ _ => false
   | .every _ => false
 
 /-- A check on the text: the source list **takes nothing** (no take source, complete sources
@@ -481,6 +500,7 @@ def SourceList.takeFree : SourceList V T P → Bool
   | .cons (.unique .take _) _ => false
   | .cons (.all .take _ _ _) _ => false
   | .cons _ rest => rest.takeFree
+  | .absent _ rest => rest.takeFree
   | .every rest => rest.takeFree
 
 /-- A check on the text: the source list **keeps nothing** (no read source). -/
@@ -488,6 +508,7 @@ def SourceList.keepFree : SourceList V T P → Bool
   | .done => true
   | .cons (.read _) _ => false
   | .cons _ rest => rest.keepFree
+  | .absent _ rest => rest.keepFree
   | .every rest => rest.keepFree
 
 variable [DecidableEq O] {L : TermLayer V T P} {m : Matcher V T P} {label : O → T} {S : Finset O}
@@ -519,6 +540,7 @@ theorem queries_eq_zero_of_noQueries :
       | absent p => exact absurd shape Bool.false_ne_true
       | unique access p => exact absurd shape Bool.false_ne_true
       | all access p coll fold => exact absurd shape Bool.false_ne_true
+  | .absent _ _, σ, x, shape, _ => absurd shape Bool.false_ne_true
   | .every rest, σ, x, shape, _ => absurd shape Bool.false_ne_true
 
 theorem takes_eq_zero_of_noTakes :
@@ -557,6 +579,10 @@ theorem takes_eq_zero_of_noTakes :
           | read =>
               obtain ⟨τ, -, rfl⟩ := mem_stepRows_all.mp inStep
               simp [takes_eq_zero_of_noTakes (src := rest) shape inRest]
+  | .absent query rest, σ, x, shape, member => by
+      obtain ⟨_, y, inRest, rfl⟩ := mem_rows_absent.mp member
+      simp only [footprintOf_cons, footprint_amalgam, Footprint.takes_add, complQueries, zero_add]
+      exact takes_eq_zero_of_noTakes (src := rest) shape inRest
   | .every rest, σ, x, shape, member => by
       rw [rows_every, Multiset.mem_singleton] at member
       subst member
@@ -598,6 +624,10 @@ theorem keeps_eq_zero_of_noKeeps :
       | all access p coll fold =>
           obtain ⟨τ, -, rfl⟩ := mem_stepRows_all.mp inStep
           simp [keeps_eq_zero_of_noKeeps (src := rest) shape inRest]
+  | .absent query rest, σ, x, shape, member => by
+      obtain ⟨_, y, inRest, rfl⟩ := mem_rows_absent.mp member
+      simp only [footprintOf_cons, footprint_amalgam, Footprint.keeps_add, complQueries, zero_add]
+      exact keeps_eq_zero_of_noKeeps (src := rest) shape inRest
   | .every rest, σ, x, shape, member => by
       rw [rows_every, Multiset.mem_singleton] at member
       subst member

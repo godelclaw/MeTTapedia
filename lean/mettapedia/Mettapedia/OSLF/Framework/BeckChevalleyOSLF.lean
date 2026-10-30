@@ -107,8 +107,8 @@ theorem presheaf_beckChevalley_square_direct
       =
     (CategoryTheory.Subobject.pullback g).obj
         ((CategoryTheory.Subobject.map f).obj φ) := by
-  letI : CategoryTheory.Mono f := hf
-  letI : CategoryTheory.Mono pi2 := hpi2
+  let : CategoryTheory.Mono f := hf
+  let : CategoryTheory.Mono pi2 := hpi2
   simpa using
     (Mettapedia.GSLT.Topos.beckChevalleyPresheaf
       (C := C) pi1 pi2 f g hpb φ)

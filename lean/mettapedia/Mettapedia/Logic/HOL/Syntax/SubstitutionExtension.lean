@@ -21,6 +21,35 @@ def Subst.cons (head : Term Const delta domain) (tail : Subst Const gamma delta)
   | _, .vz => head
   | _, .vs index => tail index
 
+/-- A finite typed assignment stores each variable image once. -/
+inductive Subst.Table (Const : Ty Base → Type v) (target : Ctx Base) : Ctx Base → Type (max u v) where
+  | nil : Subst.Table Const target []
+  | cons {source : Ctx Base} {type : Ty Base} (term : Term Const target type)
+      (rest : Subst.Table Const target source) : Subst.Table Const target (type :: source)
+
+namespace Subst.Table
+
+def lookup : {source : Ctx Base} → Subst.Table Const delta source → Subst Const source delta
+  | _, .nil, _, index => nomatch index
+  | _, .cons term _, _, .vz => term
+  | _, .cons _ rest, _, .vs index => rest.lookup index
+
+def ofSubst : {source : Ctx Base} → Subst Const source delta → Subst.Table Const delta source
+  | [], _ => .nil
+  | _ :: _, substitution => .cons (substitution .vz) (ofSubst (fun index => substitution (.vs index)))
+
+theorem lookup_ofSubst (substitution : Subst Const gamma delta) :
+    ((ofSubst substitution).lookup : Subst Const gamma delta) = (substitution : Subst Const gamma delta) := by
+  induction gamma with
+  | nil => funext type index; cases index
+  | cons type context ih =>
+      funext result index
+      cases index with
+      | vz => rfl
+      | vs prior => exact congrFun (congrFun (ih (fun index => substitution (.vs index))) result) prior
+
+end Subst.Table
+
 theorem instantiate_subst_lift (argument : Term Const delta domain)
     (theta : Subst Const gamma delta) (body : Term Const (domain :: gamma) result) :
     instantiate argument (subst (Subst.lift theta) body) = subst (Subst.cons argument theta) body := by

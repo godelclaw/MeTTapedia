@@ -1,4 +1,5 @@
 import Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.OccurrenceCommits.SourceControls
+import Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.OccurrenceCommits.Reflection.HigherOrderFootprints
 
 /-!
 # Rules as data: installing, uninstalling and reading rules, with exact commutation
@@ -207,7 +208,8 @@ namespace RuleControls
 open Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.OccurrenceCommits.Sources
 open Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.OccurrenceCommits.Sources.Commutative
 open Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.OccurrenceCommits.Sources.Controls
-  (Occ lbl Ls ms supply exists_of_not_forall)
+  (Occ lbl Ls ms supply exists_of_not_forall k empty aAndB heldBoundRows heldFreeRows
+    held_context_changes_source_rows)
 
 /-- The atoms of the ground controls of `Commits`. -/
 abbrev Atom := Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.OccurrenceCommits.Controls.Atom
@@ -226,6 +228,36 @@ def factA : Tm RSig := un .seen (.leaf .a)
 def outA : Tm RSig := un .out (.leaf .a)
 /-- The output `out(b)`. -/
 def outB : Tm RSig := un .out (.leaf .b)
+
+/-- Two source texts that differ only in the variable they name. -/
+def boundRead : Transform ℕ (Tm RSig) (Pat ℕ RSig) :=
+  ⟨.cons (.read (.var 0)) .done, [.var 0]⟩
+
+def freeRead : Transform ℕ (Tm RSig) (Pat ℕ RSig) :=
+  ⟨.cons (.read (.var 1)) .done, [.var 1]⟩
+
+/-- A held binding changes what the closure can keep. The free source can
+    keep `a`; the source whose variable is bound to `b` cannot. -/
+theorem held_context_distinguishes_closure_firings :
+    (∀ c, ClosureFires Ls ms lbl aAndB boundRead
+        (Function.update empty 0 (some (k .b))) c → (k .a, 0) ∉ c.kept) ∧
+    (∃ c, ClosureFires Ls ms lbl aAndB freeRead
+        (Function.update empty 0 (some (k .b))) c ∧ (k .a, 0) ∈ c.kept) := by
+  constructor
+  · intro c ⟨row, member, _, commit⟩
+    change row ∈ heldBoundRows at member
+    have keeps := held_context_changes_source_rows.2.2.1 row member
+    rw [commit.kept, keeps]
+    simp [k]
+  · have has : ¬ ∀ row ∈ heldFreeRows,
+        ¬ ((footprintOf row.2).Linear ∧ (footprintOf row.2).keeps = {(k .a, 0)}) := by
+      decide +kernel
+    obtain ⟨row, member, linear, keeps⟩ := exists_of_not_forall has
+    obtain ⟨c, commit⟩ := exists_isCommitOf (S := aAndB) supply (footprintOf row.2)
+    refine ⟨c, ⟨row, ?_, linear, commit⟩, ?_⟩
+    · exact member
+    · rw [commit.kept, keeps]
+      simp
 
 /-- A ground rule: `eqn(fact, output)`, "when `fact` holds, make `output`". -/
 def rule (fact output : Tm RSig) : Tm RSig := .node .eqn fact output

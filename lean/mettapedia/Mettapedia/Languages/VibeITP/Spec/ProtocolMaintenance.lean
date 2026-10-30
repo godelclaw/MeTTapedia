@@ -6,14 +6,16 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.VibeITP.Spec.ProtocolMaintenance
 
+variable {D : Theory → List ExecutionObservation → Term → Prop}
+
 open ProtocolExecution ProtocolInvariant ProtocolStorage
 
 theorem logical_frame (before after : State) (observations : List ExecutionObservation)
-    (invariant : LogicalInvariant ⟨before, observations⟩)
+    (invariant : LogicalInvariantFor D ⟨before, observations⟩)
     (theory : after.theory = before.theory) (allocation : after.nextFresh = before.nextFresh)
     (symbols : after.symbols = before.symbols) (terms : after.terms = before.terms)
     (theorems : after.theorems = before.theorems) (satisfied : after.satisfied = before.satisfied) :
-    LogicalInvariant ⟨after, observations⟩ := by
+    LogicalInvariantFor D ⟨after, observations⟩ := by
   have signature : after.sig = before.sig := congrArg Theory.sig theory
   constructor
   · simpa [theory, allocation] using invariant.theory
@@ -30,13 +32,13 @@ theorem logical_frame (before after : State) (observations : List ExecutionObser
     rw [satisfied] at member
     simpa [theory] using invariant.satisfied statement member
 
-theorem enterProofs_invariant (before : ObservedState) (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨enterProofs before.kernel, before.observations⟩ :=
+theorem enterProofs_invariant (before : ObservedState) (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨enterProofs before.kernel, before.observations⟩ :=
   logical_frame _ _ _ invariant rfl rfl rfl rfl rfl rfl
 
 theorem clear_symbol_invariant (before : ObservedState) (slot : Nat)
-    (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨{ before.kernel with symbols := setSlot before.kernel.symbols slot none },
+    (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨{ before.kernel with symbols := setSlot before.kernel.symbols slot none },
       before.observations⟩ := by
   constructor
   · exact invariant.theory
@@ -49,8 +51,8 @@ theorem clear_symbol_invariant (before : ObservedState) (slot : Nat)
   · exact invariant.satisfied
 
 theorem clear_term_invariant (before : ObservedState) (slot : Nat)
-    (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨{ before.kernel with terms := setSlot before.kernel.terms slot none },
+    (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨{ before.kernel with terms := setSlot before.kernel.terms slot none },
       before.observations⟩ := by
   constructor
   · exact invariant.theory
@@ -63,8 +65,8 @@ theorem clear_term_invariant (before : ObservedState) (slot : Nat)
   · exact invariant.satisfied
 
 theorem clear_theorem_invariant (before : ObservedState) (slot : Nat)
-    (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨{ before.kernel with theorems := setSlot before.kernel.theorems slot none },
+    (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨{ before.kernel with theorems := setSlot before.kernel.theorems slot none },
       before.observations⟩ := by
   constructor
   · exact invariant.theory
@@ -77,8 +79,8 @@ theorem clear_theorem_invariant (before : ObservedState) (slot : Nat)
   · exact invariant.satisfied
 
 theorem swap_symbol_invariant (before : ObservedState) (first second : Nat)
-    (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨{ before.kernel with symbols := swapSlots before.kernel.symbols first second },
+    (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨{ before.kernel with symbols := swapSlots before.kernel.symbols first second },
       before.observations⟩ := by
   constructor
   · exact invariant.theory
@@ -94,8 +96,8 @@ theorem swap_symbol_invariant (before : ObservedState) (first second : Nat)
   · exact invariant.satisfied
 
 theorem swap_term_invariant (before : ObservedState) (first second : Nat)
-    (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨{ before.kernel with terms := swapSlots before.kernel.terms first second },
+    (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨{ before.kernel with terms := swapSlots before.kernel.terms first second },
       before.observations⟩ := by
   constructor
   · exact invariant.theory
@@ -111,8 +113,8 @@ theorem swap_term_invariant (before : ObservedState) (first second : Nat)
   · exact invariant.satisfied
 
 theorem swap_theorem_invariant (before : ObservedState) (first second : Nat)
-    (invariant : LogicalInvariant before) :
-    LogicalInvariant ⟨{ before.kernel with theorems := swapSlots before.kernel.theorems first second },
+    (invariant : LogicalInvariantFor D before) :
+    LogicalInvariantFor D ⟨{ before.kernel with theorems := swapSlots before.kernel.theorems first second },
       before.observations⟩ := by
   constructor
   · exact invariant.theory

@@ -1,5 +1,6 @@
 import Mettapedia.Computability.KolmogorovComplexity.FeaturePrefixInformation
 import Mettapedia.Computability.KolmogorovComplexity.EffectiveContainmentRepair
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalInformationTransport
 
 /-!
 # Joint feature and residual information with uniform costs
@@ -18,24 +19,6 @@ set_option autoImplicit false
 namespace KolmogorovComplexity.FeatureTheory
 
 open scoped Classical
-
-/-- Removing the complexity index from the condition costs its actual
-self-delimiting representation and one fixed interpreter prefix. -/
-theorem remove_complexity_index {V : ConditionalPrefixFreeMachine}
-    (reference : IsReferenceMachine V) (simulations : ReferenceMachineSimulations V)
-    (feature residual : BinString) :
-    conditionalComplexity V feature residual ≤
-      conditionalComplexity V feature (chainCondition [] residual (conditionalComplexity V residual [])) +
-        (e1encode (binaryBits (conditionalComplexity V residual []))).length +
-        simulations.indexedCondition.compilerPrefix.length := by
-  obtain ⟨program, runs, minimal⟩ := exists_program_of_conditionalComplexity V
-    (chainCondition [] residual (conditionalComplexity V residual [])) feature
-    (reference.hasProgram _ _)
-  have indexed : IsProgram (indexedConditionMachine V)
-      (e1encode (binaryBits (conditionalComplexity V residual [])) ++ program) residual feature := by
-    simpa only [IsProgram, indexedConditionMachine, e1decode_e1encode_append, chainCondition] using runs
-  have bound := conditionalComplexity_le_simulated_program simulations.indexedCondition indexed
-  simpa only [List.length_append, minimal, Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using bound
 
 theorem reference_feature_joint_information (U : ConditionalAlgorithm) (V : ConditionalPrefixFreeMachine)
     (universal : IsUniversalConditional U) (effective : Partrec₂ U) (reference : IsReferenceMachine V)
@@ -90,38 +73,6 @@ theorem reference_shortest_joint_independence (U : ConditionalAlgorithm) (V : Co
   have above := upperBound residual feature
   rw [abs_le]
   constructor <;> omega
-
-/-- The existing pair-swap interpreter is effective; exchanging the two
-fields is an actual program transformation, not a definitional equality. -/
-theorem swapPairMachine_effective (V : ConditionalPrefixFreeMachine) (effective : Effective V) :
-    Effective (swapPairMachine V) := by
-  let swapOutput : BinString → Option BinString := fun output =>
-    (unpairCondition output).map fun fields => pairCondition fields.2 fields.1
-  have swapComputable : Primrec swapOutput :=
-    Primrec.option_map KraftChaitin.unpairCondition_primrec
-      (pairCondition_primrec.comp₂ (Primrec.snd.comp₂ Primrec₂.right) (Primrec.fst.comp₂ Primrec₂.right))
-  have tail : Partrec₂ fun (_input : BinString × BinString) output => Part.ofOption (swapOutput output) :=
-    (Computable.ofOption (swapComputable.to_comp.comp Computable.snd)).to₂
-  exact (Partrec.bind effective tail).of_eq fun input => by
-    cases evaluated : V.compute input.1 input.2 with
-    | none => simp [swapPairMachine, evaluated, Part.ofOption]
-    | some output =>
-        cases decoded : unpairCondition output <;>
-          simp [swapOutput, swapPairMachine, evaluated, decoded, Part.ofOption, Part.bind_some]
-
-theorem reference_pair_swap (V : ConditionalPrefixFreeMachine) (reference : IsReferenceMachine V) :
-    ∃ overhead : Nat, ∀ first second condition,
-      conditionalComplexity V (pairCondition first second) condition ≤
-        conditionalComplexity V (pairCondition second first) condition + overhead := by
-  obtain ⟨compiler⟩ := reference.2 (swapPairMachine V) (swapPairMachine_effective V reference.1)
-  refine ⟨compiler.compilerPrefix.length, fun first second condition => ?_⟩
-  obtain ⟨program, runs, minimal⟩ := exists_program_of_conditionalComplexity V condition
-    (pairCondition second first) (reference.hasProgram _ _)
-  have swapped : IsProgram (swapPairMachine V) program condition (pairCondition first second) := by
-    change V.compute program condition = some (pairCondition second first) at runs
-    simp only [IsProgram, swapPairMachine, runs, unpairCondition_pairCondition]
-  have bound := conditionalComplexity_le_simulated_program compiler swapped
-  simpa only [minimal] using bound
 
 /-- The general joint deficit in `(feature, residual)` order, including
 the excess length of a feature that is not shortest. -/

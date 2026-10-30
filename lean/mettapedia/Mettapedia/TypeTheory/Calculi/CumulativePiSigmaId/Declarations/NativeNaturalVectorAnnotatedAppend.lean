@@ -91,11 +91,8 @@ theorem cons_typed {element length head tail : CTm Tower.Head n}
   have arguments : CSubstMor (church enabled) (liftCtx consContext) Γ
       (consArguments element length head tail) := by
     intro index
-    fin_cases index
-    · exact tailTyped
-    · exact headTyped
-    · exact lengthTyped
-    · exact elementTyped
+    exact Fin.cases tailTyped (Fin.cases headTyped (Fin.cases lengthTyped
+      (Fin.cases elementTyped (fun impossible => Fin.elim0 impossible)))) index
   exact applyAlong_typed (Q := church enabled) consEntry 4 consResult
     (consArguments element length head tail) arguments (cons_constant_typed enabled)
 
@@ -176,13 +173,9 @@ theorem arguments_typed {element family base method length value : CTm Tower.Hea
     CSubstMor (church enabled) (liftCtx recursorContext) Γ
       (arguments element family base method length value) := by
   intro index
-  fin_cases index
-  · exact valueTyped
-  · exact lengthTyped
-  · exact methodTyped
-  · exact baseTyped
-  · exact familyTyped
-  · exact elementTyped
+  exact Fin.cases valueTyped (Fin.cases lengthTyped (Fin.cases methodTyped
+    (Fin.cases baseTyped (Fin.cases familyTyped
+      (Fin.cases elementTyped (fun impossible => Fin.elim0 impossible)))))) index
 
 def eliminate (element family base method length value : CTm Tower.Head n) : CTm Tower.Head n :=
   .app (.app (.app (.app (.app (.app (.const vecEliminateName) element) family) base) method) length) value

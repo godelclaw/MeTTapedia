@@ -47,6 +47,9 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoCanonicalForms
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoDriverReading
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoPresentations
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoDriverReadingControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.NormalizedDriverReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.NormalizedAuthoredReading
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.NormalizedAuthoredReadingControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.EmbeddingControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.VerdictCatalogue
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.VerdictCatalogueControls
@@ -127,6 +130,12 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedFormers
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedFixedPoints
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedDecision
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipCountedControls
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipRepresentatives
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipPracticalStage
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetDriver
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoModelLanguage
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RhoModelEquality
+import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetDriverControls
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.EngineAgreement
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.ObservedSystems
 import Mettapedia.OSLF.NativeTypes.GeneratedLogic.RelationalAnswerFrontDoor
@@ -429,6 +438,23 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointControl
   container); the multiplicities of the types in `V_k`, read up to one more than the cap, stabilize, and a stable stage
   holds distinct representatives enough for every container and sort search. The count-guarded formulas are decided by
   an exact evaluation; kernel-evaluated controls count distinct members, singletons, and members lying in some set.
+- `SetMembershipRepresentatives`, `SetMembershipPracticalStage`: steps back and quantifiers over sets searched among
+  representatives. A list of hereditary sets is closed for a local closure when it realizes every closure vector of
+  every set over its sublists; then a set's container, and some set of a sort, can be chosen with members among the
+  representatives. The representatives are grown from the empty list by adding sets over sublists with new closure
+  vectors, checked closed once, and searched in place of every set below the stage rank; the practical evaluation
+  agrees with the evaluation on every count-guarded formula.
+- `RhoModelLanguage`, `RhoModelEquality`: the normalized ρ profile's model written as a language: ρ's constructors
+  without the declared algebra, its rules read where the plan fires, the model's parallel laws and name equation
+  authored as equations (flattening one member, flattening the empty bag, removing `0`, `@(*n) = n`). Its equivalence
+  of object terms without sets is the profile's equality: each equation step is a move of the model, and each move is
+  a chain of equation steps, permutations included, from moving any member to the front in four steps.
+- `SetDriver`, `SetDriverControls`: the set driver, the membership language read on its hereditary terms. A
+  context-free formula at a hereditary term is answered by its fragment's decision, count-guarded formulas by the
+  practical evaluation and crossing fixed points by elimination, each answer exact in the hereditary reading; on
+  forward formulas it agrees with the front door of the reference structure. Controls: past modalities, counting,
+  quantifiers over a type and crossing fixed points, with negatives and refusals; questions whose stage holds a tower
+  of twos of candidates, answered over at most 2⁶ representative candidates.
 - `EngineAgreement`: on aligned, equation-free languages the front door steps where the engine steps over a relation
   environment, so consumers stated through the engine's relation ask the front door: some step to a term, no step.
 - `ObservedSystems`: a transition system with declared observations is the one-rule language `x ~> y` when
@@ -575,12 +601,14 @@ import Mettapedia.OSLF.NativeTypes.GeneratedLogic.SetMembershipFixedPointControl
   types under its scope policy and its rules through its reflection profile. Its admitted elements (closed processes,
   names and input continuations, sealed) keep their kind along the equivalence, canonicalization gives canonical forms
   on them, coherent for plain steps; the ρ driver is read by steps there.
-- TODO(integration, Normalized driver): the sixth runtime driver, `Instances.Normalized`, decides over the plan
-  occurrence semantics (`MeTTaIL.GeneralOccurrenceSemantics`: rule-job receipts and equation-job completions), not
-  over the reference step relation. Its reading at the front door needs one theorem: that semantics agrees with
-  `ReferenceStep` on the language whose equality is the profile's normalization laws (wrappers kept apart). The
-  occurrence-semantics work builds pieces of that agreement in parallel (recovered captures against
-  `ReferenceStep.Equivalent`); the reading should be built on those pieces once they land, not on a second bridge.
+- `NormalizedDriverReading`, `NormalizedAuthoredReading`, `NormalizedAuthoredReadingControls`: the sixth runtime
+  driver, `Instances.Normalized`, decides over the plan occurrence semantics (rule-job receipts and equation-job
+  completions). It is read at the front door from an agreement on admitted closed terms: its steps are the reference
+  structure's, they stay admitted, and its equality is identification; an observation testing for a term is `is t`.
+  Profiles on a first-order root plan agree by the plan semantics' agreement with the reference relation; the
+  authored conditional-equation profile agrees by its own analysis, with canonical forms, and its seven runtime
+  verdicts are obtained from the generated front door. The ρ profile keeps the wrappers `{P}` and `{}` apart, unlike
+  ρ's declared algebra, so its reading is in a language whose equality is that model.
 - `RhoPresentations`: ρ's presentations listed for its canonical forms: splits by dealing parallel components, the
   quotation `@P` presented also as `@*@P`, types by kind; its presentation decider.
 - `PartrecDriverReadingControls`, `LambdaDriverReadingControls`, `RhoDriverReadingControls`: the runtime's verdicts

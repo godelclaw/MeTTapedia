@@ -131,6 +131,41 @@ def variableRenaming (ρ : Var ≃ Var) : Subst := fun name => some (.var (ρ na
 
 def rename (ρ : Var ≃ Var) (atom : Atom) : Atom := subst (variableRenaming ρ) atom
 
+/-- Rename an environment together with its keys and stored values. -/
+def renameEnvironment (ρ : Var ≃ Var) (σ : Subst) : Subst :=
+  fun name => (σ (ρ.symm name)).map (rename ρ)
+
+/-- Renaming both syntax and its environment renames the resulting instance. -/
+theorem subst_rename_equivariant (ρ : Var ≃ Var) (σ : Subst) (atom : Atom) :
+    subst (renameEnvironment ρ σ) (rename ρ atom) = rename ρ (subst σ atom) := by
+  unfold rename
+  rw [SubstitutionAlgebra.subst_subst, SubstitutionAlgebra.subst_subst]
+  apply subst_congr_getD
+  intro name _
+  cases found : σ name <;>
+    simp [SubstitutionAlgebra.comp, variableRenaming, renameEnvironment, subst, rename, found]
+
+/-- Keeping the original environment still commutes with renaming exactly
+    when it agrees with the renamed environment on the renamed term. -/
+theorem subst_rename_fixed_environment_iff (ρ : Var ≃ Var) (σ : Subst) (atom : Atom) :
+    subst σ (rename ρ atom) = rename ρ (subst σ atom) ↔
+      ∀ name ∈ vars (rename ρ atom),
+        (σ name).getD (.var name) =
+          ((renameEnvironment ρ σ) name).getD (.var name) := by
+  rw [← subst_rename_equivariant ρ σ atom]
+  exact ⟨getD_agree_of_subst_eq σ (renameEnvironment ρ σ) (rename ρ atom),
+    subst_congr_getD σ (renameEnvironment ρ σ) (rename ρ atom)⟩
+
+/-- A binding travels with its variable. Keeping the old environment after
+    swapping `x` and `y` leaves the renamed occurrence free instead. -/
+theorem transported_environment_separates_fixed :
+    let ρ : Var ≃ Var := Equiv.swap "x" "y"
+    let σ : Subst := fun v => if v = "x" then some (.symbol "B") else none
+    subst (renameEnvironment ρ σ) (rename ρ (.var "x")) = .symbol "B" ∧
+    subst σ (rename ρ (.var "x")) = .var "y" ∧
+    rename ρ (subst σ (.var "x")) = .symbol "B" := by
+  decide
+
 /-- Two equation atoms are alpha-variants when one bijective renaming takes
 both sides of the first to the sides of the second. -/
 def AlphaVariant (equation other : Atom) : Prop :=
@@ -148,6 +183,17 @@ theorem subst_unrename (ρ : Var ≃ Var) (σ : Subst) (atom : Atom) :
   apply subst_congr_getD
   intro name _
   simp [SubstitutionAlgebra.comp, variableRenaming, unrename, subst]
+
+/-- Keeping the same surrounding substitution after renaming is sound for
+    exact instances precisely when it agrees with the transported context on
+    the renamed atom's variables. -/
+theorem subst_rename_fixed_context_iff (ρ : Var ≃ Var) (σ : Subst) (atom : Atom) :
+    subst σ (rename ρ atom) = subst σ atom ↔
+      ∀ name ∈ vars (rename ρ atom),
+        (σ name).getD (.var name) = ((unrename ρ σ) name).getD (.var name) := by
+  rw [← subst_unrename ρ σ atom]
+  exact ⟨getD_agree_of_subst_eq σ (unrename ρ σ) (rename ρ atom),
+    subst_congr_getD σ (unrename ρ σ) (rename ρ atom)⟩
 
 theorem Step.of_alphaVariant {space other : Atomspace}
     (variant : ∀ equation ∈ space.atoms, ∃ copy ∈ other.atoms, AlphaVariant equation copy)

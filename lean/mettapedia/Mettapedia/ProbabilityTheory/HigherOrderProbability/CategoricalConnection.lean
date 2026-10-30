@@ -52,7 +52,7 @@ noncomputable section
 
 namespace Mettapedia.ProbabilityTheory.HigherOrderProbability
 
-open MeasureTheory ProbabilityTheory Finset BigOperators ENNReal
+open MeasureTheory _root_.ProbabilityTheory Finset BigOperators ENNReal
 open Mettapedia.ProbabilityTheory.Exchangeability.CategoricalDeFinetti
 
 namespace CategoricalConnection
@@ -71,39 +71,15 @@ def catWeight {k n : ℕ} (θ : ProbSimplex k) (xs : Fin n → Fin k) : ENNReal 
 theorem sum_catWeight_eq_one {k n : ℕ} (θ : ProbSimplex k) :
     ∑ xs : Fin n → Fin k, catWeight θ xs = 1 := by
   classical
-  unfold catWeight
-  induction n with
-  | zero => simp [categoricalProductPMF]
-  | succ n ih =>
-    -- Decompose via Fin.consEquiv: (Fin (n+1) → Fin k) ≃ Fin k × (Fin n → Fin k)
-    have hdecomp :
-        ∑ xs : Fin (n + 1) → Fin k, ENNReal.ofReal (categoricalProductPMF (↑θ) xs) =
-          ∑ p : Fin k × (Fin n → Fin k),
-            ENNReal.ofReal (categoricalProductPMF (↑θ) (Fin.cons p.1 p.2)) := by
-      simpa using
-        (Fintype.sum_equiv (Fin.consEquiv (n := n) (α := fun _ : Fin (n + 1) => Fin k))
-          (fun p => ENNReal.ofReal (categoricalProductPMF (↑θ) (Fin.cons p.1 p.2)))
-          (fun xs => ENNReal.ofReal (categoricalProductPMF (↑θ) xs))
-          (fun _p => rfl)).symm
-    rw [hdecomp, Fintype.sum_prod_type]
-    -- Factor head * tail in each term
-    have hcons (a : Fin k) (xs : Fin n → Fin k) :
-        ENNReal.ofReal (categoricalProductPMF (↑θ) (Fin.cons a xs)) =
-          ENNReal.ofReal ((↑θ : Fin k → ℝ) a) *
-            ENNReal.ofReal (categoricalProductPMF (↑θ) xs) := by
-      have hhead : 0 ≤ (↑θ : Fin k → ℝ) a := probSimplex_nonneg θ a
-      rw [show categoricalProductPMF (↑θ) (Fin.cons a xs) =
-          (↑θ : Fin k → ℝ) a * categoricalProductPMF (↑θ) xs from by
-        unfold categoricalProductPMF; rw [Fin.prod_univ_succ]; simp]
-      exact ENNReal.ofReal_mul hhead
-    simp_rw [hcons, ← Finset.mul_sum]
-    -- Use IH: ∑ xs, ofReal(prod θ xs) = 1
-    rw [show ∑ xs : Fin n → Fin k,
-        ENNReal.ofReal (categoricalProductPMF (↑θ) xs) = 1 from ih]
-    simp [mul_one]
-    -- ∑ₐ ofReal(θ a) = ofReal(∑ₐ θ a) = ofReal(1) = 1
+  have hweight (xs : Fin n → Fin k) :
+      catWeight θ xs = ∏ i, ENNReal.ofReal ((θ : Fin k → ℝ) (xs i)) :=
+    ENNReal.ofReal_prod_of_nonneg (fun i _ => probSimplex_nonneg θ (xs i))
+  have hnorm : (∑ a : Fin k, ENNReal.ofReal ((θ : Fin k → ℝ) a)) = 1 := by
     rw [← ENNReal.ofReal_sum_of_nonneg (fun a _ => probSimplex_nonneg θ a)]
     simp
+  simp_rw [hweight]
+  rw [← Fintype.prod_sum (fun _ : Fin n => fun a : Fin k => ENNReal.ofReal ((θ : Fin k → ℝ) a))]
+  simp only [hnorm, Finset.prod_const_one]
 
 /-- The `PMF` on `Fin n → Fin k` induced by a simplex point `θ`. -/
 def catPMF {k : ℕ} (θ : ProbSimplex k) (n : ℕ) : PMF (Fin n → Fin k) :=
@@ -161,22 +137,9 @@ def mixingMeasureSimplex {k : ℕ} (M : CategoricalMixture k) : Measure (ProbSim
 
 instance mixingMeasureSimplex_isProbability {k : ℕ} (M : CategoricalMixture k) :
     IsProbabilityMeasure (mixingMeasureSimplex M) := by
-  classical
-  haveI : IsProbabilityMeasure M.mixingMeasure := M.isProbability
-  have hIcc :
-      mixingMeasureSimplex M Set.univ = M.mixingMeasure (stdSimplex ℝ (Fin k)) := by
-    simpa [mixingMeasureSimplex, measurableSet_stdSimplex] using!
-      (comap_subtype_coe_apply (s := stdSimplex ℝ (Fin k))
-        (measurableSet_stdSimplex k)
-        (μ := M.mixingMeasure) (t := Set.univ))
-  have hIcc_one : M.mixingMeasure (stdSimplex ℝ (Fin k)) = 1 := by
-    have hIcc_eq_univ :
-        M.mixingMeasure (stdSimplex ℝ (Fin k)) = M.mixingMeasure Set.univ := by
-      simpa using
-        (measure_of_measure_compl_eq_zero (μ := M.mixingMeasure)
-          (s := stdSimplex ℝ (Fin k)) M.support_simplex)
-    simpa [measure_univ] using hIcc_eq_univ
-  exact ⟨by simp [hIcc, hIcc_one]⟩
+  have : IsProbabilityMeasure M.mixingMeasure := M.isProbability
+  refine (MeasurableEmbedding.subtype_coe (measurableSet_stdSimplex k)).isProbabilityMeasure_comap ?_
+  simpa only [Subtype.range_val, ae_iff, Set.compl_def] using M.support_simplex
 
 /-- The Kyburg parametrized distribution for a categorical mixture at horizon `n`. -/
 def pd {k : ℕ} (M : CategoricalMixture k) (n : ℕ) :
@@ -223,41 +186,15 @@ theorem flatten_apply_singleton {k : ℕ} (M : CategoricalMixture k) (n : ℕ)
   -- Convert lintegral of ofReal to ofReal of integral
   have hcont : Continuous fun t : Fin k → ℝ => categoricalProductPMF t xs := by
     unfold categoricalProductPMF
-    exact continuous_finset_prod _ (fun i _ => continuous_apply (xs i))
-  have hint :
-      Integrable (fun t : Fin k → ℝ => categoricalProductPMF t xs)
-        (M.mixingMeasure.restrict (stdSimplex ℝ (Fin k))) := by
-    haveI : IsProbabilityMeasure M.mixingMeasure := M.isProbability
-    have hmeas' : AEStronglyMeasurable (fun t => categoricalProductPMF t xs)
-        M.mixingMeasure := hcont.measurable.aestronglyMeasurable
-    have hbound :
-        ∀ᵐ t ∂(M.mixingMeasure.restrict (stdSimplex ℝ (Fin k))),
-          ‖categoricalProductPMF t xs‖ ≤ (1 : ℝ) := by
-      refine ae_restrict_of_forall_mem (measurableSet_stdSimplex k) ?_
-      intro t ht
-      have hnonneg : 0 ≤ categoricalProductPMF t xs := by
-        unfold categoricalProductPMF
-        exact Finset.prod_nonneg (fun i _ => ht.1 (xs i))
-      have hle1 : categoricalProductPMF t xs ≤ 1 := by
-        rw [categoricalProductPMF_eq_power]
-        refine Finset.prod_le_one (fun a _ => pow_nonneg (ht.1 a) _) (fun a _ => ?_)
-        exact pow_le_one₀ (ht.1 a) (by
-          have := Finset.single_le_sum (fun j _ => ht.1 j) (Finset.mem_univ a)
-          linarith [ht.2])
-      simp [Real.norm_of_nonneg hnonneg, hle1]
-    have hs_finite : M.mixingMeasure (stdSimplex ℝ (Fin k)) ≠ ∞ := by
-      have hle : M.mixingMeasure (stdSimplex ℝ (Fin k)) ≤ M.mixingMeasure Set.univ :=
-        measure_mono (Set.subset_univ _)
-      have huniv : M.mixingMeasure Set.univ = 1 := measure_univ
-      exact ne_of_lt (lt_of_le_of_lt (hle.trans_eq huniv) (by simp))
-    exact Measure.integrableOn_of_bounded hs_finite hmeas' hbound
-  have hnonneg :
-      (0 : (Fin k → ℝ) → ℝ) ≤ᵐ[(M.mixingMeasure.restrict (stdSimplex ℝ (Fin k)))]
-        (fun t => categoricalProductPMF t xs) := by
-    refine ae_restrict_of_forall_mem (measurableSet_stdSimplex k) ?_
-    intro t ht
-    unfold categoricalProductPMF
-    exact Finset.prod_nonneg (fun i _ => ht.1 (xs i))
+    exact continuous_finsetProd _ (fun i _ => continuous_apply (xs i))
+  have : IsProbabilityMeasure M.mixingMeasure := M.isProbability
+  have hbounds : ∀ᵐ t ∂M.mixingMeasure.restrict (stdSimplex ℝ (Fin k)),
+      categoricalProductPMF t xs ∈ Set.Icc 0 1 :=
+    ae_restrict_of_forall_mem hs fun t ht =>
+      ⟨categoricalProductPMF_nonneg ⟨t, ht⟩ xs, categoricalProductPMF_le_one ⟨t, ht⟩ xs⟩
+  have hint := (memLp_of_bounded hbounds
+    hcont.measurable.aestronglyMeasurable 1).integrable (by simp)
+  have hnonneg := hbounds.mono fun _ ht => ht.1
   have hconv :
       ∫⁻ t in stdSimplex ℝ (Fin k),
         ENNReal.ofReal (categoricalProductPMF t xs) ∂M.mixingMeasure =

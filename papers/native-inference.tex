@@ -990,6 +990,126 @@ multi-premise inference require their respective judgments. No single one
 of these observations defines every useful MeTTa kernel. The design of a MeTTa kernel integrating these judgments remains open;
 the following connection uses an existing mathematical calculus.
 
+\subsection{Source queries, retained execution and checked publication}
+\label{sec:interaction-queries}
+
+The occurrence-based interaction model now connects its source grammar to
+the existing retained read machine. This connection concerns execution of
+queries and their resource footprints. A proof checker remains responsible
+for the logical conclusion of an inference request.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, node distance=7mm,
+  box/.style={draw=ink,rounded corners,align=center,font=\small,
+    text width=48mm,minimum height=11mm}]
+\node[box] (sources) at (-29mm,0) {Source patterns, bindings,\\queries and templates};
+\node[box] (judgments) at (29mm,0) {Independent judgments,\\theories and evidence};
+\node[box] (queries) at (-29mm,-22mm) {Adaptive read program\\and retained cursor};
+\node[box] (checker) at (29mm,-22mm) {Selected source checker\\and checked application};
+\node[box] (commit) at (0,-46mm) {Guarded resource commit\\and publication intent};
+\node[box] (native) at (0,-69mm) {Native scanner, ownership,\\validation and publication};
+\draw[->] (sources) -- node[left,font=\scriptsize]{lowering} (queries);
+\draw[->] (judgments) -- node[right,font=\scriptsize]{checking} (checker);
+\draw[->] (queries) -- (commit);
+\draw[->] (checker) -- (commit);
+\draw[->,dashed] (commit) -- node[right,font=\scriptsize]{implementation obligations} (native);
+\end{tikzpicture}
+\end{center}
+
+\begin{theorem}[Source-query lowering]
+Suppose each region read returns exactly its finite occurrence family, in
+the scanner's chosen order. The constructed read program for a source list
+returns exactly the original compiler's row multiset after forgetting answer
+order. This covers reads, takes, uniqueness, aggregation, pure computed
+bindings, conjunction, nested absence and \code{every}. Matching alternatives,
+duplicate-labelled occurrences and computed-result positions are retained.
+The proof is by the source grammar, using the local scanner equation and
+the independent read interpreter; whole-program soundness is not a premise.
+\end{theorem}
+\lean{Sources.Query.scanList_complete, Sources.Query.run_step, Sources.Query.run_compile}
+
+An \code{every} query returns one amalgamated row even when its body has no
+rows. Its enclosing absence is therefore false. With the established sound,
+complete and minimal matcher laws and theory-respecting pure computations,
+a completed empty answer is equivalent to there being no row in the
+independent declarative source relation. A scanner that omits an occurrence
+can fabricate emptiness and fails the explicit scanner premise.
+\lean{Sources.Query.run_empty_iff_no_declarative, Sources.Query.Execution.completed_agreement, Sources.Query.Controls.vacuous_rows_are_present, Sources.Query.Controls.omitted_region_reply_is_not_complete}
+
+\begin{theorem}[Retained source execution]
+The existing cursor completes a compiled query after the number of reads on
+its selected finite path plus one return inspection. Splitting the budget
+preserves its entire saved packet and accumulated read charge. A paused
+packet exposes no completed answer. Successful validation and resumption
+against a new complete view recover that view's source rows; a changed
+performed read refuses resumption and retains the old packet. These are
+region-read counts, not bounds on matcher work or computed-binding evaluation.
+\end{theorem}
+\lean{Sources.Query.Execution.execute_complete, Sources.Query.Execution.execute_split, Sources.Query.Execution.completed_absence, Sources.Query.Execution.resumed_rows, Sources.Query.Controls.partial_query_is_not_absence, Sources.Query.Controls.changed_prefix_retains_refused_packet}
+
+The certificate records actual adaptive reads, including empty replies.
+Reordering equal-labelled occurrences preserves the row-bag observation but
+changes the ordered certificate. A new acknowledgement for an unread key can
+be observed after resumption, whereas changing the message that selected that
+key invalidates the continuation. The source absence constructor additionally
+retains its declared completeness regions, which can be stronger than the
+adaptive observations needed merely to establish an empty join.
+\lean{Sources.Query.validated_source_rows, Sources.Query.Controls.adaptive_dependency_is_bound, Sources.Query.Controls.absence_row_retains_full_footprint, Sources.Query.Controls.bag_agreement_does_not_validate_reordering, Sources.Query.Controls.resume_sees_unread_arrival}
+
+Checked publication reads the selected source, consumes pending work and
+produces evidence only after the existing open-rule checker succeeds.
+Its validity theorem governs those steps from a valid initial store;
+arbitrary writes and native capability confinement require their own
+contracts. Inserting a refused evidence record violates the invariant.
+Adding another source object while retaining the old one does not revoke
+the old request: revision replacement must retire the earlier authority.
+A well-sorted record alone does not establish derivability.
+\lean{ProgrammableJudgmentTransforms.step_preserves_validity, ProgrammableJudgmentTransforms.stored_evidence_derivation, ProgrammableJudgmentTransforms.retaining_source_keeps_old_request_enabled, ProgrammableJudgmentTransforms.refused_evidence_write_breaks_validity, ProgrammableJudgmentServices.program_intents_preserve}
+
+Conditional composition similarly keeps the computed guard distinct from
+the net update. Intermediate freshness can remain necessary when the final
+writes cancel. The proved mover condition licenses fusion of separated
+commits at the declared observation; unrestricted history equality does not
+follow. Both creation and removal windows have separating observers. The
+conditional-rewriting literature supplies the broader overlap and condition-
+transport programme\cite{BehrSobocinski,BehrKrivine}; these concrete results do
+not yet enumerate symbolic occurrence-map overlaps or establish that general
+categorical programme.
+\lean{CommitPrecondition.sequential_holds_iff, Commit.composition_exact, OccurrenceCommits.executable_fusion_iff, OccurrenceCommits.fusion_not_traceEq}
+
+\status{The source-query lowering and retained-cursor comparisons are checked.
+The native interaction engine now retains absence and every as nested groups
+of jobs. Computed sources use its existing request/resume path; a reply handle
+identifies one request generation. Native controls exercise vacuous and nested
+aggregation, nonlinear matching, query-local bindings, changed dependencies,
+cancellation, stale replies, allocation failure and explicit post-effect
+failure. Both space programming and a client invoking the actual proof checker
+use that machinery. Complete scanner qualification, transitive dependencies
+of arbitrary computed code, view lifetime, full backend preparation, atomic
+revision validation and failure-history correspondence remain obligations.
+Shared execution
+does not identify Rho, equational reachability, HOL, MM0 or VibeITP judgments,
+nor construct new translations between them.}
+
+The existing correlated-reply model separately proves that a consumed or
+cancelled request identity stays absent through arbitrary later operations.
+Retargeting an old reply to the current request supplies a separating control:
+the value reaches the wrong continuation despite there being only one live
+request. The native generation check follows this contract; its memory and
+seal implementation retain their qualification obligations.
+\lean{Kernel.CorrelatedReplies.consumed_reply_stays_refused, Kernel.CorrelatedReplies.cancelled_reply_stays_refused, Kernel.CorrelatedReplies.Controls.stale_request_cannot_answer_next, Kernel.CorrelatedReplies.Controls.replacing_supplied_identity_accepts_wrong_reply}
+
+The selected native checkpoint passes 317 continuation and failure controls,
+including incomplete matching and refused waiter registration. Twenty
+mathematics programmes and twelve space-interaction fixtures agree across the
+current-source build, generated Cesta project and plain-C export. The three
+executables are byte-identical under the unchanged Cesta pin. This comparison
+supplies the interpreted library tree explicitly; the C export does not yet
+package those resources. Sanitizer qualification also identifies its SWI
+provider: a reviewed corrected build passes, while the installed provider
+retains a reproducible cleanup leak. Neither build agreement nor these finite
+executions constitute a whole-runtime refinement theorem.
+
 \subsection{An exact reason to require dependency}
 
 The need for dependent typing can be stated without treating every richer
@@ -4423,6 +4543,14 @@ Preprint, 2024. \url{https://arxiv.org/abs/2403.14064}.
 \bibitem{ConLeche}
 J. Breitner. \emph{con-leche: a consistent Lean checker}.
 Lean FRO, 2026. \url{https://github.com/leanprover/con-leche}.
+
+\bibitem{BehrSobocinski}
+N. Behr and P. Soboci\'nski. Rule Algebras for Adhesive Categories.
+Version 4. \url{https://arxiv.org/abs/1807.00785v4}.
+
+\bibitem{BehrKrivine}
+N. Behr and J. Krivine. Compositionality of Rewriting Rules with Conditions.
+Version 2. \url{https://arxiv.org/abs/1904.09322v2}.
 
 \end{thebibliography}
 

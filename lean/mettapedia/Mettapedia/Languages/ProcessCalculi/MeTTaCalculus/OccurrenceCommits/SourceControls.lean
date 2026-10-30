@@ -139,6 +139,17 @@ def un (f : Sig) (x : Tm Sig) : Tm Sig := .node f x (.leaf .nil)
 /-- A binary node. -/
 def bin (f : Sig) (x y : Tm Sig) : Tm Sig := .node f x y
 
+/-- Two variable patterns have the same shape, but a held assignment to one
+    variable makes their observations different unless the assignment is
+    renamed with the pattern. -/
+theorem captured_variable_requires_context_renaming :
+    (ms (.var 0) (Function.update empty 0 (some (k .b))) (k .a)).length = 0 ∧
+    (ms (.var 1) (Function.update empty 0 (some (k .b))) (k .a)).length = 1 ∧
+    (ms (.var 1) (Function.update empty 1 (some (k .b))) (k .a)).length = 0 ∧
+    (ms (.var 0) (Function.update empty 0 (some (k .b))) (k .b)).length = 1 ∧
+    (ms (.var 1) (Function.update empty 1 (some (k .b))) (k .b)).length = 1 := by
+  decide
+
 /-! ## Read and take of one occurrence -/
 
 /-- Read a `tok` and take a `tok`. -/
@@ -163,10 +174,104 @@ theorem readTake_two_linear_rows :
       ((readTake.rows Ls ms lbl twoTok).filter fun x => (footprintOf x.2).Linear).card = 2 := by
   decide
 
+/-- Equal token labels leave two different legal occurrence footprints. A
+    removal policy must say which it selects; their identities are observable. -/
+theorem readTake_two_distinct_footprints :
+    (∃ row ∈ readTake.rows Ls ms lbl twoTok,
+      (footprintOf row.2).Linear ∧
+      (footprintOf row.2).keeps = {(k .tok, 0)} ∧
+      (footprintOf row.2).takes = {(k .tok, 1)}) ∧
+    (∃ row ∈ readTake.rows Ls ms lbl twoTok,
+      (footprintOf row.2).Linear ∧
+      (footprintOf row.2).keeps = {(k .tok, 1)} ∧
+      (footprintOf row.2).takes = {(k .tok, 0)}) := by
+  constructor
+  · apply exists_of_not_forall
+    decide +kernel
+  · apply exists_of_not_forall
+    decide +kernel
+
 /-- **Positive control: with two `tok`s the transform fires.** -/
 theorem readTake_two_fires : ∃ c, Fires Ls ms lbl twoTok readTake c := by
   obtain ⟨-, -, c, fires, -⟩ := fires_of_row (L := Ls) (m := ms) (S := twoTok) (t := readTake)
     (exists_of_not_forall (by decide))
+  exact ⟨c, fires⟩
+
+/-! Replacing a taken value by an equal value does not keep the original
+occurrence. A read and take still need different physical witnesses. -/
+
+/-- Keep and take a token, then make a fresh token with the same label. -/
+def readReplaceTok : Transform ℕ (Tm Sig) (Pat ℕ Sig) :=
+  ⟨.cons (.read (.leaf .tok)) (.cons (.take (.leaf .tok)) .done), [.leaf .tok]⟩
+
+/-- A same-labelled output does not make a single read/take witness linear. -/
+theorem readReplaceTok_one_refused (c : Commit Occ (Tm Sig)) :
+    ¬ Fires Ls ms lbl oneTok readReplaceTok c := by
+  apply not_fires_of_rows (t := readReplaceTok) _ c
+  decide
+
+/-- A second physical token supplies the independent witness. -/
+theorem readReplaceTok_two_fires : ∃ c, Fires Ls ms lbl twoTok readReplaceTok c := by
+  obtain ⟨-, -, c, fires, -⟩ := fires_of_row (L := Ls) (m := ms) (S := twoTok)
+    (t := readReplaceTok) (exists_of_not_forall (by decide))
+  exact ⟨c, fires⟩
+
+/-! ## A removal selected after a read
+
+Once a removal has selected a physical occurrence, its consumption participates
+in the same footprint as source takes. A conflicting candidate does not imply
+that all read matches conflict: the next witness can keep a different item.
+This models the selected removal, not the separate policy for a removal with
+no matching occurrence. -/
+
+/-- Keep one arbitrary occurrence and consume the occurrence labelled `a`. -/
+def readAnyTakeA : Transform ℕ (Tm Sig) (Pat ℕ Sig) :=
+  ⟨.cons (.read (.var 0)) (.cons (.take (.leaf .a)) .done), [.var 0]⟩
+
+def aAndB : Finset Occ := {(k .a, 0), (k .b, 1)}
+
+/-- Source rows for a variable already bound to `b`. -/
+def heldBoundRows := Sources.rows Ls ms lbl aAndB [.var 0]
+  (.cons (.read (.var 0)) .done) (Function.update empty 0 (some (k .b)))
+
+/-- Source rows for another variable in that same held context. -/
+def heldFreeRows := Sources.rows Ls ms lbl aAndB [.var 1]
+  (.cons (.read (.var 1)) .done) (Function.update empty 0 (some (k .b)))
+
+/-- The same store distinguishes an outer-bound source variable from an
+    unbound one: the former has one kept row, the latter has two. -/
+theorem held_context_changes_source_rows :
+    heldBoundRows.card = 1 ∧ heldFreeRows.card = 2 ∧
+    (∀ row ∈ heldBoundRows, (footprintOf row.2).keeps = {((k .b), 1)}) ∧
+    (∃ row ∈ heldFreeRows, (footprintOf row.2).keeps = {((k .a), 0)}) := by
+  have checks : heldBoundRows.card = 1 ∧ heldFreeRows.card = 2 ∧
+      (∀ row ∈ heldBoundRows, (footprintOf row.2).keeps = {((k .b), 1)}) ∧
+      ¬ (∀ row ∈ heldFreeRows, (footprintOf row.2).keeps ≠ {((k .a), 0)}) := by
+    decide +kernel
+  exact ⟨checks.1, checks.2.1, checks.2.2.1, exists_of_not_forall checks.2.2.2⟩
+
+/-- Both read candidates exist, but only the one keeping `b` is linear. -/
+theorem readAnyTakeA_candidate_filter :
+    (readAnyTakeA.rows Ls ms lbl aAndB).card = 2 ∧
+      ((readAnyTakeA.rows Ls ms lbl aAndB).filter fun x =>
+        (footprintOf x.2).Linear).card = 1 ∧
+      ∀ x ∈ readAnyTakeA.rows Ls ms lbl aAndB,
+        (footprintOf x.2).Linear → x.1 0 = some (k .b) := by
+  decide +kernel
+
+/-- Both choices are present: keeping `a` conflicts and keeping `b` does not. -/
+theorem readAnyTakeA_both_candidates :
+    (∃ x ∈ readAnyTakeA.rows Ls ms lbl aAndB,
+      x.1 0 = some (k .a) ∧ ¬ (footprintOf x.2).Linear) ∧
+    (∃ x ∈ readAnyTakeA.rows Ls ms lbl aAndB,
+      x.1 0 = some (k .b) ∧ (footprintOf x.2).Linear) := by
+  exact ⟨exists_of_not_forall (by decide), exists_of_not_forall (by decide)⟩
+
+/-- Rejecting the candidate that keeps `a` is not exhaustion: a complete
+matcher still finds an independent firing that keeps `b`. -/
+theorem readAnyTakeA_has_firing : ∃ c, Fires Ls ms lbl aAndB readAnyTakeA c := by
+  obtain ⟨-, -, c, fires, -⟩ := fires_of_row (L := Ls) (m := ms)
+    (S := aAndB) (t := readAnyTakeA) (exists_of_not_forall (by decide))
   exact ⟨c, fires⟩
 
 /-! ## A vacuous `every` after a taking kernel -/

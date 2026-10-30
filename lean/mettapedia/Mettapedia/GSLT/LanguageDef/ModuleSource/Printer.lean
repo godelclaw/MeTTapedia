@@ -7,7 +7,7 @@ import Mettapedia.OSLF.MeTTaIL.Export
 `print` writes a module back in the format: imports, the module's theories and its entry. Rows are
 written as `languageDef!` writes them; a bound variable is written by its binder's name, an
 application of an authored abstraction as `(subst body argument)`, a nullary constructor as
-`(Zero)`, a curried binder type as `[A -> B -> C]` (an arrow domain in parentheses). Equations are anonymous in the format and are written without their generated names.
+`"Zero"`, a curried binder type as `[A -> B -> C]` (an arrow domain in parentheses). Equations are anonymous in the format and are written without their generated names.
 
 `#module_roundtrip X` (in `ModuleSource.Commands`) prints `X.module`, reads the text back with the
 same syntax and checks that the data is unchanged.
@@ -19,7 +19,18 @@ namespace Mettapedia.GSLT.LanguageDef.ModuleSource.Printer
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
-private def quote (text : String) : String := "\"" ++ text ++ "\""
+private def quoteChar (character : Char) : List Char :=
+  if character = '\n' then ['\\', 'n']
+  else if character = '\t' then ['\\', 't']
+  else if character = '\\' then ['\\', '\\']
+  else if character = '"' then ['\\', '"']
+  else if character.toNat ≤ 31 ∨ character.toNat = 127 then
+    ['\\', 'x', Nat.digitChar (character.toNat / 16), Nat.digitChar (character.toNat % 16)]
+  else [character]
+
+/-- A string literal with explicit escapes for the module reader. -/
+def stringLiteral (text : String) : String :=
+  String.ofList ('"' :: (text.toList.flatMap quoteChar ++ ['"']))
 
 private def commas (parts : List String) : String := ", ".intercalate parts
 
@@ -38,23 +49,17 @@ def type : TypeExpr → String
       let collection := match kind with | .vec => "Vec" | .hashBag => "HashBag" | .hashSet => "HashSet"
       collection ++ "(" ++ type element ++ ")"
 
-/-- Whether a label reads as an identifier. -/
-private def identifierLike (label : String) : Bool :=
-  match label.toList with
-  | [] => false
-  | first :: rest => (first.isAlpha || first == '_') && rest.all fun c => c.isAlphanum || c == '_'
-
-/-- A pattern, with the names of the enclosing binders, innermost first. A constant whose label is not an identifier
-is written as a string, which reads back as that constant. -/
+/-- A pattern, with enclosing binders innermost first. Quoted constructor
+heads retain punctuation, keywords and escaped literal contents. -/
 def pattern (names : List String) : Pattern → String
   | .bvar index => (names[index]?).getD s!"#{index}"
   | .fvar name => name
-  | .apply label [] => if identifierLike label then s!"({label})" else quote label
+  | .apply label [] => stringLiteral label
   | .apply label arguments =>
       if label == Pattern.evalHead then
         "(subst " ++ " ".intercalate (arguments.map (pattern names)) ++ ")"
       else
-        "(" ++ label ++ " " ++ " ".intercalate (arguments.map (pattern names)) ++ ")"
+        stringLiteral label ++ "(" ++ commas (arguments.map (pattern names)) ++ ")"
   | .lambda binder body =>
       let name := binder.getD s!"x{names.length}"
       s!"^{name}." ++ pattern (name :: names) body
@@ -67,6 +72,20 @@ def pattern (names : List String) : Pattern → String
       let items := elements.map (pattern names) ++ (rest.map (fun name => s!"...{name}")).toList
       open_ ++ commas items ++ close
 decreasing_by all_goals sizeOf_pattern_dec
+
+theorem pattern_nullary (names : List String) (label : String) :
+    pattern names (.apply label []) = stringLiteral label := by
+  rw [pattern]
+
+theorem pattern_free (names : List String) (name : String) :
+    pattern names (.fvar name) = name := by
+  rw [pattern]
+
+theorem pattern_apply_one (names : List String) (label : String) (child : Pattern)
+    (ordinary : label ≠ Pattern.evalHead) :
+    pattern names (.apply label [child]) =
+      stringLiteral label ++ "(" ++ pattern names child ++ ")" := by
+  rw [pattern] <;> simp [ordinary, commas]
 
 def premise : Premise → String
   | .freshness condition =>
@@ -89,17 +108,17 @@ mutual
 
 def syntaxOp : SyntaxPatternOp → String
   | .var name => name
-  | .sep collection separator none => s!"{collection}.*sep({quote separator})"
-  | .sep _ separator (some source) => s!"{syntaxOp source}.*sep({quote separator})"
+  | .sep collection separator none => s!"{collection}.*sep({stringLiteral separator})"
+  | .sep _ separator (some source) => s!"{syntaxOp source}.*sep({stringLiteral separator})"
   | .zip left right => s!"*zip({left}, {right})"
   | .map source params body => s!"{syntaxOp source}.*map(|{commas params}| {" ".intercalate (body.map syntaxItem)})"
   | .opt inner => s!"*opt({" ".intercalate (inner.map syntaxItem)})"
 
 def syntaxItem : SyntaxItem → String
-  | .terminal text => quote text
+  | .terminal text => stringLiteral text
   | .nonTerminal name => name
-  | .separator text => quote text
-  | .delimiter left right => quote left ++ " " ++ quote right
+  | .separator text => stringLiteral text
+  | .delimiter left right => stringLiteral left ++ " " ++ stringLiteral right
   | .op op => syntaxOp op
 
 end
@@ -114,7 +133,7 @@ def rule (row : GrammarRule) : String :=
   let representation := match row.collectionRepresentation with
     | .bare => ""
     | .wrapped => " ![wrapped]"
-  s!"{quote row.label} . {commas (row.params.map termParam)} |- {" ".intercalate (row.syntaxPattern.map syntaxItem)} : " ++
+  s!"{stringLiteral row.label} . {commas (row.params.map termParam)} |- {" ".intercalate (row.syntaxPattern.map syntaxItem)} : " ++
     s!"{row.category}{evalPolicy row.evalPolicy?}{representation};"
 
 private def guarded (premises : List Premise) (body : String) : String :=
@@ -126,7 +145,7 @@ def equation (row : Equation) : String :=
   else
     let context := commas (row.typeContext.map fun (name, sort) => s!"{name}:{type sort}")
     let conditions := if row.premises.isEmpty then "" else " | " ++ commas (row.premises.map premise)
-    s!"{quote row.name} . {context}{conditions} |- {pattern [] row.left} = {pattern [] row.right};"
+    s!"{stringLiteral row.name} . {context}{conditions} |- {pattern [] row.left} = {pattern [] row.right};"
 
 def rewrite (row : RewriteRule) : String :=
   if row.typeContext.isEmpty then
@@ -134,7 +153,7 @@ def rewrite (row : RewriteRule) : String :=
   else
     let context := commas (row.typeContext.map fun (name, sort) => s!"{name}:{type sort}")
     let conditions := if row.premises.isEmpty then "" else " | " ++ commas (row.premises.map premise)
-    s!"{quote row.name} . {context}{conditions} |- {pattern [] row.left} ~> {pattern [] row.right};"
+    s!"{stringLiteral row.name} . {context}{conditions} |- {pattern [] row.left} ~> {pattern [] row.right};"
 
 /-! ## Modules -/
 
@@ -188,7 +207,7 @@ def theory (row : Theory) : List String :=
 
 /-- **A module as `.module` text.** -/
 def print (module : Module) : String :=
-  let imports := module.imports.map fun item => s!"import {quote item.file} as {item.qualifier}"
+  let imports := module.imports.map fun item => s!"import {stringLiteral item.file} as {item.qualifier}"
   let entry := match module.entry with
     | some (target, args) => [s!"theory {path target}(" ++ commas (args.map fun arg => " ".intercalate (expr 0 arg)) ++ ")"]
     | none => []

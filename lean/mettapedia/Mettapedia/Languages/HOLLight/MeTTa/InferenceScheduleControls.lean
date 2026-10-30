@@ -84,12 +84,12 @@ def transitivity (record : Record) (logical : (reflexivity []).LogicalResult rec
     (refl_view record logical) (refl_view record logical)
 
 def specialization (first second : Record) : Invocation frame [(secondKey, second), (firstKey, first)] :=
-  .instType [(Ty.var parameter, Ty.bool)] secondKey second
+  .instType [(Ty.bool, Ty.var parameter)] secondKey second
     (by
       intro entry member
       simp only [List.mem_singleton] at member
       subst entry
-      refine ⟨by simp [parameter, Name.global, TypeFormation.Resolved], ?_⟩
+      refine ⟨?_, by simp [parameter, Name.global, TypeFormation.Resolved]⟩
       simp only [Ty.bool, TypeFormation.Resolved]
       have formed := primitive_boolean
       simp only [Ty.bool, TypeFormed] at formed
@@ -98,7 +98,7 @@ def specialization (first second : Record) : Invocation frame [(secondKey, secon
       intro entry member
       simp only [List.mem_singleton] at member
       subst entry
-      exact ⟨by simp [TypeFormed], primitive_boolean⟩)
+      exact ⟨primitive_boolean, by simp [TypeFormed]⟩)
     rfl
 
 def mixedPlan : Plan frame [] [] 3 :=
@@ -125,6 +125,17 @@ theorem transitivity_retains_both_occurrences (record : Record)
 theorem substitution_is_nonempty (first second : Record) :
     (specialization first second).payload ≠ .symbol "HOL:Nil" := by
   simp [specialization, Invocation.payload, TypeSubstitution.maplets, Premises.keys]
+
+/-- HOL Light writes a replacement before its variable key. The retained
+substitution actually specializes the parameter, rather than merely being
+a nonempty list whose operator key would be ignored. -/
+theorem substitution_specializes_parameter :
+    SourceSubstitution.typeAction [(Ty.bool, .var parameter)] (.var parameter) = Ty.bool := by
+  simp [SourceSubstitution.typeAction, SourceSubstitution.variableType]
+
+theorem reversed_maplet_leaves_parameter :
+    SourceSubstitution.typeAction [(.var parameter, Ty.bool)] (.var parameter) = .var parameter := by
+  simp [SourceSubstitution.typeAction, SourceSubstitution.variableType, Ty.bool]
 
 theorem absent_premise_cannot_be_selected (address : Atom) (record : Record) :
     ([] : Cache).lookup address ≠ some record := by simp
