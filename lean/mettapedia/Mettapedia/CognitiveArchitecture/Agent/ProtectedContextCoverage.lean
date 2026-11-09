@@ -10,11 +10,14 @@ required in the current context.  This does not require every historical byte
 in every prompt.
 
 A successful bounded projection contains either the full payload or a reference
-for every required occurrence.  References resolve against the same durable
-history, so compact presentation does not replace the authoritative record.
-Missing identities, temporarily unavailable sources, and insufficient budgets
-are distinct explicit errors.  In particular, returning an empty successful
-view after dropping required evidence is not an admissible compaction rule.
+for every required occurrence.  A reference is not claimed to be prompt text:
+the composed contract separately requires a consumer whose fetch operation
+agrees with the same durable history.  Inline and reference encoding costs are
+explicit inputs in abstract cost units; a token bound requires supplying an
+actual token-cost model.  Missing identities, temporarily unavailable sources,
+and insufficient budgets are distinct explicit errors.  In particular,
+returning an empty successful view after dropping required evidence is not an
+admissible compaction rule.
 
 Projection and assembly are pure functions of a history snapshot.  The composed
 runner returns that same history alongside its result, making noninterference
@@ -87,28 +90,29 @@ def inlineItems (occurrences : List (Occurrence Id Payload)) : List (Item Id Pay
 def referenceItems (occurrences : List (Occurrence Id Payload)) : List (Item Id Payload) :=
   occurrences.map fun occurrence => .reference occurrence.id
 
-def itemCost (measure : Payload → Nat) : Item Id Payload → Nat
+def itemCost (measure : Payload → Nat) (referenceCost : Id → Nat) : Item Id Payload → Nat
   | .inline occurrence => measure occurrence.payload + 1
-  | .reference _ => 1
+  | .reference id => referenceCost id
 
-def viewCost (measure : Payload → Nat) (fixed : Nat) (items : List (Item Id Payload)) : Nat :=
-  fixed + (items.map (itemCost measure)).sum
+def viewCost (measure : Payload → Nat) (referenceCost : Id → Nat) (fixed : Nat)
+    (items : List (Item Id Payload)) : Nat :=
+  fixed + (items.map (itemCost measure referenceCost)).sum
 
 /-- Full inline evidence is preferred.  If it does not fit, the algorithm may
 use references only when the complete required reference index fits.  No item
 is silently removed to make a view appear successful. -/
 def project [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) : Except (PreparationError Id) (List (Item Id Payload)) :=
+    (referenceCost : Id → Nat) (fixed budget : Nat) : Except (PreparationError Id) (List (Item Id Payload)) :=
   match resolveRequired history available required with
   | .error error => .error error
   | .ok occurrences =>
       let inline := inlineItems occurrences
-      if viewCost measure fixed inline ≤ budget then
+      if viewCost measure referenceCost fixed inline ≤ budget then
         .ok inline
       else
         let references := referenceItems occurrences
-        if viewCost measure fixed references ≤ budget then
+        if viewCost measure referenceCost fixed references ≤ budget then
           .ok references
         else .error .insufficientBudget
 
@@ -122,8 +126,8 @@ def assemble (items : List (Item Id Payload)) : Prompt Id Payload := ⟨items⟩
 /-- The concrete record → project → assemble pipeline. -/
 def prepare [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) : Except (PreparationError Id) (Prompt Id Payload) :=
-  (project history available required measure fixed budget).map assemble
+    (referenceCost : Id → Nat) (fixed budget : Nat) : Except (PreparationError Id) (Prompt Id Payload) :=
+  (project history available required measure referenceCost fixed budget).map assemble
 
 /-- The runner exposes history preservation rather than relying on an informal
 promise that formatting has no storage effects. -/
@@ -133,13 +137,13 @@ structure RunResult (Id : Type u) (Payload : Type v) where
 
 def run [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) : RunResult Id Payload :=
-  ⟨history, prepare history available required measure fixed budget⟩
+    (referenceCost : Id → Nat) (fixed budget : Nat) : RunResult Id Payload :=
+  ⟨history, prepare history available required measure referenceCost fixed budget⟩
 
 @[simp] theorem run_preserves_history [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) :
-    (run history available required measure fixed budget).history = history := rfl
+    (referenceCost : Id → Nat) (fixed budget : Nat) :
+    (run history available required measure referenceCost fixed budget).history = history := rfl
 
 /-- Coverage is occurrence-indexed: each required identity has a durable payload
 and a projected item with that same provenance resolving to that payload. -/
@@ -148,6 +152,32 @@ def Covers [DecidableEq Id] (history : History Id Payload)
   ∀ id ∈ required, ∃ occurrence : Occurrence Id Payload,
     occurrence.id = id ∧ history.read id = some occurrence.payload ∧
       ∃ item ∈ items, item.id = id ∧ item.resolve history = some occurrence.payload
+
+/-- The eventual reference consumer is an explicit part of the contract. -/
+structure Consumer (Id : Type u) (Payload : Type v) where
+  fetch : Id → Option Payload
+
+/-- Consumer fetchability means agreement with durable occurrence payloads,
+not merely the existence of an arbitrary resolver in the proof. -/
+def ConsumerAgrees (history : History Id Payload) (consumer : Consumer Id Payload) : Prop :=
+  ∀ id, consumer.fetch id = history.read id
+
+namespace Item
+
+def resolveConsumer (consumer : Consumer Id Payload) : Item Id Payload → Option Payload
+  | .inline occurrence => some occurrence.payload
+  | .reference id => consumer.fetch id
+
+end Item
+
+/-- Coverage observed by the declared consumer.  References carry provenance,
+not immediate inline text; consumer resolution is what supplies their payload. -/
+def ConsumerCovers (history : History Id Payload) (consumer : Consumer Id Payload)
+    (items : List (Item Id Payload)) (required : List Id) : Prop :=
+  ∀ id ∈ required, ∃ occurrence : Occurrence Id Payload,
+    occurrence.id = id ∧ history.read id = some occurrence.payload ∧
+      ∃ item ∈ items, item.id = id ∧
+        item.resolveConsumer consumer = some occurrence.payload
 
 /-! ## Resolution and general coverage -/
 
@@ -217,12 +247,29 @@ theorem covers_references [DecidableEq Id] (history : History Id Payload)
     · exact List.mem_map.mpr ⟨occurrence, occurrenceMember, rfl⟩
     · exact sound.2 occurrence occurrenceMember
 
+theorem covers_consumer [DecidableEq Id] (history : History Id Payload)
+    (consumer : Consumer Id Payload) (agrees : ConsumerAgrees history consumer)
+    (items : List (Item Id Payload)) (required : List Id)
+    (covered : Covers history items required) :
+    ConsumerCovers history consumer items required := by
+  intro id member
+  obtain ⟨occurrence, identity, durable, item, itemMember, itemIdentity, resolved⟩ :=
+    covered id member
+  refine ⟨occurrence, identity, durable, item, itemMember, itemIdentity, ?_⟩
+  cases item with
+  | inline inlineOccurrence => exact resolved
+  | reference referenceId =>
+      simp only [Item.resolve] at resolved
+      simp only [Item.resolveConsumer]
+      rw [agrees]
+      exact resolved
+
 /-- Every successful projection covers all required occurrences, whether it
 selected inline evidence or the bounded reference index. -/
 theorem project_ready_covers [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) (items : List (Item Id Payload))
-    (ready : project history available required measure fixed budget = .ok items) :
+    (referenceCost : Id → Nat) (fixed budget : Nat) (items : List (Item Id Payload))
+    (ready : project history available required measure referenceCost fixed budget = .ok items) :
     Covers history items required := by
   unfold project at ready
   split at ready
@@ -240,9 +287,9 @@ theorem project_ready_covers [DecidableEq Id] (history : History Id Payload)
 
 theorem project_ready_bounded [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) (items : List (Item Id Payload))
-    (ready : project history available required measure fixed budget = .ok items) :
-    viewCost measure fixed items ≤ budget := by
+    (referenceCost : Id → Nat) (fixed budget : Nat) (items : List (Item Id Payload))
+    (ready : project history available required measure referenceCost fixed budget = .ok items) :
+    viewCost measure referenceCost fixed items ≤ budget := by
   unfold project at ready
   split at ready
   · contradiction
@@ -259,14 +306,14 @@ theorem project_ready_bounded [DecidableEq Id] (history : History Id Payload)
 
 theorem prepare_ok_iff_project [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) (prompt : Prompt Id Payload) :
-    prepare history available required measure fixed budget = .ok prompt ↔
-      project history available required measure fixed budget = .ok prompt.items := by
+    (referenceCost : Id → Nat) (fixed budget : Nat) (prompt : Prompt Id Payload) :
+    prepare history available required measure referenceCost fixed budget = .ok prompt ↔
+      project history available required measure referenceCost fixed budget = .ok prompt.items := by
   cases prompt
   constructor
   · intro prepared
     unfold prepare at prepared
-    cases result : project history available required measure fixed budget with
+    cases result : project history available required measure referenceCost fixed budget with
     | error error =>
         rw [result] at prepared
         contradiction
@@ -280,19 +327,22 @@ theorem prepare_ok_iff_project [DecidableEq Id] (history : History Id Payload)
     rfl
 
 /-- Composed record → project → assemble correctness: successful preparation is
-bounded, occurrence-complete with resolvable provenance, and leaves the
-authoritative history snapshot untouched. -/
+bounded in the supplied encoding units, occurrence-complete for the declared
+consumer with resolvable provenance, and leaves durable history untouched. -/
 theorem prepare_composes [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) (prompt : Prompt Id Payload)
-    (ready : prepare history available required measure fixed budget = .ok prompt) :
-    viewCost measure fixed prompt.items ≤ budget ∧
-      Covers history prompt.items required ∧
-        (run history available required measure fixed budget).history = history := by
-  have projected := (prepare_ok_iff_project history available required measure fixed budget prompt).mp ready
-  exact ⟨project_ready_bounded history available required measure fixed budget prompt.items projected,
-    project_ready_covers history available required measure fixed budget prompt.items projected,
-    run_preserves_history history available required measure fixed budget⟩
+    (referenceCost : Id → Nat) (fixed budget : Nat)
+    (consumer : Consumer Id Payload) (agrees : ConsumerAgrees history consumer)
+    (prompt : Prompt Id Payload)
+    (ready : prepare history available required measure referenceCost fixed budget = .ok prompt) :
+    viewCost measure referenceCost fixed prompt.items ≤ budget ∧
+      ConsumerCovers history consumer prompt.items required ∧
+        (run history available required measure referenceCost fixed budget).history = history := by
+  have projected := (prepare_ok_iff_project history available required measure referenceCost fixed budget prompt).mp ready
+  exact ⟨project_ready_bounded history available required measure referenceCost fixed budget prompt.items projected,
+    covers_consumer history consumer agrees prompt.items required
+      (project_ready_covers history available required measure referenceCost fixed budget prompt.items projected),
+    run_preserves_history history available required measure referenceCost fixed budget⟩
 
 /-! ## Non-destructive correction -/
 
@@ -329,12 +379,12 @@ theorem correction_retains_original [DecidableEq Id] (history : History Id Paylo
 counterexample: on overflow it reports success after deleting every item. -/
 def legacyProject [DecidableEq Id] (history : History Id Payload)
     (available : Id → Bool) (required : List Id) (measure : Payload → Nat)
-    (fixed budget : Nat) : Except (PreparationError Id) (List (Item Id Payload)) :=
+    (referenceCost : Id → Nat) (fixed budget : Nat) : Except (PreparationError Id) (List (Item Id Payload)) :=
   match resolveRequired history available required with
   | .error error => .error error
   | .ok occurrences =>
       let inline := inlineItems occurrences
-      if viewCost measure fixed inline ≤ budget then .ok inline else .ok []
+      if viewCost measure referenceCost fixed inline ≤ budget then .ok inline else .ok []
 
 /-! ## Finite controls -/
 
@@ -354,31 +404,43 @@ def markerHistory : TextHistory := ofList [(markerId, marker)]
 /-- The concrete required finding reaches the assembled prompt inline when its
 full measured representation fits exactly. -/
 theorem marker_record_project_assemble :
-    prepare markerHistory (fun _ => true) [markerId] String.length 0 (marker.length + 1) =
+    prepare markerHistory (fun _ => true) [markerId] String.length (fun _ => 1) 0 (marker.length + 1) =
       .ok ⟨[.inline ⟨markerId, marker⟩]⟩ := by
   rfl
 
 /-- At a smaller budget the same evidence remains covered by a resolvable
 reference; it is not reported as absent and is not silently dropped. -/
 theorem marker_reference_at_budget_boundary :
-    prepare markerHistory (fun _ => true) [markerId] String.length 0 1 =
+    prepare markerHistory (fun _ => true) [markerId] String.length (fun _ => 1) 0 1 =
       .ok ⟨[.reference markerId]⟩ := by
   rfl
 
+def markerConsumer : Consumer String String := ⟨markerHistory.read⟩
+
+theorem marker_reference_is_consumer_fetchable :
+    ConsumerAgrees markerHistory markerConsumer ∧
+      (Item.reference markerId).resolveConsumer markerConsumer = some marker := by
+  exact ⟨fun _ => rfl, rfl⟩
+
+theorem reference_encoding_cost_is_not_assumed_to_be_one :
+    prepare markerHistory (fun _ => true) [markerId] String.length (fun _ => 2) 0 1 =
+      .error .insufficientBudget := by
+  rfl
+
 theorem zero_budget_is_explicitly_not_ready :
-    prepare markerHistory (fun _ => true) [markerId] String.length 0 0 =
+    prepare markerHistory (fun _ => true) [markerId] String.length (fun _ => 1) 0 0 =
       .error .insufficientBudget := by
   rfl
 
 theorem unavailable_is_not_absent :
-    prepare markerHistory (fun _ => false) [markerId] String.length 0 1000 =
+    prepare markerHistory (fun _ => false) [markerId] String.length (fun _ => 1) 0 1000 =
       .error (.unavailable markerId) ∧
-    prepare markerHistory (fun _ => true) ["missing"] String.length 0 1000 =
+    prepare markerHistory (fun _ => true) ["missing"] String.length (fun _ => 1) 0 1000 =
       .error (.absent "missing") := by
   exact ⟨rfl, rfl⟩
 
 theorem legacy_rule_silently_drops_required_marker :
-    legacyProject markerHistory (fun _ => true) [markerId] String.length 0 0 = .ok [] ∧
+    legacyProject markerHistory (fun _ => true) [markerId] String.length (fun _ => 1) 0 0 = .ok [] ∧
       ¬ Covers markerHistory [] [markerId] := by
   constructor
   · rfl
@@ -391,7 +453,7 @@ theorem equal_text_distinct_sources :
     let history := ofList [("source-a:0:0", "same observation"),
       ("source-b:0:0", "same observation")]
     let required := ["source-a:0:0", "source-b:0:0"]
-    ∃ prompt, prepare history (fun _ => true) required String.length 0 1000 = .ok prompt ∧
+    ∃ prompt, prepare history (fun _ => true) required String.length (fun _ => 1) 0 1000 = .ok prompt ∧
       prompt.items.map Item.id = required := by
   exact ⟨⟨[.inline ⟨"source-a:0:0", "same observation"⟩,
     .inline ⟨"source-b:0:0", "same observation"⟩]⟩, rfl, rfl⟩
@@ -407,10 +469,13 @@ end Controls
 #print axioms resolveRequired_sound
 #print axioms project_ready_covers
 #print axioms project_ready_bounded
+#print axioms covers_consumer
 #print axioms prepare_composes
 #print axioms correction_retains_original
 #print axioms Controls.marker_record_project_assemble
 #print axioms Controls.marker_reference_at_budget_boundary
+#print axioms Controls.marker_reference_is_consumer_fetchable
+#print axioms Controls.reference_encoding_cost_is_not_assumed_to_be_one
 #print axioms Controls.zero_budget_is_explicitly_not_ready
 #print axioms Controls.unavailable_is_not_absent
 #print axioms Controls.legacy_rule_silently_drops_required_marker

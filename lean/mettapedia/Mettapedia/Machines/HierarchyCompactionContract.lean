@@ -275,8 +275,8 @@ def stage (publication : Publication Id Payload) (generation : Generation Id Pay
     (generation : Generation Id Payload) :
     recover (stage publication generation) = recover publication := rfl
 
-/-- Commit is the explicit boundary: a complete, closed pending generation is
-added to the published set and atomically selected by the commit pointer. -/
+/-- Generic publication permits deliberate data replacement; its completeness
+and closure checks are not a history-preservation claim. -/
 def commit [DecidableEq Id] (publication : Publication Id Payload) (identity : Nat) :
     Option (Publication Id Payload) :=
   match publication.pending.find? fun generation => generation.identity == identity with
@@ -343,6 +343,62 @@ theorem recover_complete_closed [DecidableEq Id] (publication : Publication Id P
             exact ⟨generation, List.mem_of_find?_eq_some found, valid.1, valid.2, rfl⟩
           · contradiction
 
+/-! ## Compaction-specific staging and publication -/
+
+/-- Unlike generic replacement, this candidate is obtained from the currently
+recoverable store by physical compaction and reopening.  It can be staged only
+when the archive is available and the reopened candidate is closed. -/
+def stageCompaction [DecidableEq Id] (publication : Publication Id Payload)
+    (identity : Nat) (archiveAvailable : Bool) : Option (Publication Id Payload) := do
+  let base ← recover publication
+  let candidate ← reopen archiveAvailable (compact base)
+  if referentiallyClosed candidate then
+    some (stage publication ⟨identity, candidate, true⟩)
+  else none
+
+theorem stageCompaction_success [DecidableEq Id] (publication : Publication Id Payload)
+    (identity : Nat) (base : Store Id Payload)
+    (recovered : recover publication = some base)
+    (closed : referentiallyClosed base = true) :
+    stageCompaction publication identity true =
+      some (stage publication ⟨identity, base, true⟩) := by
+  simp [stageCompaction, recovered, closed]
+
+/-- The complete compaction path is tied to its recovered base.  The pending
+lookup premise also covers the ordinary case where generation identities are
+unique; it explicitly handles collisions rather than assuming them away. -/
+theorem compact_stage_commit_recovers_base [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat) (base : Store Id Payload)
+    (recovered : recover publication = some base)
+    (closed : referentiallyClosed base = true)
+    (pending : ((stage publication ⟨identity, base, true⟩).pending.find?
+      fun candidate => candidate.identity == identity) = some ⟨identity, base, true⟩) :
+    ((stageCompaction publication identity true).bind (fun staged =>
+      (commit staged identity).bind recover)) = some base := by
+  rw [stageCompaction_success publication identity base recovered closed]
+  exact commit_recovers_generation _ _ ⟨identity, base, true⟩ pending rfl closed
+
+theorem compact_stage_commit_preserves_read [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat) (base : Store Id Payload)
+    (recovered : recover publication = some base)
+    (closed : referentiallyClosed base = true)
+    (pending : ((stage publication ⟨identity, base, true⟩).pending.find?
+      fun candidate => candidate.identity == identity) = some ⟨identity, base, true⟩)
+    (id : Id) (revision : Nat) :
+    ((stageCompaction publication identity true).bind fun staged =>
+      (commit staged identity).bind recover).map (fun store => read store id revision) =
+        some (read base id revision) := by
+  rw [compact_stage_commit_recovers_base publication identity base recovered closed pending]
+  rfl
+
+/-- Archive refusal happens before staging, so no compaction candidate is
+silently published with an incomplete logical view. -/
+theorem stageCompaction_archive_unavailable [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat) :
+    stageCompaction publication identity false = none := by
+  unfold stageCompaction
+  cases recover publication <;> rfl
+
 /-! ## Original-plus-correction regression -/
 
 namespace Controls
@@ -388,6 +444,15 @@ theorem interruption_then_commit :
   · rfl
   · exact commit_recovers_generation _ _ ⟨2, seeded, true⟩ rfl rfl (by decide)
 
+theorem compaction_publication_preserves_original_and_correction :
+    ((stageCompaction initialPublication 2 true).bind fun staged =>
+      (commit staged 2).bind recover).map (fun store => read store "e" 1) =
+        some (some "original needle Ω") ∧
+    ((stageCompaction initialPublication 2 true).bind fun staged =>
+      (commit staged 2).bind recover).map (fun store => read store "e" 2) =
+        some (some "corrected") := by
+  constructor <;> decide
+
 end Controls
 
 #print axioms decode_encodeRequest
@@ -402,8 +467,12 @@ end Controls
 #print axioms commit_recovers_generation
 #print axioms recover_stage
 #print axioms recover_complete_closed
+#print axioms compact_stage_commit_recovers_base
+#print axioms compact_stage_commit_preserves_read
+#print axioms stageCompaction_archive_unavailable
 #print axioms Controls.original_and_correction_survive_compact_reopen
 #print axioms Controls.exact_fixture_repair_composes
 #print axioms Controls.interruption_then_commit
+#print axioms Controls.compaction_publication_preserves_original_and_correction
 
 end Mettapedia.Machines.HierarchyCompactionContract

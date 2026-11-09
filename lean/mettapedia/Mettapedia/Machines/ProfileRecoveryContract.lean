@@ -1,4 +1,4 @@
-import Std
+import Mettapedia.Logic.Relation.FiniteReachability
 
 /-!
 # Profile admission and local completion recovery
@@ -38,6 +38,10 @@ def allModules : List Module :=
   [.nativeLlm, .accounting, .lifetime, .policy, .path,
     .chatgptAgent, .requestContext, .libImport]
 
+instance : Fintype Module where
+  elems := allModules.toFinset
+  complete module := by cases module <;> simp [allModules]
+
 /-- Static imports relevant to the native command path. -/
 def dependencies : Module → List Module
   | .nativeLlm => [.accounting, .chatgptAgent]
@@ -53,6 +57,30 @@ inductive Reachable (edges : Module → List Module) : Module → Module → Pro
   | step {start middle target : Module} (edge : middle ∈ edges start)
       (rest : Reachable edges middle target) : Reachable edges start target
 
+namespace Reachable
+
+theorem trans {edges : Module → List Module} {start middle target : Module}
+    (first : Reachable edges start middle) (second : Reachable edges middle target) :
+    Reachable edges start target := by
+  induction first with
+  | refl => exact second
+  | step edge _ ih => exact .step edge (ih second)
+
+theorem iff_reflTransGen {edges : Module → List Module} {start target : Module} :
+    Reachable edges start target ↔
+      Relation.ReflTransGen (fun source next => next ∈ edges source) start target := by
+  constructor
+  · intro reachable
+    induction reachable with
+    | refl => exact .refl
+    | step edge _ ih => exact .head edge ih
+  · intro reachable
+    induction reachable with
+    | refl => exact .refl _
+    | tail _ edge ih => exact ih.trans (.step edge (.refl _))
+
+end Reachable
+
 structure Profile where
   supported : Module → Bool
   required : List Module
@@ -64,6 +92,32 @@ def Closed (profile : Profile) : Prop :=
   ∀ {start target : Module}, start ∈ profile.roots →
     Reachable dependencies start target →
       target ∈ profile.required ∧ profile.supported target = true
+
+/-- The independently computed transitive closure of the declared roots. -/
+def dependencyClosure (profile : Profile) : Finset Module :=
+  Mettapedia.Logic.Relation.reachSet
+    (fun source => (dependencies source).toFinset) profile.roots.toFinset
+
+theorem mem_dependencyClosure {profile : Profile} {target : Module} :
+    target ∈ dependencyClosure profile ↔
+      ∃ start ∈ profile.roots, Reachable dependencies start target := by
+  rw [dependencyClosure, Mettapedia.Logic.Relation.mem_reachSet_iff]
+  simp only [List.mem_toFinset]
+  constructor
+  · rintro ⟨start, member, reachable⟩
+    exact ⟨start, member, Reachable.iff_reflTransGen.mpr reachable⟩
+  · rintro ⟨start, member, reachable⟩
+    exact ⟨start, member, Reachable.iff_reflTransGen.mp reachable⟩
+
+theorem closed_iff_dependencyClosure (profile : Profile) :
+    Closed profile ↔ ∀ target ∈ dependencyClosure profile,
+      target ∈ profile.required ∧ profile.supported target = true := by
+  constructor
+  · intro closed target member
+    obtain ⟨start, root, reachable⟩ := mem_dependencyClosure.mp member
+    exact closed root reachable
+  · intro closed start target root reachable
+    exact closed target (mem_dependencyClosure.mpr ⟨start, root, reachable⟩)
 
 def heSupported : Module → Bool
   | .libImport => false
@@ -315,11 +369,39 @@ theorem repeated_settlement_is_ignored [DecidableEq Id] [DecidableEq Payload]
 
 /-! ## Compose admission with recovery -/
 
-def admit (profile : Profile) (answer : Answer Id Payload) : Option (State Id Payload) :=
+/-- The historical checker trusted the caller's declaration and checked only
+that the roots occurred in it.  It is retained as the executable old rule. -/
+def legacyAdmit (profile : Profile) (answer : Answer Id Payload) : Option (State Id Payload) :=
   if profile.required.all profile.supported &&
       profile.roots.all fun root => profile.required.contains root then
     some (initial answer)
   else none
+
+/-- Boolean closure check, enumerated over the finite module universe. -/
+def closureChecked (profile : Profile) : Bool :=
+  allModules.all fun target =>
+    if target ∈ dependencyClosure profile then
+      profile.required.contains target && profile.supported target
+    else true
+
+/-- Admission computes the transitive dependency closure itself and accepts
+only when every reachable module is declared and supported. -/
+def admit (profile : Profile) (answer : Answer Id Payload) : Option (State Id Payload) :=
+  if closureChecked profile then some (initial answer) else none
+
+theorem admit_some_closed (profile : Profile) (answer : Answer Id Payload)
+    {state : State Id Payload} (admitted : admit profile answer = some state) :
+    Closed profile := by
+  apply (closed_iff_dependencyClosure profile).mpr
+  intro target member
+  have targetInAll : target ∈ allModules := by cases target <;> simp [allModules]
+  unfold admit closureChecked at admitted
+  split at admitted
+  · rename_i checked
+    have checkedTarget := List.all_eq_true.mp checked target targetInAll
+    simp only [member, ↓reduceIte, Bool.and_eq_true] at checkedTarget
+    exact ⟨by simpa using checkedTarget.1, checkedTarget.2⟩
+  · contradiction
 
 def providerEffects (admitted : Option (State Id Payload)) : Nat :=
   match admitted with
@@ -386,6 +468,7 @@ end Controls
 #print axioms rollback_recovery_for_any_finite_wait
 #print axioms repeated_settlement_is_ignored
 #print axioms he_admission_refused_before_effects
+#print axioms admit_some_closed
 #print axioms petta_admission_recovery_composes
 #print axioms Controls.concrete_rollback_and_duplicate_delivery
 

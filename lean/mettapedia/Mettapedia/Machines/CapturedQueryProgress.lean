@@ -17,11 +17,14 @@ read is evaluated in the reached world, not in the original capture.
 Two capture policies model a concrete continuation-capture defect.  The old
 policy rejects a live, shareable, lifetime-tracked fresh space and reports the
 rejection as retryable suspension.  Work increases while the outstanding request
-stays unchanged.  The repaired policy acquires the resource hold and completes
-the read.  If a resource is genuinely unavailable or unshareable, refusal is
-terminal and explicit rather than a promise that retrying the identical state is
-progress.  External changes carry different revision tokens and require host
-revalidation; an own effect is committed before its subsequent request is made.
+stays unchanged.  The repaired semantic policy retains the completed result;
+`captureComplete` separately composes that transition with a successful arena
+capture receipt and actual resource holds.  If a resource is genuinely
+unavailable or unshareable, refusal is terminal and explicit rather than a
+promise that retrying the identical state is progress.  External changes before
+completion carry different revision tokens and require host revalidation; an
+own effect is committed before its subsequent request is made.  This control
+does not model every possible callback or publication race.
 
 Answer order is contractual in this sequential fragment, so answers and captured
 occurrences are lists.  Effects retain their causal order as well.  A parallel
@@ -154,7 +157,8 @@ structure Machine (Payload : Type u) where
   effects : List (Effect Payload)
   answers : List (Answer Payload)
   resource : Resource
-  held : Bool
+  /-- A completed host result is retained, not a resource-lifetime receipt. -/
+  resultHeld : Bool
   work : Nat
   budget : Nat
   status : Status
@@ -179,15 +183,15 @@ def initial (captured : List (Occurrence Payload)) (program : List (Instruction 
     effects := []
     answers := []
     resource := resource
-    held := false
+    resultHeld := false
     work := 0
     budget := 0
     status := .running }
 
-/-- A completed result belongs to the current reached world.  The hold exists
-exactly while such a result awaits consumption. -/
+/-- A completed result belongs to the current reached world.  `resultHeld`
+tracks this host-result buffer only; it is not an arena ownership receipt. -/
 def HostValid (machine : Machine Payload) : Prop :=
-  machine.held = machine.completed.isSome ∧
+  machine.resultHeld = machine.completed.isSome ∧
     match machine.outstanding, machine.completed with
     | none, none => True
     | some _, none => True
@@ -215,7 +219,7 @@ private def consumeResult (machine : Machine Payload) (result : ReadResult Paylo
     answers := machine.answers ++ result.answers
     outstanding := none
     completed := none
-    held := false }
+    resultHeld := false }
 
 private def refreshRequest (machine : Machine Payload) (request : ReadRequest Payload) :
     Machine Payload :=
@@ -227,7 +231,7 @@ private def completeRequest (policy : CapturePolicy) (machine : Machine Payload)
   if admits policy machine.resource then
     charge { machine with
       completed := some ⟨machine.world.revision, readAnswers request machine.world⟩
-      held := true }
+      resultHeld := true }
   else
     let refused := charge machine
     match policy with
@@ -1134,7 +1138,7 @@ def stalledFresh : M :=
     effects := [.append b6]
     answers := []
     resource := ⟨.trackedFresh, true, true⟩
-    held := false
+    resultHeld := false
     work := 17
     budget := 0
     status := .suspended }
@@ -1238,6 +1242,59 @@ theorem captured_resources_are_held {ArenaId R : Type} [DecidableEq ArenaId]
   rw [ArenaHeldResources.Capture.admitted_log state sources receiver shareable nodes admitted]
   exact List.mem_append.mpr (Or.inr inNodes)
 
+/-- The capture-backed host keeps the actual arena state and capture inputs
+next to the semantic machine. -/
+structure CaptureBackedMachine (Payload ArenaId R : Type) [DecidableEq ArenaId]
+    [DecidableEq R] where
+  machine : Machine Payload
+  arenaState : ArenaHeldResources.State ArenaId R
+  sources : Finset ArenaId
+  receiver : ArenaId
+  shareable : R → Bool
+  nodes : ArenaHeldResources.Log R
+
+/-- Capture-backed counterpart of the abstract completion transition.  Abstract
+support is checked first; then the real capture receipt determines whether the
+completed result is retained or the host explicitly refuses. -/
+noncomputable def captureComplete {Payload ArenaId R : Type} [DecidableEq ArenaId]
+    [DecidableEq R] (hosted : CaptureBackedMachine Payload ArenaId R)
+    (request : ReadRequest Payload) : CaptureBackedMachine Payload ArenaId R :=
+  if admits .repaired hosted.machine.resource then
+    let receipt := ArenaHeldResources.Capture.capture hosted.arenaState hosted.sources
+      hosted.receiver hosted.shareable hosted.nodes
+    if receipt.1 then
+      { hosted with
+        arenaState := receipt.2
+        machine := charge { hosted.machine with
+          completed := some ⟨hosted.machine.world.revision,
+            readAnswers request hosted.machine.world⟩
+          resultHeld := true } }
+    else
+      { hosted with
+        arenaState := receipt.2
+        machine := { (charge hosted.machine) with status := .captureRefused } }
+  else
+    { hosted with machine := { (charge hosted.machine) with status := .captureRefused } }
+
+/-- On a successful receipt, the machine performs exactly the original semantic
+completion transition, while the returned arena state really holds every
+resource in the captured nodes.  Thus `resultHeld` is not being used as a
+stand-in for the separate lifetime guarantee. -/
+theorem captureComplete_composes {Payload ArenaId R : Type} [DecidableEq ArenaId]
+    [DecidableEq R] (hosted : CaptureBackedMachine Payload ArenaId R)
+    (request : ReadRequest Payload)
+    (supported : admits .repaired hosted.machine.resource = true)
+    (receipt : (ArenaHeldResources.Capture.capture hosted.arenaState hosted.sources
+      hosted.receiver hosted.shareable hosted.nodes).1 = true) :
+    let final := captureComplete hosted request
+    final.machine = completeRequest .repaired hosted.machine request ∧
+      ∀ {resource : R}, resource ∈ hosted.nodes.flatten →
+        ArenaHeldResources.Held final.arenaState resource := by
+  simp only [captureComplete, completeRequest, supported, receipt, ↓reduceIte]
+  exact ⟨trivial, fun required =>
+    captured_resources_are_held hosted.arenaState hosted.sources hosted.receiver
+      hosted.shareable hosted.nodes receipt required⟩
+
 #print axioms initial_prefix
 #print axioms work_prefix
 #print axioms autoStep_prefix
@@ -1253,5 +1310,6 @@ theorem captured_resources_are_held {ArenaId R : Type} [DecidableEq ArenaId]
 #print axioms Controls.old_metering_is_not_semantic_progress
 #print axioms Controls.repaired_resume_preserves_committed_effect
 #print axioms captured_resources_are_held
+#print axioms captureComplete_composes
 
 end Mettapedia.Machines.CapturedQueryProgress

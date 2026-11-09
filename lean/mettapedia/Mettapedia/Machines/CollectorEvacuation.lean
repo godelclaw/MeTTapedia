@@ -556,12 +556,26 @@ def relocationTarget (graph : SourceGraph Source Label) (roots : List Source)
     (source : Source) (sourceLive : source ∈ live graph roots) : Target :=
   (lookup source state.entries).get (Option.isSome_iff_exists.mpr (total source sourceLive))
 
+/-- A proof-independent view of the same relocation map.  Under `total`, every
+live source is present, so the default is never observed in the contract. -/
+def relocatedOrZero (state : CopyState Source) (source : Source) : Target :=
+  (lookup source state.entries).getD ⟨0⟩
+
 theorem lookup_relocationTarget (graph : SourceGraph Source Label) (roots : List Source)
     (state : CopyState Source)
     (total : ∀ source ∈ live graph roots, Mapped state source)
     {source : Source} (sourceLive : source ∈ live graph roots) :
     lookup source state.entries = some (relocationTarget graph roots state total source sourceLive) :=
   (Option.some_get _).symm
+
+theorem relocationTarget_eq_relocatedOrZero (graph : SourceGraph Source Label)
+    (roots : List Source) (state : CopyState Source)
+    (total : ∀ source ∈ live graph roots, Mapped state source)
+    {source : Source} (sourceLive : source ∈ live graph roots) :
+    relocationTarget graph roots state total source sourceLive = relocatedOrZero state source := by
+  unfold relocatedOrZero
+  rw [lookup_relocationTarget graph roots state total sourceLive]
+  rfl
 
 omit [Fintype Source] in
 theorem mem_successors_of_mem_children (graph : SourceGraph Source Label)
@@ -737,6 +751,45 @@ theorem completeNode_ordered_children (graph : SourceGraph Source Label)
           (child_live graph (sourcesLive entry entryMember)
             (mem_successors_of_mem_children graph edge.property))) := rfl
 
+private theorem attach_map_eq_map {A : Type u} {B : Type v} (items : List A)
+    (f : ∀ item, item ∈ items → B) (g : A → B)
+    (pointwise : ∀ item member, f item member = g item) :
+    items.attach.map (fun item => f item.val item.property) = items.map g := by
+  apply List.ext_getElem
+  · simp
+  · intro index rootsLength mappedLength
+    simp only [List.getElem_map, List.getElem_attach]
+    exact pointwise _ _
+
+theorem complete_roots_map_relocatedOrZero (graph : SourceGraph Source Label)
+    (roots : List Source) (state : CopyState Source)
+    (sourcesLive : ∀ entry ∈ state.entries, entry.source ∈ live graph roots)
+    (total : ∀ source ∈ live graph roots, Mapped state source) :
+    (complete graph roots state sourcesLive total).roots = roots.map (relocatedOrZero state) := by
+  rw [complete_roots_ordered]
+  apply attach_map_eq_map roots
+    (fun root member => relocationTarget graph roots state total root (root_live graph member))
+  intro root member
+  exact relocationTarget_eq_relocatedOrZero graph roots state total (root_live graph member)
+
+theorem completeNode_children_map_relocatedOrZero (graph : SourceGraph Source Label)
+    (roots : List Source) (state : CopyState Source)
+    (sourcesLive : ∀ entry ∈ state.entries, entry.source ∈ live graph roots)
+    (total : ∀ source ∈ live graph roots, Mapped state source)
+    (entry : Entry Source) (entryMember : entry ∈ state.entries) :
+    (completeNode graph roots state sourcesLive total entry entryMember).children =
+      (graph.node entry.source).children.map fun edge =>
+        (edge.1, relocatedOrZero state edge.2) := by
+  rw [completeNode_ordered_children]
+  apply attach_map_eq_map (graph.node entry.source).children
+    (fun edge member => (edge.1, relocationTarget graph roots state total edge.2
+      (child_live graph (sourcesLive entry entryMember)
+        (mem_successors_of_mem_children graph member))))
+  intro edge member
+  rw [relocationTarget_eq_relocatedOrZero graph roots state total
+    (child_live graph (sourcesLive entry entryMember)
+      (mem_successors_of_mem_children graph member))]
+
 inductive EvacuationFailure where
   | allocation | incompleteRelocation
   deriving DecidableEq, Repr
@@ -760,8 +813,29 @@ def evacuate (graph : SourceGraph Source Label) (roots : List Source) (capacity 
         else .failed .incompleteRelocation
       else .failed .incompleteRelocation
 
-/-- Observable successful-evacuation contract, independent of traversal order. -/
+/-- Observable successful-evacuation contract.  Root and child transport are
+exact list equations: order, labels, sharing, and every duplicate occurrence
+are preserved by the same lookup-based relocation map. -/
 structure PublishedContract (graph : SourceGraph Source Label) (roots : List Source)
+    (capacity : Nat) (state : CopyState Source) (target : TargetGraph Label) : Prop where
+  exhausted : state.pending = ∅
+  total : ∀ source ∈ live graph roots, Mapped state source
+  injective : ∀ {source other image},
+    lookup source state.entries = some image → lookup other state.entries = some image →
+      source = other
+  keys_unique : (state.entries.map Entry.source).Nodup
+  storage_valid : StorageValid graph state
+  targets_bounded : ∀ entry ∈ state.entries, entry.target.index < capacity
+  roots_ordered : target.roots = roots.map (relocatedOrZero state)
+  nodes_preserved : ∀ {source image}, lookup source state.entries = some image →
+    ∃ node, lookupNode image target.nodes = some node ∧
+      node.payload = (graph.node source).payload ∧
+      node.children = (graph.node source).children.map fun edge =>
+        (edge.1, relocatedOrZero state edge.2)
+
+/-- The former exported interface is retained solely for its counterexample:
+support plus cardinality does not determine order or per-root multiplicity. -/
+structure LegacyPublishedContract (graph : SourceGraph Source Label) (roots : List Source)
     (capacity : Nat) (state : CopyState Source) (target : TargetGraph Label) : Prop where
   exhausted : state.pending = ∅
   total : ∀ source ∈ live graph roots, Mapped state source
@@ -783,8 +857,8 @@ structure PublishedContract (graph : SourceGraph Source Label) (roots : List Sou
           (label, childImage) ∈ node.children
 
 /-- Composed finite collector theorem.  Sufficient capacity yields an actual
-published graph, total injective relocation, storage discipline, and root,
-payload, order-cardinality, and ordered-edge preservation. -/
+published graph, total injective relocation, storage discipline, and exact
+ordered root and labelled-child transport, including duplicate occurrences. -/
 theorem trace_reset_evacuate_composes (graph : SourceGraph Source Label)
     (roots : List Source) {capacity : Nat} (enough : (live graph roots).card ≤ capacity) :
     ∃ state target, evacuate graph roots capacity = .published state target ∧
@@ -820,17 +894,16 @@ theorem trace_reset_evacuate_composes (graph : SourceGraph Source Label)
     rw [reserved]
     dsimp only
     rw [dif_pos sourcesLiveCheck, dif_pos totalCheck]
-  · refine ⟨exhausted, total, ?_, invariant.keys_unique, invariant.storage_valid, ?_, ?_, ?_, ?_⟩
+  · refine ⟨exhausted, total, ?_, invariant.keys_unique, invariant.storage_valid, ?_, ?_, ?_⟩
     · intro source other image sourceFound otherFound
       exact lookup_injective invariant.targets_unique sourceFound otherFound
     · intro entry entryMember
       exact (invariant.target_bound entry entryMember).trans_le nextBound
-    · exact fun root member => complete_roots graph roots state sourcesLive total member
-    · exact complete_roots_length graph roots state sourcesLive total
+    · exact complete_roots_map_relocatedOrZero graph roots state sourcesLive total
     · intro source image found
-      obtain ⟨node, nodeFound, payload, edges⟩ :=
+      obtain ⟨node, nodeFound, payload, _⟩ :=
         complete_lookup_relocated graph roots state sourcesLive total invariant.targets_unique found
-      refine ⟨node, nodeFound, payload, ?_, edges⟩
+      refine ⟨node, nodeFound, payload, ?_⟩
       obtain ⟨entry, entryMember, sourceEqual, targetEqual⟩ := lookup_some_mem_entries found
       cases sourceEqual
       cases targetEqual
@@ -852,7 +925,7 @@ theorem trace_reset_evacuate_composes (graph : SourceGraph Source Label)
         · simp only [complete, List.mem_map]
           exact ⟨⟨entry, entryMember⟩, List.mem_attach _ _, rfl⟩
       rw [nodeEqual]
-      exact completeNode_children_length graph roots state sourcesLive total entry entryMember
+      exact completeNode_children_map_relocatedOrZero graph roots state sourcesLive total entry entryMember
 
 theorem reserve_failure_publishes_no_graph (graph : SourceGraph Source Label)
     (roots : List Source) (capacity : Nat)
@@ -934,7 +1007,7 @@ theorem empty_roots_publish_empty_relocation :
       state.entries = [] ∧ target.roots = [] := by
   obtain ⟨state, target, published, contract⟩ :=
     trace_reset_evacuate_composes regressionGraph [] (capacity := 0) (by decide)
-  refine ⟨state, target, published, ?_, List.eq_nil_of_length_eq_zero contract.root_count⟩
+  refine ⟨state, target, published, ?_, by simpa using contract.roots_ordered⟩
   cases stateEntries : state.entries with
   | nil => rfl
   | cons entry rest =>
@@ -956,6 +1029,8 @@ end Controls
 #print axioms complete_lookup_relocated
 #print axioms complete_roots_ordered
 #print axioms completeNode_ordered_children
+#print axioms complete_roots_map_relocatedOrZero
+#print axioms completeNode_children_map_relocatedOrZero
 #print axioms trace_reset_evacuate_composes
 #print axioms reserve_failure_publishes_no_graph
 #print axioms Controls.repaired_regression_publishes
