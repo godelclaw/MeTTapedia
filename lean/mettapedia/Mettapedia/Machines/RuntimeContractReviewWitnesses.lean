@@ -44,6 +44,25 @@ theorem repaired_successful_admission_implies_dependency_closure
   admit_some_closed incompleteDeclaration answer admitted
 end Admission
 
+namespace Entrypoint
+open ProfileRecoveryContract
+
+def emptyProfile : Profile := ⟨fun _ => false, [], []⟩
+def answer : Answer Nat Nat := ⟨7, 42⟩
+
+theorem empty_graph_is_closed : Closed emptyProfile := by
+  intro start target member _
+  simp [emptyProfile] at member
+
+/-- The former consumer could submit a provider request after validating an
+empty graph that declared none of the modules the consumer actually uses. -/
+theorem legacy_consumer_executes_without_its_entrypoint :
+    (legacyRecoverSupported emptyProfile answer 0).map State.providerRequests = some 1 := rfl
+
+theorem repaired_consumer_refuses_missing_entrypoint :
+    recoverSupported emptyProfile answer 0 = none := rfl
+end Entrypoint
+
 namespace Publication
 open HierarchyCompactionContract
 
@@ -68,6 +87,16 @@ theorem repaired_compaction_publication_preserves_retained_history :
     ((stageCompaction before 2 true).bind (fun staged =>
       (commit staged 2).bind recover)).bind (fun store => read store 7 1) = some 42 := by
   rfl
+
+/-- Appending the correct candidate does not help if commit finds an earlier
+candidate with the same generation identity. -/
+theorem unchecked_compaction_collision_loses_history :
+    ((legacyStageCompaction before 1 true).bind (fun staged =>
+      (commit staged 1).bind recover)).bind (fun store => read store 7 1) = none := rfl
+
+theorem repaired_compaction_rejects_pending_and_published_collisions :
+    stageCompaction before 1 true = none ∧ stageCompaction before 0 true = none :=
+  ⟨rfl, rfl⟩
 end Publication
 
 namespace Authority
@@ -144,6 +173,10 @@ end Collector
 
 #print axioms Admission.successful_admission_does_not_imply_dependency_closure
 #print axioms Publication.accepted_commit_loses_retained_history
+#print axioms Publication.unchecked_compaction_collision_loses_history
+#print axioms Publication.repaired_compaction_rejects_pending_and_published_collisions
+#print axioms Entrypoint.legacy_consumer_executes_without_its_entrypoint
+#print axioms Entrypoint.repaired_consumer_refuses_missing_entrypoint
 #print axioms Publication.repaired_compaction_publication_preserves_retained_history
 #print axioms Authority.one_capability_is_accepted_by_two_distinct_registries
 #print axioms Collector.same_support_and_length_preserve_contract

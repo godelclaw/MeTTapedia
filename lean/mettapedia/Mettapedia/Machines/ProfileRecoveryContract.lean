@@ -417,11 +417,43 @@ theorem petta_admission_succeeds (answer : Answer Id Payload) :
     admit pettaProfile answer = some (initial answer) := by
   rfl
 
-def recoverSupported [DecidableEq Id] [DecidableEq Payload]
+/-- Historical composition validated the declared roots without binding them
+to the native LLM entrypoint that this consumer proceeds to execute. -/
+def legacyRecoverSupported [DecidableEq Id] [DecidableEq Payload]
     (profile : Profile) (answer : Answer Id Payload) (rollbacks : Nat) :
     Option (State Id Payload) :=
   (admit profile answer).map fun start =>
     run start ([.submit, .receive answer] ++ recoveryEvents answer rollbacks)
+
+/-- Closure is relative to declared roots. This consumer actually executes the
+native LLM path, so it must also require that entrypoint among those roots. -/
+def recoverSupported [DecidableEq Id] [DecidableEq Payload]
+    (profile : Profile) (answer : Answer Id Payload) (rollbacks : Nat) :
+    Option (State Id Payload) :=
+  if Module.nativeLlm ∈ profile.roots then
+    legacyRecoverSupported profile answer rollbacks
+  else none
+
+theorem recoverSupported_missing_entrypoint [DecidableEq Id] [DecidableEq Payload]
+    (profile : Profile) (answer : Answer Id Payload) (rollbacks : Nat)
+    (missing : Module.nativeLlm ∉ profile.roots) :
+    recoverSupported profile answer rollbacks = none := by
+  simp [recoverSupported, missing]
+
+theorem recoverSupported_success_has_closed_entrypoint [DecidableEq Id] [DecidableEq Payload]
+    (profile : Profile) (answer : Answer Id Payload) (rollbacks : Nat)
+    {final : State Id Payload}
+    (success : recoverSupported profile answer rollbacks = some final) :
+    Module.nativeLlm ∈ profile.roots ∧ Closed profile := by
+  unfold recoverSupported at success
+  split at success
+  · rename_i root
+    refine ⟨root, ?_⟩
+    unfold legacyRecoverSupported at success
+    cases admitted : admit profile answer with
+    | none => simp [admitted] at success
+    | some state => exact admit_some_closed profile answer admitted
+  · contradiction
 
 /-- The supported profile composes admission, one provider submission, captured
 receipt, finite local rollback, local commit, and exactly one settlement. -/
@@ -432,7 +464,8 @@ theorem petta_admission_recovery_composes [DecidableEq Id] [DecidableEq Payload]
         final.retained = some answer ∧ final.durable = some answer ∧
           final.identity = answer.identity := by
   refine ⟨run (afterReceive answer) (recoveryEvents answer rollbacks), ?_, ?_⟩
-  · unfold recoverSupported
+  · rw [recoverSupported, if_pos (by simp [pettaProfile])]
+    unfold legacyRecoverSupported
     rw [petta_admission_succeeds]
     simp only [Option.map_some]
     apply congrArg some
@@ -470,6 +503,8 @@ end Controls
 #print axioms he_admission_refused_before_effects
 #print axioms admit_some_closed
 #print axioms petta_admission_recovery_composes
+#print axioms recoverSupported_missing_entrypoint
+#print axioms recoverSupported_success_has_closed_entrypoint
 #print axioms Controls.concrete_rollback_and_duplicate_delivery
 
 end Mettapedia.Machines.ProfileRecoveryContract

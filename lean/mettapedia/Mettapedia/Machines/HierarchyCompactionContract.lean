@@ -345,10 +345,10 @@ theorem recover_complete_closed [DecidableEq Id] (publication : Publication Id P
 
 /-! ## Compaction-specific staging and publication -/
 
-/-- Unlike generic replacement, this candidate is obtained from the currently
-recoverable store by physical compaction and reopening.  It can be staged only
-when the archive is available and the reopened candidate is closed. -/
-def stageCompaction [DecidableEq Id] (publication : Publication Id Payload)
+/-- Historical staging constructed the replacement from the recovered base,
+but left candidate identity unchecked. An earlier pending candidate could
+therefore shadow the one appended here. -/
+def legacyStageCompaction [DecidableEq Id] (publication : Publication Id Payload)
     (identity : Nat) (archiveAvailable : Bool) : Option (Publication Id Payload) := do
   let base ← recover publication
   let candidate ← reopen archiveAvailable (compact base)
@@ -356,40 +356,123 @@ def stageCompaction [DecidableEq Id] (publication : Publication Id Payload)
     some (stage publication ⟨identity, candidate, true⟩)
   else none
 
+/-- A compaction candidate cannot shadow an older pending or published
+generation. The lookup used by commit is keyed by this identity. -/
+def generationUnused (publication : Publication Id Payload) (identity : Nat) : Bool :=
+  publication.pending.all (fun generation => generation.identity != identity) &&
+    publication.published.all (fun generation => generation.identity != identity)
+
+/-- The candidate is derived from the recovered base and its identity is
+checked before staging. The composed publication below is sequential;
+interleaved writers require an additional base-revalidation contract. -/
+def stageCompaction [DecidableEq Id] (publication : Publication Id Payload)
+    (identity : Nat) (archiveAvailable : Bool) : Option (Publication Id Payload) :=
+  if generationUnused publication identity then
+    legacyStageCompaction publication identity archiveAvailable
+  else none
+
+theorem stageCompaction_collision_refused [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat) (archiveAvailable : Bool)
+    (collision : generationUnused publication identity = false) :
+    stageCompaction publication identity archiveAvailable = none := by
+  simp [stageCompaction, collision]
+
+theorem stageCompaction_some_unused [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat) (archiveAvailable : Bool)
+    {staged : Publication Id Payload}
+    (success : stageCompaction publication identity archiveAvailable = some staged) :
+    generationUnused publication identity = true := by
+  unfold stageCompaction at success
+  split at success
+  · assumption
+  · contradiction
+
+theorem staged_fresh_candidate_found (publication : Publication Id Payload)
+    (identity : Nat) (base : Store Id Payload)
+    (fresh : generationUnused publication identity = true) :
+    ((stage publication ⟨identity, base, true⟩).pending.find?
+      fun candidate => candidate.identity == identity) = some ⟨identity, base, true⟩ := by
+  have checks :
+      publication.pending.all (fun generation => generation.identity != identity) = true ∧
+      publication.published.all (fun generation => generation.identity != identity) = true := by
+    simpa only [generationUnused, Bool.and_eq_true] using fresh
+  have checked := checks.1
+  have missing : (publication.pending.find?
+      fun candidate => candidate.identity == identity) = none := by
+    apply List.find?_eq_none.mpr
+    intro candidate member
+    have different := List.all_eq_true.mp checked candidate member
+    simpa using different
+  simp [stage, List.find?_append, missing]
+
 theorem stageCompaction_success [DecidableEq Id] (publication : Publication Id Payload)
     (identity : Nat) (base : Store Id Payload)
     (recovered : recover publication = some base)
-    (closed : referentiallyClosed base = true) :
+    (closed : referentiallyClosed base = true)
+    (fresh : generationUnused publication identity = true) :
     stageCompaction publication identity true =
       some (stage publication ⟨identity, base, true⟩) := by
-  simp [stageCompaction, recovered, closed]
+  simp [stageCompaction, fresh, legacyStageCompaction, recovered, closed]
 
-/-- The complete compaction path is tied to its recovered base.  The pending
-lookup premise also covers the ordinary case where generation identities are
-unique; it explicitly handles collisions rather than assuming them away. -/
+/-- The complete compaction path is tied to its recovered base. Identity
+freshness is enforced by staging; the correct lookup is derived from it. -/
 theorem compact_stage_commit_recovers_base [DecidableEq Id]
     (publication : Publication Id Payload) (identity : Nat) (base : Store Id Payload)
     (recovered : recover publication = some base)
     (closed : referentiallyClosed base = true)
-    (pending : ((stage publication ⟨identity, base, true⟩).pending.find?
-      fun candidate => candidate.identity == identity) = some ⟨identity, base, true⟩) :
+    (fresh : generationUnused publication identity = true) :
     ((stageCompaction publication identity true).bind (fun staged =>
       (commit staged identity).bind recover)) = some base := by
-  rw [stageCompaction_success publication identity base recovered closed]
-  exact commit_recovers_generation _ _ ⟨identity, base, true⟩ pending rfl closed
+  rw [stageCompaction_success publication identity base recovered closed fresh]
+  exact commit_recovers_generation _ _ ⟨identity, base, true⟩
+    (staged_fresh_candidate_found publication identity base fresh) rfl closed
 
 theorem compact_stage_commit_preserves_read [DecidableEq Id]
     (publication : Publication Id Payload) (identity : Nat) (base : Store Id Payload)
     (recovered : recover publication = some base)
     (closed : referentiallyClosed base = true)
-    (pending : ((stage publication ⟨identity, base, true⟩).pending.find?
-      fun candidate => candidate.identity == identity) = some ⟨identity, base, true⟩)
+    (fresh : generationUnused publication identity = true)
     (id : Id) (revision : Nat) :
     ((stageCompaction publication identity true).bind fun staged =>
       (commit staged identity).bind recover).map (fun store => read store id revision) =
         some (read base id revision) := by
-  rw [compact_stage_commit_recovers_base publication identity base recovered closed pending]
+  rw [compact_stage_commit_recovers_base publication identity base recovered closed fresh]
   rfl
+
+/-- Successful staging supplies the freshness and valid base needed by commit;
+callers need not assume that a particular pending lookup happens to succeed. -/
+theorem staged_compaction_commit_preserves_base [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat)
+    {staged : Publication Id Payload}
+    (success : stageCompaction publication identity true = some staged) :
+    ∃ base, recover publication = some base ∧
+      (commit staged identity).bind recover = some base := by
+  have fresh := stageCompaction_some_unused publication identity true success
+  cases recovered : recover publication with
+  | none =>
+      simp [stageCompaction, fresh, legacyStageCompaction, recovered] at success
+  | some base =>
+      have closed : referentiallyClosed base = true := by
+        obtain ⟨generation, _, _, valid, equal⟩ := recover_complete_closed publication base recovered
+        simpa only [equal] using valid
+      have same : staged = stage publication ⟨identity, base, true⟩ :=
+        Option.some.inj (success.symm.trans
+          (stageCompaction_success publication identity base recovered closed fresh))
+      refine ⟨base, rfl, ?_⟩
+      rw [same]
+      exact commit_recovers_generation _ _ ⟨identity, base, true⟩
+        (staged_fresh_candidate_found publication identity base fresh) rfl closed
+
+theorem staged_compaction_commit_preserves_read [DecidableEq Id]
+    (publication : Publication Id Payload) (identity : Nat)
+    {staged : Publication Id Payload}
+    (success : stageCompaction publication identity true = some staged)
+    (id : Id) (revision : Nat) :
+    ((commit staged identity).bind recover).map (fun store => read store id revision) =
+      (recover publication).map (fun store => read store id revision) := by
+  obtain ⟨base, recovered, committed⟩ :=
+    staged_compaction_commit_preserves_base publication identity success
+  rw [recovered, committed]
 
 /-- Archive refusal happens before staging, so no compaction candidate is
 silently published with an incomplete logical view. -/
@@ -397,7 +480,10 @@ theorem stageCompaction_archive_unavailable [DecidableEq Id]
     (publication : Publication Id Payload) (identity : Nat) :
     stageCompaction publication identity false = none := by
   unfold stageCompaction
-  cases recover publication <;> rfl
+  split
+  · unfold legacyStageCompaction
+    cases recover publication <;> rfl
+  · rfl
 
 /-! ## Original-plus-correction regression -/
 
@@ -469,6 +555,10 @@ end Controls
 #print axioms recover_complete_closed
 #print axioms compact_stage_commit_recovers_base
 #print axioms compact_stage_commit_preserves_read
+#print axioms stageCompaction_collision_refused
+#print axioms stageCompaction_some_unused
+#print axioms staged_compaction_commit_preserves_base
+#print axioms staged_compaction_commit_preserves_read
 #print axioms stageCompaction_archive_unavailable
 #print axioms Controls.original_and_correction_survive_compact_reopen
 #print axioms Controls.exact_fixture_repair_composes
