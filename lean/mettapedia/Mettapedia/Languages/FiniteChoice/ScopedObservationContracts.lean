@@ -118,6 +118,63 @@ theorem payload_deduplication_fails_overlap_check :
     checkOverlap ([.witness [0] 7, .witness [1] 7] : List (Event Nat))
       [.witness [1] 7] [.witness [0] 7] = false := by decide
 
+/-- Only witnessed branches demand a continuation. Faults are retained separately. -/
+def demandedReports {Index A B : Type} (next : A → Report Index B) :
+    List (Event A) → List (Report Index B)
+  | [] => []
+  | .witness _ value :: rest => next value :: demandedReports next rest
+  | .fault _ _ :: rest => demandedReports next rest
+
+def qualifyPath {Value : Type} (path : List Nat) : Event Value → Event Value
+  | .witness id value => .witness (path ++ id) value
+  | .fault id reason => .fault (path ++ id) reason
+
+def boundEvents {Index A B : Type} (next : A → Report Index B) :
+    List (Event A) → List (Event B)
+  | [] => []
+  | .witness id value :: rest =>
+      (next value).events.map (qualifyPath id) ++ boundEvents next rest
+  | .fault id reason :: rest => .fault id reason :: boundEvents next rest
+
+def bindReports {Index A B : Type} (parent : Report Index A)
+    (next : A → Report Index B) : Report (Index × List Index) B Index :=
+  let demanded := demandedReports next parent.events
+  ⟨(parent.index, demanded.map Report.index), boundEvents next parent.events,
+    demanded.foldl (fun status child => status.merge child.completion) parent.completion,
+    parent.negativeDependencies ++ demanded.flatMap Report.negativeDependencies⟩
+
+theorem values_qualifyPath {Value : Type} (path : List Nat) (events : List (Event Value)) :
+    values (events.map (qualifyPath path)) = values events := by
+  induction events with
+  | nil => rfl
+  | cons event rest ih => cases event <;> simp_all [values, qualifyPath]
+
+theorem bind_preserves_order_and_multiplicity {Index A B : Type}
+    (parent : Report Index A) (next : A → Report Index B) :
+    values (bindReports parent next).events =
+      (values parent.events).flatMap (fun value => values (next value).events) := by
+  suffices ∀ events : List (Event A),
+      values (boundEvents next events) =
+        (values events).flatMap (fun value => values (next value).events) by
+    exact this parent.events
+  intro events
+  induction events with
+  | nil => rfl
+  | cons event rest ih =>
+    cases event with
+    | witness id value =>
+      rw [boundEvents, values_append, values_qualifyPath, ih]
+      rfl
+    | fault id reason => exact ih
+
+/-- An empty producer does not inherit the status or dependencies of unused code. -/
+theorem empty_bind_has_no_extra_demands {Index A B : Type}
+    (parent : Report Index A) (next : A → Report Index B) (empty : parent.events = []) :
+    (bindReports parent next).completion = parent.completion ∧
+    (bindReports parent next).events = [] ∧
+    (bindReports parent next).negativeDependencies = parent.negativeDependencies := by
+  simp [bindReports, demandedReports, boundEvents, empty]
+
 #print axioms scan_completed_absence
 #print axioms scan_coverage_finishes
 #print axioms checkGrade_sound
@@ -125,4 +182,6 @@ theorem payload_deduplication_fails_overlap_check :
 #print axioms grade_requires_subject_revalidation
 #print axioms empty_type_eliminates
 #print axioms checked_overlap_sound
+#print axioms bind_preserves_order_and_multiplicity
+#print axioms empty_bind_has_no_extra_demands
 end Mettapedia.Languages.FiniteChoice.ScopedObservation
