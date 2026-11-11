@@ -1,4 +1,5 @@
 import Mettapedia.Languages.FiniteChoice.ScopedObservation
+import Mathlib.Logic.Relation
 
 /-!
 # Producer and interface correspondence for scoped observations
@@ -175,6 +176,39 @@ theorem empty_bind_has_no_extra_demands {Index A B : Type}
     (bindReports parent next).negativeDependencies = parent.negativeDependencies := by
   simp [bindReports, demandedReports, boundEvents, empty]
 
+/-- Closed-set invariants control paths of every finite length. -/
+theorem reachability_preserves_closed {Node : Type} {step : Node → Node → Prop}
+    (property : Node → Prop) (closed : ∀ a b, property a → step a b → property b)
+    {start finish : Node} (initial : property start)
+    (reachable : Relation.ReflTransGen step start finish) : property finish := by
+  induction reachable with
+  | refl => exact initial
+  | tail _ edge ih => exact closed _ _ ih edge
+
+def graphReachable (edges : List (Fin 3 × Fin 3)) (start finish : Fin 3) : Prop :=
+  Relation.ReflTransGen (fun a b => (a, b) ∈ edges) start finish
+
+/-- Neither captured graph has ANY path from 0 to 2. Their union does. -/
+theorem full_reachability_changes_under_graph_join :
+    ¬ graphReachable [(0, 1)] 0 2 ∧ ¬ graphReachable [(1, 2)] 0 2 ∧
+      graphReachable ([(0, 1)] ++ [(1, 2)]) 0 2 := by
+  have left : ¬ graphReachable [(0, 1)] 0 2 := by
+    intro path
+    have closed : ∀ a b : Fin 3, a ≠ 2 → (a, b) ∈ [(0, 1)] → b ≠ 2 := by decide
+    have impossible := reachability_preserves_closed (fun a : Fin 3 => a ≠ 2)
+      closed (by decide : (0 : Fin 3) ≠ 2) path
+    exact impossible rfl
+  have right : ¬ graphReachable [(1, 2)] 0 2 := by
+    intro path
+    have closed : ∀ a b : Fin 3, a = 0 → (a, b) ∈ [(1, 2)] → b = 0 := by decide
+    have impossible := reachability_preserves_closed (fun a : Fin 3 => a = 0)
+      closed (rfl : (0 : Fin 3) = 0) path
+    exact (by decide : (2 : Fin 3) ≠ 0) impossible
+  refine ⟨left, right, ?_⟩
+  exact Relation.ReflTransGen.trans
+    (Relation.ReflTransGen.single (by simp : ((0 : Fin 3), (1 : Fin 3)) ∈ ([(0, 1)] ++ [(1, 2)])))
+    (Relation.ReflTransGen.single (by simp : ((1 : Fin 3), (2 : Fin 3)) ∈ ([(0, 1)] ++ [(1, 2)])))
+
 #print axioms scan_completed_absence
 #print axioms scan_coverage_finishes
 #print axioms checkGrade_sound
@@ -184,4 +218,5 @@ theorem empty_bind_has_no_extra_demands {Index A B : Type}
 #print axioms checked_overlap_sound
 #print axioms bind_preserves_order_and_multiplicity
 #print axioms empty_bind_has_no_extra_demands
+#print axioms full_reachability_changes_under_graph_join
 end Mettapedia.Languages.FiniteChoice.ScopedObservation
