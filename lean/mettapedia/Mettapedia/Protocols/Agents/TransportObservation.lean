@@ -11,7 +11,8 @@ an unclassified failure is not evidence of a deadline.
 
 The clock model separately describes total, first-body-byte and body-idle
 limits. Zero disables a limit. Body progress changes the silence anchor, not
-the request's admission time. The hard bound is invariant under an arbitrary
+the request's execution-start anchor. Queue/admission latency is outside this
+clock model. The hard bound is invariant under an arbitrary
 progress trace. A status observation or soft attention wait cannot create a
 new request identity.
 
