@@ -91,10 +91,38 @@ theorem unscoped_tag_cannot_establish_grade :
   have bad := claimed [(2, 7)]
   simp [GradeHolds, lookup] at bad
 
+/-- Event identity is separate from its payload, including for faults. -/
+def eventIdentity {Value : Type} : Event Value → List Nat
+  | .witness id _ => id
+  | .fault id _ => id
+
+/-- An executable finite checker for an ordered overlap reconciliation.
+The two sublist tests use the standard library's decidable subsequence check;
+identity uniqueness rules out keeping conflicting records under one identity. -/
+def checkOverlap {Value : Type} [DecidableEq Value]
+    (left right candidate : List (Event Value)) : Bool :=
+  decide (left.Sublist candidate) && decide (right.Sublist candidate) &&
+    decide ((candidate.map eventIdentity).Nodup) &&
+    candidate.all fun event => decide (event ∈ left ∨ event ∈ right)
+
+theorem checked_overlap_sound {Value : Type} [DecidableEq Value]
+    (left right candidate : List (Event Value))
+    (checked : checkOverlap left right candidate = true) :
+    ((left.Sublist candidate ∧ right.Sublist candidate) ∧
+       (candidate.map eventIdentity).Nodup) ∧
+       ∀ event ∈ candidate, event ∈ left ∨ event ∈ right := by
+  simpa [checkOverlap, List.all_eq_true, and_assoc] using checked
+
+/-- Equal payloads at different identities cannot be compressed to one occurrence. -/
+theorem payload_deduplication_fails_overlap_check :
+    checkOverlap ([.witness [0] 7, .witness [1] 7] : List (Event Nat))
+      [.witness [1] 7] [.witness [0] 7] = false := by decide
+
 #print axioms scan_completed_absence
 #print axioms scan_coverage_finishes
 #print axioms checkGrade_sound
 #print axioms grade_conjunction
 #print axioms grade_requires_subject_revalidation
 #print axioms empty_type_eliminates
+#print axioms checked_overlap_sound
 end Mettapedia.Languages.FiniteChoice.ScopedObservation
