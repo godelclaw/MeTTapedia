@@ -105,7 +105,7 @@ theorem seen_prefix_run {Index Value : Type} (fuel : Nat) (c : Cursor Index Valu
   | succ n ih =>
     obtain ⟨tail, ht⟩ := ih (advance c)
     obtain ⟨head, hh⟩ := seen_prefix_advance c
-    exact ⟨head ++ tail, by simpa [run, ht, hh, List.append_assoc]⟩
+    exact ⟨head ++ tail, by simp [run, ht, hh, List.append_assoc]⟩
 
 theorem empty_observation_sound {Index Value : Type} (c : Cursor Index Value)
     (h : (observe c).Empty) : c.meaning = [] := by
