@@ -42,7 +42,7 @@ set_option autoImplicit false
 namespace Mettapedia.Machines.CapturedQueryProgress
 
 universe u
-variable {Payload : Type u} [DecidableEq Payload]
+variable {Payload : Type u}
 
 /-- Identity is not payload equality. -/
 structure Occurrence (Payload : Type u) where
@@ -393,7 +393,7 @@ private theorem refreshRequest_prefix {machine : Machine Payload} {request : Rea
 private theorem completeRequest_prefix {machine : Machine Payload}
     {request : ReadRequest Payload} {program : List (Instruction Payload)}
     {start : Reference Payload} (policy : CapturePolicy)
-    (outstanding : machine.outstanding = some request) (completed : machine.completed = none)
+    (outstanding : machine.outstanding = some request) (_completed : machine.completed = none)
     (invariant : PrefixInvariant machine program start) :
     PrefixInvariant (completeRequest policy machine request) program start := by
   obtain ⟨valid, executed, split, current⟩ := invariant
@@ -401,7 +401,7 @@ private theorem completeRequest_prefix {machine : Machine Payload}
   split
   · apply charge_prefix
     refine ⟨?_, executed, ?_, current⟩
-    · simp [HostValid, outstanding, completed]
+    · simp [HostValid, outstanding]
     · simpa [continuation, outstanding] using split
   · split <;> exact charge_prefix ⟨valid, executed, split, current⟩
 
@@ -474,24 +474,24 @@ theorem work_prefix {machine : Machine Payload} {program : List (Instruction Pay
       · exact invariant
       cases outstanding : machine.outstanding with
       | none =>
-          simp only [outstanding]
+          simp only
           cases remaining : machine.remaining with
           | nil =>
               simpa only [remaining, outstanding] using
                 (show PrefixInvariant { machine with status := .finished } program start from invariant)
           | cons instruction rest =>
-              simp only [remaining]
+              simp only
               exact perform_prefix instruction rest outstanding remaining invariant
       | some request =>
-          simp only [outstanding]
+          simp only
           cases completed : machine.completed with
           | none =>
-              simp only [completed]
+              simp only
               split
               · exact refreshRequest_prefix outstanding invariant
               · exact completeRequest_prefix policy outstanding completed invariant
           | some result =>
-              simp only [completed]
+              simp only
               exact consumeResult_prefix outstanding completed invariant
   | suspended => simpa [work, status] using invariant
   | finished => simpa [work, status] using invariant
@@ -527,10 +527,10 @@ private theorem charge_supported {machine : Machine Payload} (supported : Suppor
   · split <;> exact supported
 
 private theorem refreshRequest_supported {machine : Machine Payload}
-    {request : ReadRequest Payload} (outstanding : machine.outstanding = some request)
+    {request : ReadRequest Payload} (_outstanding : machine.outstanding = some request)
     (supported : Supported machine) : Supported (refreshRequest machine request) := by
   apply charge_supported
-  exact ⟨supported.1, by simp [outstanding]⟩
+  exact ⟨supported.1, by simp⟩
 
 private theorem completeRequest_supported {machine : Machine Payload}
     {request : ReadRequest Payload} (policy : CapturePolicy)
@@ -565,24 +565,24 @@ theorem work_supported (policy : CapturePolicy) {machine : Machine Payload}
       · exact supported
       cases outstanding : machine.outstanding with
       | none =>
-          simp only [outstanding]
+          simp only
           cases remaining : machine.remaining with
           | nil =>
               simpa only [remaining, outstanding] using
                 (show Supported { machine with status := .finished } from supported)
           | cons instruction rest =>
-              simp only [remaining]
+              simp only
               exact perform_supported instruction rest outstanding supported
       | some request =>
-          simp only [outstanding]
+          simp only
           cases completed : machine.completed with
           | none =>
-              simp only [completed]
+              simp only
               split
               · exact refreshRequest_supported outstanding supported
               · exact completeRequest_supported policy supported
           | some result =>
-              simp only [completed]
+              simp only
               exact consumeResult_supported supported
   | suspended => simpa [work, status] using supported
   | finished => simpa [work, status] using supported
@@ -630,12 +630,12 @@ theorem work_remainingWork_lt {machine : Machine Payload} (supported : Supported
   simp only [work, running, notEmpty, budget, Bool.false_eq_true, ↓reduceIte]
   cases outstanding : machine.outstanding with
   | none =>
-      simp only [outstanding, ↓reduceIte]
+      simp only
       cases remaining : machine.remaining with
       | nil =>
           simp [continuation, outstanding, remaining] at nonempty
       | cons instruction rest =>
-          simp only [remaining, ↓reduceIte]
+          simp only
           cases instruction with
           | effect effect =>
               simp only [perform, charge_remainingWork]
@@ -648,10 +648,10 @@ theorem work_remainingWork_lt {machine : Machine Payload} (supported : Supported
               simp [remainingWork, outstanding, remaining, programCost, instructionCost]
               split <;> omega
   | some request =>
-      simp only [outstanding, ↓reduceIte]
+      simp only
       cases completed : machine.completed with
       | none =>
-          simp only [completed, ↓reduceIte]
+          simp only
           have current := supported.2
           simp [outstanding] at current
           split
@@ -660,7 +660,7 @@ theorem work_remainingWork_lt {machine : Machine Payload} (supported : Supported
           · simp only [completeRequest, supported.1, ↓reduceIte, charge_remainingWork]
             simp [remainingWork, outstanding, completed]
       | some result =>
-          simp only [completed, ↓reduceIte]
+          simp only
           simp only [consumeResult, charge_remainingWork]
           simp [remainingWork, outstanding, completed]
 
@@ -741,7 +741,7 @@ private theorem charge_finished_empty {machine : Machine Payload}
     change continuation { machine with work := machine.work + 1, budget := machine.budget - 1 } = []
     simpa using empty
   · rename_i notEmpty
-    simp only [notEmpty, ↓reduceIte] at finished
+    simp only [notEmpty] at finished
     split
     · rename_i exhausted
       simp [exhausted] at finished
@@ -778,7 +778,7 @@ private theorem completeRequest_finished_empty {machine : Machine Payload}
     simp only [admitted, ↓reduceIte] at finished
     exact charge_finished_empty running finished
   · rename_i refused
-    simp only [refused, ↓reduceIte] at finished
+    simp only [refused] at finished
     cases policy <;> simp at finished
 
 private theorem perform_finished_empty {machine : Machine Payload}
@@ -797,7 +797,7 @@ private theorem work_finished_empty (policy : CapturePolicy) {machine : Machine 
     change continuation machine = []
     simpa using empty
   · rename_i notEmpty
-    simp only [notEmpty, ↓reduceIte] at finished
+    simp only [notEmpty] at finished
     split
     · rename_i exhausted
       simp [exhausted] at finished
@@ -808,7 +808,7 @@ private theorem work_finished_empty (policy : CapturePolicy) {machine : Machine 
           simp only [outstanding] at finished ⊢
           cases remaining : machine.remaining with
           | nil =>
-              simp [continuation, outstanding, remaining]
+              simp [continuation]
           | cons instruction rest =>
               simp only [remaining] at finished ⊢
               exact perform_finished_empty instruction rest running finished
@@ -822,7 +822,7 @@ private theorem work_finished_empty (policy : CapturePolicy) {machine : Machine 
                 simp only [stale, ↓reduceIte] at finished
                 exact refreshRequest_finished_empty running finished
               · rename_i current
-                simp only [current, ↓reduceIte] at finished
+                simp only [current] at finished
                 exact completeRequest_finished_empty policy running finished
           | some result =>
               simp only [completed] at finished ⊢
@@ -862,22 +862,22 @@ private theorem work_not_refused {machine : Machine Payload} (supported : Suppor
   · simp
   cases outstanding : machine.outstanding with
   | none =>
-      simp only [outstanding]
+      simp only
       cases remaining : machine.remaining with
       | nil => simp
       | cons instruction rest =>
-          simp only [remaining]
+          simp only
           exact perform_not_refused instruction rest running
   | some request =>
-      simp only [outstanding]
+      simp only
       cases completed : machine.completed with
       | none =>
-          simp only [completed]
+          simp only
           split
           · exact refreshRequest_not_refused running
           · exact completeRequest_not_refused supported running
       | some result =>
-          simp only [completed]
+          simp only
           exact consumeResult_not_refused running
 
 private theorem autoStep_finished_empty {machine : Machine Payload}

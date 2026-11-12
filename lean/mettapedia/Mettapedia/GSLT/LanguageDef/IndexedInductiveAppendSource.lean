@@ -72,6 +72,20 @@ def quoteDeclaration (environment : String → Option Pattern) :
   | .pi _ _ _ => none
   | .project _ _ _ => none
 
+theorem quoteDeclaration_constructor_application :
+    quoteDeclaration (fun _ => none) (.app (.name "Vec") (.name "Nat")) =
+      some (.apply "Vec" [.apply "Nat" []]) := rfl
+
+theorem quoteDeclaration_refuses_dependent_product
+    (environment : String → Option Pattern) (binder : String)
+    (domain codomain : ModuleSource.InductiveSyntax.Term) :
+    quoteDeclaration environment (.pi binder domain codomain) = none := rfl
+
+theorem quoteDeclaration_refuses_projection
+    (environment : String → Option Pattern) (owner : String) (field : Nat)
+    (record : ModuleSource.InductiveSyntax.Term) :
+    quoteDeclaration environment (.project owner field record) = none := rfl
+
 def naturalHeader (constructor : ModuleSource.InductiveSyntax.Constructor) : Header 2 :=
   let fields := constructor.fields.length
   ⟨constructor.name, fields,

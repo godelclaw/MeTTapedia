@@ -11,7 +11,9 @@ A name position holds one of two sorts of atom.
   or Gödel numbers, and no firing issues it.
 
 The two sorts are different constructors, so they never collide: no side condition is needed
-(`quote_ne_name`, and `not_nameEquiv_name_quote` modulo any equivalence of terms).
+(`quote_ne_name`). Comparing modulo an equivalence of terms keeps them apart by the definition of
+`NameEquiv`, which relates a name only to itself (`not_nameEquiv_name_quote` records that design
+choice).
 
 ## Laws
 
@@ -132,7 +134,9 @@ theorem nameEquiv_quote_iff (R : Expr → Expr → Prop) (e e' : Expr) :
 theorem nameEquiv_name_iff (R : Expr → Expr → Prop) (n m : ℕ) :
     NameEquiv R (.name n) (.name m) ↔ n = m := Iff.rfl
 
-/-- **Modulo any equivalence of terms, no generative name equals a code.** -/
+/-- **By the definition of `NameEquiv`, no generative name is equivalent to a code**, whatever
+equivalence of terms is used. This records a design choice, that an equivalence of terms acts only
+on codes; it is not a property derived from the equivalence. -/
 theorem not_nameEquiv_name_quote (R : Expr → Expr → Prop) (n : ℕ) (e : Expr) :
     ¬ NameEquiv R (.name n) (quote e) ∧ ¬ NameEquiv R (quote e) (.name n) :=
   ⟨fun equivalent => equivalent, fun equivalent => equivalent⟩
