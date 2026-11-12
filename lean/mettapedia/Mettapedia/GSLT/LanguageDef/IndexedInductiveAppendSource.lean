@@ -69,6 +69,8 @@ def quoteDeclaration (environment : String → Option Pattern) :
       | .apply sourceName arguments => some (.apply sourceName (arguments ++ [argument]))
       | _ => none
   | .arrow _ _ => none
+  | .pi _ _ _ => none
+  | .project _ _ _ => none
 
 def naturalHeader (constructor : ModuleSource.InductiveSyntax.Constructor) : Header 2 :=
   let fields := constructor.fields.length
