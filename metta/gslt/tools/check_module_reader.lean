@@ -15,6 +15,7 @@ open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 #module_file "../module/godelclaw/StreamEvents.module"
 #module_file "../module/godelclaw/ToolCalls.module"
 #module_file "../module/godelclaw/ComponentAPI.module"
+#module_file "../module/godelclaw/AccessPolicy.module"
 #module_file "../../../lean/mettapedia/artifacts/oslf-languages/Aliased.module"
 #module_file "../../../lean/mettapedia/artifacts/oslf-languages/AmbientComm.module"
 #module_file "../../../lean/mettapedia/artifacts/oslf-languages/AmbientNu.module"
