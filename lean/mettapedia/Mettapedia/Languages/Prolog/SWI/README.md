@@ -286,6 +286,87 @@ Assumptions and limits:
   `SupervisorV1` counterexample is preserved as a result about the earlier
   protocol.
 
+## Retract.lean: constraints before destructive retraction, `6b14930`
+
+This model concerns the proposed `retract/1` and `retractall/1` constraint
+fix in `6b14930` on `cf6960c`. It distinguishes an erase request from this
+operation and database edits made by a wakeup itself. Namespace:
+`Mettapedia.Languages.Prolog.SWI.Retract`.
+
+| C behavior | Model |
+|---|---|
+| SSU flags plus `decompile()`, or `decompileHead()` | `Candidate.unifies`: ordinary structural success; failure short-circuits before the constraint hook |
+| `CONSTRAINTS_HOLD()` tests only `ALERT_WAKEUP` | `Candidate.wake = none` takes the successful fast path; `otherAlerts` has no effect |
+| `clause_constraints_run()`: propagate a caught exception, then `rc && !PL_exception(0)` | `guardResult`: acceptance requires a true query result and no pending exception |
+| `foreignWakeup()`: `PL_next_solution()`, then `PL_cut_query()` | `Wake` records the first observed result and effects; discarded `alternatives` are never evaluated |
+| Patched condition before `retractClauseDefinition()` | `candidateTrace true`: an accepted check immediately precedes every outer erase request |
+| Old ordering with a pending hook | `candidateTrace false`: erase before checking; one pending rejected or throwing candidate witnesses either predicate's bug |
+| Hook-driven assert/retract operations | `Event.callback` edits, distinct from `Event.erase` requests issued by the outer operation; `replay` applies both |
+| `allVars()`: distinct plain variable cells, excluding attributed cells | `allVars`, `allVars_plain`, `allVars_nonsharing`, `attributed_argument_slow` |
+| `pushPredicateAccessObj()` protects the access generation while callbacks run | `predicate_access_visible_live`, derived from the existing `Publish` invariant, protects any clause visible in an active access generation |
+
+The main theorem `fixed_scan_guarded` proves the ordering for every candidate
+list in both traversal modes and for arbitrary callback edits. Rejected
+and throwing candidates issue no outer erase (`rejected_candidate_no_request`,
+`throwing_candidate_no_request`). `fixed_all_filter` identifies exactly
+the accepted requests in the prefix before the first exception;
+`fixed_first_requests` selects the first of those requests. `exception_stops_scan`
+and `exception_preserves_prefix` prove that a throwing prefix stops all
+suffix work and keeps the effects already performed. Repeated plain failure
+continues to the next candidate.
+
+`structural_failure_short_circuits`, `no_wakeup_fast_path`,
+`unrelated_alerts_ignored`, `guard_result_accepted_iff` and
+`foreign_wakeup_cuts_alternatives` check the guard's smaller boundaries.
+In particular, acceptance of the first wakeup solution does not retain
+choicepoints that could issue another erase for the same candidate.
+
+Checked witnesses under `Retract.Examples` include:
+
+- `stock_rejection_unsafe`, `stock_exception_unsafe`: the old order has
+  already removed a rejected or throwing candidate, for either mode.
+- `first_authorized_skips_rejections`, `all_authorized_filters_rejections`:
+  reject `p(a)`, accept `p(b)`, reject `p(c)`; only `p(b)` is requested for
+  deletion by the fixed traversal. The old first-accepted traversal also
+  removes `p(a)`.
+- `no_accepted_candidate_no_deletions`: all candidates are rejected.
+- `exception_keeps_prior_deletions`: a prior accepted deletion persists;
+  the throwing and subsequent clauses remain.
+- `failed_wakeup_can_modify_database`: a rejecting hook itself deletes
+  another clause, although the outer operation makes no erase request.
+  A theorem promising whole-database rollback on failure would be false.
+- `failed_structure_never_runs_hook` and the plain, shared and attributed
+  fast-path witnesses.
+
+Scope and assumptions:
+
+- Constraint solving and candidate selection are abstract inputs. `Wake`
+  describes a completed observation after the first-query search, not an
+  implementation of attributed-variable hooks or their scheduler. Its
+  effects include effects produced during that search, including failed
+  branches; cut discards only future alternatives.
+- The traversals specify **authorized erase requests**, rather than full
+  `retract/1` return values. A removal listener may veto an erase or throw;
+  a wakeup may already have removed the current candidate. On a first call,
+  that latter case can refresh `setGenerationFrame()` and continue. Redo
+  can return an already-erased clause under the logical update view.
+  Candidate enumeration across those cases is not proved here. The
+  multi-candidate examples use successful, unopposed removals.
+- A rejected candidate's bindings and temporary terms must be rewound before
+  the next candidate, as `PL_rewind_foreign_frame(fid)` does in C. The model
+  assumes those independent attempts; it does not prove trail restoration,
+  foreign-frame allocation bounds, stack relocation, or raw pointer safety.
+  Decompilation/resource errors before the guard and removal-event errors
+  after it are outside the scan abstraction.
+- The visible-clause lifetime lemma reuses the sequential publication model
+  conditionally on an active protected generation. It is not a formal
+  composition with the callback scanner or a refinement of the C predicate
+  access stack. A generation refresh requires establishing visibility in
+  the refreshed generation again.
+- No C build or runtime experiment is part of this formalization. The
+  source mapping and checked protocol properties complement the patch's
+  regression tests; they do not certify the complete SWI implementation.
+
 ## Assumptions of the earlier models (Publish, PublishAsym, Handoff)
 
 1. A frame's generation store is visible together with the step that makes it. In C it is a store, so a scan could see the previous value between the reader's load and its store. Informally the loop covers this: the frame exits only on a read that follows its last store and a barrier. The next refinement puts generation stores through the store buffer.
