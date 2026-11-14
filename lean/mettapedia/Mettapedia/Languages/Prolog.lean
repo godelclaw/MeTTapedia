@@ -1,4 +1,5 @@
 import Mettapedia.Languages.Prolog.Prolog
+import Mettapedia.Languages.Prolog.SWI
 
 /-!
 # Prolog
