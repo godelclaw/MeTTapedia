@@ -225,6 +225,7 @@ import Mettapedia.Languages.Prolog.SWI.RetractAccess
 #print axioms Mettapedia.Languages.Prolog.SWI.Retract.fixed_first_requests
 #print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.fixed_safe
 #print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.stock_unsafe
+#print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.moved_start_pin_unsafe
 #print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.move_before_scan_unsafe
 #print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.unlocked_move_unsafe
 #print axioms Mettapedia.Languages.Prolog.SWI.SnapshotContracts.filtering_complete

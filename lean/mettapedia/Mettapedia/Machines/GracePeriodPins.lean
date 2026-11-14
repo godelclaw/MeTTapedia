@@ -16,7 +16,9 @@ Objects live from a birth generation until the generation at which they are
 erased.  Readers *pin* generations; a reader may hold an object only if it
 found the object visible at one of its pins.  A collector run takes the
 current generation as its start, marks the pins of every reader, and frees
-the objects erased before the start that are invisible at every marked pin.
+the objects that are invisible from the start on and at every marked pin.
+An object may be a container that leads to other objects, such as an index:
+a reader that walks it holds the container as well as what it finds there.
 
 * `Step` is the protocol.  A reader adds a pin at the current generation
   (`pin`), and may replace its pins by a subset of them (`repin`) only while
@@ -82,9 +84,9 @@ structure St (R O : Type) where
 
 variable {R O : Type} [DecidableEq R] [DecidableEq O]
 
-/-- Erased before the run started, and invisible at every marked generation. -/
+/-- Invisible from the run's start on, and at every marked generation. -/
 def Garbage (s : St R O) (start : ℕ) (marks : Set ℕ) (o : O) : Prop :=
-  (∃ d, (s.life o).died = some d ∧ d < start) ∧ ∀ m ∈ marks, ¬ (s.life o).Visible m
+  (∃ d, (s.life o).died = some d ∧ d ≤ start) ∧ ∀ m ∈ marks, ¬ (s.life o).Visible m
 
 /-- The reclamation protocol. -/
 inductive Step : St R O → St R O → Prop where

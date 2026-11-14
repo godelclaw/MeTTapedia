@@ -381,8 +381,12 @@ Scope and assumptions:
 generations, including pin replacement and atomic scanning of one reader's
 pins. Its three counterexamples remove pinned selection, safe replacement or
 atomic scanning. `RetractAccess` instantiates those results for stock
-`cf6960c` and the proposed `bf81af4` retract access-generation fix, with a C
-source map and explicit assumptions. It is imported separately by the Prolog
+`cf6960c` and the retract access-generation fix, with a C source map and
+explicit assumptions. The clause index that retract/1 walks is a held object
+there: revision 1 (`bf81af4`) moved the first access object to the new
+generation, so clause GC could free an index that a resize had replaced
+(`moved_start_pin_unsafe`); revision 2 (`66e35f0`) keeps it and adds a second
+access object for the new generation. It is imported separately by the Prolog
 umbrella; `SWI.Audit` also checks it and the generic library.
 
 The instantiation assumes the publication ordering, valid memory during an
@@ -487,7 +491,7 @@ A safe abstract protocol does not establish that every C path refines it.
 | PR 6 rev 3, `7a56de8` + `f98cbb3` | `CallPort` / `CallPortPred`: buffering, barriers, light rounds and frame reuse under stated assumptions | Real platform barrier success/failure contracts, numeric lTop/argument preservation, C path completeness and platform CI; pending review corrections are not discharged by these models |
 | Supervisor ownership, `65455ce`–`8f7019a` | `Supervisor.fixed_mem_safe`, `fixed_lud_safe`, six removed-fix witnesses and the birth-side limitation | Composition with weak-memory publication and actual C reclamation/refcounts; current source review |
 | Retract constraints, C body of `d743487` | `Retract`: accepted-before-erase, exception stopping, cut alternatives, fast-path restrictions and callback effects | Native unification/trail restoration, foreign-frame allocation, stack relocation, erase-event vetoes/errors, cursor refresh and C refinement |
-| Retract access-generation fix, `bf81af4` | `GracePeriodPins` and `RetractAccess`: pin handover safety and three removed-condition witnesses; `Mutation` supplies complementary local-ownership obligations | Source review must establish scan atomicity, publication ordering, cursor/walk lifetime and error paths; transactions and weak-memory composition remain open |
+| Retract access-generation fix, revision 2 `66e35f0` (revision 1 `bf81af4` refuted) | `GracePeriodPins` and `RetractAccess`: safety of the kept start pin plus a pin for the new generation, with the walked index as a held object, and removed-condition witnesses including revision 1's (`moved_start_pin_unsafe`); `Mutation` supplies complementary local-ownership obligations | Source review must establish scan atomicity, publication ordering, cursor/walk lifetime and error paths; transactions and weak-memory composition remain open |
 | `db_snapshot` v15 (`642c1f8` / `21cebc7` / `10ee5dc`) | Generic retention/frozen-frame laws and `Handoff` publication/close ordering | Current scope/handle identity and lifetime, transaction rollback, nested query requests, stack/atom GC, API errors, and the pending v16 rebase |
 
 Additional cross-cutting gaps include shutdown/thread teardown, the Debug
