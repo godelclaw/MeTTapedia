@@ -14,7 +14,8 @@ validation, no frame ever holds a reclaimed clause or a freed supervisor,
 also when a visible frame changes its predicate, and with or without the
 `light` rounds of revision 3 (the call port's loop with a compiler barrier
 only, before the loop with the full barrier when there is no process-wide
-barrier: `fallback_safe`).
+barrier: `fallback_safe`), and with clause GC runs that give up without
+scanning (`gcAbort`, revision 3b).
 -/
 
 set_option autoImplicit false
@@ -203,6 +204,9 @@ inductive Step (P : Proto) : St R D K → St R D K → Prop where
       (hinv : ∀ r d' g, (s.rd r).seen = some (some (d', g)) → d' = d → e < g) :
       Step P s { s with vfreed := upd s.vfreed d (upd (s.vfreed d) v true) }
   | gcEnd (s : St R D K) (h : s.gpc = .scanning) : Step P s { s with gpc := .idle }
+  /-- `processBarrier()` failed: clause GC gives up the run without scanning
+  and frees nothing (revision 3b). -/
+  | gcAbort (s : St R D K) (h : s.gpc = .started) : Step P s { s with gpc := .idle }
 
 inductive Reach (P : Proto) : St R D K → St R D K → Prop where
   | refl (s : St R D K) : Reach P s s
@@ -967,6 +971,7 @@ theorem step_inv {s t : St R D K} (he : P.early = false) (hrc : P.recheck = true
   | freeClause k e hg hall hek hlt hinv => exact inv_freeClause h hg hall hek hlt hinv
   | freeCode d v e hg hall hd hlt hinv => exact inv_freeCode h hg hall hd hlt hinv
   | gcEnd => exact inv_gcEnd h
+  | gcAbort => exact inv_gcEnd h
 
 end preservation
 

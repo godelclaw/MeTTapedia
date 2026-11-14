@@ -76,6 +76,7 @@ This model follows the code step by step. A frame protects what it reads only on
 | `check` | the barrier, `} while(gen != global_generation());` then `MEMORY_ACQUIRE()` |
 | `fence` | `MEMORY_BARRIER()`: the first commit; `GENERATION_BARRIER()` and `depart_alerted` without a process-wide barrier |
 | `cross`, per thread, while the others run | `processBarrier()` after `start_gen`: `membarrier(MEMBARRIER_CMD_PRIVATE_EXPEDITED)` (Linux, FreeBSD), `FlushProcessWriteBuffers()` (Windows), `thread_get_register_pointer_values()` on every thread (macOS); the loop has a compiler barrier |
+| `toScan`, only once every thread has crossed | clause GC scans only if `processBarrier()` returned true; otherwise it skips the run (`gcAbort`) and waits until more clauses are erased (revision 3b). On macOS a thread counts as crossed only if its registers were read or the error says that it is gone or is the hidden exception thread of Rosetta 2; `KERN_ABORTED` is retried |
 | `light` | `setGenerationCallPort()`: the loop with a compiler barrier; without a process-wide barrier `ALERT_FENCE` sends the call to `depart_alerted`, which runs the loop with `MEMORY_BARRIER()` |
 | `dispatch` | `PC = DEF->codes` |
 | `replace` | `freeCodesDefinition()` -> `linger_always()` (`c->generation = global_generation()`) |
@@ -92,6 +93,7 @@ Results:
 
 Still assumed here:
 - Loads happen in program order. This is `MEMORY_ACQUIRE()` after the loop: free on x86, `dmb ishld` on ARM.
+- `processBarrier()` returns true only if every thread that runs Prolog crossed. On macOS this assumes that the errors it accepts (`KERN_TERMINATED`, `KERN_INVALID_ARGUMENT`, `MACH_SEND_INVALID_DEST`) come only from a thread that has exited or from Rosetta's exception thread, which runs no Prolog.
 - One predicate here; see `CallPortPred` for several predicates and last calls.
 - The scan reads lTop and the generation field in one step. A frame that matters has no pending stores at that point.
 - The erase is one step.

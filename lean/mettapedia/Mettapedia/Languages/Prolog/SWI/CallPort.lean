@@ -38,6 +38,10 @@ examples: `early_codes_unsafe` (DEF->codes read before validating, the
 place of the S_TRUSTME use-after-free), `no_recheck_unsafe` (the loaded
 generation stored without loading again), `neither_unsafe` (no fence and no
 crossing).
+
+Revision 3b: a clause GC that has started may give up without scanning
+(`gcAbort`: `processBarrier()` could not reach every thread); it frees
+nothing, and the results above include such runs.
 -/
 
 set_option autoImplicit false
@@ -241,6 +245,9 @@ inductive Step (P : Proto) : St R K → St R K → Prop where
       (hinv : ∀ r g, (s.rd r).seen = some (some g) → d < g) :
       Step P s { s with vfreed := upd s.vfreed v true }
   | gcEnd (s : St R K) (h : s.gpc = .scanning) : Step P s { s with gpc := .idle }
+  /-- `processBarrier()` failed: clause GC gives up the run without scanning
+  and frees nothing (revision 3b). -/
+  | gcAbort (s : St R K) (h : s.gpc = .started) : Step P s { s with gpc := .idle }
 
 inductive Reach (P : Proto) : St R K → St R K → Prop where
   | refl (s : St R K) : Reach P s s
@@ -925,6 +932,7 @@ theorem step_inv {s t : St R K} (he : P.early = false) (hrc : P.recheck = true)
   | freeClause k e hg hall hek hlt hinv => exact inv_freeClause h hg hall hek hlt hinv
   | freeCode v d hg hall hd hlt hinv => exact inv_freeCode h hg hall hd hlt hinv
   | gcEnd => exact inv_gcEnd h
+  | gcAbort => exact inv_gcEnd h
 
 end preservation
 
