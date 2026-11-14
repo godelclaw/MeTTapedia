@@ -7,7 +7,7 @@ depends only on `propext`, `Quot.sound` and, in `Handoff.A`,
 `Classical.choice`.
 
 Each model is a transition system over the interleavings of its actors.
-Each ordering the C code relies on is a flag. The publication models prove
+Selected protocol orderings are flags. The publication models prove
 their fixed protocols safe for every schedule. `SupervisorV1` refutes the
 earlier three-fix supervisor safety claim even with its fixes enabled. Each
 removed fix also has an explicit counterexample.
@@ -17,6 +17,10 @@ erasure side of the logical update view for every reachable fixed-protocol
 state. Six removed-fix traces distinguish memory faults from erasure violations.
 A seventh trace documents the remaining birth-side limitation. The legacy
 counterexample remains under `Supervisor.V1`.
+
+The theorem count measures checked statements, not the fraction of C verified.
+There is no end-to-end C refinement proof. The coverage table below separates
+proved protocols from source and platform obligations.
 
 Import `Mettapedia.Languages.Prolog.SWI` for all models. Build
 `Mettapedia.Languages.Prolog.SWI.Audit` for the axiom output of every explicitly
@@ -366,6 +370,119 @@ Scope and assumptions:
 - No C build or runtime experiment is part of this formalization. The
   source mapping and checked protocol properties complement the patch's
   regression tests; they do not certify the complete SWI implementation.
+
+## Mutation.lean: post-publication lifetime and erase-generation guards
+
+`Mutation.Lifetime` splits operation preparation, publication, postwork and
+finish from list unlink and list-node disposal. `clauseLive` is derived from
+the list reference or an owned local Clause reference. Invalid dereferences
+are recorded when they occur; the read transitions do not require liveness.
+GC may interleave arbitrarily once publication permits list disposal.
+
+- `fixed_safe`: a local Clause reference held through the last access, with
+  no reads through the borrowed list node, preserves safety for every modeled
+  schedule.
+- `no_hold_unsafe`: the unprotected post-publication read reaches freed memory.
+- `clause_pin_does_not_pin_node`: a local Clause reference keeps the Clause
+  alive while its list ClauseRef is already dead; reading that node is unsafe.
+- `early_release_unsafe`: releasing before the last metadata/callback access
+  leaves a reclamation window.
+- `fixed_survives_node_disposal`, `fixed_can_release_last_owner`: the list
+  node may disappear during protected postwork, and the last reference may be
+  released once that postwork finishes.
+
+This is the lifetime obligation relevant to PR 1 revision 2 (`ee182ae`) and
+the post-unlock `retract_clause()` issue reported on `cf6960c`. It does not
+certify the new retract fix, which was still under development at this audit.
+For each C path, the reference must be acquired while the pointer is valid,
+retained across every remaining access and callback, then released on its
+success and error exits. Alternatively, all later dereferences may be removed.
+Caching only the generation does not justify a remaining callback that reads
+the Clause. A Clause reference does not preserve a borrowed ClauseRef node.
+The model permits list disposal after publication independently of generation
+roots. A maintained access generation could protect the same pointer instead;
+this model does not establish why C clause GC missed that protection. It omits
+address reuse and extra owners, and has no fairness, leak-freedom or
+shutdown-liveness theorem.
+
+`Mutation.EraseGeneration` models the serialized comparison changed from
+`>=` to `>` by `1ba322c`, in either the ordinary or local transaction generation
+space. `already_erased_stable`, `fixed_idempotent` and
+`fixed_no_resurrection` prove that a retry preserves an existing erasure and
+cannot make a clause visible again. `stock_retry_resurrects` checks the bad
+`erased == current` case. Special discard modes, generation-space exhaustion,
+overflow, transaction rollback and the surrounding C control flow are outside
+this arithmetic fragment.
+
+`refresh_does_not_preserve_saved_visibility` separately shows that advancing a
+frame generation can invalidate a saved next clause's visibility assertion,
+even while an older access generation still sees it. This is not a proof of
+physical reclamation or of a release-build cursor defect. Mapping the cursor,
+frame generation and predicate-access generation together remains necessary.
+
+`frame_refresh_can_outgrow_access_pin` shows the other direction of the gap:
+a clause born at 1 and erased at 2 is visible to a refreshed selector at 1,
+invisible to an unchanged predicate-access pin at 0, and older than GC start
+3. At `d743487`, `pl_retract1_va` initializes the frame from
+`pushPredicateAccessObj(def)->generation`, but on a lost first-call erase it
+calls `setGenerationFrame(environment_frame)` without updating that access
+record. `markAccessedPredicates()` scans the record's generation for the target
+predicate. This is a source-mapping concern, not a machine-checked C trace or
+a proven explanation of the reported ASan event. Whether cursor enumeration
+can reach the newer clause and whether any other root protects it must be
+established. Advancing a pin while keeping an old cursor can instead expose
+old saved nodes; a repair must handle both sides, and publish any changed pin
+with the ordering that the collector requires.
+
+## SnapshotContracts.lean and EmptyCutoff.lean: earlier index/snapshot laws
+
+These historical review models are now part of the public build and axiom
+audit. `SnapshotContracts` proves occurrence-preserving filtering under a
+coverage premise, a sufficient generation cutoff, least safe retention roots,
+frozen-frame preservation, and local insertion/retirement laws. It also gives
+counterexamples for unlocked index-array retirement and a fill/retirement wait
+cycle. These are list and state laws; they do not implement index filling or
+prove that current C locks and caches realize those laws.
+
+`EmptyCutoff.upper_bound_suffices` proves the timestamp condition required by
+an empty-predicate shortcut. Its counterexamples show that publishing a stale
+stamp, or a late older plain store, can lose a visible clause. Taking a maximum
+commutes after both writes complete, but does not close a publication gap
+before a write completes. The current implementation must establish the upper
+bound at the point the shortcut reads its metadata.
+
+## Verification coverage and remaining source obligations
+
+This table is an audit of the pinned revisions, not a submission certificate.
+A safe abstract protocol does not establish that every C path refines it.
+
+| Patch or feature | Checked coverage | Still outside the proof |
+|---|---|---|
+| PR 1 rev 2, `ee182ae` | `Mutation.Lifetime` distinguishes Clause ownership from borrowed ClauseRef lifetime | Mapping every assert/reload/VM/event/error path to acquisition, publication and final release; actual refcount and allocator behavior |
+| PR 2, `22f137a` | Local insertion/retirement and wait-cycle laws in `SnapshotContracts` | The filling counter, lock protocol, invalid-index retirement, exactly-once index population, and all retries in the C implementation |
+| PR 3 rev 9, `f578091` | Filtering/cutoff laws; stale timestamp counterexamples | `last_erased` publication across all writers, `good_from`, old-view assessment caches, their invalidation, fallback paths and retry progress |
+| PR 4, `feb0f16` | Test-only thread-support guard; no dedicated protocol theorem | Threaded and unthreaded test builds, rather than a bespoke Lean proof |
+| PR 5, `1ba322c` | Exact natural-number guard fragment: idempotent erasure and no resurrection | Generation limits, discard/rollback modes and surrounding implementation paths |
+| PR 6 rev 3, `7a56de8` + `f98cbb3` | `CallPort` / `CallPortPred`: buffering, barriers, light rounds and frame reuse under stated assumptions | Real platform barrier success/failure contracts, numeric lTop/argument preservation, C path completeness and platform CI; pending review corrections are not discharged by these models |
+| Supervisor ownership, `65455ce`–`8f7019a` | `Supervisor.fixed_mem_safe`, `fixed_lud_safe`, six removed-fix witnesses and the birth-side limitation | Composition with weak-memory publication and actual C reclamation/refcounts; current source review |
+| Retract constraints, C body of `d743487` | `Retract`: accepted-before-erase, exception stopping, cut alternatives, fast-path restrictions and callback effects | Native unification/trail restoration, foreign-frame allocation, stack relocation, erase-event vetoes/errors, cursor refresh and C refinement |
+| New `retract_clause` post-unlock UAF | A required ownership discipline and counterexamples in `Mutation.Lifetime` | The actual fix revision, its source mapping and why the existing GC/access protection allowed reclamation |
+| `db_snapshot` v15 (`642c1f8` / `21cebc7` / `10ee5dc`) | Generic retention/frozen-frame laws and `Handoff` publication/close ordering | Current scope/handle identity and lifetime, transaction rollback, nested query requests, stack/atom GC, API errors, and the pending v16 rebase |
+
+Additional cross-cutting gaps include shutdown/thread teardown, the Debug
+protected-ClauseRef registry, finite machine arithmetic, C data races and
+memory accesses, and composition of separately proved protocols. The
+`CallPort` models assume that relevant frame fields are scanned coherently;
+`Supervisor` assumes the reader publication guarantee; `Retract` assumes
+independent rewound attempts. Those assumptions must be justified at the source
+boundary, not inferred from the existence of a theorem named `safe`.
+
+The appropriate review package pins the exact source revision and its claimed
+property, supplies baseline/fixed reproductions and regression controls,
+records platform and performance evidence, and states the remaining model
+assumptions. Independent stock failures do not by themselves prove that a
+particular patched failure is unrelated. Each patch should claim only the
+property its evidence establishes.
 
 ## Assumptions of the earlier models (Publish, PublishAsym, Handoff)
 
