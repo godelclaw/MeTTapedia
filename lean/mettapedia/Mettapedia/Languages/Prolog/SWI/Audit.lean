@@ -1,6 +1,7 @@
 import Mettapedia.Languages.Prolog.SWI
+import Mettapedia.Languages.Prolog.SWI.RetractAccess
 
-/-! Axiom audit of every explicitly declared theorem in these protocol models. -/
+/-! Axiom audit of the SWI protocol models and their generic reclamation theory. -/
 
 #print axioms Mettapedia.Languages.Prolog.SWI.CallPort.lastD_append
 #print axioms Mettapedia.Languages.Prolog.SWI.CallPort.setR_same
@@ -127,6 +128,7 @@ import Mettapedia.Languages.Prolog.SWI
 #print axioms Mettapedia.Languages.Prolog.SWI.Mutation.EraseGeneration.fixed_no_resurrection
 #print axioms Mettapedia.Languages.Prolog.SWI.Mutation.EraseGeneration.stock_retry_resurrects
 #print axioms Mettapedia.Languages.Prolog.SWI.Mutation.EraseGeneration.refresh_does_not_preserve_saved_visibility
+#print axioms Mettapedia.Languages.Prolog.SWI.Mutation.EraseGeneration.frame_refresh_can_outgrow_access_pin
 #print axioms Mettapedia.Languages.Prolog.SWI.Publish.upd_same
 #print axioms Mettapedia.Languages.Prolog.SWI.Publish.upd_ne
 #print axioms Mettapedia.Languages.Prolog.SWI.Publish.setR_same
@@ -221,6 +223,10 @@ import Mettapedia.Languages.Prolog.SWI
 #print axioms Mettapedia.Languages.Prolog.SWI.Retract.accepted_prefix_filter
 #print axioms Mettapedia.Languages.Prolog.SWI.Retract.fixed_all_filter
 #print axioms Mettapedia.Languages.Prolog.SWI.Retract.fixed_first_requests
+#print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.fixed_safe
+#print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.stock_unsafe
+#print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.move_before_scan_unsafe
+#print axioms Mettapedia.Languages.Prolog.SWI.RetractAccess.unlocked_move_unsafe
 #print axioms Mettapedia.Languages.Prolog.SWI.SnapshotContracts.filtering_complete
 #print axioms Mettapedia.Languages.Prolog.SWI.SnapshotContracts.filtering_complete_iff
 #print axioms Mettapedia.Languages.Prolog.SWI.SnapshotContracts.unaffected_bucket_complete
@@ -353,4 +359,15 @@ import Mettapedia.Languages.Prolog.SWI
 #print axioms Mettapedia.Languages.Prolog.SWI.Supervisor.V1.unvalidated_install_unsafe
 #print axioms Mettapedia.Languages.Prolog.SWI.Supervisor.V1.plain_swap_unsafe
 #print axioms Mettapedia.Languages.Prolog.SWI.Supervisor.V1.no_hold_unsafe
-#print axioms Mettapedia.Languages.Prolog.SWI.Mutation.EraseGeneration.frame_refresh_can_outgrow_access_pin
+#print axioms Mettapedia.Machines.GracePeriodPins.Life.visible_erase
+#print axioms Mettapedia.Machines.GracePeriodPins.inv_step
+#print axioms Mettapedia.Machines.GracePeriodPins.inv_of_reach
+#print axioms Mettapedia.Machines.GracePeriodPins.safe_of_reach
+#print axioms Mettapedia.Machines.GracePeriodPins.inv_init
+#print axioms Mettapedia.Machines.GracePeriodPins.update_unit
+#print axioms Mettapedia.Machines.GracePeriodPins.step_to
+#print axioms Mettapedia.Machines.GracePeriodPins.all_unit
+#print axioms Mettapedia.Machines.GracePeriodPins.inv_start
+#print axioms Mettapedia.Machines.GracePeriodPins.unpinned_view_unsafe
+#print axioms Mettapedia.Machines.GracePeriodPins.unchecked_repin_unsafe
+#print axioms Mettapedia.Machines.GracePeriodPins.slotwise_scan_unsafe

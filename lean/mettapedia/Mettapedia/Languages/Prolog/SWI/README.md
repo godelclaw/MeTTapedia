@@ -1,9 +1,11 @@
 # Models of the SWI-Prolog clause GC protocols
 
-Part of MeTTapedia's main Lean project. These models use core Lean only.
+Part of MeTTapedia's main Lean project. The original protocol models use core
+Lean; the separate `RetractAccess` instantiation and generic reclamation library
+use Mathlib.
 Build from `lean/mettapedia` with
 `lake build Mettapedia.Languages.Prolog.SWI`; every theorem
-depends only on `propext`, `Quot.sound` and, in `Handoff.A`,
+depends only on a subset of `propext`, `Quot.sound` and
 `Classical.choice`.
 
 Each model is a transition system over the interleavings of its actors.
@@ -371,6 +373,22 @@ Scope and assumptions:
   source mapping and checked protocol properties complement the patch's
   regression tests; they do not certify the complete SWI implementation.
 
+## RetractAccess.lean and the generic grace-period library
+
+`Mettapedia.Machines.GracePeriodPins` proves safe reclamation with pinned
+generations, including pin replacement and atomic scanning of one reader's
+pins. Its three counterexamples remove pinned selection, safe replacement or
+atomic scanning. `RetractAccess` instantiates those results for stock
+`cf6960c` and the proposed `bf81af4` retract access-generation fix, with a C
+source map and explicit assumptions. It is imported separately by the Prolog
+umbrella; `SWI.Audit` also checks it and the generic library.
+
+The instantiation assumes the publication ordering, valid memory during an
+index/list walk, and sequentially consistent reader-pin scans. It excludes
+transactions and address reuse. This is meaningful checked protocol coverage
+plus an explicit source map; the C implementation and its weak-memory/platform
+primitives are not mechanically refined into the model.
+
 ## Mutation.lean: post-publication lifetime and erase-generation guards
 
 `Mutation.Lifetime` splits operation preparation, publication, postwork and
@@ -392,8 +410,9 @@ GC may interleave arbitrarily once publication permits list disposal.
   released once that postwork finishes.
 
 This is the lifetime obligation relevant to PR 1 revision 2 (`ee182ae`) and
-the post-unlock `retract_clause()` issue reported on `cf6960c`. It does not
-certify the new retract fix, which was still under development at this audit.
+the post-unlock `retract_clause()` issue reported on `cf6960c`. This local
+reference discipline is separate from the conditional access-pin handover
+proof in `RetractAccess`.
 For each C path, the reference must be acquired while the pointer is valid,
 retained across every remaining access and callback, then released on its
 success and error exits. Alternatively, all later dereferences may be removed.
@@ -466,7 +485,7 @@ A safe abstract protocol does not establish that every C path refines it.
 | PR 6 rev 3, `7a56de8` + `f98cbb3` | `CallPort` / `CallPortPred`: buffering, barriers, light rounds and frame reuse under stated assumptions | Real platform barrier success/failure contracts, numeric lTop/argument preservation, C path completeness and platform CI; pending review corrections are not discharged by these models |
 | Supervisor ownership, `65455ce`–`8f7019a` | `Supervisor.fixed_mem_safe`, `fixed_lud_safe`, six removed-fix witnesses and the birth-side limitation | Composition with weak-memory publication and actual C reclamation/refcounts; current source review |
 | Retract constraints, C body of `d743487` | `Retract`: accepted-before-erase, exception stopping, cut alternatives, fast-path restrictions and callback effects | Native unification/trail restoration, foreign-frame allocation, stack relocation, erase-event vetoes/errors, cursor refresh and C refinement |
-| New `retract_clause` post-unlock UAF | A required ownership discipline and counterexamples in `Mutation.Lifetime` | The actual fix revision, its source mapping and why the existing GC/access protection allowed reclamation |
+| Retract access-generation fix, `bf81af4` | `GracePeriodPins` and `RetractAccess`: pin handover safety and three removed-condition witnesses; `Mutation` supplies complementary local-ownership obligations | Source review must establish scan atomicity, publication ordering, cursor/walk lifetime and error paths; transactions and weak-memory composition remain open |
 | `db_snapshot` v15 (`642c1f8` / `21cebc7` / `10ee5dc`) | Generic retention/frozen-frame laws and `Handoff` publication/close ordering | Current scope/handle identity and lifetime, transaction rollback, nested query requests, stack/atom GC, API errors, and the pending v16 rebase |
 
 Additional cross-cutting gaps include shutdown/thread teardown, the Debug
