@@ -1076,6 +1076,7 @@ import Mettapedia.Machines.AdmissionRewriting
 import Mettapedia.Machines.AnswerRecipes
 import Mettapedia.Machines.SecondSideAnswers
 import Mettapedia.Machines.SpaceReclamationCost
+import Mettapedia.Machines.GracePeriodPins
 import Mettapedia.Machines.HeadIndexCost
 import Mettapedia.Machines.SetPresenceChurn
 import Mettapedia.Machines.PresenceSetForm
