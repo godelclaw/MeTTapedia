@@ -12,10 +12,11 @@ their fixed protocols safe for every schedule. `SupervisorV1` refutes the
 earlier three-fix supervisor safety claim even with its fixes enabled. Each
 removed fix also has an explicit counterexample.
 
-The ownership-aware model in `Supervisor.lean` defines list and supervisor
-references separately. Its memory and erasure invariants are distinct; their
-full reachability proofs are being developed. The legacy counterexample remains
-under `Supervisor.V1`, rather than being relabeled as a result about ownership.
+The ownership-aware model in `Supervisor.lean` proves memory safety and the
+erasure side of the logical update view for every reachable fixed-protocol
+state. Six removed-fix traces distinguish memory faults from erasure violations.
+A seventh trace documents the remaining birth-side limitation. The legacy
+counterexample remains under `Supervisor.V1`.
 
 Import `Mettapedia.Languages.Prolog.SWI` for all models. Build
 `Mettapedia.Languages.Prolog.SWI.Audit` for the axiom output of every explicitly
@@ -202,6 +203,88 @@ Assumptions and limits:
   defined-predicate `S_VIRGIN` path calls `setDefaultSupervisor()` and then
   loads `DEF->codes` without refreshing the frame's generation, consistent
   with the birth gap above.
+
+## Supervisor.lean: ownership and erasure safety, `65455ce`–`8f7019a`
+
+The protocol is pinned to the four commits on `pr/static-supervisor-v3`,
+based on `cf6960c`. Namespace:
+`Mettapedia.Languages.Prolog.SWI.Supervisor`.
+
+| Commit | C behavior | Model |
+|---|---|---|
+| `65455ce` | `ownClause()` calls `newClauseRef()` / `acquire_clause()` for `S_TRUSTME` and `S_LIST` while `singleClauseSupervisor()` / `listSupervisor()` hold `acquire_def2()`; `freeCodes()` calls `releaseSupervisorClauses()` → `freeClauseRef()` → `release_clause()` | `Proto.own`, `allocate`, `owned`, `embeds`, `vfreed`; each unfreed owning version retains every embedded operand |
+| `dc6b978` | Supervisor slots use CAS; only a successful replacement retires the old version, including default, wrapped and reset paths | `Proto.cas`, `install`, `detacherCas`, `detacherRetry`; reservations move between slot, prototype and pending linger locations; `dup` detects double retirement |
+| `c445fee` | `detachErasedSupervisor()` runs under `L_GENERATION` before publishing the erasure generation in `removeClausesPredicate()` / `reconsultFinalizePredicate()` | `writerLock`, `mark`, `writerDetach`, `publish`; `Proto.detach = inSection` |
+| `8f7019a` | `installSupervisor()` checks `CL_ERASED` and CAS under `L_GENERATION`; validation uses owned references, without an outer hold in `setDefaultSupervisor()`; `S_WRAP` takes its generation before reading the wrapped slot | `creatorLock`, `install`, `retry`, `Proto.validate`; `stamp` precedes `readSlot`; `allocate` releases the acquisition hold before validation |
+
+The creator's scan has the inner `getClauses()` hold in every protocol.
+`finishScan` distinguishes the subsequent build window: `Proto.hold` keeps
+the predicate held until `allocate` acquires the supervisor's own references.
+The `noHold` mutant drops protection in this window, before ownership exists.
+This does not impose the removed outer hold around `setDefaultSupervisor()`.
+
+`linked k` represents the clause-list reference. `unlink` implements the
+list-generation `ddi_is_garbage()` test, requiring no creator hold; it drops
+only that reference. `hasOwner k` asks whether any allocated, unfreed owning
+version embeds `k`. The clause is physically free exactly when both the list
+reference and all such owners are absent. `freeVersion` therefore releases
+its operands as well as the code. Reference multiplicity within one version
+is abstracted to presence, which is enough for these lifetime properties.
+
+Results (all checked by `SWI.Audit`):
+
+| Theorem | Statement |
+|---|---|
+| `fixed_mem_safe` | From any `Init` state, every state reachable under `fixed` satisfies `Mem` |
+| `fixed_lud_safe` | The same states satisfy `LudErase`: a running clause's erasure is strictly after the reader's generation |
+| `mem_safe` | Memory safety needs CAS, ownership and the acquisition hold; it holds independently of detachment timing and install validation |
+| `no_own_unsafe` | The birth-gap trace frees a running operand after list unlink while its supervisor version remains allocated |
+| `plain_swap_unsafe` | Two detachers retire the same version, setting `dup` |
+| `no_hold_unsafe` | GC unlinks and frees an operand retained by the creator between scan completion and acquiring ownership |
+| `no_detach_lud` | An erased clause remains callable in the erasing generation; `Mem` still holds |
+| `late_detach_lud` | A reader loads the stale version between publication and detachment; `Mem` still holds |
+| `unvalidated_install_lud` | A prototype collected before erasure is installed afterwards; `Mem` still holds |
+| `birth_side_open` | The fixed protocol reaches a memory-safe state running a clause born after the reader's generation |
+
+`Mem` covers the reader's code and selected operand, creator operands during
+both borrowing and prototype ownership, absence of duplicate retirement,
+and absence of lingering or freed code in an installed slot. `LudErase`
+is separate: ownership can preserve memory even when erasure visibility is
+wrong. Neither theorem claims the birth side of the logical update view.
+
+The proofs induct over `Reach`. The resource invariant tracks unique clean
+reservations, immutable allocated operands, the acquisition hold, owning
+references, readers' code and retirement bounds, and the GC scan cutoff.
+The erasure invariant additionally connects the generation lock, detached
+slot, validated installs and reader generations. These invariants are
+proved from `Init`; they are not extra transition preconditions. In
+particular, `readSlot` and `run` do not test clause visibility or liveness.
+
+Assumptions and limits:
+
+- Sequentially consistent interleavings; the reader stamp already has the
+  publication guarantee modeled separately in `CallPort`. This module does
+  not re-prove that store-buffer protocol or compose the two models formally.
+- One predicate and one slot, arbitrary reader and detacher index types, one
+  creator serialized by `L_PREDICATE`, and writers serialized by `L_GENERATION`.
+  The slot abstracts either the ordinary or wrapped slot; the corrected
+  `S_WRAP` ordering now matches the reader rule.
+- Fresh unbounded version identifiers, with no address reuse, integer overflow,
+  or allocation failure. Clause births are prescribed and may be in a future
+  generation, abstracting additions made visible by reconsult publication.
+- Reference acquisition is one step while the creator is protected. GC list
+  unlink and dropping its reference are combined; separating them can retain
+  an extra reference longer. Writer detachment and its linger are combined
+  inside the generation critical section; unlocked detachers and creator
+  lingering remain separate steps.
+- GC records active generations and frees a retired version only below both
+  its start generation and every recorded generation. The list-generation
+  clause test is modeled; interval GC may retain more. No fairness or eventual
+  reclamation theorem is claimed.
+- These are protocol proofs with a source mapping, rather than a C refinement
+  proof, weak-memory proof, or a new executed SWI experiment. The older
+  `SupervisorV1` counterexample is preserved as a result about the earlier
+  protocol.
 
 ## Assumptions of the earlier models (Publish, PublishAsym, Handoff)
 
