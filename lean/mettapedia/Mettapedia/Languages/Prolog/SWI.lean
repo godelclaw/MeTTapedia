@@ -8,5 +8,6 @@ import Mettapedia.Languages.Prolog.SWI.Retract
 import Mettapedia.Languages.Prolog.SWI.Mutation
 import Mettapedia.Languages.Prolog.SWI.SnapshotContracts
 import Mettapedia.Languages.Prolog.SWI.EmptyCutoff
+import Mettapedia.Languages.Prolog.SWI.ReadyFixes
 
 /-! SWI-Prolog generation publication, clause GC and supervisor lifetime protocols. -/

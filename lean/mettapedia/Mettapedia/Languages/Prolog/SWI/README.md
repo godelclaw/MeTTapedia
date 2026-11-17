@@ -476,6 +476,40 @@ commutes after both writes complete, but does not close a publication gap
 before a write completes. The current implementation must establish the upper
 bound at the point the shortcut reads its metadata.
 
+## ReadyFixes.lean: source obligations for the reviewed fix branches
+
+`ReadyFixes.lean` gives each November 15 ready branch a compact positive
+protocol theorem and a counterexample with the repaired condition removed.
+It is intended to be read beside the larger models above and beside the C diff.
+
+| C branch | Lean namespace | Checked obligation |
+|---|---|---|
+| `pr/mqual-cyclic-error`, `b61d9f7` | `ReadyFixes.MetaQualification` | Moving `lTop` over the frame arguments before `PL_error()` allocates makes the error path stack-safe; the old lower top is an explicit invalid-access witness. |
+| `pr/assertz-clause-reference-v3`, `36f53d5` | `ReadyFixes.AssertionReference`, `Mutation.Lifetime` | The returned clause reference exists before publication, the original clause is owned, and the borrowed `where` node is not read after unlock. Removing any of these conditions is unsafe. |
+| `pr/index-fill-race-v6`, `18ad39f` | `ReadyFixes.IndexFill` | Predicate locking admits only mutation-before-fill or mutation-after-fill schedules. The transition invariant proves one linked and indexed occurrence at every completed run; old schedules exhibit duplicate and missing entries. Completion publication is paired with acquire observation. |
+| `pr/retract-constraints`, `d743487` | `Retract` | Constraint wakeups authorize deletion before the destructive request, exceptions stop the suffix, rejected candidates issue no outer erase, and wakeup alternatives are cut. |
+| `pr/retract-access-generation-v2`, `64db76f` | `RetractAccess`, `ReadyFixes.RetractContinuation` | The original pin continues to cover the walked index, generation handover is atomic to clause GC, and a lost candidate is found again before continuing. Falling back to the complete clause list preserves appended matching clauses. |
+| `pr/transaction-start-generation`, `ec7d838` | `ReadyFixes.TransactionStart` | A start generation is accepted only after the published sample equals the re-read global generation. The old stale announcement can miss a clause visible in the refreshed view. |
+| `pr/static-reload-view`, `0f7a274` | `ReadyFixes.StaticReload` | Reload records `last_modified` and dirty registration under the predicate lock. Clause GC repeats the generation condition under that lock, so an older running goal prevents unregister. The split old precheck has a concrete lost-registration trace. |
+| `pr/clause-publication-order`, `fb1a108` | `ReadyFixes.Publication` | A release-linked node exposes initialized payload, and release publication of the global generation exposes its prior birth stamp. Plain publication has witnesses for both failures. |
+| `pr/transaction-isolation-v11`, `96a0875` | `ReadyFixes.Publication` | Release/acquire publication of `good_from` makes completed entries visible. The x86 assembly path is safe only under its stated compiler and machine ordering premise; the theorem takes that premise explicitly and the unordered path is refuted. |
+
+The same module records design obligations for three unresolved source items.
+`WrapperOwnership` requires atomic wrapper-slot update, retirement and drainage
+of closure-owned lingering versions, and ownership of embedded clauses (C2).
+`PostUnlock` requires a Clause owner across every post-unlock Clause read and
+forbids reads through a borrowed ClauseRef node (C8.2). `SplitGeneration` shows
+that a split 32-bit frame-generation read can produce a value equal to neither
+the old nor new generation (C7a). These positive theorems describe a design for
+the C fix; they do not claim the current source implements it.
+
+The models also delimit what formalization can establish. In particular,
+`x86_path_safe_of_ordered` proves the desired property from the x86 load-order
+premise; it does not prove that a volatile inline-assembly access is a C11
+atomic acquire. Source review or a switch to the portable acquire path must
+discharge that premise. The same source-boundary rule applies to allocation,
+reference counts, lock coverage, error exits and every platform barrier.
+
 ## Verification coverage and remaining source obligations
 
 This table is an audit of the pinned revisions, not a submission certificate.
@@ -483,15 +517,19 @@ A safe abstract protocol does not establish that every C path refines it.
 
 | Patch or feature | Checked coverage | Still outside the proof |
 |---|---|---|
-| PR 1 rev 2, `ee182ae` | `Mutation.Lifetime` distinguishes Clause ownership from borrowed ClauseRef lifetime | Mapping every assert/reload/VM/event/error path to acquisition, publication and final release; actual refcount and allocator behavior |
-| PR 2, `22f137a` | Local insertion/retirement and wait-cycle laws in `SnapshotContracts` | The filling counter, lock protocol, invalid-index retirement, exactly-once index population, and all retries in the C implementation |
-| PR 3 rev 9, `f578091` | Filtering/cutoff laws; stale timestamp counterexamples | `last_erased` publication across all writers, `good_from`, old-view assessment caches, their invalidation, fallback paths and retry progress |
+| Assert reference rev 3, `36f53d5` | `AssertionReference` and `Mutation.Lifetime` cover pre-publication result ownership, original-clause ownership, and rejection of post-unlock borrowed-node access | Mapping every assert/reload/VM/event/error path to acquisition, publication and final release; actual refcount, atom handle and allocator behavior |
+| Index fill rev 6, `18ad39f` | `IndexFill` proves the lock/wait transition invariant and exactly-once terminal indexing; `SnapshotContracts` supplies retirement and wait-cycle laws | Exact source-path coverage of all mutators, invalid-index retirement, mutex/atomic semantics and retry progress |
+| Transaction isolation rev 11, `96a0875` | `Publication` proves the release/acquire `good_from` contract and refutes unordered observation; filtering/cutoff laws cover retained clauses | The x86 assembly path's C atomicity and compiler contract, `last_erased` publication across all writers, cache invalidation and multi-argument C6d |
 | PR 4, `feb0f16` | Test-only thread-support guard; no dedicated protocol theorem | Threaded and unthreaded test builds, rather than a bespoke Lean proof |
 | PR 5, `1ba322c` | Exact natural-number guard fragment: idempotent erasure and no resurrection | Generation limits, discard/rollback modes and surrounding implementation paths |
 | PR 6 rev 3, `7a56de8` + `f98cbb3` | `CallPort` / `CallPortPred`: buffering, barriers, light rounds and frame reuse under stated assumptions | Real platform barrier success/failure contracts, numeric lTop/argument preservation, C path completeness and platform CI; pending review corrections are not discharged by these models |
+| Cyclic meta qualification, `b61d9f7` | `MetaQualification` proves the raised local top covers error allocation and refutes the old lower top | `PL_error()` and term-reference stack footprint, relocation and all architecture-specific frame layouts |
+| Transaction start publication, `ec7d838` | `TransactionStart` proves stable sample publication and exhibits a stale announcement that misses the refreshed view | Weak-memory realization of `GENERATION_BARRIER`, transaction nesting and all reset/error paths |
+| Static reload view, `0f7a274` | `StaticReload` proves an older goal prevents unregister with the locked repeated test and exhibits the old split race | C lock discipline at every registration/unregistration site and composition with static supervisors |
+| Clause publication, `fb1a108` | `Publication` proves release-link payload visibility and birth-stamp-before-generation visibility, with removed-order witnesses | Every list/bucket publication site, non-GNU atomic implementation and reader acquire/data-dependency behavior |
 | Supervisor ownership, `65455ce`–`8f7019a` | `Supervisor.fixed_mem_safe`, `fixed_lud_safe`, six removed-fix witnesses and the birth-side limitation | Composition with weak-memory publication and actual C reclamation/refcounts; current source review |
 | Retract constraints, C body of `d743487` | `Retract`: accepted-before-erase, exception stopping, cut alternatives, fast-path restrictions and callback effects | Native unification/trail restoration, foreign-frame allocation, stack relocation, erase-event vetoes/errors, cursor refresh and C refinement |
-| Retract access-generation fix, revision 2 `66e35f0` (revision 1 `bf81af4` refuted) | `GracePeriodPins` and `RetractAccess`: safety of the kept start pin plus a pin for the new generation, with the walked index as a held object, and removed-condition witnesses including revision 1's (`moved_start_pin_unsafe`); `Mutation` supplies complementary local-ownership obligations | Source review must establish scan atomicity, publication ordering, cursor/walk lifetime and error paths; transactions and weak-memory composition remain open |
+| Retract access and continuation, `64db76f` (`66e35f0` lifetime core; revision 1 `bf81af4` refuted) | `GracePeriodPins` and `RetractAccess` prove safety of the kept start pin and current pin; `RetractContinuation` proves current-index coverage or full-list fallback preserves appended candidates | Source review must establish scan atomicity, publication ordering, current-index coverage, argument reconstruction after stack shifts and all error paths; transactions and weak-memory composition remain open |
 | `db_snapshot` v15 (`642c1f8` / `21cebc7` / `10ee5dc`) | Generic retention/frozen-frame laws and `Handoff` publication/close ordering | Current scope/handle identity and lifetime, transaction rollback, nested query requests, stack/atom GC, API errors, and the pending v16 rebase |
 
 Additional cross-cutting gaps include shutdown/thread teardown, the Debug
