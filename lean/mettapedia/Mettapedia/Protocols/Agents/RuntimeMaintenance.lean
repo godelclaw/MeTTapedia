@@ -121,6 +121,49 @@ theorem stale_source_does_not_authorize_copy [DecidableEq Record]
     publish captured current staged = none := by
   simp [publish, h]
 
+/-! ## Sharing append-only membership across revisions
+
+A revision with only appended children is a prefix of the same ordered
+occurrence sequence. A versioned prefix length can therefore replace the
+copied membership list. Arbitrary removal and reordering would need explicit
+edits or an independently stored generation.
+-/
+
+def membershipAt (members : List Record) (through : Nat) : Option (List Record) :=
+  if through ≤ members.length then some (members.take through) else none
+
+theorem append_preserves_old_membership (members added : List Record) (through : Nat)
+    (h : through ≤ members.length) :
+    membershipAt (members ++ added) through = membershipAt members through := by
+  have hall : through ≤ (members ++ added).length := by
+    simp only [List.length_append]
+    omega
+  simp only [membershipAt, if_pos h, if_pos hall]
+  rw [List.take_append_of_le_length h]
+
+theorem equal_members_still_have_separate_occurrences :
+    membershipAt ([7, 7, 9] : List Nat) 2 = some [7, 7] := by
+  decide
+
+/-- Member slots needed when all lists after single additions are copied.
+This counts member slots, excluding the common per-version metadata. -/
+def copiedMemberSlots : Nat → Nat
+  | 0 => 0
+  | n + 1 => copiedMemberSlots n + (n + 1)
+
+theorem copied_member_slots_quadratic (n : Nat) :
+    2 * copiedMemberSlots n = n * (n + 1) := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    simp only [copiedMemberSlots, Nat.mul_add, ih, Nat.add_mul]
+    omega
+
+theorem shared_member_slots_at_128 :
+    copiedMemberSlots 128 = 8256 ∧ (List.range 128).length = 128 := by
+  have h : 2 * copiedMemberSlots 128 = 2 * 8256 := copied_member_slots_quadratic 128
+  exact ⟨Nat.eq_of_mul_eq_mul_left (by decide) h, List.length_range⟩
+
 inductive Phase where
   | boundary | provider | settling
   deriving DecidableEq, Repr
