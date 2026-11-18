@@ -145,6 +145,31 @@ theorem equal_members_still_have_separate_occurrences :
     membershipAt ([7, 7, 9] : List Nat) 2 = some [7, 7] := by
   decide
 
+/-- Reuse a generation only after checking its actual ordered prefix.
+A caller must still publish the delta and version reference atomically. -/
+def membershipDelta [DecidableEq Record] (old next : List Record) : Option (List Record) :=
+  if old = next.take old.length then some (next.drop old.length) else none
+
+theorem membership_delta_preserves_prefix [DecidableEq Record] {old next delta : List Record}
+    (accepted : membershipDelta old next = some delta) :
+    old ++ delta = next := by
+  unfold membershipDelta at accepted
+  split at accepted
+  · next ordered =>
+    have h := Option.some.inj accepted
+    rw [← h]
+    exact (congrArg (fun p => p ++ next.drop old.length) ordered).trans
+      (List.take_append_drop old.length next)
+  · cases accepted
+
+theorem equal_lengths_can_have_different_membership :
+    ([1, 2] : List Nat).length = [2, 1].length ∧ membershipDelta [1, 2] [2, 1] = none := by
+  decide
+
+theorem deduplication_can_lose_the_prefix :
+    membershipDelta ([9, 1, 9] : List Nat) [9, 1, 2] = none := by
+  decide
+
 /-- Member slots needed when all lists after single additions are copied.
 This counts member slots, excluding the common per-version metadata. -/
 def copiedMemberSlots : Nat → Nat
