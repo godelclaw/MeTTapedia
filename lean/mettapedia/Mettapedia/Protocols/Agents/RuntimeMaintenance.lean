@@ -1,0 +1,156 @@
+import Std
+
+/-!
+# Maintenance preserves the admitted view and the committed turn
+
+A hot context is a suffix of the original ordered records. Its offset includes
+records omitted by an earlier checkpoint. Source identities and multiplicity
+survive; a request can retrieve the preceding records from the original ledger.
+
+A hierarchy copy stages whole partitions before the binding moves. Publication
+requires exact ordered readback of the partitions and an unchanged source
+coordinate. Implementations using digests must establish that their encoding
+is faithful and treat digest equality as a cryptographic check, not as a proof
+of structural equality. This model assumes the source revision identifies an
+immutable logical snapshot.
+
+Recycling is a request to leave after the current turn reaches a durable
+checkpoint. A returned provider response alone does not establish settlement.
+-/
+
+set_option autoImplicit false
+namespace Mettapedia.Protocols.Agents.RuntimeMaintenance
+
+universe u
+variable {Record : Type u}
+
+structure Window (Record : Type u) where
+  archive : List Record
+  recent : List Record
+  used : Nat
+  deriving Repr
+
+def weight (size : Record → Nat) (records : List Record) : Nat :=
+  (records.map size).sum
+
+/-- A suffix of whole records, with room reserved for the frame and handoff. -/
+def select (size : Record → Nat) (room : Nat) : List Record → Window Record
+  | [] => ⟨[], [], 0⟩
+  | row :: rows =>
+    let suffix := select size room rows
+    if suffix.archive.isEmpty && size row + suffix.used ≤ room then
+      ⟨[], row :: suffix.recent, size row + suffix.used⟩
+    else
+      ⟨row :: suffix.archive, suffix.recent, suffix.used⟩
+
+theorem select_partition (size : Record → Nat) (room : Nat) (rows : List Record) :
+    (select size room rows).archive ++ (select size room rows).recent = rows := by
+  induction rows with
+  | nil => rfl
+  | cons row rows ih =>
+    simp only [select]
+    split
+    · next fit =>
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at fit
+      have h : (select size room rows).archive = [] :=
+        List.isEmpty_iff.mp fit.1
+      simpa [h] using congrArg (List.cons row) ih
+    · exact congrArg (List.cons row) ih
+
+theorem select_cost (size : Record → Nat) (room : Nat) (rows : List Record) :
+    (select size room rows).used = weight size (select size room rows).recent ∧
+      (select size room rows).used ≤ room := by
+  induction rows with
+  | nil => simp [select, weight]
+  | cons row rows ih =>
+    simp only [select]
+    split
+    · next fit =>
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at fit
+      refine ⟨?_, fit.2⟩
+      exact congrArg (fun n => size row + n) ih.1
+    · exact ih
+
+theorem absolute_offset (size : Record → Nat) (room : Nat) (old rows : List Record) :
+    old.length + (select size room rows).archive.length +
+      (select size room rows).recent.length = (old ++ rows).length := by
+  have h := congrArg List.length (select_partition size room rows)
+  simp only [List.length_append] at h ⊢
+  omega
+
+theorem relative_offset_loses_a_prefix :
+    let selected := select (fun (_ : Nat) => 1) 1 [7, 7]
+    selected.archive.length ≠ [3, 4].length + selected.archive.length := by
+  decide
+
+structure Space (Record : Type u) where
+  identity : Nat
+  revision : Nat
+  partitions : List (List Record)
+  deriving DecidableEq
+
+/-- Transfer checks the captured binding, then all the archived occurrences.
+The destination has its own storage identity and revision. -/
+def publish [DecidableEq Record] (captured current staged : Space Record) :
+    Option (Space Record) :=
+  if current.identity = captured.identity ∧ current.revision = captured.revision ∧
+      staged.partitions = captured.partitions then some staged else none
+
+theorem publish_preserves_occurrences [DecidableEq Record]
+    {captured current staged next : Space Record}
+    (h : publish captured current staged = some next) :
+    next.partitions.flatten = captured.partitions.flatten ∧
+    current.identity = captured.identity ∧ current.revision = captured.revision := by
+  unfold publish at h
+  split at h
+  · next checked =>
+    have hs : staged = next := Option.some.inj h
+    subst next
+    exact ⟨congrArg List.flatten checked.2.2, checked.1, checked.2.1⟩
+  · cases h
+
+theorem equal_counts_do_not_authorize_copy :
+    let source : Space Nat := ⟨1, 3, [[7, 7], [9]]⟩
+    let wrong : Space Nat := ⟨2, 1, [[7, 9], [9]]⟩
+    source.partitions.flatten.length = wrong.partitions.flatten.length ∧
+    publish source source wrong = none := by
+  decide
+
+theorem stale_source_does_not_authorize_copy [DecidableEq Record]
+    (captured current staged : Space Record) (h : current.revision ≠ captured.revision) :
+    publish captured current staged = none := by
+  simp [publish, h]
+
+inductive Phase where
+  | boundary | provider | settling
+  deriving DecidableEq, Repr
+
+structure Loop where
+  phase : Phase
+  checkpoint : Nat
+  requested : Bool
+  deriving DecidableEq, Repr
+
+def requestRecycle (s : Loop) : Loop := {s with requested := true}
+def canRecycle (s : Loop) : Bool := s.requested && (s.phase == .boundary)
+
+def finishProvider (s : Loop) : Loop :=
+  if s.phase = .provider then {s with phase := .settling} else s
+
+def settle (s : Loop) (committed : Bool) : Loop :=
+  if committed && (s.phase == .settling) then
+    {s with phase := .boundary, checkpoint := s.checkpoint + 1}
+  else s
+
+theorem live_provider_keeps_its_owner (n : Nat) :
+    canRecycle (requestRecycle ⟨.provider, n, false⟩) = false := rfl
+
+theorem failed_checkpoint_cannot_recycle (n : Nat) :
+    canRecycle (settle (finishProvider (requestRecycle ⟨.provider, n, false⟩)) false)
+      = false := rfl
+
+theorem successful_checkpoint_can_recycle (n : Nat) :
+    let settled := settle (finishProvider (requestRecycle ⟨.provider, n, false⟩)) true
+    canRecycle settled = true ∧ settled.checkpoint = n + 1 := ⟨rfl, rfl⟩
+
+end Mettapedia.Protocols.Agents.RuntimeMaintenance
