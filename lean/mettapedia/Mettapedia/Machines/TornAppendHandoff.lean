@@ -22,11 +22,15 @@ on a concrete case. A restriction without such a case only stalls the loops.
   writer that cannot read the intent sees only the log, and whatever it would
   append, a recoverable torn payload consistent with that log is lost by the
   write (`unread_intent_forces_wait`).
-* Waiting on an append that can never complete is not necessary. Its place
-  holds other bytes, which no write changes (`lost_stays_lost`,
-  `place_bytes_fixed`), so a reader or writer waiting for it waits for
-  nothing. The same holds for a payload that cannot be known (one that fails
-  its digest): no writer can write it.
+* Waiting on an append that can never complete is not necessary once every
+  new record starts on a line of its own. Its place holds other bytes, which
+  no write changes (`lost_stays_lost`, `place_bytes_fixed`), so waiting for
+  it waits for nothing; the same holds for a payload that cannot be known
+  (one that fails its digest). What a write after it can still harm is the
+  readability of the new record, when the log ends inside the abandoned
+  fragment and readers find records at line starts: the write must begin
+  with a line break there (`on_own_line_starts_line`, `on_own_line_keeps`,
+  `no_break_joins_fragment`).
 * With whole-record commits no torn state exists. An owner recovers by
   membership, appending its record once when the log lacks it, and no writer
   reads another's intent (`recover_mem`, `recover_count`, `commit_keeps`).
@@ -155,6 +159,42 @@ theorem unread_intent_forces_wait (log q : List α) (y : α) (hq : q ≠ [])
 /-- A concrete case: a payload torn after one symbol, then another record. -/
 example : Torn [0, 1] 1 [1, 2] ∧ Lost ([0, 1] ++ [3]) 1 [1, 2] := by
   refine ⟨⟨by decide, by decide, by decide⟩, ⟨by decide, by decide, by decide⟩⟩
+
+/-- A new record on a line of its own: after a log that ends inside a line,
+a line break first. -/
+def onOwnLine [DecidableEq α] (nl : α) (log q : List α) : List α :=
+  if log.getLast? = some nl ∨ log = [] then log ++ q else log ++ nl :: q
+
+/-- The log before the new record is kept byte for byte, fragment included. -/
+theorem on_own_line_keeps [DecidableEq α] (nl : α) (log q : List α) :
+    log <+: onOwnLine nl log q := by
+  unfold onOwnLine
+  split
+  · exact List.prefix_append _ _
+  · exact List.prefix_append _ _
+
+/-- The new record starts a line: what precedes it is empty or ends with the
+line break. -/
+theorem on_own_line_starts_line [DecidableEq α] (nl : α) (log q : List α) :
+    ∃ pre, onOwnLine nl log q = pre ++ q ∧ (pre = [] ∨ pre.getLast? = some nl) := by
+  unfold onOwnLine
+  split
+  · rename_i h
+    exact ⟨log, rfl, h.elim Or.inr Or.inl⟩
+  · exact ⟨log ++ [nl], by simp, Or.inr (by simp)⟩
+
+/-- Without the break, a record written after a fragment that ends inside a
+line does not start a line: readers that find records at line starts read it
+joined to the fragment. -/
+theorem no_break_joins_fragment (nl : α) (log q : List α) (hne : log ≠ [])
+    (hmid : log.getLast? ≠ some nl) :
+    ¬ ∃ pre, log ++ q = pre ++ q ∧ (pre = [] ∨ pre.getLast? = some nl) := by
+  rintro ⟨pre, heq, hpre⟩
+  have : pre = log := (List.append_cancel_right heq).symm
+  subst this
+  rcases hpre with h | h
+  · exact hne h
+  · exact hmid h
 
 end ByteLog
 
