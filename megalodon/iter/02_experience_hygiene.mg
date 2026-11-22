@@ -2251,4 +2251,435 @@ apply and3I.
 - exact cleanup_establishes_CleanedUp Hidem P (drop_leading_tools s).
 Qed.
 
+(** ---- Theorem Group 7: General k <= 80 Uniformity & Prompt-Cache Prefix Stability
+    1. Proves IsBucket20_exists on all of omega, generalizing original pre-strip
+       uniformity (1 cleanup per (20 + k)-step cycle, with (19 + k) silent turns)
+       to EVERY 0 <= k <= RETAIN_EXP (0..80), not only 0..20.
+    2. Defines PrefixOf s1 s2 (strict LLM KV-cache prefix preservation) and
+       seq_snoc s m (appending one message).
+    3. Proves that every silent non-jump turn under the 20-message jump cadence
+       preserves PrefixOf identically, whereas per-turn normalize_experience
+       provably breaks PrefixOf at index (len - P) whenever an uncleaned tool or
+       reasoning message ages out of the P-message preserve tail (with a concrete
+       witness at len = 80, P = 10 that is already ToolPaired and CleanedUp 10). *)
+
+Theorem IsBucket20_exists : forall L :e omega, exists b, IsBucket20 L b.
+let L. assume HL.
+apply nat_ind (fun m => exists b, IsBucket20 m b).
+- prove exists b, IsBucket20 0 b.
+  witness 0.
+  prove 0 :e omega /\ 0 * INTERVAL_EXP <= 0 /\ 0 < (0 + 1) * INTERVAL_EXP.
+  rewrite mul_SNo_zeroL INTERVAL_EXP (omega_SNo INTERVAL_EXP n20_omega).
+  rewrite add_SNo_0L 1 SNo_1.
+  rewrite mul_SNo_oneL INTERVAL_EXP (omega_SNo INTERVAL_EXP n20_omega).
+  apply and3I.
+  + exact nat_0_omega.
+  + exact SNoLe_ref 0.
+  + exact n20_pos.
+- let m. assume Hm IH.
+  claim Hmo : m :e omega. { exact nat_p_omega m Hm. }
+  apply IH. let b. assume Hb.
+  apply Hb. assume Hb1 Hmlt. apply Hb1. assume Hbo Hble.
+  claim Hb1o : b + 1 :e omega. { exact nat_add_omega b Hbo 1 nat_1_omega. }
+  claim Hbm1o : (b + 1) * INTERVAL_EXP :e omega. { exact nat_mul_omega (b + 1) Hb1o INTERVAL_EXP n20_omega. }
+  claim Hm1o : m + 1 :e omega. { exact nat_add_omega m Hmo 1 nat_1_omega. }
+  claim Hle_succ : m + 1 <= (b + 1) * INTERVAL_EXP.
+  { exact nat_SNoLt_S_Le m Hmo ((b + 1) * INTERVAL_EXP) Hbm1o Hmlt. }
+  prove exists b', IsBucket20 (ordsucc m) b'.
+  rewrite ordsucc_eq_add_1 m Hmo.
+  apply nat_SNoLe_cases (m + 1) Hm1o ((b + 1) * INTERVAL_EXP) Hbm1o Hle_succ.
+  + assume Hin : m + 1 :e (b + 1) * INTERVAL_EXP.
+    witness b.
+    prove b :e omega /\ b * INTERVAL_EXP <= m + 1 /\ m + 1 < (b + 1) * INTERVAL_EXP.
+    apply and3I.
+    * exact Hbo.
+    * apply SNoLe_tra (b * INTERVAL_EXP) m (m + 1)
+            (omega_SNo (b * INTERVAL_EXP) (nat_mul_omega b Hbo INTERVAL_EXP n20_omega))
+            (omega_SNo m Hmo) (omega_SNo (m + 1) Hm1o) Hble.
+      rewrite <- add_SNo_0R m (omega_SNo m Hmo) at 1.
+      exact add_SNo_Le2 m 0 1 (omega_SNo m Hmo) SNo_0 SNo_1 (SNoLtLe 0 1 SNoLt_0_1).
+    * exact nat_In_SNoLt ((b + 1) * INTERVAL_EXP) Hbm1o (m + 1) Hin.
+  + assume Heq : m + 1 = (b + 1) * INTERVAL_EXP.
+    witness (b + 1).
+    prove b + 1 :e omega /\ (b + 1) * INTERVAL_EXP <= m + 1 /\ m + 1 < ((b + 1) + 1) * INTERVAL_EXP.
+    apply and3I.
+    * exact Hb1o.
+    * rewrite Heq. exact SNoLe_ref ((b + 1) * INTERVAL_EXP).
+    * rewrite Heq.
+      rewrite mul_SNo_distrR (b + 1) 1 INTERVAL_EXP (omega_SNo (b + 1) Hb1o) SNo_1 (omega_SNo INTERVAL_EXP n20_omega).
+      rewrite mul_SNo_oneL INTERVAL_EXP (omega_SNo INTERVAL_EXP n20_omega).
+      rewrite <- add_SNo_0R ((b + 1) * INTERVAL_EXP) (omega_SNo ((b + 1) * INTERVAL_EXP) Hbm1o) at 1.
+      exact add_SNo_Lt2 ((b + 1) * INTERVAL_EXP) 0 INTERVAL_EXP
+            (omega_SNo ((b + 1) * INTERVAL_EXP) Hbm1o) SNo_0 (omega_SNo INTERVAL_EXP n20_omega) n20_pos.
+- exact omega_nat_p L HL.
+Qed.
+
+Theorem bucket20_spec : forall L :e omega, IsBucket20 L (bucket20 L).
+let L. assume HL.
+exact Eps_i_ex (fun b => IsBucket20 L b) (IsBucket20_exists L HL).
+Qed.
+
+Theorem bucket20_not_gt_4_below_100 : forall L :e omega, L < MAX_EXP -> ~(4 < bucket20 L).
+let L. assume HL Hlt100 H4b.
+claim Hspec : IsBucket20 L (bucket20 L). { exact bucket20_spec L HL. }
+apply Hspec. assume Hb1 _. apply Hb1. assume Hbo Hble.
+claim H5le : 5 <= bucket20 L.
+{ rewrite n5_eq_4_plus_1. exact nat_SNoLt_S_Le 4 (nat_p_omega 4 nat_4) (bucket20 L) Hbo H4b. }
+claim H100le : MAX_EXP <= bucket20 L * INTERVAL_EXP.
+{ exact nat_mul_20_mono 5 (nat_p_omega 5 nat_5) (bucket20 L) Hbo H5le. }
+claim H100leL : MAX_EXP <= L.
+{ exact SNoLe_tra MAX_EXP (bucket20 L * INTERVAL_EXP) L
+        (omega_SNo MAX_EXP n100_omega)
+        (omega_SNo (bucket20 L * INTERVAL_EXP) (nat_mul_omega (bucket20 L) Hbo INTERVAL_EXP n20_omega))
+        (omega_SNo L HL) H100le Hble. }
+exact SNoLt_irref L (SNoLtLe_tra L MAX_EXP L (omega_SNo L HL) (omega_SNo MAX_EXP n100_omega) (omega_SNo L HL) Hlt100 H100leL).
+Qed.
+
+(** Generalized silent-stretch and full-cycle uniformity for ALL 0 <= k <= 80. *)
+Theorem original_silent_stretch_all_k :
+  forall k :e omega, k <= RETAIN_EXP -> forall c :e omega,
+  cad_run PolicyPreStrip k (CadState ((RETAIN_EXP + - k) + 1) 4 c) ((10 + 9) + k) =
+  CadState MAX_EXP 4 c.
+let k. assume Hk Hk80. let c. assume Hc.
+claim Hsub_o : RETAIN_EXP + - k :e omega. { exact nat_sub_omega k Hk RETAIN_EXP n80_omega Hk80. }
+claim HL0_o : (RETAIN_EXP + - k) + 1 :e omega. { exact nat_add_omega (RETAIN_EXP + - k) Hsub_o 1 nat_1_omega. }
+claim Hts_o : (10 + 9) + k :e omega. { exact nat_add_omega (10 + 9) n19_omega k Hk. }
+claim Hsum : ((RETAIN_EXP + - k) + 1) + ((10 + 9) + k) = MAX_EXP.
+{ claim HS80k : SNo (RETAIN_EXP + - k). { exact omega_SNo (RETAIN_EXP + - k) Hsub_o. }
+  claim HS19 : SNo (10 + 9). { exact omega_SNo (10 + 9) n19_omega. }
+  claim HSk : SNo k. { exact omega_SNo k Hk. }
+  rewrite add_SNo_com (10 + 9) k HS19 HSk.
+  rewrite add_SNo_assoc ((RETAIN_EXP + - k) + 1) k (10 + 9) (SNo_add_SNo (RETAIN_EXP + - k) 1 HS80k SNo_1) HSk HS19.
+  rewrite <- add_SNo_assoc (RETAIN_EXP + - k) 1 k HS80k SNo_1 HSk.
+  rewrite add_SNo_com 1 k SNo_1 HSk.
+  rewrite add_SNo_assoc (RETAIN_EXP + - k) k 1 HS80k HSk SNo_1.
+  rewrite add_SNo_com (RETAIN_EXP + - k) k HS80k HSk.
+  rewrite SNo_add_sub_L RETAIN_EXP k (omega_SNo RETAIN_EXP n80_omega) HSk.
+  rewrite <- add_SNo_assoc RETAIN_EXP 1 (10 + 9) (omega_SNo RETAIN_EXP n80_omega) SNo_1 HS19.
+  rewrite add_SNo_com 1 (10 + 9) SNo_1 HS19.
+  rewrite <- n20_eq_19_plus_1.
+  symmetry. exact n100_eq_80_plus_20. }
+rewrite <- Hsum.
+apply cad_run_silent_range PolicyPreStrip k ((RETAIN_EXP + - k) + 1) HL0_o 4 c ((10 + 9) + k) Hts_o.
+let j. assume Hj.
+claim Hjo : j :e omega. { exact nat_In_omega ((10 + 9) + k) Hts_o j Hj. }
+claim HL_o : ((RETAIN_EXP + - k) + 1) + j :e omega. { exact nat_add_omega ((RETAIN_EXP + - k) + 1) HL0_o j Hjo. }
+claim HL_lt : ((RETAIN_EXP + - k) + 1) + j < MAX_EXP.
+{ rewrite <- Hsum.
+  exact add_SNo_Lt2 ((RETAIN_EXP + - k) + 1) j ((10 + 9) + k)
+        (omega_SNo ((RETAIN_EXP + - k) + 1) HL0_o) (omega_SNo j Hjo) (omega_SNo ((10 + 9) + k) Hts_o)
+        (nat_In_SNoLt ((10 + 9) + k) Hts_o j Hj). }
+apply andI.
+- exact HL_lt.
+- exact bucket20_not_gt_4_below_100 (((RETAIN_EXP + - k) + 1) + j) HL_o HL_lt.
+Qed.
+
+Theorem original_full_cycle_uniform_all_k :
+  forall k :e omega, k <= RETAIN_EXP -> forall c :e omega,
+  cad_run PolicyPreStrip k (CadState ((RETAIN_EXP + - k) + 1) 4 c) (INTERVAL_EXP + k) =
+  CadState ((RETAIN_EXP + - k) + 1) 4 (c + 1).
+let k. assume Hk Hk80. let c. assume Hc.
+claim Hts_o : (10 + 9) + k :e omega. { exact nat_add_omega (10 + 9) n19_omega k Hk. }
+claim Htot_eq : INTERVAL_EXP + k = ((10 + 9) + k) + 1.
+{ rewrite n20_eq_19_plus_1.
+  rewrite <- add_SNo_assoc (10 + 9) 1 k (omega_SNo (10 + 9) n19_omega) SNo_1 (omega_SNo k Hk).
+  rewrite add_SNo_com 1 k SNo_1 (omega_SNo k Hk).
+  exact add_SNo_assoc (10 + 9) k 1 (omega_SNo (10 + 9) n19_omega) (omega_SNo k Hk) SNo_1. }
+rewrite Htot_eq.
+rewrite cad_run_add PolicyPreStrip k (CadState ((RETAIN_EXP + - k) + 1) 4 c) ((10 + 9) + k) Hts_o 1 nat_1_omega.
+rewrite original_silent_stretch_all_k k Hk Hk80 c Hc.
+rewrite cad_run_1 PolicyPreStrip k (CadState MAX_EXP 4 c).
+rewrite cad_step_at_100 PolicyPreStrip k c.
+claim Href : PolicyPreStrip = PolicyPreStrip. { reflexivity. }
+rewrite If_i_1 (PolicyPreStrip = PolicyPreStrip) (bucket20 RETAIN_EXP) (bucket20 (RETAIN_EXP + - k)) Href.
+rewrite bucket20_80_to_99 RETAIN_EXP n80_omega (SNoLe_ref RETAIN_EXP) n80_lt_100.
+reflexivity.
+Qed.
+
+(** Strict prefix relation: models LLM KV-cache prefix preservation across turns. *)
+Definition PrefixOf : set -> set -> prop :=
+  fun s1 s2 => seq_len s1 <= seq_len s2 /\ (forall i :e seq_len s1, seq_at s2 i = seq_at s1 i).
+
+Definition seq_snoc : set -> set -> set :=
+  fun s m => Seq (seq_len s + 1) (fun i => if i = seq_len s then m else seq_at s i).
+
+Theorem seq_snoc_valid : forall s, ValidSeq s -> forall m, ValidSeq (seq_snoc s m).
+let s. assume Hs. let m.
+exact ValidSeq_mk (seq_len s + 1) (nat_add_omega (seq_len s) Hs 1 nat_1_omega) (fun i => if i = seq_len s then m else seq_at s i).
+Qed.
+
+Theorem seq_snoc_len : forall s m, seq_len (seq_snoc s m) = seq_len s + 1.
+let s m. exact seq_len_mk (seq_len s + 1) (fun i => if i = seq_len s then m else seq_at s i).
+Qed.
+
+Theorem seq_snoc_PrefixOf : forall s, ValidSeq s -> forall m, PrefixOf s (seq_snoc s m).
+let s. assume Hs. let m.
+prove seq_len s <= seq_len (seq_snoc s m) /\ (forall i :e seq_len s, seq_at (seq_snoc s m) i = seq_at s i).
+apply andI.
+- rewrite seq_snoc_len s m.
+  rewrite <- add_SNo_0R (seq_len s) (omega_SNo (seq_len s) Hs) at 1.
+  exact add_SNo_Le2 (seq_len s) 0 1 (omega_SNo (seq_len s) Hs) SNo_0 SNo_1 (SNoLtLe 0 1 SNoLt_0_1).
+- let i. assume Hi.
+  claim Hio : i :e omega. { exact nat_In_omega (seq_len s) Hs i Hi. }
+  claim Hilt : i < seq_len s. { exact nat_In_SNoLt (seq_len s) Hs i Hi. }
+  claim Hne : i <> seq_len s.
+  { assume Heq : i = seq_len s. apply SNoLt_irref i. rewrite Heq at 2. exact Hilt. }
+  claim Hin1 : i :e seq_len s + 1.
+  { rewrite <- ordsucc_eq_add_1 (seq_len s) Hs. exact ordsuccI1 (seq_len s) i Hi. }
+  prove seq_at (Seq (seq_len s + 1) (fun j => if j = seq_len s then m else seq_at s j)) i = seq_at s i.
+  rewrite seq_at_mk (seq_len s + 1) (fun j => if j = seq_len s then m else seq_at s j) i Hin1.
+  exact If_i_0 (i = seq_len s) m (seq_at s i) Hne.
+Qed.
+
+Theorem seq_snoc_preserves_NoLeadingTool : forall s, ValidSeq s -> 0 < seq_len s -> NoLeadingTool s ->
+  forall m, NoLeadingTool (seq_snoc s m).
+let s. assume Hs Hpos Hnlt. let m.
+prove seq_len (seq_snoc s m) = 0 \/ msg_role (seq_at (seq_snoc s m) 0) <> RoleTool.
+apply orIR.
+claim H0in : 0 :e seq_len s. { exact nat_SNoLt_In (seq_len s) Hs 0 nat_0_omega Hpos. }
+claim Hpref : PrefixOf s (seq_snoc s m). { exact seq_snoc_PrefixOf s Hs m. }
+apply Hpref. assume _ Hat.
+rewrite Hat 0 H0in.
+apply Hnlt.
+- assume H0 : seq_len s = 0.
+  apply FalseE. apply SNoLt_irref 0. rewrite <- H0 at 2. exact Hpos.
+- assume Hne : msg_role (seq_at s 0) <> RoleTool. exact Hne.
+Qed.
+
+(** PER-TURN NORMALIZATION CACHE-BUSTING THEOREM:
+    Whenever a history s (with 0 < P <= len s and len s + 1 < M) has an uncleaned
+    message right at the preserve boundary (index len s - P), appending one new
+    message m and immediately applying per-turn normalize_experience rewrites
+    index (len s - P), strictly breaking PrefixOf s (normalize (seq_snoc s m))
+    and invalidating the KV-cache prefix for all P newest messages. *)
+Theorem per_turn_normalize_breaks_prefix :
+  forall M :e omega, forall R :e omega, R < M ->
+  forall P :e omega, 0 < P ->
+  forall s, ValidSeq s -> P <= seq_len s -> seq_len s + 1 < M -> NoLeadingTool s ->
+  clean_msg (seq_at s (seq_len s + - P)) <> seq_at s (seq_len s + - P) ->
+  forall m, ~(PrefixOf s (normalize_experience M R P (seq_snoc s m))).
+let M. assume HM. let R. assume HR HRM. let P. assume HP HPpos.
+let s. assume Hs HPs HltM Hnlt Hdirty. let m.
+assume Hpref : PrefixOf s (normalize_experience M R P (seq_snoc s m)).
+claim Hspos : 0 < seq_len s.
+{ exact SNoLtLe_tra 0 P (seq_len s) SNo_0 (omega_SNo P HP) (omega_SNo (seq_len s) Hs) HPpos HPs. }
+claim Hidx_o : seq_len s + - P :e omega. { exact nat_sub_omega P HP (seq_len s) Hs HPs. }
+claim Hidx_lt : seq_len s + - P < seq_len s.
+{ rewrite <- SNo_add_sub_L (seq_len s) P (omega_SNo (seq_len s) Hs) (omega_SNo P HP) at 2.
+  rewrite <- add_SNo_0L (seq_len s + - P) (omega_SNo (seq_len s + - P) Hidx_o) at 1.
+  exact add_SNo_Lt1 0 (seq_len s + - P) P SNo_0 (omega_SNo (seq_len s + - P) Hidx_o) (omega_SNo P HP) HPpos. }
+claim Hidx_in : seq_len s + - P :e seq_len s. { exact nat_SNoLt_In (seq_len s) Hs (seq_len s + - P) Hidx_o Hidx_lt. }
+claim Hsn_v : ValidSeq (seq_snoc s m). { exact seq_snoc_valid s Hs m. }
+claim Hsn_nlt : NoLeadingTool (seq_snoc s m). { exact seq_snoc_preserves_NoLeadingTool s Hs Hspos Hnlt m. }
+claim Hnge : ~(M <= seq_len (seq_snoc s m)).
+{ rewrite seq_snoc_len s m.
+  assume Hle : M <= seq_len s + 1.
+  exact SNoLt_irref M (SNoLeLt_tra M (seq_len s + 1) M (omega_SNo M HM) (SNo_add_SNo (seq_len s) 1 (omega_SNo (seq_len s) Hs) SNo_1) (omega_SNo M HM) Hle HltM). }
+claim Htrim : window_trim M R (seq_snoc s m) = seq_snoc s m.
+{ exact If_i_0 (M <= seq_len (seq_snoc s m)) (seq_drop (seq_len (seq_snoc s m) + - R) (seq_snoc s m)) (seq_snoc s m) Hnge. }
+claim Hcut0 : lead_tool_cut (seq_snoc s m) = 0.
+{ apply lead_tool_cut_eq (seq_snoc s m) Hsn_v 0
+        (nat_Le_In_ordsucc 0 nat_0_omega (seq_len (seq_snoc s m)) Hsn_v (nat_0_Le (seq_len (seq_snoc s m)) Hsn_v)).
+  - let j. assume Hj. apply FalseE. exact EmptyE j Hj.
+  - apply Hsn_nlt.
+    + assume H0 : seq_len (seq_snoc s m) = 0. apply orIL. symmetry. exact H0.
+    + assume Hne : msg_role (seq_at (seq_snoc s m) 0) <> RoleTool. apply orIR. exact Hne. }
+claim Hhyg_len : seq_len (hygiene_step M R (seq_snoc s m)) = seq_len s + 1.
+{ prove seq_len (drop_leading_tools (window_trim M R (seq_snoc s m))) = seq_len s + 1.
+  rewrite Htrim.
+  prove seq_len (Seq (seq_len (seq_snoc s m) + - lead_tool_cut (seq_snoc s m))
+                     (fun i => seq_at (seq_snoc s m) (lead_tool_cut (seq_snoc s m) + i))) = seq_len s + 1.
+  rewrite seq_len_mk (seq_len (seq_snoc s m) + - lead_tool_cut (seq_snoc s m))
+          (fun i => seq_at (seq_snoc s m) (lead_tool_cut (seq_snoc s m) + i)).
+  rewrite Hcut0. rewrite minus_SNo_0.
+  rewrite add_SNo_0R (seq_len (seq_snoc s m)) (omega_SNo (seq_len (seq_snoc s m)) Hsn_v).
+  exact seq_snoc_len s m. }
+claim Hidx_in1 : seq_len s + - P :e seq_len s + 1.
+{ rewrite <- ordsucc_eq_add_1 (seq_len s) Hs. exact ordsuccI1 (seq_len s) (seq_len s + - P) Hidx_in. }
+claim Hidx_in_h : seq_len s + - P :e seq_len (hygiene_step M R (seq_snoc s m)).
+{ rewrite Hhyg_len. exact Hidx_in1. }
+claim Hhyg_at : seq_at (hygiene_step M R (seq_snoc s m)) (seq_len s + - P) = seq_at s (seq_len s + - P).
+{ prove seq_at (drop_leading_tools (window_trim M R (seq_snoc s m))) (seq_len s + - P) = seq_at s (seq_len s + - P).
+  rewrite Htrim.
+  claim Hsub1 : seq_len s + - P :e seq_len (seq_snoc s m) + - lead_tool_cut (seq_snoc s m).
+  { rewrite Hcut0. rewrite minus_SNo_0.
+    rewrite add_SNo_0R (seq_len (seq_snoc s m)) (omega_SNo (seq_len (seq_snoc s m)) Hsn_v).
+    rewrite seq_snoc_len s m. exact Hidx_in1. }
+  prove seq_at (Seq (seq_len (seq_snoc s m) + - lead_tool_cut (seq_snoc s m))
+                    (fun i => seq_at (seq_snoc s m) (lead_tool_cut (seq_snoc s m) + i))) (seq_len s + - P)
+      = seq_at s (seq_len s + - P).
+  rewrite seq_at_mk (seq_len (seq_snoc s m) + - lead_tool_cut (seq_snoc s m))
+          (fun i => seq_at (seq_snoc s m) (lead_tool_cut (seq_snoc s m) + i)) (seq_len s + - P) Hsub1.
+  rewrite Hcut0.
+  rewrite add_SNo_0L (seq_len s + - P) (omega_SNo (seq_len s + - P) Hidx_o).
+  claim Hsn_pref : PrefixOf s (seq_snoc s m). { exact seq_snoc_PrefixOf s Hs m. }
+  apply Hsn_pref. assume _ Hsn_at.
+  exact Hsn_at (seq_len s + - P) Hidx_in. }
+claim Hlt_clean : (seq_len s + - P) + P < seq_len (hygiene_step M R (seq_snoc s m)).
+{ rewrite Hhyg_len.
+  rewrite add_SNo_com (seq_len s + - P) P (omega_SNo (seq_len s + - P) Hidx_o) (omega_SNo P HP).
+  rewrite SNo_add_sub_L (seq_len s) P (omega_SNo (seq_len s) Hs) (omega_SNo P HP).
+  rewrite <- add_SNo_0R (seq_len s) (omega_SNo (seq_len s) Hs) at 1.
+  exact add_SNo_Lt2 (seq_len s) 0 1 (omega_SNo (seq_len s) Hs) SNo_0 SNo_1 SNoLt_0_1. }
+claim Hnorm_at : seq_at (normalize_experience M R P (seq_snoc s m)) (seq_len s + - P) = clean_msg (seq_at s (seq_len s + - P)).
+{ prove seq_at (Seq (seq_len (hygiene_step M R (seq_snoc s m)))
+                    (fun i => if i + P < seq_len (hygiene_step M R (seq_snoc s m))
+                              then clean_msg (seq_at (hygiene_step M R (seq_snoc s m)) i)
+                              else seq_at (hygiene_step M R (seq_snoc s m)) i)) (seq_len s + - P)
+      = clean_msg (seq_at s (seq_len s + - P)).
+  rewrite seq_at_mk (seq_len (hygiene_step M R (seq_snoc s m)))
+          (fun i => if i + P < seq_len (hygiene_step M R (seq_snoc s m))
+                    then clean_msg (seq_at (hygiene_step M R (seq_snoc s m)) i)
+                    else seq_at (hygiene_step M R (seq_snoc s m)) i) (seq_len s + - P) Hidx_in_h.
+  rewrite If_i_1 ((seq_len s + - P) + P < seq_len (hygiene_step M R (seq_snoc s m)))
+          (clean_msg (seq_at (hygiene_step M R (seq_snoc s m)) (seq_len s + - P)))
+          (seq_at (hygiene_step M R (seq_snoc s m)) (seq_len s + - P)) Hlt_clean.
+  rewrite Hhyg_at. reflexivity. }
+apply Hpref. assume _ Hpref_at.
+apply Hdirty.
+rewrite <- Hnorm_at.
+exact Hpref_at (seq_len s + - P) Hidx_in.
+Qed.
+
+(** CONCRETE SEPARATION WITNESS (len = 80, P = 10):
+    Constructs an already-clean, ToolPaired, NoLeadingTool 80-message history
+    with one verbose tool message at index 70 (80 - 10). On the very next turn
+    (appending one User message, len 80 -> 81 inside bucket 4):
+      - The 20-message jump cadence preserves PrefixOf identically (KV-cache hit).
+      - Per-turn normalize_experience strictly breaks PrefixOf (KV-cache miss). *)
+Definition cache_witness_seq : set -> set :=
+  fun x => Seq RETAIN_EXP (fun i => if i = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0).
+
+Theorem cache_prefix_separation_witness :
+  CleanOpsIdempotent ->
+  forall x, trunc_tool x <> x ->
+  (forall y, strip_reasoning y = y) ->
+  ValidSeq (cache_witness_seq x) /\
+  NoLeadingTool (cache_witness_seq x) /\
+  CleanedUp 10 (cache_witness_seq x) /\
+  PrefixOf (cache_witness_seq x) (seq_snoc (cache_witness_seq x) (Msg RoleUser 0)) /\
+  ~(PrefixOf (cache_witness_seq x) (normalize_experience MAX_EXP RETAIN_EXP 10 (seq_snoc (cache_witness_seq x) (Msg RoleUser 0)))).
+assume Hidem. let x. assume Htx Hsr.
+claim H10o : 10 :e omega. { exact nat_p_omega 10 nat_10. }
+claim H10pos : 0 < 10. { exact nat_In_SNoLt 10 H10o 0 (nat_0_in_ordsucc 9 nat_9). }
+claim H10le20 : 10 <= INTERVAL_EXP.
+{ prove 10 <= 10 + 10.
+  rewrite <- add_SNo_0R 10 (omega_SNo 10 H10o) at 1.
+  exact add_SNo_Le2 10 0 10 (omega_SNo 10 H10o) SNo_0 (omega_SNo 10 H10o) (nat_0_Le 10 H10o). }
+claim H10le80 : 10 <= RETAIN_EXP.
+{ apply SNoLe_tra 10 INTERVAL_EXP RETAIN_EXP (omega_SNo 10 H10o) (omega_SNo INTERVAL_EXP n20_omega) (omega_SNo RETAIN_EXP n80_omega) H10le20.
+  rewrite n80_eq_60_plus_20.
+  rewrite <- add_SNo_0L INTERVAL_EXP (omega_SNo INTERVAL_EXP n20_omega) at 1.
+  exact add_SNo_Le1 0 INTERVAL_EXP (3 * INTERVAL_EXP) SNo_0 (omega_SNo INTERVAL_EXP n20_omega) (omega_SNo (3 * INTERVAL_EXP) n60_omega) (nat_0_Le (3 * INTERVAL_EXP) n60_omega). }
+claim H70o : RETAIN_EXP + - 10 :e omega. { exact nat_sub_omega 10 H10o RETAIN_EXP n80_omega H10le80. }
+claim H70lt80 : RETAIN_EXP + - 10 < RETAIN_EXP.
+{ rewrite <- SNo_add_sub_L RETAIN_EXP 10 (omega_SNo RETAIN_EXP n80_omega) (omega_SNo 10 H10o) at 2.
+  rewrite <- add_SNo_0L (RETAIN_EXP + - 10) (omega_SNo (RETAIN_EXP + - 10) H70o) at 1.
+  exact add_SNo_Lt1 0 (RETAIN_EXP + - 10) 10 SNo_0 (omega_SNo (RETAIN_EXP + - 10) H70o) (omega_SNo 10 H10o) H10pos. }
+claim H70in80 : RETAIN_EXP + - 10 :e RETAIN_EXP. { exact nat_SNoLt_In RETAIN_EXP n80_omega (RETAIN_EXP + - 10) H70o H70lt80. }
+claim H70pos : 0 < RETAIN_EXP + - 10.
+{ claim H60pos : 0 < 3 * INTERVAL_EXP.
+  { exact mul_SNo_pos_pos 3 INTERVAL_EXP (omega_SNo 3 (nat_p_omega 3 nat_3)) (omega_SNo INTERVAL_EXP n20_omega)
+          (nat_In_SNoLt 3 (nat_p_omega 3 nat_3) 0 In_0_3) n20_pos. }
+  exact SNoLtLe_tra 0 (3 * INTERVAL_EXP) (RETAIN_EXP + - 10) SNo_0 (omega_SNo (3 * INTERVAL_EXP) n60_omega) (omega_SNo (RETAIN_EXP + - 10) H70o)
+        H60pos (retain_sub_ge_60 10 H10o H10le20). }
+claim H0neq70 : 0 <> RETAIN_EXP + - 10.
+{ assume Heq : 0 = RETAIN_EXP + - 10. apply SNoLt_irref 0. rewrite Heq at 2. exact H70pos. }
+claim Hlen : seq_len (cache_witness_seq x) = RETAIN_EXP.
+{ exact seq_len_mk RETAIN_EXP (fun i => if i = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0). }
+claim Hv : ValidSeq (cache_witness_seq x).
+{ exact ValidSeq_mk RETAIN_EXP n80_omega (fun i => if i = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0). }
+claim H0in80 : 0 :e RETAIN_EXP.
+{ exact nat_SNoLt_In RETAIN_EXP n80_omega 0 nat_0_omega (SNoLt_tra 0 (RETAIN_EXP + - 10) RETAIN_EXP SNo_0 (omega_SNo (RETAIN_EXP + - 10) H70o) (omega_SNo RETAIN_EXP n80_omega) H70pos H70lt80). }
+claim Hnlt : NoLeadingTool (cache_witness_seq x).
+{ prove seq_len (cache_witness_seq x) = 0 \/ msg_role (seq_at (cache_witness_seq x) 0) <> RoleTool.
+  apply orIR.
+  prove msg_role (seq_at (Seq RETAIN_EXP (fun i => if i = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0)) 0) <> RoleTool.
+  rewrite seq_at_mk RETAIN_EXP (fun i => if i = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0) 0 H0in80.
+  rewrite If_i_0 (0 = RETAIN_EXP + - 10) (Msg RoleTool x) (Msg RoleAssistant 0) H0neq70.
+  rewrite msg_role_pair RoleAssistant 0.
+  exact RoleAssistant_neq_Tool. }
+claim Hclean : CleanedUp 10 (cache_witness_seq x).
+{ let i. assume Hi Hlt.
+  claim Hin : i :e RETAIN_EXP. { rewrite <- Hlen. exact Hi. }
+  claim Hio : i :e omega. { exact nat_In_omega RETAIN_EXP n80_omega i Hin. }
+  claim Hlt80 : i + 10 < RETAIN_EXP. { rewrite <- Hlen. exact Hlt. }
+  claim Hneq70 : i <> RETAIN_EXP + - 10.
+  { assume Heq : i = RETAIN_EXP + - 10.
+    apply SNoLt_irref RETAIN_EXP.
+    rewrite <- SNo_add_sub_L RETAIN_EXP 10 (omega_SNo RETAIN_EXP n80_omega) (omega_SNo 10 H10o) at 1.
+    rewrite add_SNo_com 10 (RETAIN_EXP + - 10) (omega_SNo 10 H10o) (omega_SNo (RETAIN_EXP + - 10) H70o).
+    rewrite <- Heq. exact Hlt80. }
+  claim Hati : seq_at (cache_witness_seq x) i = Msg RoleAssistant 0.
+  { prove seq_at (Seq RETAIN_EXP (fun j => if j = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0)) i = Msg RoleAssistant 0.
+    rewrite seq_at_mk RETAIN_EXP (fun j => if j = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0) i Hin.
+    exact If_i_0 (i = RETAIN_EXP + - 10) (Msg RoleTool x) (Msg RoleAssistant 0) Hneq70. }
+  rewrite Hati.
+  claim Hnt : msg_role (Msg RoleAssistant 0) <> RoleTool. { rewrite msg_role_pair RoleAssistant 0. exact RoleAssistant_neq_Tool. }
+  claim Ha : msg_role (Msg RoleAssistant 0) = RoleAssistant. { exact msg_role_pair RoleAssistant 0. }
+  prove (if msg_role (Msg RoleAssistant 0) = RoleTool then Msg RoleTool (trunc_tool (msg_content (Msg RoleAssistant 0)))
+         else if msg_role (Msg RoleAssistant 0) = RoleAssistant then Msg RoleAssistant (strip_reasoning (msg_content (Msg RoleAssistant 0)))
+         else if msg_role (Msg RoleAssistant 0) = RoleRaw then Msg RoleRaw (strip_reasoning (msg_content (Msg RoleAssistant 0)))
+         else Msg RoleAssistant 0) = Msg RoleAssistant 0.
+  rewrite If_i_0 (msg_role (Msg RoleAssistant 0) = RoleTool)
+          (Msg RoleTool (trunc_tool (msg_content (Msg RoleAssistant 0))))
+          (if msg_role (Msg RoleAssistant 0) = RoleAssistant then Msg RoleAssistant (strip_reasoning (msg_content (Msg RoleAssistant 0)))
+           else if msg_role (Msg RoleAssistant 0) = RoleRaw then Msg RoleRaw (strip_reasoning (msg_content (Msg RoleAssistant 0)))
+           else Msg RoleAssistant 0) Hnt.
+  rewrite If_i_1 (msg_role (Msg RoleAssistant 0) = RoleAssistant)
+          (Msg RoleAssistant (strip_reasoning (msg_content (Msg RoleAssistant 0))))
+          (if msg_role (Msg RoleAssistant 0) = RoleRaw then Msg RoleRaw (strip_reasoning (msg_content (Msg RoleAssistant 0)))
+           else Msg RoleAssistant 0) Ha.
+  rewrite msg_content_pair RoleAssistant 0.
+  rewrite Hsr 0. reflexivity. }
+claim H81lt100 : RETAIN_EXP + 1 < MAX_EXP.
+{ rewrite n100_eq_80_plus_20.
+  claim H1lt20 : 1 < INTERVAL_EXP.
+  { prove 1 < 10 + 10.
+    claim H1lt10 : 1 < 10.
+    { apply nat_In_SNoLt 10 H10o 1.
+      exact ordsuccI1 9 1 (ordsuccI1 8 1 (ordsuccI1 7 1 (ordsuccI1 6 1 (ordsuccI1 5 1 (ordsuccI1 4 1 (ordsuccI1 3 1 (ordsuccI1 2 1 In_1_2))))))). }
+    apply SNoLt_tra 1 10 (10 + 10) SNo_1 (omega_SNo 10 H10o) (omega_SNo INTERVAL_EXP n20_omega) H1lt10.
+    rewrite <- add_SNo_0R 10 (omega_SNo 10 H10o) at 1.
+    exact add_SNo_Lt2 10 0 10 (omega_SNo 10 H10o) SNo_0 (omega_SNo 10 H10o) H10pos. }
+  exact add_SNo_Lt2 RETAIN_EXP 1 INTERVAL_EXP (omega_SNo RETAIN_EXP n80_omega) SNo_1 (omega_SNo INTERVAL_EXP n20_omega) H1lt20. }
+claim Hdirty : clean_msg (seq_at (cache_witness_seq x) (seq_len (cache_witness_seq x) + - 10)) <> seq_at (cache_witness_seq x) (seq_len (cache_witness_seq x) + - 10).
+{ rewrite Hlen.
+  claim Hat70 : seq_at (cache_witness_seq x) (RETAIN_EXP + - 10) = Msg RoleTool x.
+  { prove seq_at (Seq RETAIN_EXP (fun j => if j = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0)) (RETAIN_EXP + - 10) = Msg RoleTool x.
+    rewrite seq_at_mk RETAIN_EXP (fun j => if j = RETAIN_EXP + - 10 then Msg RoleTool x else Msg RoleAssistant 0) (RETAIN_EXP + - 10) H70in80.
+    claim Href : RETAIN_EXP + - 10 = RETAIN_EXP + - 10. { reflexivity. }
+    exact If_i_1 (RETAIN_EXP + - 10 = RETAIN_EXP + - 10) (Msg RoleTool x) (Msg RoleAssistant 0) Href. }
+  rewrite Hat70.
+  claim Ht : msg_role (Msg RoleTool x) = RoleTool. { exact msg_role_pair RoleTool x. }
+  prove (if msg_role (Msg RoleTool x) = RoleTool then Msg RoleTool (trunc_tool (msg_content (Msg RoleTool x)))
+         else if msg_role (Msg RoleTool x) = RoleAssistant then Msg RoleAssistant (strip_reasoning (msg_content (Msg RoleTool x)))
+         else if msg_role (Msg RoleTool x) = RoleRaw then Msg RoleRaw (strip_reasoning (msg_content (Msg RoleTool x)))
+         else Msg RoleTool x) <> Msg RoleTool x.
+  rewrite If_i_1 (msg_role (Msg RoleTool x) = RoleTool)
+          (Msg RoleTool (trunc_tool (msg_content (Msg RoleTool x))))
+          (if msg_role (Msg RoleTool x) = RoleAssistant then Msg RoleAssistant (strip_reasoning (msg_content (Msg RoleTool x)))
+           else if msg_role (Msg RoleTool x) = RoleRaw then Msg RoleRaw (strip_reasoning (msg_content (Msg RoleTool x)))
+           else Msg RoleTool x) Ht.
+  rewrite msg_content_pair RoleTool x.
+  assume Heq : Msg RoleTool (trunc_tool x) = Msg RoleTool x.
+  apply Htx.
+  rewrite <- msg_content_pair RoleTool (trunc_tool x).
+  rewrite Heq.
+  exact msg_content_pair RoleTool x. }
+apply andI.
+- apply andI.
+  + apply andI.
+    * apply andI.
+      { exact Hv. }
+      { exact Hnlt. }
+    * exact Hclean.
+  + exact seq_snoc_PrefixOf (cache_witness_seq x) Hv (Msg RoleUser 0).
+- apply per_turn_normalize_breaks_prefix MAX_EXP n100_omega RETAIN_EXP n80_omega n80_lt_100 10 H10o H10pos (cache_witness_seq x) Hv.
+  + rewrite Hlen. exact H10le80.
+  + rewrite Hlen. exact H81lt100.
+  + exact Hnlt.
+  + exact Hdirty.
+Qed.
+
 End IterExperienceHygiene.
