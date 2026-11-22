@@ -11,6 +11,32 @@ holds its arguments in order, and finally fixes its equation candidates. Thus
 an argument's effects cannot retroactively change whether that argument was
 held, while those effects are visible to candidate selection.
 
+## The rules
+
+`⟦e⟧` is a `Search World Value`: each answer carries the world at that
+moment, and resuming the search takes the world as the answer's consumer
+left it.
+
+```text
+⟦v⟧                     = return v          -- values, quotes, bound variables: never re-read
+⟦(let p e₁ e₂)⟧         = ⟦e₁⟧ >>= λv. unify p v; ⟦e₂⟧   -- the world flows from e₁ into e₂
+⟦f₁ f₂ … fₙ⟧  (a file)  = ⟦f₁⟧ >> ⟦f₂⟧ >> … >> ⟦fₙ⟧      -- the same bind: lines are binds
+⟦(superpose (e₁ … eₙ))⟧ = ⟦e₁⟧ ++ … ++ ⟦eₙ⟧  -- each branch starts in the world
+                                             -- the previous branch's consumer left
+⟦(collapse e)⟧          = all answers of ⟦e⟧, in the current world
+⟦(= l r)⟧, add-atom, remove-atom, import!  : the only operations that change the world
+⟦(f e₁ … eₙ)⟧           = read f's declarations (they say which arguments to evaluate);
+                          evaluate the arguments in order;
+                          read f's equations now and fix them for this call;
+                          none → the data (f v₁ … vₙ);
+                          otherwise each candidate in order, in the current world
+```
+
+`eval` below gives the value, quote, `let`, sequencing, choice, edit and
+application rows (`evalArgs` and `invokeAtEntry` for the last); `evalForms`
+gives the file row. `collapse` drains a search (`Trace.drain`), and the four
+world-changing operations are `edit`s.
+
 Compilation is a staging of this evaluator. A captured stretch may run while
 its recorded reads remain valid. Otherwise the entire stretch is translated
 again in the world in which it is reached. Values are opaque and are never
