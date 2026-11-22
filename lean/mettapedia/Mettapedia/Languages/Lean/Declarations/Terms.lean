@@ -60,14 +60,17 @@ open Lean Meta
 
 namespace Mettapedia.Languages.Lean.Declarations
 
-/-- A universe level: a parameter, a numeral, or a successor. -/
+/-- A universe level: a parameter, a numeral, a successor, a maximum, or an impredicative
+maximum (`imax a b` is `0` when `b` is `0`, else `max a b`). -/
 inductive FLevel where
   | param (name : String)
   | num (n : Nat)
   | succ (level : FLevel)
+  | max (a b : FLevel)
+  | imax (a b : FLevel)
   deriving Repr, BEq, Inhabited
 
-/-- A level as `FLevel`, when it is built from parameters, zero and successors. -/
+/-- A level as `FLevel`; `none` only for a metavariable. -/
 def FLevel.of? : Level → Option FLevel
   | .zero => some (.num 0)
   | .param u => some (.param u.toString)
@@ -75,7 +78,13 @@ def FLevel.of? : Level → Option FLevel
     | some (.num n) => some (.num (n + 1))
     | some other => some (.succ other)
     | none => none
-  | _ => none
+  | .max a b => match FLevel.of? a, FLevel.of? b with
+    | some a, some b => some (.max a b)
+    | _, _ => none
+  | .imax a b => match FLevel.of? a, FLevel.of? b with
+    | some a, some b => some (.imax a b)
+    | _, _ => none
+  | .mvar _ => none
 
 /-- A first-order Lean term with its type arguments kept. -/
 inductive FTerm where
@@ -97,8 +106,10 @@ inductive FTerm where
   as `proof`'s; the term says how the proposition follows. -/
   | proofBy (term : FTerm)
   /-- In a proof term: a theorem applied to as many arguments as its
-  statement binds. -/
+  statement binds, its level arguments first. -/
   | cite (name : Name) (args : List FTerm)
+  /-- A universe level given to a cited theorem's level parameter. -/
+  | level (level : FLevel)
   deriving Repr, BEq, Inhabited
 
 /-- A binder of an equation theorem. -/
@@ -263,7 +274,12 @@ where
         unless expanded.isLambda do
           throwThe String s!"{c} applied to fewer arguments than its statement binds"
         return ← readProof names expanded
-      let own ← (args.extract 0 arity).toList.mapM readArgument
+      -- The theorem's level arguments come first, in the order of its level parameters, as
+      -- its statement quantifies them.
+      let levelArgs ← levels.mapM fun l => match FLevel.of? l with
+        | some v => pure (FTerm.level v)
+        | none => throwThe String s!"a level with a metavariable in {c}"
+      let own := levelArgs ++ (← (args.extract 0 arity).toList.mapM readArgument)
       if args.size == arity then return .cite c own
       return .apv (.cite c own) (← (args.extract arity args.size).toList.mapM readArgument)
     | _ => throwThe String s!"a proof outside the readable profile: {← ppExpr e}"
@@ -328,6 +344,28 @@ def readSignature (type : Expr) : FReadM (List FBinder × FTerm) := do
         if ← isProp ty then return FBinder.hyp name (← readTerm names ty)
         return FBinder.term name (← readTerm names ty)
       return (binders, ← readTerm names body)
+  ExceptT.mk go
+
+/-- A theorem's statement with its binders: as `readSignature`, with the
+propositions read as statements, so that a proposition given by a definition
+stays as Lean writes it; a proposition whose head is a projection at an
+instance is in its proposition form, as in the definitions that cite it. -/
+def readLemma (type : Expr) : FReadM (List FBinder × FTerm) := do
+  let go : MetaM (Except String (List FBinder × FTerm)) := forallTelescope type fun xs body => do
+    let (names, _) ← nameAll {} [] xs "x"
+    ExceptT.run do
+      let binders ← xs.toList.mapM fun x => do
+        let name := names[x.fvarId!]!
+        let ty ← inferType x
+        if let .sort u := ty then
+          if u.isZero then return FBinder.term name .prop
+          if let .param l := u then return FBinder.sort name l.toString
+          match typeLevel? u with
+          | some level => return FBinder.type name level
+          | none => throwThe String s!"a binder of sort {u}: {name}"
+        if ← isProp ty then return FBinder.hyp name (← readStatement names ty (projections := true))
+        return FBinder.term name (← readTerm names ty)
+      return (binders, ← readStatement names body (projections := true))
   ExceptT.mk go
 
 /-- Read an equation, optionally at successor-universe instances of its
@@ -410,11 +448,13 @@ def egalLevel (level : String) : String :=
 
 Variables and levels are written as Egal identifiers. -/
 
-/-- A level as an atom: `(lvl l_u)`, `(lvl k)`, `(lsucc L)`. -/
+/-- A level as an atom: `(lvl l_u)`, `(lvl k)`, `(lsucc L)`, `(lmax A B)`, `(limax A B)`. -/
 def FLevel.atom : FLevel → String
   | .param u => s!"(lvl {egalLevel u})"
   | .num n => s!"(lvl {n})"
   | .succ l => s!"(lsucc {FLevel.atom l})"
+  | .max a b => s!"(lmax {FLevel.atom a} {FLevel.atom b})"
+  | .imax a b => s!"(limax {FLevel.atom a} {FLevel.atom b})"
 
 /-- A term as an atom: `(var x)`, `(num n)`, `(app c (args ..))`,
 `(apv f (args ..))`, `(lam x T b)`, `(arrow A B)`. -/
@@ -427,9 +467,10 @@ partial def FTerm.atom : FTerm → String
   | .arrow domain codomain => s!"(arrow {domain.atom} {codomain.atom})"
   | .pi x domain codomain => s!"(pi {egalVar x} {domain.atom} {codomain.atom})"
   | .prop => "(prop)"
-  | .sort level => s!"(sort {level.atom})"
+  | .sort l => s!"(sort {l.atom})"
   | .proof | .proofBy _ => "(proof)"
   | .cite c args => s!"(cite {c} ({" ".intercalate (args.map FTerm.atom)}))"
+  | .level l => s!"(level {l.atom})"
 
 /-- A term as an atom with its proof terms written out: a proof Lean's term
 is kept for is `(by term)`, and a theorem applied to its arguments is
@@ -443,15 +484,16 @@ partial def FTerm.atomWithProofs : FTerm → String
   | .arrow domain codomain => s!"(arrow {domain.atomWithProofs} {codomain.atomWithProofs})"
   | .pi x domain codomain => s!"(pi {egalVar x} {domain.atomWithProofs} {codomain.atomWithProofs})"
   | .prop => "(prop)"
-  | .sort level => s!"(sort {level.atom})"
+  | .sort l => s!"(sort {l.atom})"
   | .proof => "(proof)"
   | .proofBy term => s!"(by {term.atomWithProofs})"
   | .cite c args => s!"(cite {c} ({" ".intercalate (args.map FTerm.atomWithProofs)}))"
+  | .level l => s!"(level {l.atom})"
 
 /-- The proofs of a term in the order its atom writes them: for each, the
 term Lean records, when it was read. -/
 partial def FTerm.proofTerms : FTerm → List (Option FTerm)
-  | .var _ | .num _ | .prop | .sort _ => []
+  | .var _ | .num _ | .prop | .sort _ | .level _ => []
   | .app _ args | .cite _ args => args.flatMap FTerm.proofTerms
   | .apv f args => (f :: args).flatMap FTerm.proofTerms
   | .lam _ type body => type.proofTerms ++ body.proofTerms
@@ -461,7 +503,7 @@ partial def FTerm.proofTerms : FTerm → List (Option FTerm)
 
 /-- The theorems a term's proofs cite, in order of first use. -/
 partial def FTerm.cited : FTerm → List Name
-  | .var _ | .num _ | .prop | .sort _ | .proof => []
+  | .var _ | .num _ | .prop | .sort _ | .proof | .level _ => []
   | .app _ args => args.foldl (fun acc a => acc ++ (a.cited.filter (!acc.contains ·))) []
   | .cite c args => args.foldl (fun acc a => acc ++ (a.cited.filter (!acc.contains ·))) [c]
   | .apv f args => (f :: args).foldl (fun acc a => acc ++ (a.cited.filter (!acc.contains ·))) []
@@ -485,7 +527,7 @@ def FEquation.atom (eqn : FEquation) : String :=
 
 /-- The constants a term applies, in order of first use. -/
 partial def FTerm.constants : FTerm → List Name
-  | .var _ | .num _ => []
+  | .var _ | .num _ | .level _ => []
   | .app c args => args.foldl (fun acc a => acc ++ (a.constants.filter (!acc.contains ·)))
       (if c.isAnonymous then [] else [c])
   | .apv f args => (f :: args).foldl (fun acc a => acc ++ (a.constants.filter (!acc.contains ·))) []

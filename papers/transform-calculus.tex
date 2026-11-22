@@ -1,0 +1,1274 @@
+\documentclass[11pt]{article}
+% ---------------------------------------------------------------- page and fonts
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[expansion=false]{microtype}
+% ---------------------------------------------------------------- mathematics
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{mathpartir}
+\usepackage{tikz-cd}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{xstring}
+\usepackage[hidelinks]{hyperref}
+% ---------------------------------------------------------------- theorems (one counter)
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+% ---------------------------------------------------------------- MeTTa code and Lean names
+\NewDocumentCommand{\mt}{m}{\text{\ttfamily\frenchspacing #1}}
+\NewDocumentCommand{\mv}{m}{\mt{\$#1}}
+\lstdefinelanguage{metta}{morecomment=[l]{;}, morestring=[b]", sensitive=true}
+\lstset{language=metta, basicstyle=\ttfamily\small, columns=fullflexible,
+  keepspaces=true, showstringspaces=false, commentstyle=\itshape,
+  frame=lines, framesep=4pt, xleftmargin=1em, xrightmargin=1em}
+\newcommand{\lean}[1]{{\ttfamily\def\_{\textunderscore\allowbreak}\noexpandarg\StrSubstitute{#1}{.}{.\allowbreak}}}
+% ---------------------------------------------------------------- grammar
+\newenvironment{grammar}
+  {\begin{center}$\renewcommand{\arraystretch}{1.25}%
+   \begin{array}{@{}r@{\;}c@{\;}l@{\quad}l@{}}}
+  {\end{array}$\end{center}}
+\newcommand{\gr}[3]{#1 & \Coloneqq & #2 & \text{#3}}
+\newcommand{\grin}[3]{#1 & \in & #2 & \text{#3}}
+\newcommand{\gralt}[2]{ & \mid & #1 & \text{#2}}
+\newcommand{\alt}{\mathrel{\mid}}
+% ---------------------------------------------------------------- rule names and boxed rule figures
+\NewDocumentCommand{\rn}{m}{\textnormal{\scshape #1}}
+\renewcommand{\TirNameStyle}[1]{\rn{#1}}
+\newcommand{\judgebox}[1]{\fbox{$#1$}}
+\newcommand{\judgements}[1]{\noindent\hfill#1\par\smallskip}
+\newlength{\rulefigsep}\setlength{\rulefigsep}{6pt}
+\newsavebox{\rulefigbox}
+\NewDocumentEnvironment{rulefigure}{O{tbp} m m +b}
+  {\begin{figure}[#1]\centering
+   \begin{lrbox}{\rulefigbox}%
+     \begin{minipage}{\dimexpr\linewidth-2\rulefigsep-2\fboxrule\relax}%
+       \let\mathpar\mathparpagebreakable
+       \let\endmathpar\endmathparpagebreakable
+       #4%
+     \end{minipage}%
+   \end{lrbox}%
+   {\setlength{\fboxsep}{\rulefigsep}\fbox{\usebox{\rulefigbox}}}\par
+   \caption{#3}\label{#2}%
+   \end{figure}}
+  {}
+% ---------------------------------------------------------------- states, occurrences, knowledge
+\newcommand{\st}[3]{\langle #1;\,#2;\,#3\rangle}
+\newcommand{\mset}[1]{\Lbag #1\Rbag}
+\newcommand{\occ}[2]{#1{:}#2}
+\newcommand{\keq}{\doteq}
+\newcommand{\op}[1]{\operatorname{\mathsf{#1}}}
+\newcommand{\kw}[1]{\mathbf{#1}}
+\newcommand{\Sol}{\op{Sol}}
+\newcommand{\Solv}{\op{Solvable}}
+\newcommand{\row}{\op{row}}
+\newcommand{\step}[1]{\xrightarrow{\;#1\;}}
+\newcommand{\gruns}[2]{\xRightarrow[\;#2\;]{\;#1\;}}
+\newcommand{\entails}{\Vdash}
+\newcommand{\adm}[2]{#1\vdash #2\ \mathsf{adm}}
+\newcommand{\query}[4]{#1,#2\vdash #3\Downarrow #4}
+\newcommand{\sem}[1]{\llbracket #1\rrbracket}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\emergencystretch=3em
+
+\title{The Transform Calculus\\[2pt]
+\large One step for communication, constraints and resources}
+\author{}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Programs in a cognitive architecture such as Hyperon communicate, accumulate partial
+knowledge, and consume and produce resources, often in a single indivisible action. Established
+calculi specialize: the $\pi$- and $\rho$-calculi model communication, concurrent constraint
+programming models partial knowledge, and Petri nets and multiset rewriting model resources.
+The transform calculus gives all three one operational step. A state holds a frame of unknowns,
+a store of equations called its \emph{knowledge}, and a finite set of labelled occurrences called
+its \emph{space}. A rule takes, reads and makes occurrences, tells equations and asks guards. A
+\emph{firing} opens a rule with fresh unknowns and selects occurrences for its patterns. It is
+admitted when its information, which is the knowledge together with the matching and told
+equations, has a solution and the guards hold at every solution. An admitted firing publishes
+the new knowledge and the edits of the space together.
+We present the calculus and its basic theory: knowledge only refines along runs, admission is
+local in the space, and equivalence of states modulo the knowledge is exactly bisimilarity of the
+step that offers every rule.
+We describe a tower of frames from first-order unification to dependent types with $\eta$, the
+compilation of MeTTa equations to rules, queries over the space and the contracts under which
+a result computed on a snapshot may be used later, and grades on runs. We compare the step with
+the $\rho$-calculus, constraint handling rules and concurrent constraint programming, and show
+that a predicate query asking that \emph{no} occurrence match separates the step from every
+calculus with a parallel context rule. The results marked in footnotes are formalized in Lean~4.
+An appendix states the open problems.
+\end{abstract}
+
+\tableofcontents
+
+%======================================================================
+\section{Introduction}\label{sec:intro}
+%======================================================================
+
+Consider an agent that hands jobs to workers. When a job arrives, it must remove the job from a
+queue and mark one worker busy; it reads, without consuming, a record of which skills the worker
+has; it may learn something in the process, for instance that the job's owner is the worker's
+team; and it must be sure that the worker has not been suspended. All of this must happen at
+once: a second agent should never see the job taken but the worker still idle.
+
+Each part of this action has a well-studied calculus. Taking the job and the idle marker and
+producing a busy marker is the firing of a Petri net transition, or a rule of multiset
+rewriting~\cite{banatre-metayer-gamma,berry-boudol-cham}. Reading the skill record without
+consuming it is a read arc of a contextual net~\cite{montanari-rossi-contextual}. Learning an
+equation and checking a condition against what is known are the \emph{tell} and \emph{ask} of
+concurrent constraint programming~\cite{saraswat-rinard-ccp}. Matching the job's requirements
+against the worker's skills is unification, as in logic programming. Communicating a value
+between two processes is the reaction of the $\pi$-calculus~\cite{milner-parrow-walker} or of
+the reflective $\rho$-calculus~\cite{meredith-radestock-rho}. And the check that no suspension
+is recorded is a \emph{predicate read} in the sense of database
+isolation~\cite{eswaran-predicate-locks}: its answer depends on occurrences that do not yet
+exist.
+
+\paragraph{The step, stated once.} The transform calculus has one rule. A rule of a program
+lists the occurrences it \emph{takes}, \emph{reads} and \emph{makes}, the equations it
+\emph{tells}, and the guards it \emph{asks}. A firing opens the rule with fresh unknowns, selects
+occurrences of the space for its patterns, and collects its \emph{information}: the current
+knowledge, an equation between each pattern and the occurrence selected for it, and the told
+equations. The firing is admitted when its information has a solution and its guards hold at
+every solution. An admitted firing replaces the knowledge by its information and edits the space,
+removing what it took and adding what it made, in one step.
+
+Everything else in this paper is a consequence of that rule, a restriction of it, or an
+observation of its runs. Communication is a firing that takes a message and a receiver.
+Constraint solving is the knowledge growing by tells. Resource use is the edit of the space.
+Matching a call against an equation is the equation between a pattern and an occurrence.
+
+\paragraph{Where the calculus sits.} In Hyperon, MeTTa programs are equations stored in spaces,
+and evaluation matches calls against them~\cite{meta-metta,goertzel-metta-spec}. The two
+reference dialects differ: HE, the Rust implementation, and PeTTa, which compiles MeTTa to
+Prolog, disagree on calls that match no equation, on conditionals, and on typed arguments
+(Section~\ref{sec:metta}). MM2 and MORK run transformations over a trie of
+atoms~\cite{mork-sources-sinks}, and MeTTa-IL describes languages by graph-structured lambda
+theories, building on Stay and Meredith's representation of operational semantics by enriched
+Lawvere theories~\cite{stay-meredith-lawvere}. The transform calculus is a semantic core beneath these
+systems: a dialect is a set of rules on the step together with choices of what to observe. We
+do not claim that any implementation realizes the step exactly.
+
+\paragraph{Contributions.}
+\begin{itemize}
+\item The calculus: states, rules and one rule of inference for the step
+  (Sections~\ref{sec:background}--\ref{sec:step}).
+\item Its basic theory: knowledge refines along runs, guard answers persist, admission is local
+  in the space, and the identities of states agree with bisimilarity where expected
+  (Section~\ref{sec:theory}).
+\item A tower of frames, from one substitution action to dependent types with $\eta$, with the
+  theorem that relates the second-order frames to the dependent ones (Section~\ref{sec:frames}).
+\item MeTTa programs as rules on the step, with exact correspondences for the fragments named,
+  and models of HE and PeTTa compared on every run (Section~\ref{sec:metta}).
+\item Queries, the certain-check calculus that decides them at first order, and the contracts
+  under which a result computed on a snapshot may be used by a later firing
+  (Section~\ref{sec:queries}).
+\item Grades on runs, laws of choice for races, and the limits of interchange
+  (Section~\ref{sec:runs}).
+\item Comparisons with the $\rho$-calculus, constraint handling rules and concurrent constraint
+  programming, including a strict separation (Section~\ref{sec:compare}).
+\end{itemize}
+
+\paragraph{What we claim, and what we do not.} We claim the theorems as stated, each with its
+hypotheses; those marked with a footnote are formalized. We do not claim that the dependent
+unifier decides every store of the dynamic pattern fragment: with universes included silently
+that claim is false, and Section~\ref{sec:frames} gives the counterexample. We do not claim a
+fibration of language profiles, a complete account of every MeTTa dialect, or a probability
+semantics beyond finite races. Section~\ref{sec:shown} separates what is proved from what is
+argued, and Appendix~\ref{app:open} lists the open problems.
+
+%======================================================================
+\section{Background: frames, solutions and entailment}\label{sec:background}
+%======================================================================
+
+The step is parametric in how terms, unknowns and equality are represented. We recall only what
+it uses.
+
+\begin{definition}[Frame action]\label{def:frames}
+A \emph{frame action} has frames $\Gamma,\Delta,\dots$; for each frame a set $T_\Gamma$ of terms
+and an equivalence $\approx_\Gamma$ on it; and morphisms $f:\Gamma\to\Delta$ acting on terms by
+$f_*:T_\Gamma\to T_\Delta$, with identities and composites, such that
+\[
+(\mathrm{id})_*t=t,\qquad (g\circ f)_*t=g_*(f_*t),\qquad s\approx t\ \Rightarrow\ f_*s\approx f_*t .
+\]
+\end{definition}
+
+A frame declares the unknowns that exist and their sorts or types; a morphism instantiates them.
+Three instances recur. With \emph{one frame}, a frame action is a substitution action on a term
+algebra. With \emph{declaration families}, the frames declare metavariables with binding arities,
+terms are built over a binding signature, and morphisms are capture-avoiding instantiations, so
+that higher-order patterns such as $F(x)$ under a binder $x$ make sense~\cite{miller-pattern}.
+With \emph{typed telescopes}, frames are dependent contexts and equality is typed
+$\beta\eta$-conversion. The reader may think of first-order terms with logic variables
+throughout Sections~\ref{sec:states}--\ref{sec:theory}; Section~\ref{sec:frames} returns to the
+general case.\footnote{\lean{Interface.Frames}; the three instances are
+\lean{Interface.Frames.ofSubstitution}, \lean{Interface.Frames.contextual} and the typed frames
+of \lean{Interface.DependentFull}. Lean names in footnotes are relative to
+\lean{Mettapedia.Languages.ProcessCalculi.ConstraintMultisetRewriting} unless they begin with
+\lean{Mettapedia}.}
+
+\begin{definition}[Solutions and entailment]\label{def:solutions}
+An \emph{equation} at $\Gamma$ is a pair $s\keq t$ of terms, and a \emph{store} is a finite list
+of equations. A morphism $\sigma:\Gamma\to\Delta$ \emph{solves} a store $K$, written
+$\sigma\models K$, when $\sigma_*s\approx\sigma_*t$ for every $s\keq t$ in $K$. We write
+$\Sol(K)$ for the solutions into any frame, and
+\[
+\Solv(K)\iff\Sol(K)\neq\emptyset,\qquad
+K\entails\varphi\iff\varphi(\sigma)\ \text{for every }\sigma\in\Sol(K).
+\]
+A solution $u:\Gamma\to M$ is \emph{principal} when every solution factors through it up to
+$\approx$.
+\end{definition}
+
+A principal solution is a most general unifier; in categorical terms it is a weak coequalizer of
+the store's pairs, the reading of unification given by Rydeheard and
+Burstall~\cite{rydeheard-burstall} and by Goguen~\cite{goguen-unification}. When a principal
+solution exists, the solutions of the store are exactly the morphisms that factor through
+it.\footnote{\lean{Interface.Frames.Principal}, \lean{Interface.Frames.Principal.models\_iff}.}
+Solvability needs no higher-order machinery: a store has a solution exactly when it has one into
+the frame with one parameterless unknown per sort.\footnote{\lean{Interface.Frames.solvable\_iff\_into},
+\lean{Interface.Frames.firstOrderFrame\_weaklyTerminal},
+\lean{Interface.Frames.contextual\_solvable\_iff\_firstOrder}.}
+
+The quantifier in $K\entails\varphi$ ranges over \emph{every} solution, including those that
+instantiate unknowns the store leaves open. This is the ask of concurrent constraint
+programming: $\varphi$ is entailed when no further information could falsify it.
+
+\paragraph{Notation.} Knowledge equations are written $s\keq t$. MeTTa equations, which are
+program text, are written \mt{(= lhs rhs)}; the two signs mean different things. MeTTa
+variables are written \mv{x}. A space is written $W=\{\occ{o_1}{t_1},\dots,\occ{o_n}{t_n}\}$ with
+distinct identities $o_i$; its labels form a multiset $\mset{t_1,\dots,t_n}$. We write
+$W\setminus T$ for removal of identities and $W\uplus M$ for disjoint addition.
+
+%======================================================================
+\section{States and rules}\label{sec:states}
+%======================================================================
+
+Figure~\ref{fig:syntax} gives the syntax. A state has three parts, and a rule has six.
+
+\begin{rulefigure}[!htb]{fig:syntax}{Syntax. A state is a frame, its knowledge and its space of
+labelled occurrences. A rule, at its own frame $\rho$ of schematic unknowns, says what a firing
+takes, reads and makes, which equations it tells, which guards it asks, and which queries it
+collects. A program is a set of rules.}
+\begin{grammar}
+  \grin{o,n}{\mathcal O}{occurrence identities} \\
+  \grin{s,t,p,q,m,u}{T_\Gamma}{terms and patterns at a frame $\Gamma$} \\
+  \gr{e}{s\keq t}{equations} \\
+  \gr{c}{s\approx^{?}t \alt \kw{any}\ p \alt \kw{none}\ p \alt \kw{count}\ p\ n}{checks} \\
+  \gr{r}{\forall\rho.\ \kw{take}\ \vec p;\ \kw{read}\ \vec q;\ \kw{tell}\ \vec e;}{rules} \\
+  & & \qquad\kw{guard}\ \vec c;\ \kw{make}\ \vec m;\ \kw{collect}\ \vec u & \\
+  \gr{P}{\{r_1,\dots,r_k\}}{programs} \\
+  \gr{K}{e_1,\dots,e_n}{knowledge} \\
+  \gr{W}{\{\occ{o_1}{t_1},\dots,\occ{o_n}{t_n}\}}{spaces, the $o_i$ distinct} \\
+  \gr{s}{\st{\Gamma}{K}{W}}{states}
+\end{grammar}
+\end{rulefigure}
+
+\paragraph{States.} The frame $\Gamma$ declares the unknowns in play. The knowledge $K$ is a
+store at $\Gamma$; it records what has been learned about those unknowns. The space $W$ maps
+occurrence identities to labels, which are terms at $\Gamma$. Identities are physical: two
+occurrences with equal labels are two occurrences, as in the individual-token reading of Petri
+nets~\cite{vanglabbeek-tokens}. A label may mention unknowns, so a space can hold partially
+known data, such as a request whose recipient has not yet been decided.
+
+\paragraph{Rules.} A rule has its own frame $\rho$ of schematic unknowns, and its patterns are
+terms at $\rho$. Its parts are:
+\begin{itemize}
+\item \emph{take} patterns $\vec p$: each consumes one occurrence;
+\item \emph{read} patterns $\vec q$: each observes one occurrence and leaves it in place;
+\item \emph{tell} equations $\vec e$: added to the knowledge;
+\item \emph{guard} checks $\vec c$: equations, or predicate and aggregate queries over the space,
+  asked at every solution;
+\item \emph{make} patterns $\vec m$: each produces one new occurrence;
+\item \emph{collect} patterns $\vec u$: the firing claims the exact set of occurrences each one
+  matches.
+\end{itemize}
+Omitted parts are empty. Take and make are a Petri net transition's consumed and produced
+tokens; read is a read arc~\cite{montanari-rossi-contextual}. In constraint handling
+rules~\cite{fruehwirth-chr}, a simpagation rule $H_k\setminus H_r\Leftrightarrow G\mid B$ has
+kept heads $H_k$ (our reads), removed heads $H_r$ (our takes), a guard $G$ and a body $B$ (our
+makes and tells). The difference that matters is when the guard is asked
+(Remark~\ref{rem:cut}).
+
+\paragraph{Checks.} The check $s\approx^?t$ asks that two terms be equal. The others are queries
+over the space. A \emph{predicate query} asks a proposition about the occurrences matching a
+pattern: $\kw{any}\ p$ asks that some occurrence match, and $\kw{none}\ p$ that none does. An
+\emph{aggregate query} computes over them: $\kw{count}\ p\ n$ asks that exactly $n$ match, and a
+collect pattern claims the exact set. All are read through solutions
+(Definition~\ref{def:checks}), so an occurrence matches a pattern when a solution makes the two
+equal, not when they are syntactically identical.
+
+\paragraph{The running example.} The job assignment of the introduction is one rule:
+\[
+\begin{aligned}
+\mathit{assign}\ \triangleq\ \forall j\,w\,k.\ \ &\kw{take}\ \mathit{job}(j,k),\ \mathit{idle}(w);\ \
+\kw{read}\ \mathit{skill}(w,k);\\
+&\kw{guard}\ \kw{none}\ \mathit{suspended}(w);\ \ \kw{make}\ \mathit{busy}(w,j).
+\end{aligned}
+\]
+It takes a job requiring skill $k$ and an idle worker $w$, reads that $w$ has skill $k$, asks
+that no suspension of $w$ be recorded, and makes the busy marker. The shared unknowns $w$ and $k$
+join the patterns: one solution must equate all of them with the selected occurrences.
+
+\begin{definition}[Identity of states]\label{def:identity}
+Two states are \emph{equivalent modulo the knowledge} when their knowledges have the same
+solutions, and a bijection of occurrence identities, fixing those visible outside, carries one
+space to the other with corresponding labels equal at every solution.
+\end{definition}
+
+This is the structural congruence of the calculus. It is used to \emph{compare} states, never to
+merge occurrences: two equal labels remain two occurrences. Section~\ref{sec:theory} shows that it
+is exactly bisimilarity on the steps that offer every rule.
+
+%======================================================================
+\section{The step}\label{sec:step}
+%======================================================================
+
+Fix a program $P$ and a state $s=\st{\Gamma}{K}{W}$. Each frame $\Gamma$ has a set of
+\emph{extensions} $x$, each reaching a frame $\Gamma_x$ along a weakening $w_x:\Gamma\to\Gamma_x$:
+the identity at one frame, new declarations at declaration families, helper telescopes at typed
+frames. The labels of $W$ transported to $\Gamma_x$ are the \emph{rows}
+$\row(o)=(w_x)_*W(o)$.
+
+\begin{definition}[Firing]\label{def:firing}
+A \emph{firing} $f$ of $P$ at $s$ consists of
+\begin{itemize}
+\item a rule $r=\forall\rho.\ \kw{take}\ \vec p;\ \kw{read}\ \vec q;\ \kw{tell}\ \vec e;\
+  \kw{guard}\ \vec c;\ \kw{make}\ \vec m;\ \kw{collect}\ \vec u$ in $P$;
+\item an extension $x$ and an \emph{opening} $\iota:\rho\to\Gamma_x$; we write $p^\iota$ for
+  $\iota_*p$;
+\item a \emph{selection}: occurrences $\vec o$ for the take patterns, occurrences $\vec o\,'$ for
+  the read patterns, and identities $\vec n$ for the make patterns;
+\item for each collect pattern $u_k$, a claimed set $S_k$ of occurrences.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Information, shapes and enabling]\label{def:information}
+The \emph{information} of $f$ is the store at $\Gamma_x$
+\[
+I_f\;=\;(w_x)_*K\ \ \cup\ \ \{\,p_i^\iota\keq\row(o_i)\,\}_i\ \ \cup\ \
+\{\,q_j^\iota\keq\row(o'_j)\,\}_j\ \ \cup\ \ \vec e^{\,\iota}.
+\]
+The opening is \emph{fresh} when the rule's unknowns are new: every instantiation of $\Gamma$ and
+every instantiation of $\rho$ into a common frame are realized together by one instantiation of
+$\Gamma_x$, on the terms the state mentions and on the rule's terms. The firing has the right
+\emph{shape} when its opening is fresh, its taken identities are distinct, its made identities
+are distinct, and each pattern has exactly one occurrence, identity or claimed set. It is
+\emph{enabled} at $W$ when the taken and read occurrences are present, no occurrence is both taken
+and read, and the made identities are absent from $W$.
+\end{definition}
+
+Two read patterns may select the same occurrence; two take patterns may not. Freshness renames
+the rule apart from everything in the state, as a logic programming system renames a clause
+before resolution; it never renames the unknowns of the state
+itself.\footnote{\lean{RuleSyntax.Firing}, \lean{RuleSyntax.Firing.information},
+\lean{RuleSyntax.Firing.Fresh}. Renaming apart is fresh and capturing the state's unknown is not:
+\lean{RuleSyntax.Examples.answer\_fresh}, \lean{RuleSyntax.Examples.capture\_not\_fresh}.}
+
+\begin{definition}[Checks at a solution]\label{def:checks}
+For a solution $\sigma:\Gamma_x\to\Delta$ of $I_f$, the occurrences \emph{matching} a pattern $p$
+are
+\[
+\op{match}_\sigma(p)\;=\;\{\,o\in W \mid \sigma_*p\approx\sigma_*\row(o)\,\}.
+\]
+The checks hold at $\sigma$ as follows:
+\[
+\begin{array}{@{}l@{\quad\text{iff}\quad}l@{}}
+s\approx^?t & \sigma_*s\approx\sigma_*t,\\
+\kw{any}\ p & \op{match}_\sigma(p)\neq\emptyset,\\
+\kw{none}\ p & \op{match}_\sigma(p)=\emptyset,\\
+\kw{count}\ p\ n & |\op{match}_\sigma(p)|=n .
+\end{array}
+\]
+The \emph{guard} of the firing is the predicate $H_f(\sigma)$: every opened check holds at
+$\sigma$, and $\op{match}_\sigma(u_k^\iota)=S_k$ for every collect pattern.
+\end{definition}
+
+The space $W$ in these definitions is the space before the firing. Figure~\ref{fig:step} gives the
+step.
+
+\begin{rulefigure}[!htb]{fig:step}{Admission and the step. A firing is admitted when it has the right
+shape, its selection is enabled, its information has a solution, and its guard holds at every
+solution. The step then publishes the new knowledge and the edits of the space together.}
+\judgements{\judgebox{\adm{s}{f}}\quad\judgebox{s \step{f} s'}}
+\begin{mathpar}
+\inferrule*[right=Adm]
+  {r\in P \\ \op{Shapes}(f) \\ \op{Enabled}(W,f) \\\\ \Solv(I_f) \\ I_f\entails H_f}
+  {\adm{\st{\Gamma}{K}{W}}{f}}
+\and
+\inferrule*[right=Fire]
+  {\adm{\st{\Gamma}{K}{W}}{f}}
+  {\st{\Gamma}{K}{W} \step{f}
+   \st{\Gamma_x}{I_f}{(W\setminus\vec o)\uplus\{\occ{n_k}{m_k^\iota}\}_k}}
+\end{mathpar}
+\smallskip
+\noindent In the result, every occurrence that was not taken keeps its row, and the $k$-th made
+identity is labelled by the $k$-th opened make pattern.
+\end{rulefigure}
+
+Admission is computed from the rule, the opening and the selection; it is not an extra input to
+the step. The result's knowledge is the firing's information, by
+definition.\footnote{\lean{RuleSyntax.step}, \lean{RuleSyntax.admits\_iff},
+\lean{RuleSyntax.result\_knowledge}; made labels \lean{RuleSyntax.Firing.result\_label\_made}.}
+Every solution of the new knowledge therefore equates each opened take and read pattern with its
+occurrence, satisfies each told equation, and restricts to a solution of the old
+knowledge.\footnote{\lean{RuleSyntax.Firing.take\_solved}, \lean{RuleSyntax.Firing.read\_solved},
+\lean{RuleSyntax.Firing.tell\_solved}, \lean{RuleSyntax.Firing.knowledge\_solved}.}
+
+\begin{remark}[The guard is asked at the firing's own information]\label{rem:cut}
+The guard is asked at every solution of $I_f$, which contains the firing's own matches and tells.
+A rule may tell $X\keq 1$ and ask $X\approx^?1$ in one firing. In constraint handling rules the
+guard is checked before the body runs, so its tells cannot help it. We call the point at which
+the guard is asked the firing's \emph{cut}: the old space, and the new information.
+\end{remark}
+
+\begin{remark}[Two atomicities]\label{rem:atomic}
+One firing is atomic by the rule: the knowledge and the space change in one conclusion, and no
+intermediate state exists to be observed. Atomicity across several firings is not given by the
+rule. It is a protocol, such as a reservation or a validation at publication, and
+Section~\ref{sec:queries} states what such a protocol must check.
+\end{remark}
+
+\subsection{Small examples}\label{sec:small}
+
+Each example is the smallest we know that separates two readings.
+
+\begin{example}[Resources]\label{ex:resources}
+Let $W=\{\occ{0}{c},\occ{1}{c}\}$. The rule $\kw{take}\ c,\,c$ is admitted with the selection
+$(0,1)$ and refused with $(0,0)$, since takes must be distinct. The rule $\kw{read}\ c,\,c$ is
+admitted with $(0,0)$. Reading occurrence $0$ and then taking it is a run; taking it and then
+reading it is not.\footnote{\lean{OccurrenceCorePlacement.Examples.Resources}:
+\lean{take\_two\_admitted}, \lean{take\_same\_twice\_refused}, \lean{aliased\_read\_admitted},
+\lean{read\_then\_take}, \lean{read\_after\_take\_refused}.}
+\end{example}
+
+\begin{example}[Open unification]\label{ex:unification}
+Let $W=\{\occ{0}{p(1)},\occ{1}{p(2)}\}$ and let $X_0$ be an unknown of the state. A firing that
+reads occurrence $0$ through the pattern $p(X_0)$ is admitted and adds $p(X_0)\keq p(1)$ to the
+knowledge. After it, reading occurrence $1$ through $p(X_0)$ is refused, because no solution
+makes $X_0$ both $1$ and $2$; reading it through a fresh unknown is admitted. Likewise the tells
+$X_0\keq 1$ and $X_0\keq 2$ are each admitted at the start, and never one after the
+other.\footnote{\lean{OccurrenceCorePlacement.Examples.OpenUnification}:
+\lean{shared\_second\_read\_refused}, \lean{fresh\_second\_read\_admitted}, \lean{tells\_conflict}.}
+\end{example}
+
+\begin{example}[A tell feeds a guard]\label{ex:tellguard}
+At the empty state, let $\mathit{teller}=\kw{tell}\ X\keq 1$ and
+$\mathit{asker}=\kw{guard}\ X\approx^?1$. The run $\mathit{teller};\mathit{asker}$ exists; the run
+$\mathit{asker};\mathit{teller}$ does not, because before the tell some solution sets $X$ to
+something else. The two rules touch no occurrence, so a static comparison of their footprints
+sees no conflict; the knowledge orders them.\footnote{\lean{AnnotatedRuns.Controls.told\_check\_one\_order}.}
+\end{example}
+
+\begin{example}[A predicate query and an unknown]\label{ex:none}
+Let $W$ hold $\occ{0}{\mathit{cancel}(0)}$ and two requests, and let
+\[
+\mathit{ask}=\kw{take}\ \mathit{req}_1;\ \kw{guard}\ \kw{none}\ \mathit{cancel}(u);\ \kw{make}\ \mathit{done},
+\qquad
+\mathit{bind}_v=\kw{take}\ \mathit{req}_2;\ \kw{tell}\ u\keq v .
+\]
+At the start $\mathit{ask}$ is refused: $u$ is unknown, and the solution with $u=0$ matches
+$\mathit{cancel}(0)$. After $\mathit{bind}_1$ it is admitted; after $\mathit{bind}_0$ it is
+refused. After $\mathit{bind}_1$, adding $\mathit{cancel}(1)$ to the space refuses it again,
+while adding $\mathit{cancel}(2)$ does not.\footnote{\lean{OccurrenceCorePlacement.NoneExample}.}
+The verdict on $\kw{none}$ quantifies over every solution, so an unknown that \emph{might} match
+blocks the firing.
+\end{example}
+
+\begin{example}[Communication through the knowledge]\label{ex:comm}
+A sender and a receiver meet on a channel $c$; the receiver's slot is an unknown $Y$ of the
+state, a logic variable in the sense of concurrent constraint programming:
+\[
+\mathit{comm}\ \triangleq\ \forall c\,v\,y.\ \ \kw{take}\ \mathit{send}(c,v),\ \mathit{recv}(c,y);\
+\ \kw{tell}\ y\keq v;\ \ \kw{make}\ \mathit{got}(y).
+\]
+At $W=\{\occ{0}{\mathit{send}(a,5)},\occ{1}{\mathit{recv}(a,Y)}\}$ the firing that selects both
+occurrences has information $\{\mathit{send}(c,v)\keq\mathit{send}(a,5),\
+\mathit{recv}(c,y)\keq\mathit{recv}(a,Y),\ y\keq v\}$, whose solutions all set $Y=5$. The value
+travels by unification, and every later firing that mentions $Y$ sees it.
+\end{example}
+
+%======================================================================
+\section{Basic theory}\label{sec:theory}
+%======================================================================
+
+A \emph{run} is a sequence of admitted firings $s_0\step{f_1}s_1\step{f_2}\cdots\step{f_n}s_n$.
+The first two results say that knowledge only grows and that what a guard established stays
+established.
+
+\begin{theorem}[Knowledge only refines]\label{thm:refine}
+Along a run, every solution of the last knowledge restricts, along the composite of the
+weakenings, to a solution of the first.\footnote{\lean{Interface.Step.Run.models\_start}.}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Induction on the run. Each \rn{Fire} replaces $K$ by $I_f$, which contains $(w_x)_*K$.
+\end{proof}
+
+\begin{theorem}[Guard answers persist]\label{thm:cut}
+If $f$ is admitted, then at every later state of every run from its result, every solution of the
+knowledge, read back to the firing's frame, satisfies $H_f$.\footnote{\lean{InterfaceTable.cut\_preserved},
+\lean{InterfaceTable.holds\_of\_admitted}.}
+\end{theorem}
+
+The theorem concerns the solutions, not the space: a $\kw{none}$ query answered at the cut is
+not re-asked against occurrences made later. That is the meaning of asking at the cut, and
+Section~\ref{sec:queries} returns to it.
+
+\paragraph{The step is a guarded instance of a general interface.} Many transition systems carry
+a frame, knowledge and a space. Call a \emph{step} any system whose firings have a selection, an
+information that refines the knowledge, and a result whose space is
+$(W\setminus\mathit{taken})\uplus\mathit{made}$, with an admission predicate that implies the
+information is solvable. A step is \emph{guarded} when admission is solvability together with
+$I_f\entails H_f$ for some predicate $H_f$.\footnote{\lean{Interface.Step}, \lean{Interface.EffectCore},
+\lean{Interface.Step.Guarded}, \lean{Interface.Step.admits\_iff}.} The next theorem shows that the
+interface alone says little, and so the content of the calculus is in the rule.
+
+\begin{theorem}[What the interface admits]\label{thm:realizable}
+A relation on states is the admitted relation of some step exactly when each of its transitions
+starts from solvable knowledge, refines that knowledge along some morphism of frames, and edits
+the space by an enabled selection. With no knowledge, every transition relation on spaces is
+one.\footnote{\lean{RuleSyntax.realizable\_iff}, \lean{RuleSyntax.admitted\_laws},
+\lean{RuleSyntax.ofLTS\_admitted\_iff}.}
+\end{theorem}
+
+What the step of a program adds is locality. A firing's admission depends only on the occurrences
+it selects and on those its queries could match.
+
+\begin{theorem}[Admission is local in the space]\label{thm:local}
+Let $f$ be admitted at $W$, and let $W'$ agree with $W$ on the taken, read and made identities
+and differ only in occurrences that no solution of $I_f$ equates with a query pattern of $f$. If
+the opening is still fresh at $W'$, then $f$ is admitted at $W'$. An occurrence that a query
+pattern can match refuses the firing, and some instance of the interface has admission that
+depends on an occurrence outside every pattern.\footnote{\lean{RuleSyntax.admits\_of\_outsideRegions};
+controls \lean{RuleSyntax.Controls.row\_in\_region\_refused},
+\lean{RuleSyntax.Controls.nonlocal\_restriction}.}
+\end{theorem}
+
+\paragraph{Identity of states.} Definition~\ref{def:identity} is the expected equivalence. On the
+step that offers every rule, given a fresh supply of identities for every label, equivalence
+modulo the knowledge is a bisimulation; on states with consistent knowledge it is exactly
+bisimilarity.\footnote{\lean{Observation.ModuloEquivalent.semantic\_bisimilar},
+\lean{LogicOverTheStep.ProgramFreeBisimilarity.ruleOffers\_bisimilar\_iff}.} For a fixed
+finite program, bisimilarity can be strictly coarser, and it is not preserved by a rule that
+takes two occurrences.\footnote{\lean{LogicOverTheStep.ProgramFreeBisimilarity.program\_strictly\_coarser},
+\lean{LogicOverTheStep.ProgramFreeBisimilarity.takeTU\_not\_congruence}.} On the first-order step,
+under every finite program, the Hennessy--Milner theorem holds: two states are bisimilar exactly
+when they satisfy the same modal formulas.\footnote{\lean{LogicOverTheStep.ProgramAdequacy.program\_adequacy}.}
+
+\paragraph{A congruence for programs.} A \emph{system} is a program with a state. Call two
+systems \emph{congruent} when a symmetric relation contains them that preserves the may-barbs,
+answers each reduction within the relation, and is closed under the basic contexts: adding rules,
+telling an equation, extending the frame, and adding occurrences. Congruence is an equivalence,
+and it is preserved by every basic context and by running beside another
+system.\footnote{\lean{RuleSyntax.Equivalence.Congruent},
+\lean{RuleSyntax.Equivalence.congruent\_equivalence}, \lean{RuleSyntax.Equivalence.Congruent.addRules},
+\lean{RuleSyntax.Equivalence.Congruent.beside}.} At one first-order frame without function symbols,
+beside a program that leaves a constant unused, congruence is static equivalence: after a
+renaming of identities the two states are equivalent modulo the knowledge, or both have
+unsolvable knowledge.\footnote{\lean{RuleSyntax.Equivalence.Characterization.congruent\_iff\_static}.} The
+congruence is strong (taking an occurrence and making it again is distinguished from doing
+nothing), it treats every unknown as public, and it does not count answers: two congruent
+translations can have answer bags $\mset{a}$ and $\mset{a,a}$. A congruence that counts is open
+(Appendix~\ref{app:open}).
+
+%======================================================================
+\section{Frames: from unification to dependent types}\label{sec:frames}
+%======================================================================
+
+The step never inspects how equations are solved; it asks only whether the information has a
+solution and whether the guard holds at all of them. A solver supplies these answers. On a
+frame action where solving is decidable, admission is decidable for queries over finite spaces.
+Table~\ref{tab:tower} lists the frames used and the theorem that relates each to the next.
+
+\begin{table}[tbp]
+\centering\small
+\begin{tabular}{@{}L{0.17\textwidth}L{0.36\textwidth}L{0.38\textwidth}@{}}
+\toprule
+Frames & Terms and unknowns & What is proved \\
+\midrule
+one frame & a substitution action & solvability is consistency \\
+first order & parameterless unknowns & the unifier decides; principal answers \\
+patterns & unknowns applied to distinct bound variables & the driver solves or refutes \\
+second order & declaration families with binding arities & translation into telescopes reflects solutions \\
+dependent, with $\eta$ & formed telescopes, typed $\beta\eta$ & second order is the $\eta$-long fibre \\
+\bottomrule
+\end{tabular}
+\caption{The tower of frames. Each level is an instance of Definition~\ref{def:frames}, and the
+step is the same at every level.}
+\label{tab:tower}
+\end{table}
+
+At first order the unifier decides and returns principal answers.\footnote{\lean{FirstOrder.accepted\_iff\_consistent},
+\lean{FirstOrder.accepted\_principal}.} For higher-order patterns, unknowns applied to distinct
+bound variables, a terminating driver either solves the store with a principal answer or
+refutes it~\cite{miller-pattern}.\footnote{\lean{ContextualPatternTermination.solves\_or\_refutes}.}
+Outside the pattern fragment a solver may leave equations as residuals; the solvers used never
+lose a solution.\footnote{\lean{ContextualFrameWorklist.preserves\_every\_solution}.}
+
+\paragraph{Why the tower ends with $\eta$.} Consider the pattern equation $m(x)\keq n(x)$, where
+$m$ and $n$ are unknowns of function type and $x$ is bound. With $\eta$ it has the principal
+answer $m:=n$. Without $\eta$ the solutions $m:=n$ and $m:=\lambda y.\,n(y)$ are distinct, and
+the equation has no principal answer.\footnote{\lean{ContextualDependentFibre.Controls.point\_pattern\_principal},
+\lean{Interface.Translation.pattern\_no\_principal}.} Principal answers for patterns therefore
+need dependent frames with $\eta$.
+
+\begin{theorem}[The second-order frames are a fibre]\label{thm:fibre}
+Over a package whose names are all rigid, the second-order frames are the $\eta$-long fibre of
+the dependent frames on the translated telescopes, and solutions correspond. For firings whose
+guards and queries are equations, admission transfers through the fibre wherever the dependent
+solver decides the translated store.\footnote{\lean{ContextualDependentFibre.fibre\_full},
+\lean{ContextualDependentFibre.fibre\_solutions\_correspond},
+\lean{Interface.DependentFull.fibre\_admission\_transfer\_of\_full}.}
+\end{theorem}
+
+Both halves of ``decides'' occur: a translated store that the solver solves is admitted on both
+sides, and one it refutes is refused on both sides. The dependent driver returns a principal
+answer when it solves, refutes only with a certificate, and never refutes a solvable
+store.\footnote{\lean{Interface.DependentFull.NonVacuity.solved\_case\_nonvacuous},
+\lean{Interface.DependentFull.NonVacuity.refuted\_case\_refused},
+\lean{ContextualDependentWorklist.drive\_solved\_principal},
+\lean{ContextualDependentWorklist.drive\_not\_refuted\_of\_solvable}.}
+
+\paragraph{A limit.} The dependent solver does not decide every store of the dynamic pattern
+fragment. With universes included silently, there is a solvable store with no principal answer,
+and every exact solver must postpone it.\footnote{\lean{UnificationWithLevels.DependentFibre.cross\_postponed},
+\lean{UnificationWithLevels.postponed\_of\_solvable\_no\_principal}.} A solver therefore has three
+outcomes, solved, refuted and postponed, and the step must not read a postponement as a refusal.
+A budgeted procedure makes this precise: its verdicts at budget $k$ are yes, no or undecided;
+yes and no are sound; a decided verdict stays decided at larger budgets; and undecided means only
+that the budget ran out.\footnote{\lean{UnificationWithLevels.TreeFibre.Budgets.Procedure}.} Reading
+undecided as no breaks the information order.\footnote{\lean{UnificationWithLevels.TreeFibre.Budgets.Procedure.no\_reading\_breaks}.}
+
+%======================================================================
+\section{Programs on the step}\label{sec:metta}
+%======================================================================
+
+A MeTTa program is a list of equations \mt{(= lhs rhs)}. Evaluation matches a call against the
+left sides and continues with an instantiated right side. On the step, an equation becomes a
+rule that takes the call and makes the right side; the knowledge performs the match.
+
+\paragraph{Equations as rules.} For each equation \mt{(= (f p1 \dots{} pn) rhs)} there is a rule
+\[
+\forall\rho.\ \ \kw{take}\ f(p_1,\dots,p_n);\ \ \kw{make}\ \mathit{rhs},
+\]
+where $\rho$ declares the equation's variables: the rule takes the call and makes the right side,
+and the equation between the opened left side and the call does the matching. Opening the rule
+afresh is renaming the equation apart. Each matching equation gives exactly one alternative, in
+program order and with duplicates, and a call that matches no equation has no
+step.\footnote{\lean{ProgramEquations.answers\_exact}, \lean{ProgramEquations.stuck\_iff}; the
+reference semantics is an independent inductive relation over most general unifiers,
+\lean{ProgramEquations.equations\_execution}.}
+
+\begin{example}[A call that matches nothing]\label{ex:unmatched}
+\begin{lstlisting}
+(= (g a) b)
+(= (f $x) (out $x))
+!(f (g c))          ; answers (out (g c))
+\end{lstlisting}
+No equation matches \mt{(g c)}. A return rule asks $\kw{none}$ over the equations whose left
+side could match the call, and makes \mt{(g c)} a value. The outer call then matches, and the run
+answers \mt{(out (g c))}.\footnote{\lean{ProgramNested.UnmatchedControls.inner\_value\_outer\_call\_on\_step};
+without the return rule the run is stuck, \lean{ProgramNested.Controls.unmatched\_inner\_stuck}.}
+The answer cites the version of the program it read: installing \mt{(= (f a) b)} later changes
+neither the earlier answer nor its citation.\footnote{\lean{ProgramNested.UnmatchedControls.no\_retroactive\_change\_on\_step}.}
+\end{example}
+
+\paragraph{A source language, both directions.} Consider a source language with return, call,
+choice and failure, and \mt{let} under scoping. On its translation, the step's matching is the
+source's unification. One firing simulates each source move, every firing is a source move, and
+the same holds for whole runs; the answers are the source's answers as a
+bag.\footnote{\lean{Hosting.schema\_admitted\_iff}, \lean{Hosting.simulation},
+\lean{Hosting.reflection}, \lean{Hosting.runs\_forward}, \lean{Hosting.runs\_reflected},
+\lean{Hosting.frontier\_answers}.} Because a program is a set of rules, two copies of one closed
+rule are one rule; a translation can then have two source bags, and the bag is computed from the
+step alone exactly when the rules are pairwise distinct.\footnote{\lean{Hosting.Alternatives.bag\_of\_rule\_classes}.}
+
+\paragraph{Binders.} Over a binding signature, an equation is a pair of terms with holes, each
+hole listing the bound variables its solutions may use. The $\beta$-rule is the equation
+\mt{(= ((\(\lambda\) x. \$B x) \$A) \$B[\$A])}, and activating a quotation is
+\mt{(= (activate (quote \$C)) \$C)}. Source rewriting is exactly the readings of runs, and for
+Miller patterns every firing computes one principal answer.\footnote{\lean{ProgramBinders.execution\_iff},
+\lean{ProgramBinders.principal\_answers\_on\_step}, \lean{ProgramBinders.miller\_with\_solvers}.}
+
+\begin{example}[A second-order pattern under a binder]\label{ex:binder}
+With the equation and call
+\begin{lstlisting}
+(= (app (lam x. ($F x)) $a) ($F $a))
+!(choice (app (lam x. (s x)) zero) (app (lam x. (pair x x)) one))
+\end{lstlisting}
+the call has two alternatives. On
+the step each is one state, reached by the choice rule, the equation's rule and the return rule;
+the equation's rule is admitted exactly when a fresh copy of its left side unifies with the call.
+The bag of answers is $\mset{\mt{(s zero)},\ \mt{(pair one one)}}$.\footnote{\lean{Hosting.ExampleChoice.run\_through\_translation}.}
+\end{example}
+
+\paragraph{The cost of one match.} One firing selects one occurrence per pattern. Three results
+say what this costs. A rule family with a uniform bound on made occurrences cannot publish a
+larger block in one firing; no finite list of rules rewrites every copy of a pattern at once; and
+no fixed family of rules answers every call with variables in one firing, so an interpreter on the
+step must allocate one fresh unknown per variable in separate firings.\footnote{\lean{OccurrenceCorePlacement.no\_bounded\_family\_commits},
+\lean{RuleSyntax.Representation.allAtOnce\_not\_finite},
+\lean{ProgramCompiled.no\_fixed\_one\_firing\_interpreter}.} An interpreter of thirteen equations
+does exactly this, and its answers are those of the compiled program up to renaming, in both
+directions.\footnote{\lean{ProgramInterpreterJoin.interpreter\_join\_iff},
+\lean{ProgramInterpreterJoin.interpreter\_join\_converse\_on\_step}.} Atomic blocks of unbounded
+size are realized by a rule computed per block, which is still one firing. Whether a firing
+should instead select every match, or a maximal compatible bag, is open
+(Appendix~\ref{app:open}).
+
+\paragraph{Call by need.} At first order, a heap cell holds a thunk. The first demand takes the
+cell, evaluates the thunk and makes the value; every later demand reads the value without taking
+it. Launchbury's natural semantics~\cite{launchbury-lazy}, its machine and the step
+agree.\footnote{\lean{ProgramNeed.need\_adequacy}, \lean{ProgramNeed.need\_eval\_on\_step}.}
+
+\paragraph{HE and PeTTa, compared on every run.} The two dialects can be modelled on the step and
+compared run by run. The step, restricted to one ground rule per transition of HE's read-only
+machine, is strongly bisimilar to that machine.\footnote{\lean{DialectsAsStrategies.HEOnTheStep.he\_on\_the\_step}.}
+HE's equation query and PeTTa's call request read the same occurrences exactly when their
+patterns agree.\footnote{\lean{DialectsAsStrategies.TriangleFootprints.read\_word\_triangle}.} For
+calls with symbol heads and no list cells that reach a value, every complete HE run publishes
+the bag that PeTTa streams from some fuel on.\footnote{\lean{DialectsAsStrategies.TriangleFootprints.EveryRun.answer\_bags\_every\_run}.}
+The differences are named and hold on every run: a call that matches nothing returns itself in
+HE and yields nothing in PeTTa; a conditional on a non-Boolean returns the call in HE and takes the
+\mt{else} branch in PeTTa; and a declared argument type gives an error in HE where PeTTa, without
+the declaration, answers.\footnote{\lean{DialectsAsStrategies.TriangleFootprints.EveryRun.uncovered\_every\_run},
+\lean{DialectsAsStrategies.TriangleFootprints.IfDifference.if\_non\_boolean\_differs},
+\lean{DialectsAsStrategies.TriangleFootprints.DeclaredEveryRun.declared\_every\_run}.} These models are the step
+restricted to each dialect's machine; placing HE with one rule per rule of its specification is
+open.
+
+%======================================================================
+\section{Queries, snapshots and publication}\label{sec:queries}
+%======================================================================
+
+A query asks about the occurrences that match a pattern. Its answer can depend on occurrences
+that do not exist yet: a $\kw{none}$ query is falsified by an arrival, and a count changes
+when a matching occurrence is made. This is the predicate read of database
+isolation~\cite{eswaran-predicate-locks,ports-grittner-ssi}, and it is what makes queries the
+interesting part of concurrency on the step.
+
+\subsection{Deciding queries at first order}
+
+At first order the guard can be decided from the unifier of the information. Let $\mu$ be the
+most general unifier of $K$, and say that $p$ is \emph{compatible} with a row $t$ when
+$K\cup\{p\keq t\}$ has a unifier. Figure~\ref{fig:certain} gives the rules.
+
+\begin{rulefigure}[!htb]{fig:certain}{The certain-check calculus at first order. A check is derivable
+when it holds at every solution of $K$. A $\kw{none}$ query needs every row to be incompatible,
+not merely different under $\mu$.}
+\judgements{\judgebox{K;W\vdash c}}
+\begin{mathpar}
+\inferrule*[right=Eq]{\mu=\op{mgu}(K) \\ \mu s=\mu t}{K;W\vdash s\approx^?t}
+\and
+\inferrule*[right=Any]{\mu=\op{mgu}(K) \\ \exists o\in W.\ \mu p=\mu\,W(o)}{K;W\vdash\kw{any}\ p}
+\and
+\inferrule*[right=None]{\forall o\in W.\ \neg\op{compat}(K,p,W(o))}{K;W\vdash\kw{none}\ p}
+\and
+\inferrule*[right=Count]{\mu=\op{mgu}(K) \\ |\{o\in W\mid \mu p=\mu\,W(o)\}|=n \\\\
+  \forall o\in W.\ \mu p=\mu\,W(o)\ \vee\ \neg\op{compat}(K,p,W(o))}{K;W\vdash\kw{count}\ p\ n}
+\end{mathpar}
+\end{rulefigure}
+
+The calculus is sound for free Henkin models and complete at generic points; the Herbrand model
+is sound but not complete, since one constant already separates them. A firing without queries
+is admitted exactly when its admission is derivable.\footnote{\lean{AnnotatedRuns.CertainChecks.Derives},
+\lean{AnnotatedRuns.CertainChecks.derives\_sound\_free},
+\lean{AnnotatedRuns.CertainChecks.derives\_complete\_generic},
+\lean{AnnotatedRuns.CertainChecks.oneConstant\_separates},
+\lean{AnnotatedRuns.CertainChecks.admitsDerivably\_iff}.} At any frame, asking $\kw{none}\ p$ at
+every solution is refuting each extension: $K\entails\kw{none}\ p$ holds exactly when, for every
+occurrence $o$, the store $K\cup\{p\keq\row(o)\}$ has no solution. No principal answer is
+needed.\footnote{\lean{Interface.DependentFull.entails\_none\_iff}.}
+
+\subsection{What a query observes}
+
+For a pattern $p$ and a solution $\sigma$, write $\op{match}_\sigma(p)$ as in
+Definition~\ref{def:checks}. Every query is a function of this set. A predicate query (\emph{any},
+\emph{none}, \emph{all}, \emph{best}) is a proposition about it; an aggregate query (\emph{count},
+\emph{collect}, \emph{sum}) folds it through an operation that ignores order. Two occurrences
+with equal labels count twice. A count can be fixed at every solution while the identities that
+contribute to it vary; a collect claims the identities themselves. At an admitted firing, a
+collect pattern's matches \emph{are} its claimed set, so every observation of the matches is an
+observation of that set, and a maximality test can be read off it.\footnote{\lean{RegionQueryBridge.region\_eq\_seen},
+\lean{RegionQueryBridge.observe\_region\_eq\_observe\_seen},
+\lean{RegionQueryBridge.isBest\_region\_iff\_best\_seen}.}
+
+A query's \emph{footprint} is everything that could change its answer: the occurrences it
+matched, the range in which a new occurrence would match, the solutions of the knowledge (a
+binding of a captured unknown can change membership without any edit of the space), and the
+equality used to compare. A check that only the selected occurrences are unchanged is therefore
+insufficient for any query that an arrival can falsify. Under the union of two programs, a firing
+guarded by $\kw{none}$ stays admitted exactly when the added store has no match, while a firing
+without queries stays admitted exactly when one solution of its equations also solves the added
+knowledge.\footnote{\lean{NullsOnTheStep.Composition.guarded\_union\_iff},
+\lean{NullsOnTheStep.Composition.positive\_admission\_iff}.}
+
+\subsection{Snapshots and the contract at publication}
+
+A simulation may copy the state, explore private alternatives, and return a recommendation,
+proof or ranking. Its result means something at that snapshot. A later firing may use it under
+one of three contracts.
+
+\begin{definition}[Contracts for a snapshot result]\label{def:contracts}
+Let a firing $f$ use a result $R$ computed at a snapshot.
+\begin{enumerate}
+\item \emph{Advice.} $R$ is data for $f$, and $f$ must be admitted by \rn{Adm} on its own.
+\item \emph{Current eligibility.} $f$ selects the occurrences $R$ proposes, and is admitted if
+  they are still present and $R$'s own conditions still hold at $f$'s cut.
+\item \emph{Current comparison.} As eligibility, and in addition a predicate query over the
+  competing alternatives holds at $f$'s cut; for a claim of maximality, no eligible candidate
+  beats the one proposed.
+\end{enumerate}
+\end{definition}
+
+\begin{example}[The best worker]\label{ex:best}
+A simulation sees one job and one idle worker $a$ with score $5$, and recommends $a$. Before the
+live firing, one of five things happens. The columns give the verdicts of eligibility, of
+maximality (no idle worker scores higher), and of the claim that the snapshot's whole ranking is
+still current.
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Change after the simulation & eligible & maximal & ranking current \\
+\midrule
+idle $b$ arrives with score $9$ & yes & no & no \\
+idle $c$ arrives with score $1$ & yes & yes & no \\
+idle $d$ arrives with score $5$ & yes & yes & no \\
+an unrelated occurrence arrives & yes & yes & yes \\
+the occurrence for $a$ is taken & no & no & no \\
+\bottomrule
+\end{tabular}
+\end{center}
+After $b$ arrives the selected job and worker are unchanged, but the query
+$\{w\in\op{match}_\sigma(\mathit{idle})\mid \mathit{score}(w)>5\}=\emptyset$ has changed its
+answer. A protocol that checks only the versions of the selected occurrences accepts this case; a
+protocol that checks the version of the whole space also rejects the unrelated arrival.
+Coordination is needed over exactly what can falsify the promised property.
+\end{example}
+
+The distinction is a theorem: filtering each candidate by its own grade is stable under arrivals,
+while choosing a maximum is not.\footnote{\lean{AnnotatedRuns.local\_stable},
+\lean{AnnotatedRuns.argmax\_changed\_by\_arrival}.} A result may also be reused from a cache: a
+pure adaptive query over a store of keyed values gives the same result whenever the store agrees
+with its read certificate.\footnote{\lean{Mettapedia.Machines.ReadOnlyQuery.run\_eq\_of\_agrees}.} And
+a reader's output is itself a snapshot: a reader that reports $X=\mathit{false}$ before a teller
+of $X=\mathit{true}$ cannot report it after.\footnote{\lean{Interface.NativeSnapshot.snapshot\_obstruction}.}
+
+%======================================================================
+\section{Runs, grades and choice}\label{sec:runs}
+%======================================================================
+
+\subsection{Graded runs}
+
+A grade assigns to each firing an element of a monoid $(A,\cdot,1)$: a cost, a weight, a
+provenance tag. Grades are a layer over the step and never change admission
+(Figure~\ref{fig:runs}).
+
+\begin{rulefigure}[!htb]{fig:runs}{Graded runs. A run's grade is the product of its firings' grades.
+The step is unchanged.}
+\judgements{\judgebox{s \gruns{\pi}{a} s'}}
+\begin{mathpar}
+\inferrule*[right=Nil]{ }{s \gruns{\varepsilon}{1} s}
+\and
+\inferrule*[right=Seq]
+  {s \step{f} s' \\ s' \gruns{\pi}{a} s''}
+  {s \gruns{f\pi}{\op{gr}(f)\cdot a} s''}
+\end{mathpar}
+\end{rulefigure}
+
+The grade of a run is a functor out of runs. A grade in a commutative monoid descends through
+interchanges of independent firings, and a meter that refuses to exceed a purse removes exactly
+the runs whose grade is over it.\footnote{\lean{Interface.Step.Run.account\_append},
+\lean{AnnotatedRuns.siteAccount\_factors\_static}, \lean{AnnotatedRuns.meteredRun\_iff}.} What a
+grade \emph{means} is a separate choice. A threshold on a firing's own grade is a local admission
+test. A maximum, a quantile or a normalized share depends on a family of competitors, and a
+firing that uses one needs a query over that family, as in Example~\ref{ex:best}.
+
+\subsection{Races}
+
+A stochastic execution declares a law of choice. For a finite set of admitted firings with
+positive weights $w_f$, the probability that the next firing is $f$ is
+\[
+\Pr(f)\;=\;\frac{w_f}{\sum_{g\ \text{admitted}}w_g}.
+\]
+In a continuous-time reading the weights are rates of exponential clocks.\footnote{\lean{Race.prob}
+defines the finite normalization.} Inhibition changes what contexts can do.
+
+\begin{example}[A predicate query forces a race]\label{ex:inhibition}
+The space holds one occurrence $a$, and two rules race for it:
+\[
+\mathit{racer}=\kw{take}\ a;\ \kw{make}\ \mathit{out},\qquad
+\mathit{vetoed}=\kw{take}\ a;\ \kw{guard}\ \kw{none}\ p;\ \kw{make}\ \mathit{out}.
+\]
+Here $\mathit{racer}$ wins with probability $w_r/(w_r+w_v)<1$. After one occurrence of $p$ is
+added from outside, $\mathit{vetoed}$ is refused and $\mathit{racer}$ wins with probability $1$.
+Without queries no context can force a race over positive weights.\footnote{\lean{Contention.Controls.forcing\_control},
+\lean{Contention.no\_context\_forces}.} Inhibition also separates two ways of normalizing: a
+firing that takes $a$ and makes $p$, and one that takes $b$ under $\kw{none}\ p$, share no
+occurrence, yet the first refuses the second. Normalizing within shared occurrences gives total
+mass $2$; normalizing within interference, queries included, gives the step's own mass
+$1$.\footnote{\lean{Contention.Controls.inhibition\_control}.}
+\end{example}
+
+\begin{example}[A race that fair search never completes]\label{ex:fair}
+The space holds one $\mathit{goal}$, and two search rules race for it:
+$\kw{take}\ \mathit{goal};\ \kw{make}\ \mathit{dead}$ and
+$\kw{take}\ \mathit{goal};\ \kw{make}\ \mathit{proof}$. The run in which the first wins and the
+system then idles is strongly fair and never makes $\mathit{proof}$, although $\mathit{proof}$ is
+reachable. If the rules read the goal instead of taking it, every weakly fair run proves. Adding
+the repair $\kw{take}\ \mathit{dead};\ \kw{make}\ \mathit{proof}$ reaches exactly the same states,
+and every weakly fair run of the repaired system proves. Reachability therefore does not decide
+fair completeness.\footnote{\lean{FairSearch.Controls.race\_never\_proves},
+\lean{FairSearch.Controls.read\_race\_proves},
+\lean{FairSearch.Controls.reachability\_does\_not\_decide\_fair\_completeness}.} What separates
+the two is that a proof stays reachable from every reachable state, a property that bisimilarity
+preserves and reachability does not.
+\end{example}
+
+\subsection{Interchange}
+
+Two firings at one state \emph{interchange} when each remains admitted after the other and the
+two orders reach equivalent states:
+\[
+\begin{tikzcd}[column sep=large]
+s \arrow[r, "f"] \arrow[d, "g"'] & s_f \arrow[d, "g/f"] \\
+s_g \arrow[r, "f/g"'] & s_{fg}\ \cong\ s_{gf}
+\end{tikzcd}
+\]
+A \emph{round} is a list of firings admitted at one state whose members are pairwise compatible
+(independent footprints, guards that ignore each other's edits, queries that nothing writes
+into) and whose equations are jointly consistent. Every order of a round runs and reaches the
+same class of states; this is the analogue of serializability for transactional
+constraint handling rules~\cite{schrijvers-sulzmann-tchr}.\footnote{\lean{AnnotatedRuns.Round.executable\_perm},
+\lean{AnnotatedRuns.Round.follow\_perm}.}
+
+\begin{example}[Squares do not make a cube]\label{ex:cube}
+The tells $X\keq Y$, $X\keq 1$ and $Y\keq 2$, over distinct constants, are pairwise consistent:
+each pair forms an interchange square. Together they are inconsistent, so no order runs all
+three, and the three squares bound no cube.\footnote{\lean{AnnotatedRuns.CellControls.hollow\_cube},
+\lean{AnnotatedRuns.RoundControls.pairwise\_consistent\_not\_joint}.}
+\end{example}
+
+Joint consistency is therefore a property of the whole wave, not of its pairs. For tells that
+are median-convex, pairwise consistency does suffice, by a Helly
+theorem.\footnote{\lean{ProofRelevantRuns.helly}.} Separation of firings does not make their
+outcomes independent: two operationally separated firings can have correlated
+survival.\footnote{\lean{Interface.KnowledgeTensorCore.SeparatedControls.separated\_yet\_correlated}.}
+
+%======================================================================
+\section{Relation to other calculi}\label{sec:compare}
+%======================================================================
+
+\paragraph{The $\rho$-calculus.} In the reflective higher-order calculus of Meredith and
+Radestock~\cite{meredith-radestock-rho}, names are quoted processes, synchronization compares
+names up to name equivalence, and a received process is activated by semantic substitution.
+Communication is the step's natural shape: a firing takes an input and an output on equivalent
+channels and makes the continuation.
+\begin{align*}
+\mathit{comm}&=\kw{take}\ \mathit{for}(y\leftarrow K)\,B,\ \ K!(Q);\ \ \kw{make}\ \mathit{react}(B,Q)\\
+\mathit{heat}&=\kw{take}\ P\mid R;\ \ \kw{make}\ P,\ R
+\qquad\qquad \mathit{clear}=\kw{take}\ 0
+\end{align*}
+Three such rules place the closed $\rho$-calculus with semantic substitution on the first-order
+step. Every process is represented; every firing is a communication or administrative;
+administrative firings preserve the represented process; every source step is a bounded run of
+administrative firings followed by one communication; and a communication is admitted exactly
+when the knowledge solves the channel equation.\footnote{\lean{FragmentsOfTheStep.ReflectiveCalculus.reflective\_calculus\_on\_the\_step},
+\lean{FragmentsOfTheStep.ReflectiveCalculus.Mechanisms.channel\_match\_is\_solvability}.} For
+$\mathit{for}(y\leftarrow @0)\{{*}y\}\mid @0!(@0!(0))$, heating and one communication give
+$@0!(0)$. Ordinary substitution would give ${*}@(@0!(0))$, which is stuck beside a receiver on
+$@0$.\footnote{\lean{FragmentsOfTheStep.ReflectiveCalculus.Source.semantic\_and\_ordinary\_differ}.}
+No finite ground placement exists, and a placement by ordinary instantiation at frames with paired
+binders gives the same correspondence with quotes kept sealed.\footnote{\lean{FragmentsOfTheStep.ReflectiveCalculus.Mechanisms.ground\_placement\_is\_not\_finite},
+\lean{FragmentsOfTheStep.ReflectiveCalculus.ByInstantiation.reflective\_calculus\_by\_instantiation}.}
+
+\paragraph{Predicate queries separate the step from parallel calculi.} A calculus with a parallel
+context rule, $t\to t'\Rightarrow t\mid u\to t'\mid u$, is \emph{persistent}: what a term can
+do, it can still do beside any other term. The step is not, because a $\kw{none}$ query can be
+switched off by a neighbour that makes a matching occurrence.
+
+\begin{theorem}[Separation]\label{thm:separation}
+Call a translation \emph{uniform} when it is homomorphic on parallel composition up to the
+target's equivalence and preserves and reflects reachable success. There is no uniform
+translation from a calculus in which some composition switches success off into a persistent
+one. The step, under the program $\{\kw{guard}\ \kw{none}\ U;\ \kw{make}\ T,\ \ \kw{read}\ U;\
+\kw{make}\ W\}$ composed by union, switches success off, so it has no uniform translation into
+any presentation with a parallel context rule, into any rule set of the $\rho$-calculus, or into
+positive multiset rewriting. In the other direction, a uniform translation from $\rho$ into the
+step exists when composition is restricted to solvable joint
+knowledge.\footnote{\lean{NullsOnTheStep.ParallelClosed.no\_uniformTranslation},
+\lean{NullsOnTheStep.ParallelClosed.no\_uniformTranslation\_presentation},
+\lean{FragmentsOfTheStep.ReflectiveCalculus.Encodings.strict\_separation\_solvable}.}
+\end{theorem}
+
+Each hypothesis is needed: the characteristic function of success preserves and reflects success
+but is not homomorphic, and the identity into the source calculus is uniform. The dividing line
+is exact: a system whose checks are only equations and $\kw{any}$ queries, with no collect
+pattern, is switched off by no composable neighbour, and every switched system has a $\kw{none}$,
+$\kw{count}$ or collect check.\footnote{\lean{FragmentsOfTheStep.ReflectiveCalculus.Encodings.succeeds\_beside},
+\lean{FragmentsOfTheStep.ReflectiveCalculus.Encodings.switched\_has\_guard}.}
+
+\paragraph{Constraint handling rules and concurrent constraint programming.} Take, read and make
+are CHR's removed heads, kept heads and body; tell and ask are those of concurrent constraint
+programming. Two differences remain. The guard is asked after the firing's own tells
+(Remark~\ref{rem:cut}); and the knowledge is shared by all occurrences rather than being a store
+of constraint occurrences, so the step separates resources, which are consumed, from knowledge,
+which only grows. For read-only rules that keep firing, the step's propagation history agrees with
+CHR's.\footnote{\lean{PropagationHistory.chr\_key\_agrees}, \lean{PropagationHistory.chr\_record\_agrees}.}
+A theorem relating the step to a full CHR operational semantics is open.
+
+\paragraph{Rewriting logic, the chemical machine and MM2.} The step is parametric in the
+equivalence $\approx$, as rewriting logic is parametric in its equational
+theory~\cite{meseguer-rewriting}; equations do computation inside a solution, and rules do
+computation between states. The chemical abstract machine~\cite{berry-boudol-cham} and
+Gamma~\cite{banatre-metayer-gamma} rewrite multisets of molecules; the step adds open knowledge and
+asks at every solution. MM2's sources and sinks separate the work done while matching from the
+work done while rewriting~\cite{mork-sources-sinks}; on the step the first is the information and
+the guard, and the second is the edit of the space.
+
+%======================================================================
+\section{What is shown and what is not}\label{sec:shown}
+%======================================================================
+
+\paragraph{Proved and formalized.} The step, its admission characterization, refinement of
+knowledge and persistence of guard answers along runs, locality, the characterization of the
+general interface, the identities of states and their relation to bisimilarity, the tower of
+frames up to the fibre theorem, the correspondences for the hosted source fragment, for equations
+under binders and for call by need, the one-match costs, the HE and PeTTa models and their named
+differences, the certain-check calculus, the snapshot obstruction, graded runs, races, rounds and
+the hollow cube, the $\rho$ placements and the separation theorem. Every footnoted declaration is
+checked by Lean's kernel with at most the standard axioms, and none relies on an unproved
+statement.
+
+\paragraph{Illustrated but not formalized.} The worker example of Section~\ref{sec:queries} and
+the contracts of Definition~\ref{def:contracts} are stated here, and the theorems that support
+them concern their parts: local filtering against maximum selection, collect patterns, and
+replay of read-only queries.
+
+\paragraph{Not claimed.} That the dependent solver decides the whole dynamic pattern fragment;
+that bisimilarity is a congruence for programs; a congruence that counts answers; a fibration of
+language profiles; a probability semantics for runs beyond finite races; and placements of HE and
+PeTTa with one rule per rule of their specifications. Appendix~\ref{app:open} states each as an
+open problem.
+
+%======================================================================
+\appendix
+\section{Open problems}\label{app:open}
+%======================================================================
+
+Each problem is stated as a question, with the result it would extend.
+
+\paragraph{The size of a firing.} The step selects one occurrence per pattern. The candidates
+are one match, every match of a rule, any jointly admissible bag, and a maximal bag. Which of
+them keeps the admission characterization (Figure~\ref{fig:step}) and locality
+(Theorem~\ref{thm:local}), and which avoids the three one-match costs of
+Section~\ref{sec:metta}? An every-match firing is functional, which is a first data point.
+
+\paragraph{Rules as syntax everywhere.} The dependent step with queries of arbitrary range, the
+helper step and the converting step are steps in the sense of the interface. Is each the step of
+some program, or can one be shown to be the step of no program?
+
+\paragraph{Unification.} Is there a class theorem for higher-order patterns combined with a join
+of universe levels? Which stores does a phased solver decide? Does the principal-answer property
+fail inside the pattern fragment for a package with dependent vectors?
+
+\paragraph{A congruence that counts.} Is there a reduction-closed congruence that preserves the
+bag of answers and gives unknowns a scope, with a finite check? Does the characterization of
+congruence extend to frames with function symbols, binders and types, and to a weak form?
+
+\paragraph{Hosting beyond the first fragment.} Do runs correspond in both directions once spaces,
+types, delay and force, and code as text are added? Can the bag of answers be computed from the
+translated program when rules repeat, given rules that are told apart?
+
+\paragraph{Dialects by their specifications.} Can HE and PeTTa be placed with one rule per rule of
+their specifications, with the knowledge doing the matching, rather than one ground rule per
+machine transition?
+
+\paragraph{The $\rho$-calculus in full.} Can the placement admit quotes that hold a bound name?
+Does the renaming clause of the usual encodability criteria hold? Is there a separation under a
+criterion with a context per operator, or with divergence reflection?
+
+\paragraph{Validation of queries at publication.} Lift the versioned publication result to
+queries over dependent views. Derive the sufficient validation footprint for each contract of
+Definition~\ref{def:contracts}, and check it on the worker example under late better, lower, tied
+and unrelated arrivals, a taken occurrence, and a score changed by a shared binding.
+
+\paragraph{Profiles and their morphisms.} Give demand, effect and observation choices of a MeTTa
+dialect one formal interface. Which translations of profiles preserve and reflect scope,
+multiplicity, pending work and effects? When do profiles form a fibration over the step?
+
+\paragraph{True concurrency.} Assemble the transport of residuals, squares and higher cells under
+a change of frame, including fresh helpers. Under which conditions do squares compose into cubes,
+given that the hollow cube of Example~\ref{ex:cube} bounds them?
+
+\paragraph{Stochastic semantics.} When does a probability law on runs descend to a quotient of
+runs, such as causal histories, and when must a scheduler or an event order be kept? How do
+shared and independent random draws differ when evidence is replayed?
+
+\paragraph{Fair search.} Does the property that a proof stays reachable from every reachable state,
+together with strong fairness, give completeness on every finite-state system?
+
+\paragraph{Types from the presentation.} Is there a presentation of the step by sorts,
+constructors and rewrites from which types are generated, with the theorem that two states are
+bisimilar exactly when they have the same types? Finitary types are exactly the
+bisimulation-closed classes under every finite program of the first-order step; where is the
+boundary for graded formulas?
+
+\paragraph{Cost and compilation.} Give the step a cost semantics that prices rewriting, choice
+and space operations, and state when compiled code is optimal for it: time within a constant
+factor of the source cost that is uniform over programs, inputs and extensions; no interpretive
+overhead on the deterministic fragment; code size linear in the program.
+
+%======================================================================
+\section{Formalization index}\label{app:index}
+%======================================================================
+
+\begin{center}\small
+\begin{tabular}{@{}L{0.42\textwidth}L{0.52\textwidth}@{}}
+\toprule
+Concept & Lean declaration \\
+\midrule
+frame action, solutions, principal answers & \lean{Interface.Frames}, \lean{Interface.Frames.Principal} \\
+rule, firing, information & \lean{RuleSyntax.Rule}, \lean{RuleSyntax.Firing}, \lean{RuleSyntax.Firing.information} \\
+the step and its admission & \lean{RuleSyntax.step}, \lean{RuleSyntax.admits\_iff} \\
+the general interface & \lean{Interface.Step}, \lean{Interface.Step.admits\_iff} \\
+knowledge refines along runs & \lean{Interface.Step.Run.models\_start} \\
+guard answers persist & \lean{InterfaceTable.cut\_preserved} \\
+locality & \lean{RuleSyntax.admits\_of\_outsideRegions} \\
+what the interface admits & \lean{RuleSyntax.realizable\_iff} \\
+congruence & \lean{RuleSyntax.Equivalence.Congruent} \\
+the fibre theorem & \lean{ContextualDependentFibre.fibre\_full} \\
+postponement & \lean{UnificationWithLevels.DependentFibre.cross\_postponed} \\
+certain-check calculus & \lean{AnnotatedRuns.CertainChecks.Derives} \\
+races & \lean{Race.prob} \\
+rounds & \lean{AnnotatedRuns.Round.executable\_perm} \\
+$\rho$ on the step & \lean{FragmentsOfTheStep.ReflectiveCalculus.reflective\_calculus\_on\_the\_step} \\
+separation & \lean{NullsOnTheStep.ParallelClosed.no\_uniformTranslation\_presentation} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%======================================================================
+\begin{thebibliography}{99}
+%======================================================================
+
+\bibitem{banatre-metayer-gamma}
+Jean-Pierre Ban\^atre and Daniel Le M\'etayer.
+Programming by multiset transformation.
+\emph{Communications of the ACM}, 36(1):98--111, 1993.
+
+\bibitem{berry-boudol-cham}
+G\'erard Berry and G\'erard Boudol.
+The chemical abstract machine.
+\emph{Theoretical Computer Science}, 96(1):217--248, 1992.
+
+\bibitem{eswaran-predicate-locks}
+Kapali P. Eswaran, Jim N. Gray, Raymond A. Lorie and Irving L. Traiger.
+The notions of consistency and predicate locks in a database system.
+\emph{Communications of the ACM}, 19(11):624--633, 1976.
+
+\bibitem{fruehwirth-chr}
+Thom Fr\"uhwirth.
+\emph{Constraint Handling Rules}.
+Cambridge University Press, 2009.
+
+\bibitem{goertzel-metta-spec}
+Ben Goertzel.
+MeTTa formal specification, draft version 1.2, 2025.
+
+\bibitem{goguen-unification}
+Joseph A. Goguen.
+What is unification? A categorical view of substitution, equation and solution.
+In \emph{Resolution of Equations in Algebraic Structures}, volume~1, pages 217--261.
+Academic Press, 1989.
+
+\bibitem{launchbury-lazy}
+John Launchbury.
+A natural semantics for lazy evaluation.
+In \emph{Proceedings of POPL}, pages 144--154, 1993.
+
+\bibitem{meredith-radestock-rho}
+L. Gregory Meredith and Matthias Radestock.
+A reflective higher-order calculus.
+\emph{Electronic Notes in Theoretical Computer Science}, 141(5):49--67, 2005.
+
+\bibitem{meta-metta}
+L. Gregory Meredith, Ben Goertzel, Jonathan Warrell and Adam Vandervorst.
+Meta-MeTTa: an operational semantics for MeTTa.
+arXiv:2305.17218, 2023.
+
+\bibitem{meseguer-rewriting}
+Jos\'e Meseguer.
+Conditional rewriting logic as a unified model of concurrency.
+\emph{Theoretical Computer Science}, 96(1):73--155, 1992.
+
+\bibitem{miller-pattern}
+Dale Miller.
+A logic programming language with lambda-abstraction, function variables, and simple
+unification.
+\emph{Journal of Logic and Computation}, 1(4):497--536, 1991.
+
+\bibitem{milner-parrow-walker}
+Robin Milner, Joachim Parrow and David Walker.
+A calculus of mobile processes, parts I and II.
+\emph{Information and Computation}, 100(1):1--77, 1992.
+
+\bibitem{montanari-rossi-contextual}
+Ugo Montanari and Francesca Rossi.
+Contextual nets.
+\emph{Acta Informatica}, 32(6):545--596, 1995.
+
+\bibitem{mork-sources-sinks}
+MORK project.
+Sources and sinks. MM2 documentation.
+\url{https://github.com/trueagi-io/MORK/wiki/Sources-and-Sinks}.
+
+\bibitem{ports-grittner-ssi}
+Dan R. K. Ports and Kevin Grittner.
+Serializable snapshot isolation in PostgreSQL.
+\emph{Proceedings of the VLDB Endowment}, 5(12):1850--1861, 2012.
+
+\bibitem{rydeheard-burstall}
+David E. Rydeheard and Rod M. Burstall.
+\emph{Computational Category Theory}.
+Prentice Hall, 1988.
+
+\bibitem{saraswat-rinard-ccp}
+Vijay A. Saraswat and Martin Rinard.
+Concurrent constraint programming.
+In \emph{Proceedings of POPL}, pages 232--245, 1990.
+
+\bibitem{schrijvers-sulzmann-tchr}
+Tom Schrijvers and Martin Sulzmann.
+Transactions in constraint handling rules.
+In \emph{Proceedings of ICLP}, LNCS 5366, pages 516--530, 2008.
+
+\bibitem{stay-meredith-lawvere}
+Mike Stay and L. Gregory Meredith.
+Representing operational semantics with enriched Lawvere theories.
+arXiv:1704.03080, 2017.
+
+\bibitem{vanglabbeek-tokens}
+Rob J. van Glabbeek.
+The individual and collective token interpretations of Petri nets.
+In \emph{Proceedings of CONCUR}, LNCS 3653, pages 323--337, 2005.
+
+\end{thebibliography}
+
+\end{document}

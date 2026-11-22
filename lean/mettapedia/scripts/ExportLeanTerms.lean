@@ -16,6 +16,7 @@ and writes `artifacts/lean-declarations/terms.metta`:
   (LeanComputationRefused i reason)      test i, not first order
   (LeanFunction c (thm ..))              a function and its equation theorems
   (LeanFunctionRefused c reason)         a function whose equations are not read
+  (LeanLevels c (l ..))                  a function's, theorem's or lemma's level parameters
   (LeanProjection c S S.mk i n)          the projection of field i of structure S
                                          with n parameters
   (LeanPointwise thm k)                  an equation read pointwise, k arguments added
@@ -83,6 +84,13 @@ def targetRoots (target : String) : IO (List Name) := do
     match (row.splitOn "\t").head? with
     | some c => if c.isEmpty || c.startsWith "#" then none else some c.toName
     | none => none
+
+/-- A constant's universe level parameters, in Lean's order: `(LeanLevels c (l ..))`.  A
+statement of the reading quantifies them first, and a use of the constant gives them in this
+order. -/
+def levelsRow (c : Name) : MetaM String := do
+  let info ← getConstInfo c
+  return s!"(LeanLevels {c} ({" ".intercalate (info.levelParams.map (fun u => egalLevel u.toString))}))"
 
 /-- The library theorems a target's proofs use (`Relation.ReflTransGen.head`,
 ...), listed in the Egal target's `.lemmas` file: their statements are read
@@ -177,28 +185,6 @@ def proofTermsAtoms (eqn : FEquation) : List String :=
   (proofTermsOf "LeanProofTerms" eqn.name eqn.rhs).toList ++
     (proofTermsOf "LeanArgumentProofs" eqn.name eqn.lhs).toList
 
-/-- A theorem's statement with its binders: as `readSignature`, with the
-propositions read as statements, so that a proposition given by a definition
-stays as Lean writes it; a proposition whose head is a projection at an
-instance is in its proposition form, as in the definitions that cite it. -/
-def readLemma (type : Expr) : FReadM (List FBinder × FTerm) := do
-  let go : MetaM (Except String (List FBinder × FTerm)) := forallTelescope type fun xs body => do
-    let (names, _) ← nameAll {} [] xs "x"
-    ExceptT.run do
-      let binders ← xs.toList.mapM fun x => do
-        let name := names[x.fvarId!]!
-        let ty ← inferType x
-        if let .sort u := ty then
-          if u.isZero then return FBinder.term name .prop
-          if let .param l := u then return FBinder.sort name l.toString
-          match typeLevel? u with
-          | some level => return FBinder.type name level
-          | none => throwThe String s!"a binder of sort {u}: {name}"
-        if ← isProp ty then return FBinder.hyp name (← readStatement names ty (projections := true))
-        return FBinder.term name (← readTerm names ty)
-      return (binders, ← readStatement names body (projections := true))
-  ExceptT.mk go
-
 /-- The definitions a family's fields are written with: a field's type, or a
 proof field's proposition as read (`propositionForm`), may apply a definition
 that is not an abbreviation (`Multiset α`, `s.Nodup` in `Finset`); the
@@ -271,6 +257,7 @@ def exportTerms (target : Option String) : TermElabM String := do
           | .ok stmt =>
               out := out.push s!"(EgalName {c} {egalIdent c.toString})"
               out := out.push s!"(LeanTheorem {c} {stmt.atom})"
+              out := out.push (← levelsRow c)
               for d in stmt.constants do
                 unless roots.contains d do roots := roots.push d
           | .error reason => out := out.push s!"(LeanTheoremRefused {c} {reasonText reason})"
@@ -415,6 +402,7 @@ def exportTerms (target : Option String) : TermElabM String := do
           | some reason => out := out.push s!"(LeanFunctionRefused {c} {reasonText reason})"
           | none =>
               out := out.push s!"(LeanFunction {c} ({" ".intercalate (thms.toList.map toString)}))"
+              out := out.push (← levelsRow c)
               -- The function's declared type: the result type of a decision
               -- procedure depends on its arguments, which closed equations do
               -- not show.
@@ -448,6 +436,14 @@ def exportTerms (target : Option String) : TermElabM String := do
       | .ok (binders, statement) =>
           lemmaRecords := lemmaRecords.push
             s!"(LeanLemma {c} ({" ".intercalate (binders.map FBinder.atom)}) {statement.atom})"
+          lemmaRecords := lemmaRecords.push (← levelsRow c)
+          -- A structure's proof field (`Finset.nodup`): Lean declares its
+          -- projection as a theorem.  Marked, the reader proves it from the
+          -- structure's elimination and the field's guard.
+          if let some pinfo ← getProjectionFnInfo? c then
+            if let some (.ctorInfo ctor) := (← getEnv).find? pinfo.ctorName then
+              lemmaRecords := lemmaRecords.push
+                s!"(LeanProofProjection {c} {ctor.induct} {pinfo.ctorName} {pinfo.i} {pinfo.numParams})"
           -- What the statement applies is read too: a proposition given by a
           -- definition stays as written, and the definition is a function.
           for term in statement :: binders.filterMap binderType do
