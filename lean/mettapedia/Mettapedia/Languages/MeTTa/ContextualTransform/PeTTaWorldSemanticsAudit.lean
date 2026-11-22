@@ -1,0 +1,21 @@
+import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
+
+open Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
+
+#print axioms Trace.bind_assoc
+#print axioms Search.bind_assoc
+#print axioms DecisionStaging.refresh_capture
+#print axioms DecisionStaging.bind_revalidated_eq_live
+#print axioms line_break_invariance
+#print axioms evalForms_append
+#print axioms sequence_associative
+#print axioms inert_wrapper
+#print axioms invokeAtEntry_selected
+#print axioms compiled_stretch_after_prefix
+#print axioms compiled_stretch_fast_path
+#print axioms compiled_stretch_slow_path
+#print axioms Controls.edit_flows_to_next_application
+#print axioms Controls.carried_value_is_not_retranslated
+#print axioms Controls.candidate_selection_follows_argument_evaluation
+#print axioms Controls.alternatives_share_the_world_left_to_right
+#print axioms Controls.argument_mode_precedes_argument_evaluation
