@@ -3,11 +3,11 @@ import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaLiveCallability
 /-!
 # World-threaded PeTTa evaluation
 
-This file gives the control-flow foundation behind P-DEF-4. Source lines,
-`let` bodies, branches and function bodies all use the same state-threaded
-search. The program world is outside nondeterminism, so effects survive
-backtracking. An application first reads its argument modes, then evaluates or
-holds its arguments in order, and finally fixes its equation candidates. Thus
+This file gives the control-flow foundation behind P-DEF-4. Sequenced
+fragments, `let` bodies, branches and function bodies all use the same
+state-threaded search. The program world is outside nondeterminism, so effects
+survive backtracking. An application first reads its argument modes, then
+evaluates or holds its arguments in order, and finally fixes its equation candidates. Thus
 an argument's effects cannot retroactively change whether that argument was
 held, while those effects are visible to candidate selection.
 
@@ -20,7 +20,7 @@ left it.
 ```text
 ⟦v⟧                     = return v          -- values, quotes, bound variables: never re-read
 ⟦(let p e₁ e₂)⟧         = ⟦e₁⟧ >>= λv. unify p v; ⟦e₂⟧   -- the world flows from e₁ into e₂
-⟦f₁ f₂ … fₙ⟧  (a file)  = ⟦f₁⟧ >> ⟦f₂⟧ >> … >> ⟦fₙ⟧      -- the same bind: lines are binds
+⟦f₁ f₂ … fₙ⟧ (in sequence) = ⟦f₁⟧ >> ⟦f₂⟧ >> … >> ⟦fₙ⟧  -- grouping within one search
 ⟦(superpose (e₁ … eₙ))⟧ = ⟦e₁⟧ ++ … ++ ⟦eₙ⟧  -- each branch starts in the world
                                              -- the previous branch's consumer left
 ⟦(collapse e)⟧          = all answers of ⟦e⟧, in the current world
@@ -33,9 +33,10 @@ left it.
 ```
 
 `eval` below gives the value, quote, `let`, sequencing, choice, edit and
-application rows (`evalArgs` and `invokeAtEntry` for the last); `evalForms`
-gives the file row. `collapse` drains a search (`Trace.drain`), and the four
-world-changing operations are `edit`s.
+application rows (`evalArgs` and `invokeAtEntry` for the last). `evalForms`
+gives the sequence row. Top-level requests can be collected separately.
+`collapse` drains a search (`Trace.drain`). The world-changing operations in
+this fragment are `edit`s.
 
 Compilation is a staging of this evaluator. A captured stretch may run while
 its recorded reads remain valid. Otherwise the entire stretch is translated
@@ -327,8 +328,8 @@ mutual
             Search.pure (value :: values)
 end
 
-/-- A nonempty file is the same sequencing operation as an internal `seq`.
-The last form supplies the file's result. -/
+/-- A nonempty sequence of fragments inside one search uses the same bind
+as `seq`. The last fragment supplies its result. -/
 def evalForms (model : Model World Name Value Edit Candidate) :
     Expr Name Value Edit → List (Expr Name Value Edit) → Search World Value
   | first, [] => eval model first

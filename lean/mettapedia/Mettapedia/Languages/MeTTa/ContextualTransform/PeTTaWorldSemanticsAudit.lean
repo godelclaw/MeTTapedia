@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
+import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaResumptionSemantics
 
 open Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
 
@@ -19,3 +19,23 @@ open Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
 #print axioms Controls.candidate_selection_follows_argument_evaluation
 #print axioms Controls.alternatives_share_the_world_left_to_right
 #print axioms Controls.argument_mode_precedes_argument_evaluation
+
+open Mettapedia.Languages.MeTTa.ContextualTransform in
+section
+#print axioms PeTTaResumptionSemantics.checked_resume_eq_live
+#print axioms PeTTaResumptionSemantics.resume_eq_unchecked_of_disjoint
+#print axioms PeTTaResumptionSemantics.live_resume_eq_fresh_entry
+#print axioms PeTTaResumptionSemantics.argument_edit_keeps_entry_modes
+#print axioms PeTTaResumptionSemantics.Controls.live_named_eq_source
+#print axioms PeTTaResumptionSemantics.Controls.forward_edit
+#print axioms PeTTaResumptionSemantics.Controls.later_alternative
+#print axioms PeTTaResumptionSemantics.Controls.fresh_wrapper_changes_editsOnly
+#print axioms PeTTaResumptionSemantics.Controls.existing_call_reads_new_equations
+#print axioms PeTTaResumptionSemantics.Controls.entered_call_retains_candidates_and_resumes_body
+#print axioms PeTTaResumptionSemantics.Controls.answerless_edit_reaches_next_alternative
+#print axioms PeTTaResumptionSemantics.Controls.collecting_requests_and_binding_differ
+#print axioms PeTTaResumptionSemantics.Controls.argument_declaration_affects_the_next_invocation
+#print axioms PeTTaResumptionSemantics.Controls.transform_first_answer_preserves_pending_work
+#print axioms PeTTaResumptionSemantics.Controls.transform_resume_respects_demand_and_current_interface
+#print axioms PeTTaResumptionSemantics.Controls.prepared_transform_resumes_the_same_search
+end
