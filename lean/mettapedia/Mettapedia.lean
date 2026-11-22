@@ -1,3 +1,4 @@
+import Mettapedia.Machines.Resources.CappedAdmission
 import Mettapedia.Languages.GuardedAtomRule
 import Mettapedia.Languages.MeTTa.PrimeComparisons.StudyBuild
 import Mettapedia.Languages.FiniteChoice
