@@ -95,11 +95,11 @@
 
 (= (iter-verify:main)
    (let* (($n1 (iter-verify:check-mg "megalodon/iter/01_nal_truth.mg" 63))
-          ($n2 (iter-verify:check-mg "megalodon/iter/02_experience_hygiene.mg" 114))
+          ($n2 (iter-verify:check-mg "megalodon/iter/02_experience_hygiene.mg" 117))
           ($n3 (iter-verify:check-mg "megalodon/iter/03_loop_state_machine.mg" 46))
           ($n4 (iter-verify:check-mg "megalodon/iter/04_data_boundaries.mg" 48))
           ($total (+ (+ $n1 $n2) (+ $n3 $n4)))
-          ($_ (iter-verify:assert-true "grand-total-271" (== $total 271)))
+          ($_ (iter-verify:assert-true "grand-total-274" (== $total 274)))
           ($_ (iter-verify:check-cadence-crosscheck)))
      (println! (IterVerificationSuitePass
                  (megalodon-modules 4)

@@ -2682,4 +2682,101 @@ apply andI.
   + exact Hdirty.
 Qed.
 
+(** SENTINEL INITIALIZATION THEOREMS (&cleanup_bucket = -1):
+    Initializing cleanup_bucket to -1 instead of floor(len / interval) causes
+    Loop's existing cleanup guard (-1 < bucket20 L) to fire once on the first
+    iteration for EVERY loaded history length L in omega (both L < 100 and
+    L >= 100), without duplicating cleanup_old_messages or moving the orphan
+    strip ahead of bucket recording. In particular, an 80-message loaded
+    history with k leading orphan tools cleans once at turn 0, records
+    bucket = 4 from the pre-strip length 80, strips to 80 - k, and then stays
+    completely silent for all (19 + k) turns until L = 100. *)
+
+Theorem neg1_lt_bucket20 : forall L :e omega, - 1 < bucket20 L.
+let L. assume HL.
+claim Hspec : IsBucket20 L (bucket20 L). { exact bucket20_spec L HL. }
+apply Hspec. assume Hb1 _. apply Hb1. assume Hbo _.
+exact SNoLtLe_tra (- 1) 0 (bucket20 L) (SNo_minus_SNo 1 SNo_1) SNo_0 (omega_SNo (bucket20 L) Hbo) SNoLt_minus_1_0 (nat_0_Le (bucket20 L) Hbo).
+Qed.
+
+Theorem init_bucket_neg1_fires_on_any_startup :
+  forall policy k, forall L :e omega,
+  cad_count (cad_step policy k (CadState L (- 1) 0)) = 1 /\
+  (L < MAX_EXP -> cad_bucket (cad_step policy k (CadState L (- 1) 0)) = bucket20 L) /\
+  (MAX_EXP <= L -> policy = PolicyPreStrip -> cad_bucket (cad_step policy k (CadState L (- 1) 0)) = 4).
+let policy k. let L. assume HL.
+claim Hlt : - 1 < bucket20 L. { exact neg1_lt_bucket20 L HL. }
+claim Hnc : cad_next_count L (- 1) 0 = 1.
+{ prove (if - 1 < bucket20 L then 0 + 1 else 0) = 1.
+  rewrite If_i_1 (- 1 < bucket20 L) (0 + 1) 0 Hlt.
+  exact add_SNo_0L 1 SNo_1. }
+apply and3I.
+- prove cad_count (CadState (cad_next_len k (cad_len (CadState L (- 1) 0)))
+                            (cad_next_bucket policy k (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)))
+                            (cad_next_count (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)) (cad_count (CadState L (- 1) 0)))) = 1.
+  rewrite cad_count_mk (cad_next_len k (cad_len (CadState L (- 1) 0)))
+          (cad_next_bucket policy k (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)))
+          (cad_next_count (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)) (cad_count (CadState L (- 1) 0))).
+  rewrite cad_len_mk L (- 1) 0.
+  rewrite cad_bucket_mk L (- 1) 0.
+  rewrite cad_count_mk L (- 1) 0.
+  exact Hnc.
+- assume Hlt100 : L < MAX_EXP.
+  claim Hnle : ~(MAX_EXP <= L).
+  { assume Hle : MAX_EXP <= L.
+    exact SNoLt_irref L (SNoLtLe_tra L MAX_EXP L (omega_SNo L HL) (omega_SNo MAX_EXP n100_omega) (omega_SNo L HL) Hlt100 Hle). }
+  prove cad_bucket (CadState (cad_next_len k (cad_len (CadState L (- 1) 0)))
+                             (cad_next_bucket policy k (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)))
+                             (cad_next_count (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)) (cad_count (CadState L (- 1) 0)))) = bucket20 L.
+  rewrite cad_bucket_mk (cad_next_len k (cad_len (CadState L (- 1) 0)))
+          (cad_next_bucket policy k (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)))
+          (cad_next_count (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)) (cad_count (CadState L (- 1) 0))).
+  rewrite cad_len_mk L (- 1) 0.
+  rewrite cad_bucket_mk L (- 1) 0.
+  prove (if MAX_EXP <= L then
+           (if policy = PolicyPreStrip then bucket20 RETAIN_EXP else bucket20 (RETAIN_EXP + - k))
+         else
+           (if - 1 < bucket20 L then bucket20 L else - 1)) = bucket20 L.
+  rewrite If_i_0 (MAX_EXP <= L)
+          (if policy = PolicyPreStrip then bucket20 RETAIN_EXP else bucket20 (RETAIN_EXP + - k))
+          (if - 1 < bucket20 L then bucket20 L else - 1) Hnle.
+  exact If_i_1 (- 1 < bucket20 L) (bucket20 L) (- 1) Hlt.
+- assume Hge100 : MAX_EXP <= L. assume Hpol : policy = PolicyPreStrip.
+  prove cad_bucket (CadState (cad_next_len k (cad_len (CadState L (- 1) 0)))
+                             (cad_next_bucket policy k (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)))
+                             (cad_next_count (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)) (cad_count (CadState L (- 1) 0)))) = 4.
+  rewrite cad_bucket_mk (cad_next_len k (cad_len (CadState L (- 1) 0)))
+          (cad_next_bucket policy k (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)))
+          (cad_next_count (cad_len (CadState L (- 1) 0)) (cad_bucket (CadState L (- 1) 0)) (cad_count (CadState L (- 1) 0))).
+  rewrite cad_len_mk L (- 1) 0.
+  rewrite cad_bucket_mk L (- 1) 0.
+  prove (if MAX_EXP <= L then
+           (if policy = PolicyPreStrip then bucket20 RETAIN_EXP else bucket20 (RETAIN_EXP + - k))
+         else
+           (if - 1 < bucket20 L then bucket20 L else - 1)) = 4.
+  rewrite If_i_1 (MAX_EXP <= L)
+          (if policy = PolicyPreStrip then bucket20 RETAIN_EXP else bucket20 (RETAIN_EXP + - k))
+          (if - 1 < bucket20 L then bucket20 L else - 1) Hge100.
+  rewrite If_i_1 (policy = PolicyPreStrip) (bucket20 RETAIN_EXP) (bucket20 (RETAIN_EXP + - k)) Hpol.
+  exact bucket20_80_to_99 RETAIN_EXP n80_omega (SNoLe_ref RETAIN_EXP) n80_lt_100.
+Qed.
+
+Theorem init_bucket_neg1_orphan80_stays_uniform :
+  forall k :e omega, k <= RETAIN_EXP ->
+  cad_count (cad_step PolicyPreStrip k (CadState RETAIN_EXP (- 1) 0)) = 1 /\
+  cad_bucket (cad_step PolicyPreStrip k (CadState RETAIN_EXP (- 1) 0)) = 4 /\
+  cad_run PolicyPreStrip k (CadState ((RETAIN_EXP + - k) + 1) 4 1) ((10 + 9) + k) = CadState MAX_EXP 4 1.
+let k. assume Hk Hk80.
+claim Hst : cad_count (cad_step PolicyPreStrip k (CadState RETAIN_EXP (- 1) 0)) = 1 /\
+  (RETAIN_EXP < MAX_EXP -> cad_bucket (cad_step PolicyPreStrip k (CadState RETAIN_EXP (- 1) 0)) = bucket20 RETAIN_EXP) /\
+  (MAX_EXP <= RETAIN_EXP -> PolicyPreStrip = PolicyPreStrip -> cad_bucket (cad_step PolicyPreStrip k (CadState RETAIN_EXP (- 1) 0)) = 4).
+{ exact init_bucket_neg1_fires_on_any_startup PolicyPreStrip k RETAIN_EXP n80_omega. }
+apply Hst. assume H12 _. apply H12. assume Hc Hb.
+apply and3I.
+- exact Hc.
+- rewrite Hb n80_lt_100.
+  exact bucket20_80_to_99 RETAIN_EXP n80_omega (SNoLe_ref RETAIN_EXP) n80_lt_100.
+- exact original_silent_stretch_all_k k Hk Hk80 1 nat_1_omega.
+Qed.
+
 End IterExperienceHygiene.
