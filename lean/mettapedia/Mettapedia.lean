@@ -1,3 +1,4 @@
+import Mettapedia.Algorithms.Retrieval.BatchedQueryMerge
 import Mettapedia.Machines.Resources.CappedAdmission
 import Mettapedia.Languages.GuardedAtomRule
 import Mettapedia.Languages.MeTTa.PrimeComparisons.StudyBuild
