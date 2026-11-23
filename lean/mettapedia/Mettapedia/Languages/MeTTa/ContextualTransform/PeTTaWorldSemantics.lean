@@ -43,12 +43,11 @@ evaluator: a captured stretch may run while its recorded reads remain valid;
 otherwise the entire stretch is translated again in the world in which it is
 reached. Values are opaque and are never retranslated.
 
-SWI-PeTTa implements the staged reading instead (`PeTTaStagedSemantics`).
-Code is translated at an entry: a query when it is reached, a function body at
-its call, the expression of a MeTTa `eval` when it runs. It keeps the
-call-or-data decisions it was translated with. The two readings agree wherever
-no edit changed what a translation read, and a MeTTa `eval` gives the live
-reading at its occurrence.
+`PeTTaStagedSemantics` models SWI-PeTTa's staging. A query is translated
+when it is reached. A function enters its installed compiled clauses.
+The model's fresh entry describes such a clause when its translation reads
+still agree with the current program. A run-time `eval` explicitly
+translates its source at that occurrence.
 
 This is deliberately an abstract control theorem. Pattern matching, recursive
 equation bodies, exceptions, and concrete atoms are supplied by `Model` (or by

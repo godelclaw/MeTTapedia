@@ -1,22 +1,19 @@
 import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaResumptionSemantics
 
 /-!
-# Staged PeTTa evaluation: what SWI-PeTTa implements
+# Staged PeTTa evaluation
 
-SWI-PeTTa translates code once, against the program as it stands at an entry:
-a `!` query when it is reached, a function body when the function is called
-(its callers are translated again whenever an equation, a declaration or a
-translator rule they were translated with changes), and the expression of an
-`eval` when the `eval` runs. Translated code keeps the call-or-data decisions
-it was translated with, after an edit it makes itself and when backtracking
-resumes it. Execution always runs in the current world, so a call kept in the
-translation finds the equations its function has now.
+SWI-PeTTa translates a `!` query when it is reached. A function call enters
+already compiled clauses. Named edits can refresh stored clauses when they
+change recorded decisions. Running code keeps its translation after its own
+edits and on backtracking. Each newly reached call selects its alternatives
+from the clauses available at that call's entry.
 
-`stagedAt` is this reading in the vocabulary of `PeTTaResumptionSemantics`.
-It agrees with the live reading at every entry, and wherever the translation
-read nothing that an intervening edit changed. The controls show where the two
-readings differ, and that a fresh entry, such as `eval`, gives the live answer
-there.
+`stagedAt` models a fresh translation at an entry and retention inside the
+running unit. The fresh entry also describes a stored clause whose
+translation reads still agree with the current world. A run-time `eval`
+provides an explicit fresh translation. The Lean results concern the
+abstract policy and its read-agreement condition.
 -/
 
 set_option autoImplicit false
@@ -40,8 +37,8 @@ def stagedAt (boundary : Boundary) (observe : World → Key → Fact)
   | .afterEdit => execute (run (observe preparedIn) prepare).answer
   | .resume => execute (run (observe preparedIn) prepare).answer
 
-/-- A query when it is reached, a called function and an `eval` are entries:
-there the staged and the live readings coincide. -/
+/-- At an entry with a fresh translation, the staged and live readings
+coincide. -/
 theorem staged_entry_eq_live (observe : World → Key → Fact) (preparedIn : World)
     (prepare : Program Key Fact Plan) (execute : Plan → Search World A) :
     stagedAt .entry observe preparedIn prepare execute =
@@ -111,8 +108,7 @@ private def named (boundary : Boundary) (preparedIn : Store) (head : String) :
 
 /-- `!(let $u (add-atom &self (= (helper) 42)) (helper))`: the code after the
 edit keeps the decision it was translated with, so `(helper)` stays data.
-`(eval (helper))`, or a call of a function whose body is `(helper)`, is an
-entry and sees the new equation. -/
+A fresh translation, as in `(eval (helper))`, sees the new equation. -/
 theorem edit_then_plain_or_entry :
     ((install.bind fun _ => named .afterEdit [] "helper") []).drain.1 = [helper] ∧
     ((install.bind fun _ => named .entry [] "helper") []).drain.1 = [value] := by
