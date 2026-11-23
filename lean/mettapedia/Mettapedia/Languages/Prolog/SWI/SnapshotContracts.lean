@@ -195,4 +195,3 @@ theorem equal_generation_does_not_identify_local_namespaces :
     localValue 0 5 ≠ localValue 1 5 := by decide
 
 end Mettapedia.Languages.Prolog.SWI.SnapshotContracts
-

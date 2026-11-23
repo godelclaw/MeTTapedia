@@ -46,7 +46,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 def readings : List (String × ModuleData) := [("UnivAlg", UnivAlg.module), ("Rholang", Rholang.module),
     ("RegexCore", RegexCore.module), ("RetryWake", GodelClawRetryWake.module),
     ("StreamEvents", StreamEvents.module), ("ToolCalls", ToolCalls.module),
-    ("ComponentAPI", ComponentAPI.module),
+    ("ComponentAPI", ComponentAPI.module), ("AccessPolicy", GodelClawAccessPolicy.module),
     ("Aliased", AliasedAsWritten.module),
     ("AmbientComm", MobileAmbientsComm.module),
     ("AmbientNu", MobileAmbientsNu.module),

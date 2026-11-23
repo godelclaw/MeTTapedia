@@ -1,5 +1,6 @@
+import Mettapedia.GSLT.LanguageDef.RewriteValidationNameTraversal
 import Mettapedia.GSLT.LanguageDef.TptpOfficialFofElaboration
-import Mettapedia.GSLT.LanguageDef.RewriteValidationCertificate
+import Mettapedia.GSLT.LanguageDef.RewriteValidationBatch
 import Mettapedia.GSLT.LanguageDef.ConstructorSignatureExtension
 import Mettapedia.GSLT.LanguageDef.CanonicalWire
 import Mettapedia.OSLF.MeTTaIL.ContextualStep
@@ -559,244 +560,47 @@ private theorem constructorLabels_nodup :
     LanguageDef.constructorLabels_nodup_of_validate_eq_nil syntaxLanguage
       syntaxLanguage_validate
 
-private def constructorLabelNamespaced (label : String) : Bool :=
-  label.startsWith "tptp92-ast:" ||
-    label.startsWith "tptp-fof-named:" ||
-      label.startsWith "tptp-fof-symbol:" ||
-        label.startsWith "tptp-fof-elab:" ||
-        label = "$true" || label = "$false"
+private def plainTerms : List RewriteRule := termRewrites.take 7
+private def literalTerms : List RewriteRule := (termRewrites.drop 7).take 4
+private def definedAndSystemTerms : List RewriteRule := (termRewrites.drop 11).take 4
+private def argumentRules : List RewriteRule := termRewrites.drop 15
 
-private theorem constructorLabels_namespaced :
-    (RewriteValidationCertificate.constructorLabels language).all
-      constructorLabelNamespaced = true := by
-  decide +kernel
+private theorem termRewrites_sections :
+    termRewrites = plainTerms ++ literalTerms ++ definedAndSystemTerms ++ argumentRules := rfl
 
-private theorem plainName_not_constructor (name : String)
-    (plain : constructorLabelNamespaced name = false) :
-    name ∉ RewriteValidationCertificate.constructorLabels language := by
-  intro membership
-  have colon := (List.all_eq_true.mp constructorLabels_namespaced)
-    name membership
-  simp [plain] at colon
+private theorem plainTerms_checked :
+    plainTerms.all (RewriteValidationCertificate.check language) = true :=
+  (RewriteValidationCertificate.check_all_eq_checkByNameTraversal language _).trans
+    (by decide +kernel)
 
-private theorem lexeme_not_constructor :
-    "lexeme" ∉ RewriteValidationCertificate.constructorLabels language :=
-  plainName_not_constructor "lexeme" (by simp [constructorLabelNamespaced])
+private theorem literalTerms_checked :
+    literalTerms.all (RewriteValidationCertificate.check language) = true :=
+  (RewriteValidationCertificate.check_all_eq_checkByNameTraversal language _).trans
+    (by decide +kernel)
 
-private theorem arguments_not_constructor :
-    "arguments" ∉ RewriteValidationCertificate.constructorLabels language :=
-  plainName_not_constructor "arguments" (by simp [constructorLabelNamespaced])
+private theorem definedAndSystemTerms_checked :
+    definedAndSystemTerms.all (RewriteValidationCertificate.check language) = true :=
+  (RewriteValidationCertificate.check_all_eq_checkByNameTraversal language _).trans
+    (by decide +kernel)
 
-private theorem argumentsResult_not_constructor :
-    "argumentsResult" ∉
-      RewriteValidationCertificate.constructorLabels language :=
-  plainName_not_constructor "argumentsResult"
-    (by simp [constructorLabelNamespaced])
+private theorem argumentRules_checked :
+    argumentRules.all (RewriteValidationCertificate.check language) = true :=
+  (RewriteValidationCertificate.check_all_eq_checkByNameTraversal language _).trans
+    (by decide +kernel)
 
-private theorem term_not_constructor :
-    "term" ∉ RewriteValidationCertificate.constructorLabels language :=
-  plainName_not_constructor "term" (by simp [constructorLabelNamespaced])
-
-private theorem termResult_not_constructor :
-    "termResult" ∉ RewriteValidationCertificate.constructorLabels language :=
-  plainName_not_constructor "termResult" (by simp [constructorLabelNamespaced])
-
-local macro "certify_elaboration_row" : tactic =>
-  `(tactic|
-    (simp [RewriteValidationCertificate.check,
-      RewriteValidationCertificate.contextTypesCheck,
-      RewriteValidationCertificate.premiseTypesCheck,
-      RewriteValidationCertificate.patternDeclaredCheck,
-      RewriteValidationCertificate.premisesDeclaredCheck,
-      RewriteValidationCertificate.allPatternsScopedCheck,
-      RewriteValidationCertificate.fvarsAvoidConstructorsCheck,
-      RewriteValidationCertificate.bindersAvoidConstructorsCheck,
-      RewriteValidationCertificate.contextAvoidsConstructorsCheck,
-      RewriteValidationCertificate.rightBoundCheck,
-      variableRule, plainNullaryRule, plainAppliedRule, numberRule,
-      distinctRule, definedNullaryRule, definedAppliedRule,
-      systemNullaryRule, systemAppliedRule, argumentsOneRule,
-      argumentsMoreRule, mkRule, typed, congruence, translateTerm,
-      translateArguments, targetVariable, targetName, targetFunctionHead,
-      targetFunction,
-      targetTermsNil, targetTermsCons, sourcePlainTerm, sourceDefinedTerm,
-      sourceSystemTerm, sourceDefinedFunctor, sourceSystemFunctor,
-      sourceToken, sourceAtomicWord, a, v,
-      RewriteValidationCertificate.constructorSignatures,
-      Pattern.constructorRefs, Pattern.constructorRefsList,
-      Pattern.isWellScoped, Pattern.isWellScopedAt,
-      Pattern.isWellScopedListAt, Pattern.freeFvarNames,
-      LanguageDef.patternFvarNames, LanguageDef.patternBinderNames,
-      LanguageDef.premisePatterns, LanguageDef.premiseFvarNames,
-      LanguageDef.premiseForAllParams,
-      LanguageDef.premiseProducedFvarNames,
-      LanguageDef.premiseStepTypeExprs, LanguageDef.premiseLocallyScoped, TypeExpr.baseNames,
-      lexeme_not_constructor, arguments_not_constructor,
-      argumentsResult_not_constructor, term_not_constructor,
-      termResult_not_constructor] <;> decide +kernel))
-
-private theorem variableRule_checked :
-    RewriteValidationCertificate.check language variableRule = true := by
-  certify_elaboration_row
-
-private theorem plainLowerNullaryRule_checked :
-    RewriteValidationCertificate.check language
-      (plainNullaryRule "tptp-fof-elab:term-plain-lower-nullary"
-        "tptp92-ast:atomic-word:alt-1" "tptp92-ast:token:lower-word") =
-      true := by
-  certify_elaboration_row
-
-private theorem plainQuotedNullaryRule_checked :
-    RewriteValidationCertificate.check language
-      (plainNullaryRule "tptp-fof-elab:term-plain-quoted-nullary"
-        "tptp92-ast:atomic-word:alt-2" "tptp92-ast:token:single-quoted") =
-      true := by
-  certify_elaboration_row
-
-private theorem plainBackquotedNullaryRule_checked :
-    RewriteValidationCertificate.check language
-      (plainNullaryRule "tptp-fof-elab:term-plain-backquoted-nullary"
-        "tptp92-ast:atomic-word:alt-3" "tptp92-ast:token:back-quoted") =
-      true := by
-  certify_elaboration_row
-
-private theorem plainLowerAppliedRule_checked :
-    RewriteValidationCertificate.check language
-      (plainAppliedRule "tptp-fof-elab:term-plain-lower-applied"
-        "tptp92-ast:atomic-word:alt-1" "tptp92-ast:token:lower-word") =
-      true := by
-  certify_elaboration_row
-
-private theorem plainQuotedAppliedRule_checked :
-    RewriteValidationCertificate.check language
-      (plainAppliedRule "tptp-fof-elab:term-plain-quoted-applied"
-        "tptp92-ast:atomic-word:alt-2" "tptp92-ast:token:single-quoted") =
-      true := by
-  certify_elaboration_row
-
-private theorem plainBackquotedAppliedRule_checked :
-    RewriteValidationCertificate.check language
-      (plainAppliedRule "tptp-fof-elab:term-plain-backquoted-applied"
-        "tptp92-ast:atomic-word:alt-3" "tptp92-ast:token:back-quoted") =
-      true := by
-  certify_elaboration_row
-
-private theorem integerRule_checked :
-    RewriteValidationCertificate.check language
-      (numberRule "tptp-fof-elab:term-integer"
-        "tptp92-ast:number:alt-1" "tptp92-ast:token:integer"
-        "tptp-fof-symbol:function-integer") = true := by
-  certify_elaboration_row
-
-private theorem rationalRule_checked :
-    RewriteValidationCertificate.check language
-      (numberRule "tptp-fof-elab:term-rational"
-        "tptp92-ast:number:alt-2" "tptp92-ast:token:rational"
-        "tptp-fof-symbol:function-rational") = true := by
-  certify_elaboration_row
-
-private theorem realRule_checked :
-    RewriteValidationCertificate.check language
-      (numberRule "tptp-fof-elab:term-real"
-        "tptp92-ast:number:alt-3" "tptp92-ast:token:real"
-        "tptp-fof-symbol:function-real") = true := by
-  certify_elaboration_row
-
-private theorem distinctRule_checked :
-    RewriteValidationCertificate.check language distinctRule = true := by
-  certify_elaboration_row
-
-private theorem definedNullaryRule_checked :
-    RewriteValidationCertificate.check language definedNullaryRule = true := by
-  certify_elaboration_row
-
-private theorem definedAppliedRule_checked :
-    RewriteValidationCertificate.check language definedAppliedRule = true := by
-  certify_elaboration_row
-
-private theorem systemNullaryRule_checked :
-    RewriteValidationCertificate.check language systemNullaryRule = true := by
-  certify_elaboration_row
-
-private theorem systemAppliedRule_checked :
-    RewriteValidationCertificate.check language systemAppliedRule = true := by
-  certify_elaboration_row
-
-private theorem argumentsOneRule_checked :
-    RewriteValidationCertificate.check language argumentsOneRule = true := by
-  certify_elaboration_row
-
-private theorem argumentsMoreRule_checked :
-    RewriteValidationCertificate.check language argumentsMoreRule = true := by
-  certify_elaboration_row
-
-local macro "validate_elaboration_row" : tactic =>
-  `(tactic|
-    apply RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup <;>
-    first
-    | exact variableRule_checked
-    | exact plainLowerNullaryRule_checked
-    | exact plainQuotedNullaryRule_checked
-    | exact plainBackquotedNullaryRule_checked
-    | exact plainLowerAppliedRule_checked
-    | exact plainQuotedAppliedRule_checked
-    | exact plainBackquotedAppliedRule_checked
-    | exact integerRule_checked
-    | exact rationalRule_checked
-    | exact realRule_checked
-    | exact distinctRule_checked
-    | exact definedNullaryRule_checked
-    | exact definedAppliedRule_checked
-    | exact systemNullaryRule_checked
-    | exact systemAppliedRule_checked
-    | exact argumentsOneRule_checked
-    | exact argumentsMoreRule_checked)
+private theorem termRewrites_checked :
+    termRewrites.all (RewriteValidationCertificate.check language) = true := by
+  rw [termRewrites_sections]
+  simp only [List.all_append, plainTerms_checked, literalTerms_checked,
+    definedAndSystemTerms_checked, argumentRules_checked, Bool.and_self]
 
 /-- Every term-elaboration row remains valid for any later layer that retains
 this exact source/target constructor signature. -/
 theorem termRewrite_validate (rewrite : RewriteRule)
     (membership : rewrite ∈ termRewrites) :
-    language.validateRewrite rewrite = [] := by
-  simp only [termRewrites, List.mem_cons, List.mem_nil_iff,
-    or_false] at membership
-  rcases membership with
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup variableRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup plainLowerNullaryRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup plainQuotedNullaryRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup plainBackquotedNullaryRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup plainLowerAppliedRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup plainQuotedAppliedRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup plainBackquotedAppliedRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup integerRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup rationalRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup realRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup distinctRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup definedNullaryRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup definedAppliedRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup systemNullaryRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup systemAppliedRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup argumentsOneRule_checked
-  · exact RewriteValidationCertificate.validateRewrite_eq_nil_of_check
-      constructorLabels_nodup argumentsMoreRule_checked
+    language.validateRewrite rewrite = [] :=
+  RewriteValidationCertificate.validateRewrite_eq_nil_of_all
+    constructorLabels_nodup termRewrites_checked rewrite membership
 
 theorem language_validate : language.validate = [] := by
   apply LanguageDef.validate_eq_nil_of_rows
@@ -853,7 +657,7 @@ private theorem terms_supported :
 private theorem rewrites_supported :
     language.rewrites.all CanonicalWire.rewriteSupported = true := by
   rw [language_rewrites]
-  simp [termRewrites, variableRule, plainNullaryRule, plainAppliedRule,
+  simp [-Bool.and_eq_true, termRewrites, variableRule, plainNullaryRule, plainAppliedRule,
     numberRule, distinctRule, definedNullaryRule, definedAppliedRule,
     systemNullaryRule, systemAppliedRule, argumentsOneRule,
     argumentsMoreRule, mkRule, typed, congruence, translateTerm,

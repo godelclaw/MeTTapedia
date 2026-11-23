@@ -15,6 +15,37 @@ universe u v w
 
 variable {Base : Type u} {Const : Ty Base → Type v}
 
+/-- An enumeration of the predicate carrier in every model of the theory. -/
+abbrev PredicateDomainFintypes (T : ClosedTheorySet (WithParams Const)) (tau : Ty Base) :=
+  ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
+    Fintype (PredicateObject (Base := Base) (Const := WithParams Const) M.1 tau)
+
+/-- A measurable structure on each predicate carrier of the theory. -/
+abbrev PredicateDomainMeasurability (T : ClosedTheorySet (WithParams Const)) (tau : Ty Base) :=
+  ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
+    MeasurableSpace (PredicateObject (Base := Base) (Const := WithParams Const) M.1 tau)
+
+/-- A uniform exact size for the predicate carriers over the declared models. -/
+abbrev PredicateDomainCardinalityEq (T : ClosedTheorySet (WithParams Const))
+    (tau : Ty Base) (enumerations : PredicateDomainFintypes T tau) (size : Nat) : Prop :=
+  ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
+    @Fintype.card (PredicateObject (Base := Base) (Const := WithParams Const) M.1 tau)
+      (enumerations M) = size
+
+/-- Count the objects in the extension of the predicate in this model. -/
+noncomputable abbrev predicateExtensionCardinality {T : ClosedTheorySet (WithParams Const)}
+    (tau : Ty Base) (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
+    (M : ExtensionalTheoryModel (Base := Base) (Const := Const) T) : Nat :=
+  (predicateExtension (Base := Base) (Const := WithParams Const) M.1 tau p).ncard
+
+/-- A formula represents a test on predicate cardinality when it holds in
+exactly the models whose predicate extension passes the test. -/
+abbrev RepresentsPredicateCardinality {T : ClosedTheorySet (WithParams Const)}
+    (tau : Ty Base) (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
+    (formula : ClosedFormula (WithParams Const)) (test : Nat → Prop) : Prop :=
+  ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
+    HenkinModel.models M.1 formula ↔ test (predicateExtensionCardinality tau p M)
+
 /-! ## Exact-denominator finite-QFM counting cuts -/
 
 /-- A nonempty subset of a finite carrier has normalized counting capacity at
@@ -198,27 +229,15 @@ noncomputable def predicateFuzzyForAllCountingCardinalityThresholdCut
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard) :
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count)) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   { score := fun M =>
       letI := hObj M
@@ -271,45 +290,11 @@ noncomputable def predicateFuzzyForAllCountingCardinalityThresholdCut
                   (FuzzyCapacity.countingCapacity
                     (U := PredicateObject
                       (Base := Base) (Const := WithParams Const) M.1 σ)) p]
-      constructor
-      · intro hModels
-        have hCount : k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard :=
-          (hχRep M).1 hModels
-        have hCap :
-            (k : ℝ) / (N : ℝ) ≤
-              (((FuzzyCapacity.countingCapacity
-                (U := PredicateObject
-                  (Base := Base) (Const := WithParams Const) M.1 σ))
-                (predicateExtension
-                  (Base := Base) (Const := WithParams Const) M.1 σ p) :
-                unitInterval) : ℝ) :=
-          (FuzzyCapacity.countingCapacity_ge_nat_div_iff_card_ge_of_card_eq
-            (U := PredicateObject
-              (Base := Base) (Const := WithParams Const) M.1 σ)
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)
-            k N hNpos (hCardEq M)).2 hCount
-        simpa [hPCL, hNearEq] using hCap
-      · intro hGe
-        apply (hχRep M).2
-        have hCap :
-            (k : ℝ) / (N : ℝ) ≤
-              (((FuzzyCapacity.countingCapacity
-                (U := PredicateObject
-                  (Base := Base) (Const := WithParams Const) M.1 σ))
-                (predicateExtension
-                  (Base := Base) (Const := WithParams Const) M.1 σ p) :
-                unitInterval) : ℝ) := by
-          simpa [hPCL, hNearEq] using hGe
-        exact
-          (FuzzyCapacity.countingCapacity_ge_nat_div_iff_card_ge_of_card_eq
-            (U := PredicateObject
-              (Base := Base) (Const := WithParams Const) M.1 σ)
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)
-            k N hNpos (hCardEq M)).1 hCap }
+      have calibrated :=
+        FuzzyCapacity.countingCapacity_ge_nat_div_iff_card_ge_of_card_eq
+          (predicateExtension (Base := Base) (Const := WithParams Const) M.1 σ p)
+          k N hNpos (hCardEq M)
+      exact (hχRep M).trans (by simpa only [hPCL, hNearEq] using calibrated.symm) }
 
 /-- The finite-QFM `ForAll` exact-denominator threshold cut reads out through
 the existing HOL interval for its supplied cardinality-threshold formula. -/
@@ -319,32 +304,20 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_intervalOfConsistent
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -363,32 +336,20 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_lower_eq_one_iff_pro
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -396,13 +357,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_lower_eq_one_iff_pro
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).lower = 1 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T χ := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the generic exact-denominator finite-QFM `ForAll`
 cardinality-threshold cut: upper endpoint `0` is exactly provability of the
@@ -413,32 +368,20 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_upper_eq_zero_iff_pr
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -446,13 +389,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_upper_eq_zero_iff_pr
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).upper = 0 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the generic exact-denominator finite-QFM
 `ForAll` cardinality-threshold cut: lower endpoint `0` is exactly
@@ -463,32 +400,20 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_lower_eq_zero_iff_no
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -496,13 +421,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_lower_eq_zero_iff_no
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).lower = 0 ↔
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ := by
-  exact
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the generic exact-denominator finite-QFM
 `ForAll` cardinality-threshold cut: upper endpoint `1` is exactly
@@ -513,32 +432,20 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_upper_eq_one_iff_not
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -546,13 +453,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_upper_eq_one_iff_not
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).upper = 1 ↔
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the generic exact-denominator finite-QFM `ForAll`
 cardinality-threshold cut: the interval collapses exactly when the theory
@@ -563,32 +464,20 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_width_eq_zero_iff_de
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -597,13 +486,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_width_eq_zero_iff_de
       enum henum hCons hT0 hEM).width = 0 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T χ ∨
       ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- On a finite carrier whose cardinality is exactly `N`, a rational threshold
 for the complement of normalized counting capacity is equivalent to a finite
@@ -683,27 +566,15 @@ noncomputable def predicateFuzzyThereExistsCountingCardinalityThresholdCut
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard) :
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count)) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   { score := fun M =>
       letI := hObj M
@@ -756,67 +627,14 @@ noncomputable def predicateFuzzyThereExistsCountingCardinalityThresholdCut
                   (FuzzyCapacity.countingCapacity
                     (U := PredicateObject
                       (Base := Base) (Const := WithParams Const) M.1 σ)) p]
-      constructor
-      · intro hModels
-        have hCount : k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard :=
-          (hχRep M).1 hModels
-        have hComplCount :
-            ((predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)ᶜ).ncard +
-                k ≤ N :=
-          (Set.ncard_compl_add_le_iff_le_ncard_of_card_eq
-            (U := PredicateObject
-              (Base := Base) (Const := WithParams Const) M.1 σ)
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)
-            k N (hCardEq M)).2 hCount
-        have hCap :
-            (k : ℝ) / (N : ℝ) ≤
-              1 -
-                (((FuzzyCapacity.countingCapacity
-                  (U := PredicateObject
-                    (Base := Base) (Const := WithParams Const) M.1 σ))
-                  (predicateExtension
-                    (Base := Base) (Const := WithParams Const) M.1 σ p)ᶜ :
-                  unitInterval) : ℝ) :=
-          (FuzzyCapacity.nat_div_le_one_sub_countingCapacity_iff_card_add_le_of_card_eq
-            (U := PredicateObject
-              (Base := Base) (Const := WithParams Const) M.1 σ)
-            ((predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)ᶜ)
-            k N hNpos (hCardEq M)).2 hComplCount
-        simpa [hPCL, hNearEq] using hCap
-      · intro hGe
-        apply (hχRep M).2
-        have hCap :
-            (k : ℝ) / (N : ℝ) ≤
-              1 -
-                (((FuzzyCapacity.countingCapacity
-                  (U := PredicateObject
-                    (Base := Base) (Const := WithParams Const) M.1 σ))
-                  (predicateExtension
-                    (Base := Base) (Const := WithParams Const) M.1 σ p)ᶜ :
-                  unitInterval) : ℝ) := by
-          simpa [hPCL, hNearEq] using hGe
-        have hComplCount :
-            ((predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)ᶜ).ncard +
-                k ≤ N :=
-          (FuzzyCapacity.nat_div_le_one_sub_countingCapacity_iff_card_add_le_of_card_eq
-            (U := PredicateObject
-              (Base := Base) (Const := WithParams Const) M.1 σ)
-            ((predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)ᶜ)
-            k N hNpos (hCardEq M)).1 hCap
-        exact
-          (Set.ncard_compl_add_le_iff_le_ncard_of_card_eq
-            (U := PredicateObject
-              (Base := Base) (Const := WithParams Const) M.1 σ)
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p)
-            k N (hCardEq M)).1 hComplCount }
+      let extent := predicateExtension (Base := Base) (Const := WithParams Const) M.1 σ p
+      have complementThreshold :=
+        FuzzyCapacity.nat_div_le_one_sub_countingCapacity_iff_card_add_le_of_card_eq
+          extentᶜ k N hNpos (hCardEq M)
+      have complementCardinality :=
+        Set.ncard_compl_add_le_iff_le_ncard_of_card_eq extent k N (hCardEq M)
+      exact (hχRep M).trans (by
+        simpa only [hPCL, hNearEq] using (complementThreshold.trans complementCardinality).symm) }
 
 /-- The finite-QFM `ThereExists` exact-denominator threshold cut reads out
 through the existing HOL interval for its supplied cardinality-threshold
@@ -827,32 +645,20 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_intervalOfConsi
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -871,32 +677,20 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_lower_eq_one_if
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -904,13 +698,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_lower_eq_one_if
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).lower = 1 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T χ := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ForAll` threshold cut for the HOL
 existence formula `∃ x, p x`.
@@ -924,21 +712,13 @@ noncomputable def predicateFuzzyForAllCountingExistsExactThresholdCut
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N) :
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   predicateFuzzyForAllCountingCardinalityThresholdCut
     (Base := Base) (Const := Const) (T := T)
@@ -961,26 +741,18 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_intervalOfConsistent
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -999,26 +771,18 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_lower_eq_one_iff_pro
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1028,13 +792,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_lower_eq_one_iff_pro
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the HOL-existence finite-QFM `ForAll` cut: upper
 endpoint `0` is exactly provability of `¬ ∃ x, p x`. -/
@@ -1043,26 +801,18 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_upper_eq_zero_iff_pr
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1072,13 +822,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_upper_eq_zero_iff_pr
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the HOL-existence finite-QFM `ForAll`
 cut: lower endpoint `0` is exactly non-provability of `∃ x, p x`. -/
@@ -1087,26 +831,18 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_lower_eq_zero_iff_no
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1116,14 +852,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_lower_eq_zero_iff_no
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  simpa [predicateFuzzyForAllCountingExistsExactThresholdCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the HOL-existence finite-QFM `ForAll`
 cut: upper endpoint `1` is exactly non-provability of `¬ ∃ x, p x`. -/
@@ -1132,26 +861,18 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_upper_eq_one_iff_not
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1161,14 +882,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_upper_eq_one_iff_not
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  simpa [predicateFuzzyForAllCountingExistsExactThresholdCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the HOL-existence finite-QFM `ForAll` cut: the
 interval collapses exactly when the theory decides `∃ x, p x`. -/
@@ -1177,26 +891,18 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_width_eq_zero_iff_de
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1209,13 +915,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_width_eq_zero_iff_de
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the generic exact-denominator finite-QFM
 `ThereExists` cardinality-threshold cut: upper endpoint `0` is exactly
@@ -1226,32 +926,20 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_upper_eq_zero_i
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1259,13 +947,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_upper_eq_zero_i
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).upper = 0 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the generic exact-denominator finite-QFM
 `ThereExists` cardinality-threshold cut: lower endpoint `0` is exactly
@@ -1276,32 +958,20 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_lower_eq_zero_i
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1309,13 +979,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_lower_eq_zero_i
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).lower = 0 ↔
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ := by
-  exact
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the generic exact-denominator finite-QFM
 `ThereExists` cardinality-threshold cut: upper endpoint `1` is exactly
@@ -1326,32 +990,20 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_upper_eq_one_if
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1359,13 +1011,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_upper_eq_one_if
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
       enum henum hCons hT0 hEM).upper = 1 ↔
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the generic exact-denominator finite-QFM
 `ThereExists` cardinality-threshold cut: the interval collapses exactly when
@@ -1376,32 +1022,20 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_width_eq_zero_i
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
     (χ : ClosedFormula (WithParams Const))
-    (hχ0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) χ)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hχ0 : ParameterFree χ)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (k N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (k : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
-    (hχRep :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        HenkinModel.models M.1 χ ↔
-          k ≤
-            (predicateExtension
-              (Base := Base) (Const := WithParams Const) M.1 σ p).ncard)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
+    (hχRep : RepresentsPredicateCardinality (T := T) σ p χ
+      (fun count => k ≤ count))
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1410,13 +1044,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_width_eq_zero_i
       enum henum hCons hT0 hEM).width = 0 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T χ ∨
       ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingCardinalityThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ThereExists` threshold cut for the
 HOL existence formula `∃ x, p x`.
@@ -1429,21 +1057,13 @@ noncomputable def predicateFuzzyThereExistsCountingExistsExactThresholdCut
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N) :
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   predicateFuzzyThereExistsCountingCardinalityThresholdCut
     (Base := Base) (Const := Const) (T := T)
@@ -1466,26 +1086,18 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_intervalOfConsi
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1504,26 +1116,18 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_lower_eq_one_if
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1533,13 +1137,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_lower_eq_one_if
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the HOL-existence finite-QFM `ThereExists` cut:
 upper endpoint `0` is exactly provability of `¬ ∃ x, p x`. -/
@@ -1548,26 +1146,18 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_upper_eq_zero_i
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1577,13 +1167,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_upper_eq_zero_i
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the HOL-existence finite-QFM
 `ThereExists` cut: lower endpoint `0` is exactly non-provability of
@@ -1593,26 +1177,18 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_lower_eq_zero_i
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1622,14 +1198,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_lower_eq_zero_i
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  simpa [predicateFuzzyThereExistsCountingExistsExactThresholdCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the HOL-existence finite-QFM
 `ThereExists` cut: upper endpoint `1` is exactly non-provability of
@@ -1639,26 +1208,18 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_upper_eq_one_if
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1668,14 +1229,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_upper_eq_one_if
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  simpa [predicateFuzzyThereExistsCountingExistsExactThresholdCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the HOL-existence finite-QFM `ThereExists` cut:
 the interval collapses exactly when the theory decides `∃ x, p x`. -/
@@ -1684,26 +1238,18 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_width_eq_zero_i
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = ((1 : Nat) : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1716,13 +1262,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_width_eq_zero_i
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateExistsFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingExistsExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ForAll` threshold cut for the HOL
 universal formula `∀ x, p x`.
@@ -1734,21 +1274,13 @@ noncomputable def predicateFuzzyForAllCountingUniversalExactThresholdCut
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N) :
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   predicateFuzzyForAllCountingCardinalityThresholdCut
     (Base := Base) (Const := Const) (T := T)
@@ -1771,26 +1303,18 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_intervalOfConsist
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1809,26 +1333,18 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_lower_eq_one_iff_
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1838,13 +1354,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_lower_eq_one_iff_
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the HOL-universal finite-QFM `ForAll` cut: upper
 endpoint `0` is exactly provability of `¬ ∀ x, p x`. -/
@@ -1853,26 +1363,18 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_upper_eq_zero_iff
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1882,13 +1384,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_upper_eq_zero_iff
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the HOL-universal finite-QFM `ForAll`
 cut: lower endpoint `0` is exactly non-provability of `∀ x, p x`. -/
@@ -1897,26 +1393,18 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_lower_eq_zero_iff
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1926,14 +1414,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_lower_eq_zero_iff
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  simpa [predicateFuzzyForAllCountingUniversalExactThresholdCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the HOL-universal finite-QFM `ForAll`
 cut: upper endpoint `1` is exactly non-provability of `¬ ∀ x, p x`. -/
@@ -1942,26 +1423,18 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_upper_eq_one_iff_
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1971,14 +1444,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_upper_eq_one_iff_
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  simpa [predicateFuzzyForAllCountingUniversalExactThresholdCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the HOL-universal finite-QFM `ForAll` cut: the
 interval collapses exactly when the theory decides `∀ x, p x`. -/
@@ -1987,26 +1453,18 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_width_eq_zero_iff
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -2019,13 +1477,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_width_eq_zero_iff
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ThereExists` threshold cut for the
 HOL universal formula `∀ x, p x`.
@@ -2037,21 +1489,13 @@ noncomputable def predicateFuzzyThereExistsCountingUniversalExactThresholdCut
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N) :
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   predicateFuzzyThereExistsCountingCardinalityThresholdCut
     (Base := Base) (Const := Const) (T := T)
@@ -2074,26 +1518,18 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_intervalOfCo
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2112,26 +1548,18 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_lower_eq_one
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2141,13 +1569,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_lower_eq_one
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the HOL-universal finite-QFM `ThereExists` cut:
 upper endpoint `0` is exactly provability of `¬ ∀ x, p x`. -/
@@ -2156,26 +1578,18 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_upper_eq_zer
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2185,13 +1599,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_upper_eq_zer
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the HOL-universal finite-QFM
 `ThereExists` cut: lower endpoint `0` is exactly non-provability of
@@ -2201,26 +1609,18 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_lower_eq_zer
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2230,14 +1630,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_lower_eq_zer
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p) := by
-  simpa [predicateFuzzyThereExistsCountingUniversalExactThresholdCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the HOL-universal finite-QFM
 `ThereExists` cut: upper endpoint `1` is exactly non-provability of
@@ -2247,26 +1640,18 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_upper_eq_one
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2276,14 +1661,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_upper_eq_one
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  simpa [predicateFuzzyThereExistsCountingUniversalExactThresholdCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the HOL-universal finite-QFM `ThereExists` cut:
 the interval collapses exactly when the theory decides `∀ x, p x`. -/
@@ -2292,26 +1670,18 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_width_eq_zer
     (σ : Ty Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) σ)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 σ))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T σ)
+    (hMeasurable : PredicateDomainMeasurability T σ)
     (hε0 : params.ε = 0)
     (N : Nat) (hNpos : 0 < N)
     (hPCL : params.PCL = (N : ℝ) / (N : ℝ))
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 σ) = N)
+    (hCardEq : PredicateDomainCardinalityEq T σ hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2324,13 +1694,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_width_eq_zer
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateForAllFormula
           (Base := Base) (Const := WithParams Const) σ p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
-        (Base := Base) (Const := Const) (T := T)
-        σ params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ForAll` threshold cut for the
 base-type HOL formula "at least two distinct witnesses satisfy `p`".
@@ -2342,7 +1706,7 @@ noncomputable def predicateFuzzyForAllCountingAtLeastTwoBaseCut
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2379,7 +1743,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_intervalOfConsistent
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2397,8 +1761,8 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_intervalOfConsistent
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2418,7 +1782,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_one_iff_provable
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2436,8 +1800,8 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_one_iff_provable
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2447,13 +1811,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_one_iff_provable
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the concrete base-type "at least two" finite-QFM
 `ForAll` cut: upper endpoint `0` is exactly provability of the negated
@@ -2463,7 +1821,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_zero_iff_provable
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2481,8 +1839,8 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_zero_iff_provable
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2492,13 +1850,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_zero_iff_provable
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the concrete base-type "at least two"
 finite-QFM `ForAll` cut: lower endpoint `0` is exactly non-provability of the
@@ -2508,7 +1860,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not_prov
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2526,8 +1878,8 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not_prov
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2537,14 +1889,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not_prov
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  simpa [predicateFuzzyForAllCountingAtLeastTwoBaseCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the concrete base-type "at least two"
 finite-QFM `ForAll` cut: upper endpoint `1` is exactly non-provability of the
@@ -2554,7 +1899,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_prova
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2572,8 +1917,8 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_prova
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2583,14 +1928,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_prova
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  simpa [predicateFuzzyForAllCountingAtLeastTwoBaseCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the concrete base-type "at least two" finite-QFM
 `ForAll` cut: the interval collapses exactly when the theory decides the
@@ -2600,7 +1938,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_width_eq_zero_iff_decides
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2618,8 +1956,8 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_width_eq_zero_iff_decides
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2632,13 +1970,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_width_eq_zero_iff_decides
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Uniform exact-denominator finite-QFM `ForAll` threshold cut for the
 base-type HOL formula "at least `k` distinct witnesses satisfy `p`".
@@ -2653,7 +1985,7 @@ noncomputable def predicateFuzzyForAllCountingAtLeastNBaseCut
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2694,7 +2026,7 @@ noncomputable def predicateFuzzyThereExistsCountingAtLeastNBaseCut
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2733,7 +2065,7 @@ theorem predicateFuzzyForAllCountingAtLeastNBaseCut_width_eq_zero_iff_decides
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2751,8 +2083,8 @@ theorem predicateFuzzyForAllCountingAtLeastNBaseCut_width_eq_zero_iff_decides
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastNBaseCut
@@ -2789,7 +2121,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastNBaseCut_width_eq_zero_iff_decid
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2807,8 +2139,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastNBaseCut_width_eq_zero_iff_decid
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastNBaseCut
@@ -2846,7 +2178,7 @@ noncomputable def predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2883,7 +2215,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_intervalOfConsistent
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2901,8 +2233,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_intervalOfConsistent
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -2922,7 +2254,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_one_iff_prov
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2940,8 +2272,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_one_iff_prov
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -2951,13 +2283,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_one_iff_prov
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the concrete base-type "at least two" finite-QFM
 `ThereExists` cut: upper endpoint `0` is exactly provability of the negated
@@ -2967,7 +2293,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_zero_iff_pro
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -2985,8 +2311,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_zero_iff_pro
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -2996,13 +2322,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_zero_iff_pro
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the concrete base-type "at least two"
 finite-QFM `ThereExists` cut: lower endpoint `0` is exactly non-provability of
@@ -3012,7 +2332,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3030,8 +2350,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3041,14 +2361,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  simpa [predicateFuzzyThereExistsCountingAtLeastTwoBaseCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the concrete base-type "at least two"
 finite-QFM `ThereExists` cut: upper endpoint `1` is exactly non-provability of
@@ -3058,7 +2371,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3076,8 +2389,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3087,14 +2400,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  simpa [predicateFuzzyThereExistsCountingAtLeastTwoBaseCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the concrete base-type "at least two" finite-QFM
 `ThereExists` cut: the interval collapses exactly when the theory decides the
@@ -3104,7 +2410,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_width_eq_zero_iff_dec
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3122,8 +2428,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_width_eq_zero_iff_dec
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3136,13 +2442,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_width_eq_zero_iff_dec
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastTwoBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ForAll` threshold cut for the
 base-type HOL formula "at least three distinct witnesses satisfy `p`".
@@ -3154,7 +2454,7 @@ noncomputable def predicateFuzzyForAllCountingAtLeastThreeBaseCut
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3191,7 +2491,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_intervalOfConsistent
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3209,8 +2509,8 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_intervalOfConsistent
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3230,7 +2530,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_one_iff_provabl
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3248,8 +2548,8 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_one_iff_provabl
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3259,13 +2559,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_one_iff_provabl
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the concrete base-type "at least three" finite-QFM
 `ForAll` cut: upper endpoint `0` is exactly provability of the negated
@@ -3275,7 +2569,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_zero_iff_provab
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3293,8 +2587,8 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_zero_iff_provab
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3304,13 +2598,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_zero_iff_provab
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the concrete base-type "at least three"
 finite-QFM `ForAll` cut: lower endpoint `0` is exactly non-provability of the
@@ -3320,7 +2608,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_zero_iff_not_pr
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3338,8 +2626,8 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_zero_iff_not_pr
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3349,14 +2637,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_zero_iff_not_pr
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  simpa [predicateFuzzyForAllCountingAtLeastThreeBaseCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the concrete base-type "at least three"
 finite-QFM `ForAll` cut: upper endpoint `1` is exactly non-provability of the
@@ -3366,7 +2647,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_one_iff_not_pro
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3384,8 +2665,8 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_one_iff_not_pro
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3395,14 +2676,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_one_iff_not_pro
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  simpa [predicateFuzzyForAllCountingAtLeastThreeBaseCut,
-    predicateFuzzyForAllCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the concrete base-type "at least three" finite-QFM
 `ForAll` cut: the interval collapses exactly when the theory decides the
@@ -3412,7 +2686,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_width_eq_zero_iff_decide
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3430,8 +2704,8 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_width_eq_zero_iff_decide
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3444,13 +2718,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_width_eq_zero_iff_decide
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyForAllCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete exact-denominator finite-QFM `ThereExists` threshold cut for the
 base-type HOL formula "at least three distinct witnesses satisfy `p`".
@@ -3462,7 +2730,7 @@ noncomputable def predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3499,7 +2767,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_intervalOfConsisten
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3517,8 +2785,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_intervalOfConsisten
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3538,7 +2806,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_one_iff_pr
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3556,8 +2824,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_one_iff_pr
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3567,13 +2835,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_one_iff_pr
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the concrete base-type "at least three" finite-QFM
 `ThereExists` cut: upper endpoint `0` is exactly provability of the negated
@@ -3583,7 +2845,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_zero_iff_p
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3601,8 +2863,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_zero_iff_p
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3612,13 +2874,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_zero_iff_p
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the concrete base-type "at least three"
 finite-QFM `ThereExists` cut: lower endpoint `0` is exactly non-provability of
@@ -3628,7 +2884,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_zero_iff_n
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3646,8 +2902,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_zero_iff_n
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3657,14 +2913,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_zero_iff_n
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p) := by
-  simpa [predicateFuzzyThereExistsCountingAtLeastThreeBaseCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the concrete base-type "at least three"
 finite-QFM `ThereExists` cut: upper endpoint `1` is exactly non-provability of
@@ -3674,7 +2923,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_one_iff_no
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3692,8 +2941,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_one_iff_no
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3703,14 +2952,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_one_iff_no
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  simpa [predicateFuzzyThereExistsCountingAtLeastThreeBaseCut,
-    predicateFuzzyThereExistsCountingCardinalityThresholdCut] using
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the concrete base-type "at least three" finite-QFM
 `ThereExists` cut: the interval collapses exactly when the theory decides the
@@ -3720,7 +2962,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_width_eq_zero_iff_d
     (b : Base)
     (params : FuzzyQuantifierParams)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -3738,8 +2980,8 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_width_eq_zero_iff_d
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3752,12 +2994,6 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_width_eq_zero_iff_d
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.not (predicateAtLeastThreeBaseFormula
           (Base := Base) (Const := WithParams Const) b p)) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
-        (Base := Base) (Const := Const) (T := T)
-        b params p hp0 hObj hMeasurable hε0 N hNpos hPCL hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 end Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLDefinableCuts

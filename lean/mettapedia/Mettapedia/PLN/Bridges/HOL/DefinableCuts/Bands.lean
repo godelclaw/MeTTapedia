@@ -30,19 +30,11 @@ noncomputable def predicateCountingCapacityExistsAndExistsNotBandCut
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N) :
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N) :
     ExtensionalDefinableCut (Base := Base) (Const := Const) T :=
   predicateCountingCapacityCardinalityBandCut
     (Base := Base) (Const := Const) (T := T)
@@ -76,19 +68,11 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_ge_iff
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (M : ExtensionalTheoryModel (Base := Base) (Const := Const) T) :
     (predicateCountingCapacityExistsAndExistsNotBandCut
       (Base := Base) (Const := Const) (T := T)
@@ -138,19 +122,11 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_ge_iff_countingCapaci
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (M : ExtensionalTheoryModel (Base := Base) (Const := Const) T) :
     (predicateCountingCapacityExistsAndExistsNotBandCut
       (Base := Base) (Const := Const) (T := T)
@@ -190,24 +166,16 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_intervalOfConsistent
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsAndExistsNotBandCut
@@ -228,24 +196,16 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_lower_eq_one_iff_prov
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsAndExistsNotBandCut
@@ -258,13 +218,7 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_lower_eq_one_iff_prov
             (Base := Base) (Const := WithParams Const) tau p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) tau p)) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityExistsAndExistsNotBandCut
-        (Base := Base) (Const := Const) (T := T)
-        tau p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the concrete all-HOL proper finite-frequency band:
 upper endpoint `0` is exactly provability of the negation of
@@ -273,24 +227,16 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_upper_eq_zero_iff_pro
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsAndExistsNotBandCut
@@ -303,13 +249,7 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_upper_eq_zero_iff_pro
             (Base := Base) (Const := WithParams Const) tau p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) tau p))) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityExistsAndExistsNotBandCut
-        (Base := Base) (Const := Const) (T := T)
-        tau p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the concrete all-HOL proper
 finite-frequency band: lower endpoint `0` is exactly non-provability of the
@@ -318,24 +258,16 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_lower_eq_zero_iff_not
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsAndExistsNotBandCut
@@ -348,13 +280,7 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_lower_eq_zero_iff_not
             (Base := Base) (Const := WithParams Const) tau p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) tau p)) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityExistsAndExistsNotBandCut
-        (Base := Base) (Const := Const) (T := T)
-        tau p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the concrete all-HOL proper
 finite-frequency band: upper endpoint `1` is exactly non-provability of the
@@ -363,24 +289,16 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_upper_eq_one_iff_not_
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsAndExistsNotBandCut
@@ -393,13 +311,7 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_upper_eq_one_iff_not_
             (Base := Base) (Const := WithParams Const) tau p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) tau p))) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityExistsAndExistsNotBandCut
-        (Base := Base) (Const := Const) (T := T)
-        tau p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the concrete all-HOL proper finite-frequency
 band: the interval collapses exactly when the theory decides the conjunction
@@ -408,24 +320,16 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_width_eq_zero_iff_dec
     {T : ClosedTheorySet (WithParams Const)}
     (tau : Ty Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) tau)
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
-    (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-      Fintype (PredicateObject
-        (Base := Base) (Const := WithParams Const) M.1 tau))
-    (hMeasurable :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        MeasurableSpace (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau))
+    (hp0 : ParameterFree p)
+    (hObj : PredicateDomainFintypes T tau)
+    (hMeasurable : PredicateDomainMeasurability T tau)
     (N : Nat) (hNpos : 0 < N)
-    (hCardEq :
-      ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
-        Fintype.card (PredicateObject
-          (Base := Base) (Const := WithParams Const) M.1 tau) = N)
+    (hCardEq : PredicateDomainCardinalityEq T tau hObj N)
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsAndExistsNotBandCut
@@ -444,13 +348,7 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_width_eq_zero_iff_dec
             (Base := Base) (Const := WithParams Const) tau p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) tau p))) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityExistsAndExistsNotBandCut
-        (Base := Base) (Const := Const) (T := T)
-        tau p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 /-- Concrete base-type finite-frequency band cut for normalized counting
 capacity.
@@ -465,7 +363,7 @@ noncomputable def predicateCountingCapacityTwoToAllButOneBaseBandCut
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -511,7 +409,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_ge_iff
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -571,7 +469,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_intervalOfConsistent
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -587,8 +485,8 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_intervalOfConsistent
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityTwoToAllButOneBaseBandCut
@@ -610,7 +508,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_lower_eq_one_iff_prov
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -626,8 +524,8 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_lower_eq_one_iff_prov
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityTwoToAllButOneBaseBandCut
@@ -640,13 +538,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_lower_eq_one_iff_prov
             (Base := Base) (Const := WithParams Const) b p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) (.base b) p)) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_one_iff_provable
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityTwoToAllButOneBaseBandCut
-        (Base := Base) (Const := Const) (T := T)
-        b p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_one_iff_provable _ enum henum hCons hT0 hEM
 
 /-- Endpoint tightness for the concrete base finite-frequency band: upper
 endpoint `0` is exactly provability of the negation of the conjunction of its
@@ -655,7 +547,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_upper_eq_zero_iff_pro
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -671,8 +563,8 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_upper_eq_zero_iff_pro
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityTwoToAllButOneBaseBandCut
@@ -685,13 +577,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_upper_eq_zero_iff_pro
             (Base := Base) (Const := WithParams Const) b p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) (.base b) p))) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityTwoToAllButOneBaseBandCut
-        (Base := Base) (Const := Const) (T := T)
-        b p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_zero_iff_provable_not _ enum henum hCons hT0 hEM
 
 /-- Open lower-endpoint tightness for the concrete base finite-frequency
 band: lower endpoint `0` is exactly non-provability of the conjunction of its
@@ -700,7 +586,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_lower_eq_zero_iff_not
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -716,8 +602,8 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_lower_eq_zero_iff_not
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityTwoToAllButOneBaseBandCut
@@ -730,13 +616,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_lower_eq_zero_iff_not
             (Base := Base) (Const := WithParams Const) b p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) (.base b) p)) := by
-  exact
-    ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityTwoToAllButOneBaseBandCut
-        (Base := Base) (Const := Const) (T := T)
-        b p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.lower_eq_zero_iff_not_provable _ enum henum hCons hT0 hEM
 
 /-- Open upper-endpoint tightness for the concrete base finite-frequency
 band: upper endpoint `1` is exactly non-provability of the negation of the
@@ -745,7 +625,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_upper_eq_one_iff_not_
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -761,8 +641,8 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_upper_eq_one_iff_not_
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityTwoToAllButOneBaseBandCut
@@ -775,13 +655,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_upper_eq_one_iff_not_
             (Base := Base) (Const := WithParams Const) b p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) (.base b) p))) := by
-  exact
-    ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityTwoToAllButOneBaseBandCut
-        (Base := Base) (Const := Const) (T := T)
-        b p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not _ enum henum hCons hT0 hEM
 
 /-- Width-zero tightness for the concrete base finite-frequency band: the
 interval collapses exactly when the theory decides the conjunction of its two
@@ -790,7 +664,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_width_eq_zero_iff_dec
     {T : ClosedTheorySet (WithParams Const)}
     (b : Base)
     (p : UnaryPredicate (Base := Base) (Const := WithParams Const) (.base b))
-    (hp0 : ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) p)
+    (hp0 : ParameterFree p)
     (hObj : ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
       Fintype (PredicateObject
         (Base := Base) (Const := WithParams Const) M.1 (.base b)))
@@ -806,8 +680,8 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_width_eq_zero_iff_dec
     (enum : Nat → Body Const)
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
-    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
+    (hT0 : ParameterFreeTheory T)
+    (hEM : TheoryProvesExcludedMiddle T) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityTwoToAllButOneBaseBandCut
@@ -826,13 +700,7 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_width_eq_zero_iff_dec
             (Base := Base) (Const := WithParams Const) b p)
           (predicateExistsNotFormula
             (Base := Base) (Const := WithParams Const) (.base b) p))) := by
-  exact
-    ExtensionalDefinableCut.width_eq_zero_iff_decides
-      (Base := Base) (Const := Const)
-      (predicateCountingCapacityTwoToAllButOneBaseBandCut
-        (Base := Base) (Const := Const) (T := T)
-        b p hp0 hObj hMeasurable N hNpos hCardEq)
-      enum henum hCons hT0 hEM
+  exact ExtensionalDefinableCut.width_eq_zero_iff_decides _ enum henum hCons hT0 hEM
 
 
 end Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLDefinableCuts

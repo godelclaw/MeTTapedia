@@ -44,4 +44,3 @@ theorem max_publication_commutes (old e1 e2 : Nat) :
   omega
 
 end Mettapedia.Languages.Prolog.SWI.EmptyCutoff
-
