@@ -49,4 +49,10 @@ section
 #print axioms PeTTaStagedSemantics.Controls.edit_then_plain_or_entry
 #print axioms PeTTaStagedSemantics.Controls.later_branch_plain_or_entry
 #print axioms PeTTaStagedSemantics.Controls.kept_call_reads_new_equations
+#print axioms PeTTaStagedSemantics.refreshAfter_current
+#print axioms PeTTaStagedSemantics.refreshAll_current
+#print axioms PeTTaStagedSemantics.enter_current_eq_live
+#print axioms PeTTaStagedSemantics.within_of_rows
+#print axioms PeTTaStagedSemantics.FootprintControls.pattern_removal_needs_removed_rows
+#print axioms PeTTaStagedSemantics.FootprintControls.combined_key_needs_every_source
 end
