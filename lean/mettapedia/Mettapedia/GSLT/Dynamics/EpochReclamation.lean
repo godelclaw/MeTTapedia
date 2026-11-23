@@ -35,9 +35,11 @@ Results:
   retained is the current epoch's plus the held ones'.
 * **Preservation**: decoding, reading, building static or owned storage,
   closing an epoch, widening an owner's set (a holder that ends hands its set
-  to the one below; a host hands values to a cursor), an owner's collection
-  (which may shrink its set to what it still points into), an owner's exit
-  and freeing an epoch all keep the disciplines.
+  to the one below; a cursor that stops running lends its set to its host,
+  whose goals share its copies; a host hands values to a cursor), an owner's
+  collection (which may shrink its set to what it still points into: a host
+  that returns its storage to a mark returns to its set at that mark), an
+  owner's exit and freeing an epoch all keep the disciplines.
 * **Necessity** (`shared_copy_resurrects`): a static root that shares a
   decoded copy keeps an epoch that no owner holds reachable.
 
@@ -214,7 +216,8 @@ theorem close_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed) (next : ℕ) 
   ownedBounded := hw.ownedBounded
 
 /-- Widening owners' sets: a holder that ends hands its set to the holder
-below it, and a host hands a cursor values that share its copies. -/
+below it, a cursor that stops running lends its set to its host, and a host
+hands a cursor values that share its copies. -/
 def widen (H : Heap Cell Owner) (more : Owner → ℕ → Prop) : Heap Cell Owner :=
   { H with holds := fun o e => H.holds o e ∨ more o e }
 
@@ -239,7 +242,9 @@ owner's keeps its region, edges and roots; other owners keep their sets; and
 every root and edge of the owner then targets static storage, the owner's own
 storage, or an epoch of the owner's new set.  The new set may be smaller: a
 collection that copies an epoch's cells into the owner's storage drops it,
-and a host that reclaims what it made for a goal drops what that goal read. -/
+and a host that returns its storage to a mark, releasing what it made after
+it, returns to the set it had there: what its goals read and what cursors
+lent it with them. -/
 structure Collected (H H' : Heap Cell Owner) (o : Owner) : Prop where
   current : H'.current = H.current
   holdsOther : ∀ {o'}, o' ≠ o → H'.holds o' = H.holds o'
