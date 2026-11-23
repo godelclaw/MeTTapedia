@@ -11,8 +11,9 @@ cannot be freed together with their terms.  This module proves the protocol
 that frees them anyway, without stopping or tracing other holders.
 
 Cells live in the **static** region (never collected), in an **epoch** of the
-dynamic heap, or in an **owner**'s own collected storage.  The protocol keeps
-four disciplines:
+dynamic heap, or in an **owner**'s own collected storage.  Each owner records
+the set of epochs whose cells it may point into.  The protocol keeps four
+disciplines:
 
 * static cells point only to static cells (`staticClosed`): storing into
   static storage copies dynamic children instead of sharing them;
@@ -20,28 +21,30 @@ four disciplines:
   (`epochClosed`), and the cache slots point only into the current epoch
   (`slotsCurrent`): closing an epoch clears every slot, so later copies are
   decoded afresh;
-* an owner's roots and its own cells point into epochs no older than the
-  epoch current at the owner's last collection (`ownerRoots`,
-  `ownedBounded`): an owner's collection moves the decoded copies it reaches
-  into its own storage;
-* no owner's collection lies in the future (`cleanCurrent`).
+* an owner's roots and its own cells point only into epochs of its set
+  (`ownerRoots`, `ownedBounded`).
 
 Results:
 
-* **Safety** (`freeable_unreachable`): an epoch that is closed, and older than
-  every live owner's last collection, holds no reachable cell.
+* **Safety** (`freeable_unreachable`): an epoch that is not current and that
+  no live owner holds contains no reachable cell.
 * **Invisibility** (`free_reach_iff`): removing such an epoch changes no
   reachability, so no observation that factors through the reachable part.
-* **Bound** (`freeable_of_lag`): when no live owner lags more than `k`
-  epochs behind, every epoch older than `current - k` is freeable, so at most
-  `k + 1` epochs are retained.
+* **Retention** (`reachable_epoch_held`): a reachable cell of an epoch lies
+  in the current epoch or in an epoch some live owner holds, so the memory
+  retained is the current epoch's plus the held ones'.
 * **Preservation**: decoding, reading, building static or owned storage,
-  closing an epoch, an owner's collection, an owner's exit and freeing an
-  epoch all keep the disciplines.
+  closing an epoch, widening an owner's set (a holder that ends hands its set
+  to the one below; a host hands values to a cursor), an owner's collection
+  (which may shrink its set to what it still points into), an owner's exit
+  and freeing an epoch all keep the disciplines.
+* **Necessity** (`shared_copy_resurrects`): a static root that shares a
+  decoded copy keeps an epoch that no owner holds reachable.
 
-The concrete collector (CeTTa's decoded-copy epochs) realizes each operation;
-agreement between its C visitors and these operations is checked by poisoned
-reclamation and growth tests, not by this model.
+The concrete collector (CeTTa's decoded-copy epochs) realizes each operation:
+an owner's set is a word with one bit per unfreed epoch.  Agreement between
+its C visitors and these operations is checked by poisoned reclamation and
+growth tests, not by this model.
 -/
 
 namespace Mettapedia.GSLT.Dynamics.EpochReclamation
@@ -56,8 +59,8 @@ inductive Region (Owner : Type) where
 
 variable {Cell Owner : Type}
 
-/-- A heap with its reclamation clock: the current epoch and, for each owner,
-the epoch that was current at its last collection. -/
+/-- A heap with its reclamation state: the current epoch and, for each owner,
+the epochs whose cells it may point into. -/
 structure Heap (Cell Owner : Type) where
   region : Cell → Region Owner
   pointsTo : Cell → Cell → Prop
@@ -66,7 +69,7 @@ structure Heap (Cell Owner : Type) where
   ownerRoot : Owner → Cell → Prop
   live : Owner → Prop
   current : ℕ
-  clean : Owner → ℕ
+  holds : Owner → ℕ → Prop
 
 namespace Heap
 
@@ -76,11 +79,10 @@ def store (H : Heap Cell Owner) : Store Cell where
   pointsTo := H.pointsTo
   root c := H.staticRoot c ∨ H.slot c ∨ ∃ o, H.live o ∧ H.ownerRoot o c
 
-/-- A cell an owner may point to: static, its own, or in an epoch no older
-than the owner's last collection. -/
+/-- A cell an owner may point to: static, its own, or in an epoch it holds. -/
 def OwnerTarget (H : Heap Cell Owner) (o : Owner) (c : Cell) : Prop :=
   H.region c = .static ∨ H.region c = .owned o ∨
-    ∃ e, H.region c = .epoch e ∧ H.clean o ≤ e
+    ∃ e, H.region c = .epoch e ∧ H.holds o e
 
 /-- The protocol's disciplines. -/
 structure WellFormed (H : Heap Cell Owner) : Prop where
@@ -91,12 +93,10 @@ structure WellFormed (H : Heap Cell Owner) : Prop where
   slotsCurrent : ∀ {c}, H.slot c → H.region c = .epoch H.current
   ownerRoots : ∀ {o c}, H.live o → H.ownerRoot o c → H.OwnerTarget o c
   ownedBounded : ∀ {o c d}, H.pointsTo c d → H.region c = .owned o → H.OwnerTarget o d
-  cleanCurrent : ∀ {o}, H.live o → H.clean o ≤ H.current
 
-/-- An epoch that may be freed: closed, and older than every live owner's
-last collection. -/
+/-- An epoch that may be freed: not current, and held by no live owner. -/
 def Freeable (H : Heap Cell Owner) (e : ℕ) : Prop :=
-  e < H.current ∧ ∀ o, H.live o → e < H.clean o
+  e ≠ H.current ∧ ∀ o, H.live o → ¬ H.holds o e
 
 /-- What a reachable cell can be. -/
 def Good (H : Heap Cell Owner) (c : Cell) : Prop :=
@@ -112,7 +112,7 @@ theorem reach_good {H : Heap Cell Owner} (hw : H.WellFormed) {c : Cell}
     · exact Or.inr (Or.inl (hw.slotsCurrent hs))
     · exact Or.inr (Or.inr ⟨o, hl, hw.ownerRoots hl ho⟩)
   | @step a b _ hab ih =>
-    rcases ih with hs | he | ⟨o, hl, hs | ho | ⟨e, he, hle⟩⟩
+    rcases ih with hs | he | ⟨o, hl, hs | ho | ⟨e, he, hheld⟩⟩
     · exact Or.inl (hw.staticClosed hab hs)
     · rcases hw.epochClosed hab he with h' | h'
       · exact Or.inr (Or.inl h')
@@ -120,23 +120,35 @@ theorem reach_good {H : Heap Cell Owner} (hw : H.WellFormed) {c : Cell}
     · exact Or.inl (hw.staticClosed hab hs)
     · exact Or.inr (Or.inr ⟨o, hl, hw.ownedBounded hab ho⟩)
     · rcases hw.epochClosed hab he with h' | h'
-      · exact Or.inr (Or.inr ⟨o, hl, Or.inr (Or.inr ⟨e, h', hle⟩)⟩)
+      · exact Or.inr (Or.inr ⟨o, hl, Or.inr (Or.inr ⟨e, h', hheld⟩)⟩)
       · exact Or.inl h'
 
 /-- **Safety**: a freeable epoch holds no reachable cell. -/
 theorem freeable_unreachable {H : Heap Cell Owner} (hw : H.WellFormed) {e : ℕ}
     (hf : H.Freeable e) {c : Cell} (h : Reach H.store c) : H.region c ≠ .epoch e := by
   intro hc
-  rcases reach_good hw h with hs | hcur | ⟨o, hl, hs | ho | ⟨e', he', hle⟩⟩
+  rcases reach_good hw h with hs | hcur | ⟨o, hl, hs | ho | ⟨e', he', hheld⟩⟩
   · rw [hc] at hs; cases hs
   · rw [hc] at hcur
     cases hcur
-    exact Nat.lt_irrefl _ hf.1
+    exact hf.1 rfl
   · rw [hc] at hs; cases hs
   · rw [hc] at ho; cases ho
   · rw [hc] at he'
     cases he'
-    exact absurd (hf.2 o hl) (Nat.not_lt.mpr hle)
+    exact hf.2 o hl hheld
+
+/-- **Retention**: a reachable cell of an epoch lies in the current epoch or
+in one a live owner holds. -/
+theorem reachable_epoch_held {H : Heap Cell Owner} (hw : H.WellFormed) {c : Cell} {e : ℕ}
+    (h : Reach H.store c) (hc : H.region c = .epoch e) :
+    e = H.current ∨ ∃ o, H.live o ∧ H.holds o e := by
+  by_cases hcur : e = H.current
+  · exact Or.inl hcur
+  · by_cases hheld : ∃ o, H.live o ∧ H.holds o e
+    · exact Or.inr hheld
+    · exact absurd hc (freeable_unreachable hw
+        ⟨hcur, fun o hl ho => hheld ⟨o, hl, ho⟩⟩ h)
 
 /-- Removing epoch `e`: its cells lose every edge and every root. -/
 def free (H : Heap Cell Owner) (e : ℕ) : Heap Cell Owner where
@@ -147,7 +159,7 @@ def free (H : Heap Cell Owner) (e : ℕ) : Heap Cell Owner where
   ownerRoot o c := H.ownerRoot o c ∧ H.region c ≠ .epoch e
   live := H.live
   current := H.current
-  clean := H.clean
+  holds := H.holds
 
 theorem reach_free_mono {H : Heap Cell Owner} {e : ℕ} {c : Cell}
     (h : Reach (H.free e).store c) : Reach H.store c := by
@@ -183,39 +195,54 @@ theorem free_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed) (e : ℕ) :
   slotsCurrent h := hw.slotsCurrent h.1
   ownerRoots hl h := hw.ownerRoots hl h.1
   ownedBounded h ho := hw.ownedBounded h.1 ho
-  cleanCurrent hl := hw.cleanCurrent hl
-
-/-- **Bound**: if no live owner lags more than `k` epochs behind the current
-one, every epoch older than `current - k` is freeable. -/
-theorem freeable_of_lag {H : Heap Cell Owner} {k e : ℕ}
-    (hlag : ∀ o, H.live o → H.current ≤ H.clean o + k) (he : e + k < H.current) :
-    H.Freeable e :=
-  ⟨by omega, fun o hl => by have := hlag o hl; omega⟩
 
 /-! ## The operations keep the disciplines -/
 
-/-- Closing the current epoch: a new epoch begins and every cache slot is
-cleared. -/
-def close (H : Heap Cell Owner) : Heap Cell Owner :=
-  { H with current := H.current + 1, slot := fun _ => False }
+/-- Closing the current epoch: the epoch `next` becomes current, and every
+cache slot is cleared.  The numbers are names; the implementation skips one
+an unfreed epoch still uses. -/
+def close (H : Heap Cell Owner) (next : ℕ) : Heap Cell Owner :=
+  { H with current := next, slot := fun _ => False }
 
-theorem close_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed) : H.close.WellFormed where
+theorem close_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed) (next : ℕ) :
+    (H.close next).WellFormed where
   staticClosed := hw.staticClosed
   epochClosed := hw.epochClosed
   staticRoots := hw.staticRoots
   slotsCurrent h := h.elim
   ownerRoots := hw.ownerRoots
   ownedBounded := hw.ownedBounded
-  cleanCurrent hl := Nat.le_succ_of_le (hw.cleanCurrent hl)
+
+/-- Widening owners' sets: a holder that ends hands its set to the holder
+below it, and a host hands a cursor values that share its copies. -/
+def widen (H : Heap Cell Owner) (more : Owner → ℕ → Prop) : Heap Cell Owner :=
+  { H with holds := fun o e => H.holds o e ∨ more o e }
+
+theorem widen_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed)
+    (more : Owner → ℕ → Prop) : (H.widen more).WellFormed := by
+  have target : ∀ {o c}, H.OwnerTarget o c → (H.widen more).OwnerTarget o c :=
+    fun {o c} ht => by
+      rcases ht with hs | ho | ⟨e, he, hheld⟩
+      · exact Or.inl hs
+      · exact Or.inr (Or.inl ho)
+      · exact Or.inr (Or.inr ⟨e, he, Or.inl hheld⟩)
+  exact
+    { staticClosed := hw.staticClosed
+      epochClosed := hw.epochClosed
+      staticRoots := hw.staticRoots
+      slotsCurrent := hw.slotsCurrent
+      ownerRoots := fun hl h => target (hw.ownerRoots hl h)
+      ownedBounded := fun h ho => target (hw.ownedBounded h ho) }
 
 /-- An owner's collection, stated as its contract: storage that is not the
-owner's keeps its region, edges and roots; the owner's clock advances to the
-current epoch; and every root and edge of the owner then targets static
-storage, the owner's own storage, or the current epoch. -/
+owner's keeps its region, edges and roots; other owners keep their sets; and
+every root and edge of the owner then targets static storage, the owner's own
+storage, or an epoch of the owner's new set.  The new set may be smaller: a
+collection that copies an epoch's cells into the owner's storage drops it,
+and a host that reclaims what it made for a goal drops what that goal read. -/
 structure Collected (H H' : Heap Cell Owner) (o : Owner) : Prop where
   current : H'.current = H.current
-  clean : H'.clean o = H.current
-  cleanOther : ∀ {o'}, o' ≠ o → H'.clean o' = H.clean o'
+  holdsOther : ∀ {o'}, o' ≠ o → H'.holds o' = H.holds o'
   live : ∀ {o'}, H'.live o' ↔ H.live o'
   region : ∀ {c}, H.region c ≠ .owned o → H'.region c = H.region c
   regionNew : ∀ {c}, H'.region c ≠ H.region c → H'.region c = .owned o
@@ -226,20 +253,34 @@ structure Collected (H H' : Heap Cell Owner) (o : Owner) : Prop where
   ownRoots : ∀ {c}, H'.ownerRoot o c → H'.OwnerTarget o c
   ownEdges : ∀ {c d}, H'.pointsTo c d → H'.region c = .owned o → H'.OwnerTarget o d
 
+/-- A cell outside the collecting owner's storage after the collection was
+outside it before. -/
+theorem Collected.not_owned {H H' : Heap Cell Owner} {o : Owner} (hc : Collected H H' o)
+    {c : Cell} (h : H'.region c ≠ .owned o) : H.region c ≠ .owned o := fun hco =>
+  h (hc.regionNew (fun heq => h (heq.trans hco)))
+
+/-- Another owner's targets keep their meaning across a collection. -/
+theorem Collected.transfer {H H' : Heap Cell Owner} {o o' : Owner} {d : Cell}
+    (hc : Collected H H' o) (ho : o' ≠ o) (ht : H.OwnerTarget o' d) : H'.OwnerTarget o' d := by
+  rcases ht with hs | hd | ⟨e, he, hheld⟩
+  · have hnd : H.region d ≠ .owned o := by rw [hs]; exact fun h' => by cases h'
+    exact Or.inl (by rw [hc.region hnd, hs])
+  · have hnd : H.region d ≠ .owned o := by
+      rw [hd]; exact fun h' => by cases h'; exact ho rfl
+    exact Or.inr (Or.inl (by rw [hc.region hnd, hd]))
+  · have hnd : H.region d ≠ .owned o := by rw [he]; exact fun h' => by cases h'
+    exact Or.inr (Or.inr ⟨e, by rw [hc.region hnd, he], by rw [hc.holdsOther ho]; exact hheld⟩)
+
 theorem collected_wellFormed {H H' : Heap Cell Owner} {o : Owner}
     (hw : H.WellFormed) (hc : Collected H H' o) : H'.WellFormed where
   staticClosed {c d} h hs := by
-    have hnc : H.region c ≠ .owned o := fun hco => by
-      have := hc.regionNew (c := c) (by rw [hs, hco]; exact fun h' => by cases h')
-      rw [hs] at this; cases this
+    have hnc := hc.not_owned (by rw [hs]; exact fun h' => by cases h')
     have hrc : H'.region c = H.region c := hc.region hnc
     have hH := hw.staticClosed ((hc.edges hnc).1 h) (hrc ▸ hs)
     have hnd : H.region d ≠ .owned o := by rw [hH]; exact fun h' => by cases h'
     rw [hc.region hnd, hH]
   epochClosed {c d e} h he := by
-    have hnc : H.region c ≠ .owned o := fun hco => by
-      have := hc.regionNew (c := c) (by rw [he, hco]; exact fun h' => by cases h')
-      rw [he] at this; cases this
+    have hnc := hc.not_owned (by rw [he]; exact fun h' => by cases h')
     have hrc : H'.region c = H.region c := hc.region hnc
     rcases hw.epochClosed ((hc.edges hnc).1 h) (hrc ▸ he) with hd | hd
     · have hnd : H.region d ≠ .owned o := by rw [hd]; exact fun h' => by cases h'
@@ -257,37 +298,13 @@ theorem collected_wellFormed {H H' : Heap Cell Owner} {o : Owner}
   ownerRoots {o' c} hl h := by
     by_cases ho : o' = o
     · subst ho; exact hc.ownRoots h
-    · have hl' := hc.live.1 hl
-      have ht := hw.ownerRoots hl' ((hc.otherRoots ho).1 h)
-      exact transfer hc ho ht
+    · exact hc.transfer ho (hw.ownerRoots (hc.live.1 hl) ((hc.otherRoots ho).1 h))
   ownedBounded {o' c d} h hco := by
     by_cases ho : o' = o
     · subst ho; exact hc.ownEdges h hco
-    · have hnc : H.region c ≠ .owned o := by
-        intro hco'
-        have hne : H'.region c ≠ H.region c := by
-          rw [hco, hco']; intro h'; cases h'; exact ho rfl
-        have hnew := hc.regionNew hne
-        rw [hco] at hnew; cases hnew; exact ho rfl
+    · have hnc := hc.not_owned (by rw [hco]; exact fun h' => by cases h'; exact ho rfl)
       have hrc : H'.region c = H.region c := hc.region hnc
-      have ht := hw.ownedBounded ((hc.edges hnc).1 h) (hrc ▸ hco)
-      exact transfer hc ho ht
-  cleanCurrent {o'} hl := by
-    by_cases ho : o' = o
-    · subst ho; rw [hc.clean, hc.current]; exact Nat.le_refl _
-    · rw [hc.cleanOther ho, hc.current]; exact hw.cleanCurrent (hc.live.1 hl)
-where
-  /-- Another owner's targets keep their meaning across a collection. -/
-  transfer {H H' : Heap Cell Owner} {o o' : Owner} {d : Cell} (hc : Collected H H' o)
-      (ho : o' ≠ o) (ht : H.OwnerTarget o' d) : H'.OwnerTarget o' d := by
-    rcases ht with hs | hd | ⟨e, he, hle⟩
-    · have hnd : H.region d ≠ .owned o := by rw [hs]; exact fun h' => by cases h'
-      exact Or.inl (by rw [hc.region hnd, hs])
-    · have hnd : H.region d ≠ .owned o := by
-        rw [hd]; exact fun h' => by cases h'; exact ho rfl
-      exact Or.inr (Or.inl (by rw [hc.region hnd, hd]))
-    · have hnd : H.region d ≠ .owned o := by rw [he]; exact fun h' => by cases h'
-      exact Or.inr (Or.inr ⟨e, by rw [hc.region hnd, he], by rw [hc.cleanOther ho]; exact hle⟩)
+      exact hc.transfer ho (hw.ownedBounded ((hc.edges hnc).1 h) (hrc ▸ hco))
 
 /-- An owner's exit: it stops being live. -/
 def exit (H : Heap Cell Owner) (o : Owner) : Heap Cell Owner :=
@@ -301,24 +318,32 @@ theorem exit_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed)
   slotsCurrent := hw.slotsCurrent
   ownerRoots hl h := hw.ownerRoots hl.1 h
   ownedBounded := hw.ownedBounded
-  cleanCurrent hl := hw.cleanCurrent hl.1
 
-/-- A live owner reads a cached copy: it gains a root to a slot. -/
+/-- A read: the owner `o` gains a root to the slot `s` and holds the current
+epoch from then on. -/
 def read (H : Heap Cell Owner) (o : Owner) (s : Cell) : Heap Cell Owner :=
-  { H with ownerRoot := fun o' c => H.ownerRoot o' c ∨ (o' = o ∧ c = s) }
+  { H with
+    ownerRoot := fun o' c => H.ownerRoot o' c ∨ (o' = o ∧ c = s)
+    holds := fun o' e => H.holds o' e ∨ (o' = o ∧ e = H.current) }
 
 theorem read_wellFormed {H : Heap Cell Owner} (hw : H.WellFormed)
-    {o : Owner} {s : Cell} (hs : H.slot s) : (H.read o s).WellFormed where
-  staticClosed := hw.staticClosed
-  epochClosed := hw.epochClosed
-  staticRoots := hw.staticRoots
-  slotsCurrent := hw.slotsCurrent
-  ownerRoots {o' c} hl h := by
-    rcases h with h | ⟨rfl, rfl⟩
-    · exact hw.ownerRoots hl h
-    · exact Or.inr (Or.inr ⟨H.current, hw.slotsCurrent hs, hw.cleanCurrent hl⟩)
-  ownedBounded := hw.ownedBounded
-  cleanCurrent := hw.cleanCurrent
+    {o : Owner} {s : Cell} (hs : H.slot s) : (H.read o s).WellFormed := by
+  have target : ∀ {o' c}, H.OwnerTarget o' c → (H.read o s).OwnerTarget o' c :=
+    fun {o' c} ht => by
+      rcases ht with h | h | ⟨e, he, hheld⟩
+      · exact Or.inl h
+      · exact Or.inr (Or.inl h)
+      · exact Or.inr (Or.inr ⟨e, he, Or.inl hheld⟩)
+  exact
+    { staticClosed := hw.staticClosed
+      epochClosed := hw.epochClosed
+      staticRoots := hw.staticRoots
+      slotsCurrent := hw.slotsCurrent
+      ownerRoots := fun {o' c} hl h => by
+        rcases h with h | ⟨rfl, rfl⟩
+        · exact target (hw.ownerRoots hl h)
+        · exact Or.inr (Or.inr ⟨H.current, hw.slotsCurrent hs, Or.inr ⟨rfl, rfl⟩⟩)
+      ownedBounded := fun h ho => target (hw.ownedBounded h ho) }
 
 /-- A fresh cell: no edge, root or slot touches it yet. -/
 structure Fresh (H : Heap Cell Owner) (n : Cell) : Prop where
@@ -338,7 +363,6 @@ def alloc [DecidableEq Cell] (H : Heap Cell Owner) (n : Cell) (r : Region Owner)
     slot := fun c => H.slot c ∨ (c = n ∧ cached)
     staticRoot := fun c => H.staticRoot c ∨ (c = n ∧ rooted) }
 
-/-- Shared bookkeeping for allocation: the old structure keeps its regions. -/
 theorem alloc_region_old [DecidableEq Cell] {H : Heap Cell Owner} {n c : Cell}
     {r : Region Owner} {kids : Cell → Prop} {cached rooted : Prop} (hc : c ≠ n) :
     (H.alloc n r kids cached rooted).region c = H.region c := by
@@ -363,7 +387,7 @@ theorem alloc_wellFormed [DecidableEq Cell] {H : Heap Cell Owner} (hw : H.WellFo
     unfold OwnerTarget at ht ⊢
     rw [old hd]
     simpa [alloc] using ht
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro c d h hs
     rcases h with h | ⟨rfl, hk⟩
     · obtain ⟨hc, hd⟩ := edge_old h
@@ -396,7 +420,6 @@ theorem alloc_wellFormed [DecidableEq Cell] {H : Heap Cell Owner} (hw : H.WellFo
       exact target_old hd (hw.ownedBounded h ho)
     · have hr : r = .owned o := by simpa [alloc] using ho
       exact target_old (hkid hk) (howned hr hk)
-  · exact hw.cleanCurrent
 
 /-- **Decoding**: a copy in the current epoch, its children decoded in the
 same epoch or static, cached in a slot. -/
@@ -418,7 +441,7 @@ theorem buildStatic_wellFormed [DecidableEq Cell] {H : Heap Cell Owner} (hw : H.
     (fun h => h.elim) (fun _ => rfl) (fun h => by cases h)
 
 /-- **Building an owner's storage**: its children are what the owner may
-point to. -/
+point to; an export that copies the decoded copies it names is one. -/
 theorem buildOwned_wellFormed [DecidableEq Cell] {H : Heap Cell Owner} (hw : H.WellFormed)
     {n : Cell} (hn : H.Fresh n) {o : Owner} {kids : Cell → Prop}
     (hkid : ∀ {d}, kids d → d ≠ n) (hk : ∀ {d}, kids d → H.OwnerTarget o d) :
@@ -426,9 +449,8 @@ theorem buildOwned_wellFormed [DecidableEq Cell] {H : Heap Cell Owner} (hw : H.W
   alloc_wellFormed hw hn hkid (fun h => by cases h) (fun h => by cases h)
     (fun h => h.elim) (fun h => h.elim) (fun h _ hd => by cases h; exact hk hd)
 
-/-- **Without the copy rule, freeing is unsafe**: a static root that shares a
-decoded copy keeps a closed epoch reachable, even after every owner has
-collected. -/
+/-- A static root that shares a decoded copy of epoch 0: no owner holds
+epoch 0 and the current epoch is 1, yet the copy stays reachable. -/
 def sharedCopy : Heap Bool Unit where
   region c := if c then .static else .epoch 0
   pointsTo c d := c = true ∧ d = false
@@ -437,11 +459,12 @@ def sharedCopy : Heap Bool Unit where
   ownerRoot _ _ := False
   live _ := True
   current := 1
-  clean _ := 1
+  holds _ _ := False
 
+/-- **Without the copy rule, freeing is unsafe**: the shared copy's epoch is
+freeable, yet reachable. -/
 theorem shared_copy_resurrects : sharedCopy.Freeable 0 ∧ Reach sharedCopy.store false :=
-  ⟨⟨Nat.zero_lt_one, fun _ _ => Nat.zero_lt_one⟩,
-    Reach.step (Reach.root (Or.inl rfl)) ⟨rfl, rfl⟩⟩
+  ⟨⟨by decide, fun _ _ h => h⟩, Reach.step (Reach.root (Or.inl rfl)) ⟨rfl, rfl⟩⟩
 
 end Heap
 
