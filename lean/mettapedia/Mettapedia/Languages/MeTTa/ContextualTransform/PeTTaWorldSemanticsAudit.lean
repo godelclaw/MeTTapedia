@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaResumptionSemantics
+import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaStagedSemantics
 
 open Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
 
@@ -38,4 +39,14 @@ section
 #print axioms PeTTaResumptionSemantics.Controls.transform_first_answer_preserves_pending_work
 #print axioms PeTTaResumptionSemantics.Controls.transform_resume_respects_demand_and_current_interface
 #print axioms PeTTaResumptionSemantics.Controls.prepared_transform_resumes_the_same_search
+end
+
+open Mettapedia.Languages.MeTTa.ContextualTransform in
+section
+#print axioms PeTTaStagedSemantics.staged_entry_eq_live
+#print axioms PeTTaStagedSemantics.staged_resume_eq_editsOnly
+#print axioms PeTTaStagedSemantics.staged_eq_live_of_agrees
+#print axioms PeTTaStagedSemantics.Controls.edit_then_plain_or_entry
+#print axioms PeTTaStagedSemantics.Controls.later_branch_plain_or_entry
+#print axioms PeTTaStagedSemantics.Controls.kept_call_reads_new_equations
 end
