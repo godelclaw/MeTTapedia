@@ -144,7 +144,7 @@ theorem scoped_realizes_completed_unique {space : Space} {task : Task} {results 
       ⟨space, .work task, [], earned⟩ = (actual, .finished finished)) :
     actual = results ∧ finished = ⟨space, .returning [], [], earned ++ results⟩ := by
   obtain ⟨_, complete⟩ := scoped_realizes_completed realized earned
-  exact Machine.finished_unique ran complete
+  exact Machine.finished_run_eq ran complete
 
 /-- Any budget-exhausted intermediate state of a `ScopedRealizes` task resumes from
 the exact saved configuration to complete the remaining suffix of results. -/
