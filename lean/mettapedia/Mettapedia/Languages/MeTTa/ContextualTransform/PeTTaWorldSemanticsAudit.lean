@@ -1,5 +1,7 @@
 import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaResumptionSemantics
 import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaStagedSemantics
+import Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaCallGrain
+import Mettapedia.Languages.Prolog.SWI.StockSnapshotObstruction
 
 open Mettapedia.Languages.MeTTa.ContextualTransform.PeTTaWorldSemantics
 
@@ -55,4 +57,10 @@ section
 #print axioms PeTTaStagedSemantics.within_of_rows
 #print axioms PeTTaStagedSemantics.FootprintControls.pattern_removal_needs_removed_rows
 #print axioms PeTTaStagedSemantics.FootprintControls.combined_key_needs_every_source
+#print axioms PeTTaCallGrain.loaded_store_current
+#print axioms PeTTaCallGrain.refreshed_current
+#print axioms PeTTaCallGrain.every_call_is_live
+#print axioms PeTTaCallGrain.Controls.late_definition_by_grain
+#print axioms Mettapedia.Languages.Prolog.SWI.StockSnapshotObstruction.every_future_key_is_observed
+#print axioms Mettapedia.Languages.Prolog.SWI.StockSnapshotObstruction.entry_read_lower_bound
 end
